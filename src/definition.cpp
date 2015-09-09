@@ -282,7 +282,7 @@ void Definition::removeFromMap(Definition *d)
 
 Definition::Definition(const char *df,int dl,int dc,
                        const char *name,const char *b,
-                       const char *d,bool isSymbol)
+                       const char *d,bool isSymbol) : m_cookie(0)
 {
   m_name = name;
   m_defLine = dl;
@@ -299,7 +299,7 @@ Definition::Definition(const char *df,int dl,int dc,
   }
 }
 
-Definition::Definition(const Definition &d) : DefinitionIntf()
+Definition::Definition(const Definition &d) : DefinitionIntf(), m_cookie(0)
 {
   m_name = d.m_name;
   m_defLine = d.m_defLine;
@@ -380,7 +380,7 @@ Definition::Definition(const Definition &d) : DefinitionIntf()
 
 Definition::~Definition()
 {
-  if (m_isSymbol) 
+  if (m_isSymbol)
   {
     removeFromMap(this);
   }
@@ -389,6 +389,7 @@ Definition::~Definition()
     delete m_impl;
     m_impl=0;
   }
+  delete m_cookie;
 }
 
 void Definition::setName(const char *name)

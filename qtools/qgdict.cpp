@@ -154,6 +154,32 @@ int QGDict::hashKeyAscii( const char *key )
     return index;
 }
 
+#if 0
+int QGDict::hashKeyAscii( const char *key )
+{
+#if defined(CHECK_NULL)
+    if ( key == 0 )
+    {
+	qWarning( "QGDict::hashAsciiKey: Invalid null key" );
+        return 0;
+    }
+#endif
+    unsigned int hash = 5381;
+    int c;
+    // use djb2 by Dan Bernstein
+    if (cases)
+    {
+      while ((c=*key++)) hash = ((hash<<5)+hash)+c;
+    }
+    else
+    {
+      while ((c=*key++)) hash = ((hash<<5)+hash)+tolower(c);
+    }
+    int index = hash;
+    return index<0 ? -index : index;
+}
+#endif
+
 #ifndef QT_NO_DATASTREAM
 
 /*!

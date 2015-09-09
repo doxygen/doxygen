@@ -92,7 +92,8 @@ class DefinitionIntf
 class Definition : public DefinitionIntf
 {
   public:
-    
+    struct Cookie {};
+
     /*! Create a new definition */
     Definition(
         const char *defFileName,int defLine,int defColumn,
@@ -344,6 +345,9 @@ class Definition : public DefinitionIntf
     void addSectionsToIndex();
     void writeToc(OutputList &ol);
 
+    void setCookie(Cookie *cookie) { m_cookie = cookie; }
+    Cookie *cookie() const { return m_cookie; }
+
   protected:
 
     Definition(const Definition &d);
@@ -367,6 +371,7 @@ class Definition : public DefinitionIntf
     QCString m_symbolName;
     int m_defLine;
     int m_defColumn;
+    Cookie *m_cookie;
 };
 
 /** A list of Definition objects. */

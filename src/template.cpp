@@ -142,92 +142,38 @@ static QCString replace(const char *s,char csrc,char cdst)
 
 //- TemplateVariant implementation -------------------------------------------
 
-/** @brief Private data of a template variant object */
-class TemplateVariant::Private
-{
-  public:
-    Private(Type t) : type(t), intVal(0), boolVal(TRUE), strukt(0), list(0), raw(FALSE) {}
-    Type                type;
-    int                 intVal;
-    QCString            strVal;
-    bool                boolVal;
-    TemplateStructIntf *strukt;
-    TemplateListIntf   *list;
-    Delegate            delegate;
-    bool                raw;
-};
-
-TemplateVariant::TemplateVariant()
-{
-  p = new Private(None);
-}
-
-TemplateVariant::TemplateVariant(bool b)
-{
-  p = new Private(Bool);
-  p->boolVal = b;
-}
-
-TemplateVariant::TemplateVariant(int v)
-{
-  p = new Private(Integer);
-  p->intVal = v;
-}
-
-TemplateVariant::TemplateVariant(const char *s,bool raw)
-{
-  p = new Private(String);
-  p->strVal = s;
-  p->raw = raw;
-}
-
-TemplateVariant::TemplateVariant(const QCString &s,bool raw)
-{
-  p = new Private(String);
-  p->strVal = s;
-  p->raw = raw;
-}
 
 TemplateVariant::TemplateVariant(TemplateStructIntf *s)
+  : m_type(Struct), m_strukt(s), m_raw(FALSE)
 {
-  p = new Private(Struct);
-  p->strukt = s;
-  p->strukt->addRef();
+  m_strukt->addRef();
 }
 
 TemplateVariant::TemplateVariant(TemplateListIntf *l)
+  : m_type(List), m_list(l), m_raw(FALSE)
 {
-  p = new Private(List);
-  p->list = l;
-  p->list->addRef();
-}
-
-TemplateVariant::TemplateVariant(const TemplateVariant::Delegate &delegate)
-{
-  p = new Private(Function);
-  p->delegate = delegate;
+  m_list->addRef();
 }
 
 TemplateVariant::~TemplateVariant()
 {
-  if (p->type==Struct) p->strukt->release();
-  else if (p->type==List) p->list->release();
-  delete p;
+  if      (m_type==Struct) m_strukt->release();
+  else if (m_type==List)   m_list->release();
 }
 
 TemplateVariant::TemplateVariant(const TemplateVariant &v)
+  : m_type(v.m_type), m_strukt(0), m_raw(FALSE)
 {
-  p = new Private(v.p->type);
-  p->raw     = v.p->raw;
-  switch (p->type)
+  m_raw = v.m_raw;
+  switch (m_type)
   {
     case None: break;
-    case Bool:     p->boolVal = v.p->boolVal; break;
-    case Integer:  p->intVal  = v.p->intVal;  break;
-    case String:   p->strVal  = v.p->strVal;  break;
-    case Struct:   p->strukt  = v.p->strukt;  p->strukt->addRef(); break;
-    case List:     p->list    = v.p->list;    p->list->addRef();   break;
-    case Function: p->delegate= v.p->delegate;break;
+    case Bool:     m_boolVal = v.m_boolVal; break;
+    case Integer:  m_intVal  = v.m_intVal;  break;
+    case String:   m_strVal  = v.m_strVal;  break;
+    case Struct:   m_strukt  = v.m_strukt;  m_strukt->addRef(); break;
+    case List:     m_list    = v.m_list;    m_list->addRef();   break;
+    case Function: m_delegate= v.m_delegate;break;
   }
 }
 
@@ -235,21 +181,21 @@ TemplateVariant &TemplateVariant::operator=(const TemplateVariant &v)
 {
   // assignment can change the type of the variable, so we have to be
   // careful with reference counted content.
-  TemplateStructIntf *tmpStruct = p->type==Struct ? p->strukt : 0;
-  TemplateListIntf   *tmpList   = p->type==List   ? p->list   : 0;
-  Type tmpType = p->type;
+  TemplateStructIntf *tmpStruct = m_type==Struct ? m_strukt : 0;
+  TemplateListIntf   *tmpList   = m_type==List   ? m_list   : 0;
+  Type tmpType = m_type;
 
-  p->type    = v.p->type;
-  p->raw     = v.p->raw;
-  switch (p->type)
+  m_type    = v.m_type;
+  m_raw     = v.m_raw;
+  switch (m_type)
   {
     case None: break;
-    case Bool:     p->boolVal = v.p->boolVal; break;
-    case Integer:  p->intVal  = v.p->intVal;  break;
-    case String:   p->strVal  = v.p->strVal;  break;
-    case Struct:   p->strukt  = v.p->strukt;  p->strukt->addRef(); break;
-    case List:     p->list    = v.p->list;    p->list->addRef();   break;
-    case Function: p->delegate= v.p->delegate;break;
+    case Bool:     m_boolVal = v.m_boolVal; break;
+    case Integer:  m_intVal  = v.m_intVal;  break;
+    case String:   m_strVal  = v.m_strVal;  break;
+    case Struct:   m_strukt  = v.m_strukt;  m_strukt->addRef(); break;
+    case List:     m_list    = v.m_list;    m_list->addRef();   break;
+    case Function: m_delegate= v.m_delegate;break;
   }
 
   // release overwritten reference counted values
@@ -258,161 +204,34 @@ TemplateVariant &TemplateVariant::operator=(const TemplateVariant &v)
   return *this;
 }
 
-QCString TemplateVariant::toString() const
-{
-  QCString result;
-  switch (p->type)
-  {
-    case None:
-      break;
-    case Bool:
-      result=p->boolVal ? "true" : "false";
-      break;
-    case Integer:
-      result=QCString().setNum(p->intVal);
-      break;
-    case String:
-      result=p->strVal;
-      break;
-    case Struct:
-      result="[struct]";
-      break;
-    case List:
-      result="[list]";
-      break;
-    case Function:
-      result="[function]";
-      break;
-  }
-  return result;
-}
-
 bool TemplateVariant::toBool() const
 {
-  bool result=FALSE;
-  switch (p->type)
+  switch (m_type)
   {
-    case None:
-      break;
-    case Bool:
-      result = p->boolVal;
-      break;
-    case Integer:
-      result = p->intVal!=0;
-      break;
-    case String:
-      result = !p->strVal.isEmpty(); // && p->strVal!="false" && p->strVal!="0";
-      break;
-    case Struct:
-      result = TRUE;
-      break;
-    case List:
-      result = p->list->count()!=0;
-      break;
-    case Function:
-      result = FALSE;
-      break;
+    case None:     return FALSE;
+    case Bool:     return m_boolVal;
+    case Integer:  return m_intVal!=0;
+    case String:   return !m_strVal.isEmpty();
+    case Struct:   return TRUE;
+    case List:     return m_list->count()!=0;
+    case Function: return FALSE;
   }
-  return result;
+  return FALSE;
 }
 
 int TemplateVariant::toInt() const
 {
-  int result=0;
-  switch (p->type)
+  switch (m_type)
   {
-    case None:
-      break;
-    case Bool:
-      result = p->boolVal ? 1 : 0;
-      break;
-    case Integer:
-      result = p->intVal;
-      break;
-    case String:
-      result = p->strVal.toInt();
-      break;
-    case Struct:
-      break;
-    case List:
-      result = p->list->count();
-      break;
-    case Function:
-      result = 0;
-      break;
+    case None:     return 0;
+    case Bool:     return m_boolVal ? 1 : 0;
+    case Integer:  return m_intVal;
+    case String:   return m_strVal.toInt();
+    case Struct:   return 0;
+    case List:     return m_list->count();
+    case Function: return 0;
   }
-  return result;
-}
-
-TemplateStructIntf *TemplateVariant::toStruct() const
-{
-  return p->type==Struct ? p->strukt : 0;
-}
-
-TemplateListIntf *TemplateVariant::toList() const
-{
-  return p->type==List ? p->list : 0;
-}
-
-TemplateVariant TemplateVariant::call(const QValueList<TemplateVariant> &args)
-{
-  if (p->type==Function) return p->delegate(args);
-  return TemplateVariant();
-}
-
-bool TemplateVariant::operator==(TemplateVariant &other)
-{
-  if (p->type==None)
-  {
-    return FALSE;
-  }
-  if (p->type==TemplateVariant::List && other.p->type==TemplateVariant::List)
-  {
-    return p->list==other.p->list; // TODO: improve me
-  }
-  else if (p->type==TemplateVariant::Struct && other.p->type==TemplateVariant::Struct)
-  {
-    return p->strukt==other.p->strukt; // TODO: improve me
-  }
-  else
-  {
-    return toString()==other.toString();
-  }
-}
-
-TemplateVariant::Type TemplateVariant::type() const
-{
-  return p->type;
-}
-
-QCString TemplateVariant::typeAsString() const
-{
-  switch (p->type)
-  {
-    case None:     return "none";
-    case Bool:     return "bool";
-    case Integer:  return "integer";
-    case String:   return "string";
-    case Struct:   return "struct";
-    case List:     return "list";
-    case Function: return "function";
-  }
-  return "invalid";
-}
-
-bool TemplateVariant::isValid() const
-{
-  return p->type!=None;
-}
-
-void TemplateVariant::setRaw(bool b)
-{
-  p->raw = b;
-}
-
-bool TemplateVariant::raw() const
-{
-  return p->raw;
+  return 0;
 }
 
 //- Template struct implementation --------------------------------------------
@@ -2491,9 +2310,8 @@ TemplateVariant TemplateContextImpl::get(const QCString &name) const
   }
   else // obj.prop
   {
-    TemplateVariant v;
     QCString objName = name.left(i);
-    v = getPrimary(objName);
+    TemplateVariant v = getPrimary(objName);
     QCString propName = name.mid(i+1);
     while (!propName.isEmpty())
     {
