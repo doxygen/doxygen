@@ -44,7 +44,7 @@ class FTextStream;
 /** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
 {
-  IncludeInfo() { fileDef=0; local=FALSE; indirect=FALSE; }
+  IncludeInfo() : fileDef(0), local(FALSE), imported(FALSE), indirect(FALSE) {}
   ~IncludeInfo() {}
   FileDef *fileDef;
   QCString includeName;
