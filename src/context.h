@@ -71,7 +71,7 @@ class RefCountedContext
       m_className=className;
       m_insideRelease = FALSE;
     }
-    ~RefCountedContext()
+    virtual ~RefCountedContext()
     {
       if (!m_insideRelease) abort();
     }

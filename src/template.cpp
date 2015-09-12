@@ -1409,6 +1409,10 @@ class ExprAstFunctionVariable : public ExprAst
     { TRACE(("ExprAstFunctionVariable()\n"));
       m_args.setAutoDelete(TRUE);
     }
+   ~ExprAstFunctionVariable()
+    {
+      delete m_var;
+    }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
       QValueList<TemplateVariant> args;
@@ -2260,6 +2264,7 @@ class TemplateImpl : public TemplateNode, public Template
   public:
     TemplateImpl(TemplateEngine *e,const QCString &name,const QCString &data,
                  const QCString &extension);
+   ~TemplateImpl();
     void render(FTextStream &ts, TemplateContext *c);
 
     TemplateEngine *engine() const { return m_engine; }
@@ -2274,6 +2279,22 @@ class TemplateImpl : public TemplateNode, public Template
 
 //----------------------------------------------------------
 
+/** @brief Weak reference wrapper for TemplateStructIntf that provides access to the
+ *  wrapped struct without holding a reference.
+ */
+class TemplateStructWeakRef : public TemplateStructIntf
+{
+  public:
+    TemplateStructWeakRef(TemplateStructIntf *ref) : m_ref(ref), m_refCount(0) {}
+    virtual TemplateVariant get(const char *name) const { return m_ref->get(name); }
+    virtual int addRef() { return ++m_refCount; }
+    virtual int release() { int count=--m_refCount; if (count<=0) { delete this; } return count; }
+  private:
+    TemplateStructIntf *m_ref;
+    int m_refCount;
+};
+
+//----------------------------------------------------------
 
 TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
   : m_engine(e), m_templateName("<unknown>"), m_line(1), m_activeEscapeIntf(0),
@@ -2418,7 +2439,7 @@ void TemplateContextImpl::warn(const char *fileName,int line,const char *fmt,...
 
 void TemplateContextImpl::openSubIndex(const QCString &indexName)
 {
-  //printf("TemplateContextImpl::openSubIndex(%s)\n",indexName.data());
+  printf("TemplateContextImpl::openSubIndex(%s)\n",indexName.data());
   QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
   if (!stack || stack->isEmpty() || stack->top()->type()==TemplateVariant::List) // error: no stack yet or no entry
   {
@@ -2439,7 +2460,7 @@ void TemplateContextImpl::openSubIndex(const QCString &indexName)
 
 void TemplateContextImpl::closeSubIndex(const QCString &indexName)
 {
-  //printf("TemplateContextImpl::closeSubIndex(%s)\n",indexName.data());
+  printf("TemplateContextImpl::closeSubIndex(%s)\n",indexName.data());
   QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
   if (!stack || stack->count()<3)
   {
@@ -2462,6 +2483,7 @@ void TemplateContextImpl::closeSubIndex(const QCString &indexName)
       }
     }
   }
+  //fprintf(stderr,"TemplateContextImpl::closeSubIndex(%s) end g_count=%d\n\n",indexName.data(),g_count);
 }
 
 static void getPathListFunc(TemplateStructIntf *entry,TemplateList *list)
@@ -2520,7 +2542,9 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueLi
     if (stack->count()>1)
     {
       TemplateVariant *tmp = stack->pop();
-      parent = *stack->top();
+      // To prevent a cyclic dependency between parent and child which causes a memory
+      // leak, we wrap the parent into a weak reference version.
+      parent = new TemplateStructWeakRef(stack->top()->toStruct());
       stack->push(tmp);
       ASSERT(parent.type()==TemplateVariant::Struct);
     }
@@ -3652,6 +3676,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
         }
       }
       c->pop();
+      delete it;
       return result.data();
     }
     void render(FTextStream &ts, TemplateContext *c)
@@ -4058,6 +4083,11 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
       parser->removeNextToken(); // skip over endmarkers
       TRACE(("}TemplateNodeMarkers(%s)\n",data.data()));
     }
+   ~TemplateNodeMarkers()
+    {
+      delete m_listExpr;
+      delete m_patternExpr;
+    }
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -4109,6 +4139,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
             }
             ts << str.right(str.length()-index); // write text after last marker
             c->pop();
+            delete it;
           }
           else
           {
@@ -4768,6 +4799,11 @@ TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const QCS
   lexer.tokenize(tokens);
   TemplateParser parser(engine,name,tokens);
   parser.parse(this,1,QStrList(),m_nodes);
+}
+
+TemplateImpl::~TemplateImpl()
+{
+  //printf("deleting template %s\n",m_name.data());
 }
 
 void TemplateImpl::render(FTextStream &ts, TemplateContext *c)

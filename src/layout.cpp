@@ -1269,6 +1269,7 @@ class LayoutParser : public QXmlDefaultHandler
 
   private:
     LayoutParser() : m_sHandler(163), m_eHandler(17), m_invalidEntry(FALSE) { }
+   ~LayoutParser() { delete m_rootNav; }
 
     QDict<StartElementHandler> m_sHandler;
     QDict<EndElementHandler>   m_eHandler;

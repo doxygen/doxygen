@@ -390,6 +390,7 @@ Definition::~Definition()
     m_impl=0;
   }
   delete m_cookie;
+  m_cookie=0;
 }
 
 void Definition::setName(const char *name)

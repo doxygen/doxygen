@@ -92,7 +92,10 @@ class DefinitionIntf
 class Definition : public DefinitionIntf
 {
   public:
-    struct Cookie {};
+    struct Cookie
+    {
+      virtual ~Cookie() {}
+    };
 
     /*! Create a new definition */
     Definition(
@@ -345,7 +348,7 @@ class Definition : public DefinitionIntf
     void addSectionsToIndex();
     void writeToc(OutputList &ol);
 
-    void setCookie(Cookie *cookie) { m_cookie = cookie; }
+    void setCookie(Cookie *cookie) { delete m_cookie; m_cookie = cookie; }
     Cookie *cookie() const { return m_cookie; }
 
   protected:

@@ -3845,6 +3845,7 @@ TemplateVariant createLinkedText(Definition *def,const QCString &relPath,const Q
   if (tg)
   {
     linkifyText(*tg,def->getOuterScope(),def->getBodyDef(),def,text);
+    delete tg;
     return TemplateVariant(s.data(),TRUE);
   }
   else
@@ -10198,6 +10199,28 @@ void generateOutputViaTemplate()
           FTextStream ts;
           tpl->render(ts,ctx);
           e.unload(tpl);
+        }
+      }
+
+      // clear all cached data in Definition objects.
+      QDictIterator<DefinitionIntf> di(*Doxygen::symbolMap);
+      DefinitionIntf *intf;
+      for (;(intf=di.current());++di)
+      {
+        if (intf->definitionType()==DefinitionIntf::TypeSymbolList) // list of symbols
+        {
+          DefinitionListIterator dli(*(DefinitionList*)intf);
+          Definition *d;
+          // for each symbol
+          for (dli.toFirst();(d=dli.current());++dli)
+          {
+            d->setCookie(0);
+          }
+        }
+        else // single symbol
+        {
+          Definition *d = (Definition *)intf;
+          d->setCookie(0);
         }
       }
 
