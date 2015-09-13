@@ -2439,7 +2439,7 @@ void TemplateContextImpl::warn(const char *fileName,int line,const char *fmt,...
 
 void TemplateContextImpl::openSubIndex(const QCString &indexName)
 {
-  printf("TemplateContextImpl::openSubIndex(%s)\n",indexName.data());
+  //printf("TemplateContextImpl::openSubIndex(%s)\n",indexName.data());
   QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
   if (!stack || stack->isEmpty() || stack->top()->type()==TemplateVariant::List) // error: no stack yet or no entry
   {
@@ -2460,7 +2460,7 @@ void TemplateContextImpl::openSubIndex(const QCString &indexName)
 
 void TemplateContextImpl::closeSubIndex(const QCString &indexName)
 {
-  printf("TemplateContextImpl::closeSubIndex(%s)\n",indexName.data());
+  //printf("TemplateContextImpl::closeSubIndex(%s)\n",indexName.data());
   QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
   if (!stack || stack->count()<3)
   {
