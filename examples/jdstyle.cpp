@@ -2,7 +2,7 @@
  *  A test class. A more elaborate class description.
  */
 
-class Test
+class Javadoc_Test
 {
   public:
 
@@ -23,20 +23,20 @@ class Test
        * A constructor.
        * A more elaborate description of the constructor.
        */
-      Test();
+      Javadoc_Test();
 
       /**
        * A destructor.
        * A more elaborate description of the destructor.
        */
-     ~Test();
+     ~Javadoc_Test();
     
       /**
        * a normal member taking two arguments and returning an integer value.
        * @param a an integer argument.
        * @param s a constant character pointer.
-       * @see Test()
-       * @see ~Test()
+       * @see Javadoc_Test()
+       * @see ~Javadoc_Test()
        * @see testMeToo()
        * @see publicVar()
        * @return The test results

@@ -1,6 +1,6 @@
 /*! A test class */
 
-class Test
+class Afterdoc_Test
 {
   public:
     /** An enum type. 

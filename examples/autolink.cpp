@@ -1,33 +1,33 @@
 /*! \file autolink.cpp
   Testing automatic link generation.
   
-  A link to a member of the Test class: Test::member, 
+  A link to a member of the Autolink_Test class: Autolink_Test::member, 
   
   More specific links to the each of the overloaded members:
-  Test::member(int) and Test#member(int,int)
+  Autolink_Test::member(int) and Autolink_Test#member(int,int)
 
-  A link to a protected member variable of Test: Test#var, 
+  A link to a protected member variable of Autolink_Test: Autolink_Test#var, 
 
   A link to the global enumeration type #GlobEnum.
  
   A link to the define #ABS(x).
   
-  A link to the destructor of the Test class: Test::~Test, 
+  A link to the destructor of the Autolink_Test class: Autolink_Test::~Autolink_Test, 
   
   A link to the typedef ::B.
  
-  A link to the enumeration type Test::EType
+  A link to the enumeration type Autolink_Test::EType
   
-  A link to some enumeration values Test::Val1 and ::GVal2
+  A link to some enumeration values Autolink_Test::Val1 and ::GVal2
 */
 
 /*!
-  Since this documentation block belongs to the class Test no link to 
-  Test is generated.
+  Since this documentation block belongs to the class Autolink_Test no link to 
+  Autolink_Test is generated.
 
-  Two ways to link to a constructor are: #Test and Test().
+  Two ways to link to a constructor are: #Autolink_Test and Autolink_Test().
 
-  Links to the destructor are: #~Test and ~Test().
+  Links to the destructor are: #~Autolink_Test and ~Autolink_Test().
   
   A link to a member in this class: member().
 
@@ -46,19 +46,19 @@
   
   A link to the enumeration type #EType.
 
-  A link to some enumeration values: \link Test::Val1 Val1 \endlink and ::GVal1.
+  A link to some enumeration values: \link Autolink_Test::Val1 Val1 \endlink and ::GVal1.
 
   And last but not least a link to a file: autolink.cpp.
   
   \sa Inside a see also section any word is checked, so EType, 
-      Val1, GVal1, ~Test and member will be replaced by links in HTML.
+      Val1, GVal1, ~Autolink_Test and member will be replaced by links in HTML.
 */
 
-class Test
+class Autolink_Test
 {
   public:
-    Test();               //!< constructor 
-   ~Test();               //!< destructor 
+    Autolink_Test();               //!< constructor 
+   ~Autolink_Test();               //!< destructor 
     void member(int);     /**< A member function. Details. */
     void member(int,int); /**< An overloaded member function. Details */
 
@@ -73,10 +73,10 @@ class Test
 };
 
 /*! details. */
-Test::Test() { }
+Autolink_Test::Autolink_Test() { }
 
 /*! details. */
-Test::~Test() { }
+Autolink_Test::~Autolink_Test() { }
 
 /*! A global variable. */
 int globVar;
@@ -92,8 +92,8 @@ enum GlobEnum {
  */ 
 #define ABS(x) (((x)>0)?(x):-(x))
 
-typedef Test B;
+typedef Autolink_Test B;
 
-/*! \fn typedef Test B
+/*! \fn typedef Autolink_Test B
  *  A type definition. 
  */

@@ -1,7 +1,7 @@
 
 /*! A test class. */
 
-class Test
+class Include_Test
 {
   public:
     /// a member function
@@ -9,12 +9,12 @@ class Test
 };
 
 /*! \page example
- *  \dontinclude example_test.cpp
+ *  \dontinclude include_test.cpp
  *  Our main function starts like this:
  *  \skip main
  *  \until {
- *  First we create an object \c t of the Test class.
- *  \skipline Test
+ *  First we create an object \c t of the Include_Test class.
+ *  \skipline Include_Test
  *  Then we call the example member function 
  *  \line example
  *  After that our little test routine ends.
