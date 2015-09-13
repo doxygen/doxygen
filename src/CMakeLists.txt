@@ -106,7 +106,7 @@ FLEX_TARGET(config         config.l         ${GENERATED_SRC}/config.cpp         
 BISON_TARGET(vhdlparser    vhdlparser.y     ${GENERATED_SRC}/vhdlparser.cpp     COMPILE_FLAGS "-l -p vhdlscannerYY")
 BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "-l -p constexpYY")
 
-add_library(doxycfg
+add_library(doxycfg STATIC
     ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/config.cpp
     ${GENERATED_SRC}/configoptions.cpp
@@ -114,7 +114,7 @@ add_library(doxycfg
     portable_c.c
 )
 
-add_library(_doxygen
+add_library(_doxygen STATIC
     # custom generated files
     ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/settings.h

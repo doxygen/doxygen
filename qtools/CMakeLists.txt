@@ -52,6 +52,6 @@ qwaitcondition_win32.cpp
 )
 endif()
 
-add_library(qtools
+add_library(qtools STATIC
 ${qtools_src}
 )

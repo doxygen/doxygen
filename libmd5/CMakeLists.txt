@@ -1,3 +1,3 @@
-add_library(md5
+add_library(md5 STATIC
 md5.c
 )
