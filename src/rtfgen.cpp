@@ -2697,6 +2697,7 @@ void RTFGenerator::startSimpleSect(SectionTypes,const char *file,const char *anc
 void RTFGenerator::endSimpleSect()
 {
   DBG_RTF(t << "{\\comment (endSimpleSect)}"    << endl)
+  m_omitParagraph = FALSE;
   newParagraph();
   decrementIndentLevel();
   m_omitParagraph = TRUE;
