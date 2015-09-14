@@ -42,7 +42,7 @@ MemberGroup::MemberGroup()
 }
 
 MemberGroup::MemberGroup(Definition *parent,
-      int id,const char *hdr,const char *d,const char *docFile) 
+      int id,const char *hdr,const char *d,const char *docFile,int docLine)
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
   memberList      = new MemberList(MemberListType_memberGroup);
@@ -56,6 +56,7 @@ MemberGroup::MemberGroup(Definition *parent,
   m_numDocMembers = -1;
   m_parent        = parent;
   m_docFile       = docFile;
+  m_docLine       = docLine;
   m_xrefListItems = 0;
   //printf("Member group docs=`%s'\n",doc.data());
 }

@@ -42,7 +42,7 @@ class MemberGroup
   public:
     MemberGroup();
     MemberGroup(Definition *parent,int id,const char *header,
-                const char *docs,const char *docFile);
+                const char *docs,const char *docFile,int docLine);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
@@ -89,6 +89,9 @@ class MemberGroup
     Definition *parent() const { return m_parent; }
     QCString anchor() const;
 
+    QCString docFile() const { return m_docFile; }
+    int docLine() const { return m_docLine; }
+
     void marshal(StorageIntf *s);
     void unmarshal(StorageIntf *s);
 
@@ -105,6 +108,7 @@ class MemberGroup
     int  m_numDocMembers;
     Definition *m_parent;
     QCString m_docFile;
+    int m_docLine;
     QList<ListItemInfo> *m_xrefListItems;
 };
 
@@ -137,12 +141,13 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
 /** Data collected for a member group */
 struct MemberGroupInfo
 {
-  MemberGroupInfo() : m_sli(0) {}
+  MemberGroupInfo() : m_sli(0), docLine(-1) {}
  ~MemberGroupInfo() { delete m_sli; m_sli=0; }
   void setRefItems(const QList<ListItemInfo> *sli);
   QCString header;
   QCString doc;
   QCString docFile;
+  int docLine;
   QCString compoundName;
   QList<ListItemInfo> *m_sli;
 };

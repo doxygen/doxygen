@@ -627,7 +627,7 @@ void MemberList::writeDeclarations(OutputList &ol,
           {
             //printf("Member group has docs!\n");
             ol.startMemberGroupDocs();
-            ol.generateDoc("[generated]",-1,ctx,0,mg->documentation()+"\n",FALSE,FALSE);
+            ol.generateDoc(mg->docFile(),mg->docLine(),ctx,0,mg->documentation()+"\n",FALSE,FALSE);
             ol.endMemberGroupDocs();
           }
           ol.startMemberGroup();

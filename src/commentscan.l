@@ -374,7 +374,7 @@ class GuardedSection
 void openGroup(Entry *e,const char *file,int line);
 void closeGroup(Entry *e,const char *file,int line,bool foundInline=FALSE);
 void initGroupInfo(Entry *e);
-static void groupAddDocs(Entry *e,const char *fileName);
+static void groupAddDocs(Entry *e);
 
 /* -----------------------------------------------------------------
  *
@@ -2996,7 +2996,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   checkFormula();
   prot = protection;
   
-  groupAddDocs(curEntry,fileName);
+  groupAddDocs(curEntry);
 
   newEntryNeeded = needNewEntry;
 
@@ -3125,10 +3125,10 @@ void openGroup(Entry *e,const char *,int)
   }
 }
 
-void closeGroup(Entry *e,const char *fileName,int,bool foundInline)
+void closeGroup(Entry *e,const char *fileName,int line,bool foundInline)
 {
-  //printf("==> closeGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
-  //    e->name.data(),e->section,g_autoGroupStack.count());
+  //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) g_autoGroupStack=%d\n",
+  //    e->name.data(),e->section,fileName,line,g_autoGroupStack.count());
   if (g_memberGroupId!=DOX_NOGROUP) // end of member group
   {
     MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
@@ -3136,6 +3136,7 @@ void closeGroup(Entry *e,const char *fileName,int,bool foundInline)
     {
       info->doc = g_memberGroupDocs;
       info->docFile = fileName;
+      info->docLine = line;
     }
     g_memberGroupId=DOX_NOGROUP;
     g_memberGroupRelates.resize(0);
@@ -3169,7 +3170,7 @@ void initGroupInfo(Entry *e)
   }
 }
 
-static void groupAddDocs(Entry *e,const char *fileName)
+static void groupAddDocs(Entry *e)
 {
   if (e->section==Entry::MEMBERGRP_SEC)
   {
@@ -3184,7 +3185,8 @@ static void groupAddDocs(Entry *e,const char *fileName)
     if (info) 
     {
       info->doc = g_memberGroupDocs;
-      info->docFile = fileName;
+      info->docFile = e->docFile;
+      info->docLine = e->docLine;
       info->setRefItems(e->sli);
     }
     e->doc.resize(0);

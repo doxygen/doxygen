@@ -5901,7 +5901,8 @@ void addMembersToMemberGroup(MemberList *ml,
                     groupId,
                     info->header,
                     info->doc,
-                    info->docFile
+                    info->docFile,
+                    info->docLine
                     );
                 (*ppMemberGroupSDict)->append(groupId,mg);
               }
@@ -5933,7 +5934,8 @@ void addMembersToMemberGroup(MemberList *ml,
               groupId,
               info->header,
               info->doc,
-              info->docFile
+              info->docFile,
+              info->docLine
               );
           (*ppMemberGroupSDict)->append(groupId,mg);
         }
