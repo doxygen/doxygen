@@ -1,8 +1,8 @@
-/******************************************************************************
+﻿/******************************************************************************
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -20,13 +20,29 @@
  *               Harry Kalogirou <no email>
  *
  * 01 Jan 2009 : Greek maintenance by
- *               Paul Gessos <gessos.paul@yahoo.gr>
+ *               Paul Gessos <gessos.paul@gmail.com>
+ *
+ * Last update : 06 Jan 2015
  */
 
+/*	English to Greek keyword dictionary
+	(Many words have more clear meaning in English than Greek)
+	template -> πρότυπο
+	instance -> υπόσταση
+	module -> υπομονάδα
+	interface -> διεπαφή (ενναλλακτικά μπορεί να χρησιμοποιηθεί: διασύνδεση)
+	singleton -> μονοσύνολο
+	service -> υπηρεσία
+	exception -> εξαίρεση
+	namespace -> χώρος ονομάτων
+	enumeration -> απαρίθμηση
+*/ 
+ 
+ 
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public TranslatorAdapter_1_8_4
+class TranslatorGreek : public Translator
 {
   public:
 
@@ -63,7 +79,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return "Τεκμηρίωση Μελών Typedef"; }
+    { return "Τεκμηρίωση Μελών Ορισμών Τύπων"; }
 
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
@@ -118,7 +134,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
-    { return "όνομα απαρύθμισης"; }
+    { return "όνομα απαρίθμησης"; }
 
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
@@ -134,7 +150,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
-    { return "Κομμάτια"; }
+    { return "Υπομονάδες"; }
 
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
@@ -214,12 +230,12 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Ακολουθούνε οι δομές δεδομένων με σύντομες περιγραφές:";
+        return "Ακολουθούν οι δομές δεδομένων με σύντομες περιγραφές:";
       }
       else
       {
-        return "Ακολουθούνε οι κλάσεις, δομές, "
-               "ενώσεις και οι διασυνδέσεις με σύντομες περιγραφές:";
+        return "Ακολουθούν οι κλάσεις, οι δομές, "
+               "οι ενώσεις και οι διασυνδέσεις με σύντομες περιγραφές:";
       }
     }
 
@@ -297,7 +313,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return "Ακολουθεί η λίστα όλων των μονάδων:"; }
+    { return "Ακολουθεί η λίστα όλων των υπομονάδων:"; }
 
     // index titles (the project name is prepended for these)
 
@@ -310,7 +326,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      * index of all groups.
      */
     virtual QCString trModuleIndex()
-    { return "Ευρετήριο μονάδων"; }
+    { return "Ευρετήριο υπομονάδων"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
@@ -337,13 +353,13 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      * list of all files.
      */
     virtual QCString trFileIndex()
-    { return "Ευρετήτιο Αρχείων"; }
+    { return "Ευρετήριο Αρχείων"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     virtual QCString trModuleDocumentation()
-    { return "Τεκμηρίωση Μονάδων"; }
+    { return "Τεκμηρίωση Υπομονάδων"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -380,7 +396,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return "Εγχειρίδιο Αναφοράς"; }
+    { return "Εγχειρίδιο Τεκμηρίωσης"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
@@ -494,7 +510,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
 
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
-    { return "Ημ/νια"; }
+    { return "Ημερομηνία"; }
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
@@ -558,14 +574,14 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)"Αναφορά";
+      QCString result=(QCString)"Τεκμηρίωση";
       if (isTemplate) result+=" Προτύπου";
       switch(compType)
       {
         case ClassDef::Class:      result+=" Κλάσης "; break;
         case ClassDef::Struct:     result+=" Δομής "; break;
         case ClassDef::Union:      result+=" Ένωσης "; break;
-        case ClassDef::Interface:  result+=" Διασύνδεσης "; break;
+        case ClassDef::Interface:  result+=" Διεπαφής "; break;
         case ClassDef::Protocol:   result+=" Πρωτοκόλλου "; break;
         case ClassDef::Category:   result+=" Κατηγορίας "; break;
         case ClassDef::Exception:  result+=" Εξαίρεσης "; break;
@@ -578,7 +594,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result="Αναφορά Αρχείου ";
+      QCString result="Τεκμηρίωση Αρχείου ";
       result+=fileName;
       return result;
     }
@@ -586,7 +602,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result="Αναφορά Χώρου Ονομάτων ";
+      QCString result="Τεκμηρίωση Χώρου Ονομάτων ";
       result+=namespaceName;
       return result;
     }
@@ -594,21 +610,21 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
     virtual QCString trPublicMembers()
     { return "Δημόσιες Μέθοδοι"; }
     virtual QCString trPublicSlots()
-    { return "Δημόσια Slots"; }
+    { return "Δημόσιες Υποδοχές"; }
     virtual QCString trSignals()
     { return "Σήματα"; }
     virtual QCString trStaticPublicMembers()
-    { return "Στατικές Δημόσιες Μέδοδοι"; }
+    { return "Στατικές Δημόσιες Μέθοδοι"; }
     virtual QCString trProtectedMembers()
-    { return "Προστατευμένες Μέδοδοι"; }
+    { return "Προστατευμένες Μέθοδοι"; }
     virtual QCString trProtectedSlots()
-    { return "Προστατευμένα Slots"; }
+    { return "Προστατευμένες Υποδοχές"; }
     virtual QCString trStaticProtectedMembers()
-    { return "Στατικές Προστατευμένες Μέδοδοι"; }
+    { return "Στατικές Προστατευμένες Μέθοδοι"; }
     virtual QCString trPrivateMembers()
     { return "Ιδιωτικές Μέθοδοι"; }
     virtual QCString trPrivateSlots()
-    { return "Ιδιοτικά Slots"; }
+    { return "Ιδιωτικές Υποδοχές"; }
     virtual QCString trStaticPrivateMembers()
     { return "Στατικές Ιδιωτικές Μέθοδοι"; }
 
@@ -642,7 +658,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      */
     virtual QCString trInheritsList(int numEntries)
     {
-      return "Κληρονομεί "+trWriteList(numEntries)+".";
+      return QCString("Κληρονομεί ")+(numEntries==1?"την ":"τις ")+trWriteList(numEntries)+".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -650,7 +666,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return "Κληρονομείται από "+trWriteList(numEntries)+".";
+      return QCString("Κληρονομείται από ")+(numEntries==1?"την ":"τις ")+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -658,7 +674,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return "Επαναϋλοποιείται από "+trWriteList(numEntries)+".";
+      return QCString("Επαναϋλοποιείται από ")+(numEntries==1?"την ":"τις ")+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -666,7 +682,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return "Επαναϋλοποιείται στην "+trWriteList(numEntries)+".";
+      return QCString("Επαναϋλοποιείται ")+(numEntries==1?"στην ":"στις ")+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
@@ -724,14 +740,14 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
         case ClassDef::Class:      result+="αυτή την κλάση"; break;
         case ClassDef::Struct:     result+="αυτή τη δομή"; break;
         case ClassDef::Union:      result+="αυτή την ένωση"; break;
-        case ClassDef::Interface:  result+="αυτή τη διασύνδεση"; break;
+        case ClassDef::Interface:  result+="αυτή τη διεπαφή"; break;
         case ClassDef::Protocol:   result+="αυτό το πρωτόκολλο"; break;
         case ClassDef::Category:   result+="αυτή την κατηγορία"; break;
         case ClassDef::Exception:  result+="αυτή την εξαίρεση"; break;
         default: break;
       }
-      result+=" δημιουργήθηκε απο τ";
-      if (single) result+="ο ακόλουθο αρχείο:"; else result+="α ακόλουθα αρχεία:";
+      result+=" δημιουργήθηκε από ";
+      if (single) result+="το ακόλουθο αρχείο:"; else result+="τα ακόλουθα αρχεία:";
       return result;
     }
 
@@ -783,7 +799,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)"Δίαγραμμα Συνεργασίας για την κλάση "+clName+":";
+      return (QCString)"Διάγραμμα Συνεργασίας για την κλάση "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
@@ -1011,8 +1027,8 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
         "<li>Ένα μωβ διακεκομένο βέλος χρησιμοποιείται αν μία κλάση περιέχεται ή χρησιμοποιείται "
         "από μία άλλη κλάση. Το βέλος ονομάζεται από το όνομα της μεταβλητής(ων) "
         "μέσω της οποίας η κλάση ή δομή είναι προσβάσιμη.</li>\n"
-        "<li>Ένα κίτρινο διακεκομμένο βέλος χρησιμοποιείται για μια σχέση μεταξύ ενός template αντικειμένου και "
-        "της template κλάσης από την οποία δημιουργήθηκε. Το βέλος ονομάζεται με τις παραμέτρους του template "
+        "<li>Ένα κίτρινο διακεκομμένο βέλος χρησιμοποιείται για μια σχέση μεταξύ ενός προτύπου αντικειμένου και "
+        "της πρότυπης κλάσης από την οποία δημιουργήθηκε. Το βέλος ονομάζεται με τις παραμέτρους του προτύπου "
         "του αντικειμένου.</li>\n"
         "</ul>\n";
     }
@@ -1185,8 +1201,9 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Namespace" : "namespace"));
-      if (!singular)  result+="s";
+      QCString result((first_capital ? "Χ" : "χ"));
+      if (!singular)  result+="ώροι"; else result+="ώρος";
+	  result+=" ονομάτων";
       return result;
     }
 
@@ -1503,7 +1520,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return "Enumerator Documentation"; }
+    { return "Τεκμηρίωση Απαρίθμησης"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
@@ -1600,7 +1617,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
         case ClassDef::Class:      result+=" Υπομονάδα"; break;
         case ClassDef::Struct:     result+=" Τύπος"; break;
         case ClassDef::Union:      result+=" Ένωση"; break;
-        case ClassDef::Interface:  result+=" Interface"; break;
+        case ClassDef::Interface:  result+=" Διεπαφή"; break;
         case ClassDef::Protocol:   result+=" Πρωτόκολλο"; break;
         case ClassDef::Category:   result+=" Κατηγορία"; break;
         case ClassDef::Exception:  result+=" Εξαίρεση"; break;
@@ -1668,7 +1685,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
         case ClassDef::Class:      result+="αυτή την υπομονάδα"; break;
         case ClassDef::Struct:     result+="αυτό τον τύπο δεδομένων"; break;
         case ClassDef::Union:      result+="αυτή την ένωση"; break;
-        case ClassDef::Interface:  result+="αυτό το interface"; break;
+        case ClassDef::Interface:  result+="αυτή τη διεπαφή"; break;
         case ClassDef::Protocol:   result+="αυτό το πρωτόκολλο"; break;
         case ClassDef::Category:   result+="αυτή την κατηγορία"; break;
         case ClassDef::Exception:  result+="αυτή την εξαίρεση"; break;
@@ -1889,7 +1906,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      */
     virtual QCString trInstanceMethods()
     {
-      return "Μέθοδοι Αντικειμένου";
+      return "Μέθοδοι Υπόστασης";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
@@ -1907,15 +1924,61 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
       return "Επισκόπηση σχεδίασης";
     }
 
-
-/* Future strategy of changes
-	Many words have more clear meaning in English and not in Greek:
-	template -> πρότυπο
-	instance -> αντικείμενο? (μπορεί να μιλάμε για template instantiation ή class instantiation)
-	interface -> διασύνδεση
-*/
-
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "Εξαγόμενες Διεπαφές"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "Συμπεριλαμβανόμενες Υπηρεσίες"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "Ομάδες Σταθερών"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" Τεκμηρίωση Ομάδας Σταθερών";
+      return result;
+    }
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" Τεκμηρίωση Υπηρεσίας";
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" Τεκμηρίωση Μονοσύνολου";
+      return result;
+    }
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"Η τεκμηρίωση για την υπηρεσία αυτή "
+                                "δημιουργήθηκε από ";
+      if (single) result+="το ακόλουθο αρχείο:"; else result+="τα ακόλουθα αρχεία:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"Η τεκμηρίωση για αυτό το μονοσύνολο "
+                                "δημιουργήθηκε από ";
+      if (single) result+="το ακόλουθο αρχείο:"; else result+="τα ακόλουθα αρχεία:";
+      return result;
+    }
 
 };
 
