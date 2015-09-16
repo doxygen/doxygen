@@ -64,7 +64,7 @@ namespace parser {
 // i < 16 - guaranteed
 char hexChar(int i) {
   if (i < 10) {
-    return i - '0';
+    return i + '0';
   }
   return 'a' + (i - 10);
 }
