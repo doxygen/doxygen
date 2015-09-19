@@ -518,7 +518,7 @@ class TemplateContext
      */
     virtual const TemplateVariant *getRef(const QCString &name) const = 0;
 
-    /** When files are create (i.e. by {% create ... %}) they written
+    /** When files are created (i.e. by {% create ... %}) they written
      *  to the directory \a dir.
      */
     virtual void setOutputDirectory(const QCString &dir) = 0;
@@ -575,11 +575,10 @@ class TemplateEngine
      */
     void destroyContext(TemplateContext *ctx);
 
-    /** Creates a new template whole contents are in a file.
-     *  @param[in] fileName The name of the file containing the
-     *             template data
+    /** Creates a new template whose contents are in a file.
+     *  @param[in] fileName The name of the file containing the template data
      *  @param[in] fromLine The line number of the statement that triggered the load
-     *  @return the new template, the caller will be the owner.
+     *  @return the new template, the engine will keep ownership of the object.
      */
     Template *loadByName(const QCString &fileName,int fromLine);
 
@@ -605,7 +604,6 @@ class TemplateEngine
 
     /** Returns the output extension, set via setOutputExtension() */
     QCString outputExtension() const;
-
 
     class Private;
     Private *p;
