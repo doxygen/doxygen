@@ -8559,3 +8559,29 @@ void initFilePattern(void)
     }
   }
 }
+
+bool openOutputFile(const char *outFile,QFile &f)
+{
+  bool fileOpened=FALSE;
+  bool writeToStdout=(outFile[0]=='-' && outFile[1]=='\0');
+  if (writeToStdout) // write to stdout
+  {
+    fileOpened = f.open(IO_WriteOnly,stdout);
+  }
+  else // write to file
+  {
+    QFileInfo fi(outFile);
+    if (fi.exists()) // create a backup
+    {
+      QDir dir=fi.dir();
+      QFileInfo backup(fi.fileName()+".bak");
+      if (backup.exists()) // remove existing backup
+        dir.remove(backup.fileName());
+      dir.rename(fi.fileName(),fi.fileName()+".bak");
+    } 
+    f.setName(outFile);
+    fileOpened = f.open(IO_WriteOnly|IO_Translate);
+  }
+  return fileOpened;
+}
+

@@ -1397,7 +1397,8 @@ void LayoutDocManager::parse(QTextStream &t,const char *fileName)
 void writeDefaultLayoutFile(const char *fileName)
 {
   QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  bool ok = openOutputFile(fileName,f);
+  if (!ok)
   {
     err("Failed to open file %s for writing!\n",fileName);
     return;

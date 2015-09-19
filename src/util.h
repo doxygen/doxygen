@@ -57,6 +57,7 @@ class BufStr;
 class QFileInfo;
 class QStrList;
 class FTextStream;
+class QFile;
 
 //--------------------------------------------------------------------
 
@@ -473,6 +474,7 @@ void convertProtectionLevel(
 
 bool mainPageHasTitle();
 void initFilePattern(void);
+bool openOutputFile(const char *outFile,QFile &f);
 
 #endif
 
