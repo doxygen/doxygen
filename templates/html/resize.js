@@ -56,7 +56,7 @@ function resizeHeight()
   var windowHeight = $(window).height() - headerHeight - footerHeight;
   content.css({height:windowHeight + "px"});
   navtree.css({height:windowHeight + "px"});
-  sidenav.css({height:windowHeight + "px",top: headerHeight+"px"});
+  sidenav.css({height:windowHeight + "px"});
 }
 
 function initResizable()
