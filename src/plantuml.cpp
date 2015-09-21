@@ -101,7 +101,7 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   //printf("*** running: %s %s outDir:%s %s\n",pumlExe.data(),pumlArgs.data(),outDir,outFile);
   msg("Running PlantUML on generated file %s.pu\n",baseName);
   portable_sysTimerStart();
-  if ((exitCode=portable_system(pumlExe,pumlArgs,FALSE))!=0)
+  if ((exitCode=portable_system(pumlExe,pumlArgs,TRUE))!=0)
   {
     err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
         plantumlJarPath.data(),exitCode);
