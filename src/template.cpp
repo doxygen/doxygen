@@ -34,6 +34,7 @@
 #include "message.h"
 #include "util.h"
 #include "resourcemgr.h"
+#include "portable.h"
 
 #define ENABLE_TRACING 0
 
@@ -552,6 +553,10 @@ class TemplateContextImpl : public TemplateContext
                                                    if (m_activeEscapeIntf) m_activeEscapeIntf->enableTabbing(b);
                                                  }
     bool tabbingEnabled() const                  { return m_tabbingEnabled; }
+    bool needsRecoding() const                   { return !m_encoding.isEmpty(); }
+    QCString encoding() const                    { return m_encoding; }
+    void setEncoding(const QCString &file,int line,const QCString &enc);
+    QCString recode(const QCString &s);
     void warn(const char *fileName,int line,const char *fmt,...) const;
 
     // index related functions
@@ -573,6 +578,8 @@ class TemplateContextImpl : public TemplateContext
     bool m_tabbingEnabled;
     TemplateAutoRef<TemplateStruct> m_indices;
     QDict< QStack<TemplateVariant> > m_indexStacks;
+    QCString m_encoding;
+    void *m_fromUtf8;
 };
 
 //-----------------------------------------------------------------------------
@@ -2303,6 +2310,7 @@ TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
   m_indexStacks.setAutoDelete(TRUE);
   m_contextStack.setAutoDelete(TRUE);
   m_escapeIntfDict.setAutoDelete(TRUE);
+  m_fromUtf8 = (void*)(-1);
   push();
   set("index",m_indices.get());
 }
@@ -2310,6 +2318,49 @@ TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
 TemplateContextImpl::~TemplateContextImpl()
 {
   pop();
+}
+
+void TemplateContextImpl::setEncoding(const QCString &templateName,int line,const QCString &enc)
+{
+  if (enc==m_encoding) return; // nothing changed
+  if (m_fromUtf8!=(void *)(-1))
+  {
+    portable_iconv_close(m_fromUtf8);
+    m_fromUtf8 = (void*)(-1);
+  }
+  m_encoding=enc;
+  if (!enc.isEmpty())
+  {
+    m_fromUtf8 = portable_iconv_open(enc,"UTF-8");
+    if (m_fromUtf8==(void*)(-1))
+    {
+      warn(templateName,line,"unsupported character conversion: '%s'->'UTF-8'\n", enc.data());
+    }
+  }
+  //printf("TemplateContextImpl::setEncoding(%s)\n",enc.data());
+}
+
+QCString TemplateContextImpl::recode(const QCString &s)
+{
+  //printf("TemplateContextImpl::recode(%s)\n",s.data());
+  int iSize        = s.length();
+  int oSize        = iSize*4+1;
+  QCString output(oSize);
+  size_t iLeft     = iSize;
+  size_t oLeft     = oSize;
+  char *iPtr       = s.rawData();
+  char *oPtr       = output.rawData();
+  if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
+  {
+    oSize -= (int)oLeft;
+    output.resize(oSize+1);
+    output.at(oSize)='\0';
+    return output;
+  }
+  else
+  {
+    return s;
+  }
 }
 
 void TemplateContextImpl::set(const char *name,const TemplateVariant &v)
@@ -2586,16 +2637,30 @@ class TemplateNodeText : public TemplateNode
 
     void render(FTextStream &ts, TemplateContext *c)
     {
-      //printf("TemplateNodeText::render(%s)\n",m_data.data());
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
+      //printf("TemplateNodeText::render(%s) needsRecoding=%d ci=%p\n",m_data.data(),ci->needsRecoding(),ci);
       if (ci->spacelessEnabled())
       {
-        ts << ci->spacelessIntf()->remove(m_data);
+        if (ci->needsRecoding())
+        {
+          ts << ci->recode(ci->spacelessIntf()->remove(m_data));
+        }
+        else
+        {
+          ts << ci->spacelessIntf()->remove(m_data);
+        }
       }
       else
       {
-        ts << m_data;
+        if (ci->needsRecoding())
+        {
+          ts << ci->recode(m_data);
+        }
+        else
+        {
+          ts << m_data;
+        }
       }
     }
   private:
@@ -2638,11 +2703,25 @@ class TemplateNodeVariable : public TemplateNode
         }
         if (ci->escapeIntf() && !v.raw())
         {
-          ts << ci->escapeIntf()->escape(v.toString());
+          if (ci->needsRecoding())
+          {
+            ts << ci->recode(ci->escapeIntf()->escape(v.toString()));
+          }
+          else
+          {
+            ts << ci->escapeIntf()->escape(v.toString());
+          }
         }
         else
         {
-          ts << v.toString();
+          if (ci->needsRecoding())
+          {
+            ts << ci->recode(v.toString());
+          }
+          else
+          {
+            ts << v.toString();
+          }
         }
       }
     }
@@ -2791,7 +2870,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
           if (guardValue.toBool()) // render nodes for the first guard that evaluated to 'true'
           {
             nodes->trueNodes.render(ts,c);
-           processed=TRUE;
+            processed=TRUE;
           }
         }
         else
@@ -3961,11 +4040,25 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
         }
         if (ci->escapeIntf() && !v.raw())
         {
-          ts << ci->escapeIntf()->escape(v.toString());
+          if (ci->needsRecoding())
+          {
+            ts << ci->recode(ci->escapeIntf()->escape(v.toString()));
+          }
+          else
+          {
+            ts << ci->escapeIntf()->escape(v.toString());
+          }
         }
         else
         {
-          ts << v.toString();
+          if (ci->needsRecoding())
+          {
+            ts << ci->recode(v.toString());
+          }
+          else
+          {
+            ts << v.toString();
+          }
         }
       }
       if (++m_index==m_args.count()) // wrap around
@@ -4109,7 +4202,14 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
             int index=0,newIndex,matchLen;
             while ((newIndex=marker.match(str,index,&matchLen))!=-1)
             {
-              ts << str.mid(index,newIndex-index); // write text before marker
+              if (ci->needsRecoding())
+              {
+                ts << ci->recode(str.mid(index,newIndex-index)); // write text before marker
+              }
+              else
+              {
+                ts << str.mid(index,newIndex-index); // write text before marker
+              }
               bool ok;
               uint entryIndex = str.mid(newIndex+1,matchLen-1).toUInt(&ok); // get marker id
               TemplateVariant var;
@@ -4137,7 +4237,14 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
               }
               index=newIndex+matchLen; // set index just after marker
             }
-            ts << str.right(str.length()-index); // write text after last marker
+            if (ci->needsRecoding())
+            {
+              ts << ci->recode(str.right(str.length()-index)); // write text after last marker
+            }
+            else
+            {
+              ts << str.right(str.length()-index); // write text after last marker
+            }
             c->pop();
             delete it;
           }
@@ -4244,8 +4351,7 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
             QCString targetFile = m_asExpr->resolve(c).toString();
             mkpath(ci,targetFile);
             if (targetFile.isEmpty())
-            {
-              ci->warn(m_templateName,m_line,"invalid parameter at right side of 'as' for resource command\n");
+            { ci->warn(m_templateName,m_line,"invalid parameter at right side of 'as' for resource command\n");
             }
             else
             {
@@ -4262,6 +4368,59 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
   private:
     ExprAst *m_resExpr;
     ExprAst *m_asExpr;
+};
+
+//----------------------------------------------------------
+
+/** @brief Class representing the 'encoding' tag in a template */
+class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
+{
+  public:
+    TemplateNodeEncoding(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeEncoding>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeEncoding(%s)\n",data.data()));
+      ExpressionParser ep(parser,line);
+      if (data.isEmpty())
+      {
+        parser->warn(m_templateName,line,"encoding tag is missing encoding argument");
+        m_encExpr = 0;
+      }
+      else
+      {
+        m_encExpr = ep.parse(data);
+      }
+      QStrList stopAt;
+      stopAt.append("endencoding");
+      parser->parse(this,line,stopAt,m_nodes);
+      parser->removeNextToken(); // skip over endencoding
+      TRACE(("}TemplateNodeEncoding(%s)\n",data.data()));
+    }
+   ~TemplateNodeEncoding()
+    {
+      delete m_encExpr;
+    }
+    void render(FTextStream &ts, TemplateContext *c)
+    {
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
+      ci->setLocation(m_templateName,m_line);
+      QCString encStr;
+      if (m_encExpr)
+      {
+        encStr = m_encExpr->resolve(c).toString();
+      }
+      QCString oldEncStr = ci->encoding();
+      if (!encStr.isEmpty())
+      {
+        ci->setEncoding(m_templateName,m_line,encStr);
+      }
+      m_nodes.render(ts,c);
+      ci->setEncoding(m_templateName,m_line,oldEncStr);
+    }
+  private:
+    ExprAst *m_encExpr;
+    TemplateNodeList m_nodes;
 };
 
 //----------------------------------------------------------
@@ -4328,6 +4487,7 @@ static TemplateNodeFactory::AutoRegister<TemplateNodeInclude>       autoRefInclu
 static TemplateNodeFactory::AutoRegister<TemplateNodeMarkers>       autoRefMarkers("markers");
 static TemplateNodeFactory::AutoRegister<TemplateNodeTabbing>       autoRefTabbing("tabbing");
 static TemplateNodeFactory::AutoRegister<TemplateNodeResource>      autoRefResource("resource");
+static TemplateNodeFactory::AutoRegister<TemplateNodeEncoding>      autoRefEncoding("encoding");
 static TemplateNodeFactory::AutoRegister<TemplateNodeSpaceless>     autoRefSpaceless("spaceless");
 static TemplateNodeFactory::AutoRegister<TemplateNodeIndexEntry>    autoRefIndexEntry("indexentry");
 static TemplateNodeFactory::AutoRegister<TemplateNodeOpenSubIndex>  autoRefOpenSubIndex("opensubindex");
@@ -4715,7 +4875,8 @@ void TemplateParser::parse(
                    command=="endrecursetree" || command=="endspaceless" ||
                    command=="endmarkers"     || command=="endmsg"       ||
                    command=="endrepeat"      || command=="elif"         ||
-                   command=="endrange"       || command=="endtabbing")
+                   command=="endrange"       || command=="endtabbing"   ||
+                   command=="endencoding")
           {
             warn(m_templateName,tok->line,"Found tag '%s' without matching start tag",command.data());
           }
