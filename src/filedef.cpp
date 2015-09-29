@@ -1737,7 +1737,8 @@ bool FileDef::isDocumentationFile() const
 void FileDef::acquireFileVersion()
 {
   QCString vercmd = Config_getString("FILE_VERSION_FILTER");
-  if (!vercmd.isEmpty() && !m_filePath.isEmpty() && m_filePath!="generated") 
+  if (!vercmd.isEmpty() && !m_filePath.isEmpty() &&
+      m_filePath!="generated" && m_filePath!="graph_legend")
   {
     msg("Version of %s : ",m_filePath.data());
     QCString cmd = vercmd+" \""+m_filePath+"\"";
