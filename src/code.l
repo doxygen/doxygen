@@ -2026,6 +2026,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <SkipCPP>"//"				{ 
   					  g_code->codify(yytext);
 					}
+<Body,FuncCall>"}"			{ 
+                                          g_theVarContext.popScope();
+					  g_yyColNr++;
+					  g_code->codify(yytext);
+					}
 <Body,FuncCall>"{"			{ 
                                           g_theVarContext.pushScope();
 
