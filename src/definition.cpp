@@ -1219,7 +1219,7 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
-          if (!rtfSourceCode)
+          if (rtfSourceCode)
           {
             ol.disable(OutputGenerator::RTF);
           }
