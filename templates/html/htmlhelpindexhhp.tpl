@@ -14,10 +14,9 @@ Title={{ config.PROJECT_NAME }}
 main="My Project","index.hhc","index.hhk","index{{ config.HTML_FILE_EXTENSION }}","index{{ config.HTML_FILE_EXTENSION }}",,,,,0x23520,,0x{% if config.BINARY_TOC %}7{% else %}1{% endif %}0387e,,,,,,,,0
 
 [FILES]
-{% recursetree index.nav %}
-{% if not node.isReference %}{{ node.file }}{{ config.HTML_FILE_EXTENSION }}{% endif %}
-{{ children }}
-{% endrecursetree %}
+{% for node in index.nav|flatten|listsort:config.HTML_FILE_EXTENSION|prepend:'{{file}}' %}
+{% if not node.isReference and node.file %}{{ node.file }}{{ config.HTML_FILE_EXTENSION }}{% endif %}
+{% endfor %}
 tab_a.png
 tab_b.png
 tab_h.png
