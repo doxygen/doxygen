@@ -45,7 +45,7 @@ include_directories(
 set(GENERATED_SRC_WIZARD ${GENERATED_SRC}/doxywizard)
 file(MAKE_DIRECTORY ${GENERATED_SRC_WIZARD})
 
-add_definitions(-DQT_ARCH_X86_64 -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DUNICODE)
+add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DUNICODE)
 if (NOT Qt5Core_FOUND)
   include(${QT_USE_FILE})
 endif()
