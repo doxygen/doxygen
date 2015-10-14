@@ -1436,6 +1436,10 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  <br>Note that the filter must not add or remove lines; it is applied before the 
  code is scanned, but not when the output code is generated. If lines are added 
  or removed, the anchors will not be placed correctly.
+ <br>Note that for custom extensions or not directly supported extensions you also
+ need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
+ otherwise the files are not properly processed by doxygen.<br>
+
 ]]>
       </docs>
     </option>
@@ -1449,6 +1453,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  information on how filters are used. If the \c FILTER_PATTERNS tag is empty or if
  none of the patterns match the file name, \ref cfg_input_filter "INPUT_FILTER" is 
  applied.
+ <br>Note that for custom extensions or not directly supported extensions you also
+ need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
+ otherwise the files are not properly processed by doxygen.<br>
 ]]>
       </docs>
     </option>
