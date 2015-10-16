@@ -813,6 +813,12 @@ void DotRunner::addPostProcessing(const char *cmd,const char *args)
   m_postArgs = args;
 }
 
+void DotRunner::addPreProcessing(const char *cmd,const char *args)
+{
+  m_preCmd = cmd;
+  m_preArgs = args;
+}
+
 bool DotRunner::run()
 {
   int exitCode=0;
@@ -830,8 +836,17 @@ bool DotRunner::run()
   QCString imageName = m_imageName;
   QCString postCmd   = m_postCmd;
   QCString postArgs  = m_postArgs;
+  QCString preCmd   = m_preCmd;
+  QCString preArgs  = m_preArgs;
   bool checkResult   = m_checkResult;
   bool cleanUp       = m_cleanUp;
+  
+  if (!preCmd.isEmpty() && portable_system(preCmd,preArgs)!=0)
+  {
+    err("Problems running '%s' as a pre-processing step for dot output\n",m_preCmd.data());
+    return FALSE;
+  }
+  
   if (multiTargets)
   {
     dotArgs="\""+file+"\"";
@@ -3518,7 +3533,8 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
     err("Output dir %s does not exist!\n",path); exit(1);
   }
   static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
-
+  static bool dotPreprocess = Config_getBool("INCLUDE_GRAPH_PREPROCESS");
+  
   QCString baseName=m_diskName;
   if (m_inverse) baseName+="_dep";
   baseName+="_incl";
@@ -3535,6 +3551,13 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   QCString absEpsName  = absBaseName+".eps";
   QCString absImgName  = absBaseName+"."+imgExt;
 
+  QCString dotPPcmd;
+  QCString dotPPargs;
+  if (dotPreprocess){
+    dotPPcmd = Config_getString("INCLUDE_GRAPH_PP_CMD");
+    dotPPargs = absDotName;    
+  }
+  
   bool regenerate = FALSE;
   if (updateDotGraph(m_startNode,
                  DotNode::Dependency,
@@ -3557,6 +3580,9 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),TRUE,absImgName);
       dotRun->addJob(imgFmt,absImgName);
       if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
+      if (dotPreprocess){
+        dotRun->addPreProcessing(dotPPcmd, dotPPargs);
+      }
       DotManager::instance()->addRun(dotRun);
     }
     else if (graphFormat==GOF_EPS)
@@ -3569,6 +3595,9 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       else
       {
         dotRun->addJob("ps",absEpsName);
+      }
+      if (dotPreprocess){
+        dotRun->addPreProcessing(dotPPcmd, dotPPargs);
       }
       DotManager::instance()->addRun(dotRun);
     }
