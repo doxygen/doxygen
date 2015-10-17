@@ -326,6 +326,31 @@ class DotGroupCollaboration
     QList<Edge>     m_edges;
 };
 
+/** Minimal constant string class that is thread safe, once initialized. */
+class DotConstString
+{
+  public:
+    DotConstString()                                   { m_str=0; }
+   ~DotConstString()                                   { delete[] m_str; }
+    DotConstString(const QCString &s) : m_str(0)       { set(s); }
+    DotConstString(const DotConstString &s) : m_str(0) { set(s.data()); }
+    const char *data() const                           { return m_str; }
+    bool isEmpty() const                               { return m_str==0 || m_str[0]=='\0'; }
+    void set(const QCString &s)
+    {
+      delete[] m_str;
+      m_str=0;
+      if (!s.isEmpty())
+      {
+        m_str=new char[s.length()+1];
+        qstrcpy(m_str,s.data());
+      }
+    }
+  private:
+    DotConstString &operator=(const DotConstString &);
+    char *m_str;
+};
+
 /** Helper class to run dot from doxygen.
  */
 class DotRunner
@@ -333,8 +358,8 @@ class DotRunner
   public:
     struct CleanupItem
     {
-      QCString path;
-      QCString file;
+      DotConstString path;
+      DotConstString file;
     };
 
     /** Creates a runner for a dot \a file. */
@@ -352,16 +377,19 @@ class DotRunner
 
     /** Runs dot for all jobs added. */
     bool run();
-    CleanupItem cleanup() const { return m_cleanupItem; }
+    const CleanupItem &cleanup() const { return m_cleanupItem; }
 
   private:
-    QList<QCString> m_jobs;
-    QCString m_postArgs;
-    QCString m_postCmd;
-    QCString m_file;
-    QCString m_path;
+    DotConstString m_dotExe;
+    bool m_multiTargets;
+    QList<DotConstString> m_jobs;
+    DotConstString m_postArgs;
+    DotConstString m_postCmd;
+    DotConstString m_file;
+    DotConstString m_path;
     bool m_checkResult;
-    QCString m_imageName;
+    DotConstString m_imageName;
+    DotConstString m_imgExt;
     bool m_cleanUp;
     CleanupItem m_cleanupItem;
 };
