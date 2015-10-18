@@ -695,14 +695,26 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     if (i<size && data[i]=='<') i++;
     linkStart=i;
     nl=0;
-    while (i<size && data[i]!='\'' && data[i]!='"' && data[i]!=')') 
+    int braceCount=1;
+    while (i<size && data[i]!='\'' && data[i]!='"' && braceCount>0)
     {
-      if (data[i]=='\n')
+      if (data[i]=='\n') // unexpected EOL
       {
         nl++;
         if (nl>1) return 0;
       }
-      i++;
+      else if (data[i]=='(')
+      {
+        braceCount++;
+      }
+      else if (data[i]==')')
+      {
+        braceCount--;
+      }
+      if (braceCount>0)
+      {
+        i++;
+      }
     }
     if (i>=size || data[i]=='\n') return 0;
     convertStringFragment(link,data+linkStart,i-linkStart);
@@ -720,7 +732,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       nl=0;
       while (i<size && data[i]!=')')
       {
-        if (data[i]=='\n') 
+        if (data[i]=='\n')
         {
           if (nl>1) return 0;
           nl++;
