@@ -1032,23 +1032,6 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>("\\"[a-z_A-Z]+)+"\\"		{ // directory (or chain of commands!)
   					  addOutput(yytext);
   					}
-<Comment>{XREFCMD}/[^a-z_A-Z]*		{ // xref command 
-					  if (inContext!=OutputXRef) 
-					  {
-					    briefEndsAtDot=FALSE;
-					    setOutput(OutputDoc);
-					  }
-					  // continue with the same input
-                                          REJECT;
-					}
-   /*
-<Comment>{DETAILEDCMD}/[^a-z_A-Z]*	{ // command that can end a brief description
-				          briefEndsAtDot=FALSE;
-				          setOutput(OutputDoc);
-					  // continue with the same input
-                                          REJECT;
-					}
-   */
 <Comment>"<"{DETAILEDHTML}{ATTR}">"	{ // HTML command that ends a brief description
 					  setOutput(OutputDoc);
 					  // continue with the same input
@@ -1127,8 +1110,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             int i=0;
                                             while (yytext[i]==' ' || yytext[i]=='\t') i++;
 					    g_spaceBeforeCmd = QCString(yytext).left(i);
-					    if (cmdPtr->endsBrief && inContext!=OutputXRef) 
-					    { 
+					    if (cmdPtr->endsBrief && !(inContext==OutputXRef && cmdName=="parblock"))
+					    {
 					      briefEndsAtDot=FALSE;
 					      // this command forces the end of brief description
 					      setOutput(OutputDoc);
