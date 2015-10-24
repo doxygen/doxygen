@@ -37,6 +37,7 @@ RefList::RefList(const char *listName,
   m_dictIterator = 0;
   m_id = 0;
   m_listName = listName;
+  m_fileName = convertNameToFile(listName,FALSE,TRUE);
   m_pageTitle = pageTitle;
   m_secTitle = secTitle;
 }
@@ -97,6 +98,11 @@ RefItem *RefList::getNextRefItem()
 QCString RefList::listName() const
 {
   return m_listName;
+}
+
+QCString RefList::fileName() const
+{
+  return m_fileName;
 }
 
 QCString RefList::pageTitle() const
@@ -174,6 +180,6 @@ void RefList::generatePage()
   }
   doc += "</dl>\n";
   //printf("generatePage('%s')\n",doc.data());
-  addRelatedPage(m_listName,m_pageTitle,doc,0,m_listName,1,0,0,0);
+  addRelatedPage(m_listName,m_pageTitle,doc,0,m_fileName,1,0,0,0);
 }
 

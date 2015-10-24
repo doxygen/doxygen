@@ -34,6 +34,8 @@ PageDef::PageDef(const char *f,int l,const char *n,
   m_subPageDict = new PageSDict(7);
   m_pageScope = 0;
   m_nestingLevel = 0;
+  static bool shortNames = Config_getBool("SHORT_NAMES");
+  m_fileName = shortNames ? convertNameToFile(n) : QCString(n);
   m_showToc = FALSE;
 }
 
@@ -61,19 +63,10 @@ QCString PageDef::getOutputFileBase() const
     return m_fileName; 
 }
 
-void PageDef::setFileName(const char *name,bool dontEscape) 
-{ 
-  static bool shortNames = Config_getBool("SHORT_NAMES");
-  if (shortNames && !dontEscape)
-  {
-    m_fileName = convertNameToFile(name);
-  }
-  else
-  {
-    m_fileName = name; 
-  }
+void PageDef::setFileName(const char *name)
+{
+  m_fileName = name;
 }
-
 
 void PageDef::addInnerCompound(Definition *def)
 {

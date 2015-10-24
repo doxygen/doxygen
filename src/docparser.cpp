@@ -2171,7 +2171,7 @@ bool DocXRefItem::parse()
       }
       else
       {
-        m_file   = convertNameToFile(refList->listName(),FALSE,TRUE);
+        m_file   = refList->fileName();
         m_anchor = item->listAnchor;
       }
       m_title  = refList->sectionTitle();

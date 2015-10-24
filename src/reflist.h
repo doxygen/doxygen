@@ -72,6 +72,7 @@ class RefList
     RefItem *getFirstRefItem();
     RefItem *getNextRefItem();
     QCString listName() const;
+    QCString fileName() const;
     QCString pageTitle() const;
     QCString sectionTitle() const;
 
@@ -85,6 +86,7 @@ class RefList
   private:
     int m_id;
     QCString m_listName;
+    QCString m_fileName;
     QCString m_pageTitle;
     QCString m_secTitle;
     SortedRefItems *m_itemList;

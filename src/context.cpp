@@ -10142,7 +10142,7 @@ void generateOutputViaTemplate()
       {
         // TODO: for LaTeX output index should be main... => solve in template
         Doxygen::mainPage = new PageDef("[generated]",1,"index","",theTranslator->trMainPage());
-        Doxygen::mainPage->setFileName("index",TRUE);
+        Doxygen::mainPage->setFileName("index");
         SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage,TRUE,FALSE));
         ctx->set("mainPage",mainPage.get());
       }
