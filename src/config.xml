@@ -2647,6 +2647,16 @@ or
 ]]>
       </docs>
     </option>
+    <option type='bool' id='LATEX_TIMESTAMP' defval='0' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ If the \c LATEX_TIMESTAMP tag is set to \c YES then the footer of
+ each generated page will contain the date and time when the page
+ was generated. Setting this to \c NO can help when comparing the output of
+ multiple runs.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='RTF' docs='Configuration options related to the RTF output'>
     <option type='bool' id='GENERATE_RTF' defval='0'>

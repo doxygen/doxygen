@@ -571,11 +571,18 @@ static void writeDefaultHeaderPart1(FTextStream &t)
 
   // Headers & footers
   QGString genString;
+  QCString generatedBy;
+  static bool timeStamp = Config_getBool("LATEX_TIMESTAMP");
   FTextStream tg(&genString);
-  filterLatexString(tg,
-                    theTranslator->trGeneratedAt(dateToString(TRUE),
-                       Config_getString("PROJECT_NAME")),
-                    FALSE,FALSE,FALSE);
+  if (timeStamp)
+  {
+    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), Config_getString("PROJECT_NAME"));
+  }
+  else
+  {
+    generatedBy = theTranslator->trGeneratedBy();
+  }
+  filterLatexString(tg, generatedBy, FALSE,FALSE,FALSE);
   t << "% Headers & footers\n"
        "\\usepackage{fancyhdr}\n"
        "\\pagestyle{fancyplain}\n"
@@ -700,10 +707,11 @@ static void writeDefaultHeaderPart3(FTextStream &t)
 {
   // part 3
   // Finalize project number
-  t << " Doxygen " << versionString << "}\\\\\n"
-       "\\vspace*{0.5cm}\n"
-       "{\\small " << dateToString(TRUE) << "}\\\\\n"
-       "\\end{center}\n"
+  t << " Doxygen " << versionString << "}\\\\\n";
+  if (Config_getBool("LATEX_TIMESTAMP"))
+    t << "\\vspace*{0.5cm}\n"
+         "{\\small " << dateToString(TRUE) << "}\\\\\n";
+  t << "\\end{center}\n"
        "\\end{titlepage}\n";
   bool compactLatex = Config_getBool("COMPACT_LATEX");
   if (!compactLatex)
