@@ -1017,8 +1017,8 @@ static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int
   if (size>1 && data[0]=='\\')
   {
     char c=data[1];
-    if (c=='[' || c==']' || c=='*' || c=='+' || c=='-' ||
-        c=='!' || c=='(' || c==')' || c=='.' || c=='`' || c=='_') 
+    if (c=='[' || c==']' || c=='*' || /* c=='+' || c=='-' || c=='.' || */
+        c=='!' || c=='(' || c==')' || c=='`' || c=='_')
     {
       if (c=='-' && size>3 && data[2]=='-' && data[3]=='-') // \---
       {
@@ -1030,7 +1030,11 @@ static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int
         out.addStr(&data[1],2);
         return 3;
       }
-      out.addStr(&data[1],1);
+      else if (c=='-') // \-
+      {
+        out.addChar(c);
+      }
+      out.addChar(data[1]);
       return 2;
     }
   }

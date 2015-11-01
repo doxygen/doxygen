@@ -1367,6 +1367,15 @@ reparsetoken:
         case CMD_HASH:
           children.append(new DocSymbol(parent,DocSymbol::Sym_Hash));
           break;
+        case CMD_PUNT:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Dot));
+          break;
+        case CMD_PLUS:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Plus));
+          break;
+        case CMD_MINUS:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
+          break;
         case CMD_DCOLON:
           children.append(new DocSymbol(parent,DocSymbol::Sym_DoubleColon));
           break;
