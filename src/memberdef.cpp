@@ -1418,6 +1418,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // are explicitly grouped.
   if (!inGroup && m_impl->mtype==MemberType_EnumValue) return;
 
+
   Definition *d=0;
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
@@ -1444,19 +1445,21 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = isDetailedSectionLinkable();
-  if (!detailsVisible)
+  bool writeAnchor = (inGroup || m_impl->group==0) &&     // only write anchors for member that have no details and are
+                     !detailsVisible && !m_impl->annMemb; // rendered inside the group page or are not grouped at all
+  if (writeAnchor)
   {
     QCString doxyArgs=argsString();
-    if (!m_impl->annMemb)
+    QCString doxyName=name();
+    if (!cname.isEmpty())
     {
-      QCString doxyName=name();
-      if (!cname.isEmpty())
-      {
-        doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
-      }
-      ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
+      doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
     }
+    ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
+  }
 
+  if (!detailsVisible)
+  {
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Man);
     ol.disable(OutputGenerator::Latex);
@@ -1775,7 +1778,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.endTypewriter();
   }
 
-  if (!detailsVisible && !m_impl->annMemb)
+  if (writeAnchor)
   {
     ol.endDoxyAnchor(cfname,anchor());
   }
