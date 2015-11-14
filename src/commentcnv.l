@@ -781,6 +781,7 @@ void replaceComment(int offset);
 				       //printf("** Adding start of comment!\n");
 				       if (g_lang!=SrcLangExt_Python &&
 					   g_lang!=SrcLangExt_VHDL &&
+					   g_lang!=SrcLangExt_Markdown &&
 					   g_lang!=SrcLangExt_Fortran)
 				       {
  				         ADDCHAR('/');
@@ -800,6 +801,7 @@ void replaceComment(int offset);
     			             {
 				       if (g_lang!=SrcLangExt_Python &&
 					   g_lang!=SrcLangExt_VHDL &&
+					   g_lang!=SrcLangExt_Markdown &&
 					   g_lang!=SrcLangExt_Fortran)
 				       {
  				         ADDCHAR('*');
