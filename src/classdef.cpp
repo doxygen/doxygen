@@ -2603,7 +2603,7 @@ void ClassDef::setTypeConstraints(ArgumentList *al)
 void ClassDef::setTemplateArguments(ArgumentList *al)
 {
   if (al==0) return;
-  if (!m_impl->tempArgs) delete m_impl->tempArgs; // delete old list if needed
+  if (m_impl->tempArgs) delete m_impl->tempArgs; // delete old list if needed
   //printf("setting template args '%s' for '%s'\n",tempArgListToString(al,getLanguage()).data(),name().data());
   m_impl->tempArgs=new ArgumentList;
   ArgumentListIterator ali(*al);

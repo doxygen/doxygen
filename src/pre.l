@@ -1659,6 +1659,7 @@ static void endCondSection()
   {
     CondCtx *ctx = g_condStack.pop();
     g_skip=ctx->skip;
+    delete ctx;
   }
   //printf("endCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
 }
@@ -1667,7 +1668,7 @@ static void forceEndCondSection()
 {
   while (!g_condStack.isEmpty())
   {
-    g_condStack.pop();
+    delete g_condStack.pop();
   }
   g_skip=FALSE;
 }
@@ -3010,8 +3011,8 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   g_includeStack.clear();
   g_expandedDict->setAutoDelete(FALSE);
   g_expandedDict->clear();
-  g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
+  g_condStack.clear();
   //g_fileDefineDict->clear();
 
   setFileName(fileName);
@@ -3161,6 +3162,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
     if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label %s ",ctx->sectionId.data()); 
     warn(fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
+    delete ctx;
   }
   // make sure we don't extend a \cond with missing \endcond over multiple files (see bug 624829)
   forceEndCondSection();
