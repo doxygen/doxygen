@@ -1367,15 +1367,6 @@ reparsetoken:
         case CMD_HASH:
           children.append(new DocSymbol(parent,DocSymbol::Sym_Hash));
           break;
-        case CMD_PUNT:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Dot));
-          break;
-        case CMD_PLUS:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Plus));
-          break;
-        case CMD_MINUS:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
-          break;
         case CMD_DCOLON:
           children.append(new DocSymbol(parent,DocSymbol::Sym_DoubleColon));
           break;
@@ -1393,6 +1384,15 @@ reparsetoken:
           break;
         case CMD_QUOTE:
           children.append(new DocSymbol(parent,DocSymbol::Sym_Quot));
+          break;
+        case CMD_PUNT:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Dot));
+          break;
+        case CMD_PLUS:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Plus));
+          break;
+        case CMD_MINUS:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
           break;
         case CMD_EMPHASIS:
           {
@@ -3238,6 +3238,9 @@ int DocIndexEntry::parse()
         case CMD_NDASH:   m_entry+="--";  break;
         case CMD_MDASH:   m_entry+="---";  break;
         case CMD_QUOTE:   m_entry+='"';  break;
+        case CMD_PUNT:    m_entry+='.';  break;
+        case CMD_PLUS:    m_entry+='+';  break;
+        case CMD_MINUS:   m_entry+='-';  break;
         default:
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command %s found as argument of \\addindex",
                     qPrint(g_token->name));
@@ -5346,6 +5349,15 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_QUOTE:
       m_children.append(new DocSymbol(this,DocSymbol::Sym_Quot));
       break;
+    case CMD_PUNT:
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Dot));
+      break;
+    case CMD_PLUS:
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Plus));
+      break;
+    case CMD_MINUS:
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+      break;
     case CMD_SA:
       g_inSeeBlock=TRUE;
       retval = handleSimpleSection(DocSimpleSect::See);
@@ -6856,6 +6868,15 @@ void DocText::parse()
             break;
           case CMD_QUOTE:
             m_children.append(new DocSymbol(this,DocSymbol::Sym_Quot));
+            break;
+          case CMD_PUNT:
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Dot));
+            break;
+          case CMD_PLUS:
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Plus));
+            break;
+          case CMD_MINUS:
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
             break;
           default:
             warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command `%s' found",
