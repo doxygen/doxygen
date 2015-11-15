@@ -344,6 +344,7 @@ void filterLatexString(FTextStream &t,const char *str,
 
 QCString latexEscapeLabelName(const char *s,bool insideTabbing);
 QCString latexEscapeIndexChars(const char *s,bool insideTabbing);
+QCString latexEscapePDFString(const char *s);
 
 QCString rtfFormatBmkStr(const char *name);
 

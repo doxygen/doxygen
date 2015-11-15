@@ -6713,6 +6713,29 @@ QCString latexEscapeIndexChars(const char *s,bool insideTabbing)
   return result.data();
 }
 
+QCString latexEscapePDFString(const char *s)
+{
+  QGString result;
+  FTextStream t(&result);
+  const char *p=s;
+  char c;
+  int i;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '\\': t << "\\textbackslash{}"; break;
+      case '{':  t << "\\{"; break;
+      case '}':  t << "\\}"; break;
+      default:
+        t << c;
+        break;
+    }
+  }
+  return result.data();
+}
+
+
 QCString rtfFormatBmkStr(const char *name)
 {
   static QCString g_nextTag( "AAAAAAAAAA" );

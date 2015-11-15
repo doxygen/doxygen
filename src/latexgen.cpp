@@ -682,7 +682,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
     // To avoid duplicate page anchors due to reuse of same numbers for
     // the index (be it as roman numbers)
     t << "\\hypersetup{pageanchor=false,\n"
-      << "             bookmarks=true,\n"
+    //  << "             bookmarks=true,\n" // commented out to prevent warning
       << "             bookmarksnumbered=true,\n"
       << "             pdfencoding=unicode\n"
       << "            }\n";
@@ -1569,13 +1569,22 @@ void LatexGenerator::startMemberDoc(const char *clname,
   }
   static const char *levelLab[] = { "subsubsection","paragraph","subparagraph", "subparagraph" };
   static bool compactLatex = Config_getBool("COMPACT_LATEX");
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
   int level=0;
   if (showInline) level+=2;
   if (compactLatex) level++;
   t << "\\" << levelLab[level]; 
 
   t << "[{";
+  if (pdfHyperlinks)
+  {
+    t << "\\texorpdfstring{";
+  }
   t << latexEscapeIndexChars(title,insideTabbing);
+  if (pdfHyperlinks)
+  {
+    t << "}{" << latexEscapePDFString(title) << "}";
+  }
   t << "}]";
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
   disableLinks=TRUE;
@@ -2087,78 +2096,6 @@ void LatexGenerator::endConstraintList()
   t << "\\end{description}" << endl;
   t << "\\end{Desc}" << endl;
 }
-
-#if 0
-void LatexGenerator::escapeLabelName(const char *s)
-{
-  if (s==0) return;
-  const char *p=s;
-  char c;
-  QCString result(qstrlen(s)+1); // worst case allocation
-  int i;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '|': t << "\\texttt{\"|}"; break;
-      case '!': t << "\"!"; break;
-      case '%': t << "\\%";       break;
-      case '{': t << "\\lcurly{}"; break;
-      case '}': t << "\\rcurly{}"; break;
-      case '~': t << "````~"; break; // to get it a bit better in index together with other special characters
-      // NOTE: adding a case here, means adding it to while below as well!
-      default:  
-        i=0;
-        // collect as long string as possible, before handing it to docify
-        result[i++]=c;
-        while ((c=*p) && c!='|' && c!='!' && c!='%' && c!='{' && c!='}' && c!='~')
-        {
-          result[i++]=c;
-          p++;
-        }
-        result[i]=0;
-        docify(result); 
-        break;
-    }
-  }
-}
-
-void LatexGenerator::escapeMakeIndexChars(const char *s)
-{
-  if (s==0) return;
-  const char *p=s;
-  char c;
-  QCString result(qstrlen(s)+1); // worst case allocation
-  int i;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '!': t << "\"!"; break;
-      case '"': t << "\"\""; break;
-      case '@': t << "\"@"; break;
-      case '|': t << "\\texttt{\"|}"; break;
-      case '[': t << "["; break;
-      case ']': t << "]"; break;
-      case '{': t << "\\lcurly{}"; break;
-      case '}': t << "\\rcurly{}"; break;
-      // NOTE: adding a case here, means adding it to while below as well!
-      default:  
-        i=0;
-        // collect as long string as possible, before handing it to docify
-        result[i++]=c;
-        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
-        {
-          result[i++]=c;
-          p++;
-        }
-        result[i]=0;
-        docify(result); 
-        break;
-    }
-  }
-}
-#endif
 
 void LatexGenerator::startCodeFragment()
 {
