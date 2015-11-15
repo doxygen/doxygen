@@ -2367,21 +2367,22 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString fn      = QFileInfo(fileName).fileName().utf8();
   static QCString mdfileAsMainPage = Config_getString("USE_MDFILE_AS_MAINPAGE");
   if (id.isEmpty()) id = markdownFileNameToId(fileName);
-  if (title.isEmpty()) title = titleFn;
   if (!mdfileAsMainPage.isEmpty() &&
       (fn==mdfileAsMainPage || // name reference
        QFileInfo(fileName).absFilePath()==
        QFileInfo(mdfileAsMainPage).absFilePath()) // file reference with path
      )
   {
-    docs.prepend("@mainpage\n");
+    docs.prepend("@mainpage "+title+"\n");
   }
   else if (id=="mainpage" || id=="index")
   {
+    if (title.isEmpty()) title = titleFn;
     docs.prepend("@mainpage "+title+"\n");
   }
   else
   {
+    if (title.isEmpty()) title = titleFn;
     docs.prepend("@page "+id+" "+title+"\n");
   }
   int lineNr=1;
