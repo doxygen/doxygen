@@ -2420,6 +2420,7 @@ void HtmlGenerator::endConstraintDocs()
 void HtmlGenerator::endConstraintList()
 {
   t << "</table>" << endl;
+  t << "</dd>" << endl;
   t << "</dl>" << endl;
   t << "</div>" << endl;
 }
