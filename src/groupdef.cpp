@@ -824,7 +824,7 @@ void GroupDef::writeFiles(OutputList &ol,const QCString &title)
     FileDef *fd;
     for (;(fd=it.current());++it)
     {
-      if (!(!fd->briefDescription().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
+      if (!(!fd->briefDescription().isEmpty() || !fd->documentation().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
       ol.startMemberDeclaration();
       ol.startMemberItem(fd->getOutputFileBase(),0);
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
@@ -876,7 +876,7 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
     GroupDef *gd;
     for (;(gd=it.current());++it)
     {
-      if (!(!gd->briefDescription().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
+      if (!(!gd->briefDescription().isEmpty() || !gd->documentation().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
       if (gd->isVisible())
       {
         ol.startMemberDeclaration();
@@ -912,7 +912,7 @@ void GroupDef::writeDirs(OutputList &ol,const QCString &title)
     DirDef *dd;
     for (;(dd=it.current());++it)
     {
-      if (!(!dd->briefDescription().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
+      if (!(!dd->briefDescription().isEmpty() || !dd->documentation().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
       ol.startMemberDeclaration();
       ol.startMemberItem(dd->getOutputFileBase(),0);
       ol.parseText(theTranslator->trDir(FALSE,TRUE));

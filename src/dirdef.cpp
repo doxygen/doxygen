@@ -228,7 +228,7 @@ void DirDef::writeSubDirList(OutputList &ol)
     DirDef *dd;
     for (;(dd=it.current());++it)
     {
-      if (!(!dd->briefDescription().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
+      if (!(!dd->briefDescription().isEmpty() || !dd->documentation().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
       ol.startMemberDeclaration();
       ol.startMemberItem(dd->getOutputFileBase(),0);
       ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
@@ -267,7 +267,7 @@ void DirDef::writeFileList(OutputList &ol)
     FileDef *fd;
     for (;(fd=it.current());++it)
     {
-      if (!(!fd->briefDescription().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
+      if (!(!fd->briefDescription().isEmpty() || !fd->documentation().isEmpty() || Config_getBool("EXTRACT_ALL"))) continue;
       ol.startMemberDeclaration();
       ol.startMemberItem(fd->getOutputFileBase(),0);
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");

@@ -1850,7 +1850,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
   //static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   SrcLangExt lang = getLanguage();
   if ((visibleInParentsDeclList()) &&
-      (!briefDescription().isEmpty() || Config_getBool("EXTRACT_ALL")))
+      (!briefDescription().isEmpty() || !documentation().isEmpty() || Config_getBool("EXTRACT_ALL")))
   {
     if (!found) // first class
     {
