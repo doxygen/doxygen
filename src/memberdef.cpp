@@ -1412,6 +1412,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                bool inGroup, ClassDef *inheritedFrom,const char *inheritId)
 {
+  static bool extractAll        = Config_getBool("EXTRACT_ALL");
   //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",qualifiedName().data(),inGroup);
 
   // hide enum value, since they appear already as part of the enum, unless they
@@ -1422,6 +1423,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   Definition *d=0;
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
+  if (briefDescription().isEmpty() && !extractAll) return;
 
   //_writeTagData(compoundType);
   _addToSearchIndex();
