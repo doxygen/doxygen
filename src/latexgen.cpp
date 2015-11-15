@@ -1575,7 +1575,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
   t << "\\" << levelLab[level]; 
 
   t << "[{";
-  t << latexEscapeIndexChars(title,insideTabbing);
+  t << latexEscapeIndexChars(memname,insideTabbing);
   t << "}]";
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
   disableLinks=TRUE;
