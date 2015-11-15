@@ -2591,7 +2591,7 @@ static MemberDef *addVariableToFile(
   MemberDef *md=new MemberDef(
       fileName,root->startLine,root->startColumn,
       root->type,name,root->args,0,
-      Public, Normal,root->stat,Member,
+      root->protection, Normal,root->stat,Member,
       mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0);
   md->setTagInfo(rootNav->tagInfo());
   md->setMemberSpecifiers(root->spec);
@@ -7324,7 +7324,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                   MemberDef *fmd=new MemberDef(
                       fileName,root->startLine,root->startColumn,
                       root->type,root->name,root->args,0,
-                      Public, Normal,root->stat,Member,
+                      root->protection, Normal,root->stat,Member,
                       MemberType_EnumValue,0,0);
                   if      (md->getClassDef())     fmd->setMemberClass(md->getClassDef());
                   else if (md->getNamespaceDef()) fmd->setNamespace(md->getNamespaceDef());
