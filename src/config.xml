@@ -1221,6 +1221,14 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='bool' id='WARN_AS_ERROR' defval='0'>
+      <docs>
+<![CDATA[
+ If the \c WARN_AS_ERROR tag is set to \c YES then doxygen will immediately stop
+ when a warning is encountered.
+]]>
+      </docs>
+    </option>
     <option type='string' id='WARN_FORMAT' format='string' defval='$file:$line: $text'>
       <docs>
 <![CDATA[
