@@ -3700,7 +3700,7 @@ void codeFreeScanner()
 extern "C" { // some bogus code to keep the compiler happy
   void codeYYdummy() { yy_flex_realloc(0,0); } 
 }
-#elif YY_FLEX_MINOR_VERSION<6 && YY_FLEX_SUBMINOR_VERSION<33
-#error "You seem to be using a version of flex newer than 2.5.4 but older than 2.5.33. These versions do NOT work with doxygen! Please use version <=2.5.4 or >=2.5.33 or expect things to be parsed wrongly!"
+#elif YY_FLEX_MAJOR_VERISON<=2 && YY_FLEX_MINOR_VERSION<=5 && YY_FLEX_SUBMINOR_VERSION<33
+#error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
 #endif
 
