@@ -939,7 +939,7 @@ bool NamespaceSDict::declVisible() const
 void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
         bool const isConstantGroup,bool localName)
 {
- 
+  static bool extractAll = Config_getBool("EXTRACT_ALL");
 
   if (count()==0) return; // no namespaces in the list
 
@@ -984,7 +984,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
   ol.startMemberList();
   for (ni.toFirst();(nd=ni.current());++ni)
   {
-    if (nd->isLinkable())
+    if (nd->isLinkable() && (extractAll || !nd->briefDescription().isEmpty()) || !nd->documentation().isEmpty())
     {
       SrcLangExt lang = nd->getLanguage();
       if (lang==SrcLangExt_IDL && (isConstantGroup != nd->isConstantGroup()))

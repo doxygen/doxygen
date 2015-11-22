@@ -387,7 +387,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             }
             // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
-            if (enumVars==0) // show enum here
+            if ((enumVars==0) // show enum here
+              && (!md->briefDescription().isEmpty() || !md->documentation().isEmpty() || Config_getBool("EXTRACT_ALL")))
             {
               //printf("Enum!!\n");
               if (first)
