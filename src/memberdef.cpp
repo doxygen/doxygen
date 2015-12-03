@@ -1422,6 +1422,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   Definition *d=0;
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
+  if (!hasDocumentation()) return;
 
   //_writeTagData(compoundType);
   _addToSearchIndex();

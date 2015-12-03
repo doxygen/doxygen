@@ -984,7 +984,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
   ol.startMemberList();
   for (ni.toFirst();(nd=ni.current());++ni)
   {
-    if (nd->isLinkable())
+    if (nd->isLinkable() && nd->hasDocumentation())
     {
       SrcLangExt lang = nd->getLanguage();
       if (lang==SrcLangExt_IDL && (isConstantGroup != nd->isConstantGroup()))
