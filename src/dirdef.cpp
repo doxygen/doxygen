@@ -836,6 +836,7 @@ static void computeCommonDirPrefix()
           else // dir is shorter than path -> take path of dir as new start
           {
             path=dir->name();
+            l=path.length();
             int i=path.findRev('/',l-2);
             if (i==-1) // no unique prefix -> stop
             {
