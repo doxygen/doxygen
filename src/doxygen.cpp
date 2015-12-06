@@ -6204,6 +6204,8 @@ static void findMember(EntryNav *rootNav,
                 memType.stripPrefix("static "); // see bug700696
                 funcType=substitute(stripTemplateSpecifiersFromScope(funcType,TRUE),
                                     className+"::",""); // see bug700693 & bug732594
+                memType=substitute(stripTemplateSpecifiersFromScope(memType,TRUE),
+                                    className+"::",""); // see bug758900
                 Debug::print(Debug::FindMembers,0,
                    "5b. Comparing return types '%s'<->'%s' #args %d<->%d\n",
                     qPrint(md->typeString()),qPrint(funcType),
