@@ -1603,7 +1603,7 @@ to disable this feature.
   necessary type information.
 
   @note The availability of this option depends on whether or not doxygen
-  was compiled with the `--with-libclang` option.
+  was generated with the `-Duse-libclang=ON` option for CMake.
 ]]>
       </docs>
     </option>
