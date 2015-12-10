@@ -153,9 +153,12 @@ void RefList::generatePage()
     doc += "\n";
     if (item->scope)
     {
-      doc += "\\_setscope ";
-      doc += item->scope->name();
-      doc += " ";
+      if (item->scope->name() != "<globalScope>")
+      {
+        doc += "\\_setscope ";
+        doc += item->scope->name();
+        doc += " ";
+      }
     }
     doc += item->prefix;
     doc += " \\_internalref ";
