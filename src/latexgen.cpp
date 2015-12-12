@@ -553,7 +553,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\hbadness=750\n"
        "\\setlength{\\emergencystretch}{15pt}\n"
        "\\setlength{\\parindent}{0cm}\n"
-       "\\setlength{\\parskip}{0.2cm}\n";
+       "\\setlength{\\parskip}{3ex plus 2ex minus 2ex}\n";
   // Redefine paragraph/subparagraph environments, using sectsty fonts
   t << "\\makeatletter\n"
        "\\renewcommand{\\paragraph}{%\n"
