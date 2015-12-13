@@ -75,6 +75,7 @@ static int              lastCSConstraint;
 static int              lastHereDocContext;
 static int              lastDefineContext;
 static int              lastAlignAsContext;
+static int              lastC11AttributeContext;
 static Protection	protection;
 static Protection	baseProt;
 static int		sharpCount   = 0 ;
@@ -668,6 +669,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %x      SkipPHPString
 %x	SkipInits
 %x	SkipC11Inits
+%x      SkipC11Attribute
 %x	SkipCPP
 %x	SkipCPPBlock
 %x	SkipComment
@@ -5024,6 +5026,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN(SkipInits);
                                           }
                                         }
+<SkipC11Attribute>"]]"                 {
+                                          BEGIN(lastC11AttributeContext);
+                                        }
 <SkipInits>"{"				{ // C++11 style initializer
   					  unput('{');
 					  BEGIN( Function );
@@ -5127,7 +5132,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   				          //addToBody(yytext);
   					  BEGIN( SkipCurlyCpp );
 					}
-<SkipCurly,SkipC11Inits,SkipInits>\n	{
+<SkipCurly,SkipC11Inits,SkipInits,SkipC11Attribute>\n	{
                                           lineCount();
   				          //addToBody(yytext);
   					}
@@ -5156,22 +5161,22 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   				          //addToBody(yytext);
                                           lineCount();
 					}
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp>"/*"	{
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>"/*"	{
   				          //addToBody(yytext);
   					  lastCContext = YY_START;
 					  BEGIN(SkipComment);
   					}
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp>"//"  {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>"//"  {
   				          //addToBody(yytext);
   					  lastCContext = YY_START;
 					  BEGIN(SkipCxxComment);
   					}
-<SkipInits,SkipC11Inits>"("             {
+<SkipInits,SkipC11Inits,SkipC11Attribute>"("             {
                                           roundCount=0;
                                           lastSkipRoundContext=YY_START;
                                           BEGIN(SkipRound);
                                         }
-<SkipInits,SkipC11Inits>\"	        {
+<SkipInits,SkipC11Inits,SkipC11Attribute>\"	        {
   					  lastStringContext=YY_START;
   				          BEGIN( SkipString ); 
 					}
@@ -5206,7 +5211,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN(SkipPHPString);
 					  }
 					}
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp>.	{ }
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>.	{ }
 <SkipString,SkipPHPString>\\.		{ }
 <SkipString>\"				{ 
   					  BEGIN( lastStringContext ); 
@@ -6001,7 +6006,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <Comment>.				{ current->program += *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,Bases,OldStyleArgs>("//"{B}*)?"/*!" { 
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,SkipC11Attribute,Bases,OldStyleArgs>("//"{B}*)?"/*!" { 
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
@@ -6530,6 +6535,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  BEGIN( lastCContext ) ;
 					}
 <SkipComment>[^\*\n]+
+
+"[["                                    { // C++11 attribute
+                                          lastC11AttributeContext = YY_START;
+                                          BEGIN( SkipC11Attribute );
+                                        }
+
 <*>\n					{ lineCount(); }
 <*>\"					{
 					  if (insideIDL && insideCppQuote)
