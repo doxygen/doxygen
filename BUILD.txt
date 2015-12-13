@@ -27,6 +27,7 @@ Visual Studio or other compiler environments like MinGW)
 Doxygen's cmake configuration provides a number of options:
 - build_wizard    Build the GUI frontend for doxygen.
 - build_app       Example showing how to embed doxygen in an application.
+- build_parse     Parses source code and dumps the dependencies between the code elements.
 - build_xmlparser Example showing how to parse doxygen's XML output.
 - build_search    Build external search tools (doxysearch and doxyindexer).
 - build_doc       Build user manual.
