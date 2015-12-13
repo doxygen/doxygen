@@ -2431,6 +2431,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             }
 					    else
                                             {
+					      externC=FALSE; // see bug759247
 		 			      BEGIN(FindMembers);
                                             }
 					  }
@@ -3417,6 +3418,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
   					    current->args += yytext ;
 					    squareCount=1;
+					    externC=FALSE; // see bug759247
 					    BEGIN( Array ) ;
 					  }
 					}
