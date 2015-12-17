@@ -69,10 +69,10 @@ void initWarningFormat()
 //  {
 //    warnFormatOrder = 6;
 //  }
-//  outputFormat = 
+//  outputFormat =
 //      substitute(
 //        substitute(
-//          substitute( 
+//          substitute(
 //            Config_getString("WARN_FORMAT"),
 //           "$file","%s"
 //          ),
@@ -95,6 +95,10 @@ void initWarningFormat()
   if (!warnFile) // point it to something valid, because warn() relies on it
   {
     warnFile = stderr;
+  }
+
+  if (Config_getBool("WARN_AS_ERROR")) {
+    warning_str = error_str;
   }
 }
 
@@ -130,11 +134,12 @@ static void format_warn(const char *file,int line,const char *text)
     }
   }
   // substitute markers by actual values
-  QCString msgText = 
+  bool warnAsError = Config_getBool("WARN_AS_ERROR");
+  QCString msgText =
       substitute(
         substitute(
           substitute(
-            substitute( 
+            substitute(
               outputFormat,
               "$file",fileSubst
             ),
@@ -143,10 +148,19 @@ static void format_warn(const char *file,int line,const char *text)
           "$version",versionSubst
         ),
         "$text",textSubst
-      )+'\n';
+      );
+  if (warnAsError) {
+    msgText += " (warning treated as error, aborting now)";
+  }
+  msgText += '\n';
 
   // print resulting message
   fwrite(msgText.data(),1,msgText.length(),warnFile);
+  if (warnAsError) {
+    exit(1);
+  } else {
+    Doxygen::exitCode = 2;
+  }
 }
 
 static void do_warn(const char *tag, const char *file, int line, const char *prefix, const char *fmt, va_list args)
@@ -170,7 +184,7 @@ void warn(const char *file,int line,const char *fmt, ...)
   va_list args;
   va_start(args, fmt);
   do_warn("WARNINGS", file, line, warning_str, fmt, args);
-  va_end(args); 
+  va_end(args);
 }
 
 void va_warn(const char *file,int line,const char *fmt,va_list args)
@@ -191,7 +205,7 @@ void warn_undoc(const char *file,int line,const char *fmt, ...)
   do_warn("WARN_IF_UNDOCUMENTED", file, line, warning_str, fmt, args);
   va_end(args);
 }
-  
+
 void warn_doc_error(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
@@ -205,7 +219,7 @@ void warn_uncond(const char *fmt, ...)
   va_list args;
   va_start(args, fmt);
   vfprintf(warnFile, (QCString(warning_str) + fmt).data(), args);
-  va_end(args); 
+  va_end(args);
 }
 
 void err(const char *fmt, ...)
@@ -213,7 +227,7 @@ void err(const char *fmt, ...)
   va_list args;
   va_start(args, fmt);
   vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
-  va_end(args); 
+  va_end(args);
 }
 
 extern void err_full(const char *file,int line,const char *fmt, ...)
@@ -221,7 +235,7 @@ extern void err_full(const char *file,int line,const char *fmt, ...)
   va_list args;
   va_start(args, fmt);
   do_warn(NULL, file, line, error_str, fmt, args);
-  va_end(args); 
+  va_end(args);
 }
 
 void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
