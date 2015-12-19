@@ -4005,6 +4005,11 @@ bool getDefs(const QCString &scName,
 
       MemberDef *tmd=0;
       ClassDef *fcd=getResolvedClass(Doxygen::globalScope,0,className,&tmd);
+      if (fcd==0 && className.find('<')!=-1) // try without template specifiers as well
+      {
+         QCString nameWithoutTemplates = stripTemplateSpecifiersFromScope(className,FALSE);
+         fcd=getResolvedClass(Doxygen::globalScope,0,nameWithoutTemplates,&tmd);
+      }
       //printf("Trying class scope %s: fcd=%p tmd=%p\n",className.data(),fcd,tmd);
       // todo: fill in correct fileScope!
       if (fcd &&  // is it a documented class
@@ -4756,7 +4761,7 @@ bool resolveLink(/* in */ const char *scName,
 
   QCString linkRef=lr;
   QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
-  //printf("ResolveLink linkRef=%s inSee=%d\n",lr,inSeeBlock);
+  //printf("ResolveLink linkRef=%s\n",lr);
   FileDef  *fd;
   GroupDef *gd;
   PageDef  *pd;
