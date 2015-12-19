@@ -113,6 +113,9 @@ static int              g_braceCount;
 static bool             g_lexInit = FALSE;
 static bool             g_packageCommentAllowed;
 
+static bool             g_start_init = FALSE;
+static int              g_search_count = 0;
+
 //-----------------------------------------------------------------------------
 
 
@@ -458,6 +461,7 @@ OCTNUMBER         "0"[0-7]+[lL]?
 NUMBER            {DIGIT}+[lLjJ]?
 INTNUMBER         {HEXNUMBER}|{OCTNUMBER}|{NUMBER}
 FLOATNUMBER       {DIGIT}+"."{DIGIT}+([eE][+\-]?{DIGIT}+)?[jJ]?
+BOOL              ("True"|"False")
 LETTER            [A-Za-z\x80-\xFF]
 NONEMPTY          [A-Za-z0-9_\x80-\xFF]
 EXPCHAR           [#(){}\[\],:.%/\\=`*~|&<>!;+-]
@@ -580,6 +584,7 @@ STARTDOCSYMS      "##"
 			BEGIN(VariableDec);
        	              }
      ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
+                        if (g_search_count) REJECT;
       			g_indent=computeIndent(yytext);
       			current->section   = Entry::VARIABLE_SEC;
 			current->name      = QCString(yytext).stripWhiteSpace();
@@ -633,6 +638,12 @@ STARTDOCSYMS      "##"
 			g_packageCommentAllowed = FALSE;
 			initSpecialBlock();
 			BEGIN(SpecialComment);
+                      }
+    [(]               { // we have to do something with (
+                        g_search_count += 1;
+                      }
+    [)]               { // we have to do something with )
+                        g_search_count -= 1;
                       }
     [^\n]             { // any other character...
                         // This is the major default
@@ -1160,6 +1171,7 @@ STARTDOCSYMS      "##"
 <VariableDec>{
    "="                { // the assignment operator
                         //printf("====== VariableDec at line %d\n",yyLineNr);
+                        g_start_init = TRUE;
 			current->initializer = yytext;
 			current->initializer += " ";
                       }
@@ -1172,6 +1184,11 @@ STARTDOCSYMS      "##"
 		      }
    {FLOATNUMBER}      { // floating point value
 			current->type = "float";
+			current->initializer += yytext;
+			BEGIN(VariableEnd);
+		      }
+   {BOOL}             { // boolean value
+			current->type = "bool";
 			current->initializer += yytext;
 			BEGIN(VariableEnd);
 		      }
@@ -1206,8 +1223,8 @@ STARTDOCSYMS      "##"
        			g_stringContext=VariableEnd;
 			BEGIN(TripleString);
                       }
-   "("		      { // tuple
-                        if (current->mtype!=Property)
+   "("		      { // tuple, only when direct after =
+                        if (current->mtype!=Property && g_start_init)
 			{
 			  current->type = "tuple";
 			}
@@ -1218,7 +1235,7 @@ STARTDOCSYMS      "##"
 			BEGIN( VariableAtom );
                       }
    "["                { // list
-			current->type = "list";
+                        if (g_start_init) current->type = "list";
       		        current->initializer+=*yytext;
                         g_atomStart='[';
 			g_atomEnd=']';
@@ -1226,7 +1243,7 @@ STARTDOCSYMS      "##"
 			BEGIN( VariableAtom );
                       }
    "{"		      { // dictionary
-			current->type = "dictionary";
+                        if (g_start_init) current->type = "dictionary";
       		        current->initializer+=*yytext;
                         g_atomStart='{';
 			g_atomEnd='}';
@@ -1237,9 +1254,11 @@ STARTDOCSYMS      "##"
                         BEGIN( VariableEnd ); 
                       }
    {IDENTIFIER}	      {
+                        g_start_init = FALSE;
       		        current->initializer+=yytext;
 	              }
    .		      {
+                        g_start_init = FALSE;
       		        current->initializer+=*yytext;
                       }
    \n		      {
@@ -1264,7 +1283,8 @@ STARTDOCSYMS      "##"
 			}
 			if (g_atomCount==0)
 			{
-			  BEGIN(VariableEnd);
+                          g_start_init = FALSE;
+			  BEGIN(VariableDec);
 			}
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
