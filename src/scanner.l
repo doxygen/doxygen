@@ -6279,14 +6279,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  BEGIN(DocCopyBlock);
   					}
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                {
-                                          docBlock+=yytext;
+                                          docBlock+=substitute(yytext,"*"," ");
                                           docBlockName="~~~";
                                           g_fencedSize=yyleng;
                                           g_nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                {
-                                          docBlock+=yytext;
+                                          docBlock+=substitute(yytext,"*"," ");
                                           docBlockName="```";
                                           g_fencedSize=yyleng;
                                           g_nestedComment=FALSE;
@@ -6404,14 +6404,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
-                                          docBlock+=yytext;
+                                          docBlock+=substitute(yytext,"*"," ");
                                           if (g_fencedSize==yyleng)
                                           {
                                             BEGIN(DocBlock);
                                           }
                                         }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
-                                          docBlock+=yytext;
+                                          docBlock+=substitute(yytext,"*"," ");
                                           if (g_fencedSize==yyleng)
                                           {
                                             BEGIN(DocBlock);
