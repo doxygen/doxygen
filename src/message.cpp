@@ -97,7 +97,8 @@ void initWarningFormat()
     warnFile = stderr;
   }
 
-  if (Config_getBool("WARN_AS_ERROR")) {
+  if (Config_getBool("WARN_AS_ERROR"))
+  {
     warning_str = error_str;
   }
 }
@@ -149,17 +150,17 @@ static void format_warn(const char *file,int line,const char *text)
         ),
         "$text",textSubst
       );
-  if (warnAsError) {
+  if (warnAsError)
+  {
     msgText += " (warning treated as error, aborting now)";
   }
   msgText += '\n';
 
   // print resulting message
   fwrite(msgText.data(),1,msgText.length(),warnFile);
-  if (warnAsError) {
+  if (warnAsError)
+  {
     exit(1);
-  } else {
-    Doxygen::exitCode = 2;
   }
 }
 

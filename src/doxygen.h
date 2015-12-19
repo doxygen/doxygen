@@ -152,7 +152,6 @@ class Doxygen
     static bool                      generatingXmlOutput;
     static bool                      markdownSupport;
     static GenericsSDict            *genericsDict;
-    static int                       exitCode;
 };
 
 void initDoxygen();
