@@ -5332,8 +5332,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					}
 <ClassTemplSpec>"<"			{
-  					  current->name += yytext;
-  					  sharpCount++;
+					  current->name += yytext;
+					  if (roundCount==0) sharpCount++;
   					}
 <ClassTemplSpec>.			{
   					  current->name += yytext;
