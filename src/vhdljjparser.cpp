@@ -164,6 +164,9 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   g_thisParser=this;
   bool inLine=false;
   inputString=fileBuf;
+
+ // fprintf(stderr,"\n ============= %s\n ==========\n",fileBuf);
+
   if (strlen(fileName)==0)
   {
     inLine=true;
@@ -291,6 +294,8 @@ bool checkInlineCode(QCString & doc)
 
 void VhdlParser::handleFlowComment(const char* doc)
 {
+	lineCount(doc);
+
   if (VhdlDocGen::getFlowMember())
   {
     QCString qcs(doc);
@@ -305,7 +310,9 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
 {
   int position=0;
   static bool isIn;
-  QCString doc(doc1);
+  QCString doc;
+  doc.append(doc1);
+ // fprintf(stderr,"\n %s",doc.data());
   if (doc.isEmpty()) return;
 
   if (checkMultiComment(doc,yyLineNr))
@@ -359,6 +366,14 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
     current->docLine = yyLineNr;
   }
   //  printf("parseCommentBlock file<%s>\n [%s]\n at line [%d] \n ",yyFileName.data(),doc.data(),iDocLine);
+
+  int j=doc.find("[plant]");
+  if (j>=0)
+  {
+    doc=doc.remove(j,7);
+    current->stat=true;
+  }
+
   while (parseCommentBlock(
         g_thisParser,
         current,

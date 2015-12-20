@@ -1367,10 +1367,10 @@ QCString index_subtype_definition() :  {QCString s;}
  s=type_mark() <RANGE_T> <BOX_T> { return s+" range <> ";}
 }
 
-QCString instantiation_unit() :  {QCString s,s1,s2;Token *tok=0;}
+QCString instantiation_unit() :  {QCString s,s1,s2;}
 {
-[ tok=<COMPONENT_T> ] s=identifier() {s1="component"; return s; }
-| tok=<ENTITY_T> s2=name() {s=tok->image.c_str()+s2;} [ <LPAREN_T> s1=identifier() <RPAREN_T> {s+="(";s+=s1;s+=")" ;}] { return s;}
+[ <COMPONENT_T> ] s=identifier() {s1="component "; return s; }
+| <ENTITY_T>  [LOOKAHEAD(2)<BASIC_IDENTIFIER> <DOT_T>] s2=name() {s="entity "+s2;} [ <LPAREN_T> s1=identifier() <RPAREN_T> {s+="(";s+=s1;s+=")" ;}] { return s;}
 | <CONFIGURATION_T> s=name() {s1="configuration ";return s;}
 }
 

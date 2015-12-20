@@ -27,10 +27,7 @@
 #include <qcstring.h>
 #include <qfileinfo.h>
 #include <qstringlist.h>
-
-//#ifdef DEBUGFLOW
 #include <qmap.h>
-//#endif
 
 /* --------------------------------------------------------------- */
 
@@ -47,7 +44,6 @@
 #include "searchindex.h"
 #include "outputlist.h"
 #include "parserintf.h"
-
 #include "layout.h"
 #include "arguments.h"
 #include "portable.h"
@@ -59,11 +55,12 @@
 #include "filename.h"
 #include "membergroup.h"
 #include "memberdef.h"
-
+#include "plantuml.h"
 #include "vhdljjparser.h"
 #include "VhdlParser.h"
-
 #include "vhdlcode.h"
+#include "plantuml.h"
+//#define DEBUGFLOW
 #define theTranslator_vhdlType VhdlDocGen::trVhdlType
 
 static QDict<QCString> g_vhdlKeyDict0(17,FALSE);
@@ -95,7 +92,7 @@ void VhdlDocGen::setFlowMember( const MemberDef* mem)
   flowMember=mem;
 }
 
-const MemberDef* VhdlDocGen::getFlowMember()
+ const MemberDef* VhdlDocGen::getFlowMember()
 {
   return flowMember;
 }
@@ -2266,10 +2263,11 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   ol.endMemberItem();
   if (!mdef->briefDescription().isEmpty() &&   Config_getBool("BRIEF_MEMBER_DESC") /* && !annMemb */)
   {
-    ol.startMemberDescription(mdef->anchor());
+ 	 QCString s=mdef->briefDescription();
+	 ol.startMemberDescription(mdef->anchor());
     ol.generateDoc(mdef->briefFile(),mdef->briefLine(),
         mdef->getOuterScope()?mdef->getOuterScope():d,
-        mdef,mdef->briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
+        mdef,s.data(),TRUE,FALSE,0,TRUE,FALSE);
     if (detailsVisible)
     {
       ol.pushGeneratorState();
@@ -2610,7 +2608,7 @@ void VhdlDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
                        codeFragment,     // input
                        SrcLangExt_VHDL,  // lang
                        FALSE,            // isExample
-                       0,                // exampleName
+                       0,               // exampleName
                        mdef->getFileDef(),            // fileDef
                        mdef->getStartBodyLine(),      // startLine
                        mdef->getEndBodyLine(),        // endLine
@@ -3559,7 +3557,7 @@ void FlowChart::printNode(const FlowChart* flo)
     }
     else
     {
-      printf("\n NO: %s%s[%d,%d]",q.data(),t.data(),flo->stamp,flo->id);
+      printf("\n NO: %s[%d,%d]",t.data(),flo->stamp,flo->id);
     }
   }
 }
@@ -3745,8 +3743,13 @@ void FlowChart::buildCommentNodes(FTextStream & t)
     FlowChart *fll=flowList.at(j);
     if (fll->type & (COMMENT_NO | BEGIN_NO))
     {
+      int diff=FLOWLEN-(j+1);
       flowList.remove(j);
-      delete fll;
+
+	   if ((fll->type & COMMENT_NO) && diff > 1)
+		  flowList.at(j+1)->label=fll->label;
+
+	   delete fll;
       fll=0;
       size--;
       if (j>0) j--;
@@ -3841,7 +3844,6 @@ void FlowChart::addFlowChart(int type,const char* text,const char* exp, const ch
   {
     flowList.append(fl);
   }
-
 }
 
 void FlowChart::moveToPrevLevel()
@@ -3850,6 +3852,88 @@ void FlowChart::moveToPrevLevel()
   ifcounter--;
 }
 
+QCString FlowChart::printPlantUmlNode(const FlowChart *flo,bool ca,bool endL)
+{
+  QCString t;
+  QCString exp=flo->exp.stripWhiteSpace();
+  QCString text=flo->text.stripWhiteSpace();
+  switch (flo->type)
+  {
+    case START_NO:   t=":"+text+"|"; break;
+    case IF_NO :     t="\nif ("+exp+") then (yes)"; break;
+    case ELSIF_NO:   t="\nelseif ("+exp+") then (yes)"; break;
+    case ELSE_NO:    t="\nelse"; break;
+    case CASE_NO:    t="\n:"+exp+";"; break;
+    case WHEN_NO:    t="\n";
+                     if (!ca) t+="else";
+                     t+="if ("+exp+") then (yes)";
+                     break;
+    case EXIT_NO:    break;
+    case END_NO:     if (text.contains(" function")==0) t="\n:"+text+";";
+                     break;
+    case TEXT_NO:    t="\n:"+text+"]"; break;
+    case ENDIF_NO:   t="\nendif"; break;
+    case FOR_NO:     t="\nwhile ("+exp+") is (yes)"; break;
+    case WHILE_NO:   t="\nwhile ("+exp+") is (yes)"; break;
+    case END_LOOP:   t="\nendwhile"; break;
+    case END_CASE:   t="\nendif\n:end case;"; break;
+    case VARIABLE_NO:t="\n:"+text+";"; break;
+    case RETURN_NO:  t="\n:"+text+";";
+                     if (!endL) t+="\nstop";
+                     break;
+    case LOOP_NO:    t="\nwhile (infinite loop)"; break;
+    case NEXT_NO:    break;
+    case EMPTY_NO:   break;
+    case COMMENT_NO: t="\n note left \n "+flo->label+"\nend note \n"; break;
+    case BEGIN_NO:   t="\n:begin;"; break;
+    default:         assert(false); break;
+  }
+  return t;
+}
+
+void  FlowChart::printUmlTree()
+{
+  int caseCounter = 0;
+  int whenCounter = 0;
+
+  QCString qcs;
+  uint size=flowList.count();
+  bool endList;
+  for (uint j=0;j<size;j++)
+  {
+    endList=j==FLOWLEN;
+    FlowChart *flo=flowList.at(j);
+    if (flo->type==CASE_NO)
+    {
+      caseCounter++;
+      whenCounter=0;
+    }
+
+    if (flo->type==END_CASE)
+    {
+      caseCounter--;
+    }
+
+    bool ca = (caseCounter>0 && whenCounter==0);
+
+    qcs+=printPlantUmlNode(flo,ca,endList);
+
+    if (flo->type==WHEN_NO)
+    {
+      whenCounter++;
+    }
+
+  }
+  qcs+="\n";
+
+  QCString & outDir = Config_getString("OUTPUT_DIRECTORY");
+  QCString & htmlOutDir = Config_getString("HTML_OUTPUT");
+
+  QCString n=convertNameToFileName();
+  QCString tmp=htmlOutDir;
+  n=writePlantUMLSource(tmp,n,qcs);
+  generatePlantUMLOutput(n.data(),tmp.data(),PUML_SVG);
+}
 
 QCString FlowChart::convertNameToFileName()
 {
@@ -3857,16 +3941,19 @@ QCString FlowChart::convertNameToFileName()
   QCString temp,qcs;
   const  MemberDef* md=VhdlDocGen::getFlowMember();
 
-  temp.sprintf("%p",md);
+  // temp.sprintf("%p",md);
   qcs=md->name();
 
+  #if 0
   if (qcs.find(exp,0)>=0)
   {
     qcs.prepend("Z");
     qcs=qcs.replace(exp,"_");
   }
+  #endif
 
-  return qcs+temp;
+  //QCString tt= qcs;VhdlDocGen::getRecordNumber();
+  return qcs;
 }
 
 const char* FlowChart::getNodeType(int c)
@@ -3889,7 +3976,7 @@ const char* FlowChart::getNodeType(int c)
     case END_CASE:     return "end_case  ";
     case VARIABLE_NO:  return "variable_decl  ";
     case RETURN_NO:    return "return  ";
-    case LOOP_NO:      return "infinte loop  ";
+    case LOOP_NO:      return "infinite loop  ";
     case NEXT_NO:      return "next  ";
     case COMMENT_NO:   return "comment  ";
     case EMPTY_NO:     return "empty  ";
@@ -3949,14 +4036,23 @@ void FlowChart::writeFlowChart()
   }
 
   colTextNodes();
+  //  buildCommentNodes(t);
 
 #ifdef DEBUGFLOW
-  printFlowTree();
+   printFlowTree();
 #endif
+  const MemberDef *p=VhdlDocGen::getFlowMember();
+
+  if (p->isStatic())
+  {
+    printUmlTree();
+    delFlowList();
+    f.close();
+    return;
+  }
 
   startDot(t);
   buildCommentNodes(t);
-
   uint size=flowList.count();
 
   for (uint j=0;j <size ;j++)
@@ -4458,4 +4554,9 @@ parseVhdlCode(codeOutIntf,
 
 );
 
-}
+
+
+
+
+
+}// class
