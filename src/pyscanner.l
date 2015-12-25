@@ -487,6 +487,7 @@ STRINGPREFIX      ("r"|"u"|"ur"|"R"|"U"|"UR"|"Ur"|"uR")
 KEYWORD           ("lambda"|"import"|"class"|"assert"|"as"|"from"|"global"|"def"|"True"|"False")
 FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"if"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
 POUNDCOMMENT      "#"[^#\n][^\n]* 
+SCRIPTCOMMENT      "#!".* 
 
 STARTDOCSYMS      "##"
 
@@ -608,6 +609,9 @@ STARTDOCSYMS      "##"
                       }
     "@staticmethod"  {
        			gstat=TRUE;
+      		      }
+    {SCRIPTCOMMENT}   { // Unix type script comment
+                        if (yyLineNr != 1) REJECT;
       		      }
     {POUNDCOMMENT}    { // normal comment 
 			g_packageCommentAllowed = FALSE;
