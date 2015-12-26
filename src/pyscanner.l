@@ -594,6 +594,20 @@ STARTDOCSYMS      "##"
 			g_packageCommentAllowed = FALSE;
 			BEGIN(VariableDec);
       		      }
+     {B}{IDENTIFIER}/({B},{B}{IDENTIFIER})*{B}")"*{B}"="[^=] { // list of variables, we cannot place the default value
+                                                               // so we will skip it later on in a general rule
+                                                               // Also note ")" this is to catch also (a,b). the "("
+                                                               // is caught in the rule: [(], the ")" will be handled in [)]
+                        if (g_search_count > 1) REJECT;
+      			g_indent=computeIndent(yytext);
+      			current->section   = Entry::VARIABLE_SEC;
+			current->name      = QCString(yytext).stripWhiteSpace();
+			current->fileName  = yyFileName;
+			current->startLine = yyLineNr;
+			current->bodyLine  = yyLineNr;
+			g_packageCommentAllowed = FALSE;
+			newVariable();
+      		      }
      "'"	      { // start of a single quoted string
        		        g_stringContext=YY_START;
 		        g_copyString=0;
