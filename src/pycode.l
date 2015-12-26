@@ -989,6 +989,14 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 				        codify("self.");
 				        findMemberLink(*g_code,&yytext[5]);
 	                            }
+      "cls."{IDENTIFIER}/"("       {
+				        codify("cls.");
+				        findMemberLink(*g_code,&yytext[4]);
+	                            }
+      "cls."{IDENTIFIER}           {
+				        codify("cls.");
+				        findMemberLink(*g_code,&yytext[4]);
+	                            }
 }
 
 <ClassDec>{IDENTIFIER}              {

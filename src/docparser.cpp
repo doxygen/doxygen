@@ -471,9 +471,9 @@ static void checkUndocumentedParams()
         if (lang==SrcLangExt_Fortran) argName = argName.lower();
         argName=argName.stripWhiteSpace();
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
-        if (g_memberDef->getLanguage()==SrcLangExt_Python && argName=="self")
+        if (g_memberDef->getLanguage()==SrcLangExt_Python && (argName=="self" || argName=="cls"))
         { 
-          // allow undocumented self parameter for Python
+          // allow undocumented self / cls parameter for Python
         }
         else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a->docs.isEmpty()) 
         {
@@ -494,9 +494,9 @@ static void checkUndocumentedParams()
           QCString argName = g_memberDef->isDefine() ? a->type : a->name;
           if (lang==SrcLangExt_Fortran) argName = argName.lower();
           argName=argName.stripWhiteSpace();
-          if (g_memberDef->getLanguage()==SrcLangExt_Python && argName=="self")
+          if (g_memberDef->getLanguage()==SrcLangExt_Python && (argName=="self" || argName=="cls"))
           { 
-            // allow undocumented self parameter for Python
+            // allow undocumented self / cls parameter for Python
           }
           else if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
           {
@@ -554,7 +554,7 @@ static void detectNoDocumentedParams()
         for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
         {
           if (!a->name.isEmpty() && a->type!="void" &&
-              !(isPython && a->name=="self")
+              !(isPython && (a->name=="self" || a->name=="cls"))
              )
           {
             allDoc = !a->docs.isEmpty();
@@ -570,7 +570,7 @@ static void detectNoDocumentedParams()
           for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
           {
             if (!a->name.isEmpty() && a->type!="void" &&
-                !(isPython && a->name=="self")
+                !(isPython && (a->name=="self" || a->name=="cls"))
                )
             {
               allDoc = !a->docs.isEmpty();
