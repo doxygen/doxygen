@@ -527,10 +527,10 @@ static void codifyLines(char *text)
   }
 }
 
-static void codifyLines(QCString str)
+static void codifyLines(const QCString &str)
 {
-  char *tmp= (char *) malloc(str.length()+1);
-  strcpy(tmp, str);
+  char *tmp= (char *)malloc(str.length()+1);
+  qstrcpy(tmp, str);
   codifyLines(tmp);
   free(tmp);
 }
