@@ -1016,7 +1016,7 @@ STARTDOCSYMS      "##"
 			  }
 			  else // continue
 			  {
-			    g_braceCount--;
+			    if (*yytext == ')')g_braceCount--;
 			    g_defVal+=*yytext;
 			  }
        			}
