@@ -745,8 +745,26 @@ STARTDOCSYMS      "##"
 
 <SearchMemVars>{
     "self."{IDENTIFIER}/{B}"=" {
-                        DBG_CTX((stderr,"Found member variable %s in %s at %d\n",&yytext[5],current_root->name.data(),yyLineNr));
+                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],current_root->name.data(),yyLineNr));
 			current->name=&yytext[5];
+			current->section=Entry::VARIABLE_SEC;
+			current->fileName  = yyFileName;
+			current->startLine = yyLineNr;
+			current->bodyLine  = yyLineNr;
+			current->type.resize(0);
+			if (current->name.at(0)=='_') // mark as private
+			{
+			  current->protection=Private;
+			}
+			else
+			{
+			  current->protection=Public;
+			}
+			newEntry();
+                      }
+    "cls."{IDENTIFIER}/{B}"=" {
+                        DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],current_root->name.data(),yyLineNr));
+			current->name=&yytext[4];
 			current->section=Entry::VARIABLE_SEC;
 			current->fileName  = yyFileName;
 			current->startLine = yyLineNr;
