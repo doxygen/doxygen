@@ -1814,6 +1814,7 @@ class TrManager:
         # Define templates for HTML table parts of the documentation.
         htmlTableTpl = '''\
             \\htmlonly
+			</p>
             <table align="center" cellspacing="0" cellpadding="0" border="0">
             <tr bgcolor="#000000">
             <td>
@@ -1832,6 +1833,7 @@ class TrManager:
             </td>
             </tr>
             </table>
+			<p>
             \\endhtmlonly
             '''
         htmlTableTpl = textwrap.dedent(htmlTableTpl)
