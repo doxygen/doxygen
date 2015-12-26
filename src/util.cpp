@@ -7040,6 +7040,7 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".M",        "objective-c");
   updateLanguageMapping(".mm",       "objective-c");
   updateLanguageMapping(".py",       "python");
+  updateLanguageMapping(".pyw",      "python");
   updateLanguageMapping(".f",        "fortran");
   updateLanguageMapping(".for",      "fortran");
   updateLanguageMapping(".f90",      "fortran");
