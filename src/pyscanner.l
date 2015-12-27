@@ -401,7 +401,6 @@ static void searchFoundDef()
   current->startLine = yyLineNr;
   current->bodyLine  = yyLineNr;
   current->section = Entry::FUNCTION_SEC;
-  current->protection = protection = Public;
   current->lang = SrcLangExt_Python;
   current->virt = Normal;
   current->stat = gstat;
@@ -774,10 +773,6 @@ STARTDOCSYMS      "##"
 			{
 			  current->protection=Private;
 			}
-			else
-			{
-			  current->protection=Public;
-			}
 			newEntry();
                       }
     "cls."{IDENTIFIER}/{B}"=" {
@@ -791,10 +786,6 @@ STARTDOCSYMS      "##"
 			if (current->name.at(0)=='_') // mark as private
 			{
 			  current->protection=Private;
-			}
-			else
-			{
-			  current->protection=Public;
 			}
 			newEntry();
                       }
