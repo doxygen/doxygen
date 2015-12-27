@@ -4093,6 +4093,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current_root->addSubEntry( current ) ;
   					  current=new Entry;
 					  initEntry();
+					  language = current->lang = SrcLangExt_Cpp; // see bug746361
 					  insideObjC=FALSE;
 					  BEGIN( FindMembers ); 
   					}
@@ -5382,6 +5383,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
     					  unput(';');
 					  current->reset();
 					  initEntry();
+                                          if (insideObjC) // see bug746361
+                                          {
+					    language = current->lang = SrcLangExt_Cpp;
+                                            insideObjC = FALSE;
+                                          }
 					  if (isTypedef) // typedef of a class, put typedef keyword back
 					  {
 					    current->type.prepend("typedef");

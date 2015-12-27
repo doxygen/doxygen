@@ -7038,7 +7038,7 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".phtml",    "php");
   updateLanguageMapping(".m",        "objective-c");
   updateLanguageMapping(".M",        "objective-c");
-  updateLanguageMapping(".mm",       "objective-c");
+  updateLanguageMapping(".mm",       "c");  // see bug746361
   updateLanguageMapping(".py",       "python");
   updateLanguageMapping(".pyw",      "python");
   updateLanguageMapping(".f",        "fortran");
