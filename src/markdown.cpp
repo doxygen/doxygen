@@ -901,7 +901,8 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
         out.addStr("\"");
       }
       out.addStr(">");
-      out.addStr(content.simplifyWhiteSpace());
+      content = content.simplifyWhiteSpace();
+      processInline(out,content,content.length());
       out.addStr("</a>");
     }
     else // avoid link to e.g. F[x](y)
