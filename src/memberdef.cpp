@@ -3237,7 +3237,7 @@ void MemberDef::warnIfUndocumented()
       !isReference() && !isDeleted()
      )
   {
-    warn_undoc(d->getDefFileName(),d->getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
+    warn_undoc(getDefFileName(),getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
          qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),t,qPrint(d->name()));
   }
 }
