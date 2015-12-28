@@ -1901,7 +1901,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
     }
   }
 
-  ol.writeString("<table style=\"margin: 10px; white-space: nowrap;\" align=\"center\" width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
+  ol.writeString("<table class=\"classindex\">\n");
   // generate table
   for (i=0;i<=maxRows;i++) // foreach table row
   {

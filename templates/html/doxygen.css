@@ -247,7 +247,7 @@ div.ah, span.ah {
 	-webkit-box-shadow: 2px 2px 3px #999;
 	-moz-box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 2px;
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#000),color-stop(0.3, #444));
-	background-image: -moz-linear-gradient(center top, #eee 0%, #444 40%, #000);
+	background-image: -moz-linear-gradient(center top, #eee 0%, #444 40%, #000 110%);
 }
 
 div.classindex ul {
@@ -1004,6 +1004,18 @@ div.summary
 div.summary a
 {
 	white-space: nowrap;
+}
+
+table.classindex
+{
+        margin: 10px;
+        white-space: nowrap;
+        margin-left: 3%;
+        margin-right: 3%;
+        width: 94%;
+        border: 0;
+        border-spacing: 0; 
+        padding: 0;
 }
 
 div.ingroups
