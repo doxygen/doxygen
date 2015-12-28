@@ -2594,7 +2594,12 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
 
   int edgeStyle = (label || prot==EdgeInfo::Orange || prot==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
-  if (usedName) // name is a typedef
+  if (cd->isAnonymous())
+  {
+    className="anonymous:";
+    className+=label;
+  }
+  else if (usedName) // name is a typedef
   {
     className=usedName;
   }
@@ -2822,9 +2827,9 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
   if (m_graphType == DotNode::Collaboration)
   {
     // ---- Add usage relations
-    
-    UsesClassDict *dict = 
-      base ? cd->usedImplementationClasses() : 
+
+    UsesClassDict *dict =
+      base ? cd->usedImplementationClasses() :
              cd->usedByImplementationClasses()
       ;
     if (dict)

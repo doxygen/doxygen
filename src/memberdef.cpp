@@ -1516,11 +1516,16 @@ void MemberDef::writeDeclaration(OutputList &ol,
         ol.writeNonBreakableSpace(3);
       }
       QCString varName=ltype.right(ltype.length()-ir).stripWhiteSpace();
-      //printf(">>>>>> indDepth=%d ltype=`%s' varName=`%s'\n",indDepth,ltype.data(),varName.data());
+      //printf(">>>>>> ltype=`%s' varName=`%s'\n",ltype.data(),varName.data());
       ol.docify("}");
       if (varName.isEmpty() && (name().isEmpty() || name().at(0)=='@'))
       {
         ol.docify(";");
+      }
+      else if (!varName.isEmpty() && (varName.at(0)=='*' || varName.at(0)=='&'))
+      {
+        ol.docify(" ");
+        ol.docify(varName);
       }
       endAnonScopeNeeded=TRUE;
     }
