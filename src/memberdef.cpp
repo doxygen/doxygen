@@ -1422,7 +1422,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
   Definition *d=0;
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
-  if (!hasDocumentation()) return;
 
   //_writeTagData(compoundType);
   _addToSearchIndex();
@@ -3228,10 +3227,9 @@ void MemberDef::warnIfUndocumented()
     t="file", d=fd;
   static bool extractAll = Config_getBool("EXTRACT_ALL");
 
-  //printf("warnIfUndoc: d->isLinkable()=%d isLinkable()=%d "
-  //       "isDocumentedFriendClass()=%d name()=%s prot=%d isReference=%d\n",
-  //       d->isLinkable(),isLinkable(),isDocumentedFriendClass(),
-  //       name().data(),m_impl->prot,isReference());
+  //printf("%s:warnIfUndoc: hasUserDocs=%d isFriendClass=%d protection=%d isRef=%d isDel=%d\n",
+  //    name().data(),
+  //    hasUserDocumentation(),isFriendClass(),protectionLevelVisible(m_impl->prot),isReference(),isDeleted());
   if ((!hasUserDocumentation() && !extractAll) &&
       !isFriendClass() &&
       name().find('@')==-1 && d && d->name().find('@')==-1 &&

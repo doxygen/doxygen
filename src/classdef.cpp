@@ -1849,7 +1849,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
   //static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   //static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   SrcLangExt lang = getLanguage();
-  if (visibleInParentsDeclList() && hasDocumentation())
+  if (visibleInParentsDeclList())
   {
     if (!found) // first class
     {

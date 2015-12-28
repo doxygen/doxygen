@@ -324,6 +324,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                       )
 {
   //printf("----- writePlainDeclaration() ----\n");
+  static bool hideUndocMembers = Config_getBool("HIDE_UNDOC_MEMBERS");
   countDecMembers();
   if (numDecMembers()==0) 
   {
@@ -387,8 +388,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             }
             // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
-            if ((enumVars==0) // show enum here
-                && md->hasDocumentation())
+            if (enumVars==0 && !hideUndocMembers) // show enum here
             {
               //printf("Enum!!\n");
               if (first)
