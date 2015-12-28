@@ -401,7 +401,6 @@ static void searchFoundDef()
   current->startLine = yyLineNr;
   current->bodyLine  = yyLineNr;
   current->section = Entry::FUNCTION_SEC;
-  current->protection = protection = Public;
   current->lang = SrcLangExt_Python;
   current->virt = Normal;
   current->stat = gstat;
@@ -487,6 +486,7 @@ STRINGPREFIX      ("r"|"u"|"ur"|"R"|"U"|"UR"|"Ur"|"uR")
 KEYWORD           ("lambda"|"import"|"class"|"assert"|"as"|"from"|"global"|"def"|"True"|"False")
 FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"if"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
 POUNDCOMMENT      "#"[^#\n][^\n]* 
+SCRIPTCOMMENT      "#!".* 
 
 STARTDOCSYMS      "##"
 
@@ -594,6 +594,20 @@ STARTDOCSYMS      "##"
 			g_packageCommentAllowed = FALSE;
 			BEGIN(VariableDec);
       		      }
+     {B}{IDENTIFIER}/({B},{B}{IDENTIFIER})*{B}")"*{B}"="[^=] { // list of variables, we cannot place the default value
+                                                               // so we will skip it later on in a general rule
+                                                               // Also note ")" this is to catch also (a,b). the "("
+                                                               // is caught in the rule: [(], the ")" will be handled in [)]
+                        if (g_search_count > 1) REJECT;
+      			g_indent=computeIndent(yytext);
+      			current->section   = Entry::VARIABLE_SEC;
+			current->name      = QCString(yytext).stripWhiteSpace();
+			current->fileName  = yyFileName;
+			current->startLine = yyLineNr;
+			current->bodyLine  = yyLineNr;
+			g_packageCommentAllowed = FALSE;
+			newVariable();
+      		      }
      "'"	      { // start of a single quoted string
        		        g_stringContext=YY_START;
 		        g_copyString=0;
@@ -608,6 +622,9 @@ STARTDOCSYMS      "##"
                       }
     "@staticmethod"  {
        			gstat=TRUE;
+      		      }
+    {SCRIPTCOMMENT}   { // Unix type script comment
+                        if (yyLineNr != 1) REJECT;
       		      }
     {POUNDCOMMENT}    { // normal comment 
 			g_packageCommentAllowed = FALSE;
@@ -756,10 +773,6 @@ STARTDOCSYMS      "##"
 			{
 			  current->protection=Private;
 			}
-			else
-			{
-			  current->protection=Public;
-			}
 			newEntry();
                       }
     "cls."{IDENTIFIER}/{B}"=" {
@@ -773,10 +786,6 @@ STARTDOCSYMS      "##"
 			if (current->name.at(0)=='_') // mark as private
 			{
 			  current->protection=Private;
-			}
-			else
-			{
-			  current->protection=Public;
 			}
 			newEntry();
                       }
@@ -998,7 +1007,7 @@ STARTDOCSYMS      "##"
 			  }
 			  else // continue
 			  {
-			    g_braceCount--;
+			    if (*yytext == ')')g_braceCount--;
 			    g_defVal+=*yytext;
 			  }
        			}
