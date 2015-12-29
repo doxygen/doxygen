@@ -21,7 +21,9 @@
 #include "sortdict.h"
 #include "definition.h"
 
+#include <map>
 #include <qlist.h>
+#include <qcstring.h>
 
 class FileList;
 class ClassSDict;
@@ -127,6 +129,14 @@ class FilePairDict : public SDict<FilePair>
     int compareValues(const FilePair *item1,const FilePair *item2) const;
 };
 
+class FilePairList
+{
+  public:
+    FilePair* find(const QCString &n);
+    void insert(const QCString str, FilePair pair);
+    std::map<const QCString, FilePair> m_map;
+};
+
 /** Usage information of a directory. */
 class UsedDir
 {
@@ -135,13 +145,13 @@ class UsedDir
     virtual ~UsedDir();
     void addFileDep(FileDef *srcFd,FileDef *dstFd);
     FilePair *findFilePair(const char *name);
-    const FilePairDict &filePairs() const { return m_filePairs; }
+    const FilePairList &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
     bool inherited() const { return m_inherited; }
 
   private:
     DirDef *m_dir;
-    FilePairDict m_filePairs;
+    FilePairList m_filePairs;
     bool m_inherited;
 };
 

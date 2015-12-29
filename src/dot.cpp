@@ -4893,7 +4893,7 @@ void writeDotDirDepGraph(FTextStream &t,DirDef *dd,bool linkRelations)
             Doxygen::dirRelations.append(relationName,
                 new DirRelation(relationName,dir,udir));
           }
-          int nrefs = udir->filePairs().count();
+          int nrefs = udir->filePairs().m_map.size();
           t << "  " << dir->getOutputFileBase() << "->"
                     << usedDir->getOutputFileBase();
           t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";
