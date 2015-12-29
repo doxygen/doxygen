@@ -5238,54 +5238,67 @@ bool hasVisibleRoot(BaseClassList *bcl)
 
 //----------------------------------------------------------------------
 
-// note that this function is not reentrant due to the use of static growBuf!
-QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore)
+// WARNING: this function may overrun the output buffer by up to 4 bytes, just use 8 to have some reserve
+// maximum size increase (without nullbytes): *4
+// returns written bytes (incl nullbyte) or -1 for "overrun"
+static ssize_t escapeCharsInString(char *out, const char *name, bool allowDots, bool allowUnderscore, size_t max_len)
 {
+  char *out_start = out;
+  #define ADDCHAR(x) ((*(out++) = (x)), used++)
+  #define ADDTWO(a, b) (ADDCHAR(a), ADDCHAR(b))
+  #define ADDTHREE(a) (ADDCHAR('_'), ADDCHAR('0'), ADDCHAR(c))
   static bool caseSenseNames = Config_getBool("CASE_SENSE_NAMES");
   static bool allowUnicodeNames = Config_getBool("ALLOW_UNICODE_NAMES");
-  static GrowBuf growBuf;
-  growBuf.clear();
   char c;
+  size_t used = 0;
   const char *p=name;
   while ((c=*p++)!=0)
   {
+    if (used >= max_len)
+      return -1;
     switch(c)
     {
-      case '_': if (allowUnderscore) growBuf.addChar('_'); else growBuf.addStr("__"); break;
-      case '-': growBuf.addChar('-');  break;
-      case ':': growBuf.addStr("_1"); break;
-      case '/': growBuf.addStr("_2"); break;
-      case '<': growBuf.addStr("_3"); break;
-      case '>': growBuf.addStr("_4"); break;
-      case '*': growBuf.addStr("_5"); break;
-      case '&': growBuf.addStr("_6"); break;
-      case '|': growBuf.addStr("_7"); break;
-      case '.': if (allowDots) growBuf.addChar('.'); else growBuf.addStr("_8"); break;
-      case '!': growBuf.addStr("_9"); break;
-      case ',': growBuf.addStr("_00"); break;
-      case ' ': growBuf.addStr("_01"); break;
-      case '{': growBuf.addStr("_02"); break;
-      case '}': growBuf.addStr("_03"); break;
-      case '?': growBuf.addStr("_04"); break;
-      case '^': growBuf.addStr("_05"); break;
-      case '%': growBuf.addStr("_06"); break;
-      case '(': growBuf.addStr("_07"); break;
-      case ')': growBuf.addStr("_08"); break;
-      case '+': growBuf.addStr("_09"); break;
-      case '=': growBuf.addStr("_0A"); break;
-      case '$': growBuf.addStr("_0B"); break;
-      case '\\': growBuf.addStr("_0C"); break;
-      case '@': growBuf.addStr("_0D"); break;
+      case '_': {
+        ADDCHAR('_');
+        if (!allowUnderscore) ADDCHAR('_');
+        break;
+      }
+      case '-': ADDCHAR('-');  break;
+      case ':': ADDTWO('_', '1'); break;
+      case '/': ADDTWO('_', '2'); break;
+      case '<': ADDTWO('_', '3'); break;
+      case '>': ADDTWO('_', '4'); break;
+      case '*': ADDTWO('_', '5'); break;
+      case '&': ADDTWO('_', '6'); break;
+      case '|': ADDTWO('_', '7'); break;
+      case '.': if (allowDots) ADDCHAR('.'); else ADDTWO('_', '8'); break;
+      case '!': ADDTWO('_', '9'); break;
+      case ',': ADDTHREE('0'); break;
+      case ' ': ADDTHREE('1'); break;
+      case '{': ADDTHREE('2'); break;
+      case '}': ADDTHREE('3'); break;
+      case '?': ADDTHREE('4'); break;
+      case '^': ADDTHREE('5'); break;
+      case '%': ADDTHREE('6'); break;
+      case '(': ADDTHREE('7'); break;
+      case ')': ADDTHREE('8'); break;
+      case '+': ADDTHREE('9'); break;
+      case '=': ADDTHREE('A'); break;
+      case '$': ADDTHREE('B'); break;
+      case '\\': ADDTHREE('C'); break;
+      case '@': ADDTHREE('D'); break;
       default: 
+                // this is the case with highest overrun lengths
                 if (c<0)
                 {
-                  char ids[5];
                   const unsigned char uc = (unsigned char)c;
                   bool doEscape = TRUE;
+                  char *before_unescaped = out;
+                  // this case writes up to 4 bytes
                   if (allowUnicodeNames && uc <= 0xf7)
                   {
                     const char* pt = p;
-                    ids[ 0 ] = c;
+                    ADDCHAR(c);
                     int l = 0;
                     if ((uc&0xE0)==0xC0)
                     {
@@ -5309,42 +5322,67 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
                       }
                       else
                       {
-                        ids[ m ] = *pt++;
+                        ADDCHAR(*pt++);
                       }
                     }
-                    if ( !doEscape ) // got a valid unicode character
-                    {
-                      ids[ l ] = 0;
-                      growBuf.addStr( ids );
+                    if (doEscape)
+                      out = before_unescaped;
+                    else
                       p += l - 1;
-                    }
                   }
+                  // this case writes up to 4 bytes
                   if (doEscape) // not a valid unicode char or escaping needed
                   {
                     static char map[] = "0123456789ABCDEF";
                     unsigned char id = (unsigned char)c;
-                    ids[0]='_';
-                    ids[1]='x';
-                    ids[2]=map[id>>4];
-                    ids[3]=map[id&0xF];
-                    ids[4]=0;
-                    growBuf.addStr(ids);
+                    ADDCHAR('_');
+                    ADDCHAR('x');
+                    ADDCHAR(map[id>>4]);
+                    ADDCHAR(map[id&0xF]);
                   }
                 }
                 else if (caseSenseNames || !isupper(c))
                 {
-                  growBuf.addChar(c);
+                  ADDCHAR(c);
                 }
                 else
                 {
-                  growBuf.addChar('_');
-                  growBuf.addChar(tolower(c)); 
+                  ADDCHAR('_');
+                  ADDCHAR(tolower(c));
                 }
                 break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  // detect late overrun
+  if (used + 1 > max_len)
+    return -1;
+  ADDCHAR(0);
+  return out - out_start;
+}
+
+// this function isn't called very often, but the other escapeCharsInString is
+QCString escapeCharsInString(const char *name,bool allowDots, bool allowUnderscore)
+{
+  size_t name_len = strlen(name);
+  size_t buf_len = name_len + name_len/4;
+  QCString out = QCString(buf_len + 8);
+  // fast case
+  ssize_t ret = escapeCharsInString(out.rawData(), name, allowDots, allowUnderscore, buf_len);
+  if (ret != -1)
+    goto fix_len;
+  // slow case - this is guaranteed to fit
+  buf_len = name_len * 4 + 1;
+  out.resize(buf_len);
+  ret = escapeCharsInString(out.rawData(), name, allowDots, allowUnderscore, buf_len);
+  assert(ret != -1);
+fix_len:;
+  out.resize(ret);
+  return out;
+}
+
+static char hex_chars[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+static char hexchar(int n) {
+  return hex_chars[n];
 }
 
 /*! This function determines the file name on disk of an item
@@ -5355,7 +5393,10 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
 {
   static bool shortNames = Config_getBool("SHORT_NAMES");
   static bool createSubdirs = Config_getBool("CREATE_SUBDIRS");
-  QCString result;
+  QCString result = QCString(7/*dir*/ + 128/*name*/ + 8 /*for escaping overrun*/ + 1/*null*/);
+  char *data = result.rawData();
+  char *nameData = data + (createSubdirs ? 7 : 0);
+
   if (shortNames) // use short names only
   {
     static QDict<int> usedNames(10007);
@@ -5373,20 +5414,17 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
     {
       num = *value;
     }
-    result.sprintf("a%05d",num); 
+    sprintf(nameData, "a%05d", num);
   }
   else // long names
   {
-    result=escapeCharsInString(name,allowDots,allowUnderscore);
-    int resultLen = result.length();
-    if (resultLen>=128) // prevent names that cannot be created!
+    bool overflow = (escapeCharsInString(nameData, name, allowDots, allowUnderscore, 128+1) == -1);
+    if (overflow) // prevent names that cannot be created!
     {
       // third algorithm based on MD5 hash
       uchar md5_sig[16];
-      QCString sigStr(33);
-      MD5Buffer((const unsigned char *)result.data(),resultLen,md5_sig);
-      MD5SigToString(md5_sig,sigStr.rawData(),33);
-      result=result.left(128-32)+sigStr; 
+      MD5Buffer((const unsigned char *)name, strlen(name), md5_sig);
+      MD5SigToString(md5_sig, nameData + 128 - 32, 33);
     }
   }
   if (createSubdirs)
@@ -5423,13 +5461,20 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
 #elif MAP_ALGO==ALGO_MD5
     // third algorithm based on MD5 hash
     uchar md5_sig[16];
-    MD5Buffer((const unsigned char *)result.data(),result.length(),md5_sig);
+    MD5Buffer((const unsigned char *)nameData,strlen(nameData),md5_sig);
     l1Dir = md5_sig[14]&0xf;
     l2Dir = md5_sig[15];
 #endif
-    result.prepend(QCString().sprintf("d%x/d%02x/",l1Dir,l2Dir));
+    data[0] = 'd';
+    data[1] = hexchar(l1Dir);
+    data[2] = '/';
+    data[3] = 'd';
+    data[4] = hexchar(l2Dir>>4);
+    data[5] = hexchar(l2Dir&0xf);
+    data[6] = '/';
   }
   //printf("*** convertNameToFile(%s)->%s\n",name,result.data());
+  result.resize(strlen(result)+1);
   return result;
 }
 
