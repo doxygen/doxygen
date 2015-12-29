@@ -2628,7 +2628,7 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
   else // new class
   {
     QCString displayName=className;
-    if (Config_getBool("HIDE_SCOPE_NAMES")) displayName=stripScope(displayName);
+    if (Doxygen::hideScopeNames) displayName=stripScope(displayName);
     QCString tmp_url;
     if (cd->isLinkable() && !cd->isHidden()) 
     {
@@ -3689,7 +3689,7 @@ void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
         else
         {
           QCString name;
-          if (Config_getBool("HIDE_SCOPE_NAMES"))
+          if (Doxygen::hideScopeNames)
           {
             name  = rmd->getOuterScope()==m_scope ? 
                     rmd->name() : rmd->qualifiedName();
@@ -3778,7 +3778,7 @@ DotCallGraph::DotCallGraph(MemberDef *md,bool inverse)
   uniqueId = md->getReference()+"$"+
              md->getOutputFileBase()+"#"+md->anchor();
   QCString name;
-  if (Config_getBool("HIDE_SCOPE_NAMES"))
+  if (Doxygen::hideScopeNames)
   {
     name = md->name();
   }
