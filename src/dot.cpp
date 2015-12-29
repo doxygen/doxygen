@@ -17,6 +17,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <qdir.h>
 #include <qfile.h>
@@ -418,10 +419,10 @@ inline int reNumberNode(int number, bool doReNumbering)
         ns = number * 3 / 2 + 5;
       }
       s_newNumber.resize(ns);
-      for (int i=s;i<ns;i++) // clear new part of the array
-      {
-        s_newNumber.at(i)=0;
-      }
+
+      // clear new part of the array
+      int *raw_array = s_newNumber.data();
+      memset(raw_array + s, 0, sizeof(int) * (ns - s));
     }
     int i = s_newNumber.at(number);
     if (i == 0) // not yet mapped

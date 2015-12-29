@@ -729,7 +729,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
     ol.pushGeneratorState(); 
     ol.disable(OutputGenerator::Html);
   }
-  static bool fullPathNames = Config_getBool("FULL_PATH_NAMES");
+  static bool fullPathNames = Doxygen::fullPathNames;
   startIndexHierarchy(ol,0);
   if (fullPathNames)
   {

@@ -76,7 +76,7 @@ class FileDef : public Definition
     DefType definitionType() const { return TypeFile; }
 
     /*! Returns the unique file name (this may include part of the path). */
-    QCString name() const;
+    const QCString& name() const;
     QCString displayName(bool=TRUE) const { return name(); }
     QCString fileName() const { return m_fileName; }
     

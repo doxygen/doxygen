@@ -20,7 +20,7 @@ static int g_dirCount=0;
 
 DirDef::DirDef(const char *path) : Definition(path,1,1,path), visited(FALSE)
 {
-  bool fullPathNames = Config_getBool("FULL_PATH_NAMES");
+  bool fullPathNames = Doxygen::fullPathNames;
   // get display name (stipping the paths mentioned in STRIP_FROM_PATH)
   // get short name (last part of path)
   m_shortName = path;
@@ -620,8 +620,10 @@ bool DirDef::depGraphIsTrivial() const
 int FilePairDict::compareValues(const FilePair *left,const FilePair *right) const
 {
   int orderHi = qstricmp(left->source()->name(),right->source()->name());
+  if (orderHi != 0)
+    return orderHi;
   int orderLo = qstricmp(left->destination()->name(),right->destination()->name());
-  return orderHi==0 ? orderLo : orderHi;
+  return orderLo;
 }
 
 //----------------------------------------------------------------------

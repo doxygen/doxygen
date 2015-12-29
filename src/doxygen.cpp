@@ -169,6 +169,7 @@ bool             Doxygen::userComments = FALSE;
 QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
 bool             Doxygen::markdownSupport = TRUE;
+bool             Doxygen::fullPathNames;
 GenericsSDict   *Doxygen::genericsDict;
 
 // locally accessible globals
@@ -10581,6 +10582,8 @@ void adjustConfiguration()
   Doxygen::spaces.resize(tabSize+1);
   int sp;for (sp=0;sp<tabSize;sp++) Doxygen::spaces.at(sp)=' ';
   Doxygen::spaces.at(tabSize)='\0';
+
+  Doxygen::fullPathNames = Config_getBool("FULL_PATH_NAMES");
 }
 
 #ifdef HAS_SIGNALS
