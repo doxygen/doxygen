@@ -1622,30 +1622,18 @@ ClassDef *getResolvedClass(Definition *scope,
 
 static bool findOperator(const QCString &s,int i)
 {
-  int b = s.findRev("operator",i);
-  if (b==-1) return FALSE; // not found
-  b+=8;
-  while (b<i) // check if there are only spaces in between 
-    // the operator and the >
-  {
-    if (!isspace((uchar)s.at(b))) return FALSE;
-    b++;
-  }
-  return TRUE;
+  while (i>0 && isspace((uchar)s.at(i-1))) i--;
+
+  return i>=8 && s.at(i-8)=='o' && s.at(i-7)=='p' && s.at(i-6)=='e' && s.at(i-5)=='r'
+    && s.at(i-4)=='a' && s.at(i-3)=='t' && s.at(i-2)=='o' && s.at(i-1)=='r';
 }
 
 static bool findOperator2(const QCString &s,int i)
 {
-  int b = s.findRev("operator",i);
-  if (b==-1) return FALSE; // not found
-  b+=8;
-  while (b<i) // check if there are only non-ascii
-              // characters in front of the operator
-  {
-    if (isId((uchar)s.at(b))) return FALSE;
-    b++;
-  }
-  return TRUE;
+  while (i>0 && !isId((uchar)s.at(i-1))) i--;
+
+  return i>=8 && s.at(i-8)=='o' && s.at(i-7)=='p' && s.at(i-6)=='e' && s.at(i-5)=='r'
+    && s.at(i-4)=='a' && s.at(i-3)=='t' && s.at(i-2)=='o' && s.at(i-1)=='r';
 }
 
 static const char constScope[]   = { 'c', 'o', 'n', 's', 't', ':' };
