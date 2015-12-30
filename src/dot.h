@@ -19,6 +19,8 @@
 #ifndef _DOT_H
 #define _DOT_H
 
+#include <list>
+
 #include <qlist.h>
 #include <qdict.h>
 #include <qwaitcondition.h>
@@ -369,20 +371,23 @@ class DotRunner
      */
     void addJob(const char *format,const char *output);
 
-    void addPostProcessing(const char *cmd,const char *args);
-
     void preventCleanUp() { m_cleanUp = FALSE; }
 
     /** Runs dot for all jobs added. */
-    bool run();
+    bool run(std::list<DotRunner*> &slaves);
     const CleanupItem &cleanup() const { return m_cleanupItem; }
+
+    bool compatibleWith(const DotRunner *other);
+
+    bool hasMultiTargets() { return m_multiTargets; }
 
   private:
     DotConstString m_dotExe;
     bool m_multiTargets;
     QList<DotConstString> m_jobs;
-    DotConstString m_postArgs;
-    DotConstString m_postCmd;
+    QList<DotConstString> m_formats;
+    QList<DotConstString> m_outnames;
+    /* input file path */
     DotConstString m_file;
     DotConstString m_path;
     bool m_checkResult;
@@ -428,7 +433,7 @@ class DotRunnerQueue
 {
   public:
     void enqueue(DotRunner *runner);
-    DotRunner *dequeue();
+    DotRunner *dequeue(std::list<DotRunner*> &slaves);
     uint count() const;
   private:
     QWaitCondition  m_bufferNotEmpty;

@@ -51,6 +51,7 @@
 #include "namespacedef.h"
 #include "memberdef.h"
 #include "membergroup.h"
+#include "growbuf.h"
 
 #define MAP_CMD "cmapx"
 
@@ -789,59 +790,89 @@ DotRunner::DotRunner(const QCString &file,const QCString &path,
   m_cleanUp      = dotCleanUp;
   m_multiTargets = dotMultiTargets;
   m_jobs.setAutoDelete(TRUE);
+  m_formats.setAutoDelete(TRUE);
+  m_outnames.setAutoDelete(TRUE);
+}
+
+bool DotRunner::compatibleWith(const DotRunner *other)
+{
+  // don't compare m_dotExe/m_multiTargets, always equal
+  // I thiiink m_path should always be the same? But I'm not sure.
+  if (strcmp(m_path.data(), other->m_path.data())) return false;
+  if (m_checkResult != other->m_checkResult) return false;
+  if (m_cleanUp != other->m_cleanUp) return false;
+
+  if (m_jobs.count() != other->m_jobs.count()) return false;
+  // This is inefficient, but the job list is always just 1 or 2
+  // long, so it doesn't matter.
+  for (int i=0; i<m_jobs.count(); i++) {
+    if (strcmp(m_formats.at(i)->data(), other->m_formats.at(i)->data()))
+      return false;
+  }
+
+  return true;
 }
 
 void DotRunner::addJob(const char *format,const char *output)
 {
   QCString args = QCString("-T")+format+" -o \""+output+"\"";
   m_jobs.append(new DotConstString(args));
+  m_formats.append(new DotConstString(format));
+  m_outnames.append(new DotConstString(output));
 }
 
-void DotRunner::addPostProcessing(const char *cmd,const char *args)
-{
-  m_postCmd.set(cmd);
-  m_postArgs.set(args);
-}
-
-bool DotRunner::run()
+bool DotRunner::run(std::list<DotRunner*> &slaves)
 {
   int exitCode=0;
 
-  QCString dotArgs;
-  QListIterator<DotConstString> li(m_jobs);
   DotConstString *s;
+  const char *dotArgsStr;
+  QCString dotArgs;
   if (m_multiTargets)
   {
-    dotArgs=QCString("\"")+m_file.data()+"\"";
+    // This should really be rewritten to use fork()+execlp() or so
+    // directly, but I have no idea what the windows equivalent is.
+    GrowBuf argsBuf;
+    argsBuf.addStr("-O \"");
+    argsBuf.addStr(m_file.data());
+    argsBuf.addStr("\"");
+    for (std::list<DotRunner*>::iterator it = slaves.begin(); it != slaves.end(); it++) {
+      argsBuf.addStr(" \"");
+      argsBuf.addStr((*it)->m_file.data());
+      argsBuf.addChar('"');
+    }
+    QListIterator<DotConstString> li(m_formats);
     for (li.toFirst();(s=li.current());++li)
     {
-      dotArgs+=' ';
-      dotArgs+=s->data();
+      argsBuf.addStr(" -T");
+      argsBuf.addStr(s->data());
     }
-    if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0)
+    dotArgsStr = argsBuf.get();
+    if ((exitCode=portable_system(m_dotExe.data(),dotArgsStr,FALSE))!=0)
     {
       goto error;
     }
   }
   else
   {
+    QListIterator<DotConstString> li(m_jobs);
+    assert(slaves.size() == 0);
     for (li.toFirst();(s=li.current());++li)
     {
       dotArgs=QCString("\"")+m_file.data()+"\" "+s->data();
-      if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0)
+      dotArgsStr = dotArgs.data();
+      if ((exitCode=portable_system(m_dotExe.data(),dotArgsStr,FALSE))!=0)
       {
         goto error;
       }
     }
   }
-  if (!m_postCmd.isEmpty() && portable_system(m_postCmd.data(),m_postArgs.data())!=0)
-  {
-    err("Problems running '%s' as a post-processing step for dot output\n",m_postCmd.data());
-    return FALSE;
-  }
   if (m_checkResult)
   {
     checkDotResult(m_imgExt.data(),m_imageName.data());
+    for (std::list<DotRunner*>::iterator it = slaves.begin(); it != slaves.end(); it++) {
+      checkDotResult((*it)->m_imgExt.data(),(*it)->m_imageName.data());
+    }
   }
   if (m_cleanUp) 
   {
@@ -849,11 +880,15 @@ bool DotRunner::run()
     //QDir(path).remove(file);
     m_cleanupItem.file.set(m_file.data());
     m_cleanupItem.path.set(m_path.data());
+    for (std::list<DotRunner*>::iterator it = slaves.begin(); it != slaves.end(); it++) {
+      (*it)->m_cleanupItem.file.set((*it)->m_file.data());
+      (*it)->m_cleanupItem.path.set((*it)->m_path.data());
+    }
   }
   return TRUE;
 error:
   err("Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
-      exitCode,m_dotExe.data(),dotArgs.data());
+      exitCode,m_dotExe.data(),dotArgsStr);
   return FALSE;
 }
 
@@ -1151,15 +1186,26 @@ void DotRunnerQueue::enqueue(DotRunner *runner)
   m_bufferNotEmpty.wakeAll();
 }
 
-DotRunner *DotRunnerQueue::dequeue()
+#define DOT_RUNNER_MAX_SLAVES 300 // chosen arbitrarily
+
+DotRunner *DotRunnerQueue::dequeue(std::list<DotRunner*> &slaves)
 {
   QMutexLocker locker(&m_mutex);
+  assert(slaves.empty());
   while (m_queue.isEmpty())
   {
     // wait until something is added to the queue
     m_bufferNotEmpty.wait(&m_mutex);
   }
+  int len_before = m_queue.count();
   DotRunner *result = m_queue.dequeue();
+  if (result && result->hasMultiTargets()) {
+    while (slaves.size() < DOT_RUNNER_MAX_SLAVES && !m_queue.isEmpty()
+        && m_queue.head() != 0 && result->compatibleWith(m_queue.head())) {
+      slaves.push_back(m_queue.dequeue());
+    }
+  }
+  int len_after = m_queue.count();
   return result;
 }
 
@@ -1180,14 +1226,22 @@ DotWorkerThread::DotWorkerThread(DotRunnerQueue *queue)
 void DotWorkerThread::run()
 {
   DotRunner *runner;
-  while ((runner=m_queue->dequeue()))
+  std::list<DotRunner*> slaves;
+  while ((runner=m_queue->dequeue(slaves)))
   {
-    runner->run();
+    runner->run(slaves);
+
     const DotRunner::CleanupItem &cleanup = runner->cleanup();
     if (!cleanup.file.isEmpty())
-    {
       m_cleanupItems.append(new DotRunner::CleanupItem(cleanup));
+
+    for (std::list<DotRunner*>::iterator it = slaves.begin(); it != slaves.end(); it++) {
+      const DotRunner::CleanupItem &cleanup = (*it)->cleanup();
+      if (!cleanup.file.isEmpty())
+        m_cleanupItems.append(new DotRunner::CleanupItem(cleanup));
     }
+
+    slaves.clear();
   }
 }
 
@@ -1343,8 +1397,10 @@ bool DotManager::run()
   {
     for (li.toFirst();(dr=li.current());++li)
     {
+      // TODO make singlethreaded case fast, too
+      std::list<DotRunner*> slaves;
       msg("Running dot for graph %d/%d\n",prev,numDotRuns);
-      dr->run();
+      dr->run(slaves);
       prev++;
     }
   }
@@ -1358,18 +1414,13 @@ bool DotManager::run()
     while ((i=m_queue->count())>0)
     {
       i = numDotRuns - i;
-      while (i>=prev)
-      {
-        msg("Running dot for graph %d/%d\n",prev,numDotRuns);
-        prev++;
+      if (i > prev) {
+        msg("Running dot for graph %d/%d\n",i,numDotRuns);
+        prev = i;
       }
       portable_sleep(100);
     }
-    while ((int)numDotRuns>=prev)
-    {
-      msg("Running dot for graph %d/%d\n",prev,numDotRuns);
-      prev++;
-    }
+    msg("Dot runs finalizing\n");
     // signal the workers we are done
     for (i=0;i<(int)m_workers.count();i++)
     {
@@ -2264,7 +2315,7 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
   QCString imgFmt = Config_getEnum("DOT_IMAGE_FORMAT");
   baseName.sprintf("inherit_graph_%d",id);
   QCString imgName = baseName+"."+ imgExt;
-  QCString mapName = baseName+".map";
+  QCString mapName = baseName+".dot.cmapx";
   QCString absImgName = QCString(d.absPath().data())+"/"+imgName;
   QCString absMapName = QCString(d.absPath().data())+"/"+mapName;
   QCString absBaseName = QCString(d.absPath().data())+"/"+baseName;
@@ -3154,7 +3205,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
   QCString imgFmt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString absBaseName = d.absPath().utf8()+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
-  QCString absMapName  = absBaseName+".map";
+  QCString absMapName  = absBaseName+".dot.cmapx";
   QCString absPdfName  = absBaseName+".pdf";
   QCString absEpsName  = absBaseName+".eps";
   QCString absImgName  = absBaseName+"."+imgExt;
@@ -3511,7 +3562,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   QCString imgFmt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString absBaseName = d.absPath().utf8()+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
-  QCString absMapName  = absBaseName+".map";
+  QCString absMapName  = absBaseName+".dot.cmapx";
   QCString absPdfName  = absBaseName+".pdf";
   QCString absEpsName  = absBaseName+".eps";
   QCString absImgName  = absBaseName+"."+imgExt;
@@ -3593,7 +3644,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." << imgExt << "\" border=\"0\" usemap=\"#" << mapName << "\" alt=\"\"/>";
       out << "</div>" << endl;
 
-      QCString absMapName = absBaseName+".map";
+      QCString absMapName = absBaseName+".dot.cmapx";
       if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
       {
         int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
@@ -3789,7 +3840,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
   QCString imgFmt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString absBaseName = d.absPath().utf8()+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
-  QCString absMapName  = absBaseName+".map";
+  QCString absMapName  = absBaseName+".dot.cmapx";
   QCString absPdfName  = absBaseName+".pdf";
   QCString absEpsName  = absBaseName+".eps";
   QCString absImgName  = absBaseName+"."+imgExt;
@@ -3946,7 +3997,7 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   QCString imgFmt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString absBaseName = d.absPath().utf8()+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
-  QCString absMapName  = absBaseName+".map";
+  QCString absMapName  = absBaseName+".dot.cmapx";
   QCString absPdfName  = absBaseName+".pdf";
   QCString absEpsName  = absBaseName+".eps";
   QCString absImgName  = absBaseName+"."+imgExt;
@@ -4178,7 +4229,9 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   }
 
   dotRun.preventCleanUp();
-  if (!dotRun.run())
+  // TODO does this need speedup?
+  std::list<DotRunner*> slaves;
+  if (!dotRun.run(slaves))
   {
      return;
   }
@@ -4211,7 +4264,7 @@ void writeDotImageMapFromFile(FTextStream &t,
     err("Output dir %s does not exist!\n",outDir.data()); exit(1);
   }
 
-  QCString mapName = baseName+".map";
+  QCString mapName = baseName+".dot.cmapx";
   QCString imgExt = getDotImageExtension();
   QCString imgFmt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString imgName = baseName+"."+imgExt;
@@ -4220,7 +4273,10 @@ void writeDotImageMapFromFile(FTextStream &t,
   DotRunner dotRun(inFile,d.absPath().data(),FALSE);
   dotRun.addJob(MAP_CMD,absOutFile);
   dotRun.preventCleanUp();
-  if (!dotRun.run())
+
+  // TODO does this need speedup?
+  std::list<DotRunner*> slaves;
+  if (!dotRun.run(slaves))
   {
     return;
   }
@@ -4516,7 +4572,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
   QCString absBaseName = absPath+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
   QCString absImgName  = absBaseName+"."+imgExt;
-  QCString absMapName  = absBaseName+".map";
+  QCString absMapName  = absBaseName+".dot.cmapx";
   QCString absPdfName  = absBaseName+".pdf";
   QCString absEpsName  = absBaseName+".eps";
   bool regenerate=FALSE;

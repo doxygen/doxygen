@@ -8596,7 +8596,7 @@ QCString getDotImageExtension(void)
 {
   QCString imgExt      = Config_getEnum("DOT_IMAGE_FORMAT");
   imgExt = imgExt.replace( QRegExp(":.*"), "" );
-  return imgExt;
+  return QCString("dot.") + imgExt;
 }
 
 void initFilePattern(void)
