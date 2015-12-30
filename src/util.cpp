@@ -5234,7 +5234,7 @@ static ssize_t escapeCharsInString(char *out, const char *name, bool allowDots, 
   char *out_start = out;
   #define ADDCHAR(x) ((*(out++) = (x)), used++)
   #define ADDTWO(a, b) (ADDCHAR(a), ADDCHAR(b))
-  #define ADDTHREE(a) (ADDCHAR('_'), ADDCHAR('0'), ADDCHAR(c))
+  #define ADDTHREE(a) (ADDCHAR('_'), ADDCHAR('0'), ADDCHAR(a))
   static bool caseSenseNames = Config_getBool("CASE_SENSE_NAMES");
   static bool allowUnicodeNames = Config_getBool("ALLOW_UNICODE_NAMES");
   char c;
