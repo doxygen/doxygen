@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <map>
+
 #include <qdir.h>
 #include <qfile.h>
 #include <qqueue.h>
@@ -398,7 +400,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
   return TRUE;
 }
 
-static QArray<int> s_newNumber;
+static std::map<int,int> s_newNumber;
 static int s_max_newNumber=0;
 
 inline int reNumberNode(int number, bool doReNumbering)
@@ -409,35 +411,18 @@ inline int reNumberNode(int number, bool doReNumbering)
   } 
   else 
   {
-    int s = s_newNumber.size();
-    if (number>=s) 
-    {
-      int ns=0;
-      ns = s * 3 / 2 + 5; // new size
-      if (number>=ns) // number still doesn't fit
-      {
-        ns = number * 3 / 2 + 5;
-      }
-      s_newNumber.resize(ns);
-
-      // clear new part of the array
-      int *raw_array = s_newNumber.data();
-      memset(raw_array + s, 0, sizeof(int) * (ns - s));
+    int& mapped = s_newNumber[number];
+    if (mapped == 0) {
+      mapped = ++s_max_newNumber; // start from 1
     }
-    int i = s_newNumber.at(number);
-    if (i == 0) // not yet mapped
-    {
-      i = ++s_max_newNumber; // start from 1
-      s_newNumber.at(number) = i;
-    }
-    return i;
+    return mapped;
   }
 }
 
 static void resetReNumbering() 
 {
   s_max_newNumber=0;
-  s_newNumber.resize(s_max_newNumber);
+  s_newNumber.clear();
 }
 
 static QCString g_dotFontPath;
