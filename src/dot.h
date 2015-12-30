@@ -233,11 +233,9 @@ class DotCallGraph
                         const char *path,const char *fileName,
                         const char *relPath,bool writeImageMap=TRUE,
                         int graphId=-1) const;
-    void buildGraph(DotNode *n,MemberDef *md,int distance);
+    void buildGraph(MemberDef *root_md);
     bool isTrivial() const;
     bool isTooBig() const;
-    void determineVisibleNodes(QList<DotNode> &queue, int &maxNodes);
-    void determineTruncatedNodes(QList<DotNode> &queue);
     
   private:
     DotNode        *m_startNode;

@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include <map>
+#include <list>
 
 #include <qdir.h>
 #include <qfile.h>
@@ -3650,104 +3651,78 @@ void DotInclDepGraph::writeDocbook(FTextStream &t)
 
 int DotCallGraph::m_curNodeNumber = 0;
 
-void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
+// This function uses BFS to let the nodes limit have a fair effect.
+void DotCallGraph::buildGraph(MemberDef *root_md)
 {
-  MemberSDict *refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
-  if (refs)
-  {
-    MemberSDict::Iterator mri(*refs);
-    MemberDef *rmd;
-    for (;(rmd=mri.current());++mri)
+  static const int maxDistance = Config_getInt("MAX_DOT_GRAPH_DEPTH");
+  static const int maxNodesConfig = Config_getInt("DOT_GRAPH_MAX_NODES");
+
+  std::list<std::pair<DotNode*,MemberDef*> > collected;
+  collected.push_back(std::pair<DotNode*,MemberDef*>(m_startNode, root_md));
+  int maxNodes = maxNodesConfig - 1;
+
+  for (std::list<std::pair<DotNode*,MemberDef*> >::iterator it = collected.begin(); it != collected.end(); it++) {
+    std::pair<DotNode*,MemberDef*> el = *it;
+    DotNode *n = el.first;
+    MemberDef *md = el.second;
+    MemberSDict *refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+    if (refs)
     {
-      if (rmd->showInCallGraph())
+      MemberSDict::Iterator mri(*refs);
+      MemberDef *rmd;
+      for (;(rmd=mri.current());++mri)
       {
-        QCString uniqueId;
-        uniqueId=rmd->getReference()+"$"+
-                 rmd->getOutputFileBase()+"#"+rmd->anchor();
-        DotNode *bn  = m_usedNodes->find(uniqueId);
-        if (bn) // file is already a node in the graph
+        if (rmd->showInCallGraph())
         {
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          bn->setDistance(distance);
-        }
-        else
-        {
-          QCString name;
-          if (Doxygen::hideScopeNames)
+          QCString uniqueId;
+          uniqueId=rmd->getReference()+"$"+
+                   rmd->getOutputFileBase()+"#"+rmd->anchor();
+          DotNode *bn  = m_usedNodes->find(uniqueId);
+          if (bn) // file is already a node in the graph
           {
-            name  = rmd->getOuterScope()==m_scope ? 
-                    rmd->name() : rmd->qualifiedName();
+            n->addChild(bn,0,0,0);
+            bn->addParent(n);
+            bn->setDistance(n->distance()+1);
           }
           else
           {
-            name = rmd->qualifiedName();
+            if (maxNodes > 0 && n->distance()+1 <= maxDistance)
+            {
+              maxNodes--;
+              QCString name;
+              if (Doxygen::hideScopeNames)
+              {
+                name  = rmd->getOuterScope()==m_scope ? 
+                        rmd->name() : rmd->qualifiedName();
+              }
+              else
+              {
+                name = rmd->qualifiedName();
+              }
+              QCString tooltip = rmd->briefDescriptionAsTooltip();
+              bn = new DotNode(
+                  m_curNodeNumber++,
+                  linkToText(rmd->getLanguage(),name,FALSE),
+                  tooltip,
+                  uniqueId,
+                  0 //distance
+                  );
+              n->addChild(bn,0,0,0);
+              bn->addParent(n);
+              bn->setDistance(n->distance()+1);
+              bn->markAsVisible();
+              bn->markAsTruncated(false); /* override might happen later */
+              m_usedNodes->insert(uniqueId,bn);
+
+              collected.push_back(std::pair<DotNode*,MemberDef*>(bn, rmd));
+            }
+            else
+            {
+              n->markAsTruncated(true);
+            }
           }
-          QCString tooltip = rmd->briefDescriptionAsTooltip();
-          bn = new DotNode(
-              m_curNodeNumber++,
-              linkToText(rmd->getLanguage(),name,FALSE),
-              tooltip,
-              uniqueId,
-              0 //distance
-              );
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          bn->setDistance(distance);
-          m_usedNodes->insert(uniqueId,bn);
-
-          buildGraph(bn,rmd,distance+1);
         }
       }
-    }
-  }
-}
-
-void DotCallGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
-{
-  while (queue.count()>0 && maxNodes>0)
-  {
-    static int maxDistance = Config_getInt("MAX_DOT_GRAPH_DEPTH");
-    DotNode *n = queue.take(0);
-    if (!n->isVisible() && n->distance()<=maxDistance) // not yet processed
-    {
-      n->markAsVisible();
-      maxNodes--;
-      // add direct children
-      if (n->m_children)
-      {
-        QListIterator<DotNode> li(*n->m_children);
-        DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
-        {
-          queue.append(dn);
-        }
-      }
-    }
-  }
-}
-
-void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
-{
-  while (queue.count()>0)
-  {
-    DotNode *n = queue.take(0);
-    if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
-    {
-      bool truncated = FALSE;
-      if (n->m_children)
-      {
-        QListIterator<DotNode> li(*n->m_children);
-        DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
-        {
-          if (!dn->isVisible()) 
-            truncated = TRUE;
-          else 
-            queue.append(dn);
-        }
-      }
-      n->markAsTruncated(truncated);
     }
   }
 }
@@ -3756,6 +3731,7 @@ void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
 
 DotCallGraph::DotCallGraph(MemberDef *md,bool inverse)
 {
+
   m_inverse = inverse;
   m_diskName = md->getOutputFileBase()+"_"+md->anchor();
   m_scope    = md->getOuterScope();
@@ -3778,22 +3754,12 @@ DotCallGraph::DotCallGraph(MemberDef *md,bool inverse)
                             TRUE     // root node
                            );
   m_startNode->setDistance(0);
+  m_startNode->markAsVisible();
+  m_startNode->markAsTruncated(false); /* override might happen later */
   m_usedNodes = new QDict<DotNode>(1009);
   m_usedNodes->insert(uniqueId,m_startNode);
-  buildGraph(m_startNode,md,1);
 
-  static int nodes = Config_getInt("DOT_GRAPH_MAX_NODES");
-  int maxNodes = nodes;
-  //int directChildNodes = 1;
-  //if (m_startNode->m_children!=0) 
-  //  directChildNodes+=m_startNode->m_children->count();
-  //if (directChildNodes>maxNodes) maxNodes=directChildNodes;
-  QList<DotNode> openNodeQueue;
-  openNodeQueue.append(m_startNode);
-  determineVisibleNodes(openNodeQueue,maxNodes);
-  openNodeQueue.clear();
-  openNodeQueue.append(m_startNode);
-  determineTruncatedNodes(openNodeQueue);
+  buildGraph(md);
 }
 
 DotCallGraph::~DotCallGraph()
