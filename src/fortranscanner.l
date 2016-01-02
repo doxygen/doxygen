@@ -214,7 +214,7 @@ static bool endScope(Entry *scope, bool isGlobalRoot=FALSE);
 //static bool isTypeName(QCString name);
 static void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root);
 static int getAmpersandAtTheStart(const char *buf, int length);
-static int getAmpOrExclAtTheEnd(const char *buf, int length);
+static int getAmpOrExclAtTheEnd(const char *buf, int length, char ch);
 static void truncatePrepass(int index);
 static void pushBuffer(QCString &buffer);
 static void popBuffer();
@@ -328,7 +328,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           DBG_CTX((stderr, "---%s", yytext));
 
                                             int indexStart = getAmpersandAtTheStart(yytext, (int)yyleng);
-                                            int indexEnd = getAmpOrExclAtTheEnd(yytext, (int)yyleng);
+                                            int indexEnd = getAmpOrExclAtTheEnd(yytext, (int)yyleng, '\0');
 					    if (indexEnd>=0 && yytext[indexEnd]!='&') //we are only interested in amp
 					      indexEnd=-1;
 
@@ -1276,13 +1276,15 @@ static int getAmpersandAtTheStart(const char *buf, int length)
 }
 
 /* Returns ampersand index, comment start index or -1 if neither exist.*/ 
-static int getAmpOrExclAtTheEnd(const char *buf, int length)
+static int getAmpOrExclAtTheEnd(const char *buf, int length, char ch)
 {
   // Avoid ampersands in string and comments
   int parseState = Start;
   char quoteSymbol = 0;
   int ampIndex = -1;
   int commentIndex = -1;
+  quoteSymbol = ch;
+  if (ch != '\0') parseState = String;
 
   for(int i=0; i<length && parseState!=Comment; i++)
   {
@@ -1413,6 +1415,8 @@ static const char* prepassFixedForm(const char* contents)
   int column=0;
   int prevLineLength=0;
   int prevLineAmpOrExclIndex=-1;
+  char prevQuote = '\0';
+  char thisQuote = '\0';
   bool emptyLabel=TRUE;
   bool commented=FALSE;
   bool inSingle=FALSE;
@@ -1432,11 +1436,12 @@ static const char* prepassFixedForm(const char* contents)
     switch(c) {
       case '\n':
         prevLineLength=column;
-        prevLineAmpOrExclIndex=getAmpOrExclAtTheEnd(&contents[i-prevLineLength+1], prevLineLength);
+        prevLineAmpOrExclIndex=getAmpOrExclAtTheEnd(&contents[i-prevLineLength+1], prevLineLength,prevQuote);
         column=0;
 	emptyLabel=TRUE;
         commented=FALSE;
         newContents[j]=c;
+        prevQuote = thisQuote;
         break;
       case ' ':
       case '\t':
@@ -1467,12 +1472,22 @@ static const char* prepassFixedForm(const char* contents)
           }
           else if (c == '\'')
           {
-            if (!inDouble) inSingle = !inSingle;
+            if (!inDouble)
+            {
+              inSingle = !inSingle;
+              if (inSingle) thisQuote = c;
+              else thisQuote = '\0';
+            }
             break;
           }
           else if (c == '"')
           {
-            if (!inSingle) inDouble = !inDouble;
+            if (!inSingle)
+            {
+              inDouble = !inDouble; 
+              if (inDouble) thisQuote = c; 
+              else thisQuote = '\0';
+            }
             break;
           }
         }
