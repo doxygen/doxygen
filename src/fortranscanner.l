@@ -686,9 +686,12 @@ private                                 {
                                            // in a scope of their own, even if multiple
                                            // are group in one INTERFACE/END INTERFACE block.
                                            //
-                                           last_entry->endBodyLine = yyLineNr - 1;
                                            if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
+                                           {
                                              endScope(current_root);
+                                             last_entry->endBodyLine = yyLineNr - 1;
+                                           }
+                                           current_root->endBodyLine = yyLineNr - 1;
 
 					   if (!endScope(current_root))
 					     yyterminate();
