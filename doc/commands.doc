@@ -876,7 +876,7 @@ Structural indicators
   Indicates that the member documented by the comment block is private,
   i.e., should only be accessed by other members in the same class.
 
-  Note that Doxygen automatically detects the protection level of members
+  Note that doxygen automatically detects the protection level of members
   in object-oriented languages. This command is intended for use only when
   the language does not support the concept of protection level natively
   (e.g. C, PHP 4).
@@ -919,7 +919,7 @@ Structural indicators
   i.e., should only be accessed by other members in the same or derived
   classes.
 
-  Note that Doxygen automatically detects the protection level of members
+  Note that doxygen automatically detects the protection level of members
   in object-oriented languages. This command is intended for use only when
   the language does not support the concept of protection level natively
   (e.g. C, PHP 4).
@@ -960,7 +960,7 @@ Structural indicators
   Indicates that the member documented by the comment block is public,
   i.e., can be accessed by any other class or function.
 
-  Note that Doxygen automatically detects the protection level of members
+  Note that doxygen automatically detects the protection level of members
   in object-oriented languages. This command is intended for use only when
   the language does not support the concept of protection level natively
   (e.g. C, PHP 4).

@@ -145,7 +145,7 @@
 <li>[Doxygen-users] plugin / filter not behaving as expected [<a href="http://github.com/doxygen/doxygen/commit/0c7f182016c7c2604a484367738e76cb40c0541b">view</a>]</li>
 <li>add spaces like &quot;Doyxgen&quot;CN_SPC-&gt;&quot;Doyxgen&quot; CN_SPC [<a href="http://github.com/doxygen/doxygen/commit/35d1aa8bf9208302601fa96462e246c98aa0b0e5">view</a>]</li>
 <li>allow building with custom iconv on Windows [<a href="http://github.com/doxygen/doxygen/commit/3d684f6d123abdbf630bb19bc6095cc9d69efb68">view</a>]</li>
-<li>doc: generate Doxygen&#39;s documentation. [<a href="http://github.com/doxygen/doxygen/commit/3c4a1ea2ee56f2604c2277f13737d53b3a0b0353">view</a>]</li>
+<li>doc: generate doxygen&#39;s documentation. [<a href="http://github.com/doxygen/doxygen/commit/3c4a1ea2ee56f2604c2277f13737d53b3a0b0353">view</a>]</li>
 <li>doc: put man pages under share/man/man1 [<a href="http://github.com/doxygen/doxygen/commit/95d28153779810dc95afafa38ed838f32516a1f4">view</a>]</li>
 <li>docparser: warn when finding a documented empty return type [<a href="http://github.com/doxygen/doxygen/commit/10989e2dade3bb35a421787c5315d2630d665842">view</a>]</li>
 <li>docs: add examples as a dependency of docs [<a href="http://github.com/doxygen/doxygen/commit/ec5fde6913935fbe2015220259b611a17a437de3">view</a>]</li>
@@ -272,7 +272,7 @@
 <li>Removed OS version check for MACOSX (was not used anywhere) [<a href="http://github.com/doxygen/doxygen/commit/1e3e9f03e746d4ac46c9c7b1b80e7e3100ee42f0">view</a>]</li>
 <li>Removed dbus XML parser, various refinements [<a href="http://github.com/doxygen/doxygen/commit/551012f2647c53d8532d638361011d003d5b81f3">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/bf4aee305879406d9057864ab7f8938e01ca8bd0">view</a>]</li>
 <li>Removed old build files, added install targets and other options [<a href="http://github.com/doxygen/doxygen/commit/7bcf8e9a379ec0599160e5562f07b93f8fb9557a">view</a>]</li>
-<li>Repair Doxygen generate invalid styleSheetFile and extensionsFile of RTF [<a href="http://github.com/doxygen/doxygen/commit/0d208bc1c9a32718a93eb9911220ba72ad27fb9a">view</a>]</li>
+<li>Repair doxygen generate invalid styleSheetFile and extensionsFile of RTF [<a href="http://github.com/doxygen/doxygen/commit/0d208bc1c9a32718a93eb9911220ba72ad27fb9a">view</a>]</li>
 <li>Replace to_c_cmd by resource compiler [<a href="http://github.com/doxygen/doxygen/commit/2e39e5c7c1427ac6b24c64b7ef01be8d5a20092b">view</a>]</li>
 <li>Restore deleted file [<a href="http://github.com/doxygen/doxygen/commit/dfe93f9fde39167eae2aeeab929641a9c56cc916">view</a>]</li>
 <li>Showing grey/gray in documentation [<a href="http://github.com/doxygen/doxygen/commit/320ebb35dd4a615a7a692d71de4587be9ce8b99b">view</a>]</li>
@@ -552,7 +552,7 @@
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=731238">731238</a> Dead links in html documentation when using tabs for indentation in c++ [<a href="http://github.com/doxygen/doxygen/commit/2cc3b18da39bde323c5739483e507a133e93ac22">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=731363">731363</a> Callgraphs for C# only generated for methods inside the same class [<a href="http://github.com/doxygen/doxygen/commit/7edbf2b2e705eccc0d99cce86149228473bc7f3e">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=731985">731985</a> Variadic macros failing to expand if trailing ... is empty [<a href="http://github.com/doxygen/doxygen/commit/070c35549da108695074239be3ab4268f3722261">view</a>]</li>
-<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=732594">732594</a> Two entries for a single member in Doxygen XML [<a href="http://github.com/doxygen/doxygen/commit/ed8ce3cf405204916f9832e26797cb15d1490fd1">view</a>]</li>
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=732594">732594</a> Two entries for a single member in doxygen XML [<a href="http://github.com/doxygen/doxygen/commit/ed8ce3cf405204916f9832e26797cb15d1490fd1">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=732768">732768</a> nested html tables cause pdflatex to hang (1.8.4 and 1.8.6) [<a href="http://github.com/doxygen/doxygen/commit/3cb963061343aa5b3b8a044cdfa62848723a02ee">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=733451">733451</a> volatile declaration on member functions is not handled as xml attribute [<a href="http://github.com/doxygen/doxygen/commit/97d12d058a7831adcc8c6f2cfe8c20ddd2ae5bc2">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=733605">733605</a> Incorrect LaTeX generation for private union member in C++ [<a href="http://github.com/doxygen/doxygen/commit/a36ddbe0ee97c5ee248b7b391b4c30fd4b3c884b">view</a>]</li>
@@ -617,7 +617,7 @@
 <li>Messages truncated in warnings file [<a href="http://github.com/doxygen/doxygen/commit/cc4f3b454cae7d3e9eaa44342bcbae1061f5e790">view</a>]</li>
 <li>Minor fixes [<a href="http://github.com/doxygen/doxygen/commit/c31a81a85e0396fb276beefd06bb71c2819571ed">view</a>]</li>
 <li>Minor fixes to the template context [<a href="http://github.com/doxygen/doxygen/commit/963e0adfd76e6a59ace5e7318f948632322b1e51">view</a>]</li>
-<li>Missing word after \n command in Doxygen rtf output, version 1.8.5 &amp; up [<a href="http://github.com/doxygen/doxygen/commit/ea9f3b1d727b22973c0176b2564304fb160aa70b">view</a>]</li>
+<li>Missing word after \n command in doxygen rtf output, version 1.8.5 &amp; up [<a href="http://github.com/doxygen/doxygen/commit/ea9f3b1d727b22973c0176b2564304fb160aa70b">view</a>]</li>
 <li>More robust extraction of scope information from tag files [<a href="http://github.com/doxygen/doxygen/commit/6a60477b418e21dbadd3e62dc557a038e319581b">view</a>]</li>
 <li>No warning in case cite definition is missing [<a href="http://github.com/doxygen/doxygen/commit/1f77638174f715f0f2bcf5b2e32ebb329d531f85">view</a>]</li>
 <li>Preparations for release 1.8.8 [<a href="http://github.com/doxygen/doxygen/commit/f16be0113f8d47d4f04e69d0c45ccc4b24e3c426">view</a>]</li>
@@ -664,7 +664,7 @@
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=436885">436885</a> - c-source and h-source missing for latex [<a href="http://github.com/doxygen/doxygen/commit/d5d34325fb9bed776cf2b4facc0c341f701e780b">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=625601">625601</a> - FORTRAN: recognition free versus fixed formatted code [<a href="http://github.com/doxygen/doxygen/commit/2dec1060623165057628ee678eb3580351922408">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=626172">626172</a> - Latex $projectname with &quot;&amp;&quot; gets no escaped [<a href="http://github.com/doxygen/doxygen/commit/586b3b69238fb09d55a03c5d50fc1b7d3e65ed97">view</a>]</li>
-<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=643618">643618</a> - Fortran: variable with name &quot;type&quot; confuses Doxygen [<a href="http://github.com/doxygen/doxygen/commit/17c5b6160d013d118296663e133cf8884c74a939">view</a>]</li>
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=643618">643618</a> - Fortran: variable with name &quot;type&quot; confuses doxygen [<a href="http://github.com/doxygen/doxygen/commit/17c5b6160d013d118296663e133cf8884c74a939">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=674851">674851</a> - Percent to prevent auto-linking in page title is not removed for navpath [<a href="http://github.com/doxygen/doxygen/commit/5d44acc0a49bd7b990bfe649efa312f5f0bb594b">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=678436">678436</a> - Nested \if messes up list items [<a href="http://github.com/doxygen/doxygen/commit/7f4414b92a1c2147b073dd3cf58e0db7c8a88be6">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=678436">678436</a> - Nested \if messes up list items [<a href="http://github.com/doxygen/doxygen/commit/de502ca71fc1c20ed93209f6a223c488eee38297">view</a>]</li>
@@ -684,7 +684,7 @@
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722603">722603</a> - doxygen nested \if \endif sample not working [<a href="http://github.com/doxygen/doxygen/commit/cc78b12b0019fbcb17692b231d38ba75d0952201">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722619">722619</a> - doxygen 1.8.6 sorts the contents of a namespace by group within the Class List [<a href="http://github.com/doxygen/doxygen/commit/f9b80aff6d20524dd0838aff12033fe3df66ba98">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722711">722711</a> - Link refs with no title swallow an extra newline [<a href="http://github.com/doxygen/doxygen/commit/60ea06a68f2e355e34b61bf45babc6405bfbfe84">view</a>]</li>
-<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722759">722759</a> - Documentation for derived classes no longer has an &quot;Additional Inherited Members&quot; section after upgrading Doxygen from 1.8.3.1 to 1.8.6 [<a href="http://github.com/doxygen/doxygen/commit/0e9da9fb27147c5685088019afd428a0aaa901fa">view</a>]</li>
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722759">722759</a> - Documentation for derived classes no longer has an &quot;Additional Inherited Members&quot; section after upgrading doxygen from 1.8.3.1 to 1.8.6 [<a href="http://github.com/doxygen/doxygen/commit/0e9da9fb27147c5685088019afd428a0aaa901fa">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722786">722786</a> - configure --prefix=/opt/foo not accepted [<a href="http://github.com/doxygen/doxygen/commit/bc7e6301e2d1474592f6cd6cc07624852d1b5016">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722788">722788</a> - Command \| not working when last character in markdown table line [<a href="http://github.com/doxygen/doxygen/commit/8309fbd9e639eaf9e763e83ca7a228c659450a57">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=723299">723299</a> - Last line of code block lost if it is only one character and there is no text afterward [<a href="http://github.com/doxygen/doxygen/commit/4d1951ebb648bbc92464904305cafc7fc0dba557">view</a>]</li>
@@ -1036,7 +1036,7 @@
 <li> jquery: use the env MINIFIER if specified</li>
 <li> Some words now in code style __attribute__ was seen (markdown) as the bold word attribute Reformulation of a sentence due to a not nice split of word (__declspec was split directly after __ in pdf)</li>
 <li> Extended list with supported options for automatic link generation</li>
-<li> Added -v option (analogous to --version). In case option started with -- and is not a known valuue (help or version) and error is given instead of starting Doxygen</li>
+<li> Added -v option (analogous to --version). In case option started with -- and is not a known valuue (help or version) and error is given instead of starting doxygen</li>
 <li> Fixed regression when nested class were processed before their parent</li>
 <li> Minor changes to the way the code for config options is generated (thanks to Albert for the patch)</li>
 <li> Brief description did not appear in the page index, when a page did not have any details.</li>

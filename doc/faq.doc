@@ -97,12 +97,12 @@ with a \ref cmdcond "\\cond" command at the start and one comment block
 with a \ref cmdendcond "\\endcond" command at the end of the piece of
 code that should be ignored. This should be within the same file of course.
 
-But you can also use Doxygen's preprocessor for this: 
+But you can also use doxygen's preprocessor for this: 
 If you put
 \verbatim
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
- /* code that must be skipped by Doxygen */
+ /* code that must be skipped by doxygen */
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 \endverbatim
@@ -110,7 +110,7 @@ around the blocks that should be hidden and put:
 \verbatim
   PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS
 \endverbatim
-in the config file then all blocks should be skipped by Doxygen as long
+in the config file then all blocks should be skipped by doxygen as long
 as \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to `YES`.
 
 \section faq_code_inc How can I change what is after the <code>\#include</code> in the class documentation?

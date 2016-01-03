@@ -115,7 +115,7 @@ on the tree of entries, built during language parsing. Look at the
 "Gathering information" part of \c parseInput() for details.
 
 The result of this step is a number of dictionaries, which can be
-found in the Doxygen "namespace" defined in \c src/doxygen.h. Most
+found in the doxygen "namespace" defined in \c src/doxygen.h. Most
 elements of these dictionaries are derived from the class \c Definition;
 The class \c MemberDef, for instance, holds all information for a member. 
 An instance of such a class can be part of a file ( class \c FileDef ), 
