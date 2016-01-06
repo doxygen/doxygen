@@ -5955,7 +5955,7 @@ assert(false);
 }
 
 
-QCString VhdlParser::miscellaneous_operator() {Token *t=0;
+QCString VhdlParser::miscellaneous_operator() {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case DOUBLEMULT_T:{if (!hasError) {
       

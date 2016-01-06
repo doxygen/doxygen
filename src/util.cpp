@@ -4293,7 +4293,6 @@ bool getDefs(const QCString &scName,
       else
       {
         //printf("not a namespace\n");
-        bool found=FALSE;
         MemberListIterator mmli(*mn);
         MemberDef *mmd;
         for (mmli.toFirst();(mmd=mmli.current());++mmli)
