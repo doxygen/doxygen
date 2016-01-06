@@ -62,6 +62,7 @@ return tok->image.c_str();
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -118,6 +119,7 @@ return str;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -187,6 +189,7 @@ s+="(";s+=s1+")";return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -231,6 +234,7 @@ return "&";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -403,6 +407,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -634,6 +639,7 @@ return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -847,6 +853,7 @@ return tok->image.c_str();
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -1718,6 +1725,7 @@ return " others ";
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -2009,6 +2017,7 @@ return s+"#";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -2621,6 +2630,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -2712,6 +2722,7 @@ return s+" inertial ";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -2813,6 +2824,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -2846,6 +2858,7 @@ return tok->image.c_str();
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -2913,6 +2926,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -3043,6 +3057,7 @@ return tok->image.c_str();
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -3241,6 +3256,7 @@ return "file";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -3728,6 +3744,7 @@ return "all";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -3844,6 +3861,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -3878,6 +3896,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -4116,6 +4135,7 @@ return "or" ;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -4212,6 +4232,7 @@ s1="not ";return s1+s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -4363,6 +4384,7 @@ return tok->image.c_str();
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -4683,6 +4705,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -4844,6 +4867,7 @@ return tok->image.c_str();
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -5130,6 +5154,7 @@ return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -5263,6 +5288,7 @@ s1="configuration ";return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -5308,6 +5334,7 @@ return tok->image.c_str();
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -5416,6 +5443,7 @@ if (parse_sec==GEN_SEC)
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -5681,6 +5709,7 @@ QCString q=lab+" for "+s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -5758,6 +5787,7 @@ return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -5820,6 +5850,7 @@ return "null";
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -5965,6 +5996,7 @@ return "not";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -6031,6 +6063,7 @@ return "linkage";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -6086,6 +6119,7 @@ return tok->image.c_str();
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -6526,6 +6560,7 @@ return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -6607,6 +6642,7 @@ return "type";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -7417,6 +7453,7 @@ return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -7689,6 +7726,7 @@ return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -8048,6 +8086,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -8227,6 +8266,7 @@ return "/=";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -8399,6 +8439,7 @@ return s+" "+s1+"%";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -8760,6 +8801,7 @@ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -8871,6 +8913,7 @@ return "ror";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -8904,6 +8947,7 @@ return "-";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -8998,6 +9042,7 @@ return s+s1+"<="+s2+s3+";";
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -9102,6 +9147,7 @@ return "bus";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -9172,6 +9218,7 @@ return "all";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -9645,6 +9692,7 @@ return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -10060,6 +10108,7 @@ return " all ";
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -10096,6 +10145,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -10198,6 +10248,7 @@ return s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -10282,6 +10333,7 @@ return "";
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -10473,6 +10525,7 @@ return "";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -10707,6 +10760,7 @@ return " unaffected ";
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -11191,6 +11245,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -11681,6 +11736,7 @@ return t->image.data();
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -11725,6 +11781,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
@@ -11770,6 +11827,7 @@ return "."+s;
       }
     }
 assert(false);
+return QCString();
 }
 
 
@@ -12572,6 +12630,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
 assert(false);
+return QCString();
 }
 
 
