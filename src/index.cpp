@@ -1640,7 +1640,7 @@ static void writeAnnotatedClassList(OutputList &ol)
 static QCString letterToLabel(uint startLetter)
 {
   char s[11]; // max 0x12345678 + '\0'
-  if (startLetter>0x20 && startLetter<=0x7f) // printable ASCII character
+  if (isId(startLetter)) // printable ASCII character
   {
     s[0]=(char)startLetter;
     s[1]=0;
@@ -1901,7 +1901,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
     }
   }
 
-  ol.writeString("<table style=\"margin: 10px; white-space: nowrap;\" align=\"center\" width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
+  ol.writeString("<table class=\"classindex\">\n");
   // generate table
   for (i=0;i<=maxRows;i++) // foreach table row
   {
@@ -2476,8 +2476,8 @@ static void writeQuickMemberIndex(OutputList &ol,
       anchor=fullName+extension+"#index_";
     else 
       anchor=fullName+"_"+letterToLabel(i)+extension+"#index_";
-    startQuickIndexItem(ol,anchor+ci,i==page,TRUE,first);
-    ol.writeString(is);
+    startQuickIndexItem(ol,anchor+is,i==page,TRUE,first);
+    ol.writeString(ci);
     endQuickIndexItem(ol);
     first=FALSE;
   }
@@ -3787,7 +3787,7 @@ static void writeIndex(OutputList &ol)
   {
     title = theTranslator->trMainPage();
   }
-  else 
+  else if (Doxygen::mainPage)
   {
     title = filterTitle(Doxygen::mainPage->title());
   }
@@ -3836,19 +3836,7 @@ static void writeIndex(OutputList &ol)
     {
       ol.startHeaderSection();
       ol.startTitleHead(0);
-			// By: Ali Majdzadeh Kohbanani (ali.majdzadeh@gmail.com)
-			// When the generated documentation is in Persian, the title of the index page should be:
-			// theTranslator->trDocumentation() + projPrefix
-			// not:
-			// projPrefix + theTranslator->trDocumentation()
-			if (theTranslator->idLanguage()=="persian")
-			{
-				ol.parseText(theTranslator->trDocumentation()+projPrefix);
-			}
-			else
-			{
-				ol.parseText(projPrefix+theTranslator->trDocumentation());
-			}
+      ol.parseText(projPrefix+theTranslator->trDocumentation());
       headerWritten = TRUE;
     }
   }
@@ -4098,7 +4086,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
       for (i=oldSize;i<newSize;i++) indexWritten.at(i)=FALSE;
     }
     //printf("starting %s kind=%d\n",lne->title().data(),lne->kind());
-    bool addToIndex=lne==0 || lne->visible();
+    bool addToIndex=lne->visible();
     bool needsClosing=FALSE;
     if (!indexWritten.at(index))
     {
