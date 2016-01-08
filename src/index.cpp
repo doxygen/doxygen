@@ -3836,7 +3836,20 @@ static void writeIndex(OutputList &ol)
     {
       ol.startHeaderSection();
       ol.startTitleHead(0);
-      ol.parseText(projPrefix+theTranslator->trDocumentation());
+		// By: Ali Majdzadeh Kohbanani (ali.majdzadeh@gmail.com)
+		// When the generated documentation is in Persian, the title of the index page should be:
+		// theTranslator->trDocumentation() + projPrefix
+		// not:
+		// projPrefix + theTranslator->trDocumentation()
+		if (theTranslator->idLanguage()=="persian")
+		{
+			ol.parseText(theTranslator->trDocumentation()+projPrefix);
+		}
+		else
+		{
+			ol.parseText(projPrefix+theTranslator->trDocumentation());
+		}
+      //ol.parseText(projPrefix+theTranslator->trDocumentation());
       headerWritten = TRUE;
     }
   }
