@@ -142,7 +142,7 @@ void Expert::createTopics(const QDomElement &rootElem)
           SLOT(activateTopic(QTreeWidgetItem *,QTreeWidgetItem *)));
 }
 
-static QString getDocsForNode(const QDomElement &child)
+QString Expert::getDocsForNode(const QDomElement &child)
 {
   QString type = child.attribute(SA("type"));
   QString docs = SA("");
@@ -381,7 +381,42 @@ static QString getDocsForNode(const QDomElement &child)
     docs+=  dependsOn.toLower();
     docs+=  SA(" \"");
     docs+=  dependsOn.toUpper();
-    docs+=  SA("\" is set to <code>YES</code>.");
+
+    // determine the type of the element the current element is depending on,
+    // relevant for the help text.
+    QDomElement locChileElem;
+    QDomElement childElem = m_rootElement.firstChildElement();
+    QString type;
+    while (!childElem.isNull())
+    {
+      if (childElem.tagName()==SA("group"))
+      {
+        QDomElement locChildElem = childElem.firstChildElement();
+        while (!locChildElem.isNull())
+        {
+          QString setting = locChildElem.attribute(SA("setting"));
+          if (setting.isEmpty() || IS_SUPPORTED(setting.toAscii()))
+          {
+            if (dependsOn.toUpper() == locChildElem.attribute(SA("id")))
+            {
+              type = locChildElem.attribute(SA("type"));
+              break;
+            }
+          }
+          locChildElem = locChildElem.nextSiblingElement();
+        }
+      }
+      childElem = childElem.nextSiblingElement();
+    }
+
+    if (type==SA("bool"))
+    {
+      docs+=  SA("\" is set to <code>YES</code>.");
+    }
+    else
+    {
+      docs+=  SA("\" is set.");
+    }
   }
 
   // Remove / replace doxygen markup strings
