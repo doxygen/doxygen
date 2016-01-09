@@ -687,7 +687,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
       << "             pdfencoding=unicode\n"
       << "            }\n";
   }
-  t << "\\pagenumbering{roman}\n"
+  t << "\\pagenumbering{alph}\n"
        "\\begin{titlepage}\n"
        "\\vspace*{7cm}\n"
        "\\begin{center}%\n"
@@ -716,6 +716,7 @@ static void writeDefaultHeaderPart3(FTextStream &t)
   bool compactLatex = Config_getBool("COMPACT_LATEX");
   if (!compactLatex)
     t << "\\clearemptydoublepage\n";
+  t << "\\pagenumbering{roman}\n";
 
   // ToC
   t << "\\tableofcontents\n";
