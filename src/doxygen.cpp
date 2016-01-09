@@ -11221,10 +11221,6 @@ void parseInput()
   flushCachedTemplateRelations();
   g_s.end();
 
-  g_s.begin("Creating members for template instances...\n");
-  createTemplateInstanceMembers();
-  g_s.end();
-
   g_s.begin("Computing class relations...\n");
   computeTemplateClassRelations();
   flushUnresolvedRelations();
@@ -11247,6 +11243,12 @@ void parseInput()
 
   transferRelatedFunctionDocumentation();
   transferFunctionDocumentation();
+  g_s.end();
+
+  // moved to after finding and copying documentation,
+  // as this introduces new members see bug 722654
+  g_s.begin("Creating members for template instances...\n");
+  createTemplateInstanceMembers();
   g_s.end();
 
   g_s.begin("Building page list...\n");

@@ -1602,11 +1602,13 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // *** write name
   if (!name().isEmpty() && name().at(0)!='@') // hide anonymous stuff
   {
-    //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable());
+    static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+    static bool extractStatic  = Config_getBool("EXTRACT_STATIC");
+    //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
     if (!(name().isEmpty() || name().at(0)=='@') && // name valid
         (hasDocumentation() || isReference()) && // has docs
-        !(m_impl->prot==Private && !Config_getBool("EXTRACT_PRIVATE") && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
-        !(isStatic() && m_impl->classDef==0 && !Config_getBool("EXTRACT_STATIC")) // hidden due to static-ness
+        !(m_impl->prot==Private && !extractPrivate && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
+        !(isStatic() && m_impl->classDef==0 && !extractStatic) // hidden due to static-ness
        )
     {
       if (m_impl->annMemb)
@@ -1817,7 +1819,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
         ol.disableAllBut(OutputGenerator::Html);
         //ol.endEmphasis();
         ol.docify(" ");
-        if (separateMemberPages ||
+        if (inheritedFrom ||
+            separateMemberPages ||
             (m_impl->group!=0 && gd==0) ||
             (m_impl->nspace!=0 && nd==0)
            ) // forward link to the page or group or namespace
