@@ -157,7 +157,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_curArgDefValue+=*yytext;
   					  BEGIN( CopyArgString );
   					}
-<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*\^]+{B}*/{ID} { 
+<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*({ID}{B}*)?[&*\^]+{B}*/{ID} { 
   					  // function pointer as argument
 					  g_curArgTypeName+=yytext;
 					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
