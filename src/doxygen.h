@@ -152,6 +152,8 @@ class Doxygen
     static bool                      generatingXmlOutput;
     static bool                      markdownSupport;
     static GenericsSDict            *genericsDict;
+    static bool                      fullPathNames;
+    static bool                      hideScopeNames;
 };
 
 void initDoxygen();

@@ -17,6 +17,8 @@
 
 #include <ctype.h>
 #include <assert.h>
+#include <err.h>
+#include <arpa/inet.h>
 
 #include <qfile.h>
 #include <qregexp.h>
@@ -244,19 +246,16 @@ void SearchIndex::addWord(const char *word,bool hiPriority)
   addWord(word,hiPriority,FALSE);
 }
 
-static void writeInt(QFile &f,int index)
+static void writeInt(FILE *fp, int index)
 {
-  f.putch(((uint)index)>>24);
-  f.putch((((uint)index)>>16)&0xff);
-  f.putch((((uint)index)>>8)&0xff);
-  f.putch(((uint)index)&0xff);
+  uint32_t nboval = htonl((uint32_t)index);
+  fwrite(&nboval, 4, 1, fp);
 }
 
-static void writeString(QFile &f,const char *s)
+static void writeString(FILE *fp, const char *s)
 {
-  const char *p = s;
-  while (*p) f.putch(*p++);
-  f.putch(0);
+  fputs(s, fp);
+  putc(0, fp);
 }
 
 void SearchIndex::write(const char *fileName)
@@ -342,66 +341,69 @@ void SearchIndex::write(const char *fileName)
           url->url.length()+1;
   }
   //printf("Total size %x bytes (word=%x stats=%x urls=%x)\n",size,wordsOffset,statsOffset,urlsOffset);
-  QFile f(fileName);
-  if (f.open(IO_WriteOnly))
+  FILE *fp = fopen(fileName, "wb");
+  if (fp == NULL)
+    err(1, "unable to write search index");
+
+  // write header
+  fwrite("DOXS", 1, 4, fp);
+  // write index
+  for (i=0;i<numIndexEntries;i++)
   {
-    // write header
-    f.putch('D'); f.putch('O'); f.putch('X'); f.putch('S');
-    // write index
-    for (i=0;i<numIndexEntries;i++)
+    writeInt(fp, indexOffsets[i]);
+  }
+  // write word lists
+  count=0;
+  for (i=0;i<numIndexEntries;i++)
+  {
+    QList<IndexWord> *wlist = m_index[i];
+    if (!wlist->isEmpty())
     {
-      writeInt(f,indexOffsets[i]);
-    }
-    // write word lists
-    count=0;
-    for (i=0;i<numIndexEntries;i++)
-    {
-      QList<IndexWord> *wlist = m_index[i];
-      if (!wlist->isEmpty())
+      QListIterator<IndexWord> iwi(*wlist);
+      IndexWord *iw;
+      for (iwi.toFirst();(iw=iwi.current());++iwi)
       {
-        QListIterator<IndexWord> iwi(*wlist);
-        IndexWord *iw;
-        for (iwi.toFirst();(iw=iwi.current());++iwi)
-        {
-          writeString(f,iw->word());
-          writeInt(f,wordStatOffsets[count++]);
-        }
-        f.putch(0);
+        writeString(fp, iw->word());
+        writeInt(fp, wordStatOffsets[count++]);
       }
-    }
-    // write extra padding bytes
-    for (i=0;i<padding;i++) f.putch(0);
-    // write word statistics
-    for (i=0;i<numIndexEntries;i++)
-    {
-      QList<IndexWord> *wlist = m_index[i];
-      if (!wlist->isEmpty())
-      {
-        QListIterator<IndexWord> iwi(*wlist);
-        IndexWord *iw;
-        for (iwi.toFirst();(iw=iwi.current());++iwi)
-        {
-          int numUrls = iw->urls().count();
-          writeInt(f,numUrls);
-          QIntDictIterator<URLInfo> uli(iw->urls());
-          URLInfo *ui;
-          for (uli.toFirst();(ui=uli.current());++uli)
-          {
-            writeInt(f,urlOffsets[ui->urlIdx]);
-            writeInt(f,ui->freq);
-          }
-        }
-      }
-    }
-    // write urls
-    QIntDictIterator<URL> udi(m_urls);
-    URL *url;
-    for (udi.toFirst();(url=udi.current());++udi)
-    {
-      writeString(f,url->name);
-      writeString(f,url->url);
+      putc(0, fp);
     }
   }
+  // write extra padding bytes
+  for (i=0;i<padding;i++) putc(0, fp);
+  // write word statistics
+  for (i=0;i<numIndexEntries;i++)
+  {
+    QList<IndexWord> *wlist = m_index[i];
+    if (!wlist->isEmpty())
+    {
+      QListIterator<IndexWord> iwi(*wlist);
+      IndexWord *iw;
+      for (iwi.toFirst();(iw=iwi.current());++iwi)
+      {
+        int numUrls = iw->urls().count();
+        writeInt(fp, numUrls);
+        QIntDictIterator<URLInfo> uli(iw->urls());
+        URLInfo *ui;
+        for (uli.toFirst();(ui=uli.current());++uli)
+        {
+          writeInt(fp, urlOffsets[ui->urlIdx]);
+          writeInt(fp, ui->freq);
+        }
+      }
+    }
+  }
+  // write urls
+  QIntDictIterator<URL> udi2(m_urls);
+  for (udi2.toFirst();(url=udi2.current());++udi2)
+  {
+    writeString(fp, url->name);
+    writeString(fp, url->url);
+  }
+
+  fflush(fp);
+  if (ferror(fp) || fclose(fp))
+    errx(1, "write to search index failed");
 
   delete[] urlOffsets;
   delete[] wordStatOffsets;

@@ -1190,12 +1190,12 @@ void FileDef::insertNamespace(NamespaceDef *nd)
   }
 }
 
-QCString FileDef::name() const 
+const QCString& FileDef::name() const
 { 
-  if (Config_getBool("FULL_PATH_NAMES")) 
-    return m_fileName; 
-  else 
-    return Definition::name(); 
+  if (Doxygen::fullPathNames)
+    return m_fileName;
+  else
+    return Definition::name();
 } 
 
 void FileDef::addSourceRef(int line,Definition *d,MemberDef *md)

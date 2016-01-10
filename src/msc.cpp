@@ -156,7 +156,7 @@ error:
 QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
                                 const QCString& relPath,const QCString& context)
 {
-  QCString outFile = inFile + ".map";
+  QCString outFile = inFile + ".dot.cmapx";
 
 
   //printf("*** running:getMscImageMapFromFile \n");
@@ -199,7 +199,7 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
 			      MscOutputFormat format
  			    )
 {
-  QCString mapName = baseName+".map";
+  QCString mapName = baseName+".dot.cmapx";
   t << "<img src=\"" << relPath << baseName << ".";
   switch (format)
   {

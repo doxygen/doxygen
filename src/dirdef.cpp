@@ -20,7 +20,7 @@ static int g_dirCount=0;
 
 DirDef::DirDef(const char *path) : Definition(path,1,1,path), visited(FALSE)
 {
-  bool fullPathNames = Config_getBool("FULL_PATH_NAMES");
+  bool fullPathNames = Doxygen::fullPathNames;
   // get display name (stipping the paths mentioned in STRIP_FROM_PATH)
   // get short name (last part of path)
   m_shortName = path;
@@ -620,16 +620,35 @@ bool DirDef::depGraphIsTrivial() const
 int FilePairDict::compareValues(const FilePair *left,const FilePair *right) const
 {
   int orderHi = qstricmp(left->source()->name(),right->source()->name());
+  if (orderHi != 0)
+    return orderHi;
   int orderLo = qstricmp(left->destination()->name(),right->destination()->name());
-  return orderHi==0 ? orderLo : orderHi;
+  return orderLo;
+}
+
+//----------------------------------------------------------------------
+
+FilePair* FilePairList::find(const QCString &n)
+{
+  std::map<QCString, FilePair>::iterator it = m_map.find(n);
+  if (it == m_map.end())
+    return NULL;
+  return &(*it).second;
+}
+
+void FilePairList::insert(const QCString str, FilePair pair)
+{
+  if (!m_map.insert(std::pair<QCString, FilePair>(str, pair)).second) {
+    printf("ERROR, duplicate in FilePairList::insert\n");
+    abort();
+  }
 }
 
 //----------------------------------------------------------------------
 
 UsedDir::UsedDir(DirDef *dir,bool inherited) :
-   m_dir(dir), m_filePairs(7), m_inherited(inherited)
+   m_dir(dir), m_inherited(inherited)
 {
-  m_filePairs.setAutoDelete(TRUE);
 }
 
 UsedDir::~UsedDir()
@@ -639,8 +658,9 @@ UsedDir::~UsedDir()
 
 void UsedDir::addFileDep(FileDef *srcFd,FileDef *dstFd)
 {
-  m_filePairs.inSort(srcFd->getOutputFileBase()+dstFd->getOutputFileBase(),
-                     new FilePair(srcFd,dstFd));
+  m_filePairs.insert(
+    srcFd->getOutputFileBase()+dstFd->getOutputFileBase(),
+    FilePair(srcFd,dstFd));
 }
 
 FilePair *UsedDir::findFilePair(const char *name)
@@ -763,16 +783,16 @@ void DirRelation::writeDocumentation(OutputList &ol)
   ol.writeString("</th>");
   ol.writeString("</tr>");
 
-  SDict<FilePair>::Iterator fpi(m_dst->filePairs());
-  FilePair *fp;
-  for (fpi.toFirst();(fp=fpi.current());++fpi)
+  const std::map<const QCString, FilePair>& fpl = m_dst->filePairs().m_map;
+  for (std::map<QCString, FilePair>::const_iterator fpi = fpl.begin(); fpi != fpl.end(); ++fpi)
   {
+    const FilePair &fp = (*fpi).second;
     ol.writeString("<tr class=\"dirtab\">");
     ol.writeString("<td class=\"dirtab\">");
-    writePartialFilePath(ol,m_src,fp->source());
+    writePartialFilePath(ol,m_src,fp.source());
     ol.writeString("</td>");
     ol.writeString("<td class=\"dirtab\">");
-    writePartialFilePath(ol,m_dst->dir(),fp->destination());
+    writePartialFilePath(ol,m_dst->dir(),fp.destination());
     ol.writeString("</td>");
     ol.writeString("</tr>");
   }
