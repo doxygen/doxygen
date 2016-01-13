@@ -114,7 +114,7 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
 
     if (hasCaption)
     {
-      t << "\n\\caption{";
+      t << "\n\\doxyfigcaption{";
     }
 }
 
@@ -947,7 +947,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
   if (t->hasCaption())
   {
     DocHtmlCaption *c = t->caption();
-    m_t << "\\caption{";
+    m_t << "\\doxyfigcaption{";
     visitCaption(this, c->children());
     m_t << "}";
     m_t << "\\label{" << stripPath(c->file()) << "_" << c->anchor() << "}";
