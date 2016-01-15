@@ -947,7 +947,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
   if (t->hasCaption())
   {
     DocHtmlCaption *c = t->caption();
-    m_t << "\\doxyfigcaption{";
+    m_t << "\\caption{";
     visitCaption(this, c->children());
     m_t << "}";
     m_t << "\\label{" << stripPath(c->file()) << "_" << c->anchor() << "}";
