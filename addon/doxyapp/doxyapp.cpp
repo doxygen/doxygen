@@ -262,28 +262,28 @@ int main(int argc,char **argv)
   // setup the non-default configuration options
 
   // we need a place to put intermediate files
-  Config_getString("OUTPUT_DIRECTORY")="/tmp/doxygen"; 
+  Config_getString(OUTPUT_DIRECTORY)="/tmp/doxygen"; 
   // disable html output
-  Config_getBool("GENERATE_HTML")=FALSE;
+  Config_getBool(GENERATE_HTML)=FALSE;
   // disable latex output
-  Config_getBool("GENERATE_LATEX")=FALSE;
+  Config_getBool(GENERATE_LATEX)=FALSE;
   // be quiet
-  Config_getBool("QUIET")=TRUE;
+  Config_getBool(QUIET)=TRUE;
   // turn off warnings
-  Config_getBool("WARNINGS")=FALSE;
-  Config_getBool("WARN_IF_UNDOCUMENTED")=FALSE;
-  Config_getBool("WARN_IF_DOC_ERROR")=FALSE;
+  Config_getBool(WARNINGS)=FALSE;
+  Config_getBool(WARN_IF_UNDOCUMENTED)=FALSE;
+  Config_getBool(WARN_IF_DOC_ERROR)=FALSE;
   // Extract as much as possible
-  Config_getBool("EXTRACT_ALL")=TRUE;
-  Config_getBool("EXTRACT_STATIC")=TRUE;
-  Config_getBool("EXTRACT_PRIVATE")=TRUE;
-  Config_getBool("EXTRACT_LOCAL_METHODS")=TRUE;
+  Config_getBool(EXTRACT_ALL)=TRUE;
+  Config_getBool(EXTRACT_STATIC)=TRUE;
+  Config_getBool(EXTRACT_PRIVATE)=TRUE;
+  Config_getBool(EXTRACT_LOCAL_METHODS)=TRUE;
   // Extract source browse information, needed 
   // to make doxygen gather the cross reference info
-  Config_getBool("SOURCE_BROWSER")=TRUE;
+  Config_getBool(SOURCE_BROWSER)=TRUE;
 
   // set the input
-  Config_getList("INPUT").append(argv[1]);
+  Config_getList(INPUT).append(argv[1]);
 
   // check and finialize the configuration
   checkConfiguration();
