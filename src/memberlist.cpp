@@ -76,7 +76,7 @@ MemberList::~MemberList()
 
 int MemberList::compareValues(const MemberDef *c1, const MemberDef *c2) const
 {
-  static bool sortConstructorsFirst = Config_getBool("SORT_MEMBERS_CTORS_1ST");
+  static bool sortConstructorsFirst = Config_getBool(SORT_MEMBERS_CTORS_1ST);
   if (sortConstructorsFirst) {
     int ord1 = c1->isConstructor() ? 2 : (c1->isDestructor() ? 1 : 0);
     int ord2 = c2->isConstructor() ? 2 : (c2->isDestructor() ? 1 : 0);
@@ -169,7 +169,7 @@ void MemberList::countDecMembers(bool countEnumValues,GroupDef *gd)
                                      break;
         case MemberType_Typedef:     m_typeCnt++,m_numDecMembers++; break;
         //case MemberType_Prototype:   m_protoCnt++,m_numDecMembers++; break;
-        case MemberType_Define:      if (Config_getBool("EXTRACT_ALL") || 
+        case MemberType_Define:      if (Config_getBool(EXTRACT_ALL) || 
                                          md->argsString() || 
                                          !md->initializer().isEmpty() ||
                                          md->hasDocumentation() 
@@ -324,7 +324,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                       )
 {
   //printf("----- writePlainDeclaration() ----\n");
-  static bool hideUndocMembers = Config_getBool("HIDE_UNDOC_MEMBERS");
+  static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
   countDecMembers();
   if (numDecMembers()==0) 
   {
@@ -410,7 +410,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               {
                 ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
               }
-              if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
+              if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
                 DocRoot *rootNode = validatingParseDoc(
                     md->briefFile(),md->briefLine(),
@@ -524,7 +524,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   (void)showEnumValues; // unused
 
   //printf("----- writeDeclaration() this=%p ---- inheritedFrom=%p\n",this,inheritedFrom);
-  static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  static bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   QCString inheritId;
 
   countDecMembers(/*showEnumValues*/FALSE,gd); // count members shown in this section
@@ -715,7 +715,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
 void MemberList::writeDocumentationPage(OutputList &ol,
                      const char *scopeName, Definition *container)
 {
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   MemberListIterator mli(*this);
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)

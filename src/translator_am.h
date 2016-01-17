@@ -65,7 +65,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Դաշտեր";
       }
@@ -139,7 +139,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Տվյալների կառուցվածք";
       }
@@ -156,7 +156,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Տվյալների դաշտեր";
       }
@@ -170,7 +170,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*??*/
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Գլոբալներ";
       }
@@ -210,7 +210,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Տվյալների կառուցվածքը` կարճ բացատրություններով.";
       }
@@ -226,7 +226,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     {
         QCString result="Բոլոր ";
         if(!extractAll) result+="փաստագրված ";
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
           result+="կառուցվածքների և միավորումների դաշտերի ";
         else
           result+="դասի անդամների ";
@@ -234,14 +234,14 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 		result+=" հղումներով դեպի ";
         if(!extractAll)
         {
-          if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
             result+="կառուցվածք/միավորում փաստագրությունները բոլոր անդամների համար.";
           else
             result+="դասի փաստագրությունը բոլոր անդամների համար.";
         }
         else
         {
-          if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
             result += "կառուցվածքները/միավորումները, որոնց նրանք պատկանում են.";
           else
             result += "դասերը, որոնց նրանք պատկանում են.";
@@ -255,7 +255,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       QCString result="Բոլոր ";
       if (!extractAll) result+="փաստագրված ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="ֆունկցիաների, փոփոխականների, մակրո-հայտարարությունների, "
                 "համարակալումների և տիպի սահմանումների (typedef)";
@@ -309,7 +309,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Տվյալների կառուցվածք";
       }
@@ -336,7 +336,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Տվյալների կառուցվածքներ";
       }
@@ -439,7 +439,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Տվյալների կառուցվածք";
       }
@@ -865,7 +865,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Տվյալների դաշտեր";
       }
@@ -1062,7 +1062,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Տվյալների կառուցվածք";
       }
@@ -1137,7 +1137,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trClass(bool first_capital, bool singular)
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         QCString result((first_capital ? "Տվյալների կառուցվածք" : "տվյալների կառուցվածք"));
         return result;

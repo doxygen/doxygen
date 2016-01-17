@@ -1074,7 +1074,7 @@ private                                 {
 					   current->docLine  = yyLineNr;
  					   docBlockJavaStyle = FALSE;
 					   docBlock.resize(0);
-					   docBlockJavaStyle = Config_getBool("JAVADOC_AUTOBRIEF");
+					   docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
 					   startCommentBlock(TRUE);
                                            yy_push_state(DocBackLine);
                                           }
@@ -1129,7 +1129,7 @@ private                                 {
  					  docBlockJavaStyle = FALSE;
 					  if (YY_START==SubprogBody) docBlockInBody = TRUE;
 					  docBlock.resize(0);
-					  docBlockJavaStyle = Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
 					  startCommentBlock(TRUE);
 					  BEGIN(DocBlock);
                                           //cout << "start DocBlock " << endl;
@@ -2267,7 +2267,7 @@ static void startCommentBlock(bool brief)
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
   bool needsEntry = FALSE;
-  static bool hideInBodyDocs = Config_getBool("HIDE_IN_BODY_DOCS");
+  static bool hideInBodyDocs = Config_getBool(HIDE_IN_BODY_DOCS);
   int position=0;
   if (docBlockInBody && hideInBodyDocs)
   {

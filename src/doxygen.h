@@ -1,8 +1,5 @@
 /******************************************************************************
  *
- *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its

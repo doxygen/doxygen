@@ -755,7 +755,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Podatkovne strukture";
       }

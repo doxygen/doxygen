@@ -438,7 +438,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   Definition *d,
                   const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -1388,7 +1388,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
    			       }
 <DocBlock>{NEWLINE}            { // comment block ends at the end of this line
                                  // remove special comment (default config)
-				 if (Config_getBool("STRIP_CODE_COMMENTS"))
+				 if (Config_getBool(STRIP_CODE_COMMENTS))
 				 {
 				    g_yyLineNr+=((QCString)g_docBlock).contains('\n');
 				    g_endComment=TRUE;
@@ -1457,7 +1457,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
 <*><<EOF>>                     {
                                  if (YY_START == DocBlock) {
-                                   if (!Config_getBool("STRIP_CODE_COMMENTS"))
+                                   if (!Config_getBool(STRIP_CODE_COMMENTS))
                                    {
                                      startFontClass("comment");
                                      codifyLines(g_docBlock);

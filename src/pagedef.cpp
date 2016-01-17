@@ -34,7 +34,7 @@ PageDef::PageDef(const char *f,int l,const char *n,
   m_subPageDict = new PageSDict(7);
   m_pageScope = 0;
   m_nestingLevel = 0;
-  static bool shortNames = Config_getBool("SHORT_NAMES");
+  static bool shortNames = Config_getBool(SHORT_NAMES);
   m_fileName = shortNames ? convertNameToFile(n) : QCString(n);
   m_showToc = FALSE;
 }
@@ -118,7 +118,7 @@ void PageDef::writeTagFile(FTextStream &tagFile)
 
 void PageDef::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
   //outputList->disable(OutputGenerator::Man);
   QCString pageName,manPageName;
@@ -154,7 +154,7 @@ void PageDef::writeDocumentation(OutputList &ol)
 
   if (!generateTreeView)
   {
-    if (getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
+    if (getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
     {
       getOuterScope()->writeNavigationPath(ol);
     }
@@ -204,7 +204,7 @@ void PageDef::writeDocumentation(OutputList &ol)
 
   writePageDocumentation(ol);
 
-  if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
+  if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
   {
     ol.endContents();
     endFileWithNavPath(getOuterScope(),ol);
@@ -281,7 +281,7 @@ void PageDef::writePageDocumentation(OutputList &ol)
 
 bool PageDef::visibleInIndex() const
 {
-  static bool externalPages = Config_getBool("EXTERNAL_PAGES");
+  static bool externalPages = Config_getBool(EXTERNAL_PAGES);
   return // not part of a group
          !getGroupDef() && 
          // not an externally defined page

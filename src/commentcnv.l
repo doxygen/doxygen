@@ -134,7 +134,7 @@ static void replaceCommentMarker(const char *s,int len)
 static inline int computeIndent(const char *s)
 {
   int col=0;
-  static int tabSize=Config_getInt("TAB_SIZE");
+  static int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -164,7 +164,7 @@ static inline void copyToOutput(const char *s,int len)
   else if (len>0)
   {
     ADDARRAY(s,len);
-    static int tabSize=Config_getInt("TAB_SIZE");
+    static int tabSize=Config_getInt(TAB_SIZE);
     for (i=0;i<len;i++) 
     {
       switch (s[i])
@@ -983,7 +983,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_outBuf   = outBuf;
   g_inBufPos = 0;
   g_col      = 0;
-  g_mlBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
+  g_mlBrief = Config_getBool(MULTILINE_CPP_IS_BRIEF);
   g_skip     = FALSE;
   g_fileName = fileName;
   g_lang = getLanguageFromFileName(fileName);

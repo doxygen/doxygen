@@ -53,12 +53,12 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
 
 void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutputFormat format)
 {
-  static QCString plantumlJarPath = Config_getString("PLANTUML_JAR_PATH");
+  static QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
 
   QCString pumlExe = "java";
   QCString pumlArgs = "";
 
-  QStrList &pumlIncludePathList = Config_getList("PLANTUML_INCLUDE_PATH");
+  QStrList &pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
   char *s=pumlIncludePathList.first();
   if (s)
   {
@@ -106,12 +106,12 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
     err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
         plantumlJarPath.data(),exitCode);
   }
-  else if (Config_getBool("DOT_CLEANUP"))
+  else if (Config_getBool(DOT_CLEANUP))
   {
     QFile(QCString(baseName)+".pu").remove();
   }
   portable_sysTimerStop();
-  if ( (format==PUML_EPS) && (Config_getBool("USE_PDFLATEX")) )
+  if ( (format==PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",baseName,baseName);

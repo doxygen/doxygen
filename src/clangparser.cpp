@@ -64,7 +64,7 @@ class ClangParser::Private
 
 static QCString detab(const QCString &s)
 {
-  static int tabSize = Config_getInt("TAB_SIZE");
+  static int tabSize = Config_getInt(TAB_SIZE);
   GrowBuf out;
   int size = s.length();
   const char *data = s.data();
@@ -157,9 +157,9 @@ void ClangParser::determineInputFilesInSameTu(QStrList &files)
 
 void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
 {
-  static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
-  static QStrList &includePath = Config_getList("INCLUDE_PATH");
-  static QStrList clangOptions = Config_getList("CLANG_OPTIONS");
+  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+  static QStrList &includePath = Config_getList(INCLUDE_PATH);
+  static QStrList clangOptions = Config_getList(CLANG_OPTIONS);
   if (!clangAssistedParsing) return;
   //printf("ClangParser::start(%s)\n",fileName);
   p->fileName = fileName;
@@ -230,7 +230,7 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   // provide the input and and its dependencies as unsaved files so we can
   // pass the filtered versions
   argv[argc++]=strdup(fileName);
-  static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
+  static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   //printf("source %s ----------\n%s\n-------------\n\n",
   //    fileName,p->source.data());
   uint numUnsavedFiles = filesInTranslationUnit.count()+1;
@@ -339,7 +339,7 @@ void ClangParser::switchToFile(const char *fileName)
 
 void ClangParser::finish()
 {
-  static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
+  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return;
   if (p->tu)
   {
@@ -381,7 +381,7 @@ QCString ClangParser::lookup(uint line,const char *symbol)
   //printf("ClangParser::lookup(%d,%s)\n",line,symbol);
   QCString result;
   if (symbol==0) return result;
-  static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
+  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return result;
 
   int sl = strlen(symbol);
@@ -615,7 +615,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   Definition *d,
                   const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();

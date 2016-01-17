@@ -282,20 +282,20 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
       switch(type)
       {
         case DocImage::Html:
-	  if (!Config_getBool("GENERATE_HTML")) return result;
-	  outputDir = Config_getString("HTML_OUTPUT");
+	  if (!Config_getBool(GENERATE_HTML)) return result;
+	  outputDir = Config_getString(HTML_OUTPUT);
 	  break;
         case DocImage::Latex:
-	  if (!Config_getBool("GENERATE_LATEX")) return result;
-	  outputDir = Config_getString("LATEX_OUTPUT");
+	  if (!Config_getBool(GENERATE_LATEX)) return result;
+	  outputDir = Config_getString(LATEX_OUTPUT);
 	  break;
         case DocImage::DocBook:
-	  if (!Config_getBool("GENERATE_DOCBOOK")) return result;
-	  outputDir = Config_getString("DOCBOOK_OUTPUT");
+	  if (!Config_getBool(GENERATE_DOCBOOK)) return result;
+	  outputDir = Config_getString(DOCBOOK_OUTPUT);
 	  break;
         case DocImage::Rtf:
-	  if (!Config_getBool("GENERATE_RTF")) return result;
-	  outputDir = Config_getString("RTF_OUTPUT");
+	  if (!Config_getBool(GENERATE_RTF)) return result;
+	  outputDir = Config_getString(RTF_OUTPUT);
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
@@ -336,11 +336,11 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
 	  "could not open image %s",qPrint(fileName));
     }
 
-    if (type==DocImage::Latex && Config_getBool("USE_PDFLATEX") && 
+    if (type==DocImage::Latex && Config_getBool(USE_PDFLATEX) && 
 	fd->name().right(4)==".eps"
        )
     { // we have an .eps image in pdflatex mode => convert it to a pdf.
-      QCString outputDir = Config_getString("LATEX_OUTPUT");
+      QCString outputDir = Config_getString(LATEX_OUTPUT);
       QCString baseName  = fd->name().left(fd->name().length()-4);
       QCString epstopdfArgs(4096);
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
@@ -385,7 +385,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
  */
 static void checkArgumentName(const QCString &name,bool isParam)
 {                
-  if (!Config_getBool("WARN_IF_DOC_ERROR")) return;
+  if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0) return; // not a member
   ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
 		   g_memberDef->argumentList() :
@@ -454,7 +454,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
  */
 static void checkUndocumentedParams()
 {
-  if (g_memberDef && g_hasParamCommand && Config_getBool("WARN_IF_DOC_ERROR"))
+  if (g_memberDef && g_hasParamCommand && Config_getBool(WARN_IF_DOC_ERROR))
   {
     ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
       g_memberDef->argumentList() :
@@ -526,7 +526,7 @@ static void checkUndocumentedParams()
  */
 static void detectNoDocumentedParams()
 {
-  if (g_memberDef && Config_getBool("WARN_NO_PARAMDOC"))
+  if (g_memberDef && Config_getBool(WARN_NO_PARAMDOC))
   {
     ArgumentList *al     = g_memberDef->argumentList();
     ArgumentList *declAl = g_memberDef->declArgumentList();
@@ -1054,7 +1054,7 @@ static void handleUnclosedStyleCommands()
 static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignoreAutoLinkFlag=FALSE)
 {
   QCString name = linkToText(SrcLangExt_Unknown,g_token->name,TRUE);
-  static bool autolinkSupport = Config_getBool("AUTOLINK_SUPPORT");
+  static bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
   if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
   {
     children.append(new DocWord(parent,name));
@@ -1760,11 +1760,11 @@ static void readTextFileByName(const QCString &file,QCString &text)
     QFileInfo fi(file);
     if (fi.exists())
     {
-      text = fileToString(file,Config_getBool("FILTER_SOURCE_FILES"));
+      text = fileToString(file,Config_getBool(FILTER_SOURCE_FILES));
       return;
     }
   }
-  QStrList &examplePathList = Config_getList("EXAMPLE_PATH");
+  QStrList &examplePathList = Config_getList(EXAMPLE_PATH);
   char *s=examplePathList.first();
   while (s)
   {
@@ -1772,7 +1772,7 @@ static void readTextFileByName(const QCString &file,QCString &text)
     QFileInfo fi(absFileName);
     if (fi.exists())
     {
-      text = fileToString(absFileName,Config_getBool("FILTER_SOURCE_FILES"));
+      text = fileToString(absFileName,Config_getBool(FILTER_SOURCE_FILES));
       return;
     }
     s=examplePathList.next(); 
@@ -1783,7 +1783,7 @@ static void readTextFileByName(const QCString &file,QCString &text)
   FileDef *fd;
   if ((fd=findFileDef(Doxygen::exampleNameDict,file,ambig)))
   {
-    text = fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES"));
+    text = fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
   }
   else if (ambig)
   {
@@ -2162,10 +2162,10 @@ bool DocXRefItem::parse()
   if (refList && 
       (
        // either not a built-in list or the list is enabled
-       (m_key!="todo"       || Config_getBool("GENERATE_TODOLIST")) && 
-       (m_key!="test"       || Config_getBool("GENERATE_TESTLIST")) && 
-       (m_key!="bug"        || Config_getBool("GENERATE_BUGLIST"))  && 
-       (m_key!="deprecated" || Config_getBool("GENERATE_DEPRECATEDLIST"))
+       (m_key!="todo"       || Config_getBool(GENERATE_TODOLIST)) && 
+       (m_key!="test"       || Config_getBool(GENERATE_TESTLIST)) && 
+       (m_key!="bug"        || Config_getBool(GENERATE_BUGLIST))  && 
+       (m_key!="deprecated" || Config_getBool(GENERATE_DEPRECATEDLIST))
       ) 
      )
   {
@@ -2599,7 +2599,7 @@ void DocRef::parse()
 
 DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //context)
 {
-  static uint numBibFiles = Config_getList("CITE_BIB_FILES").count();
+  static uint numBibFiles = Config_getList(CITE_BIB_FILES).count();
   m_parent = parent;
   //printf("DocCite::DocCite(target=%s)\n",target.data());
   ASSERT(!target.isEmpty());
@@ -5543,7 +5543,7 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_STARTUML:
       {
-        static QCString jarPath = Config_getString("PLANTUML_JAR_PATH");
+        static QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         doctokenizerYYsetStatePlantUMLOpt();
         retval = doctokenizerYYlex();
         QCString plantFile(g_token->sectionId);
@@ -5964,7 +5964,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         {
           if (paramName.isEmpty())
           {
-            if (Config_getBool("WARN_NO_PARAMDOC"))
+            if (Config_getBool(WARN_NO_PARAMDOC))
             {
               warn_doc_error(g_fileName,doctokenizerYYlineno,"empty 'name' attribute for <param%s> tag.",tagId==XML_PARAM?"":"type");
             }
@@ -7190,7 +7190,7 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   //g_token = new TokenInfo;
 
   // store parser state so we can re-enter this function if needed
-  //bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   docParserPushContext();
 
   if (ctx && ctx!=Doxygen::globalScope &&

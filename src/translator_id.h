@@ -87,7 +87,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Dokumentasi Variabel";
       }
@@ -154,7 +154,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Struktur Data";
       }
@@ -171,7 +171,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Variabel Data";
       }
@@ -184,7 +184,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Daftar Definisi Global";
       }
@@ -225,7 +225,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Berikut ini daftar struktur data, dengan penjelasan singkat:";
       }
@@ -239,7 +239,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
       QCString result="Berikut ini daftar seluruh ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="variabel anggota struct dan union";
       }
@@ -254,7 +254,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       result+=", dengan tautan ke ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="dokumentasi struct/union untuk setiap variabel:";
         }
@@ -265,7 +265,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="struct/union yang memuatnya:";
         }
@@ -282,7 +282,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     {
       QCString result="Berikut ini daftar ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="fungsi, variabel, makro definisi, enumerasi, dan tipe";
       }
@@ -334,7 +334,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Indeks Struktur Data";
       }
@@ -361,7 +361,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Dokumentasi Struktur Data";
       }
@@ -464,7 +464,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Struktur Data";
       }
@@ -873,7 +873,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Variabel Data";
       }
@@ -1067,7 +1067,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Struktur Data";
       }

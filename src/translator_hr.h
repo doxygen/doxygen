@@ -134,7 +134,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Stablo klasa"; }
     QCString trCompoundList()
 	{
-		if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
 		{
 			return "Sve strukture";
 		}
@@ -147,7 +147,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Popis datoteka"; }
     QCString trCompoundMembers()
 	{
-		if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
 			return "Svi članovi struktura";
 		else
 			return "Svi članovi klasa";
@@ -181,7 +181,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       if (!extractAll)
 		  result+="dokumentiranih ";
 
-	  if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+	  if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
 		  result+="članova klasa s linkovima na ";
 	  else
 		  result+="članova struktura s linkovima na ";
@@ -192,7 +192,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       }
 	  else
 	  {
-		  if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+		  if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
 			  result+="dokumentaciju klase :";
 		  else
 			  result +="dokumentaciju strukture";
@@ -226,7 +226,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Hijerarhijsko kazalo"; }
     QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Kazalo struktura podataka";
       }
@@ -241,7 +241,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Dokumentacija modula"; }
     QCString trClassDocumentation()
     {
-		if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
 		{
 			return "Dokumentacija struktura podataka";
 		}

@@ -37,7 +37,7 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
   // go to the html output directory (i.e. path)
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
-  QCString diaExe = Config_getString("DIA_PATH")+"dia"+portable_commandExtension();
+  QCString diaExe = Config_getString(DIA_PATH)+"dia"+portable_commandExtension();
   QCString diaArgs;
   QCString extension;
   diaArgs+="-n ";
@@ -69,7 +69,7 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
     goto error;
   }
   portable_sysTimerStop();
-  if ( (format==DIA_EPS) && (Config_getBool("USE_PDFLATEX")) )
+  if ( (format==DIA_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",

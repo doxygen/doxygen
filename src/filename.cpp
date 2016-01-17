@@ -130,7 +130,7 @@ void FileNameList::generateDiskNames()
 
 int FileNameList::compareValues(const FileName *f1, const FileName *f2) const
 {
-  return Config_getBool("FULL_PATH_NAMES") ?
+  return Config_getBool(FULL_PATH_NAMES) ?
          qstricmp(f1->fullName(),f2->fullName()) :
          qstricmp(f1->fileName(),f2->fileName());
 }
@@ -142,7 +142,7 @@ FileNameListIterator::FileNameListIterator(const FileNameList &fnlist) :
 
 static bool getCaseSenseNames()
 {
-  static bool caseSenseNames = Config_getBool("CASE_SENSE_NAMES");
+  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
   return caseSenseNames;
 }
 

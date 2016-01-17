@@ -37,9 +37,9 @@ static FILE *warnFile = stderr;
 
 void initWarningFormat()
 {
-//  int filePos = Config_getString("WARN_FORMAT").find("$file");
-//  int linePos = Config_getString("WARN_FORMAT").find("$line");
-//  int textPos = Config_getString("WARN_FORMAT").find("$text");
+//  int filePos = Config_getString(WARN_FORMAT).find("$file");
+//  int linePos = Config_getString(WARN_FORMAT).find("$line");
+//  int textPos = Config_getString(WARN_FORMAT).find("$text");
 //
 //  // sort items on position (there are 6 cases)
 //  warnFormatOrder = 1;
@@ -73,7 +73,7 @@ void initWarningFormat()
 //      substitute(
 //        substitute(
 //          substitute(
-//            Config_getString("WARN_FORMAT"),
+//            Config_getString(WARN_FORMAT),
 //           "$file","%s"
 //          ),
 //          "$text","%s"
@@ -86,18 +86,18 @@ void initWarningFormat()
   //    replace(QRegExp("\\$line"),"%d")+
   //    '\n';
 
-  outputFormat = Config_getString("WARN_FORMAT");
+  outputFormat = Config_getString(WARN_FORMAT);
 
-  if (!Config_getString("WARN_LOGFILE").isEmpty())
+  if (!Config_getString(WARN_LOGFILE).isEmpty())
   {
-    warnFile = portable_fopen(Config_getString("WARN_LOGFILE"),"w");
+    warnFile = portable_fopen(Config_getString(WARN_LOGFILE),"w");
   }
   if (!warnFile) // point it to something valid, because warn() relies on it
   {
     warnFile = stderr;
   }
 
-  if (Config_getBool("WARN_AS_ERROR"))
+  if (Config_getBool(WARN_AS_ERROR))
   {
     warning_str = error_str;
   }
@@ -106,7 +106,7 @@ void initWarningFormat()
 
 void msg(const char *fmt, ...)
 {
-  if (!Config_getBool("QUIET"))
+  if (!Config_getBool(QUIET))
   {
     if (Debug::isFlagSet(Debug::Time))
     {
@@ -135,7 +135,7 @@ static void format_warn(const char *file,int line,const char *text)
     }
   }
   // substitute markers by actual values
-  bool warnAsError = Config_getBool("WARN_AS_ERROR");
+  bool warnAsError = Config_getBool(WARN_AS_ERROR);
   QCString msgText =
       substitute(
         substitute(
@@ -164,9 +164,9 @@ static void format_warn(const char *file,int line,const char *text)
   }
 }
 
-static void do_warn(const char *tag, const char *file, int line, const char *prefix, const char *fmt, va_list args)
+static void do_warn(bool enabled, const char *file, int line, const char *prefix, const char *fmt, va_list args)
 {
-  if (tag && !Config_getBool(tag)) return; // warning type disabled
+  if (!enabled) return; // warning type disabled
   const int bufSize = 40960;
   char text[bufSize];
   int l=0;
@@ -184,18 +184,18 @@ void warn(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn("WARNINGS", file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARNINGS), file, line, warning_str, fmt, args);
   va_end(args);
 }
 
 void va_warn(const char *file,int line,const char *fmt,va_list args)
 {
-  do_warn("WARNINGS", file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARNINGS), file, line, warning_str, fmt, args);
 }
 
 void warn_simple(const char *file,int line,const char *text)
 {
-  if (!Config_getBool("WARNINGS")) return; // warning type disabled
+  if (!Config_getBool(WARNINGS)) return; // warning type disabled
   format_warn(file,line,QCString(warning_str) + text);
 }
 
@@ -203,7 +203,7 @@ void warn_undoc(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn("WARN_IF_UNDOCUMENTED", file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARN_IF_UNDOCUMENTED), file, line, warning_str, fmt, args);
   va_end(args);
 }
 
@@ -211,7 +211,7 @@ void warn_doc_error(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn("WARN_IF_DOC_ERROR", file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARN_IF_DOC_ERROR), file, line, warning_str, fmt, args);
   va_end(args);
 }
 
@@ -235,7 +235,7 @@ extern void err_full(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn(NULL, file, line, error_str, fmt, args);
+  do_warn(TRUE, file, line, error_str, fmt, args);
   va_end(args);
 }
 

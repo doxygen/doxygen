@@ -705,7 +705,7 @@ void VhdlParser::mapLibPackage( Entry* root)
 
 bool VhdlParser::addLibUseClause(const QCString &type)
 {
-  static bool showIEEESTD=Config_getBool("FORCE_LOCAL_INCLUDES");
+  static bool showIEEESTD=Config_getBool(FORCE_LOCAL_INCLUDES);
 
   if (showIEEESTD) // all standard packages and libraries will not be shown
   {

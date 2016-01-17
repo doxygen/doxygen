@@ -120,7 +120,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Field مستندات";
       }
@@ -187,7 +187,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "ساختار های داده ";
       }
@@ -204,7 +204,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "فضاهای داده ها";
       }
@@ -217,7 +217,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Globals";
       }
@@ -257,7 +257,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "ليست ساختارهای داده به همراه توضيحی کوتاه :";
       }
@@ -280,7 +280,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         result+="همه ی اعضاء ";
       }
       result+=" به همراه ارتباطشان با ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="ساختارهای داده ";
       }
@@ -289,7 +289,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         result+="كلاس ها ";
       }
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
           result+="و مستندات ساختار داده برای هر عضو ";
       }
@@ -348,7 +348,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "فهرست ساختار داده ها";
       }
@@ -375,7 +375,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "مستندات ساختار داده ها";
       }
@@ -484,7 +484,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "ساختارهای داده";
       }
@@ -889,7 +889,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "فضاهای داده ها";
       }
@@ -1084,7 +1084,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "ساختار های داده";
       }

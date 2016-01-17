@@ -5710,7 +5710,7 @@ QCString VhdlParser::library_clause() {QCString s;if (!hasError) {
     
     }
     
-if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
+if ( parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
                    {
                            addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::LIBRARY,s.data(),"_library_",Public);
                    }
@@ -10397,7 +10397,7 @@ QStringList ql1=QStringList::split(",",s,FALSE);
                    {
                     QStringList ql=QStringList::split(".",ql1[j],FALSE);
                     QCString it=ql[1].utf8();
-                     if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
+                     if ( parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
                      {
                        VhdlParser::addVhdlType(it.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_",Public);
                      }

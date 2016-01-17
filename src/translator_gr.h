@@ -92,7 +92,7 @@ class TranslatorGreek : public Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Τεκμηρίωση Πεδίων";
       }
@@ -159,7 +159,7 @@ class TranslatorGreek : public Translator
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Δομές Δεδομένων";
       }
@@ -176,7 +176,7 @@ class TranslatorGreek : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Μέλη Δομών Δεδομένων";
       }
@@ -189,7 +189,7 @@ class TranslatorGreek : public Translator
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Καθολικοί ορισμοί";
       }
@@ -228,7 +228,7 @@ class TranslatorGreek : public Translator
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Ακολουθούν οι δομές δεδομένων με σύντομες περιγραφές:";
       }
@@ -247,7 +247,7 @@ class TranslatorGreek : public Translator
       {
         result+="τεκμηριωμένων ";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="μελών δομών δεδομένων και ενώσεων ";
       }
@@ -258,7 +258,7 @@ class TranslatorGreek : public Translator
       result+=" με συνδέσμους ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="στην τεκμηρίωση των δομών/ενώσεων για κάθε πεδίο:";
         }
@@ -269,7 +269,7 @@ class TranslatorGreek : public Translator
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="στις δομές/ενώσεις που ανήκουν:";
         }
@@ -287,7 +287,7 @@ class TranslatorGreek : public Translator
       QCString result="Ακολουθεί η λίστα όλων των ";
       if (!extractAll) result+="τεκμηριωμένων ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="συναρτήσεων, μεταβλητών, ορισμών, απαριθμήσεων, και ορισμών τύπων";
       }
@@ -339,7 +339,7 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Ευρετήριο δομών δεδομένων";
       }
@@ -366,7 +366,7 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Τεκμηρίωση Δομών Δεδομένων";
       }
@@ -469,7 +469,7 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Δομές Δεδομένων";
       }
@@ -877,7 +877,7 @@ class TranslatorGreek : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Πεδία Δεδομένων";
       }
@@ -1075,7 +1075,7 @@ class TranslatorGreek : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Δομές Δεδομένων";
       }

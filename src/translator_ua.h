@@ -61,7 +61,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return  "Поля" ;
       }
@@ -136,7 +136,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return  "Структури даних" ;
       }
@@ -153,7 +153,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return  "Поля структур" ;
       }
@@ -200,7 +200,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return  "Структури даних з коротким описом." ;
       }
@@ -215,20 +215,20 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     {
         QCString result="Список всіх ";
         if(!extractAll) result+="документоаних ";
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
           result+="елементів структур даних з посиланням на ";
         else
           result+="елементів класів даних з посиланням на ";
         if(extractAll)
         {
-          if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
             result+="документацію по структурі/об'єднанню кожного елементу.";
           else
             result+="документацію по класу кожного елементу.";
         }
         else
         {
-          if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
             result += "відповідні структури";
           else
             result += "відповідні класи";
@@ -243,7 +243,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       QCString result="Список всіх ";
       if (!extractAll) result+="документованих ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="функцій, змінних, макровизначень, "
                 "переліків і визначень типів";
@@ -295,7 +295,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return  "Алфавітний покажчик структур даних" ;
       }
@@ -322,7 +322,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return  "Структури даних" ;
       }
@@ -425,7 +425,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return  "Структури даних" ;
       }
@@ -867,7 +867,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return  "Поля даних" ;
       }
@@ -1060,7 +1060,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return  "Структури даних" ;
       }
@@ -1135,7 +1135,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trClass(bool first_capital, bool singular)
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         QCString result((first_capital ? "Структури даних" : "структури даних"));
         return result;

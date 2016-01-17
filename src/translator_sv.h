@@ -118,7 +118,7 @@ class TranslatorSwedish : public Translator
 
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Fält dokumentation";
       }
@@ -171,7 +171,7 @@ class TranslatorSwedish : public Translator
 
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datastrukturer";
       }
@@ -186,7 +186,7 @@ class TranslatorSwedish : public Translator
 
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Data fält";
       }
@@ -198,7 +198,7 @@ class TranslatorSwedish : public Translator
 
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Globala symboler";
       }
@@ -233,7 +233,7 @@ class TranslatorSwedish : public Translator
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Här följer datastrukturerna med korta beskrivningar:";
       }
@@ -252,7 +252,7 @@ class TranslatorSwedish : public Translator
       {
         result+="dokumenterade ";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="struktur- och unions-fält";
       }
@@ -263,7 +263,7 @@ class TranslatorSwedish : public Translator
       result+=" med länkar till ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="struktur/unions-dokumentationen för varje fält:";
         }
@@ -274,7 +274,7 @@ class TranslatorSwedish : public Translator
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+=" strukturerna/unionerna de tillhör:";
         }
@@ -291,7 +291,7 @@ class TranslatorSwedish : public Translator
       QCString result="Här följer en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funktioner, variabler, definitioner, enumerationer "
                 "och typdefinitioner";
@@ -331,7 +331,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Index över datastrukturer";
       } else {
         return "Index över sammensatta typer";
@@ -349,7 +349,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Dokumentation över datastrukturer";
       }
@@ -405,7 +405,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datastrukturer";
       }
@@ -780,7 +780,7 @@ class TranslatorSwedish : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datafält";
       }
@@ -979,7 +979,7 @@ class TranslatorSwedish : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datastrukturer";
       }

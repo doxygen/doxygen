@@ -29,7 +29,7 @@
 #include <qstack.h>
 #include <qglobal.h>
   
-#include "config.h"
+#include "configimpl.h"
 #include "version.h"
 #include "portable.h"
 #include "util.h"
@@ -38,22 +38,9 @@
 #include "lang_cfg.h"
 #include "configoptions.h"
 
-#undef Config_getString
-#undef Config_getInt
-#undef Config_getList
-#undef Config_getEnum
-#undef Config_getBool
-
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-// use in-class definitions
-#define Config_getString(val)  getString(__FILE__,__LINE__,val)
-#define Config_getInt(val)     getInt(__FILE__,__LINE__,val)
-#define Config_getList(val)    getList(__FILE__,__LINE__,val)
-#define Config_getEnum(val)    getEnum(__FILE__,__LINE__,val)
-#define Config_getBool(val)    getBool(__FILE__,__LINE__,val)
-  
 static const char *warning_str = "warning: ";
 static const char *error_str = "error: ";
 
@@ -175,7 +162,7 @@ void ConfigOption::writeStringList(FTextStream &t,QStrList &l)
 /* -----------------------------------------------------------------
  */
 
-Config *Config::m_instance = 0;
+ConfigImpl *ConfigImpl::m_instance = 0;
 
 void ConfigInt::convertStrToVal() 
 {
@@ -216,7 +203,7 @@ void ConfigBool::convertStrToVal()
   }
 }
 
-QCString &Config::getString(const char *fileName,int num,const char *name) const
+QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
@@ -232,7 +219,7 @@ QCString &Config::getString(const char *fileName,int num,const char *name) const
   return *((ConfigString *)opt)->valueRef();
 }
 
-QStrList &Config::getList(const char *fileName,int num,const char *name) const
+QStrList &ConfigImpl::getList(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
@@ -248,7 +235,7 @@ QStrList &Config::getList(const char *fileName,int num,const char *name) const
   return *((ConfigList *)opt)->valueRef();
 }
 
-QCString &Config::getEnum(const char *fileName,int num,const char *name) const
+QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
@@ -264,7 +251,7 @@ QCString &Config::getEnum(const char *fileName,int num,const char *name) const
   return *((ConfigEnum *)opt)->valueRef();
 }
 
-int &Config::getInt(const char *fileName,int num,const char *name) const
+int &ConfigImpl::getInt(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
@@ -280,7 +267,7 @@ int &Config::getInt(const char *fileName,int num,const char *name) const
   return *((ConfigInt *)opt)->valueRef();
 }
 
-bool &Config::getBool(const char *fileName,int num,const char *name) const
+bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
@@ -439,10 +426,8 @@ static QStrList          includePathList;
 static QStack<ConfigFileState> includeStack;  
 static int               includeDepth;
 static bool              config_upd = FALSE;
-
-static QCString     encoding;
-
-static Config      *config;
+static QCString          encoding;
+static ConfigImpl       *config;
 
 /* -----------------------------------------------------------------
  */
@@ -858,7 +843,7 @@ static void readIncludeFile(const char *incName)
 /*@ ----------------------------------------------------------------------------
  */
 
-void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
+void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
 {
   /* print first lines of user comment that were at the beginning of the file, might have special meaning for editors */
   if (m_startComment)
@@ -884,7 +869,7 @@ void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
   }
 }
 
-void Config::convertStrToVal()
+void ConfigImpl::convertStrToVal()
 {
   QListIterator<ConfigOption> it = iterator();
   ConfigOption *option;
@@ -1024,7 +1009,9 @@ void ConfigEnum::substEnvVars()
   substEnvVarsInString(m_value);
 }
 
-void Config::substituteEnvironmentVars()
+//---------------------------------------------
+
+void ConfigImpl::substituteEnvironmentVars()
 {
   QListIterator<ConfigOption> it = iterator();
   ConfigOption *option;
@@ -1034,585 +1021,7 @@ void Config::substituteEnvironmentVars()
   }
 }
 
-static void cleanUpPaths(QStrList &str)
-{
-  char *sfp = str.first();
-  while (sfp)
-  {
-    register char *p = sfp;
-    if (p)
-    {
-      char c;
-      while ((c=*p))
-      {
-	if (c=='\\') *p='/';
-	p++;
-      }
-    }
-    QCString path = sfp;
-    if ((path.at(0)!='/' && (path.length()<=2 || path.at(1)!=':')) ||
-	path.at(path.length()-1)!='/'
-       )
-    {
-      QFileInfo fi(path);
-      if (fi.exists() && fi.isDir())
-      {
-	int i = str.at();
-	str.remove();
-	if (str.at()==i) // did not remove last item
-	  str.insert(i,fi.absFilePath().utf8()+"/");
-	else
-	  str.append(fi.absFilePath().utf8()+"/");
-      }
-    }
-    sfp = str.next();
-  }
-}
-
-void Config::checkFileName(const char *optionName)
-{
-  QCString &s = Config_getString(optionName);
-  QCString val = s.stripWhiteSpace().lower();
-  if ((val=="yes" || val=="true"  || val=="1" || val=="all") ||
-      (val=="no"  || val=="false" || val=="0" || val=="none")) 
-  {
-    config_err("file name expected for option %s, got %s instead. Ignoring...\n",optionName,s.data());
-    s=""; // note the use of &s above: this will change the option value!
-  }
-}
-
-void Config::check()
-{
-  //if (!projectName.isEmpty())
-  //{
-  //  projectName[0]=toupper(projectName[0]);
-  //}
-
-  QCString &warnFormat = Config_getString("WARN_FORMAT");
-  if (warnFormat.stripWhiteSpace().isEmpty())
-  {
-    warnFormat="$file:$line $text";
-  }
-  else
-  {
-    if (warnFormat.find("$file")==-1)
-    {
-      config_warn("warning format does not contain a $file tag!\n");
-    }
-    if (warnFormat.find("$line")==-1)
-    {
-      config_warn("warning format does not contain a $line tag!\n");
-    }
-    if (warnFormat.find("$text")==-1)
-    {
-      config_warn("warning format foes not contain a $text tag!\n");
-    }
-  }
-
-  QCString &manExtension = Config_getString("MAN_EXTENSION");
-  
-  // set default man page extension if non is given by the user
-  if (manExtension.isEmpty())
-  {
-    manExtension=".3";
-  }
-  
-  QCString &paperType = Config_getEnum("PAPER_TYPE");
-  paperType=paperType.lower().stripWhiteSpace(); 
-  if (paperType.isEmpty() || paperType=="a4wide")
-  {
-    paperType = "a4";
-  }
-  if (paperType!="a4" && paperType!="letter" && 
-      paperType!="legal" && paperType!="executive")
-  {
-    config_err("Unknown page type specified\n");
-    paperType="a4";
-  }
-  
-  QCString &outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
-  outputLanguage=outputLanguage.stripWhiteSpace();
-  if (outputLanguage.isEmpty())
-  {
-    outputLanguage = "English";
-  }
-
-  QCString &htmlFileExtension=Config_getString("HTML_FILE_EXTENSION");
-  htmlFileExtension=htmlFileExtension.stripWhiteSpace();
-  if (htmlFileExtension.isEmpty())
-  {
-    htmlFileExtension = ".html";
-  }
-  
-  // expand the relative stripFromPath values
-  QStrList &stripFromPath = Config_getList("STRIP_FROM_PATH");
-  char *sfp = stripFromPath.first();
-  if (sfp==0) // by default use the current path
-  {
-    stripFromPath.append(QDir::currentDirPath().utf8()+"/");
-  }
-  else
-  {
-    cleanUpPaths(stripFromPath);
-  }
-
-  // expand the relative stripFromPath values
-  QStrList &stripFromIncPath = Config_getList("STRIP_FROM_INC_PATH");
-  cleanUpPaths(stripFromIncPath);
-  
-  // Test to see if HTML header is valid
-  QCString &headerFile = Config_getString("HTML_HEADER");
-  if (!headerFile.isEmpty())
-  {
-    QFileInfo fi(headerFile);
-    if (!fi.exists())
-    {
-      config_err("tag HTML_HEADER: header file `%s' "
-	  "does not exist\n",headerFile.data());
-      exit(1);
-    }
-  }
-  // Test to see if HTML footer is valid
-  QCString &footerFile = Config_getString("HTML_FOOTER");
-  if (!footerFile.isEmpty())
-  {
-    QFileInfo fi(footerFile);
-    if (!fi.exists())
-    {
-      config_err("tag HTML_FOOTER: footer file `%s' "
-	  "does not exist\n",footerFile.data());
-      exit(1);
-    }
-  }
-
-  // Test to see if MathJax code file is valid
-  if (Config_getBool("USE_MATHJAX"))
-  {
-    QCString &MathJaxCodefile = Config_getString("MATHJAX_CODEFILE");
-    if (!MathJaxCodefile.isEmpty())
-    {
-      QFileInfo fi(MathJaxCodefile);
-      if (!fi.exists())
-      {
-        config_err("tag MATHJAX_CODEFILE file `%s' "
-	    "does not exist\n",MathJaxCodefile.data());
-        exit(1);
-      }
-    }
-    QCString &path = Config_getString("MATHJAX_RELPATH");
-    if (!path.isEmpty() && path.at(path.length()-1)!='/')
-    {
-      path+="/";
-    }
-
-  }
-
-  // Test to see if LaTeX header is valid
-  QCString &latexHeaderFile = Config_getString("LATEX_HEADER");
-  if (!latexHeaderFile.isEmpty())
-  {
-    QFileInfo fi(latexHeaderFile);
-    if (!fi.exists())
-    {
-      config_err("tag LATEX_HEADER: header file `%s' "
-	  "does not exist\n",latexHeaderFile.data());
-      exit(1);
-    }
-  }
-  // Test to see if LaTeX footer is valid
-  QCString &latexFooterFile = Config_getString("LATEX_FOOTER");
-  if (!latexFooterFile.isEmpty())
-  {
-    QFileInfo fi(latexFooterFile);
-    if (!fi.exists())
-    {
-      config_err("tag LATEX_FOOTER: footer file `%s' "
-	  "does not exist\n",latexFooterFile.data());
-      exit(1);
-    }
-  }
-
-  // check include path
-  QStrList &includePath = Config_getList("INCLUDE_PATH");
-  char *s=includePath.first();
-  while (s)
-  {
-    QFileInfo fi(s);
-    if (!fi.exists()) config_warn("tag INCLUDE_PATH: include path `%s' "
-	                  "does not exist\n",s);
-    s=includePath.next();
-  }
-
-  // check aliases
-  QStrList &aliasList = Config_getList("ALIASES");
-  s=aliasList.first();
-  while (s)
-  {
-    QRegExp re1("[a-z_A-Z][a-z_A-Z0-9]*[ \t]*=");         // alias without argument
-    QRegExp re2("[a-z_A-Z][a-z_A-Z0-9]*{[0-9]*}[ \t]*="); // alias with argument
-    QCString alias=s;
-    alias=alias.stripWhiteSpace();
-    if (alias.find(re1)!=0 && alias.find(re2)!=0)
-    {
-      config_err("Illegal alias format `%s'. Use \"name=value\" or \"name(n)=value\", where n is the number of arguments\n",
-	  alias.data());
-    }
-    s=aliasList.next();
-  }
-
-  // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
-  if (Config_getBool("GENERATE_TREEVIEW") && Config_getBool("GENERATE_HTMLHELP"))
-  {
-    config_err("When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
-    Config_getBool("GENERATE_TREEVIEW")=FALSE;
-  }
-  if (Config_getBool("SEARCHENGINE") && Config_getBool("GENERATE_HTMLHELP"))
-  {
-    config_err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
-    Config_getBool("SEARCHENGINE")=FALSE;
-  }
-
-  // check if SEPARATE_MEMBER_PAGES and INLINE_GROUPED_CLASSES are both enabled
-  if (Config_getBool("SEPARATE_MEMBER_PAGES") && Config_getBool("INLINE_GROUPED_CLASSES"))
-  {
-    config_err("When enabling INLINE_GROUPED_CLASSES the SEPARATE_MEMBER_PAGES option should be disabled. I'll do it for you.\n");
-    Config_getBool("SEPARATE_MEMBER_PAGES")=FALSE;
-  }
-    
-  // check dot image format
-  QCString &dotImageFormat=Config_getEnum("DOT_IMAGE_FORMAT");
-  dotImageFormat=dotImageFormat.stripWhiteSpace();
-  if (dotImageFormat.isEmpty())
-  {
-    dotImageFormat = "png";
-  }
-  //else if (dotImageFormat!="gif" && dotImageFormat!="png" && dotImageFormat!="jpg")
-  //{
-  //  config_err("Invalid value for DOT_IMAGE_FORMAT: `%s'. Using the default.\n",dotImageFormat.data());
-  //  dotImageFormat = "png";
-  //}
-
-  QCString &dotFontName=Config_getString("DOT_FONTNAME");
-  if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
-  {
-    config_warn("doxygen no longer ships with the FreeSans font.\n"
-               "You may want to clear or change DOT_FONTNAME.\n"
-               "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
-  }
-  
-  
-  // check dot path
-  QCString &dotPath = Config_getString("DOT_PATH");
-  if (!dotPath.isEmpty())
-  {
-    QFileInfo fi(dotPath);
-    if (fi.exists() && fi.isFile()) // user specified path + exec
-    {
-      dotPath=fi.dirPath(TRUE).utf8()+"/";
-    }
-    else
-    {
-      QFileInfo dp(dotPath+"/dot"+portable_commandExtension());
-      if (!dp.exists() || !dp.isFile())
-      {
-	config_warn("the dot tool could not be found at %s\n",dotPath.data());
-	dotPath="";
-      }
-      else
-      {
-	dotPath=dp.dirPath(TRUE).utf8()+"/";
-      }
-    }
-#if defined(_WIN32) // convert slashes
-    uint i=0,l=dotPath.length();
-    for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
-#endif
-  }
-  else // make sure the string is empty but not null!
-  {
-    dotPath="";
-  }
-
-  // check mscgen path
-  QCString &mscgenPath = Config_getString("MSCGEN_PATH");
-  if (!mscgenPath.isEmpty())
-  {
-    QFileInfo dp(mscgenPath+"/mscgen"+portable_commandExtension());
-    if (!dp.exists() || !dp.isFile())
-    {
-      config_warn("the mscgen tool could not be found at %s\n",mscgenPath.data());
-      mscgenPath="";
-    }
-    else
-    {
-      mscgenPath=dp.dirPath(TRUE).utf8()+"/";
-#if defined(_WIN32) // convert slashes
-      uint i=0,l=mscgenPath.length();
-      for (i=0;i<l;i++) if (mscgenPath.at(i)=='/') mscgenPath.at(i)='\\';
-#endif
-    }
-  }
-  else // make sure the string is empty but not null!
-  {
-    mscgenPath="";
-  }
-
-  // check plantuml path
-  QCString &plantumlJarPath = Config_getString("PLANTUML_JAR_PATH");
-  if (!plantumlJarPath.isEmpty())
-  {
-    QFileInfo pu(plantumlJarPath);
-    if (pu.exists() && pu.isDir()) // PLANTUML_JAR_PATH is directory
-    {
-      QFileInfo jar(plantumlJarPath+portable_pathSeparator()+"plantuml.jar");
-      if (jar.exists() && jar.isFile())
-      {
-        plantumlJarPath = jar.dirPath(TRUE).utf8()+portable_pathSeparator();
-      }
-      else
-      {
-        config_err("Jar file plantuml.jar not found at location "
-                   "specified via PLANTUML_JAR_PATH: '%s'\n",plantumlJarPath.data());
-        plantumlJarPath="";
-      }
-    }
-    else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
-    {
-      plantumlJarPath = pu.dirPath(TRUE).utf8()+portable_pathSeparator();
-    }
-    else
-    {
-      config_err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
-                 plantumlJarPath.data());
-      plantumlJarPath="";
-    }
-  }
-
-  // check dia path
-  QCString &diaPath = Config_getString("DIA_PATH");
-  if (!diaPath.isEmpty())
-  {
-    QFileInfo dp(diaPath+"/dia"+portable_commandExtension());
-    if (!dp.exists() || !dp.isFile())
-    {
-      config_warn("dia could not be found at %s\n",diaPath.data());
-      diaPath="";
-    }
-    else
-    {
-      diaPath=dp.dirPath(TRUE).utf8()+"/";
-#if defined(_WIN32) // convert slashes
-      uint i=0,l=diaPath.length();
-      for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
-#endif
-    }
-  }
-  else // make sure the string is empty but not null!
-  {
-    diaPath="";
-  }
-
-  // check input
-  QStrList &inputSources=Config_getList("INPUT");
-  if (inputSources.count()==0)
-  {
-    // use current dir as the default
-    inputSources.append(QDir::currentDirPath().utf8());
-  }
-  else
-  {
-    s=inputSources.first();
-    while (s)
-    {
-      QFileInfo fi(s);
-      if (!fi.exists())
-      {
-	config_warn("tag INPUT: input source `%s' does not exist\n",s);
-      }
-      s=inputSources.next();
-    }
-  }
-
-  initFilePattern();
-
-  // add default pattern if needed
-  QStrList &examplePatternList = Config_getList("EXAMPLE_PATTERNS");
-  if (examplePatternList.isEmpty())
-  {
-    examplePatternList.append("*");
-  }
-
-  // if no output format is enabled, warn the user
-  if (!Config_getBool("GENERATE_HTML")    && 
-      !Config_getBool("GENERATE_LATEX")   &&
-      !Config_getBool("GENERATE_MAN")     && 
-      !Config_getBool("GENERATE_RTF")     &&
-      !Config_getBool("GENERATE_XML")     &&
-      !Config_getBool("GENERATE_PERLMOD") &&
-      !Config_getBool("GENERATE_RTF")     &&
-      !Config_getBool("GENERATE_DOCBOOK") &&
-      !Config_getBool("GENERATE_AUTOGEN_DEF") &&
-      Config_getString("GENERATE_TAGFILE").isEmpty()
-     )
-  {
-    config_warn("No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
-  }
-
-  // check HTMLHELP creation requirements
-  if (!Config_getBool("GENERATE_HTML") && 
-      Config_getBool("GENERATE_HTMLHELP"))
-  {
-    config_warn("GENERATE_HTMLHELP=YES requires GENERATE_HTML=YES.\n");
-  }
-
-  // check QHP creation requirements
-  if (Config_getBool("GENERATE_QHP"))
-  {
-    if (Config_getString("QHP_NAMESPACE").isEmpty())
-    {
-      config_err("GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
-      Config_getString("QHP_NAMESPACE")="org.doxygen.doc";
-    }
-
-    if (Config_getString("QHP_VIRTUAL_FOLDER").isEmpty())
-    {
-      config_err("GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
-      Config_getString("QHP_VIRTUAL_FOLDER")="doc";
-    }
-  }
-
-  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA") && Config_getBool("INLINE_INFO"))
-  {
-    // don't show inline info for Java output, since Java has no inline 
-    // concept.
-    Config_getBool("INLINE_INFO")=FALSE;
-  }
-
-  int &depth = Config_getInt("MAX_DOT_GRAPH_DEPTH");
-  if (depth==0)
-  {
-    depth=1000;
-  }
-
-  int &hue = Config_getInt("HTML_COLORSTYLE_HUE");
-  if (hue<0)
-  {
-    hue=0;
-  }
-  else if (hue>=360)
-  {
-    hue=hue%360;
-  }
-
-  int &sat = Config_getInt("HTML_COLORSTYLE_SAT");
-  if (sat<0)
-  {
-    sat=0;
-  }
-  else if (sat>255)
-  {
-    sat=255;
-  }
-  int &gamma = Config_getInt("HTML_COLORSTYLE_GAMMA");
-  if (gamma<40)
-  {
-    gamma=40;
-  }
-  else if (gamma>240)
-  {
-    gamma=240;
-  }
-
-  QCString mathJaxFormat = Config_getEnum("MATHJAX_FORMAT");
-  if (!mathJaxFormat.isEmpty() && mathJaxFormat!="HTML-CSS" &&
-       mathJaxFormat!="NativeMML" && mathJaxFormat!="SVG")
-  {
-    config_err("Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
-    Config_getEnum("MATHJAX_FORMAT")="HTML-CSS";
-  }
-
-  // add default words if needed
-  QStrList &annotationFromBrief = Config_getList("ABBREVIATE_BRIEF");
-  if (annotationFromBrief.isEmpty())
-  {
-    annotationFromBrief.append("The $name class");
-    annotationFromBrief.append("The $name widget");
-    annotationFromBrief.append("The $name file");
-    annotationFromBrief.append("is");
-    annotationFromBrief.append("provides");
-    annotationFromBrief.append("specifies");
-    annotationFromBrief.append("contains");
-    annotationFromBrief.append("represents");
-    annotationFromBrief.append("a");
-    annotationFromBrief.append("an");
-    annotationFromBrief.append("the");
-  }
-
-  // some default settings for vhdl
-  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && 
-      (Config_getBool("INLINE_INHERITED_MEMB") || 
-       Config_getBool("INHERIT_DOCS") || 
-       !Config_getBool("HIDE_SCOPE_NAMES") ||
-       !Config_getBool("EXTRACT_PRIVATE") ||
-       !Config_getBool("EXTRACT_PACKAGE")
-      )
-     )
-  {
-    bool b1 = Config_getBool("INLINE_INHERITED_MEMB");
-    bool b2 = Config_getBool("INHERIT_DOCS");
-    bool b3 = Config_getBool("HIDE_SCOPE_NAMES");
-    bool b4 = Config_getBool("EXTRACT_PRIVATE");
-    bool b5 = Config_getBool("SKIP_FUNCTION_MACROS");
-    bool b6 = Config_getBool("EXTRACT_PACKAGE");
-    const char *s1,*s2,*s3,*s4,*s5,*s6;
-    if (b1)  s1="  INLINE_INHERITED_MEMB  = NO (was YES)\n"; else s1="";
-    if (b2)  s2="  INHERIT_DOCS           = NO (was YES)\n"; else s2="";
-    if (!b3) s3="  HIDE_SCOPE_NAMES       = YES (was NO)\n"; else s3="";
-    if (!b4) s4="  EXTRACT_PRIVATE        = YES (was NO)\n"; else s4="";
-    if (b5)  s5="  ENABLE_PREPROCESSING   = NO (was YES)\n"; else s5="";
-    if (!b6) s6="  EXTRACT_PACKAGE        = YES (was NO)\n"; else s6="";
-
-
-    config_warn("enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
-	       "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
-	      );
-
-    Config_getBool("INLINE_INHERITED_MEMB") = FALSE;
-    Config_getBool("INHERIT_DOCS")          = FALSE;
-    Config_getBool("HIDE_SCOPE_NAMES")      = TRUE;
-    Config_getBool("EXTRACT_PRIVATE")       = TRUE;
-    Config_getBool("ENABLE_PREPROCESSING")  = FALSE;
-    Config_getBool("EXTRACT_PACKAGE")       = TRUE;
-  }                               
-
-  checkFileName("GENERATE_TAGFILE");
-
-#if 0 // TODO: this breaks test 25; SOURCEBROWSER = NO and SOURCE_TOOLTIPS = YES.
-      // So this and other regressions should be analysed and fixed before this can be enabled
-  // disable any boolean options that depend on disabled options
-  QListIterator<ConfigOption> it = iterator();
-  ConfigOption *option;
-  for (it.toFirst();(option=it.current());++it)
-  {
-    QCString depName = option->dependsOn(); // option has a dependency
-    if (!depName.isEmpty())
-    {
-      ConfigOption * dep = Config::instance()->get(depName);
-      if (dep->kind()==ConfigOption::O_Bool &&
-          Config_getBool(depName)==FALSE) // dependent option is disabled
-      {
-        if (option->kind()==ConfigOption::O_Bool)
-        {
-          printf("disabling option %s\n",option->name().data());
-          Config_getBool(option->name())=FALSE; // also disable this option
-        }
-      }
-    }
-  }
-#endif
-}
-
-void Config::init()
+void ConfigImpl::init()
 {
   QListIterator<ConfigOption> it = iterator();
   ConfigOption *option;
@@ -1627,7 +1036,7 @@ void Config::init()
     QCString depName = option->dependsOn();
     if (!depName.isEmpty())
     {
-      ConfigOption * opt = Config::instance()->get(depName);
+      ConfigOption * opt = ConfigImpl::instance()->get(depName);
       if (opt==0)
       {
         config_warn("Config option '%s' has invalid depends relation on unknown option '%s'\n",
@@ -1638,7 +1047,7 @@ void Config::init()
   }
 }
 
-void Config::create()
+void ConfigImpl::create()
 {
   if (m_initialized) return; 
   m_initialized = TRUE;
@@ -1704,9 +1113,9 @@ static QCString configFileToString(const char *name)
   return "";
 }
 
-bool Config::parseString(const char *fn,const char *str,bool update)
+bool ConfigImpl::parseString(const char *fn,const char *str,bool update)
 {
-  config = Config::instance();
+  config = ConfigImpl::instance();
   inputString   = str;
   inputPosition = 0;
   yyFileName    = fn;
@@ -1714,16 +1123,16 @@ bool Config::parseString(const char *fn,const char *str,bool update)
   includeStack.setAutoDelete(TRUE);
   includeStack.clear();
   includeDepth  = 0;
-  configYYrestart( configYYin );
+  configimplYYrestart( configimplYYin );
   BEGIN( PreStart );
   config_upd = update;
-  configYYlex();
+  configimplYYlex();
   config_upd = FALSE;
   inputString = 0;
   return TRUE;
 }
 
-bool Config::parse(const char *fn,bool update)
+bool ConfigImpl::parse(const char *fn,bool update)
 {
   int retval;
   encoding = "UTF-8";
@@ -1733,6 +1142,639 @@ bool Config::parse(const char *fn,bool update)
   return retval;
 }
 
-extern "C" { // some bogus code to keep the compiler happy
-  //int  configYYwrap() { return 1 ; }
+//----------------------------------------------------------------------
+
+static void cleanUpPaths(QStrList &str)
+{
+  char *sfp = str.first();
+  while (sfp)
+  {
+    register char *p = sfp;
+    if (p)
+    {
+      char c;
+      while ((c=*p))
+      {
+	if (c=='\\') *p='/';
+	p++;
+      }
+    }
+    QCString path = sfp;
+    if ((path.at(0)!='/' && (path.length()<=2 || path.at(1)!=':')) ||
+	path.at(path.length()-1)!='/'
+       )
+    {
+      QFileInfo fi(path);
+      if (fi.exists() && fi.isDir())
+      {
+	int i = str.at();
+	str.remove();
+	if (str.at()==i) // did not remove last item
+	  str.insert(i,fi.absFilePath().utf8()+"/");
+	else
+	  str.append(fi.absFilePath().utf8()+"/");
+      }
+    }
+    sfp = str.next();
+  }
 }
+
+static void checkFileName(QCString &s,const char *optionName)
+{
+  QCString val = s.stripWhiteSpace().lower();
+  if ((val=="yes" || val=="true"  || val=="1" || val=="all") ||
+      (val=="no"  || val=="false" || val=="0" || val=="none"))
+  {
+    err("file name expected for option %s, got %s instead. Ignoring...\n",optionName,s.data());
+    s=""; // note the use of &s above: this will change the option value!
+  }
+}
+
+static void initFilePattern(void)
+{
+  // add default pattern if needed
+  QStrList &filePatternList = ConfigImpl_getList("FILE_PATTERNS");
+  if (filePatternList.isEmpty())
+  {
+    QDictIterator<int> it( getExtensionLookup() );
+    QCString pattern;
+    bool caseSens =  portable_fileSystemIsCaseSensitive();
+    for (;it.current();++it)
+    {
+      pattern = "*";
+      pattern += it.currentKey();
+      filePatternList.append(pattern.data());
+      if (caseSens) filePatternList.append(pattern.upper().data());
+    }
+  }
+}
+
+
+#include "config.h"
+
+void Config::init()
+{
+  ConfigImpl::instance()->init();
+}
+
+void Config::checkAndCorrect()
+{
+  QCString &warnFormat = ConfigImpl_getString("WARN_FORMAT");
+  if (warnFormat.stripWhiteSpace().isEmpty())
+  {
+    warnFormat="$file:$line $text";
+  }
+  else
+  {
+    if (warnFormat.find("$file")==-1)
+    {
+      warn_uncond("warning format does not contain a $file tag!\n");
+
+    }
+    if (warnFormat.find("$line")==-1)
+    {
+      warn_uncond("warning format does not contain a $line tag!\n");
+    }
+    if (warnFormat.find("$text")==-1)
+    {
+      warn_uncond("warning format foes not contain a $text tag!\n");
+    }
+  }
+
+  QCString &manExtension = ConfigImpl_getString("MAN_EXTENSION");
+
+  // set default man page extension if non is given by the user
+  if (manExtension.isEmpty())
+  {
+    manExtension=".3";
+  }
+
+  QCString &paperType = ConfigImpl_getEnum("PAPER_TYPE");
+  paperType=paperType.lower().stripWhiteSpace();
+  if (paperType.isEmpty() || paperType=="a4wide")
+  {
+    paperType = "a4";
+  }
+  if (paperType!="a4" && paperType!="letter" &&
+      paperType!="legal" && paperType!="executive")
+  {
+    err("Unknown page type specified\n");
+    paperType="a4";
+  }
+
+  QCString &outputLanguage=ConfigImpl_getEnum("OUTPUT_LANGUAGE");
+  outputLanguage=outputLanguage.stripWhiteSpace();
+  if (outputLanguage.isEmpty())
+  {
+    outputLanguage = "English";
+  }
+
+  QCString &htmlFileExtension=ConfigImpl_getString("HTML_FILE_EXTENSION");
+  htmlFileExtension=htmlFileExtension.stripWhiteSpace();
+  if (htmlFileExtension.isEmpty())
+  {
+    htmlFileExtension = ".html";
+  }
+
+  // expand the relative stripFromPath values
+  QStrList &stripFromPath = ConfigImpl_getList("STRIP_FROM_PATH");
+  char *sfp = stripFromPath.first();
+  if (sfp==0) // by default use the current path
+  {
+    stripFromPath.append(QDir::currentDirPath().utf8()+"/");
+  }
+  else
+  {
+    cleanUpPaths(stripFromPath);
+  }
+
+  // expand the relative stripFromPath values
+  QStrList &stripFromIncPath = ConfigImpl_getList("STRIP_FROM_INC_PATH");
+  cleanUpPaths(stripFromIncPath);
+
+  // Test to see if HTML header is valid
+  QCString &headerFile = ConfigImpl_getString("HTML_HEADER");
+  if (!headerFile.isEmpty())
+  {
+    QFileInfo fi(headerFile);
+    if (!fi.exists())
+    {
+      err("tag HTML_HEADER: header file `%s' "
+	  "does not exist\n",headerFile.data());
+      exit(1);
+    }
+  }
+  // Test to see if HTML footer is valid
+  QCString &footerFile = ConfigImpl_getString("HTML_FOOTER");
+  if (!footerFile.isEmpty())
+  {
+    QFileInfo fi(footerFile);
+    if (!fi.exists())
+    {
+      err("tag HTML_FOOTER: footer file `%s' "
+	  "does not exist\n",footerFile.data());
+      exit(1);
+    }
+  }
+
+  // Test to see if MathJax code file is valid
+  if (ConfigImpl_getBool("USE_MATHJAX"))
+  {
+    QCString &MathJaxCodefile = ConfigImpl_getString("MATHJAX_CODEFILE");
+    if (!MathJaxCodefile.isEmpty())
+    {
+      QFileInfo fi(MathJaxCodefile);
+      if (!fi.exists())
+      {
+        err("tag MATHJAX_CODEFILE file `%s' "
+	    "does not exist\n",MathJaxCodefile.data());
+        exit(1);
+      }
+    }
+    QCString &path = ConfigImpl_getString("MATHJAX_RELPATH");
+    if (!path.isEmpty() && path.at(path.length()-1)!='/')
+    {
+      path+="/";
+    }
+
+  }
+
+  // Test to see if LaTeX header is valid
+  QCString &latexHeaderFile = ConfigImpl_getString("LATEX_HEADER");
+  if (!latexHeaderFile.isEmpty())
+  {
+    QFileInfo fi(latexHeaderFile);
+    if (!fi.exists())
+    {
+      err("tag LATEX_HEADER: header file `%s' "
+	  "does not exist\n",latexHeaderFile.data());
+      exit(1);
+    }
+  }
+  // Test to see if LaTeX footer is valid
+  QCString &latexFooterFile = ConfigImpl_getString("LATEX_FOOTER");
+  if (!latexFooterFile.isEmpty())
+  {
+    QFileInfo fi(latexFooterFile);
+    if (!fi.exists())
+    {
+      err("tag LATEX_FOOTER: footer file `%s' "
+	  "does not exist\n",latexFooterFile.data());
+      exit(1);
+    }
+  }
+
+  // check include path
+  QStrList &includePath = ConfigImpl_getList("INCLUDE_PATH");
+  char *s=includePath.first();
+  while (s)
+  {
+    QFileInfo fi(s);
+    if (!fi.exists()) warn_uncond("tag INCLUDE_PATH: include path `%s' "
+	                  "does not exist\n",s);
+    s=includePath.next();
+  }
+
+  // check aliases
+  QStrList &aliasList = ConfigImpl_getList("ALIASES");
+  s=aliasList.first();
+  while (s)
+  {
+    QRegExp re1("[a-z_A-Z][a-z_A-Z0-9]*[ \t]*=");         // alias without argument
+    QRegExp re2("[a-z_A-Z][a-z_A-Z0-9]*{[0-9]*}[ \t]*="); // alias with argument
+    QCString alias=s;
+    alias=alias.stripWhiteSpace();
+    if (alias.find(re1)!=0 && alias.find(re2)!=0)
+    {
+      err("Illegal alias format `%s'. Use \"name=value\" or \"name(n)=value\", where n is the number of arguments\n",
+	  alias.data());
+    }
+    s=aliasList.next();
+  }
+
+  // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
+  if (ConfigImpl_getBool("GENERATE_TREEVIEW") && ConfigImpl_getBool("GENERATE_HTMLHELP"))
+  {
+    err("When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
+    ConfigImpl_getBool("GENERATE_TREEVIEW")=FALSE;
+  }
+  if (ConfigImpl_getBool("SEARCHENGINE") && ConfigImpl_getBool("GENERATE_HTMLHELP"))
+  {
+    err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
+    ConfigImpl_getBool("SEARCHENGINE")=FALSE;
+  }
+
+  // check if SEPARATE_MEMBER_PAGES and INLINE_GROUPED_CLASSES are both enabled
+  if (ConfigImpl_getBool("SEPARATE_MEMBER_PAGES") && ConfigImpl_getBool("INLINE_GROUPED_CLASSES"))
+  {
+    err("When enabling INLINE_GROUPED_CLASSES the SEPARATE_MEMBER_PAGES option should be disabled. I'll do it for you.\n");
+    ConfigImpl_getBool("SEPARATE_MEMBER_PAGES")=FALSE;
+  }
+
+  // check dot image format
+  QCString &dotImageFormat=ConfigImpl_getEnum("DOT_IMAGE_FORMAT");
+  dotImageFormat=dotImageFormat.stripWhiteSpace();
+  if (dotImageFormat.isEmpty())
+  {
+    dotImageFormat = "png";
+  }
+  //else if (dotImageFormat!="gif" && dotImageFormat!="png" && dotImageFormat!="jpg")
+  //{
+  //  err("Invalid value for DOT_IMAGE_FORMAT: `%s'. Using the default.\n",dotImageFormat.data());
+  //  dotImageFormat = "png";
+  //}
+
+  QCString &dotFontName=ConfigImpl_getString("DOT_FONTNAME");
+  if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
+  {
+    warn_uncond("doxygen no longer ships with the FreeSans font.\n"
+               "You may want to clear or change DOT_FONTNAME.\n"
+               "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
+  }
+
+
+  // check dot path
+  QCString &dotPath = ConfigImpl_getString("DOT_PATH");
+  if (!dotPath.isEmpty())
+  {
+    QFileInfo fi(dotPath);
+    if (fi.exists() && fi.isFile()) // user specified path + exec
+    {
+      dotPath=fi.dirPath(TRUE).utf8()+"/";
+    }
+    else
+    {
+      QFileInfo dp(dotPath+"/dot"+portable_commandExtension());
+      if (!dp.exists() || !dp.isFile())
+      {
+	warn_uncond("the dot tool could not be found at %s\n",dotPath.data());
+	dotPath="";
+      }
+      else
+      {
+	dotPath=dp.dirPath(TRUE).utf8()+"/";
+      }
+    }
+#if defined(_WIN32) // convert slashes
+    uint i=0,l=dotPath.length();
+    for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
+#endif
+  }
+  else // make sure the string is empty but not null!
+  {
+    dotPath="";
+  }
+
+  // check mscgen path
+  QCString &mscgenPath = ConfigImpl_getString("MSCGEN_PATH");
+  if (!mscgenPath.isEmpty())
+  {
+    QFileInfo dp(mscgenPath+"/mscgen"+portable_commandExtension());
+    if (!dp.exists() || !dp.isFile())
+    {
+      warn_uncond("the mscgen tool could not be found at %s\n",mscgenPath.data());
+      mscgenPath="";
+    }
+    else
+    {
+      mscgenPath=dp.dirPath(TRUE).utf8()+"/";
+#if defined(_WIN32) // convert slashes
+      uint i=0,l=mscgenPath.length();
+      for (i=0;i<l;i++) if (mscgenPath.at(i)=='/') mscgenPath.at(i)='\\';
+#endif
+    }
+  }
+  else // make sure the string is empty but not null!
+  {
+    mscgenPath="";
+  }
+
+  // check plantuml path
+  QCString &plantumlJarPath = ConfigImpl_getString("PLANTUML_JAR_PATH");
+  if (!plantumlJarPath.isEmpty())
+  {
+    QFileInfo pu(plantumlJarPath);
+    if (pu.exists() && pu.isDir()) // PLANTUML_JAR_PATH is directory
+    {
+      QFileInfo jar(plantumlJarPath+portable_pathSeparator()+"plantuml.jar");
+      if (jar.exists() && jar.isFile())
+      {
+        plantumlJarPath = jar.dirPath(TRUE).utf8()+portable_pathSeparator();
+      }
+      else
+      {
+        err("Jar file plantuml.jar not found at location "
+                   "specified via PLANTUML_JAR_PATH: '%s'\n",plantumlJarPath.data());
+        plantumlJarPath="";
+      }
+    }
+    else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
+    {
+      plantumlJarPath = pu.dirPath(TRUE).utf8()+portable_pathSeparator();
+    }
+    else
+    {
+      err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
+                 plantumlJarPath.data());
+      plantumlJarPath="";
+    }
+  }
+
+  // check dia path
+  QCString &diaPath = ConfigImpl_getString("DIA_PATH");
+  if (!diaPath.isEmpty())
+  {
+    QFileInfo dp(diaPath+"/dia"+portable_commandExtension());
+    if (!dp.exists() || !dp.isFile())
+    {
+      warn_uncond("dia could not be found at %s\n",diaPath.data());
+      diaPath="";
+    }
+    else
+    {
+      diaPath=dp.dirPath(TRUE).utf8()+"/";
+#if defined(_WIN32) // convert slashes
+      uint i=0,l=diaPath.length();
+      for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
+#endif
+    }
+  }
+  else // make sure the string is empty but not null!
+  {
+    diaPath="";
+  }
+
+  // check input
+  QStrList &inputSources=ConfigImpl_getList("INPUT");
+  if (inputSources.count()==0)
+  {
+    // use current dir as the default
+    inputSources.append(QDir::currentDirPath().utf8());
+  }
+  else
+  {
+    s=inputSources.first();
+    while (s)
+    {
+      QFileInfo fi(s);
+      if (!fi.exists())
+      {
+	warn_uncond("tag INPUT: input source `%s' does not exist\n",s);
+      }
+      s=inputSources.next();
+    }
+  }
+
+  initFilePattern();
+
+  // add default pattern if needed
+  QStrList &examplePatternList = ConfigImpl_getList("EXAMPLE_PATTERNS");
+  if (examplePatternList.isEmpty())
+  {
+    examplePatternList.append("*");
+  }
+
+  // if no output format is enabled, warn the user
+  if (!ConfigImpl_getBool("GENERATE_HTML")    &&
+      !ConfigImpl_getBool("GENERATE_LATEX")   &&
+      !ConfigImpl_getBool("GENERATE_MAN")     &&
+      !ConfigImpl_getBool("GENERATE_RTF")     &&
+      !ConfigImpl_getBool("GENERATE_XML")     &&
+      !ConfigImpl_getBool("GENERATE_PERLMOD") &&
+      !ConfigImpl_getBool("GENERATE_RTF")     &&
+      !ConfigImpl_getBool("GENERATE_DOCBOOK") &&
+      !ConfigImpl_getBool("GENERATE_AUTOGEN_DEF") &&
+      ConfigImpl_getString("GENERATE_TAGFILE").isEmpty()
+     )
+  {
+    warn_uncond("No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
+  }
+
+  // check HTMLHELP creation requirements
+  if (!ConfigImpl_getBool("GENERATE_HTML") &&
+      ConfigImpl_getBool("GENERATE_HTMLHELP"))
+  {
+    warn_uncond("GENERATE_HTMLHELP=YES requires GENERATE_HTML=YES.\n");
+  }
+
+  // check QHP creation requirements
+  if (ConfigImpl_getBool("GENERATE_QHP"))
+  {
+    if (ConfigImpl_getString("QHP_NAMESPACE").isEmpty())
+    {
+      err("GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
+      ConfigImpl_getString("QHP_NAMESPACE")="org.doxygen.doc";
+    }
+
+    if (ConfigImpl_getString("QHP_VIRTUAL_FOLDER").isEmpty())
+    {
+      err("GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
+      ConfigImpl_getString("QHP_VIRTUAL_FOLDER")="doc";
+    }
+  }
+
+  if (ConfigImpl_getBool("OPTIMIZE_OUTPUT_JAVA") && ConfigImpl_getBool("INLINE_INFO"))
+  {
+    // don't show inline info for Java output, since Java has no inline
+    // concept.
+    ConfigImpl_getBool("INLINE_INFO")=FALSE;
+  }
+
+  int &depth = ConfigImpl_getInt("MAX_DOT_GRAPH_DEPTH");
+  if (depth==0)
+  {
+    depth=1000;
+  }
+
+  int &hue = ConfigImpl_getInt("HTML_COLORSTYLE_HUE");
+  if (hue<0)
+  {
+    hue=0;
+  }
+  else if (hue>=360)
+  {
+    hue=hue%360;
+  }
+
+  int &sat = ConfigImpl_getInt("HTML_COLORSTYLE_SAT");
+  if (sat<0)
+  {
+    sat=0;
+  }
+  else if (sat>255)
+  {
+    sat=255;
+  }
+  int &gamma = ConfigImpl_getInt("HTML_COLORSTYLE_GAMMA");
+  if (gamma<40)
+  {
+    gamma=40;
+  }
+  else if (gamma>240)
+  {
+    gamma=240;
+  }
+
+  QCString mathJaxFormat = ConfigImpl_getEnum("MATHJAX_FORMAT");
+  if (!mathJaxFormat.isEmpty() && mathJaxFormat!="HTML-CSS" &&
+       mathJaxFormat!="NativeMML" && mathJaxFormat!="SVG")
+  {
+    err("Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
+    ConfigImpl_getEnum("MATHJAX_FORMAT")="HTML-CSS";
+  }
+
+  // add default words if needed
+  QStrList &annotationFromBrief = ConfigImpl_getList("ABBREVIATE_BRIEF");
+  if (annotationFromBrief.isEmpty())
+  {
+    annotationFromBrief.append("The $name class");
+    annotationFromBrief.append("The $name widget");
+    annotationFromBrief.append("The $name file");
+    annotationFromBrief.append("is");
+    annotationFromBrief.append("provides");
+    annotationFromBrief.append("specifies");
+    annotationFromBrief.append("contains");
+    annotationFromBrief.append("represents");
+    annotationFromBrief.append("a");
+    annotationFromBrief.append("an");
+    annotationFromBrief.append("the");
+  }
+
+  // some default settings for vhdl
+  if (ConfigImpl_getBool("OPTIMIZE_OUTPUT_VHDL") &&
+      (ConfigImpl_getBool("INLINE_INHERITED_MEMB") ||
+       ConfigImpl_getBool("INHERIT_DOCS") ||
+       !ConfigImpl_getBool("HIDE_SCOPE_NAMES") ||
+       !ConfigImpl_getBool("EXTRACT_PRIVATE") ||
+       !ConfigImpl_getBool("EXTRACT_PACKAGE")
+      )
+     )
+  {
+    bool b1 = ConfigImpl_getBool("INLINE_INHERITED_MEMB");
+    bool b2 = ConfigImpl_getBool("INHERIT_DOCS");
+    bool b3 = ConfigImpl_getBool("HIDE_SCOPE_NAMES");
+    bool b4 = ConfigImpl_getBool("EXTRACT_PRIVATE");
+    bool b5 = ConfigImpl_getBool("SKIP_FUNCTION_MACROS");
+    bool b6 = ConfigImpl_getBool("EXTRACT_PACKAGE");
+    const char *s1,*s2,*s3,*s4,*s5,*s6;
+    if (b1)  s1="  INLINE_INHERITED_MEMB  = NO (was YES)\n"; else s1="";
+    if (b2)  s2="  INHERIT_DOCS           = NO (was YES)\n"; else s2="";
+    if (!b3) s3="  HIDE_SCOPE_NAMES       = YES (was NO)\n"; else s3="";
+    if (!b4) s4="  EXTRACT_PRIVATE        = YES (was NO)\n"; else s4="";
+    if (b5)  s5="  ENABLE_PREPROCESSING   = NO (was YES)\n"; else s5="";
+    if (!b6) s6="  EXTRACT_PACKAGE        = YES (was NO)\n"; else s6="";
+
+
+    warn_uncond("enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
+	       "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
+	      );
+
+    ConfigImpl_getBool("INLINE_INHERITED_MEMB") = FALSE;
+    ConfigImpl_getBool("INHERIT_DOCS")          = FALSE;
+    ConfigImpl_getBool("HIDE_SCOPE_NAMES")      = TRUE;
+    ConfigImpl_getBool("EXTRACT_PRIVATE")       = TRUE;
+    ConfigImpl_getBool("ENABLE_PREPROCESSING")  = FALSE;
+    ConfigImpl_getBool("EXTRACT_PACKAGE")       = TRUE;
+  }
+
+  checkFileName(ConfigImpl_getString("GENERATE_TAGFILE"),"GENERATE_TAGFILE");
+
+#if 0 // TODO: this breaks test 25; SOURCEBROWSER = NO and SOURCE_TOOLTIPS = YES.
+      // So this and other regressions should be analysed and fixed before this can be enabled
+  // disable any boolean options that depend on disabled options
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (it.toFirst();(option=it.current());++it)
+  {
+    QCString depName = option->dependsOn(); // option has a dependency
+    if (!depName.isEmpty())
+    {
+      ConfigOption * dep = Config::instance()->get(depName);
+      if (dep->kind()==ConfigOption::O_Bool &&
+          ConfigImpl_getBool("depName")==FALSE) // dependent option is disabled
+      {
+        if (option->kind()==ConfigOption::O_Bool)
+        {
+          printf("disabling option %s\n",option->name().data());
+          ConfigImpl_getBool("option->name("))=FALSE; // also disable this option
+        }
+      }
+    }
+  }
+#endif
+
+  ConfigValues::instance().init();
+
+}
+
+void Config::writeTemplate(FTextStream &t,bool shortList,bool update)
+{
+  ConfigImpl::instance()->writeTemplate(t,shortList,update);
+}
+
+bool Config::parse(const char *fileName,bool update)
+{
+  return ConfigImpl::instance()->parse(fileName,update);
+}
+
+void Config::postProcess(bool clearHeaderAndFooter)
+{
+  ConfigImpl::instance()->substituteEnvironmentVars();
+  ConfigImpl::instance()->convertStrToVal();
+
+  // avoid bootstrapping issues when the config file already
+  // refers to the files that we are supposed to parse.
+  if (clearHeaderAndFooter)
+  {
+    Config_getString(HTML_HEADER)="";
+    Config_getString(HTML_FOOTER)="";
+    Config_getString(LATEX_HEADER)="";
+    Config_getString(LATEX_FOOTER)="";
+  }
+}
+
+void Config::deinit()
+{
+  ConfigImpl::instance()->deleteInstance();
+}
+

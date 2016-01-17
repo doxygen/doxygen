@@ -1501,7 +1501,7 @@ QCString library_clause() :  {QCString s;}
  (<LIBRARY_T> s=identifier_list() <SEMI_T>
  )
  {
-               if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
+               if ( parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
                    {
                            addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::LIBRARY,s.data(),"_library_",Public);
                    }
@@ -2408,7 +2408,7 @@ QCString unconstraint_array_definition() :  {QCString s,s1,s2,s3;}
                    {
                     QStringList ql=QStringList::split(".",ql1[j],FALSE);
                     QCString it=ql[1].utf8();
-                     if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
+                     if ( parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
                      {
                        VhdlParser::addVhdlType(it.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_",Public);
                      }

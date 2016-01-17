@@ -86,7 +86,7 @@ class TranslatorChinese : public Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体成员变量说明";
       }
@@ -154,7 +154,7 @@ class TranslatorChinese : public Translator
     /*! This is put above each page as a link to the list of annotated class */
      virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "结构体";
       }
       else {
@@ -169,7 +169,7 @@ class TranslatorChinese : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "成员变量";
       }
       else {
@@ -180,7 +180,7 @@ class TranslatorChinese : public Translator
     /*! This is put above each page as a link to all member of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "全局定义";
       } else {
         return "文件成员";
@@ -211,7 +211,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trCompoundListDescription()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "这里列出了所有结构体，并附带简要说明:";
       }
@@ -227,7 +227,7 @@ class TranslatorChinese : public Translator
       if (!extractAll) {
         result+="文档化的";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         result+="结构体和联合体的成员变量，并附带";
       }
       else {
@@ -235,7 +235,7 @@ class TranslatorChinese : public Translator
       }
       //result+=" with links to ";
       if (extractAll) {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
           result+="结构体或联合的详细说明:";
         }
         else {
@@ -243,7 +243,7 @@ class TranslatorChinese : public Translator
         }
       }
       else {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
           result+="结构或联合所属的文件:";
         }
         else {
@@ -258,7 +258,7 @@ class TranslatorChinese : public Translator
       QCString result="这里列出了所有";
       if (!extractAll)
         result +="文档化的";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         result +="函数,变量,宏,枚举和类型定义等,并附带";
       }
       else {
@@ -292,7 +292,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体索引";
       }
@@ -309,7 +309,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体说明";
       }
@@ -366,7 +366,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体";
       }
@@ -776,7 +776,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trPublicAttribs()
     {
-       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
        {
          return "成员变量";
        }
@@ -978,7 +978,7 @@ class TranslatorChinese : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体";
       }

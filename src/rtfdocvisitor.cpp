@@ -140,7 +140,7 @@ void RTFDocVisitor::visit(DocURL *u)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocURL)}\n");
-  if (Config_getBool("RTF_HYPERLINKS"))
+  if (Config_getBool(RTF_HYPERLINKS))
   {
     m_t << "{\\field "
              "{\\*\\fldinst "
@@ -284,7 +284,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         QCString fileName(4096);
 
         fileName.sprintf("%s%d%s", 
-            (Config_getString("RTF_OUTPUT")+"/inline_dotgraph_").data(), 
+            (Config_getString(RTF_OUTPUT)+"/inline_dotgraph_").data(), 
             dotindex++,
             ".dot"
            );
@@ -300,7 +300,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         visitCaption(this, s->children());
         includePicturePostRTF(true, s->hasCaption());
 
-        if (Config_getBool("DOT_CLEANUP")) file.remove();
+        if (Config_getBool(DOT_CLEANUP)) file.remove();
       }
       break;
     case DocVerbatim::Msc: 
@@ -309,7 +309,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         QCString baseName(4096);
 
         baseName.sprintf("%s%d%s",
-            (Config_getString("RTF_OUTPUT")+"/inline_mscgraph_").data(), 
+            (Config_getString(RTF_OUTPUT)+"/inline_mscgraph_").data(), 
             mscindex++,
             ".msc"
            );
@@ -328,12 +328,12 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         visitCaption(this, s->children());
         includePicturePostRTF(true, s->hasCaption());
 
-        if (Config_getBool("DOT_CLEANUP")) file.remove();
+        if (Config_getBool(DOT_CLEANUP)) file.remove();
       }
       break;
     case DocVerbatim::PlantUML:
       {
-        static QCString rtfOutput = Config_getString("RTF_OUTPUT");
+        static QCString rtfOutput = Config_getString(RTF_OUTPUT);
         QCString baseName = writePlantUMLSource(rtfOutput,s->exampleFile(),s->text());
 
         writePlantUMLFile(baseName, s->hasCaption());
@@ -969,7 +969,7 @@ void RTFDocVisitor::visitPre(DocHRef *href)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHRef)}\n");
-  if (Config_getBool("RTF_HYPERLINKS"))
+  if (Config_getBool(RTF_HYPERLINKS))
   {
     m_t << "{\\field "
              "{\\*\\fldinst "
@@ -991,7 +991,7 @@ void RTFDocVisitor::visitPost(DocHRef *)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocHRef)}\n");
-  if (Config_getBool("RTF_HYPERLINKS"))
+  if (Config_getBool(RTF_HYPERLINKS))
   { 
     m_t <<     "}"
              "}"
@@ -1198,7 +1198,7 @@ void RTFDocVisitor::visitPost(DocSecRefList *)
 //void RTFDocVisitor::visitPre(DocLanguage *l)
 //{
 //  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocLanguage)}\n");
-//  QCString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  QCString langId = Config_getEnum(OUTPUT_LANGUAGE);
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    pushEnabled();
@@ -1209,7 +1209,7 @@ void RTFDocVisitor::visitPost(DocSecRefList *)
 //void RTFDocVisitor::visitPost(DocLanguage *l) 
 //{
 //  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocLanguage)}\n");
-//  QCString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  QCString langId = Config_getEnum(OUTPUT_LANGUAGE);
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    popEnabled();
@@ -1452,7 +1452,7 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
   m_t << "{"; // start param list
   //m_t << "{\\b "; // start bold
   m_t << "{" << rtf_Style["Heading5"]->reference << endl;
-  if (Config_getBool("RTF_HYPERLINKS") && !anonymousEnum)
+  if (Config_getBool(RTF_HYPERLINKS) && !anonymousEnum)
   {
     QCString refName;
     if (!x->file().isEmpty())
@@ -1638,7 +1638,7 @@ void RTFDocVisitor::filter(const char *str,bool verbatim)
 
 void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
-  if (ref.isEmpty() && Config_getBool("RTF_HYPERLINKS"))
+  if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
   {
     QCString refName;
     if (!file.isEmpty())
@@ -1668,7 +1668,7 @@ void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
 
 void RTFDocVisitor::endLink(const QCString &ref)
 {
-  if (ref.isEmpty() && Config_getBool("RTF_HYPERLINKS"))
+  if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
   {
     m_t << "}}}";
   }
@@ -1704,7 +1704,7 @@ void RTFDocVisitor::writeDotFile(const QCString &filename, const bool hasCaption
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
-  QCString outDir = Config_getString("RTF_OUTPUT");
+  QCString outDir = Config_getString(RTF_OUTPUT);
   writeDotGraphFromFile(filename,outDir,baseName,GOF_BITMAP);
   QCString imgExt = getDotImageExtension();
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
@@ -1722,7 +1722,7 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName, const bool hasCaption
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
-  QCString outDir = Config_getString("RTF_OUTPUT");
+  QCString outDir = Config_getString(RTF_OUTPUT);
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
@@ -1735,7 +1735,7 @@ void RTFDocVisitor::writeDiaFile(DocDiaFile *df)
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
-  QCString outDir = Config_getString("RTF_OUTPUT");
+  QCString outDir = Config_getString(RTF_OUTPUT);
   writeDiaGraphFromFile(df->file(),outDir,baseName,DIA_BITMAP);
   includePicturePreRTF(baseName + ".png", true, df->hasCaption());
 }
@@ -1748,7 +1748,7 @@ void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, const bool hasCa
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
-  QCString outDir = Config_getString("RTF_OUTPUT");
+  QCString outDir = Config_getString(RTF_OUTPUT);
   generatePlantUMLOutput(fileName,outDir,PUML_BITMAP);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }

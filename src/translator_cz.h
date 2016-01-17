@@ -128,7 +128,7 @@ class TranslatorCzech : public Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Dokumentace k položkám";
       }
@@ -196,7 +196,7 @@ class TranslatorCzech : public Translator
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datové struktury";
       }
@@ -213,7 +213,7 @@ class TranslatorCzech : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datové položky";
       }
@@ -226,7 +226,7 @@ class TranslatorCzech : public Translator
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Globální symboly";
       }
@@ -266,7 +266,7 @@ class TranslatorCzech : public Translator
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Následující seznam obsahuje identifikace datových "
                       "struktur a jejich stručné popisy:";
@@ -290,7 +290,7 @@ class TranslatorCzech : public Translator
         result += "dokumentovaných ";
       }
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result += "položek struktur (struct) a unií (union) ";
       }
@@ -303,7 +303,7 @@ class TranslatorCzech : public Translator
 
       if (extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result += "dokumentaci struktur/unií, ke kterým příslušejí:";
         }
@@ -314,7 +314,7 @@ class TranslatorCzech : public Translator
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="struktury/unie, ke kterým příslušejí:";
         }
@@ -333,7 +333,7 @@ class TranslatorCzech : public Translator
       QCString result="Zde naleznete seznam všech ";
       if (!extractAll) result+="dokumentovaných ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funkcí, proměnných, maker, výčtů a definic typů (typedef) "
                 "s odkazy na ";
@@ -388,7 +388,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Rejstřík datových struktur";
       }
@@ -415,7 +415,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Dokumentace datových struktur";
       }
@@ -518,7 +518,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datové struktry";
       }
@@ -942,7 +942,7 @@ class TranslatorCzech : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datové položky";
       }

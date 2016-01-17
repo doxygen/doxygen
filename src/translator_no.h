@@ -105,7 +105,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Feltdokumentasjon";
       }
@@ -172,7 +172,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datastrukturer";
       }
@@ -193,7 +193,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datafelt";
       }
@@ -206,7 +206,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Globale";
       }
@@ -247,7 +247,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
 	return "Her er datastrukturene med korte beskrivelser:";
       }
@@ -266,7 +266,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       {
         result+="dokumenterte ";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="struct- og unionfelter";
       }
@@ -277,7 +277,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       result+=" med koblinger til ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="struct/union dokumentasjon for hvert felt:";
         }
@@ -288,7 +288,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
 	  result+="struct'ene/unionene de hører til:";
         }
@@ -305,7 +305,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       QCString result="Her er en liste over alle ";
       if (!extractAll) result+="dokumenterte ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funksjoner, variabler, definisjoner, enum'er, og typedef'er";
       }
@@ -367,7 +367,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datastrukturindeks";
       }
@@ -394,7 +394,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datastrukturdokumentasjon";
       }
@@ -503,7 +503,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datastrukturer";
       }
@@ -924,7 +924,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datafelt";
       }
@@ -1118,7 +1118,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datastrukturer";
       }

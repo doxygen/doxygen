@@ -766,7 +766,7 @@ static void organizeSubGroups(EntryNav *rootNav)
 static void buildFileList(EntryNav *rootNav)
 {
   if (((rootNav->section()==Entry::FILEDOC_SEC) ||
-        ((rootNav->section() & Entry::FILE_MASK) && Config_getBool("EXTRACT_ALL"))) &&
+        ((rootNav->section() & Entry::FILE_MASK) && Config_getBool(EXTRACT_ALL))) &&
       !rootNav->name().isEmpty() && !rootNav->tagInfo() // skip any file coming from tag files
      )
   {
@@ -845,13 +845,13 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
   if (
       (!root->doc.stripWhiteSpace().isEmpty() ||
        !root->brief.stripWhiteSpace().isEmpty() ||
-       Config_getBool("EXTRACT_ALL")
+       Config_getBool(EXTRACT_ALL)
       ) && root->protection!=Private
      )
   {
     //printf(">>>>>> includeFile=%s\n",root->includeFile.data());
 
-    bool local=Config_getBool("FORCE_LOCAL_INCLUDES");
+    bool local=Config_getBool(FORCE_LOCAL_INCLUDES);
     QCString includeFile = root->includeFile;
     if (!includeFile.isEmpty() && includeFile.at(0)=='"')
     {
@@ -915,7 +915,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
           iName=fd->name();
         }
       }
-      else if (!Config_getList("STRIP_FROM_INC_PATH").isEmpty())
+      else if (!Config_getList(STRIP_FROM_INC_PATH).isEmpty())
       {
         iName=stripFromIncludePath(fd->absFilePath());
       }
@@ -1491,7 +1491,7 @@ static void resolveClassNestingRelations()
 
 void distributeClassGroupRelations()
 {
-  //static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (!inlineGroupedClasses) return;
   //printf("** distributeClassGroupRelations()\n");
 
@@ -2270,7 +2270,7 @@ static MemberDef *addVariableToClass(
   QCString def;
   if (!root->type.isEmpty())
   {
-    if (related || mtype==MemberType_Friend || Config_getBool("HIDE_SCOPE_NAMES"))
+    if (related || mtype==MemberType_Friend || Config_getBool(HIDE_SCOPE_NAMES))
     {
       if (root->spec&Entry::Alias) // turn 'typedef B A' into 'using A = B'
       {
@@ -2295,7 +2295,7 @@ static MemberDef *addVariableToClass(
   }
   else
   {
-    if (Config_getBool("HIDE_SCOPE_NAMES"))
+    if (Config_getBool(HIDE_SCOPE_NAMES))
     {
       def=name+root->args;
     }
@@ -2437,7 +2437,7 @@ static MemberDef *addVariableToFile(
   FileDef *fd = rootNav->fileDef();
 
   // see if we have a typedef that should hide a struct or union
-  if (mtype==MemberType_Typedef && Config_getBool("TYPEDEF_HIDES_STRUCT"))
+  if (mtype==MemberType_Typedef && Config_getBool(TYPEDEF_HIDES_STRUCT))
   {
     QCString type = root->type;
     type.stripPrefix("typedef ");
@@ -2480,7 +2480,7 @@ static MemberDef *addVariableToFile(
 
   // determine the definition of the global variable
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@' &&
-      !Config_getBool("HIDE_SCOPE_NAMES")
+      !Config_getBool(HIDE_SCOPE_NAMES)
      )
     // variable is inside a namespace, so put the scope before the name
   {
@@ -2959,7 +2959,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
       //int anonyScopes = 0;
       //bool added=FALSE;
 
-      static bool inlineSimpleStructs = Config_getBool("INLINE_SIMPLE_STRUCTS");
+      static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
       if (si!=-1 && !inlineSimpleStructs) // anonymous scope or type
       {
         QCString pScope;
@@ -3322,7 +3322,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
     // for PHP we use Class::method and Namespace\method
     scopeSeparator="::";
   }
-  if (!root->relates.isEmpty() || isFriend || Config_getBool("HIDE_SCOPE_NAMES"))
+  if (!root->relates.isEmpty() || isFriend || Config_getBool(HIDE_SCOPE_NAMES))
   {
     if (!root->type.isEmpty())
     {
@@ -4306,7 +4306,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
           if (!found && !type.isEmpty()) // used class is not documented in any scope
           {
             ClassDef *usedCd = Doxygen::hiddenClasses->find(type);
-            if (usedCd==0 && !Config_getBool("HIDE_UNDOC_RELATIONS"))
+            if (usedCd==0 && !Config_getBool(HIDE_UNDOC_RELATIONS))
             {
               if (type.right(2)=="(*" || type.right(2)=="(^") // type is a function pointer
               {
@@ -4381,8 +4381,8 @@ static void findBaseClassesForClass(
       {
         // 1.8.2: decided to show inheritance relations even if not documented,
         //        we do make them artificial, so they do not appear in the index
-        //if (!Config_getBool("HIDE_UNDOC_RELATIONS"))
-        bool b = Config_getBool("HIDE_UNDOC_RELATIONS") ? TRUE : isArtificial;
+        //if (!Config_getBool(HIDE_UNDOC_RELATIONS))
+        bool b = Config_getBool(HIDE_UNDOC_RELATIONS) ? TRUE : isArtificial;
         //{
           // no documented base class -> try to find an undocumented one
           findClassRelation(rootNav,context,instanceCd,&tbi,templateNames,Undocumented,b);
@@ -4810,7 +4810,7 @@ static bool findClassRelation(
               usedName=biName;
               //printf("***** usedName=%s templSpec=%s\n",usedName.data(),templSpec.data());
             }
-            static bool sipSupport = Config_getBool("SIP_SUPPORT");
+            static bool sipSupport = Config_getBool(SIP_SUPPORT);
             if (sipSupport) bi->prot=Public;
             if (!cd->isSubClass(baseClass)) // check for recursion, see bug690787
             {
@@ -5057,9 +5057,9 @@ static void computeClassRelations()
     {
       if (!root->name.isEmpty() && root->name.find('@')==-1 && // normal name
           (guessSection(root->fileName)==Entry::HEADER_SEC ||
-           Config_getBool("EXTRACT_LOCAL_CLASSES")) && // not defined in source file
+           Config_getBool(EXTRACT_LOCAL_CLASSES)) && // not defined in source file
            protectionLevelVisible(root->protection) && // hidden by protection
-           !Config_getBool("HIDE_UNDOC_CLASSES") // undocumented class are visible
+           !Config_getBool(HIDE_UNDOC_CLASSES) // undocumented class are visible
          )
         warn_undoc(
                    root->fileName,root->startLine,
@@ -5590,7 +5590,7 @@ static bool findGlobalMember(EntryNav *rootNav,
     if (root->type!="friend class" &&
         root->type!="friend struct" &&
         root->type!="friend union" &&
-        (!Config_getBool("TYPEDEF_HIDES_STRUCT") ||
+        (!Config_getBool(TYPEDEF_HIDES_STRUCT) ||
          root->type.find("typedef ")==-1)
        )
     {
@@ -5999,7 +5999,7 @@ static void findMember(EntryNav *rootNav,
 
   //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
   // rebuild the function declaration (needed to get the scope right).
-  if (!scopeName.isEmpty() && !isRelated && !isFriend && !Config_getBool("HIDE_SCOPE_NAMES"))
+  if (!scopeName.isEmpty() && !isRelated && !isFriend && !Config_getBool(HIDE_SCOPE_NAMES))
   {
     if (!funcType.isEmpty())
     {
@@ -6323,7 +6323,7 @@ static void findMember(EntryNav *rootNav,
                 }
               }
             }
-            static bool strictProtoMatching = Config_getBool("STRICT_PROTO_MATCHING");
+            static bool strictProtoMatching = Config_getBool(STRICT_PROTO_MATCHING);
             if (!strictProtoMatching)
             {
               if (candidates==1 && ucd && umd)
@@ -6760,7 +6760,7 @@ static void findMember(EntryNav *rootNav,
 localObjCMethod:
       ClassDef *cd;
       //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
-      if (Config_getBool("EXTRACT_LOCAL_METHODS") && (cd=getClass(scopeName)))
+      if (Config_getBool(EXTRACT_LOCAL_METHODS) && (cd=getClass(scopeName)))
       {
         Debug::print(Debug::FindMembers,0,"4. Local objective C method %s\n"
               "  scopeName=%s className=%s\n",qPrint(root->name),qPrint(scopeName),qPrint(className));
@@ -7133,7 +7133,7 @@ static void findEnums(EntryNav *rootNav)
 
       if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
       {
-        if (isRelated || Config_getBool("HIDE_SCOPE_NAMES"))
+        if (isRelated || Config_getBool(HIDE_SCOPE_NAMES))
         {
           md->setDefinition(name+baseType);
         }
@@ -7165,7 +7165,7 @@ static void findEnums(EntryNav *rootNav)
       }
       else if (cd)
       {
-        if (isRelated || Config_getBool("HIDE_SCOPE_NAMES"))
+        if (isRelated || Config_getBool(HIDE_SCOPE_NAMES))
         {
           md->setDefinition(name+baseType);
         }
@@ -7819,7 +7819,7 @@ static void generateFileSources()
   if (Doxygen::inputNameList->count()>0)
   {
 #if USE_LIBCLANG
-    static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
+    static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
     if (clangAssistedParsing)
     {
       QDict<void> g_processedFiles(10007);
@@ -8560,7 +8560,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
     }
     else if (!root->doc.isEmpty() || !root->brief.isEmpty()) // define not found
     {
-      static bool preEnabled = Config_getBool("ENABLE_PREPROCESSING");
+      static bool preEnabled = Config_getBool(ENABLE_PREPROCESSING);
       if (preEnabled)
       {
         warn(root->fileName,root->startLine,
@@ -8673,7 +8673,7 @@ static void buildPageList(EntryNav *rootNav)
 
     QCString title=root->args.stripWhiteSpace();
     if (title.isEmpty()) title=theTranslator->trMainPage();
-    //QCString name = Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+    //QCString name = Config_getBool(GENERATE_TREEVIEW)?"main":"index";
     QCString name = "index";
     addRefItem(root->sli,
                name,
@@ -8700,7 +8700,7 @@ static void findMainPage(EntryNav *rootNav)
       Entry *root = rootNav->entry();
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
-      //QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+      //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
       QCString indexName="index";
       Doxygen::mainPage = new PageDef(root->docFile,root->docLine,
                               indexName, root->brief+root->doc+root->inbodyDocs,title);
@@ -9112,7 +9112,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   if (fileOpened)
   {
     FTextStream t(&f);
-    Config::instance()->writeTemplate(t,shortList,updateOnly);
+    Config::writeTemplate(t,shortList,updateOnly);
     if (!writeToStdout)
     {
       if (!updateOnly)
@@ -9189,7 +9189,7 @@ static void readTagFile(Entry *root,const char *tl)
 //----------------------------------------------------------------------------
 static void copyLatexStyleSheet()
 {
-  QStrList latexExtraStyleSheet = Config_getList("LATEX_EXTRA_STYLESHEET");
+  QStrList latexExtraStyleSheet = Config_getList(LATEX_EXTRA_STYLESHEET);
   for (uint i=0; i<latexExtraStyleSheet.count(); ++i)
   {
     QCString fileName(latexExtraStyleSheet.at(i));
@@ -9202,7 +9202,7 @@ static void copyLatexStyleSheet()
       }
       else
       {
-        QCString destFileName = Config_getString("LATEX_OUTPUT")+"/"+fi.fileName().data();
+        QCString destFileName = Config_getString(LATEX_OUTPUT)+"/"+fi.fileName().data();
         if (!checkExtension(fi.fileName().data(), latexStyleExtension))
         {
           destFileName += latexStyleExtension;
@@ -9216,7 +9216,7 @@ static void copyLatexStyleSheet()
 //----------------------------------------------------------------------------
 static void copyStyleSheet()
 {
-  QCString &htmlStyleSheet = Config_getString("HTML_STYLESHEET");
+  QCString &htmlStyleSheet = Config_getString(HTML_STYLESHEET);
   if (!htmlStyleSheet.isEmpty())
   {
     QFileInfo fi(htmlStyleSheet);
@@ -9227,11 +9227,11 @@ static void copyStyleSheet()
     }
     else
     {
-      QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
+      QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName().data();
       copyFile(htmlStyleSheet,destFileName);
     }
   }
-  QStrList htmlExtraStyleSheet = Config_getList("HTML_EXTRA_STYLESHEET");
+  QStrList htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
   for (uint i=0; i<htmlExtraStyleSheet.count(); ++i)
   {
     QCString fileName(htmlExtraStyleSheet.at(i));
@@ -9248,7 +9248,7 @@ static void copyStyleSheet()
       }
       else
       {
-        QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
+        QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName().data();
         copyFile(fileName, destFileName);
       }
     }
@@ -9257,7 +9257,7 @@ static void copyStyleSheet()
 
 static void copyLogo()
 {
-  QCString &projectLogo = Config_getString("PROJECT_LOGO");
+  QCString &projectLogo = Config_getString(PROJECT_LOGO);
   if (!projectLogo.isEmpty())
   {
     QFileInfo fi(projectLogo);
@@ -9268,16 +9268,15 @@ static void copyLogo()
     }
     else
     {
-      QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
+      QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName().data();
       copyFile(projectLogo,destFileName);
       Doxygen::indexList->addImageFile(fi.fileName().data());
     }
   }
 }
 
-static void copyExtraFiles(const QCString& filesOption,const QCString &outputOption)
+static void copyExtraFiles(QStrList files,const QString &filesOption,const QCString &outputOption)
 {
-  QStrList files = Config_getList(filesOption);
   uint i;
   for (i=0; i<files.count(); ++i)
   {
@@ -9288,11 +9287,11 @@ static void copyExtraFiles(const QCString& filesOption,const QCString &outputOpt
       QFileInfo fi(fileName);
       if (!fi.exists())
       {
-        err("Extra file '%s' specified in " + filesOption + " does not exist!\n", fileName.data());
+        err("Extra file '%s' specified in %s does not exist!\n", fileName.data(),filesOption.data());
       }
       else
       {
-        QCString destFileName = Config_getString(outputOption)+"/"+fi.fileName().data();
+        QCString destFileName = outputOption+"/"+fi.fileName().data();
         Doxygen::indexList->addImageFile(fi.fileName().utf8());
         copyFile(fileName, destFileName);
       }
@@ -9325,7 +9324,7 @@ static void parseFile(ParserInterface *parser,
                       bool sameTu,QStrList &filesInSameTu)
 {
 #if USE_LIBCLANG
-  static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
+  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
 #else
   static bool clangAssistedParsing = FALSE;
 #endif
@@ -9344,7 +9343,7 @@ static void parseFile(ParserInterface *parser,
   QFileInfo fi(fileName);
   BufStr preBuf(fi.size()+4096);
 
-  if (Config_getBool("ENABLE_PREPROCESSING") &&
+  if (Config_getBool(ENABLE_PREPROCESSING) &&
       parser->needsPreprocessing(extension))
   {
     BufStr inBuf(fi.size()+4096);
@@ -9387,7 +9386,7 @@ static void parseFile(ParserInterface *parser,
 static void parseFiles(Entry *root,EntryNav *rootNav)
 {
 #if USE_LIBCLANG
-  static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
+  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (clangAssistedParsing)
   {
     QDict<void> g_processedFiles(10007);
@@ -9599,7 +9598,7 @@ int readDir(QFileInfo *fi,
           }
         }
         else if (cfi->isFile() &&
-            (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
+            (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
             (patList==0 || patternMatch(*cfi,patList)) &&
             !patternMatch(*cfi,exclPatList) &&
             (killDict==0 || killDict->find(cfi->absFilePath().utf8())==0)
@@ -9634,7 +9633,7 @@ int readDir(QFileInfo *fi,
           if (killDict) killDict->insert(cfi->absFilePath().utf8(),(void *)0x8);
         }
         else if (recursive &&
-            (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
+            (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
             cfi->isDir() &&
             !patternMatch(*cfi,exclPatList) &&
             cfi->fileName().at(0)!='.') // skip "." ".." and ".dir"
@@ -9690,7 +9689,7 @@ int readFileOrDirectory(const char *s,
           warn_uncond("source %s is not a readable file or directory... skipping.\n",s);
         }
       }
-      else if (!Config_getBool("EXCLUDE_SYMLINKS") || !fi.isSymLink())
+      else if (!Config_getBool(EXCLUDE_SYMLINKS) || !fi.isSymLink())
       {
         if (fi.isFile())
         {
@@ -9750,7 +9749,7 @@ int readFileOrDirectory(const char *s,
 
 void readFormulaRepository()
 {
-  QFile f(Config_getString("HTML_OUTPUT")+"/formula.repository");
+  QFile f(Config_getString(HTML_OUTPUT)+"/formula.repository");
   if (f.open(IO_ReadOnly)) // open repository
   {
     msg("Reading formula repository...\n");
@@ -9832,7 +9831,7 @@ void readAliases()
 {
   // add aliases to a dictionary
   Doxygen::aliasDict.setAutoDelete(TRUE);
-  QStrList &aliasList = Config_getList("ALIASES");
+  QStrList &aliasList = Config_getList(ALIASES);
   const char *s=aliasList.first();
   while (s)
   {
@@ -10019,7 +10018,6 @@ void initDoxygen()
   Doxygen::functionNameSDict->setAutoDelete(TRUE);
   Doxygen::groupSDict = new GroupSDict(17);
   Doxygen::groupSDict->setAutoDelete(TRUE);
-  Doxygen::globalScope = new NamespaceDef("<globalScope>",1,1,"<globalScope>");
   Doxygen::namespaceSDict = new NamespaceSDict(20);
   Doxygen::namespaceSDict->setAutoDelete(TRUE);
   Doxygen::classSDict = new ClassSDict(1009);
@@ -10032,15 +10030,6 @@ void initDoxygen()
   Doxygen::pageSDict->setAutoDelete(TRUE);
   Doxygen::exampleSDict = new PageSDict(1009);       // all examples
   Doxygen::exampleSDict->setAutoDelete(TRUE);
-  Doxygen::inputNameDict = new FileNameDict(10007);
-  Doxygen::includeNameDict = new FileNameDict(10007);
-  Doxygen::exampleNameDict = new FileNameDict(1009);
-  Doxygen::exampleNameDict->setAutoDelete(TRUE);
-  Doxygen::imageNameDict = new FileNameDict(257);
-  Doxygen::imageNameDict->setAutoDelete(TRUE);
-  Doxygen::dotFileNameDict = new FileNameDict(257);
-  Doxygen::mscFileNameDict = new FileNameDict(257);
-  Doxygen::diaFileNameDict = new FileNameDict(257);
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
@@ -10052,6 +10041,17 @@ void initDoxygen()
   Doxygen::formulaNameDict = new FormulaDict(1009);
   Doxygen::sectionDict = new SectionDict(257);
   Doxygen::sectionDict->setAutoDelete(TRUE);
+
+  // initialisation of these globals depends on
+  // configuration switches so we need to postpone these
+  Doxygen::globalScope     = 0;
+  Doxygen::inputNameDict   = 0;
+  Doxygen::includeNameDict = 0;
+  Doxygen::exampleNameDict = 0;
+  Doxygen::imageNameDict   = 0;
+  Doxygen::dotFileNameDict = 0;
+  Doxygen::mscFileNameDict = 0;
+  Doxygen::diaFileNameDict = 0;
 
   /**************************************************************************
    *            Initialize some global constants
@@ -10258,23 +10258,18 @@ void readConfiguration(int argc, char **argv)
           if (optind+4<argc || QFileInfo("Doxyfile").exists())
           {
             QCString df = optind+4<argc ? argv[optind+4] : QCString("Doxyfile");
-            if (!Config::instance()->parse(df))
+            if (!Config::parse(df))
             {
               err("error opening or reading configuration file %s!\n",argv[optind+4]);
               cleanUpDoxygen();
               exit(1);
             }
-            Config::instance()->substituteEnvironmentVars();
-            Config::instance()->convertStrToVal();
-            // avoid bootstrapping issues when the config file already
-            // refers to the files that we are supposed to parse.
-            Config_getString("HTML_HEADER")="";
-            Config_getString("HTML_FOOTER")="";
-            Config::instance()->check();
+            Config::postProcess(TRUE);
+            Config::checkAndCorrect();
           }
           else
           {
-            Config::instance()->init();
+            Config::init();
           }
           if (optind+3>=argc)
           {
@@ -10283,7 +10278,7 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
 
-          QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
+          QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
           if (!setTranslator(outputLanguage))
           {
             warn_uncond("Output language %s not supported! Using English instead.\n", outputLanguage.data());
@@ -10312,21 +10307,18 @@ void readConfiguration(int argc, char **argv)
           if (optind+4<argc || QFileInfo("Doxyfile").exists())
           {
             QCString df = optind+4<argc ? argv[optind+4] : QCString("Doxyfile");
-            if (!Config::instance()->parse(df))
+            if (!Config::parse(df))
             {
               err("error opening or reading configuration file %s!\n",argv[optind+4]);
               cleanUpDoxygen();
               exit(1);
             }
-            Config::instance()->substituteEnvironmentVars();
-            Config::instance()->convertStrToVal();
-            Config_getString("LATEX_HEADER")="";
-            Config_getString("LATEX_FOOTER")="";
-            Config::instance()->check();
+            Config::postProcess(TRUE);
+            Config::checkAndCorrect();
           }
           else // use default config
           {
-            Config::instance()->init();
+            Config::init();
           }
           if (optind+3>=argc)
           {
@@ -10335,7 +10327,7 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
 
-          QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
+          QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
           if (!setTranslator(outputLanguage))
           {
             warn_uncond("Output language %s not supported! Using English instead.\n", outputLanguage.data());
@@ -10420,7 +10412,7 @@ void readConfiguration(int argc, char **argv)
    *            Parse or generate the config file                           *
    **************************************************************************/
 
-  Config::instance()->init();
+  Config::init();
 
   if (genConfig)
   {
@@ -10469,7 +10461,7 @@ void readConfiguration(int argc, char **argv)
   }
 
 
-  if (!Config::instance()->parse(configName,updateConfig))
+  if (!Config::parse(configName,updateConfig))
   {
     err("could not open or read configuration file %s!\n",configName);
     cleanUpDoxygen();
@@ -10493,23 +10485,32 @@ void readConfiguration(int argc, char **argv)
 void checkConfiguration()
 {
 
-  Config::instance()->substituteEnvironmentVars();
-  Config::instance()->convertStrToVal();
-  Config::instance()->check();
-
+  Config::postProcess(FALSE);
+  Config::checkAndCorrect();
   initWarningFormat();
 }
 
 /** adjust globals that depend on configuration settings. */
 void adjustConfiguration()
 {
-  QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
+  Doxygen::globalScope = new NamespaceDef("<globalScope>",1,1,"<globalScope>");
+  Doxygen::inputNameDict = new FileNameDict(10007);
+  Doxygen::includeNameDict = new FileNameDict(10007);
+  Doxygen::exampleNameDict = new FileNameDict(1009);
+  Doxygen::exampleNameDict->setAutoDelete(TRUE);
+  Doxygen::imageNameDict = new FileNameDict(257);
+  Doxygen::imageNameDict->setAutoDelete(TRUE);
+  Doxygen::dotFileNameDict = new FileNameDict(257);
+  Doxygen::mscFileNameDict = new FileNameDict(257);
+  Doxygen::diaFileNameDict = new FileNameDict(257);
+
+  QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
   if (!setTranslator(outputLanguage))
   {
     warn_uncond("Output language %s not supported! Using English instead.\n",
        outputLanguage.data());
   }
-  QStrList &includePath = Config_getList("INCLUDE_PATH");
+  QStrList &includePath = Config_getList(INCLUDE_PATH);
   char *s=includePath.first();
   while (s)
   {
@@ -10519,23 +10520,23 @@ void adjustConfiguration()
   }
 
   /* Set the global html file extension. */
-  Doxygen::htmlFileExtension = Config_getString("HTML_FILE_EXTENSION");
+  Doxygen::htmlFileExtension = Config_getString(HTML_FILE_EXTENSION);
 
 
   Doxygen::xrefLists->setAutoDelete(TRUE);
 
-  Doxygen::parseSourcesNeeded = Config_getBool("CALL_GRAPH") ||
-                                Config_getBool("CALLER_GRAPH") ||
-                                Config_getBool("REFERENCES_RELATION") ||
-                                Config_getBool("REFERENCED_BY_RELATION");
+  Doxygen::parseSourcesNeeded = Config_getBool(CALL_GRAPH) ||
+                                Config_getBool(CALLER_GRAPH) ||
+                                Config_getBool(REFERENCES_RELATION) ||
+                                Config_getBool(REFERENCED_BY_RELATION);
 
-  Doxygen::markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
+  Doxygen::markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
 
   /**************************************************************************
    *            Add custom extension mappings
    **************************************************************************/
 
-  QStrList &extMaps = Config_getList("EXTENSION_MAPPING");
+  QStrList &extMaps = Config_getList(EXTENSION_MAPPING);
   char *mapping = extMaps.first();
   while (mapping)
   {
@@ -10562,7 +10563,7 @@ void adjustConfiguration()
 
 
   // add predefined macro name to a dictionary
-  QStrList &expandAsDefinedList =Config_getList("EXPAND_AS_DEFINED");
+  QStrList &expandAsDefinedList =Config_getList(EXPAND_AS_DEFINED);
   s=expandAsDefinedList.first();
   while (s)
   {
@@ -10577,7 +10578,7 @@ void adjustConfiguration()
   readAliases();
 
   // store number of spaces in a tab into Doxygen::spaces
-  int &tabSize = Config_getInt("TAB_SIZE");
+  int &tabSize = Config_getInt(TAB_SIZE);
   Doxygen::spaces.resize(tabSize+1);
   int sp;for (sp=0;sp<tabSize;sp++) Doxygen::spaces.at(sp)=' ';
   Doxygen::spaces.at(tabSize)='\0';
@@ -10603,7 +10604,7 @@ static void stopDoxygen(int)
 
 static void writeTagFile()
 {
-  QCString &generateTagFile = Config_getString("GENERATE_TAGFILE");
+  QCString &generateTagFile = Config_getString(GENERATE_TAGFILE);
   if (generateTagFile.isEmpty()) return;
 
   QFile tag(generateTagFile);
@@ -10661,7 +10662,7 @@ static void writeTagFile()
   if (Doxygen::mainPage) Doxygen::mainPage->writeTagFile(tagFile);
 
   /*
-  if (Doxygen::mainPage && !Config_getString("GENERATE_TAGFILE").isEmpty())
+  if (Doxygen::mainPage && !Config_getString(GENERATE_TAGFILE).isEmpty())
   {
     tagFile << "  <compound kind=\"page\">" << endl
                      << "    <name>"
@@ -10700,11 +10701,10 @@ static void exitDoxygen()
 }
 
 static QCString createOutputDirectory(const QCString &baseDirName,
-                                  const char *formatDirOption,
+                                  QCString &formatDirName,
                                   const char *defaultDirName)
 {
   // Note the & on the next line, we modify the formatDirOption!
-  QCString &formatDirName = Config_getString(formatDirOption);
   if (formatDirName.isEmpty())
   {
     formatDirName = baseDirName + defaultDirName;
@@ -10725,14 +10725,14 @@ static QCString createOutputDirectory(const QCString &baseDirName,
 
 static QCString getQchFileName()
 {
-  QCString const & qchFile = Config_getString("QCH_FILE");
+  QCString const & qchFile = Config_getString(QCH_FILE);
   if (!qchFile.isEmpty())
   {
     return qchFile;
   }
 
-  QCString const & projectName = Config_getString("PROJECT_NAME");
-  QCString const & versionText = Config_getString("PROJECT_NUMBER");
+  QCString const & projectName = Config_getString(PROJECT_NAME);
+  QCString const & versionText = Config_getString(PROJECT_NUMBER);
 
   return QCString("../qch/")
       + (projectName.isEmpty() ? QCString("index") : projectName)
@@ -10742,21 +10742,21 @@ static QCString getQchFileName()
 
 void searchInputFiles()
 {
-  QStrList &exclPatterns = Config_getList("EXCLUDE_PATTERNS");
-  bool alwaysRecursive = Config_getBool("RECURSIVE");
+  QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
+  bool alwaysRecursive = Config_getBool(RECURSIVE);
   StringDict excludeNameDict(1009);
   excludeNameDict.setAutoDelete(TRUE);
 
   // gather names of all files in the include path
   g_s.begin("Searching for include files...\n");
-  QStrList &includePathList = Config_getList("INCLUDE_PATH");
+  QStrList &includePathList = Config_getList(INCLUDE_PATH);
   char *s=includePathList.first();
   while (s)
   {
-    QStrList &pl = Config_getList("INCLUDE_FILE_PATTERNS");
+    QStrList &pl = Config_getList(INCLUDE_FILE_PATTERNS);
     if (pl.count()==0)
     {
-      pl = Config_getList("FILE_PATTERNS");
+      pl = Config_getList(FILE_PATTERNS);
     }
     readFileOrDirectory(s,0,Doxygen::includeNameDict,0,&pl,
                         &exclPatterns,0,0,
@@ -10766,20 +10766,20 @@ void searchInputFiles()
   g_s.end();
 
   g_s.begin("Searching for example files...\n");
-  QStrList &examplePathList = Config_getList("EXAMPLE_PATH");
+  QStrList &examplePathList = Config_getList(EXAMPLE_PATH);
   s=examplePathList.first();
   while (s)
   {
     readFileOrDirectory(s,0,Doxygen::exampleNameDict,0,
-                        &Config_getList("EXAMPLE_PATTERNS"),
+                        &Config_getList(EXAMPLE_PATTERNS),
                         0,0,0,
-                        (alwaysRecursive || Config_getBool("EXAMPLE_RECURSIVE")));
+                        (alwaysRecursive || Config_getBool(EXAMPLE_RECURSIVE)));
     s=examplePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for images...\n");
-  QStrList &imagePathList=Config_getList("IMAGE_PATH");
+  QStrList &imagePathList=Config_getList(IMAGE_PATH);
   s=imagePathList.first();
   while (s)
   {
@@ -10791,7 +10791,7 @@ void searchInputFiles()
   g_s.end();
 
   g_s.begin("Searching for dot files...\n");
-  QStrList &dotFileList=Config_getList("DOTFILE_DIRS");
+  QStrList &dotFileList=Config_getList(DOTFILE_DIRS);
   s=dotFileList.first();
   while (s)
   {
@@ -10803,7 +10803,7 @@ void searchInputFiles()
   g_s.end();
 
   g_s.begin("Searching for msc files...\n");
-  QStrList &mscFileList=Config_getList("MSCFILE_DIRS");
+  QStrList &mscFileList=Config_getList(MSCFILE_DIRS);
   s=mscFileList.first();
   while (s)
   {
@@ -10815,7 +10815,7 @@ void searchInputFiles()
   g_s.end();
 
   g_s.begin("Searching for dia files...\n");
-  QStrList &diaFileList=Config_getList("DIAFILE_DIRS");
+  QStrList &diaFileList=Config_getList(DIAFILE_DIRS);
   s=diaFileList.first();
   while (s)
   {
@@ -10827,11 +10827,11 @@ void searchInputFiles()
   g_s.end();
 
   g_s.begin("Searching for files to exclude\n");
-  QStrList &excludeList = Config_getList("EXCLUDE");
+  QStrList &excludeList = Config_getList(EXCLUDE);
   s=excludeList.first();
   while (s)
   {
-    readFileOrDirectory(s,0,0,0,&Config_getList("FILE_PATTERNS"),
+    readFileOrDirectory(s,0,0,0,&Config_getList(FILE_PATTERNS),
                         0,0,&excludeNameDict,
                         alwaysRecursive,
                         FALSE);
@@ -10845,7 +10845,7 @@ void searchInputFiles()
 
   g_s.begin("Searching INPUT for files to process...\n");
   QDict<void> *killDict = new QDict<void>(10007);
-  QStrList &inputList=Config_getList("INPUT");
+  QStrList &inputList=Config_getList(INPUT);
   g_inputFiles.setAutoDelete(TRUE);
   s=inputList.first();
   while (s)
@@ -10862,7 +10862,7 @@ void searchInputFiles()
           Doxygen::inputNameList,
           Doxygen::inputNameDict,
           &excludeNameDict,
-          &Config_getList("FILE_PATTERNS"),
+          &Config_getList(FILE_PATTERNS),
           &exclPatterns,
           &g_inputFiles,0,
           alwaysRecursive,
@@ -10885,7 +10885,7 @@ void parseInput()
   /**************************************************************************
    *            Make sure the output directory exists
    **************************************************************************/
-  QCString &outputDirectory = Config_getString("OUTPUT_DIRECTORY");
+  QCString &outputDirectory = Config_getString(OUTPUT_DIRECTORY);
   if (outputDirectory.isEmpty())
   {
     outputDirectory=QDir::currentDirPath().utf8();
@@ -10920,7 +10920,7 @@ void parseInput()
   Doxygen::symbolStorage = new Store;
 
   // also scale lookup cache with SYMBOL_CACHE_SIZE
-  int cacheSize = Config_getInt("LOOKUP_CACHE_SIZE");
+  int cacheSize = Config_getInt(LOOKUP_CACHE_SIZE);
   if (cacheSize<0) cacheSize=0;
   if (cacheSize>9) cacheSize=9;
   uint lookupSize = 65536 << cacheSize;
@@ -10950,43 +10950,43 @@ void parseInput()
    **************************************************************************/
 
   QCString htmlOutput;
-  bool &generateHtml = Config_getBool("GENERATE_HTML");
+  bool &generateHtml = Config_getBool(GENERATE_HTML);
   if (generateHtml || g_useOutputTemplate /* TODO: temp hack */)
-    htmlOutput = createOutputDirectory(outputDirectory,"HTML_OUTPUT","/html");
+    htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
 
   QCString docbookOutput;
-  bool &generateDocbook = Config_getBool("GENERATE_DOCBOOK");
+  bool &generateDocbook = Config_getBool(GENERATE_DOCBOOK);
   if (generateDocbook)
-    docbookOutput = createOutputDirectory(outputDirectory,"DOCBOOK_OUTPUT","/docbook");
+    docbookOutput = createOutputDirectory(outputDirectory,Config_getString(DOCBOOK_OUTPUT),"/docbook");
 
   QCString xmlOutput;
-  bool &generateXml = Config_getBool("GENERATE_XML");
+  bool &generateXml = Config_getBool(GENERATE_XML);
   if (generateXml)
-    xmlOutput = createOutputDirectory(outputDirectory,"XML_OUTPUT","/xml");
+    xmlOutput = createOutputDirectory(outputDirectory,Config_getString(XML_OUTPUT),"/xml");
 
   QCString latexOutput;
-  bool &generateLatex = Config_getBool("GENERATE_LATEX");
+  bool &generateLatex = Config_getBool(GENERATE_LATEX);
   if (generateLatex)
-    latexOutput = createOutputDirectory(outputDirectory,"LATEX_OUTPUT","/latex");
+    latexOutput = createOutputDirectory(outputDirectory,Config_getString(LATEX_OUTPUT),"/latex");
 
   QCString rtfOutput;
-  bool &generateRtf = Config_getBool("GENERATE_RTF");
+  bool &generateRtf = Config_getBool(GENERATE_RTF);
   if (generateRtf)
-    rtfOutput = createOutputDirectory(outputDirectory,"RTF_OUTPUT","/rtf");
+    rtfOutput = createOutputDirectory(outputDirectory,Config_getString(RTF_OUTPUT),"/rtf");
 
   QCString manOutput;
-  bool &generateMan = Config_getBool("GENERATE_MAN");
+  bool &generateMan = Config_getBool(GENERATE_MAN);
   if (generateMan)
-    manOutput = createOutputDirectory(outputDirectory,"MAN_OUTPUT","/man");
+    manOutput = createOutputDirectory(outputDirectory,Config_getString(MAN_OUTPUT),"/man");
 
   //QCString sqlOutput;
-  //bool &generateSql = Config_getBool("GENERATE_SQLITE3");
+  //bool &generateSql = Config_getBool(GENERATE_SQLITE3);
   //if (generateSql)
   //  sqlOutput = createOutputDirectory(outputDirectory,"SQLITE3_OUTPUT","/sqlite3");
 
-  if (Config_getBool("HAVE_DOT"))
+  if (Config_getBool(HAVE_DOT))
   {
-    QCString curFontPath = Config_getString("DOT_FONTPATH");
+    QCString curFontPath = Config_getString(DOT_FONTPATH);
     if (curFontPath.isEmpty())
     {
       portable_getenv("DOTFONTPATH");
@@ -11011,7 +11011,7 @@ void parseInput()
    **************************************************************************/
 
   LayoutDocManager::instance().init();
-  QCString &layoutFileName = Config_getString("LAYOUT_FILE");
+  QCString &layoutFileName = Config_getString(LAYOUT_FILE);
   bool defaultLayoutUsed = FALSE;
   if (layoutFileName.isEmpty())
   {
@@ -11037,7 +11037,7 @@ void parseInput()
    **************************************************************************/
 
   // prevent search in the output directories
-  QStrList &exclPatterns = Config_getList("EXCLUDE_PATTERNS");
+  QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
   if (generateHtml)    exclPatterns.append(htmlOutput);
   if (generateDocbook) exclPatterns.append(docbookOutput);
   if (generateXml)     exclPatterns.append(xmlOutput);
@@ -11049,7 +11049,7 @@ void parseInput()
 
   // Notice: the order of the function calls below is very important!
 
-  if (Config_getBool("GENERATE_HTML"))
+  if (Config_getBool(GENERATE_HTML))
   {
     readFormulaRepository();
   }
@@ -11071,7 +11071,7 @@ void parseInput()
   rootNav->setEntry(root);
   msg("Reading and parsing tag files\n");
 
-  QStrList &tagFileList = Config_getList("TAGFILES");
+  QStrList &tagFileList = Config_getList(TAGFILES);
   char *s=tagFileList.first();
   while (s)
   {
@@ -11084,7 +11084,7 @@ void parseInput()
    *             Parse source files                                         *
    **************************************************************************/
 
-  if (Config_getBool("BUILTIN_STL_SUPPORT"))
+  if (Config_getBool(BUILTIN_STL_SUPPORT))
   {
     addSTLClasses(rootNav);
   }
@@ -11210,7 +11210,7 @@ void parseInput()
   findUsedTemplateInstances();
   g_s.end();
 
-  if (Config_getBool("INLINE_SIMPLE_STRUCTS"))
+  if (Config_getBool(INLINE_SIMPLE_STRUCTS))
   {
     g_s.begin("Searching for tag less structs...\n");
     findTagLessClasses();
@@ -11224,7 +11224,7 @@ void parseInput()
   g_s.begin("Computing class relations...\n");
   computeTemplateClassRelations();
   flushUnresolvedRelations();
-  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL"))
+  if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
   {
     VhdlDocGen::computeVhdlComponentRelations();
   }
@@ -11302,7 +11302,7 @@ void parseInput()
   addMembersToMemberGroup();
   g_s.end();
 
-  if (Config_getBool("DISTRIBUTE_GROUP_DOC"))
+  if (Config_getBool(DISTRIBUTE_GROUP_DOC))
   {
     g_s.begin("Distributing member group documentation.\n");
     distributeMemberGroupDocumentation();
@@ -11313,7 +11313,7 @@ void parseInput()
   computeMemberReferences();
   g_s.end();
 
-  if (Config_getBool("INHERIT_DOCS"))
+  if (Config_getBool(INHERIT_DOCS))
   {
     g_s.begin("Inheriting documentation...\n");
     inheritDocumentation();
@@ -11339,7 +11339,7 @@ void parseInput()
   sortMemberLists();
   g_s.end();
 
-  if (Config_getBool("DIRECTORY_GRAPH"))
+  if (Config_getBool(DIRECTORY_GRAPH))
   {
     g_s.begin("Computing dependencies between directories...\n");
     computeDirDependencies();
@@ -11396,10 +11396,10 @@ void generateOutput()
 
   initSearchIndexer();
 
-  bool generateHtml  = Config_getBool("GENERATE_HTML");
-  bool generateLatex = Config_getBool("GENERATE_LATEX");
-  bool generateMan   = Config_getBool("GENERATE_MAN");
-  bool generateRtf   = Config_getBool("GENERATE_RTF");
+  bool generateHtml  = Config_getBool(GENERATE_HTML);
+  bool generateLatex = Config_getBool(GENERATE_LATEX);
+  bool generateMan   = Config_getBool(GENERATE_MAN);
+  bool generateRtf   = Config_getBool(GENERATE_RTF);
 
 
   g_outputList = new OutputList(TRUE);
@@ -11409,11 +11409,11 @@ void generateOutput()
     HtmlGenerator::init();
 
     // add HTML indexers that are enabled
-    bool generateHtmlHelp    = Config_getBool("GENERATE_HTMLHELP");
-    bool generateEclipseHelp = Config_getBool("GENERATE_ECLIPSEHELP");
-    bool generateQhp         = Config_getBool("GENERATE_QHP");
-    bool generateTreeView    = Config_getBool("GENERATE_TREEVIEW");
-    bool generateDocSet      = Config_getBool("GENERATE_DOCSET");
+    bool generateHtmlHelp    = Config_getBool(GENERATE_HTMLHELP);
+    bool generateEclipseHelp = Config_getBool(GENERATE_ECLIPSEHELP);
+    bool generateQhp         = Config_getBool(GENERATE_QHP);
+    bool generateTreeView    = Config_getBool(GENERATE_TREEVIEW);
+    bool generateDocSet      = Config_getBool(GENERATE_DOCSET);
     if (generateEclipseHelp) Doxygen::indexList->addIndex(new EclipseHelp);
     if (generateHtmlHelp)    Doxygen::indexList->addIndex(new HtmlHelp);
     if (generateQhp)         Doxygen::indexList->addIndex(new Qhp);
@@ -11437,10 +11437,10 @@ void generateOutput()
     g_outputList->add(new RTFGenerator);
     RTFGenerator::init();
   }
-  if (Config_getBool("USE_HTAGS"))
+  if (Config_getBool(USE_HTAGS))
   {
     Htags::useHtags = TRUE;
-    QCString htmldir = Config_getString("HTML_OUTPUT");
+    QCString htmldir = Config_getString(HTML_OUTPUT);
     if (!Htags::execute(htmldir))
        err("USE_HTAGS is YES but htags(1) failed. \n");
     if (!Htags::loadFilemap(htmldir))
@@ -11451,17 +11451,17 @@ void generateOutput()
    *                        Generate documentation                          *
    **************************************************************************/
 
-  if (generateHtml)  writeDoxFont(Config_getString("HTML_OUTPUT"));
-  if (generateLatex) writeDoxFont(Config_getString("LATEX_OUTPUT"));
-  if (generateRtf)   writeDoxFont(Config_getString("RTF_OUTPUT"));
+  if (generateHtml)  writeDoxFont(Config_getString(HTML_OUTPUT));
+  if (generateLatex) writeDoxFont(Config_getString(LATEX_OUTPUT));
+  if (generateRtf)   writeDoxFont(Config_getString(RTF_OUTPUT));
 
   g_s.begin("Generating style sheet...\n");
   //printf("writing style info\n");
   g_outputList->writeStyleInfo(0); // write first part
   g_s.end();
 
-  static bool searchEngine      = Config_getBool("SEARCHENGINE");
-  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
+  static bool searchEngine      = Config_getBool(SEARCHENGINE);
+  static bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
 
   g_s.begin("Generating search indices...\n");
   if (searchEngine && !serverBasedSearch && (generateHtml || g_useOutputTemplate))
@@ -11474,7 +11474,7 @@ void generateOutput()
   // what categories we find in this function.
   if (generateHtml && searchEngine)
   {
-    QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
+    QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
     {
@@ -11521,7 +11521,7 @@ void generateOutput()
   generateNamespaceDocs();
   g_s.end();
 
-  if (Config_getBool("GENERATE_LEGEND"))
+  if (Config_getBool(GENERATE_LEGEND))
   {
     g_s.begin("Generating graph info page...\n");
     writeGraphInfo(*g_outputList);
@@ -11533,14 +11533,14 @@ void generateOutput()
   g_s.end();
 
   if (Doxygen::formulaList->count()>0 && generateHtml
-      && !Config_getBool("USE_MATHJAX"))
+      && !Config_getBool(USE_MATHJAX))
   {
     g_s.begin("Generating bitmaps for formulas in HTML...\n");
-    Doxygen::formulaList->generateBitmaps(Config_getString("HTML_OUTPUT"));
+    Doxygen::formulaList->generateBitmaps(Config_getString(HTML_OUTPUT));
     g_s.end();
   }
 
-  if (Config_getBool("SORT_GROUP_NAMES"))
+  if (Config_getBool(SORT_GROUP_NAMES))
   {
     Doxygen::groupSDict->sort();
     GroupSDict::Iterator gli(*Doxygen::groupSDict);
@@ -11564,17 +11564,17 @@ void generateOutput()
   writeTagFile();
   g_s.end();
 
-  if (Config_getBool("DOT_CLEANUP"))
+  if (Config_getBool(DOT_CLEANUP))
   {
     if (generateHtml)
-      removeDoxFont(Config_getString("HTML_OUTPUT"));
+      removeDoxFont(Config_getString(HTML_OUTPUT));
     if (generateRtf)
-      removeDoxFont(Config_getString("RTF_OUTPUT"));
+      removeDoxFont(Config_getString(RTF_OUTPUT));
     if (generateLatex)
-      removeDoxFont(Config_getString("LATEX_OUTPUT"));
+      removeDoxFont(Config_getString(LATEX_OUTPUT));
   }
 
-  if (Config_getBool("GENERATE_XML"))
+  if (Config_getBool(GENERATE_XML))
   {
     g_s.begin("Generating XML output...\n");
     Doxygen::generatingXmlOutput=TRUE;
@@ -11589,20 +11589,20 @@ void generateOutput()
     g_s.end();
   }
 
-  if (Config_getBool("GENERATE_DOCBOOK"))
+  if (Config_getBool(GENERATE_DOCBOOK))
   {
     g_s.begin("Generating Docbook output...\n");
     generateDocbook();
     g_s.end();
   }
 
-  if (Config_getBool("GENERATE_AUTOGEN_DEF"))
+  if (Config_getBool(GENERATE_AUTOGEN_DEF))
   {
     g_s.begin("Generating AutoGen DEF output...\n");
     generateDEF();
     g_s.end();
   }
-  if (Config_getBool("GENERATE_PERLMOD"))
+  if (Config_getBool(GENERATE_PERLMOD))
   {
     g_s.begin("Generating Perl module output...\n");
     generatePerlMod();
@@ -11614,19 +11614,19 @@ void generateOutput()
     if (Doxygen::searchIndex->kind()==SearchIndexIntf::Internal) // write own search index
     {
       HtmlGenerator::writeSearchPage();
-      Doxygen::searchIndex->write(Config_getString("HTML_OUTPUT")+"/search/search.idx");
+      Doxygen::searchIndex->write(Config_getString(HTML_OUTPUT)+"/search/search.idx");
     }
     else // write data for external search index
     {
       HtmlGenerator::writeExternalSearchPage();
-      QCString searchDataFile = Config_getString("SEARCHDATA_FILE");
+      QCString searchDataFile = Config_getString(SEARCHDATA_FILE);
       if (searchDataFile.isEmpty())
       {
         searchDataFile="searchdata.xml";
       }
       if (!portable_isAbsolutePath(searchDataFile))
       {
-        searchDataFile.prepend(Config_getString("OUTPUT_DIRECTORY")+"/");
+        searchDataFile.prepend(Config_getString(OUTPUT_DIRECTORY)+"/");
       }
       Doxygen::searchIndex->write(searchDataFile);
     }
@@ -11638,14 +11638,14 @@ void generateOutput()
   if (generateRtf)
   {
     g_s.begin("Combining RTF output...\n");
-    if (!RTFGenerator::preProcessFileInplace(Config_getString("RTF_OUTPUT"),"refman.rtf"))
+    if (!RTFGenerator::preProcessFileInplace(Config_getString(RTF_OUTPUT),"refman.rtf"))
     {
       err("An error occurred during post-processing the RTF files!\n");
     }
     g_s.end();
   }
 
-  if (Config_getBool("HAVE_DOT"))
+  if (Config_getBool(HAVE_DOT))
   {
     g_s.begin("Running dot...\n");
     DotManager::instance()->run();
@@ -11658,23 +11658,23 @@ void generateOutput()
     FTVHelp::generateTreeViewImages();
     copyStyleSheet();
     copyLogo();
-    copyExtraFiles("HTML_EXTRA_FILES","HTML_OUTPUT");
+    copyExtraFiles(Config_getList(HTML_EXTRA_FILES),"HTML_EXTRA_FILES",Config_getString(HTML_OUTPUT));
   }
   if (generateLatex)
   {
     copyLatexStyleSheet();
-    copyExtraFiles("LATEX_EXTRA_FILES","LATEX_OUTPUT");
+    copyExtraFiles(Config_getList(LATEX_EXTRA_FILES),"LATEX_EXTRA_FILES",Config_getString(LATEX_OUTPUT));
   }
 
   if (generateHtml &&
-      Config_getBool("GENERATE_HTMLHELP") &&
-      !Config_getString("HHC_LOCATION").isEmpty())
+      Config_getBool(GENERATE_HTMLHELP) &&
+      !Config_getString(HHC_LOCATION).isEmpty())
   {
     g_s.begin("Running html help compiler...\n");
     QString oldDir = QDir::currentDirPath();
-    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
+    QDir::setCurrent(Config_getString(HTML_OUTPUT));
     portable_sysTimerStart();
-	if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", Debug::isFlagSet(Debug::ExtCmd)))
+	if (portable_system(Config_getString(HHC_LOCATION), "index.hhp", Debug::isFlagSet(Debug::ExtCmd)))
     {
       err("failed to run html help compiler on index.hhp\n");
     }
@@ -11683,8 +11683,8 @@ void generateOutput()
     g_s.end();
   }
   if ( generateHtml &&
-       Config_getBool("GENERATE_QHP") &&
-      !Config_getString("QHG_LOCATION").isEmpty())
+       Config_getBool(GENERATE_QHP) &&
+      !Config_getString(QHG_LOCATION).isEmpty())
   {
     g_s.begin("Running qhelpgenerator...\n");
     QCString const qhpFileName = Qhp::getQhpFileName();
@@ -11692,9 +11692,9 @@ void generateOutput()
 
     QCString const args = QCString().sprintf("%s -o \"%s\"", qhpFileName.data(), qchFileName.data());
     QString const oldDir = QDir::currentDirPath();
-    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
+    QDir::setCurrent(Config_getString(HTML_OUTPUT));
     portable_sysTimerStart();
-    if (portable_system(Config_getString("QHG_LOCATION"), args.data(), FALSE))
+    if (portable_system(Config_getString(QHG_LOCATION), args.data(), FALSE))
     {
       err("failed to run qhelpgenerator on index.qhp\n");
     }
@@ -11710,7 +11710,7 @@ void generateOutput()
       Doxygen::lookupCache->hits(),
       Doxygen::lookupCache->misses());
   cacheParam = computeIdealCacheParam(Doxygen::lookupCache->misses()*2/3); // part of the cache is flushed, hence the 2/3 correction factor
-  if (cacheParam>Config_getInt("LOOKUP_CACHE_SIZE"))
+  if (cacheParam>Config_getInt(LOOKUP_CACHE_SIZE))
   {
     msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);
   }
@@ -11739,7 +11739,7 @@ void generateOutput()
   Doxygen::symbolStorage->close();
   QDir thisDir;
   thisDir.remove(Doxygen::objDBFileName);
-  Config::deleteInstance();
+  Config::deinit();
   QTextCodec::deleteAllCodecs();
   delete Doxygen::symbolMap;
   delete Doxygen::clangUsrMap;
