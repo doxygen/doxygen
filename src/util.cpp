@@ -6724,7 +6724,6 @@ QCString latexEscapePDFString(const char *s)
   FTextStream t(&result);
   const char *p=s;
   char c;
-  int i;
   while ((c=*p++))
   {
     switch (c)
