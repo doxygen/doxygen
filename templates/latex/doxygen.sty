@@ -475,3 +475,10 @@
 
 % Color used for table heading
 \newcommand{\tableheadbgcolor}{lightgray}%
+
+% Define caption that is also suitable in a table
+\makeatletter
+\def\doxyfigcaption{%
+\refstepcounter{figure}%
+\@dblarg{\@caption{figure}}}
+\makeatother

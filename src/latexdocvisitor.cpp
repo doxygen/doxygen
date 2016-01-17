@@ -114,7 +114,7 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
 
     if (hasCaption)
     {
-      t << "\n\\caption{";
+      t << "\n\\doxyfigcaption{";
     }
 }
 
