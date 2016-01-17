@@ -1357,10 +1357,6 @@ void HtmlDocVisitor::visitPost(DocHtmlCell *c)
 void HtmlDocVisitor::visitPre(DocHtmlCaption *c)
 {
   if (m_hide) return;
-  bool hasAlign      = FALSE;
-  HtmlAttribListIterator li(c->attribs());
-  HtmlAttrib *att;
-  QCString id;
   m_t << "<caption" << htmlAttribsToString(c->attribs()) << ">";
 }
 
