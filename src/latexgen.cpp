@@ -199,7 +199,7 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
     {
       QCString lineAnchor;
       lineAnchor.sprintf("_l%05d",l);
-      lineAnchor.prepend(m_sourceFileName);
+      lineAnchor.prepend(stripExtensionGeneral(m_sourceFileName, ".tex"));
       //if (!m_prettyCode) return;
       if (usePDFLatex && pdfHyperlinks)
       {
