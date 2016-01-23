@@ -620,8 +620,9 @@ bool DirDef::depGraphIsTrivial() const
 int FilePairDict::compareValues(const FilePair *left,const FilePair *right) const
 {
   int orderHi = qstricmp(left->source()->name(),right->source()->name());
+  if (orderHi!=0) return orderHi;
   int orderLo = qstricmp(left->destination()->name(),right->destination()->name());
-  return orderHi==0 ? orderLo : orderHi;
+  return orderLo;
 }
 
 //----------------------------------------------------------------------
