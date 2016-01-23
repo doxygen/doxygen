@@ -258,6 +258,7 @@ void startFile(OutputList &ol,const char *name,const char *manName,
   }
   ol.writeSplitBar(altSidebarName ? altSidebarName : name);
   ol.writeSearchInfo();
+  resetDotNodeNumbering();
 }
 
 void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,

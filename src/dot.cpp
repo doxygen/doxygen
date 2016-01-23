@@ -397,48 +397,6 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
   return TRUE;
 }
 
-static QArray<int> s_newNumber;
-static int s_max_newNumber=0;
-
-inline int reNumberNode(int number, bool doReNumbering)
-{
-  if (!doReNumbering) 
-  {
-    return number;
-  } 
-  else 
-  {
-    int s = s_newNumber.size();
-    if (number>=s) 
-    {
-      int ns=0;
-      ns = s * 3 / 2 + 5; // new size
-      if (number>=ns) // number still doesn't fit
-      {
-        ns = number * 3 / 2 + 5;
-      }
-      s_newNumber.resize(ns);
-      for (int i=s;i<ns;i++) // clear new part of the array
-      {
-        s_newNumber.at(i)=0;
-      }
-    }
-    int i = s_newNumber.at(number);
-    if (i == 0) // not yet mapped
-    {
-      i = ++s_max_newNumber; // start from 1
-      s_newNumber.at(number) = i;
-    }
-    return i;
-  }
-}
-
-static void resetReNumbering() 
-{
-  s_max_newNumber=0;
-  s_newNumber.resize(s_max_newNumber);
-}
-
 static QCString g_dotFontPath;
 
 static void setDotFontPath(const char *path)
@@ -1722,15 +1680,15 @@ static QCString stripProtectionPrefix(const QCString &s)
 void DotNode::writeBox(FTextStream &t,
                        GraphType gt,
                        GraphOutputFormat /*format*/,
-                       bool hasNonReachableChildren,
-                       bool reNumber)
+                       bool hasNonReachableChildren
+                      )
 {
   const char *labCol = 
           m_url.isEmpty() ? "grey75" :  // non link
            (
             (hasNonReachableChildren) ? "red" : "black"
            );
-  t << "  Node" << reNumberNode(m_number,reNumber) << " [label=\"";
+  t << "  Node" << m_number << " [label=\"";
   static bool umlLook = Config_getBool(UML_LOOK);
 
   if (m_classDef && umlLook && (gt==Inheritance || gt==Collaboration))
@@ -1856,21 +1814,20 @@ void DotNode::writeArrow(FTextStream &t,
                          GraphOutputFormat format,
                          DotNode *cn,
                          EdgeInfo *ei,
-                         bool topDown, 
-                         bool pointBack,
-                         bool reNumber
+                         bool topDown,
+                         bool pointBack
                         )
 {
   t << "  Node";
-  if (topDown) 
-    t << reNumberNode(cn->number(),reNumber); 
-  else 
-    t << reNumberNode(m_number,reNumber);
+  if (topDown)
+    t << cn->number();
+  else
+    t << m_number;
   t << " -> Node";
-  if (topDown) 
-    t << reNumberNode(m_number,reNumber); 
-  else 
-    t << reNumberNode(cn->number(),reNumber);
+  if (topDown)
+    t << m_number;
+  else
+    t << cn->number();
   t << " [";
 
   static bool umlLook = Config_getBool(UML_LOOK);
@@ -1908,14 +1865,13 @@ void DotNode::write(FTextStream &t,
                     GraphOutputFormat format,
                     bool topDown,
                     bool toChildren,
-                    bool backArrows,
-                    bool reNumber
+                    bool backArrows
                    )
 {
   //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,m_label.data(),this,m_written,m_visible);
   if (m_written) return; // node already written to the output
   if (!m_visible) return; // node is not visible
-  writeBox(t,gt,format,m_truncated==Truncated,reNumber);
+  writeBox(t,gt,format,m_truncated==Truncated);
   m_written=TRUE;
   QList<DotNode> *nl = toChildren ? m_children : m_parents; 
   if (nl)
@@ -1930,9 +1886,9 @@ void DotNode::write(FTextStream &t,
         if (cn->isVisible())
         {
           //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",cn->label().data());
-          writeArrow(t,gt,format,cn,dnli2.current(),topDown,backArrows,reNumber);
+          writeArrow(t,gt,format,cn,dnli2.current(),topDown,backArrows);
         }
-        cn->write(t,gt,format,topDown,toChildren,backArrows,reNumber);
+        cn->write(t,gt,format,topDown,toChildren,backArrows);
       }
     }
     else // render parents
@@ -1950,11 +1906,10 @@ void DotNode::write(FTextStream &t,
               pn,
               pn->m_edgeInfo->at(pn->m_children->findRef(this)),
               FALSE,
-              backArrows,
-              reNumber
+              backArrows
               );
         }
-        pn->write(t,gt,format,TRUE,FALSE,backArrows,reNumber);
+        pn->write(t,gt,format,TRUE,FALSE,backArrows);
       }
     }
   }
@@ -2229,6 +2184,20 @@ void DotNode::colorConnectedNodes(int curColor)
   }
 }
 
+void DotNode::renumberNodes(int &number)
+{
+  m_number = number++;
+  if (m_children)
+  {
+    QListIterator<DotNode> dnlic(*m_children);
+    DotNode *cn;
+    for (dnlic.toFirst();(cn=dnlic.current());++dnlic)
+    {
+      cn->renumberNodes(number);
+    }
+  }
+}
+
 const DotNode *DotNode::findDocNode() const
 {
   if (!m_url.isEmpty()) return this;
@@ -2266,8 +2235,6 @@ const DotNode *DotNode::findDocNode() const
 
 //--------------------------------------------------------------------
 
-int DotGfxHierarchyTable::m_curNodeNumber;
-
 void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
        const char *path,const char *fileName,int id) const
 {
@@ -2300,11 +2267,10 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
   {
     if (node->m_subgraphId==n->m_subgraphId) 
     {
-      node->write(md5stream,DotNode::Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE,TRUE);
+      node->write(md5stream,DotNode::Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE);
     }
   }
   writeGraphFooter(md5stream);
-  resetReNumbering();
   uchar md5_sig[16];
   QCString sigStr(33);
   MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
@@ -2321,7 +2287,6 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
     FTextStream t(&f);
     t << theGraph;
     f.close();
-    resetReNumbering();
 
     DotRunner *dotRun = new DotRunner(dotName,d.absPath().data(),TRUE,absImgName);
     dotRun->addJob(imgFmt,absImgName);
@@ -2512,9 +2477,8 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
   }
 }
 
-DotGfxHierarchyTable::DotGfxHierarchyTable()
+DotGfxHierarchyTable::DotGfxHierarchyTable() : m_curNodeNumber(0)
 {
-  m_curNodeNumber=0;
   m_rootNodes = new QList<DotNode>;
   m_usedNodes = new QDict<DotNode>(1009); 
   m_usedNodes->setAutoDelete(TRUE);
@@ -2556,15 +2520,17 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
   }
   
   //printf("Number of independent subgraphs: %d\n",curColor);
-  //QListIterator<DotNode> dnli2(*m_rootSubgraphs);
-  //DotNode *n;
-  //for (dnli2.toFirst();(n=dnli2.current());++dnli2)
-  //{
-  //  printf("Node %s color=%d (c=%d,p=%d)\n",
-  //      n->m_label.data(),n->m_subgraphId,
-  //      n->m_children?n->m_children->count():0,
-  //      n->m_parents?n->m_parents->count():0);
-  //}
+  QListIterator<DotNode> dnli2(*m_rootSubgraphs);
+  DotNode *n;
+  for (dnli2.toFirst();(n=dnli2.current());++dnli2)
+  {
+    //printf("Node %s color=%d (c=%d,p=%d)\n",
+    //    n->m_label.data(),n->m_subgraphId,
+    //    n->m_children?n->m_children->count():0,
+    //    n->m_parents?n->m_parents->count():0);
+    int number=0;
+    n->renumberNodes(number);
+  }
 }
 
 DotGfxHierarchyTable::~DotGfxHierarchyTable()
@@ -2584,8 +2550,6 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
 }
 
 //--------------------------------------------------------------------
-
-int DotClassGraph::m_curNodeNumber = 0;
 
 void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     const char *label,const char *usedName,const char *templSpec,bool base,int distance)
@@ -2936,6 +2900,13 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
   }
 }
 
+int DotClassGraph::m_curNodeNumber = 0;
+
+void DotClassGraph::resetNumbering()
+{
+  m_curNodeNumber = 0;
+}
+
 DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t)
 {
   //printf("--------------- DotClassGraph::DotClassGraph `%s'\n",cd->displayName().data());
@@ -3025,8 +2996,6 @@ QCString computeMd5Signature(DotNode *root,
                    QCString &graphStr
                   )
 {
-  bool reNumber=TRUE;
-    
   //printf("computeMd5Signature\n");
   QGString buf;
   FTextStream md5stream(&buf);
@@ -3041,8 +3010,7 @@ QCString computeMd5Signature(DotNode *root,
       format,
       gt!=DotNode::CallGraph && gt!=DotNode::Dependency,
       TRUE,
-      backArrows,
-      reNumber);
+      backArrows);
   if (renderParents && root->m_parents) 
   {
     QListIterator<DotNode>  dnli(*root->m_parents);
@@ -3057,8 +3025,7 @@ QCString computeMd5Signature(DotNode *root,
             pn,                                                  // child node
             pn->m_edgeInfo->at(pn->m_children->findRef(root)),   // edge info
             FALSE,                                               // topDown?
-            backArrows,                                          // point back?
-            reNumber                                             // renumber nodes
+            backArrows                                           // point back?
             );
       }
       pn->write(md5stream,      // stream
@@ -3066,8 +3033,7 @@ QCString computeMd5Signature(DotNode *root,
                 format,         // output format
                 TRUE,           // topDown?
                 FALSE,          // toChildren?
-                backArrows,     // backward pointing arrows?
-                reNumber        // renumber nodes?
+                backArrows      // backward pointing arrows?
                );
     }
   }
@@ -3076,10 +3042,6 @@ QCString computeMd5Signature(DotNode *root,
   QCString sigStr(33);
   MD5Buffer((const unsigned char *)buf.data(),buf.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr.rawData(),33);
-  if (reNumber)
-  {
-    resetReNumbering();
-  }
   graphStr=buf.data();
   //printf("md5: %s | file: %s\n",sigStr,baseName.data());
   return sigStr;
@@ -3339,8 +3301,6 @@ void DotClassGraph::writeDEF(FTextStream &t)
 
 //--------------------------------------------------------------------
 
-int DotInclDepGraph::m_curNodeNumber = 0;
-
 void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
 {
   QList<IncludeInfo> *includeFiles = 
@@ -3454,6 +3414,12 @@ void DotInclDepGraph::determineTruncatedNodes(QList<DotNode> &queue)
   }
 }
 
+int DotInclDepGraph::m_curNodeNumber = 0;
+
+void DotInclDepGraph::resetNumbering()
+{
+  m_curNodeNumber = 0;
+}
 
 DotInclDepGraph::DotInclDepGraph(FileDef *fd,bool inverse)
 {
@@ -3667,8 +3633,6 @@ void DotInclDepGraph::writeDocbook(FTextStream &t)
 
 //-------------------------------------------------------------
 
-int DotCallGraph::m_curNodeNumber = 0;
-
 void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
 {
   MemberSDict *refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
@@ -3771,7 +3735,12 @@ void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
   }
 }
 
+int DotCallGraph::m_curNodeNumber = 0;
 
+void DotCallGraph::resetNumbering()
+{
+  m_curNodeNumber = 0;
+}
 
 DotCallGraph::DotCallGraph(MemberDef *md,bool inverse)
 {
@@ -4303,12 +4272,18 @@ void writeDotImageMapFromFile(FTextStream &t,
 
 //-------------------------------------------------------------
 
+int DotGroupCollaboration::m_curNodeNumber = 0;
+
+void DotGroupCollaboration::resetNumbering()
+{
+  m_curNodeNumber = 0;
+}
+
 DotGroupCollaboration::DotGroupCollaboration(GroupDef* gd)
 {
-    m_curNodeId = 0;
     QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
     m_usedNodes = new QDict<DotNode>(1009);
-    m_rootNode = new DotNode(m_curNodeId++, gd->groupTitle(), "", tmp_url, TRUE );
+    m_rootNode = new DotNode(m_curNodeNumber++, gd->groupTitle(), "", tmp_url, TRUE );
     m_rootNode->markAsVisible();
     m_usedNodes->insert(gd->name(), m_rootNode );
     m_edges.setAutoDelete(TRUE);
@@ -4342,7 +4317,7 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd)
       { // add node
         tmp_url = d->getReference()+"$"+d->getOutputFileBase();
         QCString tooltip = d->briefDescriptionAsTooltip();
-        nnode = new DotNode(m_curNodeId++, d->groupTitle(), tooltip, tmp_url );
+        nnode = new DotNode(m_curNodeNumber++, d->groupTitle(), tooltip, tmp_url );
         nnode->markAsVisible();
         m_usedNodes->insert(d->name(), nnode );
       }
@@ -4363,7 +4338,7 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd)
       { // add node
         tmp_url = def->getReference()+"$"+def->getOutputFileBase();
         QCString tooltip = def->briefDescriptionAsTooltip();
-        nnode = new DotNode(m_curNodeId++, def->groupTitle(), tooltip, tmp_url );
+        nnode = new DotNode(m_curNodeNumber++, def->groupTitle(), tooltip, tmp_url );
         nnode->markAsVisible();
         m_usedNodes->insert(def->name(), nnode );
       }
@@ -4505,7 +4480,7 @@ void DotGroupCollaboration::addCollaborationMember(
       { // add node
         tmp_str = d->getReference()+"$"+d->getOutputFileBase();
         QCString tooltip = d->briefDescriptionAsTooltip();
-        nnode = new DotNode(m_curNodeId++, d->groupTitle(), tooltip, tmp_str );
+        nnode = new DotNode(m_curNodeNumber++, d->groupTitle(), tooltip, tmp_str );
         nnode->markAsVisible();
         m_usedNodes->insert(d->name(), nnode );
       }
@@ -4544,7 +4519,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
   // write other nodes.
   for (dni.toFirst();(pn=dni.current());++dni)
   {
-    pn->write(md5stream,DotNode::Inheritance,graphFormat,TRUE,FALSE,FALSE,FALSE);
+    pn->write(md5stream,DotNode::Inheritance,graphFormat,TRUE,FALSE,FALSE);
   }
 
   // write edges
@@ -4556,7 +4531,6 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
   }
 
   writeGraphFooter(md5stream);
-  resetReNumbering();
   uchar md5_sig[16];
   QCString sigStr(33);
   MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
@@ -4912,3 +4886,12 @@ void writeDotDirDepGraph(FTextStream &t,DirDef *dd,bool linkRelations)
 
     t << "}\n";
 }
+
+void resetDotNodeNumbering()
+{
+  DotClassGraph::resetNumbering();
+  DotInclDepGraph::resetNumbering();
+  DotCallGraph::resetNumbering();
+  DotGroupCollaboration::resetNumbering();
+}
+
