@@ -34,8 +34,7 @@ PageDef::PageDef(const char *f,int l,const char *n,
   m_subPageDict = new PageSDict(7);
   m_pageScope = 0;
   m_nestingLevel = 0;
-  static bool shortNames = Config_getBool(SHORT_NAMES);
-  m_fileName = shortNames ? convertNameToFile(n) : QCString(n);
+  m_fileName = ::convertNameToFile(n,FALSE,TRUE);
   m_showToc = FALSE;
 }
 
