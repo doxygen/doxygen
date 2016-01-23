@@ -47,7 +47,7 @@ LatexCodeGenerator::LatexCodeGenerator(FTextStream &t,const QCString &relPath,co
   setTextStream(t);
 }
 
-LatexCodeGenerator::LatexCodeGenerator() : m_col(0), m_streamSet(FALSE)
+LatexCodeGenerator::LatexCodeGenerator() : m_streamSet(FALSE), m_col(0)
 {
   m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
 }

@@ -141,7 +141,7 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
 /** Data collected for a member group */
 struct MemberGroupInfo
 {
-  MemberGroupInfo() : m_sli(0), docLine(-1) {}
+  MemberGroupInfo() : docLine(-1), m_sli(0) {}
  ~MemberGroupInfo() { delete m_sli; m_sli=0; }
   void setRefItems(const QList<ListItemInfo> *sli);
   QCString header;

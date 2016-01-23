@@ -3926,7 +3926,6 @@ void  FlowChart::printUmlTree()
   }
   qcs+="\n";
 
-  QCString & outDir = Config_getString(OUTPUT_DIRECTORY);
   QCString & htmlOutDir = Config_getString(HTML_OUTPUT);
 
   QCString n=convertNameToFileName();

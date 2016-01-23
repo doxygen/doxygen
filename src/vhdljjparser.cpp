@@ -341,9 +341,6 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
 
   bool needsEntry=FALSE;
   Protection protection=Public;
-  int lineNr;
-  if (iDocLine==-1)
-    lineNr=yyLineNr;
 
   if (oldEntry==current)
   {
