@@ -4234,7 +4234,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FuncFuncType>.				{
   					  current->type += *yytext;
   					}
-<FindMembers>"("/{BN}*{ID}{BN}*"*"{BN}*{ID}*")(" { // for catching typedef void (__stdcall *f)() like definitions
+<FindMembers>"("/{BN}*{ID}{BN}*"*"{BN}*{ID}*")"{BN}*"(" { // for catching typedef void (__stdcall *f)() like definitions
                                           if (current->type.left(7)=="typedef" && current->bodyLine==-1) 
 					    // the bodyLine check is to prevent this guard to be true more than once
 					  {
