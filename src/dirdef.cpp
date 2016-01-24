@@ -67,15 +67,21 @@ bool DirDef::isLinkable() const
 
 void DirDef::addSubDir(DirDef *subdir)
 {
-  m_subdirs.inSort(subdir);
+  m_subdirs.append(subdir);
   subdir->setOuterScope(this);
   subdir->m_parent=this;
 }
 
 void DirDef::addFile(FileDef *fd)
 {
-  m_fileList->inSort(fd);
+  m_fileList->append(fd);
   fd->setDirDef(this);
+}
+
+void DirDef::sort()
+{
+  m_subdirs.sort();
+  m_fileList->sort();
 }
 
 static QCString encodeDirName(const QCString &anchor)
@@ -593,9 +599,18 @@ void DirDef::computeDependencies()
               //printf("      %d: add dependency %s->%s\n",count++,name().data(),usedDir->name().data());
               addUsesDependency(usedDir,fd,ii->fileDef,FALSE);
             }
-          } 
+          }
         }
       }
+    }
+  }
+  if (m_usedDirs)
+  {
+    QDictIterator<UsedDir> udi(*m_usedDirs);
+    UsedDir *udir;
+    for (udi.toFirst();(udir=udi.current());++udi)
+    {
+      udir->sort();
     }
   }
 }
@@ -640,8 +655,13 @@ UsedDir::~UsedDir()
 
 void UsedDir::addFileDep(FileDef *srcFd,FileDef *dstFd)
 {
-  m_filePairs.inSort(srcFd->getOutputFileBase()+dstFd->getOutputFileBase(),
+  m_filePairs.append(srcFd->getOutputFileBase()+dstFd->getOutputFileBase(),
                      new FilePair(srcFd,dstFd));
+}
+
+void UsedDir::sort()
+{
+  m_filePairs.sort();
 }
 
 FilePair *UsedDir::findFilePair(const char *name)
@@ -659,7 +679,7 @@ DirDef *DirDef::createNewDir(const char *path)
     //printf("Adding new dir %s\n",path);
     dir = new DirDef(path);
     //printf("createNewDir %s short=%s\n",path,dir->shortName().data());
-    Doxygen::directories->inSort(path,dir);
+    Doxygen::directories->append(path,dir);
   }
   return dir;
 }
@@ -919,6 +939,11 @@ void buildDirectories()
       }
     }
   }
+  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  {
+    dir->sort();
+  }
+  Doxygen::directories->sort();
   computeCommonDirPrefix();
 }
 

@@ -76,6 +76,7 @@ class DirDef : public Definition
     static DirDef *mergeDirectoryInTree(const QCString &path);
     bool visited;
     void setDiskName(const QCString &name) { m_diskName = name; }
+    void sort();
 
   private:
     friend void computeDirDependencies();
@@ -138,6 +139,7 @@ class UsedDir
     const FilePairDict &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
     bool inherited() const { return m_inherited; }
+    void sort();
 
   private:
     DirDef *m_dir;
