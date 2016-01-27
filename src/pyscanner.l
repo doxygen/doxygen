@@ -368,7 +368,7 @@ static void initTriDoubleQuoteBlock()
   docBlockContext   = YY_START;
   docBlockInBody    = FALSE;
   docBlockJavaStyle = TRUE;
-  docBlockSpecial   = yytext[3]=='!';
+  docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   docBlock.resize(0);
   g_doubleQuote = TRUE;
   startCommentBlock(FALSE);
@@ -379,7 +379,7 @@ static void initTriSingleQuoteBlock()
   docBlockContext   = YY_START;
   docBlockInBody    = FALSE;
   docBlockJavaStyle = TRUE;
-  docBlockSpecial   = yytext[3]=='!';
+  docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   docBlock.resize(0);
   g_doubleQuote = FALSE;
   startCommentBlock(FALSE);
@@ -470,8 +470,8 @@ IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*
 SCOPE             {IDENTIFIER}("."{IDENTIFIER})*
 BORDER            ([^A-Za-z0-9])
 
-TRISINGLEQUOTE    "'''"(!)?
-TRIDOUBLEQUOTE    "\"\"\""(!)?
+TRISINGLEQUOTE    {STRINGPREFIX}?"'''"(!)?
+TRIDOUBLEQUOTE    {STRINGPREFIX}?"\"\"\""(!)?
 LONGSTRINGCHAR    [^\\"']
 ESCAPESEQ         ("\\")(.)
 LONGSTRINGITEM    ({LONGSTRINGCHAR}|{ESCAPESEQ})
