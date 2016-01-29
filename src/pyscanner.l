@@ -472,6 +472,8 @@ BORDER            ([^A-Za-z0-9])
 
 TRISINGLEQUOTE    {STRINGPREFIX}?"'''"(!)?
 TRIDOUBLEQUOTE    {STRINGPREFIX}?"\"\"\""(!)?
+ENDTRISINGLEQUOTE "'''"
+ENDTRIDOUBLEQUOTE "\"\"\""
 LONGSTRINGCHAR    [^\\"']
 ESCAPESEQ         ("\\")(.)
 LONGSTRINGITEM    ({LONGSTRINGCHAR}|{ESCAPESEQ})
@@ -1369,8 +1371,8 @@ STARTDOCSYMS      "##"
 }
 
 <TripleComment>{
-    {TRIDOUBLEQUOTE}   | 
-    {TRISINGLEQUOTE}   {
+    {ENDTRIDOUBLEQUOTE}   | 
+    {ENDTRISINGLEQUOTE}   {
 			  // printf("Expected module block %d special=%d\n",g_expectModuleDocs,g_specialBlock);
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {
@@ -1515,8 +1517,8 @@ STARTDOCSYMS      "##"
 }
 
 <TripleString>{
-    {TRIDOUBLEQUOTE}    | 
-    {TRISINGLEQUOTE}    {
+    {ENDTRIDOUBLEQUOTE}    | 
+    {ENDTRISINGLEQUOTE}    {
                           *g_copyString += yytext;
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {
