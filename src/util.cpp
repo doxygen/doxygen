@@ -7002,7 +7002,7 @@ void initDefaultExtensionMapping()
   g_extLookup.setAutoDelete(TRUE);
   //                  extension      parser id
   updateLanguageMapping(".dox",      "c");
-  updateLanguageMapping(".txt",      "c");
+  //updateLanguageMapping(".txt",      "c"); // see bug 760836
   updateLanguageMapping(".doc",      "c");
   updateLanguageMapping(".c",        "c");
   updateLanguageMapping(".C",        "c");
