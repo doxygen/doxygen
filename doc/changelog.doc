@@ -136,7 +136,7 @@
 <li>Tweaked the htmlonly sections in the manual so it produces valid HTML output [<a href="http://github.com/doxygen/doxygen/commit/de03970396e6f7edec359e2b71f3d2aa9d6a6237">view</a>]</li>
 <li>Undo _doxygen to libdoxygen target change [<a href="http://github.com/doxygen/doxygen/commit/940048580f2d61a137e7abbb67b3aed567bfe865">view</a>]</li>
 <li>Updated instructions to toggle debugging flex code [<a href="http://github.com/doxygen/doxygen/commit/368f4f057be0ded4673be826c9a08cd771a023ce">view</a>]</li>
-<li>Updated italian translation and translator email address [<a href="http://github.com/doxygen/doxygen/commit/a9ad21b4e541d91c804ac39e393cc0c1db4f45f3">view</a>]</li>
+<li>Updated Italian translation and translator email address [<a href="http://github.com/doxygen/doxygen/commit/a9ad21b4e541d91c804ac39e393cc0c1db4f45f3">view</a>]</li>
 <li>Updated the Greek translation [<a href="http://github.com/doxygen/doxygen/commit/4e0b7f0b9a2a04d0bb5e66871da6d7ffa786836e">view</a>]</li>
 <li>Use CPack to generate rpm/deb packages [<a href="http://github.com/doxygen/doxygen/commit/ba6eb1478d24dc32d4e123951e2f62c75b4b88bd">view</a>]</li>
 <li>Use STATIC libraries to prevent them being shared [<a href="http://github.com/doxygen/doxygen/commit/37a148f6e35523fd2bbbdbc37e6ed838684c6d90">view</a>]</li>
@@ -230,7 +230,7 @@
 <li>Documenting RESULT variable of Fortran FUNCTION [<a href="http://github.com/doxygen/doxygen/commit/21f9e87db8085fb1b5e0a9a9a25dee159b3fd324">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/4d52beec3760244d959ab4d5528aea1acba505e7">view</a>]</li>
 <li>Doxygen LaTeX / PDF links point to page 1 [<a href="http://github.com/doxygen/doxygen/commit/e34913dcbe0bee2c3e21d6e21b2bcc6970003a5c">view</a>]</li>
 <li>Enable relative paths referenced source files [<a href="http://github.com/doxygen/doxygen/commit/ed178335e8c123b58c4fee24766bceae0fc80aa2">view</a>]</li>
-<li>Escape &quot;@&quot; in names as it is not allowed in XML / Docbook names (comming from anon namespaces) [<a href="http://github.com/doxygen/doxygen/commit/65c35c435ae93d5f39c3ddec93008b2f544544ca">view</a>]</li>
+<li>Escape &quot;@&quot; in names as it is not allowed in XML / Docbook names (coming from anon namespaces) [<a href="http://github.com/doxygen/doxygen/commit/65c35c435ae93d5f39c3ddec93008b2f544544ca">view</a>]</li>
 <li>Fix for bug 746673. [<a href="http://github.com/doxygen/doxygen/commit/effbbcc72295f5843377ddce2794bcf6e7000322">view</a>]</li>
 <li>Fix for building diagram example conditionally [<a href="http://github.com/doxygen/doxygen/commit/f415b624a6cf6b9e577ec6131a23cb4a0e830aaf">view</a>]</li>
 <li>Fix for issue 744670 [<a href="http://github.com/doxygen/doxygen/commit/0d684381ac40574f6a948c56eb2da0445c3ee3bf">view</a>]</li>
@@ -430,7 +430,7 @@
         <li>fix incomplete TOC : no Classe etc.</li>
         <li>add brief description for Functions etc.</li>
         <li>Comply with REPEAT_BRIEF </li>
-        <li>Do not output duplicated contents when detailed descripton is missing.</li>
+        <li>Do not output duplicated contents when detailed description is missing.</li>
         <li>set table colwidth for Param/RetVal</li>
     </ol>
 </li>
@@ -678,7 +678,7 @@
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=721169">721169</a> - Wrong call graph in simple situation [<a href="http://github.com/doxygen/doxygen/commit/e12d6b506862c8ad843b7853bc1c9ceb5d0ccb4d">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=721302">721302</a> - [Latex/PDF] Merging brief and detailed description in file section [<a href="http://github.com/doxygen/doxygen/commit/a99c33838057acba20768ca32681e1f379f36ca0">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=721462">721462</a> - Parsing problem with C++11 empty initializer lists [<a href="http://github.com/doxygen/doxygen/commit/1bfacc3b8e589907352eff923b7b3aa73cfc5138">view</a>]</li>
-<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=721618">721618</a> - Move contructors and move assignment operators of embedded classes of template classes cannot be matched. [<a href="http://github.com/doxygen/doxygen/commit/1d0c9b6fefb6c2e0a9a2b7a7ea3192ccace33710">view</a>]</li>
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=721618">721618</a> - Move constructors and move assignment operators of embedded classes of template classes cannot be matched. [<a href="http://github.com/doxygen/doxygen/commit/1d0c9b6fefb6c2e0a9a2b7a7ea3192ccace33710">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=721878">721878</a> - Dia diagrams not displayed by Firefox [<a href="http://github.com/doxygen/doxygen/commit/5ea2f2a123e473d5964435369fd925d7f103b456">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722457">722457</a> - regression referencing namespaced type [<a href="http://github.com/doxygen/doxygen/commit/9b76c1a9bb7039962933aeef398bb7aa2f59c3a5">view</a>]</li>
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722603">722603</a> - doxygen nested \if \endif sample not working [<a href="http://github.com/doxygen/doxygen/commit/cc78b12b0019fbcb17692b231d38ba75d0952201">view</a>]</li>
@@ -767,7 +767,7 @@
 <li>List only the project pages in &quot;Related Pages&quot; [<a href="http://github.com/doxygen/doxygen/commit/a2c7f91d6320f72951f1e3ef092e077a89562670">view</a>]</li>
 <li>Made documentation more consistent [<a href="http://github.com/doxygen/doxygen/commit/b81fe14c7fe8b3eaafa4ce8ddcd0f1815c2c7ff0">view</a>]</li>
 <li>Make sure all ids in g_linkRefs are lower case [<a href="http://github.com/doxygen/doxygen/commit/3df31762585075033a04e40c3cdfb52781aa258f">view</a>]</li>
-<li>Make the MAN_SUBDIR setting overide the name of the directry the man pages are placed in. [<a href="http://github.com/doxygen/doxygen/commit/83b344db49b27bf68994eb8ec6be87d6d0f24e86">view</a>]</li>
+<li>Make the MAN_SUBDIR setting override the name of the directory the man pages are placed in. [<a href="http://github.com/doxygen/doxygen/commit/83b344db49b27bf68994eb8ec6be87d6d0f24e86">view</a>]</li>
 <li>Meta tag in the HTML search page was not closed properly [<a href="http://github.com/doxygen/doxygen/commit/4ccfb9efa8382de50dfc5b176cb147fd1b05870c">view</a>]</li>
 <li>Minor fixes for the new build locations [<a href="http://github.com/doxygen/doxygen/commit/d86520ef4920a9a47a4d6e33eadfc62b8b983748">view</a>]</li>
 <li>Missing &amp; and chars after &quot; in tree of chm documentation [<a href="http://github.com/doxygen/doxygen/commit/89638fbc9961bd9a1e9cb7bc25e5f739936e8a43">view</a>]</li>
@@ -783,7 +783,7 @@
 <li>Removed generated file src/settings.h from source repository [<a href="http://github.com/doxygen/doxygen/commit/43461e44d49200fd1564c4e416db7384e7e5eab8">view</a>]</li>
 <li>Removed message, minor restructuring [<a href="http://github.com/doxygen/doxygen/commit/ea436bd659e022d6375dd37f651d4bb18a1c01db">view</a>]</li>
 <li>Removed remark about installdox from the FAQ [<a href="http://github.com/doxygen/doxygen/commit/68080883535bb146e2e4f65943c8b836da6b68e0">view</a>]</li>
-<li>Restructered html entity handling [<a href="http://github.com/doxygen/doxygen/commit/dfa20277697fe904a0846b60a01cc388fc13c933">view</a>]</li>
+<li>Restructured html entity handling [<a href="http://github.com/doxygen/doxygen/commit/dfa20277697fe904a0846b60a01cc388fc13c933">view</a>]</li>
 <li>Reverted #132 after submitter reported that it did not work [<a href="http://github.com/doxygen/doxygen/commit/fdc81edcd47ce176648d7507d0597294098ae8aa">view</a>]</li>
 <li>Showing error message on windows in case on error on startup [<a href="http://github.com/doxygen/doxygen/commit/6a0651d9328262271ade2b733c125aae4415e3c3">view</a>]</li>
 <li>Simplified LaTeX header/footer escaping [<a href="http://github.com/doxygen/doxygen/commit/3337add3a6e05e26800c9e269b23fff272a9534c">view</a>]</li>
@@ -895,7 +895,7 @@
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=719639">719639</a> - @xrefitem with empty heading string</li>
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=720046">720046</a> - Document inline objective-C blocks</li>
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=720092">720092</a> - USE_MDFILE_AS_MAINPAGE doesn't work if full path is specified.</li>
-<li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=720580">720580</a> - inline source browser shows wrong code with muilti-line c++11's raw strings</li>
+<li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=720580">720580</a> - inline source browser shows wrong code with multi-line c++11's raw strings</li>
 <li> Add support for honoring svg image format preference in msc</li>
 <li> Added @parblock and @endparblock commands</li>
 <li> Added compile support for Mavericks</li>
@@ -907,18 +907,18 @@
 <li> Added rudimentary support for Django like template system for output creation.</li>
 <li> Added the possibility to specify the -d option in the Visual studio GUI on windows for the lex rules</li>
 <li> Adjust internationalization part to current situation</li>
-<li> Alignment of @code and @verbatim section When having a code and a verbatim section the boxes are not alligned, this patch fixes this. Example code, aa.c; standard Doxyfile: /** \file</li>
+<li> Alignment of @code and @verbatim section When having a code and a verbatim section the boxes are not aligned, this patch fixes this. Example code, aa.c; standard Doxyfile: /** \file</li>
 <li> Allow @ref to unlabeled markdown page by name, i.e. @ref mypage.md</li>
 <li> Allow links to other markdown pages of the form [link text](page.md)</li>
 <li> Avoid accessing uninitialized memory in fileToString</li>
-<li> Build problem with unistd.h and Cygwin The standard g++ compiler under windows (win32-g++) has unistd.gh file; Microsoft windows does not have it, therfore it is better to use the winbuild directory in case of windows adn no dependency otherwise</li>
+<li> Build problem with unistd.h and Cygwin The standard g++ compiler under windows (win32-g++) has unistd.gh file; Microsoft windows does not have it, therefore it is better to use the winbuild directory in case of windows and no dependency otherwise</li>
 <li> Consistency in language part of the documentation Made documentation more inline with other parts of the documentation (regarding the way e.g. filenames are presented) Corrected some spelling errors Corrected the warning in the language.doc by placing ta reference to the files from which language.doc is generated Corrected the color for the languages that are still v1.4.6 (language name now also red  in stead of a pink background, was confusing with languages that were 1.5 / 1.6 compatible)</li>
 <li> Corrected some inconsistencies in the comments</li>
 <li> Debug output for lexical analyzer</li>
 <li> Deleted generated files from source repository</li>
 <li> Doxygen didn't allow @ref to parameters of type reference to an array.</li>
 <li> Doxysearch under Cygwin should not have extension cgi.exe but just .cgi</li>
-<li> Esperanto not supported by htmlhelp compiler reverting for esperanto to default language (US English)</li>
+<li> Esperanto not supported by htmlhelp compiler reverting for Esperanto to default language (US English)</li>
 <li> Fixed a number of compiler warnings reported by newer clang compiler</li>
 <li> Fixed compilation issues in doxyapp</li>
 <li> Fixed compile warning</li>
@@ -938,17 +938,16 @@
 <li> More fixes for the Windows build</li>
 <li> Patch regarding generating the rules file for the windows build regarding languages, some inconsistencies in the (windows) build system, corrections to some spelling.</li>
 <li> Regenerated language.doc</li>
-<li> Removed japanese characters in maintainers.txt as they break the build</li>
+<li> Removed Japanese characters in maintainers.txt as they break the build</li>
 <li> Removed redundant backslashes in regexp pattern</li>
 <li> Report details about fork() failure in logs.</li>
 <li> Russian translator updated, new Russian maintainer added.</li>
 <li> Small spelling correction to generate an rtf extensions file -&gt; to generate a rtf extensions file</li>
 <li> Some texts can be independent of \htmlonly / \latexonly</li>
 <li> Space missing in error message. the word 'in' and the vale of filesOption were concatenated</li>
-<li> This patch contains changes regarding the build system so that the *nix and Windows systems use the same information (consistency). Some use names routine names have been changed (from .l files with -P option) to reflect the file name that generated the routines, this makes it easier to create a general procedure. A number of include / header files are files are generated from different file types (html, xml, js), due some limitations of the windows build system the generated file names had to be changed (the extension in the windows build system is only available including the '.' so e.g. the file jquery_fx.js generates now jquery_fx.js.h instead of jquery_fx_js.h) In the windows version the creation of .cpp files from .l files has been adjusted to correct for the YY_BUF_SIZE problems. Furthermore on windows (and also used on *nix) some commends have been replaced with python scripts so that on windows only python is need (besides flex and and bison). On *nix also perl is required for the generation using tmake.</li>
+<li> This patch contains changes regarding the build system so that the *nix and Windows systems use the same information (consistency). Some use names routine names have been changed (from .l files with -P option) to reflect the file name that generated the routines, this makes it easier to create a general procedure. A number of include / header files are files are generated from different file types (html, xml, js), due some limitations of the windows build system the generated file names had to be changed (the extension in the windows build system is only available including the '.' so e.g. the file jquery_fx.js generates now jquery_fx.js.h instead of jquery_fx_js.h) In the windows version the creation of .cpp files from .l files has been adjusted to correct for the YY_BUF_SIZE problems. Furthermore on windows (and also used on *nix) some commends have been replaced with python scripts so that on windows only python is need (besides flex and bison). On *nix also perl is required for the generation using tmake.</li>
 <li> Updated Visual Studio project files to include new source files</li>
-<li> Usage of the -d opion corrected Giving an error when a wrong -d option is given. Made some error mesages more consistent. Corrected usage of the exit call, in case of an error: exit(1) otherwise exit(0). A closer look should be made on exitDoxygen as it does not contain any exit statements and it is unclear (to me) when it is used.</li>
-<li> VHDL-2008 and arrays on unconstrained elements</li>
+<li> Usage of the -d option corrected Giving an error when a wrong -d option is given. Made some error messages more consistent. Corrected usage of the exit call, in case of an error: exit(1) otherwise exit(0). A closer look should be made on exitDoxygen as it does not contain any exit statements and it is unclear (to me) when it is used.</li> <li> VHDL-2008 and arrays on unconstrained elements</li>
 <li> consider currentFile when searching for global symbols</li>
 <li> doc/language.doc generated from the updated sources (bgcolored)</li>
 <li> doc/language.tpl -- UTF-8 reflected in the langhowto template</li>
@@ -984,7 +983,7 @@
 <h3>Bug fixes</h3>
 <ul>
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=668007">668007</a> - HTML commands - documentation of &lt;/dd&gt; tag missing</li>
-<li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=676879">676879</a> - parameter on doxywizard manual Added sentenc in respect to possible argument for doxywizard Added images to the LaTex / pdf version of the manual</li>
+<li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=676879">676879</a> - parameter on doxywizard manual Added sentence in respect to possible argument for doxywizard Added images to the LaTex / pdf version of the manual</li>
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=684324">684324</a> - Strange behavior when placing cite within brief. </li>
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=688858">688858</a> - SHORT_NAMES break references to \page in PDF output</li>
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=691315">691315</a> - Line breaks are not copied/displayed properly when using @copydoc. </li>
@@ -1031,12 +1030,12 @@
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=705702">705702</a> - Post-comment blocks on C++11 using definitions attach to following entity</li>
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=706236">706236</a> - Confusing use of GENERATE_TAGFILE</li>
 <li> Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=706520">706520</a> - Fortran: in body documentation lands on wrong place</li>
-<li> Small typo correceted in doxywizard_usage.doc Generated config.doc file in git is not identical to the generated one</li>
+<li> Small typo corrected in doxywizard_usage.doc Generated config.doc file in git is not identical to the generated one</li>
 <li> Various improvements to the (still experimental) sqlite3 support (thanks to Adrian Negreanu)</li>
 <li> jquery: use the env MINIFIER if specified</li>
 <li> Some words now in code style __attribute__ was seen (markdown) as the bold word attribute Reformulation of a sentence due to a not nice split of word (__declspec was split directly after __ in pdf)</li>
 <li> Extended list with supported options for automatic link generation</li>
-<li> Added -v option (analogous to --version). In case option started with -- and is not a known valuue (help or version) and error is given instead of starting doxygen</li>
+<li> Added -v option (analogous to --version). In case option started with -- and is not a known value (help or version) and error is given instead of starting doxygen</li>
 <li> Fixed regression when nested class were processed before their parent</li>
 <li> Minor changes to the way the code for config options is generated (thanks to Albert for the patch)</li>
 <li> Brief description did not appear in the page index, when a page did not have any details.</li>
@@ -1060,7 +1059,7 @@
 <li> Replaced utf8 character that broke latex compilation of the manual</li>
 <li> Fixed unused parameter warnings</li>
 <li> Add support for writing and importing C++11 style enums to and from tag files</li>
-<li> Fixed regression introduced by fixed bug Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=700740">700740</a></li>
+<li> Fixed regression introduced by fixed bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=700740">700740</a></li>
 <li> Fixed type in function name</li>
 <li> Remove some unneeded and still enabled debug info</li>
 <li> Included fix for "Constant Groups" regression on file pages (thanks to Michael Stahl) </li>
@@ -1087,18 +1086,18 @@
 <ul>
 <li>   Added support for "clang assisted parsing", which allows
        the code to also be parsed via libclang (C/C++ frontend of LLVM) 
-       and can improve the quality of the syntax highting, cross-references, 
+       and can improve the quality of the syntax highlighting, cross-references, 
        and call graphs, especially for template heavy C++ code. To enable 
        this feature you have to configure doxygen with the --with-libclang 
        option. Then you get two new configuration options: CLANG_ASSISTED_PARSING 
        to enable or disable parsing via clang and CLANG_OPTIONS to pass additional 
        compiler options needed to compile the files. Note that enabling this feature 
-       has a significant performance penality.</li>
+       has a significant performance penalty.</li>
 <li>   Included patch donated by Intel which adds Docbook support.
        This can be enabled via GENERATE_DOCBOOK and the output location can
        be controlled using DOCBOOK_OUTPUT. Docbook specific sections can be
        added using \docbookonly ... \enddocbookonly</li>
-<li>   Added support for UNO IDL (interace language used in Open/Libre Office), thanks to
+<li>   Added support for UNO IDL (interface language used in Open/Libre Office), thanks to
        Michael Stahl for the patch.</li>
 <li>   Included patch by Adrian Negreanu which stores data gathered by 
        doxygen in a sqlite3 database. Currently still work in progress and
@@ -1108,7 +1107,7 @@
 <li>   Include patch by Adrian Negreanu to show duration statistics after a run.
        You can enable this by running doxygen with the "-d Time" option.</li>
 <li>   Included patch by Markus Geimer which adds a new option 
-       LATEX_EXTRA_FILES which works similarily to HTML_EXTRA_FILES in that
+       LATEX_EXTRA_FILES which works similarly to HTML_EXTRA_FILES in that
        it copied specified files to the LaTeX output directory.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=698223">698223</a>: Added support for C++11 keyword alignas</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=693178">693178</a>: Added support for processing DocSets with Dash (thanks to
@@ -1132,7 +1131,7 @@
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=325266">325266</a> man page output was missing a linebreak before .SH when
        definition a group with a section.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=338205">338205</a>: @anchor were wrong when CREATE_SUBDIRS was enabled.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=427012">427012</a>: Putting a @todo in front of an anonoymous namespace caused
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=427012">427012</a>: Putting a @todo in front of an anonymous namespace caused
        bogus entry in the todo list.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=564462">564462</a>: Fixed alignment issue with tabs and multibyte characters.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=567542">567542</a>: Character entities in titles were not rendered correctly 
@@ -1156,7 +1155,7 @@
        replaced by _8.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=657704">657704</a>: Fixed issue with PROJECT_LOGO when using backslashes in
        the path.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=666008">666008</a>: Fortran: Using @var at module levele didn't work.
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=666008">666008</a>: Fortran: Using @var at module level didn't work.
        expect a file/path name.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=673218">673218</a>: Replaced "echo -n" with "printf" in the configure script.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=674856">674856</a>: Removed warning when using \endinternal</li>
@@ -1430,7 +1429,7 @@
 </p>
 <h3>Changes</h3>
 <ul>
-<li>   Using a fenched block (~~~~) in Markdown without explicit extension will 
+<li>   Using a fenced block (~~~~) in Markdown without explicit extension will 
        now be interpreted as a @code..@endcode block instead 
        of @verbatim..@endverbatim.</li>
 <li>   Classes inheriting from an class that is outside the scope of doxygen
@@ -1468,7 +1467,7 @@
        <li> support for raw string literals (with and without user defined 
          delimiter), 
          e.g.  <pre>R"(some"thing)", u8R"raw(some)"thing)raw"</pre></li>
-       <li> support for explictly deleted and defaulted special members 
+       <li> support for explicitly deleted and defaulted special members 
          (<code>=default</code> and <code>=delete</code>).</li>
        </ul></li>
 <li>   Made several improvements to the way Objective-C categories and protocols 
@@ -1640,7 +1639,7 @@
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=677771">677771</a>: Fixed visual misalignment for first argument.</li>
 <li>   The "arrow out" button in interactive SVG did not work when 
        served from a web server, due to the use of an absolute path.</li>
-<li>   If a declation was too wide for a page, the content in HTML spilled 
+<li>   If a declaration was too wide for a page, the content in HTML spilled 
        over the boundary of its box, which looked ugly.</li>
 <li>   Empty lines in a code fragment were collapsed.</li>
 <li>   Navigation tree entries of the hierarchy appeared under class index as
@@ -1695,7 +1694,7 @@ make sure you add the following:
 <li>   Changed the look of the source code output.</li>
 <li>   Included language updates for Chinese, Czech, German, Esperanto, 
        Italian, Slovak, Spanish, Hungarian, and Polish.</li>
-<li>   Syntax highlighing in source code fragments is no longer dependent
+<li>   Syntax highlighting in source code fragments is no longer dependent
        on LATEX_SOURCE_CODE being set to YES.</li>
 <li>   Added natural scrolling for tablet devices (like the iPad) 
        when using the treeview.</li>
@@ -1748,7 +1747,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=671291">671291</a>: C# regression: enum values where not shown in the docs.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=671395">671395</a>: When #some_member appeared at the start of a line it was
        seen as a level one header instead of a link to a member when
-       Markdown processing was enable. Now at least one space is required
+       Markdown processing was enabled. Now at least one space is required
        after the # to make it a header.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=671426">671426</a>: Fixed case where doxygen could crash when a section and
        subsection had the same label.</li>
@@ -1840,7 +1839,7 @@ make sure you add the following:
        <ul>
        <li> tabs are converted to spaces according to TAB_SIZE.</li>
        <li> blockquotes are created for lines that start with one or more &gt;'s
-            (amount of &gt;'s detemine the indentation level).</li>
+            (amount of &gt;'s determine the indentation level).</li>
        <li> emphasis using *emphasize this* or _emphasis this_ or
             strong emphasis using **emphasis this**. Unlike classic
             Markdown 'some_great_indentifier' is not touched.</li>
@@ -1902,7 +1901,7 @@ make sure you add the following:
        file::ext.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=567494">567494</a>: Fortran: Included patch for blockdata sub-programs.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=628417">628417</a>: Fortran: doxygen filter, preparsing fixed form of null</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=662286">662286</a>: TCL: Inlcuded patch to fixed UTF-8 support.</li>
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=662286">662286</a>: TCL: Included patch to fixed UTF-8 support.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=662289">662289</a>: TCL: Included patch to prevent ##### from appearing in the
        output.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=646319">646319</a>: Using a file name with path for HTML_STYLESHEET caused the
@@ -1917,8 +1916,8 @@ make sure you add the following:
        documented.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=666124">666124</a>: Fixed problem loading the navigation tree in IE8 when
        serving pages via a web server.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=666337">666337</a>: Included patch to avoid hypenation hints in front of the 
-       first captial in a word.</li>
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=666337">666337</a>: Included patch to avoid hyphenation hints in front of the 
+       first capital in a word.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=666568">666568</a>: When SHOW_FILES was NO, a grouped function did not appear
        in the javascript based search index.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=666909">666909</a>: \copybrief introduced extra spacing in the HTML output.</li>
@@ -2387,7 +2386,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=632311">632311</a>: Fixed potential crash for empty verbatim section.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=632426">632426</a>: closing brace of a function with one parameter has wrong
        color in HTML.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=632543">632543</a>: Added support for Fortan TYPEs with languge bindings.
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=632543">632543</a>: Added support for Fortran TYPEs with language bindings.
        (thanks to a patch by Daniel Franke)</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=632879">632879</a>: An explicit link request such as #blah did not longer produce
        a warning if no symbol named blah was found.</li>
@@ -2456,7 +2455,7 @@ make sure you add the following:
        HAVE_DOT=YES, was not propely documented.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=576291">576291</a>: Python comments for next class or method could end up in
        code of a method/class when enabling INLINE_SOURCES.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=611174">611174</a>: Fixed problem handling nestes classes in Python.</li>
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=611174">611174</a>: Fixed problem handling nested classes in Python.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621733">621733</a>: removed unexpected warnings about undocumented return types</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=622737">622737</a>: Undefined function macros could cause constant expression
        errors.</li>
@@ -2492,11 +2491,11 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=625578">625578</a>: In the HTML output &lt;/div&gt; was missing for built-in
        class diagrams.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=625555">625555</a>: References in example files with underscores were wrong.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=625982">625982</a>: When using japanese characters mixed with ascii characters
-       doxygen incorrected ended the brief description with a dot.</li>
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=625982">625982</a>: When using Japanese characters mixed with ascii characters
+       doxygen incorrectly ended the brief description with a dot.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=625952">625952</a>: setting MULTILINE_CPP_IS_BRIEF to YES, cause /// to appear
        in the output.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=626033">626033</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=567774">567774</a>: EXTENSION_MAPPING did not work if a the mapped 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=626033">626033</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=567774">567774</a>: EXTENSION_MAPPING did not work if a mapped 
        language was handled by the same parser as used for the original  
        extension.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=626175">626175</a>: Fixed bracket bug in LaTeX fancy headers.</li>
@@ -2552,7 +2551,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=617761">617761</a>: In dot graphs now also @ref worked (previously only \ref was
        supported).</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621653">621653</a>: Fixed error when compiling doxygen for Solaris 8.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621733">621733</a>: Removed bogus warning about undocument return type for 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621733">621733</a>: Removed bogus warning about undocumented return type for 
        define when WARN_NO_PARAMDOC was enabled.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621780">621780</a>: Fixed parsing support for a function that returns a 
        struct definition.</li>
@@ -2663,7 +2662,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=615583">615583</a>: Fixed problem handling @copy for operators with 
        const qualifier.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=615755">615755</a>: Fixed problem handling '"' inside comments.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=615957">615957</a>: Made the LaTeX output a bit less spatious using \input.</li>
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=615957">615957</a>: Made the LaTeX output a bit less spacious using \input.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=615695">615695</a>: Fixed preprocessor issue where a macro that was redefined
        was not resolved.</li>
 <li>   Fixed character encoding issue on the search results page.</li>
@@ -2678,7 +2677,7 @@ make sure you add the following:
        name as a global function.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=616947">616947</a>: Added documentation patch on how to create URL links with 
        custom text.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=616988">616988</a>: Doxywizard now removes non-existant files from the 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=616988">616988</a>: Doxywizard now removes non-existent files from the 
        recent list and has an option to clear the list completely.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=617051">617051</a>: A macro defined via PREDEFINED did not always overrule a
        macro definition in the code.</li>

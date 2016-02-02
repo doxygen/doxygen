@@ -3319,7 +3319,7 @@ class Receiver
 
   \addindex \\\---
   This command writes three dashes (\---) to the output. This allows
-  writing three consecutuve dashes to the output instead of one m-dash character (---).
+  writing three consecutive dashes to the output instead of one m-dash character (---).
 
 <hr>
 \htmlonly</p><center><p>\endhtmlonly
