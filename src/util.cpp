@@ -2366,6 +2366,12 @@ QCString getFileFilter(const char* name,bool isSourceCode)
   }
   else
   {
+    /* remove surrounding double quotes */
+    if ((filterName.right(1) == "\"") && (filterName.left(1) == "\""))
+    {
+       filterName.remove(filterName.length() - 1, 1);
+       filterName.remove(0, 1);
+    }
     return filterName;
   }
 }
