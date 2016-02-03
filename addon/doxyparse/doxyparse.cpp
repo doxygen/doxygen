@@ -34,6 +34,7 @@
 #include <string>
 #include <cstdlib>
 #include <sstream>
+#include <map>
 
 class Doxyparse : public CodeOutputInterface
 {
@@ -75,6 +76,8 @@ class Doxyparse : public CodeOutputInterface
 };
 
 static bool is_c_code = true;
+static std::map<std::string, bool> modules;
+static std::string current_module;
 
 static void findXRefSymbols(FileDef *fd)
 {
@@ -115,121 +118,133 @@ static bool ignoreStaticExternalCall(MemberDef *context, MemberDef *md) {
   }
 }
 
-void printArgumentList(MemberDef* md) {
-  ArgumentList *argList = md->argumentList();
-  ArgumentListIterator iterator(*argList);
-
-  printf("(");
-  Argument * argument = iterator.toFirst();
-  if(argument != NULL) {
-    printf("%s", argument->type.data());
-    for(++iterator; (argument = iterator.current()) ;++iterator){
-      printf(",%s", argument->type.data());
-    }
-  }
-  printf(")");
+static void printFile(std::string file) {
+  printf("%s:\n", file.c_str());
 }
-
-void printType(MemberDef* md) {
-  printf("%s ", md->memberTypeName().data());
+static void printModule(std::string module) {
+  current_module = module;
+  printf("  %s:\n", module.c_str());
 }
-
-void printSignature(MemberDef* md) {
-  printf("%s", md->name().data());
-  if(md->isFunction()){
-    printArgumentList(md);
-  }
-  printf(" ");
+static void printClassInformation(std::string information) {
+  printf("    informations: %s\n", information.c_str());
 }
-
-static void printWhereItWasDefined(MemberDef * md) {
-  if (md->getClassDef()) {
-    printf("defined in %s\n", md->getClassDef()->name().data());
-  }
-  else if (md->getFileDef()) {
-    printf("defined in %s\n", md->getFileDef()->getFileBase().data());
-  }
-  else {
-    printf("\n");
-  }
+static void printInheritance(std::string base_class) {
+  printf("    inherits: %s\n", base_class.c_str());
 }
-
-static void printCStructMember(MemberDef * md) {
-  printType(md);
-  printf("%s::", md->getClassDef()->name().data());
-  printSignature(md);
-  printf("defined in %s\n", md->getClassDef()->getFileDef()->getFileBase().data());
+static void printDefines() {
+  if (! modules[current_module]) {
+    printf("    defines:\n");
+  }
+  modules[current_module] = true;
+}
+static void printDefinition(std::string type, std::string signature, int line) {
+  printf("      - %s:\n", signature.c_str());
+  printf("          type: %s\n", type.c_str());
+  printf("          line: %d\n", line);
+}
+static void printProtection(std::string protection) {
+  printf("          protection: %s\n", protection.c_str());
+}
+static void printNumberOfLines(int lines) {
+  printf("          lines_of_code: %d\n", lines);
+}
+static void printNumberOfArguments(int arguments) {
+  printf("          parameters: %d\n", arguments);
+}
+static void printUses() {
+  printf("          uses:\n");
+}
+static void printReferenceTo(std::string type, std::string signature, std::string defined_in) {
+  printf("            - %s:\n", signature.c_str());
+  printf("                type: %s\n", type.c_str());
+  printf("                defined_in: %s\n", defined_in.c_str());
 }
 
 static int isPartOfCStruct(MemberDef * md) {
   return is_c_code && md->getClassDef() != NULL;
 }
 
-static void printReferenceTo(MemberDef* md) {
-  printf("      uses ");
-  if (isPartOfCStruct(md)) {
-    printCStructMember(md);
+std::string functionSignature(MemberDef* md) {
+  std::string signature = md->name().data();
+  if(md->isFunction()){
+    ArgumentList *argList = md->argumentList();
+    ArgumentListIterator iterator(*argList);
+    signature += "(";
+    Argument * argument = iterator.toFirst();
+    if(argument != NULL) {
+      signature += argument->type.data();
+      for(++iterator; (argument = iterator.current()) ;++iterator){
+        signature += std::string(",") + argument->type.data();
+      }
+    }
+    signature += ")";
   }
-  else {
-    printType(md);
-    printSignature(md);
-    printWhereItWasDefined(md);
-  }
+  return signature;
 }
 
-static void printReferencesMembers(MemberDef *md) {
-  MemberSDict *defDict = md->getReferencesMembers();
-  if (defDict) {
-    MemberSDict::Iterator msdi(*defDict);
-    MemberDef *rmd;
-    for (msdi.toFirst(); (rmd=msdi.current()); ++msdi) {
-      if (rmd->definitionType() == Definition::TypeMember && !ignoreStaticExternalCall(md, rmd)) {
-        printReferenceTo(rmd);
+static void referenceTo(MemberDef* md) {
+  std::string type = md->memberTypeName().data();
+  std::string defined_in = "";
+  std::string signature = "";
+  if (isPartOfCStruct(md)) {
+    signature = md->getClassDef()->name().data() + std::string("::") + functionSignature(md);
+    defined_in = md->getClassDef()->getFileDef()->getFileBase().data();
+  }
+  else {
+    signature = functionSignature(md);
+    if (md->getClassDef()) {
+      defined_in = md->getClassDef()->name().data();
+    }
+    else if (md->getFileDef()) {
+      defined_in = md->getFileDef()->getFileBase().data();
+    }
+  }
+  printReferenceTo(type, signature, defined_in);
+}
+
+void cModule(ClassDef* cd) {
+  MemberList* ml = cd->getMemberList(MemberListType_variableMembers);
+  if (ml) {
+    MemberListIterator mli(*ml);
+    MemberDef* md;
+    for (mli.toFirst(); (md=mli.current()); ++mli) {
+      printDefinition("variable", cd->name().data() + std::string("::") + md->name().data(), md->getDefLine());
+      if (md->protection() == Public) {
+        printProtection("public");
       }
     }
   }
 }
 
-void printDefinitionLine(MemberDef* md) {
-  printf("in line %d\n", md->getDefLine());
-}
-
-void printDefinition(MemberDef* md) {
-  printf("   ");
-  printType(md);
-  printSignature(md);
-  printDefinitionLine(md);
-}
-
-static void printProtection(MemberDef* md) {
-  if (md->protection() == Public) {
-    printf("      protection public\n");
-  }
-}
-
-void printNumberOfLines(MemberDef* md) {
+void functionInformation(MemberDef* md) {
   int size = md->getEndBodyLine() - md->getStartBodyLine() + 1;
-  printf("      %d lines of code\n", size);
-}
-
-void printNumberOfArguments(MemberDef* md) {
+  printNumberOfLines(size);
   ArgumentList *argList = md->argumentList();
-  printf("      %d parameters\n", argList->count());
-}
-
-void printFunctionInformation(MemberDef* md) {
-  printNumberOfLines(md);
-  printNumberOfArguments(md);
-  printReferencesMembers(md);
+  printNumberOfArguments(argList->count());
+  MemberSDict *defDict = md->getReferencesMembers();
+  if (defDict) {
+    MemberSDict::Iterator msdi(*defDict);
+    MemberDef *rmd;
+    printUses();
+    for (msdi.toFirst(); (rmd=msdi.current()); ++msdi) {
+      if (rmd->definitionType() == Definition::TypeMember && !ignoreStaticExternalCall(md, rmd)) {
+        referenceTo(rmd);
+      }
+    }
+  }
 }
 
 static void lookupSymbol(Definition *d) {
   if (d->definitionType() == Definition::TypeMember) {
     MemberDef *md = (MemberDef *)d;
-    printDefinition(md);
-    printProtection(md);
+    std::string type = md->memberTypeName().data();
+    std::string signature = functionSignature(md);
+    printDefinition(type, signature, md->getDefLine());
+    if (md->protection() == Public) {
+      printProtection("protection public");
+    }
     if (md->isFunction()) {
-      printFunctionInformation(md);
+      functionInformation(md);
     }
   }
 }
@@ -238,31 +253,9 @@ void listMembers(MemberList *ml) {
   if (ml) {
     MemberListIterator mli(*ml);
     MemberDef *md;
+    printDefines();
     for (mli.toFirst(); (md=mli.current()); ++mli) {
       lookupSymbol((Definition*) md);
-    }
-  }
-}
-
-static void printInheritance(ClassDef* cd) {
-  BaseClassList* baseClasses = cd->baseClasses();
-  if (baseClasses) {
-    BaseClassListIterator bci(*baseClasses);
-    BaseClassDef* bcd;
-    for (bci.toFirst(); (bcd = bci.current()); ++bci) {
-      printf("   inherits from %s\n", bcd->classDef->name().data());
-    }
-  }
-}
-
-void printCModule(ClassDef* cd) {
-  MemberList* ml = cd->getMemberList(MemberListType_variableMembers);
-  if (ml) {
-    MemberListIterator mli(*ml);
-    MemberDef* md;
-    for (mli.toFirst(); (md=mli.current()); ++mli) {
-      printf("   variable %s::%s in line %d\n", cd->name().data(), md->name().data(), md->getDefLine());
-      printProtection(md);
     }
   }
 }
@@ -276,29 +269,23 @@ void listAllMembers(ClassDef* cd) {
   listMembers(cd->getMemberList(MemberListType_variableMembers));
 }
 
-void printClassInformation(ClassDef* cd) {
-  printf("module %s\n", cd->name().data());
-  printInheritance(cd);
-  if(cd->isAbstract()) {
-    printf("   abstract class\n");
-  }
-  listAllMembers(cd);
-}
-
-static void printClass(ClassDef* cd) {
+static void classInformation(ClassDef* cd) {
   if (is_c_code) {
-    printCModule(cd);
+    cModule(cd);
   } else {
-    printClassInformation(cd);
-  }
-}
-
-static void printFile(FileDef* fd) {
-  printf("file %s\n", fd->absFilePath().data());
-  MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
-  if (ml && ml->count() > 0) {
-    printf("module %s\n", fd->getFileBase().data());
-    listMembers(ml);
+    printModule(cd->name().data());
+    BaseClassList* baseClasses = cd->baseClasses();
+    if (baseClasses) {
+      BaseClassListIterator bci(*baseClasses);
+      BaseClassDef* bcd;
+      for (bci.toFirst(); (bcd = bci.current()); ++bci) {
+        printInheritance(bcd->classDef->name().data());
+      }
+    }
+    if(cd->isAbstract()) {
+      printClassInformation("abstract class");
+    }
+    listAllMembers(cd);
   }
 }
 
@@ -339,14 +326,19 @@ static void listSymbols() {
     FileNameIterator fni(*fn);
     FileDef *fd;
     for (; (fd=fni.current()); ++fni) {
-      printFile(fd);
+      printFile(fd->absFilePath().data());
+      MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
+      if (ml && ml->count() > 0) {
+        printModule(fd->getFileBase().data());
+        listMembers(ml);
+      }
 
       ClassSDict *classes = fd->getClassSDict();
       if (classes) {
         ClassSDict::Iterator cli(*classes);
         ClassDef *cd;
         for (cli.toFirst(); (cd = cli.current()); ++cli) {
-          printClass(cd);
+          classInformation(cd);
         }
       }
     }
