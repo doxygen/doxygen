@@ -165,8 +165,7 @@ void OutputList::writeDoc(DocRoot *root,Definition *ctx,MemberDef *md)
   OutputGenerator *og;
   for (it.toFirst();(og=it.current());++it)
   {
-    //printf("og->printDoc(extension=%s)\n",
-    //    ctx?ctx->getDefFileExtension().data():"<null>");
+    printf("og->printDoc(%s)\n", ctx?ctx->getDefFileName().data():"<null>");
     if (og->isEnabled()) og->writeDoc(root,ctx,md);
   }
   VhdlDocGen::setFlowMember(0);

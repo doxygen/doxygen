@@ -3956,6 +3956,8 @@ static void writeIndex(OutputList &ol)
         ol.popGeneratorState();
 
         ol.writeAnchor(0,pd->getOutputFileBase());
+		
+		ol.docify(QCString("This section is generated from ") + stripFromPath(pd->getDefFileName())); // sidiandi
 
         ol.writePageLink(pd->getOutputFileBase(),first);
         first=FALSE;

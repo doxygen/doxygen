@@ -296,16 +296,19 @@ void RTFGenerator::beginRTFChapter()
   DBG_RTF(t << "{\\comment BeginRTFChapter}\n")
   t << rtf_Style_Reset;
 
-  // if we are compact, no extra page breaks...
-  if (Config_getBool("COMPACT_RTF"))
+  if (!m_no_title_page)
   {
-    //      t <<"\\sect\\sectd\\sbknone\n";
-    t <<"\\sect\\sbknone\n";
-    rtfwriteRuler_thick();
+	  // if we are compact, no extra page breaks...
+	  if (Config_getBool("COMPACT_RTF"))
+	  {
+		  //      t <<"\\sect\\sectd\\sbknone\n";
+		  t << "\\sect\\sbknone\n";
+		  rtfwriteRuler_thick();
+	  }
+	  else
+		  t << "\\sect\\sbkpage\n";
+	  //t <<"\\sect\\sectd\\sbkpage\n";
   }
-  else
-    t <<"\\sect\\sbkpage\n";
-  //t <<"\\sect\\sectd\\sbkpage\n";
 
   t << rtf_Style["Heading1"]->reference << "\n";
 }
@@ -316,16 +319,19 @@ void RTFGenerator::beginRTFSection()
   DBG_RTF(t << "{\\comment BeginRTFSection}\n")
   t << rtf_Style_Reset;
 
-  // if we are compact, no extra page breaks...
-  if (Config_getBool("COMPACT_RTF"))
+  if (!m_no_title_page)
   {
-    //      t <<"\\sect\\sectd\\sbknone\n";
-    t <<"\\sect\\sbknone\n";
-    rtfwriteRuler_emboss();
+	  // if we are compact, no extra page breaks...
+	  if (Config_getBool("COMPACT_RTF"))
+	  {
+		  //      t <<"\\sect\\sectd\\sbknone\n";
+		  t << "\\sect\\sbknone\n";
+		  rtfwriteRuler_emboss();
+	  }
+	  else
+		  t << "\\sect\\sbkpage\n";
+	  //t <<"\\sect\\sectd\\sbkpage\n";
   }
-  else
-    t <<"\\sect\\sbkpage\n";
-  //t <<"\\sect\\sectd\\sbkpage\n";
 
   t << rtf_Style["Heading2"]->reference << "\n";
 }

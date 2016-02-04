@@ -36,7 +36,7 @@
 #include "htmlentity.h"
 #include "plantuml.h"
 
-//#define DBG_RTF(x) m_t << x
+// #define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
 
 static QCString align(DocHtmlCell *cell)
