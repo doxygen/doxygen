@@ -50,5 +50,5 @@ Define::~Define()
 
 bool Define::hasDocumentation()
 {
-  return definition && (doc || Config_getBool("EXTRACT_ALL"));
+  return definition && (doc || Config_getBool(EXTRACT_ALL));
 }

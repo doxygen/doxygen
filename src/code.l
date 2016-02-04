@@ -600,7 +600,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                                    Definition *d,
                                    const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -1781,7 +1781,7 @@ TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
-KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|{KEYWORD_OBJC})
+KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"set"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|{KEYWORD_OBJC})
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while"|"@try"|"@catch"|"@finally")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string"|"nullptr")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
@@ -3274,7 +3274,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <*>\n({B}*"//"[!/][^\n]*\n)+		{ // remove special one-line comment
 					  if (YY_START==SkipCPP) REJECT;
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr+=((QCString)yytext).contains('\n');
 					    nextCodeLine();
@@ -3297,7 +3297,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  BEGIN( g_lastSkipCppContext ) ;
 					}
 <*>\n{B}*"//@"[{}].*\n			{ // remove one-line group marker
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr+=2;
 					    nextCodeLine();
@@ -3315,7 +3315,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <*>\n{B}*"/*@"[{}]			{ // remove one-line group marker
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
   					  {
 					    g_lastSpecialCContext = YY_START;
 					    g_yyLineNr++;
@@ -3334,7 +3334,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  }
   					}
 <*>^{B}*"//@"[{}].*\n			{ // remove one-line group marker
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr++;
 					    nextCodeLine();
@@ -3347,7 +3347,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <*>^{B}*"/*@"[{}]			{ // remove multi-line group marker
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
@@ -3365,7 +3365,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
  					  }
   					}
 <*>^{B}*"//"[!/][^\n]*\n		{ // remove special one-line comment
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr++;
 					    //nextCodeLine();
@@ -3379,7 +3379,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
                                           if (YY_START==SkipComment || YY_START==SkipString) REJECT;
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    char c[2]; c[0]='\n'; c[1]=0;
 					    codifyLines(c);
@@ -3398,7 +3398,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  g_forceTagReference = g_forceTagReference.mid(s+1,e-s-1);
   					}
 <*>\n{B}*"/*"[!*]/[^/*] 		{
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
   					  {
 					    g_lastSpecialCContext = YY_START;
 					    g_yyLineNr++;
@@ -3417,7 +3417,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  }
 					}
 <*>^{B}*"/*"[!*]/[^/*]			{ // special C comment block at a new line
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
@@ -3436,7 +3436,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <*>"/*"[!*]/[^/*]			{ // special C comment block half way a line
                                           if (YY_START==SkipString) REJECT;
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
@@ -3455,7 +3455,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <*>"/*"("!"?)"*/"			{ 
                                           if (YY_START==SkipString) REJECT;
-                                          if (!Config_getBool("STRIP_CODE_COMMENTS"))
+                                          if (!Config_getBool(STRIP_CODE_COMMENTS))
   					  {
 					    startFontClass("comment");
 					    g_code->codify(yytext);
@@ -3700,7 +3700,7 @@ void codeFreeScanner()
 extern "C" { // some bogus code to keep the compiler happy
   void codeYYdummy() { yy_flex_realloc(0,0); } 
 }
-#elif YY_FLEX_SUBMINOR_VERSION<33
-#error "You seem to be using a version of flex newer than 2.5.4 but older than 2.5.33. These versions do NOT work with doxygen! Please use version <=2.5.4 or >=2.5.33 or expect things to be parsed wrongly!"
+#elif YY_FLEX_MAJOR_VERSION<=2 && YY_FLEX_MINOR_VERSION<=5 && YY_FLEX_SUBMINOR_VERSION<33
+#error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
 #endif
 

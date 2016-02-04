@@ -78,6 +78,7 @@ Compilation is now done by performing the following steps:
 
         cd doxygen-$VERSION
         mkdir build
+	cd build
 
 <li>Run cmake with the makefile generator
 
@@ -89,11 +90,11 @@ Compilation is now done by performing the following steps:
     If you have Qt-4.3 or higher installed and want to build the GUI
     front-end, you should enable it as follows:
 
-        cmake -Dbuild_wizard=YES
+        cmake -Dbuild_wizard=YES ..
 
     For an overview of other configuration options use
 
-        cmake -L
+        cmake -L ..
 
 <li>Compile the program by running make:
 

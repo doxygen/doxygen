@@ -45,7 +45,7 @@ include_directories(
 set(GENERATED_SRC_WIZARD ${GENERATED_SRC}/doxywizard)
 file(MAKE_DIRECTORY ${GENERATED_SRC_WIZARD})
 
-add_definitions(-DQT_ARCH_X86_64 -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DUNICODE)
+add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DUNICODE)
 if (NOT Qt5Core_FOUND)
   include(${QT_USE_FILE})
 endif()
@@ -76,7 +76,7 @@ OUTPUT ${GENERATED_SRC_WIZARD}/configdoc.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GENERATED 1)
 
-FLEX_TARGET(config_doxyw config_doxyw.l ${GENERATED_SRC_WIZARD}/config_doxyw.cpp COMPILE_FLAGS "-Pconfig_doxywYY")
+FLEX_TARGET(config_doxyw config_doxyw.l ${GENERATED_SRC_WIZARD}/config_doxyw.cpp COMPILE_FLAGS "${LEX_FLAGS} -Pconfig_doxywYY")
 
 qt_wrap_cpp(doxywizard_MOC
 doxywizard.h

@@ -394,7 +394,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   Definition *d,
                   const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -1464,7 +1464,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			   QCString text(vhdlcodeYYtext);
 			   int i=text.find("--");
 			   if (text.mid(i,3)=="--!" && // hide special comment
-                               Config_getBool("STRIP_CODE_COMMENTS")) 
+                               Config_getBool(STRIP_CODE_COMMENTS)) 
 			   { 
 			     g_yyLineNr++; // skip complete line
 			   }  
@@ -1479,7 +1479,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			   QCString text(vhdlcodeYYtext);
 			   int i=text.find("--");
 			   if (text.mid(i,3)=="--!" &&
-                               Config_getBool("STRIP_CODE_COMMENTS")) 
+                               Config_getBool(STRIP_CODE_COMMENTS)) 
 			   { 
 			      // hide special comment
 			   }  
@@ -1613,7 +1613,7 @@ void codeFreeVhdlScanner()
 extern "C" { // some bogus code to keep the compiler happy
   void vhdlcodeYYdummy() { yy_flex_realloc(0,0); } 
 }
-#elif YY_FLEX_SUBMINOR_VERSION<33
+#elif YY_FLEX_MAJOR_VERSION<=2 && YY_FLEX_MINOR_VERSION<=5 && YY_FLEX_SUBMINOR_VERSION<33
 #error "You seem to be using a version of flex newer than 2.5.4 but older than 2.5.33. These versions do NOT work with doxygen! Please use version <=2.5.4 or >=2.5.33 or expect things to be parsed wrongly!"
 #endif
 

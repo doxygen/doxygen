@@ -116,7 +116,7 @@ inline void writeDocbookCodeString(FTextStream &t,const char *s, int &col)
     {
       case '\t':
         {
-          static int tabSize = Config_getInt("TAB_SIZE");
+          static int tabSize = Config_getInt(TAB_SIZE);
           int spacesToNextTabStop = tabSize - (col%tabSize);
           col+=spacesToNextTabStop;
           while (spacesToNextTabStop--) t << "&#32;";
@@ -355,7 +355,7 @@ void writeDocbookCodeBlock(FTextStream &t,FileDef *fd)
   DocbookCodeGenerator *docbookGen = new DocbookCodeGenerator(t);
   pIntf->parseCode(*docbookGen,  // codeOutIntf
       0,           // scopeName
-      fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
+      fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),
       langExt,     // lang
       FALSE,       // isExampleBlock
       0,           // exampleName
@@ -372,7 +372,7 @@ void writeDocbookCodeBlock(FTextStream &t,FileDef *fd)
 
 static QCString classOutputFileBase(ClassDef *cd)
 {
-  //static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (inlineGroupedClasses && cd->partOfGroups()!=0)
   return cd->getOutputFileBase();
   //else
@@ -381,7 +381,7 @@ static QCString classOutputFileBase(ClassDef *cd)
 
 static QCString memberOutputFileBase(MemberDef *md)
 {
-  //static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (inlineGroupedClasses && md->getClassDef() && md->getClassDef()->partOfGroups()!=0)
   //  return md->getClassDef()->getDocbookOutputFileBase();
   //else
@@ -663,7 +663,7 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
           writeDocbookString(t,emd->name());
           t << "</term>" << endl;
           t << "                            <listitem>" << endl;
-          if(Config_getBool("REPEAT_BRIEF"))
+          if(Config_getBool(REPEAT_BRIEF))
           {
               t << "                                <para>";
               writeDocbookString(t,emd->briefDescription());
@@ -706,7 +706,7 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
       }
       t << "_1" << md->anchor() << "\">" << endl;
       t << "                <title>" << convertToXML(md->definition()) << "</title>";
-      if(Config_getBool("REPEAT_BRIEF"))
+      if(Config_getBool(REPEAT_BRIEF))
       {
           t << " <emphasis>";
           writeDocbookString(t,md->briefDescription());
@@ -730,7 +730,7 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
       }
       t << "_1" << md->anchor() << "\">" << endl;
       t << "                <title>" << convertToXML(md->definition()) << " " << convertToXML(md->argsString()) << "</title>";
-      if(Config_getBool("REPEAT_BRIEF"))
+      if(Config_getBool(REPEAT_BRIEF))
       {
           t << " <emphasis>";
           writeDocbookString(t,md->briefDescription());
@@ -795,7 +795,7 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
         }
         t << "_1" << md->anchor() << "\">" << endl;
         t << "                <title>" << convertToXML(md->definition()) << "</title>";
-        if(Config_getBool("REPEAT_BRIEF"))
+        if(Config_getBool(REPEAT_BRIEF))
         {
             t << " <emphasis>";
             writeDocbookString(t,md->briefDescription());
@@ -849,7 +849,7 @@ static void generateDocbookSection(Definition *d,FTextStream &t,MemberList *ml,c
   {
     for (mli.toFirst();(md=mli.current());++mli)
     {
-        if (md->documentation().isEmpty() && !Config_getBool("REPEAT_BRIEF"))
+        if (md->documentation().isEmpty() && !Config_getBool(REPEAT_BRIEF))
         {
             continue;
         }
@@ -892,7 +892,7 @@ static void generateDocbookSection(Definition *d,FTextStream &t,MemberList *ml,c
     // to prevent this duplication in the Docbook output, we filter those here.
     if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0) 
     {
-        if (detailed && md->documentation().isEmpty() && !Config_getBool("REPEAT_BRIEF"))
+        if (detailed && md->documentation().isEmpty() && !Config_getBool(REPEAT_BRIEF))
         {
             continue;
         }
@@ -1137,7 +1137,7 @@ static void generateDocbookForClass(ClassDef *cd,FTextStream &ti)
   //Add the file Documentation info to index file
   ti << "        <xi:include href=\"" << fileDocbook << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
 
-  QCString outputDirectory = Config_getString("DOCBOOK_OUTPUT");
+  QCString outputDirectory = Config_getString(DOCBOOK_OUTPUT);
   QCString fileName=outputDirectory+"/"+ classOutputFileBase(cd)+".xml";
   QCString relPath = relativePathToRoot(fileName);
   QFile f(fileName);
@@ -1194,18 +1194,18 @@ static void generateDocbookForClass(ClassDef *cd,FTextStream &ti)
     }
   }
 
-  if (Config_getBool("HAVE_DOT") && (Config_getBool("CLASS_DIAGRAMS") || Config_getBool("CLASS_GRAPH")))
+  if (Config_getBool(HAVE_DOT) && (Config_getBool(CLASS_DIAGRAMS) || Config_getBool(CLASS_GRAPH)))
   {
     t << "<para>Inheritance diagram for " << convertToXML(cd->name()) << "</para>" << endl;
     DotClassGraph inheritanceGraph(cd,DotNode::Inheritance);
-    inheritanceGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString("DOCBOOK_OUTPUT"),fileName,relPath,TRUE,FALSE);
+    inheritanceGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,TRUE,FALSE);
   }
 
-  if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
+  if (Config_getBool(HAVE_DOT) && Config_getBool(COLLABORATION_GRAPH))
   {
     t << "<para>Collaboration diagram for " << convertToXML(cd->name()) << "</para>" << endl;
     DotClassGraph collaborationGraph(cd,DotNode::Collaboration);
-    collaborationGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString("DOCBOOK_OUTPUT"),fileName,relPath,TRUE,FALSE);
+    collaborationGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,TRUE,FALSE);
   }
 
   writeInnerClasses(cd->getClassSDict(),t);
@@ -1233,7 +1233,7 @@ static void generateDocbookForClass(ClassDef *cd,FTextStream &ti)
     }
   }
 
-  if(Config_getBool("REPEAT_BRIEF"))
+  if(Config_getBool(REPEAT_BRIEF))
   {
       if (cd->briefDescription()) 
       {
@@ -1316,7 +1316,7 @@ static void generateDocbookForNamespace(NamespaceDef *nd,FTextStream &ti)
   //Add the file Documentation info to index file
   ti << "        <xi:include href=\"" << fileDocbook << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
 
-  QCString outputDirectory = Config_getString("DOCBOOK_OUTPUT");
+  QCString outputDirectory = Config_getString(DOCBOOK_OUTPUT);
   QCString fileName=outputDirectory+"/"+nd->getOutputFileBase()+".xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
@@ -1356,7 +1356,7 @@ static void generateDocbookForNamespace(NamespaceDef *nd,FTextStream &ti)
     }
   }
 
-  if(Config_getBool("REPEAT_BRIEF"))
+  if(Config_getBool(REPEAT_BRIEF))
   {
       if (nd->briefDescription()) 
       {
@@ -1402,7 +1402,7 @@ static void generateDocbookForFile(FileDef *fd,FTextStream &ti)
   //Add the file Documentation info to index file
   ti << "        <xi:include href=\"" << fileDocbook << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
 
-  QCString outputDirectory = Config_getString("DOCBOOK_OUTPUT");
+  QCString outputDirectory = Config_getString(DOCBOOK_OUTPUT);
   QCString fileName=outputDirectory+"/"+fd->getOutputFileBase()+".xml";
   QCString relPath = relativePathToRoot(fileName);
 
@@ -1449,19 +1449,19 @@ static void generateDocbookForFile(FileDef *fd,FTextStream &ti)
       t << "</programlisting>" << endl;
     }
   }
-  if (Config_getBool("HAVE_DOT"))
+  if (Config_getBool(HAVE_DOT))
   {
-    if (Config_getBool("INCLUDE_GRAPH"))
+    if (Config_getBool(INCLUDE_GRAPH))
     {
       t << "<para>Include dependency diagram for " << convertToXML(fd->name()) << "</para>" << endl;
       DotInclDepGraph idepGraph(fd, FALSE);
-      idepGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString("DOCBOOK_OUTPUT"),fileName,relPath,FALSE);
+      idepGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
     }
-    if (Config_getBool("INCLUDED_BY_GRAPH"))
+    if (Config_getBool(INCLUDED_BY_GRAPH))
     {
       t << "<para>Included by dependency diagram for " << convertToXML(fd->name()) << "</para>" << endl;
       DotInclDepGraph ibdepGraph(fd, TRUE);
-      ibdepGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString("DOCBOOK_OUTPUT"),fileName,relPath,FALSE);
+      ibdepGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
     }
   }
 
@@ -1499,7 +1499,7 @@ static void generateDocbookForFile(FileDef *fd,FTextStream &ti)
   t << "        <title>" << theTranslator->trDetailedDescription() << "</title>" << endl;
   writeDocbookDocBlock(t,fd->briefFile(),fd->briefLine(),fd,0,fd->briefDescription());
   writeDocbookDocBlock(t,fd->docFile(),fd->docLine(),fd,0,fd->documentation());
-  if (Config_getBool("FULL_PATH_NAMES")) 
+  if (Config_getBool(FULL_PATH_NAMES)) 
   {
     t << "    <para>Definition in file " << fd->getDefFileName() << "</para>" << endl;
   }
@@ -1509,7 +1509,7 @@ static void generateDocbookForFile(FileDef *fd,FTextStream &ti)
   }
   t << "    </simplesect>" << endl;
 
-  if (Config_getBool("DOCBOOK_PROGRAMLISTING"))
+  if (Config_getBool(DOCBOOK_PROGRAMLISTING))
   {
     t << "    <literallayout><computeroutput>" << endl;
     writeDocbookCodeBlock(t,fd);
@@ -1542,7 +1542,7 @@ static void generateDocbookForGroup(GroupDef *gd,FTextStream &ti)
     ti << "        <xi:include href=\"" << fileDocbook << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
   }
 
-  QCString outputDirectory = Config_getString("DOCBOOK_OUTPUT");
+  QCString outputDirectory = Config_getString(DOCBOOK_OUTPUT);
   QCString fileName=outputDirectory+"/"+gd->getOutputFileBase()+".xml";
   QCString relPath = relativePathToRoot(fileName);
 
@@ -1559,11 +1559,11 @@ static void generateDocbookForGroup(GroupDef *gd,FTextStream &ti)
 
   t << "    <title>" << convertToXML(gd->groupTitle()) << "</title>" << endl;
 
-  if (Config_getBool("GROUP_GRAPHS") && Config_getBool("HAVE_DOT"))
+  if (Config_getBool(GROUP_GRAPHS) && Config_getBool(HAVE_DOT))
   {
     t << "<para>Collaboration diagram for " << convertToXML(gd->groupTitle()) << "</para>" << endl;
     DotGroupCollaboration collaborationGraph(gd);
-    collaborationGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString("DOCBOOK_OUTPUT"),fileName,relPath,FALSE);
+    collaborationGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
   }
 
   if (gd->briefDescription()) 
@@ -1630,7 +1630,7 @@ static void generateDocbookForDir(DirDef *dd,FTextStream &ti)
   //Add the file Documentation info to index file
   ti << "        <xi:include href=\"" << fileDocbook << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
 
-  QCString outputDirectory = Config_getString("DOCBOOK_OUTPUT");
+  QCString outputDirectory = Config_getString(DOCBOOK_OUTPUT);
   QCString fileName=outputDirectory+"/"+dd->getOutputFileBase()+".xml";
   QFile f(fileName);
   QCString relPath = relativePathToRoot(fileName);
@@ -1648,11 +1648,11 @@ static void generateDocbookForDir(DirDef *dd,FTextStream &ti)
   t << "    <title>";
   t << theTranslator->trDirReference(dd->displayName());
   t << "</title>" << endl;
-  if (Config_getBool("DIRECTORY_GRAPH") && Config_getBool("HAVE_DOT"))
+  if (Config_getBool(DIRECTORY_GRAPH) && Config_getBool(HAVE_DOT))
   {
     t << "<para>Directory dependency diagram for " << convertToXML(dd->displayName()) << "</para>" << endl;
     DotDirDeps dirdepGraph(dd);
-    dirdepGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString("DOCBOOK_OUTPUT"),fileName,relPath,FALSE);
+    dirdepGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
   }
 
   writeInnerDirs(&dd->subDirs(),t);
@@ -1686,7 +1686,7 @@ static void generateDocbookForPage(PageDef *pd,FTextStream &ti,bool isExample)
     pageName="mainpage"; // to prevent overwriting the generated index page.
   }
 
-  QCString outputDirectory = Config_getString("DOCBOOK_OUTPUT");
+  QCString outputDirectory = Config_getString(DOCBOOK_OUTPUT);
   QCString fileName=outputDirectory+"/"+pageName+".xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
@@ -1767,7 +1767,7 @@ void generateDocbook()
   // + related pages
   // - examples
 
-  QCString outputDirectory = Config_getString("DOCBOOK_OUTPUT");
+  QCString outputDirectory = Config_getString(DOCBOOK_OUTPUT);
   if (outputDirectory.isEmpty())
   {
     outputDirectory=QDir::currentDirPath().utf8();
@@ -1808,7 +1808,7 @@ void generateDocbook()
   createSubDirs(docbookDir);
 
   QCString fileName=outputDirectory+"/index.xml";
-  QCString dbk_projectName = Config_getString("PROJECT_NAME");
+  QCString dbk_projectName = Config_getString(PROJECT_NAME);
   QFile f(fileName);
 
   f.setName(fileName);
@@ -1921,7 +1921,7 @@ void generateDocbook()
 
   // FILE DOCUMENTATION
 
-  static bool showFiles = Config_getBool("SHOW_FILES");
+  static bool showFiles = Config_getBool(SHOW_FILES);
   if (showFiles)
   {
     FileNameListIterator fnli(*Doxygen::inputNameList);
@@ -1953,7 +1953,7 @@ void generateDocbook()
   }
 
   // DIRECTORY DOCUMENTATION
-  if (Config_getBool("DIRECTORY_GRAPH") && Config_getBool("HAVE_DOT"))
+  if (Config_getBool(DIRECTORY_GRAPH) && Config_getBool(HAVE_DOT))
   {
     DirDef *dir;
     DirSDict::Iterator sdi(*Doxygen::directories);

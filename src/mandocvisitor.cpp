@@ -818,7 +818,7 @@ void ManDocVisitor::visitPost(DocSecRefList *)
 
 //void ManDocVisitor::visitPre(DocLanguage *l)
 //{
-//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  QString langId = Config_getEnum(OUTPUT_LANGUAGE);
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    pushEnabled();
@@ -828,7 +828,7 @@ void ManDocVisitor::visitPost(DocSecRefList *)
 //
 //void ManDocVisitor::visitPost(DocLanguage *l) 
 //{
-//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  QString langId = Config_getEnum(OUTPUT_LANGUAGE);
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    popEnabled();

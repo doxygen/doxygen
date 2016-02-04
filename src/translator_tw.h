@@ -104,7 +104,7 @@ class TranslatorChinesetraditional : public Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "欄位說明文件";
       }
@@ -171,7 +171,7 @@ class TranslatorChinesetraditional : public Translator
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "資料結構";
       }
@@ -188,7 +188,7 @@ class TranslatorChinesetraditional : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "資料欄位";
       }
@@ -201,7 +201,7 @@ class TranslatorChinesetraditional : public Translator
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "全域資料";
       }
@@ -241,7 +241,7 @@ class TranslatorChinesetraditional : public Translator
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "這是附帶簡略說明的資料結構:";
       }
@@ -260,7 +260,7 @@ class TranslatorChinesetraditional : public Translator
       {
         result+="文件化過";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="結構及聯合型態欄位";
       }
@@ -271,7 +271,7 @@ class TranslatorChinesetraditional : public Translator
       result+=", 並且帶有連結至";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="每個欄位的結構/聯合型態說明文件:";
         }
@@ -282,7 +282,7 @@ class TranslatorChinesetraditional : public Translator
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="這些結構/聯合型態所屬:";
         }
@@ -300,7 +300,7 @@ class TranslatorChinesetraditional : public Translator
       QCString result="這是全部";
       if (!extractAll) result+="文件化的";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="函式，變數，定義，列舉，及型態定義";
       }
@@ -352,7 +352,7 @@ class TranslatorChinesetraditional : public Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "資料結構索引";
       }
@@ -379,7 +379,7 @@ class TranslatorChinesetraditional : public Translator
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "資料結構說明文件";
       }
@@ -488,7 +488,7 @@ class TranslatorChinesetraditional : public Translator
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "資料結構";
       }
@@ -895,7 +895,7 @@ class TranslatorChinesetraditional : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "資料欄位";
       }
@@ -1091,7 +1091,7 @@ class TranslatorChinesetraditional : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "資料結構";
       }

@@ -103,7 +103,7 @@ class TranslatorJapanese : public Translator
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
     {
-      if( Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+      if( Config_getBool(OPTIMIZE_OUTPUT_JAVA))
       {
         return "メソッド詳解";
       }
@@ -116,7 +116,7 @@ class TranslatorJapanese : public Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if( Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if( Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "フィールド詳解";
       }
@@ -185,7 +185,7 @@ class TranslatorJapanese : public Translator
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "データ構造";
       }
@@ -202,7 +202,7 @@ class TranslatorJapanese : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "データフィールド";
       }
@@ -215,7 +215,7 @@ class TranslatorJapanese : public Translator
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "大域各種";
       }
@@ -262,7 +262,7 @@ class TranslatorJapanese : public Translator
     virtual QCString trCompoundListDescription()
     {
       /* 概要がついているのは見ればわかるので省略 */
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "データ構造一覧です。";
       }
@@ -275,7 +275,7 @@ class TranslatorJapanese : public Translator
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-      const bool forC = Config_getBool("OPTIMIZE_OUTPUT_FOR_C");
+      const bool forC = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
       QCString result;
       if (forC)
       {
@@ -332,7 +332,7 @@ class TranslatorJapanese : public Translator
     virtual QCString trFileMembersDescription(bool /*extractAll*/)
     {
       QCString result;
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="関数・変数・マクロ・列挙・型定義";
       }
@@ -377,7 +377,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "データ構造索引";
       }
@@ -404,7 +404,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "データ構造詳解";
       }
@@ -506,7 +506,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "データ構造";
       }
@@ -913,7 +913,7 @@ class TranslatorJapanese : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "フィールド";
       }
@@ -1102,7 +1102,7 @@ class TranslatorJapanese : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
     {
       return "データ構造";
     }

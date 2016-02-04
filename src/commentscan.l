@@ -1032,23 +1032,6 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>("\\"[a-z_A-Z]+)+"\\"		{ // directory (or chain of commands!)
   					  addOutput(yytext);
   					}
-<Comment>{XREFCMD}/[^a-z_A-Z]*		{ // xref command 
-					  if (inContext!=OutputXRef) 
-					  {
-					    briefEndsAtDot=FALSE;
-					    setOutput(OutputDoc);
-					  }
-					  // continue with the same input
-                                          REJECT;
-					}
-   /*
-<Comment>{DETAILEDCMD}/[^a-z_A-Z]*	{ // command that can end a brief description
-				          briefEndsAtDot=FALSE;
-				          setOutput(OutputDoc);
-					  // continue with the same input
-                                          REJECT;
-					}
-   */
 <Comment>"<"{DETAILEDHTML}{ATTR}">"	{ // HTML command that ends a brief description
 					  setOutput(OutputDoc);
 					  // continue with the same input
@@ -1127,8 +1110,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             int i=0;
                                             while (yytext[i]==' ' || yytext[i]=='\t') i++;
 					    g_spaceBeforeCmd = QCString(yytext).left(i);
-					    if (cmdPtr->endsBrief && inContext!=OutputXRef) 
-					    { 
+					    if (cmdPtr->endsBrief && !(inContext==OutputXRef && cmdName=="parblock"))
+					    {
 					      briefEndsAtDot=FALSE;
 					      // this command forces the end of brief description
 					      setOutput(OutputDoc);
@@ -1145,7 +1128,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					      // but we need to know the position in the input buffer where this 
 					      // rule matched.
 					      // for flex 2.5.33+ we should use YY_CURRENT_BUFFER_LVALUE
-#if YY_FLEX_MINOR_VERSION>=5 && YY_FLEX_SUBMINOR_VERSION>=33
+#if YY_FLEX_MAJOR_VERSION>=2 && (YY_FLEX_MINOR_VERSION>5 || (YY_FLEX_MINOR_VERSION==5 && YY_FLEX_SUBMINOR_VERSION>=33))
 					      inputPosition=prevPosition + (int)(yy_bp - YY_CURRENT_BUFFER_LVALUE->yy_ch_buf);
 #else
 					      inputPosition=prevPosition + (int)(yy_bp - yy_current_buffer->yy_ch_buf);
@@ -1170,7 +1153,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>{B}*{CMD}"~"[a-z_A-Z-]*		{ // language switch command
                                           QCString langId = QString(yytext).stripWhiteSpace().data()+2;
 			       	          if (!langId.isEmpty() &&
-					      qstricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)!=0)
+					      qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)!=0)
 				          { // enable language specific section
 				            BEGIN(SkipLang);
 				          }
@@ -1207,7 +1190,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           g_memberGroupHeader.resize(0);
 					  parseMore=TRUE;
                                           needNewEntry = TRUE;
-#if YY_FLEX_MINOR_VERSION>=5 && YY_FLEX_SUBMINOR_VERSION>=33
+#if YY_FLEX_MAJOR_VERSION>=2 && (YY_FLEX_MINOR_VERSION>5 || (YY_FLEX_MINOR_VERSION==5 && YY_FLEX_SUBMINOR_VERSION>=33))
 				          inputPosition=prevPosition + (int)(yy_bp - YY_CURRENT_BUFFER_LVALUE->yy_ch_buf) + strlen(yytext);
 #else
 				          inputPosition=prevPosition + (int)(yy_bp - yy_current_buffer->yy_ch_buf) + strlen(yytext);
@@ -2193,7 +2176,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <SkipLang>[\\@]"~"[a-zA-Z-]*        { /* language switch */
                                      QCString langId = &yytext[2];
 				     if (langId.isEmpty() ||
-					 qstricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)==0)
+					 qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)==0)
 				     { // enable language specific section
 				       BEGIN(Comment);
 				     }
@@ -2739,7 +2722,7 @@ static bool handleHideCallergraph(const QCString &)
 
 static bool handleInternal(const QCString &)
 {
-  if (!Config_getBool("INTERNAL_DOCS"))
+  if (!Config_getBool(INTERNAL_DOCS))
   {
     // make sure some whitespace before a \internal command
     // is not treated as "documentation"

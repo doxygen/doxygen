@@ -511,7 +511,7 @@ is noticeable:
        code
 
 In this case Markdown will put the word code in a code block,
-whereas Doxygen will treat it as normal text, since although the absolute
+whereas doxygen will treat it as normal text, since although the absolute
 indentation is 4, the indentation with respect to the previous paragraph
 is only 1.
 

@@ -1282,7 +1282,7 @@ void generateSqlite3()
   // + examples
   // + main page
 
-  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
+  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
   QDir sqlite3Dir(outputDirectory);
   sqlite3 *db;
   sqlite3_initialize();

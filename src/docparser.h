@@ -309,10 +309,18 @@ class DocCite : public DocNode
 class DocStyleChange : public DocNode
 {
   public:
-    enum Style { Bold, Italic, Code, Center, Small, 
-                 Subscript, Superscript, Preformatted,
-                 Span, Div
+    enum Style { Bold          = (1<<0),
+                 Italic        = (1<<1),
+                 Code          = (1<<2),
+                 Center        = (1<<3),
+                 Small         = (1<<4),
+                 Subscript     = (1<<5),
+                 Superscript   = (1<<6),
+                 Preformatted  = (1<<7),
+                 Span          = (1<<8),
+                 Div           = (1<<9)
                };
+
     DocStyleChange(DocNode *parent,uint position,Style s,bool enable,
                    const HtmlAttribList *attribs=0) : 
       m_position(position), m_style(s), m_enable(enable)
@@ -395,7 +403,7 @@ class DocSymbol : public DocNode
                    /* doxygen commands mapped */
                    Sym_BSlash, Sym_At, Sym_Less, Sym_Greater, Sym_Amp,
                    Sym_Dollar, Sym_Hash, Sym_DoubleColon, Sym_Percent, Sym_Pipe,
-                   Sym_Quot, Sym_Minus
+                   Sym_Quot, Sym_Minus, Sym_Plus, Sym_Dot
                  };
     enum PerlType { Perl_unknown = 0, Perl_string, Perl_char, Perl_symbol, Perl_umlaut,
                     Perl_acute, Perl_grave, Perl_circ, Perl_slash, Perl_tilde,

@@ -312,7 +312,9 @@ static struct htmlEntityInfo
   { SYM(Percent),  "%",            "%",          "%",                    "%",             "\\%",                    "%",      "%",           { "%",          DocSymbol::Perl_char    }},
   { SYM(Pipe),     "|",            "|",          "|",                    "|",             "$|$",                    "|",      "|",           { "|",          DocSymbol::Perl_char    }},
   { SYM(Quot),     "\"",           "\"",         "\"",                   "&quot;",        "\"",                     "\"",     "\"",          { "\"",         DocSymbol::Perl_char    }},
-  { SYM(Minus),    "-",            "-",          "-",                    "-",             "-\\/",                   "-",      "-",           { "-",          DocSymbol::Perl_char    }}
+  { SYM(Minus),    "-",            "-",          "-",                    "-",             "-\\/",                   "-",      "-",           { "-",          DocSymbol::Perl_char    }},
+  { SYM(Plus),     "+",            "+",          "+",                    "+",             "+",                      "+",      "+",           { "+",          DocSymbol::Perl_char    }},
+  { SYM(Dot),      ".",            ".",          ".",                    ".",             ".",                      ".",      ".",           { ".",          DocSymbol::Perl_char    }}
 };
 
 static const int g_numHtmlEntities = (int)(sizeof(g_htmlEntities)/ sizeof(*g_htmlEntities));

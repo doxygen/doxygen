@@ -1221,6 +1221,14 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='bool' id='WARN_AS_ERROR' defval='0'>
+      <docs>
+<![CDATA[
+ If the \c WARN_AS_ERROR tag is set to \c YES then doxygen will immediately stop
+ when a warning is encountered.
+]]>
+      </docs>
+    </option>
     <option type='string' id='WARN_FORMAT' format='string' defval='$file:$line: $text'>
       <docs>
 <![CDATA[
@@ -1317,6 +1325,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <value name='*.mm'/>
       <value name='*.dox'/>
       <value name='*.py'/>
+      <value name='*.pyw'/>
       <value name='*.f90'/>
       <value name='*.f'/>
       <value name='*.for'/>
@@ -1436,6 +1445,10 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  <br>Note that the filter must not add or remove lines; it is applied before the 
  code is scanned, but not when the output code is generated. If lines are added 
  or removed, the anchors will not be placed correctly.
+ <br>Note that for custom extensions or not directly supported extensions you also
+ need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
+ otherwise the files are not properly processed by doxygen.<br>
+
 ]]>
       </docs>
     </option>
@@ -1449,6 +1462,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  information on how filters are used. If the \c FILTER_PATTERNS tag is empty or if
  none of the patterns match the file name, \ref cfg_input_filter "INPUT_FILTER" is 
  applied.
+ <br>Note that for custom extensions or not directly supported extensions you also
+ need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
+ otherwise the files are not properly processed by doxygen.<br>
 ]]>
       </docs>
     </option>
@@ -1596,7 +1612,7 @@ to disable this feature.
   necessary type information.
 
   @note The availability of this option depends on whether or not doxygen
-  was compiled with the `--with-libclang` option.
+  was generated with the `-Duse-libclang=ON` option for CMake.
 ]]>
       </docs>
     </option>
@@ -2644,6 +2660,16 @@ or
  bibliography, e.g. \c plainnat, or \c ieeetr. 
  See http://en.wikipedia.org/wiki/BibTeX and \ref cmdcite "\\cite"
  for more info.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='LATEX_TIMESTAMP' defval='0' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ If the \c LATEX_TIMESTAMP tag is set to \c YES then the footer of
+ each generated page will contain the date and time when the page
+ was generated. Setting this to \c NO can help when comparing the output of
+ multiple runs.
 ]]>
       </docs>
     </option>

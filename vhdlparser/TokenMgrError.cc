@@ -64,7 +64,7 @@ namespace parser {
 // i < 16 - guaranteed
 char hexChar(int i) {
   if (i < 10) {
-    return i - '0';
+    return i + '0';
   }
   return 'a' + (i - 10);
 }
@@ -115,4 +115,4 @@ JAVACC_SIMPLE_STRING addUnicodeEscapes(JAVACC_STRING_TYPE str) {
 
 }
 }
-/* JavaCC - OriginalChecksum=2fe11435e6701b2fca885354b08bfdf6 (do not edit this line) */
+/* JavaCC - OriginalChecksum=72f292bc267bd0602e63291bf864f942 (do not edit this line) */

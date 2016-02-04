@@ -70,7 +70,7 @@ static QCString escapeId(const char *s)
 
 void TooltipManager::addTooltip(Definition *d)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   if (!sourceTooltips) return;
   QCString id = d->getOutputFileBase();
   int i=id.findRev('/');

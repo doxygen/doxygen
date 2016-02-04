@@ -344,6 +344,7 @@ void filterLatexString(FTextStream &t,const char *str,
 
 QCString latexEscapeLabelName(const char *s,bool insideTabbing);
 QCString latexEscapeIndexChars(const char *s,bool insideTabbing);
+QCString latexEscapePDFString(const char *s);
 
 QCString rtfFormatBmkStr(const char *name);
 
@@ -473,7 +474,7 @@ void convertProtectionLevel(
                   );
 
 bool mainPageHasTitle();
-void initFilePattern(void);
+const QDict<int> &getExtensionLookup();
 bool openOutputFile(const char *outFile,QFile &f);
 
 #endif

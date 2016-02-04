@@ -454,7 +454,7 @@ static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyInclude
   QFileInfo fi(fileName);
   if (fi.exists() && fi.isFile())
   {
-    static QStrList &exclPatterns = Config_getList("EXCLUDE_PATTERNS");
+    static QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
     if (patternMatch(fi,&exclPatterns)) return 0;
 
     QCString absName = fi.absFilePath().utf8();
@@ -1461,7 +1461,7 @@ static inline void outputArray(const char *a,int len)
 
 static void readIncludeFile(const QCString &inc)
 {
-  static bool searchIncludes = Config_getBool("SEARCH_INCLUDES");
+  static bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
   uint i=0;
 
   // find the start of the include file name
@@ -1507,7 +1507,7 @@ static void readIncludeFile(const QCString &inc)
 	}
 	else if (searchIncludes) // search in INCLUDE_PATH as well
 	{
-	  QStrList &includePath = Config_getList("INCLUDE_PATH");
+	  QStrList &includePath = Config_getList(INCLUDE_PATH);
 	  char *s=includePath.first();
 	  while (s)
 	  {
@@ -1659,6 +1659,7 @@ static void endCondSection()
   {
     CondCtx *ctx = g_condStack.pop();
     g_skip=ctx->skip;
+    delete ctx;
   }
   //printf("endCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
 }
@@ -1667,7 +1668,7 @@ static void forceEndCondSection()
 {
   while (!g_condStack.isEmpty())
   {
-    g_condStack.pop();
+    delete g_condStack.pop();
   }
   g_skip=FALSE;
 }
@@ -1788,7 +1789,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                         }
 <Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\(\)\n]*"("[^\)\n]*")"[^\)\n]*")"{B}*\n | // function list macro with one (...) argument, e.g. for K_GLOBAL_STATIC_WITH_ARGS
 <Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\)\n]*")"{B}*\n { // function like macro
-  					  static bool skipFuncMacros = Config_getBool("SKIP_FUNCTION_MACROS");
+  					  static bool skipFuncMacros = Config_getBool(SKIP_FUNCTION_MACROS);
 					  QCString name(yytext);
 					  name=name.left(name.find('(')).stripWhiteSpace();
 
@@ -2453,7 +2454,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCComment>^({B}*"*"+)?{B}{0,3}"~~~"[~]*   {
-                                          static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
+                                          static bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
                                           if (!markdownSupport)
                                           {
                                             REJECT;
@@ -2466,7 +2467,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           }
                                         }
 <SkipCComment>^({B}*"*"+)?{B}{0,3}"```"[`]*            {
-                                          static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
+                                          static bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
                                           if (!markdownSupport)
                                           {
                                             REJECT;
@@ -2998,8 +2999,8 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   //printf("##########################\n%s\n####################\n",
   //    input.data());
 
-  g_macroExpansion = Config_getBool("MACRO_EXPANSION");
-  g_expandOnlyPredef = Config_getBool("EXPAND_ONLY_PREDEF");
+  g_macroExpansion = Config_getBool(MACRO_EXPANSION);
+  g_expandOnlyPredef = Config_getBool(EXPAND_ONLY_PREDEF);
   g_skip=FALSE;
   g_curlyCount=0;
   g_nospaces=FALSE;
@@ -3010,8 +3011,8 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   g_includeStack.clear();
   g_expandedDict->setAutoDelete(FALSE);
   g_expandedDict->clear();
-  g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
+  g_condStack.clear();
   //g_fileDefineDict->clear();
 
   setFileName(fileName);
@@ -3023,7 +3024,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   {
     // add predefined macros
     char *defStr;
-    QStrList &predefList = Config_getList("PREDEFINED");
+    QStrList &predefList = Config_getList(PREDEFINED);
     QStrListIterator sli(predefList);
     for (sli.toFirst();(defStr=sli.current());++sli)
     {
@@ -3161,6 +3162,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
     if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label %s ",ctx->sectionId.data()); 
     warn(fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
+    delete ctx;
   }
   // make sure we don't extend a \cond with missing \endcond over multiple files (see bug 624829)
   forceEndCondSection();

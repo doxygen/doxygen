@@ -86,7 +86,7 @@ class TranslatorChinese : public Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体成员变量说明";
       }
@@ -110,7 +110,7 @@ class TranslatorChinese : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return "成员的完整列表，这些成员属于"CN_SPC; }
+    { return "成员的完整列表，这些成员属于" CN_SPC; }
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
@@ -121,8 +121,8 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result;
-      result = "由"CN_SPC"Doyxgen"CN_SPC"通过分析"CN_SPC;
-      if (s) result += ((QCString)s+CN_SPC"的"CN_SPC);
+      result = "由" CN_SPC "Doyxgen" CN_SPC "通过分析" CN_SPC;
+      if (s) result += ((QCString)s+CN_SPC "的" CN_SPC);
       result+= "源代码自动生成.";
       return result;
     }
@@ -137,7 +137,7 @@ class TranslatorChinese : public Translator
 
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
-    { return "定义于"CN_SPC; }
+    { return "定义于" CN_SPC; }
 
     // quick reference sections
 
@@ -154,7 +154,7 @@ class TranslatorChinese : public Translator
     /*! This is put above each page as a link to the list of annotated class */
      virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "结构体";
       }
       else {
@@ -169,7 +169,7 @@ class TranslatorChinese : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "成员变量";
       }
       else {
@@ -180,7 +180,7 @@ class TranslatorChinese : public Translator
     /*! This is put above each page as a link to all member of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "全局定义";
       } else {
         return "文件成员";
@@ -199,7 +199,7 @@ class TranslatorChinese : public Translator
     { return "搜索"; }
 
     virtual QCString trClassHierarchyDescription()
-    { return "此继承关系列表按字典顺序粗略的排序:"CN_SPC; }
+    { return "此继承关系列表按字典顺序粗略的排序:" CN_SPC; }
 
     virtual QCString trFileListDescription(bool extractAll)
     {
@@ -211,7 +211,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trCompoundListDescription()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "这里列出了所有结构体，并附带简要说明:";
       }
@@ -227,7 +227,7 @@ class TranslatorChinese : public Translator
       if (!extractAll) {
         result+="文档化的";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         result+="结构体和联合体的成员变量，并附带";
       }
       else {
@@ -235,7 +235,7 @@ class TranslatorChinese : public Translator
       }
       //result+=" with links to ";
       if (extractAll) {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
           result+="结构体或联合的详细说明:";
         }
         else {
@@ -243,7 +243,7 @@ class TranslatorChinese : public Translator
         }
       }
       else {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
           result+="结构或联合所属的文件:";
         }
         else {
@@ -258,7 +258,7 @@ class TranslatorChinese : public Translator
       QCString result="这里列出了所有";
       if (!extractAll)
         result +="文档化的";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         result +="函数,变量,宏,枚举和类型定义等,并附带";
       }
       else {
@@ -292,7 +292,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体索引";
       }
@@ -309,7 +309,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体说明";
       }
@@ -366,7 +366,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体";
       }
@@ -376,15 +376,15 @@ class TranslatorChinese : public Translator
     }
 
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { QCString result=(QCString)"生成于"CN_SPC+date;
-      if (projName) result+=(QCString)CN_SPC", 为"CN_SPC+projName;
-      result+=(QCString)"使用"CN_SPC;
+    { QCString result=(QCString)"生成于" CN_SPC+date;
+      if (projName) result+=(QCString)CN_SPC ", 为" CN_SPC+projName;
+      result+=(QCString)"使用" CN_SPC;
       return result;
     }
 
     virtual QCString trClassDiagram(const char *clName)
     {
-      return (QCString)"类"CN_SPC+clName+CN_SPC"继承关系图:";
+      return (QCString)"类" CN_SPC+clName+CN_SPC "继承关系图:";
     }
 
      virtual QCString trForInternalUseOnly()
@@ -449,7 +449,7 @@ class TranslatorChinese : public Translator
       // used as the title of the HTML page of a class/struct/union
     {
        QCString result=(QCString)clName;
-      if (isTemplate) result+=CN_SPC"模板";
+      if (isTemplate) result+=CN_SPC "模板";
       switch(compType)
       {
         case ClassDef::Class:  result+="类"; break;
@@ -461,7 +461,7 @@ class TranslatorChinese : public Translator
         case ClassDef::Exception:  result+="异常"; break;
         default: break;
       }
-      result+=CN_SPC"参考";
+      result+=CN_SPC "参考";
       return result;
     }
 
@@ -469,14 +469,14 @@ class TranslatorChinese : public Translator
     virtual QCString trFileReference(const char *fileName)
     {
       QCString result=fileName;
-      result+=CN_SPC"文件参考";
+      result+=CN_SPC "文件参考";
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     { QCString result=namespaceName;
-      result+=CN_SPC"命名空间参考";
+      result+=CN_SPC "命名空间参考";
       return result;
     }
 
@@ -528,9 +528,9 @@ class TranslatorChinese : public Translator
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
           if (i<numEntries-2) // not the fore last entry
-            result+=","CN_SPC;
+            result+="," CN_SPC;
           else                // the fore last entry
-            result+=CN_SPC", 以及"CN_SPC;
+            result+=CN_SPC ", 以及" CN_SPC;
         }
       }
       return result;
@@ -540,14 +540,14 @@ class TranslatorChinese : public Translator
      *  if class diagrams are disabled.
      */
     virtual QCString trInheritsList(int numEntries)
-    { return "继承自"CN_SPC+trWriteList(numEntries)+CN_SPC".";  }
+    { return "继承自" CN_SPC+trWriteList(numEntries)+CN_SPC ".";  }
 
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return "被"CN_SPC+trWriteList(numEntries)+CN_SPC"继承.";
+      return "被" CN_SPC+trWriteList(numEntries)+CN_SPC "继承.";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -555,7 +555,7 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return "重载"CN_SPC+trWriteList(numEntries)+CN_SPC".";
+      return "重载" CN_SPC+trWriteList(numEntries)+CN_SPC ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -563,7 +563,7 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return "被"CN_SPC+trWriteList(numEntries)+CN_SPC"重载.";
+      return "被" CN_SPC+trWriteList(numEntries)+CN_SPC "重载.";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
@@ -659,12 +659,12 @@ class TranslatorChinese : public Translator
 
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return "在文件"CN_SPC"@1"CN_SPC"第"CN_SPC"@0"CN_SPC"行定义.";
+      return "在文件" CN_SPC "@1" CN_SPC "第" CN_SPC "@0" CN_SPC "行定义.";
     }
 
     virtual QCString trDefinedInSourceFile()
     {
-      return "在文件"CN_SPC"@0"CN_SPC"中定义.";
+      return "在文件" CN_SPC "@0" CN_SPC "中定义.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -683,13 +683,13 @@ class TranslatorChinese : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)clName+CN_SPC"的协作图:";
+      return (QCString)clName+CN_SPC "的协作图:";
     }
 
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)fName+CN_SPC"的引用(Include)关系图:";
+      return (QCString)fName+CN_SPC "的引用(Include)关系图:";
     }
 
     /*! header that is put before the list of constructor/destructors. */
@@ -776,7 +776,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trPublicAttribs()
     {
-       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
        {
          return "成员变量";
        }
@@ -879,7 +879,7 @@ class TranslatorChinese : public Translator
     /*! page explaining how the dot graph's should be interpreted */
     virtual QCString trLegendDocs()
     {
-      return "本页将向您解释如何理解由"CN_SPC"doxygen"CN_SPC"生成的图.<p>\n"
+      return "本页将向您解释如何理解由" CN_SPC "doxygen" CN_SPC "生成的图.<p>\n"
         "考虑如下例子:\n"
         "\\code\n"
         "/*! 由于截断而使 Invisible 不可见 */\n"
@@ -978,7 +978,7 @@ class TranslatorChinese : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "结构体";
       }
@@ -991,7 +991,7 @@ class TranslatorChinese : public Translator
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
     {
-      return (QCString)"包"CN_SPC+name;
+      return (QCString)"包" CN_SPC+name;
     }
 
     /*! Title of the package index page */
@@ -1028,7 +1028,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trBugList ()
     {
-      return "Bug"CN_SPC"列表";
+      return "Bug" CN_SPC "列表";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1217,7 +1217,7 @@ class TranslatorChinese : public Translator
     virtual QCString trImplementedFromList(int numEntries)
     {
       /* return "Implements "+trWriteList(numEntries)+"."; */
-      return "实现了"CN_SPC+trWriteList(numEntries)+".";
+      return "实现了" CN_SPC+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1226,7 +1226,7 @@ class TranslatorChinese : public Translator
     virtual QCString trImplementedInList(int numEntries)
     {
       /* return "Implemented in "+trWriteList(numEntries)+"."; */
-      return "在"CN_SPC+trWriteList(numEntries)+CN_SPC"内被实现.";
+      return "在" CN_SPC+trWriteList(numEntries)+CN_SPC "内被实现.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1386,7 +1386,7 @@ class TranslatorChinese : public Translator
     virtual QCString trSourceFile(QCString& filename)
     {
       /* return filename + " Source File"; */
-      return filename + CN_SPC"源文件";
+      return filename + CN_SPC "源文件";
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.9
@@ -1419,7 +1419,7 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trDirDescription()
     {
-      return "此继承关系列表按字典顺序粗略的排序:"CN_SPC;
+      return "此继承关系列表按字典顺序粗略的排序:" CN_SPC;
     }
 
     /*! This returns the title of a directory page. The name of the
@@ -1428,7 +1428,7 @@ class TranslatorChinese : public Translator
     virtual QCString trDirReference(const char *dirName)
     {
       QCString result=dirName;
-      result+=CN_SPC"目录参考";
+      result+=CN_SPC "目录参考";
       return result;
     }
 
@@ -1565,16 +1565,16 @@ class TranslatorChinese : public Translator
       QCString result=(QCString)clName;
       switch(compType)
       {
-        case ClassDef::Class:      result+=CN_SPC"模块"; break;
-        case ClassDef::Struct:     result+=CN_SPC"类型"; break;
-        case ClassDef::Union:      result+=CN_SPC"联合体"; break;
-        case ClassDef::Interface:  result+=CN_SPC"接口"; break;
-        case ClassDef::Protocol:   result+=CN_SPC"协议"; break;
-        case ClassDef::Category:   result+=CN_SPC"目录"; break;
-        case ClassDef::Exception:  result+=CN_SPC"异常"; break;
+        case ClassDef::Class:      result+=CN_SPC "模块"; break;
+        case ClassDef::Struct:     result+=CN_SPC "类型"; break;
+        case ClassDef::Union:      result+=CN_SPC "联合体"; break;
+        case ClassDef::Interface:  result+=CN_SPC "接口"; break;
+        case ClassDef::Protocol:   result+=CN_SPC "协议"; break;
+        case ClassDef::Category:   result+=CN_SPC "目录"; break;
+        case ClassDef::Exception:  result+=CN_SPC "异常"; break;
         default: break;
       }
-      if (isTemplate) result+="模板"CN_SPC;
+      if (isTemplate) result+="模板" CN_SPC;
       result+="参考手册";
       return result;
     }
@@ -1583,7 +1583,7 @@ class TranslatorChinese : public Translator
     virtual QCString trModuleReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result += CN_SPC"模块参考手册";
+      result += CN_SPC "模块参考手册";
       return result;
     }
 
@@ -1640,16 +1640,16 @@ class TranslatorChinese : public Translator
       QCString result="该";
       switch(compType)
       {
-        case ClassDef::Class:      result+=CN_SPC"模块"; break;
-        case ClassDef::Struct:     result+=CN_SPC"结构体"; break;
-        case ClassDef::Union:      result+=CN_SPC"联合体"; break;
-        case ClassDef::Interface:  result+=CN_SPC"接口"; break;
-        case ClassDef::Protocol:   result+=CN_SPC"协议"; break;
-        case ClassDef::Category:   result+=CN_SPC"目录"; break;
-        case ClassDef::Exception:  result+=CN_SPC"异常"; break;
+        case ClassDef::Class:      result+=CN_SPC "模块"; break;
+        case ClassDef::Struct:     result+=CN_SPC "结构体"; break;
+        case ClassDef::Union:      result+=CN_SPC "联合体"; break;
+        case ClassDef::Interface:  result+=CN_SPC "接口"; break;
+        case ClassDef::Protocol:   result+=CN_SPC "协议"; break;
+        case ClassDef::Category:   result+=CN_SPC "目录"; break;
+        case ClassDef::Exception:  result+=CN_SPC "异常"; break;
         default: break;
       }
-      result+=CN_SPC"的文档由以下文件生成:";
+      result+=CN_SPC "的文档由以下文件生成:";
       return result;
     }
 
@@ -1684,7 +1684,7 @@ class TranslatorChinese : public Translator
   {
     // return QCString(name)+" Relation";
     // unsure
-    return QCString(name)+CN_SPC"关系";
+    return QCString(name)+CN_SPC "关系";
   }
 
     virtual QCString trLoading()
@@ -1718,7 +1718,7 @@ class TranslatorChinese : public Translator
 
   virtual QCString trIncludesFileIn(const char *name)
   {
-    return (QCString)"在"CN_SPC+name+CN_SPC"中引用";
+    return (QCString)"在" CN_SPC+name+CN_SPC "中引用";
   }
 
   virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
@@ -1730,7 +1730,7 @@ class TranslatorChinese : public Translator
 
     QCString sdate;
 
-    sdate.sprintf("%d年"CN_SPC"%s月"CN_SPC"%d日"CN_SPC"星期%s",year, months[month-1], day, days[dayOfWeek-1]);
+    sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
 
     if (includeTime)
     {
@@ -1756,7 +1756,7 @@ class TranslatorChinese : public Translator
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const char *name)
     {
-      return QCString(name)+CN_SPC"的目录依赖关系图";
+      return QCString(name)+CN_SPC "的目录依赖关系图";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1773,7 +1773,7 @@ class TranslatorChinese : public Translator
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
     virtual QCString trAndMore(const QCString &number)
-    { return "和"CN_SPC+number+CN_SPC"更多..."; }
+    { return "和" CN_SPC+number+CN_SPC "更多..."; }
 
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool /*single*/)
@@ -1781,11 +1781,11 @@ class TranslatorChinese : public Translator
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     virtual QCString trEnumReference(const char *name)
-    { return QCString(name)+CN_SPC"枚举类型参考"; }
+    { return QCString(name)+CN_SPC "枚举类型参考"; }
 
     /*! Used for a section containing inherited members */
     virtual QCString trInheritedFrom(const char *members,const char *what)
-    { return QCString(members)+CN_SPC"继承自"CN_SPC+what; }
+    { return QCString(members)+CN_SPC "继承自" CN_SPC+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
@@ -1806,7 +1806,7 @@ class TranslatorChinese : public Translator
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
       QCString opt = enable ? "开启" : "关闭";
-      return "点击"CN_SPC+opt+CN_SPC"面板同步";
+      return "点击" CN_SPC+opt+CN_SPC "面板同步";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a
@@ -1878,21 +1878,21 @@ class TranslatorChinese : public Translator
     virtual QCString trConstantGroupReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+= CN_SPC"常量组参考";
+      result+= CN_SPC "常量组参考";
       return result;
     }
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const char *sName)
     {
       QCString result=(QCString)sName;
-      result+= CN_SPC"服务参考";
+      result+= CN_SPC "服务参考";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const char *sName)
     {
       QCString result=(QCString)sName;
-      result+= CN_SPC"单例参考";
+      result+= CN_SPC "单例参考";
       return result;
     }
     /** UNO IDL service page */

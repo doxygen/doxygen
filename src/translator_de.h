@@ -245,7 +245,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datenstrukturen";
       }
@@ -262,7 +262,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datenstruktur-Elemente";
       }
@@ -307,7 +307,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
 	return "Hier folgt die Aufzählung aller Datenstrukturen "
 	       "mit einer Kurzbeschreibung:";
@@ -327,7 +327,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
       {
         result+="dokumentierten ";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="Strukturen und Varianten";
       }
@@ -338,7 +338,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
       result+=" mit Verweisen auf ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="die Dokumentation zu jedem Element:";
         }
@@ -349,7 +349,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="die zugehörigen Elemente:";
         }
@@ -366,7 +366,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     {
       QCString result="Hier folgt die Aufzählung aller ";
       if (!extractAll) result+="dokumentierten ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="Funktionen, Variablen, Makros, Aufzählungen und Typdefinitionen";
       }
@@ -417,7 +417,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
 	return "Datenstruktur-Verzeichnis";
       else
         return "Klassen-Verzeichnis";
@@ -440,7 +440,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datenstruktur-Dokumentation";
       }
@@ -543,7 +543,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datenstrukturen";
       }
@@ -977,7 +977,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
 
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datenfelder";
       }
@@ -1195,7 +1195,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "Datenstrukturen";
       else
         return "Klassen";

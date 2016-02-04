@@ -43,22 +43,22 @@ DocSets::~DocSets()
 void DocSets::initialize()
 {
   // -- get config options
-  QCString projectName = Config_getString("PROJECT_NAME");
+  QCString projectName = Config_getString(PROJECT_NAME);
   if (projectName.isEmpty()) projectName="root";
-  QCString bundleId = Config_getString("DOCSET_BUNDLE_ID");
+  QCString bundleId = Config_getString(DOCSET_BUNDLE_ID);
   if (bundleId.isEmpty()) bundleId="org.doxygen.Project";
-  QCString feedName = Config_getString("DOCSET_FEEDNAME");
+  QCString feedName = Config_getString(DOCSET_FEEDNAME);
   if (feedName.isEmpty()) feedName="FeedName";
-  QCString publisherId = Config_getString("DOCSET_PUBLISHER_ID");
+  QCString publisherId = Config_getString(DOCSET_PUBLISHER_ID);
   if (publisherId.isEmpty()) publisherId="PublisherId";
-  QCString publisherName = Config_getString("DOCSET_PUBLISHER_NAME");
+  QCString publisherName = Config_getString(DOCSET_PUBLISHER_NAME);
   if (publisherName.isEmpty()) publisherName="PublisherName";
-  QCString projectNumber = Config_getString("PROJECT_NUMBER");
+  QCString projectNumber = Config_getString(PROJECT_NUMBER);
   if (projectNumber.isEmpty()) projectNumber="ProjectNumber";
 
   // -- write Makefile
   {
-  QCString mfName = Config_getString("HTML_OUTPUT") + "/Makefile";
+  QCString mfName = Config_getString(HTML_OUTPUT) + "/Makefile";
   QFile makefile(mfName);
   if (!makefile.open(IO_WriteOnly))
   {
@@ -109,7 +109,7 @@ void DocSets::initialize()
 
   // -- write Info.plist
   {
-  QCString plName = Config_getString("HTML_OUTPUT") + "/Info.plist";
+  QCString plName = Config_getString(HTML_OUTPUT) + "/Info.plist";
   QFile plist(plName);
   if (!plist.open(IO_WriteOnly))
   {
@@ -145,14 +145,14 @@ void DocSets::initialize()
   }
 
   // -- start Nodes.xml
-  QCString notes = Config_getString("HTML_OUTPUT") + "/Nodes.xml";
+  QCString notes = Config_getString(HTML_OUTPUT) + "/Nodes.xml";
   m_nf = new QFile(notes);
   if (!m_nf->open(IO_WriteOnly))
   {
     err("Could not open file %s for writing\n",notes.data());
     exit(1);
   }
-  //QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+  //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
   QCString indexName="index";
   m_nts.setDevice(m_nf);
   m_nts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
@@ -166,7 +166,7 @@ void DocSets::initialize()
   m_firstNode.resize(m_dc);
   m_firstNode.at(0)=TRUE;
 
-  QCString tokens = Config_getString("HTML_OUTPUT") + "/Tokens.xml";
+  QCString tokens = Config_getString(HTML_OUTPUT) + "/Tokens.xml";
   m_tf = new QFile(tokens);
   if (!m_tf->open(IO_WriteOnly))
   {

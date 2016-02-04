@@ -64,11 +64,11 @@ void EclipseHelp::openedTag()
 void EclipseHelp::initialize() 
 {
   // -- read path prefix from the configuration
-  //m_pathprefix = Config_getString("ECLIPSE_PATHPREFIX");
+  //m_pathprefix = Config_getString(ECLIPSE_PATHPREFIX);
   //if (m_pathprefix.isEmpty()) m_pathprefix = "html/";
 
   // -- open the contents file 
-  QCString name = Config_getString("HTML_OUTPUT") + "/toc.xml";
+  QCString name = Config_getString(HTML_OUTPUT) + "/toc.xml";
   m_tocfile = new QFile(name);
   if (!m_tocfile->open(IO_WriteOnly)) 
   {
@@ -81,7 +81,7 @@ void EclipseHelp::initialize()
   //m_tocstream.setEncoding(FTextStream::UnicodeUTF8);
 
   // -- write the opening tag
-  QCString title = Config_getString("PROJECT_NAME");
+  QCString title = Config_getString(PROJECT_NAME);
   if (title.isEmpty())
   {
     title = "Doxygen generated documentation";
@@ -111,11 +111,11 @@ void EclipseHelp::finalize()
   m_tocfile->close();
   delete m_tocfile; m_tocfile = 0;
 
-  QCString name = Config_getString("HTML_OUTPUT") + "/plugin.xml";
+  QCString name = Config_getString(HTML_OUTPUT) + "/plugin.xml";
   QFile pluginFile(name);
   if (pluginFile.open(IO_WriteOnly))
   {
-    QString docId = Config_getString("ECLIPSE_DOC_ID");
+    QString docId = Config_getString(ECLIPSE_DOC_ID);
     FTextStream t(&pluginFile);
     t << "<plugin name=\""  << docId << "\" id=\"" << docId << "\"" << endl;
     t << "        version=\"1.0.0\" provider-name=\"Doxygen\">" << endl;

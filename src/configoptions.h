@@ -16,8 +16,8 @@
 #ifndef CONFIGOPTIONS
 #define CONFIGOPTIONS
 
-class Config;
+class ConfigImpl;
 
-void addConfigOptions(Config *cfg);
+void addConfigOptions(ConfigImpl *cfg);
 
 #endif

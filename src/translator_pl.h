@@ -77,7 +77,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Dokumentacja pól";
       }
@@ -144,7 +144,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Struktury danych";
       }
@@ -165,7 +165,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Pola danych";
       }
@@ -178,7 +178,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! This is put above each page as a link to all members of files. */
     QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Globalne";
       }
@@ -219,7 +219,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tutaj znajdują się struktury danych wraz z ich krótkimi opisami:";
       }
@@ -238,7 +238,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       {
         result+="udokumentowanych ";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="pól struktur i unii";
       }
@@ -249,7 +249,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       result+=" wraz z odnośnikami do ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="dokumentacji struktur/unii dla każdego pola:";
         }
@@ -260,7 +260,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="struktur/unii, do których dane pole należy:";
         }
@@ -277,7 +277,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     {
       QCString result="Tutaj znajduje się lista wszystkich ";
       if (!extractAll) result+="udokumentowanych ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funkcji, zmiennych, makr, wyliczeń i definicji typów";
       }
@@ -339,7 +339,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString trCompoundIndex()
     {
-     if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+     if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Indeks struktur danych";
       }
@@ -366,7 +366,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Dokumentacja struktur danych";
       }
@@ -469,7 +469,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Struktury danych";
       }
@@ -888,7 +888,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     }
     QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Pola danych";
       }
@@ -1085,7 +1085,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Struktury Danych";
       }

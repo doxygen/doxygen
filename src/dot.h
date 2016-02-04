@@ -78,7 +78,7 @@ class DotNode
     void removeParent(DotNode *n);
     int findParent( DotNode *n );
     void write(FTextStream &t,GraphType gt,GraphOutputFormat f,
-               bool topDown,bool toChildren,bool backArrows,bool reNumber);
+               bool topDown,bool toChildren,bool backArrows);
     int  m_subgraphId;
     void clearWriteFlag();
     void writeXML(FTextStream &t,bool isClassGraph);
@@ -89,13 +89,14 @@ class DotNode
     bool isVisible() const { return m_visible; }
     TruncState isTruncated() const { return m_truncated; }
     int distance() const { return m_distance; }
+    void renumberNodes(int &number);
 
   private:
     void colorConnectedNodes(int curColor);
     void writeBox(FTextStream &t,GraphType gt,GraphOutputFormat f,
-                  bool hasNonReachableChildren, bool reNumber=FALSE);
+                  bool hasNonReachableChildren);
     void writeArrow(FTextStream &t,GraphType gt,GraphOutputFormat f,DotNode *cn,
-                    EdgeInfo *ei,bool topDown, bool pointBack=TRUE, bool reNumber=FALSE);
+                    EdgeInfo *ei,bool topDown, bool pointBack=TRUE);
     void setDistance(int distance);
     const DotNode   *findDocNode() const; // only works for acyclic graphs!
     void markAsVisible(bool b=TRUE) { m_visible=b; }
@@ -160,7 +161,7 @@ class DotGfxHierarchyTable
 
     QList<DotNode> *m_rootNodes; 
     QDict<DotNode> *m_usedNodes; 
-    static int      m_curNodeNumber;
+    int             m_curNodeNumber;
     DotNodeList    *m_rootSubgraphs;
 };
 
@@ -180,6 +181,7 @@ class DotClassGraph
     void writeDocbook(FTextStream &t);
     void writeDEF(FTextStream &t);
     QCString diskName() const;
+    static void resetNumbering();
 
   private:
     void buildGraph(ClassDef *cd,DotNode *n,bool base,int distance);
@@ -211,6 +213,8 @@ class DotInclDepGraph
     QCString diskName() const;
     void writeXML(FTextStream &t);
     void writeDocbook(FTextStream &t);
+    static void resetNumbering();
+
   private:
     void buildGraph(DotNode *n,FileDef *fd,int distance);
     void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes);
@@ -238,10 +242,11 @@ class DotCallGraph
     bool isTooBig() const;
     void determineVisibleNodes(QList<DotNode> &queue, int &maxNodes);
     void determineTruncatedNodes(QList<DotNode> &queue);
-    
+    static void resetNumbering();
+
   private:
     DotNode        *m_startNode;
-    static int      m_curNodeNumber;
+    static int             m_curNodeNumber;
     QDict<DotNode> *m_usedNodes;
     bool            m_inverse;
     QCString        m_diskName;
@@ -312,6 +317,8 @@ class DotGroupCollaboration
                     bool writeImageMap=TRUE,int graphId=-1) const;
     void buildGraph(GroupDef* gd);
     bool isTrivial() const;
+    static void resetNumbering();
+
   private :
     void addCollaborationMember( Definition* def, QCString& url, EdgeType eType );
     void addMemberList( class MemberList* ml );
@@ -320,10 +327,35 @@ class DotGroupCollaboration
                    const QCString& _label, const QCString& _url );
 
     DotNode        *m_rootNode;
-    int             m_curNodeId;
+    static int      m_curNodeNumber;
     QDict<DotNode> *m_usedNodes;
     QCString        m_diskName;
     QList<Edge>     m_edges;
+};
+
+/** Minimal constant string class that is thread safe, once initialized. */
+class DotConstString
+{
+  public:
+    DotConstString()                                   { m_str=0; }
+   ~DotConstString()                                   { delete[] m_str; }
+    DotConstString(const QCString &s) : m_str(0)       { set(s); }
+    DotConstString(const DotConstString &s) : m_str(0) { set(s.data()); }
+    const char *data() const                           { return m_str; }
+    bool isEmpty() const                               { return m_str==0 || m_str[0]=='\0'; }
+    void set(const QCString &s)
+    {
+      delete[] m_str;
+      m_str=0;
+      if (!s.isEmpty())
+      {
+        m_str=new char[s.length()+1];
+        qstrcpy(m_str,s.data());
+      }
+    }
+  private:
+    DotConstString &operator=(const DotConstString &);
+    char *m_str;
 };
 
 /** Helper class to run dot from doxygen.
@@ -333,8 +365,8 @@ class DotRunner
   public:
     struct CleanupItem
     {
-      QCString path;
-      QCString file;
+      DotConstString path;
+      DotConstString file;
     };
 
     /** Creates a runner for a dot \a file. */
@@ -352,16 +384,19 @@ class DotRunner
 
     /** Runs dot for all jobs added. */
     bool run();
-    CleanupItem cleanup() const { return m_cleanupItem; }
+    const CleanupItem &cleanup() const { return m_cleanupItem; }
 
   private:
-    QList<QCString> m_jobs;
-    QCString m_postArgs;
-    QCString m_postCmd;
-    QCString m_file;
-    QCString m_path;
+    DotConstString m_dotExe;
+    bool m_multiTargets;
+    QList<DotConstString> m_jobs;
+    DotConstString m_postArgs;
+    DotConstString m_postCmd;
+    DotConstString m_file;
+    DotConstString m_path;
     bool m_checkResult;
-    QCString m_imageName;
+    DotConstString m_imageName;
+    DotConstString m_imgExt;
     bool m_cleanUp;
     CleanupItem m_cleanupItem;
 };
@@ -459,5 +494,7 @@ void writeDotImageMapFromFile(FTextStream &t,
                               const QCString& inFile, const QCString& outDir,
                               const QCString& relPath,const QCString& baseName,
                               const QCString& context,int graphId=-1);
+
+void resetDotNodeNumbering();
 
 #endif

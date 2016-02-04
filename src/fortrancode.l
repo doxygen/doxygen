@@ -356,7 +356,7 @@ static void codifyLines(QCString str)
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   Definition *d,const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -1086,7 +1086,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
    					}
 <DocBlock>"\n"        			{ // comment block ends at the end of this line
                                           // remove special comment (default config)
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr+=((QCString)docBlock).contains('\n');
               g_yyLineNr+=1;
@@ -1206,7 +1206,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                         }
 <*><<EOF>>                              {
                                           if (YY_START == DocBlock) {
-                                            if (!Config_getBool("STRIP_CODE_COMMENTS"))
+                                            if (!Config_getBool(STRIP_CODE_COMMENTS))
                                             {
                                               startFontClass("comment");
                                               codifyLines(docBlock);
@@ -1302,11 +1302,11 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
   return;
 }
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
+#if !defined(YY_FLEX_SUBMINOR_VERSION)
 extern "C" { // some bogus code to keep the compiler happy
-  void fortrancodeYYdummy() { yy_flex_realloc(0,0); } 
+  void fortrancodeYYdummy() { yy_flex_realloc(0,0); }
 }
-#elif YY_FLEX_SUBMINOR_VERSION<33
+#elif YY_FLEX_MAJOR_VERSION<=2 && YY_FLEX_MINOR_VERSION<=5 && YY_FLEX_SUBMINOR_VERSION<33
 #error "You seem to be using a version of flex newer than 2.5.4 but older than 2.5.33. These versions do NOT work with doxygen! Please use version <=2.5.4 or >=2.5.33 or expect things to be parsed wrongly!"
 #else
 extern "C" { // some bogus code to keep the compiler happy

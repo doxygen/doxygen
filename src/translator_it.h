@@ -141,7 +141,7 @@ class TranslatorItalian : public Translator
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Documentazione dei campi";
       }
@@ -209,7 +209,7 @@ class TranslatorItalian : public Translator
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Strutture dati";
       }
@@ -226,7 +226,7 @@ class TranslatorItalian : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers()
      {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Campi dei dati";
       }
@@ -239,7 +239,7 @@ class TranslatorItalian : public Translator
     /*! This is put above each page as a link to all members of files. */
     QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Elementi globali";
       }
@@ -282,7 +282,7 @@ class TranslatorItalian : public Translator
     QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Queste sono le strutture dati con una loro breve descrizione:";
       }
@@ -296,7 +296,7 @@ class TranslatorItalian : public Translator
     QCString trCompoundMembersDescription(bool extractAll)
     {
       QCString result="Questo è un elenco ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         if (!extractAll) result+="delle struct e delle union documentate ";
         else result+="di tutte le struct e le union ";
@@ -307,7 +307,7 @@ class TranslatorItalian : public Translator
         else result+="di tutti i membri ";
       }
       result+="con collegamenti alla documentazione ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
           if (extractAll) result+="della struct/union per ciascun campo:";
           else result+="delle struct/union a cui appartengono:";
@@ -324,7 +324,7 @@ class TranslatorItalian : public Translator
     QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Questo è un elenco ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
           if (!extractAll) result+="delle funzioni, delle variabili, delle define, dei tipi enumerati e delle ridefinizioni dei tipi (typedef) documentate ";
           else result+="di tutte le funzioni, variabili, define, tipi enumerati, e ridefinizioni dei tipi (typedef) ";
@@ -375,7 +375,7 @@ class TranslatorItalian : public Translator
      */
     QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Indice delle strutture dati";
       }
@@ -496,7 +496,7 @@ class TranslatorItalian : public Translator
      */
     QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Strutture dati";
       }
@@ -909,7 +909,7 @@ class TranslatorItalian : public Translator
     }
     QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Campi";
       }
@@ -1098,7 +1098,7 @@ class TranslatorItalian : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Strutture dati";
       }

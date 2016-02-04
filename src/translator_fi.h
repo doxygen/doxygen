@@ -160,7 +160,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Kenttien dokumentaatio"; // "Field Documentation";
       }
@@ -232,7 +232,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tietueet"; // "Data Structures"
       }
@@ -249,7 +249,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tietueen kentät"; // "Data Fields"
       }
@@ -262,7 +262,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Globaalit"; // "Globals"
       }
@@ -303,7 +303,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tässä ovat tietueet lyhyen selitteen kanssa:"; // "Here are the data structures with brief descriptions:"
       }
@@ -322,7 +322,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       {
         result+="dokumentoiduista "; // "documented "
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="tietuiden ja yhdisteiden kentistä"; // "struct and union fields"
       }
@@ -333,7 +333,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       result+=" linkitettyinä "; // " with links to "
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="jokaisen kentän tietueen/yhdisteen dokumentaatioon:"; // "the struct/union documentation for each field:"
         }
@@ -344,7 +344,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+= "tietueisiin/yhdisteisiin, joihin ne kuuluvat:"; // "the structures/unions they belong to:"
         }
@@ -362,7 +362,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       QCString result="Tässä on lista kaikista "; // "Here is a list of all "
       if (!extractAll) result+="dokumentoiduista "; // "documented "
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funktioista, muuttujista, määrittelyistä, luettelotyypeistä ja tyyppimäärittelyistä"; // "functions, variables, defines, enums, and typedefs"
       }
@@ -413,7 +413,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tietueluettelo"; // "Data Structure Index"
       }
@@ -440,7 +440,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tietueiden dokumentaatio"; // "Data Structure Documentation"
       }
@@ -543,7 +543,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tietueet"; // "Data Structures"
       }
@@ -956,7 +956,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tietueen kentät"; // "Data Fields"
       }
@@ -1202,7 +1202,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tietueet"; // "Data Structures"
       }

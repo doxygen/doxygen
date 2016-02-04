@@ -134,7 +134,7 @@ static void replaceCommentMarker(const char *s,int len)
 static inline int computeIndent(const char *s)
 {
   int col=0;
-  static int tabSize=Config_getInt("TAB_SIZE");
+  static int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -164,7 +164,7 @@ static inline void copyToOutput(const char *s,int len)
   else if (len>0)
   {
     ADDARRAY(s,len);
-    static int tabSize=Config_getInt("TAB_SIZE");
+    static int tabSize=Config_getInt(TAB_SIZE);
     for (i=0;i<len;i++) 
     {
       switch (s[i])
@@ -781,6 +781,7 @@ void replaceComment(int offset);
 				       //printf("** Adding start of comment!\n");
 				       if (g_lang!=SrcLangExt_Python &&
 					   g_lang!=SrcLangExt_VHDL &&
+					   g_lang!=SrcLangExt_Markdown &&
 					   g_lang!=SrcLangExt_Fortran)
 				       {
  				         ADDCHAR('/');
@@ -800,6 +801,7 @@ void replaceComment(int offset);
     			             {
 				       if (g_lang!=SrcLangExt_Python &&
 					   g_lang!=SrcLangExt_VHDL &&
+					   g_lang!=SrcLangExt_Markdown &&
 					   g_lang!=SrcLangExt_Fortran)
 				       {
  				         ADDCHAR('*');
@@ -981,7 +983,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_outBuf   = outBuf;
   g_inBufPos = 0;
   g_col      = 0;
-  g_mlBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
+  g_mlBrief = Config_getBool(MULTILINE_CPP_IS_BRIEF);
   g_skip     = FALSE;
   g_fileName = fileName;
   g_lang = getLanguageFromFileName(fileName);

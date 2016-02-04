@@ -31,3 +31,10 @@
 \fancyfoot[CO]{\fancyplain{}{}}
 \fancyfoot[RO]{\fancyplain{}{}}
 
+% Define caption that is also suitable in a table
+\makeatletter
+\def\doxyfigcaption{%
+\refstepcounter{figure}%
+\@dblarg{\@caption{figure}}}
+\makeatother
+

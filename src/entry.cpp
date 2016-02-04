@@ -216,8 +216,8 @@ void Entry::addSubEntry(Entry *current)
 
 void Entry::reset()
 {
-  static bool entryCallGraph   = Config_getBool("CALL_GRAPH");
-  static bool entryCallerGraph = Config_getBool("CALLER_GRAPH");
+  static bool entryCallGraph   = Config_getBool(CALL_GRAPH);
+  static bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
   //printf("Entry::reset()\n");
   name.resize(0);
   type.resize(0);

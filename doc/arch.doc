@@ -115,7 +115,7 @@ on the tree of entries, built during language parsing. Look at the
 "Gathering information" part of \c parseInput() for details.
 
 The result of this step is a number of dictionaries, which can be
-found in the Doxygen "namespace" defined in \c src/doxygen.h. Most
+found in the doxygen "namespace" defined in \c src/doxygen.h. Most
 elements of these dictionaries are derived from the class \c Definition;
 The class \c MemberDef, for instance, holds all information for a member. 
 An instance of such a class can be part of a file ( class \c FileDef ), 
@@ -203,49 +203,44 @@ from the correct line in the \c Makefile:
 
 $file = shift @ARGV;
 print "Toggle debugging mode for $file\n";
-
-# add or remove the -d flex flag in the makefile
-unless (rename "Makefile.libdoxygen","Makefile.libdoxygen.old") {
-  print STDERR "Error: cannot rename Makefile.libdoxygen!\n";
+if (!-e "../src/${file}.l")
+{
+  print STDERR "Error: file ../src/${file}.l does not exist!";
   exit 1;
 }
-if (open(F,"<Makefile.libdoxygen.old")) {
-  unless (open(G,">Makefile.libdoxygen")) {
-    print STDERR "Error: opening file Makefile.libdoxygen for writing\n";
-    exit 1; 
+system("touch ../src/${file}.l");
+unless (rename "src/CMakeFiles/_doxygen.dir/build.make","src/CMakefiles/_doxygen.dir/build.make.old") {
+  print STDERR "Error: cannot rename src/CMakeFiles/_doxygen.dir/build.make!\n";
+  exit 1;
+}
+if (open(F,"<src/CMakeFiles/_doxygen.dir/build.make.old")) {
+  unless (open(G,">src/CMakefiles/_doxygen.dir/build.make")) {
+    print STDERR "Error: opening file build.make for writing\n";
+    exit 1;
   }
-  print "Processing Makefile.libdoxygen...\n";
+  print "Processing build.make...\n";
   while (<F>) {
-    if ( s/\(LEX\) (-i )?-P([a-zA-Z]+)YY -t $file/(LEX) -d \1-P\2YY -t $file/g ) {
-      print "Enabling debug info for $file\n";
+    if ( s/flex \$\(LEX_FLAGS\) -P${file}YY/flex \$(LEX_FLAGS) -d -P${file}YY/ ) {
+      print "Enabling debug info for $file.l\n";
     }
-    elsif ( s/\(LEX\) -d (-i )?-P([a-zA-Z]+)YY -t $file/(LEX) \1-P\2YY -t $file/g ) {
+    elsif ( s/flex \$\(LEX_FLAGS\) -d -P${file}YY/flex \$(LEX_FLAGS) -P${file}YY/ ) {
       print "Disabling debug info for $file\n";
     }
     print G "$_";
   }
   close F;
-  unlink "Makefile.libdoxygen.old";
+  unlink "src/CMakeFiles/_doxygen.dir/build.make.old";
 }
 else {
-  print STDERR "Warning file Makefile.libdoxygen.old does not exist!\n"; 
+  print STDERR "Warning file src/CMakeFiles/_doxygen.dir/build.make does not exist!\n"; 
 }
 
 # touch the file
 $now = time;
 utime $now, $now, $file
-
 \endverbatim
-Another way to get rules matching / debugging information from the flex code is in the following way:
-\verbatim
-touch src/<flex code file>.l
-make LEX="flex -d"
-\endverbatim
-to remove the rules / debug information again:
-\verbatim
-touch src/<flex codefile>.l
-make
-\endverbatim
+Another way to get rules matching / debugging information
+from the flex code is setting LEX_FLAGS with cmake.
 
 Note that by running doxygen with `-d lex` you get information about which flex
 codefile is used.

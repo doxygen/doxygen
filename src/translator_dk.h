@@ -151,7 +151,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Felt-dokumentation";
       } else {
 	return "Dokumentation af feltvariable";
@@ -215,7 +215,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Datastrukturer";
       } else {
         return "Oversigt over sammensatte typer";
@@ -229,7 +229,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Data-felter";
       } else {
         return "Felter i sammensatte typer";
@@ -239,7 +239,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Globale symboler";
       } else {
 	return "Placering i filer"; // Fil-medlemmer"; //TODO
@@ -278,7 +278,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Her er datastrukturerne med korte beskrivelser:";
       } else {
         return "Her er klasserne, datastrukturerne, "
@@ -293,20 +293,20 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
       if (!extractAll) {
         result+="dokumenterede ";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         result+="felter i datastrukturer og unioner";
       } else {
         result+="klassemedlemmer";
       }
       result+=" med links til ";
       if (!extractAll) {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
           result+="datastruktur/unions-dokumentationen for hvert felt:";
         } else {
           result+="klassedokumentationen for hvert medlem:";
         }
       } else {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
           result+="de datastrukturer/unioner, de hører til:";
         } else {
           result+="de klasser, de hører til:";
@@ -321,7 +321,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
       QCString result="Her er en liste over alle ";
       if (!extractAll) result+="dokumenterede ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         result+="funktioner, variable, #defines, enumerationer "
 	    "og typedefinitioner";
       } else {
@@ -368,7 +368,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Indeks over datastrukturer";
       } else {
         return "Indeks over sammensatte typer";
@@ -392,7 +392,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Datastruktur-documentation";
       } else {
         return "Klasse-dokumentation";
@@ -498,7 +498,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Datastrukturer";
       } else {
         return "Sammensatte typer";
@@ -883,7 +883,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Datafelter";
       } else {
         return "Offentlige attributter";
@@ -1067,7 +1067,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Datastrukturer";
       } else {
         return "Klasser";

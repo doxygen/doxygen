@@ -1,8 +1,12 @@
 #if (defined(__APPLE__) || defined(macintosh)) && !defined(DMG_BUILD)
+#include <AvailabilityMacros.h>
+// this hack doesn't seem to be needed on El Captain (10.11)
+#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_11
 // define this before including iconv.h to avoid a mapping of
 // iconv_open and friends to libicon_open (done by mac ports),
 // while the symbols without 'lib' are linked from /usr/lib/libiconv
 #define LIBICONV_PLUG
+#endif
 #endif
 #include <iconv.h>
 

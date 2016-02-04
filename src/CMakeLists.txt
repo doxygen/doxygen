@@ -36,6 +36,21 @@ file(GENERATE OUTPUT ${GENERATED_SRC}/version.cpp
 )
 set_source_files_properties(${GENERATED_SRC}/version.cpp PROPERTIES GENERATED 1)
 
+# configvalues.h
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/configgen.py -maph ${CMAKE_SOURCE_DIR}/src/config.xml > ${GENERATED_SRC}/configvalues.h
+    DEPENDS ${CMAKE_SOURCE_DIR}/src/config.xml ${CMAKE_SOURCE_DIR}/src/configgen.py
+    OUTPUT ${GENERATED_SRC}/configvalues.h
+)
+set_source_files_properties(${GENERATED_SRC}/configvalues.h PROPERTIES GENERATED 1)
+
+# configvalues.cpp
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/configgen.py -maps ${CMAKE_SOURCE_DIR}/src/config.xml > ${GENERATED_SRC}/configvalues.cpp
+    DEPENDS ${CMAKE_SOURCE_DIR}/src/config.xml ${CMAKE_SOURCE_DIR}/src/configgen.py
+    OUTPUT ${GENERATED_SRC}/configvalues.cpp
+)
+set_source_files_properties(${GENERATED_SRC}/configvalues.cpp PROPERTIES GENERATED 1)
 
 # configoptions.cpp
 add_custom_command(
@@ -85,31 +100,32 @@ add_custom_command(
 set_source_files_properties(${GENERATED_SRC}/layout_default.xml.h PROPERTIES GENERATED 1)
 
 # Targets for flex/bison   generated files
-FLEX_TARGET(scanner        scanner.l        ${GENERATED_SRC}/scanner.cpp        COMPILE_FLAGS "-PscannerYY")
-FLEX_TARGET(code           code.l           ${GENERATED_SRC}/code.cpp           COMPILE_FLAGS "-PcodeYY")
-FLEX_TARGET(pyscanner      pyscanner.l      ${GENERATED_SRC}/pyscanner.cpp      COMPILE_FLAGS "-PpyscannerYY")
-FLEX_TARGET(pycode         pycode.l         ${GENERATED_SRC}/pycode.cpp         COMPILE_FLAGS "-PpycodeYY")
-FLEX_TARGET(fortranscanner fortranscanner.l ${GENERATED_SRC}/fortranscanner.cpp COMPILE_FLAGS "-PfortranscannerYY -i")
-FLEX_TARGET(fortrancode    fortrancode.l    ${GENERATED_SRC}/fortrancode.cpp    COMPILE_FLAGS "-PfortrancodeYY -i")
-FLEX_TARGET(vhdlcode       vhdlcode.l       ${GENERATED_SRC}/vhdlcode.cpp       COMPILE_FLAGS "-PvhdlcodeYY -i")
-FLEX_TARGET(tclscanner     tclscanner.l     ${GENERATED_SRC}/tclscanner.cpp     COMPILE_FLAGS "-PtclscannerYY -i")
-FLEX_TARGET(pre            pre.l            ${GENERATED_SRC}/pre.cpp            COMPILE_FLAGS "-PpreYY")
-FLEX_TARGET(declinfo       declinfo.l       ${GENERATED_SRC}/declinfo.cpp       COMPILE_FLAGS "-PdeclinfoYY")
-FLEX_TARGET(defargs        defargs.l        ${GENERATED_SRC}/defargs.cpp        COMPILE_FLAGS "-PdefargsYY")
-FLEX_TARGET(doctokenizer   doctokenizer.l   ${GENERATED_SRC}/doctokenizer.cpp   COMPILE_FLAGS "-PdoctokenizerYY")
-FLEX_TARGET(commentcnv     commentcnv.l     ${GENERATED_SRC}/commentcnv.cpp     COMPILE_FLAGS "-PcommentcnvYY")
-FLEX_TARGET(commentscan    commentscan.l    ${GENERATED_SRC}/commentscan.cpp    COMPILE_FLAGS "-PcommentscanYY")
-FLEX_TARGET(constexp       constexp.l       ${GENERATED_SRC}/constexp.cpp       COMPILE_FLAGS "-PconstexpYY")
-FLEX_TARGET(xmlcode        xmlcode.l        ${GENERATED_SRC}/xmlcode.cpp        COMPILE_FLAGS "-PxmlcodeYY")
-FLEX_TARGET(config         config.l         ${GENERATED_SRC}/config.cpp         COMPILE_FLAGS "-PconfigYY")
+FLEX_TARGET(scanner        scanner.l        ${GENERATED_SRC}/scanner.cpp        COMPILE_FLAGS "${LEX_FLAGS} -PscannerYY")
+FLEX_TARGET(code           code.l           ${GENERATED_SRC}/code.cpp           COMPILE_FLAGS "${LEX_FLAGS} -PcodeYY")
+FLEX_TARGET(pyscanner      pyscanner.l      ${GENERATED_SRC}/pyscanner.cpp      COMPILE_FLAGS "${LEX_FLAGS} -PpyscannerYY")
+FLEX_TARGET(pycode         pycode.l         ${GENERATED_SRC}/pycode.cpp         COMPILE_FLAGS "${LEX_FLAGS} -PpycodeYY")
+FLEX_TARGET(fortranscanner fortranscanner.l ${GENERATED_SRC}/fortranscanner.cpp COMPILE_FLAGS "${LEX_FLAGS} -PfortranscannerYY -i")
+FLEX_TARGET(fortrancode    fortrancode.l    ${GENERATED_SRC}/fortrancode.cpp    COMPILE_FLAGS "${LEX_FLAGS} -PfortrancodeYY -i")
+FLEX_TARGET(vhdlcode       vhdlcode.l       ${GENERATED_SRC}/vhdlcode.cpp       COMPILE_FLAGS "${LEX_FLAGS} -PvhdlcodeYY -i")
+FLEX_TARGET(tclscanner     tclscanner.l     ${GENERATED_SRC}/tclscanner.cpp     COMPILE_FLAGS "${LEX_FLAGS} -PtclscannerYY -i")
+FLEX_TARGET(pre            pre.l            ${GENERATED_SRC}/pre.cpp            COMPILE_FLAGS "${LEX_FLAGS} -PpreYY")
+FLEX_TARGET(declinfo       declinfo.l       ${GENERATED_SRC}/declinfo.cpp       COMPILE_FLAGS "${LEX_FLAGS} -PdeclinfoYY")
+FLEX_TARGET(defargs        defargs.l        ${GENERATED_SRC}/defargs.cpp        COMPILE_FLAGS "${LEX_FLAGS} -PdefargsYY")
+FLEX_TARGET(doctokenizer   doctokenizer.l   ${GENERATED_SRC}/doctokenizer.cpp   COMPILE_FLAGS "${LEX_FLAGS} -PdoctokenizerYY")
+FLEX_TARGET(commentcnv     commentcnv.l     ${GENERATED_SRC}/commentcnv.cpp     COMPILE_FLAGS "${LEX_FLAGS} -PcommentcnvYY")
+FLEX_TARGET(commentscan    commentscan.l    ${GENERATED_SRC}/commentscan.cpp    COMPILE_FLAGS "${LEX_FLAGS} -PcommentscanYY")
+FLEX_TARGET(constexp       constexp.l       ${GENERATED_SRC}/constexp.cpp       COMPILE_FLAGS "${LEX_FLAGS} -PconstexpYY")
+FLEX_TARGET(xmlcode        xmlcode.l        ${GENERATED_SRC}/xmlcode.cpp        COMPILE_FLAGS "${LEX_FLAGS} -PxmlcodeYY")
+FLEX_TARGET(configimpl     configimpl.l     ${GENERATED_SRC}/configimpl.cpp     COMPILE_FLAGS "${LEX_FLAGS} -PconfigimplYY")
 
-BISON_TARGET(vhdlparser    vhdlparser.y     ${GENERATED_SRC}/vhdlparser.cpp     COMPILE_FLAGS "-l -p vhdlscannerYY")
-BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "-l -p constexpYY")
+BISON_TARGET(vhdlparser    vhdlparser.y     ${GENERATED_SRC}/vhdlparser.cpp     COMPILE_FLAGS "${YACC_FLAGS} -l -p vhdlscannerYY")
+BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "${YACC_FLAGS} -l -p constexpYY")
 
 add_library(doxycfg STATIC
     ${GENERATED_SRC}/lang_cfg.h
-    ${GENERATED_SRC}/config.cpp
+    ${GENERATED_SRC}/configimpl.cpp
     ${GENERATED_SRC}/configoptions.cpp
+    ${GENERATED_SRC}/configvalues.cpp
     portable.cpp
     portable_c.c
 )
@@ -121,6 +137,7 @@ add_library(_doxygen STATIC
     ${GENERATED_SRC}/layout_default.xml.h
     ${GENERATED_SRC}/version.cpp
     ${GENERATED_SRC}/ce_parse.h
+    ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/resources.cpp
     # generated by flex/bison
     ${GENERATED_SRC}/scanner.cpp

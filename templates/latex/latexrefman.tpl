@@ -51,7 +51,7 @@
 \hbadness=750
 \setlength{\emergencystretch}{15pt}
 \setlength{\parindent}{0cm}
-\setlength{\parskip}{0.2cm}
+\setlength{\parskip}{3ex plus 2ex minus 2ex}
 \makeatletter
 \renewcommand{\paragraph}{
   \@startsection{paragraph}{4}{0ex}{-1.0ex}{1.0ex}{

@@ -346,7 +346,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						int bi=g_curArgTypeName.find('(');
 						int fi=bi-1;
 						//printf("func arg fi=%d\n",fi);
-						while (fi>=0 && isId(g_curArgTypeName.at(fi))) fi--;
+						while (fi>=0 && (isId(g_curArgTypeName.at(fi)) || g_curArgTypeName.at(fi)==':')) fi--;
 						if (fi>=0)
 						{
 						  a->type  = g_curArgTypeName.left(fi+1);

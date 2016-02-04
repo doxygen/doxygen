@@ -128,7 +128,7 @@ static int computeIndent(const char *str,int length)
 {
   int i;
   int indent=0;
-  static int tabSize=Config_getInt("TAB_SIZE");
+  static int tabSize=Config_getInt(TAB_SIZE);
   for (i=0;i<length;i++)
   {
     if (str[i]=='\t')
@@ -353,7 +353,7 @@ FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
-SPCMD2    {CMD}[\\@<>&$#%~".|]
+SPCMD2    {CMD}[\\@<>&$#%~".+|-]
 SPCMD3    {CMD}form#[0-9]+
 SPCMD4    {CMD}"::"
 INOUT	  "inout"|"in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
