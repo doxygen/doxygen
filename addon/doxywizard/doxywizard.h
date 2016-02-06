@@ -10,7 +10,7 @@ class Wizard;
 class QLabel;
 class QLineEdit;
 class QPushButton;
-class QTextEdit;
+class QTextBrowser;
 class QMenu;
 class QProcess;
 class QTimer;
@@ -69,7 +69,7 @@ class MainWindow : public QMainWindow
     QPushButton *m_saveLog;
     QPushButton *m_launchHtml;
     QPushButton *m_launchPdf;
-    QTextEdit *m_outputLog;
+    QTextBrowser *m_outputLog;
     QLabel *m_runStatus;
     Expert *m_expert;
     Wizard *m_wizard;
