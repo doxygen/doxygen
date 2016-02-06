@@ -379,6 +379,12 @@ void replaceComment(int offset);
 				     g_inRoseComment=TRUE;
 				     BEGIN(SComment);
   				   }
+<Scan>"//"[!\/]/.*\n[ \t]*"//"[|\/][ \t]*[@\\]"}" { // next line contains an end marker, see bug 752712
+				     g_inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
+  				     copyToOutput(yytext,(int)yyleng); 
+				     g_readLineCtx=YY_START;
+				     BEGIN(ReadLine);
+                                   }
 <Scan>"//"/.*\n	                   { /* one line C++ comment */ 
 				     g_inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
   				     copyToOutput(yytext,(int)yyleng); 

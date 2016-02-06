@@ -6224,6 +6224,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  handleCommentBlock(docBlock.data(),current->brief.isEmpty());
 					  BEGIN( docBlockContext );
   					}
+<DocLine>[^\n]*/"\n"{B}*"//"[!/]{B}*{CMD}"}"	{ // next line is an end group marker, see bug 752712
+  					  docBlock+=yytext;
+					  handleCommentBlock(docBlock.data(),current->brief.isEmpty());
+					  BEGIN( docBlockContext );
+  					}
 <DocLine>[^\n]*/"\n"			{ // whole line
   					  docBlock+=yytext;
 					  handleCommentBlock(docBlock.data(),current->brief.isEmpty());
