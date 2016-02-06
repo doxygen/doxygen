@@ -57,6 +57,16 @@ static QCString dateToRTFDateString()
   return result;
 } 
 
+bool isIncludableRtf()
+{
+	return Config_getBool(INCLUDABLE_RTF);
+}
+
+bool isTableOfContentEntriesEnabled()
+{
+	return !isIncludableRtf();
+}
+
 RTFGenerator::RTFGenerator() : OutputGenerator()
 {
   dir=Config_getString(RTF_OUTPUT);
