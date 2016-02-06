@@ -294,8 +294,6 @@ class RTFGenerator : public OutputGenerator
     void rtfwriteRuler_thin();
     void writeRTFReference(const char *label);
     //char *getMultiByte(int c);
-
-	bool m_no_title_page;
 };
 
 #endif

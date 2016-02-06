@@ -1103,10 +1103,7 @@ void ClassDef::showUsedFiles(OutputList &ol)
 
     ol.startItemListItem();
     QCString path=fd->getPath();
-    if (Config_getBool("FULL_PATH_NAMES"))
-    {
-      ol.docify(stripFromPath(path));
-    }
+	writeFileLink(ol, fd->absFilePath());
 
     QCString fname = fd->name();
     if (!fd->getVersion().isEmpty()) // append version if available

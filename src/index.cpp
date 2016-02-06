@@ -3760,294 +3760,303 @@ static void writeUserGroupStubPage(OutputList &ol,LayoutNavEntry *lne)
 
 static void writeIndex(OutputList &ol)
 {
-  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-  static QCString projectName = Config_getString("PROJECT_NAME");
-  // save old generator state
-  ol.pushGeneratorState();
+	static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+	static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+	static QCString projectName = Config_getString("PROJECT_NAME");
+	// save old generator state
+	ol.pushGeneratorState();
 
-  QCString projPrefix;
-  if (!projectName.isEmpty())
-  {
-    projPrefix=projectName+" ";
-  }
+	QCString projPrefix;
+	if (!projectName.isEmpty())
+	{
+		projPrefix = projectName + " ";
+	}
 
-  //--------------------------------------------------------------------
-  // write HTML index
-  //--------------------------------------------------------------------
-  ol.disableAllBut(OutputGenerator::Html);
+	//--------------------------------------------------------------------
+	// write HTML index
+	//--------------------------------------------------------------------
+	ol.disableAllBut(OutputGenerator::Html);
 
-  QCString defFileName = 
-    Doxygen::mainPage ? Doxygen::mainPage->docFile().data() : "[generated]";
-  int defLine =
-    Doxygen::mainPage ? Doxygen::mainPage->docLine() : -1;
+	QCString defFileName =
+		Doxygen::mainPage ? Doxygen::mainPage->docFile().data() : "[generated]";
+	int defLine =
+		Doxygen::mainPage ? Doxygen::mainPage->docLine() : -1;
 
-  QCString title;
-  if (!mainPageHasTitle())
-  {
-    title = theTranslator->trMainPage();
-  }
-  else if (Doxygen::mainPage)
-  {
-    title = filterTitle(Doxygen::mainPage->title());
-  }
+	QCString title;
+	if (!mainPageHasTitle())
+	{
+		title = theTranslator->trMainPage();
+	}
+	else if (Doxygen::mainPage)
+	{
+		title = filterTitle(Doxygen::mainPage->title());
+	}
 
-  QCString indexName="index";
-  ol.startFile(indexName,0,title);
-  
-  if (Doxygen::mainPage)
-  {
-    if (
-        (!projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0)
-       ) // to avoid duplicate entries in the treeview
-    {
-      Doxygen::indexList->addContentsItem(Doxygen::mainPage->hasSubPages(),title,0,indexName,0,Doxygen::mainPage->hasSubPages(),TRUE); 
-    }
-    if (Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections())
-    {
-      writePages(Doxygen::mainPage,0);
-    }
-  }
+	QCString indexName = "index";
+	ol.startFile(indexName, 0, title);
 
-  ol.startQuickIndices();
-  if (!Config_getBool("DISABLE_INDEX")) 
-  {
-    ol.writeQuickLinks(TRUE,HLI_Main,0);
-  }
-  ol.endQuickIndices();
-  ol.writeSplitBar(indexName);
-  ol.writeSearchInfo();
-  bool headerWritten=FALSE;
-  if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty())
-  {
-    if (Doxygen::mainPage->title().lower()!="notitle")
-    {
-      ol.startHeaderSection();
-      ol.startTitleHead(0);
-      ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->docLine(),
-                  Doxygen::mainPage,0,Doxygen::mainPage->title(),
-                  TRUE,FALSE,0,TRUE,FALSE);
-      headerWritten = TRUE;
-    }
-  }
-  else
-  {
-    if (!projectName.isEmpty())
-    {
-      ol.startHeaderSection();
-      ol.startTitleHead(0);
-      ol.parseText(projPrefix+theTranslator->trDocumentation());
-      headerWritten = TRUE;
-    }
-  }
-  if (headerWritten)
-  {
-    ol.endTitleHead(0,0);
-    ol.endHeaderSection();
-  }
+	if (Doxygen::mainPage)
+	{
+		if (
+			(!projectName.isEmpty() && mainPageHasTitle() && qstricmp(title, projectName) != 0)
+			) // to avoid duplicate entries in the treeview
+		{
+			Doxygen::indexList->addContentsItem(Doxygen::mainPage->hasSubPages(), title, 0, indexName, 0, Doxygen::mainPage->hasSubPages(), TRUE);
+		}
+		if (Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections())
+		{
+			writePages(Doxygen::mainPage, 0);
+		}
+	}
 
-  ol.startContents();
-  if (Config_getBool("DISABLE_INDEX") && Doxygen::mainPage==0) 
-  {
-    ol.writeQuickLinks(FALSE,HLI_Main,0);
-  }
+	ol.startQuickIndices();
+	if (!Config_getBool("DISABLE_INDEX"))
+	{
+		ol.writeQuickLinks(TRUE, HLI_Main, 0);
+	}
+	ol.endQuickIndices();
+	ol.writeSplitBar(indexName);
+	ol.writeSearchInfo();
+	bool headerWritten = FALSE;
+	if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty())
+	{
+		if (Doxygen::mainPage->title().lower() != "notitle")
+		{
+			ol.startHeaderSection();
+			ol.startTitleHead(0);
+			ol.generateDoc(Doxygen::mainPage->docFile(), Doxygen::mainPage->docLine(),
+				Doxygen::mainPage, 0, Doxygen::mainPage->title(),
+				TRUE, FALSE, 0, TRUE, FALSE);
+			headerWritten = TRUE;
+		}
+	}
+	else
+	{
+		if (!projectName.isEmpty())
+		{
+			ol.startHeaderSection();
+			ol.startTitleHead(0);
+			ol.parseText(projPrefix + theTranslator->trDocumentation());
+			headerWritten = TRUE;
+		}
+	}
+	if (headerWritten)
+	{
+		ol.endTitleHead(0, 0);
+		ol.endHeaderSection();
+	}
 
-  if (Doxygen::mainPage)
-  {
-    Doxygen::insideMainPage=TRUE;
-    if (Doxygen::mainPage->showToc() && Doxygen::mainPage->hasSections())
-    {
-      Doxygen::mainPage->writeToc(ol);
-    }
+	ol.startContents();
+	if (Config_getBool("DISABLE_INDEX") && Doxygen::mainPage == 0)
+	{
+		ol.writeQuickLinks(FALSE, HLI_Main, 0);
+	}
 
-    ol.startTextBlock();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,
-                Doxygen::mainPage->documentation(),TRUE,FALSE
-                /*,Doxygen::mainPage->sectionDict*/);
-    ol.endTextBlock();
+	if (Doxygen::mainPage)
+	{
+		Doxygen::insideMainPage = TRUE;
+		if (Doxygen::mainPage->showToc() && Doxygen::mainPage->hasSections())
+		{
+			Doxygen::mainPage->writeToc(ol);
+		}
 
-    Doxygen::insideMainPage=FALSE;
-  }
-  
-  endFile(ol);
-  ol.disable(OutputGenerator::Html);
-  
-  //--------------------------------------------------------------------
-  // write LaTeX/RTF index
-  //--------------------------------------------------------------------
-  ol.enable(OutputGenerator::Latex);
-  ol.enable(OutputGenerator::RTF);
+		ol.startTextBlock();
+		ol.generateDoc(defFileName, defLine, Doxygen::mainPage, 0,
+			Doxygen::mainPage->documentation(), TRUE, FALSE
+			/*,Doxygen::mainPage->sectionDict*/);
+		ol.endTextBlock();
 
-  ol.startFile("refman",0,0);
-  ol.startIndexSection(isTitlePageStart);
-  if (!Config_getString("LATEX_HEADER").isEmpty()) 
-  {
-    ol.disable(OutputGenerator::Latex);
-  }
+		Doxygen::insideMainPage = FALSE;
+	}
 
-  if (projPrefix.isEmpty())
-  {
-    ol.parseText(theTranslator->trReferenceManual());
-  }
-  else
-  {
-    ol.parseText(projPrefix);
-  }
+	endFile(ol);
+	ol.disable(OutputGenerator::Html);
 
-  if (!Config_getString("PROJECT_NUMBER").isEmpty())
-  {
-    ol.startProjectNumber(); 
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,Config_getString("PROJECT_NUMBER"),FALSE,FALSE);
-    ol.endProjectNumber();
-  }
-  ol.endIndexSection(isTitlePageStart);
-  ol.startIndexSection(isTitlePageAuthor);
-  ol.parseText(theTranslator->trGeneratedBy());
-  ol.endIndexSection(isTitlePageAuthor);
-  ol.enable(OutputGenerator::Latex);
+	//--------------------------------------------------------------------
+	// write LaTeX/RTF index
+	//--------------------------------------------------------------------
+	ol.enable(OutputGenerator::Latex);
+	ol.enable(OutputGenerator::RTF);
 
-  ol.lastIndexPage();
-  if (Doxygen::mainPage)
-  {
-    ol.startIndexSection(isMainPage);
-    if (mainPageHasTitle())
-    {
-      ol.parseText(Doxygen::mainPage->title());
-    }
-    else
-    {
-      ol.parseText(/*projPrefix+*/theTranslator->trMainPage());
-    }
-    ol.endIndexSection(isMainPage);
-  }
-  if (documentedPages>0)
-  {
-    //ol.parseText(projPrefix+theTranslator->trPageDocumentation());
-    //ol.endIndexSection(isPageDocumentation);
-    PageSDict::Iterator pdi(*Doxygen::pageSDict);
-    PageDef *pd=pdi.toFirst();
-    bool first=Doxygen::mainPage==0;
-    for (pdi.toFirst();(pd=pdi.current());++pdi)
-    {
-      if (!pd->getGroupDef() && !pd->isReference() && 
-          (!pd->hasParentPage() ||                    // not inside other page
-           (Doxygen::mainPage==pd->getOuterScope()))  // or inside main page
-         )
-      {
-        bool isCitationPage = pd->name()=="citelist";
-        if (isCitationPage)
-        {
-          // For LaTeX the bibliograph is already written by \bibliography
-          ol.pushGeneratorState();
-          ol.disable(OutputGenerator::Latex);
-        }
-        QCString title = pd->title();
-        if (title.isEmpty()) title=pd->name();
+	ol.startFile("refman", 0, 0);
+	ol.startIndexSection(isTitlePageStart);
+	if (!Config_getString("LATEX_HEADER").isEmpty())
+	{
+		ol.disable(OutputGenerator::Latex);
+	}
 
-        ol.startIndexSection(isPageDocumentation);
-        ol.parseText(title);
-        ol.endIndexSection(isPageDocumentation);
+	if (projPrefix.isEmpty())
+	{
+		ol.parseText(theTranslator->trReferenceManual());
+	}
+	else
+	{
+		ol.parseText(projPrefix);
+	}
 
-        ol.pushGeneratorState(); // write TOC title (RTF only)
-          ol.disableAllBut(OutputGenerator::RTF);
-          ol.startIndexSection(isPageDocumentation2);
-          ol.parseText(title);
-          ol.endIndexSection(isPageDocumentation2);
-        ol.popGeneratorState();
+	if (!Config_getString("PROJECT_NUMBER").isEmpty())
+	{
+		ol.startProjectNumber();
+		ol.generateDoc(defFileName, defLine, Doxygen::mainPage, 0, Config_getString("PROJECT_NUMBER"), FALSE, FALSE);
+		ol.endProjectNumber();
+	}
+	ol.endIndexSection(isTitlePageStart);
+	ol.startIndexSection(isTitlePageAuthor);
+	ol.parseText(theTranslator->trGeneratedBy());
+	ol.endIndexSection(isTitlePageAuthor);
+	ol.enable(OutputGenerator::Latex);
 
-        ol.writeAnchor(0,pd->getOutputFileBase());
-		
-		ol.docify(QCString("This section is generated from ") + stripFromPath(pd->getDefFileName())); // sidiandi
+	ol.lastIndexPage();
+	if (Doxygen::mainPage)
+	{
+		ol.startIndexSection(isMainPage);
+		if (mainPageHasTitle())
+		{
+			ol.parseText(Doxygen::mainPage->title());
+		}
+		else
+		{
+			ol.parseText(/*projPrefix+*/theTranslator->trMainPage());
+		}
+		ol.endIndexSection(isMainPage);
+	}
+	if (documentedPages > 0)
+	{
+		//ol.parseText(projPrefix+theTranslator->trPageDocumentation());
+		//ol.endIndexSection(isPageDocumentation);
+		PageSDict::Iterator pdi(*Doxygen::pageSDict);
+		PageDef *pd = pdi.toFirst();
+		bool first = Doxygen::mainPage == 0;
+		for (pdi.toFirst(); (pd = pdi.current()); ++pdi)
+		{
+			if (!pd->getGroupDef() && !pd->isReference() &&
+				(!pd->hasParentPage() ||                    // not inside other page
+					(Doxygen::mainPage == pd->getOuterScope()))  // or inside main page
+				)
+			{
+				bool isCitationPage = pd->name() == "citelist";
+				if (isCitationPage)
+				{
+					// For LaTeX the bibliograph is already written by \bibliography
+					ol.pushGeneratorState();
+					ol.disable(OutputGenerator::Latex);
+				}
+				QCString title = pd->title();
+				if (title.isEmpty()) title = pd->name();
 
-        ol.writePageLink(pd->getOutputFileBase(),first);
-        first=FALSE;
+				ol.startIndexSection(isPageDocumentation);
+				ol.parseText(title);
+				ol.endIndexSection(isPageDocumentation);
 
-        if (isCitationPage)
-        {
-          ol.popGeneratorState();
-        }
-      }
-    }
-  }
+				ol.pushGeneratorState(); // write TOC title (RTF only)
+				ol.disableAllBut(OutputGenerator::RTF);
+				ol.startIndexSection(isPageDocumentation2);
+				if (!Config_getBool("INCLUDABLE_RTF"))
+				{
+					ol.parseText(title);
+				}
+				ol.endIndexSection(isPageDocumentation2);
+				ol.popGeneratorState();
 
-  if (!Config_getBool("LATEX_HIDE_INDICES"))
-  {
-    //if (indexedPages>0)
-    //{
-    //  ol.startIndexSection(isPageIndex);
-    //  ol.parseText(/*projPrefix+*/ theTranslator->trPageIndex());
-    //  ol.endIndexSection(isPageIndex);
-    //}
-    if (documentedGroups>0)
-    {
-      ol.startIndexSection(isModuleIndex);
-      ol.parseText(/*projPrefix+*/ theTranslator->trModuleIndex());
-      ol.endIndexSection(isModuleIndex);
-    }
-    if (documentedNamespaces>0)
-    {
-      ol.startIndexSection(isNamespaceIndex);
-      ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trModulesIndex():theTranslator->trNamespaceIndex()));
-      ol.endIndexSection(isNamespaceIndex);
-    }
-    if (hierarchyClasses>0)
-    {
-      ol.startIndexSection(isClassHierarchyIndex);
-      ol.parseText(/*projPrefix+*/
-          (fortranOpt ? theTranslator->trCompoundIndexFortran() : 
-           vhdlOpt    ? VhdlDocGen::trDesignUnitIndex()         :
-                        theTranslator->trHierarchicalIndex()
-          ));
-      ol.endIndexSection(isClassHierarchyIndex);
-    }
-    if (annotatedClassesPrinted>0)
-    {
-      ol.startIndexSection(isCompoundIndex);
-      ol.parseText(/*projPrefix+*/
-          (fortranOpt ? theTranslator->trCompoundIndexFortran() :
-              vhdlOpt ? VhdlDocGen::trDesignUnitIndex()         : 
-                        theTranslator->trCompoundIndex()
-          ));
-      ol.endIndexSection(isCompoundIndex);
-    }
-    if (documentedFiles>0)
-    {
-      ol.startIndexSection(isFileIndex);
-      ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
-      ol.endIndexSection(isFileIndex);
-    }
-  }
-  if (documentedGroups>0)
-  {
-    ol.startIndexSection(isModuleDocumentation);
-    ol.parseText(/*projPrefix+*/theTranslator->trModuleDocumentation());
-    ol.endIndexSection(isModuleDocumentation);
-  }
-  if (documentedNamespaces>0)
-  {
-    ol.startIndexSection(isNamespaceDocumentation);
-    ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trModuleDocumentation():theTranslator->trNamespaceDocumentation()));
-    ol.endIndexSection(isNamespaceDocumentation);
-  }
-  if (annotatedClassesPrinted>0)
-  {
-    ol.startIndexSection(isClassDocumentation);
-    ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trTypeDocumentation():theTranslator->trClassDocumentation()));
-    ol.endIndexSection(isClassDocumentation);
-  }
-  if (documentedFiles>0)
-  {
-    ol.startIndexSection(isFileDocumentation);
-    ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
-    ol.endIndexSection(isFileDocumentation);
-  }
-  if (Doxygen::exampleSDict->count()>0)
-  {
-    ol.startIndexSection(isExampleDocumentation);
-    ol.parseText(/*projPrefix+*/theTranslator->trExampleDocumentation());
-    ol.endIndexSection(isExampleDocumentation);
-  }
-  ol.endIndexSection(isEndIndex);
+				ol.startParagraph();
+				ol.docify(QCString("This section is generated from "));
+				writeFileLink(ol, pd->getDefFileName()); // sidiandi
+				ol.endParagraph();
+
+				ol.writeAnchor(0, pd->getOutputFileBase());
+
+				ol.writePageLink(pd->getOutputFileBase(), first);
+				first = FALSE;
+
+				if (isCitationPage)
+				{
+					ol.popGeneratorState();
+				}
+			}
+		}
+	}
+
+	if (!Config_getBool("INCLUDABLE_RTF"))
+	{
+	if (!Config_getBool("LATEX_HIDE_INDICES"))
+	{
+		//if (indexedPages>0)
+		//{
+		//  ol.startIndexSection(isPageIndex);
+		//  ol.parseText(/*projPrefix+*/ theTranslator->trPageIndex());
+		//  ol.endIndexSection(isPageIndex);
+		//}
+		if (documentedGroups > 0)
+		{
+			ol.startIndexSection(isModuleIndex);
+			ol.parseText(/*projPrefix+*/ theTranslator->trModuleIndex());
+			ol.endIndexSection(isModuleIndex);
+		}
+		if (documentedNamespaces > 0)
+		{
+			ol.startIndexSection(isNamespaceIndex);
+			ol.parseText(/*projPrefix+*/(fortranOpt ? theTranslator->trModulesIndex() : theTranslator->trNamespaceIndex()));
+			ol.endIndexSection(isNamespaceIndex);
+		}
+		if (hierarchyClasses > 0)
+		{
+			ol.startIndexSection(isClassHierarchyIndex);
+			ol.parseText(/*projPrefix+*/
+				(fortranOpt ? theTranslator->trCompoundIndexFortran() :
+					vhdlOpt ? VhdlDocGen::trDesignUnitIndex() :
+					theTranslator->trHierarchicalIndex()
+					));
+			ol.endIndexSection(isClassHierarchyIndex);
+		}
+		if (annotatedClassesPrinted > 0)
+		{
+			ol.startIndexSection(isCompoundIndex);
+			ol.parseText(/*projPrefix+*/
+				(fortranOpt ? theTranslator->trCompoundIndexFortran() :
+					vhdlOpt ? VhdlDocGen::trDesignUnitIndex() :
+					theTranslator->trCompoundIndex()
+					));
+			ol.endIndexSection(isCompoundIndex);
+		}
+		if (documentedFiles > 0)
+		{
+			ol.startIndexSection(isFileIndex);
+			ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
+			ol.endIndexSection(isFileIndex);
+		}
+	}
+	if (documentedGroups > 0)
+	{
+		ol.startIndexSection(isModuleDocumentation);
+		ol.parseText(/*projPrefix+*/theTranslator->trModuleDocumentation());
+		ol.endIndexSection(isModuleDocumentation);
+	}
+	if (documentedNamespaces > 0)
+	{
+		ol.startIndexSection(isNamespaceDocumentation);
+		ol.parseText(/*projPrefix+*/(fortranOpt ? theTranslator->trModuleDocumentation() : theTranslator->trNamespaceDocumentation()));
+		ol.endIndexSection(isNamespaceDocumentation);
+	}
+	if (annotatedClassesPrinted > 0)
+	{
+		ol.startIndexSection(isClassDocumentation);
+		ol.parseText(/*projPrefix+*/(fortranOpt ? theTranslator->trTypeDocumentation() : theTranslator->trClassDocumentation()));
+		ol.endIndexSection(isClassDocumentation);
+	}
+	if (documentedFiles > 0)
+	{
+		ol.startIndexSection(isFileDocumentation);
+		ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
+		ol.endIndexSection(isFileDocumentation);
+	}
+	if (Doxygen::exampleSDict->count() > 0)
+	{
+		ol.startIndexSection(isExampleDocumentation);
+		ol.parseText(/*projPrefix+*/theTranslator->trExampleDocumentation());
+		ol.endIndexSection(isExampleDocumentation);
+	}
+	ol.endIndexSection(isEndIndex);
+	}
   endFile(ol);
 
   if (Doxygen::mainPage)

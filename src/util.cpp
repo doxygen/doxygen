@@ -297,7 +297,8 @@ static QCString stripFromPath(const QCString &path,QStrList &l)
  */
 QCString stripFromPath(const QCString &path)
 {
-  return stripFromPath(path,Config_getList("STRIP_FROM_PATH"));
+	QString absFilePath(QFileInfo(path).absFilePath());
+	return stripFromPath(absFilePath.utf8(), Config_getList("STRIP_FROM_PATH"));
 }
 
 /*! strip part of \a path if it matches
@@ -6825,6 +6826,35 @@ QCString stripPath(const char *s)
     result=result.mid(i+1);
   }
   return result;
+}
+
+void writeFileLink(OutputList& ol, const QCString &s)
+{
+	QCString url = Config_getString("VERSION_CONTROL_URL");
+	if (url.isEmpty())
+	{
+		QCString path = QFileInfo(s).absFilePath().utf8();
+		ol.docify(path);
+	}
+	else
+	{
+		QCString path = QFileInfo(s).absFilePath().utf8();
+		QCString rootPath = Config_getString("VERSION_CONTROL_ROOT");
+		rootPath = QFileInfo(rootPath).absFilePath().utf8();
+		path = path.mid(rootPath.length());
+
+		url.sprintf(url.data(), path.data());
+
+		DocRoot* root = new DocRoot(false, true);
+		DocHRef* link = new DocHRef(root, HtmlAttribList(), url, path);
+		root->children().append(link);
+
+		DocWord* word = new DocWord(link, path);
+		link->children().append(word);
+
+		ol.writeDoc(root, 0, 0);
+		delete root;
+	}
 }
 
 /** returns \c TRUE iff string \a s contains word \a w */

@@ -373,6 +373,8 @@ void createSubDirs(QDir &d);
 
 QCString stripPath(const char *s);
 
+void writeFileLink(OutputList& ol, const QCString &s);
+
 bool containsWord(const QCString &s,const QCString &word);
 
 bool findAndRemoveWord(QCString &s,const QCString &word);

@@ -36,8 +36,11 @@
 #include "htmlentity.h"
 #include "plantuml.h"
 
-// #define DBG_RTF(x) m_t << x
-#define DBG_RTF(x) do {} while(0)
+#define DBG_RTF(x) m_t << x
+// #define DBG_RTF(x) do {} while(0)
+
+bool isIncludableRtf();
+bool isTableOfContentEntriesEnabled();
 
 static QCString align(DocHtmlCell *cell)
 {
@@ -720,24 +723,27 @@ void RTFDocVisitor::visitPost(DocSimpleListItem *)
 
 void RTFDocVisitor::visitPre(DocSection *s)
 {
-  if (m_hide) return;
-  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocSection)}\n");
-  if (!m_lastIsPara) m_t << "\\par" << endl;
-  m_t << "{\\bkmkstart " << rtfFormatBmkStr(s->file()+"_"+s->anchor()) << "}" << endl;
-  m_t << "{\\bkmkend " << rtfFormatBmkStr(s->file()+"_"+s->anchor()) << "}" << endl;
-  m_t << "{{" // start section
-      << rtf_Style_Reset;
-  QCString heading;
-  int level = QMIN(s->level()+1,4);
-  heading.sprintf("Heading%d",level);
-  // set style
-  m_t << rtf_Style[heading]->reference << endl;
-  // make table of contents entry
-  filter(s->title());
-  m_t << endl << "\\par" << "}" << endl;
-  m_t << "{\\tc\\tcl" << level << " \\v ";
-  filter(s->title());
-  m_t << "}" << endl;
+	if (m_hide) return;
+	DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocSection)}\n");
+	if (!m_lastIsPara) m_t << "\\par" << endl;
+	m_t << "{\\bkmkstart " << rtfFormatBmkStr(s->file() + "_" + s->anchor()) << "}" << endl;
+	m_t << "{\\bkmkend " << rtfFormatBmkStr(s->file() + "_" + s->anchor()) << "}" << endl;
+	m_t << "{{" // start section
+		<< rtf_Style_Reset;
+	QCString heading;
+	int level = QMIN(s->level() + 1, 4);
+	heading.sprintf("Heading%d", level);
+	// set style
+	m_t << rtf_Style[heading]->reference << endl;
+	// make table of contents entry
+	filter(s->title());
+	m_t << endl << "\\par" << "}" << endl;
+	if (isTableOfContentEntriesEnabled())
+	{
+		m_t << "{\\tc\\tcl" << level << " \\v ";
+		filter(s->title());
+		m_t << "}" << endl;
+	}
   m_lastIsPara=TRUE;
 }
 
@@ -995,17 +1001,20 @@ void RTFDocVisitor::visitPost(DocHRef *)
 
 void RTFDocVisitor::visitPre(DocHtmlHeader *header)
 {
-  if (m_hide) return;
-  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlHeader)}\n");
-  m_t << "{" // start section
-      << rtf_Style_Reset;
-  QCString heading;
-  int level = QMIN(header->level()+2,4);
-  heading.sprintf("Heading%d",level);
-  // set style
-  m_t << rtf_Style[heading]->reference;
-  // make table of contents entry
-  m_t << "{\\tc\\tcl \\v " << level << "}";
+	if (m_hide) return;
+	DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlHeader)}\n");
+	m_t << "{" // start section
+		<< rtf_Style_Reset;
+	QCString heading;
+	int level = QMIN(header->level(), 4);
+	heading.sprintf("Heading%d", level);
+	// set style
+	m_t << rtf_Style[heading]->reference;
+	// make table of contents entry
+	if (isTableOfContentEntriesEnabled())
+	{
+		m_t << "{\\tc\\tcl \\v " << level << "}";
+	}
   m_lastIsPara=FALSE;
   
 }

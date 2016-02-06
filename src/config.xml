@@ -435,6 +435,27 @@ Go to the <a href="commands.html">next</a> section or return to the
       </docs>
       <value name=''/>
     </option>
+    <option type='string' id='VERSION_CONTROL_URL' format='string' >
+      <docs>
+<![CDATA[
+ The \c VERSION_CONTROL_URL tag
+ is used to generate URLs into a version control system web interface (e.g. github)
+ from source file paths. The string contains a single %s where the portion of the
+ path which is relative to VERSION_CONTROL_ROOT is inserted.
+ Example: VERSION_CONTROL_URL = https://github.com/doxygen/doxygen/blob/master/%s
+ Added by sidiandi.
+]]>
+      </docs>
+      <value name=''/>
+    </option>
+    <option type='string' id='VERSION_CONTROL_ROOT' format='string' depends='VERSION_CONTROL_URL'>
+      <docs>
+<![CDATA[
+ See VERSION_CONTROL_URL.
+]]>
+      </docs>
+      <value name=''/>
+    </option>
     <option type='list' id='STRIP_FROM_INC_PATH' format='string'>
       <docs>
 <![CDATA[
@@ -2698,6 +2719,15 @@ or
  If the \c COMPACT_RTF tag is set to \c YES, doxygen generates more compact
  RTF documents. This may be useful for small projects and may help to
  save some trees in general.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='INCLUDABLE_RTF' defval='0' depends='GENERATE_RTF'>
+      <docs>
+<![CDATA[
+ If the \c INCLUDABLE_RTF tag is set to \c YES, doxygen generates more 
+ RTF documents which can easily be included in other RTF documents that
+ provide the skeleton for documentation. Added by sidiandi.
 ]]>
       </docs>
     </option>
