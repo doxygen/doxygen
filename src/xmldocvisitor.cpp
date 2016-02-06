@@ -726,7 +726,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
 
   // copy the image to the output dir
   QFile inImage(img->name());
-  QFile outImage(Config_getString("XML_OUTPUT")+"/"+baseName.data());
+  QFile outImage(Config_getString(XML_OUTPUT)+"/"+baseName.data());
   if (inImage.open(IO_ReadOnly))
   {
     if (outImage.open(IO_WriteOnly))

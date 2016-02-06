@@ -104,7 +104,7 @@ class TranslatorRomanian : public Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Documentaţia Câmpurilor";
       }
@@ -172,7 +172,7 @@ class TranslatorRomanian : public Translator
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Structuri de Date";
       }
@@ -190,7 +190,7 @@ class TranslatorRomanian : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Câmpurile de Date";
       }
@@ -204,7 +204,7 @@ class TranslatorRomanian : public Translator
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Globale";
       }
@@ -246,7 +246,7 @@ class TranslatorRomanian : public Translator
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Lista structurilor de date, cu scurte descrieri:";
       }
@@ -263,7 +263,7 @@ class TranslatorRomanian : public Translator
     {
       QCString result="Lista tuturor ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="câmpurilor ";
         if (!extractAll) result+=" documentate ";
@@ -278,7 +278,7 @@ class TranslatorRomanian : public Translator
       result+=", cu legături către ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="documentaţia structurii/uniunii pentru fiecare câmp în parte:";
         }
@@ -289,7 +289,7 @@ class TranslatorRomanian : public Translator
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="structurile/uniunile de care aparţin:";
         }
@@ -306,7 +306,7 @@ class TranslatorRomanian : public Translator
     virtual QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Lista tuturor ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funcţiilor, variabilelor, definiţiilor, enumerărilor şi definiţiilor de tip";
 	  if (!extractAll) result+=" documentate";
@@ -362,7 +362,7 @@ class TranslatorRomanian : public Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Indexul Structurilor de Date";
       }
@@ -390,7 +390,7 @@ class TranslatorRomanian : public Translator
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Documentaţia Structurilor de Date";
       }
@@ -494,7 +494,7 @@ class TranslatorRomanian : public Translator
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Structuri de Date";
       }
@@ -905,7 +905,7 @@ class TranslatorRomanian : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Câmpuri de Date";
       }
@@ -1097,7 +1097,7 @@ class TranslatorRomanian : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Structuri de Date";
       }

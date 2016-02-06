@@ -394,7 +394,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   Definition *d,
                   const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -1464,7 +1464,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			   QCString text(vhdlcodeYYtext);
 			   int i=text.find("--");
 			   if (text.mid(i,3)=="--!" && // hide special comment
-                               Config_getBool("STRIP_CODE_COMMENTS")) 
+                               Config_getBool(STRIP_CODE_COMMENTS)) 
 			   { 
 			     g_yyLineNr++; // skip complete line
 			   }  
@@ -1479,7 +1479,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			   QCString text(vhdlcodeYYtext);
 			   int i=text.find("--");
 			   if (text.mid(i,3)=="--!" &&
-                               Config_getBool("STRIP_CODE_COMMENTS")) 
+                               Config_getBool(STRIP_CODE_COMMENTS)) 
 			   { 
 			      // hide special comment
 			   }  

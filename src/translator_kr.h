@@ -118,7 +118,7 @@ class TranslatorKorean : public Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
           return "필드 문서화";
       }
@@ -185,7 +185,7 @@ class TranslatorKorean : public Translator
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "데이타 구조";
       }
@@ -202,7 +202,7 @@ class TranslatorKorean : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "데이타 필드";
       }
@@ -215,7 +215,7 @@ class TranslatorKorean : public Translator
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "전역";
       }
@@ -255,7 +255,7 @@ class TranslatorKorean : public Translator
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "다음은 데이타 구조들입니다. (간략한 설명만을 보여줍니다) :";
       }
@@ -274,7 +274,7 @@ class TranslatorKorean : public Translator
       {
         result+="문서화된 ";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="모든 구조체와 공용체의 필드들";
       }
@@ -286,7 +286,7 @@ class TranslatorKorean : public Translator
 
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="각 필드들은 해당 필드에 대한 구조체와 공용체의 "
 		  "문서화 페이지의 링크를 가지고 있습니다. :";
@@ -299,7 +299,7 @@ class TranslatorKorean : public Translator
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="각 필드들은 해당 필드가 속해 있는 구조체와 공용체에 "
 		  "대한 링크를 가지고 있습니다. :";
@@ -319,7 +319,7 @@ class TranslatorKorean : public Translator
       QCString result="다음은 ";
       if (!extractAll) result+="문서화된  ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="모든 함수, 변수, 매크로, 열거형, 타입정의들";
       }
@@ -372,7 +372,7 @@ class TranslatorKorean : public Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "데이타 구조 색인";
       }
@@ -399,7 +399,7 @@ class TranslatorKorean : public Translator
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "데이타 구조 문서화";
       }
@@ -502,7 +502,7 @@ class TranslatorKorean : public Translator
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "데이타 구조";
       }
@@ -911,7 +911,7 @@ class TranslatorKorean : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "데이타 필드";
       }
@@ -1100,7 +1100,7 @@ class TranslatorKorean : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "데이타 구조";
       }

@@ -128,7 +128,7 @@ static int computeIndent(const char *str,int length)
 {
   int i;
   int indent=0;
-  static int tabSize=Config_getInt("TAB_SIZE");
+  static int tabSize=Config_getInt(TAB_SIZE);
   for (i=0;i<length;i++)
   {
     if (str[i]=='\t')

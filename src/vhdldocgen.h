@@ -326,6 +326,9 @@ class FlowChart
     static void buildCommentNodes(FTextStream &t);
     static void alignCommentNode(FTextStream &t,QCString com);
 
+    static void  printUmlTree();
+    static QCString printPlantUmlNode(const FlowChart *flo,bool,bool);
+
     static QList<FlowChart> flowList;
 
     FlowChart(int typ,const char*  t,const char* ex,const char* label=0);

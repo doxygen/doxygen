@@ -104,7 +104,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Documentació dels Camps";
       }
@@ -171,7 +171,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Estructures de Dades";
       }
@@ -188,7 +188,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Camps de Dades";
       }
@@ -201,7 +201,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Globals";
       }
@@ -242,7 +242,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Aquestes són les estructures de dades acompanyades amb breus descripcions:";
       }
@@ -257,7 +257,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
       QCString result="Aquesta és la llista de tots els ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="camps d'estructures i unions";
       }
@@ -272,7 +272,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       result+=" amb enllaços a ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="la documentació de l'estructura/unió per a cada camp:";
         }
@@ -283,7 +283,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="les estructures/unions a que pertanyen:";
         }
@@ -298,7 +298,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     virtual QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Aquesta és la llista de ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="totes les funcions, variables, definicions, enumeracions, i definicions de tipus";
         if (!extractAll) result+=" documentades";
@@ -352,7 +352,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Índex d'Estructures de Dades";
       }
@@ -379,7 +379,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Documentació de les Estructures de Dades";
       }
@@ -482,7 +482,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Estructures de Dades";
       }
@@ -894,7 +894,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Camps de Dades";
       }
@@ -1083,7 +1083,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Estructures de Dades";
       }

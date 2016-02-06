@@ -57,10 +57,10 @@ static bool elemIsVisible(const QXmlAttributes &attrib,bool defVal=TRUE)
   if (visible.at(0)=='$' && visible.length()>1)
   {
     QCString id = visible.mid(1);
-    ConfigOption *opt = Config::instance()->get(id);
-    if (opt && opt->kind()==ConfigOption::O_Bool)
+    const ConfigValues::Info *opt = ConfigValues::instance().get(id);
+    if (opt && opt->type==ConfigValues::Info::Bool)
     {
-      return *((ConfigBool *)opt)->valueRef();
+      return ConfigValues::instance().*((ConfigValues::InfoBool*)opt)->item;
     }
     else if (!opt)
     {
@@ -120,7 +120,7 @@ QCString LayoutNavEntry::url() const
     }
     if (!found)
     {
-      msg("explicit link request to '%s' in layout file '%s' could not be resolved\n",qPrint(url.mid(5)),qPrint(Config_getString("LAYOUT_FILE")));
+      msg("explicit link request to '%s' in layout file '%s' could not be resolved\n",qPrint(url.mid(5)),qPrint(Config_getString(LAYOUT_FILE)));
     }
   }
   //printf("LayoutNavEntry::url()=%s\n",url.data());
@@ -262,9 +262,9 @@ class LayoutParser : public QXmlDefaultHandler
       m_part = -1; // invalid
       m_rootNav = 0;
 
-      //bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-      //bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
-      //bool javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+      //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      //bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);  
+      //bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
 
       // start & end handlers
       m_sHandler.insert("doxygenlayout", 
@@ -887,19 +887,19 @@ class LayoutParser : public QXmlDefaultHandler
       {
         // no MainPage node... add one as the first item of the root node...
         new LayoutNavEntry(m_rootNav,LayoutNavEntry::MainPage, TRUE, 
-            /*Config_getBool("GENERATE_TREEVIEW") ? "main" :*/ "index",
+            /*Config_getBool(GENERATE_TREEVIEW) ? "main" :*/ "index",
             theTranslator->trMainPage(),"",TRUE);
       }
     }
 
     void startNavEntry(const QXmlAttributes &attrib)
     {
-      static bool javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
-      static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
-      static bool hasGraphicalHierarchy = Config_getBool("HAVE_DOT") &&
-                                          Config_getBool("GRAPHICAL_HIERARCHY");
-      static bool extractAll = Config_getBool("EXTRACT_ALL");
+      static bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+      static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);  
+      static bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
+                                          Config_getBool(GRAPHICAL_HIERARCHY);
+      static bool extractAll = Config_getBool(EXTRACT_ALL);
       static struct NavEntryMap
       {
         const char *typeStr;       // type attribute name in the XML file

@@ -92,7 +92,7 @@ void SearchIndex::setCurrentDoc(Definition *ctx,const char *anchor,bool isSource
   assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
   QCString url=isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
-  url+=Config_getString("HTML_FILE_EXTENSION");
+  url+=Config_getString(HTML_FILE_EXTENSION);
   QCString baseUrl = url;
   if (anchor) url+=QCString("#")+anchor;  
   if (!isSourceFile) baseUrl=url;
@@ -499,7 +499,7 @@ static QCString definitionToName(Definition *ctx)
 
 void SearchIndexExternal::setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile)
 {
-  QCString extId = stripPath(Config_getString("EXTERNAL_SEARCH_ID"));
+  QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
   QCString baseName = isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
   QCString url = baseName + Doxygen::htmlFileExtension;
   if (anchor) url+=QCString("#")+anchor;
@@ -587,7 +587,7 @@ static SearchIndexInfo g_searchIndexInfo[NUM_SEARCH_INDICES];
 
 static void addMemberToSearchIndex(MemberDef *md)
 {
-  static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
+  static bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
   bool isLinkable = md->isLinkable();
   ClassDef *cd=0;
   NamespaceDef *nd=0;
@@ -904,7 +904,7 @@ void writeJavascriptSearchIndex()
 {
   int i;
   // write index files
-  QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
+  QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
 
   for (i=0;i<NUM_SEARCH_INDICES;i++) // for each index
   {
@@ -1003,7 +1003,7 @@ void writeJavascriptSearchIndex()
             }
             ti << "',";
 
-            static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
+            static bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
             if (!extLinksInWindow || d->getReference().isEmpty())
             {
               ti << "1,";
@@ -1062,7 +1062,7 @@ void writeJavascriptSearchIndex()
               }
               ti << "',";
 
-              static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
+              static bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
               if (!extLinksInWindow || d->getReference().isEmpty())
               {
                 ti << "1,";
@@ -1297,9 +1297,9 @@ int SearchIndexList::compareValues(const SearchDefinitionList *md1, const Search
 
 void initSearchIndexer()
 {
-  static bool searchEngine      = Config_getBool("SEARCHENGINE");
-  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
-  static bool externalSearch    = Config_getBool("EXTERNAL_SEARCH");
+  static bool searchEngine      = Config_getBool(SEARCHENGINE);
+  static bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
+  static bool externalSearch    = Config_getBool(EXTERNAL_SEARCH);
   if (searchEngine && serverBasedSearch)
   {
     if (externalSearch) // external tools produce search index and engine

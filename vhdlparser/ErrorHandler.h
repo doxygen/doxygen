@@ -24,7 +24,7 @@ JAVACC_SIMPLE_STRING addUnicodeEscapes(JAVACC_STRING_TYPE str);
       // expectedKind - token kind that the parser was trying to consume.
       // expectedToken - the image of the token - tokenImages[expectedKind].
       // actual - the actual token that the parser got instead.
-      virtual void handleUnexpectedToken(int, JAVACC_STRING_TYPE expectedToken, Token *actual, VhdlParser *) {
+      virtual void handleUnexpectedToken(int expectedKind, JAVACC_STRING_TYPE expectedToken, Token *actual, VhdlParser *parser) {
         error_count++;
         fprintf(stderr, "Expecting %s at: %d:%d but got %s\n", addUnicodeEscapes(expectedToken).c_str(), actual->beginLine, actual->beginColumn, addUnicodeEscapes(actual->image).c_str());
       }
@@ -32,14 +32,14 @@ JAVACC_SIMPLE_STRING addUnicodeEscapes(JAVACC_STRING_TYPE str);
       // last - the last token successfully parsed.
       // unexpected - the token at which the error occurs.
       // production - the production in which this error occurrs.
-      virtual void handleParseError(Token *, Token *unexpected, JAVACC_SIMPLE_STRING production, VhdlParser *) {
+      virtual void handleParseError(Token *last, Token *unexpected, JAVACC_SIMPLE_STRING production, VhdlParser *parser) {
         error_count++;
         fprintf(stderr, "Encountered: %s at: %d:%d while parsing: %s\n", addUnicodeEscapes(unexpected->image).c_str(), unexpected->beginLine, unexpected->beginColumn, production.c_str());
       }
       virtual int getErrorCount() {
         return error_count;
       }
-      virtual void handleOtherError(JAVACC_STRING_TYPE message, VhdlParser *) {
+      virtual void handleOtherError(JAVACC_STRING_TYPE message, VhdlParser *parser) {
         fprintf(stderr, "Error: %s\n", (char*)message.c_str());
       }
       virtual ~ErrorHandler() {}
@@ -62,11 +62,11 @@ JAVACC_SIMPLE_STRING addUnicodeEscapes(JAVACC_STRING_TYPE str);
        //    errorAfter  : prefix that was seen before this error occurred
        //    curchar     : the offending character
        //
-       virtual void lexicalError(bool EOFSeen, int, int errorLine, int errorColumn, JAVACC_STRING_TYPE errorAfter, JAVACC_CHAR_TYPE curChar, VhdlParserTokenManager*) {
+       virtual void lexicalError(bool EOFSeen, int lexState, int errorLine, int errorColumn, JAVACC_STRING_TYPE errorAfter, JAVACC_CHAR_TYPE curChar, VhdlParserTokenManager* token_manager) {
         // by default, we just print an error message and return.
         fprintf(stderr, "Lexical error at: %d:%d. Encountered: %c after: %s.\n", errorLine, errorColumn, curChar, (EOFSeen? "EOF" : (const char*)errorAfter.c_str()));
       }
-       virtual void lexicalError(JAVACC_STRING_TYPE errorMessage, VhdlParserTokenManager*) {
+       virtual void lexicalError(JAVACC_STRING_TYPE errorMessage, VhdlParserTokenManager* token_manager) {
         fprintf(stderr, "%s\n", (char*)errorMessage.c_str());
       }
       virtual ~TokenManagerErrorHandler() {}

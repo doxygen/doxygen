@@ -30,13 +30,29 @@ namespace parser {
 class CharStream {
 public:
           void setTabSize(int i) { tabSize = i; }
-          int  getTabSize(int)   { return tabSize; }
-  virtual int  getColumn()       { return trackLineColumn ? bufcolumn[bufpos] : -1; }
-  virtual int  getLine()         { return trackLineColumn ? bufline[bufpos] : -1; }
-  virtual int  getEndColumn()    { return trackLineColumn ? bufcolumn[bufpos] : -1; }
-  virtual int  getEndLine()      { return trackLineColumn ? bufline[bufpos] : -1; }
-  virtual int  getBeginColumn()  { return trackLineColumn ? bufcolumn[tokenBegin] : -1; }
-  virtual int  getBeginLine()    { return trackLineColumn ? bufline[tokenBegin] : -1; }
+          int  getTabSize(int i) { return tabSize; }
+ private:
+  int getBufcolumn(int pos) {
+    if (trackLineColumn && pos>=0) {
+      return bufcolumn[pos];
+    } else {
+      return -1;
+    }
+  }
+  int getBufline(int pos) {
+    if (trackLineColumn && pos>=0) {
+      return bufline[pos];
+    } else {
+      return -1;
+    }
+  }
+ public:
+  virtual int getColumn() { return getBufcolumn(bufpos); }
+  virtual int getLine() { return getBufline(bufpos); }
+  virtual int getEndColumn() { return getBufcolumn(bufpos); }
+  virtual int getEndLine() { return getBufline(bufpos); }
+  virtual int getBeginColumn() { return getBufcolumn(tokenBegin); }
+  virtual int getBeginLine() { return getBufline(tokenBegin); }
 
   virtual bool getTrackLineColumn()         { return trackLineColumn; }
   virtual void setTrackLineColumn(bool val) { trackLineColumn = val; }
@@ -179,7 +195,7 @@ public:
   }
 
   CharStream(ReaderStream *input_stream, int startline,
-             int startcolumn, int) :
+             int startcolumn, int buffersize) :
     bufline(NULL), bufcolumn(NULL), buffer(NULL), bufpos(0), bufsize(0), 
     tokenBegin(0), column(0), line(0), prevCharIsCR(false), prevCharIsLF(false),
     available(0), maxNextCharInd(0), inBuf(0), tabSize(1), trackLineColumn(true),
@@ -248,4 +264,4 @@ public:
 }
 }
 #endif
-/* JavaCC - OriginalChecksum=89f4cb30f0d3487ee809cca18a2924f2 (do not edit this line) */
+/* JavaCC - OriginalChecksum=3f0e693d1617236429891c8c95713d73 (do not edit this line) */

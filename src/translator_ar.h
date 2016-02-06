@@ -97,7 +97,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "توثيق الحقل";
       }
@@ -164,7 +164,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "هياكل البيانات";
       }
@@ -185,7 +185,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "حقول البيانات";
       }
@@ -198,7 +198,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "العوام";
       }
@@ -239,7 +239,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "هذه هي هياكل البيانات مع وصف مختصر:";
       }
@@ -255,7 +255,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     {
       QCString result="هذه قائمة بكل ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="حقول البناءات والإتحادات";
       }
@@ -270,7 +270,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       result+=" مع وصلات إلى ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="توثيق البناء/الإتحاد لكل حقل:";
         }
@@ -281,7 +281,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="البناءات/الإتحادات التي ينتمون إليها:";
         }
@@ -299,7 +299,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       QCString result="Here is a list of all ";
       if (!extractAll) result+="documented ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="functions, variables, defines, enums, and typedefs";
       }
@@ -361,7 +361,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "فهرس هيكل البيانات";
       }
@@ -388,7 +388,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "فهرس هيكل البيانات";
       }
@@ -497,7 +497,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "هياكل البيانات";
       }
@@ -917,7 +917,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "حقول بيانات";
       }
@@ -1118,7 +1118,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "هياكل البيانات";
       }

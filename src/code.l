@@ -600,7 +600,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                                    Definition *d,
                                    const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -3274,7 +3274,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <*>\n({B}*"//"[!/][^\n]*\n)+		{ // remove special one-line comment
 					  if (YY_START==SkipCPP) REJECT;
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr+=((QCString)yytext).contains('\n');
 					    nextCodeLine();
@@ -3297,7 +3297,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  BEGIN( g_lastSkipCppContext ) ;
 					}
 <*>\n{B}*"//@"[{}].*\n			{ // remove one-line group marker
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr+=2;
 					    nextCodeLine();
@@ -3315,7 +3315,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <*>\n{B}*"/*@"[{}]			{ // remove one-line group marker
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
   					  {
 					    g_lastSpecialCContext = YY_START;
 					    g_yyLineNr++;
@@ -3334,7 +3334,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  }
   					}
 <*>^{B}*"//@"[{}].*\n			{ // remove one-line group marker
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr++;
 					    nextCodeLine();
@@ -3347,7 +3347,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <*>^{B}*"/*@"[{}]			{ // remove multi-line group marker
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
@@ -3365,7 +3365,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
  					  }
   					}
 <*>^{B}*"//"[!/][^\n]*\n		{ // remove special one-line comment
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr++;
 					    //nextCodeLine();
@@ -3379,7 +3379,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
                                           if (YY_START==SkipComment || YY_START==SkipString) REJECT;
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    char c[2]; c[0]='\n'; c[1]=0;
 					    codifyLines(c);
@@ -3398,7 +3398,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  g_forceTagReference = g_forceTagReference.mid(s+1,e-s-1);
   					}
 <*>\n{B}*"/*"[!*]/[^/*] 		{
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
   					  {
 					    g_lastSpecialCContext = YY_START;
 					    g_yyLineNr++;
@@ -3417,7 +3417,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  }
 					}
 <*>^{B}*"/*"[!*]/[^/*]			{ // special C comment block at a new line
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
@@ -3436,7 +3436,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <*>"/*"[!*]/[^/*]			{ // special C comment block half way a line
                                           if (YY_START==SkipString) REJECT;
-					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
@@ -3455,7 +3455,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <*>"/*"("!"?)"*/"			{ 
                                           if (YY_START==SkipString) REJECT;
-                                          if (!Config_getBool("STRIP_CODE_COMMENTS"))
+                                          if (!Config_getBool(STRIP_CODE_COMMENTS))
   					  {
 					    startFontClass("comment");
 					    g_code->codify(yytext);

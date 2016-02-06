@@ -90,6 +90,9 @@ static int           g_stringContext;
 
 static QValueStack<uint> g_indents;  //!< Tracks indentation levels for scoping in python
 
+static QCString      g_docBlock;     //!< contents of all lines of a documentation block
+static bool          g_endComment;
+
 static void endFontClass();
 static void adjustScopesAndSuites(unsigned indentLength);
 
@@ -361,11 +364,13 @@ static void startCodeLine()
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
     //printf("startCodeLine %d d=%p\n",g_yyLineNr,d);
     //g_code->startLineNumber();
+
     if (!g_includeCodeFragment && d && d->isLinkableInProject())
     {
       g_currentDefinition = d;
       g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
       //g_insideBody = FALSE;
+      g_endComment = FALSE;
       g_searchingForBody = TRUE;
       g_realScope = d->name().copy();
       g_classScope = d->name().copy();
@@ -433,7 +438,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   Definition *d,
                   const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -467,6 +472,26 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   }
 }
 
+static void startFontClass(const char *s)
+{
+  // if font class is already set don't stop and start it.
+  // strcmp does not like null pointers as input.
+  if (!g_currentFontClass || !s || strcmp(g_currentFontClass,s))
+  {
+    endFontClass();
+    g_code->startFontClass(s);
+    g_currentFontClass=s;
+  }
+}
+
+static void endFontClass()
+{
+  if (g_currentFontClass)
+  {
+    g_code->endFontClass();
+    g_currentFontClass=0;
+  }
+}
 
 static void codifyLines(char *text)
 {
@@ -474,6 +499,7 @@ static void codifyLines(char *text)
   char *p=text,*sp=p;
   char c;
   bool done=FALSE;
+  const char *  tmp_currentFontClass = g_currentFontClass;
   while (!done)
   {
     sp=p;
@@ -483,7 +509,15 @@ static void codifyLines(char *text)
       g_yyLineNr++;
       *(p-1)='\0';
       g_code->codify(sp);
-      nextCodeLine();
+      endCodeLine();
+      if (g_yyLineNr<g_inputLines)
+      {
+        startCodeLine();
+      }
+      if (tmp_currentFontClass)
+      {
+        startFontClass(tmp_currentFontClass);
+      }
     }
     else
     {
@@ -493,6 +527,13 @@ static void codifyLines(char *text)
   }
 }
 
+static void codifyLines(const QCString &str)
+{
+  char *tmp= (char *)malloc(str.length()+1);
+  qstrcpy(tmp, str);
+  codifyLines(tmp);
+  free(tmp);
+}
 
 static bool getLinkInScope(const QCString &c,  // scope
                            const QCString &m,  // member
@@ -796,22 +837,6 @@ static void findMemberLink(CodeOutputInterface &ol,char *symName)
   codify(symName);
 }
 
-static void startFontClass(const char *s)
-{
-  endFontClass();
-  g_code->startFontClass(s);
-  g_currentFontClass=s;
-}
-
-static void endFontClass()
-{
-  if (g_currentFontClass)
-  {
-    g_code->endFontClass();
-    g_currentFontClass=0;
-  }
-}
-
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
@@ -842,7 +867,7 @@ PARAMNONEMPTY     [^ \t\n():]
 IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*  
 BORDER            ([^A-Za-z0-9])
 
-POUNDCOMMENT      "#".*
+POUNDCOMMENT      "##"
 
 TRISINGLEQUOTE    "'''"
 TRIDOUBLEQUOTE    "\"\"\""
@@ -938,7 +963,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
 
 %option noyywrap
-%option nounput
+%option stack
 
 %x Body
 
@@ -960,6 +985,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 %x DoubleQuoteString
 %x TripleString
 
+%x DocBlock
 %%
 
 <Body,Suite>{
@@ -988,6 +1014,14 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
       "self."{IDENTIFIER}           {
 				        codify("self.");
 				        findMemberLink(*g_code,&yytext[5]);
+	                            }
+      "cls."{IDENTIFIER}/"("       {
+				        codify("cls.");
+				        findMemberLink(*g_code,&yytext[4]);
+	                            }
+      "cls."{IDENTIFIER}           {
+				        codify("cls.");
+				        findMemberLink(*g_code,&yytext[4]);
 	                            }
 }
 
@@ -1168,11 +1202,16 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
 
     {POUNDCOMMENT}                     {
-                                          // This eats EVERYTHING
-					  // except the newline
-                                          startFontClass("comment");
-					  codifyLines(yytext);
-		                          endFontClass();
+  				         if (YY_START==SingleQuoteString || 
+				             YY_START==DoubleQuoteString || 
+				             YY_START==TripleString
+				            )
+				         {
+				           REJECT;
+				         }
+                                         yy_push_state(YY_START);
+				         BEGIN(DocBlock);
+				         g_docBlock=yytext;
                                        }
 
     {NEWLINE}                          {
@@ -1341,6 +1380,28 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
   		                 codify(yytext);
 				 BEGIN(DoubleQuoteString);
                                }
+<DocBlock>.*    	       { // contents of current comment line
+                                 g_docBlock+=yytext;
+  			       }
+<DocBlock>"\n"{B}("#")         { // comment block (next line is also comment line)
+				 g_docBlock+=yytext; 
+   			       }
+<DocBlock>{NEWLINE}            { // comment block ends at the end of this line
+                                 // remove special comment (default config)
+				 if (Config_getBool(STRIP_CODE_COMMENTS))
+				 {
+				    g_yyLineNr+=((QCString)g_docBlock).contains('\n');
+				    g_endComment=TRUE;
+				  }
+				  else // do not remove comment
+				  {
+				    startFontClass("comment");
+				    codifyLines(g_docBlock);
+				    endFontClass();
+				  }
+				  unput(*yytext);
+				  yy_pop_state();
+			       }
 <*>{POUNDCOMMENT}              {
   				 if (YY_START==SingleQuoteString || 
 				     YY_START==DoubleQuoteString || 
@@ -1349,14 +1410,31 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 				 {
 				   REJECT;
 				 }
-                                 // This eats EVERYTHING
-				 // except the newline
+                                 yy_push_state(YY_START);
+				 BEGIN(DocBlock);
+				 g_docBlock=yytext;
+                               }
+<*>"#".*                       { // normal comment
+  				 if (YY_START==SingleQuoteString || 
+				     YY_START==DoubleQuoteString || 
+				     YY_START==TripleString
+				    )
+				 {
+				   REJECT;
+				 }
                                  startFontClass("comment");
-				 codifyLines(yytext);
-		                 endFontClass();
+                                 codifyLines(yytext);
+                                 endFontClass();
                                }
 <*>{NEWLINE}                   {
-  		                 codifyLines(yytext);
+				  if (g_endComment)
+				  {
+				    g_endComment=FALSE;
+				  }
+				  else
+				  {
+				    codifyLines(yytext);
+				  }
 				 //printf("[pycode] %d NEWLINE [line %d] no match\n",
 				 //       YY_START, g_yyLineNr);
 
@@ -1377,6 +1455,17 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 				 BEGIN(Body);					
                                }
 
+<*><<EOF>>                     {
+                                 if (YY_START == DocBlock) {
+                                   if (!Config_getBool(STRIP_CODE_COMMENTS))
+                                   {
+                                     startFontClass("comment");
+                                     codifyLines(g_docBlock);
+                                     endFontClass();
+                                   }
+                                 }
+                                 yyterminate();
+                               }
 %%
 
 /*@ ----------------------------------------------------------------------------

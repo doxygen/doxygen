@@ -116,7 +116,7 @@ class TranslatorPortuguese : public Translator
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Documentação dos campos e atributos";
       }
@@ -183,7 +183,7 @@ class TranslatorPortuguese : public Translator
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Estruturas de dados";
       }
@@ -200,7 +200,7 @@ class TranslatorPortuguese : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Campos de dados";
       }
@@ -213,7 +213,7 @@ class TranslatorPortuguese : public Translator
     /*! This is put above each page as a link to all members of files. */
     QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Globais";
       }
@@ -251,7 +251,7 @@ class TranslatorPortuguese : public Translator
     /*! This is an introduction to the annotated compound list. */
     QCString trCompoundListDescription()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Lista das estruturas de dados com uma breve descrição:";
       }
@@ -265,7 +265,7 @@ class TranslatorPortuguese : public Translator
     QCString trCompoundMembersDescription(bool extractAll)
     {
       QCString result="Lista de todas as";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+=" estruturas e campos de uniões";
       }
@@ -280,7 +280,7 @@ class TranslatorPortuguese : public Translator
       result+=" com referência para ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="a respectiva documentação:";
         }
@@ -291,7 +291,7 @@ class TranslatorPortuguese : public Translator
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="as estruturas/uniões a que pertencem:";
         }
@@ -307,7 +307,7 @@ class TranslatorPortuguese : public Translator
     QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Lista de ";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="todas as funções, variáveis, definições, enumerações e definições de tipo ";
         if (!extractAll) result+="documentadas ";
@@ -361,7 +361,7 @@ class TranslatorPortuguese : public Translator
      */
     QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Índice das estruturas de dados";
       }
@@ -482,7 +482,7 @@ class TranslatorPortuguese : public Translator
      */
     QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Estruturas de Dados";
       }
@@ -894,7 +894,7 @@ class TranslatorPortuguese : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Campos de Dados";
       }
@@ -1082,7 +1082,7 @@ class TranslatorPortuguese : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Estruturas de dados";
       }

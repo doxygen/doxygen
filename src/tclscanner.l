@@ -2818,24 +2818,21 @@ static void tcl_init()
 {
   // Get values from option TCL_SUBST
   tcl.config_subst.clear();
-  if (Config::instance()->get("TCL_SUBST")) 
+  QStrList myStrList = Config_getList(TCL_SUBST);
+  const char *s=myStrList.first();
+  while (s) 
   {
-    QStrList myStrList = Config_getList("TCL_SUBST");
-    const char *s=myStrList.first();
-    while (s) 
+    QCString myStr=s;
+    int i=myStr.find('=');
+    if (i>0)
     {
-      QCString myStr=s;
-      int i=myStr.find('=');
-      if (i>0)
-      {
-        QCString myName=myStr.left(i).stripWhiteSpace();
-        QCString myValue=myStr.right(myStr.length()-i-1).stripWhiteSpace();
-        if (!myName.isEmpty() && !myValue.isEmpty())
-tcl_inf("TCL_SUBST: use '%s'\n",s);
-        tcl.config_subst[myName] = myValue;
-      }
-      s = myStrList.next();
+      QCString myName=myStr.left(i).stripWhiteSpace();
+      QCString myValue=myStr.right(myStr.length()-i-1).stripWhiteSpace();
+      if (!myName.isEmpty() && !myValue.isEmpty())
+        tcl_inf("TCL_SUBST: use '%s'\n",s);
+      tcl.config_subst[myName] = myValue;
     }
+    s = myStrList.next();
   }
 
   if (tcl.input_string.at(tcl.input_string.length()-1) == 0x1A)
@@ -2854,7 +2851,7 @@ tcl_inf("TCL_SUBST: use '%s'\n",s);
   tcl.code_font=NULL;
   tcl.code_line=1;
   tcl.code_linenumbers=1;
-  tcl.config_autobrief = Config_getBool("JAVADOC_AUTOBRIEF");
+  tcl.config_autobrief = Config_getBool(JAVADOC_AUTOBRIEF);
   tcl.input_position = 0;
   tcl.file_name = NULL;
   tcl.this_parser = NULL;

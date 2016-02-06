@@ -24,7 +24,7 @@ detailed usage information.
 Optionally, the executable \c doxywizard can be used, which is a 
 \ref doxywizard_usage "graphical front-end" for editing the configuration file 
 that is used by doxygen and for running doxygen in a graphical environment.
-For Mac OS X doxywizard will be started by clicking on the Doxygen application
+For Mac OS X doxywizard will be started by clicking on the doxygen application
 icon.
 
 The following figure shows the relation between the tools and the flow
@@ -37,7 +37,7 @@ tries to be complete):
 \section step0 Step 0: Check if doxygen supports your programming language
 
 First, assure that your programming language has a reasonable chance of being
-recognized by Doxygen. These languages are supported by default: C, C++, C#,
+recognized by doxygen. These languages are supported by default: C, C++, C#,
 Objective-C, IDL, Java, VHDL, PHP, Python, Tcl, Fortran, and D. It
 is possible to configure certain file type extensions to use certain parsers:
 see the \ref cfg_extension_mapping "Configuration/ExtensionMappings" for details. 

@@ -105,7 +105,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Kampa Dokumentado";
       }
@@ -172,7 +172,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datumstruktoroj";
       }
@@ -189,7 +189,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datumkampoj";
       }
@@ -202,7 +202,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Mallokalaĵoj";
       }
@@ -243,7 +243,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     virtual QCString trCompoundListDescription()
     {
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Jen datumstrukturoj kun mallongaj priskriboj:";
       }
@@ -262,7 +262,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       {
         result+="dokumentitaj ";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="strukturaj kaj kunigaj kampoj";
       }
@@ -273,7 +273,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       result+=" kun ligiloj al ";
       if (!extractAll)
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="la struktura/kuniga dokumentado por ĉiu kampo:";
         }
@@ -284,7 +284,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       }
       else
       {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="la strukturoj/kunigoj al kiuj ili apartenas:";
         }
@@ -302,7 +302,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       QCString result="Jen listo de ĉiuj ";
       if (!extractAll) result+="dokumentitaj ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funkcioj, variabloj, difinoj, enumeracioj kaj tipodifinoj";
       }
@@ -353,7 +353,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datumstruktura Indekso";
       }
@@ -380,7 +380,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datumstruktura Dokumentado";
       }
@@ -483,7 +483,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datumstrukturoj";
       }
@@ -891,7 +891,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datumkampoj";
       }
@@ -1086,7 +1086,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datumstrukturoj";
       }

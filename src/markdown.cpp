@@ -589,8 +589,8 @@ static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
 static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
 {
   if ((offset>0 && !isOpenEmphChar(-1)) || // invalid char before * or _
-      (size>1 && data[0]!=data[1] && !isIdChar(1)) || // invalid char after * or _
-      (size>2 && data[0]==data[1] && !isIdChar(2)))   // invalid char after ** or __
+      (size>1 && data[0]!=data[1] && !(isIdChar(1) || data[1]=='[')) || // invalid char after * or _
+      (size>2 && data[0]==data[1] && !(isIdChar(2) || data[2]=='[')))   // invalid char after ** or __
   {
     return 0;
   }
@@ -901,7 +901,8 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
         out.addStr("\"");
       }
       out.addStr(">");
-      out.addStr(content.simplifyWhiteSpace());
+      content = content.simplifyWhiteSpace();
+      processInline(out,content,content.length());
       out.addStr("</a>");
     }
     else // avoid link to e.g. F[x](y)
@@ -1835,7 +1836,7 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
     int indent=0;
     while (j<end && data[j]==' ') j++,indent++;
     //printf("j=%d end=%d indent=%d refIndent=%d tabSize=%d data={%s}\n",
-    //    j,end,indent,refIndent,Config_getInt("TAB_SIZE"),QCString(data+i).left(end-i-1).data());
+    //    j,end,indent,refIndent,Config_getInt(TAB_SIZE),QCString(data+i).left(end-i-1).data());
     if (j==end-1) // empty line 
     {
       emptyLines++;
@@ -2239,7 +2240,7 @@ static QCString extractPageTitle(QCString &docs,QCString &id)
 
 static QCString detab(const QCString &s,int &refIndent)
 {
-  static int tabSize = Config_getInt("TAB_SIZE");
+  static int tabSize = Config_getInt(TAB_SIZE);
   GrowBuf out;
   int size = s.length();
   const char *data = s.data();
@@ -2365,7 +2366,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString title=extractPageTitle(docs,id).stripWhiteSpace();
   QCString titleFn = QFileInfo(fileName).baseName().utf8();
   QCString fn      = QFileInfo(fileName).fileName().utf8();
-  static QCString mdfileAsMainPage = Config_getString("USE_MDFILE_AS_MAINPAGE");
+  static QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   if (id.isEmpty()) id = markdownFileNameToId(fileName);
   if (!mdfileAsMainPage.isEmpty() &&
       (fn==mdfileAsMainPage || // name reference

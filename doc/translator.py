@@ -54,9 +54,9 @@
   2010/03/03 - Added [unreachable] prefix used in maintainers.txt.
   2010/05/28 - BOM skipped; minor code cleaning.
   2010/05/31 - e-mail mangled already in maintainers.txt
-  2010/08/20 - maintainers.txt to UTF-8, related processin of unicode strings
+  2010/08/20 - maintainers.txt to UTF-8, related processing of unicode strings
              - [any mark] introduced instead of [unreachable] only
-             - marks hihglighted in HTML
+             - marks highlighted in HTML
   2010/08/30 - Highlighting in what will be the table in langhowto.html modified.
   2010/09/27 - The underscore in \latexonly part of the generated language.doc
                was prefixed by backslash (was LaTeX related error).
@@ -91,7 +91,7 @@ def xopen(fname, mode='r', encoding='utf-8-sig'):
 
 
 def fill(s):
-    """Returns string formated to the wrapped paragraph multiline string.
+    """Returns string formatted to the wrapped paragraph multiline string.
 
     Replaces whitespaces by one space and then uses he textwrap.fill()."""
 
@@ -159,7 +159,7 @@ class Transl:
 
         The tokens have the form (tokenId, tokenString, lineNo). The
         last returned token has the form ('eof', None, None). When trying
-        to access next token afer that, the exception would be raised."""
+        to access next token after that, the exception would be raised."""
 
         # Set the dictionary for recognizing tokenId for keywords, separators
         # and the similar categories. The key is the string to be recognized,
@@ -727,7 +727,7 @@ class Transl:
         The dictionary is filled by items: uniPrototype -> prototype.
         The method is expected to be called only for TranslatorXxxx classes,
         i.e. for the classes that implement translation to some language.
-        It assumes that the openning curly brace of the class was already
+        It assumes that the opening curly brace of the class was already
         consumed. The source is consumed until the end of the class.
         The caller should consume the source until the eof to cause closing
         the source file."""
@@ -738,7 +738,7 @@ class Transl:
         # The following finite automaton slightly differs from the one
         # inside self.collectPureVirtualPrototypes(). It produces the
         # dictionary item just after consuming the body of the method
-        # (transition from from state 10 to state 2). It also does not allow
+        # (transition from state 10 to state 2). It also does not allow
         # definitions of public pure virtual methods, except for
         # TranslatorAdapterBase (states 8 and 9). Argument identifier inside
         # method argument lists can be omitted or commented.
@@ -1234,7 +1234,7 @@ class TrManager:
         self.doc_path = os.path.join(self.doxy_path, 'doc')
         self.src_path = os.path.join(self.doxy_path, 'src')
 
-        # Create the empty dictionary for Transl object identitied by the
+        # Create the empty dictionary for Transl object identified by the
         # class identifier of the translator.
         self.__translDic = {}
 
@@ -1484,7 +1484,7 @@ class TrManager:
     def __emails(self, classId):
         """Returns the list of maintainer emails.
 
-        The method returns the list of e-mail adresses for the translator
+        The method returns the list of e-mail addresses for the translator
         class, but only the addresses that were not marked as [xxx]."""
         lst = []
         for m in self.__maintainersDic[classId]:
@@ -1814,6 +1814,7 @@ class TrManager:
         # Define templates for HTML table parts of the documentation.
         htmlTableTpl = '''\
             \\htmlonly
+			</p>
             <table align="center" cellspacing="0" cellpadding="0" border="0">
             <tr bgcolor="#000000">
             <td>
@@ -1832,6 +1833,7 @@ class TrManager:
             </td>
             </tr>
             </table>
+			<p>
             \\endhtmlonly
             '''
         htmlTableTpl = textwrap.dedent(htmlTableTpl)
@@ -1845,7 +1847,7 @@ class TrManager:
         for name, obj in self.langLst:
             # Fill the table data elements for one row. The first element
             # contains the readable name of the language. Only the oldest
-            # translator are colour marked in the language columnt. Less
+            # translator are colour marked in the language column. Less
             # "heavy" color is used (when compared with the Status column).
             if obj.readableStatus.startswith('1.4'):
                 bkcolor = self.getBgcolorByReadableStatus('1.4')
@@ -1880,7 +1882,7 @@ class TrManager:
                     lm.append(name)
                 mm = '<br/>'.join(lm)
 
-                # The marked adresses (they start with the mark '[unreachable]',
+                # The marked addresses (they start with the mark '[unreachable]',
                 # '[resigned]', whatever '[xxx]') will not be displayed at all.
                 # Only the mark will be used instead.
                 rexMark = re.compile('(?P<mark>\\[.*?\\])')

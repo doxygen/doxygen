@@ -1,8 +1,5 @@
 /******************************************************************************
  *
- *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -152,7 +149,6 @@ class Doxygen
     static bool                      generatingXmlOutput;
     static bool                      markdownSupport;
     static GenericsSDict            *genericsDict;
-    static int                       exitCode;
 };
 
 void initDoxygen();

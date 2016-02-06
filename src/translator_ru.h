@@ -68,7 +68,7 @@ class TranslatorRussian : public Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Поля";
       }
@@ -143,7 +143,7 @@ class TranslatorRussian : public Translator
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Структуры данных";
       }
@@ -160,7 +160,7 @@ class TranslatorRussian : public Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Поля структур";
       }
@@ -207,7 +207,7 @@ class TranslatorRussian : public Translator
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Структуры данных с их кратким описанием.";
       }
@@ -222,20 +222,20 @@ class TranslatorRussian : public Translator
     {
         QCString result="Список всех ";
         if(!extractAll) result+="документированных ";
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
           result+="членов структур данных со ссылками на ";
         else
           result+="членов классов со ссылками на ";
         if(!extractAll)
         {
-          if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
             result+="документацию по структуре для каждого члена.";
           else
             result+="документацию по классу для каждого члена.";
         }
         else
         {
-          if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
             result += "структуры";
           else
             result += "классы";
@@ -250,7 +250,7 @@ class TranslatorRussian : public Translator
       QCString result="Список всех ";
       if (!extractAll) result+="документированных ";
 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="функций, переменных, макроопределений, "
                 "перечислений и определений типов";
@@ -303,7 +303,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Алфавитный указатель структур данных";
       }
@@ -330,7 +330,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Структуры данных";
       }
@@ -433,7 +433,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trCompounds()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Структуры данных";
       }
@@ -877,7 +877,7 @@ class TranslatorRussian : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Поля данных";
       }
@@ -1074,7 +1074,7 @@ class TranslatorRussian : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Структуры данных";
       }
@@ -1149,7 +1149,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trClass(bool first_capital, bool singular)
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         QCString result((first_capital ? "Структуры данных" : "структуры данных"));
         return result;

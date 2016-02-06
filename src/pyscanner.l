@@ -181,7 +181,7 @@ static void newFunction()
 static inline int computeIndent(const char *s)
 {
   int col=0;
-  static int tabSize=Config_getInt("TAB_SIZE");
+  static int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -368,7 +368,7 @@ static void initTriDoubleQuoteBlock()
   docBlockContext   = YY_START;
   docBlockInBody    = FALSE;
   docBlockJavaStyle = TRUE;
-  docBlockSpecial   = yytext[3]=='!';
+  docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   docBlock.resize(0);
   g_doubleQuote = TRUE;
   startCommentBlock(FALSE);
@@ -379,7 +379,7 @@ static void initTriSingleQuoteBlock()
   docBlockContext   = YY_START;
   docBlockInBody    = FALSE;
   docBlockJavaStyle = TRUE;
-  docBlockSpecial   = yytext[3]=='!';
+  docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   docBlock.resize(0);
   g_doubleQuote = FALSE;
   startCommentBlock(FALSE);
@@ -401,7 +401,6 @@ static void searchFoundDef()
   current->startLine = yyLineNr;
   current->bodyLine  = yyLineNr;
   current->section = Entry::FUNCTION_SEC;
-  current->protection = protection = Public;
   current->lang = SrcLangExt_Python;
   current->virt = Normal;
   current->stat = gstat;
@@ -471,8 +470,10 @@ IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*
 SCOPE             {IDENTIFIER}("."{IDENTIFIER})*
 BORDER            ([^A-Za-z0-9])
 
-TRISINGLEQUOTE    "'''"(!)?
-TRIDOUBLEQUOTE    "\"\"\""(!)?
+TRISINGLEQUOTE    {STRINGPREFIX}?"'''"(!)?
+TRIDOUBLEQUOTE    {STRINGPREFIX}?"\"\"\""(!)?
+ENDTRISINGLEQUOTE "'''"
+ENDTRIDOUBLEQUOTE "\"\"\""
 LONGSTRINGCHAR    [^\\"']
 ESCAPESEQ         ("\\")(.)
 LONGSTRINGITEM    ({LONGSTRINGCHAR}|{ESCAPESEQ})
@@ -487,6 +488,7 @@ STRINGPREFIX      ("r"|"u"|"ur"|"R"|"U"|"UR"|"Ur"|"uR")
 KEYWORD           ("lambda"|"import"|"class"|"assert"|"as"|"from"|"global"|"def"|"True"|"False")
 FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"if"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
 POUNDCOMMENT      "#"[^#\n][^\n]* 
+SCRIPTCOMMENT      "#!".* 
 
 STARTDOCSYMS      "##"
 
@@ -594,6 +596,20 @@ STARTDOCSYMS      "##"
 			g_packageCommentAllowed = FALSE;
 			BEGIN(VariableDec);
       		      }
+     {B}{IDENTIFIER}/({B},{B}{IDENTIFIER})*{B}")"*{B}"="[^=] { // list of variables, we cannot place the default value
+                                                               // so we will skip it later on in a general rule
+                                                               // Also note ")" this is to catch also (a,b). the "("
+                                                               // is caught in the rule: [(], the ")" will be handled in [)]
+                        if (g_search_count > 1) REJECT;
+      			g_indent=computeIndent(yytext);
+      			current->section   = Entry::VARIABLE_SEC;
+			current->name      = QCString(yytext).stripWhiteSpace();
+			current->fileName  = yyFileName;
+			current->startLine = yyLineNr;
+			current->bodyLine  = yyLineNr;
+			g_packageCommentAllowed = FALSE;
+			newVariable();
+      		      }
      "'"	      { // start of a single quoted string
        		        g_stringContext=YY_START;
 		        g_copyString=0;
@@ -608,6 +624,9 @@ STARTDOCSYMS      "##"
                       }
     "@staticmethod"  {
        			gstat=TRUE;
+      		      }
+    {SCRIPTCOMMENT}   { // Unix type script comment
+                        if (yyLineNr != 1) REJECT;
       		      }
     {POUNDCOMMENT}    { // normal comment 
 			g_packageCommentAllowed = FALSE;
@@ -745,7 +764,7 @@ STARTDOCSYMS      "##"
 
 <SearchMemVars>{
     "self."{IDENTIFIER}/{B}"=" {
-                        DBG_CTX((stderr,"Found member variable %s in %s at %d\n",&yytext[5],current_root->name.data(),yyLineNr));
+                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],current_root->name.data(),yyLineNr));
 			current->name=&yytext[5];
 			current->section=Entry::VARIABLE_SEC;
 			current->fileName  = yyFileName;
@@ -756,9 +775,19 @@ STARTDOCSYMS      "##"
 			{
 			  current->protection=Private;
 			}
-			else
+			newEntry();
+                      }
+    "cls."{IDENTIFIER}/{B}"=" {
+                        DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],current_root->name.data(),yyLineNr));
+			current->name=&yytext[4];
+			current->section=Entry::VARIABLE_SEC;
+			current->fileName  = yyFileName;
+			current->startLine = yyLineNr;
+			current->bodyLine  = yyLineNr;
+			current->type.resize(0);
+			if (current->name.at(0)=='_') // mark as private
 			{
-			  current->protection=Public;
+			  current->protection=Private;
 			}
 			newEntry();
                       }
@@ -980,7 +1009,7 @@ STARTDOCSYMS      "##"
 			  }
 			  else // continue
 			  {
-			    g_braceCount--;
+			    if (*yytext == ')')g_braceCount--;
 			    g_defVal+=*yytext;
 			  }
        			}
@@ -1342,8 +1371,8 @@ STARTDOCSYMS      "##"
 }
 
 <TripleComment>{
-    {TRIDOUBLEQUOTE}   | 
-    {TRISINGLEQUOTE}   {
+    {ENDTRIDOUBLEQUOTE}   | 
+    {ENDTRISINGLEQUOTE}   {
 			  // printf("Expected module block %d special=%d\n",g_expectModuleDocs,g_specialBlock);
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {
@@ -1488,8 +1517,8 @@ STARTDOCSYMS      "##"
 }
 
 <TripleString>{
-    {TRIDOUBLEQUOTE}    | 
-    {TRISINGLEQUOTE}    {
+    {ENDTRIDOUBLEQUOTE}    | 
+    {ENDTRISINGLEQUOTE}    {
                           *g_copyString += yytext;
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {

@@ -356,7 +356,7 @@ static void codifyLines(QCString str)
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   Definition *d,const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -1086,7 +1086,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
    					}
 <DocBlock>"\n"        			{ // comment block ends at the end of this line
                                           // remove special comment (default config)
-  					  if (Config_getBool("STRIP_CODE_COMMENTS"))
+  					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr+=((QCString)docBlock).contains('\n');
               g_yyLineNr+=1;
@@ -1206,7 +1206,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                         }
 <*><<EOF>>                              {
                                           if (YY_START == DocBlock) {
-                                            if (!Config_getBool("STRIP_CODE_COMMENTS"))
+                                            if (!Config_getBool(STRIP_CODE_COMMENTS))
                                             {
                                               startFontClass("comment");
                                               codifyLines(docBlock);

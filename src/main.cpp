@@ -36,6 +36,6 @@ int main(int argc,char **argv)
   adjustConfiguration();
   parseInput();
   generateOutput();
-  return Doxygen::exitCode;
+  return 0;
 }
 
