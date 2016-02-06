@@ -43,6 +43,7 @@
 #include "classlist.h"
 #include "filename.h"
 #include "namespacedef.h"
+#include "rtfincludable.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
@@ -56,16 +57,6 @@ static QCString dateToRTFDateString()
       d.time().hour(),d.time().minute(),d.time().second());
   return result;
 } 
-
-bool isIncludableRtf()
-{
-	return Config_getBool(INCLUDABLE_RTF);
-}
-
-bool isTableOfContentEntriesEnabled()
-{
-	return !isIncludableRtf();
-}
 
 RTFGenerator::RTFGenerator() : OutputGenerator()
 {
@@ -962,7 +953,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
 void RTFGenerator::writePageLink(const char *name,bool first)
 {
    if (first) t << "\\par " << rtf_Style_Reset << endl;
-   t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+	 t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
    t << name;
    t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
 }

@@ -225,6 +225,7 @@ add_library(_doxygen STATIC
     reflist.cpp
     rtfdocvisitor.cpp
     rtfgen.cpp
+	rtfincludable.cpp
     rtfstyle.cpp
     searchindex.cpp
     store.cpp

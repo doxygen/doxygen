@@ -44,6 +44,7 @@
 #include "filedef.h"
 #include "namespacedef.h"
 #include "membergroup.h"
+#include "rtfincludable.h"
 
 //-----------------------------------------------------------------------------
 
@@ -1102,50 +1103,53 @@ void ClassDef::showUsedFiles(OutputList &ol)
     }
 
     ol.startItemListItem();
-    QCString path=fd->getPath();
-    if (Config_getBool(FULL_PATH_NAMES))
-    {
-      ol.docify(stripFromPath(path));
-    }
-	writeFileLink(ol, fd->absFilePath());
 
-    QCString fname = fd->name();
-    if (!fd->getVersion().isEmpty()) // append version if available
-    {
-      fname += " (" + fd->getVersion() + ")";
-    }
+		if (!writeFileLink(ol, *fd))
+		{
+			QCString path = fd->getPath();
+			if (Config_getBool(FULL_PATH_NAMES))
+			{
+				ol.docify(stripFromPath(path));
+			}
 
-    // for HTML
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    if (fd->generateSourceFile())
-    {
-      ol.writeObjectLink(0,fd->getSourceFileBase(),0,fname);
-    }
-    else if (fd->isLinkable())
-    {
-      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
-          fname);
-    }
-    else
-    {
-      ol.docify(fname);
-    }
-    ol.popGeneratorState();
+			QCString fname = fd->name();
+			if (!fd->getVersion().isEmpty()) // append version if available
+			{
+				fname += " (" + fd->getVersion() + ")";
+			}
 
-    // for other output formats
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Html);
-    if (fd->isLinkable())
-    {
-      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
-          fname);
-    }
-    else
-    {
-      ol.docify(fname);
-    }
-    ol.popGeneratorState();
+			// for HTML
+			ol.pushGeneratorState();
+			ol.disableAllBut(OutputGenerator::Html);
+			if (fd->generateSourceFile())
+			{
+				ol.writeObjectLink(0, fd->getSourceFileBase(), 0, fname);
+			}
+			else if (fd->isLinkable())
+			{
+				ol.writeObjectLink(fd->getReference(), fd->getOutputFileBase(), 0,
+					fname);
+			}
+			else
+			{
+				ol.docify(fname);
+			}
+			ol.popGeneratorState();
+
+			// for other output formats
+			ol.pushGeneratorState();
+			ol.disable(OutputGenerator::Html);
+			if (fd->isLinkable())
+			{
+				ol.writeObjectLink(fd->getReference(), fd->getOutputFileBase(), 0,
+					fname);
+			}
+			else
+			{
+				ol.docify(fname);
+			}
+			ol.popGeneratorState();
+		}
 
     ol.endItemListItem();
   }

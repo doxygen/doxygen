@@ -25,6 +25,7 @@
 #include "language.h"
 #include "namespacedef.h"
 #include "reflist.h"
+#include "rtfincludable.h"
 
 PageDef::PageDef(const char *f,int l,const char *n,
                  const char *d,const char *t)
@@ -200,6 +201,8 @@ void PageDef::writeDocumentation(OutputList &ol)
   {
     writeToc(ol);
   }
+
+	writeFileLink(ol, this->getDefFileName());
 
   writePageDocumentation(ol);
 
