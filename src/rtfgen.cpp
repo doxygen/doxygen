@@ -305,23 +305,26 @@ void RTFGenerator::beginRTFChapter()
   DBG_RTF(t << "{\\comment BeginRTFChapter}\n")
   t << rtf_Style_Reset;
 
-  // if we are compact, no extra page breaks...
-  if (Config_getBool(COMPACT_RTF))
-  {
-	  // if we are compact, no extra page breaks...
-	  if (Config_getBool(COMPACT_RTF))
-	  {
-		  //      t <<"\\sect\\sectd\\sbknone\n";
-		  t << "\\sect\\sbknone\n";
-		  rtfwriteRuler_thick();
-	  }
-	  else
-		  t << "\\sect\\sbkpage\n";
-	  //t <<"\\sect\\sectd\\sbkpage\n";
-  }
-  else
-    t <<"\\sect\\sbkpage\n";
-  //t <<"\\sect\\sectd\\sbkpage\n";
+	if (!isIncludableRtf())
+	{
+		// if we are compact, no extra page breaks...
+		if (Config_getBool(COMPACT_RTF))
+		{
+			// if we are compact, no extra page breaks...
+			if (Config_getBool(COMPACT_RTF))
+			{
+				//      t <<"\\sect\\sectd\\sbknone\n";
+				t << "\\sect\\sbknone\n";
+				rtfwriteRuler_thick();
+			}
+			else
+				t << "\\sect\\sbkpage\n";
+			//t <<"\\sect\\sectd\\sbkpage\n";
+		}
+		else
+			t << "\\sect\\sbkpage\n";
+		//t <<"\\sect\\sectd\\sbkpage\n";
+	}
 
   t << rtf_Style["Heading1"]->reference << "\n";
 }
@@ -581,85 +584,88 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "Doxgyen. }\n";
         t << "{\\creatim " << dateToRTFDateString() << "}\n}";
         DBG_RTF(t << "{\\comment end of infoblock}\n");
-        // setup for this section
-        t << rtf_Style_Reset <<"\n";
-        t <<"\\sectd\\pgnlcrm\n";
-        t <<"{\\footer "<<rtf_Style["Footer"]->reference << "{\\chpgn}}\n";
-        // the title entry
-        DBG_RTF(t << "{\\comment begin title page}\n")
+		if (!isIncludableRtf())
+		{
+			// setup for this section
+			t << rtf_Style_Reset << "\n";
+			t << "\\sectd\\pgnlcrm\n";
+			t << "{\\footer " << rtf_Style["Footer"]->reference << "{\\chpgn}}\n";
+			// the title entry
+			DBG_RTF(t << "{\\comment begin title page}\n")
 
 
-        t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to title style
+				t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to title style
 
-        t << "\\vertalc\\qc\\par\\par\\par\\par\\par\\par\\par\n";
-        if (rtf_logoFilename)
-        {
-          t << "{\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"" << rtf_logoFilename;
-          t << "\" \\\\d \\\\*MERGEFORMAT} {\\fldrslt IMAGE }}\\par\\par\n";
-        }
-        if (rtf_company)
-        {
-          t << rtf_company << "\\par\\par\n";
-        }
+			t << "\\vertalc\\qc\\par\\par\\par\\par\\par\\par\\par\n";
+			if (rtf_logoFilename)
+			{
+				t << "{\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"" << rtf_logoFilename;
+				t << "\" \\\\d \\\\*MERGEFORMAT} {\\fldrslt IMAGE }}\\par\\par\n";
+			}
+			if (rtf_company)
+			{
+				t << rtf_company << "\\par\\par\n";
+			}
 
-        t << rtf_Style_Reset << rtf_Style["Title"]->reference << endl; // set to title style
-        if (rtf_title)
-          // User has overridden document title in extensions file
-          t << "{\\field\\fldedit {\\*\\fldinst " << rtf_title << " \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par" << endl;
-        else
-        {
-          DocText *root = validatingParseText(projectName);
-          t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-          writeDoc(root,0,0);
-          t << "}}\\par" << endl;
-          
-        }
+			t << rtf_Style_Reset << rtf_Style["Title"]->reference << endl; // set to title style
+			if (rtf_title)
+				// User has overridden document title in extensions file
+				t << "{\\field\\fldedit {\\*\\fldinst " << rtf_title << " \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par" << endl;
+			else
+			{
+				DocText *root = validatingParseText(projectName);
+				t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
+				writeDoc(root, 0, 0);
+				t << "}}\\par" << endl;
 
-        t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to title style
-        t << "\\par\n";
-        if (rtf_documentType)
-        {
-          t << rtf_documentType << "\\par\n";
-        }
-        if (rtf_documentId)
-        {
-          t << rtf_documentId << "\\par\n";
-        }
-        t << "\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\n";
+			}
 
-        t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to subtitle style
-        if (rtf_author)
-          t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt "<< rtf_author << " }}\\par" << endl;
-        else
-          t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
+			t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to title style
+			t << "\\par\n";
+			if (rtf_documentType)
+			{
+				t << rtf_documentType << "\\par\n";
+			}
+			if (rtf_documentId)
+			{
+				t << rtf_documentId << "\\par\n";
+			}
+			t << "\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\n";
 
-        t << theTranslator->trVersion() << " " << Config_getString(PROJECT_NUMBER) << "\\par";
-        t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
-          "{\\fldrslt "<< dateToString(FALSE) << " }}\\par"<<endl;
-        t << "\\page\\page";
-        DBG_RTF(t << "{\\comment End title page}" << endl)
+			t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to subtitle style
+			if (rtf_author)
+				t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt " << rtf_author << " }}\\par" << endl;
+			else
+				t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
 
-		t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to subtitle style
-		if (rtf_author)
-			t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt " << rtf_author << " }}\\par" << endl;
-		else
-			t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
+			t << theTranslator->trVersion() << " " << Config_getString(PROJECT_NUMBER) << "\\par";
+			t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
+				"{\\fldrslt " << dateToString(FALSE) << " }}\\par" << endl;
+			t << "\\page\\page";
+			DBG_RTF(t << "{\\comment End title page}" << endl)
 
-		t << theTranslator->trVersion() << " " << Config_getString(PROJECT_NUMBER) << "\\par";
-		t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
-			"{\\fldrslt " << dateToString(FALSE) << " }}\\par" << endl;
-		t << "\\page\\page";
-		DBG_RTF(t << "{\\comment End title page}" << endl)
+				t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to subtitle style
+			if (rtf_author)
+				t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt " << rtf_author << " }}\\par" << endl;
+			else
+				t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
 
-			// table of contents section
-			DBG_RTF(t << "{\\comment Table of contents}\n")
-			t << "\\vertalt\n";
-		t << rtf_Style_Reset << endl;
-		t << rtf_Style["Heading1"]->reference;
-		t << theTranslator->trRTFTableOfContents() << "\\par" << endl;
-		t << rtf_Style_Reset << "\\par" << endl;
-		t << "{\\field\\fldedit {\\*\\fldinst TOC \\\\f \\\\*MERGEFORMAT}{\\fldrslt Table of contents}}\\par\n";
-		t << rtf_Style_Reset << endl;
+			t << theTranslator->trVersion() << " " << Config_getString(PROJECT_NUMBER) << "\\par";
+			t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
+				"{\\fldrslt " << dateToString(FALSE) << " }}\\par" << endl;
+			t << "\\page\\page";
+			DBG_RTF(t << "{\\comment End title page}" << endl)
+
+				// table of contents section
+				DBG_RTF(t << "{\\comment Table of contents}\n")
+				t << "\\vertalt\n";
+			t << rtf_Style_Reset << endl;
+			t << rtf_Style["Heading1"]->reference;
+			t << theTranslator->trRTFTableOfContents() << "\\par" << endl;
+			t << rtf_Style_Reset << "\\par" << endl;
+			t << "{\\field\\fldedit {\\*\\fldinst TOC \\\\f \\\\*MERGEFORMAT}{\\fldrslt Table of contents}}\\par\n";
+			t << rtf_Style_Reset << endl;
+		}
       }
       break;
     case isMainPage:
@@ -940,13 +946,15 @@ void RTFGenerator::endIndexSection(IndexSections is)
       }
       break;
     case isEndIndex:
-      beginRTFChapter();
-      t << rtf_Style["Heading1"]->reference;
-      t << theTranslator->trRTFGeneralIndex() << "\\par "<< endl;
-      t << rtf_Style_Reset << endl;
-	  if (isTableOfContentEntriesEnabled()) t << "{\\tc \\v " << theTranslator->trRTFGeneralIndex() << "}" << endl;
-      t << "{\\field\\fldedit {\\*\\fldinst INDEX \\\\c2 \\\\*MERGEFORMAT}{\\fldrslt INDEX}}\n";
-
+			if (!Config_getBool(LATEX_HIDE_INDICES))
+			{
+				beginRTFChapter();
+				t << rtf_Style["Heading1"]->reference;
+				t << theTranslator->trRTFGeneralIndex() << "\\par " << endl;
+				t << rtf_Style_Reset << endl;
+				if (isTableOfContentEntriesEnabled()) t << "{\\tc \\v " << theTranslator->trRTFGeneralIndex() << "}" << endl;
+				t << "{\\field\\fldedit {\\*\\fldinst INDEX \\\\c2 \\\\*MERGEFORMAT}{\\fldrslt INDEX}}\n";
+			}
       break;
    }
 }
@@ -961,15 +969,17 @@ void RTFGenerator::writePageLink(const char *name,bool first)
 
 void RTFGenerator::lastIndexPage()
 {
-  DBG_RTF(t <<"{\\comment Beginning Body of RTF Document}\n")
-  // end page and setup for rest of document
-  t <<"\\sect \\sbkpage \\pgndec \\pgnrestart\n";
-  t <<"\\sect \\sectd \\sbknone\n";
+	DBG_RTF(t << "{\\comment Beginning Body of RTF Document}\n")
+	if (!isIncludableRtf())
+	{
+		// end page and setup for rest of document
+		t << "\\sect \\sbkpage \\pgndec \\pgnrestart\n";
+		t << "\\sect \\sectd \\sbknone\n";
 
-  // set new footer with arabic numbers
-  t <<"{\\footer "<< rtf_Style["Footer"]->reference << "{\\chpgn}}\n";
-  //t << rtf_Style["Heading1"]->reference << "\n";
-
+		// set new footer with arabic numbers
+		t << "{\\footer " << rtf_Style["Footer"]->reference << "{\\chpgn}}\n";
+		//t << rtf_Style["Heading1"]->reference << "\n";
+	}
 }
 
 void RTFGenerator::writeStyleInfo(int)
