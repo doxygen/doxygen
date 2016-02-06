@@ -849,7 +849,22 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
         out.addStr(title);
         out.addStr("\"");
       }
-    }
+
+			out.addStr("@image rtf ");
+			out.addStr(link.mid(fd ? 0 : 5));
+			if (!explicitTitle && !content.isEmpty())
+			{
+				out.addStr(" \"");
+				out.addStr(content);
+				out.addStr("\"");
+			}
+			else if ((content.isEmpty() || explicitTitle) && !title.isEmpty())
+			{
+				out.addStr(" \"");
+				out.addStr(title);
+				out.addStr("\"");
+			}
+		}
     else
     {
       out.addStr("<img src=\"");
