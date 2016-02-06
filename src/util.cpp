@@ -6836,6 +6836,11 @@ QCString stripPath(const char *s)
   return result;
 }
 
+void writeFileLink(OutputList& ol, const QCString &s)
+{
+	// TODO
+}
+
 /** returns \c TRUE iff string \a s contains word \a w */
 bool containsWord(const QCString &s,const QCString &word)
 {
