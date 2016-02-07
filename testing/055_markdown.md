@@ -20,3 +20,5 @@ More text
 [Upper-cased reference link on last line][U]
 
 [U]: http://example.com/last-line
+
+Dash - NDash -- MDash --- EDash \- ENDash \-- EMDash \--- E3Dash \-\-\-
