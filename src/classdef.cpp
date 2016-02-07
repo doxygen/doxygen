@@ -62,6 +62,15 @@ class ClassDefImpl
      */
     QCString fileName;
 
+    /*! file name used for the list of all members */
+    QCString memberListFileName;
+
+    /*! file name used for the collaboration diagram */
+    QCString collabFileName;
+
+    /*! file name used for the inheritance graph */
+    QCString inheritFileName;
+
     /*! Include information about the header file should be included
      *  in the documentation. 0 by default, set by setIncludeFile().
      */
@@ -296,6 +305,13 @@ ClassDef::ClassDef(
   m_impl->compType = ct;
   m_impl->isJavaEnum = isJavaEnum;
   m_impl->init(defFileName,name(),compoundTypeString(),fName);
+  m_impl->memberListFileName = convertNameToFile(compoundTypeString()+name()+"-members");
+  m_impl->collabFileName = convertNameToFile(m_impl->fileName+"_coll_graph");
+  m_impl->inheritFileName = convertNameToFile(m_impl->fileName+"_inherit_graph");
+  if (!lref)
+  {
+    m_impl->fileName = convertNameToFile(m_impl->fileName);
+  }
 }
 
 // destroy the class definition
@@ -306,7 +322,7 @@ ClassDef::~ClassDef()
 
 QCString ClassDef::getMemberListFileName() const
 {
-  return convertNameToFile(compoundTypeString()+name()+"-members");
+  return m_impl->memberListFileName;
 }
 
 QCString ClassDef::displayName(bool includeScope) const
@@ -3564,40 +3580,12 @@ QCString ClassDef::getOutputFileBase() const
     // point to the template of which this class is an instance
     return m_impl->templateMaster->getOutputFileBase();
   }
-  else if (isReference())
-  {
-    // point to the external location
-    return m_impl->fileName;
-  }
-  else
-  {
-    // normal locally defined class
-    return convertNameToFile(m_impl->fileName);
-  }
+  return m_impl->fileName;
 }
 
 QCString ClassDef::getInstanceOutputFileBase() const
 {
-  if (isReference())
-  {
-    return m_impl->fileName;
-  }
-  else
-  {
-    return convertNameToFile(m_impl->fileName);
-  }
-}
-
-QCString ClassDef::getFileBase() const
-{
-  if (m_impl->templateMaster)
-  {
-    return m_impl->templateMaster->getFileBase();
-  }
-  else
-  {
-    return m_impl->fileName;
-  }
+  return m_impl->fileName;
 }
 
 QCString ClassDef::getSourceFileBase() const
@@ -4613,15 +4601,9 @@ QCString ClassDef::anchor() const
       // point to the template of which this class is an instance
       anc = m_impl->templateMaster->getOutputFileBase();
     }
-    else if (isReference())
-    {
-      // point to the external location
-      anc = m_impl->fileName;
-    }
     else
     {
-      // normal locally defined class
-      anc = convertNameToFile(m_impl->fileName);
+      anc = m_impl->fileName;
     }
   }
   return anc;
@@ -4750,3 +4732,14 @@ bool ClassDef::isAnonymous() const
 {
   return m_impl->isAnonymous;
 }
+
+QCString ClassDef::collaborationGraphFileName() const
+{
+  return m_impl->collabFileName;
+}
+
+QCString ClassDef::inheritanceGraphFileName() const
+{
+  return m_impl->inheritFileName;
+}
+

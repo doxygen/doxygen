@@ -7027,8 +7027,8 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".ddl",      "idl");
   updateLanguageMapping(".odl",      "idl");
   updateLanguageMapping(".java",     "java");
-  updateLanguageMapping(".as",       "javascript");
-  updateLanguageMapping(".js",       "javascript");
+  //updateLanguageMapping(".as",       "javascript"); // not officially supported
+  //updateLanguageMapping(".js",       "javascript"); // not officially supported
   updateLanguageMapping(".cs",       "csharp");
   updateLanguageMapping(".d",        "d");
   updateLanguageMapping(".php",      "php");

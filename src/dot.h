@@ -180,7 +180,6 @@ class DotClassGraph
     void writeXML(FTextStream &t);
     void writeDocbook(FTextStream &t);
     void writeDEF(FTextStream &t);
-    QCString diskName() const;
     static void resetNumbering();
 
   private:
@@ -195,7 +194,8 @@ class DotClassGraph
     QDict<DotNode> *   m_usedNodes;
     static int         m_curNodeNumber;
     DotNode::GraphType m_graphType;
-    QCString           m_diskName;
+    QCString           m_collabFileName;
+    QCString           m_inheritFileName;
     bool               m_lrRank;
 };
 
@@ -223,7 +223,8 @@ class DotInclDepGraph
     DotNode        *m_startNode;
     QDict<DotNode> *m_usedNodes;
     static int      m_curNodeNumber;
-    QCString        m_diskName;
+    QCString        m_inclDepFileName;
+    QCString        m_inclByDepFileName;
     bool            m_inverse;
 };
 

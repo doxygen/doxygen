@@ -49,7 +49,7 @@ void FileName::generateDiskNames()
     {
       // name if unique, so diskname is simply the name
       //printf("!!!!!!!! Unique disk name=%s for fd=%s\n",name.data(),fd->diskname.data());
-      fd->m_diskName=name;
+      fd->setDiskName(name);
     }
   }
   else if (count>1) // multiple occurrences of the same file name
@@ -62,21 +62,22 @@ void FileName::generateDiskNames()
       for (it.toFirst();(fd=it.current()) && fd->isReference();++it) { }
       if (fd)
       {
-        char c=fd->m_path.at(i);
+        char c=fd->getPath().at(i);
         if (c=='/') j=i; // remember last position of dirname
         ++it;
         while ((fd=it.current()) && !found)
         {
+          QCString path = fd->getPath();
           if (!fd->isReference())
           {
             //printf("i=%d j=%d fd->path=`%s' fd->name=`%s'\n",i,j,fd->path.left(i).data(),fd->name().data());
-            if (i==(int)fd->m_path.length())
+            if (i==(int)path.length())
             {
               //warning("Input file %s found multiple times!\n"
               //        "         The generated documentation for this file may not be correct!\n",fd->absFilePath().data());
               found=TRUE;
             }
-            else if (fd->m_path[i]!=c)
+            else if (path[i]!=c)
             {
               found=TRUE;
             }
@@ -91,10 +92,11 @@ void FileName::generateDiskNames()
       //printf("fd->setName(%s)\n",(fd->path.right(fd->path.length()-j-1)+name).data());
       if (!fd->isReference())
       {
-        QCString prefix = fd->m_path.right(fd->m_path.length()-j-1);
+        QCString path   = fd->getPath();
+        QCString prefix = path.right(path.length()-j-1);
         fd->setName(prefix+name);
-        //printf("!!!!!!!! non unique disk name=%s for fd=%s\n",(prefix+name).data(),fd->diskname.data());
-        fd->m_diskName=prefix+name;
+        //printf("!!!!!!!! non unique disk name=%s:%s\n",prefix.data(),name.data());
+        fd->setDiskName(prefix+name);
       }
     }
   }

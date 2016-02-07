@@ -63,8 +63,6 @@ struct IncludeInfo
  */
 class FileDef : public Definition
 {
-  friend class FileName;
-
   public:
     //enum FileType { Source, Header, Unknown };
 
@@ -80,17 +78,18 @@ class FileDef : public Definition
     QCString displayName(bool=TRUE) const { return name(); }
     QCString fileName() const { return m_fileName; }
     
-    QCString getOutputFileBase() const 
-    { return convertNameToFile(m_diskName); }
+    QCString getOutputFileBase() const;
 
     QCString anchor() const { return QCString(); }
-
-    QCString getFileBase() const { return m_diskName; }
 
     QCString getSourceFileBase() const;
     
     /*! Returns the name of the verbatim copy of this file (if any). */
     QCString includeName() const;
+
+    QCString includeDependencyGraphFileName() const;
+
+    QCString includedByDependencyGraphFileName() const;
     
     /*! Returns the absolute path including the file name. */
     QCString absFilePath() const { return m_filePath; }
@@ -153,8 +152,8 @@ class FileDef : public Definition
     void writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu);
     void parseSource(bool sameTu,QStrList &filesInSameTu);
     void finishParsing();
+    void setDiskName(const QCString &name);
 
-    friend void generatedFileNames();
     void insertMember(MemberDef *md);
     void insertClass(ClassDef *cd);
     void insertNamespace(NamespaceDef *nd);
@@ -219,7 +218,9 @@ class FileDef : public Definition
     SDict<Definition>    *m_usingDeclList;
     QCString              m_path;
     QCString              m_filePath;
-    QCString              m_diskName;
+    QCString              m_inclDepFileName;
+    QCString              m_inclByDepFileName;
+    QCString              m_outputDiskName;
     QCString              m_fileName;
     QCString              m_docname;
     QIntDict<Definition> *m_srcDefDict;

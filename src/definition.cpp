@@ -1507,19 +1507,6 @@ QList<ListItemInfo> *Definition::xrefListItems() const
   return m_impl->xrefListItems;
 }
 
-
-QCString Definition::convertNameToFile(const char *name,bool allowDots) const
-{
-  if (!m_impl->ref.isEmpty())
-  {
-    return name;
-  }
-  else
-  {
-    return ::convertNameToFile(name,allowDots);
-  }
-}
-
 QCString Definition::pathFragment() const
 {
   QCString result;
