@@ -368,7 +368,7 @@ static void initTriDoubleQuoteBlock()
   docBlockContext   = YY_START;
   docBlockInBody    = FALSE;
   docBlockJavaStyle = TRUE;
-  docBlockSpecial   = yytext[3]=='!';
+  docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   docBlock.resize(0);
   g_doubleQuote = TRUE;
   startCommentBlock(FALSE);
@@ -379,7 +379,7 @@ static void initTriSingleQuoteBlock()
   docBlockContext   = YY_START;
   docBlockInBody    = FALSE;
   docBlockJavaStyle = TRUE;
-  docBlockSpecial   = yytext[3]=='!';
+  docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   docBlock.resize(0);
   g_doubleQuote = FALSE;
   startCommentBlock(FALSE);
@@ -470,8 +470,10 @@ IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*
 SCOPE             {IDENTIFIER}("."{IDENTIFIER})*
 BORDER            ([^A-Za-z0-9])
 
-TRISINGLEQUOTE    "'''"(!)?
-TRIDOUBLEQUOTE    "\"\"\""(!)?
+TRISINGLEQUOTE    {STRINGPREFIX}?"'''"(!)?
+TRIDOUBLEQUOTE    {STRINGPREFIX}?"\"\"\""(!)?
+ENDTRISINGLEQUOTE "'''"
+ENDTRIDOUBLEQUOTE "\"\"\""
 LONGSTRINGCHAR    [^\\"']
 ESCAPESEQ         ("\\")(.)
 LONGSTRINGITEM    ({LONGSTRINGCHAR}|{ESCAPESEQ})
@@ -1369,8 +1371,8 @@ STARTDOCSYMS      "##"
 }
 
 <TripleComment>{
-    {TRIDOUBLEQUOTE}   | 
-    {TRISINGLEQUOTE}   {
+    {ENDTRIDOUBLEQUOTE}   | 
+    {ENDTRISINGLEQUOTE}   {
 			  // printf("Expected module block %d special=%d\n",g_expectModuleDocs,g_specialBlock);
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {
@@ -1515,8 +1517,8 @@ STARTDOCSYMS      "##"
 }
 
 <TripleString>{
-    {TRIDOUBLEQUOTE}    | 
-    {TRISINGLEQUOTE}    {
+    {ENDTRIDOUBLEQUOTE}    | 
+    {ENDTRISINGLEQUOTE}    {
                           *g_copyString += yytext;
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {

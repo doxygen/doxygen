@@ -429,7 +429,7 @@ using structural commands:
 \endverbatim
 
 Make sure that the script is explicitly listed in the \ref cfg_input "INPUT" or
-that \ref cfg_file_patterns "FILE_PATTERNS" includes the `.sh` extention and the
+that \ref cfg_file_patterns "FILE_PATTERNS" includes the `.sh` extension and the
 the script can be found in the path set via \ref cfg_example_path "EXAMPLE_PATH".
 
 \subsection pythonblocks Comment blocks in Python

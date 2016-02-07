@@ -5,8 +5,8 @@
 % The following one or more lines contain information about
 % the maintainer(s) for the language (one line, one maintainer)
 % in the form: <readable name><colon><e-mail>
-% If the readable name name starts with '--' it will be displayed in HTML
-% output as a highlighted text notice related to the langluage (usually
+% If the readable name starts with '--' it will be displayed in HTML
+% output as a highlighted text notice related to the language (usually
 % '-- searching for the maintainer --').
 % If the <e-mail> is prefixed [some_text] it is not displayed in the table
 % of maintainers in the Doxygen documentation, nor it is used when building
