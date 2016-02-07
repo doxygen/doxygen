@@ -5358,6 +5358,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
  */
 QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
 {
+  if (name==0 || name[0]=='\0') return "";
   static bool shortNames = Config_getBool(SHORT_NAMES);
   static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
   QCString result;
