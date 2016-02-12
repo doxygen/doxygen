@@ -21,6 +21,43 @@ bool writeFileLink(OutputList& ol, const FileDef &fd)
 	return false;
 }
 
+QCString getFileUrl(const QString& path)
+{
+	QCString url = ConfigValues::instance().VERSION_CONTROL_URL;
+	if (!url.isEmpty())
+	{
+		QString absVersionControlRoot = QDir(ConfigValues::instance().VERSION_CONTROL_ROOT).absPath();
+		QString absPath = QFileInfo(path).absFilePath();
+		QString relativePath = absPath.mid(absVersionControlRoot.length());
+		if (!relativePath.isEmpty())
+		{
+			printf("%s\n", path.data());
+			printf("%s\n", relativePath.utf8().data());
+			url.sprintf(url, relativePath.utf8().data());
+			return url;
+		}
+	}
+
+	return QCString();
+}
+
+QCString getFileName(const QString& path)
+{
+	QCString url = ConfigValues::instance().VERSION_CONTROL_URL;
+	if (!url.isEmpty())
+	{
+		QString absVersionControlRoot = QDir(ConfigValues::instance().VERSION_CONTROL_ROOT).absPath();
+		QString absPath = QFileInfo(path).absFilePath();
+		QString relativePath = absPath.mid(absVersionControlRoot.length());
+		if (!relativePath.isEmpty())
+		{
+			return relativePath.utf8();
+		}
+	}
+
+	return QCString();
+}
+
 bool writeFileLink(OutputList& ol, const QCString &path)
 {
 	QCString url = ConfigValues::instance().VERSION_CONTROL_URL;
@@ -44,5 +81,21 @@ bool writeFileLink(OutputList& ol, const QCString &path)
 	ol.writeDoc(root, NULL, NULL);
 	delete root;
 	return true;
+}
+
+bool resolveFileLink(const QCString& currentFileName, const QCString& link, FileLink& outLink)
+{
+	QFileInfo file(currentFileName);
+	QFileInfo f(QDir(file.dirPath(true) + QString("/") + QString(link)).canonicalPath());
+	if (f.exists())
+	{
+		outLink.url = getFileUrl(f.absFilePath());
+		outLink.name = getFileName(f.absFilePath());
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 

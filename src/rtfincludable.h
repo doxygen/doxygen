@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <qstring.h>
+
 class OutputList;
 class FileDef;
 class QCString;
@@ -26,3 +28,11 @@ bool isTableOfContentEntriesEnabled();
 bool writeFileLink(OutputList& ol, const FileDef &fd);
 bool writeFileLink(OutputList& ol, const QCString& path);
 
+class FileLink
+{
+public:
+	QCString url;
+	QCString name;
+};
+
+bool resolveFileLink(const QCString& currentFileName, const QCString& link, FileLink& outLink);

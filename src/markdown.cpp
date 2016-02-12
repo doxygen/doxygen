@@ -49,6 +49,7 @@
 #include "config.h"
 #include "section.h"
 #include "message.h"
+#include "rtfincludable.h"
 
 //-----------
 
@@ -102,6 +103,8 @@ static int            g_lineNr;
 
 
 //----------
+
+QCString currentMarkdownFileName;
 
 const int codeBlockIndent = 4;
 
@@ -688,6 +691,8 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   }
 
   bool explicitTitle=FALSE;
+	FileLink fileLink;
+
   if (i<size && data[i]=='(') // inline link
   {
     i++;
@@ -719,7 +724,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     if (i>=size || data[i]=='\n') return 0;
     convertStringFragment(link,data+linkStart,i-linkStart);
     link = link.stripWhiteSpace();
-    //printf("processLink: link={%s}\n",link.data());
+    // printf("processLink: link={%s}\n",link.data());
     if (link.isEmpty()) return 0;
     if (link.at(link.length()-1)=='>') link=link.left(link.length()-1);
 
@@ -813,9 +818,20 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       isToc=TRUE;
       i=contentEnd;
     }
-    else
+		// [../../somefile.cpp] ref link to a source file
+		else if (resolveFileLink(currentMarkdownFileName, content, fileLink))
     {
-      return 0;
+				out.addStr("<a href=\"");
+				out.addStr(fileLink.url);
+				out.addStr("\"");
+				out.addStr(">");
+				processInline(out, fileLink.name, fileLink.name.length());
+				out.addStr("</a>");
+				return contentEnd + 1;
+		}
+		else
+		{
+				return 0;
     }
     i++;
   }
@@ -906,7 +922,12 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     }
     else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1) 
     { // file/url link
-      out.addStr("<a href=\"");
+			FileLink fileLink;
+			if (resolveFileLink(currentMarkdownFileName, link, fileLink))
+			{
+				link = fileLink.url;
+			}
+			out.addStr("<a href=\"");
       out.addStr(link);
       out.addStr("\"");
       if (!title.isEmpty())
@@ -2348,7 +2369,8 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
   s = processBlocks(s,refIndent);
   //printf("======== Blocks =========\n---- output -----\n%s\n---------\n",s.data());
   // finally process the inline markup (links, emphasis and code spans)
-  processInline(out,s,s.length());
+	currentMarkdownFileName = fileName;
+	processInline(out,s,s.length());
   out.addChar(0);
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n---------\n",qPrint(input),qPrint(out.get()));
   return out.get();
