@@ -45,8 +45,8 @@
 #include "namespacedef.h"
 #include "rtfincludable.h"
 
-//#define DBG_RTF(x) x;
-#define DBG_RTF(x)
+#define DBG_RTF(x) x;
+// #define DBG_RTF(x)
 
 static QCString dateToRTFDateString()
 {
@@ -294,10 +294,16 @@ void RTFGenerator::beginRTFChapter()
 {
   t <<"\n";
   DBG_RTF(t << "{\\comment BeginRTFChapter}\n")
-  t << rtf_Style_Reset;
 
-	if (!isIncludableRtf())
+	if (isIncludableRtf())
 	{
+		t << "{";
+		t << rtf_Style_Reset;
+	}
+	else
+	{
+		t << rtf_Style_Reset;
+
 		// if we are compact, no extra page breaks...
 		if (Config_getBool(COMPACT_RTF))
 		{
@@ -928,6 +934,11 @@ void RTFGenerator::endIndexSection(IndexSections is)
         //    first=FALSE;
         //  }
         //}
+
+				if (isIncludableRtf())
+				{
+					t << "\\par}";
+				}
       }
       break;
     case isPageDocumentation2:
@@ -952,7 +963,11 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
 void RTFGenerator::writePageLink(const char *name,bool first)
 {
-   if (first) t << "\\par " << rtf_Style_Reset << endl;
+	 if (!isIncludableRtf())
+	 {
+		 if (first) t << "\\par ";
+	 }
+	 t << rtf_Style_Reset << endl;
 	 t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
    t << name;
    t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
