@@ -202,7 +202,7 @@ void PageDef::writeDocumentation(OutputList &ol)
     writeToc(ol);
   }
 
-	writeFileLink(ol, this->getDefFileName());
+	writeGeneratedFromFile(ol, this->getDefFileName());
 
   writePageDocumentation(ol);
 

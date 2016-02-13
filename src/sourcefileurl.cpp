@@ -15,7 +15,7 @@
 *
 */
 
-#include "rtfincludable.h"
+#include "sourcefileurl.h"
 #include "OutputList.h"
 #include "config.h"
 #include "docparser.h"
@@ -41,16 +41,6 @@ QString urlEncode(const QString& value)
 	}
 
 	return escaped;
-}
-
-bool isIncludableRtf()
-{
-	return Config_getBool(INCLUDABLE_RTF);
-}
-
-bool isTableOfContentEntriesEnabled()
-{
-	return !isIncludableRtf();
 }
 
 bool writeFileLink(OutputList& ol, const FileDef &fd)

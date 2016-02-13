@@ -30,14 +30,10 @@ public:
 	QString name;
 };
 
-//! Determines URL and name of a file link that is specified relative to currentFileName
-bool resolveFileLink(const QString& currentFileName, const QString& link, FileLink& outLink);
+//! Determines URL and name of for relativeFileName which is specified relative to basePath
+bool resolveFileLink(const QString& relativeFileName, const QString& basePath, FileLink& outLink)
 
 bool writeFileLink(OutputList& ol, const FileDef &fd);
 
 //! Writes a paragraph that states from which file this content was generated.
 bool writeGeneratedFromFile(OutputList& ol, const QString& path);
-
-bool isIncludableRtf();
-bool isTableOfContentEntriesEnabled();
-
