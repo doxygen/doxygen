@@ -82,8 +82,7 @@ FileDef::FileDef(const char *p,const char *nm,
   m_path=p;
   m_filePath=m_path+nm;
   m_fileName=nm;
-  m_diskName=dn;
-  if (m_diskName.isEmpty()) m_diskName=nm;
+  setDiskName(dn?dn:nm);
   setReference(lref);
   m_classSDict        = 0;
   m_includeList       = 0;
@@ -123,6 +122,13 @@ FileDef::~FileDef()
   delete m_usingDirList;
   delete m_usingDeclList;
   delete m_memberGroupSDict;
+}
+
+void FileDef::setDiskName(const QCString &name)
+{
+  m_outputDiskName = convertNameToFile(name);
+  m_inclDepFileName = convertNameToFile(name+"_incl");
+  m_inclByDepFileName = convertNameToFile(name+"_dep_incl");
 }
 
 /*! Compute the HTML anchor names for all members in the class */ 
@@ -1769,15 +1775,20 @@ void FileDef::acquireFileVersion()
 
 
 QCString FileDef::getSourceFileBase() const
-{ 
+{
   if (Htags::useHtags)
   {
     return Htags::path2URL(m_filePath);
   }
   else
   {
-    return convertNameToFile(m_diskName)+"_source"; 
+    return m_outputDiskName+"_source";
   }
+}
+
+QCString FileDef::getOutputFileBase() const
+{
+  return m_outputDiskName;
 }
 
 /*! Returns the name of the verbatim copy of this file (if any). */
@@ -1916,3 +1927,14 @@ QCString FileDef::fileVersion() const
 {
   return m_fileVersion;
 }
+
+QCString FileDef::includeDependencyGraphFileName() const
+{
+  return m_inclDepFileName;
+}
+
+QCString FileDef::includedByDependencyGraphFileName() const
+{
+  return m_inclByDepFileName;
+}
+

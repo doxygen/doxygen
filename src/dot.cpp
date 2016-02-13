@@ -2953,7 +2953,8 @@ DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t)
   openNodeQueue.append(m_startNode);
   determineTruncatedNodes(openNodeQueue,t==DotNode::Inheritance);
 
-  m_diskName = cd->getFileBase().copy();
+  m_collabFileName = cd->collaborationGraphFileName();
+  m_inheritFileName = cd->inheritanceGraphFileName();
 }
 
 bool DotClassGraph::isTrivial() const
@@ -3071,27 +3072,6 @@ static bool updateDotGraph(DotNode *root,
   return checkAndUpdateMd5Signature(baseName,md5); // graph needs to be regenerated
 }
 
-QCString DotClassGraph::diskName() const
-{
-  QCString result=m_diskName.copy();
-  switch (m_graphType)
-  {
-    case DotNode::Collaboration:
-      result+="_coll_graph";
-      break;
-    //case Interface:
-    //  result+="_intf_graph";
-    //  break;
-    case DotNode::Inheritance:
-      result+="_inherit_graph";
-      break;
-    default:
-      ASSERT(0);
-      break;
-  }
-  return result;
-}
-
 QCString DotClassGraph::writeGraph(FTextStream &out,
                                GraphOutputFormat graphFormat,
                                EmbeddedOutputFormat textFormat,
@@ -3116,18 +3096,16 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
   {
     case DotNode::Collaboration:
       mapName="coll_map";
+      baseName=m_collabFileName;
       break;
-    //case Interface:
-    //  mapName="intf_map";
-    //  break;
     case DotNode::Inheritance:
       mapName="inherit_map";
+      baseName=m_inheritFileName;
       break;
     default:
       ASSERT(0);
       break;
   }
-  baseName = convertNameToFile(diskName());
 
   // derive target file names from baseName
   QCString imgExt = getDotImageExtension();
@@ -3425,8 +3403,9 @@ DotInclDepGraph::DotInclDepGraph(FileDef *fd,bool inverse)
 {
   m_inverse = inverse;
   ASSERT(fd!=0);
-  m_diskName  = fd->getFileBase().copy();
-  QCString tmp_url=fd->getReference()+"$"+fd->getFileBase();
+  m_inclDepFileName   = fd->includeDependencyGraphFileName();
+  m_inclByDepFileName = fd->includedByDependencyGraphFileName();
+  QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
   m_startNode = new DotNode(m_curNodeNumber++,
                             fd->docName(),
                             "",
@@ -3458,14 +3437,6 @@ DotInclDepGraph::~DotInclDepGraph()
   delete m_usedNodes;
 }
 
-QCString DotInclDepGraph::diskName() const
-{
-  QCString result=m_diskName.copy();
-  if (m_inverse) result+="_dep";
-  result+="_incl";
-  return convertNameToFile(result); 
-}
-
 QCString DotInclDepGraph::writeGraph(FTextStream &out,
                                  GraphOutputFormat graphFormat,
                                  EmbeddedOutputFormat textFormat,
@@ -3484,10 +3455,15 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   }
   static bool usePDFLatex = Config_getBool(USE_PDFLATEX);
 
-  QCString baseName=m_diskName;
-  if (m_inverse) baseName+="_dep";
-  baseName+="_incl";
-  baseName=convertNameToFile(baseName);
+  QCString baseName;
+  if (m_inverse)
+  {
+    baseName=m_inclByDepFileName;
+  }
+  else
+  {
+    baseName=m_inclDepFileName;
+  }
   QCString mapName=escapeCharsInString(m_startNode->m_label,FALSE);
   if (m_inverse) mapName+="dep";
 

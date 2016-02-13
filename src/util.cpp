@@ -5358,6 +5358,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
  */
 QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
 {
+  if (name==0 || name[0]=='\0') return "";
   static bool shortNames = Config_getBool(SHORT_NAMES);
   static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
   QCString result;
@@ -7038,8 +7039,8 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".ddl",      "idl");
   updateLanguageMapping(".odl",      "idl");
   updateLanguageMapping(".java",     "java");
-  updateLanguageMapping(".as",       "javascript");
-  updateLanguageMapping(".js",       "javascript");
+  //updateLanguageMapping(".as",       "javascript"); // not officially supported
+  //updateLanguageMapping(".js",       "javascript"); // not officially supported
   updateLanguageMapping(".cs",       "csharp");
   updateLanguageMapping(".d",        "d");
   updateLanguageMapping(".php",      "php");

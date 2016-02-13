@@ -42,7 +42,14 @@ NamespaceDef::NamespaceDef(const char *df,int dl,int dc,
 {
   if (fName)
   {
-    fileName = stripExtension(fName);
+    if (lref)
+    {
+      fileName = stripExtension(fName);
+    }
+    else
+    {
+      fileName = convertNameToFile(stripExtension(fName));
+    }
   }
   else
   {
@@ -90,8 +97,14 @@ NamespaceDef::~NamespaceDef()
 
 void NamespaceDef::setFileName(const QCString &fn)
 {
-  fileName="namespace";
-  fileName+=fn;
+  if (isReference())
+  {
+    fileName = "namespace"+fn;
+  }
+  else
+  {
+    fileName = convertNameToFile("namespace"+fn);
+  }
 }
 
 void NamespaceDef::distributeMemberGroupDocumentation()
@@ -796,16 +809,9 @@ void NamespaceDef::addUsingDeclaration(Definition *d)
   }
 }
 
-QCString NamespaceDef::getOutputFileBase() const 
-{ 
-  if (isReference())
-  {
-    return fileName;
-  }
-  else
-  {
-    return convertNameToFile(fileName); 
-  }
+QCString NamespaceDef::getOutputFileBase() const
+{
+  return fileName;
 }
 
 Definition *NamespaceDef::findInnerCompound(const char *n)

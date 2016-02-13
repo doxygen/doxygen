@@ -108,7 +108,6 @@ class ClassDef : public Definition
     /** Returns the unique base name (without extension) of the class's file on disk */
     QCString getOutputFileBase() const;
     QCString getInstanceOutputFileBase() const; 
-    QCString getFileBase() const;
 
     /** Returns the base name for the source code file */
     QCString getSourceFileBase() const; 
@@ -130,6 +129,12 @@ class ClassDef : public Definition
 
     /** returns TRUE if this class has a non-empty detailed description */
     bool hasDetailedDescription() const;
+    
+    /** returns the file name to use for the collaboration graph */
+    QCString collaborationGraphFileName() const;
+
+    /** returns the file name to use for the inheritance graph */
+    QCString inheritanceGraphFileName() const;
 
     /** Returns the name as it is appears in the documentation */
     QCString displayName(bool includeScope=TRUE) const;

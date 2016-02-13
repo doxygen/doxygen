@@ -61,7 +61,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
   }
   else
   {
-    fileName = (QCString)"group_"+na;
+    fileName = convertNameToFile(QCString("group_")+na);
   }
   setGroupTitle( t );
   memberGroupSDict = new MemberGroupSDict;
@@ -1509,16 +1509,9 @@ void addExampleToGroups(Entry *root,PageDef *eg)
   }
 }
 
-QCString GroupDef::getOutputFileBase() const 
-{ 
-  if (isReference())
-  {
-    return fileName;
-  }
-  else
-  {
-    return convertNameToFile(fileName); 
-  }
+QCString GroupDef::getOutputFileBase() const
+{
+  return fileName;
 }
 
 void GroupDef::addListReferences()

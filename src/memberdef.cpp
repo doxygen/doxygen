@@ -1422,6 +1422,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
   Definition *d=0;
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
+  if (d==gd) // see bug 753608
+  {
+    if (getClassDef())          d = getClassDef();
+    else if (getNamespaceDef()) d = getNamespaceDef();
+    else if (getFileDef())      d = getFileDef();
+  }
 
   //_writeTagData(compoundType);
   _addToSearchIndex();
@@ -2553,11 +2559,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   QCString scopeName = scName;
   QCString memAnchor = anchor();
   QCString ciname = container->name();
+  Definition *scopedContainer = container; // see bug 753608
   if (container->definitionType()==TypeGroup)
   {
-    if (getClassDef())          scopeName=getClassDef()->displayName();
-    else if (getNamespaceDef()) scopeName=getNamespaceDef()->displayName();
-    else if (getFileDef())      scopeName=getFileDef()->displayName();
+    if (getClassDef())          { scopeName=getClassDef()->displayName();     scopedContainer=getClassDef(); }
+    else if (getNamespaceDef()) { scopeName=getNamespaceDef()->displayName(); scopedContainer=getNamespaceDef(); }
+    else if (getFileDef())      { scopeName=getFileDef()->displayName();      scopedContainer=getFileDef(); }
     ciname = ((GroupDef *)container)->groupTitle();
   }
   else if (container->definitionType()==TypeFile && getNamespaceDef())
@@ -2616,7 +2623,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   bool htmlEndLabelTable=FALSE;
   QStrList sl;
-  getLabels(sl,container);
+  getLabels(sl,scopedContainer);
 
   if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
   {
@@ -2630,9 +2637,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
         ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
-        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.left(i));
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
-        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-i-l));
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.right(ldef.length()-i-l));
 
         found=TRUE;
       }
@@ -2657,7 +2664,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       // last ei characters of ldef contain pointer/reference specifiers
       int ni=ldef.find("::",si);
       if (ni>=ei) ei=ni+2;
-      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-ei));
+      linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.right(ldef.length()-ei));
     }
   }
   else // not an enum value or anonymous compound
@@ -2767,12 +2774,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
     if (optVhdl)
     {
-      hasParameterList=VhdlDocGen::writeVHDLTypeDocumentation(this,container,ol);
+      hasParameterList=VhdlDocGen::writeVHDLTypeDocumentation(this,scopedContainer,ol);
     }
     else
     {
       linkifyText(TextGeneratorOLImpl(ol),
-                  container,
+                  scopedContainer,
                   getBodyDef(),
                   this,
                   substitute(ldef,"::",sep)
@@ -2789,12 +2796,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         //ol.docify(" = ");
         ol.docify(" ");
         QCString init = m_impl->initializer.simplifyWhiteSpace();
-        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,init);
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,init);
       }
       else
       {
         ol.writeNonBreakableSpace(3);
-        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,m_impl->initializer);
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,m_impl->initializer);
       }
     }
     if (excpString()) // add exception list
@@ -2902,7 +2909,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   {
     ol.startParagraph();
     ol.generateDoc(briefFile(),briefLine(),
-                getOuterScope()?getOuterScope():container,this,
+                scopedContainer,this,
                 brief,FALSE,FALSE,0,TRUE,FALSE);
     ol.endParagraph();
   }
@@ -2919,13 +2926,13 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     else
     {
-      ol.generateDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,detailed+"\n",TRUE,FALSE);
+      ol.generateDoc(docFile(),docLine(),scopedContainer,this,detailed+"\n",TRUE,FALSE);
     }
 
     if (!inbodyDocumentation().isEmpty())
     {
       ol.generateDoc(inbodyFile(),inbodyLine(),
-                  getOuterScope()?getOuterScope():container,this,
+                  scopedContainer,this,
                   inbodyDocumentation()+"\n",TRUE,FALSE);
     }
   }
@@ -2934,7 +2941,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   {
     if (!inbodyDocumentation().isEmpty())
     {
-      ol.generateDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,inbodyDocumentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(inbodyFile(),inbodyLine(),scopedContainer,this,inbodyDocumentation()+"\n",TRUE,FALSE);
     }
   }
 
@@ -2959,7 +2966,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     // feed the result to the documentation parser
     ol.generateDoc(
         docFile(),docLine(),
-        getOuterScope()?getOuterScope():container,
+        scopedContainer,
         this,         // memberDef
         paramDocs,    // docStr
         TRUE,         // indexWords
@@ -2968,7 +2975,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   }
 
-  _writeEnumValues(ol,container,cfname,ciname,cname);
+  _writeEnumValues(ol,scopedContainer,cfname,ciname,cname);
   _writeReimplements(ol);
   _writeReimplementedBy(ol);
   _writeCategoryRelation(ol);
