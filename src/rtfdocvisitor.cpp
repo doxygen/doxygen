@@ -1015,17 +1015,17 @@ void RTFDocVisitor::visitPre(DocHtmlHeader *header)
   heading.sprintf("Heading%d",level);
   // set style
   m_t << rtf_Style[heading]->reference;
-  // make table of contents entry
-  m_t << "{\\tc\\tcl \\v " << level << "}";
+  // make open table of contents entry that will be closed in visitPost method
+  m_t << "{\\tc\\tcl" << level << " ";
   m_lastIsPara=FALSE;
-  
 }
 
 void RTFDocVisitor::visitPost(DocHtmlHeader *) 
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocHtmlHeader)}\n");
-  m_t << "\\par";
+  // close open table of contens entry
+  m_t << "} \\par";
   m_t << "}" << endl; // end section
   m_lastIsPara=TRUE;
 }
