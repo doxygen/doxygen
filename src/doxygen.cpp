@@ -2052,7 +2052,7 @@ static void findUsingDeclarations(EntryNav *rootNav)
       // file scope).
 
       QCString name = substitute(root->name,".","::"); //Java/C# scope->internal
-      usingCd = getClass(name);
+      usingCd = getResolvedClass(nd,fd,name);
       if (usingCd==0)
       {
         usingCd = Doxygen::hiddenClasses->find(name);
