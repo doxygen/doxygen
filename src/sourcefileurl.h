@@ -31,7 +31,7 @@ public:
 };
 
 //! Determines URL and name of for relativeFileName which is specified relative to basePath
-bool resolveFileLink(const QString& relativeFileName, const QString& basePath, FileLink& outLink)
+bool resolveFileLink(const QString& basePath, const QString& relativeFileName, FileLink& outLink);
 
 bool writeFileLink(OutputList& ol, const FileDef &fd);
 

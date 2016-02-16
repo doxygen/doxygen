@@ -49,7 +49,7 @@
 #include "config.h"
 #include "section.h"
 #include "message.h"
-#include "rtfincludable.h"
+#include "sourcefileurl.h"
 
 //-----------
 
@@ -691,7 +691,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   }
 
   bool explicitTitle=FALSE;
-	FileLink fileLink;
+  FileLink fileLink;
 
   if (i<size && data[i]=='(') // inline link
   {
@@ -802,17 +802,17 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     }
     i++;
   }
-	else if (resolveFileLink(currentMarkdownFileName, content, fileLink)) 	// [../../somefile.cpp] ref link to a source file
-	{
-		out.addStr("<a href=\"");
-		out.addStr(fileLink.url.utf8());
-		out.addStr("\"");
-		out.addStr(">");
-		processInline(out, fileLink.name.utf8(), fileLink.name.length());
-		out.addStr("</a>");
-		return contentEnd + 1;
-	}
-	else if (i<size && data[i]!=':' && !content.isEmpty()) // minimal link ref notation [some id]
+  else if (resolveFileLink(currentMarkdownFileName, content, fileLink)) 	// [../../somefile.cpp] ref link to a source file
+  {
+    out.addStr("<a href=\"");
+    out.addStr(fileLink.url.utf8());
+    out.addStr("\"");
+    out.addStr(">");
+    processInline(out, fileLink.name.utf8(), fileLink.name.length());
+    out.addStr("</a>");
+    return contentEnd + 1;
+  }
+  else if (i < size && data[i] != ':' && !content.isEmpty()) // minimal link ref notation [some id]
   {
     LinkRef *lr = g_linkRefs.find(content.lower());
     //printf("processLink: minimal link {%s} lr=%p",content.data(),lr);
@@ -921,12 +921,12 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     }
     else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1) 
     { // file/url link
-			FileLink fileLink;
-			if (resolveFileLink(currentMarkdownFileName, link, fileLink))
-			{
-				link = fileLink.url.utf8();
-			}
-			out.addStr("<a href=\"");
+      FileLink fileLink;
+      if (resolveFileLink(currentMarkdownFileName, link, fileLink))
+      {
+        link = fileLink.url.utf8();
+      }
+      out.addStr("<a href=\"");
       out.addStr(link);
       out.addStr("\"");
       if (!title.isEmpty())

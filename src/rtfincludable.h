@@ -17,27 +17,6 @@
 
 #pragma once
 
-#include <qstring.h>
-
-class OutputList;
-class FileDef;
-class QCString;
-
-class FileLink
-{
-public:
-	QString url;
-	QString name;
-};
-
-//! Determines URL and name of a file link that is specified relative to currentFileName
-bool resolveFileLink(const QString& currentFileName, const QString& link, FileLink& outLink);
-
-bool writeFileLink(OutputList& ol, const FileDef &fd);
-
-//! Writes a paragraph that states from which file this content was generated.
-bool writeGeneratedFromFile(OutputList& ol, const QString& path);
-
 bool isIncludableRtf();
 bool isTableOfContentEntriesEnabled();
 

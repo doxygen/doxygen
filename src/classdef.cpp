@@ -44,7 +44,7 @@
 #include "filedef.h"
 #include "namespacedef.h"
 #include "membergroup.h"
-#include "rtfincludable.h"
+#include "sourcefileurl.h"
 
 //-----------------------------------------------------------------------------
 

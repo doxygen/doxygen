@@ -3951,20 +3951,20 @@ static void writeIndex(OutputList &ol)
         ol.endIndexSection(isPageDocumentation);
 
         if (isTableOfContentEntriesEnabled())
-				{
-					ol.pushGeneratorState(); // write TOC title (RTF only)
-						ol.disableAllBut(OutputGenerator::RTF);
-						ol.startIndexSection(isPageDocumentation2);
-						ol.parseText(title);
-						ol.endIndexSection(isPageDocumentation2);
-					ol.popGeneratorState();
-				}
+        {
+            ol.pushGeneratorState(); // write TOC title (RTF only)
+            ol.disableAllBut(OutputGenerator::RTF);
+            ol.startIndexSection(isPageDocumentation2);
+            ol.parseText(title);
+            ol.endIndexSection(isPageDocumentation2);
+            ol.popGeneratorState();
+        }
 
         ol.writeAnchor(0,pd->getOutputFileBase());
 
-				ol.writePageLink(pd->getOutputFileBase(),first);
+        ol.writePageLink(pd->getOutputFileBase(),first);
 
-				first=FALSE;
+        first=FALSE;
 
         if (isCitationPage)
         {
