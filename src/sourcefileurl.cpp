@@ -61,6 +61,7 @@ bool writeGeneratedFromFile(OutputList& ol, const QString& path)
   para->children().append(new DocWord(para, "Generated from "));
   DocHRef* href = new DocHRef(para, HtmlAttribList(), link.url.utf8(), QCString()); para->children().append(href);
   DocWord* word = new DocWord(href, link.name.utf8()); href->children().append(word);
+  para->children().append(new DocWord(para, "."));
   ol.writeDoc(root, NULL, NULL);
   delete root;
   return true;
