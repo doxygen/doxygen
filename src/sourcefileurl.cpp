@@ -19,6 +19,7 @@
 #include "OutputList.h"
 #include "config.h"
 #include "docparser.h"
+#include "filedef.h"
 #include <qdir.h>
 #include <qregexp.h>
 
@@ -45,7 +46,19 @@ QString urlEncode(const QString& value)
 
 bool writeFileLink(OutputList& ol, const FileDef &fd)
 {
-  return false;
+  FileLink link;
+  if (!resolveFileLink(QDir::current().absPath(), QString(fd.absFilePath()), link))
+  {
+    return false;
+  }
+
+  DocRoot* root = new DocRoot(false, false);
+  DocPara* para = new DocPara(root); root->children().append(para);
+  DocHRef* href = new DocHRef(para, HtmlAttribList(), link.url.utf8(), QCString()); para->children().append(href);
+  DocWord* word = new DocWord(href, link.name.utf8()); href->children().append(word);
+  ol.writeDoc(root, NULL, NULL);
+  delete root;
+  return true;
 }
 
 bool writeGeneratedFromFile(OutputList& ol, const QString& path)
