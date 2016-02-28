@@ -5027,8 +5027,23 @@ class TemplateEngine::Private
       //printf("loadByName(%s,%d) {\n",fileName.data(),line);
       m_includeStack.append(new IncludeEntry(IncludeEntry::Template,fileName,QCString(),line));
       Template *templ = m_templateCache.find(fileName);
-      if (templ==0)
+      if (templ==0) // first time template is referenced
       {
+        QCString filePath = m_templateDirName+"/"+fileName;
+        QFile f(filePath);
+        if (f.open(IO_ReadOnly))
+        {
+           QFileInfo fi(filePath);
+           int size=fi.size();
+           QCString data(size+1);
+           if (f.readBlock(data.rawData(),size)==size)
+           {
+             templ = new TemplateImpl(m_engine,filePath,data,m_extension);
+             m_templateCache.insert(fileName,templ);
+             return templ;
+           }
+        }
+        // fallback to default built-in template
         const QCString data = ResourceMgr::instance().getAsString(fileName);
         if (!data.isEmpty())
         {
@@ -5101,12 +5116,18 @@ class TemplateEngine::Private
       return m_extension;
     }
 
+    void setTemplateDir(const char *dirName)
+    {
+      m_templateDirName = dirName;
+    }
+
   private:
     QDict<Template> m_templateCache;
     //mutable int m_indent;
     TemplateEngine *m_engine;
     QList<IncludeEntry> m_includeStack;
     QCString m_extension;
+    QCString m_templateDirName;
 };
 
 TemplateEngine::TemplateEngine()
@@ -5164,5 +5185,9 @@ QCString TemplateEngine::outputExtension() const
   return p->outputExtension();
 }
 
+void TemplateEngine::setTemplateDir(const char *dirName)
+{
+  p->setTemplateDir(dirName);
+}
 
 

@@ -590,6 +590,9 @@ class TemplateEngine
     /** Prints the current template file include stack */
     void printIncludeContext(const char *fileName,int line) const;
 
+    /** Sets the search directory where to look for template files */
+    void setTemplateDir(const char *dirName);
+
   private:
     friend class TemplateNodeBlock;
     friend class TemplateNodeCreate;

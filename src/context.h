@@ -1347,5 +1347,6 @@ class SearchIndicesContext : public RefCountedContext, public TemplateListIntf
 //----------------------------------------------------
 
 void generateOutputViaTemplate();
+void generateTemplateFiles(const char *templateDir);
 
 #endif

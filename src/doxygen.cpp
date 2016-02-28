@@ -10417,6 +10417,13 @@ void readConfiguration(int argc, char **argv)
 
   Config::init();
 
+  if (genConfig && g_useOutputTemplate)
+  {
+    generateTemplateFiles("templates");
+    cleanUpDoxygen();
+    exit(0);
+  }
+
   if (genConfig)
   {
     generateConfigFile(configName,shortList);

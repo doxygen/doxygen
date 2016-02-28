@@ -46,11 +46,10 @@
 #include "arguments.h"
 #include "groupdef.h"
 #include "searchindex.h"
+#include "resourcemgr.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
-
-#define ADD_PROPERTY(name) addProperty(#name,this,&Private::name);
 
 enum ContextOutputFormat
 {
@@ -10168,6 +10167,7 @@ void generateOutputViaTemplate()
 
       //if (Config_getBool(GENERATE_HTML))
       { // render HTML output
+        e.setTemplateDir("templates/html"); // TODO: make template part user configurable
         Template *tpl = e.loadByName("htmllayout.tpl",1);
         if (tpl)
         {
@@ -10192,6 +10192,7 @@ void generateOutputViaTemplate()
       //if (Config_getBool(GENERATE_LATEX))
       if (0)
       { // render LaTeX output
+        e.setTemplateDir("templates/latex"); // TODO: make template part user configurable
         Template *tpl = e.loadByName("latexlayout.tpl",1);
         if (tpl)
         {
@@ -10241,3 +10242,20 @@ void generateOutputViaTemplate()
 #endif
 }
 
+void generateTemplateFiles(const char *templateDir)
+{
+  if (!templateDir) return;
+  QDir thisDir;
+  if (!thisDir.exists(templateDir) && !thisDir.mkdir(templateDir))
+  {
+    err("Failed to create output directory '%s'\n",templateDir);
+    return;
+  }
+  QCString outDir = QCString(templateDir)+"/html";
+  if (!thisDir.exists(outDir) && !thisDir.mkdir(outDir))
+  {
+    err("Failed to create output directory '%s'\n",templateDir);
+    return;
+  }
+  ResourceMgr::instance().writeCategory("html",outDir);
+}
