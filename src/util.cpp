@@ -6737,6 +6737,7 @@ QCString latexEscapePDFString(const char *s)
       case '\\': t << "\\textbackslash{}"; break;
       case '{':  t << "\\{"; break;
       case '}':  t << "\\}"; break;
+      case '_':  t << "\\_"; break;
       default:
         t << c;
         break;
