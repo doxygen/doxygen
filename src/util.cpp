@@ -6738,6 +6738,8 @@ QCString latexEscapePDFString(const char *s)
       case '{':  t << "\\{"; break;
       case '}':  t << "\\}"; break;
       case '_':  t << "\\_"; break;
+      case '%':  t << "\\%"; break;
+      case '&':  t << "\\&"; break;
       default:
         t << c;
         break;
