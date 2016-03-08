@@ -2077,11 +2077,11 @@ void MemberDef::_writeCallGraph(OutputList &ol)
     {
       msg("Generating call graph for function %s\n",qPrint(qualifiedName()));
       ol.disable(OutputGenerator::Man);
-      ol.startParagraph();
       ol.startCallGraph();
+      ol.startParagraph();
       ol.parseText(theTranslator->trCallGraph());
-      ol.endCallGraph(callGraph);
       ol.endParagraph();
+      ol.endCallGraph(callGraph);
       ol.enableAll();
     }
   }
@@ -2102,11 +2102,11 @@ void MemberDef::_writeCallerGraph(OutputList &ol)
     {
       msg("Generating caller graph for function %s\n",qPrint(qualifiedName()));
       ol.disable(OutputGenerator::Man);
-      ol.startParagraph();
       ol.startCallGraph();
+      ol.startParagraph();
       ol.parseText(theTranslator->trCallerGraph());
-      ol.endCallGraph(callerGraph);
       ol.endParagraph();
+      ol.endCallGraph(callerGraph);
       ol.enableAll();
     }
   }
