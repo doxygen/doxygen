@@ -17,10 +17,10 @@
         </inbodydescription>
         <location file="064_castoperator.cpp" line="22" column="1"/>
       </memberdef>
-      <memberdef kind="function" id="struct_foo_1a870f369cc7af9489418451e78d8bd539" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="struct_foo_1a1cd30e67501c6ff12bd6bf17af081449" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
         <type/>
         <definition>Foo::operator int</definition>
-        <argsstring>() const </argsstring>
+        <argsstring>() const</argsstring>
         <name>operator int</name>
         <briefdescription>
           <para>Conversion to int const. </para>
@@ -71,27 +71,27 @@
           </listitem>
           <listitem>
             <para>
-              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">operator int() const</ref>
+              <ref refid="struct_foo_1a1cd30e67501c6ff12bd6bf17af081449" kindref="member">operator int() const</ref>
             </para>
           </listitem>
           <listitem>
             <para>
-              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">title</ref>
+              <ref refid="struct_foo_1a1cd30e67501c6ff12bd6bf17af081449" kindref="member">title</ref>
             </para>
           </listitem>
           <listitem>
             <para>
-              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">Foo::operator int() const</ref>
+              <ref refid="struct_foo_1a1cd30e67501c6ff12bd6bf17af081449" kindref="member">Foo::operator int() const</ref>
             </para>
           </listitem>
           <listitem>
             <para>
-              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">Foo::operator int() const</ref>
+              <ref refid="struct_foo_1a1cd30e67501c6ff12bd6bf17af081449" kindref="member">Foo::operator int() const</ref>
             </para>
           </listitem>
           <listitem>
             <para>
-              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">title</ref>
+              <ref refid="struct_foo_1a1cd30e67501c6ff12bd6bf17af081449" kindref="member">title</ref>
             </para>
           </listitem>
         </itemizedlist>
@@ -103,7 +103,7 @@
         <scope>Foo</scope>
         <name>operator int</name>
       </member>
-      <member refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" prot="public" virt="non-virtual">
+      <member refid="struct_foo_1a1cd30e67501c6ff12bd6bf17af081449" prot="public" virt="non-virtual">
         <scope>Foo</scope>
         <name>operator int</name>
       </member>

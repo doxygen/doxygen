@@ -3,10 +3,10 @@
   <compounddef id="namespaceoo_1_1define" kind="namespace" language="Tcl">
     <compoundname>oo::define</compoundname>
     <sectiondef kind="func">
-      <memberdef kind="function" id="namespaceoo_1_1define_1a89e7ea222a316f1926c1f9f30f2cc5c1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespaceoo_1_1define_1a92656f535365dc915e04ca81bc8eb91b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type/>
         <definition>oo::define::classmethod</definition>
-        <argsstring>name?args??body?</argsstring>
+        <argsstring>name ?args? ?body?</argsstring>
         <name>classmethod</name>
         <briefdescription>
         </briefdescription>
