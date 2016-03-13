@@ -1648,198 +1648,275 @@ static bool findOperator2(const QCString &s,int i)
   return TRUE;
 }
 
-static const char constScope[]   = { 'c', 'o', 'n', 's', 't', ':' };
-static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
+static const char constScope[]    = { 'c', 'o', 'n', 's', 't', ':' };
+static const char virtualScope[]  = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
+static const char operatorScope[] = { 'o', 'p', 'e', 'r', 'a', 't', 'o', 'r', '?', '?', '?' };
+
+struct CharAroundSpace
+{
+  CharAroundSpace()
+  {
+    charMap['('].before=FALSE;
+    charMap['='].before=FALSE;
+    charMap['&'].before=FALSE;
+    charMap['*'].before=FALSE;
+    charMap['['].before=FALSE;
+    charMap['|'].before=FALSE;
+    charMap['+'].before=FALSE;
+    charMap[';'].before=FALSE;
+    charMap[':'].before=FALSE;
+    charMap['/'].before=FALSE;
+
+    charMap['='].after=FALSE;
+    charMap[' '].after=FALSE;
+    charMap[']'].after=FALSE;
+    charMap['\t'].after=FALSE;
+    charMap['\n'].after=FALSE;
+    charMap[')'].after=FALSE;
+    charMap[','].after=FALSE;
+    charMap['<'].after=FALSE;
+    charMap['|'].after=FALSE;
+    charMap['+'].after=FALSE;
+    charMap['('].after=FALSE;
+    charMap['/'].after=FALSE;
+  }
+  struct CharElem
+  {
+    CharElem() : before(TRUE), after(TRUE) {}
+    bool before;
+    bool after;
+  };
+
+  CharElem charMap[256];
+};
+
+static CharAroundSpace g_charAroundSpace;
 
 // Note: this function is not reentrant due to the use of static buffer!
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
   static bool cliSupport = Config_getBool(CPP_CLI_SUPPORT);
   static bool vhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-   
+
   if (s.isEmpty() || vhdl) return s;
-  static GrowBuf growBuf;
-  //int resultLen = 1024;
-  //int resultPos = 0;
-  //QCString result(resultLen);
-  // we use growBuf.addChar(c) instead of result+=c to 
+
+  // We use a static character array to
   // improve the performance of this function
-  growBuf.clear();
-  uint i;
+  static char *growBuf = 0;
+  static int growBufLen = 0;
+  if (s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
+  {
+    growBufLen = s.length()*3;
+    growBuf = (char *)realloc(growBuf,growBufLen+1); // add 1 for 0-terminator
+  }
+  if (growBuf==0) return s; // should not happen, only we run out of memory
+
+  char *src=s.rawData();
+  char *dst=growBuf;
+
+  uint i=0;
   uint l=s.length();
   uint csp=0;
   uint vsp=0;
+  uint osp=0;
   char c;
-  for (i=0;i<l;i++)
+  char pc=0;
+  // skip leading whitespace
+  while (i<l && isspace(src[i]))
   {
-nextChar:
-    c=s.at(i);
+    i++;
+  }
+  for (;i<l;i++)
+  {
+    c=src[i];
+    char nc=i<l-1 ? src[i+1] : ' ';
 
     // search for "const"
     if (csp<6 && c==constScope[csp] && // character matches substring "const"
-         (csp>0 ||                     // if it is the first character 
-          i==0  ||                     // the previous may not be a digit
-          !isId(s.at(i-1))
+         (csp>0 ||                     // inside search string
+          i==0  ||                     // if it is the first character
+          !isId(pc)                    // the previous may not be a digit
          )
        )
-      csp++; 
+      csp++;
     else // reset counter
       csp=0;
 
     // search for "virtual"
     if (vsp<8 && c==virtualScope[vsp] && // character matches substring "virtual"
-         (vsp>0 ||                       // if it is the first character
-          i==0  ||                       // the previous may not be a digit 
-          !isId(s.at(i-1))
+         (vsp>0 ||                       // inside search string
+          i==0  ||                       // if it is the first character
+          !isId(pc)                      // the previous may not be a digit
          )
        )
       vsp++;
     else // reset counter
       vsp=0;
 
-    if (c=='"') // quoted string
+    // search for "operator"
+    if (osp<11 && (osp>=8 || c==operatorScope[osp]) && // character matches substring "operator" followed by 3 arbitrary characters
+        (osp>0 ||                         // inside search string
+         i==0 ||                          // if it is the first character
+         !isId(pc)                        // the previous may not be a digit
+        )
+       )
+      osp++;
+    else // reset counter
+      osp=0;
+
+    switch(c)
     {
-      i++;
-      growBuf.addChar(c);
-      while (i<l)
-      {
-        char cc=s.at(i);
-        growBuf.addChar(cc);
-        if (cc=='\\') // escaped character
-        { 
-          growBuf.addChar(s.at(i+1));
-          i+=2;
+      case '"': // quoted string
+        {
+          *dst++=c;
+          pc = c;
+          i++;
+          for (;i<l;i++) // find end of string
+          {
+            c = src[i];
+            *dst++=c;
+            if (c=='\\' && i+1<l)
+            {
+              pc = c;
+              i++;
+              c = src[i];
+              *dst+=c;
+            }
+            else if (c=='"')
+            {
+              break;
+            }
+            pc = c;
+          }
         }
-        else if (cc=='"') // end of string
-        { i++; goto nextChar; }
-        else // any other character
-        { i++; }
-      }
-    }
-    else if (i<l-2 && c=='<' &&  // current char is a <
-        (isId(s.at(i+1)) || isspace((uchar)s.at(i+1))) && // next char is an id char or space
-        (i<8 || !findOperator(s,i)) // string in front is not "operator"
-        )
-    {
-      growBuf.addChar('<');
-      growBuf.addChar(' ');
-    }
-    else if (i>0 && c=='>' && // current char is a >
-        (isId(s.at(i-1)) || isspace((uchar)s.at(i-1)) || s.at(i-1)=='*' || s.at(i-1)=='&' || s.at(i-1)=='.') && // prev char is an id char or space
-        (i<8 || !findOperator(s,i)) // string in front is not "operator"
-        )
-    {
-      growBuf.addChar(' ');
-      growBuf.addChar('>');
-    }
-    else if (i>0 && c==',' && !isspace((uchar)s.at(i-1))
-        && ((i<l-1 && (isId(s.at(i+1)) || s.at(i+1)=='[')) // the [ is for attributes (see bug702170)
-          || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))  // for PHP
-          || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3)))))  // for PHP
-    {
-      growBuf.addChar(',');
-      growBuf.addChar(' ');
-    }
-    else if (i>0 &&
-         (
-          (s.at(i-1)==')' && isId(c)) // ")id" -> ") id"
-          ||
-          (c=='\''  && s.at(i-1)==' ')  // "'id" -> "' id"
-          ||
-          (i>1 && s.at(i-2)==' ' && s.at(i-1)==' ') // "  id" -> " id"
-         )
-        )
-    {
-      growBuf.addChar(' ');
-      growBuf.addChar(c);
-    }
-    else if (c=='t' && csp==5 /*&& (i<5 || !isId(s.at(i-5)))*/ &&
-             !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || 
-               s.at(i+1)==')' || 
-               s.at(i+1)==',' || 
-               s.at(i+1)=='\0'
-              )
-            ) 
-      // prevent const ::A from being converted to const::A
-    {
-      growBuf.addChar('t');
-      growBuf.addChar(' ');
-      if (s.at(i+1)==' ') i++;
-      csp=0;
-    }
-    else if (c==':' && csp==6 /*&& (i<6 || !isId(s.at(i-6)))*/) 
-      // replace const::A by const ::A
-    {
-      growBuf.addChar(' ');
-      growBuf.addChar(':');
-      csp=0;
-    }
-    else if (c=='l' && vsp==7 /*&& (i<7 || !isId(s.at(i-7)))*/ &&
-             !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || 
-               s.at(i+1)==')' || 
-               s.at(i+1)==',' || 
-               s.at(i+1)=='\0'
-              )
-            ) 
-      // prevent virtual ::A from being converted to virtual::A
-    {
-      growBuf.addChar('l');
-      growBuf.addChar(' ');
-      if (s.at(i+1)==' ') i++;
-      vsp=0;
-    }
-    else if (c==':' && vsp==8 /*&& (i<8 || !isId(s.at(i-8)))*/) 
-      // replace virtual::A by virtual ::A
-    {
-      growBuf.addChar(' ');
-      growBuf.addChar(':');
-      vsp=0;
-    }
-    else if (!isspace((uchar)c) || // not a space
-          ( i>0 && i<l-1 &&          // internal character
-            (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']') && 
-            (isId(s.at(i+1)) || 
-             (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2))) || 
-             (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3)))
+        break;
+      case '<': // current char is a <
+        *dst++=c;
+        if (i<l-1 &&
+            (isId(nc)) && // next char is an id char
+            (osp<8) // string in front is not "operator"
+           )
+        {
+          *dst++=' '; // add extra space
+        }
+        break;
+      case '>': // current char is a >
+        if (i>0 && !isspace((uchar)pc) &&
+            (isId(pc) || pc=='*' || pc=='&' || pc=='.') && // prev char is an id char or space or *&.
+            (osp<8 || (osp==8 && pc!='-')) // string in front is not "operator>" or "operator->"
+           )
+        {
+          *dst++=' '; // add extra space in front
+        }
+        *dst++=c;
+        if (i<l-1 && (nc=='-' || nc=='&')) // '>-' -> '> -'
+        {
+          *dst++=' '; // add extra space after
+        }
+        break;
+      case ',': // current char is a ,
+        *dst++=c;
+        if (i>0 && !isspace((uchar)pc) &&
+            ((i<l-1 && (isId(nc) || nc=='[')) || // the [ is for attributes (see bug702170)
+             (i<l-2 && nc=='$' && isId(src[i+2])) ||   // for PHP: ',$name' -> ', $name'
+             (i<l-3 && nc=='&' && src[i+2]=='$' && isId(src[i+3])) // for PHP: ',&$name' -> ', &$name'
             )
-          ) 
-        )
-    {
-      if (c=='\t') c=' ';
-      if (c=='*' || c=='&' || c=='@' || c=='$')
-      {
-        //uint rl=result.length();
-        uint rl=growBuf.getPos();
-        if ((rl>0 && (isId(growBuf.at(rl-1)) || growBuf.at(rl-1)=='>')) &&
-            ((c!='*' && c!='&') || !findOperator2(s,i)) // avoid splitting operator* and operator->* and operator&
-           ) 
+           )
         {
-          growBuf.addChar(' ');
+          *dst++=' '; // add extra space after
         }
-      }
-      else if (c=='-')
-      {
-        uint rl=growBuf.getPos();
-        if (rl>0 && growBuf.at(rl-1)==')' && i<l-1 && s.at(i+1)=='>') // trailing return type ')->' => ') ->'
+        break;
+      case '^':  // CLI 'Type^name' -> 'Type^ name'
+      case '%':  // CLI 'Type%name' -> 'Type% name'
+        *dst++=c;
+        if (cliSupport && i<l-1 && (isId(nc) || nc=='-'))
         {
-          growBuf.addChar(' ');
+          *dst++=' '; // add extra space after
         }
-      }
-      growBuf.addChar(c);
-      if (cliSupport &&
-          (c=='^' || c=='%') && i>1 && isId(s.at(i-1)) &&
-          !findOperator(s,i)
-         ) 
-      {
-        growBuf.addChar(' '); // C++/CLI: Type^ name and Type% name
-      }
+        break;
+      case ')':  // current char is a )  -> ')name' -> ') name'
+        *dst++=c;
+        if (i<l-1 && (isId(nc) || nc=='-'))
+        {
+          *dst++=' '; // add extra space after
+        }
+        break;
+      case '*':
+        if (i>0 && pc!=' ' && pc!='\t' && pc!=':' &&
+                   pc!='*' && pc!='&'  && pc!='(' && pc!='/' &&
+                   pc!='.' && (osp<9 || (pc=='>' && osp==11)))
+          // avoid splitting &&, **, .*, operator*, operator->*
+        {
+          *dst++=' ';
+        }
+        *dst++=c;
+        break;
+      case '&':
+        if (i>0 && isId(pc))
+        {
+          *dst++=' ';
+        }
+        *dst++=c;
+        break;
+      case '@':  // '@name' -> ' @name'
+      case '$':  // '$name' -> ' $name'
+      case '\'': // ''name' -> '' name'
+        if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace(pc) &&
+            isId(nc) && osp<8) // ")id" -> ") id"
+        {
+          *dst++=' ';
+        }
+        *dst++=c;
+        break;
+      case ':': // current char is a :
+        if (csp==6) // replace const::A by const ::A
+        {
+          *dst++=' ';
+          csp=0;
+        }
+        else if (vsp==8) // replace virtual::A by virtual ::A
+        {
+          *dst++=' ';
+          vsp=0;
+        }
+        *dst++=c;
+        break;
+      case ' ':  // fallthrough
+      case '\n': // fallthrough
+      case '\t':
+        {
+          if (g_charAroundSpace.charMap[(uchar)pc].before &&
+              g_charAroundSpace.charMap[(uchar)nc].after  &&
+              !(pc==',' && nc=='.'))
+            // remove spaces/tabs
+          {
+            *dst++=' ';
+          }
+        }
+        break;
+      default:
+        *dst++=c;
+        if (c=='t' && csp==5 && i<l-1 && // found 't' in 'const'
+             !(isId(nc) || nc==')' || nc==',' || isspace(nc))
+           ) // prevent const ::A from being converted to const::A
+        {
+          *dst++=' ';
+          csp=0;
+        }
+        else if (c=='l' && vsp==7 && i<l-1 && // found 'l' in 'virtual'
+             !(isId(nc) || nc==')' || nc==',' || isspace(nc))
+            ) // prevent virtual ::A from being converted to virtual::A
+        {
+          *dst++=' ';
+          vsp=0;
+        }
+        break;
     }
+    pc=c;
   }
-  growBuf.addChar(0);
-  //printf("removeRedundantWhiteSpace(`%s')=`%s'\n",s.data(),growBuf.get());
-  //result.resize(resultPos);
-  return growBuf.get();
-}  
+  *dst++='\0';
+  return growBuf;
+}
 
 /**
  * Returns the position in the string where a function parameter list
