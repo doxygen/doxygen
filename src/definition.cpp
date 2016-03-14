@@ -526,7 +526,7 @@ void Definition::writeDocAnchorsToTagFile(FTextStream &tagFile)
     SectionInfo *si;
     for (;(si=sdi.current());++sdi)
     {
-      if (!si->generated)
+      if (!si->generated && si->ref.isEmpty())
       {
         //printf("write an entry!\n");
         if (definitionType()==TypeMember) tagFile << "  ";
