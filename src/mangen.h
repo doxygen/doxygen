@@ -160,8 +160,8 @@ class ManGenerator : public OutputGenerator
     void endCenter()          {}
     void startSmall()         {}
     void endSmall()           {}
-    void startMemberDescription(const char *,const char *) { t << "\n.RI \"\\fI"; firstCol=FALSE; }
-    void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
+    void startMemberDescription(const char *,const char *) { t << "\n.RI \""; firstCol=FALSE; }
+    void endMemberDescription()   { t << "\""; firstCol=FALSE; }
     void startMemberDeclaration() {} 
     void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
