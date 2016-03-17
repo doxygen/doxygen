@@ -493,14 +493,14 @@ class TagFileParser : public QXmlDefaultHandler
     {
       switch(m_state)
       {
-        case InClass:     m_curClass->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
-        case InFile:      m_curFile->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
-        case InNamespace: m_curNamespace->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
-        case InGroup:     m_curGroup->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InClass:     m_curClass->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
+        case InFile:      m_curFile->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
+        case InNamespace: m_curNamespace->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
+        case InGroup:     m_curGroup->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InPage:      m_curPage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
-        case InMember:    m_curMember->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
-        case InPackage:   m_curPackage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
-        case InDir:       m_curDir->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InMember:    m_curMember->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
+        case InPackage:   m_curPackage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
+        case InDir:       m_curDir->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         default:   warn("Unexpected tag `member' found\n"); break; 
       }
     }
