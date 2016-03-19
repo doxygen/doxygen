@@ -223,37 +223,48 @@ void DirDef::writeDirectoryGraph(OutputList &ol)
 
 void DirDef::writeSubDirList(OutputList &ol)
 {
+  int numSubdirs = 0;
+  QListIterator<DirDef> it(m_subdirs);
+  DirDef *dd;
+  for (it.toFirst();(dd=it.current());++it)
+  {
+    if (dd->hasDocumentation() || dd->getFiles()->count()>0)
+    {
+      numSubdirs++;
+    }
+  }
+
   // write subdir list
-  if (m_subdirs.count()>0)
+  if (numSubdirs>0)
   {
     ol.startMemberHeader("subdirs");
     ol.parseText(theTranslator->trDir(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
-    QListIterator<DirDef> it(m_subdirs);
-    DirDef *dd;
-    for (;(dd=it.current());++it)
+    for (it.toFirst();(dd=it.current());++it)
     {
-      if (!dd->hasDocumentation()) continue;
-      ol.startMemberDeclaration();
-      ol.startMemberItem(dd->getOutputFileBase(),0);
-      ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
-      ol.insertMemberAlign();
-      ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),0,dd->shortName());
-      ol.endMemberItem();
-      if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+      if (dd->hasDocumentation() || dd->getFiles()->count()==0)
       {
-        ol.startMemberDescription(dd->getOutputFileBase());
-        ol.generateDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),
-            FALSE, // indexWords
-            FALSE, // isExample
-            0,     // exampleName
-            TRUE,  // single line
-            TRUE   // link from index
-           );
-        ol.endMemberDescription();
+        ol.startMemberDeclaration();
+        ol.startMemberItem(dd->getOutputFileBase(),0);
+        ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
+        ol.insertMemberAlign();
+        ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),0,dd->shortName());
+        ol.endMemberItem();
+        if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        {
+          ol.startMemberDescription(dd->getOutputFileBase());
+          ol.generateDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),
+              FALSE, // indexWords
+              FALSE, // isExample
+              0,     // exampleName
+              TRUE,  // single line
+              TRUE   // link from index
+              );
+          ol.endMemberDescription();
+        }
+        ol.endMemberDeclaration(0,0);
       }
-      ol.endMemberDeclaration(0,0);
     }
 
     ol.endMemberList();
@@ -262,8 +273,19 @@ void DirDef::writeSubDirList(OutputList &ol)
 
 void DirDef::writeFileList(OutputList &ol)
 {
+  int numFiles = 0;
+  QListIterator<FileDef> it(*m_fileList);
+  FileDef *fd;
+  for (it.toFirst();(fd=it.current());++it)
+  {
+    if (fd->hasDocumentation())
+    {
+      numFiles++;
+    }
+  }
+
   // write file list
-  if (m_fileList->count()>0)
+  if (numFiles>0)
   {
     ol.startMemberHeader("files");
     ol.parseText(theTranslator->trFile(TRUE,FALSE));
@@ -273,47 +295,49 @@ void DirDef::writeFileList(OutputList &ol)
     FileDef *fd;
     for (;(fd=it.current());++it)
     {
-      if (!fd->hasDocumentation()) continue;
-      ol.startMemberDeclaration();
-      ol.startMemberItem(fd->getOutputFileBase(),0);
-      ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
-      ol.insertMemberAlign();
-      if (fd->isLinkable())
+      if (fd->hasDocumentation())
       {
-        ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
+        ol.startMemberDeclaration();
+        ol.startMemberItem(fd->getOutputFileBase(),0);
+        ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
+        ol.insertMemberAlign();
+        if (fd->isLinkable())
+        {
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
+        }
+        else
+        {
+          ol.startBold();
+          ol.docify(fd->name());
+          ol.endBold();
+        }
+        if (fd->generateSourceFile())
+        {
+          ol.pushGeneratorState();
+          ol.disableAllBut(OutputGenerator::Html);
+          ol.docify(" ");
+          ol.startTextLink(fd->includeName(),0);
+          ol.docify("[");
+          ol.parseText(theTranslator->trCode());
+          ol.docify("]");
+          ol.endTextLink();
+          ol.popGeneratorState();
+        }
+        ol.endMemberItem();
+        if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        {
+          ol.startMemberDescription(fd->getOutputFileBase());
+          ol.generateDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),
+              FALSE, // indexWords
+              FALSE, // isExample
+              0,     // exampleName
+              TRUE,  // single line
+              TRUE   // link from index
+              );
+          ol.endMemberDescription();
+        }
+        ol.endMemberDeclaration(0,0);
       }
-      else
-      {
-        ol.startBold();
-        ol.docify(fd->name()); 
-        ol.endBold();
-      }
-      if (fd->generateSourceFile())
-      {
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.docify(" ");
-        ol.startTextLink(fd->includeName(),0);
-        ol.docify("[");
-        ol.parseText(theTranslator->trCode());
-        ol.docify("]");
-        ol.endTextLink();
-        ol.popGeneratorState();
-      }
-      ol.endMemberItem();
-      if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
-      {
-        ol.startMemberDescription(fd->getOutputFileBase());
-        ol.generateDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),
-            FALSE, // indexWords
-            FALSE, // isExample
-            0,     // exampleName
-            TRUE,  // single line
-            TRUE   // link from index
-           );
-        ol.endMemberDescription();
-      }
-      ol.endMemberDeclaration(0,0);
     }
     ol.endMemberList();
   }
@@ -924,7 +948,6 @@ void buildDirectories()
   DirSDict::Iterator sdi(*Doxygen::directories);
   for (sdi.toFirst();(dir=sdi.current());++sdi)
   {
-    //printf("New dir %s\n",dir->displayName().data());
     QCString name = dir->name();
     int i=name.findRev('/',name.length()-2);
     if (i>0)
