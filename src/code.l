@@ -858,42 +858,51 @@ static bool getLinkInScope(const QCString &c,  // scope
   GroupDef     *gd;
   DBG_CTX((stderr,"getLinkInScope: trying `%s'::`%s' varOnly=%d\n",c.data(),m.data(),varOnly));
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef,FALSE,g_forceTagReference) && 
-      md->isLinkable() && (!varOnly || md->isVariable()))
+      (!varOnly || md->isVariable()))
   {
-    //printf("found it %s!\n",md->qualifiedName().data());
-    if (g_exampleBlock)
+    if (md->isLinkable())
     {
-      QCString anchor;
-      anchor.sprintf("a%d",g_anchorCount);
-      //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
-      //                                  g_exampleFile.data());
-      if (md->addExample(anchor,g_exampleName,g_exampleFile))
+      //printf("found it %s!\n",md->qualifiedName().data());
+      if (g_exampleBlock)
       {
-	ol.writeCodeAnchor(anchor);
-	g_anchorCount++;
+        QCString anchor;
+        anchor.sprintf("a%d",g_anchorCount);
+        //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
+        //                                  g_exampleFile.data());
+        if (md->addExample(anchor,g_exampleName,g_exampleFile))
+        {
+          ol.writeCodeAnchor(anchor);
+          g_anchorCount++;
+        }
+      }
+
+      Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+        md->getFileDef() : md->getOuterScope();
+      if (md->getGroupDef()) d = md->getGroupDef();
+      if (d && d->isLinkable())
+      {
+        g_theCallContext.setScope(stripClassName(md->typeString(),md->getOuterScope()));
+        //printf("g_currentDefinition=%p g_currentMemberDef=%p g_insideBody=%d\n",
+        //        g_currentDefinition,g_currentMemberDef,g_insideBody);
+
+        if (g_currentDefinition && g_currentMemberDef &&
+            md!=g_currentMemberDef && g_insideBody && g_collectXRefs)
+        {
+          addDocCrossReference(g_currentMemberDef,md);
+        }
+        //printf("d->getReference()=`%s' d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
+
+        writeMultiLineCodeLink(ol,md, text ? text : memberText);
+        addToSearchIndex(text ? text : memberText);
+        return TRUE;
       }
     }
-
-    Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-	            md->getFileDef() : md->getOuterScope();
-    if (md->getGroupDef()) d = md->getGroupDef();
-    if (d && d->isLinkable())
+    else // found member, but is is not linkable, so make sure content inside is not assign
+         // to the previous member, see bug762760
     {
-      g_theCallContext.setScope(stripClassName(md->typeString(),md->getOuterScope()));
-      //printf("g_currentDefinition=%p g_currentMemberDef=%p g_insideBody=%d\n",
-      //        g_currentDefinition,g_currentMemberDef,g_insideBody);
-
-      if (g_currentDefinition && g_currentMemberDef &&
-          md!=g_currentMemberDef && g_insideBody && g_collectXRefs)
-      {
-	addDocCrossReference(g_currentMemberDef,md);
-      }
-      //printf("d->getReference()=`%s' d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
-     
-      writeMultiLineCodeLink(ol,md, text ? text : memberText);
-      addToSearchIndex(text ? text : memberText);
-      return TRUE;
-    } 
+      DBG_CTX((stderr,"unlinkable member %s\n",md->name().data()));
+      g_currentMemberDef = 0;
+    }
   }
   return FALSE;
 }
