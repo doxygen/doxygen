@@ -78,8 +78,8 @@ function initResizable()
   $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
   $(document).bind('touchmove',function(e){
     var device = navigator.userAgent.toLowerCase();
-    var ios = device.match(/(iphone|ipod|ipad)/);
-    if (ios) {
+    var ios_or_android = device.match(/(iphone|ipod|ipad|android)/);
+    if (ios_or_android) {
       try {
         var target = e.target;
         while (target) {
