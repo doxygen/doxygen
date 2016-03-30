@@ -1722,7 +1722,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   char c;
   char pc=0;
   // skip leading whitespace
-  while (i<l && isspace(src[i]))
+  while (i<l && isspace((uchar)src[i]))
   {
     i++;
   }
