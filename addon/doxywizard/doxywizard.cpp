@@ -368,14 +368,16 @@ void MainWindow::loadSettings()
     }
   }
 
-  for (int i=0;i<MAX_RECENT_FILES;i++)
+  /* due to prepend use list in reversed order */
+  for (int i=MAX_RECENT_FILES;i>=0;i--)
   {
     QString entry = m_settings.value(QString().sprintf("recent/config%d",i)).toString();
     if (!entry.isEmpty() && QFileInfo(entry).exists())
     {
-      addRecentFile(entry);
+      addRecentFileList(entry);
     }
   }
+  updateRecentFile();
 
 }
 
@@ -402,6 +404,11 @@ void MainWindow::selectRunTab()
 
 void MainWindow::addRecentFile(const QString &fileName)
 {
+  addRecentFileList(fileName);
+  updateRecentFile();
+}
+void MainWindow::addRecentFileList(const QString &fileName)
+{
   int i=m_recentFiles.indexOf(fileName);
   if (i!=-1) m_recentFiles.removeAt(i);
   
@@ -415,8 +422,11 @@ void MainWindow::addRecentFile(const QString &fileName)
     m_recentFiles.removeLast();
     m_recentFiles.prepend(fileName);
   }
+}
+void MainWindow::updateRecentFile(void)
+{
   m_recentMenu->clear();
-  i=0;
+  int i=0;
   foreach( QString str, m_recentFiles ) 
   {
     m_recentMenu->addAction(str);
