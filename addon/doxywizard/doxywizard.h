@@ -58,6 +58,8 @@ class MainWindow : public QMainWindow
     MainWindow();
     void saveConfig(const QString &fileName);
     void addRecentFile(const QString &fileName);
+    void addRecentFileList(const QString &fileName);
+    void updateRecentFile(void);
     void updateConfigFileName(const QString &fileName);
     void setWorkingDir(const QString &dirName);
     void updateLaunchButtonState();
