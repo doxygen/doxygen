@@ -9255,7 +9255,7 @@ static void copyStyleSheet()
   }
 }
 
-static void copyLogo()
+static void copyLogo(const QCString &outputOption)
 {
   QCString &projectLogo = Config_getString(PROJECT_LOGO);
   if (!projectLogo.isEmpty())
@@ -9268,7 +9268,7 @@ static void copyLogo()
     }
     else
     {
-      QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName().data();
+      QCString destFileName = outputOption+"/"+fi.fileName().data();
       copyFile(projectLogo,destFileName);
       Doxygen::indexList->addImageFile(fi.fileName().data());
     }
@@ -11657,13 +11657,18 @@ void generateOutput()
   {
     FTVHelp::generateTreeViewImages();
     copyStyleSheet();
-    copyLogo();
+    copyLogo(Config_getString(HTML_OUTPUT));
     copyExtraFiles(Config_getList(HTML_EXTRA_FILES),"HTML_EXTRA_FILES",Config_getString(HTML_OUTPUT));
   }
   if (generateLatex)
   {
     copyLatexStyleSheet();
+    copyLogo(Config_getString(LATEX_OUTPUT));
     copyExtraFiles(Config_getList(LATEX_EXTRA_FILES),"LATEX_EXTRA_FILES",Config_getString(LATEX_OUTPUT));
+  }
+  if (generateRtf)
+  {
+    copyLogo(Config_getString(RTF_OUTPUT));
   }
 
   if (generateHtml &&
