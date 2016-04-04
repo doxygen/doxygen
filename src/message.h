@@ -32,5 +32,13 @@ extern void err(const char *fmt, ...);
 extern void err_full(const char *file,int line,const char *fmt, ...);
 void initWarningFormat();
 
-extern void printlex(int dbg, bool enter, const char *lexName, const char *fileName);
+
+#if defined(FLEX_DEBUG)
+	extern void printlex(int dbg, bool enter, const char *lexName, const char *fileName);
+#else
+	#if !defined(printlex)
+		#define printlex(dbg, enter, lexName, fileName)
+	#endif
+#endif
+
 #endif
