@@ -1977,6 +1977,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    current->section=Entry::USINGDECL_SEC;
 					  }
 					  current_root->addSubEntry(current);
+                                          previous = current;
 					  current = new Entry ;
 					  initEntry();
 					  BEGIN(Using);
