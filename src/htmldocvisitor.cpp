@@ -50,7 +50,7 @@ static QCString convertIndexWordToAnchor(const QString &word)
     while ((c = *str++))
     {
       if ((c >= 'a' && c <= 'z') || // ALPHA
-          (c >= 'A' && c <= 'A') || // ALPHA
+          (c >= 'A' && c <= 'Z') || // ALPHA
           (c >= '0' && c <= '9') || // DIGIT
           c == '-' ||
           c == '.' ||
