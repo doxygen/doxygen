@@ -1872,7 +1872,16 @@ Commands to create links
 \section cmdaddindex \\addindex (text)
 
   \addindex \\addindex
-  This command adds (text) to the \LaTeX index.
+  This command adds (text) to the \LaTeX or Compiled HTML Help index.
+
+  Doxygen Compiled HTML Help output provides support for nested indices by
+  assigning special meaning to question marks in index entries: The portion
+  before the first question mark is interpreted as a 1st-level entry, while
+  any remainder is interpreted as a 2nd-level entry, with the separating
+  question mark being discarded. Only two-level indices are supported in this
+  manner. If any 1st-level entry would be comprised of only a single 2nd-level
+  entry, it is rendered as a single-level entry, with the 2nd-leve portion
+  stripped.
 
 <hr>
 \section cmdanchor \\anchor <word>
