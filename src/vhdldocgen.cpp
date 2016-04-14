@@ -570,7 +570,7 @@ VhdlDocGen::~VhdlDocGen()
 void VhdlDocGen::init()
 {
 
- // vhdl keywords inlcuded VHDL 2008
+ // vhdl keywords included VHDL 2008
 const char* g_vhdlKeyWordMap0[] =
 {
   "abs","access","after","alias","all","and","architecture","array","assert","assume","assume_guarantee","attribute",
@@ -840,7 +840,7 @@ MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberList
   }
   MemberListIterator fmni(*ml);
   //int l=ml->count();
-  //	fprintf(stderr,"\n loading enity %s %s: %d",cd->symbolName().data(),keyType.data(),l);
+  //	fprintf(stderr,"\n loading entity %s %s: %d",cd->symbolName().data(),keyType.data(),l);
 
   for (fmni.toFirst();(md=fmni.current());++fmni)
   {
@@ -1065,7 +1065,7 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
 }// write
 
 /*
- * finds all architectures which belongs to an entiy
+ * finds all architectures which belongs to an entity
  */
 void VhdlDocGen::findAllArchitectures(QList<QCString>& qll,const ClassDef *cd)
 {

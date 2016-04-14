@@ -622,7 +622,7 @@ static unsigned HuffmanTree_makeFromFrequencies(HuffmanTree* tree, const unsigne
     /*keep the coins with lowest weight, so that they add up to the amount of symbols - 1*/
     vector_resized(&coins, numpresent - 1, Coin_cleanup);
     
-    /*calculate the lenghts of each symbol, as the amount of times a coin of each symbol is used*/
+    /*calculate the lengths of each symbol, as the amount of times a coin of each symbol is used*/
     for(i = 0; i < coins.size; i++)
     {
       Coin* coin = (Coin*)vector_get(&coins, i);
@@ -1114,7 +1114,7 @@ static unsigned encodeLZ77_brute(uivector* out, const unsigned char* in, size_t 
         size_t current_length = 1;
         size_t backtest = backpos + 1;
         size_t foretest = pos + 1;
-        while(foretest < size && in[backtest] == in[foretest] && current_length < MAX_SUPPORTED_DEFLATE_LENGTH) /*maximum supporte length by deflate is max length*/
+        while(foretest < size && in[backtest] == in[foretest] && current_length < MAX_SUPPORTED_DEFLATE_LENGTH) /*maximum support length by deflate is max length*/
         {
           if(backpos >= pos) backpos -= current_offset; /*continue as if we work on the decoded bytes after pos by jumping back before pos*/
           current_length++;
@@ -1213,7 +1213,7 @@ static unsigned encodeLZ77(uivector* out, const unsigned char* in, size_t size, 
         unsigned current_length = 0;
         unsigned backtest = backpos;
         unsigned foretest = pos;
-        while(foretest < size && in[backtest] == in[foretest] && current_length < MAX_SUPPORTED_DEFLATE_LENGTH) /*maximum supporte length by deflate is max length*/
+        while(foretest < size && in[backtest] == in[foretest] && current_length < MAX_SUPPORTED_DEFLATE_LENGTH) /*maximum support length by deflate is max length*/
         {
           if(backpos >= pos) backpos -= current_offset; /*continue as if we work on the decoded bytes after pos by jumping back before pos*/
           current_length++;
@@ -1330,7 +1330,7 @@ static unsigned deflateDynamic(ucvector* out, const unsigned char* data, size_t 
   after the BFINAL and BTYPE, the dynamic block consists out of the following:
   - 5 bits HLIT, 5 bits HDIST, 4 bits HCLEN
   - (HCLEN+4)*3 bits code lengths of code length alphabet
-  - HLIT + 257 code lenghts of lit/length alphabet (encoded using the code length alphabet, + possible repetition codes 16, 17, 18)
+  - HLIT + 257 code lengths of lit/length alphabet (encoded using the code length alphabet, + possible repetition codes 16, 17, 18)
   - HDIST + 1 code lengths of distance alphabet (encoded using the code length alphabet, + possible repetition codes 16, 17, 18)
   - compressed data
   - 256 (end code)
@@ -1346,7 +1346,7 @@ static unsigned deflateDynamic(ucvector* out, const unsigned char* data, size_t 
   uivector frequenciesD;
   uivector amounts; /*the amounts in the "normal" order*/
   uivector lldl;
-  uivector lldll; /*lit/len & dist code lenghts*/
+  uivector lldll; /*lit/len & dist code lengths*/
   uivector clcls;
   
   unsigned BFINAL = 1; /*make only one block... the first and final one*/
@@ -1448,7 +1448,7 @@ static unsigned deflateDynamic(ucvector* out, const unsigned char* data, size_t 
     if(error) break;
     
     if(!uivector_resize(&clcls, 19)) { error = 9927; break; }
-    for(i = 0; i < 19; i++) clcls.data[i] = HuffmanTree_getLength(&codelengthcodes, CLCL[i]); /*lenghts of code length tree is in the order as specified by deflate*/
+    for(i = 0; i < 19; i++) clcls.data[i] = HuffmanTree_getLength(&codelengthcodes, CLCL[i]); /*lengths of code length tree is in the order as specified by deflate*/
     while(clcls.data[clcls.size - 1] == 0 && clcls.size > 4)
     {
       if(!uivector_resize(&clcls, clcls.size - 1)) { error = 9928; break; } /*remove zeros at the end, but minimum size must be 4*/
@@ -1463,10 +1463,10 @@ static unsigned deflateDynamic(ucvector* out, const unsigned char* data, size_t 
     addBitsToStream(&bp, out, HDIST, 5);
     addBitsToStream(&bp, out, HCLEN, 4);
     
-    /*write the code lenghts of the code length alphabet*/
+    /*write the code lengths of the code length alphabet*/
     for(i = 0; i < HCLEN + 4; i++) addBitsToStream(&bp, out, clcls.data[i], 3);
   
-    /*write the lenghts of the lit/len AND the dist alphabet*/
+    /*write the lengths of the lit/len AND the dist alphabet*/
     for(i = 0; i < lldl.size; i++)
     {
       addHuffmanSymbol(&bp, out, HuffmanTree_getCode(&codelengthcodes, lldl.data[i]), HuffmanTree_getLength(&codelengthcodes, lldl.data[i]));
@@ -1734,7 +1734,7 @@ const LodeZlib_DecompressSettings LodeZlib_defaultDecompressSettings = {0};
 The two functions below (LodePNG_decompress and LodePNG_compress) directly call the
 LodeZlib_decompress and LodeZlib_compress functions. The only purpose of the functions
 below, is to provide the ability to let LodePNG use a different Zlib encoder by only
-changing the two functions below, instead of changing it inside the vareous places
+changing the two functions below, instead of changing it inside the various places
 in the other LodePNG functions.
 
 *out must be NULL and *outsize must be 0 initially, and after the function is done,
@@ -2813,7 +2813,7 @@ static unsigned postProcessScanlines(unsigned char* out, unsigned char* in, cons
       if(error) return error;
       removePaddingBits(out, in, w * bpp, ((w * bpp + 7) / 8) * 8, h);
     }
-    else error = unfilter(out, in, w, h, bpp); /*we can immediatly filter into the out buffer, no other steps needed*/
+    else error = unfilter(out, in, w, h, bpp); /*we can immediately filter into the out buffer, no other steps needed*/
   }
   else /*interlaceMethod is 1 (Adam7)*/
   {
