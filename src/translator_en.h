@@ -35,7 +35,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -1036,10 +1036,10 @@ class TranslatorEnglish : public Translator
         "<li>%A dark green arrow is used for protected inheritance.</li>\n"
         "<li>%A dark red arrow is used for private inheritance.</li>\n"
         "<li>%A purple dashed arrow is used if a class is contained or used "
-        "by another class. The arrow is labeled with the variable(s) "
+        "by another class. The arrow is labelled with the variable(s) "
         "through which the pointed class or struct is accessible.</li>\n"
         "<li>%A yellow dashed arrow denotes a relation between a template instance and "
-        "the template class it was instantiated from. The arrow is labeled with "
+        "the template class it was instantiated from. The arrow is labelled with "
         "the template parameters of the instance.</li>\n"
         "</ul>\n";
     }
@@ -1494,7 +1494,7 @@ class TranslatorEnglish : public Translator
     { QCString result=dirName; result+=" Directory Reference"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool singular)
     {
