@@ -200,7 +200,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
     { // finish old list at level 2
       if (level2Started) t << "  </UL>" << endl;
       level2Started=FALSE;
-    
+
       // <Antony>
       // Added this code so that an item with only one subitem is written
       // without any subitem.
@@ -224,7 +224,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
       if (level2.isEmpty())
       {
         t << "  <LI><OBJECT type=\"text/sitemap\">";
-        t << "<param name=\"Local\" value=\"" << field2URL(f,TRUE);
+        t << "<param name=\"Local\" value=\"" << field2URL(f,FALSE);
         t << "\">";
         t << "<param name=\"Name\" value=\"" << m_help->recode(level1) << "\">"
            "</OBJECT>\n";
