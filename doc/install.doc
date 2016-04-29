@@ -183,7 +183,7 @@ cd into the \c doxygen-x.y.z directory, create and cd to a build directory
 \verbatim
 mkdir build
 cd build
-cmake -G "Visual Studio 12 2013"
+cmake -G "Visual Studio 12 2013" ..
 \endverbatim
 
 Note that compiling Doxywizard currently requires Qt version 4
