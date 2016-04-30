@@ -1226,7 +1226,7 @@ static int isHRuler(const char *data,int size)
   return n>=3; // at least 3 characters needed for a hruler
 }
 
-static QCString extractTitleId(QCString &title)
+static QCString extractTitleId(QCString &title, int level)
 {
   //static QRegExp r1("^[a-z_A-Z][a-z_A-Z0-9\\-]*:");
   static QRegExp r2("\\{#[a-z_A-Z][a-z_A-Z0-9\\-]*\\}");
@@ -1237,6 +1237,14 @@ static QCString extractTitleId(QCString &title)
     QCString id = title.mid(i+2,l-3);
     title = title.left(i);
     //printf("found id='%s' title='%s'\n",id.data(),title.data());
+    return id;
+  }
+  if ((level > 0) && (level <= Config_getInt(TOC_INCLUDE_HEADINGS)))
+  {
+    static int autoId = 0;
+    QCString id;
+    id.sprintf("autotoc_md%d",autoId++);
+    //printf("auto-generated id='%s' title='%s'\n",id.data(),title.data());
     return id;
   }
   //printf("no id found in title '%s'\n",title.data());
@@ -1270,7 +1278,7 @@ static int isAtxHeader(const char *data,int size,
 
   // store result
   convertStringFragment(header,data+i,end-i);
-  id = extractTitleId(header);
+  id = extractTitleId(header, level);
   if (!id.isEmpty()) // strip #'s between title and id
   {
     i=header.length()-1;
@@ -2079,7 +2087,7 @@ static QCString processBlocks(const QCString &s,int indent)
         while (pi<size && data[pi]==' ') pi++;
         QCString header,id;
         convertStringFragment(header,data+pi,i-pi-1);
-        id = extractTitleId(header);
+        id = extractTitleId(header, level);
         //printf("header='%s' is='%s'\n",header.data(),id.data());
         if (!header.isEmpty())
         {
@@ -2220,7 +2228,7 @@ static QCString extractPageTitle(QCString &docs,QCString &id)
       QCString lns;
       lns.fill('\n',ln);
       docs=lns+docs.mid(end2);
-      id = extractTitleId(title);
+      id = extractTitleId(title, 0);
       //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
       return title;
     }
