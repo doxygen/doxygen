@@ -19,7 +19,7 @@ var indexSectionNames =
   {% endif %}
 {% endfor %}
 };
-var IndexSectionLabels =
+var indexSectionLabels =
 {
 {% set count=0 %}
 {% for idx in searchIndices %}

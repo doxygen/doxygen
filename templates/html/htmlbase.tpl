@@ -5,6 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen {{ doxygen.version }}"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>{{ config.PROJECT_NAME }}: {{ page.title }}</title>
 <link href="{{ page.relPath }}tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="{{ page.relPath }}jquery.js"></script>
@@ -16,7 +17,15 @@
 <script type="text/javascript" src="{{ page.relPath }}navtree.js"></script>
 <script type="text/javascript">
   $(document).ready(initResizable);
-  $(window).load(resizeHeight);
+</script>
+{% endif %}
+{% if not config.DISABLE_INDEX %}
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',{% if config.SEARCHENGINE %}true{% else %}false{% endif %},'{{ tr.search }}');
+});
 </script>
 {% endif %}
 {% if config.SEARCHENGINE %}
@@ -34,7 +43,7 @@
 <link rel="search" href="{{ page.relPath }}search-opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="{{ config.PROJECT_NAME }}"/>
   {% else %}
 <script type="text/javascript">
-  $(document).ready(function() { searchBox.OnSelectItem(0); });
+  $(document).ready(function() { init_search(); });
 </script>
   {% endif %}
 {% endif %}
@@ -129,7 +138,7 @@ var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ 
 
 {% block tabs %}
 {% if not config.DISABLE_INDEX %}
-{% include 'htmltabs.tpl' %}
+<div id="main-nav"></div>
 {% endif %}
 {% endblock %}
 

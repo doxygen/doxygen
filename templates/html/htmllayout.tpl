@@ -26,6 +26,7 @@
 {% resource 'navtree.css' %}
 {% resource 'navtree.js' %}
 {% resource 'resize.js' %}
+{% resource 'menu.js' %}
 {% resource 'doc.luma' %}
 {% resource 'folderopen.luma' %}
 {% resource 'folderclosed.luma' %}
@@ -270,6 +271,11 @@
 {# write the navigation tree data #}
 {% if config.GENERATE_TREEVIEW %}
   {% create 'navtreedata.js' from 'htmljsnavtree.tpl' %}
+{% endif %}
+
+{# write menu data #}
+{% if not config.DISABLE_INDEX %}
+  {% create 'menudata.js' from 'htmljsmenudata.tpl' %}
 {% endif %}
 
 {% msg %}----- End generating HTML output for {{ config.PROJECT_NAME }} from template ----{% endmsg %}
