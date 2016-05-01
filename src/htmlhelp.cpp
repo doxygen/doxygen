@@ -134,17 +134,8 @@ static QCString field2URL(const IndexField *f,bool checkReversed)
   QCString result = f->url + Doxygen::htmlFileExtension;
   if (!f->anchor.isEmpty() && (!checkReversed || f->reversed)) 
   {
-    result+="#";
     // HTML Help needs colons in link anchors to be escaped in the .hhk file.
-    int prev = 0;
-    int next;
-    while ((next=f->anchor.find(':', prev))!=-1)
-    {
-      result+=f->anchor.mid(prev,next-prev);
-      result+="%3A";
-      prev=next+1;
-    }
-    result+=f->anchor.mid(prev);
+    result+="#"+substitute(f->anchor,":","%3A");
   }
   return result;
 }
