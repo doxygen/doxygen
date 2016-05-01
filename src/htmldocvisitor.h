@@ -172,6 +172,7 @@ class HtmlDocVisitor : public DocVisitor
     QStack<bool> m_enabled;
     Definition *m_ctx;
     QCString m_langExt;
+    QCString m_lastSectionAnchor;
 };
 
 #endif
