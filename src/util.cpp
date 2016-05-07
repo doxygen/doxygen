@@ -2981,6 +2981,8 @@ static void stripIrrelevantString(QCString &target,const QCString &str)
   So the following example, show what is stripped by this routine
   for const. The same is done for volatile.
 
+  For Java code we also strip the "final" keyword, see bug 765070.
+
   \code
   const T param     ->   T param          // not relevant
   const T& param    ->   const T& param   // const needed               
@@ -2993,6 +2995,7 @@ void stripIrrelevantConstVolatile(QCString &s)
   //printf("stripIrrelevantConstVolatile(%s)=",s.data());
   stripIrrelevantString(s,"const");
   stripIrrelevantString(s,"volatile");
+  stripIrrelevantString(s,"final");
   //printf("%s\n",s.data());
 }
 
