@@ -1158,6 +1158,29 @@ void QDateTime::setTime_t( uint secsSince1Jan1970UTC )
 
 
 /*!
+  Sets the UTC date and time given the number of seconds that have passed
+  since 00:00:00 on January 1, 1970, Coordinated Universal Time (UTC).
+
+  Note that Microsoft Windows supports only a limited range of values for
+  \a secsSince1Jan1970UTC.
+*/
+
+void QDateTime::setTimeUtc_t( uint secsSince1Jan1970UTC )
+{
+    time_t tmp = (time_t) secsSince1Jan1970UTC;
+    tm *tM = gmtime( &tmp );
+    if ( !tM ) {
+	    d.jd = QDate::greg2jul( 1970, 1, 1 );
+	    t.ds = 0;
+	    return;
+    }
+    d.jd = QDate::greg2jul( tM->tm_year + 1900, tM->tm_mon + 1, tM->tm_mday );
+    t.ds = MSECS_PER_HOUR*tM->tm_hour + MSECS_PER_MIN*tM->tm_min +
+	    1000*tM->tm_sec;
+}
+
+
+/*!
   Returns the datetime as a string.
 
   The string format is "Sat May 20 03:40:13 1998".
