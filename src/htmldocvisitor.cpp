@@ -1312,7 +1312,7 @@ void HtmlDocVisitor::visitPre(DocHtmlTable *t)
   }
   else
   {
-    m_t << "<table " << htmlAttribsToString(t->attribs()) << ">\n";
+    m_t << "<table" << htmlAttribsToString(t->attribs()) << ">\n";
   }
 }
 
@@ -1429,17 +1429,43 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     m_t << "<div class=\"image\">" << endl;
     QCString url = img->url();
+    QCString sizeAttribs;
+    if (!img->width().isEmpty())
+    {
+      sizeAttribs+=" width=\""+img->width()+"\"";
+    }
+    if (!img->height().isEmpty())
+    {
+      sizeAttribs+=" height=\""+img->height()+"\"";
+    }
     if (url.isEmpty())
     {
-      m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\"" 
-          << baseName << "\"" << htmlAttribsToString(img->attribs()) 
-          << "/>" << endl;
+      if (img->name().right(4)==".svg")
+      {
+        m_t << "<object type=\"image/svg+xml\" data=\"" << img->relPath() << img->name()
+            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs()) << ">" << baseName
+            << "</object>" << endl;
+      }
+      else
+      {
+        m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\""
+            << baseName << "\"" << sizeAttribs << htmlAttribsToString(img->attribs())
+            << "/>" << endl;
+      }
     }
     else
     {
-      m_t << "<img src=\"" << correctURL(url,img->relPath()) << "\" " 
-          << htmlAttribsToString(img->attribs())
-          << "/>" << endl;
+      if (url.right(4)==".svg")
+      {
+        m_t << "<object type=\"image/svg+xml\" data=\"" << correctURL(url,img->relPath())
+            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs()) << "></object>" << endl;
+      }
+      else
+      {
+        m_t << "<img src=\"" << correctURL(url,img->relPath()) << "\""
+            << sizeAttribs << htmlAttribsToString(img->attribs())
+            << "/>" << endl;
+      }
     }
     if (img->hasCaption())
     {
@@ -1810,7 +1836,7 @@ void HtmlDocVisitor::visitPre(DocHtmlBlockQuote *b)
   }
   else
   {
-    m_t << "<blockquote " << htmlAttribsToString(b->attribs()) << ">\n";
+    m_t << "<blockquote" << htmlAttribsToString(b->attribs()) << ">\n";
   }
 }
 
