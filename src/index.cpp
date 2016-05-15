@@ -1777,7 +1777,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
 	     
       int index = getPrefixIndex(cd->className());
       //printf("name=%s index=%d %d\n",cd->className().data(),index,cd->protection());
-      startLetter=getUtf8CodeToUpper(cd->className(),index);
+      startLetter=getUtf8CodeToLower(cd->className(),index);
       indexLettersUsed.add(startLetter);
     }
   }
@@ -1828,7 +1828,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->className());
-      startLetter=getUtf8Code(cd->className(),index);
+      startLetter=getUtf8CodeToLower(cd->className(),index);
       // Do some sorting again, since the classes are sorted by name with 
       // prefix, which should be ignored really.
       if (cd->getLanguage()==SrcLangExt_VHDL)
