@@ -694,8 +694,6 @@ void FTVHelp::generateTreeViewImages()
   rm.copyResource("doc.luma",dname);
   rm.copyResource("folderopen.luma",dname);
   rm.copyResource("folderclosed.luma",dname);
-  rm.copyResource("arrowdown.luma",dname);
-  rm.copyResource("arrowright.luma",dname);
   rm.copyResource("splitbar.lum",dname);
 }
 

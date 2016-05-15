@@ -30,8 +30,6 @@
 {% resource 'doc.luma' %}
 {% resource 'folderopen.luma' %}
 {% resource 'folderclosed.luma' %}
-{% resource 'arrowdown.luma' %}
-{% resource 'arrowright.luma' %}
 {% resource 'splitbar.lum' %}
 
 {# general search resources #}
