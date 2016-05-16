@@ -2582,7 +2582,7 @@ QCString dateToString(bool includeTime)
     }
     else // all ok, replace current time with epoch value
     {
-      current.setTime_t((ulong)epoch); // TODO: add support for 64bit epoch value
+      current.setTimeUtc_t((ulong)epoch); // TODO: add support for 64bit epoch value
     }
   }
   return theTranslator->trDateTime(current.date().year(),
