@@ -173,6 +173,7 @@ public:
     void   setDate( const QDate &date ) { d=date; }
     void   setTime( const QTime &time ) { t=time; }
     void   setTime_t( uint secsSince1Jan1970UTC );
+    void   setTimeUtc_t( uint secsSince1Jan1970UTC );
 
     QString toString()	const;
 
