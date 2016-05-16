@@ -474,7 +474,6 @@ void convertProtectionLevel(
                   );
 
 bool mainPageHasTitle();
-const QDict<int> &getExtensionLookup();
 bool openOutputFile(const char *outFile,QFile &f);
 
 #endif

@@ -7020,8 +7020,6 @@ void stringToSearchIndex(const QCString &docBaseUrl,const QCString &title,
 
 static QDict<int> g_extLookup;
 
-const QDict<int> &getExtensionLookup() { return g_extLookup; }
-
 static struct Lang2ExtMap
 {
   const char *langName;
@@ -7092,7 +7090,7 @@ void initDefaultExtensionMapping()
   g_extLookup.setAutoDelete(TRUE);
   //                  extension      parser id
   updateLanguageMapping(".dox",      "c");
-  //updateLanguageMapping(".txt",      "c"); // see bug 760836
+  updateLanguageMapping(".txt",      "c"); // see bug 760836
   updateLanguageMapping(".doc",      "c");
   updateLanguageMapping(".c",        "c");
   updateLanguageMapping(".C",        "c");

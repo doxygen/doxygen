@@ -1344,8 +1344,6 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <value name='*.vhdl'/>
       <value name='*.ucf'/>
       <value name='*.qsf'/>
-      <value name='*.as'/>
-      <value name='*.js'/>
     </option>
     <option type='bool' id='RECURSIVE' defval='0'>
       <docs>
