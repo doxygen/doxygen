@@ -232,6 +232,15 @@ span.lineno a:hover {
 	background-color: #C8C8C8;
 }
 
+.lineno {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
 div.ah, span.ah {
 	background-color: black;
 	font-weight: bold;
