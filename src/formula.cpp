@@ -70,11 +70,19 @@ void FormulaList::generateBitmaps(const char *path)
     if (Config_getBool(LATEX_BATCHMODE)) t << "\\batchmode" << endl;
     t << "\\documentclass{article}" << endl;
     t << "\\usepackage{epsfig}" << endl; // for those who want to include images
-    const char *s=Config_getList(EXTRA_PACKAGES).first();
-    while (s)
-    {
-      t << "\\usepackage{" << s << "}\n";
-      s=Config_getList(EXTRA_PACKAGES).next();
+    QStrList &extraPackages = Config_getList(EXTRA_PACKAGES);
+    if (!extraPackages.isEmpty()) {
+      t << "% Packages requested by user\n";
+      const char *pkgName=extraPackages.first();
+      while (pkgName)
+      {
+        if ((pkgName[0] == '[') || (pkgName[0] == '{'))
+          t << "\\usepackage" << pkgName << "\n";
+        else
+          t << "\\usepackage{" << pkgName << "}\n";
+        pkgName=extraPackages.next();
+      }
+      t << "\n";
     }
     t << "\\pagestyle{empty}" << endl; 
     t << "\\begin{document}" << endl;
