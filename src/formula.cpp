@@ -70,12 +70,7 @@ void FormulaList::generateBitmaps(const char *path)
     if (Config_getBool(LATEX_BATCHMODE)) t << "\\batchmode" << endl;
     t << "\\documentclass{article}" << endl;
     t << "\\usepackage{epsfig}" << endl; // for those who want to include images
-    const char *s=Config_getList(EXTRA_PACKAGES).first();
-    while (s)
-    {
-      t << "\\usepackage{" << s << "}\n";
-      s=Config_getList(EXTRA_PACKAGES).next();
-    }
+    writeExtraLatexPackages(t);
     t << "\\pagestyle{empty}" << endl; 
     t << "\\begin{document}" << endl;
     int page=0;

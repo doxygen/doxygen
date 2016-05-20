@@ -475,6 +475,7 @@ void convertProtectionLevel(
 
 bool mainPageHasTitle();
 bool openOutputFile(const char *outFile,QFile &f);
+void writeExtraLatexPackages(FTextStream &t);
 
 #endif
 

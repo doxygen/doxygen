@@ -619,21 +619,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\makeindex\n"
        "\n";
 
-  // User-specified packages
-  QStrList &extraPackages = Config_getList(EXTRA_PACKAGES);
-  if (!extraPackages.isEmpty()) {
-    t << "% Packages requested by user\n";
-    const char *pkgName=extraPackages.first();
-    while (pkgName)
-    {
-      if ((pkgName[0] == '[') || (pkgName[0] == '{'))
-        t << "\\usepackage" << pkgName << "\n";
-      else
-        t << "\\usepackage{" << pkgName << "}\n";
-      pkgName=extraPackages.next();
-    }
-    t << "\n";
-  }
+  writeExtraLatexPackages(t);
 
   // Hyperlinks
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
