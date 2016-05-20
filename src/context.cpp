@@ -35,6 +35,7 @@
 #include "docparser.h"
 #include "htmlgen.h"
 #include "htmldocvisitor.h"
+#include "htmlhelp.h"
 #include "latexgen.h"
 #include "latexdocvisitor.h"
 #include "dot.h"
@@ -1006,6 +1007,10 @@ class TranslateContext::Private
     {
       return theTranslator->trExamplesDescription();
     }
+    TemplateVariant langString() const
+    {
+      return HtmlHelp::getLanguageString();
+    }
     Private()
     {
       static bool init=FALSE;
@@ -1195,6 +1200,8 @@ class TranslateContext::Private
         s_inst.addProperty("extendsClass",       &Private::extendsClass);
         //%% string examplesDescription
         s_inst.addProperty("examplesDescription",&Private::examplesDescription);
+        //%% string langstring
+        s_inst.addProperty("langString",         &Private::langString);
 
         init=TRUE;
       }

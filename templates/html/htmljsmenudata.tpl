@@ -36,9 +36,9 @@ var menudata={children:[
 {% if fileList %}
 ,{text:'{{ tr.files }}',url:'files{{ config.HTML_FILE_EXTENSION }}',children[
  {text:'{{ tr.fileList }}',url:'files{{ config.HTML_FILE_EXTENSION }}'}
-{% if fileMemberIndex.all %}
+{% if globalsIndex.all %}
 ,{text:'{{ tr.fileMembers }}',url'globals{{ config.HTML_FILE_EXTENSION }}',children:[
-  {% with page=fileMembersIndex %}
+  {% with page=globalsIndex %}
     {% include 'htmljsmenumembersdata.tpl' %}
   {% endwith %}
 ]}

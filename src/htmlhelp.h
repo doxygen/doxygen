@@ -84,6 +84,7 @@ class HtmlHelp  : public IndexIntf
     void addIndexFile(const char *name);
     void addImageFile(const char *);
     void addStyleSheetFile(const char *) {}
+    static QCString getLanguageString();
 
   private:
     friend class HtmlHelpIndex;

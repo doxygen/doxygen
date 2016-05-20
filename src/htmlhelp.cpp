@@ -447,7 +447,7 @@ void HtmlHelp::initialize()
 }
 
 
-static QCString getLanguageString()
+QCString HtmlHelp::getLanguageString()
 {
   if (!theTranslator->idLanguage().isEmpty())
   {
