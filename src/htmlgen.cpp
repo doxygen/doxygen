@@ -817,13 +817,16 @@ void HtmlGenerator::writeSearchData(const char *dir)
   if (f.open(IO_WriteOnly))
   {
     FTextStream t(&f);
-    QCString searchCss = replaceColorMarkers(mgr.getAsString("search.css"));
-    searchCss = substitute(searchCss,"$doxygenversion",versionString);
+    QCString searchCss;
     if (Config_getBool(DISABLE_INDEX))
     {
-      // move up the search box if there are no tabs
-      searchCss = substitute(searchCss,"margin-top: 8px;","margin-top: 0px;");
+      searchCss = mgr.getAsString("search_nomenu.css");
     }
+    else
+    {
+      searchCss = mgr.getAsString("search.css");
+    }
+    searchCss = substitute(replaceColorMarkers(searchCss),"$doxygenversion",versionString);
     t << searchCss;
     Doxygen::indexList->addStyleSheetFile("search/search.css");
   }
