@@ -2654,7 +2654,10 @@ static MemberDef *addVariableToFile(
  */
 static int findFunctionPtr(const QCString &type,int lang, int *pLength=0)
 {
-  if (lang == SrcLangExt_Fortran) return -1; // Fortran does not have function pointers
+  if (lang == SrcLangExt_Fortran || lang == SrcLangExt_VHDL)
+  {
+    return -1; // Fortran and VHDL do not have function pointers
+  }
   static const QRegExp re("([^)]*[\\*\\^][^)]*)");
   int i=-1,l;
   int bb=type.find('<');
