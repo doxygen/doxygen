@@ -82,6 +82,7 @@ class MemberList : public QList<MemberDef>
 
   private:
     int compareValues(const MemberDef *item1,const MemberDef *item2) const;
+    int countEnumValues(MemberDef *md,bool setAnonEnumType) const;
     int m_varCnt;
     int m_funcCnt;
     int m_enumCnt;
