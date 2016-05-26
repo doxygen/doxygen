@@ -111,19 +111,21 @@ static void processInline(GrowBuf &out,const char *data,int size);
 static QCString escapeSpecialChars(const QCString &s)
 {
   if (s.isEmpty()) return "";
+  bool insideQuote=FALSE;
   GrowBuf growBuf;
   const char *p=s;
-  char c;
+  char c,pc='\0';
   while ((c=*p++))
   {
     switch (c)
     {
-      case '<':  growBuf.addStr("\\<");   break;
-      case '>':  growBuf.addStr("\\>");   break;
-      case '\\': growBuf.addStr("\\\\");  break;
-      case '@':  growBuf.addStr("\\@");   break;
-      default:   growBuf.addChar(c);      break;
+      case '"':  if (pc!='\\')  { insideQuote=!insideQuote; } growBuf.addChar(c);   break;
+      case '<':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('<'); break;
+      case '>':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('>'); break;
+      case '@':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('@'); break;
+      default:   growBuf.addChar(c); break;
     }
+    pc=c;
   }
   growBuf.addChar(0);
   return growBuf.get();
