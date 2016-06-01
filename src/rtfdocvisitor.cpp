@@ -544,7 +544,7 @@ void RTFDocVisitor::visitPost(DocAutoList *)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocAutoList)}\n");
-  m_t << "\\par";
+  if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "}" << endl;
   m_lastIsPara=TRUE;
 }
