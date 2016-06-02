@@ -1,7 +1,7 @@
 var NAVTREE =
 [
 {% recursetree index.nav %}
-  [ "{{ node.name }}", {% if node.file %}"{% if node.isReference %}{{ node.externalReference }}{% endif %}{{ node.file }}{{ config.HTML_FILE_EXTENSION }}{% if node.anchor %}#{{ node.anchor }}{% endif %}"{% else %}null{% endif %},{% if not node.is_leaf_node %} [
+  [ "{{ node.name }}", {% if node.file %}"{% if node.isReference %}{{ node.externalReference }}{% endif %}{{ node.file|decodeURL }}{{ config.HTML_FILE_EXTENSION }}{% if node.anchor %}#{{ node.anchor }}{% endif %}"{% else %}null{% endif %},{% if not node.is_leaf_node %} [
      {{ children }}
   ]{% else %} null{% endif %} ]{% if not node.last %},{% endif %}
 {% endrecursetree %}

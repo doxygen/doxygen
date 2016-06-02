@@ -1292,6 +1292,64 @@ class FilterDivisibleBy
     }
 };
 
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "isRelativeURL" filter */
+class FilterIsRelativeURL
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::String)
+      {
+        QCString s = v.toString();
+        if (!s.isEmpty() && s.at(0)=='!') return TRUE;
+      }
+      return FALSE;
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "isRelativeURL" filter */
+class FilterIsAbsoluteURL
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::String)
+      {
+        QCString s = v.toString();
+        if (!s.isEmpty() && s.at(0)=='^') return TRUE;
+      }
+      return FALSE;
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "decodeURL" filter
+ *  The leading character is removed from the value in case it is a ^ or !.
+ *  - ^ is used to encode a absolute URL
+ *  - ! is used to encode a relative URL
+ */
+class FilterDecodeURL
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::String)
+      {
+        QCString s = v.toString();
+        if (!s.isEmpty() && (s.at(0)=='^' || s.at(0)=='!'))
+        {
+          return s.mid(1);
+        }
+      }
+      return v;
+    }
+};
+
 
 //--------------------------------------------------------------------
 
@@ -1343,25 +1401,28 @@ class TemplateFilterFactory
 };
 
 // register a handlers for each filter we support
-static TemplateFilterFactory::AutoRegister<FilterAdd>         fAdd("add");
-static TemplateFilterFactory::AutoRegister<FilterGet>         fGet("get");
-static TemplateFilterFactory::AutoRegister<FilterRaw>         fRaw("raw");
-static TemplateFilterFactory::AutoRegister<FilterList>        fList("list");
-static TemplateFilterFactory::AutoRegister<FilterAppend>      fAppend("append");
-static TemplateFilterFactory::AutoRegister<FilterLength>      fLength("length");
-static TemplateFilterFactory::AutoRegister<FilterNoWrap>      fNoWrap("nowrap");
-static TemplateFilterFactory::AutoRegister<FilterFlatten>     fFlatten("flatten");
-static TemplateFilterFactory::AutoRegister<FilterDefault>     fDefault("default");
-static TemplateFilterFactory::AutoRegister<FilterPrepend>     fPrepend("prepend");
-static TemplateFilterFactory::AutoRegister<FilterGroupBy>     fGroupBy("groupBy");
-static TemplateFilterFactory::AutoRegister<FilterRelative>    fRelative("relative");
-static TemplateFilterFactory::AutoRegister<FilterListSort>    fListSort("listsort");
-static TemplateFilterFactory::AutoRegister<FilterTexLabel>    fTexLabel("texLabel");
-static TemplateFilterFactory::AutoRegister<FilterTexIndex>    fTexIndex("texIndex");
-static TemplateFilterFactory::AutoRegister<FilterPaginate>    fPaginate("paginate");
-static TemplateFilterFactory::AutoRegister<FilterStripPath>   fStripPath("stripPath");
-static TemplateFilterFactory::AutoRegister<FilterAlphaIndex>  fAlphaIndex("alphaIndex");
-static TemplateFilterFactory::AutoRegister<FilterDivisibleBy> fDivisibleBy("divisibleby");
+static TemplateFilterFactory::AutoRegister<FilterAdd>                fAdd("add");
+static TemplateFilterFactory::AutoRegister<FilterGet>                fGet("get");
+static TemplateFilterFactory::AutoRegister<FilterRaw>                fRaw("raw");
+static TemplateFilterFactory::AutoRegister<FilterList>               fList("list");
+static TemplateFilterFactory::AutoRegister<FilterAppend>             fAppend("append");
+static TemplateFilterFactory::AutoRegister<FilterLength>             fLength("length");
+static TemplateFilterFactory::AutoRegister<FilterNoWrap>             fNoWrap("nowrap");
+static TemplateFilterFactory::AutoRegister<FilterFlatten>            fFlatten("flatten");
+static TemplateFilterFactory::AutoRegister<FilterDefault>            fDefault("default");
+static TemplateFilterFactory::AutoRegister<FilterPrepend>            fPrepend("prepend");
+static TemplateFilterFactory::AutoRegister<FilterGroupBy>            fGroupBy("groupBy");
+static TemplateFilterFactory::AutoRegister<FilterRelative>           fRelative("relative");
+static TemplateFilterFactory::AutoRegister<FilterListSort>           fListSort("listsort");
+static TemplateFilterFactory::AutoRegister<FilterTexLabel>           fTexLabel("texLabel");
+static TemplateFilterFactory::AutoRegister<FilterTexIndex>           fTexIndex("texIndex");
+static TemplateFilterFactory::AutoRegister<FilterPaginate>           fPaginate("paginate");
+static TemplateFilterFactory::AutoRegister<FilterStripPath>          fStripPath("stripPath");
+static TemplateFilterFactory::AutoRegister<FilterDecodeURL>          fDecodeURL("decodeURL");
+static TemplateFilterFactory::AutoRegister<FilterAlphaIndex>         fAlphaIndex("alphaIndex");
+static TemplateFilterFactory::AutoRegister<FilterDivisibleBy>        fDivisibleBy("divisibleby");
+static TemplateFilterFactory::AutoRegister<FilterIsRelativeURL>      fIsRelativeURL("isRelativeURL");
+static TemplateFilterFactory::AutoRegister<FilterIsAbsoluteURL>      fIsAbsoluteURL("isAbsoluteURL");
 
 //--------------------------------------------------------------------
 

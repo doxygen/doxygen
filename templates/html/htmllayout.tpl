@@ -270,6 +270,7 @@
 {% if config.GENERATE_HTMLHELP %}
   {% encoding config.CHM_INDEX_ENCODING|default:'CP1250' %}
     {% create 'index.hhp' from 'htmlhelpindexhhp.tpl' %}
+    {% create 'index.hhc' from 'htmlhelpindexhhc.tpl' %}
   {% endencoding %}
 {% endif %}
 
