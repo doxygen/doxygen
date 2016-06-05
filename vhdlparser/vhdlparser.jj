@@ -699,7 +699,13 @@ void component_instantiation_statement() :  {QCString s,s1;}
 s=identifier() <COLON_T>
  s1=instantiation_unit()
  {
-       addCompInst(s.lower().data(),s1.lower().data(),0,getLine());
+       QCString s3;
+       if (s1.contains("|")) {
+         s3=VhdlDocGen::getIndexWord(s1.data(),0);
+         s1=VhdlDocGen::getIndexWord(s1.data(),1);
+       }
+
+       addCompInst(s.lower().data(),s1.lower().data(),s3.data(),getLine());
  }
         [ LOOKAHEAD(generic_map_aspect()) generic_map_aspect() ]
         [ port_map_aspect() ] <SEMI_T>
@@ -1367,10 +1373,10 @@ QCString index_subtype_definition() :  {QCString s;}
  s=type_mark() <RANGE_T> <BOX_T> { return s+" range <> ";}
 }
 
-QCString instantiation_unit() :  {QCString s,s1,s2;}
+QCString instantiation_unit() :  {QCString s,s1,s2;Token *tok;}
 {
 [ <COMPONENT_T> ] s=identifier() {s1="component "; return s; }
-| <ENTITY_T>  [LOOKAHEAD(2)<BASIC_IDENTIFIER> <DOT_T>] s2=name() {s="entity "+s2;} [ <LPAREN_T> s1=identifier() <RPAREN_T> {s+="(";s+=s1;s+=")" ;}] { return s;}
+| <ENTITY_T>  [LOOKAHEAD(2)<BASIC_IDENTIFIER> <DOT_T>] s2=name() {s="entity|"+s2;} [ <LPAREN_T> s1=identifier() <RPAREN_T> {s+="(";s+=s1;s+=")" ;}] { return s;}
 | <CONFIGURATION_T> s=name() {s1="configuration ";return s;}
 }
 
@@ -1411,6 +1417,7 @@ subprogram_declaration() { return s;}
  s=object_class() s1=identifier()
  {
  if (parse_sec==GEN_SEC)
+    
     addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,currP,s1.data(),0,Public);
     return s;
     }
@@ -2848,8 +2855,9 @@ QCString param(): {QCString s,s1;Token *tok=0;}
                        if(tok)
                      {
                       s = tok->image.data();
-                         param_sec=0;
+
                     }
+                      param_sec=0;
                       return s+"("+s1+")";
                     }
 
