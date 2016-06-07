@@ -456,6 +456,30 @@ Go to the <a href="commands.html">next</a> section or return to the
       </docs>
       <value name=''/>
     </option>
+    <option type='string' id='REQUISITE_DOCUMENT_TYPE' format='string' defval='EDS'>
+      <docs>
+<![CDATA[
+ ]]>
+      </docs>
+    </option>
+	<option type='string' id='REQUISITE_DOCUMENT_PART' format='string' defval='CSD'>
+      <docs>
+<![CDATA[
+ ]]>
+      </docs>
+    </option>
+	<option type='string' id='REQUISITE_PROJECT' format='string' defval='NXVA10A'>
+      <docs>
+<![CDATA[
+ ]]>
+      </docs>
+    </option>
+	<option type='string' id='REQUISITE_BOOKMARK' format='string' defval='mrdoc'>
+      <docs>
+<![CDATA[
+ ]]>
+      </docs>
+    </option>
     <option type='list' id='STRIP_FROM_INC_PATH' format='string'>
       <docs>
 <![CDATA[
