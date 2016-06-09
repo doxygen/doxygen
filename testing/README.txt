@@ -10,14 +10,14 @@ difference the test fails and the difference (in diff -u format) will be shown.
 
 The runtest.py script responsible for running the tests takes a number of
 optional parameters:
--id n:        run test with number n only (the option may be specified
+--id n:        run test with number n only (the option may be specified
               multiple times) default is to run all tests.
--updateref:   update the reference files. Should be used in combination
+--updateref:   update the reference files. Should be used in combination
               with -id to update the reference file(s) for the given test.
--all:         can be used in combination with -updateref to update the
+--all:         can be used in combination with -updateref to update the
               reference files for all tests.
--doxygen exe: run the specified doxygen executable.
--xmllint exe: run the specified xmllint executable.
+--doxygen exe: run the specified doxygen executable.
+--xmllint exe: run the specified xmllint executable.
 
 The runtest.pl has the following dependenies on 3rd party tools:
 - python  to run the script
@@ -38,10 +38,10 @@ Example to run all tests:
     python runtest.py
 
 Example to run a test
-    python runtest.py -id 10
+    python runtest.py --id 10
 
 Example to update the reference files for a test
-    python runtest.py -updateref -id 10
+    python runtest.py --updateref --id 10
 
 There is also a CMakeLists.txt, which can be used from the build directory
 to run all tests by simply invoking 'make tests'.
