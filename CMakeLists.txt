@@ -75,7 +75,7 @@ if (sqlite3)
     find_package(SQLite3 REQUIRED)
 endif()
 
-#find_package(Iconv REQUIRED)
+find_package(Iconv REQUIRED)
 include_directories(${ICONV_INCLUDE_DIR})
 
 
