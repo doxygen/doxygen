@@ -9278,28 +9278,47 @@ static void copyLogo()
   }
 }
 
+/** copy list of files at given destination.
+@param files filelist to copy
+@param filesOption unused
+@param outputOption output directory name
+
+\note if files contains a directory name, then the directory will be recursively
+copied into the \c outputOption directory.
+*/
 static void copyExtraFiles(QStrList files,const QString &filesOption,const QCString &outputOption)
 {
-  uint i;
-  for (i=0; i<files.count(); ++i)
-  {
-    QCString fileName(files.at(i));
-
-    if (!fileName.isEmpty())
+    uint i;
+    for (i=0; i<files.count(); ++i)
     {
-      QFileInfo fi(fileName);
-      if (!fi.exists())
-      {
-        err("Extra file '%s' specified in %s does not exist!\n", fileName.data(),filesOption.data());
-      }
-      else
-      {
-        QCString destFileName = outputOption+"/"+fi.fileName().data();
-        Doxygen::indexList->addImageFile(fi.fileName().utf8());
-        copyFile(fileName, destFileName);
-      }
+        QCString fileName(files.at(i));
+
+        //msg("copyExtraFiles(%s)\n",fileName.data());
+
+        if (!fileName.isEmpty())
+        {
+            QFileInfo fi(fileName);
+
+            if (fi.isDir())
+            {
+                QCString sourceDirectory( fi.absFilePath().data());
+                QCString destinationDirectory = outputOption+"/";
+                // recursive directory copy
+                copyDirectory(sourceDirectory,destinationDirectory);
+            } else
+                if (!fi.exists())
+                {
+                    err("Extra file '%s' specified in %s does not exist!\n", fileName.data(),filesOption.data());
+                }
+                else
+                {
+                    // normal file copy
+                    QCString destFileName = outputOption+"/"+fi.fileName().data();
+                    Doxygen::indexList->addImageFile(fi.fileName().utf8());
+                    copyFile(fileName, destFileName);
+                }
+        }
     }
-  }
 }
 
 //----------------------------------------------------------------------------
@@ -9655,8 +9674,26 @@ int readDir(QFileInfo *fi,
 
 
 //----------------------------------------------------------------------------
-// read a file or all files in a directory and append their contents to the
-// input string. The names of the files are appended to the `fiList' list.
+/** read a file or all files in a directory
+ * and append their contents to the input string.
+ * The names of the files are appended to the `fiList' list.
+ *
+ * \param s file or directory name to read
+ * \param fnList
+ * \param fnDict
+ * \param exclDict
+ * \param patList
+ * \param resultList
+ * \param resultDict
+ * \param recursive
+ * \param errorIfNotExist
+ * \param killDict
+ * \param paths
+ *
+ * @return a number. not sure what it is.
+ *
+ *
+ **/
 
 int readFileOrDirectory(const char *s,
                         FileNameList *fnList,
@@ -11749,4 +11786,3 @@ void generateOutput()
   delete Doxygen::symbolStorage;
   g_successfulRun=TRUE;
 }
-

@@ -1892,6 +1892,9 @@ hr.footer {
  \ref cfg_html_footer "HTML_FOOTER" files to load these 
  files. In the \ref cfg_html_stylesheet "HTML_STYLESHEET" file, use the file name only. Also note that 
  the files will be copied as-is; there are no commands or markers available.
+ 
+ If a directory name is given in \c HTML_EXTRA_FILES, it is recursively copied
+ to the base HTML output directory.
 ]]>
       </docs>
     </option>
