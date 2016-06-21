@@ -36,9 +36,14 @@
 #include "htmlentity.h"
 #include "plantuml.h"
 #include "rtfincludable.h"
+#include "formula.h"
+#include <qfile.h>
+#include <qfileinfo.h>
+#include <qtextstream.h>
+#include <qdir.h>
 
-//#define DBG_RTF(x) m_t << x
-#define DBG_RTF(x) do {} while(0)
+#define DBG_RTF(x) m_t << x
+//#define DBG_RTF(x) do {} while(0)
 
 static QCString align(DocHtmlCell *cell)
 {
@@ -484,9 +489,10 @@ void RTFDocVisitor::visit(DocIncOperator *op)
 void RTFDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
-  // TODO: do something sensible here, like including a bitmap
+  QCString imgPath = f->relPath() + f->name() + ".png";
+  includePicturePreRTF(imgPath, true, false);
+  includePicturePostRTF(true, false);
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocFormula)}\n");
-  m_t << f->text();
   m_lastIsPara=FALSE;
 }
 
