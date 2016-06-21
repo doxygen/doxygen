@@ -36,14 +36,9 @@
 #include "htmlentity.h"
 #include "plantuml.h"
 #include "rtfincludable.h"
-#include "formula.h"
-#include <qfile.h>
-#include <qfileinfo.h>
-#include <qtextstream.h>
-#include <qdir.h>
 
-#define DBG_RTF(x) m_t << x
-//#define DBG_RTF(x) do {} while(0)
+//#define DBG_RTF(x) m_t << x
+#define DBG_RTF(x) do {} while(0)
 
 static QCString align(DocHtmlCell *cell)
 {
