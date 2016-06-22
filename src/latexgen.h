@@ -293,7 +293,7 @@ class LatexGenerator : public OutputGenerator
     void endTextBlock(bool) {}
 
     void startMemberDocPrefixItem() {}
-    void endMemberDocPrefixItem() {}
+    void endMemberDocPrefixItem() { t << "\\\\" << endl; }
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
     void startParameterType(bool,const char *);
