@@ -451,7 +451,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='string' id='VERSION_CONTROL_ROOT' format='string' depends='VERSION_CONTROL_URL'>
       <docs>
 <![CDATA[
- See VERSION_CONTROL_URL.
+ See \c VERSION_CONTROL_URL.
 ]]>
       </docs>
       <value name=''/>
@@ -459,24 +459,33 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='string' id='REQUISITE_DOCUMENT_TYPE' format='string' defval='EDS'>
       <docs>
 <![CDATA[
+ The \c REQUISITE_DOCUMENT_TYPE tag is used by \c mrdoc which is developed by Siemens Healthcare GmbH.
+ This tag defines of which type generated RequisitePro documents will be, e.g. EDS.
  ]]>
       </docs>
     </option>
 	<option type='string' id='REQUISITE_DOCUMENT_PART' format='string' defval='CSD'>
       <docs>
 <![CDATA[
+ The \c REQUISITE_DOCUMENT_PART tag is used by \c mrdoc which is developed by Siemens Healthcare GmbH.
+ This tag defines which part of a RequisitePro document will be generated, e.g. CSD.
  ]]>
       </docs>
     </option>
 	<option type='string' id='REQUISITE_PROJECT' format='string' defval='NXVA10A'>
       <docs>
 <![CDATA[
+ The \c REQUISITE_PROJECT tag is used by \c mrdoc which is developed by Siemens Healthcare GmbH.
+ This tag defines the project name to which generated RequisitePro documents belong, e.g. NVXVA10A.
  ]]>
       </docs>
     </option>
 	<option type='string' id='REQUISITE_BOOKMARK' format='string' defval='mrdoc'>
       <docs>
 <![CDATA[
+ The \c REQUISITE_BOOKMARK tag is used by \c mrdoc which is developed Siemens Healthcare GmbH.
+ This tag tells mrdoc which content of a RequisitePro document should be replaced.
+ This is always the name of the start bookmark, mrdoc then looks for an \c <REQUISITE_BOOKMARK>_end end bookmark.
  ]]>
       </docs>
     </option>
