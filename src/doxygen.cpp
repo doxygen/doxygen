@@ -9937,7 +9937,7 @@ static void devUsage()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2015\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2015\nPatches copyright Andreas Grimme 2016\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -11542,6 +11542,13 @@ void generateOutput()
   {
     g_s.begin("Generating bitmaps for formulas in HTML...\n");
     Doxygen::formulaList->generateBitmaps(Config_getString(HTML_OUTPUT));
+    g_s.end();
+  }
+
+  if (Doxygen::formulaList->count()>0 && generateRtf)
+  {
+    g_s.begin("Generating bitmaps for formulas in RTF...\n");
+    Doxygen::formulaList->generateBitmaps(Config_getString(RTF_OUTPUT));
     g_s.end();
   }
 

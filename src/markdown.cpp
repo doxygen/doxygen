@@ -49,6 +49,7 @@
 #include "config.h"
 #include "section.h"
 #include "message.h"
+#include "sourcefileurl.h"
 
 //-----------
 
@@ -102,6 +103,8 @@ static int            g_lineNr;
 
 
 //----------
+
+QCString currentMarkdownFileName;
 
 const int codeBlockIndent = 4;
 
@@ -676,7 +679,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   if (i>=size) return 0; // premature end of comment -> no link
   contentEnd=i;
   convertStringFragment(content,data+contentStart,contentEnd-contentStart);
-  //printf("processLink: content={%s}\n",content.data());
+  printf("processLink: content={%s}\n",content.data());
   if (!isImageLink && content.isEmpty()) return 0; // no link text
   i++; // skip over ]
 
@@ -690,6 +693,8 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   }
 
   bool explicitTitle=FALSE;
+  FileLink fileLink;
+
   if (i<size && data[i]=='(') // inline link
   {
     i++;
@@ -721,7 +726,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     if (i>=size || data[i]=='\n') return 0;
     convertStringFragment(link,data+linkStart,i-linkStart);
     link = link.stripWhiteSpace();
-    //printf("processLink: link={%s}\n",link.data());
+    // printf("processLink: link={%s}\n",link.data());
     if (link.isEmpty()) return 0;
     if (link.at(link.length()-1)=='>') link=link.left(link.length()-1);
 
@@ -799,7 +804,17 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     }
     i++;
   }
-  else if (i<size && data[i]!=':' && !content.isEmpty()) // minimal link ref notation [some id]
+  else if (resolveFileLink(currentMarkdownFileName, content, fileLink)) 	// [../../somefile.cpp] ref link to a source file
+  {
+    out.addStr("<a href=\"");
+    out.addStr(fileLink.url.utf8());
+    out.addStr("\"");
+    out.addStr(">");
+    processInline(out, fileLink.name.utf8(), fileLink.name.length());
+    out.addStr("</a>");
+    return contentEnd + 1;
+  }
+  else if (i < size && data[i] != ':' && !content.isEmpty()) // minimal link ref notation [some id]
   {
     LinkRef *lr = g_linkRefs.find(content.lower());
     //printf("processLink: minimal link {%s} lr=%p",content.data(),lr);
@@ -815,9 +830,9 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       isToc=TRUE;
       i=contentEnd;
     }
-    else
-    {
-      return 0;
+		else
+		{
+				return 0;
     }
     i++;
   }
@@ -851,7 +866,22 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
         out.addStr(title);
         out.addStr("\"");
       }
-    }
+
+			out.addStr("@image rtf ");
+			out.addStr(link.mid(fd ? 0 : 5));
+			if (!explicitTitle && !content.isEmpty())
+			{
+				out.addStr(" \"");
+				out.addStr(content);
+				out.addStr("\"");
+			}
+			else if ((content.isEmpty() || explicitTitle) && !title.isEmpty())
+			{
+				out.addStr(" \"");
+				out.addStr(title);
+				out.addStr("\"");
+			}
+		}
     else
     {
       out.addStr("<img src=\"");
@@ -893,6 +923,11 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     }
     else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1) 
     { // file/url link
+      FileLink fileLink;
+      if (resolveFileLink(currentMarkdownFileName, link, fileLink))
+      {
+        link = fileLink.url.utf8();
+      }
       out.addStr("<a href=\"");
       out.addStr(link);
       out.addStr("\"");
@@ -909,7 +944,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     }
     else // avoid link to e.g. F[x](y)
     {
-      //printf("no link for '%s'\n",link.data());
+      printf("no link for '%s'\n",link.data());
       return 0;
     }
   }
@@ -2358,7 +2393,8 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
   s = processBlocks(s,refIndent);
   //printf("======== Blocks =========\n---- output -----\n%s\n---------\n",s.data());
   // finally process the inline markup (links, emphasis and code spans)
-  processInline(out,s,s.length());
+	currentMarkdownFileName = fileName;
+	processInline(out,s,s.length());
   out.addChar(0);
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n---------\n",qPrint(input),qPrint(out.get()));
   return out.get();
