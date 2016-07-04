@@ -493,17 +493,21 @@ void RTFDocVisitor::visit(DocFormula *f)
     if (m_lastIsPara) m_t << "\\par" << endl;
 
 	if (line) {
-		m_t << "\\pard { \\field\\flddirty {\\*\\fldinst  INCLUDEPICTURE \"";
+		m_t << "\\pard {\\field\\flddirty {\\*\\fldinst  INCLUDEPICTURE \"";
+		m_t << imgPath;
+		m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt Formula}}" << endl;
+		m_lastIsPara=TRUE;
+		m_t << "}" <<endl;
 	}
 	else
 	{
 		m_t << "\\pard \\qc { \\field\\flddirty {\\*\\fldinst  INCLUDEPICTURE \"";
+		m_t << imgPath;
+		m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt Formula}}" << endl;
+		m_t << "\\par" << endl;
+		m_lastIsPara=TRUE;
+		m_t << "}" <<endl;
 	}
-    m_t << imgPath;
-    m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt Formula}}" << endl;
-    m_t << "\\par" << endl;
-    m_lastIsPara=TRUE;
-	m_t << "}" <<endl;
 
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocFormula)}\n");
   m_lastIsPara=FALSE;
