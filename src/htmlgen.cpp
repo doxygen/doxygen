@@ -292,7 +292,6 @@ static QCString substituteHtmlKeywords(const QCString &s,
                     "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n"
                     "<script type=\"text/javascript\">\n"
                     "  $(document).ready(initResizable);\n"
-                    "  $(window).load(resizeHeight);\n"
                     "</script>";
   }
 
@@ -305,19 +304,25 @@ static QCString substituteHtmlKeywords(const QCString &s,
     }
     searchCssJs += "<script type=\"text/javascript\" src=\"$relpath^search/search.js\"></script>\n";
 
-    if (!serverBasedSearch) 
+    if (!serverBasedSearch)
     {
-      searchCssJs += "<script type=\"text/javascript\">\n"
-                     "  $(document).ready(function() { init_search(); });\n"
-                     "</script>";
+      if (disableIndex)
+      {
+        searchCssJs += "<script type=\"text/javascript\">\n"
+                       "  $(document).ready(function() { init_search(); });\n"
+                       "</script>";
+      }
     }
-    else 
+    else
     {
-      searchCssJs += "<script type=\"text/javascript\">\n"
-                     "  $(document).ready(function() {\n"
-                     "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
-                     "  });\n"
-                     "</script>\n";
+      if (disableIndex)
+      {
+        searchCssJs += "<script type=\"text/javascript\">\n"
+                       "  $(document).ready(function() {\n"
+                       "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
+                       "  });\n"
+                       "</script>\n";
+      }
 
       // OPENSEARCH_PROVIDER {
       searchCssJs += "<link rel=\"search\" href=\"" + relPath +
@@ -727,6 +732,10 @@ void HtmlGenerator::init()
   {
     mgr.copyResource("svgpan.js",dname);
   }
+  if (!Config_getBool(DISABLE_INDEX))
+  {
+    mgr.copyResource("menu.js",dname);
+  }
 
   {
     QFile f(dname+"/dynsections.js");
@@ -808,13 +817,16 @@ void HtmlGenerator::writeSearchData(const char *dir)
   if (f.open(IO_WriteOnly))
   {
     FTextStream t(&f);
-    QCString searchCss = replaceColorMarkers(mgr.getAsString("search.css"));
-    searchCss = substitute(searchCss,"$doxygenversion",versionString);
+    QCString searchCss;
     if (Config_getBool(DISABLE_INDEX))
     {
-      // move up the search box if there are no tabs
-      searchCss = substitute(searchCss,"margin-top: 8px;","margin-top: 0px;");
+      searchCss = mgr.getAsString("search_nomenu.css");
     }
+    else
+    {
+      searchCss = mgr.getAsString("search.css");
+    }
+    searchCss = substitute(replaceColorMarkers(searchCss),"$doxygenversion",versionString);
     t << searchCss;
     Doxygen::indexList->addStyleSheetFile("search/search.css");
   }
@@ -1017,7 +1029,7 @@ void HtmlGenerator::startDoxyAnchor(const char *,const char *,
                                     const char *anchor, const char *,
                                     const char *)
 {
-  t << "<a class=\"anchor\" id=\"" << anchor << "\"></a>";
+  t << "<a id=\"" << anchor << "\"></a>";
 }
 
 void HtmlGenerator::endDoxyAnchor(const char *,const char *)
@@ -1193,7 +1205,7 @@ void HtmlGenerator::startSection(const char *lab,const char *,SectionInfo::Secti
     case SectionInfo::Paragraph:     t << "\n\n<h5>"; break;
     default: ASSERT(0); break;
   }
-  t << "<a class=\"anchor\" id=\"" << lab << "\"></a>";
+  t << "<a id=\"" << lab << "\"></a>";
 }
 
 void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
@@ -2070,59 +2082,35 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
                                    const char *file,
                                    const QCString &relPath)
 {
+  static bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
+  static bool searchEngine = Config_getBool(SEARCHENGINE);
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
-  LayoutNavEntry::Kind kind = (LayoutNavEntry::Kind)-1;
-  LayoutNavEntry::Kind altKind = (LayoutNavEntry::Kind)-1; // fall back for the old layout file
-  bool highlightParent=FALSE;
-  switch (hli) // map HLI enums to LayoutNavEntry::Kind enums
-  {
-    case HLI_Main:             kind = LayoutNavEntry::MainPage;         break;
-    case HLI_Modules:          kind = LayoutNavEntry::Modules;          break;
-    //case HLI_Directories:      kind = LayoutNavEntry::Dirs;             break;
-    case HLI_Namespaces:       kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;  break;
-    case HLI_Hierarchy:        kind = LayoutNavEntry::ClassHierarchy;   break;
-    case HLI_Classes:          kind = LayoutNavEntry::ClassIndex;       altKind = LayoutNavEntry::Classes;     break;
-    case HLI_Annotated:        kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;     break;
-    case HLI_Files:            kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;       break;
-    case HLI_NamespaceMembers: kind = LayoutNavEntry::NamespaceMembers; break;
-    case HLI_Functions:        kind = LayoutNavEntry::ClassMembers;     break;
-    case HLI_Globals:          kind = LayoutNavEntry::FileGlobals;      break;
-    case HLI_Pages:            kind = LayoutNavEntry::Pages;            break;
-    case HLI_Examples:         kind = LayoutNavEntry::Examples;         break;
-    case HLI_UserGroup:        kind = LayoutNavEntry::UserGroup;        break;
-    case HLI_ClassVisible:     kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;          
-                               highlightParent = TRUE; break;
-    case HLI_NamespaceVisible: kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;       
-                               highlightParent = TRUE; break;
-    case HLI_FileVisible:      kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;            
-                               highlightParent = TRUE; break;
-    case HLI_None:   break;
-    case HLI_Search: break;
-  }
-  
+
   if (compact)
   {
-    // find highlighted index item
-    LayoutNavEntry *hlEntry = root->find(kind,kind==LayoutNavEntry::UserGroup ? file : 0);
-    if (!hlEntry && altKind!=(LayoutNavEntry::Kind)-1) { hlEntry=root->find(altKind); kind=altKind; }
-    if (!hlEntry) // highlighted item not found in the index! -> just show the level 1 index...
+    t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>" << endl;
+    t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>" << endl;
+    t << "<script type=\"text/javascript\">" << endl;
+    t << "$(function() {" << endl;
+    t << "  initMenu('" << relPath << "',"
+      << (searchEngine?"true":"false") << ",'"
+      << theTranslator->trSearch() << "');" << endl;
+    if (Config_getBool(SEARCHENGINE))
     {
-      highlightParent=TRUE;
-      hlEntry = root->children().getFirst();
-      if (hlEntry==0) 
+      if (!serverBasedSearch)
       {
-        return; // argl, empty index!
+        t << "  $(document).ready(function() { init_search(); });\n";
+      }
+      else
+      {
+        t << "  $(document).ready(function() {\n"
+          << "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
+          << "  });\n";
       }
     }
-    if (kind==LayoutNavEntry::UserGroup)
-    {
-      LayoutNavEntry *e = hlEntry->children().getFirst();
-      if (e)
-      {
-        hlEntry = e; 
-      }
-    }
-    renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HLI_Search);
+    t << "});" << endl;
+    t << "</script>" << endl;
+    t << "<div id=\"main-nav\"></div>" << endl;
   }
   else
   {
@@ -2258,9 +2246,7 @@ void HtmlGenerator::writeSearchPage()
     // Write empty navigation path, to make footer connect properly
     if (generateTreeView)
     {
-      t << "</div><!-- doc-contents -->\n";
-      //t << "<div id=\"nav-path\" class=\"navpath\">\n";
-      //t << "  <ul>\n";
+      t << "</div><!-- doc-content -->\n";
     }
 
     writePageFooter(t,"Search","","");
@@ -2281,6 +2267,7 @@ void HtmlGenerator::writeSearchPage()
 void HtmlGenerator::writeExternalSearchPage()
 {
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  static bool disableIndex = Config_getBool(DISABLE_INDEX);
   QCString fileName = Config_getString(HTML_OUTPUT)+"/search"+Doxygen::htmlFileExtension;
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
@@ -2323,10 +2310,11 @@ void HtmlGenerator::writeExternalSearchPage()
 
     if (generateTreeView)
     {
-      t << "</div><!-- doc-contents -->" << endl;
+      t << "</div><!-- doc-content -->" << endl;
     }
 
     writePageFooter(t,"Search","","");
+
   }
   QCString scriptName = Config_getString(HTML_OUTPUT)+"/search/search.js";
   QFile sf(scriptName);

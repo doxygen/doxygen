@@ -1,9 +1,5 @@
 {# inputs: page, list #}
 {% extend 'htmlbase.tpl' %}
-{% block tabs %}
-{{ block.super }}
-{% include 'htmlmembertabs.tpl %}
-{% endblock %}
 
 {% block content %}
 <div class="contents">

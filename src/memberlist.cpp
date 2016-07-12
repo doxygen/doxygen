@@ -253,6 +253,32 @@ MemberListIterator::MemberListIterator(const QList<MemberDef> &l) :
 {
 }
 
+int MemberList::countEnumValues(MemberDef *md,bool setAnonEnumType) const
+{
+  int enumVars=0;
+  MemberListIterator vmli(*this);
+  MemberDef *vmd;
+  QCString name(md->name());
+  int i=name.findRev("::");
+  if (i!=-1) name=name.right(name.length()-i-2); // strip scope (TODO: is this needed?)
+  if (name[0]=='@') // anonymous enum => append variables
+  {
+    for ( ; (vmd=vmli.current()) ; ++vmli)
+    {
+      QCString vtype=vmd->typeString();
+      if ((vtype.find(name))!=-1) 
+      {
+        enumVars++;
+        if (setAnonEnumType)
+        {
+          vmd->setAnonymousEnumType(md);
+        }
+      }
+    }
+  }
+  return enumVars;
+}
+
 bool MemberList::declVisible() const
 {
   MemberListIterator mli(*this);
@@ -277,26 +303,9 @@ bool MemberList::declVisible() const
           return TRUE;
         case MemberType_Enumeration: 
           {
-            int enumVars=0;
-            MemberListIterator vmli(*this);
-            MemberDef *vmd;
-            QCString name(md->name());
-            int i=name.findRev("::");
-            if (i!=-1) name=name.right(name.length()-i-2); // strip scope (TODO: is this needed?)
-            if (name[0]=='@') // anonymous enum => append variables
-            {
-              for ( ; (vmd=vmli.current()) ; ++vmli)
-              {
-                QCString vtype=vmd->typeString();
-                if ((vtype.find(name))!=-1) 
-                {
-                  enumVars++;
-                }
-              }
-            }
             // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
-            if (enumVars==0) // show enum here
+            if (countEnumValues(md,FALSE)==0) // show enum here
             {
               return TRUE;
             }
@@ -368,27 +377,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           }
         case MemberType_Enumeration: 
           {
-            int enumVars=0;
-            MemberListIterator vmli(*this);
-            MemberDef *vmd;
-            QCString name(md->name());
-            int i=name.findRev("::");
-            if (i!=-1) name=name.right(name.length()-i-2); // strip scope (TODO: is this needed?)
-            if (name[0]=='@') // anonymous enum => append variables
-            {
-              for ( ; (vmd=vmli.current()) ; ++vmli)
-              {
-                QCString vtype=vmd->typeString();
-                if ((vtype.find(name))!=-1) 
-                {
-                  enumVars++;
-                  vmd->setAnonymousEnumType(md);
-                }
-              }
-            }
             // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
-            if (enumVars==0 && !hideUndocMembers) // show enum here
+            if (countEnumValues(md,TRUE)==0) // show enum here
             {
               //printf("Enum!!\n");
               if (first)

@@ -38,8 +38,8 @@ class ResourceMgr
     /** Registers an array of resources */
     void registerResources(const Resource resources[],int numResources);
 
-    /** Copies all resource belonging to a given category to a given target directory */
-    bool copyCategory(const char *categoryName,const char *targetDir) const;
+    /** Writes all resource belonging to a given category to a given target directory */
+    bool writeCategory(const char *categoryName,const char *targetDir) const;
 
     /** Copies a registered resource to a given target directory */
     bool copyResource(const char *name,const char *targetDir) const;

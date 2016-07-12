@@ -123,6 +123,7 @@ BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       
 
 add_library(doxycfg STATIC
     ${GENERATED_SRC}/lang_cfg.h
+    ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/configimpl.cpp
     ${GENERATED_SRC}/configoptions.cpp
     ${GENERATED_SRC}/configvalues.cpp

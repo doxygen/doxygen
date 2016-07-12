@@ -1777,7 +1777,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
 	     
       int index = getPrefixIndex(cd->className());
       //printf("name=%s index=%d %d\n",cd->className().data(),index,cd->protection());
-      startLetter=getUtf8CodeToUpper(cd->className(),index);
+      startLetter=getUtf8CodeToLower(cd->className(),index);
       indexLettersUsed.add(startLetter);
     }
   }
@@ -1828,7 +1828,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->className());
-      startLetter=getUtf8Code(cd->className(),index);
+      startLetter=getUtf8CodeToLower(cd->className(),index);
       // Do some sorting again, since the classes are sorted by name with 
       // prefix, which should be ignored really.
       if (cd->getLanguage()==SrcLangExt_VHDL)
@@ -2571,6 +2571,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
     if (!disableIndex)
     {
       ol.writeQuickLinks(TRUE,HLI_Functions,0);
+#if 0
       startQuickIndexList(ol);
 
       // index item for global member list
@@ -2601,6 +2602,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
         writeQuickMemberIndex(ol,g_memberIndexLetterUsed[hl],page,
             getCmhlInfo(hl)->fname,multiPageIndex);
       }
+#endif
     }
     ol.endQuickIndices();
     ol.writeSplitBar(fileName);
@@ -2743,6 +2745,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
     if (!disableIndex)
     {
       ol.writeQuickLinks(TRUE,HLI_Globals,0);
+#if 0
       startQuickIndexList(ol);
 
       // index item for all file member lists
@@ -2771,6 +2774,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
         writeQuickMemberIndex(ol,g_fileIndexLetterUsed[hl],page,
             getFmhlInfo(hl)->fname,multiPageIndex);
       }
+#endif
     }
     ol.endQuickIndices();
     ol.writeSplitBar(fileName);
@@ -2911,6 +2915,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
     if (!disableIndex)
     {
       ol.writeQuickLinks(TRUE,HLI_NamespaceMembers,0);
+#if 0
       startQuickIndexList(ol);
 
       // index item for all namespace member lists
@@ -2939,7 +2944,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
         writeQuickMemberIndex(ol,g_namespaceIndexLetterUsed[hl],page,
             getNmhlInfo(hl)->fname,multiPageIndex);
       }
-
+#endif
     }
     ol.endQuickIndices();
     ol.writeSplitBar(fileName);
@@ -4277,8 +4282,166 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
   }
 }
 
+static bool quickLinkVisible(LayoutNavEntry::Kind kind)
+{
+  static bool showFiles = Config_getBool(SHOW_FILES);
+  static bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
+  switch (kind)
+  {
+    case LayoutNavEntry::MainPage:         return TRUE; 
+    case LayoutNavEntry::User:             return TRUE;                                           
+    case LayoutNavEntry::UserGroup:        return TRUE;                                           
+    case LayoutNavEntry::Pages:            return indexedPages>0;
+    case LayoutNavEntry::Modules:          return documentedGroups>0;
+    case LayoutNavEntry::Namespaces:       return documentedNamespaces>0 && showNamespaces;
+    case LayoutNavEntry::NamespaceList:    return documentedNamespaces>0 && showNamespaces;
+    case LayoutNavEntry::NamespaceMembers: return documentedNamespaceMembers[NMHL_All]>0;
+    case LayoutNavEntry::Classes:          return annotatedClasses>0;
+    case LayoutNavEntry::ClassList:        return annotatedClasses>0; 
+    case LayoutNavEntry::ClassIndex:       return annotatedClasses>0; 
+    case LayoutNavEntry::ClassHierarchy:   return hierarchyClasses>0;
+    case LayoutNavEntry::ClassMembers:     return documentedClassMembers[CMHL_All]>0;
+    case LayoutNavEntry::Files:            return documentedHtmlFiles>0 && showFiles;
+    case LayoutNavEntry::FileList:         return documentedHtmlFiles>0 && showFiles;
+    case LayoutNavEntry::FileGlobals:      return documentedFileMembers[FMHL_All]>0;
+    //case LayoutNavEntry::Dirs:             return documentedDirs>0;
+    case LayoutNavEntry::Examples:         return Doxygen::exampleSDict->count()>0;
+  }
+  return FALSE;
+}
+
+template<class T>
+void renderMemberIndicesAsJs(FTextStream &t,
+    int total,const int *numDocumented,const LetterToIndexMap<MemberIndexList> *memberLists,
+    const T *(*getInfo)(int hl))
+{
+  // index items per category member lists
+  bool firstMember=TRUE;
+  for (int i=0;i<total;i++)
+  {
+    if (numDocumented[i]>0)
+    {
+      t << ",";
+      if (firstMember)
+      {
+        t << "children:[";
+        firstMember=FALSE;
+      }
+      t << endl << "{text:'" << convertToJSString(getInfo(i)->title) << "',url:'"
+        << convertToJSString(getInfo(i)->fname+Doxygen::htmlFileExtension) << "'";
+
+      // Check if we have many members, then add sub entries per letter...
+      // quick alphabetical index
+      bool quickIndex = numDocumented[i]>maxItemsBeforeQuickIndex;
+      if (quickIndex)
+      {
+        bool multiPageIndex=FALSE;
+        if (numDocumented[i]>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
+        {
+          multiPageIndex=TRUE;
+        }
+        t << ",children:[" << endl;
+        bool firstLetter=TRUE;
+        SIntDict<MemberIndexList>::Iterator it(memberLists[i]);
+        MemberIndexList *ml;
+        for (it.toFirst();(ml=it.current());++it)
+        {
+          if (!firstLetter) t << "," << endl;
+          uint letter = ml->letter();
+          QCString is = letterToLabel(letter);
+          QCString ci = QString(QChar(letter)).utf8();
+          QCString anchor;
+          QCString extension=Doxygen::htmlFileExtension;
+          QCString fullName = getInfo(i)->fname;
+          if (!multiPageIndex || firstLetter)
+            anchor=fullName+extension+"#index_";
+          else // other pages of multi page index
+            anchor=fullName+"_"+is+extension+"#index_";
+          t << "{text:'" << convertToJSString(ci) << "',url:'"
+            << convertToJSString(anchor+is) << "'}";
+          firstLetter=FALSE;
+        }
+        t << "]";
+      }
+      t << "}";
+    }
+  }
+  if (!firstMember)
+  {
+    t << "]";
+  }
+}
+
+static bool renderQuickLinksAsJs(FTextStream &t,LayoutNavEntry *root,bool first)
+{
+  QListIterator<LayoutNavEntry> li(root->children());
+  LayoutNavEntry *entry;
+  int count=0;
+  for (li.toFirst();(entry=li.current());++li)
+  {
+    if (entry->visible() && quickLinkVisible(entry->kind())) count++;
+  }
+  if (count>0) // at least one item is visible
+  {
+    bool firstChild = TRUE;
+    if (!first) t << ",";
+    t << "children:[" << endl;
+    for (li.toFirst();(entry=li.current());++li)
+    {
+      if (entry->visible() && quickLinkVisible(entry->kind()))
+      {
+        if (!firstChild) t << "," << endl;
+        firstChild=FALSE;
+        QCString url = entry->url();
+        t << "{text:'" << convertToJSString(entry->title()) << "',url:'"
+          << convertToJSString(url) << "'";
+        bool hasChildren=FALSE;
+        if (entry->kind()==LayoutNavEntry::NamespaceMembers)
+        {
+          renderMemberIndicesAsJs(t,NMHL_Total,documentedNamespaceMembers,
+                                  g_namespaceIndexLetterUsed,getNmhlInfo);
+        }
+        else if (entry->kind()==LayoutNavEntry::ClassMembers)
+        {
+          renderMemberIndicesAsJs(t,CMHL_Total,documentedClassMembers,
+                                  g_memberIndexLetterUsed,getCmhlInfo);
+        }
+        else if (entry->kind()==LayoutNavEntry::FileGlobals)
+        {
+          renderMemberIndicesAsJs(t,FMHL_Total,documentedFileMembers,
+                                  g_fileIndexLetterUsed,getFmhlInfo);
+        }
+        else // recursive into child list
+        {
+          hasChildren = renderQuickLinksAsJs(t,entry,FALSE);
+        }
+        if (hasChildren) t << "]";
+        t << "}";
+      }
+    }
+  }
+  return count>0;
+}
+
+static void writeMenuData()
+{
+  if (!Config_getBool(GENERATE_HTML) || Config_getBool(DISABLE_INDEX)) return;
+  QCString outputDir = Config_getBool(HTML_OUTPUT);
+  QFile f(outputDir+"/menudata.js");
+  LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
+  if (f.open(IO_WriteOnly))
+  {
+    FTextStream t(&f);
+    t << "var menudata={";
+    bool hasChildren = renderQuickLinksAsJs(t,root,TRUE);
+    if (hasChildren) t << "]";
+    t << "}" << endl;
+  }
+}
+
 void writeIndexHierarchy(OutputList &ol)
 {
+  writeMenuData();
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry();
   if (lne)
   {

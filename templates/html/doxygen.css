@@ -173,7 +173,7 @@ pre.fragment {
 }
 
 div.fragment {
-        padding: 4px 6px;
+        padding: 0px;
         margin: 4px 8px 4px 2px;
 	background-color: ##FC;
 	border: 1px solid ##CC;
@@ -230,6 +230,15 @@ span.lineno a {
 
 span.lineno a:hover {
 	background-color: #C8C8C8;
+}
+
+.lineno {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 div.ah, span.ah {

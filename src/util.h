@@ -474,8 +474,8 @@ void convertProtectionLevel(
                   );
 
 bool mainPageHasTitle();
-const QDict<int> &getExtensionLookup();
 bool openOutputFile(const char *outFile,QFile &f);
+void writeExtraLatexPackages(FTextStream &t);
 
 #endif
 

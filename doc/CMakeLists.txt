@@ -146,9 +146,9 @@ add_custom_target(doxygen_pdf
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex  .
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/manual.sty  .
         COMMAND ${EPSTOPDF} ${CMAKE_SOURCE_DIR}/doc/doxygen_logo.eps --outfile=doxygen_logo.pdf
-        COMMAND ${PDFLATEX}  doxygen_manual.tex
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
         COMMAND ${MAKEINDEX} doxygen_manual.idx
-        COMMAND ${PDFLATEX}  doxygen_manual.tex
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
         DEPENDS run_doxygen
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
 )

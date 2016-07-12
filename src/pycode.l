@@ -1007,7 +1007,15 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 					codify(yytext);
 					endFontClass();
 				    }
+      "self."{IDENTIFIER}/"."({IDENTIFIER}".")*{IDENTIFIER}"(" {
+				        codify("self.");
+				        findMemberLink(*g_code,&yytext[5]);
+	                            }
       "self."{IDENTIFIER}/"("       {
+				        codify("self.");
+				        findMemberLink(*g_code,&yytext[5]);
+	                            }
+      "self."{IDENTIFIER}/"."({IDENTIFIER}".")*{IDENTIFIER} {
 				        codify("self.");
 				        findMemberLink(*g_code,&yytext[5]);
 	                            }
@@ -1015,7 +1023,15 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 				        codify("self.");
 				        findMemberLink(*g_code,&yytext[5]);
 	                            }
+      "cls."{IDENTIFIER}/"."({IDENTIFIER}".")*{IDENTIFIER}"(" {
+				        codify("cls.");
+				        findMemberLink(*g_code,&yytext[4]);
+	                            }
       "cls."{IDENTIFIER}/"("       {
+				        codify("cls.");
+				        findMemberLink(*g_code,&yytext[4]);
+	                            }
+      "cls."{IDENTIFIER}/"."({IDENTIFIER}".")*{IDENTIFIER} {
 				        codify("cls.");
 				        findMemberLink(*g_code,&yytext[4]);
 	                            }

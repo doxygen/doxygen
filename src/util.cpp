@@ -2582,7 +2582,7 @@ QCString dateToString(bool includeTime)
     }
     else // all ok, replace current time with epoch value
     {
-      current.setTime_t((ulong)epoch); // TODO: add support for 64bit epoch value
+      current.setTimeUtc_t((ulong)epoch); // TODO: add support for 64bit epoch value
     }
   }
   return theTranslator->trDateTime(current.date().year(),
@@ -2981,6 +2981,8 @@ static void stripIrrelevantString(QCString &target,const QCString &str)
   So the following example, show what is stripped by this routine
   for const. The same is done for volatile.
 
+  For Java code we also strip the "final" keyword, see bug 765070.
+
   \code
   const T param     ->   T param          // not relevant
   const T& param    ->   const T& param   // const needed               
@@ -2993,6 +2995,7 @@ void stripIrrelevantConstVolatile(QCString &s)
   //printf("stripIrrelevantConstVolatile(%s)=",s.data());
   stripIrrelevantString(s,"const");
   stripIrrelevantString(s,"volatile");
+  stripIrrelevantString(s,"final");
   //printf("%s\n",s.data());
 }
 
@@ -7017,8 +7020,6 @@ void stringToSearchIndex(const QCString &docBaseUrl,const QCString &title,
 
 static QDict<int> g_extLookup;
 
-const QDict<int> &getExtensionLookup() { return g_extLookup; }
-
 static struct Lang2ExtMap
 {
   const char *langName;
@@ -7089,7 +7090,7 @@ void initDefaultExtensionMapping()
   g_extLookup.setAutoDelete(TRUE);
   //                  extension      parser id
   updateLanguageMapping(".dox",      "c");
-  //updateLanguageMapping(".txt",      "c"); // see bug 760836
+  updateLanguageMapping(".txt",      "c"); // see bug 760836
   updateLanguageMapping(".doc",      "c");
   updateLanguageMapping(".c",        "c");
   updateLanguageMapping(".C",        "c");
@@ -8676,5 +8677,25 @@ bool openOutputFile(const char *outFile,QFile &f)
     fileOpened = f.open(IO_WriteOnly|IO_Translate);
   }
   return fileOpened;
+}
+
+void writeExtraLatexPackages(FTextStream &t)
+{
+  // User-specified packages
+  QStrList &extraPackages = Config_getList(EXTRA_PACKAGES);
+  if (!extraPackages.isEmpty()) 
+  {
+    t << "% Packages requested by user\n";
+    const char *pkgName=extraPackages.first();
+    while (pkgName)
+    {
+      if ((pkgName[0] == '[') || (pkgName[0] == '{'))
+        t << "\\usepackage" << pkgName << "\n";
+      else
+        t << "\\usepackage{" << pkgName << "}\n";
+      pkgName=extraPackages.next();
+    }
+    t << "\n";
+  }
 }
 

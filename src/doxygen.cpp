@@ -2654,7 +2654,10 @@ static MemberDef *addVariableToFile(
  */
 static int findFunctionPtr(const QCString &type,int lang, int *pLength=0)
 {
-  if (lang == SrcLangExt_Fortran) return -1; // Fortran does not have function pointers
+  if (lang == SrcLangExt_Fortran || lang == SrcLangExt_VHDL)
+  {
+    return -1; // Fortran and VHDL do not have function pointers
+  }
   static const QRegExp re("([^)]*[\\*\\^][^)]*)");
   int i=-1,l;
   int bb=type.find('<');
@@ -10255,21 +10258,17 @@ void readConfiguration(int argc, char **argv)
         }
         else if (qstricmp(formatName,"html")==0)
         {
+          Config::init();
           if (optind+4<argc || QFileInfo("Doxyfile").exists())
+             // explicit config file mentioned or default found on disk
           {
             QCString df = optind+4<argc ? argv[optind+4] : QCString("Doxyfile");
-            if (!Config::parse(df))
+            if (!Config::parse(df)) // parse the config file
             {
               err("error opening or reading configuration file %s!\n",argv[optind+4]);
               cleanUpDoxygen();
               exit(1);
             }
-            Config::postProcess(TRUE);
-            Config::checkAndCorrect();
-          }
-          else
-          {
-            Config::init();
           }
           if (optind+3>=argc)
           {
@@ -10277,6 +10276,8 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
+          Config::postProcess(TRUE);
+          Config::checkAndCorrect();
 
           QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
           if (!setTranslator(outputLanguage))
@@ -10304,6 +10305,7 @@ void readConfiguration(int argc, char **argv)
         }
         else if (qstricmp(formatName,"latex")==0)
         {
+          Config::init();
           if (optind+4<argc || QFileInfo("Doxyfile").exists())
           {
             QCString df = optind+4<argc ? argv[optind+4] : QCString("Doxyfile");
@@ -10313,12 +10315,6 @@ void readConfiguration(int argc, char **argv)
               cleanUpDoxygen();
               exit(1);
             }
-            Config::postProcess(TRUE);
-            Config::checkAndCorrect();
-          }
-          else // use default config
-          {
-            Config::init();
           }
           if (optind+3>=argc)
           {
@@ -10326,6 +10322,8 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
+          Config::postProcess(TRUE);
+          Config::checkAndCorrect();
 
           QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
           if (!setTranslator(outputLanguage))
@@ -10413,6 +10411,13 @@ void readConfiguration(int argc, char **argv)
    **************************************************************************/
 
   Config::init();
+
+  if (genConfig && g_useOutputTemplate)
+  {
+    generateTemplateFiles("templates");
+    cleanUpDoxygen();
+    exit(0);
+  }
 
   if (genConfig)
   {
@@ -11674,7 +11679,7 @@ void generateOutput()
     QString oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString(HTML_OUTPUT));
     portable_sysTimerStart();
-	if (portable_system(Config_getString(HHC_LOCATION), "index.hhp", Debug::isFlagSet(Debug::ExtCmd)))
+    if (portable_system(Config_getString(HHC_LOCATION), "index.hhp", Debug::isFlagSet(Debug::ExtCmd))!=1)
     {
       err("failed to run html help compiler on index.hhp\n");
     }

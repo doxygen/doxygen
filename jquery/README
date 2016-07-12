@@ -7,8 +7,10 @@ packages:
     - jquery.ui.widget
     - jquery.ui.mouse
     - jquery.ui.resizable
-- jquery.hashchange: 1.3: http://benalman.com/projects/jquery-hashchange-plugin/
-- jquery.scrollTo: 1.4.2: https://github.com/flesler/jquery.scrollTo
-- jquery.powertip: 1.2.0: http://stevenbenner.github.io/jquery-powertip/
+- jquery.hashchange:   1.3: http://benalman.com/projects/jquery-hashchange-plugin/
+- jquery.scrollTo:   1.4.2: https://github.com/flesler/jquery.scrollTo
+- jquery.powertip:   1.2.0: http://stevenbenner.github.io/jquery-powertip/
+- jquery.touchpunch: 0.2.3: http://touchpunch.furf.com/
+- jquery.smartmenus: 1.0.0: http://www.smartmenus.org/
 
 The Makefile will built the jquery.js files used by doxygen.

@@ -119,15 +119,16 @@ class ConfigList : public ConfigOption
       m_doc = doc;
       m_widgetType = String;
     }
-    void addValue(const char *v) { m_value.append(v); }
+    void addValue(const char *v) { m_defaultValue.append(v); }
     void setWidgetType(WidgetType w) { m_widgetType = w; }
     WidgetType widgetType() const { return m_widgetType; }
     QStrList *valueRef() { return &m_value; }
     void writeTemplate(FTextStream &t,bool sl,bool);
     void substEnvVars();
-    void init() { m_value.clear(); }
+    void init() { m_value = m_defaultValue; }
   private:
     QStrList m_value;
+    QStrList m_defaultValue;
     WidgetType m_widgetType;
 };
 

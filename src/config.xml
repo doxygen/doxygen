@@ -617,6 +617,16 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='int' id='TOC_INCLUDE_HEADINGS' minval='0' maxval='99' defval='0' depends='MARKDOWN_SUPPORT'>
+      <docs>
+<![CDATA[
+ When the \c TOC_INCLUDE_HEADINGS tag is set to a non-zero value, all headings
+ up to that level are automatically included in the table of contents, even if
+ they do not have an id attribute.
+ \note This feature currently applies only to Markdown headings.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='AUTOLINK_SUPPORT' defval='1'>
       <docs>
 <![CDATA[
@@ -1334,8 +1344,6 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <value name='*.vhdl'/>
       <value name='*.ucf'/>
       <value name='*.qsf'/>
-      <value name='*.as'/>
-      <value name='*.js'/>
     </option>
     <option type='bool' id='RECURSIVE' defval='0'>
       <docs>
