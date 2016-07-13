@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *
+ *  
  *
  * Copyright (C) 1997-2015 by Parker Waechter & Dimitri van Heesch.
  *
@@ -46,7 +46,7 @@
 #include "rtfincludable.h"
 
 #define DBG_RTF(x) x;
- // #define DBG_RTF(x)
+// #define DBG_RTF(x) 
 
 static QCString dateToRTFDateString()
 {
@@ -56,18 +56,18 @@ static QCString dateToRTFDateString()
     d.date().year(), d.date().month(), d.date().day(),
     d.time().hour(), d.time().minute(), d.time().second());
   return result;
-}
+} 
 
 RTFGenerator::RTFGenerator() : OutputGenerator()
 {
-  dir = Config_getString(RTF_OUTPUT);
-  col = 0;
+  dir = Config_getString(RTF_OUTPUT); 
+  col = 0; 
   //insideTabbing=FALSE;
   m_listLevel = 0;
   m_bstartedBody = FALSE;
   m_omitParagraph = FALSE;
   m_numCols = 0;
-  m_prettyCode = Config_getBool(RTF_SOURCE_CODE);
+  m_prettyCode = Config_getBool(RTF_SOURCE_CODE); 
 }
 
 RTFGenerator::~RTFGenerator()
@@ -103,11 +103,11 @@ void RTFGenerator::writeStyleSheetFile(QFile &file)
   t << "# Remove a hash to activate a line.\n\n";
 
   int i;
-  for (i = 0; rtf_Style_Default[i].reference != 0; i++)
+  for (i = 0; rtf_Style_Default[i].reference != 0; i++) 
   {
     t << "# " << rtf_Style_Default[i].name << " = "
-      << rtf_Style_Default[i].reference
-      << rtf_Style_Default[i].definition << endl;
+      << rtf_Style_Default[i].reference 
+      << rtf_Style_Default[i].definition << endl; 
   }
 }
 
@@ -296,10 +296,10 @@ void RTFGenerator::beginRTFChapter()
   DBG_RTF(t << "{\\comment BeginRTFChapter}\n")
 
   if (isIncludableRtf())
-  {
-    t << rtf_Style_Reset;
-    t << "\\sect\\sbknone ";
-  }
+	{
+		t << "{";
+		t << rtf_Style_Reset;
+	}
   else
   {
     t << rtf_Style_Reset;
@@ -400,13 +400,13 @@ void RTFGenerator::startIndexSection(IndexSections is)
     break;
   case isTitlePageAuthor:
     t << "}\n";
-    if (rtf_subject)      t << "{\\subject " << rtf_subject << "}\n";
-    if (rtf_comments)     t << "{\\comment " << rtf_comments << "}\n";
-    if (rtf_company)      t << "{\\company " << rtf_company << "}\n";
-    if (rtf_author)       t << "{\\author " << rtf_author << "}\n";
-    if (rtf_manager)      t << "{\\manager " << rtf_manager << "}\n";
+    if (rtf_subject)      t << "{\\subject "  << rtf_subject      << "}\n";
+    if (rtf_comments)     t << "{\\comment "  << rtf_comments     << "}\n";
+    if (rtf_company)      t << "{\\company "  << rtf_company      << "}\n";
+    if (rtf_author)       t << "{\\author "   << rtf_author       << "}\n";
+    if (rtf_manager)      t << "{\\manager "  << rtf_manager      << "}\n";
     if (rtf_documentType) t << "{\\category " << rtf_documentType << "}\n";
-    if (rtf_keywords)     t << "{\\keywords " << rtf_keywords << "}\n";
+    if (rtf_keywords)     t << "{\\keywords " << rtf_keywords     << "}\n";
     t << "{\\comment ";
     break;
   case isMainPage:
@@ -559,6 +559,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
     break;
   }
 }
+
 
 void RTFGenerator::endIndexSection(IndexSections is)
 {
@@ -937,7 +938,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
     if (isIncludableRtf())
     {
-      t << "\\par ";
+		t << "\\par }";
     }
   }
   break;
@@ -1566,8 +1567,7 @@ void RTFGenerator::endMemberDoc(bool)
 
 void RTFGenerator::startDoxyAnchor(const char *, const char *,
   const char *, const char *,
-  const char *
-  )
+  const char *)
 {
   DBG_RTF(t << "{\\comment startDoxyAnchor}" << endl)
 }
