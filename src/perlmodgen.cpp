@@ -667,6 +667,14 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::PlantUML:  type = "plantuml";     break;
   }
   openItem(type);
+  if (s->hasCaption())
+  {
+     openSubBlock("caption");
+     QListIterator<DocNode> cli(s->children());
+     DocNode *n;
+     for (cli.toFirst();(n=cli.current());++cli) n->accept(this);
+     closeSubBlock();
+  }
   m_output.addFieldQuotedString("content", s->text());
   closeItem();
 }
