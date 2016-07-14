@@ -1269,17 +1269,43 @@ void PerlModDocVisitor::visitPre(DocParamList *pl)
   DocNode *param;
   for (li.toFirst();(param=li.current());++li)
   {
-    QCString s;
+    QCString name;
     if (param->kind()==DocNode::Kind_Word)
     {
-      s = ((DocWord*)param)->word(); 
+      name = ((DocWord*)param)->word();
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      s = ((DocLinkedWord*)param)->word(); 
+      name = ((DocLinkedWord*)param)->word();
     }
+
+    QCString dir = "";
+    DocParamSect *sect = 0;
+    if (pl->parent()->kind()==DocNode::Kind_ParamSect)
+    {
+      sect=(DocParamSect*)pl->parent();
+    }
+    if (sect && sect->hasInOutSpecifier())
+    {
+      if (pl->direction()!=DocParamSect::Unspecified)
+      {
+        if (pl->direction()==DocParamSect::In)
+        {
+          dir = "in";
+        }
+        else if (pl->direction()==DocParamSect::Out)
+        {
+          dir = "out";
+        }
+        else if (pl->direction()==DocParamSect::InOut)
+        {
+          dir = "in,out";
+        }
+      }
+    }
+
     m_output.openHash()
-      .addFieldQuotedString("name", s)
+      .addFieldQuotedString("name", name).addFieldQuotedString("dir", dir)
       .closeHash();
   }
   m_output.closeList()
