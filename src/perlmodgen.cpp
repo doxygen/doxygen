@@ -905,6 +905,7 @@ void PerlModDocVisitor::visitPre(DocSection *s)
 {
   QCString sect = QCString().sprintf("sect%d",s->level());
   openItem(sect);
+  m_output.addFieldQuotedString("title", s->title());
   openSubBlock("content");
 }
 
