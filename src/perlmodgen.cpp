@@ -653,8 +653,8 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
       m_output.add("<programlisting>");
       parseCode(m_ci,s->context(),s->text(),FALSE,0);
       m_output.add("</programlisting>");
-#endif
       return;
+#endif
     case DocVerbatim::Verbatim:  type = "preformatted"; break;
     case DocVerbatim::HtmlOnly:  type = "htmlonly";     break;
     case DocVerbatim::RtfOnly:   type = "rtfonly";      break;
