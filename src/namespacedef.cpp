@@ -1114,9 +1114,10 @@ bool NamespaceDef::isLinkableInProject() const
   int i = name().findRev("::");
   if (i==-1) i=0; else i+=2;
   static bool extractAnonNs = Config_getBool(EXTRACT_ANON_NSPACES);
+  static bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
   if (extractAnonNs &&                             // extract anonymous ns
-      name().mid(i,20)=="anonymous_namespace{"     // correct prefix
-     )                                             // not disabled by config
+      name().mid(i,20)=="anonymous_namespace{" &&  // correct prefix
+      showNamespaces)                              // not disabled by config
   {
     return TRUE;
   }
@@ -1124,7 +1125,8 @@ bool NamespaceDef::isLinkableInProject() const
     (hasDocumentation() || getLanguage()==SrcLangExt_CSharp) &&  // documented
     !isReference() &&      // not an external reference
     !isHidden() &&         // not hidden
-    !isArtificial();       // or artificial
+    !isArtificial() &&     // or artificial
+    showNamespaces;        // not disabled by config
 }
 
 bool NamespaceDef::isLinkable() const
