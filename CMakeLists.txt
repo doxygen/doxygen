@@ -65,7 +65,7 @@ endif ("${CMAKE_GENERATOR}" MATCHES "Ninja")
 
 find_program(DOT NAMES dot)
 find_package(PythonInterp REQUIRED)
-find_package(FLEX REQUIRED)
+find_package(FLEX 2.5.4 REQUIRED)
 find_package(BISON REQUIRED)
 find_package(Threads)
 

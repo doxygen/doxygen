@@ -239,6 +239,9 @@ extern void err_full(const char *file,int line,const char *fmt, ...)
   va_end(args);
 }
 
+#if defined(printlex)
+#undef printlex
+#endif
 void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
 {
   const char *enter_txt = "entering";
