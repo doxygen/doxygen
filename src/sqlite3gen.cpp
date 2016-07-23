@@ -741,7 +741,8 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
   QCString memType;
   // memberdef
-  bindTextParameter(memberdef_insert,":refid",md->anchor().data(),FALSE);
+  QCString refid = md->getOutputFileBase() + "_1" + md->anchor();
+  bindTextParameter(memberdef_insert,":refid", refid.data(),FALSE);
   bindIntParameter(memberdef_insert,":kind",md->memberType());
   bindIntParameter(memberdef_insert,":prot",md->protection());
 
