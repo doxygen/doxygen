@@ -1562,7 +1562,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
   if (compactLatex) level++;
   t << "\\" << levelLab[level]; 
 
-  t << "[{";
+  t << "{";
   if (pdfHyperlinks)
   {
     t << "\\texorpdfstring{";
@@ -1572,9 +1572,9 @@ void LatexGenerator::startMemberDoc(const char *clname,
   {
     t << "}{" << latexEscapePDFString(title) << "}";
   }
-  t << "}]";
-  t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
-  disableLinks=TRUE;
+  t << "}";
+  t << "\n{\\ttfamily ";
+  //disableLinks=TRUE;
 }
 
 void LatexGenerator::endMemberDoc(bool)
@@ -1588,10 +1588,6 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
                                      const char *anchor, const char *,
                                      const char *)
 {
-}
-
-void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
-{
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
@@ -1604,7 +1600,11 @@ void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
   t << "\\label{";
   if (fName) t << stripPath(fName);
   if (anchor) t << "_" << anchor;
-  t << "}" << endl;
+  t << "} " << endl;
+}
+
+void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
+{
 }
 
 void LatexGenerator::writeAnchor(const char *fName,const char *name)

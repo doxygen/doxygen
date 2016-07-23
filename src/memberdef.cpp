@@ -2608,7 +2608,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   }
   else if (isFunction())
   {
-    title+=argsString();
+    title += "()";
   }
   int i=0,l;
   static QRegExp r("@[0-9]+");
