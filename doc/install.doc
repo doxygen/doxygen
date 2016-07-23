@@ -106,7 +106,7 @@ Compilation is now done by performing the following steps:
 
 <li>Optional: Generate the user manual.
     
-        cmake -Dbuild_doc=YES
+        cmake -Dbuild_doc=YES ..
         make docs
 
     To let doxygen generate the HTML and PDF documentation.
