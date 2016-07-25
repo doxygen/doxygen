@@ -175,7 +175,7 @@ const char * schema_queries[][2] = {
       "\tattributes   TEXT,\n"
       "\ttype         TEXT,\n"
       "\tdeclname     TEXT,\n"
-      "\tdefnname     TEXT,\n"
+      "\tdefname     TEXT,\n"
       "\tarray        TEXT,\n"
       "\tdefval       TEXT,\n"
       "\tbriefdescription TEXT\n"
@@ -282,16 +282,16 @@ SqlStmt params_select = { "SELECT rowid FROM  params WHERE "
     "(attributes IS NULL OR attributes=:attributes) AND "
     "(type IS NULL OR type=:type) AND "
     "(declname IS NULL OR declname=:declname) AND "
-    "(defnname IS NULL OR defnname=:defnname) AND "
+    "(defname IS NULL OR defname=:defname) AND "
     "(array IS NULL OR array=:array) AND "
     "(defval IS NULL OR defval=:defval) AND "
     "(briefdescription IS NULL OR briefdescription=:briefdescription)"
     ,NULL
 };
 SqlStmt params_insert = { "INSERT INTO  params "
-  "( attributes, type, declname, defnname, array, defval, briefdescription ) "
+  "( attributes, type, declname, defname, array, defval, briefdescription ) "
     "VALUES "
-    "(:attributes,:type,:declname,:defnname,:array,:defval,:briefdescription)"
+    "(:attributes,:type,:declname,:defname,:array,:defval,:briefdescription)"
     ,NULL
 };
 //////////////////////////////////////////////////////
@@ -475,8 +475,8 @@ static void insertMemberFunctionParams(sqlite3 *db,int id_memberdef,MemberDef *m
       }
       if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
       {
-        bindTextParameter(params_select,":defnname",defArg->name.data());
-        bindTextParameter(params_insert,":defnname",defArg->name.data());
+        bindTextParameter(params_select,":defname",defArg->name.data());
+        bindTextParameter(params_insert,":defname",defArg->name.data());
       }
       if (!a->array.isEmpty())
       {
@@ -517,7 +517,7 @@ static void insertMemberDefineParams(sqlite3 *db,int id_memberdef,MemberDef *md,
       Argument *a;
       for (ali.toFirst();(a=ali.current());++ali)
       {
-        bindTextParameter(params_insert,":defnname",a->type.data());
+        bindTextParameter(params_insert,":defname",a->type.data());
         int id_param=step(db,params_insert,TRUE);
 
         bindIntParameter(memberdef_params_insert,":id_memberdef",id_memberdef);
@@ -686,8 +686,8 @@ static void writeTemplateArgumentList(sqlite3* db,
       {
         bindTextParameter(params_select,":declname",a->name);
         bindTextParameter(params_insert,":declname",a->name);
-        bindTextParameter(params_select,":defnname",a->name);
-        bindTextParameter(params_insert,":defnname",a->name);
+        bindTextParameter(params_select,":defname",a->name);
+        bindTextParameter(params_insert,":defname",a->name);
       }
       if (!a->defval.isEmpty())
       {
