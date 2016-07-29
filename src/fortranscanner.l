@@ -548,14 +548,15 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <InterfaceBody>module{BS}procedure      { yy_push_state(YY_START,yyscanner);
                                           BEGIN(ModuleProcedure);
                                         }
-<ModuleProcedure>{ID}                   { if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
+<ModuleProcedure>{ID}                   { QCString name = QCString(yytext).lower();
+                                          if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
                                           {
-                                            addInterface(yyscanner,yytext, yyextra->ifType);
+                                            addInterface(yyscanner,name, yyextra->ifType);
                                             startScope(yyscanner,yyextra->last_entry.get());
                                           }
 
                                           yyextra->current->section = Entry::FUNCTION_SEC ;
-                                          yyextra->current->name = yytext;
+                                          yyextra->current->name = name; 
                                           yyextra->moduleProcedures.push_back(yyextra->current);
                                           addCurrentEntry(yyscanner,true);
                                         }
@@ -1205,12 +1206,20 @@ private                                 {
 <Subprog>{BS}                           {   /* ignore white space */   }
 <Subprog>{ID}                           { yyextra->current->name = yytext;
                                           //cout << "1a==========> got " << yyextra->current->type << " " << yytext << " " << yyextra->lineNr << endl;
-                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()].returnName = yyextra->current->name.lower();
+                                          QCString returnName = yyextra->current->name.lower();
+                                          /* if type is part of a module, mod name is necessary for output */
+                                          if ((yyextra->current_root) && 
+                                              (yyextra->current_root->section ==  Entry::CLASS_SEC ||
+                                               yyextra->current_root->section ==  Entry::NAMESPACE_SEC)) 
+                                          {
+                                            yyextra->current->name= yyextra->current_root->name + "::" + yyextra->current->name;
+                                          }
+                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()].returnName = returnName;
 
                                           if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
                                           {
                                             yyextra->current_root->name = substitute(
-                                                yyextra->current_root->name, "$interface$", yytext);
+                                                yyextra->current_root->name, "$interface$", QCString(yytext).lower());
                                           }
 
                                           BEGIN(Parameterlist);
@@ -1859,16 +1868,37 @@ static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> 
 void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  for (const auto &ce1 : yyextra->moduleProcedures)
+  if (yyextra->moduleProcedures.empty()) return;
+ 
+  // build up map of available functions
+  std::map<std::string,std::shared_ptr<Entry>> procMap;
   {
-    // check all entries in this module
-    for (const auto &ce2 : current_root->children())
+    for (const auto& cf: current_root->children())
     {
-      if (ce1->name == ce2->name)
+      if (cf->section != Entry::FUNCTION_SEC)
+        continue;
+
+      // remove scope from name
+      QCString name = cf->name;
       {
-        copyEntry(ce1, ce2);
+        int end = name.findRev(":");
+        if (end != -1) 
+          name.remove(0, end+1);
       }
-    } // for procedures in yyextra->current module
+
+      procMap.insert(std::make_pair(name.str(), cf));
+    }
+  }
+
+
+  // for all module procedures
+  for (const auto& ce1: yyextra->moduleProcedures)
+  {
+    if (procMap.find(ce1->name.str())!=procMap.end())
+    {
+      std::shared_ptr<Entry> proc = procMap[ce1->name.str()];
+      copyEntry(ce1, proc);
+    }
   } // for all interface module procedures
   yyextra->moduleProcedures.clear();
 }
@@ -2317,7 +2347,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     // iterate variables: get and apply yyextra->modifiers
     for (const auto &ce : scope->children())
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC )
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC && ce->section != Entry::FUNCTION_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
@@ -2325,7 +2355,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
         applyModifiers(ce.get(), mdfsMap[ce->name.lower().str()]);
 
       // remove prefix for variable names
-      if (ce->section == Entry::VARIABLE_SEC)
+      if (ce->section == Entry::VARIABLE_SEC || ce->section == Entry::FUNCTION_SEC)
       {
         int end = ce->name.findRev(":");
         if (end != -1) 
