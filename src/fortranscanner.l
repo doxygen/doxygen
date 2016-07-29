@@ -2087,6 +2087,14 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
       if (mdfsMap.contains(ce->name.lower()))
         applyModifiers(ce, mdfsMap[ce->name.lower()]);
+
+      // remove prefix for variable names
+      if (ce->section == Entry::VARIABLE_SEC)
+      {
+        int end = ce->name.findRev(":");
+        if (end != -1) 
+          ce->name.remove(0, end+1);
+      }
     }
   }
 
