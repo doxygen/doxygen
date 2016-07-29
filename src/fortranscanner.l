@@ -264,7 +264,7 @@ ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL
 ACCESS_SPEC (PRIVATE|PUBLIC)
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
 /* Assume that attribute statements are almost the same as attributes. */
-ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
+ATTR_STMT {ATTR_SPEC}|DIMENSION
 EXTERNAL_STMT (EXTERNAL)
 
 CONTAINS  CONTAINS
@@ -563,10 +563,12 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
   /*------- access specification --------------------------------------------------------------------------*/
 
-<ModuleBody>private/{BS}(\n|"!")         { defaultProtection = Private;
+<ModuleBody,TypedefBody,TypedefBodyContains>private/{BS}(\n|"!") {
+                                           defaultProtection = Private;
                                            current->protection = defaultProtection ;
                                          }
-<ModuleBody>public/{BS}(\n|"!")          { defaultProtection = Public;
+<ModuleBody,TypedefBody,TypedefBodyContains>public/{BS}(\n|"!")  {
+                                           defaultProtection = Public;
                                            current->protection = defaultProtection ;
                                          }
 
@@ -580,8 +582,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           }
 
                                           yy_push_state(Typedef);
-                                          current->protection = defaultProtection;
-                                          typeProtection = defaultProtection;
+                                          current->protection = Package; // invalid in Fortran, replaced below
+                                          typeProtection = Public;
                                           typeMode = true;
                                         }
 <Typedef>{
@@ -598,11 +600,9 @@ extends{ARGS}                           {
                                         }
 public                                  {
                                           current->protection = Public;
-                                          typeProtection = Public;
                                         }
 private                                 {
                                           current->protection = Private;
-                                          typeProtection = Private;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -621,6 +621,20 @@ private                                 {
                                                || current_root->section == Entry::NAMESPACE_SEC))
                                           {
                                             current->name = current_root->name + "::" + current->name;
+                                          }
+
+                                          // set modifiers to allow adjusting public/private in surrounding module scope
+                                          if( current->protection == Package )
+                                          {
+                                            current->protection = defaultProtection;
+                                          }
+                                          else if( current->protection == Public )
+                                          {
+                                            modifiers[current_root][current->name.lower()] |= QCString("public");
+                                          }
+                                          else if( current->protection == Private )
+                                          {
+                                            modifiers[current_root][current->name.lower()] |= QCString("private");
                                           }
 
                                           addCurrentEntry(1);
@@ -803,9 +817,24 @@ private                                 {
                                           //cout << "5=========> got variable: " << argType << "::" << yytext << endl;
  					  /* work around for bug in QCString.replace (QCString works) */
 					  QCString name=yytext;
-                                          name = name.lower();
+            name = name.lower();
+            /* if variable/type/etc is part of a module, mod name is necessary for output */
+            // get surrounding state
+            int currentState = YY_START;
+            yy_pop_state();
+            int outerState = YY_START;
+            yy_push_state(currentState);
+            if( outerState == Start || outerState == ModuleBody )
+            {
+              if ((current_root) && 
+                  (current_root->section == Entry::CLASS_SEC
+                   || current_root->section == Entry::NAMESPACE_SEC))
+              {
+                name = current_root->name + "::" + name;
+              }
+            }
 					  /* remember attributes for the symbol */
-					  modifiers[current_root][name.lower()] |= currentModifiers;
+					  modifiers[current_root][name] |= currentModifiers;
 					  argName= name;
 
 					  v_type= V_IGNORE;
@@ -2052,7 +2081,7 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
     Entry *ce;
     for (;(ce=eli.current());++eli) 
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC )
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
