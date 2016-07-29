@@ -1042,7 +1042,15 @@ private                                 {
 <Subprog>{BS}                          {   /* ignore white space */   }
 <Subprog>{ID}                          { current->name = yytext;
                                          //cout << "1a==========> got " << current->type << " " << yytext << " " << yyLineNr << endl;
-                                         modifiers[current_root][current->name.lower()].returnName = current->name.lower();
+                                         QCString returnName = current->name.lower();
+                                         /* if type is part of a module, mod name is necessary for output */
+                                         if ((current_root) && 
+                                             (current_root->section ==  Entry::CLASS_SEC ||
+                                              current_root->section ==  Entry::NAMESPACE_SEC)) 
+                                         {
+                                           current->name= current_root->name + "::" + current->name;
+                                         }
+                                         modifiers[current_root][current->name.lower()].returnName = returnName;
 
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
@@ -2081,7 +2089,7 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
     Entry *ce;
     for (;(ce=eli.current());++eli) 
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC )
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC && ce->section != Entry::FUNCTION_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
@@ -2089,7 +2097,7 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
         applyModifiers(ce, mdfsMap[ce->name.lower()]);
 
       // remove prefix for variable names
-      if (ce->section == Entry::VARIABLE_SEC)
+      if (ce->section == Entry::VARIABLE_SEC || ce->section == Entry::FUNCTION_SEC)
       {
         int end = ce->name.findRev(":");
         if (end != -1) 
