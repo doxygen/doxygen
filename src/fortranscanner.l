@@ -291,7 +291,7 @@ ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL
 ACCESS_SPEC (PRIVATE|PUBLIC)
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}((,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})|(,{BS}NAME{BS}"="{BS}"'"(.*)"'"{BS}))?")"
 /* Assume that attribute statements are almost the same as attributes. */
-ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
+ATTR_STMT {ATTR_SPEC}|DIMENSION
 EXTERNAL_STMT (EXTERNAL)
 
 CONTAINS  CONTAINS
@@ -636,12 +636,14 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
   /*------- access specification --------------------------------------------------------------------------*/
 
-<ModuleBody>private/{BS}(\n|"!")        { yyextra->defaultProtection = Private;
-                                          yyextra->current->protection = yyextra->defaultProtection ;
-                                        }
-<ModuleBody>public/{BS}(\n|"!")         { yyextra->defaultProtection = Public;
-                                          yyextra->current->protection = yyextra->defaultProtection ;
-                                        }
+<ModuleBody,TypedefBody,TypedefBodyContains>private/{BS}(\n|"!") {
+                                           yyextra->defaultProtection = Private;
+                                           yyextra->current->protection = yyextra->defaultProtection ;
+                                         }
+<ModuleBody,TypedefBody,TypedefBodyContains>public/{BS}(\n|"!")  {
+                                           yyextra->defaultProtection = Public;
+                                           yyextra->current->protection = yyextra->defaultProtection ;
+                                         }
 
  /*------- type definition  -------------------------------------------------------------------------------*/
 
@@ -654,8 +656,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           }
 
                                           yy_push_state(Typedef,yyscanner);
-                                          yyextra->current->protection = yyextra->defaultProtection;
-                                          yyextra->typeProtection = yyextra->defaultProtection;
+                                          yyextra->current->protection = Package; // invalid in Fortran, replaced below
+                                          yyextra->typeProtection = Public;
                                           yyextra->typeMode = true;
                                         }
 <Typedef>{
@@ -672,11 +674,9 @@ extends{ARGS}                           {
                                         }
 public                                  {
                                           yyextra->current->protection = Public;
-                                          yyextra->typeProtection = Public;
                                         }
 private                                 {
                                           yyextra->current->protection = Private;
-                                          yyextra->typeProtection = Private;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -695,6 +695,20 @@ private                                 {
                                                yyextra->current_root->section == Entry::NAMESPACE_SEC))
                                           {
                                             yyextra->current->name = yyextra->current_root->name + "::" + yyextra->current->name;
+                                          }
+
+                                          // set modifiers to allow adjusting public/private in surrounding module scope
+                                          if( yyextra->current->protection == Package )
+                                          {
+                                            yyextra->current->protection = yyextra->defaultProtection;
+                                          }
+                                          else if( yyextra->current->protection == Public )
+                                          {
+                                            yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("public");
+                                          }
+                                          else if( yyextra->current->protection == Private )
+                                          {
+                                            yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("private");
                                           }
 
                                           addCurrentEntry(yyscanner,true);
@@ -899,8 +913,23 @@ private                                 {
                                           /* work around for bug in QCString.replace (QCString works) */
                                           QCString name=yytext;
                                           name = name.lower();
+                                          /* if variable/type/etc is part of a module, mod name is necessary for output */
+                                          // get surrounding state
+                                          int currentState = YY_START;
+                                          yy_pop_state(yyscanner);
+                                          int outerState = YY_START;
+                                          yy_push_state(currentState,yyscanner);
+                                          if( outerState == Start || outerState == ModuleBody )
+                                          {
+                                            if ((yyextra->current_root) && 
+                                                (yyextra->current_root->section == Entry::CLASS_SEC
+                                                 || yyextra->current_root->section == Entry::NAMESPACE_SEC))
+                                            {
+                                              name = yyextra->current_root->name + "::" + name;
+                                            }
+                                          }
                                           /* remember attributes for the symbol */
-                                          yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
+                                          yyextra->modifiers[yyextra->current_root][name.str()] |= yyextra->currentModifiers;
                                           yyextra->argName= name;
 
                                           yyextra->vtype= V_IGNORE;
@@ -2288,12 +2317,20 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     // iterate variables: get and apply yyextra->modifiers
     for (const auto &ce : scope->children())
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC )
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
       if (mdfsMap.find(ce->name.lower().str())!=mdfsMap.end())
         applyModifiers(ce.get(), mdfsMap[ce->name.lower().str()]);
+
+      // remove prefix for variable names
+      if (ce->section == Entry::VARIABLE_SEC)
+      {
+        int end = ce->name.findRev(":");
+        if (end != -1) 
+          ce->name.remove(0, end+1);
+      }
     }
   }
 
