@@ -47,6 +47,7 @@
 #include "classlist.h"
 #include "namespacedef.h"
 #include "filename.h"
+#include "rtfincludable.h"
 
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30
@@ -3954,16 +3955,20 @@ static void writeIndex(OutputList &ol)
         ol.parseText(title);
         ol.endIndexSection(isPageDocumentation);
 
-        ol.pushGeneratorState(); // write TOC title (RTF only)
-          ol.disableAllBut(OutputGenerator::RTF);
-          ol.startIndexSection(isPageDocumentation2);
-          ol.parseText(title);
-          ol.endIndexSection(isPageDocumentation2);
-        ol.popGeneratorState();
+        if (isTableOfContentEntriesEnabled())
+        {
+            ol.pushGeneratorState(); // write TOC title (RTF only)
+            ol.disableAllBut(OutputGenerator::RTF);
+            ol.startIndexSection(isPageDocumentation2);
+            ol.parseText(title);
+            ol.endIndexSection(isPageDocumentation2);
+            ol.popGeneratorState();
+        }
 
         ol.writeAnchor(0,pd->getOutputFileBase());
 
         ol.writePageLink(pd->getOutputFileBase(),first);
+
         first=FALSE;
 
         if (isCitationPage)

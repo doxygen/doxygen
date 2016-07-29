@@ -35,6 +35,7 @@
 #include "config.h"
 #include "htmlentity.h"
 #include "plantuml.h"
+#include "rtfincludable.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -483,10 +484,31 @@ void RTFDocVisitor::visit(DocIncOperator *op)
 void RTFDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
-  // TODO: do something sensible here, like including a bitmap
-  DBG_RTF("{\\comment RTFDocVisitor::visit(DocFormula)}\n");
-  m_t << f->text();
-  m_lastIsPara=FALSE;
+  bool line = f->isInline();
+  QCString imgPath = f->relPath() + f->name() + ".png";
+
+    if (!line) m_t << "\\par" << endl;
+    m_t << "{" << endl;
+    m_t << rtf_Style_Reset << endl;
+    if (m_lastIsPara) m_t << "\\par" << endl;
+
+	if (line) {
+		m_t << "\\pard {\\field\\flddirty {\\*\\fldinst  INCLUDEPICTURE \"";
+		m_t << imgPath;
+		m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt Formula}}" << endl;
+	}
+	else
+	{
+		m_t << "\\pard \\qc { \\field\\flddirty {\\*\\fldinst  INCLUDEPICTURE \"";
+		m_t << imgPath;
+		m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt Formula}}" << endl;
+		m_t << "\\par" << endl;
+	}
+
+	m_lastIsPara=TRUE;
+	m_t << "}" <<endl;		
+	DBG_RTF("{\\comment RTFDocVisitor::visit(DocFormula)}\n");
+	m_lastIsPara=FALSE;
 }
 
 void RTFDocVisitor::visit(DocIndexEntry *i)
@@ -543,7 +565,7 @@ void RTFDocVisitor::visitPost(DocAutoList *)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocAutoList)}\n");
-  m_t << "\\par";
+  if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "}" << endl;
   m_lastIsPara=TRUE;
 }
@@ -746,7 +768,11 @@ void RTFDocVisitor::visitPre(DocSection *s)
   // make table of contents entry
   filter(s->title());
   m_t << endl << "\\par" << "}" << endl;
-  m_t << "{\\tc\\tcl" << level << " \\v ";
+  m_t << "{";
+  if (isTableOfContentEntriesEnabled())
+  {
+    m_t << "\\tc\\tcl" << level << " \\v ";
+  }
   filter(s->title());
   m_t << "}" << endl;
   m_lastIsPara=TRUE;
@@ -1011,12 +1037,16 @@ void RTFDocVisitor::visitPre(DocHtmlHeader *header)
   m_t << "{" // start section
       << rtf_Style_Reset;
   QCString heading;
-  int level = QMIN(header->level()+2,4);
+  int level = QMIN(header->level(), 4);
   heading.sprintf("Heading%d",level);
   // set style
   m_t << rtf_Style[heading]->reference;
   // make open table of contents entry that will be closed in visitPost method
-  m_t << "{\\tc\\tcl" << level << " ";
+  m_t << "{";
+  if (isTableOfContentEntriesEnabled())
+  {
+    m_t << "\\tc\\tcl" << level << " ";
+  }
   m_lastIsPara=FALSE;
 }
 
@@ -1024,7 +1054,7 @@ void RTFDocVisitor::visitPost(DocHtmlHeader *)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocHtmlHeader)}\n");
-  // close open table of contens entry
+  // close open table of contents entry
   m_t << "} \\par";
   m_t << "}" << endl; // end section
   m_lastIsPara=TRUE;
