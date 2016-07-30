@@ -1522,8 +1522,10 @@ void LatexGenerator::startMemberDoc(const char *clname,
                                     const char *memname,
                                     const char *,
                                     const char *title,
+                                    int memCount,
+                                    int memTotal,
                                     bool showInline)
-{ 
+{
   if (memname && memname[0]!='@')
   {
     t << "\\index{";
@@ -1550,7 +1552,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
       t << latexEscapeLabelName(clname,insideTabbing);
       t << "@{";
       t << latexEscapeIndexChars(clname,insideTabbing);
-      t << "}"; 
+      t << "}";
     }
     t << "}" << endl;
   }
@@ -1560,7 +1562,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
   int level=0;
   if (showInline) level+=2;
   if (compactLatex) level++;
-  t << "\\" << levelLab[level]; 
+  t << "\\" << levelLab[level];
 
   t << "{";
   if (pdfHyperlinks)
@@ -1572,6 +1574,10 @@ void LatexGenerator::startMemberDoc(const char *clname,
   {
     t << "}{" << latexEscapePDFString(title) << "}";
   }
+  if (memTotal>1)
+  {
+    t << "\\hspace{0.1cm}{\\footnotesize\\ttfamily [" << memCount << "/" << memTotal << "]}";
+  }
   t << "}";
   t << "\n{\\ttfamily ";
   //disableLinks=TRUE;
@@ -1580,7 +1586,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
 void LatexGenerator::endMemberDoc(bool)
 {
   disableLinks=FALSE;
-  t << "}";
+  t << "}\n\n";
   //if (Config_getBool(COMPACT_LATEX)) t << "\\hfill";
 }
 
@@ -1992,7 +1998,7 @@ void LatexGenerator::startParameterList(bool openBracket)
 {
   /* start of ParameterType ParameterName list */
   if (openBracket) t << "(";
-  t << endl << "\\begin{DoxyParamCaption}" << endl;
+  t << "\\begin{DoxyParamCaption}";
 }
 
 void LatexGenerator::endParameterList()
@@ -2015,13 +2021,12 @@ void LatexGenerator::startParameterName(bool /*oneArgOnly*/)
   t << "{";
 }
 
-void LatexGenerator::endParameterName(bool last,bool /* emptyList */,bool closeBracket)
+void LatexGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
 {
-  t << "}" << endl;
-
+  t << " }";
   if (last)
   {
-    t << "\\end{DoxyParamCaption}" << endl;
+    t << "\\end{DoxyParamCaption}";
     if (closeBracket) t << ")";
   }
 }

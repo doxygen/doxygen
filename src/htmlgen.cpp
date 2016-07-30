@@ -1552,12 +1552,18 @@ void HtmlGenerator::endMemberDocList()
 }
 
 void HtmlGenerator::startMemberDoc( const char *clName, const char *memName,
-                                    const char *anchor, const char *title, bool showInline)
+                                    const char *anchor, const char *title, 
+                                    int memCount, int memTotal, bool showInline)
 {
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
-  t << "\n<h2 class=\"memtitle\">" << title << " "
-    << "<a href=\"#" << anchor << "\" class=\"permantlink\"" "title=\"Permalink to this headline\">&#9854;</a>"
-    << "</h2>"
+  t << "\n<h2 class=\"memtitle\">"
+    << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&sect;&nbsp;</a></span>"
+    << title;
+  if (memTotal>1)
+  {
+    t << " <span class=\"overload\">[" << memCount << "/" << memTotal <<"]</span>";
+  }
+  t << "</h2>"
     << endl;
   t << "\n<div class=\"memitem\">" << endl;
   t << "<div class=\"memproto\">" << endl;

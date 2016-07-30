@@ -29,17 +29,27 @@ class MemberGroupList;
 class StorageIntf;
 
 /** A list of MemberDef objects. */
-class MemberList : public QList<MemberDef> 
-{ 
+class MemberList : private QList<MemberDef>
+{
+    friend class MemberListIterator;
   public:
     MemberList();
     MemberList(MemberListType lt);
    ~MemberList();
     MemberListType listType() const { return m_listType; }
     static QCString listTypeAsString(MemberListType type);
-    bool insert(uint index,const MemberDef *md);
+
+    /* ---- standard QList methods ---- */
     void inSort(const MemberDef *md);
     void append(const MemberDef *md);
+    void remove(const MemberDef *md);
+    void sort();
+    uint count() const;
+    int findRef(const MemberDef *md) const;
+    MemberDef *getFirst() const;
+    MemberDef *take(uint index);
+
+
     int varCount() const       { ASSERT(m_numDecMembers!=-1); return m_varCnt;     }
     int funcCount() const      { ASSERT(m_numDecMembers!=-1); return m_funcCnt;    }
     int enumCount() const      { ASSERT(m_numDecMembers!=-1); return m_enumCnt;    }
@@ -98,13 +108,14 @@ class MemberList : public QList<MemberDef>
     bool m_inFile;  // is this list part of a file definition
     MemberListType m_listType;
     bool m_needsSorting;
+    QDict<int> m_overloadCount;
 };
 
 /** An iterator for MemberDef objects in a MemberList. */
 class MemberListIterator : public QListIterator<MemberDef>
 {
   public:
-    MemberListIterator(const QList<MemberDef> &list);
+    MemberListIterator(const MemberList &list);
     virtual ~MemberListIterator() {}
 };
 

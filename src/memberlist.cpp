@@ -233,11 +233,6 @@ void MemberList::countDocMembers(bool countEnumValues)
   //printf("MemberList::countDocMembers()=%d memberGroupList=%p\n",m_numDocMembers,memberGroupList);
 }
 
-bool MemberList::insert(uint index,const MemberDef *md)
-{
-  return QList<MemberDef>::insert(index,md);
-}
-
 void MemberList::inSort(const MemberDef *md)
 {
   QList<MemberDef>::inSort(md);
@@ -248,7 +243,37 @@ void MemberList::append(const MemberDef *md)
   QList<MemberDef>::append(md);
 }
 
-MemberListIterator::MemberListIterator(const QList<MemberDef> &l) :
+void MemberList::remove(const MemberDef *md)
+{
+  QList<MemberDef>::remove(md);
+}
+
+void MemberList::sort()
+{
+  QList<MemberDef>::sort();
+}
+
+uint MemberList::count() const
+{
+  return QList<MemberDef>::count();
+}
+
+int MemberList::findRef(const MemberDef *md) const
+{
+  return QList<MemberDef>::findRef(md);
+}
+
+MemberDef *MemberList::getFirst() const
+{
+  return QList<MemberDef>::getFirst();
+}
+
+MemberDef *MemberList::take(uint index)
+{
+  return QList<MemberDef>::take(index);
+}
+
+MemberListIterator::MemberListIterator(const MemberList &l) :
   QListIterator<MemberDef>(l) 
 {
 }
@@ -663,13 +688,44 @@ void MemberList::writeDocumentation(OutputList &ol,
     ol.endGroupHeader(showInline ? 2 : 0);
   }
   ol.startMemberDocList();
-  
+
   MemberListIterator mli(*this);
   MemberDef *md;
-  for ( ; (md=mli.current()) ; ++mli)
+
+  // count the number of overloaded members
+  QDict<uint> overloadTotalDict(67);
+  QDict<uint> overloadCountDict(67);
+  overloadTotalDict.setAutoDelete(TRUE);
+  overloadCountDict.setAutoDelete(TRUE);
+  for (mli.toFirst() ; (md=mli.current()) ; ++mli)
   {
-    md->writeDocumentation(this,ol,scopeName,container,
-                           m_inGroup,showEnumValues,showInline);
+    if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) && 
+        !(md->isEnumValue() && !showInline))
+    {
+      uint *pCount = overloadTotalDict.find(md->name());
+      if (pCount)
+      {
+        (*pCount)++;
+      }
+      else
+      {
+        overloadTotalDict.insert(md->name(),new uint(1));
+        overloadCountDict.insert(md->name(),new uint(1));
+      }
+    }
+  }
+
+  for (mli.toFirst() ; (md=mli.current()) ; ++mli)
+  {
+    if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) && 
+        !(md->isEnumValue() && !showInline))
+    {
+      uint overloadCount = *overloadTotalDict.find(md->name());
+      uint *pCount = overloadCountDict.find(md->name());
+      md->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container,
+          m_inGroup,showEnumValues,showInline);
+      (*pCount)++;
+    }
   }
   if (memberGroupList)
   {
@@ -707,12 +763,37 @@ void MemberList::writeDocumentationPage(OutputList &ol,
                      const char *scopeName, Definition *container)
 {
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+
+  // count the number of overloaded members
+  QDict<uint> overloadTotalDict(67);
+  QDict<uint> overloadCountDict(67);
+  overloadTotalDict.setAutoDelete(TRUE);
+  overloadCountDict.setAutoDelete(TRUE);
   MemberListIterator mli(*this);
   MemberDef *md;
-  for ( ; (md=mli.current()) ; ++mli)
+  for (mli.toFirst() ; (md=mli.current()) ; ++mli)
   {
     if (md->isDetailedSectionLinkable())
     {
+      uint *pCount = overloadTotalDict.find(md->name());
+      if (pCount)
+      {
+        (*pCount)++;
+      }
+      else
+      {
+        overloadTotalDict.insert(md->name(),new uint(1));
+        overloadCountDict.insert(md->name(),new uint(1));
+      }
+    }
+  }
+
+  for ( mli.toFirst() ; (md=mli.current()) ; ++mli)
+  {
+    if (md->isDetailedSectionLinkable())
+    {
+      uint overloadCount = *overloadTotalDict.find(md->name());
+      uint *pCount = overloadCountDict.find(md->name());
       QCString diskName=md->getOutputFileBase();
       QCString title=md->qualifiedName();
       startFile(ol,diskName,md->name(),title,HLI_None,!generateTreeView,diskName);
@@ -725,7 +806,8 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 
       if (generateTreeView)
       {
-        md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
+        md->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container,m_inGroup);
+        (*pCount)++;
         ol.endContents();
         endFileWithNavPath(container,ol);
       }
@@ -740,7 +822,8 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         ol.writeString("   </td>\n");
         ol.writeString("   <td valign=\"top\" class=\"mempage\">\n");
 
-        md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
+        md->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container,m_inGroup);
+        (*pCount)++;
 
         ol.writeString("    </td>\n");
         ol.writeString("  </tr>\n");
@@ -749,15 +832,15 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         endFile(ol);
       }
     }
-    if (memberGroupList)
+  }
+  if (memberGroupList)
+  {
+    //printf("MemberList::writeDocumentation()  --  member groups\n");
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
     {
-      //printf("MemberList::writeDocumentation()  --  member groups\n");
-      MemberGroupListIterator mgli(*memberGroupList);
-      MemberGroup *mg;
-      for (;(mg=mgli.current());++mgli)
-      {
-        mg->writeDocumentationPage(ol,scopeName,container);
-      }
+      mg->writeDocumentationPage(ol,scopeName,container);
     }
   }
 }

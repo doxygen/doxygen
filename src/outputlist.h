@@ -259,8 +259,9 @@ class OutputList : public OutputDocInterface
     void writeChar(char c)
     { forall(&OutputGenerator::writeChar,c); }
     void startMemberDoc(const char *clName,const char *memName,
-                        const char *anchor,const char *title,bool showInline)
-    { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor,title,showInline); }
+                        const char *anchor,const char *title,
+                        int memCount,int memTotal,bool showInline)
+    { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor,title,memCount,memTotal,showInline); }
     void endMemberDoc(bool hasArgs) 
     { forall(&OutputGenerator::endMemberDoc,hasArgs); }
     void startDoxyAnchor(const char *fName,const char *manName,
@@ -546,6 +547,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO5(const char *,const char *,const char *,const char *,bool);
     FORALLPROTO6(const char *,const char *,const char *,const char *,const char *,const char *);
     FORALLPROTO6(const char *,const DocLinkInfo &,const char *,const char *,const SourceLinkInfo &,const SourceLinkInfo &);
+    FORALLPROTO7(const char *,const char *,const char *,const char *,int,int,bool);
 
     OutputList(const OutputList &ol);
     QList<OutputGenerator> m_outputs;
