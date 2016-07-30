@@ -60,7 +60,7 @@ const char * schema_queries[][2] = {
   { "innerclass",
     "CREATE TABLE IF NOT EXISTS innerclass (\n"
       "\trowid        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
-      "\trefid        TEXT NOT NULL,\n"
+      "\trefid        INTEGER NOT NULL,\n"
       "\tprot         INTEGER NOT NULL,\n"
       "\tname         TEXT NOT NULL\n"
       ");"
@@ -96,7 +96,7 @@ const char * schema_queries[][2] = {
       "\tid_file      INTEGER NOT NULL,  -- file where this identifier is located\n"
       "\tline         INTEGER NOT NULL,  -- line where this identifier is located\n"
       "\tcolumn       INTEGER NOT NULL,  -- column where this identifier is located\n"
-      "\trefid        TEXT NOT NULL,     -- see the refids table\n"
+      "\trefid        INTEGER NOT NULL,  -- see the refids table\n"
       "\tname         TEXT NOT NULL,\n"
       "\tdefinition   TEXT,\n"
       "\ttype         TEXT,\n"
@@ -141,7 +141,7 @@ const char * schema_queries[][2] = {
       "\trowid        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
       "\tname         TEXT NOT NULL,\n"
       "\tkind         TEXT NOT NULL,\n"
-      "\trefid        TEXT NOT NULL,\n"
+      "\trefid        INTEGER NOT NULL,\n"
       "\tprot         INTEGER NOT NULL,\n"
       "\tid_file      INTEGER NOT NULL,\n"
       "\tline         INTEGER NOT NULL,\n"
@@ -153,7 +153,7 @@ const char * schema_queries[][2] = {
       "\trowid        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
       "\tbase         TEXT NOT NULL,\n"
       "\tderived      TEXT NOT NULL,\n"
-      "\trefid        TEXT NOT NULL,\n"
+      "\trefid        INTEGER NOT NULL,\n"
       "\tprot         INTEGER NOT NULL,\n"
       "\tvirt         INTEGER NOT NULL\n"
       ");"
@@ -163,7 +163,7 @@ const char * schema_queries[][2] = {
       "\trowid        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
       "\tbase         TEXT NOT NULL,\n"
       "\tderived      TEXT NOT NULL,\n"
-      "\trefid        TEXT NOT NULL,\n"
+      "\trefid        INTEGER NOT NULL,\n"
       "\tprot         INTEGER NOT NULL,\n"
       "\tvirt         INTEGER NOT NULL\n"
       ");"
@@ -175,7 +175,7 @@ const char * schema_queries[][2] = {
       "\tattributes   TEXT,\n"
       "\ttype         TEXT,\n"
       "\tdeclname     TEXT,\n"
-      "\tdefnname     TEXT,\n"
+      "\tdefname     TEXT,\n"
       "\tarray        TEXT,\n"
       "\tdefval       TEXT,\n"
       "\tbriefdescription TEXT\n"
@@ -192,7 +192,7 @@ const char * schema_queries[][2] = {
   { "innernamespaces",
     "CREATE TABLE IF NOT EXISTS innernamespaces (\n"
       "\trowid        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
-      "\trefid        TEXT NOT NULL,\n"
+      "\trefid        INTEGER NOT NULL,\n"
       "\tname         TEXT NOT NULL\n"
       ");"
   }
@@ -282,16 +282,16 @@ SqlStmt params_select = { "SELECT rowid FROM  params WHERE "
     "(attributes IS NULL OR attributes=:attributes) AND "
     "(type IS NULL OR type=:type) AND "
     "(declname IS NULL OR declname=:declname) AND "
-    "(defnname IS NULL OR defnname=:defnname) AND "
+    "(defname IS NULL OR defname=:defname) AND "
     "(array IS NULL OR array=:array) AND "
     "(defval IS NULL OR defval=:defval) AND "
     "(briefdescription IS NULL OR briefdescription=:briefdescription)"
     ,NULL
 };
 SqlStmt params_insert = { "INSERT INTO  params "
-  "( attributes, type, declname, defnname, array, defval, briefdescription ) "
+  "( attributes, type, declname, defname, array, defval, briefdescription ) "
     "VALUES "
-    "(:attributes,:type,:declname,:defnname,:array,:defval,:briefdescription)"
+    "(:attributes,:type,:declname,:defname,:array,:defval,:briefdescription)"
     ,NULL
 };
 //////////////////////////////////////////////////////
@@ -475,8 +475,8 @@ static void insertMemberFunctionParams(sqlite3 *db,int id_memberdef,MemberDef *m
       }
       if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
       {
-        bindTextParameter(params_select,":defnname",defArg->name.data());
-        bindTextParameter(params_insert,":defnname",defArg->name.data());
+        bindTextParameter(params_select,":defname",defArg->name.data());
+        bindTextParameter(params_insert,":defname",defArg->name.data());
       }
       if (!a->array.isEmpty())
       {
@@ -517,7 +517,7 @@ static void insertMemberDefineParams(sqlite3 *db,int id_memberdef,MemberDef *md,
       Argument *a;
       for (ali.toFirst();(a=ali.current());++ali)
       {
-        bindTextParameter(params_insert,":defnname",a->type.data());
+        bindTextParameter(params_insert,":defname",a->type.data());
         int id_param=step(db,params_insert,TRUE);
 
         bindIntParameter(memberdef_params_insert,":id_memberdef",id_memberdef);
@@ -637,7 +637,8 @@ static void writeInnerClasses(sqlite3*db,const ClassSDict *cl)
   {
     if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
     {
-      bindTextParameter(innerclass_insert,":refid",cd->getOutputFileBase(),FALSE);
+      int refid = insertRefid(db, cd->getOutputFileBase());
+      bindIntParameter(innerclass_insert,":refid", refid);
       bindIntParameter(innerclass_insert,":prot",cd->protection());
       bindTextParameter(innerclass_insert,":name",cd->name());
       step(db,innerclass_insert);
@@ -656,7 +657,8 @@ static void writeInnerNamespaces(sqlite3 *db,const NamespaceSDict *nl)
     {
       if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymouse scopes
       {
-        bindTextParameter(innernamespace_insert,":refid",nd->getOutputFileBase(),FALSE);
+        int refid = insertRefid(db, nd->getOutputFileBase());
+        bindIntParameter(innernamespace_insert,":refid",refid);
         bindTextParameter(innernamespace_insert,":name",nd->name(),FALSE);
         step(db,innernamespace_insert);
       }
@@ -686,8 +688,8 @@ static void writeTemplateArgumentList(sqlite3* db,
       {
         bindTextParameter(params_select,":declname",a->name);
         bindTextParameter(params_insert,":declname",a->name);
-        bindTextParameter(params_select,":defnname",a->name);
-        bindTextParameter(params_insert,":defnname",a->name);
+        bindTextParameter(params_select,":defname",a->name);
+        bindTextParameter(params_insert,":defname",a->name);
       }
       if (!a->defval.isEmpty())
       {
@@ -740,9 +742,12 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   // group members are only visible in their group
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
   QCString memType;
+
   // memberdef
-  QCString refid = md->getOutputFileBase() + "_1" + md->anchor();
-  bindTextParameter(memberdef_insert,":refid", refid.data(),FALSE);
+  QCString qrefid = md->getOutputFileBase() + "_1" + md->anchor();
+  int refid = insertRefid(db, qrefid.data());
+
+  bindIntParameter(memberdef_insert,":refid", refid);
   bindIntParameter(memberdef_insert,":kind",md->memberType());
   bindIntParameter(memberdef_insert,":prot",md->protection());
 
@@ -1009,7 +1014,8 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
   bindTextParameter(compounddef_insert,":name",cd->name());
   bindTextParameter(compounddef_insert,":kind",cd->compoundTypeString(),FALSE);
   bindIntParameter(compounddef_insert,":prot",cd->protection());
-  bindTextParameter(compounddef_insert,":refid",cd->getOutputFileBase(),FALSE);
+  int refid = insertRefid(db, cd->getOutputFileBase());
+  bindIntParameter(compounddef_insert,":refid", refid);
 
   int id_file = insertFile(db,cd->getDefFileName().data());
   bindIntParameter(compounddef_insert,":id_file",id_file);
@@ -1025,7 +1031,8 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {
-      bindTextParameter(basecompoundref_insert,":refid",bcd->classDef->getOutputFileBase(),FALSE);
+      int refid = insertRefid(db, bcd->classDef->getOutputFileBase());
+      bindIntParameter(basecompoundref_insert,":refid", refid);
       bindIntParameter(basecompoundref_insert,":prot",bcd->prot);
       bindIntParameter(basecompoundref_insert,":virt",bcd->virt);
 
@@ -1058,7 +1065,8 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
       {
         bindTextParameter(derivedcompoundref_insert,":derived",bcd->classDef->displayName(),FALSE);
       }
-      bindTextParameter(derivedcompoundref_insert,":refid",bcd->classDef->getOutputFileBase(),FALSE);
+      int refid = insertRefid(db, bcd->classDef->getOutputFileBase());
+      bindIntParameter(derivedcompoundref_insert,":refid", refid);
       bindIntParameter(derivedcompoundref_insert,":prot",bcd->prot);
       bindIntParameter(derivedcompoundref_insert,":virt",bcd->virt);
       step(db,derivedcompoundref_insert);
