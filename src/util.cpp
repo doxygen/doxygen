@@ -3956,7 +3956,7 @@ static void findMembersWithSpecificName(MemberName *mn,
 {
   //printf("  Function with global scope name `%s' args=`%s'\n",
   //       mn->memberName(),args);
-  MemberListIterator mli(*mn);
+  MemberNameIterator mli(*mn);
   MemberDef *md;
   for (mli.toFirst();(md=mli.current());++mli)
   {
@@ -4103,7 +4103,7 @@ bool getDefs(const QCString &scName,
          )
       {
         //printf("  Found fcd=%p\n",fcd);
-        MemberListIterator mmli(*mn);
+        MemberNameIterator mmli(*mn);
         MemberDef *mmd;
         int mdist=maxInheritanceDepth; 
         ArgumentList *argList=0;
@@ -4227,7 +4227,7 @@ bool getDefs(const QCString &scName,
   if (mn && scopeName.isEmpty() && mScope.isEmpty()) // Maybe a related function?
   {
     //printf("Global symbol\n");
-    MemberListIterator mmli(*mn);
+    MemberNameIterator mmli(*mn);
     MemberDef *mmd, *fuzzy_mmd = 0;
     ArgumentList *argList = 0;
     bool hasEmptyArgs = args && qstrcmp(args, "()") == 0;
@@ -4295,7 +4295,7 @@ bool getDefs(const QCString &scName,
         //printf("Symbol inside existing namespace `%s' count=%d\n",
         //    namespaceName.data(),mn->count());
         bool found=FALSE;
-        MemberListIterator mmli(*mn);
+        MemberNameIterator mmli(*mn);
         MemberDef *mmd;
         for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
         {
@@ -4379,7 +4379,7 @@ bool getDefs(const QCString &scName,
       else
       {
         //printf("not a namespace\n");
-        MemberListIterator mmli(*mn);
+        MemberNameIterator mmli(*mn);
         MemberDef *mmd;
         for (mmli.toFirst();(mmd=mmli.current());++mmli)
         {
@@ -4430,7 +4430,7 @@ bool getDefs(const QCString &scName,
       {
         // no exact match found, but if args="()" an arbitrary
         // member will do
-        MemberListIterator mni(*mn);
+        MemberNameIterator mni(*mn);
         for (mni.toLast();(md=mni.current());--mni)
         {
           //printf("Found member `%s'\n",md->name().data());

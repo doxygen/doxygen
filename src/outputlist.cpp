@@ -353,6 +353,7 @@ FORALL5(const char *a1,const char *a2,const char *a3,const char *a4,const char *
 FORALL5(const char *a1,const char *a2,const char *a3,const char *a4,bool a5,a1,a2,a3,a4,a5)
 FORALL6(const char *a1,const char *a2,const char *a3,const char *a4,const char *a5,const char *a6,a1,a2,a3,a4,a5,a6)
 FORALL6(const char *a1,const DocLinkInfo &a2,const char *a3,const char *a4,const SourceLinkInfo &a5,const SourceLinkInfo &a6,a1,a2,a3,a4,a5,a6)
+FORALL7(const char *a1,const char *a2,const char *a3,const char *a4,int a5,int a6,bool a7,a1,a2,a3,a4,a5,a6,a7)
 
 
 //--------------------------------------------------------------------------

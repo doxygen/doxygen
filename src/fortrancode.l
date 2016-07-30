@@ -484,7 +484,7 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
 
   if (mn) // name is known
   {
-      MemberListIterator mli(*mn);
+      MemberNameIterator mli(*mn);
       for (mli.toFirst();(md=mli.current());++mli) // all found functions with given name
       {
         FileDef  *fd=md->getFileDef();

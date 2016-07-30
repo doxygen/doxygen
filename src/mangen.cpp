@@ -418,7 +418,7 @@ void ManGenerator::endCodeFragment()
   col=0;
 }
 
-void ManGenerator::startMemberDoc(const char *,const char *,const char *,const char *,bool) 
+void ManGenerator::startMemberDoc(const char *,const char *,const char *,const char *,int,int,bool) 
 { 
   if (!firstCol) t << endl;
   t << ".SS \""; 

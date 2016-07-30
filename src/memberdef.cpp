@@ -2528,7 +2528,9 @@ void MemberDef::_writeGroupInclude(OutputList &ol,bool inGroup)
 /*! Writes the "detailed documentation" section of this member to
  *  all active output formats.
  */
-void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
+void MemberDef::writeDocumentation(MemberList *ml,
+                                   int memCount,int memTotal,
+                                   OutputList &ol,
                                    const char *scName,
                                    Definition *container,
                                    bool inGroup,
@@ -2544,8 +2546,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d sectionLinkable=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup,isDetailedSectionLinkable());
 
-  if ( !hasDocs ) return;
-  if (isEnumValue() && !showEnumValues) return;
+  //if ( !hasDocs ) return;
+  //if (isEnumValue() && !showEnumValues) return;
 
   SrcLangExt lang = getLanguage();
   //printf("member=%s lang=%d\n",name().data(),lang);
@@ -2608,7 +2610,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   }
   else if (isFunction())
   {
-    title+=argsString();
+    title += "()";
   }
   int i=0,l;
   static QRegExp r("@[0-9]+");
@@ -2624,7 +2626,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
   {
     // find enum type and insert it in the definition
-    QListIterator<MemberDef> vmli(*ml);
+    MemberListIterator vmli(*ml);
     MemberDef *vmd;
     bool found=FALSE;
     for ( ; (vmd=vmli.current()) && !found ; ++vmli)
@@ -2632,7 +2634,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-        ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
+        ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
         linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
         linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.right(ldef.length()-i-l));
@@ -2644,7 +2646,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     {
       //printf("Anonymous compound `%s'\n",cname.data());
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-      ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
+      ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
       // search for the last anonymous compound name in the definition
       int si=ldef.find(' '),pi,ei=i+l;
       if (si==-1) si=0;
@@ -2666,7 +2668,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   else // not an enum value or anonymous compound
   {
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-    ol.startMemberDoc(ciname,name(),memAnchor,title,showInline);
+    ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
 
     ClassDef *cd=getClassDef();
     NamespaceDef *nd=getNamespaceDef();

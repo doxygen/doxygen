@@ -402,7 +402,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberGroup(bool) = 0;
     virtual void insertMemberAlign(bool) = 0;
     virtual void startMemberDoc(const char *,const char *,
-                                const char *,const char *,bool) = 0;
+                                const char *,const char *,int,int,bool) = 0;
     virtual void endMemberDoc(bool) = 0;
     virtual void startDoxyAnchor(const char *fName,const char *manName,
                                  const char *anchor,const char *name,

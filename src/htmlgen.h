@@ -225,7 +225,9 @@ class HtmlGenerator : public OutputGenerator
     void endDescForItem()   { t << "</dd>\n"; }
     void lineBreak(const char *style);
     void writeChar(char c);
-    void startMemberDoc(const char *,const char *,const char *,const char *,bool);
+    void startMemberDoc(const char *clName, const char *memName, 
+                        const char *anchor, const char *title, 
+                        int memCount, int memTotal, bool showInline);
     void endMemberDoc(bool); 
     void startDoxyAnchor(const char *fName,const char *manName,
                          const char *anchor,const char *name,

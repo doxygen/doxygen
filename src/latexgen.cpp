@@ -1522,8 +1522,10 @@ void LatexGenerator::startMemberDoc(const char *clname,
                                     const char *memname,
                                     const char *,
                                     const char *title,
+                                    int memCount,
+                                    int memTotal,
                                     bool showInline)
-{ 
+{
   if (memname && memname[0]!='@')
   {
     t << "\\index{";
@@ -1550,7 +1552,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
       t << latexEscapeLabelName(clname,insideTabbing);
       t << "@{";
       t << latexEscapeIndexChars(clname,insideTabbing);
-      t << "}"; 
+      t << "}";
     }
     t << "}" << endl;
   }
@@ -1560,9 +1562,9 @@ void LatexGenerator::startMemberDoc(const char *clname,
   int level=0;
   if (showInline) level+=2;
   if (compactLatex) level++;
-  t << "\\" << levelLab[level]; 
+  t << "\\" << levelLab[level];
 
-  t << "[{";
+  t << "{";
   if (pdfHyperlinks)
   {
     t << "\\texorpdfstring{";
@@ -1572,25 +1574,25 @@ void LatexGenerator::startMemberDoc(const char *clname,
   {
     t << "}{" << latexEscapePDFString(title) << "}";
   }
-  t << "}]";
-  t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
-  disableLinks=TRUE;
+  if (memTotal>1)
+  {
+    t << "\\hspace{0.1cm}{\\footnotesize\\ttfamily [" << memCount << "/" << memTotal << "]}";
+  }
+  t << "}";
+  t << "\n{\\ttfamily ";
+  //disableLinks=TRUE;
 }
 
 void LatexGenerator::endMemberDoc(bool)
 {
   disableLinks=FALSE;
-  t << "}";
+  t << "}\n\n";
   //if (Config_getBool(COMPACT_LATEX)) t << "\\hfill";
 }
 
 void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
                                      const char *anchor, const char *,
                                      const char *)
-{
-}
-
-void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
 {
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
@@ -1604,7 +1606,11 @@ void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
   t << "\\label{";
   if (fName) t << stripPath(fName);
   if (anchor) t << "_" << anchor;
-  t << "}" << endl;
+  t << "} " << endl;
+}
+
+void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
+{
 }
 
 void LatexGenerator::writeAnchor(const char *fName,const char *name)
@@ -1992,7 +1998,7 @@ void LatexGenerator::startParameterList(bool openBracket)
 {
   /* start of ParameterType ParameterName list */
   if (openBracket) t << "(";
-  t << endl << "\\begin{DoxyParamCaption}" << endl;
+  t << "\\begin{DoxyParamCaption}";
 }
 
 void LatexGenerator::endParameterList()
@@ -2015,13 +2021,12 @@ void LatexGenerator::startParameterName(bool /*oneArgOnly*/)
   t << "{";
 }
 
-void LatexGenerator::endParameterName(bool last,bool /* emptyList */,bool closeBracket)
+void LatexGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
 {
-  t << "}" << endl;
-
+  t << " }";
   if (last)
   {
-    t << "\\end{DoxyParamCaption}" << endl;
+    t << "\\end{DoxyParamCaption}";
     if (closeBracket) t << ")";
   }
 }

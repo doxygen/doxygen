@@ -1482,6 +1482,8 @@ void RTFGenerator::startMemberDoc(const char *clname,
     const char *memname,
     const char *,
     const char *,
+    int,
+    int,
     bool showInline)
 {
   DBG_RTF(t << "{\\comment startMemberDoc}" << endl)

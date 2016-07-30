@@ -208,7 +208,7 @@ class LatexGenerator : public OutputGenerator
     void startDescItem();
     void endDescItem();
     void lineBreak(const char *style=0);
-    void startMemberDoc(const char *,const char *,const char *,const char *,bool);
+    void startMemberDoc(const char *,const char *,const char *,const char *,int,int,bool);
     void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *);
@@ -293,7 +293,7 @@ class LatexGenerator : public OutputGenerator
     void endTextBlock(bool) {}
 
     void startMemberDocPrefixItem() {}
-    void endMemberDocPrefixItem() {}
+    void endMemberDocPrefixItem() { t << "\\\\" << endl; }
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
     void startParameterType(bool,const char *);
