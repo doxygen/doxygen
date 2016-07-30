@@ -71,6 +71,11 @@ endif()
 
 set(CMAKE_REQUIRED_INCLUDES ${ICONV_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${ICONV_LIBRARY})
+
+if(MSVC_VERSION GREATER 1800)
+    set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} legacy_stdio_definitions.lib)
+endif()
+
 check_cxx_source_compiles(
     "#include <iconv.h>
      int main() {
@@ -90,6 +95,10 @@ endif(ICONV_FOUND)
 if(ICONV_FOUND)
     set(CMAKE_REQUIRED_INCLUDES ${ICONV_INCLUDE_DIR})
     set(CMAKE_REQUIRED_LIBRARIES ${ICONV_LIBRARIES})
+
+    if(MSVC_VERSION GREATER 1800)
+        set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} legacy_stdio_definitions.lib)
+    endif()
 
     if (NOT DEFINED ICONV_ACCEPTS_NONCONST_INPUT)
         # Display a useful message first time we come through here
