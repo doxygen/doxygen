@@ -147,7 +147,8 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
   for (li.toFirst();(md=li.current());++li)
   {
     //printf("matching %d == %d\n",lt,md->getSectionList(m_parent)->listType());
-    if (lt==md->getSectionList(m_parent)->listType())
+    MemberList *ml = md->getSectionList(m_parent);
+    if (ml && lt==ml->listType())
     {
       MemberList ml(lt);
       ml.append(md);
@@ -165,7 +166,8 @@ int MemberGroup::countGroupedInheritedMembers(MemberListType lt)
   for (li.toFirst();(md=li.current());++li)
   {
     //printf("matching %d == %d\n",lt,md->getSectionList(m_parent)->listType());
-    if (lt==md->getSectionList(m_parent)->listType())
+    MemberList *ml = md->getSectionList(m_parent);
+    if (ml && lt==ml->listType())
     {
       count++;
     }
