@@ -52,6 +52,8 @@ static QCString g_footer;
 static QCString g_mathjax_code;
 
 
+// note: this is only active if DISABLE_INDEX=YES, if DISABLE_INDEX is disabled, this
+// part will be rendered inside menu.js
 static void writeClientSearchBox(FTextStream &t,const char *relPath)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
@@ -72,6 +74,8 @@ static void writeClientSearchBox(FTextStream &t,const char *relPath)
   t << "        </div>\n";
 }
 
+// note: this is only active if DISABLE_INDEX=YES. if DISABLE_INDEX is disabled, this
+// part will be rendered inside menu.js
 static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlightSearch)
 {
   static bool externalSearch = Config_getBool(EXTERNAL_SEARCH);
@@ -2094,16 +2098,28 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
 {
   static bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   static bool searchEngine = Config_getBool(SEARCHENGINE);
+  static bool externalSearch = Config_getBool(EXTERNAL_SEARCH);
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
 
   if (compact)
   {
+    QCString searchPage;
+    if (externalSearch)
+    {
+      searchPage = "search" + Doxygen::htmlFileExtension;
+    }
+    else
+    {
+      searchPage = "search.php";
+    }
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>" << endl;
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>" << endl;
     t << "<script type=\"text/javascript\">" << endl;
     t << "$(function() {" << endl;
     t << "  initMenu('" << relPath << "',"
-      << (searchEngine?"true":"false") << ",'"
+      << (searchEngine?"true":"false") << ","
+      << (serverBasedSearch?"true":"false") << ",'"
+      << searchPage << "','"
       << theTranslator->trSearch() << "');" << endl;
     if (Config_getBool(SEARCHENGINE))
     {
