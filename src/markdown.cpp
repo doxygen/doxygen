@@ -2206,17 +2206,20 @@ static bool isExplicitPage(const QCString &docs)
 {
   int i=0;
   const char *data = docs.data();
-  int size=docs.size();
-  while (i<size && (data[i]==' ' || data[i]=='\n'))
+  if (data)
   {
-    i++;
-  }
-  if (i<size+1 &&
-      (data[i]=='\\' || data[i]=='@') &&
-      (qstrncmp(&data[i+1],"page ",5)==0 || qstrncmp(&data[i+1],"mainpage",8)==0)
-     )
-  {
-    return TRUE;
+    int size=docs.size();
+    while (i<size && (data[i]==' ' || data[i]=='\n'))
+    {
+      i++;
+    }
+    if (i<size+1 &&
+        (data[i]=='\\' || data[i]=='@') &&
+        (qstrncmp(&data[i+1],"page ",5)==0 || qstrncmp(&data[i+1],"mainpage",8)==0)
+       )
+    {
+      return TRUE;
+    }
   }
   return FALSE;
 }
