@@ -254,6 +254,7 @@ static DocCmdMap docCmdMap[] =
   { "result",          0,                       TRUE  },
   { "return",          0,                       TRUE  },
   { "returns",         0,                       TRUE  },
+  { "exception",       0,                       TRUE  },
   { "retval",          0,                       TRUE  },
   { "sa",              0,                       TRUE  },
   { "see",             0,                       TRUE  },
