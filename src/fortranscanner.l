@@ -596,7 +596,7 @@ abstract                                {
                                         }
 extends{ARGS}                           {
                                           QCString basename = extractFromParens(yytext);
-                                          current->extends->append(new BaseInfo(basename, Public, Normal));
+                                          current->extends->append(new BaseInfo(basename.lower(), Public, Normal));
                                         }
 public                                  {
                                           current->protection = Public;
