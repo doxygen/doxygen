@@ -7132,6 +7132,9 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".f",        "fortran");
   updateLanguageMapping(".for",      "fortran");
   updateLanguageMapping(".f90",      "fortran");
+  updateLanguageMapping(".f95",      "fortran");
+  updateLanguageMapping(".f03",      "fortran");
+  updateLanguageMapping(".f08",      "fortran");
   updateLanguageMapping(".vhd",      "vhdl");
   updateLanguageMapping(".vhdl",     "vhdl");
   updateLanguageMapping(".tcl",      "tcl");
