@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="structm1_1_1t1" kind="type" language="Fortran" prot="public">
+    <compoundname>m1::t1</compoundname>
+    <derivedcompoundref refid="structm1_1_1t2" prot="public" virt="non-virtual">m1::t2</derivedcompoundref>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="3">
+        <label>m2::t3</label>
+        <link refid="structm2_1_1t3"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="0">
+        <label>m1::t1</label>
+        <link refid="structm1_1_1t1"/>
+      </node>
+      <node id="1">
+        <label>m1::t2</label>
+        <link refid="structm1_1_1t2"/>
+        <childnode refid="0" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>m1::t3</label>
+        <link refid="structm1_1_1t3"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="069_inheritance.f03" line="14" column="1" bodyfile="069_inheritance.f03" bodystart="14" bodyend="-1"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

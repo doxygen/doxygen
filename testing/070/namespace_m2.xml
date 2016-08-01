@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="namespace_m2" kind="namespace" language="C++">
+    <compoundname>M2</compoundname>
+    <innerclass refid="class_m2_1_1_t3" prot="public">M2::T3</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="070_namespace_inheritance.cpp" line="25" column="1"/>
+  </compounddef>
+</doxygen>

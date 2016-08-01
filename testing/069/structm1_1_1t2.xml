@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="structm1_1_1t2" kind="type" language="Fortran" prot="public">
+    <compoundname>m1::t2</compoundname>
+    <basecompoundref refid="structm1_1_1t1" prot="public" virt="non-virtual">m1::t1</basecompoundref>
+    <derivedcompoundref refid="structm1_1_1t3" prot="public" virt="non-virtual">m1::t3</derivedcompoundref>
+    <derivedcompoundref refid="structm2_1_1t3" prot="public" virt="non-virtual">m2::t3</derivedcompoundref>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="8">
+        <label>m2::t3</label>
+        <link refid="structm2_1_1t3"/>
+        <childnode refid="5" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>m1::t1</label>
+        <link refid="structm1_1_1t1"/>
+      </node>
+      <node id="5">
+        <label>m1::t2</label>
+        <link refid="structm1_1_1t2"/>
+        <childnode refid="6" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>m1::t3</label>
+        <link refid="structm1_1_1t3"/>
+        <childnode refid="5" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="10">
+        <label>m1::t1</label>
+        <link refid="structm1_1_1t1"/>
+      </node>
+      <node id="9">
+        <label>m1::t2</label>
+        <link refid="structm1_1_1t2"/>
+        <childnode refid="10" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="069_inheritance.f03" line="17" column="1" bodyfile="069_inheritance.f03" bodystart="17" bodyend="-1"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

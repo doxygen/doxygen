@@ -430,10 +430,13 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           DBG_CTX((stderr,"using dir %s\n",yytext));
                                           current->name=yytext;
                                           current->fileName = yyFileName; 
-  					  current->section=Entry::USINGDIR_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry;
-                                          current->lang = SrcLangExt_Fortran; 
+                                          current->section=Entry::USINGDECL_SEC;
+                                          addCurrentEntry(1);
+                                          // also add a using directive
+                                          current->name=yytext;
+                                          current->fileName = yyFileName; 
+                                          current->section=Entry::USINGDIR_SEC;
+                                          addCurrentEntry(1);
                                           yy_pop_state();
                                         }
 <Use>{ID}/,                             { 
@@ -443,12 +446,15 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }           
 <UseOnly>{BS},{BS}                      {}
 <UseOnly>{ID}                           {
-  					  current->name= useModuleName+"::"+yytext;
+                                          current->name= useModuleName+"::"+yytext;
                                           current->fileName = yyFileName; 
-  					  current->section=Entry::USINGDECL_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry ;
-                                          current->lang = SrcLangExt_Fortran; 
+                                          current->section=Entry::USINGDECL_SEC;
+                                          addCurrentEntry(1);
+                                          // also add a using directive
+                                          current->name= useModuleName+"::"+yytext;
+                                          current->fileName = yyFileName; 
+                                          current->section=Entry::USINGDIR_SEC;
+                                          addCurrentEntry(1);
   					}
 <Use,UseOnly>"\n"                       {
 					  yyColNr -= 1;
@@ -819,19 +825,9 @@ private                                 {
 					  QCString name=yytext;
             name = name.lower();
             /* if variable/type/etc is part of a module, mod name is necessary for output */
-            // get surrounding state
-            int currentState = YY_START;
-            yy_pop_state();
-            int outerState = YY_START;
-            yy_push_state(currentState);
-            if( outerState == Start || outerState == ModuleBody )
+            if ((current_root) && current_root->section == Entry::NAMESPACE_SEC)
             {
-              if ((current_root) && 
-                  (current_root->section == Entry::CLASS_SEC
-                   || current_root->section == Entry::NAMESPACE_SEC))
-              {
-                name = current_root->name + "::" + name;
-              }
+              name = current_root->name + "::" + name;
             }
 					  /* remember attributes for the symbol */
 					  modifiers[current_root][name] |= currentModifiers;
@@ -2065,9 +2061,9 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
 
         Argument *arg = findArgument(scope->parent(), ce->name, TRUE);
         if (arg != 0) 
-	{
+        {
           // set type of dummy procedure argument to interface
-	  arg->name = arg->type;
+          arg->name = arg->type;
           arg->type = scope->name;
         }
         if (ce->name.lower() == scope->name.lower()) found = TRUE;
