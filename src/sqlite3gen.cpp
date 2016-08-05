@@ -400,11 +400,9 @@ static int insertRefid(sqlite3 *db, const char *refid)
 }
 
 
-static void insertMemberReference(sqlite3 *db, const char*src, const char*dst, const char *file, int line, int column)
+static void insertMemberReference(sqlite3 *db, int refid_src, int refid_dst,
+                                  int id_file, int line, int column)
 {
-  int id_file = insertFile(db,file);
-  int refid_src = insertRefid(db,src);
-  int refid_dst = insertRefid(db,dst);
   if (id_file==-1||refid_src==-1||refid_dst==-1)
     return;
 
@@ -412,26 +410,20 @@ static void insertMemberReference(sqlite3 *db, const char*src, const char*dst, c
   bindIntParameter(xrefs_insert,":refid_dst",refid_dst);
   bindIntParameter(xrefs_insert,":id_file",id_file);
   bindIntParameter(xrefs_insert,":line",line);
-  bindIntParameter(xrefs_insert,":column",1);
+  bindIntParameter(xrefs_insert,":column",column);
   step(db,xrefs_insert);
 }
 
-static void insertMemberReference(sqlite3 *db, MemberDef *src, MemberDef *dst, const char*floc)
+static void insertMemberReference(sqlite3 *db, MemberDef *src, MemberDef *dst)
 {
+  QCString qrefid_dst = dst->getOutputFileBase() + "_1" + dst->anchor();
+  QCString qrefid_src = src->getOutputFileBase() + "_1" + src->anchor();
   if (dst->getStartBodyLine()!=-1 && dst->getBodyDef())
   {
-    static char file[4096];
-    int line=0,column=0;
-    if (floc)
-    {
-      int rv = sscanf(floc,"%[^:]:%d:%d",file,&line,&column);
-      if (rv!=3)
-      {
-        msg("unable to read file:line:col location from string [%s]\n",floc);
-        return;
-      }
-    }
-    insertMemberReference(db,src->anchor().data(),dst->anchor().data(),file,line,column);
+    int refid_src = insertRefid(db,qrefid_src.data());
+    int refid_dst = insertRefid(db,qrefid_dst.data());
+    int id_file = insertFile(db,"no-file"); // TODO: replace no-file with proper file
+    insertMemberReference(db,refid_src,refid_dst,id_file,dst->getStartBodyLine(),-1);
   }
 }
 
@@ -462,7 +454,11 @@ static void insertMemberFunctionParams(sqlite3 *db,int id_memberdef,MemberDef *m
         QCString *s;
         while ((s=li.current()))
         {
-          insertMemberReference(db,md->anchor().data(),s->data(),def->getDefFileName().data(),md->getDefLine(),1);
+          QCString qrefid_src = md->getOutputFileBase() + "_1" + md->anchor();
+          int refid_src = insertRefid(db,qrefid_src.data());
+          int refid_dst = insertRefid(db,s->data());
+          int id_file = insertFile(db,def->getDefFileName());
+          insertMemberReference(db,refid_src,refid_dst,id_file,md->getDefLine(),-1);
           ++li;
         }
         bindTextParameter(params_select,":type",a->type.data());
@@ -874,7 +870,11 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
               s->data(),
               md->getBodyDef()->getDefFileName().data(),
               md->getStartBodyLine()));
-        insertMemberReference(db,md->anchor().data(),s->data(),md->getBodyDef()->getDefFileName().data(),md->getStartBodyLine(),1);
+        QCString qrefid_src = md->getOutputFileBase() + "_1" + md->anchor();
+        int refid_src = insertRefid(db,qrefid_src.data());
+        int refid_dst = insertRefid(db,s->data());
+        int id_file = insertFile(db,md->getBodyDef()->getDefFileName());
+        insertMemberReference(db,refid_src,refid_dst,id_file,md->getStartBodyLine(),-1);
       }
       ++li;
     }
@@ -939,7 +939,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
-      insertMemberReference(db,md,rmd,mdi.currentKey());
+      insertMemberReference(db,md,rmd);//,mdi.currentKey());
     }
   }
   // + source referenced by
@@ -950,7 +950,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
-      insertMemberReference(db,rmd,md,mdi.currentKey());
+      insertMemberReference(db,rmd,md);//,mdi.currentKey());
     }
   }
 }
