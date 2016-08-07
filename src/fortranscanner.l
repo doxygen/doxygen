@@ -232,7 +232,9 @@ static inline void pop_state(yyscan_t yyscanner);
 
 static void startScope(yyscan_t yyscanner,Entry *scope);
 static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot=FALSE);
+static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> &src);
 static void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root);
+static void resolveTypeBoundProcedures(Entry *scope);
 static void truncatePrepass(yyscan_t yyscanner,int index);
 static void pushBuffer(yyscan_t yyscanner,const QCString &buffer);
 static void popBuffer(yyscan_t yyscanner);
@@ -721,7 +723,7 @@ private                                 {
 
 <TypedefBodyContains>{                  /* Type Bound Procedures */
 ^{BS}PROCEDURE{ARGS}?                   {
-                                          yyextra->current->type = QCString(yytext).simplifyWhiteSpace();
+                                          yyextra->current->type = QCString(yytext).simplifyWhiteSpace().lower();
                                         }
 ^{BS}final                              {
                                           yyextra->current->spec |= Entry::Final;
@@ -733,7 +735,7 @@ private                                 {
 {COMMA}                                 {
                                         }
 {ATTR_SPEC}                             {
-                                          yyextra->currentModifiers |= QCString(yytext);
+                                          yyextra->currentModifiers |= QCString(yytext).stripWhiteSpace();
                                         }
 {BS}"::"{BS}                            {
                                         }
@@ -742,14 +744,46 @@ private                                 {
                                           yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
                                           yyextra->current->section  = Entry::FUNCTION_SEC;
                                           yyextra->current->name     = name;
+                                          // check for procedure(name)
+                                          if (yyextra->current->type.find('(') != -1)
+                                          {
+                                            yyextra->current->args = extractFromParens(yyextra->current->type).stripWhiteSpace();
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->args = name.lower(); // target procedure name if no => is given
+                                          }
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->bodyLine = yyextra->lineNr;
                                           yyextra->current->startLine  = yyextra->lineNr;
                                           addCurrentEntry(yyscanner,true);
                                         }
 {BS}"=>"[^(\n|\!)]*                     { /* Specific bindings come after the ID. */
-                                          QCString args = yytext;
-                                          yyextra->last_entry->args = args.lower();
+                                          QCString tmp = yytext;
+                                          int i = tmp.find("=>");
+                                          if( i != -1 )
+                                            tmp.remove(0, i+2);
+                                          tmp = tmp.simplifyWhiteSpace().lower();
+                                          if( yyextra->last_entry->type == "generic")
+                                          {
+                                            // duplicate entries for each overloaded variant
+                                            // (parse through medhod1,method2, methodN, ...
+                                            //printf("Parsing through %s for generic method %s.\n", tmp.data(), last_entry->name.data());
+                                            int i = tmp.find(",");
+                                            while(i > 0)
+                                            {
+                                              copyEntry(yyextra->current, yyextra->last_entry);
+                                              yyextra->current->name = yyextra->last_entry->name;
+                                              yyextra->current->section = Entry::FUNCTION_SEC;
+                                              yyextra->last_entry->args = tmp.left(i).stripWhiteSpace();
+                                              //printf("Found %s.\n", last_entry->args.data());
+                                              addCurrentEntry(yyscanner,true);
+                                              tmp = tmp.remove(0,i+1).stripWhiteSpace();
+                                              i = tmp.find(",");
+                                            }
+                                          }
+                                          //printf("Target function: %s\n", tmp.data());
+                                          yyextra->last_entry->args = tmp;
                                         }
 "\n"                                    {
                                           yyextra->currentModifiers = SymbolModifiers();
@@ -1869,7 +1903,11 @@ static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> 
    dest->args        = src->args;
    dest->argList     = src->argList;
    dest->doc         = src->doc;
+   dest->docLine  = src->docLine;
+   dest->docFile  = src->docFile;
    dest->brief       = src->brief;
+   dest->briefLine= src->briefLine;
+   dest->briefFile= src->briefFile;
 }
 
 /** fill empty interface module procedures with info from
@@ -2251,6 +2289,13 @@ static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
     ent->protection = Public;
   else if (mdfs.protection == SymbolModifiers::PRIVATE)
     ent->protection = Private;
+
+  if (mdfs.nonoverridable)
+    ent->spec |= Entry::Final;
+  if (mdfs.nopass)
+    ent->stat = TRUE;
+  if (mdfs.deferred)
+    ent->virt = Pure;
 }
 
 /*! Starts the new scope in fortran program. Consider using this function when
@@ -2375,7 +2420,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     // iterate variables: get and apply yyextra->modifiers
     for (const auto &ce : scope->children())
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
@@ -2395,8 +2440,162 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
   // clear all yyextra->modifiers of the scope
   yyextra->modifiers.erase(scope);
 
+  // resolve procedures in types
+  resolveTypeBoundProcedures(scope);
+
   return TRUE;
 }
+
+/*! search for types with type bound procedures (e.g. methods)
+ *  and try to resolve their arguments
+ */
+static void resolveTypeBoundProcedures(Entry *scope)
+{
+  // map of all subroutines/functions
+  bool procMapCreated = false;
+  std::map<std::string,std::shared_ptr<Entry>> procMap;
+
+  // map of all abstract interfaces
+  bool interfMapCreated = false;
+  std::map<std::string,std::shared_ptr<Entry>> interfMap;
+
+  // iterate over all types
+  for(const auto &ce: scope->children())
+  {
+    if (ce->section != Entry::CLASS_SEC)
+      continue;
+
+    // handle non-"generic" non-"deferred" methods, copying the arguments from the implementation
+    std::map<std::string,std::shared_ptr<Entry>> methodMap;
+    for(auto &ct: ce->children())
+    {
+      if (ct->section != Entry::FUNCTION_SEC)
+        continue;
+
+      if (ct->type=="generic")
+        continue;
+
+      if (ct->virt == Pure)
+        continue;
+
+      // set up the procMap
+      if (!procMapCreated)
+      {
+        for(const auto &cf: scope->children())
+        {
+          if (cf->section == Entry::FUNCTION_SEC)
+          {
+            procMap.insert(std::make_pair(cf->name.str(), cf));
+          }
+        }
+        procMapCreated = true;
+      }
+
+      // found a (non-generic) method
+      QCString implName = ct->args;
+      if( procMap.find(implName.str()) != procMap.end() )
+      {
+        std::shared_ptr<Entry> proc = procMap[implName.str()];
+        ct->args = proc->args;
+        ct->argList = ArgumentList(proc->argList);
+        if (ct->brief.isEmpty())
+        {
+          ct->brief = proc->brief;
+          ct->briefLine = proc->briefLine;
+          ct->briefFile = proc->briefFile;
+        }
+        if (ct->doc.isEmpty())
+        {
+          ct->doc = proc->doc;
+          ct->docLine = proc->docLine;
+          ct->docFile = proc->docFile;
+        }
+        methodMap.insert(std::make_pair(ct->name.str(), ct));
+      }
+    }
+
+    // handle "deferred" methods (pure virtual functions), duplicating with arguments from the target abstract interface
+    for(auto &ct: ce->children())
+    {
+      if (ct->section != Entry::FUNCTION_SEC)
+        continue;
+
+      if (ct->virt != Pure)
+        continue;
+
+      // set up the procMap
+      if (!interfMapCreated)
+      {
+        for(const auto &cf: scope->children())
+        {
+          if (cf->section == Entry::CLASS_SEC && cf->spec & Entry::Interface && cf->type == "abstract")
+          {
+            std::shared_ptr<Entry> ci = cf->children().front();
+            interfMap.insert(std::make_pair(ci->name.str(), ci));
+          }
+        }
+        interfMapCreated = true;
+      }
+
+      // found a (non-generic) method
+      QCString implName = ct->args;
+      if( interfMap.find(implName.str())!= interfMap.end() )
+      {
+        std::shared_ptr<Entry> proc = interfMap[implName.str()];
+        ct->args = proc->args;
+        ct->argList = ArgumentList(proc->argList);
+        if (ct->brief.isEmpty())
+        {
+          ct->brief = proc->brief;
+          ct->briefLine = proc->briefLine;
+          ct->briefFile = proc->briefFile;
+        }
+        if (ct->doc.isEmpty())
+        {
+          ct->doc = proc->doc;
+          ct->docLine = proc->docLine;
+          ct->docFile = proc->docFile;
+        }
+
+        methodMap.insert(std::make_pair(ct->name.str(), ct));
+      }
+    }
+
+    // handle "generic" methods (that is function overloading!), duplicating with arguments from the target method of the type
+    {
+      for(auto &ct: ce->children())
+      {
+        if (ct->section != Entry::FUNCTION_SEC)
+          continue;
+
+        if (ct->type!="generic")
+          continue;
+
+        // found a generic method (already duplicated for each entry by the parser)
+        QCString methodName = ct->args;
+        if( methodMap.find(methodName.str()) != methodMap.end() )
+        {
+          std::shared_ptr<Entry> method = methodMap[methodName.str()];
+          ct->args = method->args;
+          ct->argList = ArgumentList(method->argList);
+          if (ct->brief.isEmpty())
+          {
+            ct->brief = method->brief;
+            ct->briefLine = method->briefLine;
+            ct->briefFile = method->briefFile;
+          }
+          if (ct->doc.isEmpty())
+          {
+            ct->doc = method->doc;
+            ct->docLine = method->docLine;
+            ct->docFile = method->docFile;
+          }
+        }
+      }
+    }
+  }
+}
+
 
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {

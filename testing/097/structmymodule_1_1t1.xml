@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structmymodule_1_1t1" kind="type" language="Fortran" prot="public">
+    <compoundname>mymodule::t1</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structmymodule_1_1t1_1a40dabbcb827e13ffbb38bb7e9e5957cc" prot="public" static="no" mutable="no">
+        <type>integer</type>
+        <definition>integer mymodule::t1::publicvariable</definition>
+        <argsstring/>
+        <name>publicvariable</name>
+        <qualifiedname>mymodule::t1::publicvariable</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="097_type_with_procedures.f03" line="13" column="1" bodyfile="097_type_with_procedures.f03" bodystart="13" bodyend="13"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structmymodule_1_1t1_1ae19183d68bed3ffc6e05e413bd4f685b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>procedure</type>
+        <definition>procedure mymodule::t1::firstproc</definition>
+        <argsstring>(this, i)</argsstring>
+        <name>firstproc</name>
+        <qualifiedname>mymodule::t1::firstproc</qualifiedname>
+        <param>
+          <type>class(<ref refid="structmymodule_1_1t1" kindref="compound">t1</ref>)</type>
+          <defname>this</defname>
+        </param>
+        <param>
+          <type>integer, intent(in)</type>
+          <defname>i</defname>
+        </param>
+        <briefdescription>
+          <para>brief doc </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>this</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>this pointer </para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">i</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>integer argument </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="097_type_with_procedures.f03" line="16" column="1" bodyfile="097_type_with_procedures.f03" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="function" id="structmymodule_1_1t1_1a46ef6a488a930d0a20a3b36eb268e65e" prot="public" static="no" const="no" explicit="no" inline="no" final="yes" virt="non-virtual">
+        <type>procedure, non_overridable</type>
+        <definition>procedure, non_overridable mymodule::t1::secondproc</definition>
+        <argsstring>(this, r)</argsstring>
+        <name>secondproc</name>
+        <qualifiedname>mymodule::t1::secondproc</qualifiedname>
+        <param>
+          <type>class(<ref refid="structmymodule_1_1t1" kindref="compound">t1</ref>)</type>
+          <defname>this</defname>
+        </param>
+        <param>
+          <type>real, intent(out)</type>
+          <defname>r</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="097_type_with_procedures.f03" line="17" column="1" bodyfile="097_type_with_procedures.f03" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="function" id="structmymodule_1_1t1_1a1f5d3b587c25b0cd8482ede135585bb5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>procedure, pass(this)</type>
+        <definition>procedure, pass(this) mymodule::t1::redundantpass</definition>
+        <argsstring>(this, i)</argsstring>
+        <name>redundantpass</name>
+        <qualifiedname>mymodule::t1::redundantpass</qualifiedname>
+        <param>
+          <type>class(<ref refid="structmymodule_1_1t1" kindref="compound">t1</ref>)</type>
+          <defname>this</defname>
+        </param>
+        <param>
+          <type>integer, intent(in)</type>
+          <defname>i</defname>
+        </param>
+        <briefdescription>
+          <para>another brief doc </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>this</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>this pointer </para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">i</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>integer argument </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="097_type_with_procedures.f03" line="19" column="1" bodyfile="097_type_with_procedures.f03" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="function" id="structmymodule_1_1t1_1aae1fc16baab92e2262c25b49fdff8845" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>generic</type>
+        <definition>generic mymodule::t1::overloadedproc</definition>
+        <argsstring>(this, i)</argsstring>
+        <name>overloadedproc</name>
+        <qualifiedname>mymodule::t1::overloadedproc</qualifiedname>
+        <param>
+          <type>class(<ref refid="structmymodule_1_1t1" kindref="compound">t1</ref>)</type>
+          <defname>this</defname>
+        </param>
+        <param>
+          <type>integer, intent(in)</type>
+          <defname>i</defname>
+        </param>
+        <briefdescription>
+          <para>brief doc </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>this</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>this pointer </para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">i</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>integer argument </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="097_type_with_procedures.f03" line="20" column="1" bodyfile="097_type_with_procedures.f03" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="function" id="structmymodule_1_1t1_1a5aab3898edef16a90442c6d1af3990ef" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>generic</type>
+        <definition>generic mymodule::t1::overloadedproc</definition>
+        <argsstring>(this, r)</argsstring>
+        <name>overloadedproc</name>
+        <qualifiedname>mymodule::t1::overloadedproc</qualifiedname>
+        <param>
+          <type>class(<ref refid="structmymodule_1_1t1" kindref="compound">t1</ref>)</type>
+          <defname>this</defname>
+        </param>
+        <param>
+          <type>real, intent(out)</type>
+          <defname>r</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="097_type_with_procedures.f03" line="20" column="1" bodyfile="097_type_with_procedures.f03" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="function" id="structmymodule_1_1t1_1a69844b06186021c87dc0eccea9265d43" prot="public" static="no" const="no" explicit="no" inline="no" final="yes" virt="non-virtual">
+        <type>final</type>
+        <definition>final mymodule::t1::destructor</definition>
+        <argsstring>(this)</argsstring>
+        <name>destructor</name>
+        <qualifiedname>mymodule::t1::destructor</qualifiedname>
+        <param>
+          <type>type(<ref refid="structmymodule_1_1t1" kindref="compound">t1</ref>), intent(inout)</type>
+          <defname>this</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="097_type_with_procedures.f03" line="21" column="1" bodyfile="097_type_with_procedures.f03" bodystart="21" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="structmymodule_1_1t1_1abb688b8fc7c32fadd1055ff32392003c" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>procedure, nopass</type>
+        <definition>procedure, nopass mymodule::t1::staticproc</definition>
+        <argsstring>(somearg)</argsstring>
+        <name>staticproc</name>
+        <qualifiedname>mymodule::t1::staticproc</qualifiedname>
+        <param>
+          <type>integer</type>
+          <defname>somearg</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="097_type_with_procedures.f03" line="18" column="1" bodyfile="097_type_with_procedures.f03" bodystart="18" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="097_type_with_procedures.f03" line="12" column="1" bodyfile="097_type_with_procedures.f03" bodystart="12" bodyend="22"/>
+    <listofallmembers>
+      <member refid="structmymodule_1_1t1_1a69844b06186021c87dc0eccea9265d43" prot="public" virt="non-virtual">
+        <scope>mymodule::t1</scope>
+        <name>destructor</name>
+      </member>
+      <member refid="structmymodule_1_1t1_1ae19183d68bed3ffc6e05e413bd4f685b" prot="public" virt="non-virtual">
+        <scope>mymodule::t1</scope>
+        <name>firstproc</name>
+      </member>
+      <member refid="structmymodule_1_1t1_1aae1fc16baab92e2262c25b49fdff8845" prot="public" virt="non-virtual">
+        <scope>mymodule::t1</scope>
+        <name>overloadedproc</name>
+      </member>
+      <member refid="structmymodule_1_1t1_1a5aab3898edef16a90442c6d1af3990ef" prot="public" virt="non-virtual">
+        <scope>mymodule::t1</scope>
+        <name>overloadedproc</name>
+      </member>
+      <member refid="structmymodule_1_1t1_1a40dabbcb827e13ffbb38bb7e9e5957cc" prot="public" virt="non-virtual">
+        <scope>mymodule::t1</scope>
+        <name>publicvariable</name>
+      </member>
+      <member refid="structmymodule_1_1t1_1a1f5d3b587c25b0cd8482ede135585bb5" prot="public" virt="non-virtual">
+        <scope>mymodule::t1</scope>
+        <name>redundantpass</name>
+      </member>
+      <member refid="structmymodule_1_1t1_1a46ef6a488a930d0a20a3b36eb268e65e" prot="public" virt="non-virtual">
+        <scope>mymodule::t1</scope>
+        <name>secondproc</name>
+      </member>
+      <member refid="structmymodule_1_1t1_1abb688b8fc7c32fadd1055ff32392003c" prot="public" virt="non-virtual">
+        <scope>mymodule::t1</scope>
+        <name>staticproc</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

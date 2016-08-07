@@ -4469,6 +4469,10 @@ void MemberDefImpl::_computeIsDestructor()
   {
     isDestructor=TRUE;
   }
+  else if (getLanguage()==SrcLangExt_Fortran) // for Fortran
+  {
+    isDestructor = typeString()=="final";
+  }
   else // other languages
   {
     isDestructor =
