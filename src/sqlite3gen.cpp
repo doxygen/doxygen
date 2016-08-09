@@ -586,7 +586,7 @@ static void insertMemberFunctionParams(sqlite3 *db,int id_memberdef,MemberDef *m
           QCString qrefid_src = md->getOutputFileBase() + "_1" + md->anchor();
           int refid_src = insertRefid(db,qrefid_src.data());
           int refid_dst = insertRefid(db,s->data());
-          int id_file = insertFile(db,def->getDefFileName());
+          int id_file = insertFile(db,stripFromPath(def->getDefFileName()));
           insertMemberReference(db,refid_src,refid_dst,id_file,md->getDefLine(),-1);
           ++li;
         }
@@ -1016,7 +1016,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
         QCString qrefid_src = md->getOutputFileBase() + "_1" + md->anchor();
         int refid_src = insertRefid(db,qrefid_src.data());
         int refid_dst = insertRefid(db,s->data());
-        int id_file = insertFile(db,md->getBodyDef()->getDefFileName());
+        int id_file = insertFile(db,stripFromPath(md->getBodyDef()->getDefFileName()));
         insertMemberReference(db,refid_src,refid_dst,id_file,md->getStartBodyLine(),-1);
       }
       ++li;
@@ -1036,7 +1036,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   // File location
   if (md->getDefLine() != -1)
   {
-    int id_file = insertFile(db,md->getDefFileName());
+    int id_file = insertFile(db,stripFromPath(md->getDefFileName()));
     if (id_file!=-1)
     {
       bindIntParameter(memberdef_insert,":id_file",id_file);
@@ -1045,7 +1045,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 
       if (md->getStartBodyLine()!=-1)
       {
-        int id_bodyfile = insertFile(db,md->getBodyDef()->absFilePath());
+        int id_bodyfile = insertFile(db,stripFromPath(md->getBodyDef()->absFilePath()));
         if (id_bodyfile == -1)
         {
             sqlite3_clear_bindings(memberdef_insert.stmt);
@@ -1160,7 +1160,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
   int refid = insertRefid(db, cd->getOutputFileBase());
   bindIntParameter(compounddef_insert,":refid", refid);
 
-  int id_file = insertFile(db,cd->getDefFileName().data());
+  int id_file = insertFile(db,stripFromPath(cd->getDefFileName()));
   bindIntParameter(compounddef_insert,":id_file",id_file);
   bindIntParameter(compounddef_insert,":line",cd->getDefLine());
   bindIntParameter(compounddef_insert,":column",cd->getDefColumn());
