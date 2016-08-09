@@ -929,7 +929,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     {
       QCString bitfield = md->bitfieldString();
       if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
-      bindTextParameter(memberdef_insert,":bitfield",bitfield);
+      bindTextParameter(memberdef_insert,":bitfield",bitfield.stripWhiteSpace());
     }
   }
   else if (md->memberType() == MemberType_Property)
