@@ -92,47 +92,64 @@ const char * schema_queries[][2] = {
   { "memberdef",
     "CREATE TABLE IF NOT EXISTS memberdef (\n"
       "\t-- All processed identifiers.\n"
-      "\trowid        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
-      "\tid_file      INTEGER NOT NULL,  -- file where this identifier is located\n"
-      "\tline         INTEGER NOT NULL,  -- line where this identifier is located\n"
-      "\tcolumn       INTEGER NOT NULL,  -- column where this identifier is located\n"
-      "\trefid        INTEGER NOT NULL,  -- see the refids table\n"
-      "\tname         TEXT NOT NULL,\n"
-      "\tdefinition   TEXT,\n"
-      "\ttype         TEXT,\n"
-      "\targsstring   TEXT,\n"
-      "\tscope        TEXT,\n"
-      "\tinitializer  TEXT,\n"
-      "\tprot         INTEGER DEFAULT 0, -- 0:public 1:protected 2:private 3:package\n"
-      "\tconst        INTEGER DEFAULT 0, -- 0:non-constant 1:constant\n"
-      "\tvirt         INTEGER DEFAULT 0, -- 0:non-virtual 1:virtual 2:pure-virtual\n"
-      "\tstatic       INTEGER DEFAULT 0, -- 0:non-static 1:static\n"
-      "\texplicit     INTEGER DEFAULT 0,\n"
-      "\tinline       INTEGER DEFAULT 0,\n"
-      "\tfinal        INTEGER DEFAULT 0,\n"
-      "\tsealed       INTEGER DEFAULT 0,\n"
-      "\tnew          INTEGER DEFAULT 0,\n"
-      "\toptional     INTEGER DEFAULT 0,\n"
-      "\trequired     INTEGER DEFAULT 0,\n"
-      "\tmutable      INTEGER DEFAULT 0,\n"
-      "\tinitonly     INTEGER DEFAULT 0,\n"
-      "\treadable     INTEGER DEFAULT 0,\n"
-      "\twritable     INTEGER DEFAULT 0,\n"
-      "\tgettable     INTEGER DEFAULT 0,\n"
-      "\tsettable     INTEGER DEFAULT 0,\n"
-      "\taccessor     INTEGER DEFAULT 0,\n"
-      "\taddable      INTEGER DEFAULT 0,\n"
-      "\tremovable    INTEGER DEFAULT 0,\n"
-      "\traisable     INTEGER DEFAULT 0,\n"
+      "\trowid                INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
+      "\trefid                INTEGER NOT NULL,  -- see the refids table\n"
+      "\tname                 TEXT NOT NULL,\n"
+      "\tdefinition           TEXT,\n"
+      "\ttype                 TEXT,\n"
+      "\targsstring           TEXT,\n"
+      "\tscope                TEXT,\n"
+      "\tinitializer          TEXT,\n"
+      "\tbitfield             TEXT,\n"
+      "\tread                 TEXT,\n"
+      "\twrite                TEXT,\n"
+      "\tprot                 INTEGER DEFAULT 0, -- 0:public 1:protected 2:private 3:package\n"
+      "\tstatic               INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tconst                INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\texplicit             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tinline               INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tfinal                INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tsealed               INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tnew                  INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\toptional             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\trequired             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tvolatile             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tvirt                 INTEGER DEFAULT 0, -- 0:no 1:virtual 2:pure-virtual\n"
+      "\tmutable              INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tinitonly             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tattribute            INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tproperty             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\treadonly             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tbound                INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tconstrained          INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\ttransient            INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tmaybevoid            INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tmaybedefault         INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tmaybeambiguous       INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\treadable             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\twritable             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tgettable             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tprivategettable      INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tprotectedgettable    INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tsettable             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tprivatesettable      INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tprotectedsettable    INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\taccessor             INTEGER DEFAULT 0, -- 0:no 1:assign 2:copy 3:retain 4:string 5:weak\n"
+      "\taddable              INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tremovable            INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\traisable             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       /// @todo make a `kind' table
-      "\tkind         INTEGER DEFAULT 0, -- 0:define 1:function 2:variable 3:typedef 4:enum 5:enumvalue 6:signal 7:slot 8:friend 9:DCOP 10:property 11:event\n"
-      "\tid_bodyfile  INTEGER DEFAULT 0, -- file of definition\n"
-      "\tbodystart    INTEGER DEFAULT 0, -- starting line of definition\n"
-      "\tbodyend      INTEGER DEFAULT 0, -- ending line of definition\n"
+      "\tkind                 INTEGER DEFAULT 0, -- 0:define 1:function 2:variable 3:typedef 4:enum 5:enumvalue 6:signal 7:slot 8:friend 9:DCOP 10:property 11:event\n"
+      "\tbodystart            INTEGER DEFAULT 0, -- starting line of definition\n"
+      "\tbodyend              INTEGER DEFAULT 0, -- ending line of definition\n"
+      "\tid_bodyfile          INTEGER DEFAULT 0, -- file of definition\n"
+      "\tid_file              INTEGER NOT NULL,  -- file where this identifier is located\n"
+      "\tline                 INTEGER NOT NULL,  -- line where this identifier is located\n"
+      "\tcolumn               INTEGER NOT NULL,  -- column where this identifier is located\n"
       /// @todo make a `detaileddescription' table
       "\tdetaileddescription  TEXT,\n"
       "\tbriefdescription     TEXT,\n"
-      "\tinbodydescription    TEXTi\n"
+      "\tinbodydescription    TEXT\n"
       ");"
   },
   { "compounddef",
@@ -251,9 +268,121 @@ SqlStmt xrefs_insert= {"INSERT INTO xrefs "
 };
 //////////////////////////////////////////////////////
 SqlStmt memberdef_insert={"INSERT INTO memberdef "
-    "( refid, prot, static, const, explicit, inline, final, sealed, new, optional, required, virt, mutable, initonly, readable, writable, gettable, settable, accessor, addable, removable, raisable, name, type, definition, argsstring, scope, initializer, kind, id_bodyfile, bodystart, bodyend, id_file, line, column, detaileddescription, briefdescription, inbodydescription)"
+    "("
+      "refid,"
+      "name,"
+      "definition,"
+      "type,"
+      "argsstring,"
+      "scope,"
+      "initializer,"
+      "bitfield,"
+      "read,"
+      "write,"
+      "prot,"
+      "static,"
+      "const,"
+      "explicit,"
+      "inline,"
+      "final,"
+      "sealed,"
+      "new,"
+      "optional,"
+      "required,"
+      "volatile,"
+      "virt,"
+      "mutable,"
+      "initonly,"
+      "attribute,"
+      "property,"
+      "readonly,"
+      "bound,"
+      "constrained,"
+      "transient,"
+      "maybevoid,"
+      "maybedefault,"
+      "maybeambiguous,"
+      "readable,"
+      "writable,"
+      "gettable,"
+      "protectedsettable,"
+      "protectedgettable,"
+      "settable,"
+      "privatesettable,"
+      "privategettable,"
+      "accessor,"
+      "addable,"
+      "removable,"
+      "raisable,"
+      "kind,"
+      "bodystart,"
+      "bodyend,"
+      "id_bodyfile,"
+      "id_file,"
+      "line,"
+      "column,"
+      "detaileddescription,"
+      "briefdescription,"
+      "inbodydescription"
+    ")"
     "VALUES "
-    "(:refid,:prot,:static,:const,:explicit,:inline,:final,:sealed,:new,:optional,:required,:virt,:mutable,:initonly,:readable,:writable,:gettable,:settable,:accessor,:addable,:removable,:raisable,:name,:type,:definition,:argsstring,:scope,:initializer,:kind,:id_bodyfile,:bodystart,:bodyend,:id_file,:line,:column,:detaileddescription,:briefdescription,:inbodydescription)"
+    "("
+      ":refid,"
+      ":name,"
+      ":definition,"
+      ":type,"
+      ":argsstring,"
+      ":scope,"
+      ":initializer,"
+      ":bitfield,"
+      ":read,"
+      ":write,"
+      ":prot,"
+      ":static,"
+      ":const,"
+      ":explicit,"
+      ":inline,"
+      ":final,"
+      ":sealed,"
+      ":new,"
+      ":optional,"
+      ":required,"
+      ":volatile,"
+      ":virt,"
+      ":mutable,"
+      ":initonly,"
+      ":attribute,"
+      ":property,"
+      ":readonly,"
+      ":bound,"
+      ":constrained,"
+      ":transient,"
+      ":maybevoid,"
+      ":maybedefault,"
+      ":maybeambiguous,"
+      ":readable,"
+      ":writable,"
+      ":gettable,"
+      ":privategettable,"
+      ":protectedgettable,"
+      ":settable,"
+      ":privatesettable,"
+      ":privategettable,"
+      ":accessor,"
+      ":addable,"
+      ":removable,"
+      ":raisable,"
+      ":kind,"
+      ":bodystart,"
+      ":bodyend,"
+      ":id_bodyfile,"
+      ":id_file,"
+      ":line,"
+      ":column,"
+      ":detaileddescription,"
+      ":briefdescription,"
+      ":inbodydescription"
+    ")"
     ,NULL
 };
 //////////////////////////////////////////////////////
@@ -769,6 +898,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     if (al!=0)
     {
       bindIntParameter(memberdef_insert,":const",al->constSpecifier);
+      bindIntParameter(memberdef_insert,":volatile",al->volatileSpecifier);
     }
     bindIntParameter(memberdef_insert,":explicit",md->isExplicit());
     bindIntParameter(memberdef_insert,":inline",md->isInline());
@@ -780,26 +910,52 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 
     bindIntParameter(memberdef_insert,":virt",md->virtualness());
   }
-  // place in the arguments and linkify the arguments
 
   if (md->memberType() == MemberType_Variable)
   {
     bindIntParameter(memberdef_insert,":mutable",md->isMutable());
     bindIntParameter(memberdef_insert,":initonly",md->isInitonly());
+    bindIntParameter(memberdef_insert,":attribute",md->isAttribute());
+    bindIntParameter(memberdef_insert,":property",md->isProperty());
+    bindIntParameter(memberdef_insert,":readonly",md->isReadonly());
+    bindIntParameter(memberdef_insert,":bound",md->isBound());
+    bindIntParameter(memberdef_insert,":removable",md->isRemovable());
+    bindIntParameter(memberdef_insert,":constrained",md->isConstrained());
+    bindIntParameter(memberdef_insert,":transient",md->isTransient());
+    bindIntParameter(memberdef_insert,":maybevoid",md->isMaybeVoid());
+    bindIntParameter(memberdef_insert,":maybedefault",md->isMaybeDefault());
+    bindIntParameter(memberdef_insert,":maybeambiguous",md->isMaybeAmbiguous());
+    if (md->bitfieldString())
+    {
+      QCString bitfield = md->bitfieldString();
+      if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
+      bindTextParameter(memberdef_insert,":bitfield",bitfield);
+    }
   }
   else if (md->memberType() == MemberType_Property)
   {
     bindIntParameter(memberdef_insert,":readable",md->isReadable());
     bindIntParameter(memberdef_insert,":writable",md->isWritable());
     bindIntParameter(memberdef_insert,":gettable",md->isGettable());
+    bindIntParameter(memberdef_insert,":privategettable",md->isPrivateGettable());
+    bindIntParameter(memberdef_insert,":protectedgettable",md->isProtectedGettable());
     bindIntParameter(memberdef_insert,":settable",md->isSettable());
-    if (md->isAssign() || md->isCopy() || md->isRetain())
+    bindIntParameter(memberdef_insert,":privatesettable",md->isPrivateSettable());
+    bindIntParameter(memberdef_insert,":protectedsettable",md->isProtectedSettable());
+    if (md->isAssign() || md->isCopy() || md->isRetain()
+     || md->isStrong() || md->isWeak())
     {
-      int accessor = md->isAssign() ? md->isAssign() :
-          (md->isCopy() ? md->isCopy() : md->isRetain()) ;
+      int accessor=0;
+      if (md->isAssign())      accessor = 1;
+      else if (md->isCopy())   accessor = 2;
+      else if (md->isRetain()) accessor = 3;
+      else if (md->isStrong()) accessor = 4;
+      else if (md->isWeak())   accessor = 5;
 
       bindIntParameter(memberdef_insert,":accessor",accessor);
     }
+    bindTextParameter(memberdef_insert,":read",md->getReadAccessor());
+    bindTextParameter(memberdef_insert,":write",md->getWriteAccessor());
   }
   else if (md->memberType() == MemberType_Event)
   {
@@ -838,19 +994,6 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   }
 
   bindTextParameter(memberdef_insert,":name",md->name());
-
-  if (md->memberType() == MemberType_Property)
-  {
-    if (md->isReadable())
-    {
-      bindIntParameter(memberdef_insert,":readable",1);
-    }
-    if (md->isWritable())
-    {
-      bindIntParameter(memberdef_insert,":writable",1);
-    }
-  }
-
 
   // Extract references from initializer
   if (md->hasMultiLineInitializer() || md->hasOneLineInitializer())
