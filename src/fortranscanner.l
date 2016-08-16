@@ -472,7 +472,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 
 ^{BS}interface{BS_}{ID}{ARGS}?          { ifType = IF_GENERIC;
-				          current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
+                                          current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
                                           yy_push_state(InterfaceBody);
 
                                           // extract generic name
@@ -495,14 +495,15 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <InterfaceBody>module{BS}procedure      { yy_push_state(YY_START);
                                           BEGIN(ModuleProcedure);
                                         }
-<ModuleProcedure>{ID}                   { if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
+<ModuleProcedure>{ID}                   { QCString name = QCString(yytext).lower();
+                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                           {
-                                            addInterface(yytext, ifType);
+                                            addInterface(name, ifType);
                                             startScope(last_entry);
                                           }
 
                                           current->section = Entry::FUNCTION_SEC ;
-                                          current->name = yytext; 
+                                          current->name = name; 
                                           moduleProcedures.append(current);
                                           addCurrentEntry(1);
                                         }
@@ -1054,7 +1055,7 @@ private                                 {
 
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
-                                           current_root->name.replace(QRegExp("\\$interface\\$"), yytext);
+                                           current_root->name.replace(QRegExp("\\$interface\\$"), QCString(yytext).lower());
                                          }
 
                                          BEGIN(Parameterlist);
@@ -1640,19 +1641,38 @@ void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root
 {
   if (moduleProcedures.isEmpty()) return;
  
+  // build up map of available functions
+  QMap<QCString,Entry*> procMap;
+  {
+    EntryListIterator el(*current_root->children());
+    Entry *cf;
+    for (;(cf=el.current());++el)
+    {
+      if (cf->section != Entry::FUNCTION_SEC)
+        continue;
+
+      // remove scope from name
+      QCString name = cf->name;
+      {
+        int end = name.findRev(":");
+        if (end != -1) 
+          name.remove(0, end+1);
+      }
+
+      procMap.insert(name, cf);
+    }
+  }
+
+
   EntryListIterator eli1(moduleProcedures);
   // for all module procedures
   for (Entry *ce1; (ce1=eli1.current()); ++eli1) 
   {
-    // check all entries in this module
-    EntryListIterator eli2(*current_root->children());
-    for (Entry *ce2; (ce2=eli2.current()); ++eli2) 
+    if (procMap.contains(ce1->name))
     {
-      if (ce1->name == ce2->name) 
-      {
-        copyEntry(ce1, ce2);
-      }
-    } // for procedures in current module
+      Entry* proc = procMap[ce1->name];
+      copyEntry(ce1, proc);
+    }
   } // for all interface module procedures
   moduleProcedures.clear();
 }
