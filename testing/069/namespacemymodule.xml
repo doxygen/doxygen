@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="namespacemymodule" kind="namespace" language="Fortran">
+    <compoundname>mymodule</compoundname>
+    <innerclass refid="interfacemymodule_1_1abstractproc" prot="public">mymodule::abstractproc</innerclass>
+    <innerclass refid="interfacemymodule_1_1externalproc" prot="public">mymodule::externalproc</innerclass>
+    <innerclass refid="interfacemymodule_1_1genericproc" prot="public">mymodule::genericproc</innerclass>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="069__interfaces_8f90_1ac4fecdb729ae02a9b45e07b39a06bd4a" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::firstproc</definition>
+        <argsstring>(i)</argsstring>
+        <name>firstproc</name>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+        </param>
+        <briefdescription>
+          <para>short doc </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">i</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>integer argument </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_interfaces.f90" line="46" column="1" bodyfile="069_interfaces.f90" bodystart="47" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="function" id="069__interfaces_8f90_1ad9576415f0501f163aba191413e7ec8f" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::secondproc</definition>
+        <argsstring>(r)</argsstring>
+        <name>secondproc</name>
+        <param>
+          <type>r</type>
+          <defname>r</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_interfaces.f90" line="50" column="1" bodyfile="069_interfaces.f90" bodystart="51" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="069__interfaces_8f90_1ac7b19d3c9d79ad88b61d5a303e4d0cb1" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::otherproc</definition>
+        <argsstring>(someArg)</argsstring>
+        <name>otherproc</name>
+        <param>
+          <type>someArg</type>
+          <defname>someArg</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_interfaces.f90" line="54" column="1" bodyfile="069_interfaces.f90" bodystart="55" bodyend="55"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="069_interfaces.f90" line="8" column="1"/>
+  </compounddef>
+</doxygen>

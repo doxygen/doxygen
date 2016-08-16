@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="interfacemymodule_1_1genericproc" kind="interface" language="Fortran" prot="public">
+    <compoundname>mymodule::genericproc</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interfacemymodule_1_1genericproc_1a29212dbf2b36be4ef4bb185a8fac345f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::genericproc::firstproc</definition>
+        <argsstring>(i)</argsstring>
+        <name>firstproc</name>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+        </param>
+        <briefdescription>
+          <para>short doc </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">i</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>integer argument </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_interfaces.f90" line="46" column="1" bodyfile="069_interfaces.f90" bodystart="47" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="function" id="interfacemymodule_1_1genericproc_1ad29fdcc5c1c64ee2005a36bb349d2c00" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::genericproc::otherproc</definition>
+        <argsstring>(someArg)</argsstring>
+        <name>otherproc</name>
+        <param>
+          <type>someArg</type>
+          <defname>someArg</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_interfaces.f90" line="54" column="1" bodyfile="069_interfaces.f90" bodystart="55" bodyend="55"/>
+      </memberdef>
+      <memberdef kind="function" id="interfacemymodule_1_1genericproc_1a92cbc79d158eaa86f5a43f0f00af8a12" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::genericproc::externalproc2</definition>
+        <argsstring>(r)</argsstring>
+        <name>externalproc2</name>
+        <param>
+          <type>r</type>
+          <defname>r</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_interfaces.f90" line="30" column="1" bodyfile="069_interfaces.f90" bodystart="31" bodyend="31"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="069_interfaces.f90" line="27" column="1" bodyfile="069_interfaces.f90" bodystart="27" bodyend="32"/>
+    <listofallmembers>
+      <member refid="interfacemymodule_1_1genericproc_1a92cbc79d158eaa86f5a43f0f00af8a12" prot="public" virt="non-virtual">
+        <scope>mymodule::genericproc</scope>
+        <name>externalproc2</name>
+      </member>
+      <member refid="interfacemymodule_1_1genericproc_1a29212dbf2b36be4ef4bb185a8fac345f" prot="public" virt="non-virtual">
+        <scope>mymodule::genericproc</scope>
+        <name>firstproc</name>
+      </member>
+      <member refid="interfacemymodule_1_1genericproc_1ad29fdcc5c1c64ee2005a36bb349d2c00" prot="public" virt="non-virtual">
+        <scope>mymodule::genericproc</scope>
+        <name>otherproc</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

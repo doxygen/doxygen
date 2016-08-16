@@ -474,6 +474,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 ^{BS}interface{BS_}{ID}{ARGS}?          { ifType = IF_GENERIC;
                                           current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
                                           yy_push_state(InterfaceBody);
+                                          typeProtection = Public;
+                                          typeMode = true;
 
                                           // extract generic name
                                           QCString name = QCString(yytext).stripWhiteSpace();
@@ -490,17 +492,13 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                             yyterminate();
 
                                           ifType = IF_NONE;
+                                          typeMode = false;
                                           yy_pop_state();
                                         }
 <InterfaceBody>module{BS}procedure      { yy_push_state(YY_START);
                                           BEGIN(ModuleProcedure);
                                         }
 <ModuleProcedure>{ID}                   { QCString name = QCString(yytext).lower();
-                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
-                                          {
-                                            addInterface(name, ifType);
-                                            startScope(last_entry);
-                                          }
 
                                           current->section = Entry::FUNCTION_SEC ;
                                           current->name = name; 
