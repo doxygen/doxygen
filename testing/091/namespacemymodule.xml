@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacemymodule" kind="namespace" language="Fortran">
+    <compoundname>mymodule</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="091__module__with__procs_8f90_1ac4fecdb729ae02a9b45e07b39a06bd4a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::firstproc</definition>
+        <argsstring>(i)</argsstring>
+        <name>firstproc</name>
+        <qualifiedname>mymodule::firstproc</qualifiedname>
+        <param>
+          <type>integer, intent(in)</type>
+          <defname>i</defname>
+        </param>
+        <briefdescription>
+          <para>comment on firstProc </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">i</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>comment on i of firstProc </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="091_module_with_procs.f90" line="12" column="1" bodyfile="091_module_with_procs.f90" bodystart="13" bodyend="13"/>
+      </memberdef>
+      <memberdef kind="function" id="091__module__with__procs_8f90_1a5ec206a2a8b99f4e22074abe42e0f8c2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>integer function</type>
+        <definition>integer function mymodule::secondproc_fun</definition>
+        <argsstring>(r)</argsstring>
+        <name>secondproc_fun</name>
+        <qualifiedname>mymodule::secondproc_fun</qualifiedname>
+        <param>
+          <type>real, intent(out)</type>
+          <defname>r</defname>
+        </param>
+        <briefdescription>
+          <para>comment on secondProc_fun </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="out">r</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>comment on r of secondProc_fun </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>comment on result Res of secondProc_fun </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="091_module_with_procs.f90" line="17" column="1" bodyfile="091_module_with_procs.f90" bodystart="18" bodyend="19"/>
+      </memberdef>
+      <memberdef kind="function" id="091__module__with__procs_8f90_1a81aef287c35bbfbb04b2cb3800aa4714" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::anotherproc</definition>
+        <argsstring>(somearg)</argsstring>
+        <name>anotherproc</name>
+        <qualifiedname>mymodule::anotherproc</qualifiedname>
+        <param>
+          <type>character(len=*), intent(in)</type>
+          <defname>somearg</defname>
+        </param>
+        <briefdescription>
+          <para>comment on anotherProc </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">somearg</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>comment on someArg of anotherProc </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="091_module_with_procs.f90" line="23" column="1" bodyfile="091_module_with_procs.f90" bodystart="24" bodyend="24"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="091_module_with_procs.f90" line="5" column="1"/>
+  </compounddef>
+</doxygen>

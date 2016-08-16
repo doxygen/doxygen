@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="interfacemymodule_1_1abstractproc" kind="interface" language="Fortran" prot="public">
+    <compoundname>mymodule::abstractproc</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interfacemymodule_1_1abstractproc_1ae7af149f9526318f55fd76e8cef8004c" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::abstractproc::abstractproc</definition>
+        <argsstring>(logicalarg)</argsstring>
+        <name>abstractproc</name>
+        <qualifiedname>mymodule::abstractproc::abstractproc</qualifiedname>
+        <param>
+          <type>logical, intent(out)</type>
+          <defname>logicalarg</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="090_interfaces.f90" line="40" column="1" bodyfile="090_interfaces.f90" bodystart="41" bodyend="41"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="090_interfaces.f90" line="40" column="1" bodyfile="090_interfaces.f90" bodystart="40" bodyend="41"/>
+    <listofallmembers>
+      <member refid="interfacemymodule_1_1abstractproc_1ae7af149f9526318f55fd76e8cef8004c" prot="public" virt="virtual">
+        <scope>mymodule::abstractproc</scope>
+        <name>abstractproc</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

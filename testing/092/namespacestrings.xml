@@ -1,0 +1,631 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacestrings" kind="namespace" language="Fortran">
+    <compoundname>strings</compoundname>
+    <innerclass refid="interfacestrings_1_1append" prot="public">strings::append</innerclass>
+    <innerclass refid="interfacestrings_1_1appendifunique" prot="public">strings::appendifunique</innerclass>
+    <innerclass refid="interfacestrings_1_1find" prot="public">strings::find</innerclass>
+    <innerclass refid="interfacestrings_1_1grow" prot="public">strings::grow</innerclass>
+    <innerclass refid="interfacestrings_1_1join" prot="public">strings::join</innerclass>
+    <innerclass refid="interfacestrings_1_1len" prot="public">strings::len</innerclass>
+    <innerclass refid="interfacestrings_1_1operator_07_0a_0a_08" prot="public">strings::operator(==)</innerclass>
+    <innerclass refid="interfacestrings_1_1pack" prot="public">strings::pack</innerclass>
+    <innerclass refid="interfacestrings_1_1push" prot="private">strings::push</innerclass>
+    <innerclass refid="interfacestrings_1_1replace" prot="public">strings::replace</innerclass>
+    <innerclass refid="interfacestrings_1_1shrink" prot="public">strings::shrink</innerclass>
+    <innerclass refid="structstrings_1_1string" prot="public">strings::string</innerclass>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="namespacestrings_1a45584f6a9f6f13e5370bd883d744f0a6" prot="private" static="no" mutable="no">
+        <type>integer, parameter</type>
+        <definition>integer, parameter strings::ck</definition>
+        <argsstring/>
+        <name>ck</name>
+        <qualifiedname>strings::ck</qualifiedname>
+        <initializer>= KIND('a')</initializer>
+        <briefdescription>
+          <para>Strings store default kind characters. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="55" column="1" bodyfile="092_more_interfaces.f90" bodystart="55" bodyend="55"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespacestrings_1a774c467de652d637906ffeec32c4a010" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::grow_</definition>
+        <argsstring>(vector, count)</argsstring>
+        <name>grow_</name>
+        <qualifiedname>strings::grow_</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>integer, intent(in), optional</type>
+          <defname>count</defname>
+        </param>
+        <briefdescription>
+          <para>Expands a vector of Strings with undefined items. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">vector</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector to expand.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">count</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>Optional number of items to expand by. <linebreak/>
+ If not present, the vector is expanded by one item. If negative, the vector will shrink. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="144" column="1" bodyfile="092_more_interfaces.f90" bodystart="145" bodyend="189"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1ad31245e0a19fac8b5906c08b2f689d90" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::shrink_</definition>
+        <argsstring>(vector, count)</argsstring>
+        <name>shrink_</name>
+        <qualifiedname>strings::shrink_</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>integer, intent(in), optional</type>
+          <defname>count</defname>
+        </param>
+        <briefdescription>
+          <para>Shrinks a vector of Strings by removing items from the end. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><parameterlist kind="param"><parameteritem><parameternamelist><parametername direction="in">vector</parametername></parameternamelist><parameterdescription><para>The vector to expand.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">count</parametername></parameternamelist><parameterdescription><para>Optional number of items to shrink by. <linebreak/>
+ If not present, the vector is shrunk by one item. If negative, the vector will grow.</para></parameterdescription></parameteritem></parameterlist>
+This is perhaps a more performance way of going: <programlisting><codeline><highlight class="normal">vector<sp/>=<sp/>vector(:</highlight><highlight class="keyword">SIZE</highlight><highlight class="normal">(vector)-count)</highlight></codeline></programlisting></para>
+          <para>though it handles some edge cases nicely too. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="210" column="1" bodyfile="092_more_interfaces.f90" bodystart="211" bodyend="254"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1af04870b0146e7547d7b65997a05d1bff" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::append_</definition>
+        <argsstring>(vector, item)</argsstring>
+        <name>append_</name>
+        <qualifiedname>strings::append_</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>character(*,kind=ck), intent(in)</type>
+          <defname>item</defname>
+        </param>
+        <briefdescription>
+          <para>Adds a single item to the end of the vector of Strings. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">vector</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of strings.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">item</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The CHARACTER object to append as a new item. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="267" column="1" bodyfile="092_more_interfaces.f90" bodystart="268" bodyend="298"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1a99e25b1bf5396c11d9efdbbbc5f018fe" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::append_scalar</definition>
+        <argsstring>(vector, item)</argsstring>
+        <name>append_scalar</name>
+        <qualifiedname>strings::append_scalar</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>item</defname>
+        </param>
+        <briefdescription>
+          <para>Adds a single item to the end of the vector of Strings. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">vector</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of strings.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">item</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The scalar String object to append as a new item. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="311" column="1" bodyfile="092_more_interfaces.f90" bodystart="312" bodyend="342"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1a9ab3d3fd3e92d64b8eb727dfd03d24f9" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::append_vector</definition>
+        <argsstring>(vector, items, mask)</argsstring>
+        <name>append_vector</name>
+        <qualifiedname>strings::append_vector</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(in)</type>
+          <defname>items</defname>
+        </param>
+        <param>
+          <type>logical, dimension(:), intent(in), optional</type>
+          <defname>mask</defname>
+        </param>
+        <briefdescription>
+          <para>Appends a vector of Strings to another vector of Strings. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><parameterlist kind="param"><parameteritem><parameternamelist><parametername direction="in">vector</parametername></parameternamelist><parameterdescription><para>The vector of Strings to be appended to.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">items</parametername></parameternamelist><parameterdescription><para>The potential selection of Strings to be appended.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">mask</parametername></parameternamelist><parameterdescription><para>A mask that designates which elements from <emphasis>items</emphasis> will be appended. If not present then all elements from <emphasis>items</emphasis> will be appended. If present must be the same size as <emphasis>items</emphasis>.</para></parameterdescription></parameteritem></parameterlist>
+Note that <emphasis>items</emphasis> is left unchanged. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="362" column="1" bodyfile="092_more_interfaces.f90" bodystart="363" bodyend="409"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1ad61a54dad7fbd74598da9cc14bf5cbe5" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::appendifunique_</definition>
+        <argsstring>(vector, item)</argsstring>
+        <name>appendifunique_</name>
+        <qualifiedname>strings::appendifunique_</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>character(*,kind=ck), intent(in)</type>
+          <defname>item</defname>
+        </param>
+        <briefdescription>
+          <para>Append an item to a vector of strings if the item is not already in the vector. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><parameterlist kind="param"><parameteritem><parameternamelist><parametername direction="in">vector</parametername></parameternamelist><parameterdescription><para>The vector of Strings to be appended to.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">item</parametername></parameternamelist><parameterdescription><para>The item to be appended, if it is unique.</para></parameterdescription></parameteritem></parameterlist>
+Appends <emphasis>item</emphasis> to <emphasis>vector</emphasis> if <emphasis>item</emphasis> is not already in <emphasis>vector</emphasis>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="424" column="1" bodyfile="092_more_interfaces.f90" bodystart="425" bodyend="447"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1a3cf037e53ede1e8a9c788d30a5d74f35" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::appendifunique_scalar</definition>
+        <argsstring>(vector, item)</argsstring>
+        <name>appendifunique_scalar</name>
+        <qualifiedname>strings::appendifunique_scalar</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>item</defname>
+        </param>
+        <briefdescription>
+          <para>Append an item to a vector of strings if the item is not already in the vector. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><parameterlist kind="param"><parameteritem><parameternamelist><parametername direction="in">vector</parametername></parameternamelist><parameterdescription><para>The vector of Strings to be appended to.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">item</parametername></parameternamelist><parameterdescription><para>The scalar string to be appended, if it is unique.</para></parameterdescription></parameteritem></parameterlist>
+Appends <emphasis>item</emphasis> to <emphasis>vector</emphasis> if <emphasis>item</emphasis> is not already in <emphasis>vector</emphasis>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="463" column="1" bodyfile="092_more_interfaces.f90" bodystart="464" bodyend="486"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1a4056ea46ceea73f69865991b4f98fe95" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::appendifunique_vector</definition>
+        <argsstring>(vector, items)</argsstring>
+        <name>appendifunique_vector</name>
+        <qualifiedname>strings::appendifunique_vector</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(in)</type>
+          <defname>items</defname>
+        </param>
+        <briefdescription>
+          <para>Append items from a vector of strings to another vector if those items are not already in the vector to be appended to. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">vector</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of Strings to be appended to.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">items</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of items to be appended if they are not already in <emphasis>vector</emphasis>. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="501" column="1" bodyfile="092_more_interfaces.f90" bodystart="502" bodyend="531"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1a68ef6c26640574de9932fe8e05f4d8f2" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>integer function</type>
+        <definition>integer function strings::find_</definition>
+        <argsstring>(vector, item)</argsstring>
+        <name>find_</name>
+        <qualifiedname>strings::find_</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(in)</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>character(*,kind=ck), intent(in)</type>
+          <defname>item</defname>
+        </param>
+        <briefdescription>
+          <para>Find the index in a vector of Strings of a particular character string. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">vector</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of Strings to search.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">item</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The string to search for.</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>the element of <emphasis>vector</emphasis> that corresponds to <emphasis>item</emphasis>. </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="545" column="1" bodyfile="092_more_interfaces.f90" bodystart="546" bodyend="562"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1af1dfe5027388fc88512711566d1c5b2c" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>elemental logical function</type>
+        <definition>elemental logical function strings::compare</definition>
+        <argsstring>(lhs, rhs)</argsstring>
+        <name>compare</name>
+        <qualifiedname>strings::compare</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>lhs</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>rhs</defname>
+        </param>
+        <briefdescription>
+          <para>Implementation of OPERATOR(==) - compare two Strings. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">lhs</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The left hand string.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">rhs</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The right hand string.</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>.TRUE. if the strings compare equal (Fortran rules), .FALSE. otherwise. </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="577" column="1" bodyfile="092_more_interfaces.f90" bodystart="578" bodyend="591"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1a922858bc1b514ad04eaffad657442647" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>elemental logical function</type>
+        <definition>elemental logical function strings::compare_str</definition>
+        <argsstring>(lhs, rhs)</argsstring>
+        <name>compare_str</name>
+        <qualifiedname>strings::compare_str</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>lhs</defname>
+        </param>
+        <param>
+          <type>character(*,kind=ck), intent(in)</type>
+          <defname>rhs</defname>
+        </param>
+        <briefdescription>
+          <para>Implementation of OPERATOR(==) - compare a String with a character scalar. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">lhs</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The string to compare.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">rhs</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The character scalar to compare.</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>.TRUE. if string and the character variable compare equal (Fortran rules), .FALSE. otherwise. </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="607" column="1" bodyfile="092_more_interfaces.f90" bodystart="608" bodyend="621"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1a3244c32f86c53004b2401c7b7bef823b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::replace_</definition>
+        <argsstring>(vector, idx, insert_items)</argsstring>
+        <name>replace_</name>
+        <qualifiedname>strings::replace_</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>integer, intent(in)</type>
+          <defname>idx</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(in)</type>
+          <defname>insert_items</defname>
+        </param>
+        <briefdescription>
+          <para>Replace an item in a vector by one or more items. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="inout">vector</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of Strings to operate on.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">idx</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The index of the item to replace.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">insert_items</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of items to insert. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="635" column="1" bodyfile="092_more_interfaces.f90" bodystart="636" bodyend="657"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1a31b3901498c51f181750cef68b5df000" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>) function, dimension(:), allocatable</type>
+        <definition>type(string) function, dimension(:), allocatable strings::pack_chvector</definition>
+        <argsstring>(array, mask, vector)</argsstring>
+        <name>pack_chvector</name>
+        <qualifiedname>strings::pack_chvector</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(in)</type>
+          <defname>array</defname>
+        </param>
+        <param>
+          <type>logical, dimension(:), intent(in)</type>
+          <defname>mask</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(in), optional</type>
+          <defname>vector</defname>
+        </param>
+        <briefdescription>
+          <para>Pack function specialised for TYPE(String) as a replacement for the intrinsic. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><parameterlist kind="param"><parameteritem><parameternamelist><parametername direction="in">array</parametername></parameternamelist><parameterdescription><para>The array of things to pack.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">mask</parametername></parameternamelist><parameterdescription><para>Shall be the same size as <emphasis>array</emphasis>. The intrinsic form simply requires conformability, but that's a trivial case to implement in client code.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">vector</parametername></parameternamelist><parameterdescription><para>Optional. Shall have at least as many elements as there are .TRUE. elements in <emphasis>mask</emphasis>.</para></parameterdescription></parameteritem></parameterlist><simplesect kind="return"><para>If <emphasis>vector</emphasis> is present, the result size is that of <emphasis>vector</emphasis>, otherwise the result size is the number <emphasis>t</emphasis> of true elements in <emphasis>mask</emphasis>.</para></simplesect>
+Element <emphasis>i</emphasis> of the result is the element of <emphasis>array</emphasis> that corresponds to the <emphasis>i</emphasis>th true element of <emphasis>mask</emphasis>, taking elements in array element order, for <emphasis>i</emphasis> = 1, 2, ..., <emphasis>t</emphasis>. If <emphasis>vector</emphasis> is present and has size <emphasis>n</emphasis> &gt; <emphasis>t</emphasis>, element <emphasis>i</emphasis> of the result has the value <emphasis>vector</emphasis>(<emphasis>i</emphasis>), for <emphasis>i</emphasis> = <emphasis>t</emphasis> + 1, ..., <emphasis>n</emphasis>.</para>
+          <para>Delete and revert to the intrinsic once the ifort 12.1.0 bug reported at <ulink url="http://software.intel.com/en-us/forums/showthread.php?t=85834">http://software.intel.com/en-us/forums/showthread.php?t=85834</ulink> has been fixed. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="690" column="1" bodyfile="092_more_interfaces.f90" bodystart="691" bodyend="731"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1abea194d020bd04dd608895ba434daafe" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>elemental integer function</type>
+        <definition>elemental integer function strings::len_</definition>
+        <argsstring>(str)</argsstring>
+        <name>len_</name>
+        <qualifiedname>strings::len_</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>str</defname>
+        </param>
+        <briefdescription>
+          <para>Get the length of a string. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><parameterlist kind="param"><parameteritem><parameternamelist><parametername direction="in">str</parametername></parameternamelist><parameterdescription>
+</parameterdescription></parameteritem></parameterlist>
+This is just a forwarding function to the LEN intrinsic. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="743" column="1" bodyfile="092_more_interfaces.f90" bodystart="744" bodyend="756"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacestrings_1a4607ed542e854e5f9d57204ad82b2c95" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>character(:) function, allocatable</type>
+        <definition>character(:) function, allocatable strings::join_</definition>
+        <argsstring>(vector, separator)</argsstring>
+        <name>join_</name>
+        <qualifiedname>strings::join_</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(in)</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>character(*), intent(in), optional</type>
+          <defname>separator</defname>
+        </param>
+        <briefdescription>
+          <para>Join a vector of strings into a single character variable. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">vector</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of strings.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">separator</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>Optional separator to appear between each element in the string. If not present then ', ' is used.</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>The joined string. </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="771" column="1" bodyfile="092_more_interfaces.f90" bodystart="772" bodyend="802"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Routines for managing character strings, particularly one dimensional arrays (vectors) of strings. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>The String type and associated procedures exposed by this module conform to the typical interface for vectors:</para>
+      <para>
+        <itemizedlist>
+          <listitem>
+            <para>The item component obtains the item for a particular element in the vector.</para>
+          </listitem>
+          <listitem>
+            <para>Append: add an object to the vector.</para>
+          </listitem>
+          <listitem>
+            <para>Grow: create space for new objects at the end of the vector, but do not define those objects.</para>
+          </listitem>
+          <listitem>
+            <para>Shrink: remove objects from the end of the vector. </para>
+          </listitem>
+        </itemizedlist>
+      </para>
+    </detaileddescription>
+    <location file="092_more_interfaces.f90" line="29" column="1"/>
+  </compounddef>
+</doxygen>

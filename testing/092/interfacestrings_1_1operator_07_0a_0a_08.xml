@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="interfacestrings_1_1operator_07_0a_0a_08" kind="interface" language="Fortran" prot="public">
+    <compoundname>strings::operator(==)</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interfacestrings_1_1operator_07_0a_0a_08_1a22eaf942e2152394fa8b7228a1bb5627" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>elemental logical function</type>
+        <definition>elemental logical function strings::operator(==)::compare</definition>
+        <argsstring>(lhs, rhs)</argsstring>
+        <name>compare</name>
+        <qualifiedname>strings::operator(==)::compare</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>lhs</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>rhs</defname>
+        </param>
+        <briefdescription>
+          <para>Implementation of OPERATOR(==) - compare two Strings. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">lhs</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The left hand string.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">rhs</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The right hand string.</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>.TRUE. if the strings compare equal (Fortran rules), .FALSE. otherwise. </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="577" column="1" bodyfile="092_more_interfaces.f90" bodystart="578" bodyend="591"/>
+      </memberdef>
+      <memberdef kind="function" id="interfacestrings_1_1operator_07_0a_0a_08_1ae1c3d14b8650130cbffc130479440e5e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>elemental logical function</type>
+        <definition>elemental logical function strings::operator(==)::compare_str</definition>
+        <argsstring>(lhs, rhs)</argsstring>
+        <name>compare_str</name>
+        <qualifiedname>strings::operator(==)::compare_str</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>lhs</defname>
+        </param>
+        <param>
+          <type>character(*,kind=ck), intent(in)</type>
+          <defname>rhs</defname>
+        </param>
+        <briefdescription>
+          <para>Implementation of OPERATOR(==) - compare a String with a character scalar. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">lhs</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The string to compare.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">rhs</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The character scalar to compare.</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>.TRUE. if string and the character variable compare equal (Fortran rules), .FALSE. otherwise. </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="607" column="1" bodyfile="092_more_interfaces.f90" bodystart="608" bodyend="621"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Elemental comparison of two strings or of a string and a character scalar. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="092_more_interfaces.f90" line="88" column="1" bodyfile="092_more_interfaces.f90" bodystart="88" bodyend="90"/>
+    <listofallmembers>
+      <member refid="interfacestrings_1_1operator_07_0a_0a_08_1a22eaf942e2152394fa8b7228a1bb5627" prot="public" virt="non-virtual">
+        <scope>strings::operator(==)</scope>
+        <name>compare</name>
+      </member>
+      <member refid="interfacestrings_1_1operator_07_0a_0a_08_1ae1c3d14b8650130cbffc130479440e5e" prot="public" virt="non-virtual">
+        <scope>strings::operator(==)</scope>
+        <name>compare_str</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

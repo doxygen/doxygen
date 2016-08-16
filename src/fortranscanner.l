@@ -265,6 +265,7 @@ NOTIDSYM  [^a-z_A-Z0-9]
 SEPARATE  [:, \t]
 ID        [a-z_A-Z%]+{IDSYM}*
 ID_       [a-z_A-Z%]*{IDSYM}*
+OPERATOR_ID (operator{BS}"("{BS}(\.[a-z_A-Z]+\.|"="|"/="|"//"|"=="|"<"|"<="|">"|">="|"+"|"*"|"**"|"/"|"-"){BS}")")
 PP_ID     {ID}
 LABELID   [a-z_A-Z]+[a-z_A-Z0-9\-]*
 SUBPROG   (subroutine|function)
@@ -909,15 +910,12 @@ private                                 {
 }
 
 <Variable>{BS}                          {}
-<Variable>{ID}                          { /* parse variable declaration */
-                                          //cout << "5=========> got variable: " << yyextra->argType << "::" << yytext << endl;
-                                          /* work around for bug in QCString.replace (QCString works) */
-                                          QCString name=yytext;
-                                          name = name.lower();
+<Variable>{OPERATOR_ID}                 { /* parse operator access statements "public :: operator(==)" */
+                                          QCString name = QCString(yytext).stripWhiteSpace().lower();
                                           /* if variable/type/etc is part of a module, mod name is necessary for output */
                                           // get surrounding state
                                           int currentState = YY_START;
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                           int outerState = YY_START;
                                           yy_push_state(currentState,yyscanner);
                                           if( outerState == Start || outerState == ModuleBody )
@@ -928,6 +926,19 @@ private                                 {
                                             {
                                               name = yyextra->current_root->name + "::" + name;
                                             }
+                                          }
+                                          /* remember attributes for the symbol */
+                                          yyextra->modifiers[yyextra->current_root][name.str()] |= yyextra->currentModifiers;
+                                        }
+<Variable>{ID}                          { /* parse variable declaration */
+                                          //cout << "5=========> got variable: " << yyextra->argType << "::" << yytext << endl;
+                                          /* work around for bug in QCString.replace (QCString works) */
+                                          QCString name=yytext;
+                                          name = name.lower();
+                                          /* if variable/type/etc is part of a module, mod name is necessary for output */
+                                          if ((yyextra->current_root) && yyextra->current_root->section == Entry::NAMESPACE_SEC)
+                                          {
+                                            name = yyextra->current_root->name + "::" + name;
                                           }
                                           /* remember attributes for the symbol */
                                           yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
@@ -1244,11 +1255,12 @@ private                                 {
                                         }
 <Parameterlist>{ID}                     {
                                           //yyextra->current->type not yet available
-                                          QCString param = yytext;
+                                          QCString param = QCString(yytext).lower();
                                           // std::cout << "3=========> got parameter " << param << "\n";
                                           yyextra->current->args += param;
                                           Argument arg;
                                           arg.name = param;
+                                          arg.type = "";
                                           yyextra->current->argList.push_back(arg);
                                         }
 <Parameterlist>{NOARGS}                 {
@@ -2252,6 +2264,10 @@ static void startScope(yyscan_t yyscanner,Entry *scope)
   yyextra->current_root= scope; /* start substructure */
 
   yyextra->modifiers.insert(std::make_pair(scope, std::map<std::string,SymbolModifiers>()));
+
+  // create new current with possibly different defaults...
+  yyextra->current = std::make_shared<Entry>();
+  initEntry(yyscanner);
 }
 
 /*! Ends scope in fortran program: may update subprogram arguments or module variable attributes.
@@ -2281,6 +2297,10 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     return FALSE;
   }
 
+  // create new current with possibly different defaults...
+  yyextra->current = std::make_shared<Entry>();
+  initEntry(yyscanner);
+
   // update variables or subprogram arguments with yyextra->modifiers
   std::map<std::string,SymbolModifiers>& mdfsMap = yyextra->modifiers[scope];
 
@@ -2308,38 +2328,46 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     }
 
   }
-  if (scope->section == Entry::CLASS_SEC)
+  if (scope->section == Entry::CLASS_SEC && scope->spec & Entry::Interface) 
   { // was INTERFACE_SEC
-    if (scope->parent()->section == Entry::FUNCTION_SEC)
+    if (scope->parent() && scope->parent()->section == Entry::FUNCTION_SEC) 
     { // interface within function
       // iterate functions of interface and
       // try to find types for dummy(ie. argument) procedures.
       //cout<<"Search in "<<scope->name<<endl;
-      int count = 0;
-      int found = FALSE;
       for (const auto &ce : scope->children())
       {
-        count++;
         if (ce->section != Entry::FUNCTION_SEC)
           continue;
 
-        Argument *arg = findArgument(scope->parent(), ce->name, TRUE);
-        if (arg != 0)
+        // remove prefix
+        QCString name = ce->name.lower();
+        int i = name.findRev(":");
+        if (i != -1)
+          name.remove(0, i+1);
+        Argument *arg = findArgument(scope->parent(), name);
+        if (arg != 0) 
         {
           // set type of dummy procedure argument to interface
-          arg->name = arg->type;
-          arg->type = scope->name;
+          arg->type = "external " + ce->type + "(";
+          for (unsigned int i=0; i<ce->argList.size(); i++)
+          {
+            if (i > 0)
+            {
+              arg->type = arg->type + ", ";
+            }
+            const Argument &subarg = ce->argList.at(i);
+            arg->type = arg->type + subarg.type + " " + subarg.name;
+          }
+          arg->type = arg->type + ")";
+          arg->name = name;
         }
-        if (ce->name.lower() == scope->name.lower()) found = TRUE;
       }
-      if ((count == 1) && found)
-      {
-        // clear all yyextra->modifiers of the scope
-        yyextra->modifiers.erase(scope);
-        scope->parent()->removeSubEntry(scope);
-        scope = 0;
-        return TRUE;
-      }
+      // clear all yyextra->modifiers of the scope
+      yyextra->modifiers.erase(scope);
+      scope->parent()->removeSubEntry(scope);
+      scope = 0;
+      return TRUE;
     }
   }
   if (scope->section!=Entry::FUNCTION_SEC)
@@ -2394,6 +2422,14 @@ static void initEntry(yyscan_t yyscanner)
   if (yyextra->typeMode)
   {
     yyextra->current->protection = yyextra->typeProtection;
+  }
+  else if (yyextra->current_root && yyextra->current_root->section == Entry::CLASS_SEC && yyextra->current_root->spec & Entry::Interface)
+  {
+    yyextra->current->protection = Public;
+  }
+  else if (yyextra->current_root && yyextra->current_root->section == Entry::FUNCTION_SEC)
+  {
+    yyextra->current->protection = Private;
   }
   else
   {
@@ -2463,6 +2499,10 @@ static void addSubprogram(yyscan_t yyscanner,const QCString &text)
   yyextra->functionLine = (subtype.find("function") != -1);
   yyextra->current->type += " " + subtype;
   yyextra->current->type = yyextra->current->type.stripWhiteSpace();
+  if (yyextra->ifType == IF_ABSTRACT)
+  {
+    yyextra->current->virt = Virtual;
+  }
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->bodyLine  = yyextra->lineNr; // used for source reference start of body of routine
   yyextra->current->startLine  = yyextra->lineNr; // used for source reference start of definition

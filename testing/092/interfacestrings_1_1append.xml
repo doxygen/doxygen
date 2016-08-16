@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="interfacestrings_1_1append" kind="interface" language="Fortran" prot="public">
+    <compoundname>strings::append</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interfacestrings_1_1append_1ac6346f6a40d3a7f5a32b9892dfb28da1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::append::append_</definition>
+        <argsstring>(vector, item)</argsstring>
+        <name>append_</name>
+        <qualifiedname>strings::append::append_</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>character(*,kind=ck), intent(in)</type>
+          <defname>item</defname>
+        </param>
+        <briefdescription>
+          <para>Adds a single item to the end of the vector of Strings. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">vector</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of strings.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">item</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The CHARACTER object to append as a new item. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="267" column="1" bodyfile="092_more_interfaces.f90" bodystart="268" bodyend="298"/>
+      </memberdef>
+      <memberdef kind="function" id="interfacestrings_1_1append_1a4ec7ddd5fd369f6dcb2361d788cffbad" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::append::append_scalar</definition>
+        <argsstring>(vector, item)</argsstring>
+        <name>append_scalar</name>
+        <qualifiedname>strings::append::append_scalar</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), intent(in)</type>
+          <defname>item</defname>
+        </param>
+        <briefdescription>
+          <para>Adds a single item to the end of the vector of Strings. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">vector</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The vector of strings.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">item</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The scalar String object to append as a new item. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="311" column="1" bodyfile="092_more_interfaces.f90" bodystart="312" bodyend="342"/>
+      </memberdef>
+      <memberdef kind="function" id="interfacestrings_1_1append_1aad33bb7b5e37fe745bbb409d97ae0f87" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine strings::append::append_vector</definition>
+        <argsstring>(vector, items, mask)</argsstring>
+        <name>append_vector</name>
+        <qualifiedname>strings::append::append_vector</qualifiedname>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(inout), allocatable</type>
+          <defname>vector</defname>
+        </param>
+        <param>
+          <type>type(<ref refid="structstrings_1_1string" kindref="compound">string</ref>), dimension(:), intent(in)</type>
+          <defname>items</defname>
+        </param>
+        <param>
+          <type>logical, dimension(:), intent(in), optional</type>
+          <defname>mask</defname>
+        </param>
+        <briefdescription>
+          <para>Appends a vector of Strings to another vector of Strings. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><parameterlist kind="param"><parameteritem><parameternamelist><parametername direction="in">vector</parametername></parameternamelist><parameterdescription><para>The vector of Strings to be appended to.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">items</parametername></parameternamelist><parameterdescription><para>The potential selection of Strings to be appended.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">mask</parametername></parameternamelist><parameterdescription><para>A mask that designates which elements from <emphasis>items</emphasis> will be appended. If not present then all elements from <emphasis>items</emphasis> will be appended. If present must be the same size as <emphasis>items</emphasis>.</para></parameterdescription></parameteritem></parameterlist>
+Note that <emphasis>items</emphasis> is left unchanged. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="092_more_interfaces.f90" line="362" column="1" bodyfile="092_more_interfaces.f90" bodystart="363" bodyend="409"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Append a string or vector of strings to another vector of strings. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="092_more_interfaces.f90" line="67" column="1" bodyfile="092_more_interfaces.f90" bodystart="67" bodyend="70"/>
+    <listofallmembers>
+      <member refid="interfacestrings_1_1append_1ac6346f6a40d3a7f5a32b9892dfb28da1" prot="public" virt="non-virtual">
+        <scope>strings::append</scope>
+        <name>append_</name>
+      </member>
+      <member refid="interfacestrings_1_1append_1a4ec7ddd5fd369f6dcb2361d788cffbad" prot="public" virt="non-virtual">
+        <scope>strings::append</scope>
+        <name>append_scalar</name>
+      </member>
+      <member refid="interfacestrings_1_1append_1aad33bb7b5e37fe745bbb409d97ae0f87" prot="public" virt="non-virtual">
+        <scope>strings::append</scope>
+        <name>append_vector</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
