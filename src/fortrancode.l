@@ -925,7 +925,12 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  startScope();
 					  generateLink(*g_code,yytext);
                                         }
-<Subprog>"(".*                          { // ignore rest of line 
+<Subprog>"result"/{BS}"("[^)]*")"       {
+   					  startFontClass("keyword");
+ 					  codifyLines(yytext);
+					  endFontClass();
+                                        }
+<Subprog>"("[^)]*")"                    { // ignore rest of line 
  					  codifyLines(yytext);
                                         }
 <Subprog,Subprogend>"\n"                { codifyLines(yytext);
