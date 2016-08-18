@@ -10,7 +10,7 @@
     <innerclass refid="interfacestrings_1_1len" prot="public">strings::len</innerclass>
     <innerclass refid="interfacestrings_1_1operator_07_0A_0A_08" prot="public">strings::operator(==)</innerclass>
     <innerclass refid="interfacestrings_1_1pack" prot="public">strings::pack</innerclass>
-    <innerclass refid="interfacestrings_1_1push" prot="public">strings::push</innerclass>
+    <innerclass refid="interfacestrings_1_1push" prot="private">strings::push</innerclass>
     <innerclass refid="interfacestrings_1_1replace" prot="public">strings::replace</innerclass>
     <innerclass refid="interfacestrings_1_1shrink" prot="public">strings::shrink</innerclass>
     <innerclass refid="structstrings_1_1string" prot="public">strings::string</innerclass>
@@ -32,7 +32,7 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
-      <memberdef kind="function" id="namespacestrings_1a774c467de652d637906ffeec32c4a010" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespacestrings_1a774c467de652d637906ffeec32c4a010" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine strings::grow_</definition>
         <argsstring>(vector, count)</argsstring>
@@ -74,7 +74,7 @@
         </inbodydescription>
         <location file="071_more_interfaces.f90" line="143" column="1" bodyfile="071_more_interfaces.f90" bodystart="144" bodyend="188"/>
       </memberdef>
-      <memberdef kind="function" id="namespacestrings_1ad31245e0a19fac8b5906c08b2f689d90" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespacestrings_1ad31245e0a19fac8b5906c08b2f689d90" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine strings::shrink_</definition>
         <argsstring>(vector, count)</argsstring>
@@ -141,7 +141,7 @@ This is perhaps a more performance way of going: <programlisting><codeline><high
         </inbodydescription>
         <location file="071_more_interfaces.f90" line="266" column="1" bodyfile="071_more_interfaces.f90" bodystart="267" bodyend="297"/>
       </memberdef>
-      <memberdef kind="function" id="namespacestrings_1a99e25b1bf5396c11d9efdbbbc5f018fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespacestrings_1a99e25b1bf5396c11d9efdbbbc5f018fe" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine strings::append_scalar</definition>
         <argsstring>(vector, item)</argsstring>
@@ -183,7 +183,7 @@ This is perhaps a more performance way of going: <programlisting><codeline><high
         </inbodydescription>
         <location file="071_more_interfaces.f90" line="310" column="1" bodyfile="071_more_interfaces.f90" bodystart="311" bodyend="341"/>
       </memberdef>
-      <memberdef kind="function" id="namespacestrings_1a9ab3d3fd3e92d64b8eb727dfd03d24f9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespacestrings_1a9ab3d3fd3e92d64b8eb727dfd03d24f9" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine strings::append_vector</definition>
         <argsstring>(vector, items, mask)</argsstring>
@@ -235,7 +235,7 @@ Appends <emphasis>item</emphasis> to <emphasis>vector</emphasis> if <emphasis>it
         </inbodydescription>
         <location file="071_more_interfaces.f90" line="423" column="1" bodyfile="071_more_interfaces.f90" bodystart="424" bodyend="446"/>
       </memberdef>
-      <memberdef kind="function" id="namespacestrings_1a3cf037e53ede1e8a9c788d30a5d74f35" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespacestrings_1a3cf037e53ede1e8a9c788d30a5d74f35" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine strings::appendifunique_scalar</definition>
         <argsstring>(vector, item)</argsstring>
@@ -259,7 +259,7 @@ Appends <emphasis>item</emphasis> to <emphasis>vector</emphasis> if <emphasis>it
         </inbodydescription>
         <location file="071_more_interfaces.f90" line="462" column="1" bodyfile="071_more_interfaces.f90" bodystart="463" bodyend="485"/>
       </memberdef>
-      <memberdef kind="function" id="namespacestrings_1a4056ea46ceea73f69865991b4f98fe95" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespacestrings_1a4056ea46ceea73f69865991b4f98fe95" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine strings::appendifunique_vector</definition>
         <argsstring>(vector, items)</argsstring>

@@ -2,8 +2,8 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
   <compounddef id="interfacemymodule_1_1abstractproc" kind="interface" language="Fortran" prot="public">
     <compoundname>mymodule::abstractproc</compoundname>
-    <sectiondef kind="private-func">
-      <memberdef kind="function" id="interfacemymodule_1_1abstractproc_1aa9685b3ce77705b397d0dcfc5babf661" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interfacemymodule_1_1abstractproc_1aa9685b3ce77705b397d0dcfc5babf661" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>subroutine</type>
         <definition>subroutine mymodule::abstractproc::abstractproc</definition>
         <argsstring>(logicalArg)</argsstring>
@@ -27,7 +27,7 @@
     </detaileddescription>
     <location file="069_interfaces.f90" line="38" column="1" bodyfile="069_interfaces.f90" bodystart="38" bodyend="39"/>
     <listofallmembers>
-      <member refid="interfacemymodule_1_1abstractproc_1aa9685b3ce77705b397d0dcfc5babf661" prot="private" virt="non-virtual">
+      <member refid="interfacemymodule_1_1abstractproc_1aa9685b3ce77705b397d0dcfc5babf661" prot="public" virt="virtual">
         <scope>mymodule::abstractproc</scope>
         <name>abstractproc</name>
       </member>
