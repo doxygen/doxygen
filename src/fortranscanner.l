@@ -459,7 +459,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 
  /* INTERFACE definitions */
-<Start,ModuleBody,SubprogBody>{
+<Start,ModuleBody>{
 ^{BS}interface{IDSYM}+			{ /* variable with interface prefix */ }
 ^{BS}interface                          { ifType = IF_SPECIFIC;
                                           yy_push_state(InterfaceBody);
@@ -844,19 +844,9 @@ private                                 {
 					  QCString name=yytext;
             name = name.lower();
             /* if variable/type/etc is part of a module, mod name is necessary for output */
-            // get surrounding state
-            int currentState = YY_START;
-            yy_pop_state();
-            int outerState = YY_START;
-            yy_push_state(currentState);
-            if( outerState == Start || outerState == ModuleBody )
+            if ((current_root) && current_root->section == Entry::NAMESPACE_SEC)
             {
-              if ((current_root) && 
-                  (current_root->section == Entry::CLASS_SEC
-                   || current_root->section == Entry::NAMESPACE_SEC))
-              {
-                name = current_root->name + "::" + name;
-              }
+              name = current_root->name + "::" + name;
             }
 					  /* remember attributes for the symbol */
 					  modifiers[current_root][name] |= currentModifiers;
