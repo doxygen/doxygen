@@ -17,19 +17,6 @@
         </inbodydescription>
         <location file="072_interface_inside_routine.f90" line="7" column="1" bodyfile="072_interface_inside_routine.f90" bodystart="8" bodyend="12"/>
       </memberdef>
-      <memberdef kind="function" id="072__interface__inside__routine_8f90_1a8691e6bacc8b1fe7c62b8ba0c64710b0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
-        <type>subroutine</type>
-        <definition>subroutine use_tst::routine_interface</definition>
-        <argsstring>()</argsstring>
-        <name>routine_interface</name>
-        <briefdescription>
-        </briefdescription>
-        <detaileddescription>
-        </detaileddescription>
-        <inbodydescription>
-        </inbodydescription>
-        <location file="072_interface_inside_routine.f90" line="10" column="1" bodyfile="072_interface_inside_routine.f90" bodystart="11" bodyend="10"/>
-      </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>

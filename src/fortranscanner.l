@@ -459,7 +459,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 
  /* INTERFACE definitions */
-<Start,ModuleBody>{
+<Start,ModuleBody,SubprogBody>{
 ^{BS}interface{IDSYM}+			{ /* variable with interface prefix */ }
 ^{BS}interface                          { ifType = IF_SPECIFIC;
                                           yy_push_state(InterfaceBody);
@@ -2113,14 +2113,14 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
 
         Argument *arg = findArgument(scope->parent(), ce->name, TRUE);
         if (arg != 0) 
-	{
+        {
           // set type of dummy procedure argument to interface
-	  arg->name = arg->type;
+          arg->name = arg->type;
           arg->type = scope->name;
         }
         if (ce->name.lower() == scope->name.lower()) found = TRUE;
       }
-      if ((count == 1) && found)
+      //if ((count == 1) && found)
       {
         // clear all modifiers of the scope
         modifiers.remove(scope);
