@@ -18,14 +18,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="069_interfaces.f90" line="20" column="1" bodyfile="069_interfaces.f90" bodystart="21" bodyend="21"/>
+        <location file="069_interfaces.f90" line="22" column="1" bodyfile="069_interfaces.f90" bodystart="23" bodyend="23"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="069_interfaces.f90" line="20" column="1" bodyfile="069_interfaces.f90" bodystart="20" bodyend="21"/>
+    <location file="069_interfaces.f90" line="22" column="1" bodyfile="069_interfaces.f90" bodystart="22" bodyend="23"/>
     <listofallmembers>
       <member refid="interfacemymodule_1_1externalproc_1a50cefb79127d029dda033934c4f0d4f1" prot="public" virt="non-virtual">
         <scope>mymodule::externalproc</scope>

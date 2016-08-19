@@ -240,6 +240,7 @@ NOTIDSYM  [^a-z_A-Z0-9]
 SEPARATE  [:, \t]
 ID        [a-z_A-Z%]+{IDSYM}*
 ID_       [a-z_A-Z%]*{IDSYM}*
+OPERATOR_ID (operator{BS}"("{BS}(\.[a-z_A-Z]+\.|"="|"/="|"//"|"=="|"<"|"<="|">"|">="|"+"|"*"|"**"|"/"|"-"){BS}")")
 PP_ID     {ID}
 LABELID   [a-z_A-Z]+[a-z_A-Z0-9\-]*
 SUBPROG   (subroutine|function)
@@ -817,6 +818,26 @@ private                                 {
 }
 
 <Variable>{BS}				{ }
+<Variable>{OPERATOR_ID} { /* parse operator access statements "public :: operator(==)" */
+                          QCString name = QCString(yytext).stripWhiteSpace().lower();
+                          /* if variable/type/etc is part of a module, mod name is necessary for output */
+                          // get surrounding state
+                          int currentState = YY_START;
+                          yy_pop_state();
+                          int outerState = YY_START;
+                          yy_push_state(currentState);
+                          if( outerState == Start || outerState == ModuleBody )
+                          {
+                            if ((current_root) && 
+                                (current_root->section == Entry::CLASS_SEC
+                                 || current_root->section == Entry::NAMESPACE_SEC))
+                            {
+                              name = current_root->name + "::" + name;
+                            }
+                          }
+                          /* remember attributes for the symbol */
+                          modifiers[current_root][name] |= currentModifiers;
+                        }
 <Variable>{ID}				{ /* parse variable declaration */
                                           //cout << "5=========> got variable: " << argType << "::" << yytext << endl;
  					  /* work around for bug in QCString.replace (QCString works) */
@@ -927,30 +948,9 @@ private                                 {
   					}
 <Variable>{ARGS}			{ /* dimension of the previous entry. */
 					  QCString name(argName);
-            // check for special case: public/private statements for operator(....)
-            bool isOperator = false;
-            if (name.findRev("operator") == name.size()-QCString("operator").size())
-            {
-              // still not sure, operator is a valid name, check yytext
-              QRegExp opName("^\\(\\.[a-zA-Z]\\.\\)$");
-              QRegExp opSymb("^\\([/=<>+*-]+\\)$");
-              QCString opText = QCString(yytext).stripWhiteSpace();
-              if (opName.match(opText)) isOperator = true;
-              if (opSymb.match(opText)) isOperator = true;
-            }
-            if( isOperator )
-            {
-              //printf("Found op %s\n", QCString(yytext));
-              current->name += QCString(yytext).stripWhiteSpace().lower();
-              argName += QCString(yytext).stripWhiteSpace().lower();
-					    modifiers[current_root][argName.lower()] |= currentModifiers;
-            }
-            else
-            {
-              QCString attr("dimension");
-              attr += yytext;
-              modifiers[current_root][name.lower()] |= attr;
-            }
+					  QCString attr("dimension");
+					  attr += yytext;
+					  modifiers[current_root][name.lower()] |= attr;
 					}
 <Variable>{COMMA}	                { //printf("COMMA: %d<=..<=%d\n", yyColNr-(int)yyleng, yyColNr);
 					  // locate !< comment

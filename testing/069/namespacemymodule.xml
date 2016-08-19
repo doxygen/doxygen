@@ -5,6 +5,8 @@
     <innerclass refid="interfacemymodule_1_1abstractproc" prot="public">mymodule::abstractproc</innerclass>
     <innerclass refid="interfacemymodule_1_1externalproc" prot="public">mymodule::externalproc</innerclass>
     <innerclass refid="interfacemymodule_1_1genericproc" prot="public">mymodule::genericproc</innerclass>
+    <innerclass refid="interfacemymodule_1_1operator_07_8cross_8_08" prot="private">mymodule::operator(.cross.)</innerclass>
+    <innerclass refid="interfacemymodule_1_1operator_07_2_2_08" prot="private">mymodule::operator(//)</innerclass>
     <sectiondef kind="func">
       <memberdef kind="function" id="069__interfaces_8f90_1ac4fecdb729ae02a9b45e07b39a06bd4a" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
@@ -34,7 +36,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="069_interfaces.f90" line="46" column="1" bodyfile="069_interfaces.f90" bodystart="47" bodyend="47"/>
+        <location file="069_interfaces.f90" line="58" column="1" bodyfile="069_interfaces.f90" bodystart="59" bodyend="59"/>
       </memberdef>
       <memberdef kind="function" id="069__interfaces_8f90_1ad9576415f0501f163aba191413e7ec8f" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
@@ -51,7 +53,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="069_interfaces.f90" line="50" column="1" bodyfile="069_interfaces.f90" bodystart="51" bodyend="51"/>
+        <location file="069_interfaces.f90" line="62" column="1" bodyfile="069_interfaces.f90" bodystart="63" bodyend="63"/>
       </memberdef>
       <memberdef kind="function" id="069__interfaces_8f90_1ac7b19d3c9d79ad88b61d5a303e4d0cb1" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
@@ -68,13 +70,34 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="069_interfaces.f90" line="54" column="1" bodyfile="069_interfaces.f90" bodystart="55" bodyend="55"/>
+        <location file="069_interfaces.f90" line="66" column="1" bodyfile="069_interfaces.f90" bodystart="67" bodyend="67"/>
+      </memberdef>
+      <memberdef kind="function" id="069__interfaces_8f90_1a4c2aa3cb114644b49099023a681ac49b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>pure real function, dimension(3)</type>
+        <definition>pure real function, dimension(3) mymodule::cross_product</definition>
+        <argsstring>(v, w)</argsstring>
+        <name>cross_product</name>
+        <param>
+          <type>v</type>
+          <defname>v</defname>
+        </param>
+        <param>
+          <type>w</type>
+          <defname>w</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_interfaces.f90" line="70" column="1" bodyfile="069_interfaces.f90" bodystart="71" bodyend="74"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="069_interfaces.f90" line="8" column="1"/>
+    <location file="069_interfaces.f90" line="10" column="1"/>
   </compounddef>
 </doxygen>

@@ -3,6 +3,8 @@
 !// check: interfacemymodule_1_1genericproc.xml
 !// check: interfacemymodule_1_1externalproc.xml
 !// check: interfacemymodule_1_1abstractproc.xml
+!// check: interfacemymodule_1_1operator_07_8cross_8_08.xml
+!// check: interfacemymodule_1_1operator_07_2_2_08.xml
 !// config: OPTIMIZE_FOR_FORTRAN=YES
 
 module myModule
@@ -40,6 +42,16 @@ module myModule
     end subroutine
   end interface
 
+  ! meaning 2 again, this time as user defined operator
+  interface operator(.cross.)
+    module procedure cross_product
+  end interface
+
+  ! meaning 2 again, this time for overloading an existing operator
+  interface operator(//)
+    module procedure cross_product
+  end interface
+
 contains
 
   !> short doc
@@ -54,5 +66,12 @@ contains
   subroutine otherProc(someArg)
     character(len=*), intent(in) :: someArg
   end subroutine
+
+  pure function cross_product(v, w)
+    real, intent(in) :: v(3), w(3)
+    real :: cross_product(3)
+
+    !cross_product = ...
+  end function
 
 end module myModule
