@@ -1128,6 +1128,16 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
   					  codifyLines(yytext);
 					  endFontClass();
 					}
+<*>"assignment"/{BS}"("{BS}"="{BS}")"   {
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+					}
+<*>"operator"/{BS}"("[^)]*")"           {
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+					}
 
  /*------ preprocessor  --------------------------------------------*/ 
 <Start>"#".*\n                          {
