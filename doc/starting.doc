@@ -126,6 +126,9 @@ Extension | Language
 .f        |Fortran
 .for      |Fortran
 .f90      |Fortran
+.f95      |Fortran
+.f03      |Fortran
+.f08      |Fortran
 .vhd      |VHDL
 .vhdl     |VHDL
 .tcl      |TCL
