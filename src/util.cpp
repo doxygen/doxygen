@@ -8085,6 +8085,7 @@ bool copyFile(const QCString &src,const QCString &dest)
 
 /** Returns the section of text, in between a pair of markers. 
  *  Full lines are returned, excluding the lines on which the markers appear.
+ *  \sa routine lineBlock
  */
 QCString extractBlock(const QCString text,const QCString marker)
 {
@@ -8126,6 +8127,29 @@ QCString extractBlock(const QCString text,const QCString marker)
   }
   //printf("text=[%s]\n",text.mid(l1,l2-l1).data());
   return l2>l1 ? text.mid(l1,l2-l1) : QCString();
+}
+
+/** Returns the line number of the line following the line with the marker.
+ *  \sa routine extractBlock
+ */
+int lineBlock(const QCString text,const QCString marker)
+{
+  int result = 1;
+  int p=0,i;
+  bool found=FALSE;
+
+  // find the character positions of the first marker
+  int m1 = text.find(marker);
+  if (m1==-1) return result;
+
+  // find start line positions for the markers
+  while (!found && (i=text.find('\n',p))!=-1)
+  {
+    found = (p<=m1 && m1<i); // found the line with the start marker
+    p=i+1;
+    result++;
+  }
+  return result;
 }
 
 /** Returns a string representation of \a lang. */

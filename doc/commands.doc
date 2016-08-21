@@ -115,6 +115,7 @@ documentation:
 \refitem cmdimage \\image
 \refitem cmdimplements \\implements
 \refitem cmdinclude \\include
+\refitem cmdincludedoc \\includedoc
 \refitem cmdincludelineno \\includelineno
 \refitem cmdingroup \\ingroup
 \refitem cmdinternal \\internal
@@ -177,6 +178,7 @@ documentation:
 \refitem cmdskip \\skip
 \refitem cmdskipline \\skipline
 \refitem cmdsnippet \\snippet
+\refitem cmdsnippetdoc \\snippetdoc
 \refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
 \refitem cmdsubpage \\subpage
@@ -2171,8 +2173,8 @@ Commands for displaying examples
   \note Doxygen's special commands do not work inside blocks of code.
   It is allowed to nest C-style comments inside a code block though.
 
-  \sa sections \ref cmdexample "\\example", \ref cmddontinclude "\\dontinclude", and
-      \ref cmdverbatim "\\verbatim".
+  \sa sections \ref cmdexample "\\example", \ref cmddontinclude "\\dontinclude",
+      \ref cmdverbatim "\\verbatim" and \ref cmdincludedoc "\\includedoc".
 
 <hr>
 \section cmdincludelineno \\includelineno <file-name>
@@ -2180,6 +2182,22 @@ Commands for displaying examples
   \addindex \\includelineno
   This command works the same way as \ref cmdinclude "\\include", but will add line
   numbers to the included file.
+
+  \sa section \ref cmdinclude "\\include".
+
+<hr>
+\section cmdincludedoc \\includedoc <file-name>
+
+  \addindex \\includedoc
+  This command works the same way as \ref cmdinclude "\\include", but it will include
+  the content of the file as if it were at the place where this command is called.
+  The result is that the content is parsed by doxygen and placed in the documentation.
+
+  \note Some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
+        this command due to the moment of parsing.
+
+  \note The included documentation should not have comment signs in it as the will appear
+        in the documentation as well.
 
   \sa section \ref cmdinclude "\\include".
 
@@ -2284,6 +2302,23 @@ Commands for displaying examples
 
  see section \ref cmddontinclude "\\dontinclude" for an alternative way
  to include fragments of a source file that does not require markers.
+
+ \sa section \ref cmdsnippetdoc "\\snippetdoc".
+<hr>
+\section cmdsnippetdoc \\snippetdoc <file-name> ( block_id )
+
+  \addindex \\snippetdoc
+  This command works the same way as \ref cmdsnippet "\\snippet", but it will include
+  the content of the file between the `block-id`s as if it were at the place where this command is called.
+  The result is that the content is parsed by doxygen and placed in the documentation.
+
+  \note Some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
+        this command due to the moment of parsing.
+
+  \note The included documentation should not have comment signs in it as the will appear
+        in the documentation as well.
+
+  \sa section \ref cmdsnippet "\\snippet" and \ref cmdincludedoc "\\includedoc".
 
 <hr>
 \section cmduntil \\until ( pattern )
@@ -3177,8 +3212,9 @@ class Receiver
   \c \\verbatim command or the parser will get confused!
 
   \sa sections \ref cmdcode "\\code",
-               \ref cmdendverbatim "\\endverbatim", and
-               \ref cmdverbinclude "\\verbinclude".
+               \ref cmdendverbatim "\\endverbatim",
+               \ref cmdverbinclude "\\verbinclude", and
+               \ref cmdverbincludedooc "\\verbincludedooc".
 
 <hr>
 \section cmdxmlonly \\xmlonly
