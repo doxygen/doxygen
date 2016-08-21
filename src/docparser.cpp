@@ -1264,9 +1264,6 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
     if (tok==TK_WORD && (g_token->name=="width=" || g_token->name=="height="))
     {
       // special case: no title, but we do have a size indicator
-      doctokenizerYYsetStateTitleAttrValue();
-      // strip =
-      g_token->name = g_token->name.left(g_token->name.length()-1);
       break;
     }
     if (!defaultHandleToken(parent,tok,children))
@@ -1293,21 +1290,32 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
   {
     tok=doctokenizerYYlex();
   }
-  while (tok==TK_WORD) // there are values following the title
+  while (tok==TK_WHITESPACE || tok==TK_WORD) // there are values following the title
   {
-    if (g_token->name=="width")
+    if(tok == TK_WORD)
     {
-      width = g_token->chars;
+      if (g_token->name=="width=" || g_token->name=="height=")
+      {
+        doctokenizerYYsetStateTitleAttrValue();
+        g_token->name = g_token->name.left(g_token->name.length()-1);
+      }
+
+      if (g_token->name=="width")
+      {
+        width = g_token->chars;
+      }
+      else if (g_token->name=="height")
+      {
+        height = g_token->chars;
+      }
+      else
+      {
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"Unknown option '%s' after \\%s command, expected 'width' or 'height'",
+                       qPrint(g_token->name), Mappers::cmdMapper->find(cmd).data());
+        break;
+      }
     }
-    else if (g_token->name=="height")
-    {
-      height = g_token->chars;
-    }
-    else
-    {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unknown option '%s' after \\%s command, expected 'width' or 'height'",
-                     qPrint(g_token->name), Mappers::cmdMapper->find(cmd).data());
-    }
+
     tok=doctokenizerYYlex();
   }
   doctokenizerYYsetStatePara();
