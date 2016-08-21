@@ -2124,7 +2124,7 @@ void LatexGenerator::lineBreak(const char *)
   }
   else
   {
-    t << "\\\\*\n";
+    t << "\\newline\n";
   }
 }
 
