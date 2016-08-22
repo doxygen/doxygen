@@ -322,6 +322,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
  /*-----------------------------------------------------------------------------------*/
 
+<Prepass>^{BS}("!".*)?\n		{ } // ignore comment line in prepass
 <*>^.*\n                                { // prepass: look for line continuations
   					  functionLine = FALSE;
 
