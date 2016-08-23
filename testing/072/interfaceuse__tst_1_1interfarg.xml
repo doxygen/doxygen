@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="interfaceuse__tst_1_1interfarg" kind="interface" language="Fortran" prot="public">
+    <compoundname>use_tst::interfarg</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interfaceuse__tst_1_1interfarg_1ae81ab93c5ab7f56cf7062b9b2f3af689" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>integer function</type>
+        <definition>integer function use_tst::interfarg::interfarg</definition>
+        <argsstring>(str)</argsstring>
+        <name>interfarg</name>
+        <param>
+          <type>str</type>
+          <defname>str</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="072_interface_inside_routine.f90" line="12" column="1" bodyfile="072_interface_inside_routine.f90" bodystart="13" bodyend="13"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="072_interface_inside_routine.f90" line="12" column="1" bodyfile="072_interface_inside_routine.f90" bodystart="12" bodyend="13"/>
+    <listofallmembers>
+      <member refid="interfaceuse__tst_1_1interfarg_1ae81ab93c5ab7f56cf7062b9b2f3af689" prot="public" virt="non-virtual">
+        <scope>use_tst::interfarg</scope>
+        <name>interfarg</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

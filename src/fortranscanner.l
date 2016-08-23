@@ -476,8 +476,6 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 ^{BS}interface{BS_}{ID}{ARGS}?          { ifType = IF_GENERIC;
                                           current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
                                           yy_push_state(InterfaceBody);
-                                          typeProtection = Public;
-                                          typeMode = true;
 
                                           // extract generic name
                                           QCString name = QCString(yytext).stripWhiteSpace();
@@ -492,7 +490,6 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           if (ifType == IF_GENERIC)
                                           {
                                             last_entry->parent()->endBodyLine = yyLineNr - 1;
-                                            typeMode = false;
                                             if (!endScope(current_root))
                                               yyterminate();
                                           }
@@ -706,7 +703,6 @@ private                                 {
                                            //
                                            if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                            {
-                                             typeMode = false;
                                              endScope(current_root);
                                              last_entry->endBodyLine = yyLineNr - 1;
                                            }
@@ -1017,8 +1013,6 @@ private                                 {
 <Start,ModuleBody,SubprogBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains>^{BS}({PREFIX}{BS_})?{TYPE_SPEC}{BS}({PREFIX}{BS_})?/{SUBPROG}{BS_} {
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
-                                           typeProtection = Public;
-                                           typeMode = true;
                                            addInterface("$interface$", ifType);
                                            startScope(last_entry);
                                          }
@@ -1045,8 +1039,6 @@ private                                 {
                                          v_type = V_IGNORE;
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
-                                           typeProtection = Public;
-                                           typeMode = true;
                                            addInterface("$interface$", ifType);
                                            startScope(last_entry);
                                          }
@@ -2094,33 +2086,39 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
     }
 
   } 
-  if (scope->section == Entry::CLASS_SEC) 
+  if (scope->section == Entry::CLASS_SEC && scope->spec & Entry::Interface) 
   { // was INTERFACE_SEC
-    if (scope->parent()->section == Entry::FUNCTION_SEC) 
+    if (scope->parent() && scope->parent()->section == Entry::FUNCTION_SEC) 
     { // interface within function
       // iterate functions of interface and 
       // try to find types for dummy(ie. argument) procedures.
       //cout<<"Search in "<<scope->name<<endl;
       EntryListIterator eli(*scope->children());
       Entry *ce;
-      int count = 0;
-      int found = FALSE;
+      bool isarg = FALSE;
       for (;(ce=eli.current());++eli) 
       {
-        count++;
         if (ce->section != Entry::FUNCTION_SEC)
           continue;
 
-        Argument *arg = findArgument(scope->parent(), ce->name, TRUE);
+        // remove prefix
+        QCString name = ce->name.lower();
+        int i = name.findRev(":");
+        if (i != -1)
+          name.remove(0, i+1);
+        Argument *arg = findArgument(scope->parent(), name);
         if (arg != 0) 
         {
           // set type of dummy procedure argument to interface
-          arg->name = arg->type;
+          //arg->name = arg->type;
+          scope->name = scope->parent()->name + "::" + scope->name;
           arg->type = scope->name;
+          scope->type = "dummy argument";
+          scope->protection = Public;
+          isarg = TRUE;
         }
-        if (ce->name.lower() == scope->name.lower()) found = TRUE;
       }
-      //if ((count == 1) && found)
+      if (!isarg)
       {
         // clear all modifiers of the scope
         modifiers.remove(scope);
@@ -2196,9 +2194,17 @@ static void initEntry()
   {
     current->protection = typeProtection;
   }
-  else
+  else if (current_root && current_root->section == Entry::CLASS_SEC && current_root->spec & Entry::Interface)
+  {
+    current->protection = Public;
+  }
+  else if (current_root == NULL || current_root->section == Entry::NAMESPACE_SEC)
   {
     current->protection = defaultProtection;
+  }
+  else
+  {
+    current->protection = Private;
   }
   current->mtype      = mtype;
   current->virt       = virt;

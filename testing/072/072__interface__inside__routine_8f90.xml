@@ -2,12 +2,17 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
   <compounddef id="072__interface__inside__routine_8f90" kind="file" language="Fortran">
     <compoundname>072_interface_inside_routine.f90</compoundname>
+    <innerclass refid="interfaceuse__tst_1_1interfarg" prot="public">use_tst::interfarg</innerclass>
     <sectiondef kind="func">
-      <memberdef kind="function" id="072__interface__inside__routine_8f90_1a8b97bb4c01af0310ea13f36c21cad73a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="072__interface__inside__routine_8f90_1a62946c8ec2c9faa044b4c5199e4bbb4d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine use_tst</definition>
-        <argsstring>()</argsstring>
+        <argsstring>(interfArg)</argsstring>
         <name>use_tst</name>
+        <param>
+          <type>interfArg</type>
+          <defname>interfArg</defname>
+        </param>
         <briefdescription>
           <para>Test for interface. </para>
         </briefdescription>
@@ -15,7 +20,20 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="072_interface_inside_routine.f90" line="7" column="1" bodyfile="072_interface_inside_routine.f90" bodystart="8" bodyend="12"/>
+        <location file="072_interface_inside_routine.f90" line="8" column="1" bodyfile="072_interface_inside_routine.f90" bodystart="9" bodyend="18"/>
+      </memberdef>
+      <memberdef kind="function" id="072__interface__inside__routine_8f90_1a5e4d223ee08b0fa3c460f84b5ba36753" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine use_tst::inner_routine</definition>
+        <argsstring/>
+        <name>inner_routine</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="072_interface_inside_routine.f90" line="17" column="1" bodyfile="072_interface_inside_routine.f90" bodystart="18" bodyend="17"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
