@@ -1205,51 +1205,49 @@ STARTDOCSYMS      "##"
 			current->initializer += " ";
                       }
    {B}                { // spaces
+			current->initializer += yytext;
 	              }
    {INTNUMBER}	      { // integer value
-			current->type = "int";
+			if (current-> type.isEmpty()) current->type = "int";
 			current->initializer += yytext;
-			BEGIN(VariableEnd);
 		      }
    {FLOATNUMBER}      { // floating point value
-			current->type = "float";
+			if (current->type.isEmpty()) current->type = "float";
 			current->initializer += yytext;
-			BEGIN(VariableEnd);
 		      }
    {BOOL}             { // boolean value
-			current->type = "bool";
+			if (current->type.isEmpty()) current->type = "bool";
 			current->initializer += yytext;
-			BEGIN(VariableEnd);
 		      }
    {STRINGPREFIX}?"'" { // string
-			current->type = "string";
+			if (current->type.isEmpty()) current->type = "string";
 			current->initializer += yytext;
 			g_copyString=&current->initializer;
-       			g_stringContext=VariableEnd;
+       			g_stringContext=VariableDec;
                         BEGIN( SingleQuoteString );
      		      }
    {STRINGPREFIX}?"\"" { // string
-			current->type = "string";
+			if (current->type.isEmpty()) current->type = "string";
 			current->initializer += yytext;
 			g_copyString=&current->initializer;
-       			g_stringContext=VariableEnd;
+       			g_stringContext=VariableDec;
                         BEGIN( DoubleQuoteString );
      		      }
    {TRIDOUBLEQUOTE}   { // start of a comment block
-			current->type = "string";
+			if (current->type.isEmpty()) current->type = "string";
 			current->initializer += yytext;
 			g_doubleQuote=TRUE;
 			g_copyString=&current->initializer;
-       			g_stringContext=VariableEnd;
+       			g_stringContext=VariableDec;
 			BEGIN(TripleString);
                       }
 
    {TRISINGLEQUOTE}   { // start of a comment block
-			current->type = "string";
+			if (current->type.isEmpty()) current->type = "string";
 			current->initializer += yytext;
 			g_doubleQuote=FALSE;
 			g_copyString=&current->initializer;
-       			g_stringContext=VariableEnd;
+       			g_stringContext=VariableDec;
 			BEGIN(TripleString);
                       }
    "("		      { // tuple, only when direct after =
@@ -1283,6 +1281,20 @@ STARTDOCSYMS      "##"
                         BEGIN( VariableEnd ); 
                       }
    {IDENTIFIER}	      {
+			// do something based on the type of the IDENTIFIER
+			if (current->type.isEmpty())
+                        {
+                          QListIterator<Entry> eli(*(current_root->children()));
+                          Entry *child;
+                          for (eli.toFirst();(child=eli.current());++eli)
+                          {
+                            if (child->name == QCString(yytext))
+                            {
+                               current->type = child->type;
+                               break;
+                            }
+                          }
+                        }
                         g_start_init = FALSE;
       		        current->initializer+=yytext;
 	              }
