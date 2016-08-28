@@ -445,6 +445,7 @@ QCString replaceColorMarkers(const char *str);
 
 bool copyFile(const QCString &src,const QCString &dest);
 QCString extractBlock(const QCString text,const QCString marker);
+int lineBlock(const QCString text,const QCString marker);
 
 QCString correctURL(const QCString &url,const QCString &relPath);
 

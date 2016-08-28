@@ -123,6 +123,7 @@ struct DocParserContext
   QStack<DocStyleChange> initialStyleStack;
   QList<Definition> copyStack;
   QCString fileName;
+  int lineNo;
   QCString relPath;
 
   bool         hasParamCommand;
@@ -144,7 +145,6 @@ struct DocParserContext
 static QStack<DocParserContext> g_parserStack;
 
 //---------------------------------------------------------------------------
-
 static void docParserPushContext(bool saveParamInfo=TRUE)
 {
   //QCString indent;
@@ -163,6 +163,7 @@ static void docParserPushContext(bool saveParamInfo=TRUE)
   ctx->initialStyleStack  = g_initialStyleStack;
   ctx->copyStack          = g_copyStack;
   ctx->fileName           = g_fileName;
+  ctx->lineNo             = doctokenizerYYlineno;
   ctx->relPath            = g_relPath;
 
   if (saveParamInfo)
@@ -201,6 +202,7 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
   g_initialStyleStack   = ctx->initialStyleStack;
   g_copyStack           = ctx->copyStack;
   g_fileName            = ctx->fileName;
+  doctokenizerYYlineno  = ctx->lineNo;
   g_relPath             = ctx->relPath;
 
   if (!keepParamInfo)
@@ -5140,7 +5142,6 @@ endref:
   doctokenizerYYsetStatePara();
 }
 
-
 void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 {
   DBG(("handleInclude(%s)\n",qPrint(cmdName)));
@@ -5168,7 +5169,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   }
   QCString fileName = g_token->name;
   QCString blockId;
-  if (t==DocInclude::Snippet)
+  if (t==DocInclude::Snippet || t==DocInclude::SnippetDoc)
   {
     if (fileName == "this") fileName=g_fileName;
     doctokenizerYYsetStateSnippet();
@@ -5182,9 +5183,31 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     }
     blockId = "["+g_token->name+"]";
   }
-  DocInclude *inc = new DocInclude(this,fileName,g_context,t,g_isExample,g_exampleName,blockId);
-  m_children.append(inc);
-  inc->parse();
+
+  // This is the only place to handle the \includedoc and \snippetdoc commands,
+  // as the content is included here as if it is really here.
+  if (t==DocInclude::IncludeDoc || t==DocInclude::SnippetDoc)
+  {
+     QCString inc_text;
+     int inc_line  = 1;
+     readTextFileByName(fileName,inc_text);
+     if (t==DocInclude::SnippetDoc)
+     {
+       inc_line = lineBlock(inc_text, blockId);
+       inc_text = extractBlock(inc_text, blockId);
+     }
+     docParserPushContext();
+     g_fileName = fileName;
+     doctokenizerYYlineno=inc_line;
+     internalValidatingParseDoc(this,m_children,inc_text);
+     docParserPopContext();
+  }
+  else
+  {
+    DocInclude *inc = new DocInclude(this,fileName,g_context,t,g_isExample,g_exampleName,blockId);
+    m_children.append(inc);
+    inc->parse();
+  }
 }
 
 void DocPara::handleSection(const QCString &cmdName)
@@ -5419,15 +5442,15 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_LI:
       {
-	DocSimpleList *sl=new DocSimpleList(this);
-	m_children.append(sl);
+        DocSimpleList *sl=new DocSimpleList(this);
+        m_children.append(sl);
         retval = sl->parse();
       }
       break;
     case CMD_SECTION:
       {
         handleSection(cmdName);
-	retval = RetVal_Section;
+        retval = RetVal_Section;
       }
       break;
     case CMD_SUBSECTION:
@@ -5672,6 +5695,12 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_SNIPPET:
       handleInclude(cmdName,DocInclude::Snippet);
+      break;
+    case CMD_INCLUDEDOC:
+      handleInclude(cmdName,DocInclude::IncludeDoc);
+      break;
+    case CMD_SNIPPETDOC:
+      handleInclude(cmdName,DocInclude::SnippetDoc);
       break;
     case CMD_SKIP:
       handleIncludeOperator(cmdName,DocIncOperator::Skip);
@@ -6160,8 +6189,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
   case XML_INHERITDOC:
       handleInheritDoc();
       break;
-	  
-    default:
+  default:
       // we should not get here!
       ASSERT(0);
       break;
