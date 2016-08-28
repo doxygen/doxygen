@@ -1737,6 +1737,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	SkipString
 %x	CopyLine
 %x	CopyString
+%x	CopyStringFtn
 %x      Include
 %x      IncludeID
 %x      EndImport
@@ -1850,6 +1851,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  outputChar(*yytext);
 					  BEGIN( CopyString );
 					}
+<CopyLine>\'				{
+                                          if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_Fortran) REJECT;
+					  outputChar(*yytext);
+					  BEGIN( CopyStringFtn );
+					}
 <CopyString>[^\"\\\r\n]+		{
   					  outputArray(yytext,(int)yyleng);
 					}
@@ -1857,6 +1863,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  outputArray(yytext,(int)yyleng);
 					}
 <CopyString>\"				{
+					  outputChar(*yytext);
+					  BEGIN( CopyLine );
+					}
+<CopyStringFtn>[^\'\\\r\n]+		{
+  					  outputArray(yytext,(int)yyleng);
+					}
+<CopyStringFtn>\\.			{
+					  outputArray(yytext,(int)yyleng);
+					}
+<CopyStringFtn>\'			{
 					  outputChar(*yytext);
 					  BEGIN( CopyLine );
 					}
