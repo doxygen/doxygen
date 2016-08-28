@@ -1292,7 +1292,7 @@ void LatexGenerator::endIndexItem(const char *ref,const char *fn)
 //{
 //  t << "\\item\\contentsline{section}{";
 //  docify(text);
-//  t << "}{\\pageref{" << text << "}}" << endl;
+//  t << "}{\\pageref{" << stripPath(text) << "}}" << endl;
 //}
 
 
@@ -1336,7 +1336,7 @@ void LatexGenerator::writeStartAnnoItem(const char *,const char *,
 
 void LatexGenerator::writeEndAnnoItem(const char *name)
 {
-  t << "}{\\pageref{" << name << "}}{}" << endl;
+  t << "}{\\pageref{" << stripPath(name) << "}}{}" << endl;
 }
 
 void LatexGenerator::startIndexKey()
@@ -1357,7 +1357,7 @@ void LatexGenerator::startIndexValue(bool hasBrief)
 void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
 {
   //if (hasBrief) t << ")";
-  t << "}{\\pageref{" << name << "}}{}" << endl;
+  t << "}{\\pageref{" << stripPath(name) << "}}{}" << endl;
 }
 
 //void LatexGenerator::writeClassLink(const char *,const char *,

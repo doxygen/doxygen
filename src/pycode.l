@@ -1142,6 +1142,10 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                          codify(yytext);
                                     }
 
+    "\n"                            {
+				         codifyLines(yytext);
+                                    }
+
     ":"                             {
 				      codify(yytext);
 
