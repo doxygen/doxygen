@@ -1941,6 +1941,11 @@ void DocInclude::parse()
             m_blockId.data(),m_file.data(),count);
       }
       break;
+    case DocInclude::SnippetDoc: 
+    case DocInclude::IncludeDoc: 
+      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
+          "Please create a bug report\n",__FILE__);
+      break;
   }
 }
 
