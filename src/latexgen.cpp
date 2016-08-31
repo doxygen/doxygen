@@ -1579,7 +1579,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "\\hspace{0.1cm}{\\footnotesize\\ttfamily [" << memCount << "/" << memTotal << "]}";
   }
   t << "}";
-  t << "\n{\\ttfamily ";
+  t << "\n{\\footnotesize\\ttfamily ";
   //disableLinks=TRUE;
 }
 
@@ -1825,6 +1825,65 @@ void LatexGenerator::writeNonBreakableSpace(int)
     t << "~"; 
   }
 }
+
+// ----------------------------------------------
+// nesting of functions below:
+// startDescTable()
+// - startDescTableRow()
+//   - startDescTableTitle()
+//   - endDescTabelTitle()
+//   - startDescTableData()
+//   - endDescTableData()
+// - endDescTableRow()
+// - startDescTableRow()
+//   - ...
+// - endDescTableRow()
+// endDescTable()
+
+void LatexGenerator::startDescTable(const char *title)
+{
+  t << "\\begin{DoxyEnumFields}{" << title << "}" << endl;
+}
+
+void LatexGenerator::endDescTable()
+{
+  t << "\\end{DoxyEnumFields}" << endl;
+}
+
+void LatexGenerator::startDescTableRow()
+{
+  // this is needed to prevent the \hypertarget, \label, and \index commands from messing up
+  // the row height (based on http://tex.stackexchange.com/a/186102)
+  t << "\\raisebox{\\heightof{T}}[0pt][0pt]{";
+}
+
+void LatexGenerator::endDescTableRow()
+{
+}
+
+void LatexGenerator::startDescTableTitle()
+{
+  t << "}";
+}
+
+void LatexGenerator::endDescTableTitle()
+{
+}
+
+void LatexGenerator::startDescTableData()
+{
+  t << "&";
+}
+
+void LatexGenerator::endDescTableData()
+{
+  t << "\\\\\n\\hline\n" << endl;
+}
+
+void LatexGenerator::lastIndexPage() 
+{
+}
+
 
 void LatexGenerator::startMemberList()  
 { 
@@ -2128,16 +2187,31 @@ void LatexGenerator::lineBreak(const char *)
   }
 }
 
-void LatexGenerator::startMemberDocSimple()
+void LatexGenerator::startMemberDocSimple(bool isEnum)
 {
-  t << "\\begin{DoxyFields}{";
-  docify(theTranslator->trCompoundMembers());
+  if (isEnum)
+  {
+    t << "\\begin{DoxyEnumFields}{";
+    docify(theTranslator->trEnumerationValues());
+  }
+  else
+  {
+    t << "\\begin{DoxyFields}{";
+    docify(theTranslator->trCompoundMembers());
+  }
   t << "}" << endl;
 }
 
-void LatexGenerator::endMemberDocSimple()
+void LatexGenerator::endMemberDocSimple(bool isEnum)
 {
-  t << "\\end{DoxyFields}" << endl;
+  if (isEnum)
+  {
+    t << "\\end{DoxyEnumFields}" << endl;
+  }
+  else
+  {
+    t << "\\end{DoxyFields}" << endl;
+  }
 }
 
 void LatexGenerator::startInlineMemberType()

@@ -748,14 +748,19 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
   //printf("MemberList count=%d\n",numDocMembers());
   if (numDocMembers()==0) return;
 
-  ol.startMemberDocSimple();
+  ClassDef *cd = 0;
+  if (container && container->definitionType()==Definition::TypeClass)
+  {
+    cd = (ClassDef*)container;
+  }
+  ol.startMemberDocSimple(cd && cd->isJavaEnum());
   MemberListIterator mli(*this);
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
     md->writeMemberDocSimple(ol,container);
   }
-  ol.endMemberDocSimple();
+  ol.endMemberDocSimple(cd && cd->isJavaEnum());
 }
 
 // separate member pages

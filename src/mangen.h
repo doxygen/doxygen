@@ -199,6 +199,8 @@ class ManGenerator : public OutputGenerator
     void startDescTable(const char *t) 
     { startSimpleSect(EnumValues,0,0,t); startDescForItem(); }
     void endDescTable() { endDescForItem(); endSimpleSect(); }
+    void startDescTableRow() {}
+    void endDescTableRow() {}
     void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }
     void endDescTableTitle() { endEmphasis(); endBold(); }
     void startDescTableData() { t << endl; firstCol=TRUE; }
@@ -244,8 +246,8 @@ class ManGenerator : public OutputGenerator
     void endConstraintDocs();
     void endConstraintList();
 
-    void startMemberDocSimple();
-    void endMemberDocSimple();
+    void startMemberDocSimple(bool);
+    void endMemberDocSimple(bool);
     void startInlineMemberType();
     void endInlineMemberType();
     void startInlineMemberName();

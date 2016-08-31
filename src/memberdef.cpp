@@ -2342,6 +2342,7 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
             ol.startDescTable(theTranslator->trEnumerationValues());
           }
 
+          ol.startDescTableRow();
           ol.addIndexItem(fmd->name(),ciname);
           ol.addIndexItem(ciname,fmd->name());
 
@@ -2391,6 +2392,7 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
                 fmd,fmd->documentation()+"\n",TRUE,FALSE);
           }
           ol.endDescTableData();
+          ol.endDescTableRow();
         }
       }
     }
@@ -3118,43 +3120,47 @@ void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
   ClassDef *cd = m_impl->accessorClass;
   //printf("===> %s::anonymous: %s\n",name().data(),cd?cd->name().data():"<none>");
 
-  ol.startInlineMemberType();
-  ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-
-  QCString ts = fieldType();
-
-  if (cd) // cd points to an anonymous struct pointed to by this member
-          // so we add a link to it from the type column.
+  if (container && container->definitionType()==Definition::TypeClass &&
+      !((ClassDef*)container)->isJavaEnum())
   {
-    int i=0;
-    const char *prefixes[] = { "struct ","union ","class ", 0 };
-    const char **p = prefixes;
-    while (*p)
+    ol.startInlineMemberType();
+    ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
+
+    QCString ts = fieldType();
+
+    if (cd) // cd points to an anonymous struct pointed to by this member
+      // so we add a link to it from the type column.
     {
-      int l=qstrlen(*p);
-      if (ts.left(l)==*p)
+      int i=0;
+      const char *prefixes[] = { "struct ","union ","class ", 0 };
+      const char **p = prefixes;
+      while (*p)
       {
-        ol.writeString(*p);
-        i=l;
+        int l=qstrlen(*p);
+        if (ts.left(l)==*p)
+        {
+          ol.writeString(*p);
+          i=l;
+        }
+        p++;
       }
-      p++;
+      ol.writeObjectLink(cd->getReference(),
+          cd->getOutputFileBase(),
+          cd->anchor(),ts.mid(i));
     }
-    ol.writeObjectLink(cd->getReference(),
-                       cd->getOutputFileBase(),
-                       cd->anchor(),ts.mid(i));
+    else // use standard auto linking
+    {
+      linkifyText(TextGeneratorOLImpl(ol), // out
+          scope,                   // scope
+          getBodyDef(),            // fileScope
+          this,                    // self
+          ts,                      // text
+          TRUE                     // autoBreak
+          );
+    }
+    ol.endDoxyAnchor(cfname,memAnchor);
+    ol.endInlineMemberType();
   }
-  else // use standard auto linking
-  {
-    linkifyText(TextGeneratorOLImpl(ol), // out
-                scope,                   // scope
-                getBodyDef(),            // fileScope
-                this,                    // self
-                ts,                      // text
-                TRUE                     // autoBreak
-               );
-  }
-  ol.endDoxyAnchor(cfname,memAnchor);
-  ol.endInlineMemberType();
 
   ol.startInlineMemberName();
   ol.docify(doxyName);

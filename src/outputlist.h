@@ -372,6 +372,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDescTable,title); }
     void endDescTable()
     { forall(&OutputGenerator::endDescTable); }
+    void startDescTableRow()
+    { forall(&OutputGenerator::startDescTableRow); }
+    void endDescTableRow()
+    { forall(&OutputGenerator::endDescTableRow); }
     void startDescTableTitle()
     { forall(&OutputGenerator::startDescTableTitle); }
     void endDescTableTitle()
@@ -448,10 +452,10 @@ class OutputList : public OutputDocInterface
     void endConstraintList()
     { forall(&OutputGenerator::endConstraintList); }
 
-    void startMemberDocSimple()
-    { forall(&OutputGenerator::startMemberDocSimple); }
-    void endMemberDocSimple()
-    { forall(&OutputGenerator::endMemberDocSimple); }
+    void startMemberDocSimple(bool b)
+    { forall(&OutputGenerator::startMemberDocSimple,b); }
+    void endMemberDocSimple(bool b)
+    { forall(&OutputGenerator::endMemberDocSimple,b); }
     void startInlineMemberType()
     { forall(&OutputGenerator::startInlineMemberType); }
     void endInlineMemberType()

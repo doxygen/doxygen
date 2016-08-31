@@ -1863,6 +1863,46 @@ void HtmlGenerator::writeNonBreakableSpace(int n)
   }
 }
 
+void HtmlGenerator::startDescTable(const char *title)
+{
+  t << "<table class=\"fieldtable\">" << endl
+    << "<tr><th colspan=\"2\">" << title << "</th></tr>";
+}
+void HtmlGenerator::endDescTable()
+{
+  t << "</table>" << endl;
+}
+
+void HtmlGenerator::startDescTableRow()
+{
+  t << "<tr>";
+}
+
+void HtmlGenerator::endDescTableRow()
+{
+  t << "</tr>" << endl;
+}
+
+void HtmlGenerator::startDescTableTitle()
+{
+  t << "<td class=\"fieldname\">";
+}
+
+void HtmlGenerator::endDescTableTitle()
+{
+  t << "&#160;</td>";
+}
+
+void HtmlGenerator::startDescTableData()
+{
+  t << "<td class=\"fielddoc\">";
+}
+
+void HtmlGenerator::endDescTableData()
+{
+  t << "</td>";
+}
+
 void HtmlGenerator::startSimpleSect(SectionTypes,
                                 const char *filename,const char *anchor,
                                 const char *title)
@@ -2488,14 +2528,16 @@ void HtmlGenerator::endInlineHeader()
   t << "</h3></td></tr>" << endl;
 }
 
-void HtmlGenerator::startMemberDocSimple()
+void HtmlGenerator::startMemberDocSimple(bool isEnum)
 {
   DBG_HTML(t << "<!-- startMemberDocSimple -->" << endl;)
   t << "<table class=\"fieldtable\">" << endl;
-  t << "<tr><th colspan=\"3\">" << theTranslator->trCompoundMembers() << "</th></tr>" << endl;
+  t << "<tr><th colspan=\"" << (isEnum?"2":"3") << "\">";
+  t << (isEnum? theTranslator->trEnumerationValues() :
+       theTranslator->trCompoundMembers()) << "</th></tr>" << endl;
 }
 
-void HtmlGenerator::endMemberDocSimple()
+void HtmlGenerator::endMemberDocSimple(bool)
 {
   DBG_HTML(t << "<!-- endMemberDocSimple -->" << endl;)
   t << "</table>" << endl;
