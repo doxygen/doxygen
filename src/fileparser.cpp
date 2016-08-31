@@ -22,7 +22,7 @@ void FileParser::parseCode(CodeOutputInterface &codeOutIntf,
                SrcLangExt,       // lang
                bool,             // isExampleBlock
                const char *,     // exampleName
-               FileDef *,        // fileDef
+               FileDef *            fileDef,
                int                  startLine,
                int                  endLine,
                bool,             // inlineFragment
@@ -40,8 +40,8 @@ void FileParser::parseCode(CodeOutputInterface &codeOutIntf,
     int j=i;
     while (j<length && input[j]!='\n') j++;
     QCString lineStr = input.mid(i,j-i);
-    codeOutIntf.startCodeLine(showLineNumbers);
-    if (showLineNumbers) codeOutIntf.writeLineNumber(0,0,0,lineNr);
+    codeOutIntf.startCodeLine(fileDef != 0 && showLineNumbers);
+    if (fileDef != 0 && showLineNumbers) codeOutIntf.writeLineNumber(0,0,0,lineNr);
     if (!lineStr.isEmpty()) codeOutIntf.codify(lineStr);
     codeOutIntf.endCodeLine();
     lineNr++;
