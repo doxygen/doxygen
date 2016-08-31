@@ -716,6 +716,11 @@ void PerlModDocVisitor::visit(DocInclude *inc)
   case DocInclude::LatexInclude: type = "latexonly"; break;
   case DocInclude::VerbInclude:	type = "preformatted"; break;
   case DocInclude::Snippet: return;
+  case DocInclude::SnippetDoc: 
+  case DocInclude::IncludeDoc: 
+    err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
+        "Please create a bug report\n",__FILE__);
+    break;
   }
   openItem(type);
   m_output.addFieldQuotedString("content", inc->text());

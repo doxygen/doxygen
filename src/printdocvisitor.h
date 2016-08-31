@@ -22,6 +22,7 @@
 #include <qglobal.h>
 #include "docvisitor.h"
 #include "htmlentity.h"
+#include "message.h"
 
 /*! Concrete visitor implementation for pretty printing */
 class PrintDocVisitor : public DocVisitor
@@ -170,6 +171,11 @@ class PrintDocVisitor : public DocVisitor
         case DocInclude::LatexInclude: printf("latexinclude"); break;
         case DocInclude::VerbInclude: printf("verbinclude"); break;
         case DocInclude::Snippet: printf("snippet"); break;
+        case DocInclude::SnippetDoc: 
+        case DocInclude::IncludeDoc: 
+          err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
+              "Please create a bug report\n",__FILE__);
+          break;
       }
       printf("\"/>");
     }
