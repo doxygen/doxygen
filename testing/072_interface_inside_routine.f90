@@ -1,6 +1,5 @@
 !// objective: don't show interfaces inside routines except for arguments
 !// check: 072__interface__inside__routine_8f90.xml
-!// check: interfaceuse__tst_1_1interfarg.xml
 !// config: OPTIMIZE_FOR_FORTRAN=YES
 !// config: EXTRACT_ALL=YES
 

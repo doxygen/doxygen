@@ -2091,7 +2091,6 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
       //cout<<"Search in "<<scope->name<<endl;
       EntryListIterator eli(*scope->children());
       Entry *ce;
-      bool isarg = FALSE;
       for (;(ce=eli.current());++eli) 
       {
         if (ce->section != Entry::FUNCTION_SEC)
@@ -2106,22 +2105,25 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
         if (arg != 0) 
         {
           // set type of dummy procedure argument to interface
-          //arg->name = arg->type;
-          scope->name = scope->parent()->name + "::" + scope->name;
-          arg->type = scope->name;
-          scope->type = "dummy argument";
-          scope->protection = Public;
-          isarg = TRUE;
+          arg->type = "external " + ce->type + "(";
+          for (unsigned int i=0; i<ce->argList->count(); i++)                                                                                                                                                       
+          {                                                                                                                                                                                                              
+            Argument *subarg = ce->argList->at(i);
+            arg->type = arg->type + subarg->type + " " + subarg->name;
+            if (i > 0 && i+1 == ce->argList->count())
+            {
+              arg->type = arg->type + ", ";
+            }
+            arg->type = arg->type + ")";
+          }
+          printf("New arg type: %s\n", arg->type.data());
         }
       }
-      if (!isarg)
-      {
-        // clear all modifiers of the scope
-        modifiers.remove(scope);
-        delete scope->parent()->removeSubEntry(scope);
-        scope = 0;
-        return TRUE;
-      }
+      // clear all modifiers of the scope
+      modifiers.remove(scope);
+      delete scope->parent()->removeSubEntry(scope);
+      scope = 0;
+      return TRUE;
     }
   } 
   if (scope->section!=Entry::FUNCTION_SEC) 
