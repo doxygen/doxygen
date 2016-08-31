@@ -17,6 +17,8 @@
 #include "message.h"
 #include "ftextstream.h"
 
+#include <set>
+
 //! Number of doxygen commands mapped as if it were HTML entities
 static const int g_numberHtmlMappedCmds = 11;
 
@@ -476,12 +478,20 @@ DocSymbol::SymType HtmlEntityMapper::name2sym(const QCString &symName) const
 
 void HtmlEntityMapper::writeXMLSchema(FTextStream &t)
 {
+  std::set<QCString> seen;
   for (int i=0;i<g_numHtmlEntities - g_numberHtmlMappedCmds;i++)
   {
     QCString bareName = g_htmlEntities[i].xml;
     if (!bareName.isEmpty() && bareName.at(0)=='<' && bareName.right(2)=="/>")
     {
       bareName = bareName.mid(1,bareName.length()-3); // strip < and />
+      std::pair<std::set<QCString>::iterator, bool> p = seen.insert(bareName);
+      if (!p.second)
+        continue;
+      // otherwise the image element (with docEmptyType) would clash
+      // with image (docImageType) in the group definition docCmdGroup
+      if (bareName == "image")
+        continue;
       t << "      <xsd:element name=\"" << bareName << "\" type=\"docEmptyType\" />\n";
     }
   }
