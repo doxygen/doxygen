@@ -329,6 +329,28 @@ void XmlDocVisitor::visit(DocInclude *inc)
                                        );
       m_t << "</programlisting>"; 
       break;
+    case DocInclude::SnipWithLines:
+      {
+         m_t << "<programlisting>";
+         QFileInfo cfi( inc->file() );
+         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         Doxygen::parserManager->getParser(inc->extension())
+                               ->parseCode(m_ci,
+                                           inc->context(),
+                                           extractBlock(inc->text(),inc->blockId()),
+                                           langExt,
+                                           inc->isExample(),
+                                           inc->exampleFile(), 
+                                           &fd,
+                                           lineBlock(inc->text(),inc->blockId()),
+                                           -1,    // endLine
+                                           FALSE, // inlineFragment
+                                           0,     // memberDef
+                                           TRUE   // show line number
+                                          );
+         m_t << "</programlisting>"; 
+      }
+      break;
     case DocInclude::SnippetDoc: 
     case DocInclude::IncludeDoc: 
       err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"

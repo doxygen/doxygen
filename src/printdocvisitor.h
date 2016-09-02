@@ -171,6 +171,7 @@ class PrintDocVisitor : public DocVisitor
         case DocInclude::LatexInclude: printf("latexinclude"); break;
         case DocInclude::VerbInclude: printf("verbinclude"); break;
         case DocInclude::Snippet: printf("snippet"); break;
+        case DocInclude::SnipWithLines: printf("snipwithlines"); break;
         case DocInclude::SnippetDoc: 
         case DocInclude::IncludeDoc: 
           err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"

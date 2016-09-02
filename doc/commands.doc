@@ -179,6 +179,7 @@ documentation:
 \refitem cmdskipline \\skipline
 \refitem cmdsnippet \\snippet
 \refitem cmdsnippetdoc \\snippetdoc
+\refitem cmdsnippetlineno \\snippetlineno
 \refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
 \refitem cmdsubpage \\subpage
@@ -2183,7 +2184,7 @@ Commands for displaying examples
   This command works the same way as \ref cmdinclude "\\include", but will add line
   numbers to the included file.
 
-  \sa section \ref cmdinclude "\\include".
+  \sa sections \ref cmdinclude "\\include" and \ref cmdsnippetlineno "\\snippetlineno".
 
 <hr>
 \section cmdincludedoc \\includedoc <file-name>
@@ -2303,7 +2304,16 @@ Commands for displaying examples
  see section \ref cmddontinclude "\\dontinclude" for an alternative way
  to include fragments of a source file that does not require markers.
 
- \sa section \ref cmdsnippetdoc "\\snippetdoc".
+ \sa section \ref cmdsnippetdoc "\\snippetdoc" and \ref cmdsnippetlineno "\\snippetlineno".
+<hr>
+\section cmdsnippetlineno \\snippetlineno <file-name> ( block_id )
+
+  \addindex \\snippetlineno
+  This command works the same way as \ref cmdsnippet "\\snippet", but will add line
+  numbers to the included snippet.
+
+  \sa sections \ref cmdsnippet "\\snippet" and \ref cmdincludelineno "\\includelineno".
+
 <hr>
 \section cmdsnippetdoc \\snippetdoc <file-name> ( block_id )
 
@@ -3212,9 +3222,8 @@ class Receiver
   \c \\verbatim command or the parser will get confused!
 
   \sa sections \ref cmdcode "\\code",
-               \ref cmdendverbatim "\\endverbatim",
-               \ref cmdverbinclude "\\verbinclude", and
-               \ref cmdverbincludedooc "\\verbincludedooc".
+               \ref cmdendverbatim "\\endverbatim" and
+               \ref cmdverbinclude "\\verbinclude".
 
 <hr>
 \section cmdxmlonly \\xmlonly
