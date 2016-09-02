@@ -6744,6 +6744,7 @@ QCString latexEscapeLabelName(const char *s,bool insideTabbing)
     {
       case '|': t << "\\texttt{\"|}"; break;
       case '!': t << "\"!"; break;
+      case '@': t << "\"@"; break;
       case '%': t << "\\%";       break;
       case '{': t << "\\lcurly{}"; break;
       case '}': t << "\\rcurly{}"; break;
@@ -6753,7 +6754,7 @@ QCString latexEscapeLabelName(const char *s,bool insideTabbing)
         i=0;
         // collect as long string as possible, before handing it to docify
         tmp[i++]=c;
-        while ((c=*p) && c!='|' && c!='!' && c!='%' && c!='{' && c!='}' && c!='~')
+        while ((c=*p) && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
         {
           tmp[i++]=c;
           p++;
