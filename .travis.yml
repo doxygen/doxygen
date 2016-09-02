@@ -11,7 +11,7 @@ before_install:
 install:
     - sudo apt-get install -qq texlive
     - sudo apt-get install -qq texlive-extra-utils
-    - sudo apt-get install -qq texlive-latex-extra
+    - sudo apt-get install -q -y texlive-latex-extra
     - sudo apt-get install -qq libxml2-utils
     - sudo apt-get install -qq cmake cmake-data
 
