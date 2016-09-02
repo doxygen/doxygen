@@ -89,6 +89,7 @@ CommandMap cmdMap[] =
   { "section",       CMD_SECTION },
   { "snippet",       CMD_SNIPPET },
   { "snippetdoc",    CMD_SNIPPETDOC },
+  { "snippetlineno", CMD_SNIPWITHLINES },
   { "subpage",       CMD_SUBPAGE },
   { "subsection",    CMD_SUBSECTION },
   { "subsubsection", CMD_SUBSUBSECTION },

@@ -85,6 +85,7 @@ static int           g_yyLineNr;        //!< current line number
 static bool          g_needsTermination;
 static Definition   *g_searchCtx;
 
+static bool          g_exampleBlock;
 static QCString      g_exampleName;
 static QCString      g_exampleFile;
 
@@ -1504,7 +1505,7 @@ void resetVhdlCodeParserState()
 }
 
 void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString &s, 
-                  bool /*exBlock*/, const char *exName,FileDef *fd,
+                  bool exBlock, const char *exName,FileDef *fd,
                   int startLine,int endLine,bool inlineFragment,
                   MemberDef *memberDef,bool,Definition *searchCtx,
                   bool /* collectXRefs */)
@@ -1527,23 +1528,24 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   g_needsTermination = FALSE;
   g_searchCtx = searchCtx;
 
-  if (endLine!=-1)
-    g_inputLines  = endLine+1;
-  else
-    g_inputLines  = countLines();
-
   if (startLine!=-1)
     g_yyLineNr    = startLine;
   else
     g_yyLineNr    = 1;
 
+  if (endLine!=-1)
+    g_inputLines  = endLine+1;
+  else
+    g_inputLines  = g_yyLineNr + countLines() - 1;
+
 
   // g_theCallContext.clear();
   g_classScope    = className;
+  g_exampleBlock  = exBlock; 
   g_exampleName   = exName;
   g_sourceFileDef = fd;
   bool cleanupSourceDef = FALSE;
-  if (fd==0)
+  if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
     g_sourceFileDef = new FileDef("",exName);
