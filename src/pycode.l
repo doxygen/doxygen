@@ -1422,7 +1422,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 				  unput(*yytext);
 				  yy_pop_state();
 			       }
-<*>{POUNDCOMMENT}              {
+<*>{POUNDCOMMENT}.*            {
   				 if (YY_START==SingleQuoteString || 
 				     YY_START==DoubleQuoteString || 
 				     YY_START==TripleString
