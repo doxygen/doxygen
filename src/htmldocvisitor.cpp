@@ -578,31 +578,6 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            -1,    // endLine
                                            TRUE,  // inlineFragment
                                            0,     // memberDef
-                                           FALSE, // show line number
-                                           m_ctx  // search context
-                                          );
-         m_t << PREFRAG_END;
-         forceStartParagraph(inc);
-      }
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         forceEndParagraph(inc);
-         m_t << PREFRAG_START;
-         QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
-                                           inc->context(),
-                                           extractBlock(inc->text(),inc->blockId()),
-                                           langExt,
-                                           inc->isExample(),
-                                           inc->exampleFile(), 
-                                           &fd,
-                                           lineBlock(inc->text(),inc->blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
                                            TRUE,  // show line number
                                            m_ctx  // search context
                                           );

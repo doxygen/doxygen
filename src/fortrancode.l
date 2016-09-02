@@ -1263,16 +1263,15 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
   g_needsTermination = FALSE;
   g_searchCtx = searchCtx;
   g_collectXRefs = collectXRefs;
+  if (endLine!=-1)
+    g_inputLines  = endLine+1;
+  else
+    g_inputLines  = countLines();
+
   if (startLine!=-1)
     g_yyLineNr    = startLine;
   else
     g_yyLineNr    = 1;
-
-  if (endLine!=-1)
-    g_inputLines  = endLine+1;
-  else
-    g_inputLines  = g_yyLineNr + countLines() - 1;
-
 
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;

@@ -135,8 +135,7 @@ enum CommandType
   CMD_PLUS         = 105,
   CMD_MINUS        = 106,
   CMD_INCLUDEDOC   = 107,
-  CMD_SNIPPETDOC   = 108,
-  CMD_SNIPWITHLINES= 109
+  CMD_SNIPPETDOC   = 108
 };
 
 enum HtmlTagType

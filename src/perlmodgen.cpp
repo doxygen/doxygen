@@ -716,7 +716,6 @@ void PerlModDocVisitor::visit(DocInclude *inc)
   case DocInclude::LatexInclude: type = "latexonly"; break;
   case DocInclude::VerbInclude:	type = "preformatted"; break;
   case DocInclude::Snippet: return;
-  case DocInclude::SnipWithLines: return;
   case DocInclude::SnippetDoc: 
   case DocInclude::IncludeDoc: 
     err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"

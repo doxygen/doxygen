@@ -444,30 +444,6 @@ void RTFDocVisitor::visit(DocInclude *inc)
                                        );
       m_t << "}";
       break;
-    case DocInclude::SnipWithLines:
-      {
-         QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         m_t << "{" << endl;
-         if (!m_lastIsPara) m_t << "\\par" << endl;
-         m_t << rtf_Style_Reset << getStyle("CodeExample");
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
-                                           inc->context(),
-                                           extractBlock(inc->text(),inc->blockId()),
-                                           langExt,
-                                           inc->isExample(),
-                                           inc->exampleFile(), 
-                                           &fd,
-                                           lineBlock(inc->text(),inc->blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         m_t << "}";
-      }
-      break;
     case DocInclude::SnippetDoc: 
     case DocInclude::IncludeDoc: 
       err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"

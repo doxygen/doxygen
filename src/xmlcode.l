@@ -49,7 +49,6 @@ static int           g_yyLineNr;        //!< current line number
 static bool          g_needsTermination;
 static Definition   *g_searchCtx;
 
-static bool          g_exampleBlock;
 static QCString      g_exampleName;
 static QCString      g_exampleFile;
 
@@ -324,12 +323,12 @@ void parseXmlCode(
     CodeOutputInterface &od,
     const char * /*className*/,
     const QCString &s,
-    bool exBlock,
+    bool /*exBlock*/,
     const char *exName,
     FileDef *fd,
     int startLine,
     int endLine,
-    bool inlineFragment,
+    bool /*inlineFragment*/,
     MemberDef *,
     bool,Definition *searchCtx,
     bool /*collectXRefs*/
@@ -346,23 +345,22 @@ void parseXmlCode(
   g_needsTermination = FALSE;
   g_searchCtx=searchCtx;
   
+  if (endLine!=-1)
+    g_inputLines  = endLine+1;
+  else
+    g_inputLines  = countLines();
+  
   if (startLine!=-1)
     g_yyLineNr    = startLine;
   else
     g_yyLineNr    = 1;
   
-  if (endLine!=-1)
-    g_inputLines  = endLine+1;
-  else
-    g_inputLines  = g_yyLineNr + countLines() - 1;
-  
-  g_exampleBlock  = exBlock; 
   g_exampleName   = exName;
   g_sourceFileDef = fd;
 
   bool cleanupSourceDef = FALSE;
   
-  if (exBlock && fd==0)
+  if (fd==0)
   {
     // create a dummy filedef for the example
     g_sourceFileDef = new FileDef("",(exName?exName:"generated"));
@@ -374,7 +372,6 @@ void parseXmlCode(
     setCurrentDoc("l00001");
   }
 
-  g_includeCodeFragment = inlineFragment;
   // Starts line 1 on the output  
   startCodeLine();
 

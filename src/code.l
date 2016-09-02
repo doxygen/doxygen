@@ -3659,16 +3659,15 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_searchCtx = searchCtx;
   g_collectXRefs = collectXRefs;
   g_inFunctionTryBlock = FALSE;
+  if (endLine!=-1)
+    g_inputLines  = endLine+1;
+  else
+    g_inputLines  = countLines();
 
   if (startLine!=-1)
     g_yyLineNr    = startLine;
   else
     g_yyLineNr    = 1;
-
-  if (endLine!=-1)
-    g_inputLines  = endLine+1;
-  else
-    g_inputLines  = g_yyLineNr + countLines() - 1;
 
   g_curlyCount    = 0;
   g_bodyCurlyCount    = 0;
