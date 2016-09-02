@@ -199,7 +199,7 @@ static struct htmlEntityInfo
   { SYM(oline),    "\xe2\x80\xbe", "&oline;",    "<oline/>",             "&#8254;",       "{$\\overline{\\,}$}",    NULL,     "\\u8254?",    { NULL,         DocSymbol::Perl_unknown }},
   { SYM(frasl),    "\xe2\x81\x84", "&frasl;",    "<frasl/>",             "&#8260;",       "/",                      NULL,     "\\u8260?",    { NULL,         DocSymbol::Perl_unknown }},
   { SYM(weierp),   "\xe2\x84\x98", "&weierp;",   "<weierp/>",            "&#8472;",       "{$\\wp$}",               NULL,     "\\u8472?",    { NULL,         DocSymbol::Perl_unknown }},
-  { SYM(image),    "\xe2\x84\x91", "&image;",    "<image/>",             "&#8465;",       "{$\\Im$}",               NULL,     "\\u8465?",    { NULL,         DocSymbol::Perl_unknown }},
+  { SYM(image),    "\xe2\x84\x91", "&image;",    "<imaginary/>",         "&#8465;",       "{$\\Im$}",               NULL,     "\\u8465?",    { NULL,         DocSymbol::Perl_unknown }},
   { SYM(real),     "\xe2\x84\x9c", "&real;",     "<real/>",              "&#8476;",       "{$\\Re$}",               NULL,     "\\u8476?",    { NULL,         DocSymbol::Perl_unknown }},
   { SYM(trade),    "\xe2\x84\xa2", "&trade;",    "<trademark/>",         "&#8482;",       "\\texttrademark{}",      "(TM)",   "\\'99",       { "trademark",  DocSymbol::Perl_symbol  }},
   { SYM(alefsym),  "\xe2\x85\xb5", "&alefsym;",  "<alefsym/>",           "&#8501;",       "{$\\aleph$}",            NULL,     "\\u8501?",    { NULL,         DocSymbol::Perl_unknown }},
@@ -297,7 +297,7 @@ static struct htmlEntityInfo
   { SYM(euro),     "\xe2\x82\xac", "&euro;",     "<euro/>",              "&#8364;",       "\\texteuro{}",           NULL,     "\\'80",       { NULL,         DocSymbol::Perl_unknown }},
 
   // doxygen extension to the HTML4 table of HTML entities
-  { SYM(tm),       "\xe2\x84\xa2", "&trade;",    "<trademark/>",         "&#8482;",       "\\texttrademark{}",      "(TM)",   "\\'99",       { "trademark",  DocSymbol::Perl_symbol  }},
+  { SYM(tm),       "\xe2\x84\xa2", "&trade;",    "<tm/>",                "&#8482;",       "\\texttrademark{}",      "(TM)",   "\\'99",       { "trademark",  DocSymbol::Perl_symbol  }},
   { SYM(apos),     "'",            "'",          "'",                    "&apos;",        "\\textquotesingle{}",    "'",      "'",           { "\\\'",       DocSymbol::Perl_string  }},
 
   // doxygen commands represented as HTML entities
