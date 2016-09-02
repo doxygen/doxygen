@@ -13,8 +13,7 @@ install:
     - sudo apt-get install -qq texlive-extra-utils
     - sudo apt-get install -qq texlive-latex-extra
     - sudo apt-get install -qq libxml2-utils
-    - sudo apt-get install -qq cmake
-    - sudo apt-get install -qq cmake-data
+    - sudo apt-get install -qq cmake cmake-data
 
 script:
     - mkdir build
