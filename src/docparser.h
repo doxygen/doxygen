@@ -483,7 +483,8 @@ class DocVerbatim : public DocNode
 class DocInclude : public DocNode
 {
   public:
-  enum Type { Include, DontInclude, VerbInclude, HtmlInclude, LatexInclude, IncWithLines, Snippet , IncludeDoc, SnippetDoc};
+  enum Type { Include, DontInclude, VerbInclude, HtmlInclude, LatexInclude,
+	      IncWithLines, Snippet , IncludeDoc, SnippetDoc, SnipWithLines};
     DocInclude(DocNode *parent,const QCString &file,
                const QCString context, Type t,
                bool isExample,const QCString exampleFile,

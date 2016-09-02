@@ -1931,6 +1931,7 @@ void DocInclude::parse()
       readTextFileByName(m_file,m_text);
       break;
     case Snippet:
+    case SnipWithLines:
       readTextFileByName(m_file,m_text);
       // check here for the existence of the blockId inside the file, so we
       // only generate the warning once.
@@ -5174,7 +5175,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   }
   QCString fileName = g_token->name;
   QCString blockId;
-  if (t==DocInclude::Snippet || t==DocInclude::SnippetDoc)
+  if (t==DocInclude::Snippet || t==DocInclude::SnipWithLines || t==DocInclude::SnippetDoc)
   {
     if (fileName == "this") fileName=g_fileName;
     doctokenizerYYsetStateSnippet();
@@ -5700,6 +5701,9 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_SNIPPET:
       handleInclude(cmdName,DocInclude::Snippet);
+      break;
+    case CMD_SNIPWITHLINES:
+      handleInclude(cmdName,DocInclude::SnipWithLines);
       break;
     case CMD_INCLUDEDOC:
       handleInclude(cmdName,DocInclude::IncludeDoc);
