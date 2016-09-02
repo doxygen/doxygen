@@ -1888,7 +1888,7 @@ void FileDef::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QC
 bool FileDef::isLinkableInProject() const
 {
   static bool showFiles = Config_getBool(SHOW_FILES);
-  return hasDocumentation() && !isReference() && showFiles;
+  return hasDocumentation() && !isReference() && (showFiles || isLinkableViaGroup());
 }
 
 static void getAllIncludeFilesRecursively(

@@ -1876,6 +1876,21 @@ GroupList *Definition::partOfGroups() const
   return m_impl->partOfGroups; 
 }
 
+bool Definition::isLinkableViaGroup() const
+{
+  GroupList *gl = partOfGroups();
+  if (gl)
+  {
+    GroupListIterator gli(*gl);
+    GroupDef *gd;
+    for (gli.toFirst();(gd=gli.current());++gli)
+    {
+      if (gd->isLinkable()) return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 Definition *Definition::getOuterScope() const 
 { 
   return m_impl->outerScope; 

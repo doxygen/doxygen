@@ -257,6 +257,7 @@ class Definition : public DefinitionIntf
     SrcLangExt getLanguage() const;
 
     GroupList *partOfGroups() const;
+    bool isLinkableViaGroup() const;
 
     QList<ListItemInfo> *xrefListItems() const;
 
