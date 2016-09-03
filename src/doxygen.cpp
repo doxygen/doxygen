@@ -9987,6 +9987,8 @@ void initDoxygen()
   setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   setlocale(LC_NUMERIC,"C");
 
+  portable_correct_path();
+
   Doxygen::runningTime.start();
   initPreprocessor();
 
@@ -10067,7 +10069,6 @@ void initDoxygen()
   g_compoundKeywordDict.insert("union",(void *)8);
   g_compoundKeywordDict.insert("interface",(void *)8);
   g_compoundKeywordDict.insert("exception",(void *)8);
-
 }
 
 void cleanUpDoxygen()
