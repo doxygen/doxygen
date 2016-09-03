@@ -10,7 +10,7 @@
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QLabel>
-#include <QTextEdit>
+#include <QTextBrowser>
 #include <QStatusBar>
 #include <QProcess>
 #include <QTimer>
@@ -30,6 +30,10 @@
 #define MAX_RECENT_FILES 10
 
 const int messageTimeout = 5000; //!< status bar message timeout in milliseconds.
+
+#define APPQT(x) QString::fromLatin1("<qt><pre>") + x + QString::fromLatin1("</pre></qt>")
+
+static QString text1  = QString::fromLatin1("");
 
 MainWindow &MainWindow::instance()
 {
@@ -101,7 +105,9 @@ MainWindow::MainWindow()
   runTabLayout->addLayout(runLayout);
   runTabLayout->addWidget(new QLabel(tr("Output produced by doxygen")));
   QGridLayout *grid = new QGridLayout;
-  m_outputLog = new QTextEdit;
+  //m_outputLog = new QTextEdit;
+  m_outputLog = new QTextBrowser;
+  //m_outputLog = new QPlainTextEdit;
   m_outputLog->setReadOnly(true);
   m_outputLog->setFontFamily(QString::fromLatin1("courier"));
   m_outputLog->setMinimumWidth(600);
@@ -484,11 +490,12 @@ void MainWindow::runDoxygen()
     args << QString::fromLatin1("-");  // read config from stdin
 
     m_outputLog->clear();
+    text1  = QString::fromLatin1("");
     m_runProcess->start(doxygenPath + QString::fromLatin1("doxygen"), args);
 
     if (!m_runProcess->waitForStarted())
     {
-      m_outputLog->append(QString::fromLatin1("*** Failed to run doxygen\n"));
+      m_outputLog->append(APPQT(QString::fromLatin1("*** Failed to run doxygen\n")));
       return;
     }
     QTextStream t(m_runProcess);
@@ -497,7 +504,7 @@ void MainWindow::runDoxygen()
 
     if (m_runProcess->state() == QProcess::NotRunning)
     {
-      m_outputLog->append(QString::fromLatin1("*** Failed to run doxygen\n"));
+      m_outputLog->append(APPQT(QString::fromLatin1("*** Failed to run doxygen\n")));
     }
     else
     {
@@ -527,7 +534,9 @@ void MainWindow::readStdout()
     QString text = QString::fromUtf8(data);
     if (!text.isEmpty())
     {
-      m_outputLog->append(text.trimmed());
+      text1 += text;
+      m_outputLog->clear();
+      m_outputLog->append(APPQT(text1.trimmed()));
     }
   }
 }
@@ -536,11 +545,11 @@ void MainWindow::runComplete()
 {
   if (m_running)
   {
-    m_outputLog->append(tr("*** Doxygen has finished\n"));
+    m_outputLog->append(APPQT(tr("*** Doxygen has finished\n")));
   }
   else
   {
-    m_outputLog->append(tr("*** Cancelled by user\n"));
+    m_outputLog->append(APPQT(tr("*** Cancelled by user\n")));
   }
   m_outputLog->ensureCursorVisible();
   m_run->setText(tr("Run doxygen"));
@@ -602,7 +611,7 @@ void MainWindow::showSettings()
   QTextStream t(&text);
   m_expert->writeConfig(t,true);
   m_outputLog->clear();
-  m_outputLog->append(text);
+  m_outputLog->append(APPQT(text));
   m_outputLog->ensureCursorVisible();
   m_saveLog->setEnabled(true);
 }
