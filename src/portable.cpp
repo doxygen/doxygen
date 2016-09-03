@@ -469,5 +469,6 @@ void portable_correct_path(void)
     }
   }
   if (found) portable_setenv("PATH",q);
+  free(q);
 #endif
 }
