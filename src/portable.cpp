@@ -448,4 +448,27 @@ bool portable_isAbsolutePath(const char *fileName)
   return false;
 }
 
-
+/**
+ * Correct a possible wrong PATH variable
+ *
+ * This routine was inspired by the cause for bug 766059 was that in the Windows path there were forward slahes.
+ */
+void portable_correct_path(void)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  const char *p = portable_getenv("PATH");
+  char *q = (char *)malloc(strlen(p) + 1);
+  strcpy(q, p);
+  bool found = false;
+  for (int i = 0 ; i < strlen(q); i++)
+  {
+    if (q[i] == '/')
+    {
+      q[i] = '\\';
+      found = true;
+    }
+  }
+  if (found) portable_setenv("PATH",q);
+  free(q);
+#endif
+}
