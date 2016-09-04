@@ -1,4 +1,4 @@
-!// objective: test visibility of variables in modules
+!// objective: test visibility of procedures in modules
 !// check: namespacem1.xml
 !// check: namespacem2.xml
 !// config: OPTIMIZE_FOR_FORTRAN=YES

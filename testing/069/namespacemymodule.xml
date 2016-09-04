@@ -14,8 +14,8 @@
         <argsstring>(i)</argsstring>
         <name>firstproc</name>
         <param>
-          <type>i</type>
-          <defname>i</defname>
+          <type>integer, intent(in)</type>
+          <declname>i</declname>
         </param>
         <briefdescription>
           <para>short doc </para>
@@ -44,8 +44,8 @@
         <argsstring>(r)</argsstring>
         <name>secondproc</name>
         <param>
-          <type>r</type>
-          <defname>r</defname>
+          <type>real, intent(out)</type>
+          <declname>r</declname>
         </param>
         <briefdescription>
         </briefdescription>
@@ -61,8 +61,8 @@
         <argsstring>(somearg)</argsstring>
         <name>otherproc</name>
         <param>
-          <type>somearg</type>
-          <defname>somearg</defname>
+          <type>character(len=*), intent(in)</type>
+          <declname>somearg</declname>
         </param>
         <briefdescription>
         </briefdescription>
@@ -78,12 +78,12 @@
         <argsstring>(v, w)</argsstring>
         <name>cross_product</name>
         <param>
-          <type>v</type>
-          <defname>v</defname>
+          <type>real, dimension(3), intent(in)</type>
+          <declname>v</declname>
         </param>
         <param>
-          <type>w</type>
-          <defname>w</defname>
+          <type>real, dimension(3), intent(in)</type>
+          <declname>w</declname>
         </param>
         <briefdescription>
         </briefdescription>

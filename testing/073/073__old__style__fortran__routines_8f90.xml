@@ -35,8 +35,8 @@
         <argsstring>(routine_interface)</argsstring>
         <name>use_tst1</name>
         <param>
-          <type>routine_interface</type>
-          <defname>routine_interface</defname>
+          <type>external</type>
+          <declname>routine_interface</declname>
         </param>
         <briefdescription>
         </briefdescription>
@@ -52,8 +52,8 @@
         <argsstring>(i)</argsstring>
         <name>a</name>
         <param>
-          <type>i</type>
-          <defname>i</defname>
+          <type>integer</type>
+          <declname>i</declname>
         </param>
         <briefdescription>
         </briefdescription>
@@ -69,8 +69,8 @@
         <argsstring>(i)</argsstring>
         <name>b</name>
         <param>
-          <type>i</type>
-          <defname>i</defname>
+          <type>integer</type>
+          <declname>i</declname>
         </param>
         <briefdescription>
         </briefdescription>

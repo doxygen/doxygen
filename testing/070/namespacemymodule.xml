@@ -9,8 +9,8 @@
         <argsstring>(i)</argsstring>
         <name>firstproc</name>
         <param>
-          <type>i</type>
-          <defname>i</defname>
+          <type>integer, intent(in)</type>
+          <declname>i</declname>
         </param>
         <briefdescription>
           <para>comment on firstProc </para>
@@ -39,8 +39,8 @@
         <argsstring>(r)</argsstring>
         <name>secondproc_fun</name>
         <param>
-          <type>r</type>
-          <defname>r</defname>
+          <type>real, intent(out)</type>
+          <declname>r</declname>
         </param>
         <briefdescription>
           <para>comment on secondProc_fun </para>
@@ -72,8 +72,8 @@
         <argsstring>(somearg)</argsstring>
         <name>anotherproc</name>
         <param>
-          <type>somearg</type>
-          <defname>somearg</defname>
+          <type>character(len=*), intent(in)</type>
+          <declname>somearg</declname>
         </param>
         <briefdescription>
           <para>comment on anotherProc </para>

@@ -9,8 +9,8 @@
         <argsstring>(interfarg)</argsstring>
         <name>use_tst</name>
         <param>
-          <type>interfarg</type>
-          <defname>interfarg</defname>
+          <type>external integer function(character(len=*), intent(in) str)</type>
+          <declname>interfarg</declname>
         </param>
         <briefdescription>
           <para>Test for interface. </para>
