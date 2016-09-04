@@ -55,14 +55,14 @@
         </inbodydescription>
         <location file="069_interfaces.f90" line="62" column="1" bodyfile="069_interfaces.f90" bodystart="63" bodyend="63"/>
       </memberdef>
-      <memberdef kind="function" id="069__interfaces_8f90_1ac7b19d3c9d79ad88b61d5a303e4d0cb1" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="069__interfaces_8f90_1a22b2dd2f9930f8f57c569fa7e9ba14fb" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine mymodule::otherproc</definition>
-        <argsstring>(someArg)</argsstring>
+        <argsstring>(somearg)</argsstring>
         <name>otherproc</name>
         <param>
-          <type>someArg</type>
-          <defname>someArg</defname>
+          <type>somearg</type>
+          <defname>somearg</defname>
         </param>
         <briefdescription>
         </briefdescription>

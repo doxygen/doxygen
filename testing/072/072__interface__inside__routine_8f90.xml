@@ -3,14 +3,14 @@
   <compounddef id="072__interface__inside__routine_8f90" kind="file" language="Fortran">
     <compoundname>072_interface_inside_routine.f90</compoundname>
     <sectiondef kind="func">
-      <memberdef kind="function" id="072__interface__inside__routine_8f90_1a62946c8ec2c9faa044b4c5199e4bbb4d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="072__interface__inside__routine_8f90_1a017cb3f837c9c8e003a9931b9e1405b1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine use_tst</definition>
-        <argsstring>(interfArg)</argsstring>
+        <argsstring>(interfarg)</argsstring>
         <name>use_tst</name>
         <param>
-          <type>interfArg</type>
-          <defname>interfArg</defname>
+          <type>interfarg</type>
+          <defname>interfarg</defname>
         </param>
         <briefdescription>
           <para>Test for interface. </para>

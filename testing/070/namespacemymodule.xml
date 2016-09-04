@@ -66,14 +66,14 @@
         </inbodydescription>
         <location file="070_module_with_procs.f90" line="17" column="1" bodyfile="070_module_with_procs.f90" bodystart="18" bodyend="19"/>
       </memberdef>
-      <memberdef kind="function" id="070__module__with__procs_8f90_1a3ea462b6b3a9d3cf37e537f9a51a605d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="070__module__with__procs_8f90_1a81aef287c35bbfbb04b2cb3800aa4714" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine mymodule::anotherproc</definition>
-        <argsstring>(someArg)</argsstring>
+        <argsstring>(somearg)</argsstring>
         <name>anotherproc</name>
         <param>
-          <type>someArg</type>
-          <defname>someArg</defname>
+          <type>somearg</type>
+          <defname>somearg</defname>
         </param>
         <briefdescription>
           <para>comment on anotherProc </para>

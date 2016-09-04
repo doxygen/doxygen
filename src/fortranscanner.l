@@ -1075,31 +1075,31 @@ private                                 {
 					 BEGIN(SubprogBody);
 				       }
 <Parameterlist>{COMMA}|{BS}            { current->args += yytext;
-					 CommentInPrepass *c = locatePrepassComment(yyColNr-(int)yyleng, yyColNr);
-					 if (c!=NULL) {
+                                         CommentInPrepass *c = locatePrepassComment(yyColNr-(int)yyleng, yyColNr);
+                                         if (c!=NULL) {
                                            if(current->argList->count()>0) {
-					     current->argList->at(current->argList->count()-1)->docs = c->str;
-					   }
-					 }		         
-				       }
+                                             current->argList->at(current->argList->count()-1)->docs = c->str;
+                                           }
+                                         }
+                                       }
 <Parameterlist>{ID}                    {
-				           //current->type not yet available
-                                           QCString param = yytext;
-					   // std::cout << "3=========> got parameter " << param << std::endl;
-					   current->args += param;
-					   Argument *arg = new Argument;
-					   arg->name = param;
-					   arg->type = "";
-					   current->argList->append(arg);
- 				       } 
+                                         //current->type not yet available
+                                         QCString param = QCString(yytext).lower();
+                                         // std::cout << "3=========> got parameter " << param << std::endl;
+                                         current->args += param;
+                                         Argument *arg = new Argument;
+                                         arg->name = param;
+                                         arg->type = "";
+                                         current->argList->append(arg);
+                                       } 
 <Parameterlist>{NOARGS}                {   
-				           newLine();
-					   //printf("3=========> without parameterlist \n");
- 					   //current->argList = ;
-                                           addCurrentEntry(1);
-					   startScope(last_entry);
-					   BEGIN(SubprogBody);				           
-}
+				                                 newLine();
+                                         //printf("3=========> without parameterlist \n");
+                                         //current->argList = ;
+                                         addCurrentEntry(1);
+                                         startScope(last_entry);
+                                         BEGIN(SubprogBody);				           
+                                       }
 <SubprogBody>result{BS}\({BS}{ID}      {  
   					   if (functionLine)
 					   {
@@ -2106,16 +2106,17 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
         {
           // set type of dummy procedure argument to interface
           arg->type = "external " + ce->type + "(";
-          for (unsigned int i=0; i<ce->argList->count(); i++)                                                                                                                                                       
-          {                                                                                                                                                                                                              
-            Argument *subarg = ce->argList->at(i);
-            arg->type = arg->type + subarg->type + " " + subarg->name;
-            if (i > 0 && i+1 == ce->argList->count())
+          for (unsigned int i=0; i<ce->argList->count(); i++)
+          {
+            if (i > 0)
             {
               arg->type = arg->type + ", ";
             }
-            arg->type = arg->type + ")";
+            Argument *subarg = ce->argList->at(i);
+            arg->type = arg->type + subarg->type + " " + subarg->name;
           }
+          arg->type = arg->type + ")";
+          arg->name = name;
         }
       }
       // clear all modifiers of the scope

@@ -33,14 +33,14 @@
         </inbodydescription>
         <location file="069_interfaces.f90" line="58" column="1" bodyfile="069_interfaces.f90" bodystart="59" bodyend="59"/>
       </memberdef>
-      <memberdef kind="function" id="interfacemymodule_1_1genericproc_1ad29fdcc5c1c64ee2005a36bb349d2c00" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="interfacemymodule_1_1genericproc_1aa73d225b1a1257ad4c6402b54218c4fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>subroutine</type>
         <definition>subroutine mymodule::genericproc::otherproc</definition>
-        <argsstring>(someArg)</argsstring>
+        <argsstring>(somearg)</argsstring>
         <name>otherproc</name>
         <param>
-          <type>someArg</type>
-          <defname>someArg</defname>
+          <type>somearg</type>
+          <defname>somearg</defname>
         </param>
         <briefdescription>
         </briefdescription>
@@ -82,7 +82,7 @@
         <scope>mymodule::genericproc</scope>
         <name>firstproc</name>
       </member>
-      <member refid="interfacemymodule_1_1genericproc_1ad29fdcc5c1c64ee2005a36bb349d2c00" prot="public" virt="non-virtual">
+      <member refid="interfacemymodule_1_1genericproc_1aa73d225b1a1257ad4c6402b54218c4fe" prot="public" virt="non-virtual">
         <scope>mymodule::genericproc</scope>
         <name>otherproc</name>
       </member>
