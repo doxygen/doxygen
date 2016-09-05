@@ -1380,7 +1380,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     virtual QCString trAll()
     {
-      return "All";
+      return "Wszystko";
     }
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
@@ -1731,7 +1731,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! directory relation for \a name */
     virtual QCString trDirRelation(const char *name)
     {
-      return "Relcja "+ QCString(name);
+      return "Relacja "+ QCString(name);
     }
 
     /*! Loading message shown when loading search results */
