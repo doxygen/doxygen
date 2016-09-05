@@ -2052,10 +2052,16 @@ static void findUsingDeclarations(EntryNav *rootNav)
       // file scope).
 
       QCString name = substitute(root->name,".","::"); //Java/C# scope->internal
-      usingCd = getResolvedClass(nd,fd,name);
+      usingCd = getClass(name); // try direct lookup first, this is needed to get
+                                // builtin STL classes to properly resolve, e.g.
+                                // vector -> std::vector
       if (usingCd==0)
       {
-        usingCd = Doxygen::hiddenClasses->find(name);
+        usingCd = getResolvedClass(nd,fd,name); // try via resolving (see also bug757509)
+      }
+      if (usingCd==0)
+      {
+        usingCd = Doxygen::hiddenClasses->find(name); // check if it is already hidden
       }
 
       //printf("%s -> %p\n",root->name.data(),usingCd);

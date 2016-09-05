@@ -1887,9 +1887,10 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         {
           if (g_charAroundSpace.charMap[(uchar)pc].before &&
               g_charAroundSpace.charMap[(uchar)nc].after  &&
-              !(pc==',' && nc=='.'))
-            // remove spaces/tabs
-          {
+              !(pc==',' && nc=='.') &&
+              (osp<8 || (osp>=8 && isId(nc))) // e.g. "operator >>" -> "operator>>", but not "operator int" -> operatorint"
+             )
+          { // keep space
             *dst++=' ';
           }
         }
@@ -1915,6 +1916,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     pc=c;
   }
   *dst++='\0';
+  //printf("removeRedundantWhitespace(%s)->%s\n",s.data(),growBuf);
   return growBuf;
 }
 
