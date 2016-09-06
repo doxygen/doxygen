@@ -863,11 +863,11 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     }
     QCString trGotoGraphicalHierarchy()
     {
-      return "Idź do graficznej hierarchi klas";
+      return "Idź do graficznej hierarchii klas";
     }
     QCString trGotoTextualHierarchy()
     {
-      return "Idź do tekstowej hierarchi klas";
+      return "Idź do tekstowej hierarchii klas";
     }
     QCString trPageIndex()
     {
@@ -992,7 +992,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
         "class Nieudokumentowana { };\n\n"
         "/*! Klasa, która jest dziedziczona publicznie */\n"
         "class PublicznaBaza : public Okrojona { };\n\n"
-        "/*! A template class */\n"
+        "/*! Szablon klasy */\n"
         "template<class T> class Templ { };\n\n"
         "/*! Klasa, która jest dziedziczona przy użyciu dziedziczenia chronionego */\n"
         "class ChronionaBaza { };\n\n"
@@ -1380,7 +1380,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     virtual QCString trAll()
     {
-      return "All";
+      return "Wszystko";
     }
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
@@ -1475,7 +1475,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     virtual QCString trDirDescription()
     {
-      return "Ta struktura katalogów jest posortowana jest z grubsza, "
+      return "Ta struktura katalogów posortowana jest z grubsza, "
              "choć nie całkowicie, alfabetycznie:";
     }
 
@@ -1653,7 +1653,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       }
       else
       {
-        result+="modułów do których składowe te należą:";
+        result+="modułów, do których składowe te należą:";
       }
       return result;
     }
@@ -1731,7 +1731,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! directory relation for \a name */
     virtual QCString trDirRelation(const char *name)
     {
-      return "Relcja "+ QCString(name);
+      return "Relacja "+ QCString(name);
     }
 
     /*! Loading message shown when loading search results */
