@@ -3414,6 +3414,14 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='string' id='PLANTUML_CFG_FILE' format='file' defval=''>
+      <docs>
+<![CDATA[
+ When using plantuml, the \c PLANTUML_CFG_FILE tag can be used to specify a configuration 
+ file for plantuml.
+]]>
+      </docs>
+    </option>
     <option type='list' id='PLANTUML_INCLUDE_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[

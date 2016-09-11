@@ -54,6 +54,7 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
 void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutputFormat format)
 {
   static QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
+  static QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
 
   QCString pumlExe = "java";
   QCString pumlArgs = "";
@@ -74,6 +75,12 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   }
   if (pumlIncludePathList.first()) pumlArgs += "\" ";
   pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"plantuml.jar\" ";
+  if (plantumlConfigFile != "")
+  {
+    pumlArgs += "-config \"";
+    pumlArgs += plantumlConfigFile;
+    pumlArgs += "\" ";
+  }
   pumlArgs+="-o \"";
   pumlArgs+=outDir;
   pumlArgs+="\" ";
