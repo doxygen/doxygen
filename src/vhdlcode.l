@@ -182,7 +182,6 @@ static void startCodeLine()
   //if (g_currentFontClass) { g_code->endFontClass(); }
   if (g_sourceFileDef)
   {
-    g_startCode=TRUE;
     //QCString lineNumber,lineAnchor;
     //lineNumber.sprintf("%05d",g_yyLineNr);
     //lineAnchor.sprintf("l%05d",g_yyLineNr);
@@ -230,13 +229,13 @@ static void startCodeLine()
     }
   }
   g_code->startCodeLine(g_sourceFileDef); 
+  g_startCode=TRUE;
   if (g_currentFontClass)
   {
     g_code->startFontClass(g_currentFontClass);
   }
 }
 
-static void endFontClass();
 static void endCodeLine()
 {
   endFontClass();
