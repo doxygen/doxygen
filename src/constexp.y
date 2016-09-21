@@ -42,6 +42,9 @@ int constexpYYlex();
 
 %}
 
+%no-lines
+%name-prefix "constexpYY"
+
 %token TOK_QUESTIONMARK
 %token TOK_COLON
 %token TOK_OR

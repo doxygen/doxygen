@@ -14,6 +14,8 @@
  */
 
 %option never-interactive
+%option prefix="commentscanYY"
+
 %{
 
 /*

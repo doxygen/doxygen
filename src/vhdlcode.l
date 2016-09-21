@@ -18,6 +18,9 @@
  * supports VHDL-87/93/2008
  ******************************************************************************/
 %option never-interactive
+%option case-insensitive
+%option prefix="vhdlcodeYY"
+
 %{
 
 /*

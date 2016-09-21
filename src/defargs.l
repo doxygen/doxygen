@@ -40,6 +40,8 @@
  *        further determine the correct separation.
  */
 %option never-interactive
+%option prefix="defargsYY"
+
 %{
 
 /*

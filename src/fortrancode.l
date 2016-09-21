@@ -24,6 +24,9 @@
        - references to variables
 **/
 %option never-interactive
+%option case-insensitive
+%option prefix="fortrancodeYY"
+
 %{
 
 /*

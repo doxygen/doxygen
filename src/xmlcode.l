@@ -18,6 +18,8 @@
  ******************************************************************************/
 
 %option never-interactive
+%option prefix="xmlcodeYY"
+
 %{
 
 #include <stdio.h>

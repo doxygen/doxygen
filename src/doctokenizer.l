@@ -17,6 +17,8 @@
  */
 
 %option never-interactive
+%option prefix="doctokenizerYY"
+
 %{
 
 #include <ctype.h>
