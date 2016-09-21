@@ -2268,6 +2268,8 @@ QCString argListToString(ArgumentList *al,bool useCanonicalType,bool showDefVals
   result+=")";
   if (al->constSpecifier) result+=" const";
   if (al->volatileSpecifier) result+=" volatile";
+  if (al->refQualifier==RefQualifierLValue) result+=" &";
+  else if (al->refQualifier==RefQualifierRValue) result+=" &&";
   if (!al->trailingReturnType.isEmpty()) result+=" -> "+al->trailingReturnType;
   if (al->pureSpecifier) result+=" =0";
   return removeRedundantWhiteSpace(result);
@@ -3362,6 +3364,12 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     }
   }
 
+  if (srcAl->refQualifier != dstAl->refQualifier)
+  {
+    NOMATCH
+    return FALSE; // one member is has a different ref-qualifier than the other
+  }
+
   // so far the argument list could match, so we need to compare the types of
   // all arguments.
   ArgumentListIterator srcAli(*srcAl),dstAli(*dstAl);
@@ -3793,6 +3801,12 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
       NOMATCH
       return FALSE; // one member is volatile, the other not -> no match
     }
+  }
+
+  if (srcAl->refQualifier != dstAl->refQualifier)
+  {
+    NOMATCH
+    return FALSE; // one member is has a different ref-qualifier than the other
   }
 
   // so far the argument list could match, so we need to compare the types of

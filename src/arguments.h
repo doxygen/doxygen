@@ -73,6 +73,13 @@ struct Argument
   QCString typeConstraint;  /*!< Used for Java generics: \<T extends C\> */
 };
 
+enum RefQualifierType
+{
+  RefQualifierNone,
+  RefQualifierLValue,
+  RefQualifierRValue
+};
+
 /*! \brief This class represents an function or template argument list. 
  *
  *  This class also stores some information about member that is typically
@@ -87,7 +94,8 @@ class ArgumentList : public QList<Argument>
                      constSpecifier(FALSE),
                      volatileSpecifier(FALSE),
                      pureSpecifier(FALSE),
-                     isDeleted(FALSE)
+                     isDeleted(FALSE),
+                     refQualifier(RefQualifierNone)
                      { setAutoDelete(TRUE); }
     /*! Destroys the argument list */
    ~ArgumentList() {}
@@ -105,6 +113,8 @@ class ArgumentList : public QList<Argument>
     QCString trailingReturnType;
     /*! method with =delete */
     bool isDeleted;
+    /*! C++11 ref qualifier */
+    RefQualifierType refQualifier;
 
     static ArgumentList *unmarshal(StorageIntf *s);
     static void marshal(StorageIntf *s,ArgumentList *argList);

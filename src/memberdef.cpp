@@ -357,6 +357,14 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
   {
     ol.docify(" volatile");
   }
+  if (defArgList->refQualifier==RefQualifierLValue)
+  {
+    ol.docify(" &");
+  }
+  else if (defArgList->refQualifier==RefQualifierRValue)
+  {
+    ol.docify(" &&");
+  }
   if (!defArgList->trailingReturnType.isEmpty())
   {
     linkifyText(TextGeneratorOLImpl(ol), // out

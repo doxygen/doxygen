@@ -620,6 +620,13 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     if (md->isInline()) t << "yes"; else t << "no";
     t << "\"";
 
+    if (al->refQualifier!=RefQualifierNone)
+    {
+      t << " refqual=\"";
+      if (al->refQualifier==RefQualifierLValue) t << "lvalue"; else t << "rvalue";
+      t << "\"";
+    }
+
     if (md->isFinal())
     {
       t << " final=\"yes\"";

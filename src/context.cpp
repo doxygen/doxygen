@@ -3969,6 +3969,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         s_inst.addProperty("parameters",          &Private::parameters);
         s_inst.addProperty("hasConstQualifier",   &Private::hasConstQualifier);
         s_inst.addProperty("hasVolatileQualifier",&Private::hasVolatileQualifier);
+        s_inst.addProperty("hasRefQualifierLValue", &Private::hasRefQualifierLValue);
+        s_inst.addProperty("hasRefQualifierRValue", &Private::hasRefQualifierRValue);
         s_inst.addProperty("trailingReturnType",  &Private::trailingReturnType);
         s_inst.addProperty("extraTypeChars",      &Private::extraTypeChars);
         s_inst.addProperty("templateDecls",       &Private::templateDecls);
@@ -4570,6 +4572,16 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       ArgumentList *al = getDefArgList();
       return al ? al->volatileSpecifier : FALSE;
+    }
+    TemplateVariant hasRefQualifierLValue() const
+    {
+      ArgumentList *al = getDefArgList();
+      return al ? al->refQualifier==RefQualifierLValue : FALSE;
+    }
+    TemplateVariant hasRefQualifierRValue() const
+    {
+      ArgumentList *al = getDefArgList();
+      return al ? al->refQualifier==RefQualifierRValue : FALSE;
     }
     TemplateVariant trailingReturnType() const
     {

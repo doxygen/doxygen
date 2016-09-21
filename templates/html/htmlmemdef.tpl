@@ -94,6 +94,8 @@
                 {{ member.extraTypeChars }}
                 {% if member.hasConstQualifier %} const {% endif %}
                 {% if member.hasVolatileQualifier %} volatile {% endif %}
+                {% if member.hasRefQualifierLValue %} &amp; {% endif %}
+                {% if member.hasRefQualifierRValue %} &amp;&amp; {% endif %}
                 {{ member.trailingReturnType }}
               {% endif %}
             {% endif %}

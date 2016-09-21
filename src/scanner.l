@@ -4659,6 +4659,15 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  roundCount=0;
                                           BEGIN(CopyRound);
                                         }
+<FuncQual>{BN}*"&"                      {
+                                          current->args += " &";
+                                          current->argList->refQualifier=RefQualifierLValue;
+                                        }
+<FuncQual>{BN}*"&&"                     {
+                                          current->args += " &&";
+                                          current->argList->refQualifier=RefQualifierRValue;
+                                        }
+
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"0"{BN}*  	{ // pure virtual member function
   					  lineCount() ; 
 					  current->args += " = 0"; 

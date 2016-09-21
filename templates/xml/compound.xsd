@@ -149,6 +149,7 @@
     <xsd:attribute name="const" type="DoxBool" use="optional"/>
     <xsd:attribute name="explicit" type="DoxBool" use="optional"/>
     <xsd:attribute name="inline" type="DoxBool" use="optional"/>
+    <xsd:attribute name="refqual" type="DoxRefQualifierKind" use="optional"/>
     <xsd:attribute name="virt" type="DoxVirtualKind" use="optional"/>
     <xsd:attribute name="volatile" type="DoxBool" use="optional"/>
     <xsd:attribute name="mutable" type="DoxBool" use="optional"/>
@@ -686,6 +687,13 @@
       <xsd:enumeration value="protected" />
       <xsd:enumeration value="private" />
       <xsd:enumeration value="package" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="DoxRefQualifierKind">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="lvalue" />
+      <xsd:enumeration value="rvalue" />
     </xsd:restriction>
   </xsd:simpleType>
 
