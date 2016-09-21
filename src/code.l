@@ -3040,12 +3040,18 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           if (yytext[0]==')') // no a pointer cast
                                           {
                                             //printf("addVariable(%s,%s)\n",g_parmType.data(),g_parmName.data());
+                                            if (g_parmType.isEmpty())
+                                            {
+                                              g_parmType=g_parmName;
+                                              g_parmName.resize(0);
+                                            }
 					    g_theVarContext.addVariable(g_parmType,g_parmName);
                                           }
                                           else
                                           {
-                                            g_parmType.resize(0);
+                                            g_parmType = g_parmName;
                                             g_parmName.resize(0);
+					    g_theVarContext.addVariable(g_parmType,g_parmName);
                                           }
 					  g_theCallContext.popScope();
 					  g_inForEachExpression = FALSE;
