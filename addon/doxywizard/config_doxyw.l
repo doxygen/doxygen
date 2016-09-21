@@ -13,6 +13,7 @@
  */
 
 %option never-interactive
+%option prefix="config_doxywYY"
 %{
 
 /*

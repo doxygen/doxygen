@@ -16,6 +16,8 @@
  *
  */
 %option never-interactive
+%option prefix="constexpYY"
+
 %{
 
 #include "constexp.h"  

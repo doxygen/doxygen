@@ -38,6 +38,9 @@
  * - Must track yyLineNr when using REJECT, unput() or similar commands.
  */
 %option never-interactive
+%option case-insensitive
+%option prefix="fortranscannerYY"
+
 %{
 
 #include <stdio.h> 

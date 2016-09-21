@@ -15,6 +15,8 @@
  *
  */
 %option never-interactive
+%option prefix="preYY"
+
 %{
 
 /*

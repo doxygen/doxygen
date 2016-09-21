@@ -22,6 +22,8 @@
  */
 
 %option never-interactive
+%option prefix="pycodeYY"
+
 %{
 
 #include <stdio.h>
