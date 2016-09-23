@@ -113,7 +113,7 @@ inline void writeXMLString(FTextStream &t,const char *s)
 
 inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
 {
-  char c;
+  unsigned char c;
   while ((c=*s++))
   {
     switch(c)
@@ -132,6 +132,7 @@ inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
       case '&':  t << "&amp;"; col++;  break;
       case '\'': t << "&apos;"; col++; break;
       case '"':  t << "&quot;"; col++; break;
+      case 0xA9:  t << "&#169;"; col++; break;
       case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8:
       case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
       case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
