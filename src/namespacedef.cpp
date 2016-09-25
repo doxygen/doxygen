@@ -408,6 +408,9 @@ void NamespaceDef::writeBriefDescription(OutputList &ol)
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
+      ol.disableAllBut(OutputGenerator::Man);
+      ol.writeString(" - ");
+      ol.enableAll();
       ol.writeDoc(rootNode,this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);

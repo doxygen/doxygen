@@ -170,13 +170,16 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 
 void DirDef::writeBriefDescription(OutputList &ol)
 {
-  if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+  if (hasBriefDescription())
   {
     DocRoot *rootNode = validatingParseDoc(
          briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
+      ol.disableAllBut(OutputGenerator::Man);
+      ol.writeString(" - ");
+      ol.enableAll();
       ol.writeDoc(rootNode,this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
