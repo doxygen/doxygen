@@ -711,6 +711,7 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       || !documentation().isEmpty() || !inbodyDocumentation().isEmpty()
      )
   {
+    ol.pushGeneratorState();
     if (pageDict->count()!=countMembers()) // not only pages -> classical layout
     {
       ol.pushGeneratorState();
@@ -721,10 +722,15 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeAnchor(0,"details");
       ol.popGeneratorState();
-      ol.startGroupHeader();
-      ol.parseText(title);
-      ol.endGroupHeader();
     }
+    else
+    {
+      ol.disableAllBut(OutputGenerator::Man); // always print title for man page
+    }
+    ol.startGroupHeader();
+    ol.parseText(title);
+    ol.endGroupHeader();
+    ol.popGeneratorState();
 
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
@@ -762,13 +768,17 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 
 void GroupDef::writeBriefDescription(OutputList &ol)
 {
-  if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+  if (hasBriefDescription())
   {
     DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
                                 briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Man);
+      ol.writeString(" - ");
+      ol.popGeneratorState();
       ol.writeDoc(rootNode,this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
@@ -789,6 +799,7 @@ void GroupDef::writeBriefDescription(OutputList &ol)
     }
     delete rootNode;
   }
+  ol.writeSynopsis();
 }
 
 void GroupDef::writeGroupGraph(OutputList &ol)
@@ -1091,7 +1102,6 @@ void GroupDef::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Man);
   ol.endTitleHead(getOutputFileBase(),name());
-  ol.parseText(title);
   ol.popGeneratorState();
   ol.endHeaderSection();
   ol.startContents();
