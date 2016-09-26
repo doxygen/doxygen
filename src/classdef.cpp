@@ -954,9 +954,10 @@ void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
   if (hasBriefDescription())
   {
     ol.startParagraph();
+    ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Man);
     ol.writeString(" - ");
-    ol.enableAll();
+    ol.popGeneratorState();
     ol.generateDoc(briefFile(),briefLine(),this,0,
                    briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     ol.pushGeneratorState();

@@ -232,16 +232,17 @@ void PageDef::writePageDocumentation(OutputList &ol)
   QCString docStr = documentation()+inbodyDocumentation();
   if (!docStr.isEmpty())
   {
+    ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Man);
     ol.writeString(" - ");
-    ol.enableAll();
+    ol.popGeneratorState();
   }
   ol.generateDoc(
       docFile(),           // fileName
       docLine(),           // startLine
       this,                // context
       0,                   // memberdef
-      docStr, // docStr
+      docStr,              // docStr
       TRUE,                // index words
       FALSE                // not an example
       );

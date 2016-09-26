@@ -712,10 +712,8 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
      )
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Man); // always print title for man page
     if (pageDict->count()!=countMembers()) // not only pages -> classical layout
     {
-      ol.enableAll();
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Html);
         ol.writeRuler();
@@ -724,6 +722,10 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeAnchor(0,"details");
       ol.popGeneratorState();
+    }
+    else
+    {
+      ol.disableAllBut(OutputGenerator::Man); // always print title for man page
     }
     ol.startGroupHeader();
     ol.parseText(title);
@@ -773,9 +775,10 @@ void GroupDef::writeBriefDescription(OutputList &ol)
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
+      ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
-      ol.enableAll();
+      ol.popGeneratorState();
       ol.writeDoc(rootNode,this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
