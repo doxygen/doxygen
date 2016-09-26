@@ -1047,6 +1047,25 @@ void ConfigImpl::init()
       }
     }
   }
+
+  // disable any boolean options that depend on disabled options
+  for (it.toFirst();(option=it.current());++it)
+  {
+    QCString depName = option->dependsOn();
+    if (!depName.isEmpty())
+    {
+      ConfigOption * dep = ConfigImpl::instance()->get(depName);
+      if (dep->kind()==ConfigOption::O_Bool &&
+          ConfigImpl_getBool(depName)==FALSE) // if dependent option is disabled
+      {
+        if (option->kind()==ConfigOption::O_Bool)
+        {
+          printf("disabling option %s that depends on %s\n",option->name().data(), depName.data());
+          ConfigImpl_getBool(option->name())=FALSE; // also disable this option
+        }
+      }
+    }
+  }
 }
 
 void ConfigImpl::create()
@@ -1715,30 +1734,6 @@ void Config::checkAndCorrect()
   }
 
   checkFileName(ConfigImpl_getString("GENERATE_TAGFILE"),"GENERATE_TAGFILE");
-
-#if 0 // TODO: this breaks test 25; SOURCEBROWSER = NO and SOURCE_TOOLTIPS = YES.
-      // So this and other regressions should be analysed and fixed before this can be enabled
-  // disable any boolean options that depend on disabled options
-  QListIterator<ConfigOption> it = iterator();
-  ConfigOption *option;
-  for (it.toFirst();(option=it.current());++it)
-  {
-    QCString depName = option->dependsOn(); // option has a dependency
-    if (!depName.isEmpty())
-    {
-      ConfigOption * dep = Config::instance()->get(depName);
-      if (dep->kind()==ConfigOption::O_Bool &&
-          ConfigImpl_getBool("depName")==FALSE) // dependent option is disabled
-      {
-        if (option->kind()==ConfigOption::O_Bool)
-        {
-          printf("disabling option %s\n",option->name().data());
-          ConfigImpl_getBool("option->name("))=FALSE; // also disable this option
-        }
-      }
-    }
-  }
-#endif
 
   ConfigValues::instance().init();
 
