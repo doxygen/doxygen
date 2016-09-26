@@ -75,7 +75,7 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   }
   if (pumlIncludePathList.first()) pumlArgs += "\" ";
   pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"plantuml.jar\" ";
-  if (plantumlConfigFile != "")
+  if (!plantumlConfigFile.isEmpty())
   {
     pumlArgs += "-config \"";
     pumlArgs += plantumlConfigFile;
