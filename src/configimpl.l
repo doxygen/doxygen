@@ -1763,10 +1763,10 @@ void Config::postProcess(bool clearHeaderAndFooter)
   // refers to the files that we are supposed to parse.
   if (clearHeaderAndFooter)
   {
-    Config_getString(HTML_HEADER)="";
-    Config_getString(HTML_FOOTER)="";
-    Config_getString(LATEX_HEADER)="";
-    Config_getString(LATEX_FOOTER)="";
+    ConfigImpl_getString("HTML_HEADER")="";
+    ConfigImpl_getString("HTML_FOOTER")="";
+    ConfigImpl_getString("LATEX_HEADER")="";
+    ConfigImpl_getString("LATEX_FOOTER")="";
   }
 }
 
