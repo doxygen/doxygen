@@ -406,13 +406,13 @@ class TranslatorSpanish : public Translator
      *  list of defines
      */
     virtual QCString trDefines()
-    { return "'defines'"; }
+    { return "defines"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return "'typedefs'"; }
+    { return "typedefs"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
