@@ -1211,6 +1211,11 @@ dl.section dd {
         text-align: center;
 }
 
+.plantumlgraph
+{
+        text-align: center;
+}
+
 .diagraph
 {
         text-align: center;
