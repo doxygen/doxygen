@@ -21,6 +21,7 @@
 #include "message.h"
 #include "docparser.h"
 #include "doxygen.h"
+#include "index.h"
 #include "util.h"
 #include "ftextstream.h"
 
@@ -103,20 +104,20 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
   QCString mscExe = Config_getString(MSCGEN_PATH)+"mscgen"+portable_commandExtension();
   QCString mscArgs;
-  QCString extension;
+  QCString imgName = outFile;
   switch (format)
   {
     case MSC_BITMAP:
       mscArgs+="-T png";
-      extension=".png";
+      imgName+=".png";
       break;
     case MSC_EPS:
       mscArgs+="-T eps";
-      extension=".eps";
+      imgName+=".eps";
       break;
     case MSC_SVG:
       mscArgs+="-T svg";
-      extension=".svg";
+      imgName+=".svg";
       break;
     default:
       goto error; // I am not very fond of goto statements, but when in Rome...
@@ -125,8 +126,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   mscArgs+=inFile;
  
   mscArgs+="\" -o \"";
-  mscArgs+=outFile;
-  mscArgs+=extension+"\"";
+  mscArgs+=imgName+"\"";
   int exitCode;
 //  printf("*** running: %s %s outDir:%s %s\n",mscExe.data(),mscArgs.data(),outDir,outFile);
   portable_sysTimerStart();
@@ -148,6 +148,8 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
     }
     portable_sysTimerStop();
   }
+
+  Doxygen::indexList->addImageFile(imgName);
 
 error:
   QDir::setCurrent(oldDir);
