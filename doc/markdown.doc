@@ -337,6 +337,40 @@ which will look as follows:
 | 10    | 10     | 10    |
 | 1000  | 1000   | 1000  |
 
+Additionally, column and row spans are supported.  Using a caret ("^")
+in a cell indicates that the cell above should span rows.  Sequences
+of carets may be used for any number of row spans.  For example:
+
+    | Right | Center | Left  |
+    | ----: | :----: | :---- |
+    | 10    | 10     | 10    |
+    | ^     | 1000   | 1000  |
+
+which will look as follows:
+
+| Right | Center | Left  |
+| ----: | :----: | :---- |
+| 10    | 10     | 10    |
+| ^     | 1000   | 1000  |
+
+Column spans are supported by means of directly adjacent vertical bars
+("|").  Each additional vertical bar indicates an additional column to
+be spanned.  To put it another way, a single vertical bar indicates a
+single column span, two vertical bars indicates a 2 columns span, and
+so on.  For example:
+
+    | Right | Center | Left  |
+    | ----: | :----: | :---- |
+    | 10    | 10     | 10    |
+    | 1000  |||
+
+which will look as follows:
+
+| Right | Center | Left  |
+| ----: | :----: | :---- |
+| 10    | 10     | 10    |
+| 1000  |||   
+
 For more complex tables in doxygen please have a look at: \ref tables
 
 \subsection md_fenced Fenced Code Blocks
