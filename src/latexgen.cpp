@@ -1955,6 +1955,14 @@ void LatexGenerator::endDotGraph(const DotClassGraph &g)
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
 
+void LatexGenerator::startPlantUMLGraph()
+{
+}
+
+void LatexGenerator::endPlantUMLGraph(const PlantUMLClassGraph &)
+{
+}
+
 void LatexGenerator::startInclDepGraph() 
 {
 }

@@ -125,7 +125,7 @@ void ConfigOption::writeStringValue(FTextStream &t,QCString &s)
   {
     t << " ";
     while ((c=*p++)!=0 && !needsEscaping) 
-      needsEscaping = (c==' ' || c=='\n' || c=='\t' || c=='"' || c=='#');
+      needsEscaping = (c==' ' || c=='\n' || c=='\t' || c=='\"' || c=='#');
     if (needsEscaping)
     { 
       t << "\"";
@@ -133,7 +133,7 @@ void ConfigOption::writeStringValue(FTextStream &t,QCString &s)
       while (*p)
       {
 	if (*p==' ' && *(p+1)=='\0') break; // skip inserted space at the end
-	if (*p=='"') t << "\\"; // escape quotes
+	if (*p=='\"') t << "\\"; // escape quotes
 	t << *p++;
       }
       t << "\"";
@@ -553,7 +553,7 @@ static void readIncludeFile(const char *incName)
   substEnvVarsInString(inc);
   inc = inc.stripWhiteSpace();
   uint incLen = inc.length();
-  if (incLen>0 && inc.at(0)=='"' && inc.at(incLen-1)=='"') // strip quotes
+  if (incLen>0 && inc.at(0)=='\"' && inc.at(incLen-1)=='\"') // strip quotes
   {
     inc=inc.mid(1,incLen-2);
   }
@@ -813,7 +813,7 @@ static void readIncludeFile(const char *incName)
 					  BEGIN(lastState);
   					}
 <GetQuotedString>"\\\""			{
-  					  tmpString+='"';
+  					  tmpString+='\"';
   					}
 <GetQuotedString>.			{ tmpString+=*yytext; }
 <GetBool>[a-zA-Z]+			{ 
@@ -932,16 +932,16 @@ static void substEnvVarsInStrList(QStrList &sl)
 	while (i<l && ((c=result.at(i))==' ' || c=='\t')) i++; 
 	p=i; // p marks the start index of the word
 	// skip until end of a word
-	while (i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"')) i++;
+	while (i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='\"')) i++;
 	if (i<l) // not at the end of the string
 	{
-	  if (c=='"') // word within quotes
+	  if (c=='\"') // word within quotes
 	  {
 	    p=i+1;
 	    for (i++;i<l;i++)
 	    {
 	      c=result.at(i);
-	      if (c=='"') // end quote
+	      if (c=='\"') // end quote
 	      {
 		// replace the string in the list and go to the next item.
 		sl.insert(sl.at(),result.mid(p,i-p)); // insert new item before current item.
@@ -1621,6 +1621,12 @@ void Config::checkAndCorrect()
   if (depth==0)
   {
     depth=1000;
+  }
+
+  int &depthUML = ConfigImpl_getInt("MAX_PLANTUML_GRAPH_DEPTH");
+  if (depthUML==0)
+  {
+    depthUML=1000;
   }
 
   int &hue = ConfigImpl_getInt("HTML_COLORSTYLE_HUE");

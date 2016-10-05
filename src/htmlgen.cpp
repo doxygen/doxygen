@@ -28,6 +28,7 @@
 #include "diagram.h"
 #include "version.h"
 #include "dot.h"
+#include "plantuml.h"
 #include "language.h"
 #include "htmlhelp.h"
 #include "docparser.h"
@@ -1727,6 +1728,25 @@ void HtmlGenerator::endDotGraph(const DotClassGraph &g)
     endHtmlLink();
     t << "]</span></center>";
   }
+
+  endSectionContent(t);
+  m_sectionCount++;
+}
+
+void HtmlGenerator::startPlantUMLGraph() 
+{
+  startSectionHeader(t,relPath,m_sectionCount);
+}
+
+void HtmlGenerator::endPlantUMLGraph(const PlantUMLClassGraph &g) 
+{
+  endSectionHeader(t);
+  startSectionSummary(t,m_sectionCount);
+  endSectionSummary(t);
+  startSectionContent(t,m_sectionCount);
+
+  g.writeGraph(t, PUML_BITMAP, EOF_Html, dir, fileName, relPath, TRUE, TRUE,
+               m_sectionCount);
 
   endSectionContent(t);
   m_sectionCount++;

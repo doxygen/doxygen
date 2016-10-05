@@ -272,6 +272,8 @@ class LatexGenerator : public OutputGenerator
 
     void startDotGraph();
     void endDotGraph(const DotClassGraph &);
+    void startPlantUMLGraph();
+    void endPlantUMLGraph(const PlantUMLClassGraph &g);
     void startInclDepGraph();
     void endInclDepGraph(const DotInclDepGraph &);
     void startCallGraph();

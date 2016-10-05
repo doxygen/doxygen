@@ -31,6 +31,7 @@ class DotCallGraph;
 class DotDirDeps;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
+class PlantUMLClassGraph;
 class DocNode;
 class MemberDef;
 class GroupDef;
@@ -428,6 +429,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endClassDiagram(const ClassDiagram &,const char *,const char *) = 0;
     virtual void startDotGraph() = 0;
     virtual void endDotGraph(const DotClassGraph &g) = 0;
+    virtual void startPlantUMLGraph() = 0;
+    virtual void endPlantUMLGraph(const PlantUMLClassGraph &g) = 0;
     virtual void startInclDepGraph() = 0;
     virtual void endInclDepGraph(const DotInclDepGraph &g) = 0;
     virtual void startGroupCollaboration() = 0;

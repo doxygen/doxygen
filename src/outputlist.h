@@ -44,6 +44,7 @@ class DotClassGraph;
 class DotDirDeps;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
+class PlantUMLClassGraph;
 class SectionDict;
 class DotGroupCollaboration;
 class DocRoot;
@@ -388,6 +389,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDotGraph); }
     void endDotGraph(const DotClassGraph &g)
     { forall(&OutputGenerator::endDotGraph,g); }
+    void startPlantUMLGraph()
+    { forall(&OutputGenerator::startPlantUMLGraph); }
+    void endPlantUMLGraph(const PlantUMLClassGraph &g)
+    { forall(&OutputGenerator::endPlantUMLGraph,g); }
     void startInclDepGraph()
     { forall(&OutputGenerator::startInclDepGraph); }
     void endInclDepGraph(const DotInclDepGraph &g)
@@ -521,6 +526,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(const DotGroupCollaboration &);
     FORALLPROTO1(const DotDirDeps &);
     FORALLPROTO1(const DotGfxHierarchyTable &);
+    FORALLPROTO1(const PlantUMLClassGraph &);
     FORALLPROTO1(SectionTypes);
 #if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)
     FORALLPROTO1(bool);

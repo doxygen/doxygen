@@ -2478,6 +2478,14 @@ void RTFGenerator::endDotGraph(const DotClassGraph &g)
   DBG_RTF(t << "{\\comment (endDotGraph)}"    << endl)
 }
 
+void RTFGenerator::startPlantUMLGraph() 
+{
+}
+
+void RTFGenerator::endPlantUMLGraph(const PlantUMLClassGraph &) 
+{
+}
+
 void RTFGenerator::startInclDepGraph()
 {
   DBG_RTF(t << "{\\comment (startInclDepGraph)}"    << endl)

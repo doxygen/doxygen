@@ -284,6 +284,8 @@ class HtmlGenerator : public OutputGenerator
 
     void startDotGraph();
     void endDotGraph(const DotClassGraph &g);
+    void startPlantUMLGraph();
+    void endPlantUMLGraph(const PlantUMLClassGraph &g);
     void startInclDepGraph();
     void endInclDepGraph(const DotInclDepGraph &g);
     void startGroupCollaboration();
