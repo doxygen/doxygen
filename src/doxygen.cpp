@@ -2870,11 +2870,6 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
           //printf("root->type=%s root->args=%s\n",root->type.data(),root->args.data());
         }
       }
-      else if (root->type.find("typedef ")!=-1 && root->type.right(2)=="()") // typedef void (func)(int)
-      {
-        root->type=root->type.left(root->type.length()-1);
-        root->args.prepend(") ");
-      }
     }
 
     QCString scope,name=removeRedundantWhiteSpace(root->name);
