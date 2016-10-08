@@ -1082,7 +1082,7 @@ void MemberDef::_computeLinkableInProject()
     m_isLinkableCached = 1; // not a valid or a dummy name
     return;
   }
-  if (!hasDocumentation() && !isReference())
+  if (!hasDocumentation() || isReference())
   {
     //printf("no docs or reference\n");
     m_isLinkableCached = 1; // no documentation

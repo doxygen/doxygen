@@ -2592,7 +2592,7 @@ static MemberDef *addVariableToFile(
   }
 
   Debug::print(Debug::Variables,0,
-    "    new variable, nd=%s!\n",nd?qPrint(nd->name()):"<global>");
+    "    new variable, nd=%s tagInfo=%p!\n",nd?qPrint(nd->name()):"<global>",rootNav->tagInfo());
   // new global variable, enum value or typedef
   MemberDef *md=new MemberDef(
       fileName,root->startLine,root->startColumn,
