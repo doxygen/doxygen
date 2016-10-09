@@ -6227,9 +6227,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
  /**********************************************************************************/
 
  /* ---- Single line comments ------ */
-<DocLine>[^\n]*"\n"[ \t]*"//"[/!]       { // continuation of multiline C++-style comment
+<DocLine>[^\n]*"\n"[ \t]*"//"[/!][<]?   { // continuation of multiline C++-style comment
 				           docBlock+=yytext;
-          		                   docBlock.resize(docBlock.length() - 3);
+                                           int markerLen = yytext[yyleng-1]=='<' ? 4 : 3;
+          		                   docBlock.resize(docBlock.length() - markerLen);
                                            lineCount();
                                         }
 <DocLine>{B}*"///"[/]+{B}*/"\n"		{ // ignore marker line (see bug700345)
