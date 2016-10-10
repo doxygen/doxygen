@@ -5330,7 +5330,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <ClassTemplSpec>">"({BN}*"::"{BN}*{SCOPENAME})?	{
 					  current->name += yytext;
 					  lineCount();
-  					  if (--sharpCount<=0)
+  					  if (roundCount==0 && --sharpCount<=0)
 					  {
 					    current->name = removeRedundantWhiteSpace(current->name);
 					    if (current->spec & Entry::Protocol)
