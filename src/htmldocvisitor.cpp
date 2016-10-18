@@ -2082,7 +2082,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
   QCString imgExt = getDotImageExtension();
   if (imgExt=="svg")
   {
-    generatePlantUMLOutput(fileName,outDir,PUML_SVG);
+    generatePlantUMLOutput(baseName,outDir,PUML_SVG);
     //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />" << endl;
     //m_t << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
     //m_t << "</iframe>" << endl;
@@ -2090,7 +2090,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
   }
   else
   {
-    generatePlantUMLOutput(fileName,outDir,PUML_BITMAP);
+    generatePlantUMLOutput(baseName,outDir,PUML_BITMAP);
     m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />" << endl;
   }
 }
