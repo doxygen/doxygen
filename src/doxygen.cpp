@@ -41,6 +41,7 @@
 #include "pre.h"
 #include "tagreader.h"
 #include "dot.h"
+#include "plantuml.h"
 #include "msc.h"
 #include "docparser.h"
 #include "dirdef.h"
@@ -11657,6 +11658,12 @@ void generateOutput()
     g_s.begin("Running dot...\n");
     DotManager::instance()->run();
     g_s.end();
+    if (Config_getBool(PLANTUML_DIAGRAMS))
+    {
+      g_s.begin("Running plantuml...\n");
+      PlantUMLManager::instance()->run();
+      g_s.end();
+    }
   }
 
   // copy static stuff

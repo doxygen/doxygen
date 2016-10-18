@@ -32,6 +32,7 @@
 #include "example.h"
 #include "outputlist.h"
 #include "dot.h"
+#include "plantuml.h"
 #include "defargs.h"
 #include "debug.h"
 #include "docparser.h"
@@ -1232,6 +1233,31 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
     renderDiagram = TRUE;
   }
 
+  if (Config_getBool(HAVE_DOT) && Config_getBool(PLANTUML_DIAGRAMS) &&
+      (Config_getBool(CLASS_DIAGRAMS) || Config_getBool(CLASS_GRAPH)))
+    // write class diagram using PlantUML
+  {
+    // Rendering PlantUML diagrams is done in a separate block of code
+    // because the class graph object will pick up the DotClassGraph
+    // cached objects and cause a seg fault as the destructors are
+    // executed.  That is, PlantUMLClassGraph and DotClassGraph cannot
+    // be in the same scope for the same object, possibly for any object.
+    //
+    // Note: the above may no longer be true - the implementation at
+    // the time the above comment was written inherited from the
+    // Graphviz/dot implementation, which it no longer does.
+    PlantUMLClassGraph inheritanceGraph(this,PlantUMLNode::Inheritance);
+    if (!inheritanceGraph.isTrivial() && !inheritanceGraph.isTooBig())
+    {
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Man);
+      ol.startPlantUMLGraph();
+      ol.parseText(theTranslator->trClassDiagram(displayName() + " (UML)"));
+      ol.endPlantUMLGraph(inheritanceGraph);
+      ol.popGeneratorState();
+    }
+  }
+
   if (renderDiagram) // if we already show the inheritance relations graphically,
                      // then hide the text version
   {
@@ -1335,6 +1361,25 @@ void ClassDef::writeCollaborationGraph(OutputList &ol)
       ol.startDotGraph();
       ol.parseText(theTranslator->trCollaborationDiagram(displayName()));
       ol.endDotGraph(usageImplGraph);
+      ol.popGeneratorState();
+    }
+  }
+
+  if (Config_getBool(HAVE_DOT) && Config_getBool(PLANTUML_DIAGRAMS))
+  {
+    // Rendering PlantUML diagrams is done in a separate block of code
+    // because the class graph object will pick up the DotClassGraph
+    // cached objects and cause a seg fault as the destructors are
+    // executed.  That is, PlantUMLClassGraph and DotClassGraph cannot
+    // be in the same scope for the same object, possibly for any object.
+    PlantUMLClassGraph usageImplGraph(this,PlantUMLNode::Collaboration);
+    if (!usageImplGraph.isTrivial() && !usageImplGraph.isTooBig())
+    {
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Man);
+      ol.startPlantUMLGraph();
+      ol.parseText(theTranslator->trCollaborationDiagram(displayName() + " (UML)"));
+      ol.endPlantUMLGraph(usageImplGraph);
       ol.popGeneratorState();
     }
   }

@@ -208,6 +208,8 @@ class ManGenerator : public OutputGenerator
 
     void startDotGraph() {}
     void endDotGraph(const DotClassGraph &) {}
+    void startPlantUMLGraph() {}
+    void endPlantUMLGraph(const PlantUMLClassGraph &) {}
     void startInclDepGraph() {}
     void endInclDepGraph(const DotInclDepGraph &) {}
     void startGroupCollaboration() {}
