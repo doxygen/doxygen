@@ -87,6 +87,13 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   pumlArgs+=outDir;
   pumlArgs+="\" ";
   QCString imgName = baseName;
+  // The basename contains path, we need to strip the path from the filename in order
+  // to create the image file name which should be included in the index.qhp (Qt help index file).
+  int i;
+  if ((i=imgName.findRev('/'))!=-1) // strip path
+  {
+    imgName=imgName.right(imgName.length()-i-1);
+  }
   switch (format)
   {
     case PUML_BITMAP:
@@ -103,8 +110,6 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
       break;
   }
   pumlArgs+=" \"";
-  pumlArgs+=outDir;
-  pumlArgs+="/";
   pumlArgs+=baseName;
   pumlArgs+=".pu\" ";
   pumlArgs+="-charset UTF-8 ";
