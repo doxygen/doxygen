@@ -1989,7 +1989,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
               t << "<img src=\"";
               t << relPathAsString() << m_classDef->getOutputFileBase();
               t << ".png\" usemap=\"#" << convertToId(name) << "_map\" alt=\"\"/>" << endl;
-              t << "<map id=\"" << convertToId(name) << "_map\" name=\"" << name << "_map\">" << endl;
+              t << "<map id=\"" << convertToId(name) << "_map\" name=\"" << convertToId(name) << "_map\">" << endl;
               d.writeImage(t,g_globals.outputDir,
                            relPathAsString(),
                            m_classDef->getOutputFileBase());

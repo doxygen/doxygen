@@ -1359,8 +1359,7 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   t << relPath << fileName << ".png\" usemap=\"#" << convertToId(name);
   t << "_map\" alt=\"\"/>" << endl;
   t << "  <map id=\"" << convertToId(name);
-  t << "_map\" name=\"";
-  docify(name);
+  t << "_map\" name=\"" << convertToId(name);
   t << "_map\">" << endl;
 
   d.writeImage(t,dir,relPath,fileName);
