@@ -203,7 +203,7 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
       //if (!m_prettyCode) return;
       if (usePDFLatex && pdfHyperlinks)
       {
-        m_t << "\\hypertarget{" << stripPath(lineAnchor) << "}{}";
+        m_t << "\\Hypertarget{" << stripPath(lineAnchor) << "}";
       }
       writeCodeLink(ref,fileName,anchor,lineNumber,0);
     }
@@ -1596,17 +1596,18 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
 {
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
+  t << "\\mbox{";
   if (usePDFLatex && pdfHyperlinks)
   {
-    t << "\\hypertarget{";
+    t << "\\Hypertarget{";
     if (fName) t << stripPath(fName);
     if (anchor) t << "_" << anchor;
-    t << "}{}";
+    t << "}";
   }
   t << "\\label{";
   if (fName) t << stripPath(fName);
   if (anchor) t << "_" << anchor;
-  t << "} " << endl;
+  t << "}} " << endl;
 }
 
 void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
@@ -1623,11 +1624,11 @@ void LatexGenerator::writeAnchor(const char *fName,const char *name)
   {
     if (fName)
     {
-      t << "\\hypertarget{" << stripPath(fName) << "_" << stripPath(name) << "}{}" << endl;
+      t << "\\Hypertarget{" << stripPath(fName) << "_" << stripPath(name) << "}" << endl;
     }
     else
     {
-      t << "\\hypertarget{" << stripPath(name) << "}{}" << endl;
+      t << "\\Hypertarget{" << stripPath(name) << "}" << endl;
     }
   }
 }
@@ -2216,20 +2217,24 @@ void LatexGenerator::endMemberDocSimple(bool isEnum)
 
 void LatexGenerator::startInlineMemberType()
 {
+  insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
 }
 
 void LatexGenerator::endInlineMemberType()
 {
   t << "&" << endl;
+  insideTabbing = FALSE;
 }
 
 void LatexGenerator::startInlineMemberName()
 {
+  insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
 }
 
 void LatexGenerator::endInlineMemberName()
 {
   t << "&" << endl;
+  insideTabbing = FALSE;
 }
 
 void LatexGenerator::startInlineMemberDoc()

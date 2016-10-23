@@ -386,8 +386,8 @@ void LatexDocVisitor::visit(DocAnchor *anc)
   m_t << "\\label{" << stripPath(anc->file()) << "_" << anc->anchor() << "}%" << endl;
   if (!anc->file().isEmpty() && Config_getBool(PDF_HYPERLINKS)) 
   {
-    m_t << "\\hypertarget{" << stripPath(anc->file()) << "_" << anc->anchor() 
-      << "}{}%" << endl;
+    m_t << "\\Hypertarget{" << stripPath(anc->file()) << "_" << anc->anchor() 
+      << "}%" << endl;
   }    
 }
 

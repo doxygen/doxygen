@@ -78,7 +78,7 @@ Compilation is now done by performing the following steps:
 
         cd doxygen-$VERSION
         mkdir build
-	cd build
+        cd build
 
 <li>Run cmake with the makefile generator
 
