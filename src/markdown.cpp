@@ -37,7 +37,7 @@
 #include <qfileinfo.h>
 #include <qdict.h>
 #include <qvector.h>
-//#define USE_ORIGINAL_TABLES
+#define USE_ORIGINAL_TABLES
 
 #include "markdown.h"
 #include "growbuf.h"
@@ -1592,6 +1592,16 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
 
   i = findTableColumns(data,size,start,end,columns);
   
+#ifdef USE_ORIGINAL_TABLES
+  out.addStr("<table>");
+
+  // write table header, in range [start..end]
+  out.addStr("<tr>");
+
+  int headerStart = start;
+  int headerEnd = end;
+#endif
+    
   // read cell alignments
   int ret = findTableColumns(data+i,size-i,start,end,cc);
   k=0;
@@ -1633,13 +1643,6 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
   i+=ret;
 
 #ifdef USE_ORIGINAL_TABLES
-  out.addStr("<table>");
-
-  // write table header, in range [start..end]
-  out.addStr("<tr>");
-
-  int headerStart = start;
-  int headerEnd = end;
 
   int m=headerStart;
   for (k=0;k<columns;k++)
