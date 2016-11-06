@@ -1567,7 +1567,7 @@ void HtmlGenerator::startMemberDoc( const char *clName, const char *memName,
 {
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
   t << "\n<h2 class=\"memtitle\">"
-    << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&sect;&nbsp;</a></span>"
+    << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&#9670;&nbsp;</a></span>"
     << title;
   if (memTotal>1)
   {
