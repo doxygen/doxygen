@@ -3813,7 +3813,7 @@ class TextGeneratorLatex : public TextGeneratorIntf
       }
       else
       {
-        m_ts << "{\\bf ";
+        m_ts << "\\textbf{ ";
         filterLatexString(m_ts,text);
         m_ts << "}";
       }
