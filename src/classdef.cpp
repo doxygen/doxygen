@@ -573,7 +573,9 @@ void ClassDef::internalInsertMember(MemberDef *md,
                   break;
                 case Public:
                   addMemberToList(MemberListType_pubTypes,md,TRUE);
-                  isSimple=QCString(md->typeString()).find(")(")==-1;
+                  isSimple=!md->isEnumerate() &&
+                           !md->isEnumValue() &&
+                           QCString(md->typeString()).find(")(")==-1; // func ptr typedef
                   break;
                 case Private:
                   addMemberToList(MemberListType_priTypes,md,TRUE);
