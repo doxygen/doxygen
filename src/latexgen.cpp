@@ -1256,7 +1256,7 @@ void LatexGenerator::newParagraph()
   t << endl << endl;
 }
 
-void LatexGenerator::startParagraph()
+void LatexGenerator::startParagraph(const char *)
 {
   t << endl << endl;
 }

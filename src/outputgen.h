@@ -188,7 +188,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
     //virtual void newParagraph()   = 0;
 
     /*! Starts a new paragraph */
-    virtual void startParagraph() = 0;
+    virtual void startParagraph(const char *classDef = NULL) = 0;
     /*! Ends a paragraph */
     virtual void endParagraph() = 0;
 

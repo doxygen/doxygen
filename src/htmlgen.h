@@ -140,7 +140,7 @@ class HtmlGenerator : public OutputGenerator
     void startTitle() { t << "<div class=\"title\">"; }
     void endTitle() { t << "</div>"; }
     
-    void startParagraph();
+    void startParagraph(const char *classDef = NULL);
     void endParagraph();
     void writeString(const char *text);
     void startIndexListItem();
