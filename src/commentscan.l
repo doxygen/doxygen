@@ -443,6 +443,9 @@ static QStack<Grouping> g_autoGroupStack;
 static int              g_memberGroupId = DOX_NOGROUP;
 static QCString         g_memberGroupHeader;
 static QCString         g_memberGroupDocs;
+
+static QStack<QCString> g_compoundAutoGroupNameStack;
+
 static QCString         g_memberGroupRelates;
 static QCString         g_compoundName;
 
@@ -3009,6 +3012,8 @@ void groupEnterFile(const char *fileName,int)
   g_autoGroupStack.clear();
   g_memberGroupId = DOX_NOGROUP;
   g_memberGroupDocs.resize(0);
+  g_compoundAutoGroupNameStack.setAutoDelete(TRUE);
+  g_compoundAutoGroupNameStack.clear();
   g_memberGroupRelates.resize(0);
   g_compoundName=fileName;
 }
@@ -3026,6 +3031,17 @@ void groupLeaveFile(const char *fileName,int line)
   {
     warn(fileName,line,"end of file while inside a group\n");
   }
+}
+
+void groupPushAutoGroup() {
+  if (!g_autoGroupStack.isEmpty())
+      g_compoundAutoGroupNameStack.push(new QCString(g_autoGroupStack.top()->groupname));
+  else
+      g_compoundAutoGroupNameStack.push(new QCString(""));
+}
+
+void groupPopAutoGroup() {
+   g_compoundAutoGroupNameStack.pop();
 }
 
 void groupEnterCompound(const char *fileName,int line,const char *name)
@@ -3047,10 +3063,10 @@ void groupEnterCompound(const char *fileName,int line,const char *name)
   {
     g_compoundName=fileName;
   }
-  //printf("groupEnterCompound(%s)\n",name);
+  //printf("groupEnterCompound(%s) within AutoGroup(%s)\n",name, g_compoundAutoGroupNameStack.top()->data());
 }
 
-void groupLeaveCompound(const char *,int,const char * /*name*/)
+void groupLeaveCompound(const char *fileName,int line,const char * name)
 {
   //printf("groupLeaveCompound(%s)\n",name);
   //if (g_memberGroupId!=DOX_NOGROUP)
@@ -3086,10 +3102,11 @@ static int findExistingGroup(int &groupId,const MemberGroupInfo *info)
 void openGroup(Entry *e,const char *,int)
 {
   //printf("==> openGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
-  //  	e->name.data(),e->section,g_autoGroupStack.count());
+  // 	e->name.data(),e->section,g_autoGroupStack.count());
   if (e->section==Entry::GROUPDOC_SEC) // auto group
   {
     g_autoGroupStack.push(new Grouping(e->name,e->groupingPri()));
+    
   }
   else // start of a member group
   {
@@ -3127,6 +3144,7 @@ void closeGroup(Entry *e,const char *fileName,int line,bool foundInline)
     g_memberGroupId=DOX_NOGROUP;
     g_memberGroupRelates.resize(0);
     g_memberGroupDocs.resize(0);
+  
     if (!foundInline) e->mGrpId=DOX_NOGROUP;
     //printf("new group id=%d\n",g_memberGroupId);
   }
@@ -3152,7 +3170,18 @@ void initGroupInfo(Entry *e)
     //printf("Appending group %s to %s: count=%d entry=%p\n",
     //	g_autoGroupStack.top()->groupname.data(),
     //	e->name.data(),e->groups->count(),e);
-    e->groups->append(new Grouping(*g_autoGroupStack.top()));
+    if (g_compoundAutoGroupNameStack.isEmpty() ||
+        *g_compoundAutoGroupNameStack.top() != g_autoGroupStack.top()->groupname) {
+      e->groups->append(new Grouping(*g_autoGroupStack.top()));
+      //printf("Appending group %s to %s: count=%d entry=%p\n",
+      //g_autoGroupStack.top()->groupname.data(),
+      //e->name.data(),e->groups->count(),e);
+    }
+    else {
+      // printf("Not appending group %s to %s since parent compound is already a member of the group: count=%d entry=%p\n",
+      // g_autoGroupStack.top()->groupname.data(),
+      // e->name.data(),e->groups->count(),e);
+    }
   }
 }
 
