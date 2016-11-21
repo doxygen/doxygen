@@ -76,8 +76,8 @@ void groupEnterFile(const char *file,int line);
 void groupLeaveFile(const char *file,int line);
 void groupLeaveCompound(const char *file,int line,const char *name);
 void groupEnterCompound(const char *file,int line,const char *name);
-void groupPushAutoGroup();
-void groupPopAutoGroup();
+void groupPushAutoGroup(Entry *e);
+void groupPopAutoGroup(Entry *e);
 
 void openGroup(Entry *e,const char *file,int line);
 void closeGroup(Entry *,const char *file,int line,bool foundInline=FALSE);

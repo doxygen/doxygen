@@ -3033,15 +3033,20 @@ void groupLeaveFile(const char *fileName,int line)
   }
 }
 
-void groupPushAutoGroup() {
-  if (!g_autoGroupStack.isEmpty())
-      g_compoundAutoGroupNameStack.push(new QCString(g_autoGroupStack.top()->groupname));
-  else
-      g_compoundAutoGroupNameStack.push(new QCString(""));
+void groupPushAutoGroup(Entry *e) {
+  if (e-> section != Entry::NAMESPACE_SEC && !e->autogroupName.isNull() && !e->autogroupName.isEmpty()) {
+    g_compoundAutoGroupNameStack.push(new QCString(e->autogroupName));
+    //printf("Push autogroup %s for entry %s\n", e->autogroupName.data(), e->name.data());
+  }
+  else {
+    //printf("Push autogroup %s for entry %s (Namespace or undefined autogroup)\n", e->autogroupName.data(), e->name.data());
+  }
 }
 
-void groupPopAutoGroup() {
-   g_compoundAutoGroupNameStack.pop();
+void groupPopAutoGroup(Entry *e) {
+  if (e-> section != Entry::NAMESPACE_SEC && !e->autogroupName.isNull() && !e->autogroupName.isEmpty())
+    g_compoundAutoGroupNameStack.pop();
+  //printf("Pop autogroup for entry %s\n", e->name.data());
 }
 
 void groupEnterCompound(const char *fileName,int line,const char *name)
@@ -3170,17 +3175,18 @@ void initGroupInfo(Entry *e)
     //printf("Appending group %s to %s: count=%d entry=%p\n",
     //	g_autoGroupStack.top()->groupname.data(),
     //	e->name.data(),e->groups->count(),e);
+    e->autogroupName = g_autoGroupStack.top()->groupname;
     if (g_compoundAutoGroupNameStack.isEmpty() ||
-        *g_compoundAutoGroupNameStack.top() != g_autoGroupStack.top()->groupname) {
+        *g_compoundAutoGroupNameStack.top() != e->autogroupName) {
       e->groups->append(new Grouping(*g_autoGroupStack.top()));
       //printf("Appending group %s to %s: count=%d entry=%p\n",
-      //g_autoGroupStack.top()->groupname.data(),
-      //e->name.data(),e->groups->count(),e);
+      //  g_autoGroupStack.top()->groupname.data(),
+      //  e->name.data(),e->groups->count(),e);
     }
     else {
-      // printf("Not appending group %s to %s since parent compound is already a member of the group: count=%d entry=%p\n",
-      // g_autoGroupStack.top()->groupname.data(),
-      // e->name.data(),e->groups->count(),e);
+      //printf("Not appending group %s to %s since parent compound is already a member of the group: count=%d entry=%p\n",
+      //  g_autoGroupStack.top()->groupname.data(),
+      //  e->name.data(),e->groups->count(),e);
     }
   }
 }

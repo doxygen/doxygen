@@ -6754,10 +6754,10 @@ static void parseCompounds(Entry *rt)
   //printf("parseCompounds(%s)\n",rt->name.data());
   EntryListIterator eli(*rt->children());
   Entry *ce;
-  groupPushAutoGroup();
 
   for (;(ce=eli.current());++eli)
   {
+    groupPushAutoGroup(ce);
     if (!ce->program.isEmpty())
     {
       //printf("-- %s ---------\n%s\n---------------\n",
@@ -6867,8 +6867,8 @@ static void parseCompounds(Entry *rt)
       //}
     }
     parseCompounds(ce);
+    groupPopAutoGroup(ce);
   }
-  groupPopAutoGroup();
 
 }
 
