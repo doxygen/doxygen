@@ -246,7 +246,7 @@ keywords13      ("UNIQUE"|"UNNEST"|"UPDATE"|"UPPER"|"USER"|"USING"|"VALUE"|"VALU
 /* Need multiple keyword definitions due to max length */
 keyword         (?i:{keywords1}|{keywords2}|{keywords3}|{keywords4}|{keywords5}|{keywords6}|{keywords7}|{keywords8}|{keywords9}|{keywords10}|{keywords11}|{keywords12}|{keywords13})
 
-typekeyword     (?i:"ARRAY"|"BIGINT"|"BINARY"|"BLOB"|"BOOLEAN"|"CHAR"|"CHARACTER"|"CLOB"|"DATE"|"DEC"|"DECIMAL"|"DOUBLE"|"FLOAT"|"INT"|"INTEGER"|"NCHAR"|"NCLOB"|"NUMERIC"|"REAL"|"SMALLINT"|"TIME"|"TIMESTAMP"|"VARCHAR")
+typekeyword     (?i:"ARRAY"|"BIGINT"|"BINARY"|"BLOB"|"BOOLEAN"|"CHAR"|"CHARACTER"|"CLOB"|"DATE"|"DEC"|"DECIMAL"|"DOUBLE"|"FLOAT"|"INT"|"INTEGER"|"NCHAR"|"NCLOB"|"NUMERIC"|"NVARCHAR"|"REAL"|"SMALLINT"|"TIME"|"TIMESTAMP"|"VARCHAR")
 
 flowkeyword     (?i:"CASE"|"IF"|"ELSE"|"BEGIN"|"END"|"WHILE")
 
