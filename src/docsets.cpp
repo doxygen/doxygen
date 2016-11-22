@@ -331,6 +331,7 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
     case SrcLangExt_Fortran: lang="fortran"; break;    // Fortran
     case SrcLangExt_VHDL:    lang="vhdl"; break;       // VHDL
     case SrcLangExt_XML:     lang="xml"; break;        // DBUS XML
+    case SrcLangExt_SQL:     lang="sql"; break;        // Sql
     case SrcLangExt_Tcl:     lang="tcl"; break;        // Tcl
     case SrcLangExt_Markdown:lang="markdown"; break;   // Markdown
     case SrcLangExt_Unknown: lang="unknown"; break;    // should not happen!
