@@ -1379,7 +1379,7 @@ void LatexGenerator::startTextLink(const char *f,const char *anchor)
   }
   else
   {
-    t << "{\\bf ";
+    t << "\\textbf{ ";
   }
 }
 
@@ -1404,7 +1404,7 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
   }
   else
   {
-    t << "{\\bf ";
+    t << "\\textbf{ ";
     docify(text);
     t << "}";
   } 
@@ -1907,7 +1907,7 @@ void LatexGenerator::endMemberList()
 void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 {
   if (hasHeader) t << "\\begin{Indent}";
-  t << "{\\bf ";
+  t << "\\textbf{ ";
   // changed back to rev 756 due to bug 660501
   //if (Config_getBool(COMPACT_LATEX)) 
   //{
