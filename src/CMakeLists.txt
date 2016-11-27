@@ -116,6 +116,7 @@ FLEX_TARGET(commentcnv     commentcnv.l     ${GENERATED_SRC}/commentcnv.cpp     
 FLEX_TARGET(commentscan    commentscan.l    ${GENERATED_SRC}/commentscan.cpp    COMPILE_FLAGS "${LEX_FLAGS}")
 FLEX_TARGET(constexp       constexp.l       ${GENERATED_SRC}/constexp.cpp       COMPILE_FLAGS "${LEX_FLAGS}")
 FLEX_TARGET(xmlcode        xmlcode.l        ${GENERATED_SRC}/xmlcode.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
+FLEX_TARGET(sqlcode        sqlcode.l        ${GENERATED_SRC}/sqlcode.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
 FLEX_TARGET(configimpl     configimpl.l     ${GENERATED_SRC}/configimpl.cpp     COMPILE_FLAGS "${LEX_FLAGS}")
 
 BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "${YACC_FLAGS}")
@@ -156,6 +157,7 @@ add_library(_doxygen STATIC
     ${GENERATED_SRC}/commentscan.cpp
     ${GENERATED_SRC}/constexp.cpp
     ${GENERATED_SRC}/xmlcode.cpp
+    ${GENERATED_SRC}/sqlcode.cpp
     #
     ${GENERATED_SRC}/ce_parse.cpp
     #

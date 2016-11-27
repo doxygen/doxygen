@@ -72,6 +72,7 @@
 #include "pyscanner.h"
 #include "fortranscanner.h"
 #include "xmlscanner.h"
+#include "sqlscanner.h"
 #include "tclscanner.h"
 #include "code.h"
 #include "objcache.h"
@@ -10002,6 +10003,7 @@ void initDoxygen()
   Doxygen::parserManager->registerParser("fortranfixed", new FortranLanguageScannerFixed);
   Doxygen::parserManager->registerParser("vhdl",         new VHDLLanguageScanner);
   Doxygen::parserManager->registerParser("xml",          new XMLScanner);
+  Doxygen::parserManager->registerParser("sql",          new SQLScanner);
   Doxygen::parserManager->registerParser("tcl",          new TclLanguageScanner);
   Doxygen::parserManager->registerParser("md",           new MarkdownFileParser);
 

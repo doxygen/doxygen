@@ -1522,6 +1522,7 @@ class DefinitionContext
         case SrcLangExt_Fortran:  result="fortran";  break;
         case SrcLangExt_VHDL:     result="vhdl";     break;
         case SrcLangExt_XML:      result="xml";      break;
+        case SrcLangExt_SQL:      result="sql";      break;
         case SrcLangExt_Tcl:      result="tcl";      break;
         case SrcLangExt_Markdown: result="markdown"; break;
       }
