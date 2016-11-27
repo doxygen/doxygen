@@ -8190,6 +8190,7 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_Fortran:  return "Fortran";
     case SrcLangExt_VHDL:     return "VHDL";
     case SrcLangExt_XML:      return "XML";
+    case SrcLangExt_SQL:      return "SQL";
     case SrcLangExt_Tcl:      return "Tcl";
     case SrcLangExt_Markdown: return "Markdown";
   }
