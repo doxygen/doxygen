@@ -4,6 +4,10 @@ body, table, div, p, dl {
 	font: 400 14px/22px Roboto,sans-serif;
 }
 
+p.reference, p.definition {
+	font: 400 14px/22px Roboto,sans-serif;
+}
+
 /* @group Heading Levels */
 
 h1.groupheader {

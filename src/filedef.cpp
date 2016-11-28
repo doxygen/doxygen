@@ -344,7 +344,7 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
         ol.disable(OutputGenerator::RTF);
       }
 
-      ol.startParagraph();
+      ol.startParagraph("definition");
       QCString refText = theTranslator->trDefinedInSourceFile();
       int fileMarkerPos = refText.find("@0");
       if (fileMarkerPos!=-1) // should always pass this.
@@ -354,6 +354,10 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
             0,name());
         ol.parseText(refText.right(
               refText.length()-fileMarkerPos-2)); // text right from marker 2
+      }
+      else
+      {
+        err("translation error: invalid marker in trDefinedInSourceFile()\n");
       }
       ol.endParagraph();
       //Restore settings, bug_738548

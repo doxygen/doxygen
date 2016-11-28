@@ -1052,9 +1052,12 @@ void HtmlGenerator::endDoxyAnchor(const char *,const char *)
 //  t << endl << "<p>" << endl;
 //}
 
-void HtmlGenerator::startParagraph()
+void HtmlGenerator::startParagraph(const char *classDef)
 {
-  t << endl << "<p>";
+  if (classDef)
+    t << endl << "<p class=\"" << classDef << "\">";
+  else
+    t << endl << "<p>";
 }
 
 void HtmlGenerator::endParagraph()

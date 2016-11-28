@@ -112,8 +112,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endTitle); }
     //void newParagraph() 
     //{ forall(&OutputGenerator::newParagraph); }
-    void startParagraph() 
-    { forall(&OutputGenerator::startParagraph); }
+    void startParagraph(const char *classDef = NULL) 
+    { forall(&OutputGenerator::startParagraph,classDef); }
     void endParagraph() 
     { forall(&OutputGenerator::endParagraph); }
     void writeString(const char *text) 
