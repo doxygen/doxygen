@@ -62,7 +62,7 @@ class RTFGenerator : public OutputGenerator
     void endTitle() {} 
 
     void newParagraph();
-    void startParagraph(const char *classDef = NULL);
+    void startParagraph(const char *classDef);
     void endParagraph();
     void writeString(const char *text);
     void startIndexListItem();

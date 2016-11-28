@@ -112,7 +112,7 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endTitle); }
     //void newParagraph() 
     //{ forall(&OutputGenerator::newParagraph); }
-    void startParagraph(const char *classDef = NULL) 
+    void startParagraph(const char *classDef=0)
     { forall(&OutputGenerator::startParagraph,classDef); }
     void endParagraph() 
     { forall(&OutputGenerator::endParagraph); }

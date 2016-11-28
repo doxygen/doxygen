@@ -315,7 +315,7 @@ class FlowChart
     static void delFlowList();
     static const char* getNodeType(int c);
 
-    static void addFlowChart(int type,const char* text,const char* exp,const char * label=NULL);
+    static void addFlowChart(int type,const char* text,const char* exp,const char * label=0);
     static void moveToPrevLevel();
     static int getTimeStamp();
     static void writeFlowChart();
