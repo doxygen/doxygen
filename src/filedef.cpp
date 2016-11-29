@@ -82,8 +82,8 @@ FileDef::FileDef(const char *p,const char *nm,
   m_path=p;
   m_filePath=m_path+nm;
   m_fileName=nm;
-  setDiskName(dn?dn:nm);
   setReference(lref);
+  setDiskName(dn?dn:nm);
   m_classSDict        = 0;
   m_includeList       = 0;
   m_includeDict       = 0; 
@@ -126,9 +126,18 @@ FileDef::~FileDef()
 
 void FileDef::setDiskName(const QCString &name)
 {
-  m_outputDiskName = convertNameToFile(name);
-  m_inclDepFileName = convertNameToFile(name+"_incl");
-  m_inclByDepFileName = convertNameToFile(name+"_dep_incl");
+  if (isReference())
+  {
+    m_outputDiskName = name;
+    m_inclDepFileName = name+"_incl";
+    m_inclByDepFileName = name+"_dep_incl";
+  }
+  else
+  {
+    m_outputDiskName = convertNameToFile(name);
+    m_inclDepFileName = convertNameToFile(name+"_incl");
+    m_inclByDepFileName = convertNameToFile(name+"_dep_incl");
+  }
 }
 
 /*! Compute the HTML anchor names for all members in the class */ 
