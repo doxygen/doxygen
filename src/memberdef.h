@@ -389,6 +389,7 @@ class MemberDef : public Definition
             ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeTagFile(FTextStream &);
     void warnIfUndocumented();
+    void warnIfUndocumentedParams();
     
     MemberDef *createTemplateInstanceMember(ArgumentList *formalArgs,
                ArgumentList *actualArgs);
