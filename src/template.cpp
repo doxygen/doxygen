@@ -2451,7 +2451,7 @@ TemplateVariant TemplateContextImpl::get(const QCString &name) const
       //printf("getPrimary(%s) type=%d:%s\n",objName.data(),v.type(),v.toString().data());
       if (v.type()==TemplateVariant::Struct)
       {
-        i = propName.find(".");
+        i = propName.find('.');
         int l = i==-1 ? propName.length() : i;
         v = v.toStruct()->get(propName.left(l));
         if (!v.isValid())
@@ -2470,7 +2470,7 @@ TemplateVariant TemplateContextImpl::get(const QCString &name) const
       }
       else if (v.type()==TemplateVariant::List)
       {
-        i = propName.find(".");
+        i = propName.find('.');
         int l = i==-1 ? propName.length() : i;
         bool b;
         int index = propName.left(l).toInt(&b);

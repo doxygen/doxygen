@@ -1681,7 +1681,7 @@ static void findTagLessClasses(ClassDef *cd)
     ClassDef *icd;
     for (it.toFirst();(icd=it.current());++it)
     {
-      if (icd->name().find("@")==-1) // process all non-anonymous inner classes
+      if (icd->name().find('@')==-1) // process all non-anonymous inner classes
       {
         findTagLessClasses(icd);
       }
