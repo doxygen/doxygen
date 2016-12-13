@@ -1304,7 +1304,7 @@ void LatexGenerator::startHtmlLink(const char *url)
     t << url;
     t << "}";
   }
-  t << "{\\tt ";
+  t << "\\texttt{ ";
 }
 
 void LatexGenerator::endHtmlLink()
@@ -1320,7 +1320,7 @@ void LatexGenerator::endHtmlLink()
 //    t << url;
 //    t << "}";
 //  }
-//  t << "{\\tt "; 
+//  t << "\\texttt{ ";
 //  docify(url);
 //  t << "}";
 //}

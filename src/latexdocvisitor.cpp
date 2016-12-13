@@ -218,7 +218,7 @@ void LatexDocVisitor::visit(DocURL *u)
     if (u->isEmail()) m_t << "mailto:";
     m_t << u->url() << "}";
   }
-  m_t << "{\\tt ";
+  m_t << "\\texttt{ ";
   filter(u->url());
   m_t << "}";
 }
@@ -244,10 +244,10 @@ void LatexDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "{\\bfseries ";      else m_t << "}";
       break;
     case DocStyleChange::Italic:
-      if (s->enable()) m_t << "{\\itshape ";     else m_t << "}";
+      if (s->enable()) m_t << "\\textit{ ";     else m_t << "}";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "{\\ttfamily ";   else m_t << "}";
+      if (s->enable()) m_t << "\\texttt{ ";   else m_t << "}";
       break;
     case DocStyleChange::Subscript:
       if (s->enable()) m_t << "\\textsubscript{";    else m_t << "}";
@@ -1220,7 +1220,7 @@ void LatexDocVisitor::visitPre(DocHRef *href)
     m_t << href->url();
     m_t << "}";
   }
-  m_t << "{\\tt ";
+  m_t << "\\texttt{ ";
 }
 
 void LatexDocVisitor::visitPost(DocHRef *) 
@@ -1465,7 +1465,7 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
   {
     if (pl->direction()!=DocParamSect::Unspecified)
     {
-      m_t << "\\mbox{\\tt ";
+      m_t << "\\mbox\\texttt{ ";
       if (pl->direction()==DocParamSect::In)
       {
         m_t << "in";
