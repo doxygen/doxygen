@@ -250,6 +250,27 @@ void RTFGenerator::beginRTFDocument()
   t <<"{\\stylesheet\n";
   t <<"{\\widctlpar\\adjustright \\fs20\\cgrid \\snext0 Normal;}\n";
 
+  // set the paper dimensions according to PAPER_TYPE
+  QCString paperName = Config_getEnum(PAPER_TYPE);
+  t << "{";
+  if (paperName=="a4")
+  {
+    t << "\\paperw11900\\paperh16840"; // width & height values are inches * 1440
+  }
+  else if (paperName=="letter")
+  {
+    t << "\\paperw12240\\paperh15840";
+  }
+  else if (paperName=="legal")
+  {
+    t << "\\paperw12240\\paperh20160";
+  }
+  else if (paperName=="executive")
+  {
+    t << "\\paperw10440\\paperh15120";
+  }
+  t << "\\margl1800\\margr1800\\margt1440\\margb1440\\gutter0\\ltrsect}\n";
+
   // sort styles ascending by \s-number via an intermediate QArray
   QArray<const StyleData*> array(128);
   array.fill(0);
