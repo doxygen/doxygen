@@ -1263,10 +1263,10 @@ SearchIndexList::~SearchIndexList()
 
 void SearchIndexList::append(Definition *d)
 {
-  SearchDefinitionList *l = find(d->name());
+  QCString dispName = d->localName();
+  SearchDefinitionList *l = find(dispName);
   if (l==0)
   {
-    QCString dispName = d->localName();
     if (d->definitionType()==Definition::TypeGroup)
     {
       dispName = ((GroupDef*)d)->groupTitle();
@@ -1276,7 +1276,7 @@ void SearchIndexList::append(Definition *d)
       dispName = ((PageDef*)d)->title();
     }
     l=new SearchDefinitionList(searchId(dispName),dispName);
-    SDict< SearchDefinitionList >::append(d->name(),l);
+    SDict< SearchDefinitionList >::append(dispName,l);
   }
   l->append(d);
 }
