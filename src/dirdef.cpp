@@ -942,6 +942,20 @@ void buildDirectories()
       else
       {
         // do something for file imported via tag files.
+        QCString path = fd->getPath();
+        int pos = path.find(':');
+        if( pos > 0 ) {
+          DirDef *dir;
+          QCString dir_path(path.rawData()+pos+1);
+
+          if ((dir=Doxygen::directories->find(dir_path))==0) // new directory
+          {
+            dir = DirDef::mergeDirectoryInTree(dir_path);
+          }
+          if (dir) dir->addFile(fd);
+        } else {
+          // TODO: something if ':' isn't found in the tag file path
+        }
       }
     }
   }
