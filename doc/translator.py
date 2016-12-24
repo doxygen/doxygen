@@ -83,8 +83,7 @@ def xopen(fname, mode='r', encoding='utf-8-sig'):
     the default 'utf-8-sig' is used (skips the BOM automatically).
     '''
 
-    major, minor, patch = (int(e) for e in platform.python_version_tuple())
-    if major == 2:
+    if sys.version_info[0] == 2:
         return open(fname, mode=mode) # Python 2 without encoding
     else:
         return open(fname, mode=mode, encoding=encoding) # Python 3 with encoding
@@ -1990,7 +1989,8 @@ class TrManager:
 if __name__ == '__main__':
 
     # The Python 2.6+ or 3.3+ is required.
-    major, minor, patch = (int(e) for e in platform.python_version_tuple())
+    major = sys.version_info[0]
+    minor = sys.version_info[1]
     if (major == 2 and minor < 6) or (major == 3 and minor < 0):
         print('Python 2.6+ or Python 3.0+ are required for the script')
         sys.exit(1)
