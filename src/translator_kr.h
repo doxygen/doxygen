@@ -124,7 +124,7 @@ class TranslatorKorean : public Translator
       }
       else
       {
-          return "멤버 데이타 문서화";
+          return "멤버 데이터 문서화";
       }
     }
 
@@ -187,7 +187,7 @@ class TranslatorKorean : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "데이타 구조";
+        return "데이터 구조";
       }
       else
       {
@@ -204,7 +204,7 @@ class TranslatorKorean : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "데이타 필드";
+        return "데이터 필드";
       }
       else
       {
@@ -257,7 +257,7 @@ class TranslatorKorean : public Translator
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "다음은 데이타 구조들입니다. (간략한 설명만을 보여줍니다) :";
+        return "다음은 데이터 구조들입니다. (간략한 설명만을 보여줍니다) :";
       }
       else
       {
@@ -374,7 +374,7 @@ class TranslatorKorean : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "데이타 구조 색인";
+        return "데이터 구조 색인";
       }
       else
       {
@@ -401,7 +401,7 @@ class TranslatorKorean : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "데이타 구조 문서화";
+        return "데이터 구조 문서화";
       }
       else
       {
@@ -504,7 +504,7 @@ class TranslatorKorean : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "데이타 구조";
+        return "데이터 구조";
       }
       else
       {
@@ -913,7 +913,7 @@ class TranslatorKorean : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "데이타 필드";
+        return "데이터 필드";
       }
       else
       {
@@ -1102,7 +1102,7 @@ class TranslatorKorean : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "데이타 구조";
+        return "데이터 구조";
       }
       else
       {
@@ -1555,15 +1555,15 @@ class TranslatorKorean : public Translator
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
-    { return "데이타 타입 목록"; }
+    { return "데이터 타입 목록"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
     virtual QCString trCompoundMembersFortran()
-    { return "데이타 필드"; }
+    { return "데이터 필드"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
     virtual QCString trCompoundListDescriptionFortran()
-    { return "대략적인 설명과 함께 데이타 타입들의 목록입니다.:"; }
+    { return "대략적인 설명과 함께 데이터 타입들의 목록입니다.:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
     virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
@@ -1573,16 +1573,16 @@ class TranslatorKorean : public Translator
       {
         result+="문서화된 ";
       }
-      result+="모든 데이타 타입 멤버들의 목록입니다. ";
+      result+="모든 데이터 타입 멤버들의 목록입니다. ";
 
       result+="각 항목은 ";
       if (!extractAll)
       {
-         result+="각 멤버에 대한 데이타 구조 문서화 페이지의 링크를 가지고 있습니다.";
+         result+="각 멤버에 대한 데이터 구조 문서화 페이지의 링크를 가지고 있습니다.";
       }
       else
       {
-         result+="그들이 속한 데이타 타입의 링크를 가지고 있습니다. :";
+         result+="그들이 속한 데이터 타입의 링크를 가지고 있습니다. :";
       }
       return result;
     }
@@ -1591,13 +1591,13 @@ class TranslatorKorean : public Translator
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
-    { return "데이타 타입 색인"; }
+    { return "데이터 타입 색인"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
     virtual QCString trTypeDocumentation()
-    { return "데이타 타입 문서화"; }
+    { return "데이터 타입 문서화"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
@@ -1615,7 +1615,7 @@ class TranslatorKorean : public Translator
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
-    { return "데이타 타입들"; }
+    { return "데이터 타입들"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
