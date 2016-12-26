@@ -2051,6 +2051,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN( DocBlock );
 					  }
   					}
+<UsingAlias>">>"                        {
+                                          previous->args+="> >"; // see bug769552
+                                        }
 <UsingAlias>.                           {
                                           previous->args+=yytext;
                                         }
