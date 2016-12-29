@@ -3013,26 +3013,7 @@ void MemberDef::writeDocumentation(MemberList *ml,
   //if (Config_getBool(EXTRACT_ALL) && !hasDocs) ol.enable(OutputGenerator::Latex);
   ol.popGeneratorState();
 
-  //------------------------------------------------
-
-  if (!Config_getBool(EXTRACT_ALL) &&
-      Config_getBool(WARN_IF_UNDOCUMENTED) &&
-      Config_getBool(WARN_NO_PARAMDOC) &&
-      !Doxygen::suppressDocWarnings)
-  {
-    if (!hasDocumentedParams())
-    {
-      warn_doc_error(getDefFileName(),getDefLine(),
-          "parameters of member %s are not (all) documented",
-          qPrint(qualifiedName()));
-    }
-    if (!hasDocumentedReturnType() && isFunction() && hasDocumentation())
-    {
-      warn_doc_error(getDefFileName(),getDefLine(),
-          "return type of member %s is not documented",
-          qPrint(qualifiedName()));
-    }
-  }
+  warnIfUndocumentedParams();
 }
 
 // strip scope and field name from the type
@@ -3267,9 +3248,35 @@ void MemberDef::warnIfUndocumented()
     warn_undoc(getDefFileName(),getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
          qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),t,qPrint(d->name()));
   }
+  else if (!isDetailedSectionLinkable())
+  {
+    warnIfUndocumentedParams();
+  }
 }
 
 
+void MemberDef::warnIfUndocumentedParams()
+{
+  if (!Config_getBool(EXTRACT_ALL) &&
+      Config_getBool(WARN_IF_UNDOCUMENTED) &&
+      Config_getBool(WARN_NO_PARAMDOC) &&
+      !Doxygen::suppressDocWarnings)
+  {
+    if (!hasDocumentedParams())
+    {
+      warn_doc_error(getDefFileName(),getDefLine(),
+          "parameters of member %s are not (all) documented",
+          qPrint(qualifiedName()));
+    }
+    if (!hasDocumentedReturnType() &&
+        isFunction() && hasDocumentation())
+    {
+      warn_doc_error(getDefFileName(),getDefLine(),
+          "return type of member %s is not documented",
+          qPrint(qualifiedName()));
+    }
+  }
+}
 
 bool MemberDef::isFriendClass() const
 {
