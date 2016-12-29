@@ -2,6 +2,70 @@
 \tableofcontents
 \section log_1_8 1.8 Series
 
+\subsection log_1_8_13 Release 1.8.13
+\htmlonly
+<b>(release date 29-12-2016)</b>
+<a name="1.8.13"></a>
+</p>
+<ul>
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=707266">707266</a> - C++/CLI indexed property not documented [<a href="http://github.com/doxygen/doxygen/commit/80656d68a0838483ea2988adf028e2d85292a109">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=707278">707278</a> - Grouping of results fail when using built-in javascript search [<a href="http://github.com/doxygen/doxygen/commit/0615b1b023f7888dfdbeee7673d6d0bcc7b803df">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=722112">722112</a> - &#39;static&#39; and &#39;throw&#39; C++ keywords not colored [<a href="http://github.com/doxygen/doxygen/commit/794ae9cbc40b73d00cce5f0096b53f18e1d3e325">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=729921">729921</a> - wrong collaboration diagram when in template used scoped argument type [<a href="http://github.com/doxygen/doxygen/commit/adb44ae6ef1d102caea1338373be078bf4a5d640">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=756185">756185</a> - Multiline //!&lt; behavior changed [<a href="http://github.com/doxygen/doxygen/commit/d4accb68ff6536dcf128236b7e1e8d0239d4ffc2">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=759402">759402</a> - C++11 &quot;using&quot; type alias for function pointer with no arguments is formatted incorrectly [<a href="http://github.com/doxygen/doxygen/commit/d4c24c28ffcf7143bcdfecee1c8b55f704274d37">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=760678">760678</a> - fails to build with an unreleased python version [<a href="http://github.com/doxygen/doxygen/commit/5c6f0fdf1ebbd4c28f524a0347fe556ff2421504">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=769552">769552</a> - doxygen warning parsing C++11 &quot;using&quot; declaration [<a href="http://github.com/doxygen/doxygen/commit/5730198d20511d93c20aa7870fc2bd11f478db85">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=770973">770973</a> - Tag file size double between each run [<a href="http://github.com/doxygen/doxygen/commit/155bd0110585d401d0f898baf9c69b2ec46833ff">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=771152">771152</a> - C++11 ref-qualifiers do not appear in Member Function Documentation section [<a href="http://github.com/doxygen/doxygen/commit/9ef1bf94eef1af591c40102b930fef95250b8142">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=771199">771199</a> - Web-page bug: Comment blocks in VHDL [<a href="http://github.com/doxygen/doxygen/commit/6c6b847bcd16cc818165b51e62dc11a947f7e084">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=771310">771310</a> - French description for &quot;Namespace Members&quot; is wrong and causes fatal javascript error [<a href="http://github.com/doxygen/doxygen/commit/b5e1e195bc207c7bb93df4e51253f9f3a1026a3d">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=771344">771344</a> - Class name &#39;internal&#39; breaks class hierarchy in C++ [<a href="http://github.com/doxygen/doxygen/commit/b93dbcdab6dfc5681ec49f1d567698b7c4dc6846">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=772574">772574</a> - __xxx__ not interpreted as markdown when xxx begins with a non-word character (e.g. __-1__) [<a href="http://github.com/doxygen/doxygen/commit/a95c07ecc0a2f1205883d8420a8280c5701c901c">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=773231">773231</a> - Underscores in type or member name cause unwanted hyphenation in PDF output Data Fields [<a href="http://github.com/doxygen/doxygen/commit/d571efb062fbe17d7257f3971e3db6c9cba833d0">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=773354">773354</a> - &quot;name&quot; attribute of image map not urlencoded, not working in Chrome [<a href="http://github.com/doxygen/doxygen/commit/6300c03b6201ca7981388a6d3c01486f8a8adba0">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=774138">774138</a> - Please add HTML classes to &quot;Definition at...&quot; &amp; &quot;Referenced by...&quot; for CSS [<a href="http://github.com/doxygen/doxygen/commit/d2593e56cd52ecee2424d844916f95e12fef27c8">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=774273">774273</a> - INLINE_SIMPLE_STRUCTS with enums in classes does not work [<a href="http://github.com/doxygen/doxygen/commit/71d7a9399db016cba83ccd63c6ba7e0fac1cd44d">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=774514">774514</a> - Modify in some pronounciation expression in Korean [<a href="http://github.com/doxygen/doxygen/commit/cd3e39d7db634d9e11afc8e46269eb509ae10e40">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=774949">774949</a> - Unknown reference in manual [<a href="http://github.com/doxygen/doxygen/commit/dde15c9748053ecb68ba046ebd0fdfe625be0e2e">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=775245">775245</a> - referencing Python files via tagfile broken [<a href="http://github.com/doxygen/doxygen/commit/dc02bb977ebc6c683012c106e16e0190ac72b454">view</a>]
+<li>Add NVARCHAR as a SQL type [<a href="http://github.com/doxygen/doxygen/commit/6a85240e65bb5e3d59d2cd161eb8cf241e27ed7d">view</a>]
+<li>Add mscgen images to index.qhp [<a href="http://github.com/doxygen/doxygen/commit/f50d9ed4cdc7d4e7884bb64fddb01b017b880778">view</a>]
+<li>Add sql syntax highlighting to code blocks [<a href="http://github.com/doxygen/doxygen/commit/adf4a90340921cf7a120ae918af776355cf8ca0f">view</a>]
+<li>Add support for more CSS formatting and column/row spanning in markdown tables [<a href="http://github.com/doxygen/doxygen/commit/7f35695022d3baa8fc8c8d1b9a9f3368a0963871">view</a>]
+<li>Added missing language value for SQL to XML output [<a href="http://github.com/doxygen/doxygen/commit/b196b1a28151d75d9546dcc407947fbf29789cc5">view</a>]
+<li>Adds plantuml support Qt compressed help file [<a href="http://github.com/doxygen/doxygen/commit/c7b740d96288f19e31bd35405306c49bb9fc20c4">view</a>]
+<li>Check for undocumented params warnings if members detailed documentation is not written [<a href="http://github.com/doxygen/doxygen/commit/bae3c91812f8a6f845337f8c32d55495c4aa3522">view</a>]
+<li>Cleanup: removed redundant =NULL from interfaces, or replaced by =0 where it was needed. [<a href="http://github.com/doxygen/doxygen/commit/3b8b2e1a4b846a5c1b87f4a8ddc837462709895a">view</a>]
+<li>Clear header/footer information in ConfigImpl for postProcess [<a href="http://github.com/doxygen/doxygen/commit/5881b1bb624ee6115dc635ba44366d259cc6a10f">view</a>]
+<li>Documentation small corrections [<a href="http://github.com/doxygen/doxygen/commit/ae033324fed6ff9b3febe12b5777f19c04e065d2">view</a>]
+<li>Doxygen error: Found &#39;;&#39; while parsing initializer list [<a href="http://github.com/doxygen/doxygen/commit/985faf287233badf65fa33d21bde17afa6970d60">view</a>]
+<li>Fix for PlantUML configuration [<a href="http://github.com/doxygen/doxygen/commit/701598719c7c4301f2614b38184dfb37cd1704bc">view</a>]
+<li>Fix plantuml generation issue [<a href="http://github.com/doxygen/doxygen/commit/6c87c75e197e673d74949839d59fe8b0842e86ff">view</a>]
+<li>Fix: Add missing jquery.js, dynsections.js &amp; optional svgpan.js to QCH file [<a href="http://github.com/doxygen/doxygen/commit/bf9415698e53d79b4b94bdf64a52be4347eb3150">view</a>]
+<li>Fix: replace deprecated {\bf with \textbf{ in LaTeX generator [<a href="http://github.com/doxygen/doxygen/commit/1d85e00dd1238f74babf0a1d7eeeaf3e2ba659f2">view</a>]
+<li>Fixed constexp.y bison issue [<a href="http://github.com/doxygen/doxygen/commit/e12ec76f044b07d4e4fe167c93103be2879abaca">view</a>]
+<li>Fixed cross referencing issue when using bitfields. [<a href="http://github.com/doxygen/doxygen/commit/2a5357a0fac644ffb1bf49569344b9bc57603a29">view</a>]
+<li>Fixed jump to anchor issue when navigating to source file [<a href="http://github.com/doxygen/doxygen/commit/94b726f4273df805846d7fdcd2e9d5bd7627f628">view</a>]
+<li>Fixed problem generating per letter namespace member index pages. [<a href="http://github.com/doxygen/doxygen/commit/2b722b57f20e044b061423109bfa7168a7a1b913">view</a>]
+<li>Fixed svgpan.js issue with Chrome causing empty SVG graphs [<a href="http://github.com/doxygen/doxygen/commit/5f01f783e2387a5d44ad70fbff5365aa0e5df938">view</a>]
+<li>Fixed typedef and define strings for Spanish translation [<a href="http://github.com/doxygen/doxygen/commit/f69eb5d79885788d6bfc6303f34f5f016b326f1c">view</a>]
+<li>Fixup man only output to use generator state push pop [<a href="http://github.com/doxygen/doxygen/commit/051fb8a536e1d52aa0a0422186975852dd139c06">view</a>]
+<li>For manpages remove trailing dash when no brief description [<a href="http://github.com/doxygen/doxygen/commit/98d3f8e7d581c589e7bd1a7faf98fc6736847cf1">view</a>]
+<li>Made the RTF output honor the PAPER_TYPE option. [<a href="http://github.com/doxygen/doxygen/commit/5e894a760a6584ade2f5417e2577b66c65b51fd9">view</a>]
+<li>New classes for generated HTML div elements. [<a href="http://github.com/doxygen/doxygen/commit/84017cac3bc9d08aa95a90cf0e44b913c492c939">view</a>]
+<li>Option for PlantUML configuration file [<a href="http://github.com/doxygen/doxygen/commit/d4b0b88e189027d514fa84de75100ff1fe6e681a">view</a>]
+<li>Removed x flag from util* source files [<a href="http://github.com/doxygen/doxygen/commit/16d57031188698c7e79dd64554efc56044e91c8f">view</a>]
+<li>Replaced section marker before members by diamond shaped bullet [<a href="http://github.com/doxygen/doxygen/commit/da21ad5b5147182c2117751d8c517b81dd57277f">view</a>]
+<li>Reverting pull request #537 until it will be fixed [<a href="http://github.com/doxygen/doxygen/commit/fd67ef1f66afb0b51a784866b806ba8f04e12dfb">view</a>]
+<li>Update Swedish translation [<a href="http://github.com/doxygen/doxygen/commit/78b43ec9b5469a9e757cd658d21907fa593ed1aa">view</a>]
+<li>Updated the Polish translation [<a href="http://github.com/doxygen/doxygen/commit/158b7bdb697d19736692105161af3e891ae7732e">view</a>]
+<li>bison: use %declarations instead of command line options. [<a href="http://github.com/doxygen/doxygen/commit/97c2c1d6f323d6d38dda4820c00ca8ca8f5b6940">view</a>]
+<li>flex: use %option instead of command line options. [<a href="http://github.com/doxygen/doxygen/commit/0bdb01d4b6ced07750d8e449fd4ffab5554d8a24">view</a>]
+</ul>
+<p>
+\endhtmlonly
+
 \subsection log_1_8_12 Release 1.8.12
 \htmlonly
 <b>(release date 05-09-2016)</b>
