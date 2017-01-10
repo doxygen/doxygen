@@ -310,7 +310,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
 
     if (!serverBasedSearch)
     {
-      if (disableIndex)
+      if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
                        "  $(document).ready(function() { init_search(); });\n"
@@ -319,7 +319,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
     }
     else
     {
-      if (disableIndex)
+      if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
                        "  $(document).ready(function() {\n"
@@ -730,13 +730,20 @@ void HtmlGenerator::init()
   createSubDirs(d);
 
   ResourceMgr &mgr = ResourceMgr::instance();
-  mgr.copyResource("tabs.css",dname);
+  if (Config_getBool(HTML_DYNAMIC_MENUS))
+  {
+    mgr.copyResourceAs("tabs.css",dname,"tabs.css");
+  }
+  else // stylesheet for the 'old' static tabs
+  {
+    mgr.copyResourceAs("fixed_tabs.css",dname,"tabs.css");
+  }
   mgr.copyResource("jquery.js",dname);
   if (Config_getBool(INTERACTIVE_SVG))
   {
     mgr.copyResource("svgpan.js",dname);
   }
-  if (!Config_getBool(DISABLE_INDEX))
+  if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
   {
     mgr.copyResource("menu.js",dname);
   }
@@ -825,6 +832,10 @@ void HtmlGenerator::writeSearchData(const char *dir)
     if (Config_getBool(DISABLE_INDEX))
     {
       searchCss = mgr.getAsString("search_nomenu.css");
+    }
+    else if (!Config_getBool(HTML_DYNAMIC_MENUS))
+    {
+      searchCss = mgr.getAsString("search_fixedtabs.css");
     }
     else
     {
@@ -2149,8 +2160,36 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
   static bool searchEngine = Config_getBool(SEARCHENGINE);
   static bool externalSearch = Config_getBool(EXTERNAL_SEARCH);
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
+  LayoutNavEntry::Kind kind = (LayoutNavEntry::Kind)-1;
+  LayoutNavEntry::Kind altKind = (LayoutNavEntry::Kind)-1; // fall back for the old layout file
+  bool highlightParent=FALSE;
+  switch (hli) // map HLI enums to LayoutNavEntry::Kind enums
+  {
+    case HLI_Main:             kind = LayoutNavEntry::MainPage;         break;
+    case HLI_Modules:          kind = LayoutNavEntry::Modules;          break;
+    //case HLI_Directories:      kind = LayoutNavEntry::Dirs;             break;
+    case HLI_Namespaces:       kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;  break;
+    case HLI_Hierarchy:        kind = LayoutNavEntry::ClassHierarchy;   break;
+    case HLI_Classes:          kind = LayoutNavEntry::ClassIndex;       altKind = LayoutNavEntry::Classes;     break;
+    case HLI_Annotated:        kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;     break;
+    case HLI_Files:            kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;       break;
+    case HLI_NamespaceMembers: kind = LayoutNavEntry::NamespaceMembers; break;
+    case HLI_Functions:        kind = LayoutNavEntry::ClassMembers;     break;
+    case HLI_Globals:          kind = LayoutNavEntry::FileGlobals;      break;
+    case HLI_Pages:            kind = LayoutNavEntry::Pages;            break;
+    case HLI_Examples:         kind = LayoutNavEntry::Examples;         break;
+    case HLI_UserGroup:        kind = LayoutNavEntry::UserGroup;        break;
+    case HLI_ClassVisible:     kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;          
+                               highlightParent = TRUE; break;
+    case HLI_NamespaceVisible: kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;       
+                               highlightParent = TRUE; break;
+    case HLI_FileVisible:      kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;            
+                               highlightParent = TRUE; break;
+    case HLI_None:   break;
+    case HLI_Search: break;
+  }
 
-  if (compact)
+  if (compact && Config_getBool(HTML_DYNAMIC_MENUS))
   {
     QCString searchPage;
     if (externalSearch)
@@ -2186,6 +2225,30 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
     t << "});" << endl;
     t << "</script>" << endl;
     t << "<div id=\"main-nav\"></div>" << endl;
+  }
+  else if (compact) // && !Config_getBool(HTML_DYNAMIC_MENUS)
+  {
+    // find highlighted index item
+    LayoutNavEntry *hlEntry = root->find(kind,kind==LayoutNavEntry::UserGroup ? file : 0);
+    if (!hlEntry && altKind!=(LayoutNavEntry::Kind)-1) { hlEntry=root->find(altKind); kind=altKind; }
+    if (!hlEntry) // highlighted item not found in the index! -> just show the level 1 index...
+    {
+      highlightParent=TRUE;
+      hlEntry = root->children().getFirst();
+      if (hlEntry==0) 
+      {
+        return; // argl, empty index!
+      }
+    }
+    if (kind==LayoutNavEntry::UserGroup)
+    {
+      LayoutNavEntry *e = hlEntry->children().getFirst();
+      if (e)
+      {
+        hlEntry = e; 
+      }
+    }
+    renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HLI_Search);
   }
   else
   {

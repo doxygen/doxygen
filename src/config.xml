@@ -1941,6 +1941,18 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='bool' id='HTML_DYNAMIC_MENUS' defval='1' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ If the \c HTML_DYNAMIC_MENUS tag is set to \c YES then the generated HTML 
+ documentation will contain a main index with vertical navigation menus that 
+ are dynamically created via Javascript. If disabled, the navigation index will consists of 
+ multiple levels of tabs that are statically embedded in every HTML page. 
+ Disable this option to support browsers that do not have Javascript, like 
+ the Qt help browser.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='HTML_DYNAMIC_SECTIONS' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
