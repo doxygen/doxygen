@@ -881,25 +881,38 @@ void ConfigImpl::convertStrToVal()
   }
 }
 
-static void substEnvVarsInString(QCString &s)
+static void substEnvVarsInString(QCString &string)
 {
-  static QRegExp re("\\$\\([a-z_A-Z0-9.-]+\\)");
-  static QRegExp re2("\\$\\([a-z_A-Z0-9.-]+\\([a-z_A-Z0-9.-]+\\)\\)"); // For e.g. PROGRAMFILES(X86)
-  if (s.isEmpty()) return;
-  int p=0;
-  int i,l;
-  //printf("substEnvVarInString(%s) start\n",s.data());
-  while ((i=re.match(s,p,&l))!=-1 || (i=re2.match(s,p,&l))!=-1)
+  static QRegExp reVar("[$][(][a-z_A-Z][a-z_A-Z0-9]*[):]"); // $(<name>[):]
+  static QRegExp reDefault("-[^)]*[)]"); // -<default>)
+
+  if (string.isEmpty()) return;
+
+  int parsePosition=0;
+  int varStart, varLength, defaultStart, defaultLength;
+  //printf("substEnvVarInString(%s) start\n",string.data());
+  while ((varStart=reVar.match(string,parsePosition,&varLength))!=-1)
   {
-    //printf("Found environment var s.mid(%d,%d)=`%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
-    QCString env=portable_getenv(s.mid(i+2,l-3));
-    substEnvVarsInString(env); // recursively expand variables if needed.
-    s = s.left(i)+env+s.right(s.length()-i-l);
-    p=i+env.length(); // next time start at the end of the expanded string
+    parsePosition += varLength;
+
+    // Find default value
+    if(string[varLength-1] == ':' && (defaultStart=reDefault.match(string,parsePosition,&defaultLength)) == -1) { 
+      // No valid environment variable
+      continue;
+    }
+
+    //printf("Found environment var string.mid(%d,%d)=`%s'\n",varStart+2,varLength-3,string.mid(varStart+2,varLength-3).data());
+    QCString env=portable_getenv(string.mid(varStart+2,varLength-3));
+    //printf("%s=%s\n",string.mid(varStart+2,varLength-3).data(), env.data());
+    if(string[varLength-1] == ':' && env == NULL) {
+      env = string.mid(defaultStart+1,defaultLength-2);
+      substEnvVarsInString(env); // Replace vars in default string.
+    }
+    string = string.left(varStart)+env+string.right(string.length()-varStart-varLength-defaultLength);
+    //printf("String after environment variable substitution: %s\n", string.data());
   }
-  s=s.stripWhiteSpace(); // to strip the bogus space that was added when an argument
-                         // has quotes
-  //printf("substEnvVarInString(%s) end\n",s.data());
+  string=string.stripWhiteSpace(); // to strip the bogus space that was added when an argument has quotes
+  //printf("substEnvVarInString(%s) End\n",string.data());
 }
 
 static void substEnvVarsInStrList(QStrList &sl)

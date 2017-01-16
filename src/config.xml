@@ -46,7 +46,9 @@ new values to the list. Values are sequences of non-blanks. If the value should
 contain one or more blanks it must be surrounded by quotes (<code>&quot;...&quot;</code>).
 Multiple lines can be concatenated by inserting a backslash (\c \\)
 as the last character of a line. Environment variables can be expanded 
-using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+using the pattern <code>\$(ENV_VARIABLE_NAME)</code>. A default value if environment 
+variable is not present can be set using the pattern 
+<code>\$(ENV_VARIABLE_NAME:-DEFAULT_VALUE)</code>
 
 You can also include part of a configuration file from another configuration
 file using a <code>\@INCLUDE</code> tag as follows:
