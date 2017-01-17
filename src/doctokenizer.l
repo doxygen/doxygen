@@ -395,10 +395,14 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
-REFWORD2  ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?){FUNCARG2}?
-REFWORD3  ({ID}":")*{ID}":"?
-REFWORD4  (({SCOPEPRE}*"operator"{OPMASKOP2})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOP2})){CVSPEC}?
-REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
+REFWORD2_PRE   ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?)
+REFWORD2       {REFWORD2_PRE}{FUNCARG2}?
+REFWORD2_NOCV  {REFWORD2_PRE}("("{FUNCPART}")")?
+REFWORD3       ({ID}":")*{ID}":"?
+REFWORD4_NOCV  (({SCOPEPRE}*"operator"{OPMASKOP2})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOP2}))
+REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
+REFWORD        {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
+REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 
 %option noyywrap
 %option yylineno
@@ -1011,6 +1015,14 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
                          unput(*yytext);
   			 return 0;
   		       }
+<St_Ref>{REFWORD_NOCV}/{BLANK}("const")[a-z_A-Z0-9] { // see bug776988
+  			 g_token->name=yytext;
+			 return TK_WORD;
+                       }
+<St_Ref>{REFWORD_NOCV}/{BLANK}("volatile")[a-z_A-Z0-9] { // see bug776988
+  			 g_token->name=yytext;
+			 return TK_WORD;
+                       }
 <St_Ref>{REFWORD}      { // label to refer to
   			 g_token->name=yytext;
 			 return TK_WORD;
