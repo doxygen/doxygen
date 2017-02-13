@@ -342,6 +342,7 @@ static STLInfo g_stlinfo[] =
   { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // deprecated
   { "smart_ptr",            0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
   { "unique_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
+  { "shared_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++14
   { "weak_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
   { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
   { "error_code",           0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
@@ -515,7 +516,7 @@ static void addSTLClasses(EntryNav *rootNav)
     {
       addSTLMember(classEntryNav,info->templType2,info->templName2);
     }
-    if (fullName=="std::auto_ptr" || fullName=="std::smart_ptr" ||
+    if (fullName=="std::auto_ptr" || fullName=="std::smart_ptr" || fullName=="std::shared_ptr" ||
         fullName=="std::unique_ptr" || fullName=="std::weak_ptr")
     {
       Entry *memEntry = new Entry;
