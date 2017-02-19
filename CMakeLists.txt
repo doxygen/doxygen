@@ -16,6 +16,7 @@ project(doxygen)
 
 option(build_wizard    "Build the GUI frontend for doxygen." OFF)
 option(build_app       "Example showing how to embed doxygen in an application." OFF)
+option(build_parse     "Parses source code and dumps the dependencies between the code elements." OFF)
 option(build_xmlparser "Example showing how to parse doxygen's XML output." OFF)
 option(build_search    "Build external search tools (doxysearch and doxyindexer)" OFF)
 option(build_doc       "Build user manual" OFF)
@@ -141,6 +142,7 @@ add_subdirectory(doc)
 
 add_subdirectory(addon/doxmlparser)
 add_subdirectory(addon/doxyapp)
+add_subdirectory(addon/doxyparse)
 add_subdirectory(addon/doxysearch)
 add_subdirectory(addon/doxywizard)
 
