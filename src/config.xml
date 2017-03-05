@@ -747,7 +747,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       </docs>
     </option>
     <option type='int' id='LOOKUP_CACHE_SIZE' minval='0' maxval='9' defval='0'>
-      <!-- be carefull when changing these formulas as they are hard coded in the conversion script -->
+      <!-- be careful when changing these formulas as they are hard coded in the conversion script -->
       <docs>
 <![CDATA[
  The size of the symbol lookup cache can be 

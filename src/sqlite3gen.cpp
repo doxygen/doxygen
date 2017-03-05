@@ -491,8 +491,8 @@ static int step(sqlite3 *db, SqlStmt &s,bool getRowId=FALSE, bool select=FALSE)
     sqlite3_clear_bindings(s.stmt);
     return -1;
   }
-  if (getRowId && select) rowid = sqlite3_column_int(s.stmt, 0); // works on selects, doesnt on inserts
-  if (getRowId && !select) rowid = sqlite3_last_insert_rowid(db); //works on inserts, doesnt on selects
+  if (getRowId && select) rowid = sqlite3_column_int(s.stmt, 0); // works on selects, doesn't on inserts
+  if (getRowId && !select) rowid = sqlite3_last_insert_rowid(db); //works on inserts, doesn't on selects
   sqlite3_reset(s.stmt);
   sqlite3_clear_bindings(s.stmt); // XXX When should this really be called
   return rowid;
