@@ -1109,7 +1109,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
           actualStart,actualEnd,codeFragment)
        )
     {
-      //printf("Adding code fragement '%s' ext='%s'\n",
+      //printf("Adding code fragment '%s' ext='%s'\n",
       //    codeFragment.data(),m_impl->defFileExt.data());
       ParserInterface *pIntf = Doxygen::parserManager->getParser(m_impl->defFileExt);
       pIntf->resetCodeParserState();
