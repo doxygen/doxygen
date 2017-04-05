@@ -925,7 +925,7 @@
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=728530">728530</a> - Crash on \addindex \term [<a href="http://github.com/doxygen/doxygen/commit/653a2a8b123b79835af9f684f8b92ef7f88712aa">view</a>]</li>
 <li>A new files have been added but is not incorporated in the windows build part [<a href="http://github.com/doxygen/doxygen/commit/d9dd873e25fba968ddcbcc79d6643f5df669b626">view</a>]</li>
 <li>Add docbook directory to be removed as well [<a href="http://github.com/doxygen/doxygen/commit/08ea10029e705a388ab14ee29544d496a203f23f">view</a>]</li>
-<li>Add extra (documenattion) directories to ignore pattern [<a href="http://github.com/doxygen/doxygen/commit/db358b1f219fecf0d7df96d8c70b47b245471c66">view</a>]</li>
+<li>Add extra (documentation) directories to ignore pattern [<a href="http://github.com/doxygen/doxygen/commit/db358b1f219fecf0d7df96d8c70b47b245471c66">view</a>]</li>
 <li>Add index support to context [<a href="http://github.com/doxygen/doxygen/commit/12cd22f4c32ed8b92da7b5a03181aa6735018a5b">view</a>]</li>
 <li>Add line numbers in case comment is not closed properly. [<a href="http://github.com/doxygen/doxygen/commit/b1d513b2ac65fe26ceec2fa494867713efa01cd5">view</a>]</li>
 <li>Add template context for annotated class index [<a href="http://github.com/doxygen/doxygen/commit/9434ecb13e1f3e2901b78d3e41e7f1d7d9469434">view</a>]</li>
