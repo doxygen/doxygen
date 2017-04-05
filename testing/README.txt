@@ -19,7 +19,7 @@ optional parameters:
 -doxygen exe: run the specified doxygen executable.
 -xmllint exe: run the specified xmllint executable.
 
-The runtest.pl has the following dependenies on 3rd party tools:
+The runtest.pl has the following dependencies on 3rd party tools:
 - python  to run the script
 - xmllint to normalize the XML output
 - diff    to show the differences in case a test fails
