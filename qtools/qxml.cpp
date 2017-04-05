@@ -1895,7 +1895,7 @@ private:
   <a href="xml-sax.html#quickStart">Quick start</a>.
 */
 
-//guaranteed not to be a characater
+//guaranteed not to be a character
 const QChar QXmlSimpleReader::QEOF = QChar((ushort)0xffff);
 
 /*!
@@ -5652,7 +5652,7 @@ parseError:
   head stands on the first character after the reference.
 
   charDataRead is set to FALSE if the reference must be parsed. The
-  charachter(s) which the reference mapped to are inserted at the reference
+  character(s) which the reference mapped to are inserted at the reference
   position. The head stands on the first character of the replacement).
 */
 bool QXmlSimpleReader::parseReference( bool &charDataRead, EntityRecognitionContext context )
