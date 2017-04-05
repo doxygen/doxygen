@@ -561,7 +561,7 @@ void FileDef::writeClassDeclarations(OutputList &ol,const QCString &title)
 
 void FileDef::writeInlineClasses(OutputList &ol)
 {
-  // temporarily undo the disbling could be done by startMemberDocumentation()
+  // temporarily undo the disabling could be done by startMemberDocumentation()
   // as a result of setting SEPARATE_MEMBER_PAGES to YES; see bug730512
   bool isEnabled = ol.isEnabled(OutputGenerator::Html);
   ol.enable(OutputGenerator::Html);
