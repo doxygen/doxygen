@@ -175,7 +175,7 @@
 //
 
 
-// Should be sorted most-authorative to least-authorative
+// Should be sorted most-authoritative to least-authoritative
 
 #if defined(__SC__)
 #define _CC_SYM_
