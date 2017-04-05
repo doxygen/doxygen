@@ -3915,7 +3915,7 @@ bool QXmlSimpleReader::parseAttlistDecl()
 	{ -1,      Done,    Attdef,  Attdef,   Attdef,  Attdef,  Attdef,  Attdef  }, // Ws1
 	{ Ws2,     -1,      -1,      -1,       -1,      -1,      -1,      -1      }, // Attdef
 	{ -1,      Atttype, Atttype, Atttype,  Atttype, Atttype, Atttype, Atttype }, // Ws2
-	{ Ws3,     -1,      -1,      -1,       -1,      -1,      -1,      -1      }, // Attype
+	{ Ws3,     -1,      -1,      -1,       -1,      -1,      -1,      -1      }, // Atttype
 	{ -1,      Attval,  DDecH,   Attval,   Attval,  Attval,  Attval,  Attval  }, // Ws3
 	{ -1,      -1,      -1,      -1,       DefImp,  DefFix,  DefReq,  -1      }, // DDecH
 	{ Ws4,     Ws4,     -1,      -1,       -1,      -1,      -1,      -1      }, // DefReq
