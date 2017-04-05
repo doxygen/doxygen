@@ -2035,7 +2035,7 @@ make sure you add the following:
 <h3>Changes</h3>
 <ul>
 <li>   Auto list items can now consist of multiple paragraphs.
-       The indentation of the (first line) of a new paragraph detemines
+       The indentation of the (first line) of a new paragraph determines
        to which list item the paragraph belongs or if it marks the end of the
        list. </li>
 <li>   When UML_LOOK is enabled, relations shown on the edge of a graph
