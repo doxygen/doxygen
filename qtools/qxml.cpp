@@ -1079,7 +1079,7 @@ finished:
   \fn bool QXmlErrorHandler::error( const QXmlParseException& exception )
 
   A reader might use this function to report a recoverable error. A recoverable
-  error corresponds to the definiton of "error" in section 1.2 of the XML 1.0
+  error corresponds to the definition of "error" in section 1.2 of the XML 1.0
   specification.
 
   The reader must continue to provide normal parsing events after invoking this
