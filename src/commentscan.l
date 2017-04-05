@@ -1716,7 +1716,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of the section/subsection/.. commands ------- */
 
-<SectionLabel>{LABELID}			{ // first argyment
+<SectionLabel>{LABELID}			{ // first argument
   					  g_sectionLabel=yytext;
                                           addOutput(yytext);
 					  g_sectionTitle.resize(0);
@@ -2221,7 +2221,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of the cite command ------- */
 
-<CiteLabel>{CITEID}			{ // found argyment
+<CiteLabel>{CITEID}			{ // found argument
   					  addCite();
                                           addOutput(yytext);
 					  BEGIN(Comment);
