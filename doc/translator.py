@@ -141,8 +141,8 @@ class Transl:
         self.baseClassId = None
         self.readableStatus = None   # 'up-to-date', '1.2.3', '1.3', etc.
         self.status = None           # '', '1.2.03', '1.3.00', etc.
-        self.lang = None             # like 'Brasilian'
-        self.langReadable = None     # like 'Brasilian Portuguese'
+        self.lang = None             # like 'Brazilian'
+        self.langReadable = None     # like 'Brazilian Portuguese'
         self.note = None             # like 'should be cleaned up'
         self.prototypeDic = {}       # uniPrototype -> prototype
         self.translateMeText = 'translate me!'
