@@ -258,7 +258,7 @@ void parseFuncDecl(const QCString &decl,bool objC,QCString &cl,QCString &t,
   //        type.data(),scope.data(),name.data(),args.data());
 
   int nb = name.findRev('[');
-  if (nb!=-1 && args.isEmpty()) // correct for [] in name ambigity (due to Java return type allowing [])
+  if (nb!=-1 && args.isEmpty()) // correct for [] in name ambiguity (due to Java return type allowing [])
   {
     args.prepend(name.right(name.length()-nb));
     name=name.left(nb);
