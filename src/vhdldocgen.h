@@ -221,7 +221,7 @@ class VhdlDocGen
 
     
     static void writeSource(MemberDef *mdef,OutputList& ol,QCString & cname);
-    static void writeAlphbeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
+    static void writeAlphabeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
 
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
