@@ -615,12 +615,12 @@
 
 /*!
   \fn T& QValueListIterator::operator*()
-  Asterix operator. Returns a reference to the current iterator item.
+  Asterisk operator. Returns a reference to the current iterator item.
 */
 
 /*!
   \fn const T& QValueListIterator::operator*() const
-  Asterix operator. Returns a reference to the current iterator item.
+  Asterisk operator. Returns a reference to the current iterator item.
 */
 
 /*!
@@ -726,7 +726,7 @@
 
 /*!
   \fn const T& QValueListConstIterator::operator*() const
-  Asterix operator. Returns a reference to the current iterator item.
+  Asterisk operator. Returns a reference to the current iterator item.
 */
 
 /*!
