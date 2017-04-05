@@ -10954,7 +10954,7 @@ void parseInput()
 
 
   /**************************************************************************
-   *            Check/create output directorties                            *
+   *            Check/create output directories                            *
    **************************************************************************/
 
   QCString htmlOutput;
