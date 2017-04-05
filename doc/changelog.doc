@@ -367,7 +367,7 @@
 <li>Using tabu package for LaTeX tables [<a href="http://github.com/doxygen/doxygen/commit/647b6ac8669cd8ba1e8c60eeb3c2de961c7d6a1b">view</a>]</li>
 <li>[Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=755225">755225</a>] On Windows, generated layout is with UNIX EOL [<a href="http://github.com/doxygen/doxygen/commit/78a80001223af290c7c7321ad2d210fb3cd16f11">view</a>]</li>
 <li>[Doxygen-users] plugin / filter not behaving as expected [<a href="http://github.com/doxygen/doxygen/commit/0c7f182016c7c2604a484367738e76cb40c0541b">view</a>]</li>
-<li>add spaces like &quot;Doyxgen&quot;CN_SPC-&gt;&quot;Doyxgen&quot; CN_SPC [<a href="http://github.com/doxygen/doxygen/commit/35d1aa8bf9208302601fa96462e246c98aa0b0e5">view</a>]</li>
+<li>add spaces like &quot;Doxygen&quot;CN_SPC-&gt;&quot;Doxygen&quot; CN_SPC [<a href="http://github.com/doxygen/doxygen/commit/35d1aa8bf9208302601fa96462e246c98aa0b0e5">view</a>]</li>
 <li>allow building with custom iconv on Windows [<a href="http://github.com/doxygen/doxygen/commit/3d684f6d123abdbf630bb19bc6095cc9d69efb68">view</a>]</li>
 <li>doc: generate doxygen&#39;s documentation. [<a href="http://github.com/doxygen/doxygen/commit/3c4a1ea2ee56f2604c2277f13737d53b3a0b0353">view</a>]</li>
 <li>doc: put man pages under share/man/man1 [<a href="http://github.com/doxygen/doxygen/commit/95d28153779810dc95afafa38ed838f32516a1f4">view</a>]</li>
