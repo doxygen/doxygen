@@ -1025,7 +1025,7 @@
 <li>Use hook arrow for hyphens in symbol names in the LaTeX output. [<a href="http://github.com/doxygen/doxygen/commit/ac813134a85ba9bd999fb4cf8271c74e02cd4ebb">view</a>]</li>
 <li>Wrong UTF 8 codes [<a href="http://github.com/doxygen/doxygen/commit/fd4beb272e5f1a760a71ab8d85463b8356c6f786">view</a>]</li>
 <li>Fix broken links to subpages in LaTeX output [<a href="http://github.com/doxygen/doxygen/commit/10189681dcb46e543a287827e2096cef3dbc42ae">view</a>]</li>
-<li>\xmlonly aoppeared twice in see also section of \htmlonly and \docbookonly [<a href="http://github.com/doxygen/doxygen/commit/f1cdb27194dd180f1bff1fbdd87874bb0d15758d">view</a>]</li>
+<li>\xmlonly appeared twice in see also section of \htmlonly and \docbookonly [<a href="http://github.com/doxygen/doxygen/commit/f1cdb27194dd180f1bff1fbdd87874bb0d15758d">view</a>]</li>
 <li>add css-escape to avoid jquery based xss [<a href="http://github.com/doxygen/doxygen/commit/7fea82094723ecfb4e9b3ea6819137b99d7dfa9c">view</a>]</li>
 <li>add parameter [<a href="http://github.com/doxygen/doxygen/commit/c5bc9fc8c407aac845d594b2685d0c92699727d8">view</a>]</li>
 <li>add search.py, a client for doxygen_sqlite3.db [<a href="http://github.com/doxygen/doxygen/commit/697ac97aad7fa045b6cc205050b69cf3f22408ad">view</a>]</li>
