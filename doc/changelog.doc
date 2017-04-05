@@ -651,7 +651,7 @@
 <li>fix docbook output [<a href="http://github.com/doxygen/doxygen/commit/1a403d80160458091bab7c442e54f836c0b90bca">view</a>]
     <ol><li>support other than english</li>
         <li>fix broken example link id</li>
-        <li>fix incomplete TOC : no Classe etc.</li>
+        <li>fix incomplete TOC : no Classes etc.</li>
         <li>add brief description for Functions etc.</li>
         <li>Comply with REPEAT_BRIEF </li>
         <li>Do not output duplicated contents when detailed description is missing.</li>
