@@ -4194,7 +4194,7 @@ int ClassDef::countAdditionalInheritedMembers()
       }
     }
   }
-  //printf("countAdditonalInheritedMembers()=%d\n",totalCount);
+  //printf("countAdditionalInheritedMembers()=%d\n",totalCount);
   return totalCount;
 }
 

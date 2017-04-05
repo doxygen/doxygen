@@ -1114,7 +1114,7 @@ class TranslateContext::Private
         s_inst.addProperty("callerGraph",        &Private::callerGraph);
         //%% markerstring inheritedFrom
         s_inst.addProperty("inheritedFrom",      &Private::inheritedFrom);
-        //%% string addtionalInheritedMembers
+        //%% string additionalInheritedMembers
         s_inst.addProperty("additionalInheritedMembers",&Private::additionalInheritedMembers);
         //%% string includeDependencyGraph:container_name
         s_inst.addProperty("includeDependencyGraph",&Private::includeDependencyGraph);
