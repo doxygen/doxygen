@@ -1064,7 +1064,7 @@ class TranslateContext::Private
         s_inst.addProperty("fileMembers",       &Private::fileMembers);
         //%% string fileMembersDescription
         s_inst.addProperty("fileMembersDescription", &Private::fileMembersDescription);
-        //%% string relatedPagesDescripiton
+        //%% string relatedPagesDescription
         s_inst.addProperty("relatedPagesDesc",  &Private::relatedPagesDesc);
         //%% string more
         s_inst.addProperty("more",              &Private::more);
