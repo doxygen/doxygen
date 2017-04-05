@@ -158,7 +158,7 @@ class ClassDefImpl
     /* user defined member groups */
     MemberGroupSDict *memberGroupSDict;
 
-    /*! Is this an abstact class? */
+    /*! Is this an abstract class? */
     bool isAbstract;
 
     /*! Is the class part of an unnamed namespace? */
