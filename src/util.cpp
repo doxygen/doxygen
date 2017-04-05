@@ -948,7 +948,7 @@ class AccessStack
  */
 int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Definition *item)
 {
-  //printf("<isAccesibleFrom(scope=%s,item=%s itemScope=%s)\n",
+  //printf("<isAccessibleFrom(scope=%s,item=%s itemScope=%s)\n",
   //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
 
   static AccessStack accessStack;
