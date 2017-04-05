@@ -51,7 +51,7 @@ bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
 
 #if 0
     // check for garbage at the end of the expression
-    // an expression ends with a character '\0' and token_type = delimeter
+    // an expression ends with a character '\0' and token_type = delimiter
     if (m_tokenType!=DELIMITER || !m_token.isEmpty())
     {
       if (m_tokenType == DELIMITER)
@@ -84,7 +84,7 @@ bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
 
 
 /**
- * checks if the given char c is a delimeter
+ * checks if the given char c is a delimiter
  * minus is checked apart, can be unary minus
  */
 static bool isDelimiter(const char c)
@@ -155,7 +155,7 @@ void CondParser::getToken()
     return;
   }
 
-  // check for operators (delimeters)
+  // check for operators (delimiters)
   if (isDelimiter(*m_e))
   {
     m_tokenType = DELIMITER;
