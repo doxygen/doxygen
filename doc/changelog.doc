@@ -2422,7 +2422,7 @@ make sure you add the following:
        GENERATE_TREEVIEW was enabled.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=647768">647768</a>: Linking to a section on the main page could result in a
        broken link when GENERATE_TREEVIEW was enabled.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=647889">647889</a>: Fixed invalid warning when using @deparated method with
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=647889">647889</a>: Fixed invalid warning when using @deprecated method with
        default values for parameters.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=648302">648302</a>: A function made related using @relates could end up in
        the wrong class if there was already a method with a matching
