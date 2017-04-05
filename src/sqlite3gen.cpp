@@ -665,7 +665,7 @@ static void insertMemberFunctionParams(int id_memberdef, const MemberDef *md, co
 static void insertMemberDefineParams(int id_memberdef,const MemberDef *md, const Definition *def)
 {
     if (md->argumentList()->count()==0) // special case for "foo()" to
-                                        // disguish it from "foo".
+                                        // distinguish it from "foo".
     {
       DBG_CTX(("no params\n"));
     }

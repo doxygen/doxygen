@@ -903,7 +903,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
           md->argsString()) // define
   {
     if (md->argumentList()->count()==0) // special case for "foo()" to
-                                        // disguish it from "foo".
+                                        // distinguish it from "foo".
     {
       t << "        <param></param>" << endl;
     }
