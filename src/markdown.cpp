@@ -1989,7 +1989,7 @@ static int writeBlockQuote(GrowBuf &out,const char *data,int size)
         out.addStr("<blockquote>\n");
       }
     }
-    else if (level<curLevel) // quote level descreased => add end markers
+    else if (level<curLevel) // quote level decreased => add end markers
     {
       for (l=level;l<curLevel;l++)
       {
