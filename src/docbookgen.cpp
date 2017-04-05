@@ -968,7 +968,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
     }
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymouse scopes
+      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
       {
         t << "            <para>" << endl;
         t << "                <itemizedlist>" << endl;

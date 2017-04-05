@@ -571,7 +571,7 @@ class MemberDefImpl
     bool stat;                // is it a static function?
     bool proto;               // is it a prototype;
     bool docEnumValues;       // is an enum with documented enum values.
-    bool annScope;            // member is part of an annoymous scope
+    bool annScope;            // member is part of an anonymous scope
     bool annUsed;
     bool hasCallGraph;
     bool hasCallerGraph;
