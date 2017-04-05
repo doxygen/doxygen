@@ -142,7 +142,7 @@ PREDEFINED             =
 EXPAND_AS_DEFINED      = DEFINE_CLS_IMPL
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
-# Configuration::addtions related to external references   
+# Configuration::additions related to external references   
 #---------------------------------------------------------------------------
 TAGFILES               = ../../qtools_docs/qtools.tag=../../../../qtools_docs/html
 GENERATE_TAGFILE       = 
@@ -168,7 +168,7 @@ MAX_DOT_GRAPH_HEIGHT   = 1024
 GENERATE_LEGEND        = YES
 DOT_CLEANUP            = YES
 #---------------------------------------------------------------------------
-# Configuration::addtions related to the search engine   
+# Configuration::additions related to the search engine   
 #---------------------------------------------------------------------------
 SEARCHENGINE           = NO
 CGI_NAME               = 
