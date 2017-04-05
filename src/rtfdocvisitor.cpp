@@ -1067,7 +1067,7 @@ void RTFDocVisitor::visitPost(DocHtmlHeader *)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocHtmlHeader)}\n");
-  // close open table of contens entry
+  // close open table of contents entry
   m_t << "} \\par";
   m_t << "}" << endl; // end section
   m_lastIsPara=TRUE;
