@@ -4793,7 +4793,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FuncQual>{ID}				{ // typically a K&R style C function
                                           if (insideCS && qstrcmp(yytext,"where")==0)
 					  { 
-					    // type contraint for a method
+					    // type constraint for a method
                                             delete current->typeConstr;
                                             current->typeConstr = new ArgumentList;
 					    current->typeConstr->append(new Argument);
@@ -5530,7 +5530,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    baseName.resize(0);
 					    BEGIN( BasesProt ) ;
 					  }
-					  else if (insideCS && qstrcmp(yytext,"where")==0) // C# type contraint
+					  else if (insideCS && qstrcmp(yytext,"where")==0) // C# type constraint
 					  {
                                             delete current->typeConstr;
                                             current->typeConstr = new ArgumentList;
@@ -5810,7 +5810,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           QCString baseScope = yytext;
                                           if (insideCS && baseScope.stripWhiteSpace()=="where")
 					  { 
-					    // type contraint for a class
+					    // type constraint for a class
                                             delete current->typeConstr;
                                             current->typeConstr = new ArgumentList;
 					    current->typeConstr->append(new Argument);
