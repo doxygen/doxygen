@@ -269,11 +269,11 @@ QStringList QStringList::grep( const QRegExp &expr ) const
 QString QStringList::join( const QString &sep ) const
 {
     QString res;
-    bool alredy = FALSE;
+    bool already = FALSE;
     for ( QStringList::ConstIterator it = begin(); it != end(); ++it ) {
-	if ( alredy )
+	if ( already )
 	    res += sep;
-	alredy = TRUE;
+	already = TRUE;
 	res += *it;
     }
 
