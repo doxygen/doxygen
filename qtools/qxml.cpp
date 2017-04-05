@@ -2609,7 +2609,7 @@ bool QXmlSimpleReader::parseElementAttribute( QString &prefix, QString &uri, QSt
 		}
 	    }
 	} else {
-	    // no namespace delcaration
+	    // no namespace declaration
 	    d->namespaceSupport.processName( name(), TRUE, uri, lname );
 	    d->attList.qnameList.append( name() );
 	    d->attList.uriList.append( uri );
