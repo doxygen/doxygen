@@ -98,7 +98,7 @@
 {# write the file sources #}
 {% for compound in fileList %}
   {% with page=compound %}
-    {# TODO: to deal with clang optimisation, we need to write the sources in a different order! #}
+    {# TODO: to deal with clang optimization, we need to write the sources in a different order! #}
     {% if compound.hasSourceFile %}
       {% create compound.sourceFileName|append:config.HTML_FILE_EXTENSION from 'htmlsource.tpl' %}
     {% endif %}
