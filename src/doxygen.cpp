@@ -9548,7 +9548,7 @@ static QDict<void> g_pathsVisited(1009);
 //----------------------------------------------------------------------------
 // Read all files matching at least one pattern in `patList' in the
 // directory represented by `fi'.
-// The directory is read iff the recusiveFlag is set.
+// The directory is read iff the recursiveFlag is set.
 // The contents of all files is append to the input string
 
 int readDir(QFileInfo *fi,
@@ -9573,7 +9573,7 @@ int readDir(QFileInfo *fi,
   if (fi->isSymLink())
   {
     dirName = resolveSymlink(dirName.data());
-    if (dirName.isEmpty()) return 0;            // recusive symlink
+    if (dirName.isEmpty()) return 0;            // recursive symlink
     if (g_pathsVisited.find(dirName)) return 0; // already visited path
     g_pathsVisited.insert(dirName,(void*)0x8);
   }
