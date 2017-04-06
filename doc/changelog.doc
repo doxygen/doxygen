@@ -979,7 +979,7 @@
 <li>Fixed typo in doxyindexer.vcproj [<a href="http://github.com/doxygen/doxygen/commit/2bc8a820b3e2fefaedb10a3129eed35581a1ea5b">view</a>]</li>
 <li>Fixes for missing build dependencies [<a href="http://github.com/doxygen/doxygen/commit/62379ff8fdb13d95c7651419d92db47150e15bcc">view</a>]</li>
 <li>Give message when PROJECT_LOGO cannot be found or cannot be converted [<a href="http://github.com/doxygen/doxygen/commit/164864d9bc8ea7e32a69fbc0e47cff54dc678a48">view</a>]</li>
-<li>Handlingh of -- by \c and &lt;code&gt; results in - adjusted documentation [<a href="http://github.com/doxygen/doxygen/commit/73d12cc5cf0656e94125baea62cdb19b67908b3d">view</a>]</li>
+<li>Handling of -- by \c and &lt;code&gt; results in - adjusted documentation [<a href="http://github.com/doxygen/doxygen/commit/73d12cc5cf0656e94125baea62cdb19b67908b3d">view</a>]</li>
 <li>Improve rendering of sub and superscripts in LaTeX [<a href="http://github.com/doxygen/doxygen/commit/a7c7f36ea2a67969bf3916c7600fe487e34438c0">view</a>]</li>
 <li>Improved handling of percent symbol [<a href="http://github.com/doxygen/doxygen/commit/0e080f486f67008ef427c834f6ab6ebca7578124">view</a>]</li>
 <li>Improved performance of rendering large index pages, by replacing images in the tables by spans [<a href="http://github.com/doxygen/doxygen/commit/956a7fb004e72923f737e387d053812f99b7bda2">view</a>]</li>
