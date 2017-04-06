@@ -778,7 +778,7 @@ void QXmlInputSource::setData( const QString& dat )
 }
 
 /*!
-  Read the XML file from the byte array; try to recoginize the encoding.
+  Read the XML file from the byte array; try to recognize the encoding.
 */
 // ### The input source should not do the encoding detection!
 void QXmlInputSource::readInput( QByteArray& rawData )
