@@ -8403,7 +8403,7 @@ static void flushUnresolvedRelations()
   // This is needed before resolving the inheritance relations, since
   // it would otherwise not find the inheritance relation
   // for C in the example below, as B::I was already found to be unresolvable
-  // (which is correct if you igore the inheritance relation between A and B).
+  // (which is correct if you ignore the inheritance relation between A and B).
   //
   // class A { class I {} };
   // class B : public A {};
