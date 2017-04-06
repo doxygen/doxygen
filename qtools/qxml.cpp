@@ -403,7 +403,7 @@ void QXmlNamespaceSupport::splitName( const QString& qname,
   and looking it up among the prefixes currently declared.
 
   First parameter is the raw XML 1.0 name to be processed. The second parameter
-  is a flag wheter the name is the name of an attribute (TRUE) or not (FALSE).
+  is a flag whether the name is the name of an attribute (TRUE) or not (FALSE).
 
   The return values will be stored in the last two parameters as follows:
   <ul>
