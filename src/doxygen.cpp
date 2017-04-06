@@ -9457,7 +9457,7 @@ static void parseFiles(Entry *root,EntryNav *rootNav)
       }
     }
   }
-  else // normal pocessing
+  else // normal processing
 #endif
   {
     StringListIterator it(g_inputFiles);
