@@ -1398,7 +1398,7 @@
        rather than the file name.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=693331">693331</a>: build using ./configure ; make did not work if the path
        contained a space.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=693406">693406</a>: Tag files are now identfied by the full path instead of
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=693406">693406</a>: Tag files are now identified by the full path instead of
        only the name of the tag file.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=694376">694376</a>: In some cases members were missing from the tag file.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=694027">694027</a>: Fortran: derive intent from documentation in case no 
