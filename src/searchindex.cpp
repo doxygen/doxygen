@@ -1321,7 +1321,7 @@ void initSearchIndexer()
   }
 }
 
-void finializeSearchIndexer()
+void finalizeSearchIndexer()
 {
   delete Doxygen::searchIndex;
 }

@@ -11748,7 +11748,7 @@ void generateOutput()
 
   cleanUpDoxygen();
 
-  finializeSearchIndexer();
+  finalizeSearchIndexer();
   Doxygen::symbolStorage->close();
   QDir thisDir;
   thisDir.remove(Doxygen::objDBFileName);

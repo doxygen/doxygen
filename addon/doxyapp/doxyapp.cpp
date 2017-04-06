@@ -285,7 +285,7 @@ int main(int argc,char **argv)
   // set the input
   Config_getList(INPUT).append(argv[1]);
 
-  // check and finialize the configuration
+  // check and finalize the configuration
   checkConfiguration();
   adjustConfiguration();
 
