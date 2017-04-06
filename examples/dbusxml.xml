@@ -44,7 +44,7 @@
         <dx:member name="member4" type="s"/>
       </dx:struct>
       <!--* struct member -->
-      <dx:member name="structMembor" type="(s)" named-type="StructInAStruct"/>
+      <dx:member name="structMember" type="(s)" named-type="StructInAStruct"/>
     </dx:struct>
     <!--* Document method
 
