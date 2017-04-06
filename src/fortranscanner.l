@@ -2375,7 +2375,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       // strip direction
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::IN]));
       loc_doc.stripWhiteSpace();
-      // in case of emty documentation or (now) just name, consider it as no documentation
+      // in case of empty documentation or (now) just name, consider it as no documentation
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
         // reset current back to the part inside the routine
