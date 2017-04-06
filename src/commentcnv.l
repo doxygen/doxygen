@@ -294,7 +294,7 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-                                       /* check for fixed format; we might have some conditional as part of multilene if like C<5 .and. & */
+                                       /* check for fixed format; we might have some conditional as part of multiline if like C<5 .and. & */
                                        if (isFixedForm && (g_col == 0))
                                        {
                                          copyToOutput(yytext,(int)yyleng); 
