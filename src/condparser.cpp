@@ -283,7 +283,7 @@ bool CondParser::parseVar()
 }
 
 /**
- * evaluate an operator for given valuess
+ * evaluate an operator for given values
  */
 bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
 {
