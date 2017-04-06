@@ -3036,7 +3036,7 @@ parseError:
   Precondition: the beginning '<' of the PI is already read and the head stand
   on the '?' of '<?'.
 
-  If this funktion was successful, the head-position is on the first
+  If this function was successful, the head-position is on the first
   character after the PI.
 */
 bool QXmlSimpleReader::parsePI( bool xmldecl )
@@ -3258,7 +3258,7 @@ parseError:
   Precondition: the beginning '<!' of the doctype is already read the head
   stands on the 'D' of '<!DOCTYPE'.
 
-  If this funktion was successful, the head-position is on the first
+  If this function was successful, the head-position is on the first
   character after the document type definition.
 */
 bool QXmlSimpleReader::parseDoctype()
@@ -5291,7 +5291,7 @@ parseError:
   Precondition: the beginning '<!' of the comment is already read and the head
   stands on the first '-' of '<!--'.
 
-  If this funktion was successful, the head-position is on the first
+  If this function was successful, the head-position is on the first
   character after the comment.
 */
 bool QXmlSimpleReader::parseComment()
