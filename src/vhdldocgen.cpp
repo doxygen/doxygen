@@ -3039,7 +3039,7 @@ void assignBinding(VhdlConfNode * conf)
 /*
 
 // file foo.vhd
-// enitity foo
+// entity foo
 //        .....
 // end entity
 
