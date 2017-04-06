@@ -1593,7 +1593,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* --------- handle arguments of the file/dir/example command ------------ */
 
-<FileDocArg1>{DOCNL}			{ // no file name specfied
+<FileDocArg1>{DOCNL}			{ // no file name specified
   					  if (*yytext=='\n') yyLineNr++;
 					  addOutput('\n');
 					  BEGIN( Comment );
