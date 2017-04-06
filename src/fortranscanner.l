@@ -138,7 +138,7 @@ static const char *     inputString;
 static int		inputPosition;
 static bool             isFixedForm;
 static QCString         inputStringPrepass; ///< Input string for prepass of line cont. '&'
-static QCString         inputStringSemi; ///< Input string after command separetor ';'
+static QCString         inputStringSemi; ///< Input string after command separator ';'
 static unsigned int     inputPositionPrepass;
 static int              lineCountPrepass = 0;
 
