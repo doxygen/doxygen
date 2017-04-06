@@ -2564,7 +2564,7 @@ bool ClassDef::hasExamples() const
 
 void ClassDef::addTypeConstraint(const QCString &typeConstraint,const QCString &type)
 {
-  //printf("addTypeContraint(%s,%s)\n",type.data(),typeConstraint.data());
+  //printf("addTypeConstraint(%s,%s)\n",type.data(),typeConstraint.data());
   static bool hideUndocRelation = Config_getBool(HIDE_UNDOC_RELATIONS);
   if (typeConstraint.isEmpty() || type.isEmpty()) return;
   ClassDef *cd = getResolvedClass(this,getFileDef(),typeConstraint);
