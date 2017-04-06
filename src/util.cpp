@@ -8002,7 +8002,7 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
   return result;
 }
 
-/** Writes the intensity only bitmap representated by \a data as an image to 
+/** Writes the intensity only bitmap represented by \a data as an image to 
  *  directory \a dir using the colors defined by HTML_COLORSTYLE_*.
  */
 void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
