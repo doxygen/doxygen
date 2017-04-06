@@ -102,8 +102,8 @@ struct SymbolModifiers {
   bool nopass;
   bool pass;
   bool contiguous;
-  bool volat; /* volatile is a reserverd name */
-  bool value; /* volatile is a reserverd name */
+  bool volat; /* volatile is a reserved name */
+  bool value; /* volatile is a reserved name */
   QCString passVar;
 
   SymbolModifiers() : type(), returnName(), protection(NONE_P), direction(NONE_D),
