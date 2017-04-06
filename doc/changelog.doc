@@ -1337,7 +1337,7 @@
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=693178">693178</a>: Added support for processing DocSets with Dash (thanks to
        Bogdan Popescu for the patch </li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=684782">684782</a>: Added option EXTERNAL_PAGES which can be used to determine
-       whether or not pages importated via tags will appear under related 
+       whether or not pages imported via tags will appear under related 
        pages (similar to EXTERNAL_GROUPS).</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=692227">692227</a>: Added new MathJax command MATHJAX_CODEFILE which supports
        including a file with MathJax related scripting to be inserted before
