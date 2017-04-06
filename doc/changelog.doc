@@ -2463,7 +2463,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=655178">655178</a>: Fortran: Fixed parse issue when using variable name 
                   starting with the word interface.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=655591">655591</a>: Improved error handling for empty html style list.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=655935">655935</a>: Fixed case where %s could end up in a warning messge.</li>
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=655935">655935</a>: Fixed case where %s could end up in a warning message.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=656005">656005</a>: Methods of Objective-C categories defined in an .m file are
        now marked as private.</li>
 </ul>
