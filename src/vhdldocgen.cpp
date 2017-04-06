@@ -585,7 +585,7 @@ const char* g_vhdlKeyWordMap0[] =
   "map","mod",
   "nand","new","next","nor","not","null",
   "of","on","open","or","others","out",
-  "package","parameter","port","postponed","procedure","process","property","proctected","pure",
+  "package","parameter","port","postponed","procedure","process","property","protected","pure",
   "range","record","register","reject","release","restrict","restrict_guarantee","rem","report","rol","ror","return",
   "select","sequence","severity","signal","shared","sla","sll","sra","srl","strong","subtype",
   "then","to","transport","type",
