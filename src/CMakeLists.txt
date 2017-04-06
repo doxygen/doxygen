@@ -244,6 +244,19 @@ add_library(_doxygen STATIC
 )
 
 add_executable(doxygen main.cpp)
+
+if (use_libclang)
+    find_package(LLVM REQUIRED CONFIG)
+    find_package(Clang REQUIRED CONFIG)
+    target_compile_features(_doxygen PRIVATE cxx_alignof)
+    target_compile_options(_doxygen PRIVATE -stdlib=libc++ -std=c++11)
+    target_compile_features(doxygen PRIVATE cxx_alignof)
+    target_compile_options(doxygen PRIVATE -stdlib=libc++ -std=c++11)
+    llvm_map_components_to_libnames(llvm_libs support core option)
+    target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
+    set(CLANG_LIBS ${llvm_libs} ${CLANG_LIBS} clangTooling)
+endif()
+
 target_link_libraries(doxygen
     _doxygen
     doxycfg

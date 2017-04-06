@@ -1637,6 +1637,20 @@ to disable this feature.
 ]]>
       </docs>
     </option>
+    <option type='string' id='CLANG_COMPILATION_DATABASE_PATH' setting='USE_LIBCLANG' defval='0'>
+      <docs>
+<![CDATA[
+ If clang assisted parsing is enabled you can provide the clang parser with the
+ path to the <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">
+ compilation database</a> used when the files were built. This is equivilent to
+ specifying the "-p" option to a clang tool, such as clang-check. These options
+ will then be pased to the parser.
+
+ @note The availability of this option depends on whether or not doxygen
+ was generated with the `-Duse-libclang=ON` option for CMake.
+ ]]>
+        </docs>
+    </option>
   </group>
   <group name='Index' docs='Configuration options related to the alphabetical class index'>
     <option type='bool' id='ALPHABETICAL_INDEX' defval='1'>
