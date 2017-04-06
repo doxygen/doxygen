@@ -710,7 +710,7 @@ static void writeFuncProto()
   }
 }// writeFuncProto
 
-/* writes a process prototype to the ouput */
+/* writes a process prototype to the output */
 
  static void writeProcessProto(){
  codifyLines(g_FuncProto.data(),g_CurrClass.data());
