@@ -331,7 +331,7 @@ class Translator
      * HEBREW_CHARSET          177 (xB1)            1255
      * ARABIC _CHARSET         178 (xB2)            1256
      * SHIFTJIS_CHARSET        128 (x80)             932
-     * HANGEUL_CHARSET         129 (x81)             949
+     * HANGUL_CHARSET          129 (x81)             949
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
