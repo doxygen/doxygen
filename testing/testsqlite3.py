@@ -6,7 +6,7 @@ import sys
 import getopt
 
 # map XML attributes/elements to SQL rows
-# --POC: iterate through the children and attributes of the memberdef elelement
+# --POC: iterate through the children and attributes of the memberdef element
 #        and search it in doxygen_sqlite3.db
 
 g_conn=None
