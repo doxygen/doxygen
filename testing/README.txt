@@ -1,4 +1,4 @@
-Doxygen regession test suite
+Doxygen regression test suite
 ============================
 
 This directory contains a set of regression tests. Each test consists of a
