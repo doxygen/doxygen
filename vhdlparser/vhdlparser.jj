@@ -134,7 +134,7 @@ TOKEN [IGNORE_CASE] :
 | <ARRAY_T: "array"> {VhdlParser::setLineParsed(ARRAY_T);}
 | <ASSERT_T: "assert">
 | <ASSUME_T: "assume">
-| <ASSUME_GUARANTEE_T: "assume_guarentee">
+| <ASSUME_GUARANTEE_T: "assume_guarantee">
 | <ATTRIBUTE_T: "attribute"> {::vhdl::parser::VhdlParser::setLineParsed(ATTRIBUTE_T);}
 | <BEGIN_T: "begin">
 | <BLOCK_T: "block">
