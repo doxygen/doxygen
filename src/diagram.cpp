@@ -107,7 +107,7 @@ class DiagramRowIterator : public QListIterator<DiagramRow>
       : QListIterator<DiagramRow>(d) {}
 };
 
-/** Class represeting the tree layout for the built-in class diagram. */
+/** Class representing the tree layout for the built-in class diagram. */
 class TreeDiagram : public QList<DiagramRow>
 {
   public:

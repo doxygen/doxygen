@@ -8309,7 +8309,7 @@ TemplateVariant NamespaceMembersIndexContext::get(const char *name) const
 
 //------------------------------------------------------------------------
 
-//%% struct InheritanceGraph: a connected graph reprenting part of the overall inheritance tree
+//%% struct InheritanceGraph: a connected graph representing part of the overall inheritance tree
 //%% {
 class InheritanceGraphContext::Private
 {
