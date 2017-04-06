@@ -34,7 +34,7 @@
 static QCString getExtension()
 {
   /*
-   * [.][nuber][rest]
+   * [.][number][rest]
    * in case of . missing, just ignore it
    * in case number missing, just place a 3 in front of it
    */
