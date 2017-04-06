@@ -101,7 +101,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 //     ol.endParameterName(last==FALSE)
 //     ...
 //     ol.startParameterType(first=FALSE)
-//     ol.endParamtereType
+//     ol.endParameterType
 //     ol.startParameterName
 //     ol.endParameterName(last==TRUE)
 //     ...
