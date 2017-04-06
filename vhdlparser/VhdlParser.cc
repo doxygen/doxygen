@@ -2860,7 +2860,7 @@ void VhdlParser::disconnection_specification() {if (!hasError) {
     }
     if (!hasError) {
     
-    guarded_signal_specificatio();
+    guarded_signal_specification();
     }
     if (!hasError) {
     
@@ -2878,7 +2878,7 @@ void VhdlParser::disconnection_specification() {if (!hasError) {
   }
 
 
-void VhdlParser::guarded_signal_specificatio() {if (!hasError) {
+void VhdlParser::guarded_signal_specification() {if (!hasError) {
     
     signal_list();
     }

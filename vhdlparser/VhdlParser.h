@@ -169,7 +169,7 @@ QCString direction();
 
 void disconnection_specification();
 
-void guarded_signal_specificatio();
+void guarded_signal_specification();
 
 QCString discrete_range();
 
