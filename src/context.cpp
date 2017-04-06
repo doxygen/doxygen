@@ -10180,7 +10180,7 @@ void generateOutputViaTemplate()
       ctx->set("classMembersIndex",classMembersIndex.get());
       //%% NamespaceMembersIndex namespaceMembersIndex:
       ctx->set("namespaceMembersIndex",namespaceMembersIndex.get());
-      //%% SearchIndicaes searchindicaes
+      //%% SearchIndices searchindices
       ctx->set("searchIndices",searchIndices.get());
       //%% string space
       ctx->set("space"," ");
