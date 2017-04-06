@@ -268,7 +268,7 @@ void CiteDict::generatePage() const
       {
         if (!bibFile.isEmpty())
         {
-          // bug_700510, multile times the same name were overwriting; creating new names
+          // bug_700510, multiple times the same name were overwriting; creating new names
           // also for names with spaces
           ++i;
           copyFile(bibFile,latexOutputDir + bibTmpFile + QCString().setNum(i) + ".bib");
