@@ -2066,7 +2066,7 @@ make sure you add the following:
             (amount of &gt;'s determine the indentation level).</li>
        <li> emphasis using *emphasize this* or _emphasis this_ or
             strong emphasis using **emphasis this**. Unlike classic
-            Markdown 'some_great_indentifier' is not touched.</li>
+            Markdown 'some_great_identifier' is not touched.</li>
        <li> code spans can be created using back-ticks, i.e. `here's an example`</li>
        <li> Using three or more -'s or *'s alone on a line with only spaces
             will produce a horizontal ruler.</li>
