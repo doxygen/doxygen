@@ -1371,7 +1371,7 @@ static void addClassToContext(EntryNav *rootNav)
     //printf("ClassDict.insert(%s)\n",fullName.data());
     Doxygen::classSDict->append(fullName,cd);
 
-    if (cd->isGeneric()) // generics are also stored in a separate dictionary for fast lookup of instantions
+    if (cd->isGeneric()) // generics are also stored in a separate dictionary for fast lookup of instances
     {
       //printf("inserting generic '%s' cd=%p\n",fullName.data(),cd);
       Doxygen::genericsDict->insert(fullName,cd);
