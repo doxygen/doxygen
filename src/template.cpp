@@ -4693,7 +4693,7 @@ void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
         {
           state=StateBeginTemplate;
         }
-        else if (c!=' ' && c!='\t' && c!='\n') // non-whitepace text
+        else if (c!=' ' && c!='\t' && c!='\n') // non-whitespace text
         {
           emptyOutputLine=FALSE;
         }
