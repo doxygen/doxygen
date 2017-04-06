@@ -164,7 +164,7 @@
 <li>Fix for error in travis.yml [<a href="http://github.com/doxygen/doxygen/commit/81cf39f249c58db66368d60d596ac164d886ae90">view</a>]
 <li>Fix issue escaping backslash inside markdown style code span [<a href="http://github.com/doxygen/doxygen/commit/402970f77f961b85b6371c8e53bd69981435c2d7">view</a>]
 <li>Fix linker flags for building with clang on Windows [<a href="http://github.com/doxygen/doxygen/commit/41846b467bea58b904e26ce139394f7371ea5870">view</a>]
-<li>Fix order of member initilaization [<a href="http://github.com/doxygen/doxygen/commit/6b1ebb6bcb345d8997054492c21276dc2dc36416">view</a>]
+<li>Fix order of member initialization [<a href="http://github.com/doxygen/doxygen/commit/6b1ebb6bcb345d8997054492c21276dc2dc36416">view</a>]
 <li>Fix return-type warnings with -DNDEBUG [<a href="http://github.com/doxygen/doxygen/commit/f4574baf118da6aa2051b865040a9948bb0d22c9">view</a>]
 <li>Fix search box rendering in HTML when menu bar is disabled [<a href="http://github.com/doxygen/doxygen/commit/ee9a0664c03c306d0aeb127295ced29f8078ae03">view</a>]
 <li>Fix uppercase letters B-Z being unnecessarily escaped in index HTML anchors. [<a href="http://github.com/doxygen/doxygen/commit/0f699ab17cb88beff0ae4aa9b10042c0ccaff937">view</a>]
