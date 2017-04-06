@@ -1930,7 +1930,7 @@ void RTFGenerator::endCodeFragment()
 {
   //newParagraph();
   //styleStack.pop();
-  //printf("RTFGenerator::endCodeFrament() top=%s\n",styleStack.top());
+  //printf("RTFGenerator::endCodeFragment() top=%s\n",styleStack.top());
   //t << rtf_Style_Reset << styleStack.top() << endl;
   DBG_RTF(t << "{\\comment (endCodeFragment) }"    << endl)
   t << "}" << endl;

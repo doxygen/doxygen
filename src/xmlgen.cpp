@@ -459,7 +459,7 @@ void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
                 fd,          // fileDef
                 -1,          // startLine
                 -1,          // endLine
-                FALSE,       // inlineFragement
+                FALSE,       // inlineFragment
                 0,           // memberDef
                 TRUE         // showLineNumbers
                 );
