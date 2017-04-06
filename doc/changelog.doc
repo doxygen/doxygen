@@ -2676,7 +2676,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=563698">563698</a>: dropped support for a4wide paper format for LaTeX, since
        it is on the LaTeX taboo list.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=571014">571014</a>: Behaviour of CLASS_DIAGRAM=NO in combination with
-       HAVE_DOT=YES, was not propely documented.</li>
+       HAVE_DOT=YES, was not properly documented.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=576291">576291</a>: Python comments for next class or method could end up in
        code of a method/class when enabling INLINE_SOURCES.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=611174">611174</a>: Fixed problem handling nested classes in Python.</li>
