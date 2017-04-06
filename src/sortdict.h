@@ -248,7 +248,7 @@ class SDict
       return m_list->find(item);
     }
 
-    /*! Equavalent to find(). */
+    /*! Equivalent to find(). */
     T *operator[](const char *key) const
     {
       return m_dict->find(key);
@@ -557,7 +557,7 @@ class SIntDict
       return m_dict->find(key);
     }
 
-    /*! Equavalent to find(). */
+    /*! Equivalent to find(). */
     T *operator[](int key) const
     {
       return m_dict->find(key);
