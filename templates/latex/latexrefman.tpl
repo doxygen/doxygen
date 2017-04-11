@@ -97,6 +97,12 @@
 \setcounter{secnumdepth}{5}
 \makeindex
 
+\AtBeginDocument{
+  \addtolength{\cftsecnumwidth}{1em}
+  \addtolength{\cftsubsecnumwidth}{1em}
+  \addtolength{\cftsubsubsecnumwidth}{1em}
+}
+
 <% if config.EXTRA_PACKAGES %>
 % Packages requested by user
 <% for package in config.EXTRA_PACKAGES %>
