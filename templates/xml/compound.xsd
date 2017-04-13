@@ -375,6 +375,13 @@
  
   <xsd:group name="docTitleCmdGroup">
     <xsd:choice>
+      <xsd:group ref="docTitleCmdGroupWithoutImage"/>
+      <xsd:element name="image" type="docEmptyType" />
+    </xsd:choice>
+  </xsd:group>
+
+  <xsd:group name="docTitleCmdGroupWithoutImage">
+    <xsd:choice>
       <xsd:element name="ulink" type="docURLLink" />
       <xsd:element name="bold" type="docMarkupType" />
       <xsd:element name="emphasis" type="docMarkupType" />
@@ -403,7 +410,7 @@
 
   <xsd:group name="docCmdGroup">
     <xsd:choice>
-      <xsd:group ref="docTitleCmdGroup"/>
+      <xsd:group ref="docTitleCmdGroupWithoutImage"/>
       <xsd:element name="linebreak" type="docEmptyType" />
       <xsd:element name="hruler" type="docEmptyType" />
       <xsd:element name="preformatted" type="docMarkupType" />
