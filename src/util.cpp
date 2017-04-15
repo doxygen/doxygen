@@ -4591,7 +4591,14 @@ bool resolveRef(/* in */  const char *scName,
   //printf("resolveRef(scope=%s,name=%s,inSeeBlock=%d)\n",scName,name,inSeeBlock);
   QCString tsName = name;
   //bool memberScopeFirst = tsName.find('#')!=-1;
-  QCString fullName = substitute(tsName,"#","::");
+  QCString fullName = tsName;
+  bool explicitLink = (1 <= tsName.length()) && ('#' == tsName[0]);
+  if (explicitLink) {
+    // Do lookups on name following #, but isLowerCase(tsName) fails
+    // so link to all-lower-case entity is still created.
+    fullName = tsName.data() + 1;
+  }
+  fullName = substitute(fullName,"#", "::");
   if (fullName.find("anonymous_namespace{")==-1)
   {
     fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
@@ -4642,7 +4649,7 @@ bool resolveRef(/* in */  const char *scName,
       }
       return TRUE;
     }
-    else if (scName==fullName || (!inSeeBlock && scopePos==-1)) 
+    else if (scName==fullName || (!inSeeBlock && scopePos==-1 && !explicitLink)) 
       // nothing to link => output plain text
     {
       //printf("found scName=%s fullName=%s scName==fullName=%d "
