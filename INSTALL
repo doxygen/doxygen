@@ -1,7 +1,39 @@
-DOXYGEN
+Doxygen build instructions
+===============
 
 Please read the installation section of the manual 
 (http://www.doxygen.org/install.html) for instructions.
+
+Build from sources on Ubuntu
+---------
+
+Clone Git repository:
+
+    $ git clone --branch=master git://github.com/doxygen/doxygen.git doxygen/doxygen
+
+Download cmake dependency:
+
+    $ wget -qO- http://www.cmake.org/files/v3.1/cmake-3.1.0-Linux-x86_64.tar.gz | tar xvz
+
+Install Flex and bison dependencies:
+
+    $ sudo apt-get -y flex bison
+
+Build Doxygen and Wizard:
+
+    $ mkdir build
+    $ cd build
+    $ ../cmake-3.1.0-Linux-x86_64/bin/cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
+    $ make
+
+Build docs:
+
+    $ make docs
+
+Run tests:
+
+    $ make tests
+
 
 --------
 Dimitri van Heesch
