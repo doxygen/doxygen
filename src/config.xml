@@ -780,6 +780,18 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+  </group>
+  <group name='Build' docs='Build related configuration options'>
+    <option type='bool' id='EXTRACT_ALL_NO_DETAILED_IF_EMPTY' defval='0'>
+      <docs>
+<![CDATA[
+ When the \c EXTRACT_ALL tag is set to \c YES and a member or class
+ as no documentation, no detailed section will be produced if
+ the \c EXTRACT_ALL_NO_DETAILED_IF_EMPTY tag is set to \c YES.
+ This tag has no effect if the \c EXTRACT_ALL tag is set to \c NO.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='EXTRACT_PRIVATE' defval='0'>
       <docs>
 <![CDATA[
