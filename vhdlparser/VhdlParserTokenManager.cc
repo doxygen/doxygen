@@ -3616,7 +3616,7 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
       message += "Error: Ignoring invalid lexical state : ";
       message += lexState; message += ". State unchanged.";
 #endif
-      throw new TokenMgrError(message, INVALID_LEXICAL_STATE);
+      throw TokenMgrError(message, INVALID_LEXICAL_STATE);
     } else
       curLexState = lexState;
   }
