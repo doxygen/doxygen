@@ -355,6 +355,11 @@ int main(int argc,char **argv) {
   // initialize data structures
   initDoxygen();
 
+  // check and finalize the configuration
+  checkConfiguration();
+  Config_getBool(MODIFY_SPECIAL_CHARS)=FALSE;
+  adjustConfiguration();
+
   // setup the non-default configuration options
 
   // we need a place to put intermediate files
@@ -403,10 +408,6 @@ int main(int argc,char **argv) {
   if (Config_getList("INPUT").isEmpty()) {
     exit(0);
   }
-
-  // check and finalize the configuration
-  checkConfiguration();
-  adjustConfiguration();
 
   // parse the files
   parseInput();

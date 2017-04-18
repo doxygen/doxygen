@@ -1510,6 +1510,14 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='bool' id='MODIFY_SPECIAL_CHARS' defval='1'>
+      <docs>
+<![CDATA[
+If the \c MODIFY_SPECIAL_CHARS tag is set to \c YES, the chars _-:/<>*&|.!,{}?^
+%()+=$\@ and space will be changed to safer strings.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Source_Browser' docs='Configuration options related to source browsing'>
     <option type='bool' id='SOURCE_BROWSER' defval='0'>

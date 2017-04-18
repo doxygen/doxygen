@@ -5345,104 +5345,112 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
 {
   static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
   static bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
+  static bool modifySpecialCharsInString = Config_getBool(MODIFY_SPECIAL_CHARS);
   static GrowBuf growBuf;
   growBuf.clear();
   char c;
   const char *p=name;
   while ((c=*p++)!=0)
   {
-    switch(c)
+    if(modifySpecialCharsInString)
     {
-      case '_': if (allowUnderscore) growBuf.addChar('_'); else growBuf.addStr("__"); break;
-      case '-': growBuf.addChar('-');  break;
-      case ':': growBuf.addStr("_1"); break;
-      case '/': growBuf.addStr("_2"); break;
-      case '<': growBuf.addStr("_3"); break;
-      case '>': growBuf.addStr("_4"); break;
-      case '*': growBuf.addStr("_5"); break;
-      case '&': growBuf.addStr("_6"); break;
-      case '|': growBuf.addStr("_7"); break;
-      case '.': if (allowDots) growBuf.addChar('.'); else growBuf.addStr("_8"); break;
-      case '!': growBuf.addStr("_9"); break;
-      case ',': growBuf.addStr("_00"); break;
-      case ' ': growBuf.addStr("_01"); break;
-      case '{': growBuf.addStr("_02"); break;
-      case '}': growBuf.addStr("_03"); break;
-      case '?': growBuf.addStr("_04"); break;
-      case '^': growBuf.addStr("_05"); break;
-      case '%': growBuf.addStr("_06"); break;
-      case '(': growBuf.addStr("_07"); break;
-      case ')': growBuf.addStr("_08"); break;
-      case '+': growBuf.addStr("_09"); break;
-      case '=': growBuf.addStr("_0A"); break;
-      case '$': growBuf.addStr("_0B"); break;
-      case '\\': growBuf.addStr("_0C"); break;
-      case '@': growBuf.addStr("_0D"); break;
-      default: 
-                if (c<0)
-                {
-                  char ids[5];
-                  const unsigned char uc = (unsigned char)c;
-                  bool doEscape = TRUE;
-                  if (allowUnicodeNames && uc <= 0xf7)
+      switch(c)
+      {
+        case '_': if (allowUnderscore) growBuf.addChar('_'); else growBuf.addStr("__"); break;
+        case '-': growBuf.addChar('-');  break;
+        case ':': growBuf.addStr("_1"); break;
+        case '/': growBuf.addStr("_2"); break;
+        case '<': growBuf.addStr("_3"); break;
+        case '>': growBuf.addStr("_4"); break;
+        case '*': growBuf.addStr("_5"); break;
+        case '&': growBuf.addStr("_6"); break;
+        case '|': growBuf.addStr("_7"); break;
+        case '.': if (allowDots) growBuf.addChar('.'); else growBuf.addStr("_8"); break;
+        case '!': growBuf.addStr("_9"); break;
+        case ',': growBuf.addStr("_00"); break;
+        case ' ': growBuf.addStr("_01"); break;
+        case '{': growBuf.addStr("_02"); break;
+        case '}': growBuf.addStr("_03"); break;
+        case '?': growBuf.addStr("_04"); break;
+        case '^': growBuf.addStr("_05"); break;
+        case '%': growBuf.addStr("_06"); break;
+        case '(': growBuf.addStr("_07"); break;
+        case ')': growBuf.addStr("_08"); break;
+        case '+': growBuf.addStr("_09"); break;
+        case '=': growBuf.addStr("_0A"); break;
+        case '$': growBuf.addStr("_0B"); break;
+        case '\\': growBuf.addStr("_0C"); break;
+        case '@': growBuf.addStr("_0D"); break;
+        default:
+                  if (c<0)
                   {
-                    const char* pt = p;
-                    ids[ 0 ] = c;
-                    int l = 0;
-                    if ((uc&0xE0)==0xC0)
+                    char ids[5];
+                    const unsigned char uc = (unsigned char)c;
+                    bool doEscape = TRUE;
+                    if (allowUnicodeNames && uc <= 0xf7)
                     {
-                      l=2; // 11xx.xxxx: >=2 byte character
-                    }
-                    if ((uc&0xF0)==0xE0)
-                    {
-                      l=3; // 111x.xxxx: >=3 byte character
-                    }
-                    if ((uc&0xF8)==0xF0)
-                    {
-                      l=4; // 1111.xxxx: >=4 byte character
-                    }
-                    doEscape = l==0;
-                    for (int m=1; m<l && !doEscape; ++m)
-                    {
-                      unsigned char ct = (unsigned char)*pt;
-                      if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
+                      const char* pt = p;
+                      ids[ 0 ] = c;
+                      int l = 0;
+                      if ((uc&0xE0)==0xC0)
                       {
-                        doEscape=TRUE;
+                        l=2; // 11xx.xxxx: >=2 byte character
                       }
-                      else
+                      if ((uc&0xF0)==0xE0)
                       {
-                        ids[ m ] = *pt++;
+                        l=3; // 111x.xxxx: >=3 byte character
+                      }
+                      if ((uc&0xF8)==0xF0)
+                      {
+                        l=4; // 1111.xxxx: >=4 byte character
+                      }
+                      doEscape = l==0;
+                      for (int m=1; m<l && !doEscape; ++m)
+                      {
+                        unsigned char ct = (unsigned char)*pt;
+                        if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
+                        {
+                          doEscape=TRUE;
+                        }
+                        else
+                        {
+                          ids[ m ] = *pt++;
+                        }
+                      }
+                      if ( !doEscape ) // got a valid unicode character
+                      {
+                        ids[ l ] = 0;
+                        growBuf.addStr( ids );
+                        p += l - 1;
                       }
                     }
-                    if ( !doEscape ) // got a valid unicode character
+                    if (doEscape) // not a valid unicode char or escaping needed
                     {
-                      ids[ l ] = 0;
-                      growBuf.addStr( ids );
-                      p += l - 1;
+                      static char map[] = "0123456789ABCDEF";
+                      unsigned char id = (unsigned char)c;
+                      ids[0]='_';
+                      ids[1]='x';
+                      ids[2]=map[id>>4];
+                      ids[3]=map[id&0xF];
+                      ids[4]=0;
+                      growBuf.addStr(ids);
                     }
                   }
-                  if (doEscape) // not a valid unicode char or escaping needed
+                  else if (caseSenseNames || !isupper(c))
                   {
-                    static char map[] = "0123456789ABCDEF";
-                    unsigned char id = (unsigned char)c;
-                    ids[0]='_';
-                    ids[1]='x';
-                    ids[2]=map[id>>4];
-                    ids[3]=map[id&0xF];
-                    ids[4]=0;
-                    growBuf.addStr(ids);
+                    growBuf.addChar(c);
                   }
-                }
-                else if (caseSenseNames || !isupper(c))
-                {
-                  growBuf.addChar(c);
-                }
-                else
-                {
-                  growBuf.addChar('_');
-                  growBuf.addChar(tolower(c)); 
-                }
-                break;
+                  else
+                  {
+                    growBuf.addChar('_');
+                    growBuf.addChar(tolower(c));
+                  }
+                  break;
+      }
+    }
+    else
+    {
+      growBuf.addChar(c);
     }
   }
   growBuf.addChar(0);
