@@ -142,14 +142,14 @@ static QCString field2URL(const IndexField *f,bool checkReversed)
 
 /*! Writes the sorted list of index items into a html like list.
  *
- *  An list of calls with <code>name = level1,level2</code> as follows:
+ *  An list of calls with <code>name = level1?level2</code> as follows:
  *  <pre>
- *    a1,b1
- *    a1,b2
- *    a2,b1
- *    a2,b2
+ *    a1?b1
+ *    a1?b2
+ *    a2?b1
+ *    a2?b2
  *    a3
- *    a4,b1
+ *    a4?b1
  *  </pre>
  *
  *  Will result in the following list:
@@ -196,9 +196,9 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
       // Added this code so that an item with only one subitem is written
       // without any subitem.
       // For example:
-      //   a1, b1 -> will create only a1, not separate subitem for b1
-      //   a2, b2
-      //   a2, b3
+      //   a1?b1 -> will create only a1, not separate subitem for b1
+      //   a2?b2
+      //   a2?b3
       QCString nextLevel1;
       IndexField* fnext = ++ifli;
       if (fnext)
