@@ -52,7 +52,9 @@ if (WIN32)
       set(ICONV_DIR "${CMAKE_SOURCE_DIR}/winbuild")
     endif()
     set(CMAKE_REQUIRED_DEFINITIONS "-DLIBICONV_STATIC")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj") # needed for language.cpp on 64bit
+	if ("${CMAKE_GENERATOR}" MATCHES "Visual Studio*")
+	  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj") # needed for language.cpp on 64bit
+	endif()
     add_definitions(-DLIBICONV_STATIC -D_CRT_SECURE_NO_WARNINGS)
 endif()
 

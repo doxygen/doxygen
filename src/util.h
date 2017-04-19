@@ -444,6 +444,8 @@ void writeColoredImgData(const char *dir,ColoredImgDataItem data[]);
 QCString replaceColorMarkers(const char *str);
 
 bool copyFile(const QCString &src,const QCString &dest);
+bool copyDirectory(const QCString &srcDir,const QCString &destinationDir);
+
 QCString extractBlock(const QCString text,const QCString marker);
 int lineBlock(const QCString text,const QCString marker);
 

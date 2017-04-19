@@ -6938,7 +6938,7 @@ QCString stripPath(const char *s)
   return result;
 }
 
-/** returns \c TRUE iff string \a s contains word \a w */
+/** returns \c TRUE if string \a s contains word \a w */
 bool containsWord(const QCString &s,const QCString &word)
 {
   static QRegExp wordExp("[a-z_A-Z\\x80-\\xFF]+");
@@ -8071,12 +8071,122 @@ QCString replaceColorMarkers(const char *str)
   return result;
 }
 
+/**
+ * @brief recursiely create all directories up to \c targetDir
+ * @param targetDir the directory name to create
+ * @return true if directory  exists
+ * @retval false in case of error
+ */
+bool mkDirTree(QDir const & targetDir) {
+    msg("mkDirTree(%s)\n",targetDir.absPath().data());
+    if (targetDir.exists() || targetDir.isRoot())
+    {
+        //msg("mkDirTree EXIST: %s\n",targetDir.absPath().data());
+        return true;
+    }
+
+    QDir parentDir(QDir::cleanDirPath(targetDir.absPath() + "/.."));
+
+    if (!parentDir.exists())
+    {
+        //msg("mkDirTree CREATE PARENT: [%s]\n",parentDir.absPath().data());
+        mkDirTree(parentDir);
+    }
+    // msg("mkDirTree CREATE SOON: mkdir [%s] from [%s]\n",
+    targetDir.dirName().data(),
+            parentDir.absPath().data());
+
+    return parentDir.mkdir(targetDir.dirName());
+}
+
+/** Copies the contents of the directory  with name \c srcDir to the root  \c destinationDir.
+ * \param srcDir the source directory name
+ * \param destinationDir the directory where to copy srcDir. It MUST exist!
+ *
+ * \a srcDir will be a subdirectory of destinationDir
+ * @retval true if successful.
+ */
+bool copyDirectory(const QCString &srcDir,const QCString &destinationDir)
+{
+    QDir srcDirInfo(srcDir);
+    QDir targetDir(destinationDir);
+
+    if (!srcDirInfo.exists())
+    {
+        err("src dir %s dosn't exists.",srcDirInfo.absPath().data());
+        return false;
+    }
+
+    if (!targetDir.exists())
+    {
+        err("target dir %s dosn't exists.",targetDir.absPath().data());
+        return false;
+    }
+
+    StringList fileList;
+    int nbFiles = readFileOrDirectory(srcDir.data(),
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      &fileList,
+                                      NULL,
+                                      true,
+                                      false,
+                                      NULL,NULL);
+
+    /* src root directory prefix.
+      This string will we removed from the src-fill path after recursive lookup
+      to build the target filename.
+    */
+    QString srcDirName(srcDirInfo.absPath().data());
+
+    /* we now have a list of files.
+     * wee need to find the target filename based of destinationDir and srcDir as root.
+     */
+    for (int i=0;i<fileList.count();++i) {
+        msg("[%3i]:%s\n",i,fileList.at(i)->data());
+        QString srcFullFilename(fileList.at(i)->data());
+
+        QString targetFileName(targetDir.absPath().data());
+        QString relSrc= srcFullFilename.remove(0,srcDirName.length()+1);
+
+        targetFileName += QString("/") +relSrc;
+        /* now targetFileName contains the full pathname of the target file.
+           but  just need to create the target directory to contain that file.
+         */
+        QFileInfo tFile(targetFileName);
+        QDir destDirectory(tFile.dir());
+
+        /*   msg("dir:%s\nsrc:%s (%s)\n-> %s\ndirname:%s\n",
+            srcDirName.data(),
+            srcFullFilename.data(),
+            relSrc.data(),
+            targetFileName.data(),
+            destDirectory.absPath().data()
+            );
+            */
+
+        // would be great to have QDir::mkpath() at this stage :)
+        if (mkDirTree(destDirectory)) {
+            copyFile(*fileList.at(i),QCString(targetFileName.data()));
+        } else {
+            err("could not create directory %s\n",destDirectory.absPath().data());
+        }
+    }
+    return TRUE;
+}
+
 /** Copies the contents of file with name \a src to the newly created 
  *  file with name \a dest. Returns TRUE if successful.
  */
 bool copyFile(const QCString &src,const QCString &dest)
 {
   QFile sf(src);
+
+  //msg("copyFile %s -> %s\n",src.data(),dest.data());
+
   if (sf.open(IO_ReadOnly))
   {
     QFileInfo fi(src);
