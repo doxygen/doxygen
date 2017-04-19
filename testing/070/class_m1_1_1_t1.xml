@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_m1_1_1_t1" kind="class" language="C++" prot="public">
+    <compoundname>M1::T1</compoundname>
+    <derivedcompoundref refid="class_m1_1_1_t2" prot="public" virt="non-virtual">M1::T2</derivedcompoundref>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="3">
+        <label>M2::T3</label>
+        <link refid="class_m2_1_1_t3"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="0">
+        <label>M1::T1</label>
+        <link refid="class_m1_1_1_t1"/>
+      </node>
+      <node id="1">
+        <label>M1::T2</label>
+        <link refid="class_m1_1_1_t2"/>
+        <childnode refid="0" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>M1::T3</label>
+        <link refid="class_m1_1_1_t3"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="070_namespace_inheritance.cpp" line="12" column="1" bodyfile="070_namespace_inheritance.cpp" bodystart="11" bodyend="13"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

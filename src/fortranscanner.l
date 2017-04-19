@@ -267,7 +267,7 @@ ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL
 ACCESS_SPEC (PRIVATE|PUBLIC)
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
 /* Assume that attribute statements are almost the same as attributes. */
-ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
+ATTR_STMT {ATTR_SPEC}|DIMENSION
 EXTERNAL_STMT (EXTERNAL)
 
 CONTAINS  CONTAINS
@@ -439,10 +439,13 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           DBG_CTX((stderr,"using dir %s\n",yytext));
                                           current->name=yytext;
                                           current->fileName = yyFileName; 
-  					  current->section=Entry::USINGDIR_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry;
-                                          current->lang = SrcLangExt_Fortran; 
+                                          current->section=Entry::USINGDECL_SEC;
+                                          addCurrentEntry(1);
+                                          // also add a using directive
+                                          current->name=yytext;
+                                          current->fileName = yyFileName; 
+                                          current->section=Entry::USINGDIR_SEC;
+                                          addCurrentEntry(1);
                                           yy_pop_state();
                                         }
 <Use>{ID}/,                             { 
@@ -452,12 +455,15 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }           
 <UseOnly>{BS},{BS}                      {}
 <UseOnly>{ID}                           {
-  					  current->name= useModuleName+"::"+yytext;
+                                          current->name= useModuleName+"::"+yytext;
                                           current->fileName = yyFileName; 
-  					  current->section=Entry::USINGDECL_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry ;
-                                          current->lang = SrcLangExt_Fortran; 
+                                          current->section=Entry::USINGDECL_SEC;
+                                          addCurrentEntry(1);
+                                          // also add a using directive
+                                          current->name= useModuleName+"::"+yytext;
+                                          current->fileName = yyFileName; 
+                                          current->section=Entry::USINGDIR_SEC;
+                                          addCurrentEntry(1);
   					}
 <Use,UseOnly>"\n"                       {
 					  yyColNr -= 1;
@@ -572,10 +578,12 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
   /*------- access specification --------------------------------------------------------------------------*/
 
-<ModuleBody>private/{BS}(\n|"!")         { defaultProtection = Private;
+<ModuleBody,TypedefBody,TypedefBodyContains>private/{BS}(\n|"!") {
+                                           defaultProtection = Private;
                                            current->protection = defaultProtection ;
                                          }
-<ModuleBody>public/{BS}(\n|"!")          { defaultProtection = Public;
+<ModuleBody,TypedefBody,TypedefBodyContains>public/{BS}(\n|"!")  {
+                                           defaultProtection = Public;
                                            current->protection = defaultProtection ;
                                          }
 
@@ -589,8 +597,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           }
 
                                           yy_push_state(Typedef);
-                                          current->protection = defaultProtection;
-                                          typeProtection = defaultProtection;
+                                          current->protection = Package; // invalid in Fortran, replaced below
+                                          typeProtection = Public;
                                           typeMode = true;
                                         }
 <Typedef>{
@@ -603,15 +611,13 @@ abstract                                {
                                         }
 extends{ARGS}                           {
                                           QCString basename = extractFromParens(yytext);
-                                          current->extends->append(new BaseInfo(basename, Public, Normal));
+                                          current->extends->append(new BaseInfo(basename.lower(), Public, Normal));
                                         }
 public                                  {
                                           current->protection = Public;
-                                          typeProtection = Public;
                                         }
 private                                 {
                                           current->protection = Private;
-                                          typeProtection = Private;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -630,6 +636,20 @@ private                                 {
                                                || current_root->section == Entry::NAMESPACE_SEC))
                                           {
                                             current->name = current_root->name + "::" + current->name;
+                                          }
+
+                                          // set modifiers to allow adjusting public/private in surrounding module scope
+                                          if( current->protection == Package )
+                                          {
+                                            current->protection = defaultProtection;
+                                          }
+                                          else if( current->protection == Public )
+                                          {
+                                            modifiers[current_root][current->name.lower()] |= QCString("public");
+                                          }
+                                          else if( current->protection == Private )
+                                          {
+                                            modifiers[current_root][current->name.lower()] |= QCString("private");
                                           }
 
                                           addCurrentEntry(1);
@@ -812,9 +832,14 @@ private                                 {
                                           //cout << "5=========> got variable: " << argType << "::" << yytext << endl;
  					  /* work around for bug in QCString.replace (QCString works) */
 					  QCString name=yytext;
-                                          name = name.lower();
+            name = name.lower();
+            /* if variable/type/etc is part of a module, mod name is necessary for output */
+            if ((current_root) && current_root->section == Entry::NAMESPACE_SEC)
+            {
+              name = current_root->name + "::" + name;
+            }
 					  /* remember attributes for the symbol */
-					  modifiers[current_root][name.lower()] |= currentModifiers;
+					  modifiers[current_root][name] |= currentModifiers;
 					  argName= name;
 
 					  v_type= V_IGNORE;
@@ -1022,7 +1047,15 @@ private                                 {
 <Subprog>{BS}                          {   /* ignore white space */   }
 <Subprog>{ID}                          { current->name = yytext;
                                          //cout << "1a==========> got " << current->type << " " << yytext << " " << yyLineNr << endl;
-                                         modifiers[current_root][current->name.lower()].returnName = current->name.lower();
+                                         QCString returnName = current->name.lower();
+                                         /* if type is part of a module, mod name is necessary for output */
+                                         if ((current_root) && 
+                                             (current_root->section ==  Entry::CLASS_SEC ||
+                                              current_root->section ==  Entry::NAMESPACE_SEC)) 
+                                         {
+                                           current->name= current_root->name + "::" + current->name;
+                                         }
+                                         modifiers[current_root][current->name.lower()].returnName = returnName;
 
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
@@ -2052,9 +2085,9 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
 
         Argument *arg = findArgument(scope->parent(), ce->name, TRUE);
         if (arg != 0) 
-	{
+        {
           // set type of dummy procedure argument to interface
-	  arg->name = arg->type;
+          arg->name = arg->type;
           arg->type = scope->name;
         }
         if (ce->name.lower() == scope->name.lower()) found = TRUE;
@@ -2076,12 +2109,20 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
     Entry *ce;
     for (;(ce=eli.current());++eli) 
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC && ce->section != Entry::FUNCTION_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
       if (mdfsMap.contains(ce->name.lower()))
         applyModifiers(ce, mdfsMap[ce->name.lower()]);
+
+      // remove prefix for variable names
+      if (ce->section == Entry::VARIABLE_SEC || ce->section == Entry::FUNCTION_SEC)
+      {
+        int end = ce->name.findRev(":");
+        if (end != -1) 
+          ce->name.remove(0, end+1);
+      }
     }
   }
 

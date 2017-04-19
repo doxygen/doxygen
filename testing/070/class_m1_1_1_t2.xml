@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_m1_1_1_t2" kind="class" language="C++" prot="public">
+    <compoundname>M1::T2</compoundname>
+    <basecompoundref refid="class_m1_1_1_t1" prot="public" virt="non-virtual">M1::T1</basecompoundref>
+    <derivedcompoundref refid="class_m1_1_1_t3" prot="public" virt="non-virtual">M1::T3</derivedcompoundref>
+    <derivedcompoundref refid="class_m2_1_1_t3" prot="public" virt="non-virtual">M2::T3</derivedcompoundref>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="8">
+        <label>M2::T3</label>
+        <link refid="class_m2_1_1_t3"/>
+        <childnode refid="5" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>M1::T1</label>
+        <link refid="class_m1_1_1_t1"/>
+      </node>
+      <node id="5">
+        <label>M1::T2</label>
+        <link refid="class_m1_1_1_t2"/>
+        <childnode refid="6" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>M1::T3</label>
+        <link refid="class_m1_1_1_t3"/>
+        <childnode refid="5" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="10">
+        <label>M1::T1</label>
+        <link refid="class_m1_1_1_t1"/>
+      </node>
+      <node id="9">
+        <label>M1::T2</label>
+        <link refid="class_m1_1_1_t2"/>
+        <childnode refid="10" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="070_namespace_inheritance.cpp" line="16" column="1" bodyfile="070_namespace_inheritance.cpp" bodystart="15" bodyend="17"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
