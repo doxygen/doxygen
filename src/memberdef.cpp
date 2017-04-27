@@ -3143,8 +3143,7 @@ void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
           scope,                   // scope
           getBodyDef(),            // fileScope
           this,                    // self
-          ts,                      // text
-          TRUE                     // autoBreak
+          ts                       // text
           );
     }
     ol.endDoxyAnchor(cfname,memAnchor);
