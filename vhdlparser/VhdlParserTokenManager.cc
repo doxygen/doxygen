@@ -3061,7 +3061,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                         kind = 167;
                      { jjCheckNAddTwoStates(12, 13); }
                   }
-                  if ((0x100800401008004ULL & l) != 0L)
+                  if ((0x100801401008014ULL & l) != 0L)
                      jjstateSet[jjnewStateCnt++] = 22;
                   break;
                case 4:
@@ -3108,7 +3108,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   { jjCheckNAdd(20); }
                   break;
                case 21:
-                  if ((0x100800401008004ULL & l) != 0L)
+                  if ((0x100801401008014ULL & l) != 0L)
                      jjstateSet[jjnewStateCnt++] = 22;
                   break;
                case 23:
