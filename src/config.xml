@@ -2283,7 +2283,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='bool' id='FORMULA_TRANSPARENT' defval='1' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- Use the \c FORMULA_TRANPARENT tag to determine whether or not the images 
+ Use the \c FORMULA_TRANSPARENT tag to determine whether or not the images 
  generated for formulas are transparent PNGs. Transparent PNGs are 
  not supported properly for IE 6.0, but are supported on all modern browsers. 
  <br>Note that when changing this option you need to delete any `form_*.png` files 
