@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -41,10 +41,10 @@
 // file format: (all multi-byte values are stored in big endian format)
 //   4 byte header
 //   256*256*4 byte index (4 bytes)
-//   for each index entry: a zero terminated list of words 
+//   for each index entry: a zero terminated list of words
 //   for each word: a \0 terminated string + 4 byte offset to the stats info
 //   padding bytes to align at 4 byte boundary
-//   for each word: the number of urls (4 bytes) 
+//   for each word: the number of urls (4 bytes)
 //               + for each url containing the word 8 bytes statistics
 //                 (4 bytes index to url string + 4 bytes frequency counter)
 //   for each url: a \0 terminated string
@@ -75,7 +75,7 @@ void IndexWord::addUrlIndex(int idx,bool hiPriority)
 
 //--------------------------------------------------------------------
 
-SearchIndex::SearchIndex() : SearchIndexIntf(Internal), 
+SearchIndex::SearchIndex() : SearchIndexIntf(Internal),
       m_words(328829), m_index(numIndexEntries), m_url2IdMap(10007), m_urls(10007), m_urlIndex(-1)
 {
   int i;
@@ -94,13 +94,13 @@ void SearchIndex::setCurrentDoc(Definition *ctx,const char *anchor,bool isSource
   QCString url=isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
   url+=Config_getString(HTML_FILE_EXTENSION);
   QCString baseUrl = url;
-  if (anchor) url+=QCString("#")+anchor;  
+  if (anchor) url+=QCString("#")+anchor;
   if (!isSourceFile) baseUrl=url;
   QCString name=ctx->qualifiedName();
   if (ctx->definitionType()==Definition::TypeMember)
   {
     MemberDef *md = (MemberDef *)ctx;
-    name.prepend((md->getLanguage()==SrcLangExt_Fortran  ? 
+    name.prepend((md->getLanguage()==SrcLangExt_Fortran  ?
                  theTranslator->trSubprogram(TRUE,TRUE) :
                  theTranslator->trMember(TRUE,TRUE))+" ");
   }
@@ -188,7 +188,7 @@ static int charsToIndex(const char *word)
   //register ushort h=0;
   //const char *k = word;
   //ushort mask=0xfc00;
-  //while ( *k ) 
+  //while ( *k )
   //{
   //  h = (h&mask)^(h<<6)^(*k++);
   //}
@@ -275,7 +275,7 @@ void SearchIndex::write(const char *fileName)
       IndexWord *iw;
       for (iwi.toFirst();(iw=iwi.current());++iwi)
       {
-        int ws = iw->word().length()+1; 
+        int ws = iw->word().length()+1;
         size+=ws+4; // word + url info list offset
       }
       size+=1; // zero list terminator
@@ -295,8 +295,8 @@ void SearchIndex::write(const char *fileName)
       IndexWord *iw;
       for (iwi.toFirst();(iw=iwi.current());++iwi)
       {
-        offset+= iw->word().length()+1; 
-        offset+=4; // word + offset to url info array 
+        offset+= iw->word().length()+1;
+        offset+=4; // word + offset to url info array
       }
       offset+=1; // zero list terminator
     }
@@ -312,7 +312,7 @@ void SearchIndex::write(const char *fileName)
   //int statsOffset = size;
   //IndexWord *iw;
   int *wordStatOffsets = new int[m_words.count()];
-  
+
   int count=0;
 
   // third pass: compute offset to stats info for each word
@@ -417,7 +417,7 @@ struct SearchDocEntry
   QCString name;
   QCString args;
   QCString extId;
-  QCString url; 
+  QCString url;
   GrowBuf  importantText;
   GrowBuf  normalText;
 };
@@ -476,7 +476,7 @@ static QCString definitionToName(Definition *ctx)
   {
     switch(ctx->definitionType())
     {
-      case Definition::TypeClass: 
+      case Definition::TypeClass:
         return ((ClassDef*)ctx)->compoundTypeString();
       case Definition::TypeFile:
         return "file";
@@ -647,23 +647,23 @@ static void addMemberToSearchIndex(MemberDef *md)
       }
     }
   }
-  else if (isLinkable && 
-      (((nd=md->getNamespaceDef()) && nd->isLinkable()) || 
+  else if (isLinkable &&
+      (((nd=md->getNamespaceDef()) && nd->isLinkable()) ||
        ((fd=md->getFileDef())      && fd->isLinkable())
       )
      )
   {
     QCString n = md->name();
-    if (!n.isEmpty()) 
+    if (!n.isEmpty())
     {
       uint letter = getUtf8CodeToLower(n,0);
       g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,md);
 
-      if (md->isFunction()) 
+      if (md->isFunction())
       {
         g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].symbolList.append(letter,md);
       }
-      else if (md->isVariable()) 
+      else if (md->isVariable())
       {
         g_searchIndexInfo[SEARCH_INDEX_VARIABLES].symbolList.append(letter,md);
       }
@@ -940,18 +940,22 @@ void writeJavascriptSearchIndex()
           t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>" << endl;
           t << "<div id=\"SRResults\"></div>" << endl; // here the results will be inserted
           t << "<script type=\"text/javascript\"><!--" << endl;
+					t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
           t << "createResults();" << endl; // this function will insert the results
+					t << "/* @license-end */\n";
           t << "--></script>" << endl;
-          t << "<div class=\"SRStatus\" id=\"Searching\">" 
+          t << "<div class=\"SRStatus\" id=\"Searching\">"
             << theTranslator->trSearching() << "</div>" << endl;
           t << "<div class=\"SRStatus\" id=\"NoMatches\">"
             << theTranslator->trNoMatches() << "</div>" << endl;
 
           t << "<script type=\"text/javascript\"><!--" << endl;
+					t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
           t << "document.getElementById(\"Loading\").style.display=\"none\";" << endl;
           t << "document.getElementById(\"NoMatches\").style.display=\"none\";" << endl;
           t << "var searchResults = new SearchResults(\"searchResults\");" << endl;
           t << "searchResults.Search();" << endl;
+					t << "/* @license-end */\n";
           t << "--></script>" << endl;
           t << "</div>" << endl; // SRIndex
           t << "</body>" << endl;
@@ -1074,13 +1078,13 @@ void writeJavascriptSearchIndex()
               bool found=FALSE;
               overloadedFunction = ((prevScope!=0 && scope==prevScope) ||
                   (scope && scope==nextScope)
-                  ) && md && 
+                  ) && md &&
                 (md->isFunction() || md->isSlot());
               QCString prefix;
               if (md) prefix=convertToXML(md->localName());
               if (overloadedFunction) // overloaded member function
               {
-                prefix+=convertToXML(md->argsString()); 
+                prefix+=convertToXML(md->argsString());
                 // show argument list to disambiguate overloaded functions
               }
               else if (md) // unique member function
@@ -1112,11 +1116,11 @@ void writeJavascriptSearchIndex()
                   }
                 }
               }
-              else if (md && (md->getClassDef() || md->getNamespaceDef())) 
+              else if (md && (md->getClassDef() || md->getNamespaceDef()))
                 // member in class or namespace scope
               {
                 SrcLangExt lang = md->getLanguage();
-                name = convertToXML(d->getOuterScope()->qualifiedName()) 
+                name = convertToXML(d->getOuterScope()->qualifiedName())
                   + getLanguageSpecificSeparator(lang) + prefix;
                 found = TRUE;
               }
@@ -1321,5 +1325,3 @@ void finializeSearchIndexer()
 {
   delete Doxygen::searchIndex;
 }
-
-

@@ -16,16 +16,20 @@
 <script type="text/javascript" src="{{ page.relPath }}navtreedata.js"></script>
 <script type="text/javascript" src="{{ page.relPath }}navtree.js"></script>
 <script type="text/javascript">
+  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
   $(document).ready(initResizable);
+	/* @license-end */
 </script>
 {% endif %}
 {% if not config.DISABLE_INDEX %}
 <script type="text/javascript" src="menudata.js"></script>
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
 $(function() {
   initMenu('',{% if config.SEARCHENGINE %}true{% else %}false{% endif %},'{{ tr.search }}');
 });
+/* @license-end */
 </script>
 {% endif %}
 {% if config.SEARCHENGINE %}
@@ -36,14 +40,18 @@ $(function() {
 <script type="text/javascript" src="{{ page.relPath }}search/search.js"></script>
   {% if config.SERVER_BASED_SEARCH %}
 <script type="text/javascript">
+  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
   $(document).ready(function() {
     if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
   });
+	/* @license-end */
 </script>
 <link rel="search" href="{{ page.relPath }}search-opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="{{ config.PROJECT_NAME }}"/>
   {% else %}
 <script type="text/javascript">
+  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
   $(document).ready(function() { init_search(); });
+	/* @license-end */
 </script>
   {% endif %}
 {% endif %}
@@ -131,7 +139,9 @@ $(function() {
 {% block search %}
 {% if config.SEARCHENGINE %}
 <script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
 var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ tr.search }}');
+/* @license-end */
 </script>
 {% endif %}
 {% endblock %}
@@ -160,7 +170,9 @@ var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ 
   </div>
 </div>
 <script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
 $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix %}{{ page_postfix }}{% endif %}{{ config.HTML_FILE_EXTENSION }}','{{ page.relPath }}');});
+/* @license-end */
 </script>
 <div id="doc-content">
 {% endif %}
@@ -227,7 +239,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% else %}
 {{ tr.generatedBy }}
 {% endif %}
-&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.png" alt="doxygen"/></a> 
+&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.png" alt="doxygen"/></a>
   {{ doxygen.version }}
   </small></address>
 {% endif %}

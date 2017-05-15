@@ -4,8 +4,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -99,11 +99,11 @@ int FTVNode::numNodesAtLevel(int level,int maxLevel) const
 
 //----------------------------------------------------------------------------
 
-/*! Constructs an ftv help object. 
- *  The object has to be \link initialize() initialized\endlink before it can 
+/*! Constructs an ftv help object.
+ *  The object has to be \link initialize() initialized\endlink before it can
  *  be used.
  */
-FTVHelp::FTVHelp(bool TLI) 
+FTVHelp::FTVHelp(bool TLI)
 {
   /* initial depth */
   m_indentNodes = new QList<FTVNode>[MAX_INDENT];
@@ -134,7 +134,7 @@ void FTVHelp::finalize()
   generateTreeView();
 }
 
-/*! Increase the level of the contents hierarchy. 
+/*! Increase the level of the contents hierarchy.
  *  This will start a new sublist in contents file.
  *  \sa decContentsDepth()
  */
@@ -204,7 +204,7 @@ void FTVHelp::addContentsItem(bool isDir,
     QList<FTVNode> *pnl = &m_indentNodes[m_indent-1];
     newNode->parent = pnl->getLast();
   }
-  
+
 }
 
 static QCString node2URL(FTVNode *n,bool overruleFile=FALSE,bool srcLink=FALSE)
@@ -385,7 +385,7 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       if (srcRef)
       {
         t << "<a href=\"" << srcRef->getSourceFileBase()
-          << Doxygen::htmlFileExtension 
+          << Doxygen::htmlFileExtension
           << "\">";
       }
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
@@ -487,7 +487,7 @@ static QCString convertFileId2Var(const QCString &fileId)
   return substitute(varId,"-","_");
 }
 
-static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t, 
+static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
                            const QList<FTVNode> &nl,int level,bool &first)
 {
   static QCString htmlOutput = Config_getString(HTML_OUTPUT);
@@ -543,7 +543,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
         {
           fileId+="_"+n->anchor;
         }
-        if (dupOfParent(n)) 
+        if (dupOfParent(n))
         {
           fileId+="_dup";
         }
@@ -553,7 +553,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
           FTextStream tt(&f);
           tt << "var " << convertFileId2Var(fileId) << " =" << endl;
           generateJSTree(navIndex,tt,n->children,1,firstChild);
-          tt << endl << "];"; 
+          tt << endl << "];";
         }
         t << "\"" << fileId << "\" ]";
       }
@@ -571,7 +571,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
       if (emptySection)
         t << "null ]";
       else
-        t << endl << indentStr << "  ] ]"; 
+        t << endl << indentStr << "  ] ]";
     }
   }
   return found;
@@ -588,6 +588,22 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
     //tidx << "var NAVTREEINDEX =" << endl;
     //tidx << "{" << endl;
     FTextStream t(&f);
+		t << "/*\n@ @licstart  The following is the entire license notice for the\n"
+			"JavaScript code in this file.\n\nCopyright (C) 1997-2017 by Dimitri van Heesch\n\n"
+			"This program is free software; you can redistribute it and/or modify\n"
+			"it under the terms of the GNU General Public License as published by\n"
+			"the Free Software Foundation; either version 2 of the License, or\n"
+			"(at your option) any later version.\n\n"
+			"This program is distributed in the hope that it will be useful,\n"
+			"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+			" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+			" GNU General Public License for more details.\n\n"
+			"You should have received a copy of the GNU General Public License along\n"
+			"with this program; if not, write to the Free Software Foundation, Inc.,\n"
+			"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n\n"
+			"@licend  The above is the entire license notice\n"
+			"for the JavaScript code in this file\n"
+			"*/\n";
     t << "var NAVTREE =" << endl;
     t << "[" << endl;
     t << "  [ ";
@@ -618,9 +634,9 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
     bool first=TRUE;
     generateJSTree(navIndex,t,nodeList,1,first);
 
-    if (first) 
+    if (first)
       t << "]" << endl;
-    else 
+    else
       t << endl << "  ] ]" << endl;
     t << "];" << endl << endl;
 
@@ -660,7 +676,7 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
         ++li;
         if (li.current() && elemCount<maxElemCount-1) tsidx << ","; // not last entry
         tsidx << endl;
-  
+
         elemCount++;
         if (li.current() && elemCount>=maxElemCount) // switch to new sub-index
         {
@@ -678,8 +694,8 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
       tsidx << "};" << endl;
       t << endl << "];" << endl;
     }
-    t << endl << "var SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';"; 
-    t << endl << "var SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';"; 
+    t << endl << "var SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';";
+    t << endl << "var SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
   }
   ResourceMgr::instance().copyResource("navtree.js",htmlOutput);
 }
@@ -731,7 +747,7 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
   if (depth>1)
   {
     t << "<div class=\"levels\">[";
-    t << theTranslator->trDetailLevel(); 
+    t << theTranslator->trDetailLevel();
     t << " ";
     int i;
     for (i=1;i<=depth;i++)
@@ -779,4 +795,3 @@ void FTVHelp::generateTreeView()
   generateTreeViewImages();
   generateTreeViewScripts();
 }
-
