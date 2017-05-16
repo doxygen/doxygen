@@ -301,10 +301,12 @@ TOKEN:
  | < #BASIC_GRAPHIC_CHARACTER:    (<UPPER_CASE_LETTER>|<DIGIT>|<SPECIAL_CHARACTER>|<SPACE_CHARACTER>) >
  | < #GRAPHIC_CHARACTER: ( <BASIC_GRAPHIC_CHARACTER>|<LOWER_CASE_LETTER>|<OTHER_SPECIAL_CHARACTER> ) >
  | < #LETTER_OR_DIGIT: ( <LETTER> | <DIGIT> ) >
+ | < #LETTER_OR_DIGIT_OR_STD: (<LETTER_OR_DIGIT> | <STD_LOGIC> ) >
  | < #LETTER: (<UPPER_CASE_LETTER>|<LOWER_CASE_LETTER>) >
  | < #UPPER_CASE_LETTER: ["A"-"Z"]  >
- | <BIT_STRING_LITERAL : <BASE_SPECIFIER >["\""](<LETTER_OR_DIGIT>((["_"])*<LETTER_OR_DIGIT>)*) ["\""] >
- | <#BASE_SPECIFIER:["B","O","X","b","o","x"]>
+ | <BIT_STRING_LITERAL : (<DIGIT>)*<BASE_SPECIFIER>["\""](<LETTER_OR_DIGIT_OR_STD>((["_"])*<LETTER_OR_DIGIT_OR_STD>)*)["\""] >
+ | <#BASE_SPECIFIER:["B","O","X","b","o","x","d","D"]>
+ | <#STD_LOGIC:["0","1","L","H","X","Z","W","-","l","h","x","z","w"]>
  | < #DIGIT: ["0"-"9"] >
  | < #SPECIAL_CHARACTER: ["#","&","'","(",")","*","+",",","-",".","/",":",";","<","=",">","_","|"] >
  | < #OTHER_SPECIAL_CHARACTER: ["%","!","$","@","?","[","\\","]","^","`","{","}","~","\u00A0"-"\u00FF"]>

@@ -8416,7 +8416,7 @@ uint getUtf8CodeToLower( const QCString& s, int idx )
 }
 
 
-/*! @brief Returns one unicode character as ian unsigned interger 
+/*! @brief Returns one unicode character as an unsigned integer 
  *  from utf-8 string, making the character upper case if it was lower case.
  *
  * @param s utf-8 encoded string

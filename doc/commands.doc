@@ -2197,7 +2197,7 @@ Commands for displaying examples
   \note Some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
         this command due to the moment of parsing.
 
-  \note The included documentation should not have comment signs in it as the will appear
+  \note The included documentation should not have comment signs in it as they will appear
         in the documentation as well.
 
   \sa section \ref cmdinclude "\\include".
@@ -2325,7 +2325,7 @@ Commands for displaying examples
   \note Some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
         this command due to the moment of parsing.
 
-  \note The included documentation should not have comment signs in it as the will appear
+  \note The included documentation should not have comment signs in it as they will appear
         in the documentation as well.
 
   \sa section \ref cmdsnippet "\\snippet" and \ref cmdincludedoc "\\includedoc".

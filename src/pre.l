@@ -1050,7 +1050,7 @@ static int getNextId(const QCString &expr,int p,int *l)
   return -1;
 }
 
-/*! preforms recursive macro expansion on the string \a expr
+/*! performs recursive macro expansion on the string \a expr
  *  starting at position \a pos.
  *  May read additional characters from the input while re-scanning!
  *  If \a expandAll is \c TRUE then all macros in the expression are
