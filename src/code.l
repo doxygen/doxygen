@@ -611,8 +611,8 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
-  QCString tooltip; 
-  if (!sourceTooltips) // fall back to simple "title" tooltips
+  QCString tooltip;
+  if (sourceTooltips) // fall back to simple "title" tooltips
   {
     tooltip = d->briefDescriptionAsTooltip();
   }
@@ -1317,19 +1317,21 @@ static void generatePHPVariableLink(CodeOutputInterface &ol,const char *varName)
 
 static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
 {
-  //CodeClassDef *ccd=0;
+  int len, i;
+  QCString funcScope;
+
   ClassDef *ccd=0;
   QCString locScope=g_classScope;
   QCString locFunc=removeRedundantWhiteSpace(funcName);
-  QCString funcScope;
+
   QCString funcWithScope=locFunc;
   QCString funcWithFullScope=locFunc;
   QCString fullScope=locScope;
+
   DBG_CTX((stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data()));
-  int len=2;
-  int i=locFunc.findRev("::");
+
   if (g_currentMemberDef && g_currentMemberDef->getClassDef() &&
-      funcName==g_currentMemberDef->localName() && 
+      funcName==g_currentMemberDef->localName() &&
       g_currentMemberDef->getDefLine()==g_yyLineNr &&
       generateClassMemberLink(ol,g_currentMemberDef,funcName)
      )
@@ -1342,8 +1344,15 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
     // See also bug 549022.
     goto exit;
   }
+
+  // try to find a scope in locFunc
+  len=2;
+  i=locFunc.findRev("::");
+
   if (i==-1) i=locFunc.findRev("."),len=1;
   if (i==-1) i=locFunc.findRev("\\"),len=1; // for PHP
+
+  // found a scope
   if (i>0)
   {
     funcScope=locFunc.left(i);
@@ -1377,9 +1386,10 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
       funcWithFullScope = locScope+"::"+funcWithScope;
     }
   }
+
   if (!fullScope.isEmpty() && (ccd=g_codeClassSDict->find(fullScope)))
   {
-    //printf("using classScope %s\n",g_classScope.data());
+    DBG_CTX((stderr, "using classScope %s\n",g_classScope.data()));
     if (ccd->baseClasses())
     {
       BaseClassListIterator bcli(*ccd->baseClasses());
@@ -1392,9 +1402,10 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
       }
     }
   }
+  // local scope which is different from fullScope
   if (!locScope.isEmpty() && fullScope!=locScope && (ccd=g_codeClassSDict->find(locScope)))
   {
-    //printf("using classScope %s\n",g_classScope.data());
+    DBG_CTX((stderr, "using classScope %s\n",g_classScope.data()));
     if (ccd->baseClasses())
     {
       BaseClassListIterator bcli(*ccd->baseClasses());
@@ -1407,11 +1418,16 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
       }
     }
   }
-  if (!getLink(locScope,funcWithScope,ol,funcName))
+  // typedef on an anonymous struct
+  if (g_currentMemberDef && g_classScope != g_realScope)
+  {
+    generateClassMemberLink(ol,g_currentMemberDef,funcName);
+  }
+  else if (!getLink(locScope,funcWithScope,ol,funcName))
   {
     generateClassOrGlobalLink(ol,funcName);
   }
-exit:  
+exit:
   g_forceTagReference.resize(0);
   return;
 }
