@@ -4151,7 +4151,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
         case LayoutNavEntry::Classes: 
           if (annotatedClasses>0 && addToIndex)
           {
-            Doxygen::indexList->addContentsItem(TRUE,lne->title(),0,"annotated",0); 
+            Doxygen::indexList->addContentsItem(TRUE,lne->title(),0,lne->baseFile(),0);
             Doxygen::indexList->incContentsDepth();
             needsClosing=TRUE;
           }
