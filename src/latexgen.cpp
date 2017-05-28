@@ -92,7 +92,7 @@ void LatexCodeGenerator::codify(const char *str)
                    m_col+=spacesToNextTabStop;
                    p++;
                    break;
-        case '\n': m_t << '\n'; m_col=0; p++;
+        case '\n': (usedTableLevels>0) ? m_t << "\\newline\n" : m_t << '\n'; m_col=0; p++;
                    break;
         default:
                    i=0;
@@ -1843,11 +1843,13 @@ void LatexGenerator::writeNonBreakableSpace(int)
 
 void LatexGenerator::startDescTable(const char *title)
 {
+  usedTableLevels++;
   t << "\\begin{DoxyEnumFields}{" << title << "}" << endl;
 }
 
 void LatexGenerator::endDescTable()
 {
+  usedTableLevels--;
   t << "\\end{DoxyEnumFields}" << endl;
 }
 
@@ -2190,6 +2192,7 @@ void LatexGenerator::lineBreak(const char *)
 
 void LatexGenerator::startMemberDocSimple(bool isEnum)
 {
+  usedTableLevels++;
   if (isEnum)
   {
     t << "\\begin{DoxyEnumFields}{";
@@ -2205,6 +2208,7 @@ void LatexGenerator::startMemberDocSimple(bool isEnum)
 
 void LatexGenerator::endMemberDocSimple(bool isEnum)
 {
+  usedTableLevels--;
   if (isEnum)
   {
     t << "\\end{DoxyEnumFields}" << endl;
