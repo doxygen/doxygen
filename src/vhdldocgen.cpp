@@ -3995,10 +3995,10 @@ void FlowChart::createSVG()
   //if (m)
   //  fprintf(stderr,"\n creating  flowchart  : %s  %s in file %s \n",VhdlDocGen::trTypeString(m->getMemberSpecifiers()),m->name().data(),m->getFileDef()->name().data());
 
-  QCString dir=" -o "+ov+qcs;
+  QCString dir=" -o \""+ov+qcs+"\"";
   ov+="/flow_design.dot";
 
-  QCString vlargs="-Tsvg "+ov+dir ;
+  QCString vlargs="-Tsvg \""+ov+"\" "+dir ;
 
   if (portable_system("dot",vlargs)!=0)
   {
