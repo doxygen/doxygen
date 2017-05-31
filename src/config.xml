@@ -1642,7 +1642,7 @@ to disable this feature.
 <![CDATA[
  If clang assisted parsing is enabled you can provide the clang parser with the
  path to the <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">
- compilation database</a> used when the files were built. This is equivilent to
+ compilation database</a> used when the files were built. This is equivalent to
  specifying the "-p" option to a clang tool, such as clang-check. These options
  will then be pased to the parser.
 
