@@ -285,7 +285,7 @@ At the time I was looking into \c lex and \c yacc, where a lot of things start w
 \section faq_why What was the reason to develop doxygen?
 
 I once wrote a GUI widget based on the Qt library (it is still available at
-http://sourceforge.net/projects/qdbttabular/ but hasn't been updated since 2002). 
+https://sourceforge.net/projects/qdbttabular/ but hasn't been updated since 2002). 
 Qt had nicely generated documentation (using an internal tool which 
 <a href="http://rant.gulbrandsen.priv.no/udoc/history">they didn't want to release</a>) 
 and I wrote similar docs by hand. 
