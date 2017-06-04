@@ -52,7 +52,7 @@ The data flow is shown in the following diagram:
 
 The first step is to make the search engine available via a web server.
 If you use `doxysearch.cgi` this means making the
-<a href="http://en.wikipedia.org/wiki/Common_Gateway_Interface">CGI</a> binary
+<a href="https://en.wikipedia.org/wiki/Common_Gateway_Interface">CGI</a> binary
 available from the web server (i.e. be able to run it from a 
 browser via an URL starting with http:)
 
@@ -187,7 +187,7 @@ The next subsections describe these interfaces in more detail.
 \subsection extsearch_api_index Indexer input format
 
 The search data produced by doxygen follows the 
-<a href="http://wiki.apache.org/solr/UpdateXmlMessages">Solr XML index message</a>
+<a href="https://wiki.apache.org/solr/UpdateXmlMessages">Solr XML index message</a>
 format.
 
 The input for the indexer is an XML file, which consists of one `<add>` tag containing 
@@ -224,12 +224,12 @@ Each field has a name. The following field names are supported:
 - *text*: the documentation associated with the item. Note that only words are present, no markup.
 
 @note Due to the potentially large size of the XML file, it is recommended to use a 
-<a href="http://en.wikipedia.org/wiki/Simple_API_for_XML">SAX based parser</a> to process it.
+<a href="https://en.wikipedia.org/wiki/Simple_API_for_XML">SAX based parser</a> to process it.
 
 \subsection extsearch_api_search_in Search URL format
 
 When the search engine is invoked from a doxygen generated HTML page, a number of parameters are
-passed to via the <a href="http://en.wikipedia.org/wiki/Query_string">query string</a>.
+passed to via the <a href="https://en.wikipedia.org/wiki/Query_string">query string</a>.
 
 The following fields are passed:
 - *q*:  the query text as entered by the user
@@ -247,14 +247,14 @@ It represents a query for the word 'list' (`q=list`) requesting 20 search result
 starting with the result number 20 (`p=1`) and using callback 'dummy' (`cb=dummy`):
 
 
-@note The values are <a href="http://en.wikipedia.org/wiki/Percent-encoding">URL encoded</a> so they
+@note The values are <a href="https://en.wikipedia.org/wiki/Percent-encoding">URL encoded</a> so they
 have to be decoded before they can be used.
 
 \subsection extsearch_api_search_out Search results format
 
 When invoking the search engine as shown in the previous subsection, it should reply with
 the results. The format of the reply is
-<a href="http://en.wikipedia.org/wiki/JSONP">JSON with padding</a>, which is basically
+<a href="https://en.wikipedia.org/wiki/JSONP">JSON with padding</a>, which is basically
 a javascript struct wrapped in a function call. The name of function should be the name of
 the callback (as passed with the *cb* field in the query).
 
