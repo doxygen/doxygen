@@ -1166,7 +1166,7 @@ void VhdlDocGen::parseFuncProto(const char* text,QList<Argument>& qlist,
   QCString s1(text);
   QCString temp;
 
-  index=s1.find("(");
+  index=s1.find('(');
   end=s1.findRev(")");
 
   if ((end-index)>0)
@@ -1188,7 +1188,7 @@ void VhdlDocGen::parseFuncProto(const char* text,QList<Argument>& qlist,
   {
     QCString s1(text);
     s1=s1.stripWhiteSpace();
-    int i=s1.find("(",0,FALSE);
+    int i=s1.find('(',0,FALSE);
     int s=s1.find(QRegExp("[ \\t]"));
     if (i==-1 || i<s)
       s1=VhdlDocGen::getIndexWord(s1.data(),1);
