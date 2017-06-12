@@ -90,7 +90,7 @@ that are disabled by default:
 
 To tweak things like fonts or colors, margins, or other look \& feel
 aspects of the HTML output in detail, you can create a different 
-<a href="http://www.w3schools.com/css/default.asp">cascading style sheet</a>. 
+<a href="https://www.w3schools.com/css/default.asp">cascading style sheet</a>. 
 You can also let doxygen use a custom header and footer for each HTML 
 page it generates, for instance to make the output conform to the style 
 used on the rest of your web site.
@@ -390,7 +390,7 @@ files as one big DOM tree would not fit into memory.
 
 See <a href="https://github.com/michaeljones/breathe">the Breathe project</a> for
 an example that uses doxygen XML output from Python to bridge it with the 
-<a href="http://sphinx.pocoo.org/">Sphinx</a> document generator.
+<a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> document generator.
 
 
 \htmlonly

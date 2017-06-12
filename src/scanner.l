@@ -6198,6 +6198,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <CSAccessorDecl>"{"			{ curlyCount++; }
+<CSAccessorDecl>"}"{B}*"="		{
+					  // fall back to next rule if it's not the right bracket
+					  if (curlyCount != 0) REJECT;
+					  current->initializer = "=";
+					  current->endBodyLine=yyLineNr;
+					  lastInitializerContext = FindMembers;
+					  BEGIN(ReadInitializer);
+					}
 <CSAccessorDecl>"}"			{ 
                                           if (curlyCount) 
                                           {
@@ -6207,6 +6215,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
   					    mtype = Method;
                                             virt = Normal;
+					    // not really important, but while we are at it
+					    current->endBodyLine=yyLineNr;
                                             unput(';');
 					    BEGIN(FindMembers);
 					  }

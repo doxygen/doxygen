@@ -72,7 +72,7 @@ has its own advantages and disadvantages:
    searching, meaning that you could use your own indexer and search engine 
    of choice. To make life easier doxygen ships with an example indexer 
    (doxyindexer) and search engine (doxysearch.cgi) based on 
-   the <a href="http://xapian.org/">Xapian</a> open source search engine 
+   the <a href="https://xapian.org/">Xapian</a> open source search engine 
    library.
 
    To enable this search method set 
@@ -147,7 +147,7 @@ has its own advantages and disadvantages:
    \ref cfg_qhp_namespace "QHP_NAMESPACE", 
    \ref cfg_qhg_location "QHG_LOCATION", 
    \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER".
-   See <a href="http://doc.qt.digia.com/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
+   See <a href="http://doc.qt.io/archives/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
    for more info.
 
    Feature wise the Qt compressed help feature is comparable with the CHM 
