@@ -998,7 +998,13 @@ void generateDirDocs(OutputList &ol)
   DirSDict::Iterator sdi(*Doxygen::directories);
   for (sdi.toFirst();(dir=sdi.current());++sdi)
   {
+    ol.pushGeneratorState();
+    if (!dir->hasDocumentation())
+    {
+      ol.disableAllBut(OutputGenerator::Html);
+    }
     dir->writeDocumentation(ol);
+    ol.popGeneratorState();
   }
   if (Config_getBool(DIRECTORY_GRAPH))
   {
