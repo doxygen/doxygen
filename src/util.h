@@ -26,7 +26,6 @@
 #include <ctype.h>
 #include "types.h"
 #include "sortdict.h"
-#include "docparser.h"
 
 //--------------------------------------------------------------------
 
@@ -283,7 +282,7 @@ QCString convertToLaTeX(const QCString &s,bool insideTabbing=FALSE,bool keepSpac
 
 QCString convertToXML(const char *s);
 
-QCString convertToJSString(const char *s);
+QCString convertToJSString(const char *s, bool applyTextDir = true);
 
 QCString getOverloadDocs();
 

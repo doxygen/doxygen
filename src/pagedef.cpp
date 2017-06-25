@@ -183,6 +183,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   if (!title().isEmpty() && !name().isEmpty() && si!=0)
   {
+    ol.startPageDoc(si->title);
     //ol.startSection(si->label,si->title,si->type);
     startTitle(ol,getOutputFileBase(),this);
     ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
@@ -192,6 +193,8 @@ void PageDef::writeDocumentation(OutputList &ol)
     //ol.endSection(si->label,si->type);
     endTitle(ol,getOutputFileBase(),name());
   }
+  else
+    ol.startPageDoc("");
   ol.startContents();
   ol.popGeneratorState();
   //2.}
@@ -202,6 +205,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   }
 
   writePageDocumentation(ol);
+  ol.endPageDoc();
 
   if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
   {

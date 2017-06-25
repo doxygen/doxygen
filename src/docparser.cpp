@@ -7218,8 +7218,129 @@ static QCString processCopyDoc(const char *data,uint &len)
   buf.addChar(0);
   return buf.get();
 }
+//---------------------------------------------------------------------------
+QString::Direction getTextDirByConfig(const QString &text)
+{
+  auto configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
+  if (configDir == "None")
+    return QString::DirNeutral;
+  if (configDir == "Context")
+    return text.basicDirection();
+  if (configDir == "LTR")
+  {
+    auto textDir = text.direction();
+    if (textDir == QString::DirMixed)
+      return QString::DirLTR;
+    return textDir;
+  }
+  if (configDir == "RTL")
+  {
+    auto textDir = text.direction();
+    if (textDir == QString::DirMixed)
+      return QString::DirRTL;
+    return textDir;
+  }
+  return QString::DirNeutral;
+}
 
-//--------------------------------------------------------------------------
+QString::Direction getTextDirByConfig(const DocNode *node)
+{
+  auto configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
+  if (configDir == "None")
+    return QString::DirNeutral;
+  if (configDir == "Context")
+    return node->getTextBasicDir();
+  if (configDir == "LTR")
+  {
+    auto textDir = node->getTextDir();
+    if (textDir == QString::DirMixed)
+      return QString::DirLTR;
+    return textDir;
+  }
+  if (configDir == "RTL")
+  {
+    auto textDir = node->getTextDir();
+    if (textDir == QString::DirMixed)
+      return QString::DirRTL;
+    return textDir;
+  }
+  return QString::DirNeutral;
+}
+
+QString::Direction getTextDirByConfig(const DocPara *para, int nodeIndex)
+{
+  auto configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
+  if (configDir == "None")
+    return QString::DirNeutral;
+  if (configDir == "Context")
+    return para->getTextBasicDir(nodeIndex);
+  if (configDir == "LTR")
+  {
+    auto textDir = para->getTextDir(nodeIndex);
+    if (textDir == QString::DirMixed)
+      return QString::DirLTR;
+    return textDir;
+  }
+  if (configDir == "RTL")
+  {
+    auto textDir = para->getTextDir(nodeIndex);
+    if (textDir == QString::DirMixed)
+      return QString::DirRTL;
+    return textDir;
+  }
+  return QString::DirNeutral;
+}
+
+QCString getDirHtmlClassOfNode(QString::Direction textDir, const char *initValue)
+{
+  QCString classFromDir;
+  if (textDir == QString::DirLTR)
+    classFromDir = "DocNodeLTR";
+  else if (textDir == QString::DirRTL)
+    classFromDir = "DocNodeRTL";
+  else
+    classFromDir = "";
+
+  if (initValue != nullptr && !classFromDir.isEmpty())
+    return QCString(" class=\"") + initValue + " " + classFromDir + "\"";
+  if (initValue != nullptr)
+    return QCString(" class=\"") + initValue + "\"";
+  if (!classFromDir.isEmpty())
+    return QCString(" class=\"") + classFromDir + "\"";
+  return "";
+}
+
+QCString getDirHtmlClassOfPage(QCString pageTitle)
+{
+  QCString result = "";
+  result += " class=\"PageDoc";
+  auto titleDir = getTextDirByConfig(pageTitle);
+  if (titleDir == QString::DirLTR)
+    result += " PageDocLTR-title";
+  else if (titleDir == QString::DirRTL)
+    result += " PageDocRTL-title";
+  result += "\"";
+  return result;
+}
+
+QCString getHtmlDirEmbedingChar(QString::Direction textDir)
+{
+  if (textDir == QString::DirLTR)
+    return "&#x202A;";
+  if (textDir == QString::DirRTL)
+    return "&#x202B;";
+  return "";
+}
+
+QCString getJsDirEmbedingChar(QString::Direction textDir)
+{
+  if (textDir == QString::DirLTR)
+    return "\\u202A";
+  if (textDir == QString::DirRTL)
+    return "\\u202B";
+  return "";
+}
+//---------------------------------------------------------------------------
 
 DocRoot *validatingParseDoc(const char *fileName,int startLine,
                             Definition *ctx,MemberDef *md,

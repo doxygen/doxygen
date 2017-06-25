@@ -374,8 +374,8 @@ static QCString substituteHtmlKeywords(const QCString &s,
 
   // first substitute generic keywords
   QCString result = substituteKeywords(s,title,
-        convertToHtml(Config_getString(PROJECT_NAME)),
-        convertToHtml(Config_getString(PROJECT_NUMBER)),
+    convertToHtml(Config_getString(PROJECT_NAME)),
+    convertToHtml(Config_getString(PROJECT_NUMBER)),
         convertToHtml(Config_getString(PROJECT_BRIEF)));
 
   // additional HTML only keywords
@@ -479,6 +479,8 @@ void HtmlCodeGenerator::codify(const char *str)
 
 void HtmlCodeGenerator::docify(const char *str)
 {
+  m_t << getHtmlDirEmbedingChar(getTextDirByConfig(str));
+
   if (str && m_streamSet)
   {
     const char *p=str;
@@ -2308,6 +2310,16 @@ void HtmlGenerator::startContents()
 void HtmlGenerator::endContents()
 {
   t << "</div><!-- contents -->" << endl;
+}
+
+void HtmlGenerator::startPageDoc(const char *pageTitle)
+{
+  t << "<div" << getDirHtmlClassOfPage(pageTitle) << ">";
+}
+
+void HtmlGenerator::endPageDoc()
+{
+  t << "</div><!-- PageDoc -->" << endl;
 }
 
 void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli,const char *file)

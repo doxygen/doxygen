@@ -1521,21 +1521,21 @@ void DotNode::setDistance(int distance)
 
 static QCString convertLabel(const QCString &l)
 {
-  QCString result;
-  QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
-  QCString bAfter(">]),:;|");              // break after  character set
-  const char *p=l.data();
-  if (p==0) return result;
-  char c,pc=0;
-  char cs[2];
-  cs[1]=0;
-  int len=l.length();
+  QString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
+  QString bAfter(">]),:;|");              // break after  character set
+  QString p(l);
+  if (p.isEmpty()) return QCString();
+  QString result;
+  QChar c,pc=0;
+  int idx = 0;
+  int len=p.length();
   int charsLeft=len;
   int sinceLast=0;
   int foldLen=17; // ideal text length
-  while ((c=*p++))
+  while (idx < p.length())
   {
-    QCString replacement;
+    c = p[idx++];
+    QString replacement;
     switch(c)
     {
       case '\\': replacement="\\\\"; break;
@@ -1546,7 +1546,7 @@ static QCString convertLabel(const QCString &l)
       case '{':  replacement="\\{"; break;
       case '}':  replacement="\\}"; break;
       case '"':  replacement="\\\""; break;
-      default:   cs[0]=c; replacement=cs; break;
+      default:   replacement=c; break;
     }
     // Some heuristics to insert newlines to prevent too long
     // boxes and at the same time prevent ugly breaks
@@ -1564,14 +1564,14 @@ static QCString convertLabel(const QCString &l)
       sinceLast=1;
     }
     else if (charsLeft>1+foldLen/4 && sinceLast>foldLen+foldLen/3 && 
-            !isupper(c) && isupper(*p))
+            !isupper(c) && p[idx].category()==QChar::Letter_Uppercase)
     {
       result+=replacement;
       result+="\\l";
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=0;
     }
-    else if (charsLeft>foldLen/3 && sinceLast>foldLen && bAfter.contains(c) && (c!=':' || *p!=':'))
+    else if (charsLeft>foldLen/3 && sinceLast>foldLen && bAfter.contains(c) && (c!=':' || p[idx]!=':'))
     {
       result+=replacement;
       result+="\\l";
@@ -1586,7 +1586,7 @@ static QCString convertLabel(const QCString &l)
     charsLeft--;
     pc=c;
   }
-  return result;
+  return result.utf8();
 }
 
 static QCString escapeTooltip(const QCString &tooltip)
@@ -4712,7 +4712,7 @@ void DotGroupCollaboration::writeGraphHeader(FTextStream &t,
   }
   t << "  edge [fontname=\"" << FONTNAME << "\",fontsize=\"" << FONTSIZE << "\","
     "labelfontname=\"" << FONTNAME << "\",labelfontsize=\"" << FONTSIZE << "\"];\n";
-  t << "  node [fontname=\"" << FONTNAME << "\",fontsize=\"" << FONTSIZE << "\",shape=record];\n";
+  t << "  node [fontname=\"" << FONTNAME << "\",fontsize=\"" << FONTSIZE << "\",shape=box];\n";
   t << "  rankdir=LR;\n";
 }
 
