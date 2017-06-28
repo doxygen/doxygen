@@ -1024,7 +1024,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   // if the first element of a paragraph is something that should be outside of
   // the paragraph (<ul>,<dl>,<table>,..) then that will already started the 
   // paragraph and we don't need to do it here
-  auto paragraphAlreadyStarted = false;
+  bool paragraphAlreadyStarted = false;
   uint nodeIndex = 0;
   if (p && nodeIndex<p->children().count())
   {
