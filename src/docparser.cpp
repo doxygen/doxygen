@@ -7221,21 +7221,21 @@ static QCString processCopyDoc(const char *data,uint &len)
 //---------------------------------------------------------------------------
 QString::Direction getTextDirByConfig(const QString &text)
 {
-  auto configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
+  QCString configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
   if (configDir == "None")
     return QString::DirNeutral;
   if (configDir == "Context")
     return text.basicDirection();
   if (configDir == "LTR")
   {
-    auto textDir = text.direction();
+    QString::Direction textDir = text.direction();
     if (textDir == QString::DirMixed)
       return QString::DirLTR;
     return textDir;
   }
   if (configDir == "RTL")
   {
-    auto textDir = text.direction();
+    QString::Direction textDir = text.direction();
     if (textDir == QString::DirMixed)
       return QString::DirRTL;
     return textDir;
@@ -7245,21 +7245,21 @@ QString::Direction getTextDirByConfig(const QString &text)
 
 QString::Direction getTextDirByConfig(const DocNode *node)
 {
-  auto configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
+  QCString configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
   if (configDir == "None")
     return QString::DirNeutral;
   if (configDir == "Context")
     return node->getTextBasicDir();
   if (configDir == "LTR")
   {
-    auto textDir = node->getTextDir();
+    QString::Direction textDir = node->getTextDir();
     if (textDir == QString::DirMixed)
       return QString::DirLTR;
     return textDir;
   }
   if (configDir == "RTL")
   {
-    auto textDir = node->getTextDir();
+    QString::Direction textDir = node->getTextDir();
     if (textDir == QString::DirMixed)
       return QString::DirRTL;
     return textDir;
@@ -7269,21 +7269,21 @@ QString::Direction getTextDirByConfig(const DocNode *node)
 
 QString::Direction getTextDirByConfig(const DocPara *para, int nodeIndex)
 {
-  auto configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
+  QCString configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
   if (configDir == "None")
     return QString::DirNeutral;
   if (configDir == "Context")
     return para->getTextBasicDir(nodeIndex);
   if (configDir == "LTR")
   {
-    auto textDir = para->getTextDir(nodeIndex);
+    QString::Direction textDir = para->getTextDir(nodeIndex);
     if (textDir == QString::DirMixed)
       return QString::DirLTR;
     return textDir;
   }
   if (configDir == "RTL")
   {
-    auto textDir = para->getTextDir(nodeIndex);
+    QString::Direction textDir = para->getTextDir(nodeIndex);
     if (textDir == QString::DirMixed)
       return QString::DirRTL;
     return textDir;
@@ -7301,9 +7301,9 @@ QCString getDirHtmlClassOfNode(QString::Direction textDir, const char *initValue
   else
     classFromDir = "";
 
-  if (initValue != nullptr && !classFromDir.isEmpty())
+  if (initValue != NULL && !classFromDir.isEmpty())
     return QCString(" class=\"") + initValue + " " + classFromDir + "\"";
-  if (initValue != nullptr)
+  if (initValue != NULL)
     return QCString(" class=\"") + initValue + "\"";
   if (!classFromDir.isEmpty())
     return QCString(" class=\"") + classFromDir + "\"";
@@ -7314,7 +7314,7 @@ QCString getDirHtmlClassOfPage(QCString pageTitle)
 {
   QCString result = "";
   result += " class=\"PageDoc";
-  auto titleDir = getTextDirByConfig(pageTitle);
+  QString::Direction titleDir = getTextDirByConfig(pageTitle);
   if (titleDir == QString::DirLTR)
     result += " PageDocLTR-title";
   else if (titleDir == QString::DirRTL)

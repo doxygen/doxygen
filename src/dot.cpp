@@ -1527,7 +1527,7 @@ static QCString convertLabel(const QCString &l)
   if (p.isEmpty()) return QCString();
   QString result;
   QChar c,pc=0;
-  int idx = 0;
+  uint idx = 0;
   int len=p.length();
   int charsLeft=len;
   int sinceLast=0;

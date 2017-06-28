@@ -37,7 +37,7 @@ class SectionDict;
 QString::Direction getTextDirByConfig(const QString &text);
 QString::Direction getTextDirByConfig(const DocNode *node);
 QString::Direction getTextDirByConfig(const DocPara *para, int nodeIndex);
-QCString getDirHtmlClassOfNode(QString::Direction textDir, const char *initValue = nullptr);
+QCString getDirHtmlClassOfNode(QString::Direction textDir, const char *initValue = NULL);
 QCString getDirHtmlClassOfPage(QCString pageTitle);
 QCString getHtmlDirEmbedingChar(QString::Direction textDir);
 QCString getJsDirEmbedingChar(QString::Direction textDir);
@@ -198,10 +198,10 @@ template<class T> class CompAccept : public DocNode
     QString::Direction getTextDir(int nodeIndex) const
     {
       unsigned char resultDir = QString::DirNeutral;
-      for (int i = nodeIndex; i < m_children.count(); i++)
+      for (uint i = nodeIndex; i < m_children.count(); i++)
       {
-        auto node = m_children.at(i);
-        auto nodeDir = node->getTextDir();
+        DocNode* node = m_children.at(i);
+        QString::Direction nodeDir = node->getTextDir();
         resultDir |= nodeDir;
         if (resultDir == QString::DirMixed)
           return QString::DirMixed;
@@ -210,20 +210,20 @@ template<class T> class CompAccept : public DocNode
     }
     QString::Direction getTextBasicDir(int nodeIndex) const
     {
-      for (int i = nodeIndex; i < m_children.count(); i++)
+      for (uint i = nodeIndex; i < m_children.count(); i++)
       {
-        auto node = m_children.at(i);
-        auto nodeDir = node->getTextBasicDir();
+        DocNode* node = m_children.at(i);
+        QString::Direction nodeDir = node->getTextBasicDir();
         if (nodeDir != QString::DirNeutral)
           return nodeDir;
       }
       return QString::DirNeutral;
     }
-    QString::Direction getTextDir() const override
+    virtual QString::Direction getTextDir() const
     {
       return getTextDir(0);
     }
-    QString::Direction getTextBasicDir() const override
+    virtual QString::Direction getTextBasicDir() const
     {
       return getTextBasicDir(0);
     }
@@ -242,8 +242,8 @@ class DocWord : public DocNode
     QCString word() const { return m_word; }
     Kind kind() const { return Kind_Word; }
     void accept(DocVisitor *v) { v->visit(this); }
-    QString::Direction getTextDir() const override { return QString(word()).direction(); };
-    QString::Direction getTextBasicDir() const override { return QString(word()).basicDirection(); };
+    virtual QString::Direction getTextDir() const { return QString(word()).direction(); };
+    virtual QString::Direction getTextBasicDir() const { return QString(word()).basicDirection(); };
 
   private:
     QCString  m_word;
@@ -265,8 +265,8 @@ class DocLinkedWord : public DocNode
     QCString anchor() const     { return m_anchor; }
     QCString tooltip() const    { return m_tooltip; }
     void accept(DocVisitor *v) { v->visit(this); }
-    QString::Direction getTextDir() const override { return QString(word()).direction(); };
-    QString::Direction getTextBasicDir() const override { return QString(word()).basicDirection(); };
+    virtual QString::Direction getTextDir() const { return QString(word()).direction(); };
+    virtual QString::Direction getTextBasicDir() const { return QString(word()).basicDirection(); };
 
   private:
     QCString  m_word;
@@ -287,8 +287,8 @@ class DocURL : public DocNode
     Kind kind() const          { return Kind_URL; }
     void accept(DocVisitor *v) { v->visit(this); }
     bool isEmail() const       { return m_isEmail; }
-    QString::Direction getTextDir() const override { return QString::DirLTR; };
-    QString::Direction getTextBasicDir() const override { return QString::DirLTR; };
+    virtual QString::Direction getTextDir() const { return QString::DirLTR; };
+    virtual QString::Direction getTextBasicDir() const { return QString::DirLTR; };
 
   private:
     QCString  m_url;
