@@ -4767,7 +4767,7 @@ QCString linkToText(SrcLangExt lang,const char *link,bool isFileName)
     // replace # by ::
     result=substitute(result,"#","::");
     // replace . by ::
-    if (!isFileName && result.find('<')==-1) result=substitute(result,".","::");
+    if (!isFileName && result.find('<')==-1) result=substitute(result,".","::",3);
     // strip leading :: prefix if present
     if (result.at(0)==':' && result.at(1)==':')
     {
