@@ -543,7 +543,7 @@ static void detectNoDocumentedParams()
     }
     else if (!g_memberDef->hasDocumentedParams())
     {
-      bool allDoc=TRUE; // no paramater => all parameters are documented
+      bool allDoc=TRUE; // no parameter => all parameters are documented
       if ( // member has parameters
              al!=0 &&       // but the member has a parameter list
              al->count()>0  // with at least one parameter (that is not void)
