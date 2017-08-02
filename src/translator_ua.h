@@ -76,26 +76,26 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     { return "Детальніше..."; }
 
     /*! put in the class documentation */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trListOfAllMembers()
     {
       return  "Список всіх елементів" ;
     }
 
     /*! used as the title of the "list of all members" page of a class */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trMemberList()
     {
       return  "Cписок елементів" ;
     }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trThisIsTheListOfAllMembers()
     { return "Повний список елементів"; }
 
     /*! this is the remainder of the sentence after the class name */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trIncludingInheritedMembers()
     { return ", включаючи всі успадковані елементи"; }
 

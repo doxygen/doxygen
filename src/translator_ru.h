@@ -83,26 +83,26 @@ class TranslatorRussian : public Translator
     { return "Подробнее..."; }
 
     /*! put in the class documentation */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trListOfAllMembers()
     {
       return "Полный список членов класса";
     }
 
     /*! used as the title of the "list of all members" page of a class */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trMemberList()
     {
       return "Cписок членов класса";
     }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trThisIsTheListOfAllMembers()
     { return "Полный список членов класса "; }
 
     /*! this is the remainder of the sentence after the class name */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trIncludingInheritedMembers()
     { return ", включая наследуемые из базового класса"; }
 

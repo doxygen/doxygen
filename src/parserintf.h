@@ -96,7 +96,7 @@ class ParserInterface
      *             is associated (non null in case of an inline fragment 
      *             for a member).
      *  @param[in] showLineNumbers if set to TRUE and also fileDef is not 0,
-     *             line numbers will be added to the source fragement
+     *             line numbers will be added to the source fragment
      *  @param[in] searchCtx context under which search data has to be stored.
      *  @param[in] collectXRefs collect cross-reference relations.
      */
