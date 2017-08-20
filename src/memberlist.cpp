@@ -426,6 +426,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               {
                 ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
               }
+              ol.endMemberItem();
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
                 DocRoot *rootNode = validatingParseDoc(
@@ -452,7 +453,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 }
                 delete rootNode;
               }
-              ol.endMemberItem();
               ol.endMemberDeclaration(md->anchor(),inheritId);
             }
             md->warnIfUndocumented();
