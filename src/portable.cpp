@@ -180,6 +180,7 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
     }
   }
 #endif
+  return 1; // we should never get here
 
 }
 
