@@ -73,7 +73,7 @@ set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
 # lang_cfg.h
 add_custom_command(
     COMMENT  "Generating ${GENERATED_SRC}/lang_cfg.h"
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/lang_cfg.cmake ${LANG_CODES} 2> ${GENERATED_SRC}/lang_cfg.h
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/lang_cfg.cmake ${GENERATED_SRC}/lang_cfg.h ${LANG_CODES}
     DEPENDS ${LANGUAGE_FILES}
     OUTPUT ${GENERATED_SRC}/lang_cfg.h
 )
@@ -244,6 +244,26 @@ add_library(_doxygen STATIC
 )
 
 add_executable(doxygen main.cpp)
+
+if (use_libclang)
+    find_package(LLVM REQUIRED CONFIG)
+    find_package(Clang REQUIRED CONFIG)
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+        target_compile_features(_doxygen PRIVATE cxx_alignof)
+        target_compile_features(doxygen PRIVATE cxx_alignof)
+        target_compile_options(_doxygen PRIVATE -stdlib=libc++ -std=c++11)
+        target_compile_options(doxygen PRIVATE -stdlib=libc++ -std=c++11)
+    elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+        target_compile_options(_doxygen PRIVATE -std=c++11)
+        target_compile_options(doxygen PRIVATE -std=c++11)
+    endif()
+    include_directories(${LLVM_INCLUDE_DIRS})
+    add_definitions(${LLVM_DEFINITIONS})
+    llvm_map_components_to_libnames(llvm_libs support core option)
+    target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
+    set(CLANG_LIBS libclang clangTooling ${llvm_libs})
+endif()
+
 target_link_libraries(doxygen
     _doxygen
     doxycfg

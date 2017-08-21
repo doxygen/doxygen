@@ -62,7 +62,7 @@ to \c YES. Then the result after preprocessing becomes:
 #define VERSION
 #define CONST_STRING
 
-  static const char * version = "1.xx";
+  static const char * version = "2.xx";
 \endverbatim
 
 Note that doxygen will now expand \e all macro definitions 
