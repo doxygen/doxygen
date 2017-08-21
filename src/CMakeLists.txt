@@ -73,7 +73,7 @@ set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
 # lang_cfg.h
 add_custom_command(
     COMMENT  "Generating ${GENERATED_SRC}/lang_cfg.h"
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/lang_cfg.cmake ${LANG_CODES} 2> ${GENERATED_SRC}/lang_cfg.h
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/lang_cfg.cmake ${GENERATED_SRC}/lang_cfg.h ${LANG_CODES}
     DEPENDS ${LANGUAGE_FILES}
     OUTPUT ${GENERATED_SRC}/lang_cfg.h
 )
