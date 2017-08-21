@@ -126,6 +126,7 @@ static bool          g_lexInit = FALSE;
 
 static QStack<int>   g_classScopeLengthStack;
 
+static int           g_prefixed_with_this_keyword = FALSE;
 static Definition   *g_searchCtx;
 static bool          g_collectXRefs;
 
@@ -963,7 +964,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
   bool isLocal=FALSE;
 
   //printf("generateClassOrGlobalLink(className=%s)\n",className.data());
-  if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
+  if (!g_prefixed_with_this_keyword || (lcd=g_theVarContext.findVariable(className))==0) // not a local variable
   {
     Definition *d = g_currentDefinition;
     //printf("d=%s g_sourceFileDef=%s\n",d?d->name().data():"<none>",g_sourceFileDef?g_sourceFileDef->name().data():"<none>");
@@ -1019,6 +1020,8 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     isLocal=TRUE;
     DBG_CTX((stderr,"is a local variable cd=%p!\n",cd));
   }
+  g_prefixed_with_this_keyword = FALSE; // discard the "this" prefix for the next calls
+
   if (cd && cd->isLinkable()) // is it a linkable class
   {
     DBG_CTX((stderr,"is linkable class %s\n",clName));
@@ -1821,7 +1824,8 @@ SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
 KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"set"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|{KEYWORD_OBJC})
-FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while"|"@try"|"@catch"|"@finally")
+FLOWKW  ("break"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"return"|"switch"|"throw"|"throws"|"@catch"|"@finally")
+FLOWCONDITION  ("case"|"for"|"foreach"|"for each"|"goto"|"if"|"try"|"while"|"@try")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string"|"nullptr")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
@@ -2408,6 +2412,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <UsingName>\n				{ codifyLines(yytext); BEGIN(Body); }
 <UsingName>.				{ codifyLines(yytext); BEGIN(Body); }
 <Body,FuncCall>"$"?"this"("->"|".")	{ g_code->codify(yytext); // this-> for C++, this. for C#
+					  g_prefixed_with_this_keyword = TRUE;
                                         }
 <Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
   					  startFontClass("keyword");
@@ -2449,6 +2454,18 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  g_inForEachExpression = (qstrcmp(yytext,"for each")==0 || qstrcmp(yytext, "foreach")==0);
 					  BEGIN(FuncCall);
   					}
+<Body>{FLOWCONDITION}/{BN}*"("          {
+                                          if (g_currentMemberDef && g_currentMemberDef->isFunction())
+                                          {
+                                            g_currentMemberDef->addFlowKeyWord();
+                                          }
+                                          startFontClass("keywordflow");
+                                          codifyLines(yytext);
+                                          endFontClass();
+                                          g_name.resize(0);g_type.resize(0);
+                                          g_inForEachExpression = (strcmp(yytext,"for each")==0 || strcmp(yytext, "foreach")==0);
+                                          BEGIN(FuncCall);
+                                        }
 <Body>{FLOWKW}/([^a-z_A-Z0-9]) 		{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
@@ -2458,11 +2475,33 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    g_inFunctionTryBlock=FALSE;
 					  }
   					}
+<Body>{FLOWCONDITION}/([^a-z_A-Z0-9]) 	{
+                                          if (g_currentMemberDef && g_currentMemberDef->isFunction())
+                                          {
+                                            g_currentMemberDef->addFlowKeyWord();
+                                          }
+                                          startFontClass("keywordflow");
+                                          codifyLines(yytext);
+                                          endFontClass();
+                                          if (g_inFunctionTryBlock && (strcmp(yytext,"catch")==0 || strcmp(yytext,"finally")==0))
+                                          {
+                                            g_inFunctionTryBlock=FALSE;
+                                          }
+                                        }
 <Body>{FLOWKW}/{B}* 			{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
   					}
+<Body>{FLOWCONDITION}/{B}*              {
+                                          if (g_currentMemberDef && g_currentMemberDef->isFunction())
+                                          {
+                                            g_currentMemberDef->addFlowKeyWord();
+                                          }
+                                          startFontClass("keywordflow");
+                                          codifyLines(yytext);
+                                          endFontClass();
+                                        }
 <Body>"*"{B}*")"                        { // end of cast?
   					  g_code->codify(yytext);
 					  g_theCallContext.popScope();
@@ -2963,6 +3002,17 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_code->codify(yytext);
 					  endFontClass();
 					}
+<MemberCall2,FuncCall>{FLOWCONDITION}/([^a-z_A-Z0-9]) {
+                                          if (g_currentMemberDef && g_currentMemberDef->isFunction())
+                                          {
+                                            g_currentMemberDef->addFlowKeyWord();
+                                          }
+                                          addParmType();
+                                          g_parmName=yytext;
+                                          startFontClass("keywordflow");
+                                          g_code->codify(yytext);
+                                          endFontClass();
+                                        }
 <MemberCall2,FuncCall>{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
 					  addParmType();
 					  g_parmName=yytext; 

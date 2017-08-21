@@ -103,7 +103,7 @@ static void findXRefSymbols(FileDef *fd)
 static bool ignoreStaticExternalCall(MemberDef *context, MemberDef *md) {
   if (md->isStatic()) {
     if(md->getFileDef()) {
-      if(md->getFileDef()->getFileBase() == context->getFileDef()->getFileBase())
+      if(md->getFileDef()->getOutputFileBase() == context->getFileDef()->getOutputFileBase())
         // TODO ignore prefix of file
         return false;
       else
@@ -159,6 +159,9 @@ static void printReferenceTo(std::string type, std::string signature, std::strin
   printf("                type: %s\n", type.c_str());
   printf("                defined_in: %s\n", defined_in.c_str());
 }
+static void printNumberOfConditionalPaths(MemberDef* md) {
+  printf("          conditional_paths: %d\n", md->numberOfFlowKeyWords());
+}
 
 static int isPartOfCStruct(MemberDef * md) {
   return is_c_code && md->getClassDef() != NULL;
@@ -188,7 +191,7 @@ static void referenceTo(MemberDef* md) {
   std::string signature = "";
   if (isPartOfCStruct(md)) {
     signature = md->getClassDef()->name().data() + std::string("::") + functionSignature(md);
-    defined_in = md->getClassDef()->getFileDef()->getFileBase().data();
+    defined_in = md->getClassDef()->getFileDef()->getOutputFileBase().data();
   }
   else {
     signature = functionSignature(md);
@@ -196,7 +199,7 @@ static void referenceTo(MemberDef* md) {
       defined_in = md->getClassDef()->name().data();
     }
     else if (md->getFileDef()) {
-      defined_in = md->getFileDef()->getFileBase().data();
+      defined_in = md->getFileDef()->getOutputFileBase().data();
     }
   }
   printReferenceTo(type, signature, defined_in);
@@ -221,6 +224,7 @@ void functionInformation(MemberDef* md) {
   printNumberOfLines(size);
   ArgumentList *argList = md->argumentList();
   printNumberOfArguments(argList->count());
+  printNumberOfConditionalPaths(md);
   MemberSDict *defDict = md->getReferencesMembers();
   if (defDict) {
     MemberSDict::Iterator msdi(*defDict);
@@ -329,7 +333,7 @@ static void listSymbols() {
       printFile(fd->absFilePath().data());
       MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
       if (ml && ml->count() > 0) {
-        printModule(fd->getFileBase().data());
+        printModule(fd->getOutputFileBase().data());
         listMembers(ml);
       }
 
@@ -355,37 +359,40 @@ int main(int argc,char **argv) {
   // initialize data structures
   initDoxygen();
 
+  // check and finalize the configuration
+  checkConfiguration();
+  adjustConfiguration();
+
   // setup the non-default configuration options
 
   // we need a place to put intermediate files
   std::ostringstream tmpdir;
   tmpdir << "/tmp/doxyparse-" << getpid();
-  Config_getString("OUTPUT_DIRECTORY")= tmpdir.str().c_str();
-
+  Config_getString(OUTPUT_DIRECTORY)= tmpdir.str().c_str();
   // enable HTML (fake) output to omit warning about missing output format
-  Config_getBool("GENERATE_HTML")=TRUE;
+  Config_getBool(GENERATE_HTML)=TRUE;
   // disable latex output
-  Config_getBool("GENERATE_LATEX")=FALSE;
+  Config_getBool(GENERATE_LATEX)=FALSE;
   // be quiet
-  Config_getBool("QUIET")=TRUE;
+  Config_getBool(QUIET)=TRUE;
   // turn off warnings
-  Config_getBool("WARNINGS")=FALSE;
-  Config_getBool("WARN_IF_UNDOCUMENTED")=FALSE;
-  Config_getBool("WARN_IF_DOC_ERROR")=FALSE;
+  Config_getBool(WARNINGS)=FALSE;
+  Config_getBool(WARN_IF_UNDOCUMENTED)=FALSE;
+  Config_getBool(WARN_IF_DOC_ERROR)=FALSE;
   // Extract as much as possible
-  Config_getBool("EXTRACT_ALL")=TRUE;
-  Config_getBool("EXTRACT_STATIC")=TRUE;
-  Config_getBool("EXTRACT_PRIVATE")=TRUE;
-  Config_getBool("EXTRACT_LOCAL_METHODS")=TRUE;
+  Config_getBool(EXTRACT_ALL)=TRUE;
+  Config_getBool(EXTRACT_STATIC)=TRUE;
+  Config_getBool(EXTRACT_PRIVATE)=TRUE;
+  Config_getBool(EXTRACT_LOCAL_METHODS)=TRUE;
   // Extract source browse information, needed
   // to make doxygen gather the cross reference info
-  Config_getBool("SOURCE_BROWSER")=TRUE;
+  Config_getBool(SOURCE_BROWSER)=TRUE;
   // find functions call between modules
-  Config_getBool("CALL_GRAPH")=TRUE;
+  Config_getBool(CALL_GRAPH)=TRUE;
   // loop recursive over input files
-  Config_getBool("RECURSIVE")=TRUE;
+  Config_getBool(RECURSIVE)=TRUE;
   // set the input
-  Config_getList("INPUT").clear();
+  Config_getList(INPUT).clear();
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-") == 0) {
       char filename[1024];
@@ -394,19 +401,15 @@ int main(int argc,char **argv) {
         if (feof(stdin)) {
           break;
         }
-        Config_getList("INPUT").append(filename);
+        Config_getList(INPUT).append(filename);
       }
     } else {
-      Config_getList("INPUT").append(argv[i]);
+      Config_getList(INPUT).append(argv[i]);
     }
   }
-  if (Config_getList("INPUT").isEmpty()) {
+  if (Config_getList(INPUT).isEmpty()) {
     exit(0);
   }
-
-  // check and finalize the configuration
-  checkConfiguration();
-  adjustConfiguration();
 
   // parse the files
   parseInput();
@@ -429,7 +432,7 @@ int main(int argc,char **argv) {
   if (!Doxygen::objDBFileName.isEmpty()) unlink(Doxygen::objDBFileName);
   if (!Doxygen::entryDBFileName.isEmpty()) unlink(Doxygen::entryDBFileName);
   // clean up after us
-  rmdir(Config_getString("OUTPUT_DIRECTORY"));
+  rmdir(Config_getString(OUTPUT_DIRECTORY));
 
   listSymbols();
 
