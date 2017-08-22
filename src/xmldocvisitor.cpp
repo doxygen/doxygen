@@ -211,7 +211,7 @@ void XmlDocVisitor::visit(DocVerbatim *s)
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
-      m_t << "<programlisting lang=\"" << lang << "\">"; 
+      m_t << "<programlisting language=\"" << lang << "\">"; 
       Doxygen::parserManager->getParser(lang)
                             ->parseCode(m_ci,s->context(),s->text(),langExt,
                                         s->isExample(),s->exampleFile());
