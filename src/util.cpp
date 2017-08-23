@@ -2161,10 +2161,16 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         if (md!=self && (self==0 || md->name()!=self->name())) 
           // name check is needed for overloaded members, where getDefs just returns one
         {
-          out.writeLink(md->getReference(),md->getOutputFileBase(),
-              md->anchor(),word);
-          //printf("found symbol %s\n",matchWord.data());
-          found=TRUE;
+          /* in case of Fortran scop and the variable is a non Fortran variable: don't link,
+           * see also getLink in fortrancode.l
+           */
+          if (!(scope && (scope->getLanguage() == SrcLangExt_Fortran) && md->isVariable() && (md->getLanguage() != SrcLangExt_Fortran)))
+          {
+            out.writeLink(md->getReference(),md->getOutputFileBase(),
+                md->anchor(),word);
+            //printf("found symbol %s\n",matchWord.data());
+            found=TRUE;
+          }
         }
       }
     }
