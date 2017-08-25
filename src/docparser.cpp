@@ -1097,7 +1097,8 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
              resolveRef("",lnkname,g_inSeeBlock,&compound,&member,FALSE,0,TRUE))));
       if (found)
       {
-	if (!(member && (member->getLanguage() == SrcLangExt_Fortran))) found = false;
+	if ((!(member && (member->getLanguage() == SrcLangExt_Fortran))) &&
+	    (!(compound && (compound->getLanguage() == SrcLangExt_Fortran)))) found = false;
       }
       if (!found)
       {
