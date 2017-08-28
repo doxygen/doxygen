@@ -163,10 +163,15 @@ dl.el {
 	margin-left: -1cm;
 }
 
-.fragment
-{
-  text-align: left; 
-  direction:ltr; 
+ul {
+  overflow: hidden; /* Fixed: list item bullets overlap floating elements*/
+}
+
+.fragment {
+  text-align: left;
+  direction: ltr;
+  overflow-x: auto; /* Fixed: fragment lines overlap floating elements*/
+  overflow-y: hidden;
 }
 
 pre.fragment {
