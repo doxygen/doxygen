@@ -3317,7 +3317,7 @@ class Receiver
   \addindex \\\%
   This command writes the \c \% character to the output. This
   character has to be escaped in some cases, because it is used to
-  prevent auto-linking to word that is also a documented class or struct.
+  prevent auto-linking to a word that is also a documented class or struct.
 
 <hr>
 \section cmdquot \\"
