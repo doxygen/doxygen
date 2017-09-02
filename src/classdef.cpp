@@ -1935,7 +1935,21 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       if (rootNode && !rootNode->isEmpty())
       {
         ol.startMemberDescription(anchor());
+
+        ol.pushGeneratorState();
+        ol.disableAll();
+        ol.enable(OutputGenerator::RTF);
+        ol.writeString("{");
+        ol.popGeneratorState();
+
         ol.writeDoc(rootNode,this,0);
+
+        ol.pushGeneratorState();
+        ol.disableAll();
+        ol.enable(OutputGenerator::RTF);
+        ol.writeString("\\par}");
+        ol.popGeneratorState();
+
         if (isLinkableInProject())
         {
           writeMoreLink(ol,anchor());
