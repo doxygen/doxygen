@@ -1,3 +1,4 @@
+dist: precise
 language: cpp
 compiler:
   - gcc
