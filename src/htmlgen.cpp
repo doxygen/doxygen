@@ -295,7 +295,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
 			"<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n"
 			"<script type=\"text/javascript\">\n"
-			"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n"
+			"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
 			"  $(document).ready(initResizable);\n"
 			"/* @license-end */"
 			"</script>";
@@ -315,7 +315,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
+					"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
 				"  $(document).ready(function() { init_search(); });\n"
 					"/* @license-end */\n"
 					"</script>";
@@ -326,7 +326,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n"
+					"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
 					"  $(document).ready(function() {\n"
 					"    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
 					"  });\n"
@@ -900,7 +900,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   if (searchEngine /*&& !generateTreeView*/)
   {
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
+		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
       << relPath<< "search\",false,'" << theTranslator->trSearch() << "');\n";
 		t << "/* @license-end */\n";
@@ -2211,7 +2211,7 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>" << endl;
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>" << endl;
     t << "<script type=\"text/javascript\">" << endl;
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
+		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
     t << "$(function() {" << endl;
     t << "  initMenu('" << relPath << "',"
       << (searchEngine?"true":"false") << ","
@@ -2226,7 +2226,7 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
       }
       else
       {
-				t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
+				t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
         t << "  $(document).ready(function() {\n"
           << "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
           << "  });\n";
@@ -2291,7 +2291,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpa
 											"  </div>\n"
 											"</div>\n"
 											"<script type=\"text/javascript\">\n"
-											"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n"
+											"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
 											"$(document).ready(function(){initNavTree('") +
 			QCString(name) + Doxygen::htmlFileExtension +
 			QCString("','") + relpath +
@@ -2377,7 +2377,7 @@ void HtmlGenerator::writeSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << versionString << " -->" << endl;
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
+		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search\",false,'" << theTranslator->trSearch() << "');\n";
 		t << "/* @license-end */\n";
@@ -2431,7 +2431,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << versionString << " -->" << endl;
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
+		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search\",false,'" << theTranslator->trSearch() << "');\n";
 		t << "/* @license-end */\n";

@@ -940,7 +940,7 @@ void writeJavascriptSearchIndex()
           t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>" << endl;
           t << "<div id=\"SRResults\"></div>" << endl; // here the results will be inserted
           t << "<script type=\"text/javascript\"><!--" << endl;
-					t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
+					t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
           t << "createResults();" << endl; // this function will insert the results
 					t << "/* @license-end */\n";
           t << "--></script>" << endl;
@@ -950,7 +950,7 @@ void writeJavascriptSearchIndex()
             << theTranslator->trNoMatches() << "</div>" << endl;
 
           t << "<script type=\"text/javascript\"><!--" << endl;
-					t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */\n";
+					t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
           t << "document.getElementById(\"Loading\").style.display=\"none\";" << endl;
           t << "document.getElementById(\"NoMatches\").style.display=\"none\";" << endl;
           t << "var searchResults = new SearchResults(\"searchResults\");" << endl;
