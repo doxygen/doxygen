@@ -164,13 +164,13 @@ dl.el {
 }
 
 ul {
-  overflow: hidden; /* Fixed: list item bullets overlap floating elements*/
+  overflow: hidden; /*Fixed: list item bullets overlap floating elements*/
 }
 
 .fragment {
   text-align: left;
   direction: ltr;
-  overflow-x: auto; /* Fixed: fragment lines overlap floating elements*/
+  overflow-x: auto; /*Fixed: fragment lines overlap floating elements*/
   overflow-y: hidden;
 }
 
@@ -188,8 +188,8 @@ pre.fragment {
 }
 
 div.fragment {
-        padding: 0px;
-        margin: 4px 8px 4px 2px;
+  padding: 0 0 1px 0; /*Fixed: last line underline overlap border*/
+  margin: 4px 8px 4px 2px;
 	background-color: ##FC;
 	border: 1px solid ##CC;
 }
