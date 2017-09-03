@@ -3804,13 +3804,13 @@ class TextGeneratorLatex : public TextGeneratorIntf
       static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
       if (!ref && pdfHyperlinks)
       {
-        m_ts << "\\hyperlink{";
+        m_ts << "\\mbox{\\hyperlink{";
         if (f) m_ts << stripPath(f);
         if (f && anchor) m_ts << "_";
         if (anchor) m_ts << anchor;
         m_ts << "}{";
         filterLatexString(m_ts,text);
-        m_ts << "}";
+        m_ts << "}}";
       }
       else
       {
