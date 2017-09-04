@@ -64,6 +64,13 @@ if (WIN32)
     endif()
 endif()
 
+if(POLICY CMP0063)
+  cmake_policy(SET CMP0063 NEW)
+endif()
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 if ("${CMAKE_GENERATOR}" MATCHES "Ninja") 
   set(LEX_FLAGS )
   set(YACC_FLAGS )
