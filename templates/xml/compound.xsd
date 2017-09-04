@@ -264,6 +264,7 @@
     <xsd:sequence>
       <xsd:element name="codeline" type="codelineType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
+    <xsd:attribute name="language" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="codelineType">
