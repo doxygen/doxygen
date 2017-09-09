@@ -9826,6 +9826,16 @@ static void escapeAliases()
     }
     newValue+=value.mid(p,value.length()-p);
     *s=newValue;
+    p = 0;
+    newValue = "";
+    while ((in=value.find("^^",p))!=-1)
+    {
+      newValue+=value.mid(p,in-p);
+      newValue+="\n";
+      p=in+2;
+    }
+    newValue+=value.mid(p,value.length()-p);
+    *s=newValue;
     //printf("Alias %s has value %s\n",adi.currentKey().data(),s->data());
   }
 }
