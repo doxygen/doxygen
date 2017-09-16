@@ -1984,6 +1984,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  g_defArgsStr+=*yytext;
   					  BEGIN(ReadString);
   					}
+<FindDefineArgs>'                       {
+                                          if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_Fortran) REJECT;
+                                          g_defArgsStr+=*yytext;
+                                          BEGIN(ReadString);
+                                        }
 <FindDefineArgs>\n			{
                                           g_defArgsStr+=' ';
   					  g_yyLineNr++;
@@ -2014,6 +2019,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  g_defArgsStr+=*yytext;
 					  BEGIN(FindDefineArgs);
   					}
+<ReadString>"'"                         {
+                                          if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_Fortran) REJECT;
+                                          g_defArgsStr+=*yytext;
+                                          BEGIN(FindDefineArgs);
+                                        }
+
 <ReadString>"//"|"/*"			{
   					  g_defArgsStr+=yytext;
   					}
@@ -2902,7 +2913,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           }
   					}
 <*>"//"[/]?				{
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond)
+                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(g_yyFileName)==SrcLangExt_Fortran)
                                           {
                                             REJECT;
                                           }
