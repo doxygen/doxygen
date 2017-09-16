@@ -37,7 +37,7 @@
 #include <qfileinfo.h>
 #include <qdict.h>
 #include <qvector.h>
-#define USE_ORIGINAL_TABLES
+//#define USE_ORIGINAL_TABLES
 
 #include "markdown.h"
 #include "growbuf.h"
