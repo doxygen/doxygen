@@ -45,16 +45,6 @@ typedef struct LodeZlib_DeflateSettings /*deflate = compress*/
   unsigned windowSize; /*the maximum is 32768*/
 } LodeZlib_DeflateSettings;
 
-extern const LodeZlib_DeflateSettings LodeZlib_defaultDeflateSettings;
-void LodeZlib_DeflateSettings_init(LodeZlib_DeflateSettings* settings);
-
-/* ////////////////////////////////////////////////////////////////////////// */
-/* LodeFlate & LodeZlib                                                       */
-/* ////////////////////////////////////////////////////////////////////////// */
-
-/*This function reallocates the out buffer and appends the data.
-Either, *out must be NULL and *outsize must be 0, or, *out must be a valid buffer and *outsize its size in bytes.*/
-unsigned LodeZlib_compress(unsigned char** out, size_t* outsize, const unsigned char* in, size_t insize, const LodeZlib_DeflateSettings* settings);
 
 /* ////////////////////////////////////////////////////////////////////////// */
 /* LodePNG                                                                    */

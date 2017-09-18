@@ -53,26 +53,9 @@ About these tools (vector, uivector, ucvector and string):
 
 static unsigned LodePNG_chunk_length(const unsigned char* chunk); /*get the length of the data of the chunk. Total chunk length has 12 bytes more.*/
 
-static void LodePNG_chunk_type(char type[5], const unsigned char* chunk); /*puts the 4-byte type in null terminated string*/
-static unsigned char LodePNG_chunk_type_equals(const unsigned char* chunk, const char* type); /*check if the type is the given type*/
-
-/*properties of PNG chunks gotten from capitalization of chunk type name, as defined by the standard*/
-static unsigned char LodePNG_chunk_critical(const unsigned char* chunk); /*0: ancillary chunk, 1: it's one of the critical chunk types*/
-static unsigned char LodePNG_chunk_private(const unsigned char* chunk); /*0: public, 1: private*/
-static unsigned char LodePNG_chunk_safetocopy(const unsigned char* chunk); /*0: the chunk is unsafe to copy, 1: the chunk is safe to copy*/
-
-static unsigned char* LodePNG_chunk_data(unsigned char* chunk); /*get pointer to the data of the chunk*/
-static const unsigned char* LodePNG_chunk_data_const(const unsigned char* chunk); /*get pointer to the data of the chunk*/
-
-static unsigned LodePNG_chunk_check_crc(const unsigned char* chunk); /*returns 0 if the crc is correct, 1 if it's incorrect*/
 static void LodePNG_chunk_generate_crc(unsigned char* chunk); /*generates the correct CRC from the data and puts it in the last 4 bytes of the chunk*/
 
-/*iterate to next chunks.*/
-static unsigned char* LodePNG_chunk_next(unsigned char* chunk);
-static const unsigned char* LodePNG_chunk_next_const(const unsigned char* chunk);
-
 /*add chunks to out buffer. It reallocs the buffer to append the data. returns error code*/
-static unsigned LodePNG_append_chunk(unsigned char** out, size_t* outlength, const unsigned char* chunk); /*appends chunk that was already created, to the data. Returns pointer to start of appended chunk, or NULL if error happened*/
 static unsigned LodePNG_create_chunk(unsigned char** out, size_t* outlength, unsigned length, const char* type, const unsigned char* data); /*appends new chunk to out. Returns pointer to start of appended chunk, or NULL if error happened; may change memory address of out buffer*/
 
 static void LodePNG_InfoColor_init(LodePNG_InfoColor* info);
@@ -84,7 +67,6 @@ static void LodePNG_InfoColor_clearPalette(LodePNG_InfoColor* info);
 
 /*additional color info*/
 static unsigned LodePNG_InfoColor_getBpp(const LodePNG_InfoColor* info);      /*bits per pixel*/
-static unsigned LodePNG_InfoColor_getChannels(const LodePNG_InfoColor* info); /*amount of channels*/
 static unsigned LodePNG_InfoColor_isGreyscaleType(const LodePNG_InfoColor* info); /*is it a greyscale type? (colorType 0 or 4)*/
 static unsigned LodePNG_InfoColor_isAlphaType(const LodePNG_InfoColor* info);     /*has it an alpha channel? (colorType 2 or 6)*/
 
@@ -100,8 +82,17 @@ static unsigned LodePNG_InfoRaw_copy(LodePNG_InfoRaw* dest, const LodePNG_InfoRa
 LodePNG_convert: Converts from any color type to 24-bit or 32-bit (later maybe more supported). return value = LodePNG error code
 The out buffer must have (w * h * bpp + 7) / 8, where bpp is the bits per pixel of the output color type (LodePNG_InfoColor_getBpp)
 */
-unsigned LodePNG_convert(unsigned char* out, const unsigned char* in, LodePNG_InfoColor* infoOut, LodePNG_InfoColor* infoIn, unsigned w, unsigned h);
+static unsigned LodePNG_convert(unsigned char* out, const unsigned char* in, LodePNG_InfoColor* infoOut, LodePNG_InfoColor* infoIn, unsigned w, unsigned h);
 
+static void LodeZlib_DeflateSettings_init(LodeZlib_DeflateSettings* settings);
+
+/* ////////////////////////////////////////////////////////////////////////// */
+/* LodeFlate & LodeZlib                                                       */
+/* ////////////////////////////////////////////////////////////////////////// */
+
+/*This function reallocates the out buffer and appends the data.
+Either, *out must be NULL and *outsize must be 0, or, *out must be a valid buffer and *outsize its size in bytes.*/
+//unsigned LodeZlib_compress(unsigned char** out, size_t* outsize, const unsigned char* in, size_t insize, const LodeZlib_DeflateSettings* settings);
 
 //--------------------------------------------------------------------------------------------
 
@@ -298,38 +289,6 @@ static unsigned ucvector_push_back(ucvector* p, unsigned char c) /*returns 1 if 
   p->data[p->size - 1] = c;
   return 1;
 }
-
-/* /////////////////////////////////////////////////////////////////////////// */
-
-static unsigned string_resize(char** out, size_t size) /*returns 1 if success, 0 if failure ==> nothing done*/
-{
-  char* data = (char*)realloc(*out, size + 1);
-  if(data)
-  {
-    data[size] = 0; /*null termination char*/
-    *out = data;
-  }
-  return data != 0;
-}
-
-static void string_init(char** out) /*init a {char*, size_t} pair for use as string*/
-{
-  *out = NULL;
-  string_resize(out, 0);
-}
-
-static void string_cleanup(char** out) /*free the above pair again*/
-{
-  free(*out);
-  *out = NULL;
-}
-
-static void string_set(char** out, const char* in)
-{
-  size_t insize = strlen(in), i = 0;
-  if(string_resize(out, insize)) for(i = 0; i < insize; i++) (*out)[i] = in[i];
-}
-
 
 /* ////////////////////////////////////////////////////////////////////////// */
 /* / Reading and writing single bits and bytes from/to stream for Deflate   / */
@@ -1296,7 +1255,7 @@ static unsigned adler32(const unsigned char* data, unsigned len)
 /* / Reading and writing single bits and bytes from/to stream for Zlib      / */
 /* ////////////////////////////////////////////////////////////////////////// */
 
-void LodeZlib_add32bitInt(ucvector* buffer, unsigned value)
+static void LodeZlib_add32bitInt(ucvector* buffer, unsigned value)
 {
   ucvector_push_back(buffer, (unsigned char)((value >> 24) & 0xff));
   ucvector_push_back(buffer, (unsigned char)((value >> 16) & 0xff));
@@ -1304,17 +1263,11 @@ void LodeZlib_add32bitInt(ucvector* buffer, unsigned value)
   ucvector_push_back(buffer, (unsigned char)((value      ) & 0xff));
 }
 
-unsigned LodeZlib_read32bitInt(const unsigned char* buffer)
-{
-  return (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3];
-}
-
 /* ////////////////////////////////////////////////////////////////////////// */
 /* / Zlib                                                                   / */
 /* ////////////////////////////////////////////////////////////////////////// */
 
-
-unsigned LodeZlib_compress(unsigned char** out, size_t* outsize, const unsigned char* in, size_t insize, const LodeZlib_DeflateSettings* settings)
+static unsigned LodeZlib_compress(unsigned char** out, size_t* outsize, const unsigned char* in, size_t insize, const LodeZlib_DeflateSettings* settings)
 {
   /*initially, *out must be NULL and outsize 0, if you just give some random *out that's pointing to a non allocated buffer, this'll crash*/
   ucvector deflatedata, outv;
@@ -1360,8 +1313,6 @@ void LodeZlib_DeflateSettings_init(LodeZlib_DeflateSettings* settings)
   settings->useLZ77 = 1;
   settings->windowSize = 2048; /*this is a good tradeoff between speed and compression ratio*/
 }
-
-const LodeZlib_DeflateSettings LodeZlib_defaultDeflateSettings = {2, 1, 2048};
 
 /* ////////////////////////////////////////////////////////////////////////// */
 /* ////////////////////////////////////////////////////////////////////////// */
@@ -1488,98 +1439,19 @@ static void LodePNG_add32bitInt(ucvector* buffer, unsigned value)
 /* / PNG chunks                                                             / */
 /* ////////////////////////////////////////////////////////////////////////// */
 
-unsigned LodePNG_chunk_length(const unsigned char* chunk) /*get the length of the data of the chunk. Total chunk length has 12 bytes more.*/
+static unsigned LodePNG_chunk_length(const unsigned char* chunk) /*get the length of the data of the chunk. Total chunk length has 12 bytes more.*/
 {
   return LodePNG_read32bitInt(&chunk[0]);
 }
 
-void LodePNG_chunk_type(char type[5], const unsigned char* chunk) /*puts the 4-byte type in null terminated string*/
-{
-  unsigned i;
-  for(i = 0; i < 4; i++) type[i] = chunk[4 + i];
-  type[4] = 0; /*null termination char*/
-}
-
-unsigned char LodePNG_chunk_type_equals(const unsigned char* chunk, const char* type) /*check if the type is the given type*/
-{
-  if(strlen(type) != 4) return 0;
-  return (chunk[4] == type[0] && chunk[5] == type[1] && chunk[6] == type[2] && chunk[7] == type[3]);
-}
-
-/*properties of PNG chunks gotten from capitalization of chunk type name, as defined by the standard*/
-unsigned char LodePNG_chunk_critical(const unsigned char* chunk) /*0: ancillary chunk, 1: it's one of the critical chunk types*/
-{
-  return((chunk[4] & 32) == 0);
-}
-
-unsigned char LodePNG_chunk_private(const unsigned char* chunk) /*0: public, 1: private*/
-{
-  return((chunk[6] & 32) != 0);
-}
-
-unsigned char LodePNG_chunk_safetocopy(const unsigned char* chunk) /*0: the chunk is unsafe to copy, 1: the chunk is safe to copy*/
-{
-  return((chunk[7] & 32) != 0);
-}
-
-unsigned char* LodePNG_chunk_data(unsigned char* chunk) /*get pointer to the data of the chunk*/
-{
-  return &chunk[8];
-}
-
-const unsigned char* LodePNG_chunk_data_const(const unsigned char* chunk) /*get pointer to the data of the chunk*/
-{
-  return &chunk[8];
-}
-
-unsigned LodePNG_chunk_check_crc(const unsigned char* chunk) /*returns 0 if the crc is correct, error code if it's incorrect*/
-{
-  unsigned length = LodePNG_chunk_length(chunk);
-  unsigned CRC = LodePNG_read32bitInt(&chunk[length + 8]);
-  unsigned checksum = Crc32_crc(&chunk[4], length + 4); /*the CRC is taken of the data and the 4 chunk type letters, not the length*/
-  if(CRC != checksum) return 1;
-  else return 0;
-}
-
-void LodePNG_chunk_generate_crc(unsigned char* chunk) /*generates the correct CRC from the data and puts it in the last 4 bytes of the chunk*/
+static void LodePNG_chunk_generate_crc(unsigned char* chunk) /*generates the correct CRC from the data and puts it in the last 4 bytes of the chunk*/
 {
   unsigned length = LodePNG_chunk_length(chunk);
   unsigned CRC = Crc32_crc(&chunk[4], length + 4);
   LodePNG_set32bitInt(chunk + 8 + length, CRC);
 }
 
-unsigned char* LodePNG_chunk_next(unsigned char* chunk) /*don't use on IEND chunk, as there is no next chunk then*/
-{
-  unsigned total_chunk_length = LodePNG_chunk_length(chunk) + 12;
-  return &chunk[total_chunk_length];
-}
-
-const unsigned char* LodePNG_chunk_next_const(const unsigned char* chunk) /*don't use on IEND chunk, as there is no next chunk then*/
-{
-  unsigned total_chunk_length = LodePNG_chunk_length(chunk) + 12;
-  return &chunk[total_chunk_length];
-}
-
-unsigned LodePNG_append_chunk(unsigned char** out, size_t* outlength, const unsigned char* chunk) /*appends chunk that was already created, to the data. Returns error code.*/
-{
-  unsigned i;
-  unsigned total_chunk_length = LodePNG_chunk_length(chunk) + 12;
-  unsigned char *chunk_start, *new_buffer;
-  size_t new_length = (*outlength) + total_chunk_length;
-  if(new_length < total_chunk_length || new_length < (*outlength)) return 77; /*integer overflow happened*/
-
-  new_buffer = (unsigned char*)realloc(*out, new_length);
-  if(!new_buffer) return 9929;
-  (*out) = new_buffer;
-  (*outlength) = new_length;
-  chunk_start = &(*out)[new_length - total_chunk_length];
-
-  for(i = 0; i < total_chunk_length; i++) chunk_start[i] = chunk[i];
-
-  return 0;
-}
-
-unsigned LodePNG_create_chunk(unsigned char** out, size_t* outlength, unsigned length, const char* type, const unsigned char* data) /*appends new chunk to out. Returns error code; may change memory address of out buffer*/
+static unsigned LodePNG_create_chunk(unsigned char** out, size_t* outlength, unsigned length, const char* type, const unsigned char* data) /*appends new chunk to out. Returns error code; may change memory address of out buffer*/
 {
   unsigned i;
   unsigned char *chunk, *new_buffer;
@@ -1648,7 +1520,7 @@ static unsigned getBpp(unsigned colorType, unsigned bitDepth)
 
 /* ////////////////////////////////////////////////////////////////////////// */
 
-void LodePNG_InfoColor_init(LodePNG_InfoColor* info)
+static void LodePNG_InfoColor_init(LodePNG_InfoColor* info)
 {
   info->key_defined = 0;
   info->key_r = info->key_g = info->key_b = 0;
@@ -1658,12 +1530,12 @@ void LodePNG_InfoColor_init(LodePNG_InfoColor* info)
   info->palettesize = 0;
 }
 
-void LodePNG_InfoColor_cleanup(LodePNG_InfoColor* info)
+static void LodePNG_InfoColor_cleanup(LodePNG_InfoColor* info)
 {
   LodePNG_InfoColor_clearPalette(info);
 }
 
-void LodePNG_InfoColor_clearPalette(LodePNG_InfoColor* info)
+static void LodePNG_InfoColor_clearPalette(LodePNG_InfoColor* info)
 {
   if(info->palette) free(info->palette);
   info->palettesize = 0;
@@ -1689,19 +1561,18 @@ unsigned LodePNG_InfoColor_addPalette(LodePNG_InfoColor* info, unsigned char r, 
   return 0;
 }
 
-unsigned LodePNG_InfoColor_getBpp(const LodePNG_InfoColor* info) { return getBpp(info->colorType, info->bitDepth); } /*calculate bits per pixel out of colorType and bitDepth*/
-unsigned LodePNG_InfoColor_getChannels(const LodePNG_InfoColor* info) { return getNumColorChannels(info->colorType); }
-unsigned LodePNG_InfoColor_isGreyscaleType(const LodePNG_InfoColor* info) { return info->colorType == 0 || info->colorType == 4; }
-unsigned LodePNG_InfoColor_isAlphaType(const LodePNG_InfoColor* info) { return (info->colorType & 4) != 0; }
+static unsigned LodePNG_InfoColor_getBpp(const LodePNG_InfoColor* info) { return getBpp(info->colorType, info->bitDepth); } /*calculate bits per pixel out of colorType and bitDepth*/
+static unsigned LodePNG_InfoColor_isGreyscaleType(const LodePNG_InfoColor* info) { return info->colorType == 0 || info->colorType == 4; }
+static unsigned LodePNG_InfoColor_isAlphaType(const LodePNG_InfoColor* info) { return (info->colorType & 4) != 0; }
 
-unsigned LodePNG_InfoColor_equal(const LodePNG_InfoColor* info1, const LodePNG_InfoColor* info2)
+static unsigned LodePNG_InfoColor_equal(const LodePNG_InfoColor* info1, const LodePNG_InfoColor* info2)
 {
   return info1->colorType == info2->colorType
       && info1->bitDepth  == info2->bitDepth; /*palette and color key not compared*/
 }
 
 
-void LodePNG_InfoPng_init(LodePNG_InfoPng* info)
+static void LodePNG_InfoPng_init(LodePNG_InfoPng* info)
 {
   info->width = info->height = 0;
   LodePNG_InfoColor_init(&info->color);
@@ -1710,12 +1581,12 @@ void LodePNG_InfoPng_init(LodePNG_InfoPng* info)
   info->filterMethod = 0;
 }
 
-void LodePNG_InfoPng_cleanup(LodePNG_InfoPng* info)
+static void LodePNG_InfoPng_cleanup(LodePNG_InfoPng* info)
 {
   LodePNG_InfoColor_cleanup(&info->color);
 }
 
-unsigned LodePNG_InfoPng_copy(LodePNG_InfoPng* dest, const LodePNG_InfoPng* source)
+static unsigned LodePNG_InfoPng_copy(LodePNG_InfoPng* dest, const LodePNG_InfoPng* source)
 {
   unsigned error = 0;
   LodePNG_InfoPng_cleanup(dest);
@@ -1725,14 +1596,7 @@ unsigned LodePNG_InfoPng_copy(LodePNG_InfoPng* dest, const LodePNG_InfoPng* sour
   return error;
 }
 
-void LodePNG_InfoPng_swap(LodePNG_InfoPng* a, LodePNG_InfoPng* b)
-{
-  LodePNG_InfoPng temp = *a;
-  *a = *b;
-  *b = temp;
-}
-
-unsigned LodePNG_InfoColor_copy(LodePNG_InfoColor* dest, const LodePNG_InfoColor* source)
+static unsigned LodePNG_InfoColor_copy(LodePNG_InfoColor* dest, const LodePNG_InfoColor* source)
 {
   size_t i;
   LodePNG_InfoColor_cleanup(dest);
@@ -1743,17 +1607,17 @@ unsigned LodePNG_InfoColor_copy(LodePNG_InfoColor* dest, const LodePNG_InfoColor
   return 0;
 }
 
-void LodePNG_InfoRaw_init(LodePNG_InfoRaw* info)
+static void LodePNG_InfoRaw_init(LodePNG_InfoRaw* info)
 {
   LodePNG_InfoColor_init(&info->color);
 }
 
-void LodePNG_InfoRaw_cleanup(LodePNG_InfoRaw* info)
+static void LodePNG_InfoRaw_cleanup(LodePNG_InfoRaw* info)
 {
   LodePNG_InfoColor_cleanup(&info->color);
 }
 
-unsigned LodePNG_InfoRaw_copy(LodePNG_InfoRaw* dest, const LodePNG_InfoRaw* source)
+static unsigned LodePNG_InfoRaw_copy(LodePNG_InfoRaw* dest, const LodePNG_InfoRaw* source)
 {
   unsigned error = 0;
   LodePNG_InfoRaw_cleanup(dest);
@@ -1770,7 +1634,7 @@ converts from any color type to 24-bit or 32-bit (later maybe more supported). r
 the out buffer must have (w * h * bpp + 7) / 8 bytes, where bpp is the bits per pixel of the output color type (LodePNG_InfoColor_getBpp)
 for < 8 bpp images, there may _not_ be padding bits at the end of scanlines.
 */
-unsigned LodePNG_convert(unsigned char* out, const unsigned char* in, LodePNG_InfoColor* infoOut, LodePNG_InfoColor* infoIn, unsigned w, unsigned h)
+static unsigned LodePNG_convert(unsigned char* out, const unsigned char* in, LodePNG_InfoColor* infoOut, LodePNG_InfoColor* infoIn, unsigned w, unsigned h)
 {
   const size_t numpixels = w * h; /*amount of pixels*/
   const unsigned OUT_BYTES = LodePNG_InfoColor_getBpp(infoOut) / 8; /*bytes per pixel in the output image*/
