@@ -63,7 +63,7 @@ set_source_files_properties(${GENERATED_SRC}/configoptions.cpp PROPERTIES GENERA
 
 # ce_parse.h
 add_custom_command(
-    COMMAND ${BISON_EXECUTABLE} -l -d -p ce_parsexpYY ${CMAKE_SOURCE_DIR}/src/constexp.y -o ce_parse.c
+    COMMAND ${BISON_EXECUTABLE} -l -d -p ce_parsexpYY -Wno-deprecated ${CMAKE_SOURCE_DIR}/src/constexp.y -o ce_parse.c
     DEPENDS ${CMAKE_SOURCE_DIR}/src/constexp.y
     OUTPUT ${GENERATED_SRC}/ce_parse.h
     WORKING_DIRECTORY ${GENERATED_SRC}
@@ -119,7 +119,7 @@ FLEX_TARGET(xmlcode        xmlcode.l        ${GENERATED_SRC}/xmlcode.cpp        
 FLEX_TARGET(sqlcode        sqlcode.l        ${GENERATED_SRC}/sqlcode.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
 FLEX_TARGET(configimpl     configimpl.l     ${GENERATED_SRC}/configimpl.cpp     COMPILE_FLAGS "${LEX_FLAGS}")
 
-BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "${YACC_FLAGS}")
+BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "-Wno-deprecated ${YACC_FLAGS}")
 
 add_library(doxycfg STATIC
     ${GENERATED_SRC}/lang_cfg.h
