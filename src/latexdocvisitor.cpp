@@ -1344,7 +1344,7 @@ void LatexDocVisitor::visitPost(DocRef *ref)
   }
   else
   {
-    if (!ref->file().isEmpty()) endLink(ref->ref(),ref->file(),ref->anchor());
+    if (!ref->file().isEmpty()) endLink(ref->ref(),ref->file(),ref->anchor(),ref->refToTable());
   }
 }
 
@@ -1355,7 +1355,7 @@ void LatexDocVisitor::visitPre(DocSecRefItem *ref)
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (pdfHyperlinks)
   {
-    m_t << "\\hyperlink{" << ref->file() << "_" << ref->anchor() << "}{" ;
+    m_t << "\\mbox{\\hyperlink{" << ref->file() << "_" << ref->anchor() << "}{" ;
   }
 }
 
@@ -1365,7 +1365,7 @@ void LatexDocVisitor::visitPost(DocSecRefItem *ref)
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (pdfHyperlinks)
   {
-    m_t << "}";
+    m_t << "}}";
   }
   m_t << "}{\\ref{" << ref->file() << "_" << ref->anchor() << "}}{}" << endl;
 }
@@ -1553,6 +1553,7 @@ void LatexDocVisitor::visitPost(DocParamList *pl)
 
 void LatexDocVisitor::visitPre(DocXRefItem *x)
 {
+  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (m_hide) return;
   if (x->title().isEmpty()) return;
   m_t << "\\begin{DoxyRefDesc}{";
@@ -1560,9 +1561,9 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
   m_t << "}" << endl;
   bool anonymousEnum = x->file()=="@";
   m_t << "\\item[";
-  if (Config_getBool(PDF_HYPERLINKS) && !anonymousEnum)
+  if (pdfHyperlinks && !anonymousEnum)
   {
-    m_t << "\\hyperlink{" << stripPath(x->file()) << "_" << x->anchor() << "}{";
+    m_t << "\\mbox{\\hyperlink{" << stripPath(x->file()) << "_" << x->anchor() << "}{";
   }
   else
   {
@@ -1571,6 +1572,10 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
   m_insideItem=TRUE;
   filter(x->title());
   m_insideItem=FALSE;
+  if (pdfHyperlinks && !anonymousEnum)
+  {
+    m_t << "}";
+  }
   m_t << "}]";
 }
 
@@ -1657,7 +1662,7 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
     }
     else
     {
-      m_t << "\\hyperlink{";
+      m_t << "\\mbox{\\hyperlink{";
     }
     if (!file.isEmpty()) m_t << stripPath(file);
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
@@ -1678,7 +1683,7 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
   }
 }
 
-void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCString &anchor)
+void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable)
 {
   m_t << "}";
   static bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
@@ -1689,6 +1694,13 @@ void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCS
     m_t << "}{" << file;
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
     m_t << anchor << "}";
+  }
+  if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
+  {
+    if (!refToTable)
+    {
+      m_t << "}";
+    }
   }
 }
 
