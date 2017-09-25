@@ -80,7 +80,7 @@ class NamespaceDef : public Definition
     void findSectionsInDocumentation();
     void sortMemberLists();
 
-    virtual Definition *findInnerCompound(const char *name);
+    virtual Definition *findInnerCompound(const char *name) const;
     void addInnerCompound(Definition *d);
     void addListReferences();
     void setFileName(const QCString &fn);

@@ -122,7 +122,7 @@ class ClassDef : public Definition
     bool isLocal() const;
 
     /** returns the classes nested into this class */
-    ClassSDict *getClassSDict();
+    ClassSDict *getClassSDict() const;
 
     /** returns TRUE if this class has documentation */
     bool hasDocumentation() const;
@@ -244,7 +244,7 @@ class ClassDef : public Definition
      *  available, or 0 otherwise.
      *  @param name The name of the nested compound
      */
-    virtual Definition *findInnerCompound(const char *name);
+    virtual Definition *findInnerCompound(const char *name) const;
 
     /** Returns the template parameter lists that form the template
      *  declaration of this class.
