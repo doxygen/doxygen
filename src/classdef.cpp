@@ -3656,7 +3656,7 @@ void ClassDef::addInnerCompound(Definition *d)
   }
 }
 
-Definition *ClassDef::findInnerCompound(const char *name)
+Definition *ClassDef::findInnerCompound(const char *name) const
 {
   Definition *result=0;
   if (name==0) return 0;
@@ -4394,7 +4394,7 @@ bool ClassDef::isLocal() const
   return m_impl->isLocal;
 }
 
-ClassSDict *ClassDef::getClassSDict()
+ClassSDict *ClassDef::getClassSDict() const
 {
   return m_impl->innerClasses;
 }

@@ -1362,7 +1362,7 @@ void Definition::addSourceReferences(MemberDef *md)
   }
 }
 
-Definition *Definition::findInnerCompound(const char *)
+Definition *Definition::findInnerCompound(const char *) const
 {
   return 0;
 }

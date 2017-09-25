@@ -543,7 +543,7 @@ static void insertMemberReference(sqlite3 *db, int refid_src, int refid_dst,
   step(db,xrefs_insert);
 }
 
-static void insertMemberReference(sqlite3 *db, MemberDef *src, MemberDef *dst)
+static void insertMemberReference(sqlite3 *db, const MemberDef *src, const MemberDef *dst)
 {
   QCString qrefid_dst = dst->getOutputFileBase() + "_1" + dst->anchor();
   QCString qrefid_src = src->getOutputFileBase() + "_1" + src->anchor();
@@ -556,7 +556,7 @@ static void insertMemberReference(sqlite3 *db, MemberDef *src, MemberDef *dst)
   }
 }
 
-static void insertMemberFunctionParams(sqlite3 *db,int id_memberdef,MemberDef *md,Definition *def)
+static void insertMemberFunctionParams(sqlite3 *db,int id_memberdef, const MemberDef *md, const Definition *def)
 {
   ArgumentList *declAl = md->declArgumentList();
   ArgumentList *defAl = md->argumentList();
@@ -629,7 +629,7 @@ static void insertMemberFunctionParams(sqlite3 *db,int id_memberdef,MemberDef *m
   }
 }
 
-static void insertMemberDefineParams(sqlite3 *db,int id_memberdef,MemberDef *md,Definition *def)
+static void insertMemberDefineParams(sqlite3 *db,int id_memberdef,const MemberDef *md, const Definition *def)
 {
     if (md->argumentList()->count()==0) // special case for "foo()" to
                                         // disguish it from "foo".
@@ -793,9 +793,9 @@ static void writeInnerNamespaces(sqlite3 *db,const NamespaceSDict *nl)
 
 
 static void writeTemplateArgumentList(sqlite3* db,
-                                      ArgumentList * al,
-                                      Definition * scope,
-                                      FileDef * fileScope)
+                                      const ArgumentList * al,
+                                      const Definition * scope,
+                                      const FileDef * fileScope)
 {
   if (al)
   {
@@ -828,7 +828,7 @@ static void writeTemplateArgumentList(sqlite3* db,
   }
 }
 
-static void writeMemberTemplateLists(sqlite3* db,MemberDef *md)
+static void writeMemberTemplateLists(sqlite3* db,const MemberDef *md)
 {
   ArgumentList *templMd = md->templateArguments();
   if (templMd) // function template prefix
@@ -836,14 +836,14 @@ static void writeMemberTemplateLists(sqlite3* db,MemberDef *md)
     writeTemplateArgumentList(db,templMd,md->getClassDef(),md->getFileDef());
   }
 }
-static void writeTemplateList(sqlite3*db,ClassDef *cd)
+static void writeTemplateList(sqlite3*db, const ClassDef *cd)
 {
   writeTemplateArgumentList(db,cd->templateArguments(),cd,0);
 }
 ////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
-static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
+static void generateSqlite3ForMember(sqlite3*db,const MemberDef *md, const Definition *def)
 {
   // + declaration/definition arg lists
   // + reimplements
@@ -976,7 +976,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     QCString typeStr = md->typeString();
     stripQualifiers(typeStr);
     StringList l;
-    linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,typeStr);
+    linkifyText(TextGeneratorSqlite3Impl(l), def, md->getBodyDef(),md,typeStr);
     if (typeStr.data())
     {
       bindTextParameter(memberdef_insert,":type",typeStr.data(),FALSE);
@@ -1099,8 +1099,10 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 }
 
 static void generateSqlite3Section(sqlite3*db,
-                      Definition *d,
-                      MemberList *ml,const char * /*kind*/,const char * /*header*/=0,
+                      const Definition *d,
+                      const MemberList *ml,
+                      const char * /*kind*/,
+                      const char * /*header*/=0,
                       const char * /*documentation*/=0)
 {
   if (ml==0) return;
@@ -1129,7 +1131,7 @@ static void generateSqlite3Section(sqlite3*db,
 }
 
 
-static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
+static void generateSqlite3ForClass(sqlite3 *db, const ClassDef *cd)
 {
   // + list of direct super classes
   // + list of direct sub classes
@@ -1270,7 +1272,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
   }
 }
 
-static void generateSqlite3ForNamespace(sqlite3 *db, NamespaceDef *nd)
+static void generateSqlite3ForNamespace(sqlite3 *db, const NamespaceDef *nd)
 {
   // + contained class definitions
   // + contained namespace definitions
@@ -1313,7 +1315,7 @@ static void generateSqlite3ForNamespace(sqlite3 *db, NamespaceDef *nd)
   }
 }
 
-static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
+static void generateSqlite3ForFile(sqlite3 *db, const FileDef *fd)
 {
   // + includes files
   // + includedby files
@@ -1408,17 +1410,17 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
   }
 }
 
-static void generateSqlite3ForGroup(sqlite3*db,GroupDef *gd)
+static void generateSqlite3ForGroup(sqlite3*db, const GroupDef *gd)
 {
 #warning WorkInProgress
 }
 
-static void generateSqlite3ForDir(sqlite3 *db,DirDef *dd)
+static void generateSqlite3ForDir(sqlite3 *db,const DirDef *dd)
 {
 #warning WorkInProgress
 }
 
-static void generateSqlite3ForPage(sqlite3 *db,PageDef *pd,bool isExample)
+static void generateSqlite3ForPage(sqlite3 *db,const PageDef *pd,bool isExample)
 {
 #warning WorkInProgress
 }

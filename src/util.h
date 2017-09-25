@@ -122,9 +122,9 @@ QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=FALSE);
 //--------------------------------------------------------------------
 
 void linkifyText(const TextGeneratorIntf &ol,
-                 Definition *scope,
-                 FileDef *fileScope,
-                 Definition *self,
+                 const Definition *scope,
+                 const FileDef *fileScope,
+                 const Definition *self,
                  const char *text,
                  bool autoBreak=FALSE,
                  bool external=TRUE,
@@ -203,8 +203,8 @@ QCString resolveDefines(const char *n);
 
 ClassDef *getClass(const char *key);
 
-ClassDef *getResolvedClass(Definition *scope,
-                           FileDef *fileScope,
+ClassDef *getResolvedClass(const Definition *scope,
+                           const FileDef *fileScope,
                            const char *key,
                            MemberDef **pTypeDef=0,
                            QCString *pTemplSpec=0,
@@ -358,9 +358,9 @@ QCString stripExtension(const char *fName);
 
 void replaceNamespaceAliases(QCString &scope,int i);
 
-int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item);
+int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Definition *item);
 
-int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition *item,
+int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScope,const Definition *item,
                      const QCString &explicitScopePart);
 
 int computeQualifiedIndex(const QCString &name);
@@ -392,7 +392,7 @@ MemberDef *getMemberFromSymbol(Definition *scope,FileDef *fileScope,
                                 const char *n);
 bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n);
 
-ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
+ClassDef *newResolveTypedef(const FileDef *fileScope,MemberDef *md,
                             MemberDef **pMemType=0,QCString *pTemplSpec=0,
                             QCString *pResolvedType=0,
                             ArgumentList *actTemplParams=0);
