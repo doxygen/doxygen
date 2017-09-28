@@ -5,7 +5,7 @@
     <title>My Project</title>
     <detaileddescription>
       <para>
-        <programlisting>
+        <programlisting language="Python">
           <codeline>
             <highlight class="comment">#<sp/>comment<sp/>in<sp/>Python</highlight>
             <highlight class="normal"/>
@@ -25,7 +25,7 @@
         </programlisting>
       </para>
       <para>
-        <programlisting>
+        <programlisting language="C++">
           <codeline>
             <highlight class="comment">//<sp/>comment<sp/>in<sp/>a<sp/>code<sp/>block</highlight>
             <highlight class="normal"/>
