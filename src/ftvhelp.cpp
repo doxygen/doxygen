@@ -274,6 +274,7 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
 {
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    n->ref.data(),n->file.data(),n->anchor.data());
+  bool setTarget = FALSE;
   if (n->file.isEmpty()) // no link
   {
     t << "<b>" << convertToHtml(n->name) << "</b>";
@@ -283,7 +284,9 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
     if (!n->ref.isEmpty()) // link to entity imported via tag file
     {
       t << "<a class=\"elRef\" ";
-      t << externalLinkTarget() << externalRef("",n->ref,FALSE);
+      QCString result = externalLinkTarget();
+      if (result != "") setTarget = TRUE;
+      t << result << externalRef("",n->ref,FALSE);
     }
     else // local link
     {
@@ -292,10 +295,13 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
     t << "href=\"";
     t << externalRef("",n->ref,TRUE);
     t << node2URL(n);
-    if (m_topLevelIndex)
-      t << "\" target=\"basefrm\">";
-    else
-      t << "\" target=\"_self\">";
+    if (!setTarget)
+    {
+      if (m_topLevelIndex)
+        t << "\" target=\"basefrm\">";
+      else
+        t << "\" target=\"_self\">";
+    }
     t << convertToHtml(n->name);
     t << "</a>";
     if (!n->ref.isEmpty())
