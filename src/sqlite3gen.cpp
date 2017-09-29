@@ -1424,6 +1424,31 @@ static void generateSqlite3ForPage(sqlite3 *db,const PageDef *pd,bool isExample)
 {
 #warning WorkInProgress
 }
+
+
+static sqlite3* openDbConnection()
+{
+
+  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
+  QDir sqlite3Dir(outputDirectory);
+  sqlite3 *db;
+  int rc;
+
+  rc = sqlite3_initialize();
+  if (rc != SQLITE_OK)
+  {
+    msg("sqlite3_initialize failed\n");
+    return NULL;
+  }
+  rc = sqlite3_open_v2(outputDirectory+"/doxygen_sqlite3.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, 0);
+  if (rc != SQLITE_OK)
+  {
+    sqlite3_close(db);
+    msg("database open failed: %s\n", "doxygen_sqlite3.db");
+    return NULL;
+  }
+  return db;
+}
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void generateSqlite3()
@@ -1435,16 +1460,11 @@ void generateSqlite3()
   // + related pages
   // + examples
   // + main page
-
-  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
-  QDir sqlite3Dir(outputDirectory);
   sqlite3 *db;
-  sqlite3_initialize();
-  int rc = sqlite3_open_v2(outputDirectory+"/doxygen_sqlite3.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, 0);
-  if (rc != SQLITE_OK)
+
+  db = openDbConnection();
+  if (db==NULL)
   {
-    sqlite3_close(db);
-    msg("database open failed: %s\n", "doxygen_sqlite3.db");
     return;
   }
   beginTransaction(db);
