@@ -956,6 +956,15 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
       i=0;
       nl++;
     }
+    else if (data[end]=='\'' && nb==1 && (end==size-1 || (end<size-1 && !isIdChar(end+1))))
+    { // look for quoted strings like `some word', but skip strings like `it's cool`
+      QCString textFragment;
+      convertStringFragment(textFragment,data+nb,end-nb);
+      out.addStr("&lsquo;");
+      out.addStr(textFragment);
+      out.addStr("&rsquo;");
+      return end+1;
+    }
     else
     {
       i=0; 
@@ -982,18 +991,6 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
     f_end--;
   }
 
-  if (nb==1) // check for closing ' followed by space within f_begin..f_end
-  {
-    i=f_begin;
-    while (i<f_end-1)
-    {
-      if (data[i]=='\'' && !isIdChar(i+1)) // reject `some word' and not `it's cool`
-      {
-        return 0;
-      }
-      i++;
-    }
-  }
   //printf("found code span '%s'\n",QCString(data+f_begin).left(f_end-f_begin).data());
 
   /* real code span */
