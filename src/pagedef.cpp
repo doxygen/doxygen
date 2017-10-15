@@ -174,8 +174,11 @@ void PageDef::writeDocumentation(OutputList &ol)
     ol.writeString(" - ");
     ol.popGeneratorState();
 
-    ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
-    ol.endSection(si->label,si->type);
+    if (si->title != manPageName)
+    {
+      ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
+      ol.endSection(si->label,si->type);
+    }
   }
   ol.popGeneratorState();
   //2.}
