@@ -733,20 +733,13 @@ static int initializeSchema(sqlite3* db)
   for (unsigned int k = 0; k < sizeof(schema_queries) / sizeof(schema_queries[0]); k++)
   {
     const char *q = schema_queries[k][1];
-    // create table
-    rc = sqlite3_prepare_v2(db, q, -1, &stmt, 0);
+    char *errmsg;
+    rc = sqlite3_exec(db, q, NULL, NULL, &errmsg);
     if (rc != SQLITE_OK)
     {
-      msg("failed to prepare query: %s\n\t%s\n", q, sqlite3_errmsg(db));
+      msg("failed to execute query: %s\n\t%s\n", q, errmsg);
       return -1;
     }
-    rc = sqlite3_step(stmt);
-    if (rc != SQLITE_DONE)
-    {
-      msg("failed to execute query: %s\n\t%s\n", q, sqlite3_errmsg(db));
-      return -1;
-    }
-    sqlite3_finalize(stmt);
   }
   return 0;
 }
