@@ -800,7 +800,7 @@ void ClassDef::findSectionsInDocumentation()
 // add a file name to the used files set
 void ClassDef::insertUsedFile(FileDef *fd)
 {
-  if (fd==0) return;
+  if (fd == 0 || (!Config_getBool(SHOW_USED_FILES_SRC) && fd->isSource())) return;
   if (m_impl->files.find(fd)==-1) m_impl->files.append(fd);
   if (m_impl->templateInstances)
   {

@@ -1090,6 +1090,18 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+	<option type='bool' id='SHOW_USED_FILES_SRC' defval='1'>
+      <docs>
+<![CDATA[
+ Set the \c SHOW_USED_FILES_SRC tag to \c NO to omit the listing of source files
+ at the bottom of the documentation of classes and structs. If set to \c YES
+ the list will mention the source files that were used to generate the documentation 
+ along with the header files in the used files section. 
+ This option requires SHOW_USED_FILES to be set to YES.
+ The default value is : YES.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='SHOW_FILES' defval='1'>
       <docs>
 <![CDATA[
