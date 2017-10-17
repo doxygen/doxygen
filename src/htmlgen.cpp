@@ -2721,11 +2721,12 @@ void HtmlGenerator::writeInheritedSectionTitle(
 
 void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const char *title,bool first)
 {
+    bool summaryOutsideHeader = Config_getBool(HTML_SUMMARY_OUTSIDE_HEADER);
   if (first)
   {
     t << "  <div class=\"summary\">\n";
   }
-  else
+  else if (!summaryOutsideHeader)
   {
     t << " &#124;\n";
   }
@@ -2743,6 +2744,8 @@ void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const c
   t << "\">";
   t << title;
   t << "</a>";
+  if (summaryOutsideHeader)
+      t << "<br>";
 }
 
 void HtmlGenerator::endMemberDeclaration(const char *anchor,const char *inheritId)

@@ -1925,6 +1925,15 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='bool' id='HTML_SUMMARY_OUTSIDE_HEADER' defval='0'>
+      <docs>
+<![CDATA[
+ The \c HTML_SUMMARY_OUTSIDE_HEADER tag can be used to let the summary links be generated
+ outside of the header div html tags. This allows custom CSS files to reposition the
+ summary links arbitrarily and not be constraint by the header area.
+]]>
+      </docs>
+    </option>
     <option type='list' id='HTML_EXTRA_FILES' format='file' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
