@@ -2677,10 +2677,10 @@ void MemberDef::writeDocumentation(MemberList *ml,
   }
   else // not an enum value or anonymous compound
   {
-     auto sepPageTitle = title;
+     QCString sepPageTitle = title;
      if (Config_getBool(SEPARATE_MEMBER_PAGES) && !Config_getBool(SEPARATE_MEMBER_PAGES_TITLE))
      {
-         sepPageTitle = nullptr;
+         sepPageTitle = 0;
      }
 
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);

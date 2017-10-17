@@ -811,11 +811,11 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       ol.startHeaderSection();
       ol.startTitleHead(title);
 
-      auto clDef = md->getClassDef();
+      ClassDef* clDef = md->getClassDef();
       if (clDef)
       {
           // Write the header link back to the member's class
-          ol.writeObjectLink(clDef->getReference(), clDef->getOutputFileBase(), nullptr, md->qualifiedName());
+          ol.writeObjectLink(clDef->getReference(), clDef->getOutputFileBase(), 0, md->qualifiedName());
           ol.endHtmlLink();
       }
 
