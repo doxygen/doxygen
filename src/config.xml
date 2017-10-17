@@ -1090,7 +1090,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-	<option type='bool' id='SHOW_USED_FILES_SRC' defval='1'>
+	<option type='bool' id='SHOW_USED_FILES_SRC' defval='1' depends='SHOW_USED_FILES'>
       <docs>
 <![CDATA[
  Set the \c SHOW_USED_FILES_SRC tag to \c NO to omit the listing of source files
