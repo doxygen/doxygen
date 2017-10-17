@@ -807,6 +807,21 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         container->writeNavigationPath(ol);
         ol.endQuickIndices();
       }
+
+      ol.startHeaderSection();
+      ol.startTitleHead(title);
+
+      auto clDef = md->getClassDef();
+      if (clDef)
+      {
+          // Write the header link back to the member's class
+          ol.writeObjectLink(clDef->getReference(), clDef->getOutputFileBase(), nullptr, md->qualifiedName());
+          ol.endHtmlLink();
+      }
+
+      ol.endTitleHead(title, title);
+      ol.endHeaderSection();
+
       ol.startContents();
 
       if (generateTreeView)

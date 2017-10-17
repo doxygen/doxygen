@@ -1588,15 +1588,20 @@ void HtmlGenerator::startMemberDoc( const char *clName, const char *memName,
                                     int memCount, int memTotal, bool showInline)
 {
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
-  t << "\n<h2 class=\"memtitle\">"
-    << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&#9670;&nbsp;</a></span>";
-  docify(title);
-  if (memTotal>1)
+  // Only if there is a title specified (i.e. != nullptr) add the title area
+  if (title)
   {
-    t << " <span class=\"overload\">[" << memCount << "/" << memTotal <<"]</span>";
+      t << "\n<h2 class=\"memtitle\">"
+        << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&#9670;&nbsp;</a></span>";
+      docify(title);
+      if (memTotal > 1)
+      {
+          t << " <span class=\"overload\">[" << memCount << "/" << memTotal << "]</span>";
+      }
+      t << "</h2>"
+        << endl;
   }
-  t << "</h2>"
-    << endl;
+  
   t << "\n<div class=\"memitem\">" << endl;
   t << "<div class=\"memproto\">" << endl;
 }
