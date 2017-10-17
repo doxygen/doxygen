@@ -514,8 +514,6 @@ Go to the <a href="commands.html">next</a> section or return to the
 <![CDATA[
  If the \c SEPARATE_MEMBER_PAGES_TITLE tag is set to \c NO then doxygen will omit
  the title area on a separate member page. 
- This option requires \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES" to be 
- set to YES. The default value is : YES.
 ]]>
       </docs>
     </option>
@@ -1107,8 +1105,6 @@ Go to the <a href="commands.html">next</a> section or return to the
  at the bottom of the documentation of classes and structs. If set to \c YES
  the list will mention the source files that were used to generate the documentation 
  along with the header files in the used files section. 
- This option requires \ref cfg_show_used_files "SHOW_USED_FILES" to be set to YES.
- The default value is : YES.
 ]]>
       </docs>
     </option>
@@ -1117,8 +1113,6 @@ Go to the <a href="commands.html">next</a> section or return to the
 <![CDATA[
  Set the \c SHOW_USED_FILES_TXT tag to \c NO to omit the text string before the listing 
  of source files at the bottom of the documentation of classes and structs. 
- This option requires \ref cfg_show_used_files "SHOW_USED_FILES" to be set to YES.
- The default value is : YES.
 ]]>
       </docs>
     </option>
