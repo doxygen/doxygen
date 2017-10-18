@@ -816,7 +816,6 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       {
           // Write the header link back to the member's class
           ol.writeObjectLink(clDef->getReference(), clDef->getOutputFileBase(), 0, md->qualifiedName());
-          ol.endHtmlLink();
       }
 
       ol.endTitleHead(title, title);
