@@ -192,11 +192,13 @@ const char * schema_queries[][2] = {
       "\tattributes   TEXT,\n"
       "\ttype         TEXT,\n"
       "\tdeclname     TEXT,\n"
-      "\tdefname     TEXT,\n"
+      "\tdefname      TEXT,\n"
       "\tarray        TEXT,\n"
       "\tdefval       TEXT,\n"
       "\tbriefdescription TEXT\n"
       ");"
+    "CREATE UNIQUE INDEX idx_params ON params\n"
+      "\t(type, defname);"
   },
   { "memberdef_params",
     "CREATE TABLE IF NOT EXISTS memberdef_params (\n"
@@ -621,6 +623,10 @@ static void insertMemberFunctionParams(sqlite3 *db,int id_memberdef, const Membe
       if (id_param==0) {
         id_param=step(db,params_insert,TRUE);
       }
+      if (id_param==-1) {
+          msg("error INSERT params failed\n");
+          continue;
+      }
 
       bindIntParameter(memberdef_params_insert,":id_memberdef",id_memberdef);
       bindIntParameter(memberdef_params_insert,":id_param",id_param);
@@ -644,6 +650,10 @@ static void insertMemberDefineParams(sqlite3 *db,int id_memberdef,const MemberDe
       {
         bindTextParameter(params_insert,":defname",a->type.data());
         int id_param=step(db,params_insert,TRUE);
+        if (id_param==-1) {
+          msg("error INSERT param(%s) failed\n", a->type.data());
+          continue;
+        }
 
         bindIntParameter(memberdef_params_insert,":id_memberdef",id_memberdef);
         bindIntParameter(memberdef_params_insert,":id_param",id_param);
