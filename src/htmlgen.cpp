@@ -2724,7 +2724,14 @@ void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const c
     bool summaryOutsideHeader = Config_getBool(HTML_SUMMARY_OUTSIDE_HEADER);
   if (first)
   {
-    t << "  <div class=\"summary\">\n";
+      if (summaryOutsideHeader)
+      {
+          t << "  <div class=\"summaryFloat\">\n";
+      }
+      else
+      {
+          t << "  <div class=\"summary\">\n";
+      }
   }
   else if (!summaryOutsideHeader)
   {

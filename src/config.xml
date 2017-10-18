@@ -1929,8 +1929,7 @@ hr.footer {
       <docs>
 <![CDATA[
  The \c HTML_SUMMARY_OUTSIDE_HEADER tag can be used to let the summary links be generated
- outside of the header div html tags. This allows custom CSS files to reposition the
- summary links arbitrarily and not be constraint by the header area.
+ outside of the header div html tags displayed as a floating block if it is set to YES.
 ]]>
       </docs>
     </option>

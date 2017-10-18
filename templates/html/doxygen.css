@@ -1043,6 +1043,28 @@ div.summary a
 	white-space: nowrap;
 }
 
+div.summaryFloat
+{
+    float: right;
+    font-weight: bolder;
+    font-size: 10pt;
+    background-color: #fff;
+    border: 2px solid #6db9d7;
+    padding: 10px 10px;
+    margin-right: 20px;
+    margin-top: 20px;
+    text-align: left;
+    width: 250px;
+    position: fixed;
+    right: 10px;
+}
+
+div.summaryFloat a 
+{
+    white-space: nowrap;
+    color: #007acc;
+}
+
 table.classindex
 {
         margin: 10px;
