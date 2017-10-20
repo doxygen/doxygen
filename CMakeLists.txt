@@ -146,11 +146,7 @@ add_subdirectory(src)
 add_subdirectory(examples)
 add_subdirectory(doc)
 
-add_subdirectory(addon/doxmlparser)
-add_subdirectory(addon/doxyapp)
-add_subdirectory(addon/doxyparse)
-add_subdirectory(addon/doxysearch)
-add_subdirectory(addon/doxywizard)
+add_subdirectory(addon)
 
 enable_testing()
 add_subdirectory(testing)

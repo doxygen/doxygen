@@ -1,5 +1,3 @@
-if (build_search)
-
 find_package(Xapian REQUIRED)
 find_package(ZLIB REQUIRED)
 
@@ -32,5 +30,3 @@ target_link_libraries(doxysearch.cgi
 )
 
 install(TARGETS doxyindexer doxysearch.cgi DESTINATION bin)
-
-endif()

@@ -1,5 +1,3 @@
-if (build_wizard)
-
 # search for Qt5
 if (NOT force_qt4)
   find_package(Qt5Core QUIET CONFIG)
@@ -112,5 +110,3 @@ ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY}
 )
 
 install(TARGETS doxywizard DESTINATION bin)
-
-endif()

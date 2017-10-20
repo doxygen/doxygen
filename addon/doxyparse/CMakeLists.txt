@@ -1,5 +1,3 @@
-if (build_parse)
-
 # configvalues.h
 add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/configgen.py -maph ${CMAKE_SOURCE_DIR}/src/config.xml > ${GENERATED_SRC}/configvalues.h
@@ -35,5 +33,3 @@ ${CLANG_LIBS}
 )
 
 install(TARGETS doxyparse DESTINATION bin)
-
-endif()
