@@ -99,8 +99,6 @@ set(ENV{DOXYGEN_DOCDIR} ${DOXYDOCS})
 set(GENERATED_SRC "${CMAKE_BINARY_DIR}/generated_src" CACHE INTERNAL "Stores generated files")
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-set(CUSTOM_INCLUDE_DIR "" CACHE FILEPATH "Extra include path")
-set(CUSTOM_LINK_DIR "" CACHE FILEPATH "Extra library path")
 
 # place binaries for all build types in the same directory, so we know where to find it
 # when running tests or generating docs
@@ -122,14 +120,6 @@ else ()
   endforeach()
 endif()
 set(LANG_CODES ${lcodes} CACHE STRING "List of language codes for which translations should be compiled in")
-
-if (CUSTOM_INCLUDE_DIR)
-   include_directories(${CUSTOM_INCLUDE_DIR})
-endif()
-
-if (CUSTOM_LINK_DIR)
-   link_directories(${CUSTOM_LINK_DIR})
-endif()
 
 if (win_static)
     set(CompilerFlags
