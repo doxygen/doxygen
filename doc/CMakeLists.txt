@@ -87,9 +87,9 @@ set(DOC_FILES
 )
 file(GLOB LANG_FILES "${TOP}/src/translator_??.h")
 
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src)
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/doc)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man
+                    ${PROJECT_BINARY_DIR}/src
+                    ${PROJECT_BINARY_DIR}/doc)
 
 file(COPY ${TOP}/VERSION                  DESTINATION ${PROJECT_BINARY_DIR}/)
 file(COPY ${TOP}/src/translator.h         DESTINATION ${PROJECT_BINARY_DIR}/src/)

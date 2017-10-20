@@ -1,7 +1,7 @@
 if (build_doc)
 
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/examples)
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/html/examples)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/examples
+                    ${PROJECT_BINARY_DIR}/html/examples)
 file(GLOB EXAMPLE_FILES RELATIVE ${CMAKE_SOURCE_DIR}/examples "*")
 
 if (DOT)
