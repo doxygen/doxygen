@@ -18,6 +18,7 @@ find_package(PythonInterp REQUIRED)
 find_program(EPSTOPDF NAMES epstopdf )
 find_program(PDFLATEX NAMES pdflatex )
 find_program(MAKEINDEX NAMES makeindex )
+include(GNUInstallDirs)
 
 if (doxygen_BINARY_DIR)
     set(DOXYGEN_EXECUTABLE ${doxygen_BINARY_DIR}/bin/doxygen)
@@ -167,7 +168,7 @@ install(FILES
         "${PROJECT_BINARY_DIR}/man/doxywizard.1"
         "${PROJECT_BINARY_DIR}/man/doxysearch.1"
         "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
-        DESTINATION share/man/man1
+        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
 )
 
 install(FILES
