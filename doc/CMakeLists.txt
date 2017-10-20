@@ -11,8 +11,6 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-if (build_doc)
-
 include (${TOP}/cmake/version.cmake)
 string(TIMESTAMP DATE "%d-%m-%Y")
 
@@ -181,5 +179,3 @@ install(DIRECTORY
         "${PROJECT_BINARY_DIR}/html"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"
 )
-
-endif()

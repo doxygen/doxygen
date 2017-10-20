@@ -143,8 +143,11 @@ add_subdirectory(libmd5)
 add_subdirectory(qtools)
 add_subdirectory(vhdlparser)
 add_subdirectory(src)
-add_subdirectory(examples)
-add_subdirectory(doc)
+
+if (build_doc)
+    add_subdirectory(examples)
+    add_subdirectory(doc)
+endif ()
 
 add_subdirectory(addon)
 

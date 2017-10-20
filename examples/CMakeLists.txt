@@ -1,5 +1,3 @@
-if (build_doc)
-
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/examples
                     ${PROJECT_BINARY_DIR}/html/examples)
 file(GLOB EXAMPLE_FILES RELATIVE ${CMAKE_SOURCE_DIR}/examples "*")
@@ -246,5 +244,3 @@ if (DOT)
 	OUTPUT ${PROJECT_BINARY_DIR}/html/examples/diagrams/html/index.html ${PROJECT_BINARY_DIR}/html/examples/diagrams/latex/refman_doc.tex
   )
 endif(DOT)
-
-endif()
