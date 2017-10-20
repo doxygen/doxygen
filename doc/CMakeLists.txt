@@ -182,4 +182,4 @@ install(DIRECTORY
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"
 )
 
-endif(build_doc)
+endif()
