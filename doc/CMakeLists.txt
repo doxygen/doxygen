@@ -11,8 +11,6 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-if (build_doc)
-
 include (${TOP}/cmake/version.cmake)
 string(TIMESTAMP DATE "%d-%m-%Y")
 
@@ -20,6 +18,7 @@ find_package(PythonInterp REQUIRED)
 find_program(EPSTOPDF NAMES epstopdf )
 find_program(PDFLATEX NAMES pdflatex )
 find_program(MAKEINDEX NAMES makeindex )
+include(GNUInstallDirs)
 
 if (doxygen_BINARY_DIR)
     set(DOXYGEN_EXECUTABLE ${doxygen_BINARY_DIR}/bin/doxygen)
@@ -87,9 +86,9 @@ set(DOC_FILES
 )
 file(GLOB LANG_FILES "${TOP}/src/translator_??.h")
 
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src)
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/doc)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man
+                    ${PROJECT_BINARY_DIR}/src
+                    ${PROJECT_BINARY_DIR}/doc)
 
 file(COPY ${TOP}/VERSION                  DESTINATION ${PROJECT_BINARY_DIR}/)
 file(COPY ${TOP}/src/translator.h         DESTINATION ${PROJECT_BINARY_DIR}/src/)
@@ -169,7 +168,7 @@ install(FILES
         "${PROJECT_BINARY_DIR}/man/doxywizard.1"
         "${PROJECT_BINARY_DIR}/man/doxysearch.1"
         "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
-        DESTINATION share/man/man1
+        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
 )
 
 install(FILES
@@ -181,5 +180,3 @@ install(DIRECTORY
         "${PROJECT_BINARY_DIR}/html"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"
 )
-
-endif(build_doc)
