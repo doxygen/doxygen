@@ -1,3 +1,6 @@
+%option never-interactive
+%option prefix="smlscannerYY"
+
 %{
 
 /* includes */

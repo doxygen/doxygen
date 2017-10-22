@@ -21,6 +21,8 @@
  *  taught by Peter H. Froehlich <phf@acm.org>.
  */
 
+%option never-interactive
+%option prefix="smlcodeYY"
 
 %{
 
@@ -354,7 +356,7 @@ static void startCodeLine()
     //QCString lineNumber,lineAnchor;
     //lineNumber.sprintf("%05d",g_yyLineNr);
     //lineAnchor.sprintf("l%05d",g_yyLineNr);
-   
+
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
     //printf("startCodeLine %d d=%p\n",g_yyLineNr,d);
     //g_code->startLineNumber();
@@ -392,7 +394,7 @@ static void startCodeLine()
     }
     //g_code->endLineNumber();
   }
-  g_code->startCodeLine(g_sourceFileDef); 
+  g_code->startCodeLine(g_sourceFileDef);
   if (g_currentFontClass)
   {
     g_code->startFontClass(g_currentFontClass);
@@ -431,7 +433,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
 		  Definition *d,
 		  const char *text)
 {
-  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -632,7 +634,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   }
   else
   {
-    if (lcd!=SmlVariableContext::dummyContext) 
+    if (lcd!=SmlVariableContext::dummyContext)
     {
       g_theCallContext.setClass(lcd);
     }
@@ -649,7 +651,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
       Definition *d = md->getOuterScope()==Doxygen::globalScope ?
                       md->getBodyDef() : md->getOuterScope();
       if (md->getGroupDef()) d = md->getGroupDef();
-      if (d && d->isLinkable() && md->isLinkable() && 
+      if (d && d->isLinkable() && md->isLinkable() &&
           g_currentMemberDef && g_collectXRefs)
       {
         addDocCrossReference(g_currentMemberDef,md);
@@ -676,7 +678,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 	  Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	                  md->getBodyDef() : md->getOuterScope();
 	  if (md->getGroupDef()) d = md->getGroupDef();
-	  if (d && d->isLinkable() && md->isLinkable() && 
+	  if (d && d->isLinkable() && md->isLinkable() &&
               g_currentMemberDef && g_collectXRefs)
 	  {
 	    addDocCrossReference(g_currentMemberDef,md);
@@ -699,7 +701,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 	    Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	                    md->getBodyDef() : md->getOuterScope();
 	    if (md->getGroupDef()) d = md->getGroupDef();
-	    if (d && d->isLinkable() && md->isLinkable() && 
+	    if (d && d->isLinkable() && md->isLinkable() &&
                 g_currentMemberDef && g_collectXRefs)
 	    {
 	      addDocCrossReference(g_currentMemberDef,md);
@@ -709,7 +711,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
         }
       }
     }
-    
+
     // nothing found, just write out the word
     codifyLines(clName);
     addToSearchIndex(clName);
@@ -781,7 +783,7 @@ static bool findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *s
     DBG_CTX((stderr,"cd=%s thisCd=%s\n",cd?cd->name().data():"<none>",thisCd?thisCd->name().data():"<none>"));
 
     // TODO: find the nearest base class in case cd is a base class of
-    // thisCd 
+    // thisCd
     if (cd==thisCd || (thisCd && thisCd->isBaseClass(cd,TRUE)))
     {
       writeMultiLineCodeLink(ol,sym,symName);

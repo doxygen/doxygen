@@ -1525,6 +1525,7 @@ class DefinitionContext
         case SrcLangExt_SQL:      result="sql";      break;
         case SrcLangExt_Tcl:      result="tcl";      break;
         case SrcLangExt_Markdown: result="markdown"; break;
+        case SrcLangExt_Sml:      result="sml";      break;
       }
       return result;
     }
@@ -9706,7 +9707,7 @@ class SymbolGroupListContext::Private : public GenericNodeListContext
     }
 };
 
-SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList *sil) 
+SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList *sil)
     : RefCountedContext("SymbolGroupListContext")
 {
   p = new Private(sil);
