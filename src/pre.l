@@ -16,6 +16,8 @@
  */
 %option never-interactive
 %option prefix="preYY"
+%option noyywrap
+
 
 %{
 
@@ -439,8 +441,6 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 B       [ \t]
 BN	[ \t\r\n]
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
-
-%option noyywrap
 
 %x      Start
 %x	Command
