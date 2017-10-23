@@ -388,6 +388,7 @@ struct preYY_state
   int                g_fenceSize = 0;
   bool               g_ccomment;
   QDict<void>        g_allIncludes;
+  Doxygen           *doxygen = NULL;
 };
 
 //DefineDict* getGlobalDefineDict() 
@@ -1662,11 +1663,11 @@ static void setFileName(const char *name, yyscan_t yyscanner)
   bool ambig;
   QFileInfo fi(name);
   preYYstate->g_yyFileName=fi.absFilePath().utf8();
-  preYYstate->g_yyFileDef=findFileDef(Doxygen::inputNameDict,preYYstate->g_yyFileName,ambig);
+  preYYstate->g_yyFileDef=findFileDef(preYYstate->doxygen->inputNameDict,preYYstate->g_yyFileName,ambig);
   if (preYYstate->g_yyFileDef==0) // if this is not an input file check if it is an
                       // include file
   {
-    preYYstate->g_yyFileDef=findFileDef(Doxygen::includeNameDict,preYYstate->g_yyFileName,ambig);
+    preYYstate->g_yyFileDef=findFileDef(preYYstate->doxygen->includeNameDict,preYYstate->g_yyFileName,ambig);
   }
   //printf("setFileName(%s) preYYstate->g_yyFileName=%s preYYstate->g_yyFileDef=%p\n",
   //    name,preYYstate->g_yyFileName.data(),preYYstate->g_yyFileDef);
@@ -2726,7 +2727,7 @@ static Define *newDefine(yyscan_t yyscanner)
   //printf("newDefine: %s %s file: %s\n",def->name.data(),def->definition.data(),
   //    def->fileDef ? def->fileDef->name().data() : def->fileName.data());
   //printf("newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
-  if (!def->name.isEmpty() && Doxygen::expandAsDefinedDict[def->name])
+  if (!def->name.isEmpty() && preYYstate->doxygen->expandAsDefinedDict[def->name])
   {
     def->isPredefined=TRUE;
   }
@@ -2738,7 +2739,7 @@ static void addDefine(yyscan_t yyscanner)
   struct preYY_state *preYYstate = yyget_extra(yyscanner);
   if (preYYstate->g_skip) return; // do not add this define as it is inside a 
                       // conditional section (cond command) that is disabled.
-  if (!Doxygen::gatherDefines) return;
+  if (!preYYstate->doxygen->gatherDefines) return;
 
   //printf("addDefine %s %s\n",preYYstate->g_defName.data(),preYYstate->g_defArgsStr.data());
   //ArgumentList *al = new ArgumentList;
@@ -2776,11 +2777,11 @@ static void addDefine(yyscan_t yyscanner)
   md->setFileDef(preYYstate->g_inputFileDef);
   md->setDefinition("#define "+preYYstate->g_defName);
 
-  MemberName *mn=Doxygen::functionNameSDict->find(preYYstate->g_defName);
+  MemberName *mn=preYYstate->doxygen->functionNameSDict->find(preYYstate->g_defName);
   if (mn==0)
   {
     mn = new MemberName(preYYstate->g_defName);
-    Doxygen::functionNameSDict->append(preYYstate->g_defName,mn);
+    preYYstate->doxygen->functionNameSDict->append(preYYstate->g_defName,mn);
   }
   mn->append(md);
   if (preYYstate->g_yyFileDef) 
@@ -2900,7 +2901,7 @@ static void readIncludeFile(const QCString &inc,yyscan_t yyscanner)
         // add include dependency to the file in which the #include was found
 	bool ambig;
 	// change to absolute name for bug 641336 
-        FileDef *incFd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
+        FileDef *incFd = findFileDef(preYYstate->doxygen->inputNameDict,absIncFileName,ambig);
         oldFileDef->addIncludeDependency(ambig ? 0 : incFd,incFileName,localInclude,preYYstate->g_isImported,FALSE);
         // add included by dependency
         if (preYYstate->g_yyFileDef)
@@ -2946,7 +2947,7 @@ static void readIncludeFile(const QCString &inc,yyscan_t yyscanner)
 	//}
 
 	// change to absolute name for bug 641336 
-	FileDef *fd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
+	FileDef *fd = findFileDef(preYYstate->doxygen->inputNameDict,absIncFileName,ambig);
 	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(ambig ? 0 : fd,incFileName,localInclude,preYYstate->g_isImported,FALSE);
