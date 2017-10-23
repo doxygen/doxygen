@@ -17,6 +17,8 @@
 %option never-interactive
 %option prefix="preYY"
 %option noyywrap
+%option reentrant
+%option extra-type="struct preYY_state *"
 
 
 %{
@@ -332,106 +334,109 @@ void DefineManager::DefinesPerFile::collectDefines(
  *
  *	scanner's state
  */
-
-static int                g_yyLineNr   = 1;
-static int                g_yyMLines   = 1;
-static int                g_yyColNr   = 1;
-static QCString           g_yyFileName;
-static FileDef           *g_yyFileDef;
-static FileDef           *g_inputFileDef;
-static int                g_ifcount    = 0;
-static QStrList          *g_pathList = 0;  
-static QStack<FileState>  g_includeStack;
-static QDict<int>        *g_argDict;
-static int                g_defArgs = -1;
-static QCString           g_defName;
-static QCString           g_defText;
-static QCString           g_defLitText;
-static QCString           g_defArgsStr;
-static QCString           g_defExtraSpacing;
-static bool               g_defVarArgs;
-static int                g_level;
-static int                g_lastCContext;
-static int                g_lastCPPContext;
-static QArray<int>        g_levelGuard;
-static BufStr            *g_inputBuf;
-static int                g_inputBufPos;
-static BufStr            *g_outputBuf;
-static int                g_roundCount;
-static bool               g_quoteArg;
-static DefineDict        *g_expandedDict;
-static int                g_findDefArgContext;
-static bool               g_expectGuard;
-static QCString           g_guardName;
-static QCString           g_lastGuardName;
-static QCString           g_incName;
-static QCString           g_guardExpr;
-static int                g_curlyCount;
-static bool               g_nospaces; // add extra spaces during macro expansion
-
-static bool               g_macroExpansion; // from the configuration
-static bool               g_expandOnlyPredef; // from the configuration
-static int                g_commentCount;
-static bool               g_insideComment;
-static bool               g_isImported;
-static QCString           g_blockName;
-static int                g_condCtx;
-static bool               g_skip;
-static QStack<CondCtx>    g_condStack;
-static bool               g_insideCS; // C# has simpler preprocessor
-static bool               g_isSource;
-
-static bool               g_lexInit = FALSE;
-static int                g_fenceSize = 0;
-static bool               g_ccomment;
-static QDict<void>        g_allIncludes(10009);
+struct preYY_state
+{
+  int                g_yyLineNr   = 1;
+  int                g_yyMLines   = 1;
+  int                g_yyColNr   = 1;
+  QCString           g_yyFileName;
+  FileDef           *g_yyFileDef;
+  FileDef           *g_inputFileDef;
+  int                g_ifcount    = 0;
+  QStrList          *g_pathList = 0;  
+  QStack<FileState>  g_includeStack;
+  QDict<int>        *g_argDict;
+  int                g_defArgs = -1;
+  QCString           g_defName;
+  QCString           g_defText;
+  QCString           g_defLitText;
+  QCString           g_defArgsStr;
+  QCString           g_defExtraSpacing;
+  bool               g_defVarArgs;
+  int                g_level;
+  int                g_lastCContext;
+  int                g_lastCPPContext;
+  QArray<int>        g_levelGuard;
+  BufStr            *g_inputBuf;
+  int                g_inputBufPos;
+  BufStr            *g_outputBuf;
+  int                g_roundCount;
+  bool               g_quoteArg;
+  DefineDict        *g_expandedDict;
+  int                g_findDefArgContext;
+  bool               g_expectGuard;
+  QCString           g_guardName;
+  QCString           g_lastGuardName;
+  QCString           g_incName;
+  QCString           g_guardExpr;
+  int                g_curlyCount;
+  bool               g_nospaces; // add extra spaces during macro expansion
+  
+  bool               g_macroExpansion; // from the configuration
+  bool               g_expandOnlyPredef; // from the configuration
+  int                g_commentCount;
+  bool               g_insideComment;
+  bool               g_isImported;
+  QCString           g_blockName;
+  int                g_condCtx;
+  bool               g_skip;
+  QStack<CondCtx>    g_condStack;
+  bool               g_insideCS; // C# has simpler preprocessor
+  bool               g_isSource;
+  
+  bool               g_lexInit = FALSE;
+  int                g_fenceSize = 0;
+  bool               g_ccomment;
+  QDict<void>        g_allIncludes;
+};
 
 //DefineDict* getGlobalDefineDict() 
 //{
-//  return g_globalDefineDict;
+//  return yyget_extra(yyscanner)->g_globalDefineDict;
 //}
 
-static void setFileName(const char *name);
-static void incrLevel();
-static void decrLevel();
-static bool otherCaseDone();
-static void setCaseDone(bool value);
-static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyIncluded);
-static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyIncluded);
+static void setFileName(const char *name, yyscan_t yyscanner);
+static void incrLevel(yyscan_t yyscanner);
+static void decrLevel(yyscan_t yyscanner);
+static bool otherCaseDone(yyscan_t yyscanner);
+static void setCaseDone(bool value, yyscan_t yyscanner);
+static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyIncluded, yyscan_t yyscanner);
+static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyIncluded, yyscan_t yyscanner);
 static QCString extractTrailingComment(const char *s);
-static int getNextChar(const QCString &expr,QCString *rest,uint &pos);
-static int getCurrentChar(const QCString &expr,QCString *rest,uint pos);
-static void unputChar(const QCString &expr,QCString *rest,uint &pos,char c);
-static void expandExpression(QCString &expr,QCString *rest,int pos);
+static int getNextChar(const QCString &expr,QCString *rest,uint &pos,yyscan_t yyscanner);
+static int getCurrentChar(const QCString &expr,QCString *rest,uint pos, yyscan_t yyscanner);
+static void unputChar(const QCString &expr,QCString *rest,uint &pos,char c, yyscan_t yyscanner);
+static void expandExpression(QCString &expr,QCString *rest,int pos, yyscan_t yyscanner);
 static QCString stringize(const QCString &s);
 static void processConcatOperators(QCString &expr);
-static void yyunput (int c,char *buf_ptr  );
-static void returnCharToStream(char c);
+static void yyunput (int c,char *buf_ptr, yyscan_t yyscanner);
+static void returnCharToStream(char c, yyscan_t yyscanner);
 static void addTillEndOfString(const QCString &expr,QCString *rest,
-                                       uint &pos,char term,QCString &arg);
-static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result);
+                                       uint &pos,char term,QCString &arg,
+                                       yyscan_t yyscanner);
+static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result, yyscan_t yyscanner);
 static int getNextId(const QCString &expr,int p,int *l);
 static void expandExpression(QCString &expr,QCString *rest,int pos);
 static QCString removeIdsAndMarkers(const char *s);
 static QCString removeMarkers(const char *s);
-static bool computeExpression(const QCString &expr);
-static QCString expandMacro(const QCString &name);
-static Define *newDefine();
-static void addDefine();
-static void outputChar(char c);
-static void outputArray(const char *a,int len);
-static void readIncludeFile(const QCString &inc);
-static void startCondSection(const char *sectId);
-static void endCondSection();
-static void forceEndCondSection();
+static bool computeExpression(const QCString &expr, yyscan_t yyscanner);
+static QCString expandMacro(const QCString &name, yyscan_t yyscanner);
+static Define *newDefine(yyscan_t yyscanner);
+static void addDefine(yyscan_t yyscanner);
+static void outputChar(char c, yyscan_t yyscanner);
+static void outputArray(const char *a,int len, yyscan_t yyscanner);
+static void readIncludeFile(const QCString &inc, yyscan_t yyscanner);
+static void startCondSection(const char *sectId, yyscan_t yyscanner);
+static void endCondSection(yyscan_t yyscanner);
+static void forceEndCondSection(yyscan_t yyscanner);
 static QCString escapeAt(const char *text);
 static char resolveTrigraph(char c);
-static int yyread(char *buf,int max_size);
+static int yyread(char *buf,int max_size,yyscan_t yyscanner);
 
 /* ----------------------------------------------------------------- */
 
 #undef  YY_INPUT
-#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
+#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
 
 /* ----------------------------------------------------------------- */
 
@@ -487,9 +492,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <*>"??"[=/'()!<>-]			{ // Trigraph
   					  unput(resolveTrigraph(yytext[2]));
   					}
-<Start>^{B}*"#"				{ BEGIN(Command); g_yyColNr+=yyleng; g_yyMLines=0;}
+<Start>^{B}*"#"				{ BEGIN(Command);
+					  yyextra->g_yyColNr+=yyleng;
+					  yyextra->g_yyMLines=0;}
 <Start>^{B}*/[^#]			{
- 					  outputArray(yytext,(int)yyleng);
+ 					  outputArray(yytext,(int)yyleng, yyscanner);
   					  BEGIN(CopyLine); 
 					}
 <Start>^{B}*[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]+{B}*"("[^\)\n]*")"/{BN}{1,10}*[:{] { // constructors?
@@ -510,16 +517,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (skipFuncMacros && 
 					      name!="Q_PROPERTY" &&
 					      !(
-					         (g_includeStack.isEmpty() || g_curlyCount>0) &&
-					         g_macroExpansion &&
+					         (yyextra->g_includeStack.isEmpty() || yyextra->g_curlyCount>0) &&
+					         yyextra->g_macroExpansion &&
 					         (def=DefineManager::instance().isDefined(name)) &&
 						 /*macroIsAccessible(def) &&*/
-					         (!g_expandOnlyPredef || def->isPredefined)
+					         (!yyextra->g_expandOnlyPredef || def->isPredefined)
 					       )
 					     )
 					  {
-					    outputChar('\n');
-					    g_yyLineNr++;
+					    outputChar('\n', yyscanner);
+					    yyextra->g_yyLineNr++;
 					  }
 					  else // don't skip
 					  {
@@ -533,316 +540,316 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <CopyLine>"extern"{BN}{0,80}"\"C\""*{BN}{0,80}"{"	{
                                           QCString text=yytext;
-  					  g_yyLineNr+=text.contains('\n');
-					  outputArray(yytext,(int)yyleng);
+  					  yyextra->g_yyLineNr+=text.contains('\n');
+					  outputArray(yytext,(int)yyleng, yyscanner);
   					}
 <CopyLine>"{"				{ // count brackets inside the main file
-  					  if (g_includeStack.isEmpty()) 
+  					  if (yyextra->g_includeStack.isEmpty()) 
 					  {
-					    g_curlyCount++;
+					    yyextra->g_curlyCount++;
 					  }
-					  outputChar(*yytext);
+					  outputChar(*yytext, yyscanner);
   					}
 <CopyLine>"}"				{ // count brackets inside the main file
-  					  if (g_includeStack.isEmpty() && g_curlyCount>0) 
+  					  if (yyextra->g_includeStack.isEmpty() && yyextra->g_curlyCount>0) 
 					  {
-					    g_curlyCount--;
+					    yyextra->g_curlyCount--;
 					  }
-					  outputChar(*yytext);
+					  outputChar(*yytext, yyscanner);
   					}
 <CopyLine>"'"\\[0-7]{1,3}"'"		{ 
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
 					}
 <CopyLine>"'"\\."'"			{ 
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
 					}
 <CopyLine>"'"."'"			{ 
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
 					}
 <CopyLine>\"				{
-					  outputChar(*yytext);
+					  outputChar(*yytext, yyscanner);
 					  BEGIN( CopyString );
 					}
 <CopyLine>\'				{
-                                          if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_Fortran) REJECT;
-					  outputChar(*yytext);
+                                          if (getLanguageFromFileName(yyextra->g_yyFileName)!=SrcLangExt_Fortran) REJECT;
+					  outputChar(*yytext, yyscanner);
 					  BEGIN( CopyStringFtn );
 					}
 <CopyString>[^\"\\\r\n]+		{
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
 					}
 <CopyString>\\.				{
-					  outputArray(yytext,(int)yyleng);
+					  outputArray(yytext,(int)yyleng, yyscanner);
 					}
 <CopyString>\"				{
-					  outputChar(*yytext);
+					  outputChar(*yytext, yyscanner);
 					  BEGIN( CopyLine );
 					}
 <CopyStringFtn>[^\'\\\r\n]+		{
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
 					}
 <CopyStringFtn>\\.			{
-					  outputArray(yytext,(int)yyleng);
+					  outputArray(yytext,(int)yyleng, yyscanner);
 					}
 <CopyStringFtn>\'			{
-					  outputChar(*yytext);
+					  outputChar(*yytext, yyscanner);
 					  BEGIN( CopyLine );
 					}
 <CopyLine>{ID}/{BN}{0,80}"("		{
-  					  g_expectGuard = FALSE;
+  					  yyextra->g_expectGuard = FALSE;
   					  Define *def=0;
-					  //def=g_globalDefineDict->find(yytext);
+					  //def=yyextra->g_globalDefineDict->find(yytext);
 					  //def=DefineManager::instance().isDefined(yytext);
-					  //printf("Search for define %s found=%d g_includeStack.isEmpty()=%d "
-					  //       "g_curlyCount=%d g_macroExpansion=%d g_expandOnlyPredef=%d "
+					  //printf("Search for define %s found=%d yyextra->g_includeStack.isEmpty()=%d "
+					  //       "yyextra->g_curlyCount=%d yyextra->g_macroExpansion=%d yyextra->g_expandOnlyPredef=%d "
 					  //	 "isPreDefined=%d\n",yytext,def ? 1 : 0,
-					  //	 g_includeStack.isEmpty(),g_curlyCount,g_macroExpansion,g_expandOnlyPredef,
+					  //	 yyextra->g_includeStack.isEmpty(),yyextra->g_curlyCount,yyextra->g_macroExpansion,yyextra->g_expandOnlyPredef,
 					  //	 def ? def->isPredefined : -1
 					  //	);
-					  if ((g_includeStack.isEmpty() || g_curlyCount>0) &&
-					      g_macroExpansion &&
+					  if ((yyextra->g_includeStack.isEmpty() || yyextra->g_curlyCount>0) &&
+					      yyextra->g_macroExpansion &&
 					      (def=DefineManager::instance().isDefined(yytext)) &&
 				              /*(def->isPredefined || macroIsAccessible(def)) && */
-					      (!g_expandOnlyPredef || def->isPredefined)
+					      (!yyextra->g_expandOnlyPredef || def->isPredefined)
 					     )
 					  {
 					    //printf("Found it! #args=%d\n",def->nargs);
-					    g_roundCount=0;
-					    g_defArgsStr=yytext;
+					    yyextra->g_roundCount=0;
+					    yyextra->g_defArgsStr=yytext;
 					    if (def->nargs==-1) // no function macro
 					    {
-					      QCString result = def->isPredefined ? def->definition : expandMacro(g_defArgsStr);
-					      outputArray(result,result.length());
+					      QCString result = def->isPredefined ? def->definition : expandMacro(yyextra->g_defArgsStr, yyscanner);
+					      outputArray(result,result.length(), yyscanner);
 					    }
 					    else // zero or more arguments
 					    {
-					      g_findDefArgContext = CopyLine;
+					      yyextra->g_findDefArgContext = CopyLine;
 					      BEGIN(FindDefineArgs);
 					    }
 					  }
 					  else
 					  {
-					    outputArray(yytext,(int)yyleng);
+					    outputArray(yytext,(int)yyleng, yyscanner);
 					  }
   					}
 <CopyLine>{ID}				{
                                           Define *def=0;
-  					  if ((g_includeStack.isEmpty() || g_curlyCount>0) && 
-					      g_macroExpansion &&
+  					  if ((yyextra->g_includeStack.isEmpty() || yyextra->g_curlyCount>0) && 
+					      yyextra->g_macroExpansion &&
 					      (def=DefineManager::instance().isDefined(yytext)) &&
 					      def->nargs==-1 &&
 				              /*(def->isPredefined || macroIsAccessible(def)) &&*/
-					      (!g_expandOnlyPredef || def->isPredefined)
+					      (!yyextra->g_expandOnlyPredef || def->isPredefined)
 					     )
 					  {
-					    QCString result=def->isPredefined ? def->definition : expandMacro(yytext); 
-					    outputArray(result,result.length());
+					    QCString result=def->isPredefined ? def->definition : expandMacro(yytext, yyscanner); 
+					    outputArray(result,result.length(), yyscanner);
 					  }
 					  else
 					  {
-					    outputArray(yytext,(int)yyleng);
+					    outputArray(yytext,(int)yyleng, yyscanner);
 					  }
   					}
 <CopyLine>"\\"\r?/\n			{ // strip line continuation characters
   					}
 <CopyLine>.				{
-  					  outputChar(*yytext);
+  					  outputChar(*yytext, yyscanner);
   					}
 <CopyLine>\n				{
-  					  outputChar('\n');
+  					  outputChar('\n', yyscanner);
 					  BEGIN(Start);
-					  g_yyLineNr++;
-					  g_yyColNr=1;
+					  yyextra->g_yyLineNr++;
+					  yyextra->g_yyColNr=1;
   					}
 <FindDefineArgs>"("			{
-  					  g_defArgsStr+='(';
-  					  g_roundCount++;
+  					  yyextra->g_defArgsStr+='(';
+  					  yyextra->g_roundCount++;
   					}
 <FindDefineArgs>")"			{
-  					  g_defArgsStr+=')';
-					  g_roundCount--;
-					  if (g_roundCount==0)
+  					  yyextra->g_defArgsStr+=')';
+					  yyextra->g_roundCount--;
+					  if (yyextra->g_roundCount==0)
 					  {
-					    QCString result=expandMacro(g_defArgsStr);
-					    //printf("g_defArgsStr=`%s'->`%s'\n",g_defArgsStr.data(),result.data());
-					    if (g_findDefArgContext==CopyLine)
+					    QCString result=expandMacro(yyextra->g_defArgsStr, yyscanner);
+					    //printf("yyextra->g_defArgsStr=`%s'->`%s'\n",yyextra->g_defArgsStr.data(),result.data());
+					    if (yyextra->g_findDefArgContext==CopyLine)
 					    {
-					      outputArray(result,result.length());
-					      BEGIN(g_findDefArgContext);
+					      outputArray(result,result.length(), yyscanner);
+					      BEGIN(yyextra->g_findDefArgContext);
 					    }
-					    else // g_findDefArgContext==IncludeID
+					    else // yyextra->g_findDefArgContext==IncludeID
 					    {
-					      readIncludeFile(result);
-					      g_nospaces=FALSE;
+					      readIncludeFile(result, yyscanner);
+					      yyextra->g_nospaces=FALSE;
 					      BEGIN(Start);
 					    }
 					  }
   					}
   /*
 <FindDefineArgs>")"{B}*"("		{
-  					  g_defArgsStr+=yytext;
+  					  yyextra->g_defArgsStr+=yytext;
   					}
   */
 <FindDefineArgs>{CHARLIT}		{
-  					  g_defArgsStr+=yytext;
+  					  yyextra->g_defArgsStr+=yytext;
   					}
 <FindDefineArgs>"/*"[*]?                {
-                                          g_defArgsStr+=yytext;
+                                          yyextra->g_defArgsStr+=yytext;
                                           BEGIN(ArgCopyCComment);
                                         }
 <FindDefineArgs>\"			{
-  					  g_defArgsStr+=*yytext;
+  					  yyextra->g_defArgsStr+=*yytext;
   					  BEGIN(ReadString);
   					}
 <FindDefineArgs>'                       {
-                                          if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_Fortran) REJECT;
-                                          g_defArgsStr+=*yytext;
+                                          if (getLanguageFromFileName(yyextra->g_yyFileName)!=SrcLangExt_Fortran) REJECT;
+                                          yyextra->g_defArgsStr+=*yytext;
                                           BEGIN(ReadString);
                                         }
 <FindDefineArgs>\n			{
-                                          g_defArgsStr+=' ';
-  					  g_yyLineNr++;
-					  outputChar('\n');
+                                          yyextra->g_defArgsStr+=' ';
+  					  yyextra->g_yyLineNr++;
+					  outputChar('\n', yyscanner);
   					}
 <FindDefineArgs>"@"			{
-  					  g_defArgsStr+="@@";
+  					  yyextra->g_defArgsStr+="@@";
   					}
 <FindDefineArgs>.			{
-  					  g_defArgsStr+=*yytext;
+  					  yyextra->g_defArgsStr+=*yytext;
   					}
 <ArgCopyCComment>[^*\n]+		{
-					  g_defArgsStr+=yytext;
+					  yyextra->g_defArgsStr+=yytext;
   					}
 <ArgCopyCComment>"*/"			{
-					  g_defArgsStr+=yytext;
+					  yyextra->g_defArgsStr+=yytext;
   					  BEGIN(FindDefineArgs);
   					}
 <ArgCopyCComment>\n			{ 
-                                          g_defArgsStr+=' ';
-  					  g_yyLineNr++;
-					  outputChar('\n');
+                                          yyextra->g_defArgsStr+=' ';
+  					  yyextra->g_yyLineNr++;
+					  outputChar('\n', yyscanner);
   					}
 <ArgCopyCComment>.			{ 
-                                          g_defArgsStr+=yytext;
+                                          yyextra->g_defArgsStr+=yytext;
                                         }
 <ReadString>"\""			{
-  					  g_defArgsStr+=*yytext;
+  					  yyextra->g_defArgsStr+=*yytext;
 					  BEGIN(FindDefineArgs);
   					}
 <ReadString>"'"                         {
-                                          if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_Fortran) REJECT;
-                                          g_defArgsStr+=*yytext;
+                                          if (getLanguageFromFileName(yyextra->g_yyFileName)!=SrcLangExt_Fortran) REJECT;
+                                          yyextra->g_defArgsStr+=*yytext;
                                           BEGIN(FindDefineArgs);
                                         }
 
 <ReadString>"//"|"/*"			{
-  					  g_defArgsStr+=yytext;
+  					  yyextra->g_defArgsStr+=yytext;
   					}
 <ReadString>\\.				{
-  					  g_defArgsStr+=yytext;
+  					  yyextra->g_defArgsStr+=yytext;
   					}
 <ReadString>.				{
-  					  g_defArgsStr+=*yytext;
+  					  yyextra->g_defArgsStr+=*yytext;
   					}
 <Command>("include"|"import"){B}+/{ID}	{
-  					  g_isImported = yytext[1]=='m';
-  					  if (g_macroExpansion) 
+  					  yyextra->g_isImported = yytext[1]=='m';
+  					  if (yyextra->g_macroExpansion) 
 					    BEGIN(IncludeID);
   					}
 <Command>("include"|"import"){B}*[<"]	{ 
-  					  g_isImported = yytext[1]=='m';
+  					  yyextra->g_isImported = yytext[1]=='m';
 					  char c[2];
 					  c[0]=yytext[yyleng-1];c[1]='\0';
-					  g_incName=c;
+					  yyextra->g_incName=c;
   					  BEGIN(Include); 
 					}
 <Command>("cmake")?"define"{B}+		{ 
   			                  //printf("!!!DefName\n"); 
-					  g_yyColNr+=yyleng;
+					  yyextra->g_yyColNr+=yyleng;
   					  BEGIN(DefName); 
 					}
 <Command>"ifdef"/{B}*"("		{
-  					  incrLevel();
-					  g_guardExpr.resize(0);
+  					  incrLevel(yyscanner);
+					  yyextra->g_guardExpr.resize(0);
   					  BEGIN(DefinedExpr2);
   					}
 <Command>"ifdef"/{B}+			{
   					  //printf("Pre.l: ifdef\n");
-  					  incrLevel();
-					  g_guardExpr.resize(0);
+  					  incrLevel(yyscanner);
+					  yyextra->g_guardExpr.resize(0);
   					  BEGIN(DefinedExpr1);
   					}
 <Command>"ifndef"/{B}*"("		{
-  					  incrLevel();
-					  g_guardExpr="! ";
+  					  incrLevel(yyscanner);
+					  yyextra->g_guardExpr="! ";
   					  BEGIN(DefinedExpr2);
 					}
 <Command>"ifndef"/{B}+			{
-  					  incrLevel();
-					  g_guardExpr="! ";
+  					  incrLevel(yyscanner);
+					  yyextra->g_guardExpr="! ";
   					  BEGIN(DefinedExpr1);
   					}
 <Command>"if"/[ \t(!]			{
-  					  incrLevel();
-					  g_guardExpr.resize(0);
+  					  incrLevel(yyscanner);
+					  yyextra->g_guardExpr.resize(0);
 					  BEGIN(Guard);
 					}
 <Command>("elif"|"else"{B}*"if")/[ \t(!]	{
-  					  if (!otherCaseDone())
+  					  if (!otherCaseDone(yyscanner))
 					  {
-					    g_guardExpr.resize(0);
+					    yyextra->g_guardExpr.resize(0);
 					    BEGIN(Guard);  
 					  }
 					  else
 					  {
-					    g_ifcount=0;
+					    yyextra->g_ifcount=0;
 					    BEGIN(SkipCPPBlock);
 					  }
   					}
 <Command>"else"/[^a-z_A-Z0-9\x80-\xFF]		{
-					  //printf("else g_levelGuard[%d]=%d\n",g_level-1,g_levelGuard[g_level-1]);
-  					  if (otherCaseDone())
+					  //printf("else yyextra->g_levelGuard[%d]=%d\n",yyextra->g_level-1,yyextra->g_levelGuard[yyextra->g_level-1]);
+  					  if (otherCaseDone(yyscanner))
 					  {
-					    g_ifcount=0;
+					    yyextra->g_ifcount=0;
 					    BEGIN(SkipCPPBlock);
 					  }
 					  else
 					  {
-					    setCaseDone(TRUE);
-					    //g_levelGuard[g_level-1]=TRUE;
+					    setCaseDone(TRUE, yyscanner);
+					    //yyextra->g_levelGuard[yyextra->g_level-1]=TRUE;
 					  } 
   					}
 <Command>"undef"{B}+			{
   					  BEGIN(UndefName);
   					}
 <Command>("elif"|"else"{B}*"if")/[ \t(!]	{
-  					  if (!otherCaseDone())
+  					  if (!otherCaseDone(yyscanner))
 					  {
-					    g_guardExpr.resize(0);
+					    yyextra->g_guardExpr.resize(0);
   					    BEGIN(Guard);
 					  }
   					}
 <Command>"endif"/[^a-z_A-Z0-9\x80-\xFF]		{
   					  //printf("Pre.l: #endif\n");
-  					  decrLevel();
+  					  decrLevel(yyscanner);
   					}
 <Command,IgnoreLine>\n			{
-  					  outputChar('\n');
+  					  outputChar('\n', yyscanner);
   					  BEGIN(Start);
-					  g_yyLineNr++;
+					  yyextra->g_yyLineNr++;
   					}
 <Command>"pragma"{B}+"once"             {
-                                          g_expectGuard = FALSE;
+                                          yyextra->g_expectGuard = FALSE;
                                         }
 <Command>{ID}				{ // unknown directive
 					  BEGIN(IgnoreLine);
 					}
 <IgnoreLine>\\[\r]?\n			{
-  					  outputChar('\n');
-					  g_yyLineNr++;
+  					  outputChar('\n', yyscanner);
+					  yyextra->g_yyLineNr++;
 					}
 <IgnoreLine>.
-<Command>. {g_yyColNr+=yyleng;}
+<Command>. {yyextra->g_yyColNr+=yyleng;}
 <UndefName>{ID}				{
   					  Define *def;
   					  if ((def=DefineManager::instance().isDefined(yytext)) 
@@ -856,9 +863,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN(Start);
   					}
 <Guard>\\[\r]?\n			{
-  					  outputChar('\n');
-  					  g_guardExpr+=' ';
-					  g_yyLineNr++;
+  					  outputChar('\n', yyscanner);
+  					  yyextra->g_guardExpr+=' ';
+					  yyextra->g_yyLineNr++;
   					}
 <Guard>"defined"/{B}*"("		{
     					  BEGIN(DefinedExpr2);
@@ -866,44 +873,44 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Guard>"defined"/{B}+			{
     					  BEGIN(DefinedExpr1);
     					}
-<Guard>{ID}				{ g_guardExpr+=yytext; }
-<Guard>.				{ g_guardExpr+=*yytext; }
+<Guard>{ID}				{ yyextra->g_guardExpr+=yytext; }
+<Guard>.				{ yyextra->g_guardExpr+=*yytext; }
 <Guard>\n				{
   					  unput(*yytext);
   					  //printf("Guard: `%s'\n",
-					  //    g_guardExpr.data());
-					  bool guard=computeExpression(g_guardExpr);
-					  setCaseDone(guard);
-					  //printf("if g_levelGuard[%d]=%d\n",g_level-1,g_levelGuard[g_level-1]);
+					  //    yyextra->g_guardExpr.data());
+					  bool guard=computeExpression(yyextra->g_guardExpr, yyscanner);
+					  setCaseDone(guard, yyscanner);
+					  //printf("if yyextra->g_levelGuard[%d]=%d\n",yyextra->g_level-1,yyextra->g_levelGuard[yyextra->g_level-1]);
 					  if (guard)
 					  {
 					    BEGIN(Start);
 					  } 
 					  else
 					  {
-					    g_ifcount=0;
+					    yyextra->g_ifcount=0;
 					    BEGIN(SkipCPPBlock);
 					  }
   					}
-<DefinedExpr1,DefinedExpr2>\\\n		{ g_yyLineNr++; outputChar('\n'); }
+<DefinedExpr1,DefinedExpr2>\\\n		{ yyextra->g_yyLineNr++; outputChar('\n', yyscanner); }
 <DefinedExpr1>{ID}			{
-  					  if (DefineManager::instance().isDefined(yytext) || g_guardName==yytext)
-					    g_guardExpr+=" 1L ";
+  					  if (DefineManager::instance().isDefined(yytext) || yyextra->g_guardName==yytext)
+					    yyextra->g_guardExpr+=" 1L ";
 					  else
-					    g_guardExpr+=" 0L ";
-					  g_lastGuardName=yytext;
+					    yyextra->g_guardExpr+=" 0L ";
+					  yyextra->g_lastGuardName=yytext;
 					  BEGIN(Guard);
   					}
 <DefinedExpr2>{ID}			{
-  					  if (DefineManager::instance().isDefined(yytext) || g_guardName==yytext)
-					    g_guardExpr+=" 1L ";
+  					  if (DefineManager::instance().isDefined(yytext) || yyextra->g_guardName==yytext)
+					    yyextra->g_guardExpr+=" 1L ";
 					  else
-					    g_guardExpr+=" 0L ";
-					  g_lastGuardName=yytext;
+					    yyextra->g_guardExpr+=" 0L ";
+					  yyextra->g_lastGuardName=yytext;
   					}
 <DefinedExpr1,DefinedExpr2>\n		{ // should not happen, handle anyway
-                                          g_yyLineNr++;
-  					  g_ifcount=0;
+                                          yyextra->g_yyLineNr++;
+  					  yyextra->g_ifcount=0;
  					  BEGIN(SkipCPPBlock); 
 					}
 <DefinedExpr2>")"			{
@@ -912,29 +919,29 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefinedExpr1,DefinedExpr2>.
 <SkipCPPBlock>^{B}*"#"			{ BEGIN(SkipCommand); }
 <SkipCPPBlock>^{B}*/[^#]		{ BEGIN(SkipLine); }
-<SkipCPPBlock>\n			{ g_yyLineNr++; outputChar('\n'); }
+<SkipCPPBlock>\n			{ yyextra->g_yyLineNr++; outputChar('\n', yyscanner); }
 <SkipCPPBlock>.
 <SkipCommand>"if"(("n")?("def"))?/[ \t(!]	{ 
-  					  incrLevel();
-                                          g_ifcount++; 
-  					  //printf("#if... depth=%d\n",g_ifcount);
+  					  incrLevel(yyscanner);
+                                          yyextra->g_ifcount++; 
+  					  //printf("#if... depth=%d\n",yyextra->g_ifcount);
 					}
 <SkipCommand>"else"			{
-					  //printf("Else! g_ifcount=%d otherCaseDone=%d\n",g_ifcount,otherCaseDone());
-  					  if (g_ifcount==0 && !otherCaseDone())
+					  //printf("Else! yyextra->g_ifcount=%d otherCaseDone=%d\n",yyextra->g_ifcount,otherCaseDone());
+  					  if (yyextra->g_ifcount==0 && !otherCaseDone(yyscanner))
 					  {
-					    setCaseDone(TRUE);
-  					    //outputChar('\n');
+					    setCaseDone(TRUE, yyscanner);
+  					    //outputChar('\n', yyscanner);
 					    BEGIN(Start);
 					  }
   					}
 <SkipCommand>("elif"|"else"{B}*"if")/[ \t(!]		{
-  					  if (g_ifcount==0) 
+  					  if (yyextra->g_ifcount==0) 
 					  {
-  					    if (!otherCaseDone())
+  					    if (!otherCaseDone(yyscanner))
 					    {
-					      g_guardExpr.resize(0);
-					      g_lastGuardName.resize(0);
+					      yyextra->g_guardExpr.resize(0);
+					      yyextra->g_lastGuardName.resize(0);
   					      BEGIN(Guard);
 					    }
 					    else
@@ -944,17 +951,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					}
 <SkipCommand>"endif"			{ 
-					  g_expectGuard = FALSE;
-  					  decrLevel();
-  				          if (--g_ifcount<0)
+					  yyextra->g_expectGuard = FALSE;
+  					  decrLevel(yyscanner);
+  				          if (--yyextra->g_ifcount<0)
   					  {
-  					    //outputChar('\n');
+  					    //outputChar('\n', yyscanner);
 					    BEGIN(Start);
 					  }
 					}
 <SkipCommand>\n				{ 
-  					  outputChar('\n');
-  					  g_yyLineNr++; 
+  					  outputChar('\n', yyscanner);
+  					  yyextra->g_yyLineNr++; 
 					  BEGIN(SkipCPPBlock);
 					}
 <SkipCommand>{ID}			{ // unknown directive 
@@ -970,18 +977,18 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipString>"//"/[^\n]*                 { 
                                         }
 <SkipLine,SkipCommand,SkipCPPBlock>"//"[^\n]* {
-  					  g_lastCPPContext=YY_START;
+  					  yyextra->g_lastCPPContext=YY_START;
   					  BEGIN(RemoveCPPComment);
 					}
 <SkipString>"/*"/[^\n]*                 { 
                                         }
 <SkipLine,SkipCommand,SkipCPPBlock>"/*"/[^\n]* {
-					  g_lastCContext=YY_START;
+					  yyextra->g_lastCContext=YY_START;
   					  BEGIN(RemoveCComment);
   					}
 <SkipLine>\n				{
-  					  outputChar('\n');
-					  g_yyLineNr++;  
+  					  outputChar('\n', yyscanner);
+					  yyextra->g_yyLineNr++;  
 					  BEGIN(SkipCPPBlock);
 					}
 <SkipString>[^"\\\n]+			{ }
@@ -991,21 +998,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <SkipString>.				{ }
 <IncludeID>{ID}{B}*/"("			{
-  					  g_nospaces=TRUE;
-				          g_roundCount=0;
-					  g_defArgsStr=yytext;
-					  g_findDefArgContext = IncludeID;
+  					  yyextra->g_nospaces=TRUE;
+				          yyextra->g_roundCount=0;
+					  yyextra->g_defArgsStr=yytext;
+					  yyextra->g_findDefArgContext = IncludeID;
 					  BEGIN(FindDefineArgs);
 					}
 <IncludeID>{ID}				{
-  					  g_nospaces=TRUE;
-                                          readIncludeFile(expandMacro(yytext));
+  					  yyextra->g_nospaces=TRUE;
+                                          readIncludeFile(expandMacro(yytext, yyscanner), yyscanner);
 					  BEGIN(Start);
   					}
 <Include>[^\">\n]+[\">]			{ 
-					  g_incName+=yytext;
-					  readIncludeFile(g_incName);
-					  if (g_isImported)
+					  yyextra->g_incName+=yytext;
+					  readIncludeFile(yyextra->g_incName, yyscanner);
+					  if (yyextra->g_isImported)
 					  {
 					    BEGIN(EndImport);
 					  }
@@ -1018,179 +1025,179 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN(Start);
   					}
 <EndImport>\\[\r]?"\n"			{ 
-					  outputChar('\n');
-					  g_yyLineNr++;
+					  outputChar('\n', yyscanner);
+					  yyextra->g_yyLineNr++;
 					}
 <EndImport>.				{
   					}
 <DefName>{ID}/("\\\n")*"("		{ // define with argument
   					  //printf("Define() `%s'\n",yytext);
-					  delete g_argDict;
-					  g_argDict = new QDict<int>(31);
-					  g_argDict->setAutoDelete(TRUE);
-					  g_defArgs = 0; 
-                                          g_defArgsStr.resize(0);
-					  g_defText.resize(0);
-					  g_defLitText.resize(0);
-					  g_defName = yytext;
-					  g_defVarArgs = FALSE;
-					  g_defExtraSpacing.resize(0);
+					  delete yyextra->g_argDict;
+					  yyextra->g_argDict = new QDict<int>(31);
+					  yyextra->g_argDict->setAutoDelete(TRUE);
+					  yyextra->g_defArgs = 0; 
+                                          yyextra->g_defArgsStr.resize(0);
+					  yyextra->g_defText.resize(0);
+					  yyextra->g_defLitText.resize(0);
+					  yyextra->g_defName = yytext;
+					  yyextra->g_defVarArgs = FALSE;
+					  yyextra->g_defExtraSpacing.resize(0);
 					  BEGIN(DefineArg);
   					}
 <DefName>{ID}{B}+"1"/[ \r\t\n]		{ // special case: define with 1 -> can be "guard"
   					  //printf("Define `%s'\n",yytext);
-					  delete g_argDict; g_argDict=0;
-					  g_defArgs = -1;
-                                          g_defArgsStr.resize(0);
-					  g_defName = yytext;
-					  g_defName = g_defName.left(g_defName.length()-1).stripWhiteSpace();
-					  g_defVarArgs = FALSE;
+					  delete yyextra->g_argDict; yyextra->g_argDict=0;
+					  yyextra->g_defArgs = -1;
+                                          yyextra->g_defArgsStr.resize(0);
+					  yyextra->g_defName = yytext;
+					  yyextra->g_defName = yyextra->g_defName.left(yyextra->g_defName.length()-1).stripWhiteSpace();
+					  yyextra->g_defVarArgs = FALSE;
 					  //printf("Guard check: %s!=%s || %d\n",
-					  //    g_defName.data(),g_lastGuardName.data(),g_expectGuard);
-					  if (g_curlyCount>0 || g_defName!=g_lastGuardName || !g_expectGuard)
+					  //    yyextra->g_defName.data(),yyextra->g_lastGuardName.data(),yyextra->g_expectGuard);
+					  if (yyextra->g_curlyCount>0 || yyextra->g_defName!=yyextra->g_lastGuardName || !yyextra->g_expectGuard)
 					  { // define may appear in the output
-					    QCString tmp=(QCString)"#define "+g_defName;
-					    outputArray(tmp.data(),tmp.length());
-					    g_quoteArg=FALSE;
-					    g_insideComment=FALSE;
-					    g_lastGuardName.resize(0);
-				            g_defText="1"; 
-					    g_defLitText="1"; 
+					    QCString tmp=(QCString)"#define "+yyextra->g_defName;
+					    outputArray(tmp.data(),tmp.length(), yyscanner);
+					    yyextra->g_quoteArg=FALSE;
+					    yyextra->g_insideComment=FALSE;
+					    yyextra->g_lastGuardName.resize(0);
+				            yyextra->g_defText="1"; 
+					    yyextra->g_defLitText="1"; 
 					    BEGIN(DefineText); 
 					  }
 					  else // define is a guard => hide
 					  {
 					    //printf("Found a guard %s\n",yytext);
-					    g_defText.resize(0);
-					    g_defLitText.resize(0);
+					    yyextra->g_defText.resize(0);
+					    yyextra->g_defLitText.resize(0);
 					    BEGIN(Start);
 					  }
-					  g_expectGuard=FALSE;
+					  yyextra->g_expectGuard=FALSE;
   					}
 <DefName>{ID}/{B}*"\n"			{ // empty define
-					  delete g_argDict; g_argDict=0;
-					  g_defArgs = -1;
-					  g_defName = yytext;
-                                          g_defArgsStr.resize(0);
-					  g_defText.resize(0);
-					  g_defLitText.resize(0);
-					  g_defVarArgs = FALSE;
+					  delete yyextra->g_argDict; yyextra->g_argDict=0;
+					  yyextra->g_defArgs = -1;
+					  yyextra->g_defName = yytext;
+                                          yyextra->g_defArgsStr.resize(0);
+					  yyextra->g_defText.resize(0);
+					  yyextra->g_defLitText.resize(0);
+					  yyextra->g_defVarArgs = FALSE;
 					  //printf("Guard check: %s!=%s || %d\n",
-					  //    g_defName.data(),g_lastGuardName.data(),g_expectGuard);
-					  if (g_curlyCount>0 || g_defName!=g_lastGuardName || !g_expectGuard)
+					  //    yyextra->g_defName.data(),yyextra->g_lastGuardName.data(),yyextra->g_expectGuard);
+					  if (yyextra->g_curlyCount>0 || yyextra->g_defName!=yyextra->g_lastGuardName || !yyextra->g_expectGuard)
 					  { // define may appear in the output
-					    QCString tmp=(QCString)"#define "+g_defName;
-					    outputArray(tmp.data(),tmp.length());
-					    g_quoteArg=FALSE;
-					    g_insideComment=FALSE;
-					    if (g_insideCS) g_defText="1"; // for C#, use "1" as define text
+					    QCString tmp=(QCString)"#define "+yyextra->g_defName;
+					    outputArray(tmp.data(),tmp.length(), yyscanner);
+					    yyextra->g_quoteArg=FALSE;
+					    yyextra->g_insideComment=FALSE;
+					    if (yyextra->g_insideCS) yyextra->g_defText="1"; // for C#, use "1" as define text
 					    BEGIN(DefineText);
 					  }
 					  else // define is a guard => hide
 					  {
 					    //printf("Found a guard %s\n",yytext);
-					    g_guardName = yytext;
-					    g_lastGuardName.resize(0);
+					    yyextra->g_guardName = yytext;
+					    yyextra->g_lastGuardName.resize(0);
 					    BEGIN(Start);
 					  }
-					  g_expectGuard=FALSE;
+					  yyextra->g_expectGuard=FALSE;
   					}
 <DefName>{ID}/{B}*			{ // define with content
   					  //printf("Define `%s'\n",yytext);
-					  delete g_argDict; g_argDict=0;
-					  g_defArgs = -1;
-                                          g_defArgsStr.resize(0);
-					  g_defText.resize(0);
-					  g_defLitText.resize(0);
-					  g_defName = yytext;
-					  g_defVarArgs = FALSE;
-					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
-					  outputArray(tmp.data(),tmp.length());
-					  g_quoteArg=FALSE;
-					  g_insideComment=FALSE;
+					  delete yyextra->g_argDict; yyextra->g_argDict=0;
+					  yyextra->g_defArgs = -1;
+                                          yyextra->g_defArgsStr.resize(0);
+					  yyextra->g_defText.resize(0);
+					  yyextra->g_defLitText.resize(0);
+					  yyextra->g_defName = yytext;
+					  yyextra->g_defVarArgs = FALSE;
+					  QCString tmp=(QCString)"#define "+yyextra->g_defName+yyextra->g_defArgsStr;
+					  outputArray(tmp.data(),tmp.length(), yyscanner);
+					  yyextra->g_quoteArg=FALSE;
+					  yyextra->g_insideComment=FALSE;
 					  BEGIN(DefineText); 
   					}
 <DefineArg>"\\\n"                       {
-  					  g_defExtraSpacing+="\n";
-					  g_yyLineNr++;
+  					  yyextra->g_defExtraSpacing+="\n";
+					  yyextra->g_yyLineNr++;
                                         }
-<DefineArg>","{B}*			{ g_defArgsStr+=yytext; }
-<DefineArg>"("{B}*                      { g_defArgsStr+=yytext; }
+<DefineArg>","{B}*			{ yyextra->g_defArgsStr+=yytext; }
+<DefineArg>"("{B}*                      { yyextra->g_defArgsStr+=yytext; }
 <DefineArg>{B}*")"{B}*			{
-                                          g_defArgsStr+=yytext; 
-					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr+g_defExtraSpacing;
-					  outputArray(tmp.data(),tmp.length());
-					  g_quoteArg=FALSE;
-					  g_insideComment=FALSE;
+                                          yyextra->g_defArgsStr+=yytext; 
+					  QCString tmp=(QCString)"#define "+yyextra->g_defName+yyextra->g_defArgsStr+yyextra->g_defExtraSpacing;
+					  outputArray(tmp.data(),tmp.length(), yyscanner);
+					  yyextra->g_quoteArg=FALSE;
+					  yyextra->g_insideComment=FALSE;
   					  BEGIN(DefineText);
   					}
 <DefineArg>"..."			{ // Variadic macro
-					  g_defVarArgs = TRUE;
-					  g_defArgsStr+=yytext;
-					  g_argDict->insert("__VA_ARGS__",new int(g_defArgs));
-					  g_defArgs++;
+					  yyextra->g_defVarArgs = TRUE;
+					  yyextra->g_defArgsStr+=yytext;
+					  yyextra->g_argDict->insert("__VA_ARGS__",new int(yyextra->g_defArgs));
+					  yyextra->g_defArgs++;
   					}
 <DefineArg>{ID}{B}*("..."?)		{
   					  //printf("Define addArg(%s)\n",yytext);
   					  QCString argName=yytext;
-  					  g_defVarArgs = yytext[yyleng-1]=='.';
-					  if (g_defVarArgs) // strip ellipsis
+  					  yyextra->g_defVarArgs = yytext[yyleng-1]=='.';
+					  if (yyextra->g_defVarArgs) // strip ellipsis
 					  {
 					    argName=argName.left(argName.length()-3);
 					  }
 					  argName = argName.stripWhiteSpace();
-                                          g_defArgsStr+=yytext;
-					  g_argDict->insert(argName,new int(g_defArgs)); 
-					  g_defArgs++;
+                                          yyextra->g_defArgsStr+=yytext;
+					  yyextra->g_argDict->insert(argName,new int(yyextra->g_defArgs)); 
+					  yyextra->g_defArgs++;
   					}
   /*
 <DefineText>"/ **"|"/ *!"			{
-  					  g_defText+=yytext;
-					  g_defLitText+=yytext;
-					  g_insideComment=TRUE;
+  					  yyextra->g_defText+=yytext;
+					  yyextra->g_defLitText+=yytext;
+					  yyextra->g_insideComment=TRUE;
   					}
 <DefineText>"* /"			{
-  					  g_defText+=yytext;
-					  g_defLitText+=yytext;
-					  g_insideComment=FALSE;
+  					  yyextra->g_defText+=yytext;
+					  yyextra->g_defLitText+=yytext;
+					  yyextra->g_insideComment=FALSE;
   					}
   */
 <DefineText>"/*"[!*]?			{
-					  g_defText+=yytext;
-					  g_defLitText+=yytext;
-					  g_lastCContext=YY_START;
-					  g_commentCount=1;
+					  yyextra->g_defText+=yytext;
+					  yyextra->g_defLitText+=yytext;
+					  yyextra->g_lastCContext=YY_START;
+					  yyextra->g_commentCount=1;
   					  BEGIN(CopyCComment);
   					}
 <DefineText>"//"[!/]?			{
-  					  outputArray(yytext,(int)yyleng);
-  					  g_lastCPPContext=YY_START;
-					  g_defLitText+=' ';
+  					  outputArray(yytext,(int)yyleng, yyscanner);
+  					  yyextra->g_lastCPPContext=YY_START;
+					  yyextra->g_defLitText+=' ';
   					  BEGIN(SkipCPPComment);
   					}
 <SkipCComment>[/]?"*/"			{
-  					  if (yytext[0]=='/') outputChar('/');
-  					  outputChar('*');outputChar('/');
-					  if (--g_commentCount<=0)
+  					  if (yytext[0]=='/') outputChar('/', yyscanner);
+  					  outputChar('*', yyscanner);outputChar('/', yyscanner);
+					  if (--yyextra->g_commentCount<=0)
 					  {
-					    if (g_lastCContext==Start) 
+					    if (yyextra->g_lastCContext==Start) 
 					      // small hack to make sure that ^... rule will
 					      // match when going to Start... Example: "/*...*/ some stuff..."
 					    {
 					      YY_CURRENT_BUFFER->yy_at_bol=1;
 					    }
-  					    BEGIN(g_lastCContext);  
+  					    BEGIN(yyextra->g_lastCContext);  
 					  }
   					}
 <SkipCComment>"//"("/")*		{
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
   					}
 <SkipCComment>"/*"			{
-  					  outputChar('/');outputChar('*');
-					  //g_commentCount++;
+  					  outputChar('/', yyscanner);outputChar('*', yyscanner);
+					  //yyextra->g_commentCount++;
   					}
 <SkipCComment>[\\@][\\@]("f{"|"f$"|"f[") {
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
   					}
 <SkipCComment>^({B}*"*"+)?{B}{0,3}"~~~"[~]*   {
                                           static bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
@@ -1200,8 +1207,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           }
                                           else
                                           {
-  					    outputArray(yytext,(int)yyleng);
-                                            g_fenceSize=yyleng;
+  					    outputArray(yytext,(int)yyleng, yyscanner);
+                                            yyextra->g_fenceSize=yyleng;
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
@@ -1213,196 +1220,196 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           }
                                           else
                                           {
-  					    outputArray(yytext,(int)yyleng);
-                                            g_fenceSize=yyleng;
+  					    outputArray(yytext,(int)yyleng, yyscanner);
+                                            yyextra->g_fenceSize=yyleng;
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
 <SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
-  					  outputArray(yytext,(int)yyleng);
-  					  g_yyLineNr+=QCString(yytext).contains('\n');
+  					  outputArray(yytext,(int)yyleng, yyscanner);
+  					  yyextra->g_yyLineNr+=QCString(yytext).contains('\n');
   					}
 <SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+	{
-  					  outputArray(yytext,(int)yyleng);
-  					  g_yyLineNr+=QCString(yytext).contains('\n');
-                                          g_fenceSize=0;
+  					  outputArray(yytext,(int)yyleng, yyscanner);
+  					  yyextra->g_yyLineNr+=QCString(yytext).contains('\n');
+                                          yyextra->g_fenceSize=0;
 					  if (yytext[1]=='f')
 					  {
-					    g_blockName="f";
+					    yyextra->g_blockName="f";
 					  }
 					  else
 					  {
                                             QCString bn=&yytext[1];
                                             int i = bn.find('{'); // for \code{.c}
                                             if (i!=-1) bn=bn.left(i);
-					    g_blockName=bn.stripWhiteSpace();
+					    yyextra->g_blockName=bn.stripWhiteSpace();
 					  }
 					  BEGIN(SkipVerbatim);
   					}
 <SkipCComment,SkipCPPComment>[\\@][\\@]"cond"[ \t]+ { // escaped @cond
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
                                         }
 <SkipCPPComment>[\\@]"cond"[ \t]+	{ // conditional section
-                                          g_ccomment=TRUE;  
-                                          g_condCtx=YY_START;
+                                          yyextra->g_ccomment=TRUE;  
+                                          yyextra->g_condCtx=YY_START;
   					  BEGIN(CondLineCpp);
   					}
 <SkipCComment>[\\@]"cond"[ \t]+	{ // conditional section
-                                          g_ccomment=FALSE;  
-                                          g_condCtx=YY_START;
+                                          yyextra->g_ccomment=FALSE;  
+                                          yyextra->g_condCtx=YY_START;
   					  BEGIN(CondLineC);
   					}
 <CondLineC,CondLineCpp>[!()&| \ta-z_A-Z0-9\x80-\xFF.\-]+      {
-  				          startCondSection(yytext);
-                                          if (g_skip)
+  				          startCondSection(yytext, yyscanner);
+                                          if (yyextra->g_skip)
                                           {
                                             if (YY_START==CondLineC)
                                             {
                                               // end C comment
-  					      outputArray("*/",2);
-                                              g_ccomment=TRUE;
+  					      outputArray("*/",2, yyscanner);
+                                              yyextra->g_ccomment=TRUE;
                                             }
                                             else
                                             {
-                                              g_ccomment=FALSE;
+                                              yyextra->g_ccomment=FALSE;
                                             }
                                             BEGIN(SkipCond);
                                           }
                                           else
                                           {
-  					    BEGIN(g_condCtx);
+  					    BEGIN(yyextra->g_condCtx);
                                           }
   					}
 <CondLineC,CondLineCpp>.		{ // non-guard character
   					  unput(*yytext);
-  					  startCondSection(" ");
-                                          if (g_skip)
+  					  startCondSection(" ", yyscanner);
+                                          if (yyextra->g_skip)
                                           {
                                             if (YY_START==CondLineC)
                                             {
                                               // end C comment
-  					      outputArray("*/",2);
-                                              g_ccomment=TRUE;
+  					      outputArray("*/",2, yyscanner);
+                                              yyextra->g_ccomment=TRUE;
                                             }
                                             else
                                             {
-                                              g_ccomment=FALSE;
+                                              yyextra->g_ccomment=FALSE;
                                             }
                                             BEGIN(SkipCond);
                                           }
                                           else
                                           {
-					    BEGIN(g_condCtx);
+					    BEGIN(yyextra->g_condCtx);
                                           }
   					}
 <SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*/\n { // no guard
                                           if (YY_START==SkipCComment)
                                           {
-                                            g_ccomment=TRUE;
+                                            yyextra->g_ccomment=TRUE;
                                             // end C comment
-  					    outputArray("*/",2);
+  					    outputArray("*/",2, yyscanner);
                                           }
                                           else
                                           {
-                                            g_ccomment=FALSE;
+                                            yyextra->g_ccomment=FALSE;
                                           }
-                                          g_condCtx=YY_START;
-                                          startCondSection(" ");
+                                          yyextra->g_condCtx=YY_START;
+                                          startCondSection(" ", yyscanner);
                                           BEGIN(SkipCond);
   					}
-<SkipCond>\n                            { g_yyLineNr++; outputChar('\n'); }
+<SkipCond>\n                            { yyextra->g_yyLineNr++; outputChar('\n', yyscanner); }
 <SkipCond>.                             { }
 <SkipCond>[^\/\!*\\@\n]+                { }
-<SkipCond>"//"[/!]                      { g_ccomment=FALSE; }
-<SkipCond>"/*"[*!]                      { g_ccomment=TRUE; }
+<SkipCond>"//"[/!]                      { yyextra->g_ccomment=FALSE; }
+<SkipCond>"/*"[*!]                      { yyextra->g_ccomment=TRUE; }
 <SkipCond,SkipCComment,SkipCPPComment>[\\@][\\@]"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
-                                          if (!g_skip)
+                                          if (!yyextra->g_skip)
                                           {
-  					    outputArray(yytext,(int)yyleng);
+  					    outputArray(yytext,(int)yyleng, yyscanner);
                                           }
                                         }
 <SkipCond>[\\@]"endcond"/[^a-z_A-Z0-9\x80-\xFF]  { 
-                                          bool oldSkip = g_skip;
-                                          endCondSection(); 
-                                          if (oldSkip && !g_skip)
+                                          bool oldSkip = yyextra->g_skip;
+                                          endCondSection(yyscanner); 
+                                          if (oldSkip && !yyextra->g_skip)
                                           {
-                                            if (g_ccomment)
+                                            if (yyextra->g_ccomment)
                                             {
-                                              outputArray("/** ",4);
+                                              outputArray("/** ",4, yyscanner);
                                             }
-                                            BEGIN(g_condCtx);
+                                            BEGIN(yyextra->g_condCtx);
                                           }
                                         }
 <SkipCComment,SkipCPPComment>[\\@]"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
-                                          bool oldSkip = g_skip;
-  					  endCondSection();
-                                          if (oldSkip && !g_skip) 
+                                          bool oldSkip = yyextra->g_skip;
+  					  endCondSection(yyscanner);
+                                          if (oldSkip && !yyextra->g_skip) 
                                           {
-                                            BEGIN(g_condCtx);
+                                            BEGIN(yyextra->g_condCtx);
                                           }
   					}
 <SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
-  					  outputArray(yytext,(int)yyleng);
-					  if (yytext[1]=='f' && g_blockName=="f")
+  					  outputArray(yytext,(int)yyleng, yyscanner);
+					  if (yytext[1]=='f' && yyextra->g_blockName=="f")
 					  {
 					    BEGIN(SkipCComment);
 					  }
-					  else if (&yytext[4]==g_blockName)
+					  else if (&yytext[4]==yyextra->g_blockName)
 					  {
 					    BEGIN(SkipCComment);
 					  }
   					}
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
-  					  outputArray(yytext,(int)yyleng);
-                                          if (g_fenceSize==yyleng)
+  					  outputArray(yytext,(int)yyleng, yyscanner);
+                                          if (yyextra->g_fenceSize==yyleng)
                                           {
                                             BEGIN(SkipCComment);
                                           }
                                         }
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
-  					  outputArray(yytext,(int)yyleng);
-                                          if (g_fenceSize==yyleng)
+  					  outputArray(yytext,(int)yyleng, yyscanner);
+                                          if (yyextra->g_fenceSize==yyleng)
                                           {
                                             BEGIN(SkipCComment);
                                           }
                                         }
 <SkipVerbatim>"*/"|"/*"			{
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
   					}
 <SkipCComment,SkipVerbatim>[^*\\@\x06~`\n\/]+ {
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
   					}
 <SkipCComment,SkipVerbatim>\n		{ 
-  					  g_yyLineNr++;
-  					  outputChar('\n');
+  					  yyextra->g_yyLineNr++;
+  					  outputChar('\n', yyscanner);
   					}
 <SkipCComment,SkipVerbatim>.		{
-  					  outputChar(*yytext);
+  					  outputChar(*yytext, yyscanner);
   					}
 <CopyCComment>[^*a-z_A-Z\x80-\xFF\n]*[^*a-z_A-Z\x80-\xFF\\\n] {
-					  g_defLitText+=yytext;
-					  g_defText+=escapeAt(yytext);
+					  yyextra->g_defLitText+=yytext;
+					  yyextra->g_defText+=escapeAt(yytext);
 					}
 <CopyCComment>\\[\r]?\n                 {
-                                          g_defLitText+=yytext;
-                                          outputChar('\n');
-                                          g_defText+=" ";
-                                          g_yyLineNr++;
-                                          g_yyMLines++;
+                                          yyextra->g_defLitText+=yytext;
+                                          outputChar('\n', yyscanner);
+                                          yyextra->g_defText+=" ";
+                                          yyextra->g_yyLineNr++;
+                                          yyextra->g_yyMLines++;
                                         }
 <CopyCComment>"*/"			{
-					  g_defLitText+=yytext;
-					  g_defText+=yytext;
-  					  BEGIN(g_lastCContext);
+					  yyextra->g_defLitText+=yytext;
+					  yyextra->g_defText+=yytext;
+  					  BEGIN(yyextra->g_lastCContext);
   					}
 <CopyCComment>\n			{ 
-  					  g_yyLineNr++;
-  					  outputChar('\n');
-					  g_defLitText+=yytext;
-					  g_defText+=' ';
+  					  yyextra->g_yyLineNr++;
+  					  outputChar('\n', yyscanner);
+					  yyextra->g_defLitText+=yytext;
+					  yyextra->g_defText+=' ';
   					}
 <RemoveCComment>"*/"{B}*"#"	        { // see bug 594021 for a usecase for this rule
-                                          if (g_lastCContext==SkipCPPBlock)
+                                          if (yyextra->g_lastCContext==SkipCPPBlock)
 					  {
 					    BEGIN(SkipCommand);
 					  }
@@ -1411,109 +1418,109 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    REJECT;
 					  }
 					}
-<RemoveCComment>"*/"		        { BEGIN(g_lastCContext); }
+<RemoveCComment>"*/"		        { BEGIN(yyextra->g_lastCContext); }
 <RemoveCComment>"//"			
 <RemoveCComment>"/*"
 <RemoveCComment>[^*\x06\n]+
-<RemoveCComment>\n			{ g_yyLineNr++; outputChar('\n'); }
+<RemoveCComment>\n			{ yyextra->g_yyLineNr++; outputChar('\n', yyscanner); }
 <RemoveCComment>.			
 <SkipCPPComment>[^\n\/\\@]+		{
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
   					}
 <SkipCPPComment,RemoveCPPComment>\n	{
   					  unput(*yytext);
-  					  BEGIN(g_lastCPPContext);
+  					  BEGIN(yyextra->g_lastCPPContext);
   					}
 <SkipCPPComment>"/*"			{
-  					  outputChar('/');outputChar('*');
+  					  outputChar('/', yyscanner);outputChar('*', yyscanner);
   					}
 <SkipCPPComment>"//"			{
-  					  outputChar('/');outputChar('/');
+  					  outputChar('/', yyscanner);outputChar('/', yyscanner);
   					}
 <SkipCPPComment>[^\x06\@\\\n]+		{
-  					  outputArray(yytext,(int)yyleng);
+  					  outputArray(yytext,(int)yyleng, yyscanner);
   					}
 <SkipCPPComment>.			{
-  					  outputChar(*yytext);
+  					  outputChar(*yytext, yyscanner);
   					}
 <RemoveCPPComment>"/*"
 <RemoveCPPComment>"//"
 <RemoveCPPComment>[^\x06\n]+
 <RemoveCPPComment>.
 <DefineText>"#"				{
-  					  g_quoteArg=TRUE;
-					  g_defLitText+=yytext;
+  					  yyextra->g_quoteArg=TRUE;
+					  yyextra->g_defLitText+=yytext;
   					}
 <DefineText,CopyCComment>{ID}		{
-					  g_defLitText+=yytext;
-  					  if (g_quoteArg)
+					  yyextra->g_defLitText+=yytext;
+  					  if (yyextra->g_quoteArg)
 					  {
-					    g_defText+="\"";
+					    yyextra->g_defText+="\"";
 					  }
-					  if (g_defArgs>0)
+					  if (yyextra->g_defArgs>0)
 					  {
 					    int *n;
-					    if ((n=(*g_argDict)[yytext]))
+					    if ((n=(*yyextra->g_argDict)[yytext]))
 					    {
-					      //if (!g_quoteArg) g_defText+=' ';
-					      g_defText+='@';
+					      //if (!yyextra->g_quoteArg) yyextra->g_defText+=' ';
+					      yyextra->g_defText+='@';
 					      QCString numStr;
 					      numStr.sprintf("%d",*n);
-					      g_defText+=numStr;
-					      //if (!g_quoteArg) g_defText+=' ';
+					      yyextra->g_defText+=numStr;
+					      //if (!yyextra->g_quoteArg) yyextra->g_defText+=' ';
 					    }
 					    else
 					    {
-					      g_defText+=yytext;
+					      yyextra->g_defText+=yytext;
 					    }
 					  }
 					  else
 					  {
-					    g_defText+=yytext;
+					    yyextra->g_defText+=yytext;
 					  }
-					  if (g_quoteArg)
+					  if (yyextra->g_quoteArg)
 					  {
-					    g_defText+="\"";
+					    yyextra->g_defText+="\"";
 					  }
-					  g_quoteArg=FALSE;
+					  yyextra->g_quoteArg=FALSE;
   					}
 <CopyCComment>.				{
-					  g_defLitText+=yytext;
-					  g_defText+=yytext;
+					  yyextra->g_defLitText+=yytext;
+					  yyextra->g_defText+=yytext;
   					}
 <DefineText>\\[\r]?\n			{
-					  g_defLitText+=yytext;
-					  outputChar('\n');
-					  g_defText += ' ';
-					  g_yyLineNr++;
-					  g_yyMLines++;
+					  yyextra->g_defLitText+=yytext;
+					  outputChar('\n', yyscanner);
+					  yyextra->g_defText += ' ';
+					  yyextra->g_yyLineNr++;
+					  yyextra->g_yyMLines++;
 					}
 <DefineText>\n				{
-					  QCString comment=extractTrailingComment(g_defLitText);
-					  g_defLitText+=yytext;
+					  QCString comment=extractTrailingComment(yyextra->g_defLitText);
+					  yyextra->g_defLitText+=yytext;
 					  if (!comment.isEmpty())
 					  {
-					    outputArray(comment,comment.length());
-					    g_defLitText=g_defLitText.left(g_defLitText.length()-comment.length()-1);
+					    outputArray(comment,comment.length(), yyscanner);
+					    yyextra->g_defLitText=yyextra->g_defLitText.left(yyextra->g_defLitText.length()-comment.length()-1);
 					  }
-  					  outputChar('\n');
+  					  outputChar('\n', yyscanner);
   					  Define *def=0;
-					  //printf("Define name=`%s' text=`%s' litTexti=`%s'\n",g_defName.data(),g_defText.data(),g_defLitText.data());
-					  if (g_includeStack.isEmpty() || g_curlyCount>0) 
+					  //printf("Define name=`%s' text=`%s' litTexti=`%s'\n",yyextra->g_defName.data(),yyextra->g_defText.data(),yyextra->g_defLitText.data());
+					  if (yyextra->g_includeStack.isEmpty() || yyextra->g_curlyCount>0) 
 					  {
-					    addDefine();
+					    addDefine(yyscanner);
 					  }
-					  def=DefineManager::instance().isDefined(g_defName);
+					  def=DefineManager::instance().isDefined(yyextra->g_defName);
 					  if (def==0) // new define
 					  {
-					    //printf("new define '%s'!\n",g_defName.data());
-					    Define *nd = newDefine();
-					    DefineManager::instance().addDefine(g_yyFileName,nd);
+					    //printf("new define '%s'!\n",yyextra->g_defName.data());
+					    Define *nd = newDefine(yyscanner);
+					    DefineManager::instance().addDefine(yyextra->g_yyFileName,nd);
 
 					    // also add it to the local file list if it is a source file
-					    //if (g_isSource && g_includeStack.isEmpty())
+					    //if (yyextra->g_isSource && yyextra->g_includeStack.isEmpty())
 					    //{
-					    //  g_fileDefineDict->insert(g_defName,nd);
+					    //  yyextra->g_fileDefineDict->insert(yyextra->g_defName,nd);
 					    //}
 					  }
 					  else if (def /*&& macroIsAccessible(def)*/)
@@ -1524,85 +1531,85 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    if (def->undef) // undefined name
 					    {
 					      def->undef = FALSE;
-					      def->name = g_defName;
-					      def->definition = g_defText.stripWhiteSpace();
-					      def->nargs = g_defArgs;
-					      def->fileName = g_yyFileName.copy(); 
-					      def->lineNr = g_yyLineNr-g_yyMLines;
-					      def->columnNr = g_yyColNr;
+					      def->name = yyextra->g_defName;
+					      def->definition = yyextra->g_defText.stripWhiteSpace();
+					      def->nargs = yyextra->g_defArgs;
+					      def->fileName = yyextra->g_yyFileName.copy(); 
+					      def->lineNr = yyextra->g_yyLineNr-yyextra->g_yyMLines;
+					      def->columnNr = yyextra->g_yyColNr;
 					    }
 					    else
 					    {
-					      //printf("error: define %s is defined more than once!\n",g_defName.data());
+					      //printf("error: define %s is defined more than once!\n",yyextra->g_defName.data());
 					    }
 					  }
-					  delete g_argDict; g_argDict=0;
-					  g_yyLineNr++;
-					  g_yyColNr=1;
-					  g_lastGuardName.resize(0);
+					  delete yyextra->g_argDict; yyextra->g_argDict=0;
+					  yyextra->g_yyLineNr++;
+					  yyextra->g_yyColNr=1;
+					  yyextra->g_lastGuardName.resize(0);
 					  BEGIN(Start);
   					}
-<DefineText>{B}*			{ g_defText += ' '; g_defLitText+=yytext; }
-<DefineText>{B}*"##"{B}*		{ g_defText += "##"; g_defLitText+=yytext; }
-<DefineText>"@"				{ g_defText += "@@"; g_defLitText+=yytext; }
+<DefineText>{B}*			{ yyextra->g_defText += ' '; yyextra->g_defLitText+=yytext; }
+<DefineText>{B}*"##"{B}*		{ yyextra->g_defText += "##"; yyextra->g_defLitText+=yytext; }
+<DefineText>"@"				{ yyextra->g_defText += "@@"; yyextra->g_defLitText+=yytext; }
 <DefineText>\"				{ 
-                                          g_defText += *yytext; 
-  					  g_defLitText+=yytext; 
-					  if (!g_insideComment)
+                                          yyextra->g_defText += *yytext; 
+  					  yyextra->g_defLitText+=yytext; 
+					  if (!yyextra->g_insideComment)
 					  {
 					    BEGIN(SkipDoubleQuote);
 					  }
   					}
-<DefineText>\'				{ g_defText += *yytext;
-  					  g_defLitText+=yytext; 
-					  if (!g_insideComment)
+<DefineText>\'				{ yyextra->g_defText += *yytext;
+  					  yyextra->g_defLitText+=yytext; 
+					  if (!yyextra->g_insideComment)
 					  {
   					    BEGIN(SkipSingleQuote);
 					  }
 					}
-<SkipDoubleQuote>"//"[/]?		{ g_defText += yytext; g_defLitText+=yytext; }
-<SkipDoubleQuote>"/*"			{ g_defText += yytext; g_defLitText+=yytext; }
+<SkipDoubleQuote>"//"[/]?		{ yyextra->g_defText += yytext; yyextra->g_defLitText+=yytext; }
+<SkipDoubleQuote>"/*"			{ yyextra->g_defText += yytext; yyextra->g_defLitText+=yytext; }
 <SkipDoubleQuote>\"			{
-  					  g_defText += *yytext; g_defLitText+=yytext; 
+  					  yyextra->g_defText += *yytext; yyextra->g_defLitText+=yytext; 
 					  BEGIN(DefineText);
   					}
 <SkipSingleQuote,SkipDoubleQuote>\\.	{
-  					  g_defText += yytext; g_defLitText+=yytext;
+  					  yyextra->g_defText += yytext; yyextra->g_defLitText+=yytext;
 					}
 <SkipSingleQuote>\'			{
-  					  g_defText += *yytext; g_defLitText+=yytext;
+  					  yyextra->g_defText += *yytext; yyextra->g_defLitText+=yytext;
 					  BEGIN(DefineText);
   					}
-<SkipDoubleQuote>.			{ g_defText += *yytext; g_defLitText+=yytext; }
-<SkipSingleQuote>.			{ g_defText += *yytext; g_defLitText+=yytext; }
-<DefineText>.				{ g_defText += *yytext; g_defLitText+=yytext; }
+<SkipDoubleQuote>.			{ yyextra->g_defText += *yytext; yyextra->g_defLitText+=yytext; }
+<SkipSingleQuote>.			{ yyextra->g_defText += *yytext; yyextra->g_defLitText+=yytext; }
+<DefineText>.				{ yyextra->g_defText += *yytext; yyextra->g_defLitText+=yytext; }
 <<EOF>>					{
                                           DBG_CTX((stderr,"End of include file\n"));
-					  //printf("Include stack depth=%d\n",g_includeStack.count());
-  					  if (g_includeStack.isEmpty())
+					  //printf("Include stack depth=%d\n",yyextra->g_includeStack.count());
+  					  if (yyextra->g_includeStack.isEmpty())
 					  {
 					    DBG_CTX((stderr,"Terminating scanner!\n"));
 					    yyterminate();
 					  }
 					  else
 					  {
-					    FileState *fs=g_includeStack.pop();
-					    //fileDefineCache->merge(g_yyFileName,fs->fileName);
+					    FileState *fs=yyextra->g_includeStack.pop();
+					    //fileDefineCache->merge(yyextra->g_yyFileName,fs->fileName);
 					    YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
-					    yy_switch_to_buffer( fs->bufState );
-					    yy_delete_buffer( oldBuf );
-					    g_yyLineNr    = fs->lineNr;
+					    yy_switch_to_buffer( fs->bufState, yyscanner );
+					    yy_delete_buffer( oldBuf, yyscanner );
+					    yyextra->g_yyLineNr    = fs->lineNr;
                                             //preYYin = fs->oldYYin;
-                                            g_inputBuf    = fs->oldFileBuf;
-					    g_inputBufPos = fs->oldFileBufPos;
-					    setFileName(fs->fileName);
-					    DBG_CTX((stderr,"######## FileName %s\n",g_yyFileName.data()));
+                                            yyextra->g_inputBuf    = fs->oldFileBuf;
+					    yyextra->g_inputBufPos = fs->oldFileBufPos;
+					    setFileName(fs->fileName, yyscanner);
+					    DBG_CTX((stderr,"######## FileName %s\n",yyextra->g_yyFileName.data()));
 					    
                                             // Deal with file changes due to 
                                             // #include's within { .. } blocks
-                                            QCString lineStr(15+g_yyFileName.length());
-                                            lineStr.sprintf("# %d \"%s\" 2",g_yyLineNr,g_yyFileName.data());
-                                            outputArray(lineStr.data(),lineStr.length());
+                                            QCString lineStr(15+yyextra->g_yyFileName.length());
+                                            lineStr.sprintf("# %d \"%s\" 2",yyextra->g_yyLineNr,yyextra->g_yyFileName.data());
+                                            outputArray(lineStr.data(),lineStr.length(), yyscanner);
 					    
 					    delete fs; fs=0;
 					  }
@@ -1615,33 +1622,33 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           }
                                           else
                                           {
-					    outputArray(yytext,(int)yyleng);
-  					    g_lastCContext=YY_START;
-					    g_commentCount=1;
-					    if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
+					    outputArray(yytext,(int)yyleng, yyscanner);
+  					    yyextra->g_lastCContext=YY_START;
+					    yyextra->g_commentCount=1;
+					    if (yyleng==3) yyextra->g_lastGuardName.resize(0); // reset guard in case the #define is documented!
 					    BEGIN(SkipCComment);
                                           }
   					}
 <*>"//"[/]?				{
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(g_yyFileName)==SrcLangExt_Fortran)
+                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->g_yyFileName)==SrcLangExt_Fortran)
                                           {
                                             REJECT;
                                           }
                                           else
                                           {
-					    outputArray(yytext,(int)yyleng);
-  					    g_lastCPPContext=YY_START;
-					    if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
+					    outputArray(yytext,(int)yyleng, yyscanner);
+  					    yyextra->g_lastCPPContext=YY_START;
+					    if (yyleng==3) yyextra->g_lastGuardName.resize(0); // reset guard in case the #define is documented!
 					    BEGIN(SkipCPPComment);
                                           }
 					}
 <*>\n					{ 
-  					  outputChar('\n');
-  					  g_yyLineNr++; 
+  					  outputChar('\n', yyscanner);
+  					  yyextra->g_yyLineNr++; 
 					}
 <*>.				        {
-  					  g_expectGuard = FALSE;
-  					  outputChar(*yytext);
+  					  yyextra->g_expectGuard = FALSE;
+  					  outputChar(*yytext, yyscanner);
   					}
 
 %%
@@ -1649,66 +1656,72 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 /*@ ----------------------------------------------------------------------------
  */
 
-static void setFileName(const char *name)
+static void setFileName(const char *name, yyscan_t yyscanner)
 {
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
   bool ambig;
   QFileInfo fi(name);
-  g_yyFileName=fi.absFilePath().utf8();
-  g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
-  if (g_yyFileDef==0) // if this is not an input file check if it is an
+  preYYstate->g_yyFileName=fi.absFilePath().utf8();
+  preYYstate->g_yyFileDef=findFileDef(Doxygen::inputNameDict,preYYstate->g_yyFileName,ambig);
+  if (preYYstate->g_yyFileDef==0) // if this is not an input file check if it is an
                       // include file
   {
-    g_yyFileDef=findFileDef(Doxygen::includeNameDict,g_yyFileName,ambig);
+    preYYstate->g_yyFileDef=findFileDef(Doxygen::includeNameDict,preYYstate->g_yyFileName,ambig);
   }
-  //printf("setFileName(%s) g_yyFileName=%s g_yyFileDef=%p\n",
-  //    name,g_yyFileName.data(),g_yyFileDef);
-  if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
-  g_insideCS = getLanguageFromFileName(g_yyFileName)==SrcLangExt_CSharp;
-  g_isSource = guessSection(g_yyFileName);
+  //printf("setFileName(%s) preYYstate->g_yyFileName=%s preYYstate->g_yyFileDef=%p\n",
+  //    name,preYYstate->g_yyFileName.data(),preYYstate->g_yyFileDef);
+  if (preYYstate->g_yyFileDef && preYYstate->g_yyFileDef->isReference()) preYYstate->g_yyFileDef=0;
+  preYYstate->g_insideCS = getLanguageFromFileName(preYYstate->g_yyFileName)==SrcLangExt_CSharp;
+  preYYstate->g_isSource = guessSection(preYYstate->g_yyFileName);
 }
 
-static void incrLevel()
+static void incrLevel(yyscan_t yyscanner)
 {
-  g_level++;
-  g_levelGuard.resize(g_level);
-  g_levelGuard[g_level-1]=FALSE;
-  //printf("%s line %d: incrLevel %d\n",g_yyFileName.data(),g_yyLineNr,g_level);
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  preYYstate->g_level++;
+  preYYstate->g_levelGuard.resize(preYYstate->g_level);
+  preYYstate->g_levelGuard[preYYstate->g_level-1]=FALSE;
+  //printf("%s line %d: incrLevel %d\n",preYYstate->g_yyFileName.data(),preYYstate->g_yyLineNr,preYYstate->g_level);
 }
 
-static void decrLevel()
+static void decrLevel(yyscan_t yyscanner)
 {
-  //printf("%s line %d: decrLevel %d\n",g_yyFileName.data(),g_yyLineNr,g_level);
-  if (g_level > 0)
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  //printf("%s line %d: decrLevel %d\n",preYYstate->g_yyFileName.data(),preYYstate->g_yyLineNr,preYYstate->g_level);
+  if (preYYstate->g_level > 0)
   {
-    g_level--;
-    g_levelGuard.resize(g_level);
+    preYYstate->g_level--;
+    preYYstate->g_levelGuard.resize(preYYstate->g_level);
   }
   else
   {
-    warn(g_yyFileName,g_yyLineNr,"More #endif's than #if's found.\n");
+    warn(preYYstate->g_yyFileName,preYYstate->g_yyLineNr,"More #endif's than #if's found.\n");
   }
 }
 
-static bool otherCaseDone()
+static bool otherCaseDone(yyscan_t yyscanner)
 {
-  if (g_level==0)
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  if (preYYstate->g_level==0)
   {
-    warn(g_yyFileName,g_yyLineNr,"Found an #else without a preceding #if.\n");
+    warn(preYYstate->g_yyFileName,preYYstate->g_yyLineNr,"Found an #else without a preceding #if.\n");
     return TRUE;
   }
   else
   {
-    return g_levelGuard[g_level-1];
+    return preYYstate->g_levelGuard[preYYstate->g_level-1];
   }
 }
 
-static void setCaseDone(bool value)
+static void setCaseDone(bool value, yyscan_t yyscanner)
 {
-  g_levelGuard[g_level-1]=value;
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  preYYstate->g_levelGuard[preYYstate->g_level-1]=value;
 }
 
-static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyIncluded)
+static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyIncluded, yyscan_t yyscanner)
 {
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
   alreadyIncluded = FALSE;
   FileState *fs = 0;
   //printf("checkAndOpenFile(%s)\n",fileName.data());
@@ -1721,30 +1734,30 @@ static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyInclude
     QCString absName = fi.absFilePath().utf8();
 
     // global guard
-    if (g_curlyCount==0) // not #include inside { ... }
+    if (preYYstate->g_curlyCount==0) // not #include inside { ... }
     {
-      if (g_allIncludes.find(absName)!=0)
+      if (preYYstate->g_allIncludes.find(absName)!=0)
       {
         alreadyIncluded = TRUE;
         //printf("  already included 1\n");
         return 0; // already done
       }
-      g_allIncludes.insert(absName,(void *)0x8);
+      preYYstate->g_allIncludes.insert(absName,(void *)0x8);
     }
     // check include stack for absName
 
     QStack<FileState> tmpStack;
-    g_includeStack.setAutoDelete(FALSE);
-    while ((fs=g_includeStack.pop()))
+    preYYstate->g_includeStack.setAutoDelete(FALSE);
+    while ((fs=preYYstate->g_includeStack.pop()))
     {
       if (fs->fileName==absName) alreadyIncluded=TRUE;
       tmpStack.push(fs);
     }
     while ((fs=tmpStack.pop()))
     {
-      g_includeStack.push(fs);
+      preYYstate->g_includeStack.push(fs);
     }
-    g_includeStack.setAutoDelete(TRUE);
+    preYYstate->g_includeStack.setAutoDelete(TRUE);
 
     if (alreadyIncluded)
     {
@@ -1763,23 +1776,24 @@ static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyInclude
     }
     else
     {
-      fs->oldFileBuf    = g_inputBuf;
-      fs->oldFileBufPos = g_inputBufPos;
+      fs->oldFileBuf    = preYYstate->g_inputBuf;
+      fs->oldFileBufPos = preYYstate->g_inputBufPos;
     }
   }
   return fs;
 }
 
-static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyIncluded)
+static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyIncluded, yyscan_t yyscanner)
 {
-  //printf("** findFile(%s,%d) g_yyFileName=%s\n",fileName,localInclude,g_yyFileName.data());
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  //printf("** findFile(%s,%d) preYYstate->g_yyFileName=%s\n",fileName,localInclude,preYYstate->g_yyFileName.data());
   if (portable_isAbsolutePath(fileName))
   {
-    FileState *fs = checkAndOpenFile(fileName,alreadyIncluded);
+    FileState *fs = checkAndOpenFile(fileName,alreadyIncluded,yyscanner);
     if (fs)
     {
-      setFileName(fileName);
-      g_yyLineNr=1;
+      setFileName(fileName,yyscanner);
+      preYYstate->g_yyLineNr=1;
       return fs;
     }
     else if (alreadyIncluded)
@@ -1787,17 +1801,17 @@ static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyI
       return 0;
     }
   }
-  if (localInclude && !g_yyFileName.isEmpty())
+  if (localInclude && !preYYstate->g_yyFileName.isEmpty())
   {
-    QFileInfo fi(g_yyFileName);
+    QFileInfo fi(preYYstate->g_yyFileName);
     if (fi.exists())
     {
       QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+fileName;
-      FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
+      FileState *fs = checkAndOpenFile(absName,alreadyIncluded, yyscanner);
       if (fs)
       {
-	setFileName(absName);
-	g_yyLineNr=1;
+	setFileName(absName, yyscanner);
+	preYYstate->g_yyLineNr=1;
 	return fs;
       }
       else if (alreadyIncluded)
@@ -1806,20 +1820,20 @@ static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyI
       }
     }
   }
-  if (g_pathList==0) 
+  if (preYYstate->g_pathList==0) 
   {
     return 0;
   }
-  char *s=g_pathList->first();
+  char *s=preYYstate->g_pathList->first();
   while (s)
   {
     QCString absName = (QCString)s+"/"+fileName;
     //printf("  Looking for %s in %s\n",fileName,s);
-    FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
+    FileState *fs = checkAndOpenFile(absName,alreadyIncluded, yyscanner);
     if (fs)
     {
-      setFileName(absName);
-      g_yyLineNr=1;
+      setFileName(absName, yyscanner);
+      preYYstate->g_yyLineNr=1;
       //printf("  -> found it\n");
       return fs;
     }
@@ -1828,7 +1842,7 @@ static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyI
       return 0;
     }
 
-    s=g_pathList->next();
+    s=preYYstate->g_pathList->next();
   } 
   return 0;
 }
@@ -1951,7 +1965,7 @@ static QCString stringize(const QCString &s)
   return result;
 }
 
-static int getNextChar(const QCString &expr,QCString *rest,uint &pos)
+static int getNextChar(const QCString &expr,QCString *rest,uint &pos,yyscan_t yyscanner)
 {
   //printf("getNextChar(%s,%s,%d)\n",expr.data(),rest ? rest->data() : 0,pos);
   if (pos<expr.length())
@@ -1968,13 +1982,13 @@ static int getNextChar(const QCString &expr,QCString *rest,uint &pos)
   }
   else
   {
-    int cc=yyinput();
+    int cc=yyinput(yyscanner);
     //printf("%d=yyinput() %d\n",cc,EOF);
     return cc;
   }
 }
  
-static int getCurrentChar(const QCString &expr,QCString *rest,uint pos)
+static int getCurrentChar(const QCString &expr,QCString *rest,uint pos, yyscan_t yyscanner)
 {
   //printf("getCurrentChar(%s,%s,%d)\n",expr.data(),rest ? rest->data() : 0,pos);
   if (pos<expr.length())
@@ -1990,15 +2004,15 @@ static int getCurrentChar(const QCString &expr,QCString *rest,uint pos)
   }
   else
   {
-    int cc=yyinput();
-    returnCharToStream(cc);
+    int cc=yyinput(yyscanner);
+    returnCharToStream(cc, yyscanner);
     //unput((char)cc);
     //printf("%c=yyinput()\n",cc);
     return cc;
   }
 }
 
-static void unputChar(const QCString &expr,QCString *rest,uint &pos,char c)
+static void unputChar(const QCString &expr,QCString *rest,uint &pos,char c, yyscan_t yyscanner)
 {
   //printf("unputChar(%s,%s,%d,%c)\n",expr.data(),rest ? rest->data() : 0,pos,c);
   if (pos<expr.length())
@@ -2014,7 +2028,7 @@ static void unputChar(const QCString &expr,QCString *rest,uint &pos,char c)
   else
   {
     //unput(c);
-    returnCharToStream(c);
+    returnCharToStream(c, yyscanner);
   }
   //printf("result: unputChar(%s,%s,%d,%c)\n",expr.data(),rest ? rest->data() : 0,pos,c);
 }
@@ -2054,18 +2068,19 @@ static void processConcatOperators(QCString &expr)
   //printf("processConcatOperators: out=`%s'\n",expr.data());
 }
 
-static void returnCharToStream(char c)
+static void returnCharToStream(char c, yyscan_t yyscanner)
 {
-  unput(c);
+  struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
+  yyunput( c, yyg->yytext_ptr , yyscanner );
 }
 
 static void addTillEndOfString(const QCString &expr,QCString *rest,
-                                       uint &pos,char term,QCString &arg)
+                                       uint &pos,char term,QCString &arg,yyscan_t yyscanner)
 {
   int cc;
-  while ((cc=getNextChar(expr,rest,pos))!=EOF && cc!=0)
+  while ((cc=getNextChar(expr,rest,pos, yyscanner))!=EOF && cc!=0)
   {
-    if (cc=='\\') arg+=(char)cc,cc=getNextChar(expr,rest,pos);
+    if (cc=='\\') arg+=(char)cc,cc=getNextChar(expr,rest,pos,yyscanner);
     else if (cc==term) return;
     arg+=(char)cc;
   }
@@ -2078,24 +2093,25 @@ static void addTillEndOfString(const QCString &expr,QCString *rest,
  * The replacement string will be returned in \a result and the 
  * length of the (unexpanded) argument list is stored in \a len.
  */ 
-static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result)
+static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result, yyscan_t yyscanner)
 {
-  //printf("replaceFunctionMacro(expr=%s,rest=%s,pos=%d,def=%s) level=%d\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),g_level);
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  //printf("replaceFunctionMacro(expr=%s,rest=%s,pos=%d,def=%s) level=%d\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),preYYstate->g_level);
   uint j=pos;
   len=0;
   result.resize(0);
   int cc;
-  while ((cc=getCurrentChar(expr,rest,j))!=EOF && isspace(cc)) 
+  while ((cc=getCurrentChar(expr,rest,j,yyscanner))!=EOF && isspace(cc)) 
   { 
     len++; 
-    getNextChar(expr,rest,j); 
+    getNextChar(expr,rest,j,yyscanner); 
   }
   if (cc!='(') 
   { 
-    unputChar(expr,rest,j,' '); 
+    unputChar(expr,rest,j,' ', yyscanner); 
     return FALSE; 
   }
-  getNextChar(expr,rest,j); // eat the `(' character
+  getNextChar(expr,rest,j,yyscanner); // eat the `(' character
 
   QDict<QCString> argTable;  // list of arguments
   argTable.setAutoDelete(TRUE);
@@ -2106,7 +2122,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
   // PHASE 1: read the macro arguments
   if (def->nargs==0)
   {
-    while ((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+    while ((cc=getNextChar(expr,rest,j,yyscanner))!=EOF && cc!=0)
     {
       char c = (char)cc;
       if (c==')') break;
@@ -2115,7 +2131,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
   else
   {
     while (!done && (argCount<def->nargs || def->varArgs) && 
-	((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+	((cc=getNextChar(expr,rest,j,yyscanner))!=EOF && cc!=0)
 	  )
     {
       char c=(char)cc;
@@ -2124,14 +2140,14 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	int level=1;
 	arg+=c;
 	//char term='\0';
-	while ((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+	while ((cc=getNextChar(expr,rest,j,yyscanner))!=EOF && cc!=0)
 	{
 	  char c=(char)cc;
 	  //printf("processing %c: term=%c (%d)\n",c,term,term);
 	  if (c=='\'' || c=='\"') // skip ('s and )'s inside strings
 	  {
 	    arg+=c;
-	    addTillEndOfString(expr,rest,j,c,arg);
+	    addTillEndOfString(expr,rest,j,c,arg,yyscanner);
 	  }
 	  if (c==')')
 	  {
@@ -2173,14 +2189,14 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
       {
 	arg+=c; 
 	bool found=FALSE;
-	while (!found && (cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+	while (!found && (cc=getNextChar(expr,rest,j,yyscanner))!=EOF && cc!=0)
 	{
 	  found = cc=='"';
 	  if (cc=='\\')
 	  {
 	    c=(char)cc;	  
 	    arg+=c;
-	    if ((cc=getNextChar(expr,rest,j))==EOF || cc==0) break;
+	    if ((cc=getNextChar(expr,rest,j,yyscanner))==EOF || cc==0) break;
 	  }
 	  c=(char)cc;	  
 	  arg+=c;
@@ -2190,14 +2206,14 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
       {
 	arg+=c;
 	bool found=FALSE;
-	while (!found && (cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+	while (!found && (cc=getNextChar(expr,rest,j,yyscanner))!=EOF && cc!=0)
 	{
 	  found = cc=='\'';
 	  if (cc=='\\')
 	  {
 	    c=(char)cc;	  
 	    arg+=c;
-	    if ((cc=getNextChar(expr,rest,j))==EOF || cc==0) break;
+	    if ((cc=getNextChar(expr,rest,j,yyscanner))==EOF || cc==0) break;
 	  }
 	  c=(char)cc;
 	  arg+=c;
@@ -2263,7 +2279,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	    //printf("substArg=`%s'\n",substArg.data());
 	    // only if no ## operator is before or after the argument
 	    // marker we do macro expansion.
-	    if (!hash) expandExpression(substArg,0,0);
+	    if (!hash) expandExpression(substArg,0,0,yyscanner);
 	    if (inString)
 	    {
 	      //printf("`%s'=stringize(`%s')\n",stringize(*subst).data(),subst->data());
@@ -2278,7 +2294,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	      {
 		resExpr+="@E"; // empty argument will be remove later on
 	      }
-	      else if (g_nospaces)
+	      else if (preYYstate->g_nospaces)
 	      {
 	        resExpr+=substArg;
 	      }
@@ -2377,8 +2393,9 @@ static int getNextId(const QCString &expr,int p,int *l)
  *  If \a expandAll is \c TRUE then all macros in the expression are
  *  expanded, otherwise only the first is expanded.
  */
-static void expandExpression(QCString &expr,QCString *rest,int pos)
+static void expandExpression(QCString &expr,QCString *rest,int pos,yyscan_t yyscanner)
 {
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
   //printf("expandExpression(%s,%s)\n",expr.data(),rest ? rest->data() : 0);
   QCString macroName;
   QCString expMacro;
@@ -2391,7 +2408,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
     //printf("macroName=%s\n",macroName.data());
     if (p<2 || !(expr.at(p-2)=='@' && expr.at(p-1)=='-')) // no-rescan marker?
     {
-      if (g_expandedDict->find(macroName)==0) // expand macro
+      if (preYYstate->g_expandedDict->find(macroName)==0) // expand macro
       {
 	Define *def=DefineManager::instance().isDefined(macroName);
 	if (definedTest) // macro name was found after defined 
@@ -2405,7 +2422,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	{
 	  // substitute the definition of the macro
 	  //printf("macro `%s'->`%s'\n",macroName.data(),def->definition.data());
-	  if (g_nospaces)
+	  if (preYYstate->g_nospaces)
 	  {
 	    expMacro=def->definition.stripWhiteSpace();
 	  }
@@ -2420,7 +2437,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	}
 	else if (def && def->nargs>=0) // function macro
 	{
-	  replaced=replaceFunctionMacro(expr,rest,p+l,len,def,expMacro);
+	  replaced=replaceFunctionMacro(expr,rest,p+l,len,def,expMacro, yyscanner);
 	  len+=l;
 	}
         else if (macroName=="defined")
@@ -2438,9 +2455,9 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	  processConcatOperators(resultExpr);
 	  if (def && !def->nonRecursive)
 	  {
-	    g_expandedDict->insert(macroName,def);
-	    expandExpression(resultExpr,&restExpr,0);
-	    g_expandedDict->remove(macroName);
+	    preYYstate->g_expandedDict->insert(macroName,def);
+	    expandExpression(resultExpr,&restExpr,0, yyscanner);
+	    preYYstate->g_expandedDict->remove(macroName);
 	  }
 	  expr=expr.left(p)+resultExpr+restExpr;
 	  i=p;
@@ -2669,41 +2686,43 @@ static QCString removeMarkers(const char *s)
  *  If needed the function may read additional characters from the input.
  */
 
-static bool computeExpression(const QCString &expr)
+static bool computeExpression(const QCString &expr,yyscan_t yyscanner)
 {
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
   QCString e=expr;
-  expandExpression(e,0,0);
+  expandExpression(e,0,0,yyscanner);
   //printf("after expansion `%s'\n",e.data());
   e = removeIdsAndMarkers(e);
   if (e.isEmpty()) return FALSE;
   //printf("parsing `%s'\n",e.data());
-  return parseconstexp(g_yyFileName,g_yyLineNr,e);
+  return parseconstexp(preYYstate->g_yyFileName,preYYstate->g_yyLineNr,e);
 }
 
 /*! expands the macro definition in \a name
  *  If needed the function may read additional characters from the input
  */
 
-static QCString expandMacro(const QCString &name)
+static QCString expandMacro(const QCString &name,yyscan_t yyscanner)
 {
   QCString n=name;
-  expandExpression(n,0,0);
+  expandExpression(n,0,0,yyscanner);
   n=removeMarkers(n);
   //printf("expandMacro `%s'->`%s'\n",name.data(),n.data());
   return n;
 }
 
-static Define *newDefine()
+static Define *newDefine(yyscan_t yyscanner)
 {
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
   Define *def=new Define;
-  def->name       = g_defName;
-  def->definition = g_defText.stripWhiteSpace();
-  def->nargs      = g_defArgs;
-  def->fileName   = g_yyFileName; 
-  def->fileDef    = g_yyFileDef;
-  def->lineNr     = g_yyLineNr-g_yyMLines;
-  def->columnNr   = g_yyColNr;
-  def->varArgs    = g_defVarArgs;
+  def->name       = preYYstate->g_defName;
+  def->definition = preYYstate->g_defText.stripWhiteSpace();
+  def->nargs      = preYYstate->g_defArgs;
+  def->fileName   = preYYstate->g_yyFileName; 
+  def->fileDef    = preYYstate->g_yyFileDef;
+  def->lineNr     = preYYstate->g_yyLineNr-preYYstate->g_yyMLines;
+  def->columnNr   = preYYstate->g_yyColNr;
+  def->varArgs    = preYYstate->g_defVarArgs;
   //printf("newDefine: %s %s file: %s\n",def->name.data(),def->definition.data(),
   //    def->fileDef ? def->fileDef->name().data() : def->fileName.data());
   //printf("newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
@@ -2714,76 +2733,81 @@ static Define *newDefine()
   return def;
 }
 
-static void addDefine()
+static void addDefine(yyscan_t yyscanner)
 {
-  if (g_skip) return; // do not add this define as it is inside a 
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  if (preYYstate->g_skip) return; // do not add this define as it is inside a 
                       // conditional section (cond command) that is disabled.
   if (!Doxygen::gatherDefines) return;
 
-  //printf("addDefine %s %s\n",g_defName.data(),g_defArgsStr.data());
+  //printf("addDefine %s %s\n",preYYstate->g_defName.data(),preYYstate->g_defArgsStr.data());
   //ArgumentList *al = new ArgumentList;
-  //stringToArgumentList(g_defArgsStr,al);
+  //stringToArgumentList(preYYstate->g_defArgsStr,al);
   MemberDef *md=new MemberDef(
-      g_yyFileName,g_yyLineNr-g_yyMLines,g_yyColNr,
-      "#define",g_defName,g_defArgsStr,0,
+      preYYstate->g_yyFileName,preYYstate->g_yyLineNr-preYYstate->g_yyMLines,preYYstate->g_yyColNr,
+      "#define",preYYstate->g_defName,preYYstate->g_defArgsStr,0,
       Public,Normal,FALSE,Member,MemberType_Define,0,0);
-  if (!g_defArgsStr.isEmpty())
+  if (!preYYstate->g_defArgsStr.isEmpty())
   {
     ArgumentList *argList = new ArgumentList;
-    //printf("addDefine() g_defName=`%s' g_defArgsStr=`%s'\n",g_defName.data(),g_defArgsStr.data());
-    stringToArgumentList(g_defArgsStr,argList);
+    //printf("addDefine() preYYstate->g_defName=`%s' preYYstate->g_defArgsStr=`%s'\n",preYYstate->g_defName.data(),preYYstate->g_defArgsStr.data());
+    stringToArgumentList(preYYstate->g_defArgsStr,argList);
     md->setArgumentList(argList);
   }
-  //printf("Setting initializer for `%s' to `%s'\n",g_defName.data(),g_defText.data());
-  int l=g_defLitText.find('\n');
-  if (l>0 && g_defLitText.left(l).stripWhiteSpace()=="\\")
+  //printf("Setting initializer for `%s' to `%s'\n",preYYstate->g_defName.data(),preYYstate->g_defText.data());
+  int l=preYYstate->g_defLitText.find('\n');
+  if (l>0 && preYYstate->g_defLitText.left(l).stripWhiteSpace()=="\\")
   {
     // strip first line if it only contains a slash
-    g_defLitText = g_defLitText.right(g_defLitText.length()-l-1);
+    preYYstate->g_defLitText = preYYstate->g_defLitText.right(preYYstate->g_defLitText.length()-l-1);
   }
   else if (l>0)
   {
     // align the items on the first line with the items on the second line
     int k=l+1;
-    const char *p=g_defLitText.data()+k;
+    const char *p=preYYstate->g_defLitText.data()+k;
     char c;
     while ((c=*p++) && (c==' ' || c=='\t')) k++;
-    g_defLitText=g_defLitText.mid(l+1,k-l-1)+g_defLitText.stripWhiteSpace();
+    preYYstate->g_defLitText=preYYstate->g_defLitText.mid(l+1,k-l-1)+preYYstate->g_defLitText.stripWhiteSpace();
   }
-  md->setInitializer(g_defLitText.stripWhiteSpace());
+  md->setInitializer(preYYstate->g_defLitText.stripWhiteSpace());
 
-  //printf("pre.l: md->setFileDef(%p)\n",g_inputFileDef);
-  md->setFileDef(g_inputFileDef);
-  md->setDefinition("#define "+g_defName);
+  //printf("pre.l: md->setFileDef(%p)\n",preYYstate->g_inputFileDef);
+  md->setFileDef(preYYstate->g_inputFileDef);
+  md->setDefinition("#define "+preYYstate->g_defName);
 
-  MemberName *mn=Doxygen::functionNameSDict->find(g_defName);
+  MemberName *mn=Doxygen::functionNameSDict->find(preYYstate->g_defName);
   if (mn==0)
   {
-    mn = new MemberName(g_defName);
-    Doxygen::functionNameSDict->append(g_defName,mn);
+    mn = new MemberName(preYYstate->g_defName);
+    Doxygen::functionNameSDict->append(preYYstate->g_defName,mn);
   }
   mn->append(md);
-  if (g_yyFileDef) 
+  if (preYYstate->g_yyFileDef) 
   {
-    g_yyFileDef->insertMember(md);
+    preYYstate->g_yyFileDef->insertMember(md);
   }
 
   //Define *d;
-  //if ((d=defineDict[g_defName])==0) defineDict.insert(g_defName,newDefine()); 
+  //if ((d=defineDict[preYYstate->g_defName])==0) defineDict.insert(preYYstate->g_defName,newDefine()); 
 }
 
-static inline void outputChar(char c)
+static inline void outputChar(char c,yyscan_t yyscanner)
 {
-  if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addChar(c);
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  if (preYYstate->g_includeStack.isEmpty() || preYYstate->g_curlyCount>0) preYYstate->g_outputBuf->addChar(c);
 }
 
-static inline void outputArray(const char *a,int len)
+static inline void outputArray(const char *a,int len,yyscan_t yyscanner)
 {
-  if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addArray(a,len);
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  if (preYYstate->g_includeStack.isEmpty() || preYYstate->g_curlyCount>0) preYYstate->g_outputBuf->addArray(a,len);
 }
 
-static void readIncludeFile(const QCString &inc)
+static void readIncludeFile(const QCString &inc,yyscan_t yyscanner)
 {
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
   static bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
   uint i=0;
 
@@ -2811,15 +2835,15 @@ static void readIncludeFile(const QCString &inc)
       return;
     }
 
-    QCString oldFileName = g_yyFileName;
-    FileDef *oldFileDef  = g_yyFileDef;
-    int oldLineNr        = g_yyLineNr;
+    QCString oldFileName = preYYstate->g_yyFileName;
+    FileDef *oldFileDef  = preYYstate->g_yyFileDef;
+    int oldLineNr        = preYYstate->g_yyLineNr;
     //printf("Searching for `%s'\n",incFileName.data());
 
     // absIncFileName avoids difficulties for incFileName starting with "../" (bug 641336)
     QCString absIncFileName = incFileName;
     {
-      QFileInfo fi(g_yyFileName);
+      QFileInfo fi(preYYstate->g_yyFileName);
       if (fi.exists())
       {
 	QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+incFileName;
@@ -2853,19 +2877,19 @@ static void readIncludeFile(const QCString &inc)
 	//printf( "absIncFileName = %s\n", absIncFileName.data() );
       }
     }
-    DefineManager::instance().addInclude(g_yyFileName,absIncFileName);
+    DefineManager::instance().addInclude(preYYstate->g_yyFileName,absIncFileName);
     DefineManager::instance().addFileToContext(absIncFileName);
 
-    // findFile will overwrite g_yyFileDef if found
+    // findFile will overwrite preYYstate->g_yyFileDef if found
     FileState *fs;
     bool alreadyIncluded = FALSE;
     //printf("calling findFile(%s)\n",incFileName.data());
-    if ((fs=findFile(incFileName,localInclude,alreadyIncluded))) // see if the include file can be found
+    if ((fs=findFile(incFileName,localInclude,alreadyIncluded,yyscanner))) // see if the include file can be found
     {
       //printf("Found include file!\n");
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
-        for (i=0;i<g_includeStack.count();i++) 
+        for (i=0;i<preYYstate->g_includeStack.count();i++) 
         {
           Debug::print(Debug::Preprocessor,0,"  ");
         }
@@ -2877,36 +2901,36 @@ static void readIncludeFile(const QCString &inc)
 	bool ambig;
 	// change to absolute name for bug 641336 
         FileDef *incFd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
-        oldFileDef->addIncludeDependency(ambig ? 0 : incFd,incFileName,localInclude,g_isImported,FALSE);
+        oldFileDef->addIncludeDependency(ambig ? 0 : incFd,incFileName,localInclude,preYYstate->g_isImported,FALSE);
         // add included by dependency
-        if (g_yyFileDef)
+        if (preYYstate->g_yyFileDef)
         {
           //printf("Adding include dependency %s->%s\n",oldFileDef->name().data(),incFileName.data());
-          g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
+          preYYstate->g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,preYYstate->g_isImported);
         }
       }
-      else if (g_inputFileDef)
+      else if (preYYstate->g_inputFileDef)
       {
-        g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,g_isImported,TRUE);
+        preYYstate->g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,preYYstate->g_isImported,TRUE);
       }
       fs->bufState = YY_CURRENT_BUFFER;
       fs->lineNr   = oldLineNr;
       fs->fileName = oldFileName;
       // push the state on the stack
-      g_includeStack.push(fs);
+      preYYstate->g_includeStack.push(fs);
       // set the scanner to the include file
 
       // Deal with file changes due to 
       // #include's within { .. } blocks
-      QCString lineStr(g_yyFileName.length()+20);
-      lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
-      outputArray(lineStr.data(),lineStr.length());
+      QCString lineStr(preYYstate->g_yyFileName.length()+20);
+      lineStr.sprintf("# 1 \"%s\" 1\n",preYYstate->g_yyFileName.data());
+      outputArray(lineStr.data(),lineStr.length(), yyscanner);
 
       DBG_CTX((stderr,"Switching to include file %s\n",incFileName.data()));
-      g_expectGuard=TRUE;
-      g_inputBuf   = &fs->fileBuf;
-      g_inputBufPos=0;
-      yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE));
+      preYYstate->g_expectGuard=TRUE;
+      preYYstate->g_inputBuf   = &fs->fileBuf;
+      preYYstate->g_inputBufPos=0;
+      yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner), yyscanner);
     }
     else
     {
@@ -2925,17 +2949,17 @@ static void readIncludeFile(const QCString &inc)
 	FileDef *fd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
 	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);
 	// add include dependency to the file in which the #include was found
-	oldFileDef->addIncludeDependency(ambig ? 0 : fd,incFileName,localInclude,g_isImported,FALSE);
+	oldFileDef->addIncludeDependency(ambig ? 0 : fd,incFileName,localInclude,preYYstate->g_isImported,FALSE);
 	// add included by dependency
         if (fd)
         {
           //printf("Adding include dependency (2) %s->%s ambig=%d\n",oldFileDef->name().data(),fd->name().data(),ambig);
-          fd->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
+          fd->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,preYYstate->g_isImported);
         }
       }
-      else if (g_inputFileDef)
+      else if (preYYstate->g_inputFileDef)
       {
-        g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,g_isImported,TRUE);
+        preYYstate->g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,preYYstate->g_isImported,TRUE);
       }
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
@@ -2949,9 +2973,9 @@ static void readIncludeFile(const QCString &inc)
 	}
         //printf("error: include file %s not found\n",yytext);
       }
-      if (g_curlyCount>0 && !alreadyIncluded) // failed to find #include inside { ... }
+      if (preYYstate->g_curlyCount>0 && !alreadyIncluded) // failed to find #include inside { ... }
       {
-	warn(g_yyFileName,g_yyLineNr,"include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",incFileName.data());
+	warn(preYYstate->g_yyFileName,preYYstate->g_yyLineNr,"include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",incFileName.data());
       }
     }
   }
@@ -2959,41 +2983,44 @@ static void readIncludeFile(const QCString &inc)
 
 /* ----------------------------------------------------------------- */
 
-static void startCondSection(const char *sectId)
+static void startCondSection(const char *sectId,yyscan_t yyscanner)
 {
-  //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  //printf("startCondSection: skip=%d stack=%d\n",preYYstate->g_skip,preYYstate->g_condStack.count());
   CondParser prs;
-  bool expResult = prs.parse(g_yyFileName,g_yyLineNr,sectId);
-  g_condStack.push(new CondCtx(g_yyLineNr,sectId,g_skip));
+  bool expResult = prs.parse(preYYstate->g_yyFileName,preYYstate->g_yyLineNr,sectId);
+  preYYstate->g_condStack.push(new CondCtx(preYYstate->g_yyLineNr,sectId,preYYstate->g_skip));
   if (!expResult)
   {
-    g_skip=TRUE;
+    preYYstate->g_skip=TRUE;
   }
-  //printf("  expResult=%d skip=%d\n",expResult,g_skip);
+  //printf("  expResult=%d skip=%d\n",expResult,preYYstate->g_skip);
 }
 
-static void endCondSection()
+static void endCondSection(yyscan_t yyscanner)
 {
-  if (g_condStack.isEmpty())
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  if (preYYstate->g_condStack.isEmpty())
   {
-    g_skip=FALSE;
+    preYYstate->g_skip=FALSE;
   }
   else
   {
-    CondCtx *ctx = g_condStack.pop();
-    g_skip=ctx->skip;
+    CondCtx *ctx = preYYstate->g_condStack.pop();
+    preYYstate->g_skip=ctx->skip;
     delete ctx;
   }
-  //printf("endCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
+  //printf("endCondSection: skip=%d stack=%d\n",preYYstate->g_skip,preYYstate->g_condStack.count());
 }
 
-static void forceEndCondSection()
+static void forceEndCondSection(yyscan_t yyscanner)
 {
-  while (!g_condStack.isEmpty())
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  while (!preYYstate->g_condStack.isEmpty())
   {
-    delete g_condStack.pop();
+    delete preYYstate->g_condStack.pop();
   }
-  g_skip=FALSE;
+  preYYstate->g_skip=FALSE;
 }
 
 static QCString escapeAt(const char *text)
@@ -3028,61 +3055,83 @@ static char resolveTrigraph(char c)
   return '?';
 }
 
-static int yyread(char *buf,int max_size)
+static int yyread(char *buf,int max_size,yyscan_t yyscanner)
 {
-  int bytesInBuf = g_inputBuf->curPos()-g_inputBufPos;
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  int bytesInBuf = preYYstate->g_inputBuf->curPos()-preYYstate->g_inputBufPos;
   int bytesToCopy = QMIN(max_size,bytesInBuf);
-  memcpy(buf,g_inputBuf->data()+g_inputBufPos,bytesToCopy);
-  g_inputBufPos+=bytesToCopy;
+  memcpy(buf,preYYstate->g_inputBuf->data()+preYYstate->g_inputBufPos,bytesToCopy);
+  preYYstate->g_inputBufPos+=bytesToCopy;
   return bytesToCopy;
 }
 
+/* ----------------------------------------------------------------- */
+
+static yyscan_t yyscanner;
+static struct preYY_state pre_extra;
+
 void initPreprocessor()
 {
-  g_pathList = new QStrList;
+  preYYlex_init_extra(&pre_extra, &yyscanner);
+  pre_extra.g_pathList = new QStrList;
   addSearchDir(".");
-  g_expandedDict = new DefineDict(17);
+  pre_extra.g_expandedDict = new DefineDict(17);
 }
 
 void cleanUpPreprocessor()
 {
-  delete g_expandedDict; g_expandedDict=0;
-  delete g_pathList; g_pathList=0;
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  delete preYYstate->g_expandedDict;
+  preYYstate->g_expandedDict=0;
+
+  delete preYYstate->g_pathList;
+  preYYstate->g_pathList=0;
+
   DefineManager::deleteInstance();
+#if defined(YY_FLEX_SUBMINOR_VERSION) 
+  if (preYYstate->g_lexInit)
+  {
+    preYYlex_destroy(yyscanner);
+  }
+#endif
 }
 
 void addSearchDir(const char *dir)
 {
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
   QFileInfo fi(dir);
-  if (fi.isDir()) g_pathList->append(fi.absFilePath().utf8());
+  if (fi.isDir()) preYYstate->g_pathList->append(fi.absFilePath().utf8());
 } 
 
 void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 {
-  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
+  // needed by BEGIN
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  struct preYY_state *preYYstate = yyget_extra(yyscanner);
+  printlex(yyget_debug(yyscanner), TRUE, __FILE__, fileName);
   uint orgOffset=output.curPos();
   //printf("##########################\n%s\n####################\n",
   //    input.data());
 
-  g_macroExpansion = Config_getBool(MACRO_EXPANSION);
-  g_expandOnlyPredef = Config_getBool(EXPAND_ONLY_PREDEF);
-  g_skip=FALSE;
-  g_curlyCount=0;
-  g_nospaces=FALSE;
-  g_inputBuf=&input;
-  g_inputBufPos=0;
-  g_outputBuf=&output;
-  g_includeStack.setAutoDelete(TRUE);
-  g_includeStack.clear();
-  g_expandedDict->setAutoDelete(FALSE);
-  g_expandedDict->clear();
-  g_condStack.setAutoDelete(TRUE);
-  g_condStack.clear();
-  //g_fileDefineDict->clear();
+  preYYstate->g_macroExpansion = Config_getBool(MACRO_EXPANSION);
+  preYYstate->g_expandOnlyPredef = Config_getBool(EXPAND_ONLY_PREDEF);
+  preYYstate->g_skip=FALSE;
+  preYYstate->g_curlyCount=0;
+  preYYstate->g_nospaces=FALSE;
+  preYYstate->g_inputBuf=&input;
+  preYYstate->g_inputBufPos=0;
+  preYYstate->g_outputBuf=&output;
+  preYYstate->g_includeStack.setAutoDelete(TRUE);
+  preYYstate->g_includeStack.clear();
+  preYYstate->g_expandedDict->setAutoDelete(FALSE);
+  preYYstate->g_expandedDict->clear();
+  preYYstate->g_condStack.setAutoDelete(TRUE);
+  preYYstate->g_condStack.clear();
+  //preYYstate->g_fileDefineDict->clear();
 
-  setFileName(fileName);
-  g_inputFileDef = g_yyFileDef;
-  DefineManager::instance().startContext(g_yyFileName);
+  setFileName(fileName, yyscanner);
+  preYYstate->g_inputFileDef = preYYstate->g_yyFileDef;
+  DefineManager::instance().startContext(preYYstate->g_yyFileName);
   
   static bool firstTime=TRUE;
   if (firstTime)
@@ -3158,9 +3207,9 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 	  def->nargs        = count;
 	  def->isPredefined = TRUE;
 	  def->nonRecursive = nonRecursive;
-	  def->fileDef      = g_yyFileDef;
+	  def->fileDef      = preYYstate->g_yyFileDef;
 	  def->fileName     = fileName;
-	  DefineManager::instance().addDefine(g_yyFileName,def);
+	  DefineManager::instance().addDefine(preYYstate->g_yyFileName,def);
 	}
 
 	//printf("#define `%s' `%s' #nargs=%d\n",
@@ -3189,9 +3238,9 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 	  def->nargs = -1;
 	  def->isPredefined = TRUE;
 	  def->nonRecursive = nonRecursive;
-	  def->fileDef      = g_yyFileDef;
+	  def->fileDef      = preYYstate->g_yyFileDef;
 	  def->fileName     = fileName;
-	  DefineManager::instance().addDefine(g_yyFileName,def);
+	  DefineManager::instance().addDefine(preYYstate->g_yyFileName,def);
 	}
 	else
 	{
@@ -3205,24 +3254,24 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
     //firstTime=FALSE;
   }
  
-  g_yyLineNr = 1;
-  g_yyColNr  = 1;
-  g_level    = 0;
-  g_ifcount  = 0;
+  preYYstate->g_yyLineNr = 1;
+  preYYstate->g_yyColNr  = 1;
+  preYYstate->g_level    = 0;
+  preYYstate->g_ifcount  = 0;
 
   BEGIN( Start );
   
-  g_expectGuard = guessSection(fileName)==Entry::HEADER_SEC;
-  g_guardName.resize(0);
-  g_lastGuardName.resize(0);
-  g_guardExpr.resize(0);
-  
-  preYYlex();
-  g_lexInit=TRUE;
+  preYYstate->g_expectGuard = guessSection(fileName)==Entry::HEADER_SEC;
+  preYYstate->g_guardName.resize(0);
+  preYYstate->g_lastGuardName.resize(0);
+  preYYstate->g_guardExpr.resize(0);
 
-  while (!g_condStack.isEmpty())
+  yylex (yyscanner);
+  preYYstate->g_lexInit=TRUE;
+
+  while (!preYYstate->g_condStack.isEmpty())
   {
-    CondCtx *ctx = g_condStack.pop();
+    CondCtx *ctx = preYYstate->g_condStack.pop();
     QCString sectionInfo = " ";
     if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label %s ",ctx->sectionId.data()); 
     warn(fileName,ctx->lineNr,"Conditional section%sdoes not have "
@@ -3230,18 +3279,18 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
     delete ctx;
   }
   // make sure we don't extend a \cond with missing \endcond over multiple files (see bug 624829)
-  forceEndCondSection();
+  forceEndCondSection(yyscanner);
 
   // remove locally defined macros so they can be redefined in another source file
-  //if (g_fileDefineDict->count()>0)
+  //if (preYYstate->g_fileDefineDict->count()>0)
   //{
-  //  QDictIterator<Define> di(*g_fileDefineDict);
+  //  QDictIterator<Define> di(*preYYstate->g_fileDefineDict);
   //  Define *d;
   //  for (di.toFirst();(d=di.current());++di)
   //  {
-  //    g_globalDefineDict->remove(di.currentKey());
+  //    preYYstate->g_globalDefineDict->remove(di.currentKey());
   //  }
-  //  g_fileDefineDict->clear();
+  //  preYYstate->g_fileDefineDict->clear();
   //}
 
   if (Debug::isFlagSet(Debug::Preprocessor))
@@ -3276,17 +3325,11 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
     }
   }
   DefineManager::instance().endContext();
-  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
+  printlex(yyget_debug(yyscanner), FALSE, __FILE__, fileName);
 }
 
 void preFreeScanner()
 {
-#if defined(YY_FLEX_SUBMINOR_VERSION) 
-  if (g_lexInit)
-  {
-    preYYlex_destroy();
-  }
-#endif
 }
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
