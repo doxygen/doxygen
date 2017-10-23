@@ -16,6 +16,7 @@
  */
 %option never-interactive
 %option prefix="scannerYY"
+%option noyywrap
 
 %{
 
@@ -621,7 +622,6 @@ LOGICOP   "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"
 BITOP     "&"|"|"|"^"|"<<"|">>"|"~"
 OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
-%option noyywrap
 
   /* language parsing states */
 
