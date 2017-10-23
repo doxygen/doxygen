@@ -57,6 +57,7 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
 {
   static QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   static QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
+  static QCString dotPath = Config_getString(DOT_PATH);
 
   QCString pumlExe = "java";
   QCString pumlArgs = "";
@@ -82,6 +83,12 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
     pumlArgs += "-config \"";
     pumlArgs += plantumlConfigFile;
     pumlArgs += "\" ";
+  }
+  if (Config_getBool(HAVE_DOT) && !dotPath.isEmpty())
+  {
+    pumlArgs += "-graphvizdot \"";
+    pumlArgs += dotPath;
+    pumlArgs += "dot\" ";
   }
   pumlArgs+="-o \"";
   pumlArgs+=outDir;
