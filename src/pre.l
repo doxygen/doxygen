@@ -389,1336 +389,47 @@ static QDict<void>        g_allIncludes(10009);
 //  return g_globalDefineDict;
 //}
 
-static void setFileName(const char *name)
-{
-  bool ambig;
-  QFileInfo fi(name);
-  g_yyFileName=fi.absFilePath().utf8();
-  g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
-  if (g_yyFileDef==0) // if this is not an input file check if it is an
-                      // include file
-  {
-    g_yyFileDef=findFileDef(Doxygen::includeNameDict,g_yyFileName,ambig);
-  }
-  //printf("setFileName(%s) g_yyFileName=%s g_yyFileDef=%p\n",
-  //    name,g_yyFileName.data(),g_yyFileDef);
-  if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
-  g_insideCS = getLanguageFromFileName(g_yyFileName)==SrcLangExt_CSharp;
-  g_isSource = guessSection(g_yyFileName);
-}
-
-static void incrLevel()
-{
-  g_level++;
-  g_levelGuard.resize(g_level);
-  g_levelGuard[g_level-1]=FALSE;
-  //printf("%s line %d: incrLevel %d\n",g_yyFileName.data(),g_yyLineNr,g_level);
-}
-
-static void decrLevel()
-{
-  //printf("%s line %d: decrLevel %d\n",g_yyFileName.data(),g_yyLineNr,g_level);
-  if (g_level > 0)
-  {
-    g_level--;
-    g_levelGuard.resize(g_level);
-  }
-  else
-  {
-    warn(g_yyFileName,g_yyLineNr,"More #endif's than #if's found.\n");
-  }
-}
-
-static bool otherCaseDone()
-{
-  if (g_level==0)
-  {
-    warn(g_yyFileName,g_yyLineNr,"Found an #else without a preceding #if.\n");
-    return TRUE;
-  }
-  else
-  {
-    return g_levelGuard[g_level-1];
-  }
-}
-
-static void setCaseDone(bool value)
-{
-  g_levelGuard[g_level-1]=value;
-}
-
-static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyIncluded)
-{
-  alreadyIncluded = FALSE;
-  FileState *fs = 0;
-  //printf("checkAndOpenFile(%s)\n",fileName.data());
-  QFileInfo fi(fileName);
-  if (fi.exists() && fi.isFile())
-  {
-    static QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
-    if (patternMatch(fi,&exclPatterns)) return 0;
-
-    QCString absName = fi.absFilePath().utf8();
-
-    // global guard
-    if (g_curlyCount==0) // not #include inside { ... }
-    {
-      if (g_allIncludes.find(absName)!=0)
-      {
-        alreadyIncluded = TRUE;
-        //printf("  already included 1\n");
-        return 0; // already done
-      }
-      g_allIncludes.insert(absName,(void *)0x8);
-    }
-    // check include stack for absName
-
-    QStack<FileState> tmpStack;
-    g_includeStack.setAutoDelete(FALSE);
-    while ((fs=g_includeStack.pop()))
-    {
-      if (fs->fileName==absName) alreadyIncluded=TRUE;
-      tmpStack.push(fs);
-    }
-    while ((fs=tmpStack.pop()))
-    {
-      g_includeStack.push(fs);
-    }
-    g_includeStack.setAutoDelete(TRUE);
-
-    if (alreadyIncluded)
-    {
-      //printf("  already included 2\n");
-      return 0;
-    }
-    //printf("#include %s\n",absName.data());
-
-    fs = new FileState(fi.size()+4096);
-    alreadyIncluded = FALSE;
-    if (!readInputFile(absName,fs->fileBuf))
-    { // error
-      //printf("  error reading\n");
-      delete fs;
-      fs=0;
-    }
-    else
-    {
-      fs->oldFileBuf    = g_inputBuf;
-      fs->oldFileBufPos = g_inputBufPos;
-    }
-  }
-  return fs;
-}
-
-static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyIncluded)
-{
-  //printf("** findFile(%s,%d) g_yyFileName=%s\n",fileName,localInclude,g_yyFileName.data());
-  if (portable_isAbsolutePath(fileName))
-  {
-    FileState *fs = checkAndOpenFile(fileName,alreadyIncluded);
-    if (fs)
-    {
-      setFileName(fileName);
-      g_yyLineNr=1;
-      return fs;
-    }
-    else if (alreadyIncluded)
-    {
-      return 0;
-    }
-  }
-  if (localInclude && !g_yyFileName.isEmpty())
-  {
-    QFileInfo fi(g_yyFileName);
-    if (fi.exists())
-    {
-      QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+fileName;
-      FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
-      if (fs)
-      {
-	setFileName(absName);
-	g_yyLineNr=1;
-	return fs;
-      }
-      else if (alreadyIncluded)
-      {
-	return 0;
-      }
-    }
-  }
-  if (g_pathList==0) 
-  {
-    return 0;
-  }
-  char *s=g_pathList->first();
-  while (s)
-  {
-    QCString absName = (QCString)s+"/"+fileName;
-    //printf("  Looking for %s in %s\n",fileName,s);
-    FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
-    if (fs)
-    {
-      setFileName(absName);
-      g_yyLineNr=1;
-      //printf("  -> found it\n");
-      return fs;
-    }
-    else if (alreadyIncluded)
-    {
-      return 0;
-    }
-
-    s=g_pathList->next();
-  } 
-  return 0;
-}
-
-static QCString extractTrailingComment(const char *s)
-{
-  if (s==0) return "";
-  int i=strlen(s)-1;
-  while (i>=0)
-  {
-    char c=s[i];
-    switch (c)
-    {
-      case '/':
-	{
-	  i--;
-	  if (i>=0 && s[i]=='*') // end of a comment block
-	  {
-	    i--;
-	    while (i>0 && !(s[i-1]=='/' && s[i]=='*')) i--;
-	    if (i==0) 
-	    {
-	      i++;
-	    }
-	    // only /*!< or /**< are treated as a comment for the macro name,
-	    // otherwise the comment is treated as part of the macro definition
-	    return ((s[i+1]=='*' || s[i+1]=='!') && s[i+2]=='<') ? &s[i-1] : ""; 
-	  }
-	  else
-	  {
-	    return "";
-	  }
-	} 
-	break;
-	// whitespace or line-continuation
-      case ' ':
-      case '\t': 
-      case '\r':
-      case '\n':
-      case '\\':
-	break;
-      default:
-	return "";
-    }
-    i--;
-  }
-  return "";
-}
-
+static void setFileName(const char *name);
+static void incrLevel();
+static void decrLevel();
+static bool otherCaseDone();
+static void setCaseDone(bool value);
+static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyIncluded);
+static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyIncluded);
+static QCString extractTrailingComment(const char *s);
 static int getNextChar(const QCString &expr,QCString *rest,uint &pos);
 static int getCurrentChar(const QCString &expr,QCString *rest,uint pos);
 static void unputChar(const QCString &expr,QCString *rest,uint &pos,char c);
 static void expandExpression(QCString &expr,QCString *rest,int pos);
-
-static QCString stringize(const QCString &s)
-{
-  QCString result;
-  uint i=0;
-  bool inString=FALSE;
-  bool inChar=FALSE;
-  char c,pc;
-  while (i<s.length())
-  {
-    if (!inString && !inChar)
-    {
-      while (i<s.length() && !inString && !inChar)
-      {
-	c=s.at(i++);
-	if (c=='"')
-	{
-	  result+="\\\"";
-	  inString=TRUE;
-	}
-	else if (c=='\'')
-	{
-	  result+=c;
-	  inChar=TRUE;
-	}
-	else
-	{
-	  result+=c;
-	}
-      }
-    }
-    else if (inChar)
-    {
-      while (i<s.length() && inChar)
-      {
-	c=s.at(i++);
-	if (c=='\'')
-	{
-	  result+='\'';
-	  inChar=FALSE;
-	}
-	else if (c=='\\')
-	{
-	  result+="\\\\";
-	}
-	else
-	{
-	  result+=c;
-	}
-      }
-    }
-    else
-    {
-      pc=0;
-      while (i<s.length() && inString)
-      {
-	char c=s.at(i++);
-	if (c=='"') 
-	{
-	  result+="\\\"";
-	  inString= pc=='\\';
-	}
-	else if (c=='\\')
-	  result+="\\\\";
-	else
-	  result+=c;
-	pc=c;
-      }
-    }
-  }
-  //printf("stringize `%s'->`%s'\n",s.data(),result.data());
-  return result;
-}
-
-/*! Execute all ## operators in expr. 
- * If the macro name before or after the operator contains a no-rescan 
- * marker (@-) then this is removed (before the concatenated macro name
- * may be expanded again.
- */
-static void processConcatOperators(QCString &expr)
-{
-  //printf("processConcatOperators: in=`%s'\n",expr.data());
-  QRegExp r("[ \\t\\n]*##[ \\t\\n]*"); 
-  int l,n,i=0;
-  if (expr.isEmpty()) return;
-  while ((n=r.match(expr,i,&l))!=-1)
-  {
-    //printf("Match: `%s'\n",expr.data()+i);
-    if (n+l+1<(int)expr.length() && expr.at(n+l)=='@' && expr.at(n+l+1)=='-')
-    {
-      // remove no-rescan marker after ID
-      l+=2;
-    }
-    //printf("found `%s'\n",expr.mid(n,l).data());
-    // remove the ## operator and the surrounding whitespace
-    expr=expr.left(n)+expr.right(expr.length()-n-l);
-    int k=n-1;
-    while (k>=0 && isId(expr.at(k))) k--; 
-    if (k>0 && expr.at(k)=='-' && expr.at(k-1)=='@')
-    {
-      // remove no-rescan marker before ID
-      expr=expr.left(k-1)+expr.right(expr.length()-k-1);
-      n-=2;
-    }
-    i=n;
-  }
-  //printf("processConcatOperators: out=`%s'\n",expr.data());
-}
-
+static QCString stringize(const QCString &s);
+static void processConcatOperators(QCString &expr);
 static void yyunput (int c,char *buf_ptr  );
-static void returnCharToStream(char c)
-{
-  unput(c);
-}
-
-static inline void addTillEndOfString(const QCString &expr,QCString *rest,
-                                       uint &pos,char term,QCString &arg)
-{
-  int cc;
-  while ((cc=getNextChar(expr,rest,pos))!=EOF && cc!=0)
-  {
-    if (cc=='\\') arg+=(char)cc,cc=getNextChar(expr,rest,pos);
-    else if (cc==term) return;
-    arg+=(char)cc;
-  }
-}
-
-/*! replaces the function macro \a def whose argument list starts at
- * \a pos in expression \a expr. 
- * Notice that this routine may scan beyond the \a expr string if needed.
- * In that case the characters will be read from the input file.
- * The replacement string will be returned in \a result and the 
- * length of the (unexpanded) argument list is stored in \a len.
- */ 
-static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result)
-{
-  //printf("replaceFunctionMacro(expr=%s,rest=%s,pos=%d,def=%s) level=%d\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),g_level);
-  uint j=pos;
-  len=0;
-  result.resize(0);
-  int cc;
-  while ((cc=getCurrentChar(expr,rest,j))!=EOF && isspace(cc)) 
-  { 
-    len++; 
-    getNextChar(expr,rest,j); 
-  }
-  if (cc!='(') 
-  { 
-    unputChar(expr,rest,j,' '); 
-    return FALSE; 
-  }
-  getNextChar(expr,rest,j); // eat the `(' character
-
-  QDict<QCString> argTable;  // list of arguments
-  argTable.setAutoDelete(TRUE);
-  QCString arg;
-  int argCount=0;
-  bool done=FALSE;
-  
-  // PHASE 1: read the macro arguments
-  if (def->nargs==0)
-  {
-    while ((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
-    {
-      char c = (char)cc;
-      if (c==')') break;
-    }
-  }
-  else
-  {
-    while (!done && (argCount<def->nargs || def->varArgs) && 
-	((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
-	  )
-    {
-      char c=(char)cc;
-      if (c=='(') // argument is a function => search for matching )
-      {
-	int level=1;
-	arg+=c;
-	//char term='\0';
-	while ((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
-	{
-	  char c=(char)cc;
-	  //printf("processing %c: term=%c (%d)\n",c,term,term);
-	  if (c=='\'' || c=='\"') // skip ('s and )'s inside strings
-	  {
-	    arg+=c;
-	    addTillEndOfString(expr,rest,j,c,arg);
-	  }
-	  if (c==')')
-	  {
-	    level--;
-	    arg+=c;
-	    if (level==0) break;
-	  }
-	  else if (c=='(')
-	  {
-	    level++;
-	    arg+=c;
-	  }
-	  else
-	    arg+=c;
-	}
-      }
-      else if (c==')' || c==',') // last or next argument found
-      {
-	if (c==',' && argCount==def->nargs-1 && def->varArgs)
-	{
-	  arg=arg.stripWhiteSpace();
-	  arg+=',';
-	}
-	else
-	{
-	  QCString argKey;
-	  argKey.sprintf("@%d",argCount++); // key name
-	  arg=arg.stripWhiteSpace();
-	  // add argument to the lookup table
-	  argTable.insert(argKey, new QCString(arg));
-	  arg.resize(0);
-	  if (c==')') // end of the argument list
-	  {
-	    done=TRUE;
-	  }
-	}
-      } 
-      else if (c=='\"') // append literal strings
-      {
-	arg+=c; 
-	bool found=FALSE;
-	while (!found && (cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
-	{
-	  found = cc=='"';
-	  if (cc=='\\')
-	  {
-	    c=(char)cc;	  
-	    arg+=c;
-	    if ((cc=getNextChar(expr,rest,j))==EOF || cc==0) break;
-	  }
-	  c=(char)cc;	  
-	  arg+=c;
-	}
-      }
-      else if (c=='\'') // append literal characters
-      {
-	arg+=c;
-	bool found=FALSE;
-	while (!found && (cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
-	{
-	  found = cc=='\'';
-	  if (cc=='\\')
-	  {
-	    c=(char)cc;	  
-	    arg+=c;
-	    if ((cc=getNextChar(expr,rest,j))==EOF || cc==0) break;
-	  }
-	  c=(char)cc;
-	  arg+=c;
-	}
-      }	    
-      else // append other characters
-      {
-	arg+=c;
-      }
-    }
-  }
-
-  // PHASE 2: apply the macro function
-  if (argCount==def->nargs || // same number of arguments
-      (argCount>=def->nargs-1 && def->varArgs)) // variadic macro with at least as many
-                                                // params as the non-variadic part (see bug731985)
-  {
-    uint k=0;
-    // substitution of all formal arguments
-    QCString resExpr;
-    const QCString d=def->definition.stripWhiteSpace();
-    //printf("Macro definition: %s\n",d.data());
-    bool inString=FALSE;
-    while (k<d.length())
-    {
-      if (d.at(k)=='@') // maybe a marker, otherwise an escaped @
-      {
-	if (d.at(k+1)=='@') // escaped @ => copy it (is unescaped later)
-	{
-	  k+=2;
-	  resExpr+="@@"; // we unescape these later
-	}
-	else if (d.at(k+1)=='-') // no-rescan marker
-	{
-	  k+=2;
-	  resExpr+="@-";
-	}
-	else // argument marker => read the argument number
-	{
-	  QCString key="@";
-	  QCString *subst=0;
-	  bool hash=FALSE;
-	  int l=k-1;
-	  // search for ## backward
-	  if (l>=0 && d.at(l)=='"') l--;
-	  while (l>=0 && d.at(l)==' ') l--;
-	  if (l>0 && d.at(l)=='#' && d.at(l-1)=='#') hash=TRUE;
-	  k++;
-	  // scan the number
-	  while (k<d.length() && d.at(k)>='0' && d.at(k)<='9') key+=d.at(k++);
-	  if (!hash) 
-	  {
-	    // search for ## forward
-	    l=k;
-	    if (l<(int)d.length() && d.at(l)=='"') l++;
-	    while (l<(int)d.length() && d.at(l)==' ') l++;
-	    if (l<(int)d.length()-1 && d.at(l)=='#' && d.at(l+1)=='#') hash=TRUE;
-	  }
-	  //printf("request key %s result %s\n",key.data(),argTable[key]->data());
-	  if (key.length()>1 && (subst=argTable[key])) 
-	  {
-	    QCString substArg=*subst;
-	    //printf("substArg=`%s'\n",substArg.data());
-	    // only if no ## operator is before or after the argument
-	    // marker we do macro expansion.
-	    if (!hash) expandExpression(substArg,0,0);
-	    if (inString)
-	    {
-	      //printf("`%s'=stringize(`%s')\n",stringize(*subst).data(),subst->data());
-
-	      // if the marker is inside a string (because a # was put 
-	      // before the macro name) we must escape " and \ characters
-	      resExpr+=stringize(substArg);
-	    }
-	    else
-	    {
-	      if (hash && substArg.isEmpty())
-	      {
-		resExpr+="@E"; // empty argument will be remove later on
-	      }
-	      else if (g_nospaces)
-	      {
-	        resExpr+=substArg;
-	      }
-	      else
-	      {
-	        resExpr+=" "+substArg+" ";
-	      }
-	    }
-	  }
-	}
-      }
-      else // no marker, just copy
-      {
-	if (!inString && d.at(k)=='\"') 
-	{
-	  inString=TRUE; // entering a literal string
-	}
-	else if (inString && d.at(k)=='\"' && (d.at(k-1)!='\\' || d.at(k-2)=='\\'))
-	{
-	  inString=FALSE; // leaving a literal string
-	}
-	resExpr+=d.at(k++);
-      }
-    }
-    len=j-pos;
-    result=resExpr;
-    //printf("result after substitution `%s' expr=`%s'\n",
-    //       result.data(),expr.mid(pos,len).data());
-    return TRUE;
-  }
-  return FALSE;
-}
-
-
-/*! returns the next identifier in string \a expr by starting at position \a p.
- * The position of the identifier is returned (or -1 if nothing is found)
- * and \a l is its length. Any quoted strings are skipping during the search.
- */
-static int getNextId(const QCString &expr,int p,int *l)
-{
-  int n;
-  while (p<(int)expr.length())
-  {
-    char c=expr.at(p++);
-    if (isdigit(c)) // skip number
-    {
-      while (p<(int)expr.length() && isId(expr.at(p))) p++;
-    }
-    else if (isalpha(c) || c=='_') // read id
-    {
-      n=p-1;
-      while (p<(int)expr.length() && isId(expr.at(p))) p++;
-      *l=p-n;
-      return n; 
-    }
-    else if (c=='"') // skip string
-    {
-      char ppc=0,pc=c;
-      if (p<(int)expr.length()) c=expr.at(p);
-      while (p<(int)expr.length() && (c!='"' || (pc=='\\' && ppc!='\\'))) 
-	// continue as long as no " is found, but ignoring \", but not \\"
-      {
-	ppc=pc;
-	pc=c;
-	c=expr.at(p);
-	p++;
-      }
-      if (p<(int)expr.length()) ++p; // skip closing quote
-    }
-    else if (c=='/') // skip C Comment
-    {
-      //printf("Found C comment at p=%d\n",p);
-      char pc=c;
-      if (p<(int)expr.length()) 
-      {
-	c=expr.at(p);
-        if (c=='*')  // Start of C comment
-        { 
-	  p++;
-  	  while (p<(int)expr.length() && !(pc=='*' && c=='/'))
-	  {
-	    pc=c;
-	    c=expr.at(p++);
-	  }
-        }
-      }
-      //printf("Found end of C comment at p=%d\n",p);
-    }
-  }
-  return -1;
-}
-
-/*! performs recursive macro expansion on the string \a expr
- *  starting at position \a pos.
- *  May read additional characters from the input while re-scanning!
- *  If \a expandAll is \c TRUE then all macros in the expression are
- *  expanded, otherwise only the first is expanded.
- */
-static void expandExpression(QCString &expr,QCString *rest,int pos)
-{
-  //printf("expandExpression(%s,%s)\n",expr.data(),rest ? rest->data() : 0);
-  QCString macroName;
-  QCString expMacro;
-  bool definedTest=FALSE;
-  int i=pos,l,p,len;
-  while ((p=getNextId(expr,i,&l))!=-1) // search for an macro name
-  {
-    bool replaced=FALSE;
-    macroName=expr.mid(p,l);
-    //printf("macroName=%s\n",macroName.data());
-    if (p<2 || !(expr.at(p-2)=='@' && expr.at(p-1)=='-')) // no-rescan marker?
-    {
-      if (g_expandedDict->find(macroName)==0) // expand macro
-      {
-	Define *def=DefineManager::instance().isDefined(macroName);
-	if (definedTest) // macro name was found after defined 
-	{
-	  if (def) expMacro = " 1 "; else expMacro = " 0 ";
-	  replaced=TRUE;
-	  len=l;
-	  definedTest=FALSE;
-	}
-	else if (def && def->nargs==-1) // simple macro
-	{
-	  // substitute the definition of the macro
-	  //printf("macro `%s'->`%s'\n",macroName.data(),def->definition.data());
-	  if (g_nospaces)
-	  {
-	    expMacro=def->definition.stripWhiteSpace();
-	  }
-	  else
-	  {
-	    expMacro=" "+def->definition.stripWhiteSpace()+" ";
-	  }
-	  //expMacro=def->definition.stripWhiteSpace();
-	  replaced=TRUE;
-	  len=l;
-	  //printf("simple macro expansion=`%s'->`%s'\n",macroName.data(),expMacro.data());
-	}
-	else if (def && def->nargs>=0) // function macro
-	{
-	  replaced=replaceFunctionMacro(expr,rest,p+l,len,def,expMacro);
-	  len+=l;
-	}
-        else if (macroName=="defined")
-        {
-  	  //printf("found defined inside macro definition '%s'\n",expr.right(expr.length()-p).data());
-	  definedTest=TRUE;
-        }
-
-	if (replaced) // expand the macro and rescan the expression
-	{
-	    
-	  //printf("replacing `%s'->`%s'\n",expr.mid(p,len).data(),expMacro.data());
-	  QCString resultExpr=expMacro;
-	  QCString restExpr=expr.right(expr.length()-len-p);
-	  processConcatOperators(resultExpr);
-	  if (def && !def->nonRecursive)
-	  {
-	    g_expandedDict->insert(macroName,def);
-	    expandExpression(resultExpr,&restExpr,0);
-	    g_expandedDict->remove(macroName);
-	  }
-	  expr=expr.left(p)+resultExpr+restExpr;
-	  i=p;
-	  //printf("new expression: %s\n",expr.data());
-	}
-	else // move to the next macro name
-	{
-	  //printf("moving to the next macro old=%d new=%d\n",i,p+l);
-	  i=p+l;
-	}
-      }
-      else // move to the next macro name
-      {
-	expr=expr.left(p)+"@-"+expr.right(expr.length()-p);
-	//printf("macro already expanded, moving to the next macro expr=%s\n",expr.data());
-	i=p+l+2;
-	//i=p+l;
-      }
-    }
-    else // no re-scan marker found, skip the macro name
-    {
-      //printf("skipping marked macro\n");
-      i=p+l;
-    }
-  }
-}
-
-/*! replaces all occurrences of @@@@ in \a s by @@
- *  and removes all occurrences of @@E.
- *  All identifiers found are replaced by 0L
- */
-QCString removeIdsAndMarkers(const char *s)
-{
-  //printf("removeIdsAndMarkers(%s)\n",s);
-  const char *p=s;
-  char c;
-  bool inNum=FALSE;
-  QCString result;
-  if (p)
-  {
-    while ((c=*p))
-    {
-      if (c=='@') // replace @@ with @ and remove @E
-      {
-	if (*(p+1)=='@')
-	{
-	  result+=c; 
-	}
-	else if (*(p+1)=='E')
-	{
-	  // skip
-	}
-	p+=2;
-      }
-      else if (isdigit(c)) // number
-      {
-	result+=c;
-	p++;
-        inNum=TRUE;	
-      }
-      else if (c=='d' && !inNum) // identifier starting with a `d'
-      {
-	if (qstrncmp(p,"defined ",8)==0 || qstrncmp(p,"defined(",8)==0) 
-	           // defined keyword
-	{
-	  p+=7; // skip defined
-	}
-	else
-	{
-	  result+="0L";
-	  p++;
-	  while ((c=*p) && isId(c)) p++;
-	}
-      }
-      else if ((isalpha(c) || c=='_') && !inNum) // replace identifier with 0L
-      {
-	result+="0L";
-	p++;
-	while ((c=*p) && isId(c)) p++;
-	if (*p=='(') // undefined function macro
-	{
-	  p++;
-	  int count=1;
-	  while ((c=*p++))
-	  {
-	    if (c=='(') count++;
-	    else if (c==')')
-	    {
-	      count--;
-	      if (count==0) break;
-	    }
-	    else if (c=='/')
-	    {
-	      char pc=c;
-	      c=*++p;
-	      if (c=='*') // start of C comment
-	      {
-		while (*p && !(pc=='*' && c=='/')) // search end of comment
-		{
-		  pc=c;
-		  c=*++p;
-		}
-		p++;
-	      }
-	    }
-	  }
-	}
-      }
-      else if (c=='/') // skip C comments
-      {
-	char pc=c;
-	c=*++p;
-	if (c=='*') // start of C comment
-	{ 
-	  while (*p && !(pc=='*' && c=='/')) // search end of comment
-	  {
-	    pc=c;
-	    c=*++p;
-	  }
-	  p++;
-	}
-	else // oops, not comment but division
-	{
-	  result+=pc;
-	  goto nextChar;
-	}
-      }
-      else 
-      {
-nextChar:
-	result+=c;
-	char lc=tolower(c);
-	if (!isId(lc) && lc!='.' /*&& lc!='-' && lc!='+'*/) inNum=FALSE;
-	p++;
-      }
-    }
-  }
-  //printf("removeIdsAndMarkers(%s)=%s\n",s,result.data());
-  return result;
-}
-
-/*! replaces all occurrences of @@ in \a s by @
- *  \par assumption: 
- *   \a s only contains pairs of @@'s
- */
-QCString removeMarkers(const char *s)
-{
-  const char *p=s;
-  char c;
-  QCString result;
-  if (p)
-  {
-    while ((c=*p))
-    {
-      switch(c)
-      {
-	case '@': // replace @@ with @
-	  {
-	    if (*(p+1)=='@')
-	    {
-	      result+=c; 
-	    }
-	    p+=2;
-	  }
-	  break;
-	case '/': // skip C comments
-	  {
-	    result+=c;
-	    char pc=c;
-	    c=*++p;
-	    if (c=='*') // start of C comment
-	    { 
-	      while (*p && !(pc=='*' && c=='/')) // search end of comment
-	      {
-		if (*p=='@' && *(p+1)=='@') 
-		  result+=c,p++;
-		else 
-		  result+=c;
-		pc=c;
-		c=*++p;
-	      }
-	      if (*p) result+=c,p++;
-	    }
-	  }
-	  break;
-	case '"': // skip string literals
-	  {
-	    result+=c;
-	    char pc=c;
-	    c=*++p;
-	    while (*p && (c!='"' || pc=='\\')) // no end quote
-	    {
-	      result+=c;
-	      c=*++p;
-	    }
-	    if (*p) result+=c,p++; 
-	  }
-	  break;
-	case '\'': // skip char literals
-	  {
-	    result+=c;
-	    char pc=c;
-	    c=*++p;
-	    while (*p && (c!='\'' || pc=='\\')) // no end quote
-	    {
-	      result+=c;
-	      c=*++p;
-	    }
-	    if (*p) result+=c,p++; 
-	  }
-	  break;
-	default:
-	  {
-	    result+=c;
-	    p++;
-	  }
-	  break;
-      }
-    }
-  }
-  //printf("RemoveMarkers(%s)=%s\n",s,result.data());
-  return result;
-}
-
-/*! compute the value of the expression in string \a expr.
- *  If needed the function may read additional characters from the input.
- */
-
-bool computeExpression(const QCString &expr)
-{
-  QCString e=expr;
-  expandExpression(e,0,0);
-  //printf("after expansion `%s'\n",e.data());
-  e = removeIdsAndMarkers(e);
-  if (e.isEmpty()) return FALSE;
-  //printf("parsing `%s'\n",e.data());
-  return parseconstexp(g_yyFileName,g_yyLineNr,e);
-}
-
-/*! expands the macro definition in \a name
- *  If needed the function may read additional characters from the input
- */
-
-QCString expandMacro(const QCString &name)
-{
-  QCString n=name;
-  expandExpression(n,0,0);
-  n=removeMarkers(n);
-  //printf("expandMacro `%s'->`%s'\n",name.data(),n.data());
-  return n;
-}
-
-Define *newDefine()
-{
-  Define *def=new Define;
-  def->name       = g_defName;
-  def->definition = g_defText.stripWhiteSpace();
-  def->nargs      = g_defArgs;
-  def->fileName   = g_yyFileName; 
-  def->fileDef    = g_yyFileDef;
-  def->lineNr     = g_yyLineNr-g_yyMLines;
-  def->columnNr   = g_yyColNr;
-  def->varArgs    = g_defVarArgs;
-  //printf("newDefine: %s %s file: %s\n",def->name.data(),def->definition.data(),
-  //    def->fileDef ? def->fileDef->name().data() : def->fileName.data());
-  //printf("newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
-  if (!def->name.isEmpty() && Doxygen::expandAsDefinedDict[def->name])
-  {
-    def->isPredefined=TRUE;
-  }
-  return def;
-}
-
-void addDefine()
-{
-  if (g_skip) return; // do not add this define as it is inside a 
-                      // conditional section (cond command) that is disabled.
-  if (!Doxygen::gatherDefines) return;
-
-  //printf("addDefine %s %s\n",g_defName.data(),g_defArgsStr.data());
-  //ArgumentList *al = new ArgumentList;
-  //stringToArgumentList(g_defArgsStr,al);
-  MemberDef *md=new MemberDef(
-      g_yyFileName,g_yyLineNr-g_yyMLines,g_yyColNr,
-      "#define",g_defName,g_defArgsStr,0,
-      Public,Normal,FALSE,Member,MemberType_Define,0,0);
-  if (!g_defArgsStr.isEmpty())
-  {
-    ArgumentList *argList = new ArgumentList;
-    //printf("addDefine() g_defName=`%s' g_defArgsStr=`%s'\n",g_defName.data(),g_defArgsStr.data());
-    stringToArgumentList(g_defArgsStr,argList);
-    md->setArgumentList(argList);
-  }
-  //printf("Setting initializer for `%s' to `%s'\n",g_defName.data(),g_defText.data());
-  int l=g_defLitText.find('\n');
-  if (l>0 && g_defLitText.left(l).stripWhiteSpace()=="\\")
-  {
-    // strip first line if it only contains a slash
-    g_defLitText = g_defLitText.right(g_defLitText.length()-l-1);
-  }
-  else if (l>0)
-  {
-    // align the items on the first line with the items on the second line
-    int k=l+1;
-    const char *p=g_defLitText.data()+k;
-    char c;
-    while ((c=*p++) && (c==' ' || c=='\t')) k++;
-    g_defLitText=g_defLitText.mid(l+1,k-l-1)+g_defLitText.stripWhiteSpace();
-  }
-  md->setInitializer(g_defLitText.stripWhiteSpace());
-
-  //printf("pre.l: md->setFileDef(%p)\n",g_inputFileDef);
-  md->setFileDef(g_inputFileDef);
-  md->setDefinition("#define "+g_defName);
-
-  MemberName *mn=Doxygen::functionNameSDict->find(g_defName);
-  if (mn==0)
-  {
-    mn = new MemberName(g_defName);
-    Doxygen::functionNameSDict->append(g_defName,mn);
-  }
-  mn->append(md);
-  if (g_yyFileDef) 
-  {
-    g_yyFileDef->insertMember(md);
-  }
-
-  //Define *d;
-  //if ((d=defineDict[g_defName])==0) defineDict.insert(g_defName,newDefine()); 
-}
-
-static inline void outputChar(char c)
-{
-  if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addChar(c);
-}
-
-static inline void outputArray(const char *a,int len)
-{
-  if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addArray(a,len);
-}
-
-static void readIncludeFile(const QCString &inc)
-{
-  static bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
-  uint i=0;
-
-  // find the start of the include file name
-  while (i<inc.length() &&
-         (inc.at(i)==' ' || inc.at(i)=='"' || inc.at(i)=='<')
-        ) i++;
-  uint s=i;
-
-  // was it a local include?
-  bool localInclude = s>0 && inc.at(s-1)=='"';
-
-  // find the end of the include file name
-  while (i<inc.length() && inc.at(i)!='"' && inc.at(i)!='>') i++;
-
-  if (s<inc.length() && i>s) // valid include file name found
-  {
-    // extract include path+name
-    QCString incFileName=inc.mid(s,i-s).stripWhiteSpace();
-
-    QCString dosExt = incFileName.right(4);
-    if (dosExt==".exe" || dosExt==".dll" || dosExt==".tlb")
-    {
-      // skip imported binary files (e.g. M$ type libraries)
-      return;
-    }
-
-    QCString oldFileName = g_yyFileName;
-    FileDef *oldFileDef  = g_yyFileDef;
-    int oldLineNr        = g_yyLineNr;
-    //printf("Searching for `%s'\n",incFileName.data());
-
-    // absIncFileName avoids difficulties for incFileName starting with "../" (bug 641336)
-    QCString absIncFileName = incFileName;
-    {
-      QFileInfo fi(g_yyFileName);
-      if (fi.exists())
-      {
-	QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+incFileName;
-        QFileInfo fi2(absName);
-        if (fi2.exists())
-        {
-	  absIncFileName=fi2.absFilePath().utf8();
-	}
-	else if (searchIncludes) // search in INCLUDE_PATH as well
-	{
-	  QStrList &includePath = Config_getList(INCLUDE_PATH);
-	  char *s=includePath.first();
-	  while (s)
-	  {
-	    QFileInfo fi(s);
-	    if (fi.exists() && fi.isDir())
-	    {
-	      QCString absName = QCString(fi.absFilePath().utf8())+"/"+incFileName;
-	      //printf("trying absName=%s\n",absName.data());
-	      QFileInfo fi2(absName);
-	      if (fi2.exists())
-	      {
-		absIncFileName=fi2.absFilePath().utf8();
-		break;
-	      }
-	      //printf( "absIncFileName = %s\n", absIncFileName.data() );
-	    }
-	    s=includePath.next();
-	  }
-	}
-	//printf( "absIncFileName = %s\n", absIncFileName.data() );
-      }
-    }
-    DefineManager::instance().addInclude(g_yyFileName,absIncFileName);
-    DefineManager::instance().addFileToContext(absIncFileName);
-
-    // findFile will overwrite g_yyFileDef if found
-    FileState *fs;
-    bool alreadyIncluded = FALSE;
-    //printf("calling findFile(%s)\n",incFileName.data());
-    if ((fs=findFile(incFileName,localInclude,alreadyIncluded))) // see if the include file can be found
-    {
-      //printf("Found include file!\n");
-      if (Debug::isFlagSet(Debug::Preprocessor))
-      {
-        for (i=0;i<g_includeStack.count();i++) 
-        {
-          Debug::print(Debug::Preprocessor,0,"  ");
-        }
-        //msg("#include %s: parsing...\n",incFileName.data());
-      }
-      if (oldFileDef)
-      {
-        // add include dependency to the file in which the #include was found
-	bool ambig;
-	// change to absolute name for bug 641336 
-        FileDef *incFd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
-        oldFileDef->addIncludeDependency(ambig ? 0 : incFd,incFileName,localInclude,g_isImported,FALSE);
-        // add included by dependency
-        if (g_yyFileDef)
-        {
-          //printf("Adding include dependency %s->%s\n",oldFileDef->name().data(),incFileName.data());
-          g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
-        }
-      }
-      else if (g_inputFileDef)
-      {
-        g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,g_isImported,TRUE);
-      }
-      fs->bufState = YY_CURRENT_BUFFER;
-      fs->lineNr   = oldLineNr;
-      fs->fileName = oldFileName;
-      // push the state on the stack
-      g_includeStack.push(fs);
-      // set the scanner to the include file
-
-      // Deal with file changes due to 
-      // #include's within { .. } blocks
-      QCString lineStr(g_yyFileName.length()+20);
-      lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
-      outputArray(lineStr.data(),lineStr.length());
-
-      DBG_CTX((stderr,"Switching to include file %s\n",incFileName.data()));
-      g_expectGuard=TRUE;
-      g_inputBuf   = &fs->fileBuf;
-      g_inputBufPos=0;
-      yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE));
-    }
-    else
-    {
-      //printf("  calling findFile(%s) alreadyInc=%d\n",incFileName.data(),alreadyIncluded);
-      if (oldFileDef)
-      {
-	bool ambig;
-	//QCString absPath = incFileName;
-	//if (QDir::isRelativePath(incFileName))
-	//{
-	//  absPath = QDir::cleanDirPath(oldFileDef->getPath()+"/"+incFileName);
-	//  //printf("%s + %s -> resolved path %s\n",oldFileDef->getPath().data(),incFileName.data(),absPath.data());
-	//}
-
-	// change to absolute name for bug 641336 
-	FileDef *fd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
-	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);
-	// add include dependency to the file in which the #include was found
-	oldFileDef->addIncludeDependency(ambig ? 0 : fd,incFileName,localInclude,g_isImported,FALSE);
-	// add included by dependency
-        if (fd)
-        {
-          //printf("Adding include dependency (2) %s->%s ambig=%d\n",oldFileDef->name().data(),fd->name().data(),ambig);
-          fd->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
-        }
-      }
-      else if (g_inputFileDef)
-      {
-        g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,g_isImported,TRUE);
-      }
-      if (Debug::isFlagSet(Debug::Preprocessor))
-      {
-	if (alreadyIncluded)
-	{
-          Debug::print(Debug::Preprocessor,0,"#include %s: already included! skipping...\n",qPrint(incFileName));
-	}
-	else
-	{
-          Debug::print(Debug::Preprocessor,0,"#include %s: not found! skipping...\n",qPrint(incFileName));
-	}
-        //printf("error: include file %s not found\n",yytext);
-      }
-      if (g_curlyCount>0 && !alreadyIncluded) // failed to find #include inside { ... }
-      {
-	warn(g_yyFileName,g_yyLineNr,"include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",incFileName.data());
-      }
-    }
-  }
-}
-
-/* ----------------------------------------------------------------- */
-
-static void startCondSection(const char *sectId)
-{
-  //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
-  CondParser prs;
-  bool expResult = prs.parse(g_yyFileName,g_yyLineNr,sectId);
-  g_condStack.push(new CondCtx(g_yyLineNr,sectId,g_skip));
-  if (!expResult)
-  {
-    g_skip=TRUE;
-  }
-  //printf("  expResult=%d skip=%d\n",expResult,g_skip);
-}
-
-static void endCondSection()
-{
-  if (g_condStack.isEmpty())
-  {
-    g_skip=FALSE;
-  }
-  else
-  {
-    CondCtx *ctx = g_condStack.pop();
-    g_skip=ctx->skip;
-    delete ctx;
-  }
-  //printf("endCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
-}
-
-static void forceEndCondSection()
-{
-  while (!g_condStack.isEmpty())
-  {
-    delete g_condStack.pop();
-  }
-  g_skip=FALSE;
-}
-
-static QCString escapeAt(const char *text)
-{
-  QCString result;
-  if (text)
-  {
-    char c;
-    const char *p=text;
-    while ((c=*p++))
-    {
-      if (c=='@') result+="@@"; else result+=c;
-    }
-  }
-  return result;
-}
-
-static char resolveTrigraph(char c)
-{
-  switch (c)
-  {
-    case '=': return '#';
-    case '/': return '\\';
-    case '\'': return '^';
-    case '(': return '[';
-    case ')': return ']';
-    case '!': return '|';
-    case '<': return '{';
-    case '>': return '}';
-    case '-': return '~';
-  }
-  return '?';
-}
+static void returnCharToStream(char c);
+static void addTillEndOfString(const QCString &expr,QCString *rest,
+                                       uint &pos,char term,QCString &arg);
+static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result);
+static int getNextId(const QCString &expr,int p,int *l);
+static void expandExpression(QCString &expr,QCString *rest,int pos);
+static QCString removeIdsAndMarkers(const char *s);
+static QCString removeMarkers(const char *s);
+static bool computeExpression(const QCString &expr);
+static QCString expandMacro(const QCString &name);
+static Define *newDefine();
+static void addDefine();
+static void outputChar(char c);
+static void outputArray(const char *a,int len);
+static void readIncludeFile(const QCString &inc);
+static void startCondSection(const char *sectId);
+static void endCondSection();
+static void forceEndCondSection();
+static QCString escapeAt(const char *text);
+static char resolveTrigraph(char c);
+static int yyread(char *buf,int max_size);
 
 /* ----------------------------------------------------------------- */
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
-
-static int yyread(char *buf,int max_size)
-{
-  int bytesInBuf = g_inputBuf->curPos()-g_inputBufPos;
-  int bytesToCopy = QMIN(max_size,bytesInBuf);
-  memcpy(buf,g_inputBuf->data()+g_inputBufPos,bytesToCopy);
-  g_inputBufPos+=bytesToCopy;
-  return bytesToCopy;
-}
 
 /* ----------------------------------------------------------------- */
 
@@ -2938,6 +1649,308 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 /*@ ----------------------------------------------------------------------------
  */
 
+static void setFileName(const char *name)
+{
+  bool ambig;
+  QFileInfo fi(name);
+  g_yyFileName=fi.absFilePath().utf8();
+  g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
+  if (g_yyFileDef==0) // if this is not an input file check if it is an
+                      // include file
+  {
+    g_yyFileDef=findFileDef(Doxygen::includeNameDict,g_yyFileName,ambig);
+  }
+  //printf("setFileName(%s) g_yyFileName=%s g_yyFileDef=%p\n",
+  //    name,g_yyFileName.data(),g_yyFileDef);
+  if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
+  g_insideCS = getLanguageFromFileName(g_yyFileName)==SrcLangExt_CSharp;
+  g_isSource = guessSection(g_yyFileName);
+}
+
+static void incrLevel()
+{
+  g_level++;
+  g_levelGuard.resize(g_level);
+  g_levelGuard[g_level-1]=FALSE;
+  //printf("%s line %d: incrLevel %d\n",g_yyFileName.data(),g_yyLineNr,g_level);
+}
+
+static void decrLevel()
+{
+  //printf("%s line %d: decrLevel %d\n",g_yyFileName.data(),g_yyLineNr,g_level);
+  if (g_level > 0)
+  {
+    g_level--;
+    g_levelGuard.resize(g_level);
+  }
+  else
+  {
+    warn(g_yyFileName,g_yyLineNr,"More #endif's than #if's found.\n");
+  }
+}
+
+static bool otherCaseDone()
+{
+  if (g_level==0)
+  {
+    warn(g_yyFileName,g_yyLineNr,"Found an #else without a preceding #if.\n");
+    return TRUE;
+  }
+  else
+  {
+    return g_levelGuard[g_level-1];
+  }
+}
+
+static void setCaseDone(bool value)
+{
+  g_levelGuard[g_level-1]=value;
+}
+
+static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyIncluded)
+{
+  alreadyIncluded = FALSE;
+  FileState *fs = 0;
+  //printf("checkAndOpenFile(%s)\n",fileName.data());
+  QFileInfo fi(fileName);
+  if (fi.exists() && fi.isFile())
+  {
+    static QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
+    if (patternMatch(fi,&exclPatterns)) return 0;
+
+    QCString absName = fi.absFilePath().utf8();
+
+    // global guard
+    if (g_curlyCount==0) // not #include inside { ... }
+    {
+      if (g_allIncludes.find(absName)!=0)
+      {
+        alreadyIncluded = TRUE;
+        //printf("  already included 1\n");
+        return 0; // already done
+      }
+      g_allIncludes.insert(absName,(void *)0x8);
+    }
+    // check include stack for absName
+
+    QStack<FileState> tmpStack;
+    g_includeStack.setAutoDelete(FALSE);
+    while ((fs=g_includeStack.pop()))
+    {
+      if (fs->fileName==absName) alreadyIncluded=TRUE;
+      tmpStack.push(fs);
+    }
+    while ((fs=tmpStack.pop()))
+    {
+      g_includeStack.push(fs);
+    }
+    g_includeStack.setAutoDelete(TRUE);
+
+    if (alreadyIncluded)
+    {
+      //printf("  already included 2\n");
+      return 0;
+    }
+    //printf("#include %s\n",absName.data());
+
+    fs = new FileState(fi.size()+4096);
+    alreadyIncluded = FALSE;
+    if (!readInputFile(absName,fs->fileBuf))
+    { // error
+      //printf("  error reading\n");
+      delete fs;
+      fs=0;
+    }
+    else
+    {
+      fs->oldFileBuf    = g_inputBuf;
+      fs->oldFileBufPos = g_inputBufPos;
+    }
+  }
+  return fs;
+}
+
+static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyIncluded)
+{
+  //printf("** findFile(%s,%d) g_yyFileName=%s\n",fileName,localInclude,g_yyFileName.data());
+  if (portable_isAbsolutePath(fileName))
+  {
+    FileState *fs = checkAndOpenFile(fileName,alreadyIncluded);
+    if (fs)
+    {
+      setFileName(fileName);
+      g_yyLineNr=1;
+      return fs;
+    }
+    else if (alreadyIncluded)
+    {
+      return 0;
+    }
+  }
+  if (localInclude && !g_yyFileName.isEmpty())
+  {
+    QFileInfo fi(g_yyFileName);
+    if (fi.exists())
+    {
+      QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+fileName;
+      FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
+      if (fs)
+      {
+	setFileName(absName);
+	g_yyLineNr=1;
+	return fs;
+      }
+      else if (alreadyIncluded)
+      {
+	return 0;
+      }
+    }
+  }
+  if (g_pathList==0) 
+  {
+    return 0;
+  }
+  char *s=g_pathList->first();
+  while (s)
+  {
+    QCString absName = (QCString)s+"/"+fileName;
+    //printf("  Looking for %s in %s\n",fileName,s);
+    FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
+    if (fs)
+    {
+      setFileName(absName);
+      g_yyLineNr=1;
+      //printf("  -> found it\n");
+      return fs;
+    }
+    else if (alreadyIncluded)
+    {
+      return 0;
+    }
+
+    s=g_pathList->next();
+  } 
+  return 0;
+}
+
+static QCString extractTrailingComment(const char *s)
+{
+  if (s==0) return "";
+  int i=strlen(s)-1;
+  while (i>=0)
+  {
+    char c=s[i];
+    switch (c)
+    {
+      case '/':
+	{
+	  i--;
+	  if (i>=0 && s[i]=='*') // end of a comment block
+	  {
+	    i--;
+	    while (i>0 && !(s[i-1]=='/' && s[i]=='*')) i--;
+	    if (i==0) 
+	    {
+	      i++;
+	    }
+	    // only /*!< or /**< are treated as a comment for the macro name,
+	    // otherwise the comment is treated as part of the macro definition
+	    return ((s[i+1]=='*' || s[i+1]=='!') && s[i+2]=='<') ? &s[i-1] : ""; 
+	  }
+	  else
+	  {
+	    return "";
+	  }
+	} 
+	break;
+	// whitespace or line-continuation
+      case ' ':
+      case '\t': 
+      case '\r':
+      case '\n':
+      case '\\':
+	break;
+      default:
+	return "";
+    }
+    i--;
+  }
+  return "";
+}
+
+static QCString stringize(const QCString &s)
+{
+  QCString result;
+  uint i=0;
+  bool inString=FALSE;
+  bool inChar=FALSE;
+  char c,pc;
+  while (i<s.length())
+  {
+    if (!inString && !inChar)
+    {
+      while (i<s.length() && !inString && !inChar)
+      {
+	c=s.at(i++);
+	if (c=='"')
+	{
+	  result+="\\\"";
+	  inString=TRUE;
+	}
+	else if (c=='\'')
+	{
+	  result+=c;
+	  inChar=TRUE;
+	}
+	else
+	{
+	  result+=c;
+	}
+      }
+    }
+    else if (inChar)
+    {
+      while (i<s.length() && inChar)
+      {
+	c=s.at(i++);
+	if (c=='\'')
+	{
+	  result+='\'';
+	  inChar=FALSE;
+	}
+	else if (c=='\\')
+	{
+	  result+="\\\\";
+	}
+	else
+	{
+	  result+=c;
+	}
+      }
+    }
+    else
+    {
+      pc=0;
+      while (i<s.length() && inString)
+      {
+	char c=s.at(i++);
+	if (c=='"') 
+	{
+	  result+="\\\"";
+	  inString= pc=='\\';
+	}
+	else if (c=='\\')
+	  result+="\\\\";
+	else
+	  result+=c;
+	pc=c;
+      }
+    }
+  }
+  //printf("stringize `%s'->`%s'\n",s.data(),result.data());
+  return result;
+}
+
 static int getNextChar(const QCString &expr,QCString *rest,uint &pos)
 {
   //printf("getNextChar(%s,%s,%d)\n",expr.data(),rest ? rest->data() : 0,pos);
@@ -3006,11 +2019,1023 @@ static void unputChar(const QCString &expr,QCString *rest,uint &pos,char c)
   //printf("result: unputChar(%s,%s,%d,%c)\n",expr.data(),rest ? rest->data() : 0,pos,c);
 }
 
-void addSearchDir(const char *dir)
+/*! Execute all ## operators in expr. 
+ * If the macro name before or after the operator contains a no-rescan 
+ * marker (@-) then this is removed (before the concatenated macro name
+ * may be expanded again.
+ */
+static void processConcatOperators(QCString &expr)
 {
-  QFileInfo fi(dir);
-  if (fi.isDir()) g_pathList->append(fi.absFilePath().utf8());
-} 
+  //printf("processConcatOperators: in=`%s'\n",expr.data());
+  QRegExp r("[ \\t\\n]*##[ \\t\\n]*"); 
+  int l,n,i=0;
+  if (expr.isEmpty()) return;
+  while ((n=r.match(expr,i,&l))!=-1)
+  {
+    //printf("Match: `%s'\n",expr.data()+i);
+    if (n+l+1<(int)expr.length() && expr.at(n+l)=='@' && expr.at(n+l+1)=='-')
+    {
+      // remove no-rescan marker after ID
+      l+=2;
+    }
+    //printf("found `%s'\n",expr.mid(n,l).data());
+    // remove the ## operator and the surrounding whitespace
+    expr=expr.left(n)+expr.right(expr.length()-n-l);
+    int k=n-1;
+    while (k>=0 && isId(expr.at(k))) k--; 
+    if (k>0 && expr.at(k)=='-' && expr.at(k-1)=='@')
+    {
+      // remove no-rescan marker before ID
+      expr=expr.left(k-1)+expr.right(expr.length()-k-1);
+      n-=2;
+    }
+    i=n;
+  }
+  //printf("processConcatOperators: out=`%s'\n",expr.data());
+}
+
+static void returnCharToStream(char c)
+{
+  unput(c);
+}
+
+static void addTillEndOfString(const QCString &expr,QCString *rest,
+                                       uint &pos,char term,QCString &arg)
+{
+  int cc;
+  while ((cc=getNextChar(expr,rest,pos))!=EOF && cc!=0)
+  {
+    if (cc=='\\') arg+=(char)cc,cc=getNextChar(expr,rest,pos);
+    else if (cc==term) return;
+    arg+=(char)cc;
+  }
+}
+
+/*! replaces the function macro \a def whose argument list starts at
+ * \a pos in expression \a expr. 
+ * Notice that this routine may scan beyond the \a expr string if needed.
+ * In that case the characters will be read from the input file.
+ * The replacement string will be returned in \a result and the 
+ * length of the (unexpanded) argument list is stored in \a len.
+ */ 
+static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result)
+{
+  //printf("replaceFunctionMacro(expr=%s,rest=%s,pos=%d,def=%s) level=%d\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),g_level);
+  uint j=pos;
+  len=0;
+  result.resize(0);
+  int cc;
+  while ((cc=getCurrentChar(expr,rest,j))!=EOF && isspace(cc)) 
+  { 
+    len++; 
+    getNextChar(expr,rest,j); 
+  }
+  if (cc!='(') 
+  { 
+    unputChar(expr,rest,j,' '); 
+    return FALSE; 
+  }
+  getNextChar(expr,rest,j); // eat the `(' character
+
+  QDict<QCString> argTable;  // list of arguments
+  argTable.setAutoDelete(TRUE);
+  QCString arg;
+  int argCount=0;
+  bool done=FALSE;
+  
+  // PHASE 1: read the macro arguments
+  if (def->nargs==0)
+  {
+    while ((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+    {
+      char c = (char)cc;
+      if (c==')') break;
+    }
+  }
+  else
+  {
+    while (!done && (argCount<def->nargs || def->varArgs) && 
+	((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+	  )
+    {
+      char c=(char)cc;
+      if (c=='(') // argument is a function => search for matching )
+      {
+	int level=1;
+	arg+=c;
+	//char term='\0';
+	while ((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+	{
+	  char c=(char)cc;
+	  //printf("processing %c: term=%c (%d)\n",c,term,term);
+	  if (c=='\'' || c=='\"') // skip ('s and )'s inside strings
+	  {
+	    arg+=c;
+	    addTillEndOfString(expr,rest,j,c,arg);
+	  }
+	  if (c==')')
+	  {
+	    level--;
+	    arg+=c;
+	    if (level==0) break;
+	  }
+	  else if (c=='(')
+	  {
+	    level++;
+	    arg+=c;
+	  }
+	  else
+	    arg+=c;
+	}
+      }
+      else if (c==')' || c==',') // last or next argument found
+      {
+	if (c==',' && argCount==def->nargs-1 && def->varArgs)
+	{
+	  arg=arg.stripWhiteSpace();
+	  arg+=',';
+	}
+	else
+	{
+	  QCString argKey;
+	  argKey.sprintf("@%d",argCount++); // key name
+	  arg=arg.stripWhiteSpace();
+	  // add argument to the lookup table
+	  argTable.insert(argKey, new QCString(arg));
+	  arg.resize(0);
+	  if (c==')') // end of the argument list
+	  {
+	    done=TRUE;
+	  }
+	}
+      } 
+      else if (c=='\"') // append literal strings
+      {
+	arg+=c; 
+	bool found=FALSE;
+	while (!found && (cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+	{
+	  found = cc=='"';
+	  if (cc=='\\')
+	  {
+	    c=(char)cc;	  
+	    arg+=c;
+	    if ((cc=getNextChar(expr,rest,j))==EOF || cc==0) break;
+	  }
+	  c=(char)cc;	  
+	  arg+=c;
+	}
+      }
+      else if (c=='\'') // append literal characters
+      {
+	arg+=c;
+	bool found=FALSE;
+	while (!found && (cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+	{
+	  found = cc=='\'';
+	  if (cc=='\\')
+	  {
+	    c=(char)cc;	  
+	    arg+=c;
+	    if ((cc=getNextChar(expr,rest,j))==EOF || cc==0) break;
+	  }
+	  c=(char)cc;
+	  arg+=c;
+	}
+      }	    
+      else // append other characters
+      {
+	arg+=c;
+      }
+    }
+  }
+
+  // PHASE 2: apply the macro function
+  if (argCount==def->nargs || // same number of arguments
+      (argCount>=def->nargs-1 && def->varArgs)) // variadic macro with at least as many
+                                                // params as the non-variadic part (see bug731985)
+  {
+    uint k=0;
+    // substitution of all formal arguments
+    QCString resExpr;
+    const QCString d=def->definition.stripWhiteSpace();
+    //printf("Macro definition: %s\n",d.data());
+    bool inString=FALSE;
+    while (k<d.length())
+    {
+      if (d.at(k)=='@') // maybe a marker, otherwise an escaped @
+      {
+	if (d.at(k+1)=='@') // escaped @ => copy it (is unescaped later)
+	{
+	  k+=2;
+	  resExpr+="@@"; // we unescape these later
+	}
+	else if (d.at(k+1)=='-') // no-rescan marker
+	{
+	  k+=2;
+	  resExpr+="@-";
+	}
+	else // argument marker => read the argument number
+	{
+	  QCString key="@";
+	  QCString *subst=0;
+	  bool hash=FALSE;
+	  int l=k-1;
+	  // search for ## backward
+	  if (l>=0 && d.at(l)=='"') l--;
+	  while (l>=0 && d.at(l)==' ') l--;
+	  if (l>0 && d.at(l)=='#' && d.at(l-1)=='#') hash=TRUE;
+	  k++;
+	  // scan the number
+	  while (k<d.length() && d.at(k)>='0' && d.at(k)<='9') key+=d.at(k++);
+	  if (!hash) 
+	  {
+	    // search for ## forward
+	    l=k;
+	    if (l<(int)d.length() && d.at(l)=='"') l++;
+	    while (l<(int)d.length() && d.at(l)==' ') l++;
+	    if (l<(int)d.length()-1 && d.at(l)=='#' && d.at(l+1)=='#') hash=TRUE;
+	  }
+	  //printf("request key %s result %s\n",key.data(),argTable[key]->data());
+	  if (key.length()>1 && (subst=argTable[key])) 
+	  {
+	    QCString substArg=*subst;
+	    //printf("substArg=`%s'\n",substArg.data());
+	    // only if no ## operator is before or after the argument
+	    // marker we do macro expansion.
+	    if (!hash) expandExpression(substArg,0,0);
+	    if (inString)
+	    {
+	      //printf("`%s'=stringize(`%s')\n",stringize(*subst).data(),subst->data());
+
+	      // if the marker is inside a string (because a # was put 
+	      // before the macro name) we must escape " and \ characters
+	      resExpr+=stringize(substArg);
+	    }
+	    else
+	    {
+	      if (hash && substArg.isEmpty())
+	      {
+		resExpr+="@E"; // empty argument will be remove later on
+	      }
+	      else if (g_nospaces)
+	      {
+	        resExpr+=substArg;
+	      }
+	      else
+	      {
+	        resExpr+=" "+substArg+" ";
+	      }
+	    }
+	  }
+	}
+      }
+      else // no marker, just copy
+      {
+	if (!inString && d.at(k)=='\"') 
+	{
+	  inString=TRUE; // entering a literal string
+	}
+	else if (inString && d.at(k)=='\"' && (d.at(k-1)!='\\' || d.at(k-2)=='\\'))
+	{
+	  inString=FALSE; // leaving a literal string
+	}
+	resExpr+=d.at(k++);
+      }
+    }
+    len=j-pos;
+    result=resExpr;
+    //printf("result after substitution `%s' expr=`%s'\n",
+    //       result.data(),expr.mid(pos,len).data());
+    return TRUE;
+  }
+  return FALSE;
+}
+
+
+/*! returns the next identifier in string \a expr by starting at position \a p.
+ * The position of the identifier is returned (or -1 if nothing is found)
+ * and \a l is its length. Any quoted strings are skipping during the search.
+ */
+static int getNextId(const QCString &expr,int p,int *l)
+{
+  int n;
+  while (p<(int)expr.length())
+  {
+    char c=expr.at(p++);
+    if (isdigit(c)) // skip number
+    {
+      while (p<(int)expr.length() && isId(expr.at(p))) p++;
+    }
+    else if (isalpha(c) || c=='_') // read id
+    {
+      n=p-1;
+      while (p<(int)expr.length() && isId(expr.at(p))) p++;
+      *l=p-n;
+      return n; 
+    }
+    else if (c=='"') // skip string
+    {
+      char ppc=0,pc=c;
+      if (p<(int)expr.length()) c=expr.at(p);
+      while (p<(int)expr.length() && (c!='"' || (pc=='\\' && ppc!='\\'))) 
+	// continue as long as no " is found, but ignoring \", but not \\"
+      {
+	ppc=pc;
+	pc=c;
+	c=expr.at(p);
+	p++;
+      }
+      if (p<(int)expr.length()) ++p; // skip closing quote
+    }
+    else if (c=='/') // skip C Comment
+    {
+      //printf("Found C comment at p=%d\n",p);
+      char pc=c;
+      if (p<(int)expr.length()) 
+      {
+	c=expr.at(p);
+        if (c=='*')  // Start of C comment
+        { 
+	  p++;
+  	  while (p<(int)expr.length() && !(pc=='*' && c=='/'))
+	  {
+	    pc=c;
+	    c=expr.at(p++);
+	  }
+        }
+      }
+      //printf("Found end of C comment at p=%d\n",p);
+    }
+  }
+  return -1;
+}
+
+/*! performs recursive macro expansion on the string \a expr
+ *  starting at position \a pos.
+ *  May read additional characters from the input while re-scanning!
+ *  If \a expandAll is \c TRUE then all macros in the expression are
+ *  expanded, otherwise only the first is expanded.
+ */
+static void expandExpression(QCString &expr,QCString *rest,int pos)
+{
+  //printf("expandExpression(%s,%s)\n",expr.data(),rest ? rest->data() : 0);
+  QCString macroName;
+  QCString expMacro;
+  bool definedTest=FALSE;
+  int i=pos,l,p,len;
+  while ((p=getNextId(expr,i,&l))!=-1) // search for an macro name
+  {
+    bool replaced=FALSE;
+    macroName=expr.mid(p,l);
+    //printf("macroName=%s\n",macroName.data());
+    if (p<2 || !(expr.at(p-2)=='@' && expr.at(p-1)=='-')) // no-rescan marker?
+    {
+      if (g_expandedDict->find(macroName)==0) // expand macro
+      {
+	Define *def=DefineManager::instance().isDefined(macroName);
+	if (definedTest) // macro name was found after defined 
+	{
+	  if (def) expMacro = " 1 "; else expMacro = " 0 ";
+	  replaced=TRUE;
+	  len=l;
+	  definedTest=FALSE;
+	}
+	else if (def && def->nargs==-1) // simple macro
+	{
+	  // substitute the definition of the macro
+	  //printf("macro `%s'->`%s'\n",macroName.data(),def->definition.data());
+	  if (g_nospaces)
+	  {
+	    expMacro=def->definition.stripWhiteSpace();
+	  }
+	  else
+	  {
+	    expMacro=" "+def->definition.stripWhiteSpace()+" ";
+	  }
+	  //expMacro=def->definition.stripWhiteSpace();
+	  replaced=TRUE;
+	  len=l;
+	  //printf("simple macro expansion=`%s'->`%s'\n",macroName.data(),expMacro.data());
+	}
+	else if (def && def->nargs>=0) // function macro
+	{
+	  replaced=replaceFunctionMacro(expr,rest,p+l,len,def,expMacro);
+	  len+=l;
+	}
+        else if (macroName=="defined")
+        {
+  	  //printf("found defined inside macro definition '%s'\n",expr.right(expr.length()-p).data());
+	  definedTest=TRUE;
+        }
+
+	if (replaced) // expand the macro and rescan the expression
+	{
+	    
+	  //printf("replacing `%s'->`%s'\n",expr.mid(p,len).data(),expMacro.data());
+	  QCString resultExpr=expMacro;
+	  QCString restExpr=expr.right(expr.length()-len-p);
+	  processConcatOperators(resultExpr);
+	  if (def && !def->nonRecursive)
+	  {
+	    g_expandedDict->insert(macroName,def);
+	    expandExpression(resultExpr,&restExpr,0);
+	    g_expandedDict->remove(macroName);
+	  }
+	  expr=expr.left(p)+resultExpr+restExpr;
+	  i=p;
+	  //printf("new expression: %s\n",expr.data());
+	}
+	else // move to the next macro name
+	{
+	  //printf("moving to the next macro old=%d new=%d\n",i,p+l);
+	  i=p+l;
+	}
+      }
+      else // move to the next macro name
+      {
+	expr=expr.left(p)+"@-"+expr.right(expr.length()-p);
+	//printf("macro already expanded, moving to the next macro expr=%s\n",expr.data());
+	i=p+l+2;
+	//i=p+l;
+      }
+    }
+    else // no re-scan marker found, skip the macro name
+    {
+      //printf("skipping marked macro\n");
+      i=p+l;
+    }
+  }
+}
+
+/*! replaces all occurrences of @@@@ in \a s by @@
+ *  and removes all occurrences of @@E.
+ *  All identifiers found are replaced by 0L
+ */
+static QCString removeIdsAndMarkers(const char *s)
+{
+  //printf("removeIdsAndMarkers(%s)\n",s);
+  const char *p=s;
+  char c;
+  bool inNum=FALSE;
+  QCString result;
+  if (p)
+  {
+    while ((c=*p))
+    {
+      if (c=='@') // replace @@ with @ and remove @E
+      {
+	if (*(p+1)=='@')
+	{
+	  result+=c; 
+	}
+	else if (*(p+1)=='E')
+	{
+	  // skip
+	}
+	p+=2;
+      }
+      else if (isdigit(c)) // number
+      {
+	result+=c;
+	p++;
+        inNum=TRUE;	
+      }
+      else if (c=='d' && !inNum) // identifier starting with a `d'
+      {
+	if (qstrncmp(p,"defined ",8)==0 || qstrncmp(p,"defined(",8)==0) 
+	           // defined keyword
+	{
+	  p+=7; // skip defined
+	}
+	else
+	{
+	  result+="0L";
+	  p++;
+	  while ((c=*p) && isId(c)) p++;
+	}
+      }
+      else if ((isalpha(c) || c=='_') && !inNum) // replace identifier with 0L
+      {
+	result+="0L";
+	p++;
+	while ((c=*p) && isId(c)) p++;
+	if (*p=='(') // undefined function macro
+	{
+	  p++;
+	  int count=1;
+	  while ((c=*p++))
+	  {
+	    if (c=='(') count++;
+	    else if (c==')')
+	    {
+	      count--;
+	      if (count==0) break;
+	    }
+	    else if (c=='/')
+	    {
+	      char pc=c;
+	      c=*++p;
+	      if (c=='*') // start of C comment
+	      {
+		while (*p && !(pc=='*' && c=='/')) // search end of comment
+		{
+		  pc=c;
+		  c=*++p;
+		}
+		p++;
+	      }
+	    }
+	  }
+	}
+      }
+      else if (c=='/') // skip C comments
+      {
+	char pc=c;
+	c=*++p;
+	if (c=='*') // start of C comment
+	{ 
+	  while (*p && !(pc=='*' && c=='/')) // search end of comment
+	  {
+	    pc=c;
+	    c=*++p;
+	  }
+	  p++;
+	}
+	else // oops, not comment but division
+	{
+	  result+=pc;
+	  goto nextChar;
+	}
+      }
+      else 
+      {
+nextChar:
+	result+=c;
+	char lc=tolower(c);
+	if (!isId(lc) && lc!='.' /*&& lc!='-' && lc!='+'*/) inNum=FALSE;
+	p++;
+      }
+    }
+  }
+  //printf("removeIdsAndMarkers(%s)=%s\n",s,result.data());
+  return result;
+}
+
+/*! replaces all occurrences of @@ in \a s by @
+ *  \par assumption: 
+ *   \a s only contains pairs of @@'s
+ */
+static QCString removeMarkers(const char *s)
+{
+  const char *p=s;
+  char c;
+  QCString result;
+  if (p)
+  {
+    while ((c=*p))
+    {
+      switch(c)
+      {
+	case '@': // replace @@ with @
+	  {
+	    if (*(p+1)=='@')
+	    {
+	      result+=c; 
+	    }
+	    p+=2;
+	  }
+	  break;
+	case '/': // skip C comments
+	  {
+	    result+=c;
+	    char pc=c;
+	    c=*++p;
+	    if (c=='*') // start of C comment
+	    { 
+	      while (*p && !(pc=='*' && c=='/')) // search end of comment
+	      {
+		if (*p=='@' && *(p+1)=='@') 
+		  result+=c,p++;
+		else 
+		  result+=c;
+		pc=c;
+		c=*++p;
+	      }
+	      if (*p) result+=c,p++;
+	    }
+	  }
+	  break;
+	case '"': // skip string literals
+	  {
+	    result+=c;
+	    char pc=c;
+	    c=*++p;
+	    while (*p && (c!='"' || pc=='\\')) // no end quote
+	    {
+	      result+=c;
+	      c=*++p;
+	    }
+	    if (*p) result+=c,p++; 
+	  }
+	  break;
+	case '\'': // skip char literals
+	  {
+	    result+=c;
+	    char pc=c;
+	    c=*++p;
+	    while (*p && (c!='\'' || pc=='\\')) // no end quote
+	    {
+	      result+=c;
+	      c=*++p;
+	    }
+	    if (*p) result+=c,p++; 
+	  }
+	  break;
+	default:
+	  {
+	    result+=c;
+	    p++;
+	  }
+	  break;
+      }
+    }
+  }
+  //printf("RemoveMarkers(%s)=%s\n",s,result.data());
+  return result;
+}
+
+/*! compute the value of the expression in string \a expr.
+ *  If needed the function may read additional characters from the input.
+ */
+
+static bool computeExpression(const QCString &expr)
+{
+  QCString e=expr;
+  expandExpression(e,0,0);
+  //printf("after expansion `%s'\n",e.data());
+  e = removeIdsAndMarkers(e);
+  if (e.isEmpty()) return FALSE;
+  //printf("parsing `%s'\n",e.data());
+  return parseconstexp(g_yyFileName,g_yyLineNr,e);
+}
+
+/*! expands the macro definition in \a name
+ *  If needed the function may read additional characters from the input
+ */
+
+static QCString expandMacro(const QCString &name)
+{
+  QCString n=name;
+  expandExpression(n,0,0);
+  n=removeMarkers(n);
+  //printf("expandMacro `%s'->`%s'\n",name.data(),n.data());
+  return n;
+}
+
+static Define *newDefine()
+{
+  Define *def=new Define;
+  def->name       = g_defName;
+  def->definition = g_defText.stripWhiteSpace();
+  def->nargs      = g_defArgs;
+  def->fileName   = g_yyFileName; 
+  def->fileDef    = g_yyFileDef;
+  def->lineNr     = g_yyLineNr-g_yyMLines;
+  def->columnNr   = g_yyColNr;
+  def->varArgs    = g_defVarArgs;
+  //printf("newDefine: %s %s file: %s\n",def->name.data(),def->definition.data(),
+  //    def->fileDef ? def->fileDef->name().data() : def->fileName.data());
+  //printf("newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
+  if (!def->name.isEmpty() && Doxygen::expandAsDefinedDict[def->name])
+  {
+    def->isPredefined=TRUE;
+  }
+  return def;
+}
+
+static void addDefine()
+{
+  if (g_skip) return; // do not add this define as it is inside a 
+                      // conditional section (cond command) that is disabled.
+  if (!Doxygen::gatherDefines) return;
+
+  //printf("addDefine %s %s\n",g_defName.data(),g_defArgsStr.data());
+  //ArgumentList *al = new ArgumentList;
+  //stringToArgumentList(g_defArgsStr,al);
+  MemberDef *md=new MemberDef(
+      g_yyFileName,g_yyLineNr-g_yyMLines,g_yyColNr,
+      "#define",g_defName,g_defArgsStr,0,
+      Public,Normal,FALSE,Member,MemberType_Define,0,0);
+  if (!g_defArgsStr.isEmpty())
+  {
+    ArgumentList *argList = new ArgumentList;
+    //printf("addDefine() g_defName=`%s' g_defArgsStr=`%s'\n",g_defName.data(),g_defArgsStr.data());
+    stringToArgumentList(g_defArgsStr,argList);
+    md->setArgumentList(argList);
+  }
+  //printf("Setting initializer for `%s' to `%s'\n",g_defName.data(),g_defText.data());
+  int l=g_defLitText.find('\n');
+  if (l>0 && g_defLitText.left(l).stripWhiteSpace()=="\\")
+  {
+    // strip first line if it only contains a slash
+    g_defLitText = g_defLitText.right(g_defLitText.length()-l-1);
+  }
+  else if (l>0)
+  {
+    // align the items on the first line with the items on the second line
+    int k=l+1;
+    const char *p=g_defLitText.data()+k;
+    char c;
+    while ((c=*p++) && (c==' ' || c=='\t')) k++;
+    g_defLitText=g_defLitText.mid(l+1,k-l-1)+g_defLitText.stripWhiteSpace();
+  }
+  md->setInitializer(g_defLitText.stripWhiteSpace());
+
+  //printf("pre.l: md->setFileDef(%p)\n",g_inputFileDef);
+  md->setFileDef(g_inputFileDef);
+  md->setDefinition("#define "+g_defName);
+
+  MemberName *mn=Doxygen::functionNameSDict->find(g_defName);
+  if (mn==0)
+  {
+    mn = new MemberName(g_defName);
+    Doxygen::functionNameSDict->append(g_defName,mn);
+  }
+  mn->append(md);
+  if (g_yyFileDef) 
+  {
+    g_yyFileDef->insertMember(md);
+  }
+
+  //Define *d;
+  //if ((d=defineDict[g_defName])==0) defineDict.insert(g_defName,newDefine()); 
+}
+
+static inline void outputChar(char c)
+{
+  if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addChar(c);
+}
+
+static inline void outputArray(const char *a,int len)
+{
+  if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addArray(a,len);
+}
+
+static void readIncludeFile(const QCString &inc)
+{
+  static bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
+  uint i=0;
+
+  // find the start of the include file name
+  while (i<inc.length() &&
+         (inc.at(i)==' ' || inc.at(i)=='"' || inc.at(i)=='<')
+        ) i++;
+  uint s=i;
+
+  // was it a local include?
+  bool localInclude = s>0 && inc.at(s-1)=='"';
+
+  // find the end of the include file name
+  while (i<inc.length() && inc.at(i)!='"' && inc.at(i)!='>') i++;
+
+  if (s<inc.length() && i>s) // valid include file name found
+  {
+    // extract include path+name
+    QCString incFileName=inc.mid(s,i-s).stripWhiteSpace();
+
+    QCString dosExt = incFileName.right(4);
+    if (dosExt==".exe" || dosExt==".dll" || dosExt==".tlb")
+    {
+      // skip imported binary files (e.g. M$ type libraries)
+      return;
+    }
+
+    QCString oldFileName = g_yyFileName;
+    FileDef *oldFileDef  = g_yyFileDef;
+    int oldLineNr        = g_yyLineNr;
+    //printf("Searching for `%s'\n",incFileName.data());
+
+    // absIncFileName avoids difficulties for incFileName starting with "../" (bug 641336)
+    QCString absIncFileName = incFileName;
+    {
+      QFileInfo fi(g_yyFileName);
+      if (fi.exists())
+      {
+	QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+incFileName;
+        QFileInfo fi2(absName);
+        if (fi2.exists())
+        {
+	  absIncFileName=fi2.absFilePath().utf8();
+	}
+	else if (searchIncludes) // search in INCLUDE_PATH as well
+	{
+	  QStrList &includePath = Config_getList(INCLUDE_PATH);
+	  char *s=includePath.first();
+	  while (s)
+	  {
+	    QFileInfo fi(s);
+	    if (fi.exists() && fi.isDir())
+	    {
+	      QCString absName = QCString(fi.absFilePath().utf8())+"/"+incFileName;
+	      //printf("trying absName=%s\n",absName.data());
+	      QFileInfo fi2(absName);
+	      if (fi2.exists())
+	      {
+		absIncFileName=fi2.absFilePath().utf8();
+		break;
+	      }
+	      //printf( "absIncFileName = %s\n", absIncFileName.data() );
+	    }
+	    s=includePath.next();
+	  }
+	}
+	//printf( "absIncFileName = %s\n", absIncFileName.data() );
+      }
+    }
+    DefineManager::instance().addInclude(g_yyFileName,absIncFileName);
+    DefineManager::instance().addFileToContext(absIncFileName);
+
+    // findFile will overwrite g_yyFileDef if found
+    FileState *fs;
+    bool alreadyIncluded = FALSE;
+    //printf("calling findFile(%s)\n",incFileName.data());
+    if ((fs=findFile(incFileName,localInclude,alreadyIncluded))) // see if the include file can be found
+    {
+      //printf("Found include file!\n");
+      if (Debug::isFlagSet(Debug::Preprocessor))
+      {
+        for (i=0;i<g_includeStack.count();i++) 
+        {
+          Debug::print(Debug::Preprocessor,0,"  ");
+        }
+        //msg("#include %s: parsing...\n",incFileName.data());
+      }
+      if (oldFileDef)
+      {
+        // add include dependency to the file in which the #include was found
+	bool ambig;
+	// change to absolute name for bug 641336 
+        FileDef *incFd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
+        oldFileDef->addIncludeDependency(ambig ? 0 : incFd,incFileName,localInclude,g_isImported,FALSE);
+        // add included by dependency
+        if (g_yyFileDef)
+        {
+          //printf("Adding include dependency %s->%s\n",oldFileDef->name().data(),incFileName.data());
+          g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
+        }
+      }
+      else if (g_inputFileDef)
+      {
+        g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,g_isImported,TRUE);
+      }
+      fs->bufState = YY_CURRENT_BUFFER;
+      fs->lineNr   = oldLineNr;
+      fs->fileName = oldFileName;
+      // push the state on the stack
+      g_includeStack.push(fs);
+      // set the scanner to the include file
+
+      // Deal with file changes due to 
+      // #include's within { .. } blocks
+      QCString lineStr(g_yyFileName.length()+20);
+      lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
+      outputArray(lineStr.data(),lineStr.length());
+
+      DBG_CTX((stderr,"Switching to include file %s\n",incFileName.data()));
+      g_expectGuard=TRUE;
+      g_inputBuf   = &fs->fileBuf;
+      g_inputBufPos=0;
+      yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE));
+    }
+    else
+    {
+      //printf("  calling findFile(%s) alreadyInc=%d\n",incFileName.data(),alreadyIncluded);
+      if (oldFileDef)
+      {
+	bool ambig;
+	//QCString absPath = incFileName;
+	//if (QDir::isRelativePath(incFileName))
+	//{
+	//  absPath = QDir::cleanDirPath(oldFileDef->getPath()+"/"+incFileName);
+	//  //printf("%s + %s -> resolved path %s\n",oldFileDef->getPath().data(),incFileName.data(),absPath.data());
+	//}
+
+	// change to absolute name for bug 641336 
+	FileDef *fd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
+	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);
+	// add include dependency to the file in which the #include was found
+	oldFileDef->addIncludeDependency(ambig ? 0 : fd,incFileName,localInclude,g_isImported,FALSE);
+	// add included by dependency
+        if (fd)
+        {
+          //printf("Adding include dependency (2) %s->%s ambig=%d\n",oldFileDef->name().data(),fd->name().data(),ambig);
+          fd->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
+        }
+      }
+      else if (g_inputFileDef)
+      {
+        g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,g_isImported,TRUE);
+      }
+      if (Debug::isFlagSet(Debug::Preprocessor))
+      {
+	if (alreadyIncluded)
+	{
+          Debug::print(Debug::Preprocessor,0,"#include %s: already included! skipping...\n",qPrint(incFileName));
+	}
+	else
+	{
+          Debug::print(Debug::Preprocessor,0,"#include %s: not found! skipping...\n",qPrint(incFileName));
+	}
+        //printf("error: include file %s not found\n",yytext);
+      }
+      if (g_curlyCount>0 && !alreadyIncluded) // failed to find #include inside { ... }
+      {
+	warn(g_yyFileName,g_yyLineNr,"include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",incFileName.data());
+      }
+    }
+  }
+}
+
+/* ----------------------------------------------------------------- */
+
+static void startCondSection(const char *sectId)
+{
+  //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
+  CondParser prs;
+  bool expResult = prs.parse(g_yyFileName,g_yyLineNr,sectId);
+  g_condStack.push(new CondCtx(g_yyLineNr,sectId,g_skip));
+  if (!expResult)
+  {
+    g_skip=TRUE;
+  }
+  //printf("  expResult=%d skip=%d\n",expResult,g_skip);
+}
+
+static void endCondSection()
+{
+  if (g_condStack.isEmpty())
+  {
+    g_skip=FALSE;
+  }
+  else
+  {
+    CondCtx *ctx = g_condStack.pop();
+    g_skip=ctx->skip;
+    delete ctx;
+  }
+  //printf("endCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
+}
+
+static void forceEndCondSection()
+{
+  while (!g_condStack.isEmpty())
+  {
+    delete g_condStack.pop();
+  }
+  g_skip=FALSE;
+}
+
+static QCString escapeAt(const char *text)
+{
+  QCString result;
+  if (text)
+  {
+    char c;
+    const char *p=text;
+    while ((c=*p++))
+    {
+      if (c=='@') result+="@@"; else result+=c;
+    }
+  }
+  return result;
+}
+
+static char resolveTrigraph(char c)
+{
+  switch (c)
+  {
+    case '=': return '#';
+    case '/': return '\\';
+    case '\'': return '^';
+    case '(': return '[';
+    case ')': return ']';
+    case '!': return '|';
+    case '<': return '{';
+    case '>': return '}';
+    case '-': return '~';
+  }
+  return '?';
+}
+
+static int yyread(char *buf,int max_size)
+{
+  int bytesInBuf = g_inputBuf->curPos()-g_inputBufPos;
+  int bytesToCopy = QMIN(max_size,bytesInBuf);
+  memcpy(buf,g_inputBuf->data()+g_inputBufPos,bytesToCopy);
+  g_inputBufPos+=bytesToCopy;
+  return bytesToCopy;
+}
 
 void initPreprocessor()
 {
@@ -3026,6 +3051,11 @@ void cleanUpPreprocessor()
   DefineManager::deleteInstance();
 }
 
+void addSearchDir(const char *dir)
+{
+  QFileInfo fi(dir);
+  if (fi.isDir()) g_pathList->append(fi.absFilePath().utf8());
+} 
 
 void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 {
