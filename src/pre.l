@@ -382,6 +382,7 @@ static bool               g_isSource;
 static bool               g_lexInit = FALSE;
 static int                g_fenceSize = 0;
 static bool               g_ccomment;
+static QDict<void>        g_allIncludes(10009);
 
 //DefineDict* getGlobalDefineDict() 
 //{
@@ -445,8 +446,6 @@ static void setCaseDone(bool value)
 {
   g_levelGuard[g_level-1]=value;
 }
-
-static QDict<void> g_allIncludes(10009);
 
 static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyIncluded)
 {
