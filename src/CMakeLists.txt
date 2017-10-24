@@ -182,6 +182,7 @@ add_library(_doxygen STATIC
     docsets.cpp
     dot.cpp
     doxygen.cpp
+    job.cpp
     eclipsehelp.cpp
     entry.cpp
     filedef.cpp

@@ -612,8 +612,8 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
-  QCString tooltip; 
-  if (!sourceTooltips) // fall back to simple "title" tooltips
+  QCString tooltip;
+  if (sourceTooltips) // fall back to simple "title" tooltips
   {
     tooltip = d->briefDescriptionAsTooltip();
   }
@@ -2597,7 +2597,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  generateClassOrGlobalLink(*g_code,yytext);
   					  g_name+=yytext; 
 					}
-<Body>{SCOPENAME}/{BN}*[:;,)\]]		{ // "int var;" or "var, var2" or "debug(f) macro" , or int var : 5;
+<Body>{SCOPENAME}/{BN}*[:;,)\[]		{ // "int var;" or "var, var2" or "debug(f) macro" , or "int var : 5;"
+					  // "int var["
 					  addType();
 					  // changed this to generateFunctionLink, see bug 624514
 					  //generateClassOrGlobalLink(*g_code,yytext,FALSE,TRUE);

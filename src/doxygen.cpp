@@ -14,7 +14,7 @@
  */
 
 #include <locale.h>
-
+#include <unistd.h>
 #include <qfileinfo.h>
 #include <qfile.h>
 #include <qdir.h>
@@ -103,6 +103,8 @@
 // provided by the generated file resources.cpp
 extern void initResources();
 
+#include "job.h"
+
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
     EntryNavListIterator eli(*var->children()); \
@@ -179,7 +181,7 @@ static QDict<void>      g_compoundKeywordDict(7);  // keywords recognised as com
 static OutputList      *g_outputList = 0;          // list of output generating objects
 static QDict<FileDef>   g_usingDeclarations(1009); // used classes
 static FileStorage     *g_storage = 0;
-static bool             g_successfulRun = FALSE;
+/*static*/ bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
 static bool             g_useOutputTemplate = FALSE;
 
@@ -9959,9 +9961,29 @@ static void usage(const char *name)
   msg("    LaTeX:      %s -w latex headerFile footerFile styleSheetFile [configFile]\n\n",name);
   msg("6) Use doxygen to generate a rtf extensions file\n");
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
-  msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
   msg("-v print version string\n");
+  msg("parameters:\n");
+  msg("-s\n\tif specified, the comments of the configuration items in the config file will be omitted.\n");
+  msg("-m dump symbol map\n");
+  msg("-v print version string\n");
+  msg("-b output to wizard\n");
+  msg("-T  activates output generation via Django like template\n");
+  msg("-d <level>  Enable debug level\n");
+  msg("\tfindmembers\n");
+  msg("\tfunctions\n");
+  msg("\tvariables\n");
+  msg("\tpreprocessor\n");
+  msg("\tclasses\n");
+  msg("\tcommentcnv\n");
+  msg("\tcommentscan\n");
+  msg("\tvalidate\n");
+  msg("\tprinttree\n");
+  msg("\ttime\n");
+  msg("\textcmd\n");
+  msg("\tmarkdown\n");
+  msg("\tfilteroutput\n");
+  msg("\tlex\n");
 }
 
 //----------------------------------------------------------------------------
@@ -10076,6 +10098,7 @@ void initDoxygen()
 
 void cleanUpDoxygen()
 {
+  cleanup_jobserver();
   delete Doxygen::sectionDict;
   delete Doxygen::formulaNameDict;
   delete Doxygen::formulaDict;
@@ -10159,6 +10182,7 @@ void readConfiguration(int argc, char **argv)
   const char *layoutName=0;
   const char *debugLabel;
   const char *formatName;
+  const char *jobSlots=0;
   bool genConfig=FALSE;
   bool shortList=FALSE;
   bool updateConfig=FALSE;
@@ -10184,6 +10208,17 @@ void readConfiguration(int argc, char **argv)
         layoutName=getArg(argc,argv,optind);
         if (!layoutName)
         { layoutName="DoxygenLayout.xml"; }
+        break;
+      case 'j':
+        jobSlots=getArg(argc,argv,optind);
+        if (!jobSlots)
+        {
+         err("option \"-j\" is missing its parameter.\n");
+         cleanUpDoxygen();
+         exit(1);
+        }
+        extern int g_job_slots;
+        g_job_slots = atoi(jobSlots);
         break;
       case 'd':
         debugLabel=getArg(argc,argv,optind);
@@ -10706,6 +10741,16 @@ static void exitDoxygen()
     {
       thisDir.remove(Doxygen::objDBFileName);
     }
+  } else {
+  if (Config_getBool(HAVE_DOT))
+  {
+    // paralelization problem: if fork() is used, each
+    // process will have a _copy_ of DotManager::instance(),
+    // so any job added by a job_spawn(), will be lost
+    g_s.begin("Running dot...\n");
+    DotManager::instance()->run();
+    g_s.end();
+  }
   }
 }
 
@@ -11506,28 +11551,28 @@ void generateOutput()
   if (!Htags::useHtags)
   {
     g_s.begin("Generating file sources...\n");
-    generateFileSources();
+    job_spawn("dx:filesources", generateFileSources);
     g_s.end();
   }
 
   g_s.begin("Generating file documentation...\n");
-  generateFileDocs();
+  job_spawn("dx:filedocs", generateFileDocs);
   g_s.end();
 
   g_s.begin("Generating page documentation...\n");
-  generatePageDocs();
+  job_spawn("dx:pagedocs",generatePageDocs);
   g_s.end();
 
   g_s.begin("Generating group documentation...\n");
-  generateGroupDocs();
+  job_spawn("dx:groupdocs",generateGroupDocs);
   g_s.end();
 
   g_s.begin("Generating class documentation...\n");
-  generateClassDocs();
+  job_spawn("dx:classdocs",generateClassDocs);
   g_s.end();
 
   g_s.begin("Generating namespace index...\n");
-  generateNamespaceDocs();
+  job_spawn("dx:namespace", generateNamespaceDocs);
   g_s.end();
 
   if (Config_getBool(GENERATE_LEGEND))
@@ -11570,7 +11615,7 @@ void generateOutput()
   g_s.end();
 
   g_s.begin("writing tag file...\n");
-  writeTagFile();
+  job_spawn("dx:tagfile", writeTagFile);
   g_s.end();
 
   if (Config_getBool(DOT_CLEANUP))
@@ -11587,14 +11632,14 @@ void generateOutput()
   {
     g_s.begin("Generating XML output...\n");
     Doxygen::generatingXmlOutput=TRUE;
-    generateXML();
+    job_spawn("dx:xml", generateXML);
     Doxygen::generatingXmlOutput=FALSE;
     g_s.end();
   }
   if (USE_SQLITE3)
   {
     g_s.begin("Generating SQLITE3 output...\n");
-    generateSqlite3();
+    job_spawn("dx:sqlite3", generateSqlite3);
     g_s.end();
   }
 
@@ -11653,13 +11698,17 @@ void generateOutput()
     }
     g_s.end();
   }
-
-  if (Config_getBool(HAVE_DOT))
+#if 0
+  if (Config_getBool("HAVE_DOT"))
   {
+    // paralelization problem: if fork() is used, each
+    // process will have a _copy_ of DotManager::instance(),
+    // so any job added by a job_spawn(), will be lost
     g_s.begin("Running dot...\n");
     DotManager::instance()->run();
     g_s.end();
   }
+#endif
 
   // copy static stuff
   if (generateHtml)
