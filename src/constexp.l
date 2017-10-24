@@ -17,6 +17,7 @@
  */
 %option never-interactive
 %option prefix="constexpYY"
+%option nounput
 
 %{
 
@@ -54,7 +55,6 @@ static int yyread(char *buf,int max_size)
 
 CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
-%option nounput
 
 %%
 
