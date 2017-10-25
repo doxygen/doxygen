@@ -883,7 +883,8 @@ void ConfigImpl::convertStrToVal()
 
 static void substEnvVarsInString(QCString &string)
 {
-  static QRegExp reVar("[$][(][a-z_A-Z][a-z_A-Z0-9]*[):]"); // $(<name>[):]
+  static QRegExp reVar1("[$][(][a-z_A-Z0-9.-]+[):]"); // $(<name>[):]
+  static QRegExp reVar2("[$][(][a-z_A-Z0-9.-]+[(][a-z_A-Z0-9.-]+[)][):]"); // $(<namepart1>(<namepart2>)[):]
   static QRegExp reDefault("-[^)]*[)]"); // -<default>)
 
   if (string.isEmpty()) return;
@@ -891,7 +892,7 @@ static void substEnvVarsInString(QCString &string)
   int parsePosition=0;
   int varStart, varLength, defaultStart, defaultLength;
   //printf("substEnvVarInString(%s) start\n",string.data());
-  while ((varStart=reVar.match(string,parsePosition,&varLength))!=-1)
+  while ((varStart=reVar1.match(string,parsePosition,&varLength))!=-1 || (varStart=reVar2.match(string,parsePosition,&varLength))!=-1)
   {
     parsePosition += varLength;
 
