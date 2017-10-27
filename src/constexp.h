@@ -22,12 +22,21 @@
 #include "cppvalue.h"
 #include <qcstring.h>
 
-extern bool parseconstexp(const char *fileName,int line,const QCString &s);
-extern int constexpYYparse();
-extern int constexpYYdebug;
-extern QCString g_strToken;
-extern CPPValue g_resultValue;
-extern QCString g_constExpFileName;
-extern int      g_constExpLineNr;
+#define YYSTYPE CPPValue
+typedef void* yyscan_t;
+struct constexpYY_state
+{
+  QCString    g_strToken;
+  CPPValue    g_resultValue;
+  int         g_constExpLineNr;
+  QCString    g_constExpFileName;
 
+  const char *g_inputString;
+  int         g_inputPosition;
+};
+
+extern bool parseconstexp(const char *fileName,int line,const QCString &s);
+extern int constexpYYparse(yyscan_t);
+extern int constexpYYlex(YYSTYPE *lvalp, yyscan_t);
+struct constexpYY_state*  constexpYYget_extra (yyscan_t yyscanner );
 #endif
