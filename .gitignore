@@ -13,3 +13,5 @@
 
 /doxygen_docs
 /doxygen.tag
+
+build/*
