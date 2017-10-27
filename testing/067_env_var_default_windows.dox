@@ -1,0 +1,6 @@
+// objective: test environment variable default substitution
+// check: indexpage.xml
+// config: PROJECT_NAME = $(VAR.X(6.4):-complexproject)
+/** 
+ * \mainpage
+ */
