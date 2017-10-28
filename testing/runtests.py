@@ -4,6 +4,7 @@ from __future__ import print_function
 import argparse, glob, itertools, re, shutil, os, sys
 
 config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
+env_reg = re.compile('(?P<key>\S*)=(?P<value>.*)')
 
 class Tester:
 	def __init__(self,args,test):
@@ -61,6 +62,17 @@ class Tester:
 		if 'check' not in self.config or not self.config['check']:
 			print('Test doesn\'t specify any files to check')
 			sys.exit(1)
+
+		if 'env' in self.config:
+			for env_line in self.config['env']:
+				env_var = env_reg.match(env_line)
+				if env_var:
+					env_key = env_var.group('key')
+					env_value = env_var.group('value')
+					os.environ[env_key] = env_value
+				else:
+					print('Invalid env option: ', env_line)
+					sys.exit(1)
 
 		# run doxygen
 		if (sys.platform == 'win32'):

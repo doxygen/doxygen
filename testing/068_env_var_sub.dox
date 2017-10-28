@@ -1,0 +1,7 @@
+// objective: test environment variable default substitution
+// check: indexpage.xml
+// env: TITLEENV=doxygen
+// config: PROJECT_NAME = $(TITLEENV)
+/** 
+ * \mainpage
+ */

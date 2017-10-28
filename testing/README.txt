@@ -33,6 +33,8 @@ Where <identifier> can be one of:
              be compared against the reference.
 - config:    'argument' is a line that is added to the default Doxyfile used to
              run doxygen on the test file.
+- env:       'argument' is a line that which sets an environment variable
+             passed to Doxygen. (i.e. 'ENVVARNAME=envvarvalue')
 
 Example to run all tests:
     python runtest.py
