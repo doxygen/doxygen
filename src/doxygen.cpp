@@ -2112,9 +2112,8 @@ static void findUsingDeclImports(EntryNav *rootNav)
       (rootNav->parent()->section()&Entry::COMPOUND_MASK) // in a class/struct member
      )
   {
-    //printf("Found using declaration %s at line %d of %s inside section %x\n",
-    //    root->name.data(),root->startLine,root->fileName.data(),
-    //    root->parent->section);
+    //printf("Found using declaration %s inside section %x\n",
+    //    rootNav->name().data(), rootNav->parent()->section());
     QCString fullName=removeRedundantWhiteSpace(rootNav->parent()->name());
     fullName=stripAnonymousNamespaceScope(fullName);
     fullName=stripTemplateSpecifiersFromScope(fullName);
@@ -2130,7 +2129,7 @@ static void findUsingDeclImports(EntryNav *rootNav)
         ClassDef *bcd = getResolvedClass(cd,0,scope); // todo: file in fileScope parameter
         if (bcd)
         {
-          //printf("found class %s\n",bcd->name().data());
+          //printf("found class %s memName=%s\n",bcd->name().data(),memName.data());
           MemberNameInfoSDict *mndict=bcd->memberNameInfoSDict();
           if (mndict)
           {
@@ -11181,7 +11180,6 @@ void parseInput()
   g_s.end();
 
   g_s.begin("Searching for members imported via using declarations...\n");
-  findUsingDeclImports(rootNav);
   // this should be after buildTypedefList in order to properly import
   // used typedefs
   findUsingDeclarations(rootNav);
@@ -11249,6 +11247,7 @@ void parseInput()
   g_s.begin("Searching for member function documentation...\n");
   findObjCMethodDefinitions(rootNav);
   findMemberDocumentation(rootNav); // may introduce new members !
+  findUsingDeclImports(rootNav); // may introduce new members !
 
   transferRelatedFunctionDocumentation();
   transferFunctionDocumentation();
