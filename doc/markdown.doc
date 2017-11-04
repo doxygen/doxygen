@@ -164,13 +164,13 @@ Using two stars or underscores will produce strong emphasis.
 
 Examples:
 
-    *single asterisks*
-
-    _single underscores_
-
-    **double asterisks**
-
-    __double underscores__
+*    *single asterisks*
+*
+*    _single underscores_
+*
+*    **double asterisks**
+*
+*    __double underscores__
 
 See section \ref mddox_emph_spans for more info how doxygen handles
 emphasis spans slightly different than standard Markdown.
