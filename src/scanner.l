@@ -6574,7 +6574,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <SkipComment>[^\*\n]+
 
-"[["                                    { // C++11 attribute
+<*>"[["                                 { // C++11 attribute
                                           lastC11AttributeContext = YY_START;
                                           BEGIN( SkipC11Attribute );
                                         }
