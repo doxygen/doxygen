@@ -5,7 +5,7 @@
     <title>My Project</title>
     <detaileddescription>
       <para>
-        <programlisting language="Python">
+        <programlisting filename=".py">
           <codeline>
             <highlight class="comment">#<sp/>comment<sp/>in<sp/>Python</highlight>
             <highlight class="normal"/>
@@ -25,7 +25,7 @@
         </programlisting>
       </para>
       <para>
-        <programlisting language="C++">
+        <programlisting filename=".cpp">
           <codeline>
             <highlight class="comment">//<sp/>comment<sp/>in<sp/>a<sp/>code<sp/>block</highlight>
             <highlight class="normal"/>
@@ -34,6 +34,13 @@
             <highlight class="normal"/>
             <highlight class="keyword">class<sp/></highlight>
             <highlight class="normal">Cpp<sp/>{};</highlight>
+          </codeline>
+        </programlisting>
+      </para>
+      <para>
+        <programlisting>
+          <codeline>
+            <highlight class="normal">//<sp />implicit<sp />code<sp />language</highlight>
           </codeline>
         </programlisting>
       </para>

@@ -541,6 +541,7 @@ class DocIncOperator : public DocNode
     void markLast(bool v=TRUE)  { m_isLast = v; }
     bool isExample() const      { return m_isExample; }
     QCString exampleFile() const { return m_exampleFile; }
+    QCString includeFileName() const { return m_includeFileName; }
     void parse();
 
   private:
@@ -552,6 +553,7 @@ class DocIncOperator : public DocNode
     bool     m_isLast;
     bool     m_isExample;
     QCString  m_exampleFile;
+    QCString m_includeFileName;
 };
 
 /** Node representing an item of a cross-referenced list */
