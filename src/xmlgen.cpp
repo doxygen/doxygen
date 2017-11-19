@@ -842,7 +842,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   {
     ArgumentList *declAl = md->declArgumentList();
     ArgumentList *defAl = md->argumentList();
-    if (declAl && declAl->count()>0)
+    if (declAl && defAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
