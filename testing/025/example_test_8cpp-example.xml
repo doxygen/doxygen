@@ -4,7 +4,7 @@
     <compoundname>example_test.cpp</compoundname>
     <detaileddescription>
       <para>This is an example of how to use the <ref refid="class_test" kindref="compound">Test</ref> class.</para>
-      <para>More details about this example. <programlisting><codeline><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>main()</highlight></codeline><codeline><highlight class="normal">{</highlight></codeline><codeline><highlight class="normal"><sp/><sp/><ref refid="class_test" kindref="compound">Test</ref><sp/>t;</highlight></codeline><codeline><highlight class="normal"><sp/><sp/>t.<ref refid="class_test_1a47b775f65718978f1ffcd96376f8ecfa" kindref="member">example</ref>();</highlight></codeline><codeline><highlight class="normal">}</highlight></codeline><codeline><highlight class="normal"/></codeline></programlisting> </para>
+      <para>More details about this example. <programlisting filename="example_test.cpp"><codeline><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>main()</highlight></codeline><codeline><highlight class="normal">{</highlight></codeline><codeline><highlight class="normal"><sp/><sp/><ref refid="class_test" kindref="compound">Test</ref><sp/>t;</highlight></codeline><codeline><highlight class="normal"><sp/><sp/>t.<ref refid="class_test_1a47b775f65718978f1ffcd96376f8ecfa" kindref="member">example</ref>();</highlight></codeline><codeline><highlight class="normal">}</highlight></codeline><codeline><highlight class="normal"/></codeline></programlisting> </para>
     </detaileddescription>
   </compounddef>
 </doxygen>

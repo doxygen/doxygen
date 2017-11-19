@@ -7177,7 +7177,7 @@ void addCodeOnlyMappings()
   updateLanguageMapping(".sql",   "sql");
 }
 
-SrcLangExt getLanguageFromFileName(const QCString fileName)
+SrcLangExt getLanguageFromFileName(const QCString& fileName)
 {
   int i = fileName.findRev('.');
   if (i!=-1) // name has an extension

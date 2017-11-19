@@ -104,6 +104,7 @@ static QCString               g_exampleName;
 static SectionDict *          g_sectionDict;
 static QCString               g_searchUrl;
 
+static QCString               g_includeFileName;
 static QCString               g_includeFileText;
 static uint                   g_includeFileOffset;
 static uint                   g_includeFileLength;
@@ -1917,6 +1918,7 @@ void DocInclude::parse()
       // fall through
     case DontInclude:
       readTextFileByName(m_file,m_text);
+      g_includeFileName   = m_file;
       g_includeFileText   = m_text;
       g_includeFileOffset = 0;
       g_includeFileLength = m_text.length();
@@ -1954,6 +1956,7 @@ void DocInclude::parse()
 
 void DocIncOperator::parse()
 {
+  m_includeFileName = g_includeFileName;
   const char *p = g_includeFileText;
   uint l = g_includeFileLength;
   uint o = g_includeFileOffset;

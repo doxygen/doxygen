@@ -11,4 +11,8 @@
  * // comment in a code block
  * class Cpp {};
  * \endcode
+ *
+ * \code
+ * // implicit code language
+ * \endcode
  */
