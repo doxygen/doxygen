@@ -101,7 +101,7 @@ JAVACC_SIMPLE_STRING addUnicodeEscapes(JAVACC_STRING_TYPE str) {
         retval.append("\\\\");
         continue;
       default:
-        if (ch < 0xff) {
+        if (static_cast<unsigned char>(ch) < 0xff) {
           retval += ch;
           continue;
         }
