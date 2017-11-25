@@ -279,10 +279,14 @@
 
   <xsd:complexType name="highlightType" mixed="true">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
-      <xsd:element name="sp" />
+      <xsd:element name="sp" type="spType" />
       <xsd:element name="ref" type="refTextType" />
     </xsd:choice>
     <xsd:attribute name="class" type="DoxHighlightClass" />
+  </xsd:complexType>
+
+  <xsd:complexType name="spType" mixed="true">
+    <xsd:attribute name="value" type="xsd:integer" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="referenceType" mixed="true">
