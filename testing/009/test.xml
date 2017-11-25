@@ -3,6 +3,8 @@
   <compounddef id="test" kind="page">
     <compoundname>test</compoundname>
     <title>Test List</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>
         <variablelist>
