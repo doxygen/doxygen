@@ -668,6 +668,13 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     t << "\"";
   }
 
+  if (md->memberType() == MemberType_Enumeration)
+  {
+    t << " strong=\"";
+    if (md->isStrong()) t << "yes"; else t << "no";
+    t << "\"";
+  }
+
   if (md->memberType() == MemberType_Variable)
   {
     //ArgumentList *al = md->argumentList();

@@ -3,7 +3,7 @@
   <compounddef id="068__typed__enum_8cpp" kind="file" language="C++">
     <compoundname>068_typed_enum.cpp</compoundname>
     <sectiondef kind="enum">
-      <memberdef kind="enum" id="068__typed__enum_8cpp_1aa72902e6181db009a6a84502f81612c2" prot="public" static="no">
+      <memberdef kind="enum" id="068__typed__enum_8cpp_1aa72902e6181db009a6a84502f81612c2" prot="public" static="no" strong="yes">
         <type>unsigned short</type>
         <name>E</name>
         <briefdescription>
