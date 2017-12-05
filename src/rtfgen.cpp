@@ -703,7 +703,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       }
       else if (vhdlOpt)
       {
-        t << "{\\tc \\v " << VhdlDocGen::trDesignUnitIndex() << "}"<< endl;
+        t << "{\\tc \\v " << theTranslator->trDesignUnitIndex() << "}"<< endl;
       }
       else
       {
