@@ -1241,42 +1241,6 @@ QCString VhdlDocGen::getProtectionName(int prot)
   return "";
 }
 
-QCString VhdlDocGen::trTypeString(uint64 type)
-{
-  switch(type)
-  {
-    case VhdlDocGen::LIBRARY:        return "Library";
-    case VhdlDocGen::ENTITY:         return "Entity";
-    case VhdlDocGen::PACKAGE_BODY:   return "Package Body";
-    case VhdlDocGen::ATTRIBUTE:      return "Attribute";
-    case VhdlDocGen::PACKAGE:        return "Package";
-    case VhdlDocGen::SIGNAL:         return "Signal";
-    case VhdlDocGen::COMPONENT:      return "Component";
-    case VhdlDocGen::CONSTANT:       return "Constant";
-    case VhdlDocGen::TYPE:           return "Type";
-    case VhdlDocGen::SUBTYPE:        return "Subtype";
-    case VhdlDocGen::FUNCTION:       return "Function";
-    case VhdlDocGen::RECORD:         return "Record";
-    case VhdlDocGen::PROCEDURE:      return "Procedure";
-    case VhdlDocGen::ARCHITECTURE:   return "Architecture";
-    case VhdlDocGen::USE:            return "Package";
-    case VhdlDocGen::PROCESS:        return "Process";
-    case VhdlDocGen::PORT:           return "Port";
-    case VhdlDocGen::GENERIC:        return "Generic";
-    case VhdlDocGen::UNITS:          return "Units";
-                                     //case VhdlDocGen::PORTMAP:        return "Port Map";
-    case VhdlDocGen::SHAREDVARIABLE: return "Shared Variable";
-    case VhdlDocGen::GROUP:          return "Group";
-    case VhdlDocGen::VFILE:          return "File";
-    case VhdlDocGen::INSTANTIATION: return "Instantiation";
-    case VhdlDocGen::ALIAS:          return "Alias";
-    case VhdlDocGen::CONFIG:         return "Configuration";
-    case VhdlDocGen::MISCELLANEOUS:  return "Miscellaneous";
-    case VhdlDocGen::UCF_CONST:      return "Constraints";
-    default:                         return "";
-  }
-} // convertType
-
 /*!
  * deletes a char backwards in a string
  */
@@ -2416,7 +2380,7 @@ bool VhdlDocGen::writeClassType( ClassDef *& cd,
     OutputList &ol ,QCString & cname)
 {
   int id=cd->protection();
-  QCString qcs = VhdlDocGen::trTypeString(id+2);
+  QCString qcs = VhdlDocGen::trVhdlType(id+2);
   cname=VhdlDocGen::getClassName(cd);
   ol.startBold();
   ol.writeString(qcs.data());
@@ -3993,7 +3957,7 @@ void FlowChart::createSVG()
 
   //const  MemberDef *m=VhdlDocGen::getFlowMember();
   //if (m)
-  //  fprintf(stderr,"\n creating flowchart  : %s  %s in file %s \n",VhdlDocGen::trTypeString(m->getMemberSpecifiers()),m->name().data(),m->getFileDef()->name().data());
+  //  fprintf(stderr,"\n creating flowchart  : %s  %s in file %s \n",VhdlDocGen::trVhdlType(m->getMemberSpecifiers()),m->name().data(),m->getFileDef()->name().data());
 
   QCString dir=" -o \""+ov+qcs+"\"";
   ov+="/flow_design.dot";

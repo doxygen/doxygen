@@ -152,7 +152,6 @@ class VhdlDocGen
     //-----------------------------------------------------
     // translatable items
     
-    static QCString trTypeString(uint64 type);
     static QCString trVhdlType(uint64 type,bool sing=true);
 
     // trClassHierarchy.
