@@ -4017,7 +4017,7 @@ static void writeIndex(OutputList &ol)
       ol.startIndexSection(isClassHierarchyIndex);
       ol.parseText(/*projPrefix+*/
           (fortranOpt ? theTranslator->trCompoundIndexFortran() :
-           vhdlOpt    ? theTranslator->trDesignUnitIndex()      :
+           vhdlOpt    ? theTranslator->trHierarchicalIndex()    :
                         theTranslator->trHierarchicalIndex()
           ));
       ol.endIndexSection(isClassHierarchyIndex);
