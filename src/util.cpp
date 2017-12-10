@@ -7902,9 +7902,16 @@ QCString filterTitle(const QCString &title)
 
 bool patternMatch(const QFileInfo &fi,const QStrList *patList)
 {
-  bool found=FALSE;
+  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool found = FALSE;
+
+  // For Windows/Mac, always do the case insensitive match
+#if defined(_WIN32) || defined(__MACOSX__)
+  caseSenseNames = FALSE;
+#endif
+
   if (patList)
-  { 
+  {
     QStrListIterator it(*patList);
     QCString pattern;
 
@@ -7919,11 +7926,8 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
         int i=pattern.find('=');
         if (i!=-1) pattern=pattern.left(i); // strip of the extension specific filter name
 
-#if defined(_WIN32) || defined(__MACOSX__) // Windows or MacOSX
-        QRegExp re(pattern,FALSE,TRUE); // case insensitive match 
-#else                // unix
-        QRegExp re(pattern,TRUE,TRUE);  // case sensitive match
-#endif
+        QRegExp re(pattern,caseSenseNames,TRUE);
+
         found = re.match(fn)!=-1 ||
                 re.match(fp)!=-1 ||
                 re.match(afp)!=-1;
