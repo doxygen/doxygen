@@ -237,7 +237,7 @@ else {
 
 # touch the file
 $now = time;
-utime $now, $now, $file
+utime $now, $now, $file;
 \endverbatim
 Another way to get rules matching / debugging information
 from the \c flex code is setting LEX_FLAGS with \c make (`make LEX_FLAGS=-d`).
