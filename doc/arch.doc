@@ -205,7 +205,7 @@ $file = shift @ARGV;
 print "Toggle debugging mode for $file\n";
 if (!-e "../src/${file}.l")
 {
-  print STDERR "Error: file ../src/${file}.l does not exist!";
+  print STDERR "Error: file ../src/${file}.l does not exist!\n";
   exit 1;
 }
 system("touch ../src/${file}.l");
