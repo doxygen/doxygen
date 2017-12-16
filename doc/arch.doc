@@ -220,11 +220,11 @@ if (open(F,"<src/CMakeFiles/_doxygen.dir/build.make.old")) {
   }
   print "Processing build.make...\n";
   while (<F>) {
-    if ( s/flex \$\(LEX_FLAGS\) -P${file}YY/flex \$(LEX_FLAGS) -d -P${file}YY/ ) {
-      print "Enabling debug info for $file.l\n";
-    }
-    elsif ( s/flex \$\(LEX_FLAGS\) -d -P${file}YY/flex \$(LEX_FLAGS) -P${file}YY/ ) {
+    if ( s/flex \$\(LEX_FLAGS\) -d(.*) ${file}.l/flex \$(LEX_FLAGS)$1 ${file}.l/ ) {
       print "Disabling debug info for $file\n";
+    }
+    elsif ( s/flex \$\(LEX_FLAGS\)(.*) ${file}.l$/flex \$(LEX_FLAGS) -d$1 ${file}.l/ ) {
+      print "Enabling debug info for $file.l\n";
     }
     print G "$_";
   }
