@@ -209,12 +209,12 @@ if (!-e "../src/${file}.l")
   exit 1;
 }
 system("touch ../src/${file}.l");
-unless (rename "src/CMakeFiles/_doxygen.dir/build.make","src/CMakefiles/_doxygen.dir/build.make.old") {
+unless (rename "src/CMakeFiles/_doxygen.dir/build.make","src/CMakeFiles/_doxygen.dir/build.make.old") {
   print STDERR "Error: cannot rename src/CMakeFiles/_doxygen.dir/build.make!\n";
   exit 1;
 }
 if (open(F,"<src/CMakeFiles/_doxygen.dir/build.make.old")) {
-  unless (open(G,">src/CMakefiles/_doxygen.dir/build.make")) {
+  unless (open(G,">src/CMakeFiles/_doxygen.dir/build.make")) {
     print STDERR "Error: opening file build.make for writing\n";
     exit 1;
   }
