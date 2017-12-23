@@ -13670,7 +13670,7 @@ QString &QString::replace( uint index, uint len, const QString &s )
 
 /*!
   Replaces \a len characters starting at position \a index by
-  \a slen units ot QChar data from \a s, and returns a reference to the string.
+  \a slen units to QChar data from \a s, and returns a reference to the string.
 
   \sa insert(), remove()
 */

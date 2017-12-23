@@ -5113,7 +5113,7 @@ class TemplateEngine::Private
         }
         else
         {
-          err("Cound not open template file %s\n",fileName.data());
+          err("Could not open template file %s\n",fileName.data());
         }
       }
       return templ;

@@ -52,7 +52,7 @@
   The key is used for inserting and looking up an item. QDict has
   \l QString keys, which are Unicode strings.  If you want to use
   non-Unicode, plain 8-bit \c char* keys, use the QAsciiDict template.
-  A QDict has the same performace as a QAsciiDict.
+  A QDict has the same performance as a QAsciiDict.
 
   The dictionary has very fast insertion and lookup.
 
