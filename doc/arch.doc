@@ -205,26 +205,26 @@ $file = shift @ARGV;
 print "Toggle debugging mode for $file\n";
 if (!-e "../src/${file}.l")
 {
-  print STDERR "Error: file ../src/${file}.l does not exist!";
+  print STDERR "Error: file ../src/${file}.l does not exist!\n";
   exit 1;
 }
 system("touch ../src/${file}.l");
-unless (rename "src/CMakeFiles/_doxygen.dir/build.make","src/CMakefiles/_doxygen.dir/build.make.old") {
+unless (rename "src/CMakeFiles/_doxygen.dir/build.make","src/CMakeFiles/_doxygen.dir/build.make.old") {
   print STDERR "Error: cannot rename src/CMakeFiles/_doxygen.dir/build.make!\n";
   exit 1;
 }
 if (open(F,"<src/CMakeFiles/_doxygen.dir/build.make.old")) {
-  unless (open(G,">src/CMakefiles/_doxygen.dir/build.make")) {
+  unless (open(G,">src/CMakeFiles/_doxygen.dir/build.make")) {
     print STDERR "Error: opening file build.make for writing\n";
     exit 1;
   }
   print "Processing build.make...\n";
   while (<F>) {
-    if ( s/flex \$\(LEX_FLAGS\) -P${file}YY/flex \$(LEX_FLAGS) -d -P${file}YY/ ) {
-      print "Enabling debug info for $file.l\n";
-    }
-    elsif ( s/flex \$\(LEX_FLAGS\) -d -P${file}YY/flex \$(LEX_FLAGS) -P${file}YY/ ) {
+    if ( s/flex \$\(LEX_FLAGS\) -d(.*) ${file}.l/flex \$(LEX_FLAGS)$1 ${file}.l/ ) {
       print "Disabling debug info for $file\n";
+    }
+    elsif ( s/flex \$\(LEX_FLAGS\)(.*) ${file}.l$/flex \$(LEX_FLAGS) -d$1 ${file}.l/ ) {
+      print "Enabling debug info for $file.l\n";
     }
     print G "$_";
   }
@@ -237,7 +237,7 @@ else {
 
 # touch the file
 $now = time;
-utime $now, $now, $file
+utime $now, $now, $file;
 \endverbatim
 Another way to get rules matching / debugging information
 from the \c flex code is setting LEX_FLAGS with \c make (`make LEX_FLAGS=-d`).
