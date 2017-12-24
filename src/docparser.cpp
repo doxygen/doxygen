@@ -6125,9 +6125,20 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
             }
           }
         }
+        else if (findAttribute(tagHtmlAttribs,"langword",&cref)) // <see langword="..."/> or <see langworld="..."></see>
+        {
+            doctokenizerYYsetStatePara();
+            DocLink *lnk = new DocLink(this,cref);
+            m_children.append(lnk);
+            QCString leftOver = lnk->parse(FALSE,TRUE);
+            if (!leftOver.isEmpty())
+            {
+              m_children.append(new DocWord(this,leftOver));
+            }
+        }
         else
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing 'cref' attribute from <see> tag.");
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing 'cref' or 'langword' attribute from <see> tag.");
         }
       }
       break;
