@@ -791,10 +791,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       md->memberType()!=MemberType_Enumeration
      )
   {
-    if (md->memberType()!=MemberType_Typedef)
-    {
-      writeMemberTemplateLists(md,t);
-    }
+    writeMemberTemplateLists(md,t);
     QCString typeStr = md->typeString(); //replaceAnonymousScopes(md->typeString());
     stripQualifiers(typeStr);
     t << "        <type>";
