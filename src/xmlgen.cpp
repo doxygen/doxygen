@@ -1827,6 +1827,10 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     }
   }
   writeInnerPages(pd->getSubPages(),t);
+  if(pd->showToc())
+  {
+    t << "    <tableofcontents/>" << endl;
+  }
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,pd->briefFile(),pd->briefLine(),pd,0,pd->briefDescription());
   t << "    </briefdescription>" << endl;
