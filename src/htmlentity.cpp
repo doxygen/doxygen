@@ -22,7 +22,7 @@ static const int g_numberHtmlMappedCmds = 11;
 
 //! @brief Structure defining all HTML4 entities, doxygen extensions and doxygen commands representing special symbols.
 //! @details In case an entity does not exist a NULL is given for the entity. The first column contains the symbolic code
-//!          for the entity, see also doxparser.h The second column contains the name of the enitity (without the starting \& and
+//!          for the entity, see also doxparser.h The second column contains the name of the entity (without the starting \& and
 //!          ending ;)
 static struct htmlEntityInfo
 {

@@ -102,8 +102,8 @@ struct SymbolModifiers {
   bool nopass;
   bool pass;
   bool contiguous;
-  bool volat; /* volatile is a reserverd name */
-  bool value; /* volatile is a reserverd name */
+  bool volat; /* volatile is a reserved name */
+  bool value; /* volatile is a reserved name */
   QCString passVar;
 
   SymbolModifiers() : type(), returnName(), protection(NONE_P), direction(NONE_D),
@@ -1720,7 +1720,7 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
   return *this;
 }
 
-/*! Extracts  and adds passed modifier to these modifiers.*/
+/*! Extracts and adds passed modifier to these modifiers.*/
 SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
 {
   mdfString = mdfString.lower();
@@ -2375,7 +2375,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       // strip direction
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::IN]));
       loc_doc.stripWhiteSpace();
-      // in case of emty documentation or (now) just name, consider it as no documemntation
+      // in case of empty documentation or (now) just name, consider it as no documemntation
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
         // reset current back to the part inside the routine

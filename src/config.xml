@@ -1644,7 +1644,7 @@ to disable this feature.
  path to the <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">
  compilation database</a> used when the files were built. This is equivalent to
  specifying the "-p" option to a clang tool, such as clang-check. These options
- will then be pased to the parser.
+ will then be passed to the parser.
 
  @note The availability of this option depends on whether or not doxygen
  was generated with the `-Duse-libclang=ON` option for CMake.
