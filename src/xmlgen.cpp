@@ -1827,6 +1827,9 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     }
   }
   writeInnerPages(pd->getSubPages(),t);
+  t << "    <briefdescription>" << endl;
+  writeXMLDocBlock(t,pd->briefFile(),pd->briefLine(),pd,0,pd->briefDescription());
+  t << "    </briefdescription>" << endl;
   t << "    <detaileddescription>" << endl;
   if (isExample)
   {

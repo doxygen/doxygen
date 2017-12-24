@@ -3,6 +3,8 @@
   <compounddef id="indexpage" kind="page">
     <compoundname>index</compoundname>
     <title>My Project</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>Dollar $ At @ Backslash \ Amphasand &amp; Less &lt; Greater &gt; Hash # Percent % Quote " Dot . Double colon :: Pipe | Plus + Minus - </para>
     </detaileddescription>
