@@ -670,6 +670,13 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     t << "\"";
   }
 
+  if (md->memberType() == MemberType_Enumeration)
+  {
+    t << " strong=\"";
+    if (md->isStrong()) t << "yes"; else t << "no";
+    t << "\"";
+  }
+
   if (md->memberType() == MemberType_Variable)
   {
     //ArgumentList *al = md->argumentList();
@@ -799,6 +806,13 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     t << "</type>" << endl;
     t << "        <definition>" << convertToXML(md->definition()) << "</definition>" << endl;
     t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>" << endl;
+  }
+
+  if (md->memberType() == MemberType_Enumeration)
+  {
+    t << "        <type>";
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->enumBaseType());
+    t << "</type>" << endl;
   }
 
   t << "        <name>" << convertToXML(md->name()) << "</name>" << endl;
