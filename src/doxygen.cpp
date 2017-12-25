@@ -5594,6 +5594,7 @@ static bool findGlobalMember(EntryNav *rootNav,
     if (root->type!="friend class" &&
         root->type!="friend struct" &&
         root->type!="friend union" &&
+        root->type!="friend" &&
         (!Config_getBool(TYPEDEF_HIDES_STRUCT) ||
          root->type.find("typedef ")==-1)
        )
