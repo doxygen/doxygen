@@ -484,7 +484,7 @@ class MemberDefImpl
     void init(Definition *def,const char *t,const char *a,const char *e,
               Protection p,Specifier v,bool s,Relationship r,
               MemberType mt,const ArgumentList *tal,
-              const ArgumentList *al
+              const ArgumentList *al,const char *meta
              );
 
     ClassDef     *classDef;   // member of or related to
@@ -538,6 +538,8 @@ class MemberDefImpl
     MemberDef *templateMaster;
     QList<ArgumentList> *defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
+
+    QCString metaData;        // Slice metadata.
 
     ClassDef *cachedAnonymousType; // if the member has an anonymous compound
                                    // as its type then this is computed by
@@ -626,7 +628,7 @@ void MemberDefImpl::init(Definition *def,
                      const char *t,const char *a,const char *e,
                      Protection p,Specifier v,bool s,Relationship r,
                      MemberType mt,const ArgumentList *tal,
-                     const ArgumentList *al
+                     const ArgumentList *al,const char *meta
                     )
 {
   classDef=0;
@@ -709,6 +711,7 @@ void MemberDefImpl::init(Definition *def,
   {
     declArgList = 0;
   }
+  metaData = meta;
   templateMaster = 0;
   classSectionSDict = 0;
   docsForDefinition = TRUE;
@@ -748,17 +751,18 @@ void MemberDefImpl::init(Definition *def,
  * \param tal The template arguments of this member.
  * \param al  The arguments of this member. This is a structured form of
  *            the string past as argument \a a.
+ * \param meta Slice metadata.
  */
 
 MemberDef::MemberDef(const char *df,int dl,int dc,
                      const char *t,const char *na,const char *a,const char *e,
                      Protection p,Specifier v,bool s,Relationship r,MemberType mt,
-                     const ArgumentList *tal,const ArgumentList *al
+                     const ArgumentList *tal,const ArgumentList *al,const char *meta
                     ) : Definition(df,dl,dc,removeRedundantWhiteSpace(na)), visited(FALSE)
 {
   //printf("MemberDef::MemberDef(%s)\n",na);
   m_impl = new MemberDefImpl;
-  m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al);
+  m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al,meta);
   number_of_flowkw = 1;
   m_isLinkableCached    = 0;
   m_isConstructorCached = 0;
@@ -1401,7 +1405,7 @@ bool MemberDef::isBriefSectionVisible() const
 QCString MemberDef::getDeclType() const
 {
   QCString ltype(m_impl->type);
-  if (m_impl->mtype==MemberType_Typedef)
+  if (isTypedef() && getLanguage() != SrcLangExt_Slice)
   {
     ltype.prepend("typedef ");
   }
@@ -1511,7 +1515,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   // *** write type
   QCString ltype(m_impl->type);
-  if (m_impl->mtype==MemberType_Typedef) ltype.prepend("typedef ");
+  if (isTypedef() && getLanguage() != SrcLangExt_Slice)
+  {
+    ltype.prepend("typedef ");
+  }
   if (isAlias())
   {
     ltype="using";
@@ -2426,6 +2433,10 @@ QCString MemberDef::displayDefinition() const
     else
     {
       ldef.prepend("enum ");
+      if (isSliceLocal())
+      {
+        ldef.prepend("local ");
+      }
     }
   }
   else if (isEnumValue())
@@ -2603,6 +2614,10 @@ void MemberDef::writeDocumentation(MemberList *ml,
     else
     {
       ldef.prepend("enum ");
+      if (isSliceLocal())
+      {
+        ldef.prepend("local ");
+      }
     }
   }
   else if (isEnumValue())
@@ -2618,6 +2633,17 @@ void MemberDef::writeDocumentation(MemberList *ml,
   }
   int i=0,l;
   static QRegExp r("@[0-9]+");
+
+  if (lang == SrcLangExt_Slice)
+  {
+    // Remove the container scope from the member name.
+    QCString prefix = scName + sep;
+    int pos = ldef.findRev(prefix.data());
+    if(pos != -1)
+    {
+      ldef.remove(pos, prefix.length());
+    }
+  }
 
   //----------------------------------------
 
@@ -2673,6 +2699,13 @@ void MemberDef::writeDocumentation(MemberList *ml,
   {
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
     ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
+
+    if (!m_impl->metaData.isEmpty() && getLanguage()==SrcLangExt_Slice)
+    {
+      ol.startMemberDocPrefixItem();
+      ol.docify(m_impl->metaData);
+      ol.endMemberDocPrefixItem();
+    }
 
     ClassDef *cd=getClassDef();
     NamespaceDef *nd=getNamespaceDef();
@@ -2777,6 +2810,21 @@ void MemberDef::writeDocumentation(MemberList *ml,
     if (optVhdl)
     {
       hasParameterList=VhdlDocGen::writeVHDLTypeDocumentation(this,scopedContainer,ol);
+    }
+    else if (lang==SrcLangExt_Slice)
+    {
+      // Eliminate the self-reference.
+      int pos = ldef.findRev(' ');
+      linkifyText(TextGeneratorOLImpl(ol),
+                  scopedContainer,
+                  getBodyDef(),
+                  this,
+                  ldef.left(pos)
+                 );
+      ol.docify(ldef.mid(pos));
+      Definition *scope = cd;
+      if (scope==0) scope = nd;
+      hasParameterList=writeDefArgumentList(ol,scope,this);
     }
     else
     {
@@ -3082,7 +3130,7 @@ QCString MemberDef::fieldType() const
     type = m_impl->type;
   }
 
-  if (isTypedef()) type.prepend("typedef ");
+  if (isTypedef() && getLanguage() != SrcLangExt_Slice) type.prepend("typedef ");
   return simplifyTypeForTable(type);
 }
 
@@ -3199,6 +3247,8 @@ QCString MemberDef::memberTypeName() const
     case MemberType_Event:       return "event";
     case MemberType_Interface:   return "interface";
     case MemberType_Service:     return "service";
+    case MemberType_Sequence:    return "sequence";
+    case MemberType_Dictionary:  return "dictionary";
     default:          return "unknown";
   }
 }
@@ -3461,7 +3511,7 @@ MemberDef *MemberDef::createTemplateInstanceMember(
                        methodName,
                        substituteTemplateArgumentsInString(m_impl->args,formalArgs,actualArgs),
                        m_impl->exception, m_impl->prot,
-                       m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype, 0, 0
+                       m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype, 0, 0, ""
                    );
   imd->setArgumentList(actualArgList);
   imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def,formalArgs,actualArgs));
@@ -3623,6 +3673,8 @@ void MemberDef::writeTagFile(FTextStream &tagFile)
     case MemberType_Slot:        tagFile << "slot";        break;
     case MemberType_Interface:   tagFile << "interface";   break;
     case MemberType_Service:     tagFile << "service";     break;
+    case MemberType_Sequence:    tagFile << "sequence";    break;
+    case MemberType_Dictionary:  tagFile << "dictionary";  break;
   }
   if (m_impl->prot!=Public)
   {
@@ -4185,6 +4237,16 @@ bool MemberDef::isTypedef() const
   return m_impl->mtype==MemberType_Typedef;
 }
 
+bool MemberDef::isSequence() const
+{
+  return m_impl->mtype==MemberType_Sequence;
+}
+
+bool MemberDef::isDictionary() const
+{
+  return m_impl->mtype==MemberType_Dictionary;
+}
+
 bool MemberDef::isFunction() const
 {
   return m_impl->mtype==MemberType_Function;
@@ -4520,6 +4582,11 @@ MemberDef *MemberDef::getEnumScope() const
 bool MemberDef::livesInsideEnum() const
 {
   return m_impl->livesInsideEnum;
+}
+
+bool MemberDef::isSliceLocal() const
+{
+  return (m_impl->memSpec&Entry::Local)!=0;
 }
 
 MemberList *MemberDef::enumFieldList() const

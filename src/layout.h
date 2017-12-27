@@ -46,10 +46,11 @@ struct LayoutDocEntry
 
               // Namespace specific items
               NamespaceNestedNamespaces, NamespaceNestedConstantGroups,
-              NamespaceClasses, NamespaceInlineClasses,
+              NamespaceClasses, NamespaceInterfaces, NamespaceStructs, NamespaceExceptions,
+              NamespaceInlineClasses,
 
               // File specific items
-              FileClasses, FileNamespaces, FileConstantGroups,
+              FileClasses, FileInterfaces, FileStructs, FileExceptions, FileConstantGroups, FileNamespaces,
               FileIncludes, FileIncludeGraph, 
               FileIncludedByGraph, FileSourceLink,
               FileInlineClasses,
@@ -131,6 +132,17 @@ struct LayoutNavEntry
       ClassIndex, 
       ClassHierarchy, 
       ClassMembers,
+      Interfaces,
+      InterfaceList, 
+      InterfaceIndex, 
+      InterfaceHierarchy, 
+      Structs,
+      StructList, 
+      StructIndex, 
+      Exceptions,
+      ExceptionList, 
+      ExceptionIndex, 
+      ExceptionHierarchy, 
       Files, 
       FileList,
       FileGlobals,

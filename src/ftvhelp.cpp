@@ -35,6 +35,7 @@
 #include "docparser.h"
 #include "htmldocvisitor.h"
 #include "filedef.h"
+#include "classdef.h"
 #include "util.h"
 #include "resourcemgr.h"
 
@@ -359,11 +360,41 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
+        if (n->def->getLanguage() == SrcLangExt_Slice)
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
+        }
+        else
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
+        }
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
+        if (n->def->getLanguage() == SrcLangExt_Slice)
+        {
+          ClassDef *cd = dynamic_cast<ClassDef*>(n->def);
+          if (cd->isInterface())
+          {
+            t << "<span class=\"icona\"><span class=\"icon\">I</span></span>";
+          }
+          else if (cd->isStruct())
+          {
+            t << "<span class=\"icona\"><span class=\"icon\">S</span></span>";
+          }
+          else if (cd->isException())
+          {
+            t << "<span class=\"icona\"><span class=\"icon\">E</span></span>";
+          }
+          else
+          {
+            t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
+          }
+        }
+        else
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
+        }
       }
       else
       {
@@ -407,11 +438,41 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
+        if (n->def->getLanguage() == SrcLangExt_Slice)
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
+        }
+        else
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
+        }
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
+        if (n->def->getLanguage() == SrcLangExt_Slice)
+        {
+          ClassDef *cd = dynamic_cast<ClassDef*>(n->def);
+          if (cd->isInterface())
+          {
+            t << "<span class=\"icona\"><span class=\"icon\">I</span></span>";
+          }
+          else if (cd->isStruct())
+          {
+            t << "<span class=\"icona\"><span class=\"icon\">S</span></span>";
+          }
+          else if (cd->isException())
+          {
+            t << "<span class=\"icona\"><span class=\"icon\">E</span></span>";
+          }
+          else
+          {
+            t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
+          }
+        }
+        else
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
+        }
       }
       else
       {

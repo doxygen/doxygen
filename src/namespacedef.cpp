@@ -56,6 +56,9 @@ NamespaceDef::NamespaceDef(const char *df,int dl,int dc,
     setFileName(name);
   }
   classSDict = new ClassSDict(17);
+  interfaceSDict = new ClassSDict(17);
+  structSDict = new ClassSDict(17);
+  exceptionSDict = new ClassSDict(17);
   namespaceSDict = new NamespaceSDict(17);
   m_innerCompounds = new SDict<Definition>(17);
   usingDirList = 0;
@@ -87,6 +90,9 @@ NamespaceDef::NamespaceDef(const char *df,int dl,int dc,
 NamespaceDef::~NamespaceDef()
 {
   delete classSDict;
+  delete interfaceSDict;
+  delete structSDict;
+  delete exceptionSDict;
   delete namespaceSDict;
   delete m_innerCompounds;
   delete usingDirList;
@@ -164,12 +170,28 @@ void NamespaceDef::addInnerCompound(Definition *d)
 
 void NamespaceDef::insertClass(ClassDef *cd)
 {
-  if (classSDict->find(cd->name())==0)
+  ClassSDict *d;
+
+  if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+  {
+    if (cd->isInterface())
+      d = interfaceSDict;
+    else if (cd->isStruct())
+      d = structSDict;
+    else if (cd->isException())
+      d = exceptionSDict;
+    else
+      d = classSDict;
+  }
+  else
+    d = classSDict;
+
+  if (d->find(cd->name())==0)
   {
     if (Config_getBool(SORT_BRIEF_DOCS))
-      classSDict->inSort(cd->name(),cd);
+      d->inSort(cd->name(),cd);
     else
-      classSDict->append(cd->name(),cd);
+      d->append(cd->name(),cd);
   }
 }
 
@@ -245,6 +267,14 @@ void NamespaceDef::insertMember(MemberDef *md)
       addMemberToList(MemberListType_decTypedefMembers,md);
       addMemberToList(MemberListType_docTypedefMembers,md);
       break;
+    case MemberType_Sequence:      
+      addMemberToList(MemberListType_decSequenceMembers,md);
+      addMemberToList(MemberListType_docSequenceMembers,md);
+      break;
+    case MemberType_Dictionary:      
+      addMemberToList(MemberListType_decDictionaryMembers,md);
+      addMemberToList(MemberListType_docDictionaryMembers,md);
+      break;
     case MemberType_Enumeration:  
       addMemberToList(MemberListType_decEnumMembers,md);
       addMemberToList(MemberListType_docEnumMembers,md);
@@ -313,18 +343,25 @@ void NamespaceDef::writeTagFile(FTextStream &tagFile)
       case LayoutDocEntry::NamespaceClasses:
         {
           if (classSDict)
-          {
-            SDict<ClassDef>::Iterator ci(*classSDict);
-            ClassDef *cd;
-            for (ci.toFirst();(cd=ci.current());++ci)
-            {
-              if (cd->isLinkableInProject())
-              {
-                tagFile << "    <class kind=\"" << cd->compoundTypeString()
-                        << "\">" << convertToXML(cd->name()) << "</class>" << endl;
-              }
-            }
-          }
+            writeClassesToTagFile(tagFile, classSDict);
+        }
+        break;
+      case LayoutDocEntry::NamespaceInterfaces:
+        {
+          if (interfaceSDict)
+            writeClassesToTagFile(tagFile, interfaceSDict);
+        }
+        break;
+      case LayoutDocEntry::NamespaceStructs:
+        {
+          if (structSDict)
+            writeClassesToTagFile(tagFile, structSDict);
+        }
+        break;
+      case LayoutDocEntry::NamespaceExceptions:
+        {
+          if (exceptionSDict)
+            writeClassesToTagFile(tagFile, exceptionSDict);
         }
         break;
       case LayoutDocEntry::MemberDecl:
@@ -437,6 +474,24 @@ void NamespaceDef::writeBriefDescription(OutputList &ol)
     //ol.newParagraph();
     //ol.popGeneratorState();
   }
+
+  // Write a summary of the Slice definition including metadata.
+  if (getLanguage() == SrcLangExt_Slice)
+  {
+    ol.startParagraph();
+    ol.startTypewriter();
+    if (!metaData.isEmpty())
+    {
+      ol.docify(metaData);
+      ol.lineBreak();
+    }
+    ol.docify("module ");
+    ol.docify(stripScope(name()));
+    ol.docify(" { ... }");
+    ol.endTypewriter();
+    ol.endParagraph();
+  }
+
   ol.writeSynopsis();
 }
 
@@ -468,9 +523,9 @@ void NamespaceDef::endMemberDocumentation(OutputList &ol)
   }
 }
 
-void NamespaceDef::writeClassDeclarations(OutputList &ol,const QCString &title)
+void NamespaceDef::writeClassDeclarations(OutputList &ol,const QCString &title,ClassSDict *d)
 {
-  if (classSDict) classSDict->writeDeclaration(ol,0,title,TRUE);
+  if (d) d->writeDeclaration(ol,0,title,TRUE);
 }
 
 void NamespaceDef::writeInlineClasses(OutputList &ol)
@@ -527,6 +582,9 @@ void NamespaceDef::writeSummaryLinks(OutputList &ol)
   for (eli.toFirst();(lde=eli.current());++eli)
   {
     if ((lde->kind()==LayoutDocEntry::NamespaceClasses && classSDict && classSDict->declVisible()) || 
+        (lde->kind()==LayoutDocEntry::NamespaceInterfaces && interfaceSDict && interfaceSDict->declVisible()) || 
+        (lde->kind()==LayoutDocEntry::NamespaceStructs && structSDict && structSDict->declVisible()) || 
+        (lde->kind()==LayoutDocEntry::NamespaceExceptions && exceptionSDict && exceptionSDict->declVisible()) || 
         (lde->kind()==LayoutDocEntry::NamespaceNestedNamespaces && namespaceSDict && namespaceSDict->declVisible())
        )
     {
@@ -564,6 +622,20 @@ void NamespaceDef::addNamespaceAttributes(OutputList &ol)
     ol.writeLabel("published",false);
     ol.endLabels();
     ol.popGeneratorState();
+  }
+}
+
+void NamespaceDef::writeClassesToTagFile(FTextStream &tagFile,ClassSDict *d)
+{
+  SDict<ClassDef>::Iterator ci(*d);
+  ClassDef *cd;
+  for (ci.toFirst();(cd=ci.current());++ci)
+  {
+    if (cd->isLinkableInProject())
+    {
+      tagFile << "    <class kind=\"" << cd->compoundTypeString()
+              << "\">" << convertToXML(cd->name()) << "</class>" << endl;
+    }
   }
 }
 
@@ -619,7 +691,25 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceClasses: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeClassDeclarations(ol,ls->title(lang));
+          writeClassDeclarations(ol,ls->title(lang),classSDict);
+        }
+        break; 
+      case LayoutDocEntry::NamespaceInterfaces: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title(lang),interfaceSDict);
+        }
+        break; 
+      case LayoutDocEntry::NamespaceStructs: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title(lang),structSDict);
+        }
+        break; 
+      case LayoutDocEntry::NamespaceExceptions: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title(lang),exceptionSDict);
         }
         break; 
       case LayoutDocEntry::NamespaceNestedNamespaces: 
@@ -678,6 +768,9 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::ClassUsedFiles:
       case LayoutDocEntry::ClassInlineClasses:
       case LayoutDocEntry::FileClasses:
+      case LayoutDocEntry::FileInterfaces:
+      case LayoutDocEntry::FileStructs:
+      case LayoutDocEntry::FileExceptions:
       case LayoutDocEntry::FileNamespaces:
       case LayoutDocEntry::FileConstantGroups:
       case LayoutDocEntry::FileIncludes:
@@ -780,7 +873,8 @@ int NamespaceDef::countMembers()
 {
   MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
   if (allMemberList) allMemberList->countDocMembers();
-  return (allMemberList ? allMemberList->numDocMembers() : 0)+classSDict->count();
+  return (allMemberList ? allMemberList->numDocMembers() : 0) +
+      classSDict->count() + interfaceSDict->count() + structSDict->count() + exceptionSDict->count();
 }
 
 void NamespaceDef::addUsingDirective(NamespaceDef *nd)
@@ -1079,13 +1173,23 @@ void NamespaceDef::sortMemberLists()
   {
     classSDict->sort();
   }
+  if (interfaceSDict)
+  {
+    interfaceSDict->sort();
+  }
+  if (structSDict)
+  {
+    structSDict->sort();
+  }
+  if (exceptionSDict)
+  {
+    exceptionSDict->sort();
+  }
   if (namespaceSDict)
   {
     namespaceSDict->sort();
   }
 }
-
-
 
 MemberList *NamespaceDef::getMemberList(MemberListType lt) const
 {
@@ -1156,7 +1260,7 @@ QCString NamespaceDef::title() const
   {
     pageTitle = theTranslator->trPackage(displayName());
   }
-  else if (lang==SrcLangExt_Fortran)
+  else if (lang==SrcLangExt_Fortran || lang==SrcLangExt_Slice)
   {
     pageTitle = theTranslator->trModuleReference(displayName());
   }
@@ -1210,3 +1314,7 @@ QCString NamespaceDef::compoundTypeString() const
   return "";
 }
 
+void NamespaceDef::setMetaData(const QCString &m)
+{
+  metaData = m;
+}

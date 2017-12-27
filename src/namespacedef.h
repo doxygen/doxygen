@@ -97,11 +97,22 @@ class NamespaceDef : public Definition
     /*! Returns the classes contained in this namespace */
     ClassSDict *getClassSDict() const { return classSDict; }
 
+    /*! Returns the Slice interfaces contained in this namespace */
+    ClassSDict *getInterfaceSDict() const { return interfaceSDict; }
+
+    /*! Returns the Slice structs contained in this namespace */
+    ClassSDict *getStructSDict() const { return structSDict; }
+
+    /*! Returns the Slice exceptions contained in this namespace */
+    ClassSDict *getExceptionSDict() const { return exceptionSDict; }
+
     /*! Returns the namespaces contained in this namespace */
     NamespaceSDict *getNamespaceSDict() const { return namespaceSDict; }
 
     QCString title() const;
     QCString compoundTypeString() const;
+
+    void setMetaData(const QCString &m);
 
     bool visited;
 
@@ -114,7 +125,7 @@ class NamespaceDef : public Definition
     void writeBriefDescription(OutputList &ol);
     void startMemberDeclarations(OutputList &ol);
     void endMemberDeclarations(OutputList &ol);
-    void writeClassDeclarations(OutputList &ol,const QCString &title);
+    void writeClassDeclarations(OutputList &ol,const QCString &title,ClassSDict *d);
     void writeInlineClasses(OutputList &ol);
     void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
             bool isConstantGroup=false);
@@ -124,6 +135,7 @@ class NamespaceDef : public Definition
     void endMemberDocumentation(OutputList &ol);
     void writeSummaryLinks(OutputList &ol);
     void addNamespaceAttributes(OutputList &ol);
+    void writeClassesToTagFile(FTextStream &,ClassSDict *d);
 
     QCString              fileName;
     FileList              files;
@@ -136,10 +148,14 @@ class NamespaceDef : public Definition
     QList<MemberList>     m_memberLists;
     MemberGroupSDict     *memberGroupSDict;
     ClassSDict           *classSDict;
+    ClassSDict           *interfaceSDict;
+    ClassSDict           *structSDict;
+    ClassSDict           *exceptionSDict;
     NamespaceSDict       *namespaceSDict;
     bool                  m_subGrouping;
     enum { NAMESPACE, MODULE, CONSTANT_GROUP, LIBRARY } m_type;
     bool m_isPublished;
+    QCString              metaData;
 };
 
 /** A list of NamespaceDef objects. */

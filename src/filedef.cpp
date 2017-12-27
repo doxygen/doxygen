@@ -85,6 +85,9 @@ FileDef::FileDef(const char *p,const char *nm,
   setReference(lref);
   setDiskName(dn?dn:nm);
   m_classSDict        = 0;
+  m_interfaceSDict    = 0;
+  m_structSDict       = 0;
+  m_exceptionSDict    = 0;
   m_includeList       = 0;
   m_includeDict       = 0; 
   m_includedByList    = 0;
@@ -112,6 +115,9 @@ FileDef::FileDef(const char *p,const char *nm,
 FileDef::~FileDef()
 {
   delete m_classSDict;
+  delete m_interfaceSDict;
+  delete m_structSDict;
+  delete m_exceptionSDict;
   delete m_includeDict;
   delete m_includeList;
   delete m_includedByDict;
@@ -239,18 +245,25 @@ void FileDef::writeTagFile(FTextStream &tagFile)
       case LayoutDocEntry::FileClasses:
         {
           if (m_classSDict)
-          {
-            SDict<ClassDef>::Iterator ci(*m_classSDict);
-            ClassDef *cd;
-            for (ci.toFirst();(cd=ci.current());++ci)
-            {
-              if (cd->isLinkableInProject())
-              {
-                tagFile << "    <class kind=\"" << cd->compoundTypeString() <<
-                  "\">" << convertToXML(cd->name()) << "</class>" << endl;
-              }
-            }
-          }
+            writeClassesToTagFile(tagFile, m_classSDict);
+        }
+        break;
+      case LayoutDocEntry::FileInterfaces:
+        {
+          if (m_interfaceSDict)
+            writeClassesToTagFile(tagFile, m_interfaceSDict);
+        }
+        break;
+      case LayoutDocEntry::FileStructs:
+        {
+          if (m_structSDict)
+            writeClassesToTagFile(tagFile, m_structSDict);
+        }
+        break;
+      case LayoutDocEntry::FileExceptions:
+        {
+          if (m_exceptionSDict)
+            writeClassesToTagFile(tagFile, m_exceptionSDict);
         }
         break;
       case LayoutDocEntry::FileNamespaces:
@@ -417,6 +430,20 @@ void FileDef::writeBriefDescription(OutputList &ol)
   ol.writeSynopsis();
 }
 
+void FileDef::writeClassesToTagFile(FTextStream &tagFile, ClassSDict *d)
+{
+  SDict<ClassDef>::Iterator ci(*d);
+  ClassDef *cd;
+  for (ci.toFirst();(cd=ci.current());++ci)
+  {
+    if (cd->isLinkableInProject())
+    {
+      tagFile << "    <class kind=\"" << cd->compoundTypeString() <<
+        "\">" << convertToXML(cd->name()) << "</class>" << endl;
+    }
+  }
+}
+
 void FileDef::writeIncludeFiles(OutputList &ol)
 {
   if (m_includeList && m_includeList->count()>0)
@@ -557,10 +584,10 @@ void FileDef::writeNamespaceDeclarations(OutputList &ol,const QCString &title,
   if (m_namespaceSDict) m_namespaceSDict->writeDeclaration(ol,title,isConstantGroup);
 }
 
-void FileDef::writeClassDeclarations(OutputList &ol,const QCString &title)
+void FileDef::writeClassDeclarations(OutputList &ol,const QCString &title,ClassSDict *d)
 {
   // write list of classes
-  if (m_classSDict) m_classSDict->writeDeclaration(ol,0,title,FALSE);
+  if (d) d->writeDeclaration(ol,0,title,FALSE);
 }
 
 void FileDef::writeInlineClasses(OutputList &ol)
@@ -646,10 +673,11 @@ void FileDef::writeSummaryLinks(OutputList &ol)
   SrcLangExt lang=getLanguage();
   for (eli.toFirst();(lde=eli.current());++eli)
   {
-    if ((lde->kind()==LayoutDocEntry::FileClasses && 
-         m_classSDict && m_classSDict->declVisible()) || 
-        (lde->kind()==LayoutDocEntry::FileNamespaces && 
-         m_namespaceSDict && m_namespaceSDict->declVisible())
+    if ((lde->kind()==LayoutDocEntry::FileClasses && m_classSDict && m_classSDict->declVisible()) || 
+        (lde->kind()==LayoutDocEntry::FileInterfaces && m_interfaceSDict && m_interfaceSDict->declVisible()) || 
+        (lde->kind()==LayoutDocEntry::FileStructs && m_structSDict && m_structSDict->declVisible()) || 
+        (lde->kind()==LayoutDocEntry::FileExceptions && m_exceptionSDict && m_exceptionSDict->declVisible()) || 
+        (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaceSDict && m_namespaceSDict->declVisible())
        )
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
@@ -781,9 +809,27 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileClasses: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeClassDeclarations(ol,ls->title(lang));
+          writeClassDeclarations(ol,ls->title(lang),m_classSDict);
         }
-        break; 
+        break;
+      case LayoutDocEntry::FileInterfaces: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title(lang),m_interfaceSDict);
+        }
+        break;
+      case LayoutDocEntry::FileStructs: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title(lang),m_structSDict);
+        }
+        break;
+      case LayoutDocEntry::FileExceptions: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title(lang),m_exceptionSDict);
+        }
+        break;
       case LayoutDocEntry::FileNamespaces: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
@@ -842,6 +888,9 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceNestedConstantGroups:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceInterfaces:
+      case LayoutDocEntry::NamespaceStructs:
+      case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::GroupClasses: 
       case LayoutDocEntry::GroupInlineClasses: 
@@ -1160,6 +1209,14 @@ void FileDef::insertMember(MemberDef *md)
       addMemberToList(MemberListType_decTypedefMembers,md);
       addMemberToList(MemberListType_docTypedefMembers,md);
       break;
+    case MemberType_Sequence:      
+      addMemberToList(MemberListType_decSequenceMembers,md);
+      addMemberToList(MemberListType_docSequenceMembers,md);
+      break;
+    case MemberType_Dictionary:      
+      addMemberToList(MemberListType_decDictionaryMembers,md);
+      addMemberToList(MemberListType_docDictionaryMembers,md);
+      break;
     case MemberType_Enumeration:  
       addMemberToList(MemberListType_decEnumMembers,md);
       addMemberToList(MemberListType_docEnumMembers,md);
@@ -1184,17 +1241,50 @@ void FileDef::insertMember(MemberDef *md)
 void FileDef::insertClass(ClassDef *cd)
 {
   if (cd->isHidden()) return;
-  if (m_classSDict==0)
+
+  ClassSDict *d;
+
+  if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
   {
-    m_classSDict = new ClassSDict(17);
-  }
-  if (Config_getBool(SORT_BRIEF_DOCS))
-  {
-    m_classSDict->inSort(cd->name(),cd);
+    if (cd->isInterface())
+    {
+      if (m_interfaceSDict==0)
+        m_interfaceSDict = new ClassSDict(17);
+      d = m_interfaceSDict;
+    }
+    else if (cd->isStruct())
+    {
+      if (m_structSDict==0)
+        m_structSDict = new ClassSDict(17);
+      d = m_structSDict;
+    }
+    else if (cd->isException())
+    {
+      if (m_exceptionSDict==0)
+        m_exceptionSDict = new ClassSDict(17);
+      d = m_exceptionSDict;
+    }
+    else
+    {
+      if (m_classSDict==0)
+        m_classSDict = new ClassSDict(17);
+      d = m_classSDict;
+    }
   }
   else
   {
-    m_classSDict->append(cd->name(),cd);
+    if (m_classSDict==0)
+      m_classSDict = new ClassSDict(17);
+    d = m_classSDict;
+  }
+
+  if (Config_getBool(SORT_BRIEF_DOCS))
+  {
+    d->inSort(cd->name(),cd);
+  }
+  else
+  {
+    d->append(cd->name(),cd);
   }
 }
 

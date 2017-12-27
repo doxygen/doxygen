@@ -658,7 +658,7 @@ class TranslateContext::Private
       {
         return theTranslator->trPackages();
       }
-      else if (m_fortranOpt)
+      else if (m_fortranOpt || m_sliceOpt)
       {
         return theTranslator->trModules();
       }
@@ -689,7 +689,7 @@ class TranslateContext::Private
       {
         return theTranslator->trPackages();
       }
-      else if (m_fortranOpt)
+      else if (m_fortranOpt || m_sliceOpt)
       {
         return theTranslator->trModulesList();
       }
@@ -704,7 +704,7 @@ class TranslateContext::Private
       {
         return theTranslator->trPackageMembers();
       }
-      else if (m_fortranOpt)
+      else if (m_fortranOpt || m_sliceOpt)
       {
         return theTranslator->trModulesMembers();
       }
@@ -933,7 +933,8 @@ class TranslateContext::Private
     }
     TemplateVariant variables() const
     {
-      return theTranslator->trVariables();
+      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      return sliceOpt ? theTranslator->trConstants() : theTranslator->trVariables();
     }
     TemplateVariant typedefs() const
     {
@@ -1209,6 +1210,7 @@ class TranslateContext::Private
       m_javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
       m_fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
       m_vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      m_sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
     }
     TemplateVariant get(const char *n) const
     {
@@ -1218,6 +1220,7 @@ class TranslateContext::Private
     bool m_javaOpt;
     bool m_fortranOpt;
     bool m_vhdlOpt;
+    bool m_sliceOpt;
     static PropertyMapper<TranslateContext::Private> s_inst;
 };
 //%% }
@@ -1525,6 +1528,7 @@ class DefinitionContext
         case SrcLangExt_SQL:      result="sql";      break;
         case SrcLangExt_Tcl:      result="tcl";      break;
         case SrcLangExt_Markdown: result="markdown"; break;
+        case SrcLangExt_Slice:    result="slice";    break;
       }
       return result;
     }
@@ -2670,24 +2674,29 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       if (!init)
       {
         addBaseProperties(s_inst);
-        s_inst.addProperty("title",             &Private::title);
-        s_inst.addProperty("highlight",         &Private::highlight);
-        s_inst.addProperty("subhighlight",      &Private::subHighlight);
-        s_inst.addProperty("compoundType",      &Private::compoundType);
-        s_inst.addProperty("hasDetails",        &Private::hasDetails);
-        s_inst.addProperty("classes",           &Private::classes);
-        s_inst.addProperty("namespaces",        &Private::namespaces);
-        s_inst.addProperty("constantgroups",    &Private::constantgroups);
-        s_inst.addProperty("typedefs",          &Private::typedefs);
-        s_inst.addProperty("enums",             &Private::enums);
-        s_inst.addProperty("functions",         &Private::functions);
-        s_inst.addProperty("variables",         &Private::variables);
-        s_inst.addProperty("memberGroups",      &Private::memberGroups);
-        s_inst.addProperty("detailedTypedefs",  &Private::detailedTypedefs);
-        s_inst.addProperty("detailedEnums",     &Private::detailedEnums);
-        s_inst.addProperty("detailedFunctions", &Private::detailedFunctions);
-        s_inst.addProperty("detailedVariables", &Private::detailedVariables);
-        s_inst.addProperty("inlineClasses",     &Private::inlineClasses);
+        s_inst.addProperty("title",                &Private::title);
+        s_inst.addProperty("highlight",            &Private::highlight);
+        s_inst.addProperty("subhighlight",         &Private::subHighlight);
+        s_inst.addProperty("compoundType",         &Private::compoundType);
+        s_inst.addProperty("hasDetails",           &Private::hasDetails);
+        s_inst.addProperty("classes",              &Private::classes);
+        //s_inst.addProperty("interfaces",           &Private::interfaces);
+        s_inst.addProperty("namespaces",           &Private::namespaces);
+        s_inst.addProperty("constantgroups",       &Private::constantgroups);
+        s_inst.addProperty("typedefs",             &Private::typedefs);
+        s_inst.addProperty("sequences",            &Private::sequences);
+        s_inst.addProperty("dictionaries",         &Private::dictionaries);
+        s_inst.addProperty("enums",                &Private::enums);
+        s_inst.addProperty("functions",            &Private::functions);
+        s_inst.addProperty("variables",            &Private::variables);
+        s_inst.addProperty("memberGroups",         &Private::memberGroups);
+        s_inst.addProperty("detailedTypedefs",     &Private::detailedTypedefs);
+        s_inst.addProperty("detailedSequences",    &Private::detailedSequences);
+        s_inst.addProperty("detailedDictionaries", &Private::detailedDictionaries);
+        s_inst.addProperty("detailedEnums",        &Private::detailedEnums);
+        s_inst.addProperty("detailedFunctions",    &Private::detailedFunctions);
+        s_inst.addProperty("detailedVariables",    &Private::detailedVariables);
+        s_inst.addProperty("inlineClasses",        &Private::inlineClasses);
         init=TRUE;
       }
       if (!nd->cookie()) { nd->setCookie(new NamespaceContext::Private::Cachable(nd)); }
@@ -2722,6 +2731,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       Cachable &cache = getCache();
       if (!cache.classes)
       {
+        static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
         TemplateList *classList = TemplateList::alloc();
         if (m_namespaceDef->getClassSDict())
         {
@@ -2729,6 +2739,10 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
           ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
+            if (sliceOpt && (cd->isStruct() || cd->isInterface() || cd->isException()))
+            {
+              continue; // These types appear in their own sections.
+            }
             if (cd->visibleInParentsDeclList())
             {
               classList->append(ClassContext::alloc(cd));
@@ -2807,6 +2821,14 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     {
       return getMemberList(getCache().typedefs,MemberListType_decTypedefMembers,theTranslator->trTypedefs());
     }
+    TemplateVariant sequences() const
+    {
+      return getMemberList(getCache().sequences,MemberListType_decSequenceMembers,theTranslator->trSequences());
+    }
+    TemplateVariant dictionaries() const
+    {
+      return getMemberList(getCache().dictionaries,MemberListType_decDictionaryMembers,theTranslator->trDictionaries());
+    }
     TemplateVariant enums() const
     {
       return getMemberList(getCache().enums,MemberListType_decEnumMembers,theTranslator->trEnumerations());
@@ -2821,7 +2843,9 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     }
     TemplateVariant variables() const
     {
-      return getMemberList(getCache().variables,MemberListType_decVarMembers,theTranslator->trVariables());
+      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      return getMemberList(getCache().variables,MemberListType_decVarMembers,
+                           sliceOpt ? theTranslator->trConstants() : theTranslator->trVariables());
     }
     TemplateVariant memberGroups() const
     {
@@ -2843,6 +2867,14 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     {
       return getMemberList(getCache().detailedTypedefs,MemberListType_docTypedefMembers,theTranslator->trTypedefDocumentation());
     }
+    TemplateVariant detailedSequences() const
+    {
+      return getMemberList(getCache().detailedSequences,MemberListType_docSequenceMembers,theTranslator->trSequenceDocumentation());
+    }
+    TemplateVariant detailedDictionaries() const
+    {
+      return getMemberList(getCache().detailedDictionaries,MemberListType_docDictionaryMembers,theTranslator->trDictionaryDocumentation());
+    }
     TemplateVariant detailedEnums() const
     {
       return getMemberList(getCache().detailedEnums,MemberListType_docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
@@ -2856,7 +2888,10 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     }
     TemplateVariant detailedVariables() const
     {
-      return getMemberList(getCache().detailedVariables,MemberListType_docVarMembers,theTranslator->trVariableDocumentation());
+      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      return getMemberList(getCache().detailedVariables,MemberListType_docVarMembers,
+                           sliceOpt ? theTranslator->trConstantDocumentation() :
+                           theTranslator->trVariableDocumentation());
     }
     TemplateVariant inlineClasses() const
     {
@@ -2889,14 +2924,19 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     {
       Cachable(NamespaceDef *nd) : DefinitionContext<NamespaceContext::Private>::Cachable(nd) {}
       SharedPtr<TemplateList>               classes;
+      SharedPtr<TemplateList>               interfaces;
       SharedPtr<TemplateList>               namespaces;
       SharedPtr<TemplateList>               constantgroups;
       SharedPtr<MemberListInfoContext>      typedefs;
+      SharedPtr<MemberListInfoContext>      sequences;
+      SharedPtr<MemberListInfoContext>      dictionaries;
       SharedPtr<MemberListInfoContext>      enums;
       SharedPtr<MemberListInfoContext>      functions;
       SharedPtr<MemberListInfoContext>      variables;
       SharedPtr<MemberGroupListContext>     memberGroups;
       SharedPtr<MemberListInfoContext>      detailedTypedefs;
+      SharedPtr<MemberListInfoContext>      detailedSequences;
+      SharedPtr<MemberListInfoContext>      detailedDictionaries;
       SharedPtr<MemberListInfoContext>      detailedEnums;
       SharedPtr<MemberListInfoContext>      detailedFunctions;
       SharedPtr<MemberListInfoContext>      detailedVariables;
@@ -2961,12 +3001,16 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
         s_inst.addProperty("constantgroups",            &Private::constantgroups);
         s_inst.addProperty("macros",                    &Private::macros);
         s_inst.addProperty("typedefs",                  &Private::typedefs);
+        s_inst.addProperty("sequences",                 &Private::sequences);
+        s_inst.addProperty("dictionaries",              &Private::dictionaries);
         s_inst.addProperty("enums",                     &Private::enums);
         s_inst.addProperty("functions",                 &Private::functions);
         s_inst.addProperty("variables",                 &Private::variables);
         s_inst.addProperty("memberGroups",              &Private::memberGroups);
         s_inst.addProperty("detailedMacros",            &Private::detailedMacros);
         s_inst.addProperty("detailedTypedefs",          &Private::detailedTypedefs);
+        s_inst.addProperty("detailedSequences",         &Private::detailedSequences);
+        s_inst.addProperty("detailedDictionaries",      &Private::detailedDictionaries);
         s_inst.addProperty("detailedEnums",             &Private::detailedEnums);
         s_inst.addProperty("detailedFunctions",         &Private::detailedFunctions);
         s_inst.addProperty("detailedVariables",         &Private::detailedVariables);
@@ -3240,6 +3284,14 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       return getMemberList(getCache().typedefs,MemberListType_decTypedefMembers,theTranslator->trTypedefs());
     }
+    TemplateVariant sequences() const
+    {
+      return getMemberList(getCache().sequences,MemberListType_decSequenceMembers,theTranslator->trSequences());
+    }
+    TemplateVariant dictionaries() const
+    {
+      return getMemberList(getCache().dictionaries,MemberListType_decDictionaryMembers,theTranslator->trDictionaries());
+    }
     TemplateVariant enums() const
     {
       return getMemberList(getCache().enums,MemberListType_decEnumMembers,theTranslator->trEnumerations());
@@ -3254,7 +3306,9 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     }
     TemplateVariant variables() const
     {
-      return getMemberList(getCache().variables,MemberListType_decVarMembers,theTranslator->trVariables());
+      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      return getMemberList(getCache().variables,MemberListType_decVarMembers,
+                           sliceOpt ? theTranslator->trConstants() : theTranslator->trVariables());
     }
     TemplateVariant memberGroups() const
     {
@@ -3279,6 +3333,14 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant detailedTypedefs() const
     {
       return getMemberList(getCache().detailedTypedefs,MemberListType_docTypedefMembers,theTranslator->trTypedefDocumentation());
+    }
+    TemplateVariant detailedSequences() const
+    {
+      return getMemberList(getCache().detailedSequences,MemberListType_docSequenceMembers,theTranslator->trSequenceDocumentation());
+    }
+    TemplateVariant detailedDictionaries() const
+    {
+      return getMemberList(getCache().detailedDictionaries,MemberListType_docDictionaryMembers,theTranslator->trDictionaryDocumentation());
     }
     TemplateVariant detailedEnums() const
     {
@@ -3339,12 +3401,16 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       SharedPtr<TemplateList>               constantgroups;
       SharedPtr<MemberListInfoContext>      macros;
       SharedPtr<MemberListInfoContext>      typedefs;
+      SharedPtr<MemberListInfoContext>      sequences;
+      SharedPtr<MemberListInfoContext>      dictionaries;
       SharedPtr<MemberListInfoContext>      enums;
       SharedPtr<MemberListInfoContext>      functions;
       SharedPtr<MemberListInfoContext>      variables;
       SharedPtr<MemberGroupListContext>     memberGroups;
       SharedPtr<MemberListInfoContext>      detailedMacros;
       SharedPtr<MemberListInfoContext>      detailedTypedefs;
+      SharedPtr<MemberListInfoContext>      detailedSequences;
+      SharedPtr<MemberListInfoContext>      detailedDictionaries;
       SharedPtr<MemberListInfoContext>      detailedEnums;
       SharedPtr<MemberListInfoContext>      detailedFunctions;
       SharedPtr<MemberListInfoContext>      detailedVariables;
@@ -5494,7 +5560,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     }
     TemplateVariant variables() const
     {
-      return getMemberList(getCache().variables,MemberListType_decVarMembers,theTranslator->trVariables());
+      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      return getMemberList(getCache().variables,MemberListType_decVarMembers,
+                           sliceOpt ? theTranslator->trConstants() : theTranslator->trVariables());
     }
     TemplateVariant signals() const
     {
@@ -6428,7 +6496,7 @@ class NestingContext::Private : public GenericNodeListContext
         if (nd->localName().find('@')==-1 &&
             (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
         {
-          bool hasChildren = namespaceHasVisibleChild(nd,addClasses);
+          bool hasChildren = namespaceHasVisibleChild(nd,addClasses,false,ClassDef::Class);
           bool isLinkable  = nd->isLinkableInProject();
           if (isLinkable || hasChildren)
           {
@@ -6943,11 +7011,12 @@ class NamespaceTreeContext::Private
       static bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
       static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
       static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       if (javaOpt || vhdlOpt)
       {
         return theTranslator->trPackages();
       }
-      else if (fortranOpt)
+      else if (fortranOpt || sliceOpt)
       {
         return theTranslator->trModulesList();
       }
