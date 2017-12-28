@@ -5192,6 +5192,41 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
 
 //----------------------------------------------------------------------
 
+/// substitute all occurrences of \a src in \a s by \a dst
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
+{
+  if (s.isEmpty() || src.isEmpty()) return s;
+  const char *p, *q;
+  int srcLen = src.length();
+  int dstLen = dst.length();
+  int resLen;
+  if (srcLen!=dstLen)
+  {
+    int count;
+    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
+    resLen = s.length()+count*(dstLen-srcLen);
+  }
+  else // result has same size as s
+  {
+    resLen = s.length();
+  }
+  QCString result(resLen+1);
+  char *r;
+  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  {
+    int l = (int)(q-p);
+    memcpy(r,p,l);
+    r+=l;
+
+    if (dst) memcpy(r,dst,dstLen);
+    r+=dstLen;
+  }
+  qstrcpy(r,p);
+  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
+  return result;
+}
+
+
 /// substitute all occurrences of \a src in \a s by \a dst, but skip
 /// each consecutive sequence of \a src where the number consecutive
 /// \a src matches \a skip_seq; if \a skip_seq is negative, skip any
