@@ -624,6 +624,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
+    forceStartParagraph(op);
     if (!m_hide) m_t << PREFRAG_START;
     pushEnabled();
     m_hide=TRUE;
@@ -658,6 +659,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   {
     popEnabled();
     if (!m_hide) m_t << PREFRAG_END;
+    forceStartParagraph(op);
   }
   else
   {
@@ -776,12 +778,13 @@ void HtmlDocVisitor::visitPre(DocAutoList *l)
     //       A. 
     //         1. (repeat)...
     //
-    m_t << "<ol type=\"" << types[l->depth() % NUM_HTML_LIST_TYPES] << "\">";
+    m_t << "<ol type=\"" << types[l->depth() % NUM_HTML_LIST_TYPES] << "\"";
   }
   else
   {
-    m_t << "<ul>";
+    m_t << "<ul";
   }
+  m_t << getDirHtmlClassOfNode(getTextDirByConfig(l)) << ">";
   if (!l->isPreformatted()) m_t << "\n";
 }
 
@@ -1021,6 +1024,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   // if the first element of a paragraph is something that should be outside of
   // the paragraph (<ul>,<dl>,<table>,..) then that will already started the 
   // paragraph and we don't need to do it here
+  bool paragraphAlreadyStarted = false;
   uint nodeIndex = 0;
   if (p && nodeIndex<p->children().count())
   {
@@ -1034,6 +1038,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
       DocNode *n = p->children().at(nodeIndex);
       if (mustBeOutsideParagraph(n))
       {
+        paragraphAlreadyStarted = true;
         needsTag = FALSE;
       }
     }
@@ -1044,13 +1049,13 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   // fix the otherwise ugly spacing.
   int t;
   static const char *contexts[7] = 
-  { "",                     // 0
-    " class=\"startli\"",   // 1
-    " class=\"startdd\"",   // 2
-    " class=\"endli\"",     // 3
-    " class=\"enddd\"",     // 4
-    " class=\"starttd\"",   // 5
-    " class=\"endtd\""      // 6
+  { "",          // 0
+    "startli",   // 1
+    "startdd",   // 2
+    "endli",     // 3
+    "enddd",     // 4
+    "starttd",   // 5
+    "endtd"      // 6
   };
   bool isFirst;
   bool isLast;
@@ -1060,7 +1065,10 @@ void HtmlDocVisitor::visitPre(DocPara *p)
 
   //printf("  needsTag=%d\n",needsTag);
   // write the paragraph tag (if needed)
-  if (needsTag) m_t << "<p" << contexts[t] << ">";
+  if (needsTag)
+    m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(p), contexts[t]) << ">";
+  else if(!paragraphAlreadyStarted)
+    m_t << getHtmlDirEmbedingChar(getTextDirByConfig(p));
 }
 
 void HtmlDocVisitor::visitPost(DocPara *p)
@@ -1136,7 +1144,8 @@ void HtmlDocVisitor::visitPre(DocSimpleSect *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<dl class=\"section " << s->typeString() << "\"><dt>";
+  m_t << "<dl" << getDirHtmlClassOfNode(getTextDirByConfig(s), "section " + s->typeString()) 
+    << "><dt>";
   switch(s->type())
   {
     case DocSimpleSect::See: 
@@ -1232,7 +1241,7 @@ void HtmlDocVisitor::visitPre(DocSection *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<h" << s->level() << ">";
+  m_t << "<h" << s->level() << getDirHtmlClassOfNode(getTextDirByConfig(s->title())) << ">";
   m_t << "<a class=\"anchor\" id=\"" << s->anchor();
   m_t << "\"></a>" << endl;
   filter(convertCharEntitiesToUTF8(s->title().data()));
@@ -1250,12 +1259,13 @@ void HtmlDocVisitor::visitPre(DocHtmlList *s)
   forceEndParagraph(s);
   if (s->type()==DocHtmlList::Ordered) 
   {
-    m_t << "<ol" << htmlAttribsToString(s->attribs()) << ">\n"; 
+    m_t << "<ol" << htmlAttribsToString(s->attribs()); 
   }
   else 
   {
-    m_t << "<ul" << htmlAttribsToString(s->attribs()) << ">\n";
+    m_t << "<ul" << htmlAttribsToString(s->attribs());
   }
+  m_t << getDirHtmlClassOfNode(getTextDirByConfig(s)) << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlList *s) 
@@ -1303,7 +1313,9 @@ void HtmlDocVisitor::visitPost(DocHtmlDescList *dl)
 void HtmlDocVisitor::visitPre(DocHtmlDescTitle *dt)
 {
   if (m_hide) return;
-  m_t << "<dt" << htmlAttribsToString(dt->attribs()) << ">";
+  m_t << "<dt" << htmlAttribsToString(dt->attribs())
+    << getDirHtmlClassOfNode(getTextDirByConfig(dt))
+    << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescTitle *) 
@@ -1315,7 +1327,9 @@ void HtmlDocVisitor::visitPost(DocHtmlDescTitle *)
 void HtmlDocVisitor::visitPre(DocHtmlDescData *dd)
 {
   if (m_hide) return;
-  m_t << "<dd" << htmlAttribsToString(dd->attribs()) << ">";
+  m_t << "<dd" << htmlAttribsToString(dd->attribs()) 
+    << getDirHtmlClassOfNode(getTextDirByConfig(dd))
+    << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescData *) 
@@ -1338,11 +1352,21 @@ void HtmlDocVisitor::visitPre(DocHtmlTable *t)
   QString attrs = htmlAttribsToString(t->attribs());
   if (attrs.isEmpty())
   {
-    m_t << "<table class=\"doxtable\">\n";
+    m_t << "<table";
+    if(t->hasCaption())
+      m_t << getDirHtmlClassOfNode(getTextDirByConfig(t->caption()), "doxtable");
+    else
+      m_t << getDirHtmlClassOfNode(getTextDirByConfig(t), "doxtable");
+    m_t << ">\n";
   }
   else
   {
-    m_t << "<table" << htmlAttribsToString(t->attribs()) << ">\n";
+    m_t << "<table";
+    if (t->hasCaption())
+      m_t << getDirHtmlClassOfNode(getTextDirByConfig(t->caption()));
+    else
+      m_t << getDirHtmlClassOfNode(getTextDirByConfig(t));
+    m_t << htmlAttribsToString(t->attribs()) << ">\n";
   }
 }
 
@@ -1435,7 +1459,9 @@ void HtmlDocVisitor::visitPre(DocHtmlHeader *header)
   if (m_hide) return;
   forceEndParagraph(header);
   m_t << "<h" << header->level() 
-      << htmlAttribsToString(header->attribs()) << ">";
+      << htmlAttribsToString(header->attribs()) 
+      << getDirHtmlClassOfNode(getTextDirByConfig(header))
+      << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlHeader *header) 
@@ -1500,6 +1526,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     if (img->hasCaption())
     {
       m_t << "<div class=\"caption\">" << endl;
+      m_t << getHtmlDirEmbedingChar(getTextDirByConfig(img));
     }
   }
   else // other format -> skip
@@ -1862,11 +1889,13 @@ void HtmlDocVisitor::visitPre(DocHtmlBlockQuote *b)
   QString attrs = htmlAttribsToString(b->attribs());
   if (attrs.isEmpty())
   {
-    m_t << "<blockquote class=\"doxtable\">\n";
+    m_t << "<blockquote" << getDirHtmlClassOfNode(getTextDirByConfig(b), "doxtable")
+      << ">\n";
   }
   else
   {
-    m_t << "<blockquote" << htmlAttribsToString(b->attribs()) << ">\n";
+    m_t << "<blockquote" << getDirHtmlClassOfNode(getTextDirByConfig(b))
+      << htmlAttribsToString(b->attribs()) << ">\n";
   }
 }
 
@@ -2201,13 +2230,17 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
       return; // only whitespace at the end!
     }
 
+    bool needsTag = TRUE;
     bool isFirst;
     bool isLast;
     getParagraphContext(para,isFirst,isLast);
     //printf("forceStart first=%d last=%d\n",isFirst,isLast);
-    if (isFirst && isLast) return;
+    if (isFirst && isLast) needsTag = FALSE;
 
-    m_t << "<p>";
+    if (needsTag)
+      m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(para, nodeIndex)) << ">";
+    else
+      m_t << getHtmlDirEmbedingChar(getTextDirByConfig(para, nodeIndex));
   }
 }
 
