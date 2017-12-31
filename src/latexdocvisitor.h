@@ -23,7 +23,6 @@
 #include <qstack.h>
 #include <qcstring.h>
 #include <qlist.h>
-//#include <qmap.h>
 
 class FTextStream;
 class CodeOutputInterface;

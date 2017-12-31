@@ -47,6 +47,7 @@
 #include "searchindex.h"
 #include "doxygen.h"
 #include "textdocvisitor.h"
+#include "latexdocvisitor.h"
 #include "portable.h"
 #include "parserintf.h"
 #include "bufstr.h"
@@ -6725,6 +6726,12 @@ void filterLatexString(FTextStream &t,const char *str,
         case '{':  t << "\\{"; break;
         case '}':  t << "\\}"; break;
         case '_':  t << "\\_"; break;
+        case '&':  t << "\\&"; break;
+        case '%':  t << "\\%"; break;
+        case '#':  t << "\\#"; break;
+        case '$':  t << "\\$"; break;
+        case '^':  (usedTableLevels()>0) ? t << "\\string^" : t << (char)c;    break;
+        case '~':  (usedTableLevels()>0) ? t << "\\string~" : t << (char)c;    break;
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
                    break;
         default:
@@ -8822,4 +8829,24 @@ void writeExtraLatexPackages(FTextStream &t)
     t << "\n";
   }
 }
+
+//------------------------------------------------------
+
+static int g_usedTableLevels = 0;
+
+void incUsedTableLevels()
+{
+  g_usedTableLevels++;
+}
+void decUsedTableLevels()
+{
+  g_usedTableLevels--;
+}
+int usedTableLevels()
+{
+  return g_usedTableLevels;
+}
+
+//------------------------------------------------------
+
 

@@ -478,5 +478,9 @@ bool mainPageHasTitle();
 bool openOutputFile(const char *outFile,QFile &f);
 void writeExtraLatexPackages(FTextStream &t);
 
+int usedTableLevels();
+void incUsedTableLevels();
+void decUsedTableLevels();
+
 #endif
 
