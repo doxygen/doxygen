@@ -23,8 +23,6 @@
 #include <qstack.h>
 #include <qcstring.h>
 #include <qlist.h>
-//#include <qmap.h>
-extern int usedTableLevels;
 
 class FTextStream;
 class CodeOutputInterface;

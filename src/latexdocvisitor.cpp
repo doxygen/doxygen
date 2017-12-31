@@ -35,7 +35,6 @@
 #include "plantuml.h"
 
 const int maxLevels=5;
-int usedTableLevels = 0;
 static const char *secLabels[maxLevels] = 
    { "section","subsection","subsubsection","paragraph","subparagraph" };
 
@@ -1392,7 +1391,7 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
   if (m_hide) return;
   bool hasInOutSpecs = s->hasInOutSpecifier();
   bool hasTypeSpecs  = s->hasTypeSpecifier();
-  usedTableLevels++;
+  incUsedTableLevels();
   switch(s->type())
   {
     case DocParamSect::Param:
@@ -1426,7 +1425,7 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
 void LatexDocVisitor::visitPost(DocParamSect *s)
 {
   if (m_hide) return;
-  usedTableLevels--;
+  decUsedTableLevels();
   switch(s->type())
   {
     case DocParamSect::Param:
