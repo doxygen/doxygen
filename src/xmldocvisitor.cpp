@@ -770,17 +770,22 @@ void XmlDocVisitor::visitPre(DocImage *img)
   visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height());
 
   // copy the image to the output dir
-  QFile inImage(img->name());
-  QFile outImage(Config_getString(XML_OUTPUT)+"/"+baseName.data());
-  if (inImage.open(IO_ReadOnly))
+  FileDef *fd;
+  bool ambig;
+  if ((fd=findFileDef(Doxygen::imageNameDict,img->name(),ambig)))
   {
-    if (outImage.open(IO_WriteOnly))
+    QFile inImage(fd->absFilePath());
+    QFile outImage(Config_getString(XML_OUTPUT)+"/"+baseName.data());
+    if (inImage.open(IO_ReadOnly))
     {
-      char *buffer = new char[inImage.size()];
-      inImage.readBlock(buffer,inImage.size());
-      outImage.writeBlock(buffer,inImage.size());
-      outImage.flush();
-      delete[] buffer;
+      if (outImage.open(IO_WriteOnly))
+      {
+        char *buffer = new char[inImage.size()];
+        inImage.readBlock(buffer,inImage.size());
+        outImage.writeBlock(buffer,inImage.size());
+        outImage.flush();
+        delete[] buffer;
+      }
     }
   }
 }

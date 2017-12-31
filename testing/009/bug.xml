@@ -3,6 +3,8 @@
   <compounddef id="bug" kind="page">
     <compoundname>bug</compoundname>
     <title>Bug List</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>
         <variablelist>

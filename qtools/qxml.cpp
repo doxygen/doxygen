@@ -44,7 +44,7 @@
 // NOT REVISED
 
 // Error strings for the XML reader
-#define XMLERR_OK                         "no error occured"
+#define XMLERR_OK                         "no error occurred"
 #define XMLERR_TAGMISMATCH                "tag mismatch"
 #define XMLERR_UNEXPECTEDEOF              "unexpected end of file"
 #define XMLERR_FINISHEDPARSINGWHILENOTEOF "parsing is finished but end of file is not reached"
@@ -226,28 +226,28 @@ QString QXmlParseException::message() const
     return msg;
 }
 /*!
-  Returns the column number the error occured.
+  Returns the column number the error occurred.
 */
 int QXmlParseException::columnNumber() const
 {
     return column;
 }
 /*!
-  Returns the line number the error occured.
+  Returns the line number the error occurred.
 */
 int QXmlParseException::lineNumber() const
 {
     return line;
 }
 /*!
-  Returns the public identifier the error occured.
+  Returns the public identifier the error occurred.
 */
 QString QXmlParseException::publicId() const
 {
     return pub;
 }
 /*!
-  Returns the system identifier the error occured.
+  Returns the system identifier the error occurred.
 */
 QString QXmlParseException::systemId() const
 {
@@ -5943,7 +5943,7 @@ bool QXmlSimpleReader::processReference( bool &charDataRead, EntityRecognitionCo
 		}
 	    } else {
 		// "Unparsed"
-		// ### notify for "Occurs as Attribute Value" missing (but this is no refence, anyway)
+		// ### notify for "Occurs as Attribute Value" missing (but this is no reference, anyway)
 		// Forbidden
 		d->error = XMLERR_UNPARSEDENTITYREFERENCE;
 		charDataRead = FALSE;

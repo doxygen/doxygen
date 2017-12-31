@@ -4600,7 +4600,7 @@ bool resolveRef(/* in */  const char *scName,
   QCString fullName = substitute(tsName,"#","::");
   if (fullName.find("anonymous_namespace{")==-1)
   {
-    fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
+    fullName = removeRedundantWhiteSpace(substitute(fullName,".","::",3));
   }
   else
   {
@@ -4773,7 +4773,7 @@ QCString linkToText(SrcLangExt lang,const char *link,bool isFileName)
     // replace # by ::
     result=substitute(result,"#","::");
     // replace . by ::
-    if (!isFileName && result.find('<')==-1) result=substitute(result,".","::");
+    if (!isFileName && result.find('<')==-1) result=substitute(result,".","::",3);
     // strip leading :: prefix if present
     if (result.at(0)==':' && result.at(1)==':')
     {
@@ -5217,10 +5217,71 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
     int l = (int)(q-p);
     memcpy(r,p,l);
     r+=l;
+
     if (dst) memcpy(r,dst,dstLen);
     r+=dstLen;
   }
   qstrcpy(r,p);
+  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
+  return result;
+}
+
+
+/// substitute all occurrences of \a src in \a s by \a dst, but skip
+/// each consecutive sequence of \a src where the number consecutive
+/// \a src matches \a skip_seq; if \a skip_seq is negative, skip any
+/// number of consecutive \a src
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq)
+{
+  if (s.isEmpty() || src.isEmpty()) return s;
+  const char *p, *q;
+  int srcLen = src.length();
+  int dstLen = dst.length();
+  int resLen;
+  if (srcLen!=dstLen)
+  {
+    int count;
+    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
+    resLen = s.length()+count*(dstLen-srcLen);
+  }
+  else // result has same size as s
+  {
+    resLen = s.length();
+  }
+  QCString result(resLen+1);
+  char *r;
+  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  {
+    // search a consecutive sequence of src
+    int seq = 0, skip = 0;
+    if (skip_seq)
+    {
+      for (const char *n=q+srcLen; qstrncmp(n,src,srcLen)==0; seq=1+skip, n+=srcLen)
+        ++skip; // number of consecutive src after the current one
+
+      // verify the allowed number of consecutive src to skip
+      if (skip_seq > 0 && skip_seq != seq)
+        seq = skip = 0;
+    }
+
+    // skip a consecutive sequence of src when necessary
+    int l = (int)((q + seq * srcLen)-p);
+    memcpy(r,p,l);
+    r+=l;
+
+    if (skip)
+    {
+      // skip only the consecutive src found after the current one
+      q += skip * srcLen;
+      // the next loop will skip the current src, aka (p=q+srcLen)
+      continue;
+    }
+
+    if (dst) memcpy(r,dst,dstLen);
+    r+=dstLen;
+  }
+  qstrcpy(r,p);
+  result.resize(strlen(result.data())+1);
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }
@@ -5857,6 +5918,7 @@ QCString convertToHtml(const char *s,bool keepEntities)
   static GrowBuf growBuf;
   growBuf.clear();
   if (s==0) return "";
+  growBuf.addStr(getHtmlDirEmbedingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -5898,11 +5960,13 @@ QCString convertToHtml(const char *s,bool keepEntities)
   return growBuf.get();
 }
 
-QCString convertToJSString(const char *s)
+QCString convertToJSString(const char *s, bool applyTextDir)
 {
   static GrowBuf growBuf;
   growBuf.clear();
   if (s==0) return "";
+  if (applyTextDir)
+    growBuf.addStr(getJsDirEmbedingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -7902,9 +7966,16 @@ QCString filterTitle(const QCString &title)
 
 bool patternMatch(const QFileInfo &fi,const QStrList *patList)
 {
-  bool found=FALSE;
+  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool found = FALSE;
+
+  // For Windows/Mac, always do the case insensitive match
+#if defined(_WIN32) || defined(__MACOSX__)
+  caseSenseNames = FALSE;
+#endif
+
   if (patList)
-  { 
+  {
     QStrListIterator it(*patList);
     QCString pattern;
 
@@ -7919,11 +7990,8 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
         int i=pattern.find('=');
         if (i!=-1) pattern=pattern.left(i); // strip of the extension specific filter name
 
-#if defined(_WIN32) || defined(__MACOSX__) // Windows or MacOSX
-        QRegExp re(pattern,FALSE,TRUE); // case insensitive match 
-#else                // unix
-        QRegExp re(pattern,TRUE,TRUE);  // case sensitive match
-#endif
+        QRegExp re(pattern,caseSenseNames,TRUE);
+
         found = re.match(fn)!=-1 ||
                 re.match(fp)!=-1 ||
                 re.match(afp)!=-1;

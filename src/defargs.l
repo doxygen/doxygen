@@ -256,6 +256,14 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                             REJECT;
                                           }
                                         }
+<CopyArgSharp>">>)"                     { // combined token (see bug 790320)
+					  *g_copyArgValue += yytext;
+					  if (g_argSharpCount>0) g_argSharpCount--;
+					  else BEGIN( g_readArgContext );
+					  if (g_argSharpCount>0) g_argSharpCount--;
+					  else BEGIN( g_readArgContext );
+                                          g_argRoundCount--;
+                                        }
 <CopyArgSharp>">>"                      {
                                           if (g_argRoundCount>0)
                                           {

@@ -40,7 +40,9 @@ The simplest form of an alias is a simple substitution of the form
  put the command `\sideeffect` (or `@sideeffect`) in the documentation, which 
  will result in a user-defined paragraph with heading <b>Side Effects:</b>.
 
-Note that you can put `\n`'s in the value part of an alias to insert newlines.
+Note that you can put `\n`'s in the value part of an alias to insert newlines
+(in the resulting output). You can put `^^` in the value part of an alias to
+insert a newline as if a physical newline was in the original file.
 
 Also note that you can redefine existing special commands if you wish.
 

@@ -174,7 +174,7 @@ static void createSVG()
     }
 }
 
-// Creates a svg image. All in/out/inout  ports are shown with  brief description and direction.
+// Creates an svg image. All in/out/inout ports are shown with brief description and direction.
 // Brief descriptions for entities are shown too.
 void VhdlDocGen::writeOverview()
 {
@@ -2530,7 +2530,7 @@ QCString VhdlDocGen::trDesignUnitMembers()
 QCString VhdlDocGen::trDesignUnitListDescription()
 {
   return "Here is a list of all design unit members with links to "
-    "the Entities  they belong to:";
+    "the Entities they belong to:";
 }
 
 QCString VhdlDocGen::trDesignUnitIndex()
@@ -3993,7 +3993,7 @@ void FlowChart::createSVG()
 
   //const  MemberDef *m=VhdlDocGen::getFlowMember();
   //if (m)
-  //  fprintf(stderr,"\n creating  flowchart  : %s  %s in file %s \n",VhdlDocGen::trTypeString(m->getMemberSpecifiers()),m->name().data(),m->getFileDef()->name().data());
+  //  fprintf(stderr,"\n creating flowchart  : %s  %s in file %s \n",VhdlDocGen::trTypeString(m->getMemberSpecifiers()),m->name().data(),m->getFileDef()->name().data());
 
   QCString dir=" -o \""+ov+qcs+"\"";
   ov+="/flow_design.dot";

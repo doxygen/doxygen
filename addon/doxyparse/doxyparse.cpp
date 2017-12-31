@@ -126,7 +126,7 @@ static void printModule(std::string module) {
   printf("  %s:\n", module.c_str());
 }
 static void printClassInformation(std::string information) {
-  printf("    informations: %s\n", information.c_str());
+  printf("    information: %s\n", information.c_str());
 }
 static void printInheritance(std::string base_class) {
   printf("    inherits: %s\n", base_class.c_str());

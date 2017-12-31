@@ -667,7 +667,7 @@ void replaceComment(int offset);
                                        }
 				     }
                                    }
-  /* Python an VHDL share CComment, so special attention for ending commments is required */
+  /* Python an VHDL share CComment, so special attention for ending comments is required */
 <CComment>"\n"/[ \t]*"#" 	   {
                                      if (g_lang!=SrcLangExt_VHDL)
                                      {

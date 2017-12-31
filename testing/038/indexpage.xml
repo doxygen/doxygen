@@ -3,6 +3,8 @@
   <compounddef id="indexpage" kind="page">
     <compoundname>index</compoundname>
     <title>My Project</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>Text<linebreak/>
 New line<linebreak/>

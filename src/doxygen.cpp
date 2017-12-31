@@ -5594,6 +5594,7 @@ static bool findGlobalMember(EntryNav *rootNav,
     if (root->type!="friend class" &&
         root->type!="friend struct" &&
         root->type!="friend union" &&
+        root->type!="friend" &&
         (!Config_getBool(TYPEDEF_HIDES_STRUCT) ||
          root->type.find("typedef ")==-1)
        )
@@ -9821,6 +9822,16 @@ static void escapeAliases()
       {
         newValue+="\\n";
       }
+      p=in+2;
+    }
+    newValue+=value.mid(p,value.length()-p);
+    *s=newValue;
+    p = 0;
+    newValue = "";
+    while ((in=value.find("^^",p))!=-1)
+    {
+      newValue+=value.mid(p,in-p);
+      newValue+="\n";
       p=in+2;
     }
     newValue+=value.mid(p,value.length()-p);

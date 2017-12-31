@@ -1400,7 +1400,7 @@ class DefinitionContext
       inst.addProperty("isLinkable",&DefinitionContext::isLinkable);
       //%% bool isLinkableInProject: can the symbol be linked within this project?
       inst.addProperty("isLinkableInProject",&DefinitionContext::isLinkableInProject);
-      //%% int dynSectionId: identifier that can be used for collapsable sections
+      //%% int dynSectionId: identifier that can be used for collapsible sections
       inst.addProperty("dynSectionId",&DefinitionContext::dynSectionId);
       //%% string language: the programming language in which the symbol is written
       inst.addProperty("language",&DefinitionContext::language);

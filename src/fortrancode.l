@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Parser for syntax hightlighting and references for Fortran90 F subset
+ * Parser for syntax highlighting and references for Fortran90 F subset
  *
  * Copyright (C) by Anke Visser
  * based on the work of Dimitri van Heesch.

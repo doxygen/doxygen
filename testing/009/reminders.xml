@@ -3,6 +3,8 @@
   <compounddef id="reminders" kind="page">
     <compoundname>reminders</compoundname>
     <title>Reminders</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>
         <variablelist>

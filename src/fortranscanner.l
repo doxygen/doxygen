@@ -1720,7 +1720,7 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
   return *this;
 }
 
-/*! Extracts  and adds passed modifier to these modifiers.*/
+/*! Extracts and adds passed modifier to these modifiers.*/
 SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
 {
   mdfString = mdfString.lower();

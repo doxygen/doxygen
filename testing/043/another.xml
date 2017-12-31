@@ -3,6 +3,8 @@
   <compounddef id="another" kind="page">
     <compoundname>another</compoundname>
     <title>Another Page</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>Another page's text. </para>
     </detaileddescription>
