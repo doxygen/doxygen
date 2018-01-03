@@ -471,7 +471,7 @@ class TranslatorGerman : public Translator
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-          return "Designeinheiten-Dokumentation";
+          return "Entwurfseinheiten-Dokumentation";
       }
       else
       {
