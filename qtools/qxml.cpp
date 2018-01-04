@@ -1959,7 +1959,7 @@ bool QXmlSimpleReader::feature( const QString& name, bool *ok ) const
   <li> http://xml.org/sax/features/namespaces:
        if this feature is TRUE, namespace processing is performed
   <li> http://xml.org/sax/features/namespace-prefixes:
-       if this feature is TRUE, the the original prefixed names and attributes
+       if this feature is TRUE, the original prefixed names and attributes
        used for namespace declarations are reported
   <li> http://trolltech.com/xml/features/report-whitespace-only-CharData:
        if this feature is TRUE, CharData that consists only of whitespace (and
