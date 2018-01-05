@@ -2042,12 +2042,35 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
 {
   //static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   //static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   SrcLangExt lang = getLanguage();
   if (visibleInParentsDeclList())
   {
     if (!found) // first class
     {
-      ol.startMemberHeader("nested-classes");
+      if (sliceOpt)
+      {
+        if (isInterface())
+        {
+          ol.startMemberHeader("interfaces");
+        }
+        else if (isStruct())
+        {
+          ol.startMemberHeader("structs");
+        }
+        else if (isException())
+        {
+          ol.startMemberHeader("exceptions");
+        }
+        else
+        {
+          ol.startMemberHeader("nested-classes");
+        }
+      }
+      else
+      {
+        ol.startMemberHeader("nested-classes");
+      }
       if (header)
       {
         ol.parseText(header);
