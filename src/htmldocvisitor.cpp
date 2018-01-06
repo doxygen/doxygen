@@ -1144,8 +1144,10 @@ void HtmlDocVisitor::visitPre(DocSimpleSect *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<dl" << getDirHtmlClassOfNode(getTextDirByConfig(s), "section " + s->typeString()) 
-    << "><dt>";
+  if (s->type() != DocSimpleSect::Return)
+    m_t << "<dl" << getDirHtmlClassOfNode(getTextDirByConfig(s), "section " + s->typeString()) << "><dt>";
+  else
+    m_t << "<dl class=\"section " << s->typeString() << "\"><dt>";
   switch(s->type())
   {
     case DocSimpleSect::See: 
@@ -1831,7 +1833,8 @@ void HtmlDocVisitor::visitPre(DocXRefItem *x)
   bool anonymousEnum = x->file()=="@";
   if (!anonymousEnum)
   {
-    m_t << "<dl class=\"" << x->key() << "\"><dt><b><a class=\"el\" href=\"" 
+    m_t << "<dl" << getDirHtmlClassOfNode(getTextDirByConfig(x), x->key())  
+        << "><dt><b><a class=\"el\" href=\""
         << x->relPath() << x->file() << Doxygen::htmlFileExtension 
         << "#" << x->anchor() << "\">";
   }

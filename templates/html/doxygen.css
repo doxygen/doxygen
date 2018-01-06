@@ -163,10 +163,15 @@ dl.el {
 	margin-left: -1cm;
 }
 
-.fragment
-{
-  text-align: left; 
-  direction:ltr; 
+ul {
+  overflow: hidden; /*Fixed: list item bullets overlap floating elements*/
+}
+
+.fragment {
+  text-align: left;
+  direction: ltr;
+  overflow-x: auto; /*Fixed: fragment lines overlap floating elements*/
+  overflow-y: hidden;
 }
 
 pre.fragment {
@@ -183,8 +188,8 @@ pre.fragment {
 }
 
 div.fragment {
-        padding: 0px;
-        margin: 4px 8px 4px 2px;
+  padding: 0 0 1px 0; /*Fixed: last line underline overlap border*/
+  margin: 4px 8px 4px 2px;
 	background-color: ##FC;
 	border: 1px solid ##CC;
 }
@@ -1349,8 +1354,9 @@ div.toc {
         width: 200px;
 }
 
-.PageDocRTL-title .toc {
+.PageDocRTL-title div.toc {
   float: left !important;
+  text-align: right;
 }
 
 div.toc li {
@@ -1359,6 +1365,12 @@ div.toc li {
         margin-top: 5px;
         padding-left: 10px;
         padding-top: 2px;
+}
+
+.PageDocRTL-title div.toc li {
+  background-position-x: right !important;
+  padding-left: 0 !important;
+  padding-right: 10px;
 }
 
 div.toc h3 {
@@ -1388,6 +1400,26 @@ div.toc li.level3 {
 
 div.toc li.level4 {
         margin-left: 45px;
+}
+
+.PageDocRTL-title div.toc li.level1 {
+  margin-left: 0 !important;
+  margin-right: 0;
+}
+
+.PageDocRTL-title div.toc li.level2 {
+  margin-left: 0 !important;
+  margin-right: 15px;
+}
+
+.PageDocRTL-title div.toc li.level3 {
+  margin-left: 0 !important;
+  margin-right: 30px;
+}
+
+.PageDocRTL-title div.toc li.level4 {
+  margin-left: 0 !important;
+  margin-right: 45px;
 }
 
 .inherit_header {
