@@ -138,7 +138,7 @@ static void printDefines() {
   modules[current_module] = true;
 }
 static void printDefinition(std::string type, std::string signature, int line) {
-  printf("      - %s:\n", signature.c_str());
+  printf("      - \"%s\":\n", signature.c_str());
   printf("          type: %s\n", type.c_str());
   printf("          line: %d\n", line);
 }
@@ -155,7 +155,7 @@ static void printUses() {
   printf("          uses:\n");
 }
 static void printReferenceTo(std::string type, std::string signature, std::string defined_in) {
-  printf("            - %s:\n", signature.c_str());
+  printf("            - \"%s\":\n", signature.c_str());
   printf("                type: %s\n", type.c_str());
   printf("                defined_in: %s\n", defined_in.c_str());
 }
@@ -167,6 +167,24 @@ static int isPartOfCStruct(MemberDef * md) {
   return is_c_code && md->getClassDef() != NULL;
 }
 
+std::string removeDoubleQuotes(std::string data) {
+  // remove surrounding double quotes
+  if (data.front() == '"' && data.back() == '"') {
+    data.erase(0, 1);            // first double quote
+    data.erase(data.size() - 1); // last double quote
+  }
+  return data;
+}
+
+std::string argumentData(Argument *argument) {
+  std::string data = "";
+  if (argument->type != NULL)
+    data = removeDoubleQuotes(argument->type.data());
+  else if (argument->name != NULL)
+    data = removeDoubleQuotes(argument->name.data());
+  return data;
+}
+
 std::string functionSignature(MemberDef* md) {
   std::string signature = md->name().data();
   if(md->isFunction()){
@@ -175,9 +193,9 @@ std::string functionSignature(MemberDef* md) {
     signature += "(";
     Argument * argument = iterator.toFirst();
     if(argument != NULL) {
-      signature += argument->type.data();
-      for(++iterator; (argument = iterator.current()) ;++iterator){
-        signature += std::string(",") + argument->type.data();
+      signature += argumentData(argument);
+      for(++iterator; (argument = iterator.current()); ++iterator){
+        signature += std::string(",") + argumentData(argument);
       }
     }
     signature += ")";
@@ -245,7 +263,7 @@ static void lookupSymbol(Definition *d) {
     std::string signature = functionSignature(md);
     printDefinition(type, signature, md->getDefLine());
     if (md->protection() == Public) {
-      printProtection("protection public");
+      printProtection("public");
     }
     if (md->isFunction()) {
       functionInformation(md);
@@ -311,7 +329,10 @@ static void detectProgrammingLanguage(FileNameListIterator& fnli) {
         checkLanguage(filename, ".cc") ||
         checkLanguage(filename, ".cxx") ||
         checkLanguage(filename, ".cpp") ||
-        checkLanguage(filename, ".java")
+        checkLanguage(filename, ".java") ||
+        checkLanguage(filename, ".py") ||
+        checkLanguage(filename, ".pyw") ||
+        checkLanguage(filename, ".cs")
        ) {
       is_c_code = false;
     }
