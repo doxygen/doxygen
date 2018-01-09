@@ -64,7 +64,7 @@ There are three mailing lists:
 Source Code
 ----------------------------------
 In May 2013, Doxygen moved from 
-subversion to git hosted at github
+subversion to git hosted at GitHub
 * https://github.com/doxygen/doxygen
 
 Enjoy,

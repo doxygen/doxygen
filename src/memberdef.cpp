@@ -3260,6 +3260,7 @@ void MemberDef::warnIfUndocumentedParams()
   if (!Config_getBool(EXTRACT_ALL) &&
       Config_getBool(WARN_IF_UNDOCUMENTED) &&
       Config_getBool(WARN_NO_PARAMDOC) &&
+      !isReference() &&
       !Doxygen::suppressDocWarnings)
   {
     if (!hasDocumentedParams())

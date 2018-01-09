@@ -1391,6 +1391,7 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
   if (m_hide) return;
   bool hasInOutSpecs = s->hasInOutSpecifier();
   bool hasTypeSpecs  = s->hasTypeSpecifier();
+  incUsedTableLevels();
   switch(s->type())
   {
     case DocParamSect::Param:
@@ -1424,6 +1425,7 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
 void LatexDocVisitor::visitPost(DocParamSect *s)
 {
   if (m_hide) return;
+  decUsedTableLevels();
   switch(s->type())
   {
     case DocParamSect::Param:

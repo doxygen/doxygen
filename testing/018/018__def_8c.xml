@@ -17,7 +17,8 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="enum">
-      <memberdef kind="enum" id="018__def_8c_1aa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no">
+      <memberdef kind="enum" id="018__def_8c_1aa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no" strong="no">
+        <type/>
         <name>E</name>
         <enumvalue id="018__def_8c_1aa57b8491d1d8fc1014dd54bcf83b130aab1710e6a49014ba389d57c8753c530f4" prot="public">
           <name>E1</name>

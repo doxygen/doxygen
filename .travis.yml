@@ -19,5 +19,5 @@ script:
     - cd build
     - cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
     - make
-    - ctest -V
+    - make tests
     - make docs

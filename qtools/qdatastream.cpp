@@ -381,7 +381,7 @@ void QDataStream::setByteOrder( int bo )
   \fn void QDataStream::setVersion( int v )
   Sets the version number of the data serialization format.
 
-  In order to accomodate for new functionality, the datastream
+  In order to accommodate for new functionality, the datastream
   serialization format of some Qt classes has changed in some versions of
   Qt. If you want to read data that was created by an earlier version of
   Qt, or write data that can be read by a program that was compiled with

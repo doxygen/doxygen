@@ -3,6 +3,8 @@
   <compounddef id="deprecated" kind="page">
     <compoundname>deprecated</compoundname>
     <title>Deprecated List</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>
         <variablelist>

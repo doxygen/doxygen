@@ -67,7 +67,7 @@ class QWaitConditionPrivate
             code = pthread_cond_wait(&cond, &mutex);
             if (code == 0 && wakeups == 0) 
             {
-                // many vendors warn of spurios wakeups from
+                // many vendors warn of spurious wakeups from
                 // pthread_cond_wait(), especially after signal delivery,
                 // even though POSIX doesn't allow for it... sigh
                 continue;

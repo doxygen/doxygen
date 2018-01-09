@@ -13,7 +13,7 @@
  *
  */
 /******************************************************************************
- * Parser for syntax hightlighting and references for XML
+ * Parser for syntax highlighting and references for XML
  * written by Weston Thayer
  ******************************************************************************/
 

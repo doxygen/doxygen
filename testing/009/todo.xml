@@ -3,6 +3,8 @@
   <compounddef id="todo" kind="page">
     <compoundname>todo</compoundname>
     <title>Todo List</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>
         <variablelist>

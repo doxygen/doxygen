@@ -271,6 +271,8 @@ class HtmlGenerator : public OutputGenerator
     void writeSummaryLink(const char *file,const char *anchor,const char *title,bool first);
     void startContents();
     void endContents();
+    void startPageDoc(const char *pageTitle);
+    void endPageDoc();
     void writeNonBreakableSpace(int);
 
     void startDescTable(const char *title);

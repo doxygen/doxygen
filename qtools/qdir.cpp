@@ -705,7 +705,7 @@ QStrList QDir::encodedEntryList( const QString &nameFilter,
   indicated by the setSorting(), setFilter() and setNameFilter()
   specifications.
 
-  The the filter and sorting specifications can be overridden using the
+  The filter and sorting specifications can be overridden using the
   \e filterSpec and \e sortSpec arguments.
 
   Returns an empty list if the directory is unreadable or does not exist.
@@ -727,7 +727,7 @@ QStringList QDir::entryList( int filterSpec, int sortSpec ) const
   indicated by the setSorting(), setFilter() and setNameFilter()
   specifications.
 
-  The the filter and sorting specifications can be overridden using the
+  The filter and sorting specifications can be overridden using the
   \e nameFilter, \e filterSpec and \e sortSpec arguments.
 
   Returns and empty list if the directory is unreadable or does not exist.
@@ -755,7 +755,7 @@ QStringList QDir::entryList( const QString &nameFilter,
   the directory pointed to using the setSorting(), setFilter() and
   setNameFilter() specifications.
 
-  The the filter and sorting specifications can be overridden using the
+  The filter and sorting specifications can be overridden using the
   \e filterSpec and \e sortSpec arguments.
 
   Returns 0 if the directory is unreadable or does not exist.
@@ -782,7 +782,7 @@ const QFileInfoList *QDir::entryInfoList( int filterSpec, int sortSpec ) const
   the directory pointed to using the setSorting(), setFilter() and
   setNameFilter() specifications.
 
-  The the filter and sorting specifications can be overridden using the
+  The filter and sorting specifications can be overridden using the
   \e nameFilter, \e filterSpec and \e sortSpec arguments.
 
   Returns 0 if the directory is unreadable or does not exist.

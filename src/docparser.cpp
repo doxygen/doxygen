@@ -104,6 +104,7 @@ static QCString               g_exampleName;
 static SectionDict *          g_sectionDict;
 static QCString               g_searchUrl;
 
+static QCString               g_includeFileName;
 static QCString               g_includeFileText;
 static uint                   g_includeFileOffset;
 static uint                   g_includeFileLength;
@@ -1917,6 +1918,7 @@ void DocInclude::parse()
       // fall through
     case DontInclude:
       readTextFileByName(m_file,m_text);
+      g_includeFileName   = m_file;
       g_includeFileText   = m_text;
       g_includeFileOffset = 0;
       g_includeFileLength = m_text.length();
@@ -1954,6 +1956,7 @@ void DocInclude::parse()
 
 void DocIncOperator::parse()
 {
+  m_includeFileName = g_includeFileName;
   const char *p = g_includeFileText;
   uint l = g_includeFileLength;
   uint o = g_includeFileOffset;
@@ -6122,9 +6125,20 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
             }
           }
         }
+        else if (findAttribute(tagHtmlAttribs,"langword",&cref)) // <see langword="..."/> or <see langworld="..."></see>
+        {
+            doctokenizerYYsetStatePara();
+            DocLink *lnk = new DocLink(this,cref);
+            m_children.append(lnk);
+            QCString leftOver = lnk->parse(FALSE,TRUE);
+            if (!leftOver.isEmpty())
+            {
+              m_children.append(new DocWord(this,leftOver));
+            }
+        }
         else
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing 'cref' attribute from <see> tag.");
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing 'cref' or 'langword' attribute from <see> tag.");
         }
       }
       break;
@@ -7218,8 +7232,129 @@ static QCString processCopyDoc(const char *data,uint &len)
   buf.addChar(0);
   return buf.get();
 }
+//---------------------------------------------------------------------------
+QString::Direction getTextDirByConfig(const QString &text)
+{
+  QCString configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
+  if (configDir == "None")
+    return QString::DirNeutral;
+  if (configDir == "Context")
+    return text.basicDirection();
+  if (configDir == "LTR")
+  {
+    QString::Direction textDir = text.direction();
+    if (textDir == QString::DirMixed)
+      return QString::DirLTR;
+    return textDir;
+  }
+  if (configDir == "RTL")
+  {
+    QString::Direction textDir = text.direction();
+    if (textDir == QString::DirMixed)
+      return QString::DirRTL;
+    return textDir;
+  }
+  return QString::DirNeutral;
+}
 
-//--------------------------------------------------------------------------
+QString::Direction getTextDirByConfig(const DocNode *node)
+{
+  QCString configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
+  if (configDir == "None")
+    return QString::DirNeutral;
+  if (configDir == "Context")
+    return node->getTextBasicDir();
+  if (configDir == "LTR")
+  {
+    QString::Direction textDir = node->getTextDir();
+    if (textDir == QString::DirMixed)
+      return QString::DirLTR;
+    return textDir;
+  }
+  if (configDir == "RTL")
+  {
+    QString::Direction textDir = node->getTextDir();
+    if (textDir == QString::DirMixed)
+      return QString::DirRTL;
+    return textDir;
+  }
+  return QString::DirNeutral;
+}
+
+QString::Direction getTextDirByConfig(const DocPara *para, int nodeIndex)
+{
+  QCString configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
+  if (configDir == "None")
+    return QString::DirNeutral;
+  if (configDir == "Context")
+    return para->getTextBasicDir(nodeIndex);
+  if (configDir == "LTR")
+  {
+    QString::Direction textDir = para->getTextDir(nodeIndex);
+    if (textDir == QString::DirMixed)
+      return QString::DirLTR;
+    return textDir;
+  }
+  if (configDir == "RTL")
+  {
+    QString::Direction textDir = para->getTextDir(nodeIndex);
+    if (textDir == QString::DirMixed)
+      return QString::DirRTL;
+    return textDir;
+  }
+  return QString::DirNeutral;
+}
+
+QCString getDirHtmlClassOfNode(QString::Direction textDir, const char *initValue)
+{
+  QCString classFromDir;
+  if (textDir == QString::DirLTR)
+    classFromDir = "DocNodeLTR";
+  else if (textDir == QString::DirRTL)
+    classFromDir = "DocNodeRTL";
+  else
+    classFromDir = "";
+
+  if (initValue != NULL && !classFromDir.isEmpty())
+    return QCString(" class=\"") + initValue + " " + classFromDir + "\"";
+  if (initValue != NULL)
+    return QCString(" class=\"") + initValue + "\"";
+  if (!classFromDir.isEmpty())
+    return QCString(" class=\"") + classFromDir + "\"";
+  return "";
+}
+
+QCString getDirHtmlClassOfPage(QCString pageTitle)
+{
+  QCString result = "";
+  result += " class=\"PageDoc";
+  QString::Direction titleDir = getTextDirByConfig(pageTitle);
+  if (titleDir == QString::DirLTR)
+    result += " PageDocLTR-title";
+  else if (titleDir == QString::DirRTL)
+    result += " PageDocRTL-title";
+  result += "\"";
+  return result;
+}
+
+QCString getHtmlDirEmbedingChar(QString::Direction textDir)
+{
+  if (textDir == QString::DirLTR)
+    return "&#x202A;";
+  if (textDir == QString::DirRTL)
+    return "&#x202B;";
+  return "";
+}
+
+QCString getJsDirEmbedingChar(QString::Direction textDir)
+{
+  if (textDir == QString::DirLTR)
+    return "\\u202A";
+  if (textDir == QString::DirRTL)
+    return "\\u202B";
+  return "";
+}
+//---------------------------------------------------------------------------
 
 DocRoot *validatingParseDoc(const char *fileName,int startLine,
                             Definition *ctx,MemberDef *md,

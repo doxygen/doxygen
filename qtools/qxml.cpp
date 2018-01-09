@@ -44,7 +44,7 @@
 // NOT REVISED
 
 // Error strings for the XML reader
-#define XMLERR_OK                         "no error occured"
+#define XMLERR_OK                         "no error occurred"
 #define XMLERR_TAGMISMATCH                "tag mismatch"
 #define XMLERR_UNEXPECTEDEOF              "unexpected end of file"
 #define XMLERR_FINISHEDPARSINGWHILENOTEOF "parsing is finished but end of file is not reached"
@@ -226,28 +226,28 @@ QString QXmlParseException::message() const
     return msg;
 }
 /*!
-  Returns the column number the error occured.
+  Returns the column number the error occurred.
 */
 int QXmlParseException::columnNumber() const
 {
     return column;
 }
 /*!
-  Returns the line number the error occured.
+  Returns the line number the error occurred.
 */
 int QXmlParseException::lineNumber() const
 {
     return line;
 }
 /*!
-  Returns the public identifier the error occured.
+  Returns the public identifier the error occurred.
 */
 QString QXmlParseException::publicId() const
 {
     return pub;
 }
 /*!
-  Returns the system identifier the error occured.
+  Returns the system identifier the error occurred.
 */
 QString QXmlParseException::systemId() const
 {
@@ -403,7 +403,7 @@ void QXmlNamespaceSupport::splitName( const QString& qname,
   and looking it up among the prefixes currently declared.
 
   First parameter is the raw XML 1.0 name to be processed. The second parameter
-  is a flag wheter the name is the name of an attribute (TRUE) or not (FALSE).
+  is a flag whether the name is the name of an attribute (TRUE) or not (FALSE).
 
   The return values will be stored in the last two parameters as follows:
   <ul>
@@ -1079,7 +1079,7 @@ finished:
   \fn bool QXmlErrorHandler::error( const QXmlParseException& exception )
 
   A reader might use this function to report a recoverable error. A recoverable
-  error corresponds to the definiton of "error" in section 1.2 of the XML 1.0
+  error corresponds to the definition of "error" in section 1.2 of the XML 1.0
   specification.
 
   The reader must continue to provide normal parsing events after invoking this
@@ -1959,7 +1959,7 @@ bool QXmlSimpleReader::feature( const QString& name, bool *ok ) const
   <li> http://xml.org/sax/features/namespaces:
        if this feature is TRUE, namespace processing is performed
   <li> http://xml.org/sax/features/namespace-prefixes:
-       if this feature is TRUE, the the original prefixed names and attributes
+       if this feature is TRUE, the original prefixed names and attributes
        used for namespace declarations are reported
   <li> http://trolltech.com/xml/features/report-whitespace-only-CharData:
        if this feature is TRUE, CharData that consists only of whitespace (and
@@ -5652,7 +5652,7 @@ parseError:
   head stands on the first character after the reference.
 
   charDataRead is set to FALSE if the reference must be parsed. The
-  charachter(s) which the reference mapped to are inserted at the reference
+  character(s) which the reference mapped to are inserted at the reference
   position. The head stands on the first character of the replacement).
 */
 bool QXmlSimpleReader::parseReference( bool &charDataRead, EntityRecognitionContext context )
@@ -5943,7 +5943,7 @@ bool QXmlSimpleReader::processReference( bool &charDataRead, EntityRecognitionCo
 		}
 	    } else {
 		// "Unparsed"
-		// ### notify for "Occurs as Attribute Value" missing (but this is no refence, anyway)
+		// ### notify for "Occurs as Attribute Value" missing (but this is no reference, anyway)
 		// Forbidden
 		d->error = XMLERR_UNPARSEDENTITYREFERENCE;
 		charDataRead = FALSE;

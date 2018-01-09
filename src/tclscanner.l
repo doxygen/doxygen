@@ -426,7 +426,7 @@ static struct
   QCString file_name; // name of used file
   ParserInterface *this_parser; // myself
   int command; // true if command was found
-  int comment; // set true if comment was scaned
+  int comment; // set true if comment was scanned
   int brace_level; // bookkeeping of braces
   int bracket_level; // bookkeeping of brackets
   int bracket_quote; // bookkeeping of quotes (toggles)

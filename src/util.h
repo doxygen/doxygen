@@ -26,7 +26,6 @@
 #include <ctype.h>
 #include "types.h"
 #include "sortdict.h"
-#include "docparser.h"
 
 //--------------------------------------------------------------------
 
@@ -194,6 +193,7 @@ void mergeArguments(ArgumentList *,ArgumentList *,bool forceNameOverwrite=FALSE)
 QCString substituteClassNames(const QCString &s);
 
 QCString substitute(const QCString &s,const QCString &src,const QCString &dst);
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq);
 
 QCString clearBlock(const char *s,const char *begin,const char *end);
 
@@ -283,7 +283,7 @@ QCString convertToLaTeX(const QCString &s,bool insideTabbing=FALSE,bool keepSpac
 
 QCString convertToXML(const char *s);
 
-QCString convertToJSString(const char *s);
+QCString convertToJSString(const char *s, bool applyTextDir = true);
 
 QCString getOverloadDocs();
 
@@ -384,7 +384,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine);
 //                         const QCString &anchor="");
 
 bool updateLanguageMapping(const QCString &extension,const QCString &parser);
-SrcLangExt getLanguageFromFileName(const QCString fileName);
+SrcLangExt getLanguageFromFileName(const QCString& fileName);
 void initDefaultExtensionMapping();
 void addCodeOnlyMappings();
 
@@ -477,6 +477,10 @@ void convertProtectionLevel(
 bool mainPageHasTitle();
 bool openOutputFile(const char *outFile,QFile &f);
 void writeExtraLatexPackages(FTextStream &t);
+
+int usedTableLevels();
+void incUsedTableLevels();
+void decUsedTableLevels();
 
 #endif
 

@@ -257,7 +257,7 @@ void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,bool opened)
   while (p) { indent++; p=p->parent; }
   if (n->isDir)
   {
-    QCString dir = opened ? "&#9660;" : "&#9658;";
+    QCString dir = opened ? "&#9660;" : "&#9654;";
     t << "<span style=\"width:" << (indent*16) << "px;display:inline-block;\">&#160;</span>"
       << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\" ";
     t << "onclick=\"toggleFolder('" << generateIndentLabel(n,0) << "')\"";

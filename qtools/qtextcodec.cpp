@@ -488,7 +488,7 @@ static bool try_locale_list( const char * const locale[], const char * lang )
 }
 
 // For the probably_koi8_locales we have to look. the standard says
-// these are 8859-5, but almsot all Russion users uses KOI8-R and
+// these are 8859-5, but almost all Russian users uses KOI8-R and
 // incorrectly set $LANG to ru_RU. We'll check tolower() to see what
 // tolower() thinks ru_RU means.
 

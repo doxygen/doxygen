@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Parser for syntax hightlighting and references for Fortran90 F subset
+ * Parser for syntax highlighting and references for Fortran90 F subset
  *
  * Copyright (C) by Anke Visser
  * based on the work of Dimitri van Heesch.
@@ -774,6 +774,13 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           yy_push_state(YY_START);
 					  BEGIN(Use);     
                                         }
+<Use>"ONLY"                             { // TODO: rename
+                                          startFontClass("keywordtype");
+                                          codifyLines(yytext);
+                                          endFontClass();
+                                          yy_push_state(YY_START);
+                                          BEGIN(UseOnly);
+                                        }
 <Use>{ID}                               {
                                           QCString tmp = yytext;
                                           tmp = tmp.lower();
@@ -790,14 +797,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           useMembers->append(tmp, useEntry);
 					  addUse(tmp);
                                         }           
-<Use>,{BS}"ONLY"                        { // TODO: rename
-  					  startFontClass("keywordtype"); 
- 					  codifyLines(yytext);
-					  endFontClass();
-                                          yy_push_state(YY_START);
-					  BEGIN(UseOnly);     
-                                        }           
-<UseOnly,Import>{BS},{BS}               { codifyLines(yytext); }
+<Use,UseOnly,Import>{BS},{BS}           { codifyLines(yytext); }
 <UseOnly,Import>{BS}&{BS}"\n"           { codifyLines(yytext);
                                           g_contLineNr++;
                                           YY_FTN_RESET}

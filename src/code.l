@@ -904,7 +904,7 @@ static bool getLinkInScope(const QCString &c,  // scope
         return TRUE;
       }
     }
-    else // found member, but is is not linkable, so make sure content inside is not assign
+    else // found member, but it is not linkable, so make sure content inside is not assigned
          // to the previous member, see bug762760
     {
       DBG_CTX((stderr,"unlinkable member %s\n",md->name().data()));
