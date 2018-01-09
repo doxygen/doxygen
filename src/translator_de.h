@@ -316,8 +316,17 @@ class TranslatorGerman : public Translator
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "Die Liste der Ableitungen ist -mit Einschränkungen- "
-             "alphabetisch sortiert:";
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Hier folgt eine hierarchische Auflistung der "
+               "Entwurfseinheiten:";
+      }
+      else
+      {
+        return "Die Liste der Ableitungen ist -mit Einschränkungen- "
+               "alphabetisch sortiert:";
+      }
     }
 
     /*! This is an introduction to the list with all files. */

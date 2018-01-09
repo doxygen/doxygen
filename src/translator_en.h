@@ -224,8 +224,16 @@ class TranslatorEnglish : public Translator
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "This inheritance list is sorted roughly, "
-             "but not completely, alphabetically:";
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Here is a hierarchical list of all entities:";
+      }
+      else
+      {
+        return "This inheritance list is sorted roughly, "
+               "but not completely, alphabetically:";
+      }
     }
 
     /*! This is an introduction to the list with all files. */
