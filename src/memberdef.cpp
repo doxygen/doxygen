@@ -1978,7 +1978,7 @@ void MemberDef::getLabels(QStrList &sl,Definition *container) const
     bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     if (optVhdl)
     {
-      sl.append(theTranslator->trVhdlType(getMemberSpecifiers()));
+      sl.append(theTranslator->trVhdlType(getMemberSpecifiers(),TRUE));
     }
     else
     {

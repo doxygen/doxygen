@@ -2474,7 +2474,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           QStrList sl;
           if (lang==SrcLangExt_VHDL)
           {
-            sl.append(theTranslator->trVhdlType(md->getMemberSpecifiers())); //append vhdl type
+            sl.append(theTranslator->trVhdlType(md->getMemberSpecifiers(),TRUE)); //append vhdl type
           }
           else if (md->isFriend()) sl.append("friend");
           else if (md->isRelated()) sl.append("related");
