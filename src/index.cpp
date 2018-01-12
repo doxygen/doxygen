@@ -3342,6 +3342,8 @@ static const FmhlInfo *getFmhlInfo(int hl)
                       theTranslator->trFunctions()),
     FmhlInfo("globals_vars",sliceOpt ? theTranslator->trConstants() : theTranslator->trVariables()),
     FmhlInfo("globals_type",theTranslator->trTypedefs()),
+    FmhlInfo("globals_sequ",theTranslator->trSequences()),
+    FmhlInfo("globals_dict",theTranslator->trDictionaries()),
     FmhlInfo("globals_enum",theTranslator->trEnumerations()),
     FmhlInfo("globals_eval",theTranslator->trEnumerationValues()),
     FmhlInfo("globals_defs",theTranslator->trDefines())
