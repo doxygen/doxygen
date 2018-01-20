@@ -549,7 +549,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   // \sloppy is obsolete (see bug 563698)
   // Allow a bit of overflow to go unnoticed by other means
   t << "\\tolerance=750\n"
-       "\\hfuzz=15pt\n"
+       "\\setlength{\\hfuzz}{15pt}\n"
        "\\hbadness=750\n"
        "\\setlength{\\emergencystretch}{15pt}\n"
        "\\setlength{\\parindent}{0cm}\n"

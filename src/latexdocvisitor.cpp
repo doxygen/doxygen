@@ -927,7 +927,7 @@ static void writeStartTableCommand(FTextStream &t,const DocNode *n,int cols)
   }
   else
   {
-    t << "\\tabulinesep=1mm\n\\begin{longtabu} spread 0pt [c]{*{" << cols << "}{|X[-1]}|}\n";
+    t << "\\setlength{\\tabulinesep}{1mm}\n\\begin{longtabu} spread 0pt [c]{*{" << cols << "}{|X[-1]}|}\n";
   }
   //return isNested ? "TabularNC" : "TabularC";
 }
