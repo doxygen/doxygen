@@ -440,6 +440,7 @@ class DotRunnerQueue
     void enqueue(DotRunner *runner);
     DotRunner *dequeue();
     uint count() const;
+    void doExit(QCString msg);
   private:
     QWaitCondition  m_bufferNotEmpty;
     QQueue<DotRunner> m_queue;

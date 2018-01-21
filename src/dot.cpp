@@ -1143,6 +1143,12 @@ uint DotRunnerQueue::count() const
   return m_queue.count();
 }
 
+void DotRunnerQueue::doExit(QCString msg)
+{
+  err(msg);
+  exit(1);
+}
+
 //--------------------------------------------------------------------
 
 DotWorkerThread::DotWorkerThread(DotRunnerQueue *queue)
@@ -1156,7 +1162,10 @@ void DotWorkerThread::run()
   DotRunner *runner;
   while ((runner=m_queue->dequeue()))
   {
-    runner->run();
+    bool success = runner->run();
+    if(!success){
+      m_queue->doExit("Running dot for graph failed\n");
+    }
     const DotRunner::CleanupItem &cleanup = runner->cleanup();
     if (!cleanup.file.isEmpty())
     {
@@ -1318,7 +1327,11 @@ bool DotManager::run()
     for (li.toFirst();(dr=li.current());++li)
     {
       msg("Running dot for graph %d/%d\n",prev,numDotRuns);
-      dr->run();
+      bool success = dr->run();
+      if(!success){
+        err("Running dot for graph failed\n");
+        exit(1);
+      }
       prev++;
     }
   }
