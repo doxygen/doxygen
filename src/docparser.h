@@ -507,11 +507,13 @@ class DocVerbatim : public DocNode
     bool hasCaption() const      { return !m_children.isEmpty(); }
     QCString width() const       { return m_width; }
     QCString height() const      { return m_height; }
+    QCString label() const       { return m_label; }
     const QList<DocNode> &children() const { return m_children; }
     QList<DocNode> &children()   { return m_children; }
     void setText(const QCString &t)   { m_text=t;   }
     void setWidth(const QCString &w)  { m_width=w;  }
     void setHeight(const QCString &h) { m_height=h; }
+    void setLabel(const QCString &l) { m_label=l; }
 
   private:
     QCString  m_context;
@@ -524,6 +526,7 @@ class DocVerbatim : public DocNode
     bool      m_isBlock;
     QCString  m_width;
     QCString  m_height;
+    QCString  m_label;
     QList<DocNode> m_children;
 };
 
@@ -746,6 +749,7 @@ class DocImage : public CompAccept<DocImage>
     QCString height() const     { return m_height; }
     QCString relPath() const    { return m_relPath; }
     QCString url() const        { return m_url; }
+    QCString label() const      { return m_label; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     void parse();
 
@@ -757,6 +761,7 @@ class DocImage : public CompAccept<DocImage>
     QCString  m_height;
     QCString  m_relPath;
     QCString  m_url;
+    QCString  m_label;
 };
 
 /** Node representing a dot file */
@@ -773,6 +778,8 @@ class DocDotFile : public CompAccept<DocDotFile>
     QCString width() const      { return m_width; }
     QCString height() const     { return m_height; }
     QCString context() const    { return m_context; }
+    QCString label() const      { return m_label; }
+
   private:
     QCString  m_name;
     QCString  m_file;
@@ -780,6 +787,7 @@ class DocDotFile : public CompAccept<DocDotFile>
     QCString  m_width;
     QCString  m_height;
     QCString  m_context;
+    QCString  m_label;
 };
 
 /** Node representing a msc file */
@@ -796,6 +804,7 @@ class DocMscFile : public CompAccept<DocMscFile>
     QCString width() const     { return m_width; }
     QCString height() const    { return m_height; }
     QCString context() const   { return m_context; }
+    QCString label() const      { return m_label; }
   private:
     QCString  m_name;
     QCString  m_file;
@@ -803,6 +812,7 @@ class DocMscFile : public CompAccept<DocMscFile>
     QCString  m_width;
     QCString  m_height;
     QCString  m_context;
+    QCString  m_label;
 };
 
 /** Node representing a dia file */
@@ -819,6 +829,8 @@ class DocDiaFile : public CompAccept<DocDiaFile>
     QCString width() const     { return m_width; }
     QCString height() const    { return m_height; }
     QCString context() const   { return m_context; }
+    QCString label() const      { return m_label; }
+
   private:
     QCString  m_name;
     QCString  m_file;
@@ -826,6 +838,7 @@ class DocDiaFile : public CompAccept<DocDiaFile>
     QCString  m_width;
     QCString  m_height;
     QCString  m_context;
+    QCString  m_label;
 };
 
 /** Node representing a VHDL flow chart */
