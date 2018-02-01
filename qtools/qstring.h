@@ -369,6 +369,38 @@ public:
     QString    &operator=( QChar c );
     QString    &operator=( char c );
 
+	enum Direction
+	{
+		/// No strongly directional text.
+		/*!
+		* As return value for direction() or baseDirection(), it means that the source string
+		* is missing or empty, or contains neither left-to-right nor right-to-left characters.
+		*/
+		DirNeutral = 0x0,
+		/// Left-to-right text.
+		/*!
+		* - As return value for direction(), it means that the source string
+		*   contains no right-to-left characters.
+		* - As return value for basicDirection(), it means that the first strong character
+		*   of the source string has a left-to-right direction.
+		*/
+		DirLTR = 0x1,
+		/// Right-to-left text.
+		/*!
+		* - As return value for direction(), it means that the source string
+		*   contains no left-to-right characters.
+		* - As return value for basicDirection(), it means that the first strong character
+		*   of the source string has a right-to-left direction.
+		*/
+		DirRTL = 0x2,
+		/// Mixed-directional text
+		/*!
+		* As return value for direction(), it means that the source string
+		* contains both left-to-right and right-to-left characters.
+		*/
+		DirMixed = 0x3
+	};
+
     //QT_STATIC_CONST QString null;
     //bool	isNull()	const;
 
@@ -535,8 +567,9 @@ public:
 #endif
     // new functions for BiDi
     void compose();
-    QChar::Direction basicDirection();
-    QString visual(int index = 0, int len = -1);
+	QString::Direction direction() const;
+	QString::Direction basicDirection() const;
+	QString visual(int index = 0, int len = -1);
 
 #ifndef QT_NO_COMPAT
     const char* data() const { return latin1(); }

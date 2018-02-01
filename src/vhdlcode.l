@@ -13,7 +13,7 @@
  *
  */
 /******************************************************************************
- * Parser for syntax hightlighting and references for vhdl subset
+ * Parser for syntax highlighting and references for vhdl subset
  * written by M. Kreis
  * supports VHDL-87/93/2008
  ******************************************************************************/
@@ -672,7 +672,7 @@ static void codifyMapLines(const char *text)
 }//codifymaplines
 
 /*
-* writes a function|procedure prototype  and links the function|procedure name 
+* writes a function|procedure prototype and links the function|procedure name 
 */
 
 static void writeFuncProto()
@@ -710,7 +710,7 @@ static void writeFuncProto()
   }
 }// writeFuncProto
 
-/* writes a process prototype to the ouput */
+/* writes a process prototype to the output */
 
  static void writeProcessProto(){
  codifyLines(g_FuncProto.data(),g_CurrClass.data());
@@ -1340,7 +1340,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                            writeFont("vhdlkeyword",vhdlcodeYYtext);
                          }
 
-<Bases>^{B}*("use"|"library"){BN}+ { //found  package or library
+<Bases>^{B}*("use"|"library"){BN}+ { //found package or library
                            writeFont("vhdlkeyword",vhdlcodeYYtext);
                            BEGIN(ParsePackage);
                          }

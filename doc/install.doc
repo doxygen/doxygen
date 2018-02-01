@@ -61,7 +61,7 @@ tools should be installed.
     freetype support (which requires the freetype library and header files), 
     otherwise the graphs will not render proper text labels.
 <li>For formulas in the HTML output (when MathJax is not used)
-    or in case you do not wish to use `pdflatex,
+    or in case you do not wish to use `pdflatex`,
     the ghostscript interpreter is needed. You can find it at 
     <a href="https://www.ghostscript.com/">www.ghostscript.com</a>.
 </ul>

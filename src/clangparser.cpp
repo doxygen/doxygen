@@ -4,6 +4,7 @@
 
 #if USE_LIBCLANG
 #include <clang-c/Index.h>
+#include "clang/Tooling/Tooling.h"
 #include <qfileinfo.h>
 #include <stdlib.h>
 #include "message.h"
@@ -160,15 +161,46 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   static QStrList &includePath = Config_getList(INCLUDE_PATH);
   static QStrList clangOptions = Config_getList(CLANG_OPTIONS);
+  static QCString clangCompileDatabase = Config_getList(CLANG_COMPILATION_DATABASE_PATH);
   if (!clangAssistedParsing) return;
   //printf("ClangParser::start(%s)\n",fileName);
   p->fileName = fileName;
   p->index    = clang_createIndex(0, 0);
   p->curLine  = 1;
   p->curToken = 0;
-  char **argv = (char**)malloc(sizeof(char*)*(4+Doxygen::inputPaths.count()+includePath.count()+clangOptions.count()));
   QDictIterator<void> di(Doxygen::inputPaths);
   int argc=0;
+  std::string error;
+  // load a clang compilation database (https://clang.llvm.org/docs/JSONCompilationDatabase.html)
+  // this only needs to be loaded once, and could be refactored to a higher level function
+  static std::unique_ptr<clang::tooling::CompilationDatabase> db =
+      clang::tooling::CompilationDatabase::loadFromDirectory(clangCompileDatabase.data(), error);
+  int clang_option_len = 0;
+  std::vector<clang::tooling::CompileCommand> command;
+  if (strcmp(clangCompileDatabase, "0") != 0) {
+      if (db == nullptr) {
+          // user specified a path, but DB file was not found
+          err("%s using clang compilation database path of: \"%s\"\n", error.c_str(),
+              clangCompileDatabase.data());
+      } else {
+          // check if the file we are parsing is in the DB
+          command = db->getCompileCommands(fileName);
+          if (!command.empty() ) {
+              // it's possible to have multiple entries for the same file, so use the last entry
+              clang_option_len = command[command.size()-1].CommandLine.size();
+          }
+      }
+  }
+  char **argv = (char**)malloc(sizeof(char*)*(4+Doxygen::inputPaths.count()+includePath.count()+clangOptions.count()+clang_option_len));
+  if (!command.empty() ) {
+      std::vector<std::string> options = command[command.size()-1].CommandLine;
+      // copy each compiler option used from the database. Skip the first which is compiler exe.
+      for (auto option = options.begin()+1; option != options.end(); option++) {
+          argv[argc++] = strdup(option->c_str());
+      }
+      // this extra addition to argv is accounted for as we are skipping the first entry in
+      argv[argc++]=strdup("-w"); // finally, turn off warnings.
+  } else {
   // add include paths for input files
   for (di.toFirst();di.current();++di,++argc)
   {
@@ -230,6 +262,7 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   // provide the input and and its dependencies as unsaved files so we can
   // pass the filtered versions
   argv[argc++]=strdup(fileName);
+  }
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   //printf("source %s ----------\n%s\n-------------\n\n",
   //    fileName,p->source.data());

@@ -3,6 +3,8 @@
   <compounddef id="indexpage" kind="page">
     <compoundname>index</compoundname>
     <title>My Project</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>これは日本語(en)です. Output for all languages. </para>
     </detaileddescription>

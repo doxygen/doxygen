@@ -843,7 +843,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trReferencedBy()
     {
-      return "参考自";
+      return "被这些函数引用";
     }
 
     virtual QCString trRemarks()
@@ -1204,7 +1204,7 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trReferences()
     {
-      return "参考";
+      return "引用了";
     }
 
 //////////////////////////////////////////////////////////////////////////

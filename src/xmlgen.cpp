@@ -136,7 +136,9 @@ inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
       case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
       case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
       case 27: case 28: case 29: case 30: case 31:
-        break; // skip invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
+        // encode invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
+        t << "<sp value=\"" << int(c) << "\"/>";
+        break;
       default:   s=writeUtf8Char(t,s-1); col++; break;
     }
   }
@@ -668,6 +670,13 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     t << "\"";
   }
 
+  if (md->memberType() == MemberType_Enumeration)
+  {
+    t << " strong=\"";
+    if (md->isStrong()) t << "yes"; else t << "no";
+    t << "\"";
+  }
+
   if (md->memberType() == MemberType_Variable)
   {
     //ArgumentList *al = md->argumentList();
@@ -789,10 +798,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       md->memberType()!=MemberType_Enumeration
      )
   {
-    if (md->memberType()!=MemberType_Typedef)
-    {
-      writeMemberTemplateLists(md,t);
-    }
+    writeMemberTemplateLists(md,t);
     QCString typeStr = md->typeString(); //replaceAnonymousScopes(md->typeString());
     stripQualifiers(typeStr);
     t << "        <type>";
@@ -800,6 +806,13 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     t << "</type>" << endl;
     t << "        <definition>" << convertToXML(md->definition()) << "</definition>" << endl;
     t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>" << endl;
+  }
+
+  if (md->memberType() == MemberType_Enumeration)
+  {
+    t << "        <type>";
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->enumBaseType());
+    t << "</type>" << endl;
   }
 
   t << "        <name>" << convertToXML(md->name()) << "</name>" << endl;
@@ -842,7 +855,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   {
     ArgumentList *declAl = md->declArgumentList();
     ArgumentList *defAl = md->argumentList();
-    if (declAl && declAl->count()>0)
+    if (declAl && defAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
@@ -941,11 +954,11 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       MemberDef *emd;
       for (emli.toFirst();(emd=emli.current());++emli)
       {
-        ti << "    <member refid=\"" << memberOutputFileBase(emd) 
-           << "_1" << emd->anchor() << "\" kind=\"enumvalue\"><name>" 
+        ti << "    <member refid=\"" << memberOutputFileBase(md)
+           << "_1" << emd->anchor() << "\" kind=\"enumvalue\"><name>"
            << convertToXML(emd->name()) << "</name></member>" << endl;
 
-        t << "        <enumvalue id=\"" << memberOutputFileBase(emd) << "_1" 
+        t << "        <enumvalue id=\"" << memberOutputFileBase(md) << "_1"
           << emd->anchor() << "\" prot=\"";
         switch (emd->protection())
         {
@@ -1825,6 +1838,13 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     }
   }
   writeInnerPages(pd->getSubPages(),t);
+  if(pd->showToc())
+  {
+    t << "    <tableofcontents/>" << endl;
+  }
+  t << "    <briefdescription>" << endl;
+  writeXMLDocBlock(t,pd->briefFile(),pd->briefLine(),pd,0,pd->briefDescription());
+  t << "    </briefdescription>" << endl;
   t << "    <detaileddescription>" << endl;
   if (isExample)
   {

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Parser for syntax hightlighting and references for Fortran90 F subset
+ * Parser for syntax highlighting and references for Fortran90 F subset
  *
  * Copyright (C) by Anke Visser
  * based on the work of Dimitri van Heesch.
@@ -67,7 +67,7 @@
  * For fixed formatted code position 6 is of importance (continuation character).
  * The following variables and macros keep track of the column number
  * YY_USER_ACTION is always called for each scan action
- * YY_FTN_REST    is used to handle end of lines and reset the column counter
+ * YY_FTN_RESET   is used to handle end of lines and reset the column counter
  * YY_FTN_REJECT  resets the column counters when a pattern is rejected and thus rescanned.
  */
 int yy_old_start = 0;
@@ -135,6 +135,8 @@ static const char *  g_inputString;     //!< the code fragment as text
 static int	     g_inputPosition;   //!< read offset during parsing 
 static int           g_inputLines;      //!< number of line in the code fragment
 static int	     g_yyLineNr;        //!< current line number
+static int	     g_contLineNr;      //!< current, local, line number for continuation determination
+static int	    *g_hasContLine = NULL;     //!< signals whether or not a line has a continuation line (fixed source form)
 static bool          g_needsTermination;
 static Definition   *g_searchCtx;
 static bool          g_collectXRefs;
@@ -158,51 +160,6 @@ static char          stringStartSymbol; // single or double quote
 static int 	     bracketCount = 0;
 
 static bool      g_endComment;
-
-// simplified way to know if this is fixed form
-// duplicate in fortranscanner.l
-static bool recognizeFixedForm(const char* contents, FortranFormat format)
-{
-  int column=0;
-  bool skipLine=FALSE;
-
-  if (format == FortranFormat_Fixed) return TRUE;
-  if (format == FortranFormat_Free)  return FALSE;
-  for (int i=0;;i++)
-  {
-    column++;
-
-    switch(contents[i]) 
-    {
-      case '\n':
-        column=0;
-        skipLine=FALSE;
-        break;
-      case ' ':
-        break;
-      case '#':
-        skipLine=TRUE;
-        break;
-      case '\000':
-        return FALSE;
-      case 'C':
-      case 'c':
-      case '*':
-        if(column==1) return TRUE;
-        if(skipLine) break;
-        return FALSE;
-      case '!':
-        if(column>1 && column<7) return FALSE;
-        skipLine=TRUE;
-        break;
-      default:
-        if(skipLine) break;
-        if(column==7) return TRUE;
-        return FALSE;
-    }
-  }
-  return FALSE;
-}
 
 static void endFontClass()
 {
@@ -567,7 +524,8 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
 
   if (getFortranDefs(memberName, currentModule, md, usedict) && md->isLinkable())
   { 
-    //if (md->isVariable()) return FALSE; // variables aren't handled yet	
+    if (md->isVariable() && (md->getLanguage()!=SrcLangExt_Fortran)) return FALSE; // Non Fortran variables aren't handled yet,
+                                                                                   // see also linkifyText in util.cpp
 
     Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	            md->getBodyDef() : md->getOuterScope();
@@ -816,6 +774,13 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           yy_push_state(YY_START);
 					  BEGIN(Use);     
                                         }
+<Use>"ONLY"                             { // TODO: rename
+                                          startFontClass("keywordtype");
+                                          codifyLines(yytext);
+                                          endFontClass();
+                                          yy_push_state(YY_START);
+                                          BEGIN(UseOnly);
+                                        }
 <Use>{ID}                               {
                                           QCString tmp = yytext;
                                           tmp = tmp.lower();
@@ -832,15 +797,10 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           useMembers->append(tmp, useEntry);
 					  addUse(tmp);
                                         }           
-<Use>,{BS}"ONLY"                        { // TODO: rename
-  					  startFontClass("keywordtype"); 
- 					  codifyLines(yytext);
-					  endFontClass();
-                                          yy_push_state(YY_START);
-					  BEGIN(UseOnly);     
-                                        }           
-<UseOnly,Import>{BS},{BS}               { codifyLines(yytext); }
-<UseOnly,Import>{BS}&{BS}"\n"           { codifyLines(yytext); YY_FTN_RESET}
+<Use,UseOnly,Import>{BS},{BS}           { codifyLines(yytext); }
+<UseOnly,Import>{BS}&{BS}"\n"           { codifyLines(yytext);
+                                          g_contLineNr++;
+                                          YY_FTN_RESET}
 <UseOnly>{ID}                           {
                                           QCString tmp = yytext;
                                           tmp = tmp.lower();
@@ -867,7 +827,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                         }
  /*-------- fortran module  -----------------------------------------*/
 <Start>("block"{BS}"data"|"program"|"module"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
-					  startScope();
+                                          startScope();
   					  startFontClass("keyword"); 
   					  codifyLines(yytext);
 					  endFontClass();
@@ -937,6 +897,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
  					  codifyLines(yytext);
                                         }
 <Subprog,Subprogend>"\n"                { codifyLines(yytext);
+					  g_contLineNr++;
                                           yy_pop_state();
                                           YY_FTN_RESET
                                         }
@@ -979,14 +940,21 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  endFontClass();
   					}
 <Declaration>{ID}                       { // local var
-                                          if (g_currentMemberDef && g_currentMemberDef->isFunction() && bracketCount==0)
+                                          if (g_isFixedForm && yy_my_start == 1)
+                                          {
+  					    startFontClass("comment");
+					    g_code->codify(yytext);
+					    endFontClass();
+                                          }
+                                          else if (g_currentMemberDef && ((g_currentMemberDef->isFunction() && (g_currentMemberDef->typeString() != QCString("subroutine"))) ||
+                                                                          g_currentMemberDef->isVariable()))
+                                          {
+                                            generateLink(*g_code, yytext);
+                                          }
+                                          else
                                           {
                                             g_code->codify(yytext);
                                             addLocalVar(yytext);
-                                          }
-                                           else
-                                          {
-                                            generateLink(*g_code, yytext);
                                           }
 					}
 <Declaration>{BS}("=>"|"="){BS}                        { // Procedure binding
@@ -1007,28 +975,36 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  g_code->codify(yytext);
 					}
 
-<Declaration,DeclarationBinding>"&"                        { // continuation line
+<Declaration,DeclarationBinding>"&"     { // continuation line
 					  g_code->codify(yytext);
-                                          yy_push_state(YY_START);
-					  BEGIN(DeclContLine);					  
+                                          if (!g_isFixedForm)
+                                          {
+                                            yy_push_state(YY_START);
+					    BEGIN(DeclContLine);					  
+ 					  }
  					}
 <DeclContLine>"\n"                      { // declaration not yet finished
+					  g_contLineNr++;
                                           codifyLines(yytext);
 					  bracketCount = 0;
                                           yy_pop_state();
                                           YY_FTN_RESET
  				 	}
-<Declaration,DeclarationBinding>"\n"                       { // end declaration line
+<Declaration,DeclarationBinding>"\n"    { // end declaration line (?)
 					  if (g_endComment)
-            {
-            g_endComment=FALSE;
-            }
-            else
-            {
-            codifyLines(yytext);
-            }
+                                          {
+                                            g_endComment=FALSE;
+                                          }
+                                          else
+                                          {
+                                            codifyLines(yytext);
+                                          }
 					  bracketCount = 0;
-                                          yy_pop_state();
+					  g_contLineNr++;
+                                          if (!(g_hasContLine && g_hasContLine[g_contLineNr - 1]))
+                                          {
+                                            yy_pop_state();
+                                          }
                                           YY_FTN_RESET
  					}
 
@@ -1065,6 +1041,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 <Start,Declaration,DeclarationBinding>\n?{BS}"!>"|"!<"                 { // start comment line or comment block
                                           if (yytext[0] == '\n')
                                           {
+					    g_contLineNr++;
                                             yy_old_start = 0;
                                             yy_my_start = 1;
                                             yy_end = yyleng;
@@ -1085,6 +1062,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           docBlock+=yytext;
   					}
 <DocBlock>"\n"{BS}("!>"|"!<"|"!!")	{ // comment block (next line is also comment line)
+					  g_contLineNr++;
                                           yy_old_start = 0;
                                           yy_my_start = 1;
                                           yy_end = yyleng;
@@ -1094,6 +1072,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
    					}
 <DocBlock>"\n"        			{ // comment block ends at the end of this line
                                           // remove special comment (default config)
+					  g_contLineNr++;
   					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_yyLineNr+=((QCString)docBlock).contains('\n');
@@ -1112,6 +1091,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					    endFontClass();
 					  }
             unput(*yytext);
+					  g_contLineNr--;
                                          yy_pop_state();
                                           YY_FTN_RESET
 					}
@@ -1145,6 +1125,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
  /*------ preprocessor  --------------------------------------------*/ 
 <Start>"#".*\n                          {
                                           if (g_isFixedForm && yy_my_start == 6) YY_FTN_REJECT;
+					  g_contLineNr++;
                                           startFontClass("preprocessor");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -1165,6 +1146,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 <*>"\\\""|\\\'                          { str+=yytext; /* ignore \"  */}
 
 <String>\n                              { // string with \n inside
+					  g_contLineNr++;
                                           str+=yytext;
   					  startFontClass("stringliteral");
   					  codifyLines(str);
@@ -1201,6 +1183,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
             {
             codifyLines(yytext);
             }
+					  g_contLineNr++;
                                           YY_FTN_RESET
   					}
 <*>^{BS}"type"{BS}"="                   { g_code->codify(yytext); }
@@ -1243,6 +1226,29 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 
 void resetFortranCodeParserState() {}
 
+bool recognizeFixedForm(const char* contents, FortranFormat format); /* prototype, implementation in fortranscanner.l */
+const char* prepassFixedForm(const char* contents, int *hasContLine); /* prototype, implementation in fortranscanner.l */
+static void checkContLines(const char *s)
+{
+  int numLines = 0;
+  int curLine = 0;
+  int i = 0;
+  const char *p = s;
+
+  numLines = 2; // one for element 0, one in case no \n at end
+  while (*p)
+  {
+    if (*p == '\n') numLines++;
+    p++;
+  }
+
+  g_hasContLine = (int *) malloc((numLines) * sizeof(int));
+  for (i = 0; i < numLines; i++)
+    g_hasContLine[i] = 0;
+  p = prepassFixedForm(s, g_hasContLine);
+  g_hasContLine[0] = 0;
+}
+
 void parseFortranCode(CodeOutputInterface &od,const char *className,const QCString &s, 
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment,
@@ -1262,6 +1268,12 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
   g_inputString   = s;
   g_inputPosition = 0;
   g_isFixedForm = recognizeFixedForm((const char*)s,format);
+  g_contLineNr = 1;
+  g_hasContLine = NULL;
+  if (g_isFixedForm)
+  {
+    checkContLines(g_inputString);
+  }
   g_currentFontClass = 0;
   g_needsTermination = FALSE;
   g_searchCtx = searchCtx;
@@ -1275,7 +1287,6 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
     g_inputLines  = endLine+1;
   else
     g_inputLines  = g_yyLineNr + countLines() - 1;
-
 
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;
@@ -1317,6 +1328,8 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
     delete g_sourceFileDef;
     g_sourceFileDef=0;
   }
+  if (g_hasContLine) free(g_hasContLine);
+  g_hasContLine = NULL;
   printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
   return;
 }

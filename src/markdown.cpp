@@ -37,7 +37,7 @@
 #include <qfileinfo.h>
 #include <qdict.h>
 #include <qvector.h>
-#define USE_ORIGINAL_TABLES
+//#define USE_ORIGINAL_TABLES
 
 #include "markdown.h"
 #include "growbuf.h"
@@ -956,6 +956,15 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
       i=0;
       nl++;
     }
+    else if (data[end]=='\'' && nb==1 && (end==size-1 || (end<size-1 && !isIdChar(end+1))))
+    { // look for quoted strings like `some word', but skip strings like `it's cool`
+      QCString textFragment;
+      convertStringFragment(textFragment,data+nb,end-nb);
+      out.addStr("&lsquo;");
+      out.addStr(textFragment);
+      out.addStr("&rsquo;");
+      return end+1;
+    }
     else
     {
       i=0; 
@@ -982,18 +991,6 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
     f_end--;
   }
 
-  if (nb==1) // check for closing ' followed by space within f_begin..f_end
-  {
-    i=f_begin;
-    while (i<f_end-1)
-    {
-      if (data[i]=='\'' && !isIdChar(i+1)) // reject `some word' and not `it's cool`
-      {
-        return 0;
-      }
-      i++;
-    }
-  }
   //printf("found code span '%s'\n",QCString(data+f_begin).left(f_end-f_begin).data());
 
   /* real code span */
@@ -1868,6 +1865,16 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
 }
 
 
+static int hasLineBreak(const char *data,int size)
+{
+  int i=0;
+  while (i<size && data[i]!='\n') i++;
+  if (i>=size) return 0; // empty line
+  if (i<2) return 0; // not long enough
+  return (data[i-1]==' ' && data[i-2]==' ');
+}
+
+
 void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
 {
   int level;
@@ -1941,6 +1948,10 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
   else // nothing interesting -> just output the line
   {
     out.addStr(data,size);
+    if (hasLineBreak(data,size))
+    {
+      out.addStr("<br>");
+    }
   }
 }
 

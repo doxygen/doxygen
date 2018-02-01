@@ -3,6 +3,8 @@
   <compounddef id="citelist" kind="page">
     <compoundname>citelist</compoundname>
     <title>Bibliography</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>
         <variablelist>

@@ -47,6 +47,7 @@
 #include "searchindex.h"
 #include "doxygen.h"
 #include "textdocvisitor.h"
+#include "latexdocvisitor.h"
 #include "portable.h"
 #include "parserintf.h"
 #include "bufstr.h"
@@ -516,14 +517,14 @@ static QDict<MemberDef> g_resolvedTypedefs;
 static QDict<Definition> g_visitedNamespaces;
 
 // forward declaration
-static ClassDef *getResolvedClassRec(Definition *scope,
-                              FileDef *fileScope,
+static ClassDef *getResolvedClassRec(const Definition *scope,
+                              const FileDef *fileScope,
                               const char *n,
                               MemberDef **pTypeDef,
                               QCString *pTemplSpec,
                               QCString *pResolvedType
                              );
-int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition *item,
+int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScope,const Definition *item,
                      const QCString &explicitScopePart);
 
 /*! Returns the class representing the value of the typedef represented by \a md
@@ -533,7 +534,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition
  * 
  *  Example: typedef int T; will return 0, since "int" is not a class.
  */
-ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
+ClassDef *newResolveTypedef(const FileDef *fileScope,MemberDef *md,
                             MemberDef **pMemType,QCString *pTemplSpec,
                             QCString *pResolvedType,
                             ArgumentList *actTemplParams)
@@ -664,7 +665,7 @@ done:
 /*! Substitutes a simple unqualified \a name within \a scope. Returns the
  *  value of the typedef or \a name if no typedef was found.
  */
-static QCString substTypedef(Definition *scope,FileDef *fileScope,const QCString &name,
+static QCString substTypedef(const Definition *scope,const FileDef *fileScope,const QCString &name,
             MemberDef **pTypeDef=0)
 {
   QCString result=name;
@@ -750,11 +751,11 @@ static Definition *endOfPathIsUsedClass(SDict<Definition> *cl,const QCString &lo
  *  searched. If found the scope definition is returned, otherwise 0 
  *  is returned.
  */
-static Definition *followPath(Definition *start,FileDef *fileScope,const QCString &path)
+static const Definition *followPath(const Definition *start,const FileDef *fileScope,const QCString &path)
 {
   int is,ps;
   int l;
-  Definition *current=start;
+  const Definition *current=start;
   ps=0;
   //printf("followPath: start='%s' path='%s'\n",start?start->name().data():"<none>",path.data());
   // for each part of the explicit scope
@@ -773,7 +774,7 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
         return type;
       }
     }
-    Definition *next = current->findInnerCompound(qualScopePart);
+    const Definition *next = current->findInnerCompound(qualScopePart);
     //printf("++ Looking for %s inside %s result %s\n",
     //     qualScopePart.data(),
     //     current->name().data(),
@@ -807,8 +808,8 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
 }
 
 bool accessibleViaUsingClass(const SDict<Definition> *cl,
-                             FileDef *fileScope,
-                             Definition *item,
+                             const FileDef *fileScope,
+                             const Definition *item,
                              const QCString &explicitScopePart=""
                             )
 {
@@ -821,7 +822,7 @@ bool accessibleViaUsingClass(const SDict<Definition> *cl,
     for (cli.toFirst();(ucd=cli.current());++cli)
     {
       //printf("Trying via used class %s\n",ucd->name().data());
-      Definition *sc = explicitScopePartEmpty ? ucd : followPath(ucd,fileScope,explicitScopePart);
+      const Definition *sc = explicitScopePartEmpty ? ucd : followPath(ucd,fileScope,explicitScopePart);
       if (sc && sc==item) return TRUE; 
       //printf("Try via used class done\n");
     }
@@ -830,8 +831,8 @@ bool accessibleViaUsingClass(const SDict<Definition> *cl,
 }
 
 bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
-                                 FileDef *fileScope,
-                                 Definition *item,
+                                 const FileDef *fileScope,
+                                 const Definition *item,
                                  const QCString &explicitScopePart="")
 {
   static QDict<void> visitedDict;
@@ -844,7 +845,7 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
     {
       //printf("[Trying via used namespace %s: count=%d/%d\n",und->name().data(),
       //    count,nl->count());
-      Definition *sc = explicitScopePart.isEmpty() ? und : followPath(und,fileScope,explicitScopePart);
+      const Definition *sc = explicitScopePart.isEmpty() ? und : followPath(und,fileScope,explicitScopePart);
       if (sc && item->getOuterScope()==sc) 
       {
         //printf("] found it\n");
@@ -878,7 +879,7 @@ class AccessStack
 {
   public:
     AccessStack() : m_index(0) {}
-    void push(Definition *scope,FileDef *fileScope,Definition *item)
+    void push(const Definition *scope,const FileDef *fileScope,const Definition *item)
     {
       if (m_index<MAX_STACK_SIZE)
       {
@@ -888,7 +889,7 @@ class AccessStack
         m_index++;
       }
     }
-    void push(Definition *scope,FileDef *fileScope,Definition *item,const QCString &expScope)
+    void push(const Definition *scope,const FileDef *fileScope,const Definition *item,const QCString &expScope)
     {
       if (m_index<MAX_STACK_SIZE)
       {
@@ -903,7 +904,7 @@ class AccessStack
     {
       if (m_index>0) m_index--;
     }
-    bool find(Definition *scope,FileDef *fileScope, Definition *item)
+    bool find(const Definition *scope,const FileDef *fileScope, const Definition *item)
     {
       int i=0;
       for (i=0;i<m_index;i++)
@@ -916,7 +917,7 @@ class AccessStack
       }
       return FALSE;
     }
-    bool find(Definition *scope,FileDef *fileScope, Definition *item,const QCString &expScope)
+    bool find(const Definition *scope,const FileDef *fileScope, const Definition *item,const QCString &expScope)
     {
       int i=0;
       for (i=0;i<m_index;i++)
@@ -934,9 +935,9 @@ class AccessStack
     /** Element in the stack. */
     struct AccessElem
     {
-      Definition *scope;
-      FileDef *fileScope;
-      Definition *item;
+      const Definition *scope;
+      const FileDef *fileScope;
+      const Definition *item;
       QCString expScope;
     };
     int m_index;
@@ -946,7 +947,7 @@ class AccessStack
 /* Returns the "distance" (=number of levels up) from item to scope, or -1
  * if item in not inside scope. 
  */
-int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
+int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Definition *item)
 {
   //printf("<isAccesibleFrom(scope=%s,item=%s itemScope=%s)\n",
   //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
@@ -1049,8 +1050,8 @@ done:
  *   not found and then A::I is searched in the global scope, which matches and 
  *   thus the result is 1.
  */
-int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
-                     Definition *item,const QCString &explicitScopePart)
+int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScope,
+                     const Definition *item,const QCString &explicitScopePart)
 {
   if (explicitScopePart.isEmpty())
   {
@@ -1070,7 +1071,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
   //                                      item?item->name().data():"<none>",
   //                                      explicitScopePart.data());
   int result=0; // assume we found it
-  Definition *newScope = followPath(scope,fileScope,explicitScopePart);
+  const Definition *newScope = followPath(scope,fileScope,explicitScopePart);
   if (newScope)  // explicitScope is inside scope => newScope is the result
   {
     Definition *itemScope = item->getOuterScope();
@@ -1207,8 +1208,8 @@ int computeQualifiedIndex(const QCString &name)
   return name.findRev("::",i==-1 ? name.length() : i);
 }
 
-static void getResolvedSymbol(Definition *scope,
-                       FileDef *fileScope,
+static void getResolvedSymbol(const Definition *scope,
+                       const FileDef *fileScope,
                        Definition *d, 
                        const QCString &explicitScopePart,
                        ArgumentList *actTemplParams,
@@ -1372,8 +1373,8 @@ static void getResolvedSymbol(Definition *scope,
  * match against the input name. Can recursively call itself when 
  * resolving typedefs.
  */
-static ClassDef *getResolvedClassRec(Definition *scope,
-    FileDef *fileScope,
+static ClassDef *getResolvedClassRec(const Definition *scope,
+    const FileDef *fileScope,
     const char *n,
     MemberDef **pTypeDef,
     QCString *pTemplSpec,
@@ -1561,8 +1562,8 @@ static ClassDef *getResolvedClassRec(Definition *scope,
  * Loops through scope and each of its parent scopes looking for a
  * match against the input name. 
  */
-ClassDef *getResolvedClass(Definition *scope,
-    FileDef *fileScope,
+ClassDef *getResolvedClass(const Definition *scope,
+    const FileDef *fileScope,
     const char *n,
     MemberDef **pTypeDef,
     QCString *pTemplSpec,
@@ -1993,8 +1994,8 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 }
 
 
-void linkifyText(const TextGeneratorIntf &out,Definition *scope,
-    FileDef *fileScope,Definition *self,
+void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
+    const FileDef *fileScope,const Definition *self,
     const char *text, bool autoBreak,bool external,
     bool keepSpaces,int indentLevel)
 {
@@ -2161,10 +2162,16 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         if (md!=self && (self==0 || md->name()!=self->name())) 
           // name check is needed for overloaded members, where getDefs just returns one
         {
-          out.writeLink(md->getReference(),md->getOutputFileBase(),
-              md->anchor(),word);
-          //printf("found symbol %s\n",matchWord.data());
-          found=TRUE;
+          /* in case of Fortran scop and the variable is a non Fortran variable: don't link,
+           * see also getLink in fortrancode.l
+           */
+          if (!(scope && (scope->getLanguage() == SrcLangExt_Fortran) && md->isVariable() && (md->getLanguage() != SrcLangExt_Fortran)))
+          {
+            out.writeLink(md->getReference(),md->getOutputFileBase(),
+                md->anchor(),word);
+            //printf("found symbol %s\n",matchWord.data());
+            found=TRUE;
+          }
         }
       }
     }
@@ -4594,7 +4601,7 @@ bool resolveRef(/* in */  const char *scName,
   QCString fullName = substitute(tsName,"#","::");
   if (fullName.find("anonymous_namespace{")==-1)
   {
-    fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
+    fullName = removeRedundantWhiteSpace(substitute(fullName,".","::",3));
   }
   else
   {
@@ -4745,7 +4752,7 @@ bool resolveRef(/* in */  const char *scName,
   {
     return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,0,checkScope);
   }
-  if (bracePos!=-1) // Try without parameters as well, could be a contructor invocation
+  if (bracePos!=-1) // Try without parameters as well, could be a constructor invocation
   {
     *resContext=getClass(fullName.left(bracePos));
     if (*resContext)
@@ -4767,7 +4774,7 @@ QCString linkToText(SrcLangExt lang,const char *link,bool isFileName)
     // replace # by ::
     result=substitute(result,"#","::");
     // replace . by ::
-    if (!isFileName && result.find('<')==-1) result=substitute(result,".","::");
+    if (!isFileName && result.find('<')==-1) result=substitute(result,".","::",3);
     // strip leading :: prefix if present
     if (result.at(0)==':' && result.at(1)==':')
     {
@@ -5211,10 +5218,71 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
     int l = (int)(q-p);
     memcpy(r,p,l);
     r+=l;
+
     if (dst) memcpy(r,dst,dstLen);
     r+=dstLen;
   }
   qstrcpy(r,p);
+  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
+  return result;
+}
+
+
+/// substitute all occurrences of \a src in \a s by \a dst, but skip
+/// each consecutive sequence of \a src where the number consecutive
+/// \a src matches \a skip_seq; if \a skip_seq is negative, skip any
+/// number of consecutive \a src
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq)
+{
+  if (s.isEmpty() || src.isEmpty()) return s;
+  const char *p, *q;
+  int srcLen = src.length();
+  int dstLen = dst.length();
+  int resLen;
+  if (srcLen!=dstLen)
+  {
+    int count;
+    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
+    resLen = s.length()+count*(dstLen-srcLen);
+  }
+  else // result has same size as s
+  {
+    resLen = s.length();
+  }
+  QCString result(resLen+1);
+  char *r;
+  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  {
+    // search a consecutive sequence of src
+    int seq = 0, skip = 0;
+    if (skip_seq)
+    {
+      for (const char *n=q+srcLen; qstrncmp(n,src,srcLen)==0; seq=1+skip, n+=srcLen)
+        ++skip; // number of consecutive src after the current one
+
+      // verify the allowed number of consecutive src to skip
+      if (skip_seq > 0 && skip_seq != seq)
+        seq = skip = 0;
+    }
+
+    // skip a consecutive sequence of src when necessary
+    int l = (int)((q + seq * srcLen)-p);
+    memcpy(r,p,l);
+    r+=l;
+
+    if (skip)
+    {
+      // skip only the consecutive src found after the current one
+      q += skip * srcLen;
+      // the next loop will skip the current src, aka (p=q+srcLen)
+      continue;
+    }
+
+    if (dst) memcpy(r,dst,dstLen);
+    r+=dstLen;
+  }
+  qstrcpy(r,p);
+  result.resize(strlen(result.data())+1);
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }
@@ -5859,6 +5927,7 @@ QCString convertToHtml(const char *s,bool keepEntities)
   static GrowBuf growBuf;
   growBuf.clear();
   if (s==0) return "";
+  growBuf.addStr(getHtmlDirEmbedingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -5900,11 +5969,13 @@ QCString convertToHtml(const char *s,bool keepEntities)
   return growBuf.get();
 }
 
-QCString convertToJSString(const char *s)
+QCString convertToJSString(const char *s, bool applyTextDir)
 {
   static GrowBuf growBuf;
   growBuf.clear();
   if (s==0) return "";
+  if (applyTextDir)
+    growBuf.addStr(getJsDirEmbedingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -6663,6 +6734,12 @@ void filterLatexString(FTextStream &t,const char *str,
         case '{':  t << "\\{"; break;
         case '}':  t << "\\}"; break;
         case '_':  t << "\\_"; break;
+        case '&':  t << "\\&"; break;
+        case '%':  t << "\\%"; break;
+        case '#':  t << "\\#"; break;
+        case '$':  t << "\\$"; break;
+        case '^':  (usedTableLevels()>0) ? t << "\\string^" : t << (char)c;    break;
+        case '~':  (usedTableLevels()>0) ? t << "\\string~" : t << (char)c;    break;
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
                    break;
         default:
@@ -6734,6 +6811,8 @@ void filterLatexString(FTextStream &t,const char *str,
         case '\\': t << "\\textbackslash{}";
                    break;           
         case '"':  t << "\\char`\\\"{}";
+                   break;
+        case '`':  t << "\\`{}";
                    break;
         case '\'': t << "\\textquotesingle{}";
                    break;
@@ -7177,7 +7256,7 @@ void addCodeOnlyMappings()
   updateLanguageMapping(".sql",   "sql");
 }
 
-SrcLangExt getLanguageFromFileName(const QCString fileName)
+SrcLangExt getLanguageFromFileName(const QCString& fileName)
 {
   int i = fileName.findRev('.');
   if (i!=-1) // name has an extension
@@ -7902,9 +7981,16 @@ QCString filterTitle(const QCString &title)
 
 bool patternMatch(const QFileInfo &fi,const QStrList *patList)
 {
-  bool found=FALSE;
+  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool found = FALSE;
+
+  // For Windows/Mac, always do the case insensitive match
+#if defined(_WIN32) || defined(__MACOSX__)
+  caseSenseNames = FALSE;
+#endif
+
   if (patList)
-  { 
+  {
     QStrListIterator it(*patList);
     QCString pattern;
 
@@ -7919,11 +8005,8 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
         int i=pattern.find('=');
         if (i!=-1) pattern=pattern.left(i); // strip of the extension specific filter name
 
-#if defined(_WIN32) || defined(__MACOSX__) // Windows or MacOSX
-        QRegExp re(pattern,FALSE,TRUE); // case insensitive match 
-#else                // unix
-        QRegExp re(pattern,TRUE,TRUE);  // case sensitive match
-#endif
+        QRegExp re(pattern,caseSenseNames,TRUE);
+
         found = re.match(fn)!=-1 ||
                 re.match(fp)!=-1 ||
                 re.match(afp)!=-1;
@@ -8754,4 +8837,24 @@ void writeExtraLatexPackages(FTextStream &t)
     t << "\n";
   }
 }
+
+//------------------------------------------------------
+
+static int g_usedTableLevels = 0;
+
+void incUsedTableLevels()
+{
+  g_usedTableLevels++;
+}
+void decUsedTableLevels()
+{
+  g_usedTableLevels--;
+}
+int usedTableLevels()
+{
+  return g_usedTableLevels;
+}
+
+//------------------------------------------------------
+
 

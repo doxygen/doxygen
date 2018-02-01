@@ -11614,32 +11614,83 @@ static inline bool is_neutral(unsigned short dir) {
 #endif
 
 /*!
-  This function returns the basic directionality of the string (QChar::DirR for
-  right to left and QChar::DirL for left to right). Useful to find the right
-  alignment.
-  */
-QChar::Direction QString::basicDirection()
+This function returns the directionality of the string.
+
+\returns a value of DirLTR, DirRTL, DirMixed or DirNeutral that indicates
+if the entire text represented by this text is unidirectional,
+and which direction, or if it is mixed-directional or all characters are neutral.
+*/
+QString::Direction QString::direction() const
 {
 #ifndef QT_NO_UNICODETABLES
-    // find base direction
-    unsigned int pos = 0;
-    while ((pos < length()) &&
-	   (at(pos) != RLE) &&
-	   (at(pos) != LRE) &&
-	   (at(pos) != RLO) &&
-	   (at(pos) != LRO) &&
-	   (at(pos).direction() > 1) &&
-	   (at(pos).direction() != QChar::DirAL)) // not R and not L
-	pos++;
+	// find direction
+	unsigned char resultDir = DirNeutral;
+	for (unsigned int pos = 0; pos < length(); pos++)
+	{
+		if ((at(pos) != RLE) &&
+			(at(pos) != LRE) &&
+			(at(pos) != RLO) &&
+			(at(pos) != LRO) &&
+			(at(pos).direction() > 1) &&
+			(at(pos).direction() != QChar::DirAL)) // not R and not L
+			continue;
 
-    if ((at(pos).direction() == QChar::DirR) ||
-	(at(pos).direction() == QChar::DirAL) ||
-	(at(pos) == RLE) ||
-	(at(pos) == RLO))
-	return QChar::DirR;
+		if ((at(pos).direction() == QChar::DirR) ||
+			(at(pos).direction() == QChar::DirAL) ||
+			(at(pos) == RLE) ||
+			(at(pos) == RLO))
+			resultDir |= DirRTL;
+		else
+			resultDir |= DirLTR;
+		if (resultDir == DirMixed)
+			return DirMixed;
+	}
+	return static_cast<Direction>(resultDir);
+#else
+	return DirLTR;
 #endif
+}
 
-    return QChar::DirL;
+/*!
+This function returns the basic directionality of the string. Useful to find the right
+alignment.
+
+The base direction is derived from the first character in the string
+with bidirectional character type L, R, or AL.
+If the first such character has type L, DirLTR is returned.
+If the first such character has type R or AL, DirRTL is returned.
+If the string does not contain any character of these types, then DirNeutral is returned.
+This is a lightweight function for use when only the base direction is needed and
+no further bidi processing of the text is needed.
+
+\returns DirRTL, DirLTR or DirNeutral
+*/
+QString::Direction QString::basicDirection() const
+{
+#ifndef QT_NO_UNICODETABLES
+	// find base direction
+	unsigned int pos = 0;
+	while ((pos < length()) &&
+		(at(pos) != RLE) &&
+		(at(pos) != LRE) &&
+		(at(pos) != RLO) &&
+		(at(pos) != LRO) &&
+		(at(pos).direction() > 1) &&
+		(at(pos).direction() != QChar::DirAL)) // not R and not L
+		pos++;
+
+	if (pos == length())
+		return DirNeutral;
+
+	if ((at(pos).direction() == QChar::DirR) ||
+		(at(pos).direction() == QChar::DirAL) ||
+		(at(pos) == RLE) ||
+		(at(pos) == RLO))
+		return DirRTL;
+	return DirLTR;
+#else
+	return DirLTR;
+#endif
 }
 
 #ifndef QT_NO_UNICODETABLES
@@ -13670,7 +13721,7 @@ QString &QString::replace( uint index, uint len, const QString &s )
 
 /*!
   Replaces \a len characters starting at position \a index by
-  \a slen units ot QChar data from \a s, and returns a reference to the string.
+  \a slen units to QChar data from \a s, and returns a reference to the string.
 
   \sa insert(), remove()
 */

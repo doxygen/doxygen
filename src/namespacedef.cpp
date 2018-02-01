@@ -818,7 +818,7 @@ QCString NamespaceDef::getOutputFileBase() const
   return fileName;
 }
 
-Definition *NamespaceDef::findInnerCompound(const char *n)
+Definition *NamespaceDef::findInnerCompound(const char *n) const
 {
   if (n==0) return 0;
   Definition *d = m_innerCompounds->find(n);

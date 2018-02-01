@@ -131,7 +131,8 @@ class TranslatorFrench : public Translator
      */
        virtual QCString latexLanguageSupportCommand()
       {
-         return "\\usepackage[french]{babel}\n";
+         return "\\usepackage[french]{babel}\n"
+		"\\NoAutoSpaceBeforeFDP\n";
       }
 
     // --- Language translation methods -------------------

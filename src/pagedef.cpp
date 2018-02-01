@@ -169,8 +169,16 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.endTitleHead(manPageName, manPageName);
   if (si)
   {
-    ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
-    ol.endSection(si->label,si->type);
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Man);
+    ol.writeString(" - ");
+    ol.popGeneratorState();
+
+    if (si->title != manPageName)
+    {
+      ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
+      ol.endSection(si->label,si->type);
+    }
   }
   ol.popGeneratorState();
   //2.}
@@ -183,6 +191,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   if (!title().isEmpty() && !name().isEmpty() && si!=0)
   {
+    ol.startPageDoc(si->title);
     //ol.startSection(si->label,si->title,si->type);
     startTitle(ol,getOutputFileBase(),this);
     ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
@@ -192,6 +201,8 @@ void PageDef::writeDocumentation(OutputList &ol)
     //ol.endSection(si->label,si->type);
     endTitle(ol,getOutputFileBase(),name());
   }
+  else
+    ol.startPageDoc("");
   ol.startContents();
   ol.popGeneratorState();
   //2.}
@@ -202,6 +213,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   }
 
   writePageDocumentation(ol);
+  ol.endPageDoc();
 
   if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
   {
@@ -230,7 +242,7 @@ void PageDef::writePageDocumentation(OutputList &ol)
 
   ol.startTextBlock();
   QCString docStr = documentation()+inbodyDocumentation();
-  if (!docStr.isEmpty())
+  if (hasBriefDescription() && !Doxygen::sectionDict->find(name()))
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Man);

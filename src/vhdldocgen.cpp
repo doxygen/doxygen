@@ -174,7 +174,7 @@ static void createSVG()
     }
 }
 
-// Creates a svg image. All in/out/inout  ports are shown with  brief description and direction.
+// Creates an svg image. All in/out/inout ports are shown with brief description and direction.
 // Brief descriptions for entities are shown too.
 void VhdlDocGen::writeOverview()
 {
@@ -585,7 +585,7 @@ const char* g_vhdlKeyWordMap0[] =
   "map","mod",
   "nand","new","next","nor","not","null",
   "of","on","open","or","others","out",
-  "package","parameter","port","postponed","procedure","process","property","proctected","pure",
+  "package","parameter","port","postponed","procedure","process","property","protected","pure",
   "range","record","register","reject","release","restrict","restrict_guarantee","rem","report","rol","ror","return",
   "select","sequence","severity","signal","shared","sla","sll","sra","srl","strong","subtype",
   "then","to","transport","type",
@@ -2530,7 +2530,7 @@ QCString VhdlDocGen::trDesignUnitMembers()
 QCString VhdlDocGen::trDesignUnitListDescription()
 {
   return "Here is a list of all design unit members with links to "
-    "the Entities  they belong to:";
+    "the Entities they belong to:";
 }
 
 QCString VhdlDocGen::trDesignUnitIndex()
@@ -3039,7 +3039,7 @@ void assignBinding(VhdlConfNode * conf)
 /*
 
 // file foo.vhd
-// enitity foo
+// entity foo
 //        .....
 // end entity
 
@@ -3993,12 +3993,12 @@ void FlowChart::createSVG()
 
   //const  MemberDef *m=VhdlDocGen::getFlowMember();
   //if (m)
-  //  fprintf(stderr,"\n creating  flowchart  : %s  %s in file %s \n",VhdlDocGen::trTypeString(m->getMemberSpecifiers()),m->name().data(),m->getFileDef()->name().data());
+  //  fprintf(stderr,"\n creating flowchart  : %s  %s in file %s \n",VhdlDocGen::trTypeString(m->getMemberSpecifiers()),m->name().data(),m->getFileDef()->name().data());
 
-  QCString dir=" -o "+ov+qcs;
+  QCString dir=" -o \""+ov+qcs+"\"";
   ov+="/flow_design.dot";
 
-  QCString vlargs="-Tsvg "+ov+dir ;
+  QCString vlargs="-Tsvg \""+ov+"\" "+dir ;
 
   if (portable_system("dot",vlargs)!=0)
   {

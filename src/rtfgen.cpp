@@ -2448,7 +2448,7 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
     }
     else // no INCLUDETEXT on this line
     {
-      // elaborate hoopla to skip  the final "}" if we didn't include the
+      // elaborate hoopla to skip the final "}" if we didn't include the
       // headers
       if (!f.atEnd() || bIncludeHeader)
       {

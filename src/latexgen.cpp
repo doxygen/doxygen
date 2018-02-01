@@ -92,7 +92,7 @@ void LatexCodeGenerator::codify(const char *str)
                    m_col+=spacesToNextTabStop;
                    p++;
                    break;
-        case '\n': m_t << '\n'; m_col=0; p++;
+        case '\n': (usedTableLevels()>0) ? m_t << "\\newline\n" : m_t << '\n'; m_col=0; p++;
                    break;
         default:
                    i=0;
@@ -171,13 +171,13 @@ void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
   }
   if (!ref && usePDFLatex && pdfHyperlinks)
   {
-    m_t << "\\hyperlink{";
+    m_t << "\\mbox{\\hyperlink{";
     if (f) m_t << stripPath(f);
     if (f && anchor) m_t << "_"; 
     if (anchor) m_t << anchor; 
     m_t << "}{";
     codify(name);
-    m_t << "}";
+    m_t << "}}";
   }
   else
   {
@@ -1370,9 +1370,10 @@ void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
 
 void LatexGenerator::startTextLink(const char *f,const char *anchor)
 {
-  if (!disableLinks && Config_getBool(PDF_HYPERLINKS))
+  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  if (!disableLinks && pdfHyperlinks)
   {
-    t << "\\hyperlink{";
+    t << "\\mbox{\\hyperlink{";
     if (f) t << stripPath(f);
     if (anchor) t << "_" << anchor; 
     t << "}{";
@@ -1385,6 +1386,11 @@ void LatexGenerator::startTextLink(const char *f,const char *anchor)
 
 void LatexGenerator::endTextLink()
 {
+  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  if (!disableLinks && pdfHyperlinks)
+  {
+    t << "}";
+  }
   t << "}";
 }
 
@@ -1394,13 +1400,13 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!disableLinks && !ref && pdfHyperlinks)
   {
-    t << "\\hyperlink{";
+    t << "\\mbox{\\hyperlink{";
     if (f) t << stripPath(f);
     if (f && anchor) t << "_"; 
     if (anchor) t << anchor; 
     t << "}{";
     docify(text);
-    t << "}";
+    t << "}}";
   }
   else
   {
@@ -1843,11 +1849,13 @@ void LatexGenerator::writeNonBreakableSpace(int)
 
 void LatexGenerator::startDescTable(const char *title)
 {
+  incUsedTableLevels();
   t << "\\begin{DoxyEnumFields}{" << title << "}" << endl;
 }
 
 void LatexGenerator::endDescTable()
 {
+  decUsedTableLevels();
   t << "\\end{DoxyEnumFields}" << endl;
 }
 
@@ -2190,6 +2198,7 @@ void LatexGenerator::lineBreak(const char *)
 
 void LatexGenerator::startMemberDocSimple(bool isEnum)
 {
+  incUsedTableLevels();
   if (isEnum)
   {
     t << "\\begin{DoxyEnumFields}{";
@@ -2205,6 +2214,7 @@ void LatexGenerator::startMemberDocSimple(bool isEnum)
 
 void LatexGenerator::endMemberDocSimple(bool isEnum)
 {
+  decUsedTableLevels();
   if (isEnum)
   {
     t << "\\end{DoxyEnumFields}" << endl;

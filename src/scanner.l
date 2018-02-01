@@ -5029,6 +5029,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    }
 					  }
                                         }
+<SkipInits>">"{BN}*"{"                  { // C++11 style initializer (see bug 790788)
+                                          lineCount();
+                                          curlyCount=1;
+                                          BEGIN(SkipC11Inits);
+                                        }
 <SkipInits>{ID}{BN}*"{"                 { // C++11 style initializer (see bug 688647)
                                           lineCount();
                                           curlyCount=1;
@@ -6574,7 +6579,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <SkipComment>[^\*\n]+
 
-"[["                                    { // C++11 attribute
+<*>"[["                                 { // C++11 attribute
                                           lastC11AttributeContext = YY_START;
                                           BEGIN( SkipC11Attribute );
                                         }

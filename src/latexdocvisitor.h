@@ -23,7 +23,6 @@
 #include <qstack.h>
 #include <qcstring.h>
 #include <qlist.h>
-//#include <qmap.h>
 
 class FTextStream;
 class CodeOutputInterface;
@@ -161,7 +160,7 @@ class LatexDocVisitor : public DocVisitor
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor,bool refToTable=FALSE);
     void endLink(const QCString &ref,const QCString &file,
-                 const QCString &anchor);
+                 const QCString &anchor,bool refToTable=FALSE);
     QCString escapeMakeIndexChars(const char *s);
     void startDotFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption);

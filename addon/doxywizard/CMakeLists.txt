@@ -1,8 +1,6 @@
-if (build_wizard)
-
 # search for Qt5
 if (NOT force_qt4)
-  find_package(Qt5Core QUIET)
+  find_package(Qt5Core QUIET CONFIG)
   if (Qt5Core_FOUND)
     message(STATUS "Using Qt5")
     find_package(Qt5 COMPONENTS Widgets Gui Xml)
@@ -112,5 +110,3 @@ ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY}
 )
 
 install(TARGETS doxywizard DESTINATION bin)
-
-endif()

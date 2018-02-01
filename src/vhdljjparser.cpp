@@ -196,6 +196,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   VhdlParser::lastEntity=0;
   VhdlParser::currentCompound=0;
   VhdlParser::lastEntity=0;
+  oldEntry = 0;
   VhdlParser::current=new Entry();
   VhdlParser::initEntry(VhdlParser::current);
   groupEnterFile(fileName,yyLineNr);

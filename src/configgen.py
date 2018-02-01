@@ -63,7 +63,7 @@ def transformDocs(doc):
 	doc = re.sub('<a +href="([^"]*)" *>([^<]*)</a>', '\\2 (see: \\1)', doc)
 	# LaTeX name as formula -> LaTeX
 	doc = doc.replace("\\f$\\mbox{\\LaTeX}\\f$", "LaTeX")
-	# Other forula's (now just 2) so explicitely mentioned.
+	# Other formula's (now just 2) so explicitly mentioned.
 	doc = doc.replace("\\f$2^{(16+\\mbox{LOOKUP\\_CACHE\\_SIZE})}\\f$",
 					  "2^(16+LOOKUP_CACHE_SIZE)")
 	doc = doc.replace("\\f$2^{16} = 65536\\f$", "2^16=65536")

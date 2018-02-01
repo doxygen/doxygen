@@ -211,7 +211,11 @@ void XmlDocVisitor::visit(DocVerbatim *s)
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
-      m_t << "<programlisting>"; 
+      m_t << "<programlisting";
+      if (!s->language().isEmpty())
+          m_t << " filename=\"" << lang << "\">";
+      else
+          m_t << ">";
       Doxygen::parserManager->getParser(lang)
                             ->parseCode(m_ci,s->context(),s->text(),langExt,
                                         s->isExample(),s->exampleFile());
@@ -264,7 +268,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::IncWithLines:
       { 
-         m_t << "<programlisting>";
+         m_t << "<programlisting filename=\"" << inc->file() << "\">";
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          Doxygen::parserManager->getParser(inc->extension())
@@ -284,7 +288,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
       }
       break;    
     case DocInclude::Include: 
-      m_t << "<programlisting>";
+      m_t << "<programlisting filename=\"" << inc->file() << "\">";
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
                                         inc->text(),
@@ -318,7 +322,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
       m_t << "</verbatim>"; 
       break;
     case DocInclude::Snippet:
-      m_t << "<programlisting>";
+      m_t << "<programlisting filename=\"" << inc->file() << "\">";
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,
                                         inc->context(),
@@ -331,7 +335,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::SnipWithLines:
       {
-         m_t << "<programlisting>";
+         m_t << "<programlisting filename=\"" << inc->file() << "\">";
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          Doxygen::parserManager->getParser(inc->extension())
@@ -367,7 +371,7 @@ void XmlDocVisitor::visit(DocIncOperator *op)
   {
     if (!m_hide)
     {
-      m_t << "<programlisting>";
+      m_t << "<programlisting filename=\"" << op->includeFileName() << "\">";
     }
     pushEnabled();
     m_hide = TRUE;
@@ -766,17 +770,22 @@ void XmlDocVisitor::visitPre(DocImage *img)
   visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height());
 
   // copy the image to the output dir
-  QFile inImage(img->name());
-  QFile outImage(Config_getString(XML_OUTPUT)+"/"+baseName.data());
-  if (inImage.open(IO_ReadOnly))
+  FileDef *fd;
+  bool ambig;
+  if ((fd=findFileDef(Doxygen::imageNameDict,img->name(),ambig)))
   {
-    if (outImage.open(IO_WriteOnly))
+    QFile inImage(fd->absFilePath());
+    QFile outImage(Config_getString(XML_OUTPUT)+"/"+baseName.data());
+    if (inImage.open(IO_ReadOnly))
     {
-      char *buffer = new char[inImage.size()];
-      inImage.readBlock(buffer,inImage.size());
-      outImage.writeBlock(buffer,inImage.size());
-      outImage.flush();
-      delete[] buffer;
+      if (outImage.open(IO_WriteOnly))
+      {
+        char *buffer = new char[inImage.size()];
+        inImage.readBlock(buffer,inImage.size());
+        outImage.writeBlock(buffer,inImage.size());
+        outImage.flush();
+        delete[] buffer;
+      }
     }
   }
 }

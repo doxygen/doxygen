@@ -261,7 +261,7 @@ class Definition : public DefinitionIntf
 
     QList<ListItemInfo> *xrefListItems() const;
 
-    virtual Definition *findInnerCompound(const char *name);
+    virtual Definition *findInnerCompound(const char *name) const ;
     virtual Definition *getOuterScope() const;
 
     MemberSDict *getReferencesMembers() const;

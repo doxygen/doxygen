@@ -158,7 +158,7 @@ class ClassDefImpl
     /* user defined member groups */
     MemberGroupSDict *memberGroupSDict;
 
-    /*! Is this an abstact class? */
+    /*! Is this an abstract class? */
     bool isAbstract;
 
     /*! Is the class part of an unnamed namespace? */
@@ -1935,7 +1935,21 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       if (rootNode && !rootNode->isEmpty())
       {
         ol.startMemberDescription(anchor());
+
+        ol.pushGeneratorState();
+        ol.disableAll();
+        ol.enable(OutputGenerator::RTF);
+        ol.writeString("{");
+        ol.popGeneratorState();
+
         ol.writeDoc(rootNode,this,0);
+
+        ol.pushGeneratorState();
+        ol.disableAll();
+        ol.enable(OutputGenerator::RTF);
+        ol.writeString("\\par}");
+        ol.popGeneratorState();
+
         if (isLinkableInProject())
         {
           writeMoreLink(ol,anchor());
@@ -3642,7 +3656,7 @@ void ClassDef::addInnerCompound(Definition *d)
   }
 }
 
-Definition *ClassDef::findInnerCompound(const char *name)
+Definition *ClassDef::findInnerCompound(const char *name) const
 {
   Definition *result=0;
   if (name==0) return 0;
@@ -4380,7 +4394,7 @@ bool ClassDef::isLocal() const
   return m_impl->isLocal;
 }
 
-ClassSDict *ClassDef::getClassSDict()
+ClassSDict *ClassDef::getClassSDict() const
 {
   return m_impl->innerClasses;
 }

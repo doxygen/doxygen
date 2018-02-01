@@ -2112,9 +2112,8 @@ static void findUsingDeclImports(EntryNav *rootNav)
       (rootNav->parent()->section()&Entry::COMPOUND_MASK) // in a class/struct member
      )
   {
-    //printf("Found using declaration %s at line %d of %s inside section %x\n",
-    //    root->name.data(),root->startLine,root->fileName.data(),
-    //    root->parent->section);
+    //printf("Found using declaration %s inside section %x\n",
+    //    rootNav->name().data(), rootNav->parent()->section());
     QCString fullName=removeRedundantWhiteSpace(rootNav->parent()->name());
     fullName=stripAnonymousNamespaceScope(fullName);
     fullName=stripTemplateSpecifiersFromScope(fullName);
@@ -2130,7 +2129,7 @@ static void findUsingDeclImports(EntryNav *rootNav)
         ClassDef *bcd = getResolvedClass(cd,0,scope); // todo: file in fileScope parameter
         if (bcd)
         {
-          //printf("found class %s\n",bcd->name().data());
+          //printf("found class %s memName=%s\n",bcd->name().data(),memName.data());
           MemberNameInfoSDict *mndict=bcd->memberNameInfoSDict();
           if (mndict)
           {
@@ -5595,6 +5594,7 @@ static bool findGlobalMember(EntryNav *rootNav,
     if (root->type!="friend class" &&
         root->type!="friend struct" &&
         root->type!="friend union" &&
+        root->type!="friend" &&
         (!Config_getBool(TYPEDEF_HIDES_STRUCT) ||
          root->type.find("typedef ")==-1)
        )
@@ -8404,7 +8404,7 @@ static void flushUnresolvedRelations()
   // This is needed before resolving the inheritance relations, since
   // it would otherwise not find the inheritance relation
   // for C in the example below, as B::I was already found to be unresolvable
-  // (which is correct if you igore the inheritance relation between A and B).
+  // (which is correct if you ignore the inheritance relation between A and B).
   //
   // class A { class I {} };
   // class B : public A {};
@@ -9826,6 +9826,16 @@ static void escapeAliases()
     }
     newValue+=value.mid(p,value.length()-p);
     *s=newValue;
+    p = 0;
+    newValue = "";
+    while ((in=value.find("^^",p))!=-1)
+    {
+      newValue+=value.mid(p,in-p);
+      newValue+="\n";
+      p=in+2;
+    }
+    newValue+=value.mid(p,value.length()-p);
+    *s=newValue;
     //printf("Alias %s has value %s\n",adi.currentKey().data(),s->data());
   }
 }
@@ -11181,7 +11191,6 @@ void parseInput()
   g_s.end();
 
   g_s.begin("Searching for members imported via using declarations...\n");
-  findUsingDeclImports(rootNav);
   // this should be after buildTypedefList in order to properly import
   // used typedefs
   findUsingDeclarations(rootNav);
@@ -11249,6 +11258,7 @@ void parseInput()
   g_s.begin("Searching for member function documentation...\n");
   findObjCMethodDefinitions(rootNav);
   findMemberDocumentation(rootNav); // may introduce new members !
+  findUsingDeclImports(rootNav); // may introduce new members !
 
   transferRelatedFunctionDocumentation();
   transferFunctionDocumentation();
