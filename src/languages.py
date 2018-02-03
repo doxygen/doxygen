@@ -1,5 +1,5 @@
 #
-# This file is an aid to generated the Languages rules file.
+# This file is an aid to generate the Languages rules file.
 # usage:
 #   python languages.py > ..\winbuild\Languages.rules
 #
