@@ -1559,7 +1559,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  If the \c REFERENCED_BY_RELATION tag is set to \c YES
- then for each documented function all documented
+ then for each documented entity all documented
  functions referencing it will be listed. 
 ]]>
       </docs>
