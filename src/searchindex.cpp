@@ -1180,6 +1180,7 @@ void writeJavascriptSearchIndex()
           SearchIndexList *sl;
           for (it.toFirst();(sl=it.current());++it) // for each letter
           {
+            if ( sl->letter() == '"' ) t << QString( QChar( '\\' ) ).utf8();
             t << QString( QChar( sl->letter() ) ).utf8();
           }
           t << "\"";
