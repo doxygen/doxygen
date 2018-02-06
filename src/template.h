@@ -368,7 +368,7 @@ class TemplateListIntf
     /** Increase object's reference count */
     virtual int addRef() = 0;
 
-    /** Decreases object's referenc count, destroy object if 0 */
+    /** Decreases object's reference count, destroy object if 0 */
     virtual int release() = 0;
 };
 
@@ -417,7 +417,7 @@ class TemplateStructIntf
     /** Increase object's reference count */
     virtual int addRef() = 0;
 
-    /** Decreases object's referenc count, destroy object if 0 */
+    /** Decreases object's reference count, destroy object if 0 */
     virtual int release() = 0;
 };
 

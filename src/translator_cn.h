@@ -100,7 +100,7 @@ class TranslatorChinese : public Translator
     virtual QCString trMore()
     { return "更多..."; }
 
-    /*! put in the class documention */
+    /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
     { return "所有成员列表"; }
 
