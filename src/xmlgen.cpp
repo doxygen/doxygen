@@ -1052,7 +1052,7 @@ static void generateXMLSection(Definition *d,FTextStream &ti,FTextStream &t,
   {
     // namespace members are also inserted in the file scope, but 
     // to prevent this duplication in the XML output, we filter those here.
-    if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0)
+    if ((Config_getBool(XML_NAMESPACE_MEMBERS_IN_FILE_SCOPE) || d->definitionType()!=Definition::TypeFile) || md->getNamespaceDef()==0)
     {
       count++;
     }
@@ -1074,7 +1074,7 @@ static void generateXMLSection(Definition *d,FTextStream &ti,FTextStream &t,
   {
     // namespace members are also inserted in the file scope, but 
     // to prevent this duplication in the XML output, we filter those here.
-    if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0)
+    if ((Config_getBool(XML_NAMESPACE_MEMBERS_IN_FILE_SCOPE) || d->definitionType()!=Definition::TypeFile) || md->getNamespaceDef()==0)
     {
       generateXMLForMember(md,ti,t,d);
     }

@@ -2881,6 +2881,15 @@ or
 ]]>
       </docs>
     </option>
+    <option type='bool' id='XML_NAMESPACE_MEMBERS_IN_FILE_SCOPE' defval='0' depends='GENERATE_XML'>
+      <docs>
+<![CDATA[
+ If the \c XML_NAMESPACE_MEMBERS_IN_FILE_SCOPE tag is set to \c YES, doxygen
+ will include namespace members in file scope as well, matching the HTML
+ output.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Docbook' docs='Configuration options related to the DOCBOOK output'>
     <option type='bool' id='GENERATE_DOCBOOK' defval='0'>
