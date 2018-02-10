@@ -2061,7 +2061,7 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
 }
 
 // start searching for the end of the line start at offset \a i
-// keeping track of possible blocks that need to to skipped.
+// keeping track of possible blocks that need to be skipped.
 static void findEndOfLine(GrowBuf &out,const char *data,int size,
                           int &pi,int&i,int &end)
 {
