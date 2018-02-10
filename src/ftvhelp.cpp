@@ -302,6 +302,10 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
       else
         t << "\" target=\"_self\">";
     }
+    else
+    {
+      t << ">";
+    }
     t << convertToHtml(n->name);
     t << "</a>";
     if (!n->ref.isEmpty())
