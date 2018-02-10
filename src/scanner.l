@@ -6618,6 +6618,22 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN(SkipString);
 					  }
   					}
+<*>\?                                   {
+  					  if (insideCS) 
+					  {
+					    if (current->type.isEmpty())
+					    {
+					      if (current->name.isEmpty())
+					        current->name="?";
+					      else
+					        current->name+="?";
+					    }
+					    else
+					    {
+					      current->type+="?";
+					    }
+					  }
+  					}
 <*>.
 <SkipComment>"//"|"/*"
 <*>"/*"					{ lastCContext = YY_START ;
