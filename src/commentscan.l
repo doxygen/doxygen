@@ -1517,14 +1517,16 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  if (*yytext=='\n') yyLineNr++;
 					  BEGIN( Comment );
   					}
+<GroupDocArg1>.				{ // ignore other stuff
+  					}
 <GroupDocArg2>"\\"{B}*"\n"		{ // line continuation
   					  yyLineNr++; 
 					  addOutput('\n');
                                         }
-<GroupDocArg2>[^\n\\\*]+		{ // title (stored in type)
+<GroupDocArg2>[^\n\*]+			{ // title (stored in type)
 					  current->type += yytext;
 					  current->type = current->type.stripWhiteSpace();
-  					}
+                                        }
 <GroupDocArg2>{DOCNL}			{
                                           if ( current->groupDocType==Entry::GROUPDOC_NORMAL &&
                                                current->type.isEmpty() 
