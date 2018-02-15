@@ -602,7 +602,7 @@ abstract                                {
                                           current->spec |= Entry::AbstractClass;
                                         }
 extends{ARGS}                           {
-                                          QCString basename = extractFromParens(yytext);
+                                          QCString basename = extractFromParens(yytext).lower();
                                           current->extends->append(new BaseInfo(basename, Public, Normal));
                                         }
 public                                  {
@@ -667,7 +667,8 @@ private                                 {
                                           addCurrentEntry(1);
                                         }
 {BS}"=>"[^(\n|\!)]*                     { /* Specific bindings come after the ID. */
-                                          last_entry->args = yytext;
+                                          QCString args = yytext;
+                                          last_entry->args = args.lower();
                                         }
 "\n"                                    {
                                           currentModifiers = SymbolModifiers();
