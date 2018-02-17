@@ -164,6 +164,7 @@ static Entry*		global_root  = 0 ;
 static Entry*		file_root    = 0 ;
 static Entry*		current      = 0 ;
 static Entry*		last_entry   = 0 ;
+static Entry*		last_enum    = 0 ;
 static ScanVar          v_type       = V_IGNORE; // type of parsed variable
 static QList<Entry>     moduleProcedures; // list of all interfaces which contain unresolved 
                                           // module procedures
@@ -198,6 +199,7 @@ static SymbolModifiers currentModifiers;
 //! Holds program scope->symbol name->symbol modifiers.
 static QMap<Entry*,QMap<QCString,SymbolModifiers> > modifiers;
 
+static int              anonCount    = 0 ;        
 //-----------------------------------------------------------------------------
 
 static int yyread(char *buf,int max_size);
@@ -226,6 +228,7 @@ static QCString extractFromParens(const QCString name);
 static CommentInPrepass* locatePrepassComment(int from, int to);
 static void updateVariablePrepassComment(int from, int to);
 static void newLine();
+static void initEntry();
 
 //-----------------------------------------------------------------------------
 #undef	YY_INPUT
@@ -260,7 +263,7 @@ NUM_TYPE  (complex|integer|logical|real)
 LOG_OPER  (\.and\.|\.eq\.|\.eqv\.|\.ge\.|\.gt\.|\.le\.|\.lt\.|\.ne\.|\.neqv\.|\.or\.|\.not\.)
 KIND      {ARGS}
 CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
-TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
+TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|ENUMERATOR|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE|CONTIGUOUS|VOLATILE|VALUE)
@@ -297,6 +300,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 %x      Variable
 %x      Initialization
 %x      ArrayInitializer
+%x      Enum
 %x      Typedef
 %x      TypedefBody
 %x      TypedefBodyContains
@@ -711,8 +715,17 @@ private                                 {
 {ID}                                    {
                                         }
 }
-<Start,ModuleBody,TypedefBody,SubprogBody>{
+<Start,ModuleBody,TypedefBody,SubprogBody,Enum>{
 ^{BS}{TYPE_SPEC}/{SEPARATE}             {
+                                          last_enum = 0;
+                                          if (YY_START == Enum)
+                                          {
+					    argType = "@"; // enum marker
+                                          }
+                                          else
+                                          {
+					    argType = QCString(yytext).simplifyWhiteSpace().lower();
+                                          }
 				          current->bodyLine = yyLineNr + 1;
 				          current->endBodyLine = yyLineNr + lineCountPrepass;
                                           /* variable declaration starts */
@@ -721,7 +734,6 @@ private                                 {
                                             addModule(NULL); 
                                             yy_push_state(ModuleBody); //anon program
                                           }
-					  argType = QCString(yytext).simplifyWhiteSpace().lower();
 					  yy_push_state(AttributeList);
                                         }
   /*  Dimitri: macro expansion should already be done during preprocessing not here!
@@ -817,17 +829,30 @@ private                                 {
 					  modifiers[current_root][name.lower()] |= currentModifiers;
 					  argName= name;
 
-					  v_type= V_IGNORE;
-  					  if (!argType.isEmpty() && current_root->section!=Entry::FUNCTION_SEC) 
-					  { // new variable entry
-					    v_type = V_VARIABLE;
+                                          v_type= V_IGNORE;
+                                          if (!argType.isEmpty() && current_root->section!=Entry::FUNCTION_SEC) 
+                                          { // new variable entry
+                                            v_type = V_VARIABLE;
                                             current->section = Entry::VARIABLE_SEC;
- 					    current->name = argName;
-					    current->type = argType;
-					    current->fileName = yyFileName;
-					    current->bodyLine  = yyLineNr; // used for source reference
+                                            current->name = argName;
+                                            current->type = argType;
+                                            current->fileName = yyFileName;
+                                            current->bodyLine  = yyLineNr; // used for source reference
                                             current->startLine  = yyLineNr;
-                                            addCurrentEntry(1);
+                                            if (argType == "@")
+                                            {
+                                              current_root->addSubEntry(current);
+                                              current = new Entry(*current);
+                                              // add to the scope surrounding the enum (copy!)
+                                              current_root->parent()->addSubEntry(current);
+                                              last_enum = current;
+                                              current = new Entry ;
+                                              initEntry();
+                                            }
+                                            else
+                                            {
+                                              addCurrentEntry(1);
+                                            }
                                           } 
 					  else if (!argType.isEmpty())
 					  { // declaration of parameter list: add type for corr. parameter 
@@ -963,19 +988,72 @@ private                                 {
 					  {
 					    updateVariablePrepassComment(yyColNr-(int)yyleng, yyColNr);
 					    yy_pop_state(); // end initialization
-                                            if (v_type == V_VARIABLE) last_entry->initializer= initializer;
+                                            if (last_enum)
+                                            {
+                                              last_enum->initializer= initializer;
+                                            }
+                                            else
+                                            {
+                                              if (v_type == V_VARIABLE) last_entry->initializer= initializer;
+                                            }
 					  }
 					  else
 					    initializer+=", ";
 					}
 <Initialization>"\n"|"!"                { //|
                                           yy_pop_state(); // end initialization
-                                          if (v_type == V_VARIABLE) last_entry->initializer= initializer;
+                                          if (last_enum)
+                                          {
+                                            last_enum->initializer= initializer;
+                                          }
+                                          else
+                                          {
+                                            if (v_type == V_VARIABLE) last_entry->initializer= initializer;
+                                          }
 					  yyColNr -= 1;
  					  unput(*yytext);
                                         }
 <Initialization>.                       { initializer+=yytext; }
  
+<*>{BS}"enum"{BS}","{BS}"bind"{BS}"("{BS}"c"{BS}")"{BS} {
+                                          if(YY_START == Start)
+                                          {
+                                            addModule(NULL); 
+                                            yy_push_state(ModuleBody); //anon program
+                                          }
+
+                                          yy_push_state(Enum);
+                                          current->protection = defaultProtection;
+                                          typeProtection = defaultProtection;
+                                          typeMode = true;
+
+                                          current->spec |= Entry::Struct;
+					  current->name.resize(0);
+                                          current->args.resize(0);
+					  current->name.sprintf("@%d",anonCount++);
+
+  					  current->section = Entry::ENUM_SEC;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+                                          if ((current_root) && 
+                                              (current_root->section == Entry::CLASS_SEC
+                                               || current_root->section == Entry::NAMESPACE_SEC))
+                                          {
+                                            current->name = current_root->name + "::" + current->name;
+                                          }
+
+                                          addCurrentEntry(1);
+                                          startScope(last_entry); 
+					  BEGIN( Enum ) ;
+                                        }
+<Enum>"end"{BS}"enum"                   {
+                                          last_entry->parent()->endBodyLine = yyLineNr;
+                                          if (!endScope(current_root))
+                                            yyterminate();
+                                          typeMode = false;
+                                          yy_pop_state();
+                                        }
  /*------ fortran subroutine/function handling ------------------------------------------------------------*/
  /*       Start is initial condition                                                                       */
  
@@ -1117,6 +1195,7 @@ private                                 {
 					  {
 					    Entry *tmp_entry = current; 
 					    current = last_entry; // temporarily switch to the previous entry
+                                            if (last_enum) current = last_enum;
   					    handleCommentBlock(docBlock,TRUE);
  					    current=tmp_entry;
                                           }
@@ -1132,7 +1211,7 @@ private                                 {
 					  docBlock.resize(0);
                                         }
 
-<Start,SubprogBody,ModuleBody,TypedefBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains,TypedefBodyContains>"!>"  {
+<Start,SubprogBody,ModuleBody,TypedefBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains,TypedefBodyContains,Enum>"!>"  {
                                           yy_push_state(YY_START);
 					  current->docLine  = yyLineNr;
  					  docBlockJavaStyle = FALSE;
