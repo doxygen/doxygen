@@ -1860,10 +1860,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  addOutput(*yytext);
   					}
 <FormatBlock><<EOF>>			{
-                                          QCString endTag = "@end"+blockName;
+                                          QCString endTag = "end"+blockName;
                                           if (blockName=="startuml") endTag="enduml";
                                           warn(yyFileName,yyLineNr,
-	                                    "reached end of comment while inside a @%s block; check for missing @%s tag!",
+	                                    "reached end of comment while inside a \\%s block; check for missing \\%s tag!",
 	                                    blockName.data(),endTag.data()
 	                                  );				
 					  yyterminate();
@@ -1944,7 +1944,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  if (guards.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-						"found @endif without matching start command");
+						"found \\endif without matching start command");
 					  }
 					  else
 					  {
@@ -1962,7 +1962,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  if (guards.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-						"found @else without matching start command");
+						"found \\else without matching start command");
 					  }
 					  else
 					  {
@@ -1979,7 +1979,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  if (guards.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-						"found @elseif without matching start command");
+						"found \\elseif without matching start command");
 					  }
 					  else
 					  {
