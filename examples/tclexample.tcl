@@ -10,7 +10,7 @@ exec tclsh "$0" "$@"
 #\code
 namespace eval ns {
   ## Documented proc \c ns_proc .
-  # param[in] arg some argument
+  # \param[in] arg some argument
   proc ns_proc {arg} {}
   ## Documented var \c ns_var .
   # Some documentation.
@@ -22,13 +22,13 @@ namespace eval ns {
     ## Destroy object.
     destructor {exit}
     ## Documented itcl method \c itcl_method_x .
-    # param[in] arg Argument
+    # \param[in] arg Argument
     private method itcl_method_x {arg}
     ## Documented itcl method \c itcl_method_y .
-    # param[in] arg Argument
+    # \param[in] arg Argument
     protected method itcl_method_y {arg} {}
     ## Documented itcl method \c itcl_method_z .
-    # param[in] arg Argument
+    # \param[in] arg Argument
     public method itcl_method_z {arg} {}
     ## Documented common itcl var \c itcl_Var .
     common itcl_Var
@@ -49,13 +49,13 @@ namespace eval ns {
     # Defined inside class
     variable oo_var
     ## \private Documented oo method \c oo_method_x .
-    # param[in] arg Argument
+    # \param[in] arg Argument
     method oo_method_x {arg} {}
     ## \protected Documented oo method \c oo_method_y .
-    # param[in] arg Argument
+    # \param[in] arg Argument
     method oo_method_y {arg} {}
     ## \public Documented oo method \c oo_method_z .
-    # param[in] arg Argument
+    # \param[in] arg Argument
     method oo_method_z {arg} {}
   }
 }
@@ -72,7 +72,7 @@ oo::define ns::oo_class {
 }
 
 ## Documented global proc \c glob_proc .
-# param[in] arg Argument
+# \param[in] arg Argument
 proc glob_proc {arg} {puts $arg}
 
 variable glob_var;#< Documented global var \c glob_var\
