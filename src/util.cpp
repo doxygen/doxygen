@@ -1856,7 +1856,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '&':
         if (i>0 && isId(pc))
         {
-          *dst++=' ';
+          if (nc != '=')
+          // avoid splitting operator&=
+	  {
+            *dst++=' ';
+          }
         }
         *dst++=c;
         break;
