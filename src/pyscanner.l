@@ -1168,13 +1168,17 @@ STARTDOCSYMS      "##"
       				 current->program+=yytext;
 			 	 BEGIN(TripleComment);
                       	       }
-
     {TRISINGLEQUOTE}           { // start of a comment block
 			         initTriSingleQuoteBlock();
       				 current->program+=yytext;
 			         BEGIN(TripleComment);
                                }
-
+    {STARTDOCSYMS}[#]*         {  // start of a special comment
+                                 initSpecialBlock();
+                                 BEGIN(SpecialComment);
+                               }
+    {POUNDCOMMENT}             { // ignore comment with just one #
+                               }
     ^{BB} 		       {
       				 current->program+=yytext;
 			         //current->startLine = yyLineNr;
@@ -1187,7 +1191,6 @@ STARTDOCSYMS      "##"
                                }
 
     ""/({NONEMPTY}|{EXPCHAR})  {
-				 
 				 // Just pushback an empty class, and
 				 // resume parsing the body.
                                  newEntry();
