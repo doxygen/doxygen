@@ -114,7 +114,7 @@ This will create 3 files:
   referencing those extra files
   via \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET".
 
-You should edit these files and then reference them from the config file.
+You should edit these files and then reference them from the configuration file.
 - \ref cfg_html_header "HTML_HEADER" = \c header.html
 - \ref cfg_html_footer "HTML_FOOTER" = \c footer.html
 - \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" = \c my_customdoxygen.css
@@ -158,7 +158,7 @@ doxygen -l
 optionally the name of the layout file can be specified, if omitted
 \c DoxygenLayout.xml will be used.
 
-The next step is to mention the layout file in the config file
+The next step is to mention the layout file in the configuration file
 \verbatim
 LAYOUT_FILE = DoxygenLayout.xml
 \endverbatim

@@ -125,7 +125,7 @@ SEARCHENGINE     = YES
 \endverbatim
 
 To regenerate the Qt-1.44 documentation from the sources, you could use the
-following config file:
+following configuration file:
 \verbatim
 PROJECT_NAME         = Qt
 OUTPUT_DIRECTORY     = qt_docs
@@ -212,7 +212,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='string' id='DOXYFILE_ENCODING' format='string' defval='UTF-8'>
       <docs>
 <![CDATA[
- This tag specifies the encoding used for all characters in the config file that 
+ This tag specifies the encoding used for all characters in the configuration file that 
  follow. The default is UTF-8 which is also the encoding used for all text before
  the first occurrence of this tag. Doxygen uses \c libiconv (or the iconv built into
  \c libc) for the transcoding. See https://www.gnu.org/software/libiconv/ for the list of
@@ -1606,7 +1606,7 @@ to disable this feature.
 <br>
  To use it do the following:
  -# Install the latest version of \c global
- -# Enable \ref cfg_source_browser "SOURCE_BROWSER" and \c USE_HTAGS in the config file
+ -# Enable \ref cfg_source_browser "SOURCE_BROWSER" and \c USE_HTAGS in the configuration file
  -# Make sure the \ref cfg_input "INPUT" points to the root of the source tree
  -# Run \c doxygen as normal
 <br>
@@ -2772,7 +2772,7 @@ or
       <docs>
 <![CDATA[
  Load stylesheet definitions from file. Syntax is similar to doxygen's
- config file, i.e. a series of assignments. You only have to provide
+ configuration file, i.e. a series of assignments. You only have to provide
  replacements, missing definitions are set to their default value.
 <br>
  See also section \ref doxygen_usage for information on how to generate
@@ -2785,7 +2785,7 @@ or
       <docs>
 <![CDATA[
  Set optional variables used in the generation of an RTF document.
- Syntax is similar to doxygen's config file. 
+ Syntax is similar to doxygen's configuration file. 
  A template extensions file can be generated using 
  <code>doxygen -e rtf extensionFile</code>.
 ]]>

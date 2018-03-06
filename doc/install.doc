@@ -203,13 +203,13 @@ of the GraphViz package to render nicer diagrams, see the
 \ref cfg_have_dot "HAVE_DOT" option in the configuration file.
 
 If you want to produce compressed HTML files (see \ref 
-cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the config file, then 
+cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the configuration file, then 
 you need the Microsoft HTML help workshop. 
 You can download it from 
 <a href="http://www.microsoft.com/en-us/download/details.aspx?id=21138">Microsoft</a>.
 
 If you want to produce Qt Compressed Help files (see \ref 
-cfg_qhg_location "QHG_LOCATION") in the config file, then 
+cfg_qhg_location "QHG_LOCATION") in the configuration file, then 
 you need qhelpgenerator which is part of Qt. 
 You can download Qt from <a href="http://qt-project.org/downloads">Qt Software Downloads</a>.
 
