@@ -13,6 +13,7 @@
 \RequirePackage{tabu}
 \RequirePackage{tabularx}
 \RequirePackage{multirow}
+\RequirePackage{environ}
 
 %---------- Internal commands used in this style file ----------------
 
@@ -376,14 +377,18 @@
 }
 
 % Used for member lists
-\newenvironment{DoxyCompactItemize}{%
-  \begin{itemize}%
-    \setlength{\itemsep}{-3pt}%
-    \setlength{\parsep}{0pt}%
-    \setlength{\topsep}{0pt}%
-    \setlength{\partopsep}{0pt}%
-}{%
-  \end{itemize}%
+\NewEnviron{DoxyCompactItemize}{
+    \ifx\BODY\empty%
+      % Do nothing
+    \else%
+      \begin{itemize}%
+            \setlength{\itemsep}{-3pt}%
+            \setlength{\parsep}{0pt}%
+            \setlength{\topsep}{0pt}%
+            \setlength{\partopsep}{0pt}%
+            {\BODY}%
+        \end{itemize}%
+    \fi%
 }
 
 % Used for member descriptions
