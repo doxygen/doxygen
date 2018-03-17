@@ -384,7 +384,7 @@ public:
 		* - As return value for basicDirection(), it means that the first strong character
 		*   of the source string has a left-to-right direction.
 		*/
-		DirLTR = 0b01,
+		DirLTR = 0x1,
 		/// Right-to-left text.
 		/*!
 		* - As return value for direction(), it means that the source string
@@ -392,13 +392,13 @@ public:
 		* - As return value for basicDirection(), it means that the first strong character
 		*   of the source string has a right-to-left direction.
 		*/
-		DirRTL = 0b10,
+		DirRTL = 0x2,
 		/// Mixed-directional text
 		/*!
 		* As return value for direction(), it means that the source string
 		* contains both left-to-right and right-to-left characters.
 		*/
-		DirMixed = 0b11
+		DirMixed = 0x3
 	};
 
     //QT_STATIC_CONST QString null;

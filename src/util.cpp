@@ -1856,7 +1856,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '&':
         if (i>0 && isId(pc))
         {
-          *dst++=' ';
+          if (nc != '=')
+          // avoid splitting operator&=
+	  {
+            *dst++=' ';
+          }
         }
         *dst++=c;
         break;
@@ -4191,7 +4195,7 @@ bool getDefs(const QCString &scName,
             //}
           }
         }
-        //printf("  >Succes=%d\n",mdist<maxInheritanceDepth);
+        //printf("  >Success=%d\n",mdist<maxInheritanceDepth);
         if (mdist<maxInheritanceDepth) 
         {
           if (!md->isLinkable() || md->isStrongEnumValue()) 

@@ -285,7 +285,7 @@
 <li>Fix STRIP_FROM_PATH when running from drive root [<a href="http://github.com/doxygen/doxygen/commit/fd808ae3c1e37a8d476d250cf6b4325624a9eccb">view</a>]
 <li>Fix Windows build instructions. [<a href="http://github.com/doxygen/doxygen/commit/eec8d0a31161746041fc94ccbba5a54aecd8cf93">view</a>]
 <li>Fix documentation typos [<a href="http://github.com/doxygen/doxygen/commit/770adb37b2072bbea5412f9cc2058d98d1de60e4">view</a>]
-<li>Fix for HTML output when using server side search and the the new menu bar [<a href="http://github.com/doxygen/doxygen/commit/0faf45600c6c640bfaf11b017d43a4b9de193ebf">view</a>]
+<li>Fix for HTML output when using server side search and the new menu bar [<a href="http://github.com/doxygen/doxygen/commit/0faf45600c6c640bfaf11b017d43a4b9de193ebf">view</a>]
 <li>Fix for changed references due to different removeRedudantWhiteSpace() implementation [<a href="http://github.com/doxygen/doxygen/commit/f26cc41d0d3d436c809c293a56c66c1f5f953745">view</a>]
 <li>Fix for empty file name [<a href="http://github.com/doxygen/doxygen/commit/0fead5249b8ef2c3c5cbbbd712855bae877aa27b">view</a>]
 <li>Fix for error in travis.yml [<a href="http://github.com/doxygen/doxygen/commit/81cf39f249c58db66368d60d596ac164d886ae90">view</a>]
