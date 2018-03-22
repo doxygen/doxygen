@@ -1,4 +1,4 @@
-<script language="PHP">
+<?php
 require_once "search_config.php";
 
 function end_form($value)
@@ -363,4 +363,4 @@ function main()
   report_results($sorted);
   end_page();
 }
-</script>
+?>
