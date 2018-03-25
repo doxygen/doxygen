@@ -47,7 +47,7 @@
   right=2.5cm
 }
 \tolerance=750
-\hfuzz=15pt
+\setlength{\hfuzz}{15pt}
 \hbadness=750
 \setlength{\emergencystretch}{15pt}
 \setlength{\parindent}{0cm}

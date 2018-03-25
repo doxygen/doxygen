@@ -60,7 +60,7 @@
   \ifthenelse{\xreflength>\labelwidth}{%
     \begin{minipage}{\textwidth}%
       \setlength{\parindent}{0pt}%
-      \hangindent=15pt\bfseries #1\vspace{1.2\itemsep}%
+      \setlength{\hangindent}{15pt}\bfseries #1\vspace{1.2\itemsep}%
     \end{minipage}%
   }{%
    \parbox[b]{\labelwidth}{\makebox[0pt][l]{\textbf{#1}}}%
@@ -270,7 +270,7 @@
 
 % Used by parameter lists
 \newenvironment{DoxyParams}[2][]{%
-    \tabulinesep=1mm%
+    \setlength{\tabulinesep}{1mm}%
     \par%
     \ifthenelse{\equal{#1}{}}%
       {\begin{longtabu} spread 0pt [l]{|X[-1,l]|X[-1,l]|}}% name + description
@@ -291,7 +291,7 @@
 
 % Used for fields of simple structs
 \newenvironment{DoxyFields}[1]{%
-    \tabulinesep=1mm%
+    \setlength{\tabulinesep}{1mm}%
     \par%
     \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|X[-1,l]|}%
     \multicolumn{3}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
@@ -307,7 +307,7 @@
 
 % Used for fields simple class style enums
 \newenvironment{DoxyEnumFields}[1]{%
-    \tabulinesep=1mm%
+    \setlength{\tabulinesep}{1mm}%
     \par%
     \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
@@ -329,7 +329,7 @@
 
 % Used by return value lists
 \newenvironment{DoxyRetVals}[1]{%
-    \tabulinesep=1mm%
+    \setlength{\tabulinesep}{1mm}%
     \par%
     \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
@@ -345,7 +345,7 @@
 
 % Used by exception lists
 \newenvironment{DoxyExceptions}[1]{%
-    \tabulinesep=1mm%
+    \setlength{\tabulinesep}{1mm}%
     \par%
     \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
@@ -361,7 +361,7 @@
 
 % Used by template parameter lists
 \newenvironment{DoxyTemplParams}[1]{%
-    \tabulinesep=1mm%
+    \setlength{\tabulinesep}{1mm}%
     \par%
     \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
@@ -438,7 +438,7 @@
 % Used by tables
 \newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}%
 \newenvironment{TabularC}[1]%
-{\tabulinesep=1mm
+{\setlength{\tabulinesep}{1mm}
 \begin{longtabu} spread 0pt [c]{*#1{|X[-1]}|}}%
 {\end{longtabu}\par}%
 
