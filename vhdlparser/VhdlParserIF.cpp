@@ -14,6 +14,8 @@ void  VhdlParserIF::parseVhdlfile(const char* inputBuffer,bool inLine)
   JAVACC_STRING_TYPE s =inputBuffer;
   CharStream *stream = new CharStream(s.c_str(), (int)s.size(), 1, 1);
   VhdlParserTokenManager *tokenManager = new VhdlParserTokenManager(stream);
+  VhdlTokenManagerErrorHandler *myTokErr=new VhdlTokenManagerErrorHandler();
+  tokenManager->setErrorHandler(myTokErr);
   myParser=new VhdlParser(tokenManager);
   VhdlErrorHandler *myErr=new VhdlErrorHandler();
   myParser->setErrorHandler(myErr);

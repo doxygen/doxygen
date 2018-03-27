@@ -83,6 +83,7 @@ static struct
 static bool doxComment=FALSE; // doxygen comment ?
 static QCString strComment;
 static int iCodeLen;
+static const char *vhdlFileName = 0;
 
 bool  checkMultiComment(QCString& qcs,int line);
 QList<Entry>* getEntryAtLine(const Entry* ce,int line);
@@ -200,6 +201,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   VhdlParser::current=new Entry();
   VhdlParser::initEntry(VhdlParser::current);
   groupEnterFile(fileName,yyLineNr);
+  vhdlFileName = fileName;
   lineParse=new int[200]; // Dimitri: dangerous constant: should be bigger than largest token id in VhdlParserConstants.h
   VhdlParserIF::parseVhdlfile(fileBuf,inLine);
 
@@ -213,6 +215,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   yyFileName.resize(0);
   libUse.clear();
   VhdlDocGen::resetCodeVhdlParserState();
+  vhdlFileName = 0;
 }
 
 void VhdlParser::lineCount()
@@ -851,3 +854,7 @@ QList<Entry>* getEntryAtLine(const Entry* ce,int line)
   return &lineEntry;
 }
 
+const char *getVhdlFileName(void)
+{
+  return vhdlFileName;
+}
