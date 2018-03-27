@@ -240,10 +240,15 @@ $now = time;
 utime $now, $now, $file;
 \endverbatim
 Another way to get rules matching / debugging information
-from the \c flex code is setting LEX_FLAGS with \c make (`make LEX_FLAGS=-d`).
+from the \c flex code is setting \c LEX_FLAGS with \c make (`make LEX_FLAGS=-d`).
 
 Note that by running doxygen with `-d lex` you get information about which 
 `flex codefile` is used.
+
+<h3>Testing</h3>
+
+Doxygen has a small set of tests available to test, some, code integrity.
+The tests can be run by means of the command `make tests`. When only one or a few tests are required one can set the variable \c TEST_FLAGS when running the test e.g. `make TEST_FLAGS="--id 5" tests` or for multiple tests `make TEST_FLAGS="--id 5 --id 7" tests`.
 
 \htmlonly
 Return to the <a href="index.html">index</a>.
