@@ -94,7 +94,7 @@ static QCString      g_exampleFile;
 
 static QCString      g_classScope;
    
-static QCString      g_CurrScope;
+static bool          g_CurrARCH = FALSE;
    
 static FileDef *     g_sourceFileDef;
 static Definition *  g_currentDefinition;
@@ -109,7 +109,7 @@ static int           g_braceCount=0;
 static void writeFont(const char *s,const char* text);
 static void generateMemLink(CodeOutputInterface &ol,QCString &clName,QCString& memberName);
 static bool writeColoredWord(QCString& word );
-static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName, bool typeOnly=FALSE);
+static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName, bool typeOnly=FALSE, const char *curr_class=0);
 static void endFontClass();
 static void startFontClass(const char *s);
 //-------------------------------------------------------------------
@@ -291,7 +291,7 @@ static void writeWord(const char *word,const char* curr_class=0,bool classLink=F
 	    }
             else
             {
-              generateClassOrGlobalLink(*g_code,temp);
+              generateClassOrGlobalLink(*g_code,temp,FALSE,curr_class);
             }
           }
           else                                                                          
@@ -328,7 +328,7 @@ static void writeWord(const char *word,const char* curr_class=0,bool classLink=F
         }
         else
         {
-          generateClassOrGlobalLink(*g_code,temp);
+          generateClassOrGlobalLink(*g_code,temp,FALSE,curr_class);
         }
       }
       else                 
@@ -383,7 +383,7 @@ static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE,b
       if (comment)
         writeFont("keyword",sp);
       else
-      writeWord(sp,cl,classlink);
+        writeWord(sp,cl,classlink);
       done=TRUE;
     }
   }
@@ -510,7 +510,7 @@ static void generateMemLink(CodeOutputInterface &ol,QCString &clName,QCString& m
 }// generateMemLink
 
 
-static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName, bool /*typeOnly*/)
+static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName, bool /*typeOnly*/, const char *curr_class)
 {
   QCString className=clName;
 
@@ -521,6 +521,11 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
   //bool isLocal=FALSE;
   className.stripPrefix("_");
   cd = getClass(className.data()); 
+  if (!cd && curr_class)
+  {
+     if (QCString(curr_class).contains(QRegExp("::"+QCString(clName)+"$"))) cd = getClass(curr_class);
+  }
+
   while (cd)
   {
     //className.stripPrefix("_");
@@ -759,7 +764,7 @@ DIGITSS       [0-9]+|[0-9]+("#")*[0-9_a-fA-F\+\.\-]+("#")*
 ALLTYPESMAP   {B}*[_a-zA-Z0-9. ]+{BN}*
 ALLTYPESMAP1  {BN}*[_a-zA-Z0-9.() ]+{BN}*
 
-ARCHITECTURE  ^{B}*("architecture"){BN}+{FUNCNAME}{BN}+("of"){BN}+{FUNCNAME}
+ARCHITECTURE  ^{B}*("architecture"){BN}+{FUNCNAME}{BN}+("of"){BN}+{FUNCNAME}{BN}+("is")
 PROCESS       ({BN}*{FUNCNAME}{BN}*[:]+{BN}*("process"){BN}*[(]*)|[^a-zA-Z]("process "|"process("){BN}*[ (]*|[^a-zA-Z]("process"){BN}+
 
 END1          {B}*("end "){BN}+("if"|"case"|"loop"|"generate"|"for")
@@ -768,7 +773,7 @@ END3          {BN}*[^a-zA-Z]("end"){BN}+{FUNCNAME}{BN}*[;]
 END4          {B}*("end"){BN}+"function"{BN}+{FUNCNAME}{BN}*[;]
 ENDEFUNC      {END3}|{END4}|{END2}
 
-KEYWORD       ("new"|"event"|"break"|"case"|"end"|"loop"|"else"|"for"|"goto"|"if"|"return"|"generate"|"is"|"while"|"in")
+KEYWORD       ("of"|"new"|"event"|"break"|"case"|"end"|"loop"|"else"|"for"|"goto"|"if"|"return"|"generate"|"is"|"while"|"in")
 TYPEKW        ^{B}*("type"|"subtype"|"constant"|"attribute"|"signal"|"variable","alias","configuration")
 FUNC          ^{B}*("function"|"procedure"){BN}*{FUNCNAME}{BN}*("(")
 
@@ -807,6 +812,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 %x ClassVar
 %x ClassesName
 %x Map
+%x End
 %x Body
         
 %%
@@ -1058,14 +1064,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                          g_CurrClass.append(vhdlcodeYYtext);
                          g_CurrClass=g_CurrClass.stripWhiteSpace();
                                                   
-                         if (!writeColoredWord(g_CurrScope))
-			 {
-                           generateClassOrGlobalLink(*g_code,vhdlcodeYYtext);
-			 }
-                         else
-		         {
-                           codifyLines(vhdlcodeYYtext,g_CurrClass.data());
-		         }
+                         generateClassOrGlobalLink(*g_code,vhdlcodeYYtext);
                          BEGIN(Bases);
                        }
 
@@ -1284,6 +1283,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                            //temp+=("-");
                            //temp+=VhdlDocGen::getIndexWord(vhdlcodeYYtext,3);
 			   QCString temp = VhdlDocGen::getIndexWord(vhdlcodeYYtext,3);
+                           g_CurrARCH = TRUE;
 			   temp+="::";
 			   temp+=VhdlDocGen::getIndexWord(vhdlcodeYYtext,1);
                            g_CurrClass=temp;
@@ -1291,7 +1291,6 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                            codifyLines(vhdlcodeYYtext,temp.data(),TRUE);
                            //generateClassOrGlobalLink(*g_code,temp.data());
                            isPackageBody=FALSE;
-                           BEGIN(ClassName);
                          }
 
 
@@ -1371,6 +1370,41 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                          }
                                         
 
+<Bases>"end"{BN}+"architecture"{BN}+{FUNCNAME} {
+                           codifyLines(vhdlcodeYYtext,g_CurrClass.data(),TRUE);
+                           g_CurrARCH = FALSE;
+                         }
+<Bases>"end"{BN}+{FUNCNAME} {
+                           if (g_CurrARCH)
+                           {
+                             codifyLines(vhdlcodeYYtext,g_CurrClass.data(),TRUE);
+                             g_CurrARCH = FALSE;
+                           }
+                           else
+                              REJECT;
+                         }
+<Bases>"end"             {
+                           appStringLower(g_PrevString,vhdlcodeYYtext);
+                           QCString temp(vhdlcodeYYtext);
+                           temp=temp.stripWhiteSpace();
+
+                           writeColoredWord(temp);
+                           BEGIN(End);
+                         }
+<End>{ID}                {
+                           appStringLower(g_PrevString,vhdlcodeYYtext);
+                           QCString temp(vhdlcodeYYtext);
+                           temp=temp.stripWhiteSpace();
+
+                           if (!writeColoredWord(temp))
+                           {
+                             generateClassOrGlobalLink(*g_code,temp.data());
+                           }
+                         }
+<End>";"                 {
+			   codifyLines(vhdlcodeYYtext);
+			   BEGIN(Bases);
+                         }
 <Bases>{KEYWORD}         { // found keyword
                            QCString qcs(vhdlcodeYYtext);
                            if (!writeColoredWord(qcs))
