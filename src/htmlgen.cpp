@@ -375,7 +375,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
       mathJaxJs += "\n";
     }
     mathJaxJs += "</script>";
-    mathJaxJs += "<script type=\"text/javascript\" async src=\"" + path + "MathJax.js\"></script>\n";
+    mathJaxJs += "<script type=\"text/javascript\" async=\"async\" src=\"" + path + "MathJax.js\"></script>\n";
   }
 
   // first substitute generic keywords
