@@ -63,11 +63,12 @@ class Tester:
 		os.mkdir(self.test_out)
 		shutil.copy(self.args.inputdir+'/Doxyfile',self.test_out)
 		with open(self.test_out+'/Doxyfile','a') as f:
+			print('INPUT=%s/%s' % (self.args.inputdir,self.test), file=f)
+			print('STRIP_FROM_PATH=%s' % self.args.inputdir, file=f)
+			print('EXAMPLE_PATH=%s' % self.args.inputdir, file=f)
 			if 'config' in self.config:
 				for option in self.config['config']:
 					print(option, file=f)
-			print('INPUT=%s/%s' % (self.args.inputdir,self.test), file=f)
-			print('STRIP_FROM_PATH=%s' % self.args.inputdir, file=f)
 			if (self.args.xml):
 				print('GENERATE_XML=YES', file=f)
 				print('XML_OUTPUT=%s/out' % self.test_out, file=f)
@@ -81,7 +82,6 @@ class Tester:
 			if (self.args.pdf):
 				print('GENERATE_LATEX=YES', file=f)
 				print('LATEX_OUTPUT=%s/latex' % self.test_out, file=f)
-			print('EXAMPLE_PATH=%s' % self.args.inputdir, file=f)
 
 		if 'check' not in self.config or not self.config['check']:
 			print('Test doesn\'t specify any files to check')
