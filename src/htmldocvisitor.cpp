@@ -126,20 +126,28 @@ static bool mustBeOutsideParagraph(DocNode *n)
   return FALSE;
 }
 
-static QString htmlAttribsToString(const HtmlAttribList &attribs)
+static QString htmlAttribsToString(const HtmlAttribList &attribs, const bool img_tag = FALSE)
 {
   QString result;
   HtmlAttribListIterator li(attribs);
   HtmlAttrib *att;
+  bool alt_set = FALSE;
+
   for (li.toFirst();(att=li.current());++li)
   {
     if (!att->value.isEmpty())  // ignore attribute without values as they
-                                // are not XHTML compliant
+                                // are not XHTML compliant, with the exception
+				// of the alt attribute with the img tag
     {
       result+=" ";
       result+=att->name;
       result+="=\""+convertToXML(att->value)+"\"";
+      if (att->name == "alt") alt_set = TRUE;
     }
+  }
+  if (!alt_set && img_tag)
+  {
+      result+=" alt=\"\"";
   }
   return result;
 }
@@ -1521,7 +1529,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       else
       {
         m_t << "<img src=\"" << correctURL(url,img->relPath()) << "\""
-            << sizeAttribs << htmlAttribsToString(img->attribs())
+            << sizeAttribs << htmlAttribsToString(img->attribs(), TRUE)
             << "/>" << endl;
       }
     }
