@@ -18,12 +18,12 @@
 
 #include "layout.h"
 #include "message.h"
+#include "config.h"
 #include "language.h"
 #include "vhdldocgen.h"
 #include "util.h"
 #include "doxygen.h"
 #include "version.h"
-#include "config.h"
 
 #include <assert.h>
 #include <qxml.h>

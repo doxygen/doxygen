@@ -18,6 +18,7 @@
 #include "namespacedef.h"
 #include "outputlist.h"
 #include "util.h"
+#include "config.h"
 #include "language.h"
 #include "classdef.h"
 #include "classlist.h"
@@ -29,7 +30,6 @@
 #include "vhdldocgen.h"
 #include "layout.h"
 #include "membergroup.h"
-#include "config.h"
 
 //------------------------------------------------------------------
 

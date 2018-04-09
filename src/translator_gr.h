@@ -59,8 +59,8 @@ class TranslatorGreek : public Translator
 
     virtual QCString latexLanguageSupportCommand()
     {
-      //return "\\usepackage[greek,english]{babel}\n\\usepackage[iso-8859-7]{inputenc}\n";
-      return "\\usepackage[greek,english]{babel}\n";
+      return "\\usepackage[greek,english]{babel}\n"
+             "\\usepackage{alphabeta}\n";
     }
 
     // --- Language translation methods -------------------

@@ -41,6 +41,36 @@ class Translator
 
     virtual QCString idLanguage() = 0;
     virtual QCString latexLanguageSupportCommand() = 0;
+    /*!
+     * Sets the LaTeX font encoding to be used. The default is set to `T1`,
+     * in case another font encoding has to be used this can be specified with
+     * this routine. In case no font encoding is required the empty string 
+     * can be returned.
+     */
+    virtual QCString latexFontenc() { return "T1"; };
+    /*!
+     * Sets the commands to be insered directly after the `\\begin{document}`
+     * in the LaTeX document.
+     */
+    virtual QCString latexDocumentPre() { return ""; };
+    /*!
+     * Sets the commands to be insered directly before the `\\end{document}`
+     * in the LaTeX document.
+     */
+    virtual QCString latexDocumentPost() { return ""; };
+    /*!
+     * Set the name to be used as latex command.
+     */
+    virtual QCString latexCommandName()
+    {
+      QCString latex_command = Config_getString(LATEX_CMD_NAME);
+      if (latex_command.isEmpty()) latex_command = "latex";
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        if (latex_command == "latex") latex_command = "pdflatex";
+      }
+      return latex_command;
+    }
 
     // --- Language translation methods -------------------
 

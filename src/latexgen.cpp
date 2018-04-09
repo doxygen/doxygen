@@ -271,13 +271,15 @@ static void writeLatexMakefile()
     exit(1);
   }
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
-  QCString latex_command = Config_getString(LATEX_CMD_NAME);
+  QCString latex_command = theTranslator->latexCommandName();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   FTextStream t(&file);
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "all: refman.dvi" << endl
+    t << "LATEX_CMD=" << latex_command << endl
+      << endl
+      << "all: refman.dvi" << endl
       << endl
       << "ps: refman.ps" << endl
       << endl
@@ -294,7 +296,7 @@ static void writeLatexMakefile()
     t << "\tps2pdf refman.ps refman.pdf" << endl << endl;
     t << "refman.dvi: clean refman.tex doxygen.sty" << endl
       << "\techo \"Running latex...\"" << endl
-      << "\t" << latex_command << " refman.tex" << endl
+      << "\t$(LATEX_CMD) refman.tex" << endl
       << "\techo \"Running makeindex...\"" << endl
       << "\t" << mkidx_command << " refman.idx" << endl;
     if (generateBib)
@@ -302,19 +304,19 @@ static void writeLatexMakefile()
       t << "\techo \"Running bibtex...\"" << endl;
       t << "\tbibtex refman" << endl;
       t << "\techo \"Rerunning latex....\"" << endl;
-      t << "\t" << latex_command << " refman.tex" << endl;
+      t << "\t$(LATEX_CMD) refman.tex" << endl;
     }
     t << "\techo \"Rerunning latex....\"" << endl
-      << "\t" << latex_command << " refman.tex" << endl
+      << "\t$(LATEX_CMD) refman.tex" << endl
       << "\tlatex_count=8 ; \\" << endl
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl
       << "\t      echo \"Rerunning latex....\" ;\\" << endl
-      << "\t      " << latex_command << " refman.tex ;\\" << endl
+      << "\t      $(LATEX_CMD) refman.tex ; \\" << endl
       << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
       << "\t    done" << endl
       << "\t" << mkidx_command << " refman.idx" << endl
-      << "\t" << latex_command << " refman.tex" << endl << endl
+      << "\t$(LATEX_CMD) refman.tex" << endl << endl
       << "refman_2on1.ps: refman.ps" << endl
       << "\tpsnup -2 refman.ps >refman_2on1.ps" << endl
       << endl
@@ -323,26 +325,28 @@ static void writeLatexMakefile()
   }
   else // use pdflatex for higher quality output
   {
+    t << "LATEX_CMD=" << latex_command << endl
+      << endl;
     t << "all: refman.pdf" << endl << endl
       << "pdf: refman.pdf" << endl << endl;
     t << "refman.pdf: clean refman.tex" << endl;
-    t << "\tpdflatex refman" << endl;
+    t << "\t$(LATEX_CMD) refman" << endl;
     t << "\t" << mkidx_command << " refman.idx" << endl;
     if (generateBib)
     {
       t << "\tbibtex refman" << endl;
-      t << "\tpdflatex refman" << endl;
+      t << "\t$(LATEX_CMD) refman" << endl;
     }
-    t << "\tpdflatex refman" << endl
+    t << "\t$(LATEX_CMD) refman" << endl
       << "\tlatex_count=8 ; \\" << endl
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl
       << "\t      echo \"Rerunning latex....\" ;\\" << endl
-      << "\t      pdflatex refman ;\\" << endl
+      << "\t      $(LATEX_CMD) refman ;\\" << endl
       << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
       << "\t    done" << endl
       << "\t" << mkidx_command << " refman.idx" << endl
-      << "\tpdflatex refman" << endl << endl;
+      << "\t$(LATEX_CMD) refman" << endl << endl;
   }
 
   t << endl
@@ -356,7 +360,7 @@ static void writeMakeBat()
 #if defined(_MSC_VER)
   QCString dir=Config_getString(LATEX_OUTPUT);
   QCString fileName=dir+"/make.bat";
-  QCString latex_command = Config_getString(LATEX_CMD_NAME);
+  QCString latex_command = theTranslator->latexCommandName();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   QFile file(fileName);
   bool generateBib = !Doxygen::citeDict->isEmpty();
@@ -371,14 +375,15 @@ static void writeMakeBat()
   t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n\n";
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << latex_command << " refman.tex\n";
+    t << "set LATEX_CMD=" << latex_command << "\n";
+    t << "%LATEX_CMD% refman.tex\n";
     t << "echo ----\n";
     t << mkidx_command << " refman.idx\n";
     if (generateBib)
     {
       t << "bibtex refman\n";
       t << "echo ----\n";
-      t << latex_command << " refman.tex\n";
+      t << "\t%LATEX_CMD% refman.tex\n";
     }
     t << "setlocal enabledelayedexpansion\n";
     t << "set count=8\n";
@@ -390,28 +395,29 @@ static void writeMakeBat()
     t << "set /a count-=1\n";
     t << "if !count! EQU 0 goto :skip\n\n";
     t << "echo ----\n";
-    t << latex_command << " refman.tex\n";
+    t << "%LATEX_CMD% refman.tex\n";
     t << "goto :repeat\n";
     t << ":skip\n";
     t << "endlocal\n";
     t << mkidx_command << " refman.idx\n";
-    t << latex_command << " refman.tex\n";
+    t << "%LATEX_CMD% refman.tex\n";
     t << "dvips -o refman.ps refman.dvi\n";
     t << "gswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
          "-sOutputFile=refman.pdf -c save pop -f refman.ps\n";
   }
   else // use pdflatex
   {
-    t << "pdflatex refman\n";
+    t << "set LATEX_CMD=" << latex_command << "\n";
+    t << "%LATEX_CMD% refman\n";
     t << "echo ----\n";
     t << mkidx_command << " refman.idx\n";
     if (generateBib)
     {
       t << "bibtex refman" << endl;
-      t << "pdflatex refman" << endl;
+      t << "%LATEX_CMD% refman" << endl;
     }
     t << "echo ----\n";
-    t << "pdflatex refman\n\n";
+    t << "%LATEX_CMD% refman\n\n";
     t << "setlocal enabledelayedexpansion\n";
     t << "set count=8\n";
     t << ":repeat\n";
@@ -422,12 +428,12 @@ static void writeMakeBat()
     t << "set /a count-=1\n";
     t << "if !count! EQU 0 goto :skip\n\n";
     t << "echo ----\n";
-    t << "pdflatex refman\n";
+    t << "%LATEX_CMD% refman\n";
     t << "goto :repeat\n";
     t << ":skip\n";
     t << "endlocal\n";
     t << mkidx_command << " refman.idx\n";
-    t << "pdflatex refman\n";
+    t << "%LATEX_CMD% refman\n";
     t << "cd /D %Dir_Old%\n";
     t << "set Dir_Old=\n";
   }
@@ -504,6 +510,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{textcomp}\n"
        "\\usepackage[nointegrals]{wasysym}\n"
        "\\usepackage[table]{xcolor}\n"
+       "\\usepackage{ifpdf,ifxetex}\n"
        "\n";
 
   // Language support
@@ -516,9 +523,13 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   }
 
   // Define default fonts
-  t << "% Font selection\n"
-       "\\usepackage[T1]{fontenc}\n"
-       "\\usepackage[scaled=.90]{helvet}\n"
+  t << "% Font selection\n";
+  QCString fontenc = theTranslator->latexFontenc();
+  if (!fontenc.isEmpty())
+  {
+    t << "\\usepackage[" << fontenc << "]{fontenc}\n";
+  }
+  t << "\\usepackage[scaled=.90]{helvet}\n"
        "\\usepackage{courier}\n"
        "\\usepackage{amssymb}\n"
        "\\usepackage{sectsty}\n"
@@ -626,11 +637,14 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   if (pdfHyperlinks)
   {
     t << "% Hyperlinks (required, but should be loaded last)\n"
-         "\\usepackage{ifpdf}\n"
          "\\ifpdf\n"
          "  \\usepackage[pdftex,pagebackref=true]{hyperref}\n"
          "\\else\n"
-         "  \\usepackage[ps2pdf,pagebackref=true]{hyperref}\n"
+         "  \\ifxetex\n"
+         "    \\usepackage[pagebackref=true]{hyperref}\n"
+         "  \\else\n"
+         "    \\usepackage[ps2pdf,pagebackref=true]{hyperref}\n"
+         "  \\fi\n"
          "\\fi\n"
          "\\hypersetup{%\n"
          "  colorlinks=true,%\n"
@@ -656,8 +670,11 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   t << "%===== C O N T E N T S =====\n"
        "\n"
        "\\begin{document}\n";
-  if (theTranslator->idLanguage()=="greek")
-    t << "\\selectlanguage{greek}\n";
+  QCString documentPre = theTranslator->latexDocumentPre();
+  if (!documentPre.isEmpty())
+  {
+    t << documentPre;
+  }
   t << "\n";
 
   // Front matter
@@ -750,8 +767,13 @@ static void writeDefaultFooter(FTextStream &t)
        "\\clearemptydoublepage\n"
        "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trRTFGeneralIndex() << "}\n"
        "\\printindex\n"
-       "\n"
-       "\\end{document}\n";
+       "\n";
+  QCString documentPost = theTranslator->latexDocumentPost();
+  if (!documentPost.isEmpty())
+  {
+    t << documentPost;
+  }
+  t << "\\end{document}\n";
 }
 
 void LatexGenerator::writeHeaderFile(QFile &f)

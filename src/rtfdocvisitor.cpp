@@ -20,6 +20,7 @@
 
 #include "rtfdocvisitor.h"
 #include "docparser.h"
+#include "config.h"
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
@@ -32,7 +33,6 @@
 #include "msc.h"
 #include "dia.h"
 #include "filedef.h"
-#include "config.h"
 #include "htmlentity.h"
 #include "plantuml.h"
 

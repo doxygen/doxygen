@@ -5,12 +5,12 @@
 #include "doxygen.h"
 #include "util.h"
 #include "outputlist.h"
+#include "config.h"
 #include "language.h"
 #include "message.h"
 #include "dot.h"
 #include "layout.h"
 #include "ftextstream.h"
-#include "config.h"
 #include "docparser.h"
 
 //----------------------------------------------------------------------
