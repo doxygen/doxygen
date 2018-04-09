@@ -47,17 +47,17 @@ class Translator
      * this routine. In case no font encoding is required the empty string 
      * can be returned.
      */
-    virtual QCString latexFontenc() { return "T1"; };
+    virtual QCString latexFontenc() { return "T1"; }
     /*!
      * Sets the commands to be insered directly after the `\\begin{document}`
      * in the LaTeX document.
      */
-    virtual QCString latexDocumentPre() { return ""; };
+    virtual QCString latexDocumentPre() { return ""; }
     /*!
      * Sets the commands to be insered directly before the `\\end{document}`
      * in the LaTeX document.
      */
-    virtual QCString latexDocumentPost() { return ""; };
+    virtual QCString latexDocumentPost() { return ""; }
     /*!
      * Set the name to be used as latex command.
      */

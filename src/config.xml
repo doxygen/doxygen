@@ -2538,7 +2538,7 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
 <![CDATA[
  The \c LATEX_CMD_NAME tag can be used to specify the \f$\mbox{\LaTeX}\f$ command name to be invoked. 
  <br>Note that when  not enabling \ref cfg_use_pdflatex "USE_PDFLATEX" the default is \c latex when
- enabling \ref cfg_use_pdflatex "USE_PDFLATEX" the default is \cpdflatex and when in the later case
+ enabling \ref cfg_use_pdflatex "USE_PDFLATEX" the default is \c pdflatex and when in the later case
  \c latex is chosen this is overwritten by \c pdflatex. For specific output languages the default can
  have been set differently, this depends on the implementation of the output language.
 ]]>
