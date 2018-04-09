@@ -2,7 +2,7 @@
 // check: indexpage.xml
 
 /** \mainpage 
- *  Some text.
+ *  Some text with some special character here: .
  *  \include example_test.cpp
  *  More text.
  *  \includelineno example_test.cpp

@@ -453,6 +453,8 @@ void HtmlCodeGenerator::codify(const char *str)
                    m_t << Doxygen::spaces.left(spacesToNextTabStop);
                    m_col+=spacesToNextTabStop;
                    break;
+        case '\007': m_t << "^G"; m_col++;
+                   break;
         case '\n': m_t << "\n"; m_col=0;
                    break;
         case '\r': break;
@@ -508,6 +510,7 @@ void HtmlCodeGenerator::docify(const char *str)
                    else
                      m_t << "\\";
                    break;
+        case '\007':  m_t << "&#x2407;"; break;
         default:   m_t << c;
       }
     }
@@ -1285,6 +1288,7 @@ void HtmlGenerator::docify(const char *str,bool inHtmlComment)
                    else
                      t << "\\";
                    break;
+        case '\007':  t << "&#x2407;"; break;
         default:   t << c;
       }
     }

@@ -5958,6 +5958,7 @@ QCString convertToHtml(const char *s,bool keepEntities)
                  break;
       case '\'': growBuf.addStr("&#39;");  break; 
       case '"':  growBuf.addStr("&quot;"); break;
+      case '\007':  growBuf.addStr("&#x2407;"); break;
       default:   growBuf.addChar(c);       break;
     }
   }
@@ -6738,6 +6739,7 @@ void filterLatexString(FTextStream &t,const char *str,
         case '~':  (usedTableLevels()>0) ? t << "\\string~" : t << (char)c;    break;
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
                    break;
+        case '\007':  (usedTableLevels()>0) ? t << "\\string^G" : t << "^G"; break;
         default:
                    t << (char)c;
                    break;
@@ -6815,6 +6817,7 @@ void filterLatexString(FTextStream &t,const char *str,
         case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
                    break;
 
+        case '\007':  t << "\\bell"; break;
         default:   
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing && 

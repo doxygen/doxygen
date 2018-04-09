@@ -3733,6 +3733,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
             case '"':  m_ts << "&quot;"; break;
             case '&':  m_ts << "&amp;"; break;
             case ' ':  m_ts << "&#160;"; break;
+            case '\007':  m_ts << "&#x2407;"; break;
           }
         }
       }

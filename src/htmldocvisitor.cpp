@@ -1986,6 +1986,7 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
       case '"':  m_t << "&quot;"; break;
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
+      case '\007':  m_t << "&#x2407;"; break;
       default:   m_t << c;
     }
   }
