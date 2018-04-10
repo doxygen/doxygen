@@ -748,7 +748,7 @@ static void writeDefaultFooter(FTextStream &t)
   t << "\\newpage\n"
        "\\phantomsection\n"
        "\\clearemptydoublepage\n"
-       "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trRTFGeneralIndex() << "}\n"
+       "\\addcontentsline{toc}{" << unit << "}{\\indexname}\n"
        "\\printindex\n"
        "\n"
        "\\end{document}\n";
