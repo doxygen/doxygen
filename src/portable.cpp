@@ -35,7 +35,21 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
 
   if (command==0) return 1;
 
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  const char *p = command;
+  char *q = (char *)malloc(strlen(p) + 1);
+  strcpy(q, p);
+  for (int i = 0 ; i < strlen(q); i++)
+  {
+    if (q[i] == '/')
+    {
+      q[i] = '\\';
+    }
+  }
+  QCString fullCmd=q;
+#else
   QCString fullCmd=command;
+#endif
   fullCmd=fullCmd.stripWhiteSpace();
   if (fullCmd.at(0)!='"' && fullCmd.find(' ')!=-1)
   {
@@ -122,6 +136,7 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
 #else // Win32 specific
   if (commandHasConsole)
   {
+    free(q);
     return system(fullCmd);
   }
   else
@@ -134,7 +149,7 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
     // For that case COM is initialized as follows
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-    QString commandw = QString::fromUtf8( command );
+    QString commandw = QString::fromUtf8( q );
     QString argsw = QString::fromUtf8( args );
 
     // gswin32 is a GUI api which will pop up a window and run
@@ -161,6 +176,7 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
       NULL,                       /* ignored: icon */
       NULL                        /* resulting application handle */
     };
+    free(q);
 
     if (!ShellExecuteExW(&sInfo))
     {
@@ -180,6 +196,7 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
     }
   }
 #endif
+  fprintf(stderr,"AME ==> we should not get here\n");
   return 1; // we should never get here
 
 }
