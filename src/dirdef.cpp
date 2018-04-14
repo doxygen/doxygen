@@ -930,14 +930,14 @@ void buildDirectories()
     for (;(fd=fni.current());++fni)
     {
       //printf("buildDirectories %s\n",fd->name().data());
-      if (fd->getReference().isEmpty() && !fd->isDocumentationFile())
+      if (fd->getReference().isEmpty())
       {
         DirDef *dir;
         if ((dir=Doxygen::directories->find(fd->getPath()))==0) // new directory
         {
           dir = DirDef::mergeDirectoryInTree(fd->getPath());
         }
-        if (dir) dir->addFile(fd);
+        if (dir && !fd->isDocumentationFile()) dir->addFile(fd);
       }
       else
       {
