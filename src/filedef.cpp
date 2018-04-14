@@ -1425,8 +1425,7 @@ bool FileDef::generateSourceFile() const
          (sourceBrowser || 
            (verbatimHeaders && guessSection(name())==Entry::HEADER_SEC) 
          ) &&
-         extension!=".doc" && extension!=".txt" && extension!=".dox" &&
-         extension!=".md" && name().right(9)!=".markdown";  
+         !isDocumentationFile();
 }
 
 
