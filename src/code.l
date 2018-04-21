@@ -116,6 +116,7 @@ static int           g_memCallContext;
 static int	     g_lastCContext;
 static int           g_skipInlineInitContext;
 
+static bool          g_insideCpp;
 static bool          g_insideObjC;
 static bool          g_insideJava;
 static bool          g_insideCS;
@@ -1906,6 +1907,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  endFontClass();
 					}
 <Body>(KEYWORD_CPPCLI_DATATYPE|("partial"{B}+)?"class"|"struct"|"union"|"namespace"|"interface"){B}+ { 
+                                          if (g_insideCpp && !qstrcmp(yytext,"function")) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -2415,6 +2417,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  g_prefixed_with_this_keyword = TRUE;
                                         }
 <Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
+                                          if (g_insideCpp && !qstrcmp(yytext,"function")) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  if (QCString(yytext)=="typedef")
@@ -2425,11 +2428,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  endFontClass();
   					}
 <Body>{KEYWORD}/{B}* 			{
+                                          if (g_insideCpp && !qstrcmp(yytext,"function")) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
   					}
 <Body>{KEYWORD}/{BN}*"(" 		{
+                                          if (g_insideCpp && !qstrcmp(yytext,"function")) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -2984,6 +2989,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <MemberCall2,FuncCall>{KEYWORD}/([^a-z_A-Z0-9]) {
 					  //addParmType();
 					  //g_parmName=yytext; 
+                                          if (g_insideCpp && !qstrcmp(yytext,"function")) REJECT;
   					  startFontClass("keyword");
   					  g_code->codify(yytext);
 					  endFontClass();
@@ -3738,6 +3744,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
     g_sourceFileDef = new FileDef("",(exName?exName:"generated"));
     cleanupSourceDef = TRUE;
   }
+  g_insideCpp  = lang==SrcLangExt_Cpp;
   g_insideObjC = lang==SrcLangExt_ObjC;
   g_insideJava = lang==SrcLangExt_Java;
   g_insideCS   = lang==SrcLangExt_CSharp;
