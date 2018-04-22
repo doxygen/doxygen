@@ -210,7 +210,7 @@ remove the % and keep the word unlinked.
 No, not as such; doxygen needs to understand the structure of what it reads. 
 If you don't mind spending some time on it, there are several options:
 - If the grammar of X is close to C or C++, then it is probably not too hard to
-  tweak src/scanner.l a bit so the language is supported. This is done
+  tweak \c src/scanner.l a bit so the language is supported. This is done
   for all other languages directly supported by doxygen 
   (i.e. Java, IDL, C#, PHP).
 - If the grammar of X is somewhat different than you can write an input
@@ -219,7 +219,7 @@ If you don't mind spending some time on it, there are several options:
   Javascript, see http://www.stack.nl/~dimitri/doxygen/download.html#helpers).
 - If the grammar is completely different one could write a parser for X and 
   write a backend that produces a similar syntax tree as is done by 
-  src/scanner.l (and also by src/tagreader.cpp while reading tag files).
+  \c src/scanner.l (and also by \c src/tagreader.cpp while reading tag files).
 
 \section faq_lex Help! I get the cryptic message "input buffer overflow, can't enlarge buffer because scanner uses REJECT"
 
