@@ -41,14 +41,14 @@ available through the global functions \c Config_getXXX(), where \c XXX is the
 type of the option. The argument of these function is a string naming
 the option as it appears in the configuration file. For instance: 
 \c Config_getBool("GENERATE_TESTLIST") returns a reference to a boolean
-value that is \c TRUE if the test list was enabled in the config file. 
+value that is \c TRUE if the test list was enabled in the configuration file. 
 
 The function \c readConfiguration() in \c src/doxygen.cpp 
 reads the command line options and then calls the configuration parser.
 
 <h3>C Preprocessor</h3>
 
-The input files mentioned in the config file are (by default) fed to the
+The input files mentioned in the configuration file are (by default) fed to the
 C Preprocessor (after being piped through a user defined filter if available).
 
 The way the preprocessor works differs somewhat from a standard C Preprocessor.
