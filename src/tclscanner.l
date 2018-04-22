@@ -703,6 +703,7 @@ static void tcl_codify(const char *s,const char *str)
     }
     else
     {
+      if (*(p-2)==0x1A) *(p-2) = '\0'; // remove ^Z
       tcl.code->codify(sp);
       done=TRUE;
     }
@@ -3024,11 +3025,6 @@ void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
   }
 tcl_inf("%s (%d,%d) %d %d\n",myStr.ascii(),startLine,endLine,isExampleBlock,inlineFragment);
 //tcl_inf("%s\n"input.data());
-  if (isExampleBlock)
-  {
-    tcl_codify(NULL,input);
-    return;
-  }
   tcl_init();
   tcl.collectXRefs = collectXRefs;
   tcl.memberdef = memberDef;
@@ -3047,8 +3043,15 @@ tcl_inf("%s (%d,%d) %d %d\n",myStr.ascii(),startLine,endLine,isExampleBlock,inli
   }
   tcl.file_name = "";
   tcl.this_parser = NULL;
-  tcl.entry_main = tcl_entry_new();
-  tcl_parse(myNs,myCls);
+  if (isExampleBlock)
+  {
+    tcl_codify(NULL,input);
+  }
+  else
+  {
+    tcl.entry_main = tcl_entry_new();
+    tcl_parse(myNs,myCls);
+  }
   tcl.code->endCodeLine();
   tcl.scan.clear();
   tcl.ns.clear();
