@@ -3635,7 +3635,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      current->fileName   = yyFileName;
 					      current->startLine  = yyLineNr;
 					      current->startColumn = yyColNr;
-					      current->type       = "@"; // enum marker
+					      if (!(current_root->spec&Entry::Enum))
+					      {
+					        current->type       = "@"; // enum marker
+					      }
 					      current->args       = current->args.simplifyWhiteSpace();
 					      current->name       = current->name.stripWhiteSpace();
 					      current->section    = Entry::VARIABLE_SEC;

@@ -540,22 +540,34 @@ void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
 {
   QChar c;
   bool needsEscaping=false;
+  bool needsHashEscaping=false;
   // convert the string back to it original encoding
   //QByteArray se = codec->fromUnicode(s);
   t.setCodec(codec);
   const QChar *p=s.data();
   if (!s.isEmpty() && !p->isNull())
   {
-    while (!(c=*p++).isNull() && !needsEscaping) 
+    if (*p != QChar::fromLatin1('"'))
     {
-      needsEscaping = (c==QChar::fromLatin1(' ')  || 
-	               c==QChar::fromLatin1('\n') || 
-		       c==QChar::fromLatin1('\t') || 
-		       c==QChar::fromLatin1('"'));
+      while (!(c=*p++).isNull() && !needsEscaping) 
+      {
+        needsEscaping = (c==QChar::fromLatin1(' ')  || 
+	                 c==QChar::fromLatin1('\n') || 
+		         c==QChar::fromLatin1('\t') || 
+		         c==QChar::fromLatin1('"'));
+      }
+      p=s.data();
+      while (!(c=*p++).isNull() && !needsHashEscaping) 
+      {
+        needsHashEscaping = (c==QChar::fromLatin1('#'));
+      }
+    }
+    if (needsHashEscaping || needsEscaping)
+    { 
+      t << "\"";
     }
     if (needsEscaping)
     { 
-      t << "\"";
       p=s.data();
       while (!p->isNull())
       {
@@ -564,11 +576,14 @@ void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
 	if (*p   ==QChar::fromLatin1('"')) t << "\\"; // escape quotes
 	t << *p++;
       }
-      t << "\"";
     }
     else
     {
       t << s;
+    }
+    if (needsHashEscaping || needsEscaping)
+    { 
+      t << "\"";
     }
   }
 }

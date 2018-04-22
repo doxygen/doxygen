@@ -563,14 +563,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     RefItem *item = refList->getRefItem(lii->itemId);
     ASSERT(item!=0);
     item->text += " <p>";
-    if (Doxygen::markdownSupport)
-    {
-      item->text += processMarkdown(yyFileName,yyLineNr,current,outputXRef);
-    }
-    else
-    {
-      item->text += outputXRef;
-    }
+    item->text += outputXRef;
     //printf("%s: text +=%s\n",listName,item->text.data());
   }
   else // new item
@@ -585,14 +578,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     sprintf(anchorLabel,"_%s%06d",listName,itemId);
     RefItem *item = refList->getRefItem(itemId);
     ASSERT(item!=0);
-    if (Doxygen::markdownSupport)
-    {
-      item->text = processMarkdown(yyFileName,yyLineNr,current,outputXRef);
-    }
-    else
-    {
-      item->text = outputXRef;
-    }
+    item->text = outputXRef;
     item->listAnchor = anchorLabel;
     docEntry->addSpecialListItem(listName,itemId);
     QCString cmdString;
@@ -1860,10 +1846,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  addOutput(*yytext);
   					}
 <FormatBlock><<EOF>>			{
-                                          QCString endTag = "@end"+blockName;
+                                          QCString endTag = "end"+blockName;
                                           if (blockName=="startuml") endTag="enduml";
                                           warn(yyFileName,yyLineNr,
-	                                    "reached end of comment while inside a @%s block; check for missing @%s tag!",
+	                                    "reached end of comment while inside a \\%s block; check for missing \\%s tag!",
 	                                    blockName.data(),endTag.data()
 	                                  );				
 					  yyterminate();
@@ -1944,7 +1930,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  if (guards.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-						"found @endif without matching start command");
+						"found \\endif without matching start command");
 					  }
 					  else
 					  {
@@ -1962,7 +1948,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  if (guards.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-						"found @else without matching start command");
+						"found \\else without matching start command");
 					  }
 					  else
 					  {
@@ -1979,7 +1965,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  if (guards.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-						"found @elseif without matching start command");
+						"found \\elseif without matching start command");
 					  }
 					  else
 					  {
@@ -2943,7 +2929,19 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   langParser     = parser;
   current        = curEntry;
   if (comment.isEmpty()) return FALSE; // avoid empty strings
-  inputString    = comment;
+  if (Doxygen::markdownSupport)
+  {
+    inputString      = processMarkdown(fileName,lineNr,NULL,comment);
+    QString qq(inputString);
+    while (qq.startsWith(" ")) qq = qq.mid(1);
+    while (qq.startsWith("\n")) qq = qq.mid(1);
+    if (qq.startsWith("<br>")) qq = qq.mid(4);
+    inputString = QCString(qq.data());
+  }
+  else
+  {
+    inputString    = comment;
+  }
   inputString.append(" ");
   inputPosition  = position;
   yyLineNr       = lineNr;
@@ -2970,7 +2968,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\n"
-               "input=[\n%s]\n",qPrint(fileName),lineNr,qPrint(comment)
+               "input=[\n%s]\n",qPrint(fileName),lineNr,qPrint(inputString)
               );
   
   commentscanYYrestart( commentscanYYin );
@@ -3008,15 +3006,9 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
     openGroup(current,yyFileName,yyLineNr);
   }
 
-  if (Doxygen::markdownSupport)
-  {
-    current->brief      = processMarkdown(fileName,lineNr,current,current->brief);
-    current->doc        = processMarkdown(fileName,lineNr,current,current->doc);
-    current->inbodyDocs = processMarkdown(fileName,lineNr,current,current->inbodyDocs);
-  }
-
-  Debug::print(Debug::CommentScan,0,
-               "brief=[line=%d\n%s]\ndocs=[line=%d\n%s]\ninbody=[line=%d\n%s]\n===========\n",
+  Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\noutput=[\n"
+               "brief=[line=%d\n%s]\ndocs=[line=%d\n%s]\ninbody=[line=%d\n%s]\n]\n===========\n",
+               qPrint(fileName),lineNr,
 	       current->briefLine,qPrint(current->brief),
                current->docLine,qPrint(current->doc),
                current->inbodyLine,qPrint(current->inbodyDocs)

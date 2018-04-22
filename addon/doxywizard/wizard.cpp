@@ -1210,18 +1210,23 @@ void Step4::setCallerGraphEnabled(int state)
 
 void Step4::init()
 {
+  int id = 0;
   if (getBoolOption(m_modelData,STR_HAVE_DOT))
   {
     m_diagramModeGroup->button(2)->setChecked(true); // Dot
+    id = 2;
   }
   else if (getBoolOption(m_modelData,STR_CLASS_DIAGRAMS))
   {
     m_diagramModeGroup->button(1)->setChecked(true); // Builtin diagrams
+    id = 1;
   }
   else
   {
     m_diagramModeGroup->button(0)->setChecked(true); // no diagrams
+    id = 0;
   }
+  m_dotGroup->setEnabled(id==2);
   m_dotClass->setChecked(getBoolOption(m_modelData,STR_CLASS_GRAPH));
   m_dotCollaboration->setChecked(getBoolOption(m_modelData,STR_COLLABORATION_GRAPH));
   m_dotInheritance->setChecked(getBoolOption(m_modelData,STR_GRAPHICAL_HIERARCHY));

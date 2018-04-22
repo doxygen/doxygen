@@ -293,7 +293,7 @@ The brief descriptions are included in the member overview of a
 class, namespace or file and are printed using a small italic font 
 (this description can be hidden by setting 
 \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" to \c NO in 
-the config file). By default the brief descriptions become the first 
+the configuration file). By default the brief descriptions become the first 
 sentence of the detailed descriptions 
 (but this can be changed by setting the \ref cfg_repeat_brief "REPEAT_BRIEF" 
 tag to \c NO). Both the brief and the detailed descriptions are optional 
@@ -473,7 +473,7 @@ Here is the same example again but now using doxygen style comments:
 
 Since python looks more like Java than like C or C++, you should set 
 \ref cfg_optimize_output_java "OPTIMIZE_OUTPUT_JAVA" to \c YES in the
-config file. 
+configuration file. 
 
 
 \subsection vhdlblocks Comment blocks in VHDL
@@ -503,7 +503,7 @@ Here is an example VHDL file with doxygen comments:
 
 To get proper looking output you need to set
 \ref cfg_optimize_output_vhdl "OPTIMIZE_OUTPUT_VHDL" to \c YES in the
-config file. This will also affect a number of other settings. When they
+configuration file. This will also affect a number of other settings. When they
 were not already set correctly doxygen will produce a warning telling which
 settings where overruled.
 
@@ -595,7 +595,7 @@ before the command.
 
 <!--
 To use your own keywords you an map these keyword to the recognized commands
-using the \ref cfg_tcl_subs "TCL_SUBST" entry in the config file.
+using the \ref cfg_tcl_subs "TCL_SUBST" entry in the configuration file.
 The entry contain a list of word-keyword mappings. To use the itcl::*
 commands without the leading namespace use p.e.:
 

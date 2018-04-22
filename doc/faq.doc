@@ -43,14 +43,14 @@ You should use the \ref cmdmainpage "\\mainpage" command inside a comment block 
   <ol>
   <li>Is your class / file / namespace documented? If not, it will not 
       be extracted from the sources unless \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES
-      in the config file.
+      in the configuration file.
   <li>Are the members private? If so, you must set \ref cfg_extract_private "EXTRACT_PRIVATE" to \c YES
       to make them appear in the documentation.
   <li>Is there a function macro in your class that does not end with a 
       semicolon (e.g. MY_MACRO())? If so then you have to instruct 
       doxygen's preprocessor to remove it.
 
-      This typically boils down to the following settings in the config file:
+      This typically boils down to the following settings in the configuration file:
 
       \verbatim
 ENABLE_PREPROCESSING   = YES
@@ -110,10 +110,10 @@ around the blocks that should be hidden and put:
 \verbatim
   PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS
 \endverbatim
-in the config file then all blocks should be skipped by doxygen as long
+in the configuration file then all blocks should be skipped by doxygen as long
 as \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to `YES`.
 
-\section faq_code_inc How can I change what is after the <code>\#include</code> in the class documentation?
+\section faq_code_inc How can I change what is after the \#include in the class documentation?
 
 In most cases you can use \ref cfg_strip_from_inc_path "STRIP_FROM_INC_PATH" 
 to strip a user defined part of a path.
@@ -210,7 +210,7 @@ remove the % and keep the word unlinked.
 No, not as such; doxygen needs to understand the structure of what it reads. 
 If you don't mind spending some time on it, there are several options:
 - If the grammar of X is close to C or C++, then it is probably not too hard to
-  tweak src/scanner.l a bit so the language is supported. This is done
+  tweak \c src/scanner.l a bit so the language is supported. This is done
   for all other languages directly supported by doxygen 
   (i.e. Java, IDL, C#, PHP).
 - If the grammar of X is somewhat different than you can write an input
@@ -219,7 +219,7 @@ If you don't mind spending some time on it, there are several options:
   Javascript, see http://www.stack.nl/~dimitri/doxygen/download.html#helpers).
 - If the grammar is completely different one could write a parser for X and 
   write a backend that produces a similar syntax tree as is done by 
-  src/scanner.l (and also by src/tagreader.cpp while reading tag files).
+  \c src/scanner.l (and also by \c src/tagreader.cpp while reading tag files).
 
 \section faq_lex Help! I get the cryptic message "input buffer overflow, can't enlarge buffer because scanner uses REJECT"
 
@@ -235,7 +235,7 @@ should send me a code fragment that triggers the message. To work around
 the problem, put some line-breaks into your file, split it up into smaller 
 parts, or exclude it from the input using EXCLUDE.
 
-\section faq_latex When running make in the latex dir I get "TeX capacity exceeded". Now what?
+\section faq_latex When running make in the latex directory I get "TeX capacity exceeded". Now what?
 
 You can edit the texmf.cfg file to increase the default values of the 
 various buffers and then run "texconfig init".

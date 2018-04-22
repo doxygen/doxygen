@@ -116,6 +116,7 @@ static int           g_memCallContext;
 static int	     g_lastCContext;
 static int           g_skipInlineInitContext;
 
+static bool          g_insideCpp;
 static bool          g_insideObjC;
 static bool          g_insideJava;
 static bool          g_insideCS;
@@ -2416,6 +2417,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                         }
 <Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
                                           if (g_insideJava && qstrcmp("internal",yytext) ==0) REJECT;
+                                          if (g_insideCpp && (QCString(yytext) =="set" ||QCString(yytext) =="get")) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  if (QCString(yytext)=="typedef")
@@ -2426,11 +2428,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  endFontClass();
   					}
 <Body>{KEYWORD}/{B}* 			{
+                                          if (g_insideCpp && (QCString(yytext) =="set" ||QCString(yytext) =="get")) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
   					}
 <Body>{KEYWORD}/{BN}*"(" 		{
+                                          if (g_insideCpp && (QCString(yytext) =="set" ||QCString(yytext) =="get")) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -2985,6 +2989,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <MemberCall2,FuncCall>{KEYWORD}/([^a-z_A-Z0-9]) {
 					  //addParmType();
 					  //g_parmName=yytext; 
+                                          if (g_insideCpp && (QCString(yytext) =="set" ||QCString(yytext) =="get")) REJECT;
   					  startFontClass("keyword");
   					  g_code->codify(yytext);
 					  endFontClass();
@@ -3743,6 +3748,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_insideJava = lang==SrcLangExt_Java;
   g_insideCS   = lang==SrcLangExt_CSharp;
   g_insidePHP  = lang==SrcLangExt_PHP;
+  g_insideCpp  = lang==SrcLangExt_Cpp;
   if (g_sourceFileDef) 
   {
     setCurrentDoc("l00001");

@@ -554,7 +554,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->indent     = computeIndent(text,dotPos);
                          return TK_ENDLIST;
                        }
-<St_Para>"{"{BLANK}*"@link" {
+<St_Para>"{"{BLANK}*"@link"/{BLANK}+ {
   			 g_token->name = "javalink";
 			 return TK_COMMAND;
   		       }
