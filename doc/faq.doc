@@ -113,7 +113,7 @@ around the blocks that should be hidden and put:
 in the config file then all blocks should be skipped by doxygen as long
 as \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to `YES`.
 
-\section faq_code_inc How can I change what is after the <code>\#include</code> in the class documentation?
+\section faq_code_inc How can I change what is after the \#include in the class documentation?
 
 In most cases you can use \ref cfg_strip_from_inc_path "STRIP_FROM_INC_PATH" 
 to strip a user defined part of a path.
