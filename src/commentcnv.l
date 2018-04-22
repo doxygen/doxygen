@@ -1093,7 +1093,9 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     g_outBuf->at(g_outBuf->curPos())='\0';
-    msg("-------------\n%s\n-------------\n",g_outBuf->data());
+    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
+                 "output=[\n%s]\n-----------\n",fileName,g_outBuf->data()
+                );
   }
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
