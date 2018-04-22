@@ -20,7 +20,7 @@
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=743367">743367</a> - Duplicate attribute (target=&quot;_top&quot; target=&quot;_top&quot;) generated in .SVG files [<a href="http://github.com/doxygen/doxygen/commit/97bfbfa6c4d4eb07ac8c60545086c3370e9683b8">view</a>]
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=775493">775493</a> - Usage of underscore&#39;s in parameter names [<a href="http://github.com/doxygen/doxygen/commit/c10af45c61a1f9b25c514f397ace16c94cc7c8df">view</a>]
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=776791">776791</a> - [1.8.13 Regression] Segfault building the breathe docs [<a href="http://github.com/doxygen/doxygen/commit/0f02761a158a5e9ddbd5801682482af8986dbc35">view</a>]
-<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=776870">776870</a> - XML Parsing Error for operator&lt;&lt; methods when outputing to XHTML [<a href="http://github.com/doxygen/doxygen/commit/0e8530e42b69c909ef2c26468b24dfb88cc0997f">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=776870">776870</a> - XML Parsing Error for operator&lt;&lt; methods when outputting to XHTML [<a href="http://github.com/doxygen/doxygen/commit/0e8530e42b69c909ef2c26468b24dfb88cc0997f">view</a>]
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=776964">776964</a> - Menu does not work without Javascript [<a href="http://github.com/doxygen/doxygen/commit/1be97720b7820361e85242d08d4cac3e46570bfe">view</a>]
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=776988">776988</a> - Too greedy behavior of @ref const matching [<a href="http://github.com/doxygen/doxygen/commit/04001c8926fb0f37dfcf284b3637b182125bba75">view</a>]
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=778730">778730</a> - doxygen build fails [<a href="http://github.com/doxygen/doxygen/commit/bb5c8dd29782ecbb05a4ef9788f2507e9a156848">view</a>]
@@ -153,7 +153,7 @@
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=773354">773354</a> - &quot;name&quot; attribute of image map not urlencoded, not working in Chrome [<a href="http://github.com/doxygen/doxygen/commit/6300c03b6201ca7981388a6d3c01486f8a8adba0">view</a>]
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=774138">774138</a> - Please add HTML classes to &quot;Definition at...&quot; &amp; &quot;Referenced by...&quot; for CSS [<a href="http://github.com/doxygen/doxygen/commit/d2593e56cd52ecee2424d844916f95e12fef27c8">view</a>]
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=774273">774273</a> - INLINE_SIMPLE_STRUCTS with enums in classes does not work [<a href="http://github.com/doxygen/doxygen/commit/71d7a9399db016cba83ccd63c6ba7e0fac1cd44d">view</a>]
-<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=774514">774514</a> - Modify in some pronounciation expression in Korean [<a href="http://github.com/doxygen/doxygen/commit/cd3e39d7db634d9e11afc8e46269eb509ae10e40">view</a>]
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=774514">774514</a> - Modify in some pronunciation expression in Korean [<a href="http://github.com/doxygen/doxygen/commit/cd3e39d7db634d9e11afc8e46269eb509ae10e40">view</a>]
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=774949">774949</a> - Unknown reference in manual [<a href="http://github.com/doxygen/doxygen/commit/dde15c9748053ecb68ba046ebd0fdfe625be0e2e">view</a>]
 <li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=775245">775245</a> - referencing Python files via tagfile broken [<a href="http://github.com/doxygen/doxygen/commit/dc02bb977ebc6c683012c106e16e0190ac72b454">view</a>]
 <li>Add NVARCHAR as a SQL type [<a href="http://github.com/doxygen/doxygen/commit/6a85240e65bb5e3d59d2cd161eb8cf241e27ed7d">view</a>]
@@ -1073,7 +1073,7 @@
 <li>Added support for \-- and \--- to prevent interpretation as ndash and mdash [<a href="http://github.com/doxygen/doxygen/commit/385b87e08c23b1392d0e6d6fbdb6ef463fa28477">view</a>]</li>
 <li>Added support for elif to the template language [<a href="http://github.com/doxygen/doxygen/commit/ae3a22ba276a2e446a460274e0bff8a9bdf4af7d">view</a>]</li>
 <li>Added support for range tag in the template language [<a href="http://github.com/doxygen/doxygen/commit/b98846d0b57b78cd45d34e0962a8bcdc2e643e18">view</a>]</li>
-<li>Alterative way to get rules information from flex [<a href="http://github.com/doxygen/doxygen/commit/224fa96dd9c9245bfdf68ee6f92160b7aa05f8d1">view</a>]</li>
+<li>Alternative way to get rules information from flex [<a href="http://github.com/doxygen/doxygen/commit/224fa96dd9c9245bfdf68ee6f92160b7aa05f8d1">view</a>]</li>
 <li>Better message in case doxygen -u is used [<a href="http://github.com/doxygen/doxygen/commit/cfd8c2415e7d0744a00bf1990f26aab538940f20">view</a>]</li>
 <li>Changed &quot;See Also&quot; back to &quot;See also&quot; [<a href="http://github.com/doxygen/doxygen/commit/0754c968a4a06c8217c9301a5ca82c6212c228ec">view</a>]</li>
 <li>Chm don&#39;t add images multiple times [<a href="http://github.com/doxygen/doxygen/commit/3b339813794390bdce59fa1009cf71506e0cec2b">view</a>]</li>
@@ -1296,7 +1296,7 @@
 <li> Small spelling correction to generate an rtf extensions file -&gt; to generate a rtf extensions file</li>
 <li> Some texts can be independent of \htmlonly / \latexonly</li>
 <li> Space missing in error message. the word 'in' and the vale of filesOption were concatenated</li>
-<li> This patch contains changes regarding the build system so that the *nix and Windows systems use the same information (consistency). Some use names routine names have been changed (from .l files with -P option) to reflect the file name that generated the routines, this makes it easier to create a general procedure. A number of include / header files are files are generated from different file types (html, xml, js), due some limitations of the windows build system the generated file names had to be changed (the extension in the windows build system is only available including the '.' so e.g. the file jquery_fx.js generates now jquery_fx.js.h instead of jquery_fx_js.h) In the windows version the creation of .cpp files from .l files has been adjusted to correct for the YY_BUF_SIZE problems. Furthermore on windows (and also used on *nix) some commends have been replaced with python scripts so that on windows only python is need (besides flex and bison). On *nix also perl is required for the generation using tmake.</li>
+<li> This patch contains changes regarding the build system so that the *nix and Windows systems use the same information (consistency). Some use names routine names have been changed (from .l files with -P option) to reflect the file name that generated the routines, this makes it easier to create a general procedure. A number of include / header files are files are generated from different file types (html, xml, js), due some limitations of the windows build system the generated file names had to be changed (the extension in the windows build system is only available including the '.' so e.g. the file jquery_fx.js generates now jquery_fx.js.h instead of jquery_fx_js.h) In the windows version the creation of .cpp files from .l files has been adjusted to correct for the YY_BUF_SIZE problems. Furthermore on windows (and also used on *nix) some commands have been replaced with python scripts so that on windows only python is need (besides flex and bison). On *nix also perl is required for the generation using tmake.</li>
 <li> Updated Visual Studio project files to include new source files</li>
 <li> Usage of the -d option corrected Giving an error when a wrong -d option is given. Made some error messages more consistent. Corrected usage of the exit call, in case of an error: exit(1) otherwise exit(0). A closer look should be made on exitDoxygen as it does not contain any exit statements and it is unclear (to me) when it is used.</li> <li> VHDL-2008 and arrays on unconstrained elements</li>
 <li> consider currentFile when searching for global symbols</li>
@@ -2162,7 +2162,7 @@ make sure you add the following:
 <h3>Changes</h3>
 <ul>
 <li>   Auto list items can now consist of multiple paragraphs.
-       The indentation of the (first line) of a new paragraph detemines
+       The indentation of the (first line) of a new paragraph determines
        to which list item the paragraph belongs or if it marks the end of the
        list. </li>
 <li>   When UML_LOOK is enabled, relations shown on the edge of a graph
@@ -2590,7 +2590,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=655178">655178</a>: Fortran: Fixed parse issue when using variable name 
                   starting with the word interface.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=655591">655591</a>: Improved error handling for empty html style list.</li>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=655935">655935</a>: Fixed case where %s could end up in a warning messge.</li>
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=655935">655935</a>: Fixed case where %s could end up in a warning message.</li>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=656005">656005</a>: Methods of Objective-C categories defined in an .m file are
        now marked as private.</li>
 </ul>
