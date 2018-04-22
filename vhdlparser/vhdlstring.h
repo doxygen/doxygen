@@ -9,6 +9,7 @@
 /** @brief Minimal string class with std::string like behaviour that fulfills the JavaCC
  *  string requirements.
  */
+
 class VhdlString
 {
   public:
@@ -93,11 +94,18 @@ class VhdlString
     void        clear()                 { free(m_str); init(); }
     VhdlString  &operator+=(char c)      { char s[2]; s[0]=c; s[1]=0; return append(s); }
     VhdlString  &operator+=(const char *s) { return append(s); }
+    VhdlString  &operator+=(VhdlString s) { return append(s); }
+    VhdlString   operator+ (const char *s) { return append(s); }
 
   private:
     void init() { m_str=(char*)calloc(1,1); m_len=0; }
     char *m_str;
     int   m_len;
 };
+
+// declare it static otherwise we will get:
+//   multiple definition of `operator+(char const*, VhdlString)'
+// as we are in an include file
+static VhdlString   operator+ (const char *s, VhdlString v) { return VhdlString(s).append(v); }
 
 #endif
