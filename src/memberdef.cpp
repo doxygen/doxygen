@@ -3212,7 +3212,10 @@ QCString MemberDef::memberTypeName() const
 
 void MemberDef::warnIfUndocumented()
 {
-  if (m_impl->memberGroup) return;
+  /*
+   *  Removed bug_303020:
+   *  if (m_impl->memberGroup) return;
+   */
   ClassDef     *cd = getClassDef();
   NamespaceDef *nd = getNamespaceDef();
   FileDef      *fd = getFileDef();
