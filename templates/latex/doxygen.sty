@@ -11,6 +11,7 @@
 \RequirePackage[table]{xcolor}
 \RequirePackage{longtable}
 \RequirePackage{tabu}
+\RequirePackage{fancyvrb}
 \RequirePackage{tabularx}
 \RequirePackage{multirow}
 
@@ -273,10 +274,10 @@
     \tabulinesep=1mm%
     \par%
     \ifthenelse{\equal{#1}{}}%
-      {\begin{longtabu} spread 0pt [l]{|X[-1,l]|X[-1,l]|}}% name + description
+      {\begin{longtabu*} spread 0pt [l]{|X[-1,l]|X[-1,l]|}}% name + description
     {\ifthenelse{\equal{#1}{1}}%
-      {\begin{longtabu} spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + name + desc
-      {\begin{longtabu} spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + type + name + desc
+      {\begin{longtabu*} spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + name + desc
+      {\begin{longtabu*} spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + type + name + desc
     }
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
     \hline%
@@ -285,7 +286,7 @@
     \hline%
     \endhead%
 }{%
-    \end{longtabu}%
+    \end{longtabu*}%
     \vspace{6pt}%
 }
 
@@ -293,7 +294,7 @@
 \newenvironment{DoxyFields}[1]{%
     \tabulinesep=1mm%
     \par%
-    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|X[-1,l]|}%
+    \begin{longtabu*} spread 0pt [l]{|X[-1,r]|X[-1,l]|X[-1,l]|}%
     \multicolumn{3}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
     \hline%
     \endfirsthead%
@@ -301,7 +302,7 @@
     \hline%
     \endhead%
 }{%
-    \end{longtabu}%
+    \end{longtabu*}%
     \vspace{6pt}%
 }
 
@@ -309,7 +310,7 @@
 \newenvironment{DoxyEnumFields}[1]{%
     \tabulinesep=1mm%
     \par%
-    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
+    \begin{longtabu*} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
     \hline%
     \endfirsthead%
@@ -317,7 +318,7 @@
     \hline%
     \endhead%
 }{%
-    \end{longtabu}%
+    \end{longtabu*}%
     \vspace{6pt}%
 }
 
@@ -331,7 +332,7 @@
 \newenvironment{DoxyRetVals}[1]{%
     \tabulinesep=1mm%
     \par%
-    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
+    \begin{longtabu*} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
     \hline%
     \endfirsthead%
@@ -339,7 +340,7 @@
     \hline%
     \endhead%
 }{%
-    \end{longtabu}%
+    \end{longtabu*}%
     \vspace{6pt}%
 }
 
@@ -347,7 +348,7 @@
 \newenvironment{DoxyExceptions}[1]{%
     \tabulinesep=1mm%
     \par%
-    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
+    \begin{longtabu*} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
     \hline%
     \endfirsthead%
@@ -355,7 +356,7 @@
     \hline%
     \endhead%
 }{%
-    \end{longtabu}%
+    \end{longtabu*}%
     \vspace{6pt}%
 }
 
@@ -363,7 +364,7 @@
 \newenvironment{DoxyTemplParams}[1]{%
     \tabulinesep=1mm%
     \par%
-    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
+    \begin{longtabu*} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
     \hline%
     \endfirsthead%
@@ -371,7 +372,7 @@
     \hline%
     \endhead%
 }{%
-    \end{longtabu}%
+    \end{longtabu*}%
     \vspace{6pt}%
 }
 
@@ -439,8 +440,8 @@
 \newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}%
 \newenvironment{TabularC}[1]%
 {\tabulinesep=1mm
-\begin{longtabu} spread 0pt [c]{*#1{|X[-1]}|}}%
-{\end{longtabu}\par}%
+\begin{longtabu*} spread 0pt [c]{*#1{|X[-1]}|}}%
+{\end{longtabu*}\par}%
 
 \newenvironment{TabularNC}[1]%
 {\begin{tabu} spread 0pt [l]{*#1{|X[-1]}|}}%
