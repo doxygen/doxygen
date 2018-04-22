@@ -2416,6 +2416,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  g_prefixed_with_this_keyword = TRUE;
                                         }
 <Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
+                                          if (g_insideJava && qstrcmp("internal",yytext) ==0) REJECT;
                                           if (g_insideCpp && (QCString(yytext) =="set" ||QCString(yytext) =="get")) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
