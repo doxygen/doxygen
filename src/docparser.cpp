@@ -6145,16 +6145,15 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
             }
           }
         }
-        else if (findAttribute(tagHtmlAttribs,"langword",&cref)) // <see langword="..."/> or <see langworld="..."></see>
+        else if (findAttribute(tagHtmlAttribs,"langword",&cref)) // <see langword="..."/> or <see langword="..."></see>
         {
-            doctokenizerYYsetStatePara();
-            DocLink *lnk = new DocLink(this,cref);
-            m_children.append(lnk);
-            QCString leftOver = lnk->parse(FALSE,TRUE);
-            if (!leftOver.isEmpty())
-            {
-              m_children.append(new DocWord(this,leftOver));
-            }
+          bool inSeeBlock = g_inSeeBlock;
+          g_token->name = cref;
+          g_inSeeBlock = TRUE;
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,TRUE));
+          handleLinkedWord(this,m_children,TRUE);
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,FALSE));
+          g_inSeeBlock = inSeeBlock;
         }
         else
         {
