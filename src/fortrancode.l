@@ -862,7 +862,7 @@ PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON
 					  generateLink(*g_code,yytext);
                                           yy_pop_state();
  					}
-<ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable deklaration
+<ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable declaration
               startFontClass("keyword");
             g_code->codify(yytext);
             endFontClass();
@@ -946,7 +946,7 @@ PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON
 					  g_code->codify(yytext);
 					  endFontClass();
                                        }
-<Declaration>({TYPE_SPEC}|{ATTR_SPEC})/[,:( ] { //| variable deklaration
+<Declaration>({TYPE_SPEC}|{ATTR_SPEC})/[,:( ] { //| variable declaration
   					  startFontClass("keywordtype");
 					  g_code->codify(yytext);
 					  endFontClass();

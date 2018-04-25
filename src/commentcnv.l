@@ -294,12 +294,12 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-                                       /* check for fixed format; we might have some conditional as part of multilene if like C<5 .and. & */
+                                       /* check for fixed format; we might have some conditional as part of multiline if like C<5 .and. & */
                                        if (isFixedForm && (g_col == 0))
                                        {
                                          copyToOutput(yytext,(int)yyleng); 
                                          g_nestingCount=0;
-                                         g_commentStack.clear(); /*  to be on the save side */
+                                         g_commentStack.clear(); /* to be on the safe side */
 				         BEGIN(CComment);
                                          g_commentStack.push(new CommentCtx(g_lineNr));
 				       }
