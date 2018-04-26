@@ -266,6 +266,7 @@ static void writeGraphHeader(FTextStream &t,const QCString &title=QCString())
   {
     t << " // INTERACTIVE_SVG=YES\n";
   }
+  t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size repacement
   if (Config_getBool(DOT_TRANSPARENT))
   {
     t << "  bgcolor=\"transparent\";" << endl;
@@ -437,6 +438,55 @@ static void unsetDotFontPath()
   g_dotFontPath="";
 }
 
+static bool resetPDFSize(const int width,const int height, const char *base)
+{
+  QString tmpName = QString::fromUtf8(QCString(base)+".tmp");
+  QString patchFile = QString::fromUtf8(QCString(base)+".dot");
+  if (!QDir::current().rename(patchFile,tmpName))
+  {
+    err("Failed to rename file %s to %s!\n",patchFile.data(),tmpName.data());
+    return FALSE;
+  }
+  QFile fi(tmpName);
+  QFile fo(patchFile);
+  if (!fi.open(IO_ReadOnly)) 
+  {
+    err("problem opening file %s for patching!\n",tmpName.data());
+    QDir::current().rename(tmpName,patchFile);
+    return FALSE;
+  }
+  if (!fo.open(IO_WriteOnly))
+  {
+    err("problem opening file %s for patching!\n",patchFile.data());
+    QDir::current().rename(tmpName,patchFile);
+    fi.close();
+    return FALSE;
+  }
+  FTextStream t(&fo);
+  const int maxLineLen=100*1024;
+  while (!fi.atEnd()) // foreach line
+  {
+    QCString line(maxLineLen);
+    int numBytes = fi.readLine(line.rawData(),maxLineLen);
+    if (numBytes<=0)
+    {
+      break;
+    }
+    line.resize(numBytes+1);
+    if (line.find("LATEX_PDF_SIZE") != -1)
+    {
+      double scale = (width > height ? width : height)/double(MAX_LATEX_GRAPH_INCH);
+      t << "  size=\""<<width/scale << "," <<height/scale <<"\";\n";
+    }
+    else
+      t << line;
+  }
+  fi.close();
+  fo.close();
+  // remove temporary file
+  QDir::current().remove(tmpName);
+  return TRUE;
+}
 static bool readBoundingBox(const char *fileName,int *width,int *height,bool isEps)
 {
   QCString bb = isEps ? QCString("%%PageBoundingBox:") : QCString("/MediaBox [");
@@ -765,10 +815,10 @@ DotRunner::DotRunner(const QCString &file,const QCString &path,
   m_jobs.setAutoDelete(TRUE);
 }
 
-void DotRunner::addJob(const char *format,const char *output)
+void DotRunner::addJob(const char *format,const char *output, const char *base)
 {
   QCString args = QCString("-T")+format+" -o \""+output+"\"";
-  m_jobs.append(new DotConstString(args));
+  m_jobs.append(new DotConstString(args, base));
 }
 
 void DotRunner::addPostProcessing(const char *cmd,const char *args)
@@ -780,6 +830,7 @@ void DotRunner::addPostProcessing(const char *cmd,const char *args)
 bool DotRunner::run()
 {
   int exitCode=0;
+  int width=0,height=0;
 
   QCString dotArgs;
   QListIterator<DotConstString> li(m_jobs);
@@ -792,9 +843,26 @@ bool DotRunner::run()
       dotArgs+=' ';
       dotArgs+=s->data();
     }
-    if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0)
+    if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
+    dotArgs=QCString("\"")+m_file.data()+"\"";
+    bool redo = FALSE;
+    for (li.toFirst();(s=li.current());++li)
     {
-      goto error;
+      if (s->pdfData())
+      {
+        if (!readBoundingBox(QCString(s->pdfData())+".pdf",&width,&height,FALSE)) goto error;
+	if ((width > MAX_LATEX_GRAPH_SIZE) || (height > MAX_LATEX_GRAPH_SIZE))
+	{
+	  if (!resetPDFSize(width,height,s->pdfData())) goto error;
+          dotArgs+=' ';
+          dotArgs+=s->data();
+          redo = TRUE;
+        }
+      }
+    }
+    if (redo)
+    {
+      if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
     }
   }
   else
@@ -802,9 +870,15 @@ bool DotRunner::run()
     for (li.toFirst();(s=li.current());++li)
     {
       dotArgs=QCString("\"")+m_file.data()+"\" "+s->data();
-      if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0)
+      if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
+      if (s->pdfData())
       {
-        goto error;
+        if (!readBoundingBox(QCString(s->pdfData())+".pdf",&width,&height,FALSE)) goto error;
+	if ((width > MAX_LATEX_GRAPH_SIZE) || (height > MAX_LATEX_GRAPH_SIZE))
+	{
+	  if (!resetPDFSize(width,height,s->pdfData())) goto error;
+          if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
+        }
       }
     }
   }
@@ -3150,7 +3224,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       if (usePDFLatex)
       {
-        dotRun->addJob("pdf",absPdfName);
+        dotRun->addJob("pdf",absPdfName,absBaseName);
       }
       else
       {
@@ -3508,7 +3582,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       if (usePDFLatex)
       {
-        dotRun->addJob("pdf",absPdfName);
+        dotRun->addJob("pdf",absPdfName,absBaseName);
       }
       else
       {
@@ -3826,7 +3900,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       if (usePDFLatex)
       {
-        dotRun->addJob("pdf",absPdfName);
+        dotRun->addJob("pdf",absPdfName,absBaseName);
       }
       else
       {
@@ -3992,7 +4066,7 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       if (usePDFLatex)
       {
-        dotRun->addJob("pdf",absPdfName);
+        dotRun->addJob("pdf",absPdfName,absBaseName);
       }
       else
       {
@@ -4170,7 +4244,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   {
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun.addJob("pdf",absOutFile+".pdf");
+      dotRun.addJob("pdf",absOutFile+".pdf",absOutFile);
     }
     else
     {
@@ -4555,7 +4629,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       if (usePDFLatex)
       {
-        dotRun->addJob("pdf",absPdfName);
+        dotRun->addJob("pdf",absPdfName,absBaseName);
       }
       else
       {
