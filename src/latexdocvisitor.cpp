@@ -526,7 +526,19 @@ void LatexDocVisitor::visit(DocIncOperator *op)
 void LatexDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
-  m_t << f->text();
+  const char *p=f->text();
+  char c;
+  if (p)
+  {
+    while ((c=*p++))
+    {
+      switch (c)
+      {
+        case '\'': m_t << "\\text{'}"; break;
+        default:  m_t << c; break;
+      }
+    }
+  }
 }
 
 void LatexDocVisitor::visit(DocIndexEntry *i)
@@ -927,7 +939,7 @@ static void writeStartTableCommand(FTextStream &t,const DocNode *n,int cols)
   }
   else
   {
-    t << "\\tabulinesep=1mm\n\\begin{longtabu} spread 0pt [c]{*{" << cols << "}{|X[-1]}|}\n";
+    t << "\\tabulinesep=1mm\n\\begin{longtabu}spread 0pt [c]{*{" << cols << "}{|X[-1]}|}\n";
   }
   //return isNested ? "TabularNC" : "TabularC";
 }
