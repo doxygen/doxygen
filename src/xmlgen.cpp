@@ -175,7 +175,7 @@ static void writeCombineScript()
   "  <xsl:output method=\"xml\" version=\"1.0\" indent=\"no\" standalone=\"yes\" />\n"
   "  <xsl:template match=\"/\">\n"
   "    <doxygen version=\"{doxygenindex/@version}\">\n"
-  "      <!-- Load all doxgen generated xml files -->\n"
+  "      <!-- Load all doxygen generated xml files -->\n"
   "      <xsl:for-each select=\"doxygenindex/compound\">\n"
   "        <xsl:copy-of select=\"document( concat( @refid, '.xml' ) )/doxygen/*\" />\n"
   "      </xsl:for-each>\n"

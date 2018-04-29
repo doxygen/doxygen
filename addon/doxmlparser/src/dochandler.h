@@ -571,7 +571,7 @@ class EMailHandler : public DocEMailImpl, public BaseHandler<EMailHandler>
 
 //-----------------------------------------------------------------------------
 
-/* \brief Node representing a link to an URL
+/* \brief Node representing a link to a URL
  *
  */
 class ULinkHandler : public DocULinkImpl, public BaseHandler<ULinkHandler>
