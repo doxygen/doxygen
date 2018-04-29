@@ -931,9 +931,17 @@ PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON
 					  endFontClass();
                                         }
  /*-------- variable declaration ----------------------------------*/
+<Start>^{BS}"real"/[,:( ]               { // real is a bit tricky as it is a data type but also a function.
+                                          yy_push_state(YY_START);
+					  BEGIN(Declaration);
+   					  startFontClass("keywordtype");
+					  g_code->codify(yytext);
+					  endFontClass();
+                                       }
 <Start>{TYPE_SPEC}/[,:( ]               { 
                                           QCString typ = yytext;
-                                          typ = typ.lower();
+                                          typ = removeRedundantWhiteSpace(typ.lower());
+                                          if (QString(typ).startsWith("real")) YY_FTN_REJECT;
                                           if (typ == "type" || typ == "class" || typ == "procedure") inTypeDecl = 1;
                                           yy_push_state(YY_START);
 					  BEGIN(Declaration);
@@ -1188,14 +1196,16 @@ PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON
  /*-----------------------------------------------------------------------------*/
 
 <*>\n					{
-  					if (g_endComment)
-            {
-            g_endComment=FALSE;
-            }
-            else
-            {
-            codifyLines(yytext);
-            }
+  				  	  if (g_endComment)
+                                          {
+                                            g_endComment=FALSE;
+                                          }
+                                          else
+                                          {
+                                            codifyLines(yytext);
+                                            // comment cannot extend over the end of a line so should always be terminatd at the end of the line.
+                                            if (g_currentFontClass && !strcmp(g_currentFontClass,"comment")) endFontClass();
+                                          }
 					  g_contLineNr++;
                                           YY_FTN_RESET
   					}
