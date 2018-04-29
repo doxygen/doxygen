@@ -240,7 +240,7 @@ static QCString isBlockCommand(const char *data,int offset,int size)
     {
       return "f]";
     }
-    else if (data[end]=='}')
+    else if (data[end]=='{')
     {
       return "f}";
     }
