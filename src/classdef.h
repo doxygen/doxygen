@@ -200,7 +200,7 @@ class ClassDef : public Definition
     MemberDef    *getMemberByName(const QCString &) const;
     
     /** Returns TRUE iff \a bcd is a direct or indirect base class of this
-     *  class. This function will recusively traverse all branches of the
+     *  class. This function will recursively traverse all branches of the
      *  inheritance tree.
      */
     bool isBaseClass(ClassDef *bcd,bool followInstances,int level=0);

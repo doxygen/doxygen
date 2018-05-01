@@ -41,14 +41,14 @@ available through the global functions \c Config_getXXX(), where \c XXX is the
 type of the option. The argument of these function is a string naming
 the option as it appears in the configuration file. For instance: 
 \c Config_getBool("GENERATE_TESTLIST") returns a reference to a boolean
-value that is \c TRUE if the test list was enabled in the config file. 
+value that is \c TRUE if the test list was enabled in the configuration file. 
 
 The function \c readConfiguration() in \c src/doxygen.cpp 
 reads the command line options and then calls the configuration parser.
 
 <h3>C Preprocessor</h3>
 
-The input files mentioned in the config file are (by default) fed to the
+The input files mentioned in the configuration file are (by default) fed to the
 C Preprocessor (after being piped through a user defined filter if available).
 
 The way the preprocessor works differs somewhat from a standard C Preprocessor.
@@ -139,8 +139,8 @@ strings and executes the commands it finds in it (this is the second pass
 in parsing the documentation). It writes the result directly to the output 
 generators.
 
-The parser is written in C++ and can be found in src/docparser.cpp. The
-tokens that are eaten by the parser come from src/doctokenizer.l.
+The parser is written in C++ and can be found in \c src/docparser.cpp. The
+tokens that are eaten by the parser come from \c src/doctokenizer.l.
 Code fragments found in the comment blocks are passed on to the source parser.
 
 The main entry point for the documentation parser is \c validatingParseDoc()
@@ -190,12 +190,12 @@ could extract information from the XML output. Possible tools could be:
 Since doxygen uses a lot of \c flex code it is important to understand
 how \c flex works (for this one should read the \c man page) 
 and to understand what it is doing when \c flex is parsing some input. 
-Fortunately, when flex is used with the `-d` option it outputs what rules
+Fortunately, when \c flex is used with the `-d` option it outputs what rules
 matched. This makes it quite easy to follow what is going on for a 
 particular input fragment. 
 
-To make it easier to toggle debug information for a given flex file I
-wrote the following perl script, which automatically adds or removes `-d`
+To make it easier to toggle debug information for a given \c flex file I
+wrote the following \c perl script, which automatically adds or removes `-d`
 from the correct line in the \c Makefile:
 
 \verbatim
@@ -240,10 +240,15 @@ $now = time;
 utime $now, $now, $file;
 \endverbatim
 Another way to get rules matching / debugging information
-from the \c flex code is setting LEX_FLAGS with \c make (`make LEX_FLAGS=-d`).
+from the \c flex code is setting \c LEX_FLAGS with \c make (`make LEX_FLAGS=-d`).
 
 Note that by running doxygen with `-d lex` you get information about which 
 `flex codefile` is used.
+
+<h3>Testing</h3>
+
+Doxygen has a small set of tests available to test, some, code integrity.
+The tests can be run by means of the command `make tests`. When only one or a few tests are required one can set the variable \c TEST_FLAGS when running the test e.g. `make TEST_FLAGS="--id 5" tests` or for multiple tests `make TEST_FLAGS="--id 5 --id 7" tests`.
 
 \htmlonly
 Return to the <a href="index.html">index</a>.

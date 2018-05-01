@@ -38,6 +38,7 @@
 #include "filename.h"
 #include "resourcemgr.h"
 
+static bool DoxyCodeOpen = FALSE;
 //-------------------------------
 
 LatexCodeGenerator::LatexCodeGenerator(FTextStream &t,const QCString &relPath,const QCString &sourceFileName)
@@ -77,8 +78,8 @@ void LatexCodeGenerator::codify(const char *str)
     //char cs[5];
     int spacesToNextTabStop;
     static int tabSize = Config_getInt(TAB_SIZE);
-    const int maxLineLen = 108;
-    QCString result(4*maxLineLen+1); // worst case for 1 line of 4-byte chars
+    static char *result = NULL;
+    static int lresult = 0;
     int i;
     while ((c=*p))
     {
@@ -86,9 +87,17 @@ void LatexCodeGenerator::codify(const char *str)
       {
         case 0x0c: p++;  // remove ^L
                    break;
+        case ' ':  m_t <<" ";
+                   m_col++;
+                   p++;
+                   break;
+        case '^':  m_t <<"\\string^";
+                   m_col++;
+                   p++;
+                   break;
         case '\t': spacesToNextTabStop =
                          tabSize - (m_col%tabSize);
-                   m_t << Doxygen::spaces.left(spacesToNextTabStop);
+                   for (i = 0; i < spacesToNextTabStop; i++) m_t <<" ";
                    m_col+=spacesToNextTabStop;
                    p++;
                    break;
@@ -100,6 +109,11 @@ void LatexCodeGenerator::codify(const char *str)
 #undef  COPYCHAR
 // helper macro to copy a single utf8 character, dealing with multibyte chars.
 #define COPYCHAR() do {                                           \
+                     if (lresult < (i + 5))                       \
+                     {                                            \
+                       lresult += 512;                            \
+                       result = (char *)realloc(result, lresult); \
+                     }                                            \
                      result[i++]=c; p++;                          \
                      if (c<0) /* multibyte utf-8 character */     \
                      {                                            \
@@ -116,30 +130,16 @@ void LatexCodeGenerator::codify(const char *str)
                          result[i++]=*p++;                        \
                        }                                          \
                      }                                            \
-                     m_col++;                                       \
+                     m_col++;                                     \
                    } while(0)
 
-                   // gather characters until we find whitespace or are at
-                   // the end of a line
+                   // gather characters until we find whitespace or another special character
                    COPYCHAR();
-                   if (m_col>=maxLineLen) // force line break
+                   while ((c=*p) &&
+                          c!=0x0c && c!='\t' && c!='\n' && c!=' ' && c!='^'
+                         )
                    {
-                     m_t << "\n      ";
-                     m_col=0;
-                   }
-                   else // copy more characters
-                   {
-                     while (m_col<maxLineLen && (c=*p) &&
-                            c!=0x0c && c!='\t' && c!='\n' && c!=' '
-                           )
-                     {
-                       COPYCHAR();
-                     }
-                     if (m_col>=maxLineLen) // force line break
-                     {
-                       m_t << "\n      ";
-                       m_col=0;
-                     }
+                     COPYCHAR();
                    }
                    result[i]=0; // add terminator
                    //if (m_prettyCode)
@@ -190,6 +190,11 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
 {
   static bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  if (!DoxyCodeOpen)
+  {
+    m_t << "\\DoxyCodeLine{";
+    DoxyCodeOpen = TRUE;
+  }
   if (m_prettyCode)
   {
     QCString lineNumber;
@@ -223,10 +228,20 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
 void LatexCodeGenerator::startCodeLine(bool)
 {
   m_col=0;
+  if (!DoxyCodeOpen)
+  {
+    m_t << "\\DoxyCodeLine{";
+    DoxyCodeOpen = TRUE;
+  }
 }
 
 void LatexCodeGenerator::endCodeLine()
 {
+  if (DoxyCodeOpen)
+  {
+    m_t << "}";
+    DoxyCodeOpen = FALSE;
+  }
   codify("\n");
 }
 
@@ -478,8 +493,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   t << "% Packages required by doxygen\n"
        "\\usepackage{fixltx2e}\n" // for \textsubscript
        "\\usepackage{calc}\n"
-       "\\usepackage{doxygen}\n"
-       "\\usepackage[export]{adjustbox} % also loads graphicx\n";
+       "\\usepackage{doxygen}\n";
   QStrList extraLatexStyle = Config_getList(LATEX_EXTRA_STYLESHEET);
   for (uint i=0; i<extraLatexStyle.count(); ++i)
   {
@@ -636,6 +650,23 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (pdfHyperlinks)
   {
+    unsigned char minus[4]; // Superscript minus
+    char *pminus = (char *)minus;
+    unsigned char sup2[3]; // Superscript two
+    char *psup2 = (char *)sup2;
+    unsigned char sup3[3];
+    char *psup3 = (char *)sup3; // Superscript three
+    minus[0]= 0xE2;
+    minus[1]= 0x81;
+    minus[2]= 0xBB;
+    minus[3]= 0;
+    sup2[0]= 0xC2;
+    sup2[1]= 0xB2;
+    sup2[2]= 0;
+    sup3[0]= 0xC2;
+    sup3[1]= 0xB3;
+    sup3[2]= 0;
+
     t << "% Hyperlinks (required, but should be loaded last)\n"
          "\\ifpdf\n"
          "  \\usepackage[pdftex,pagebackref=true]{hyperref}\n"
@@ -646,6 +677,19 @@ static void writeDefaultHeaderPart1(FTextStream &t)
          "    \\usepackage[ps2pdf,pagebackref=true]{hyperref}\n"
          "  \\fi\n"
          "\\fi\n"
+	 "\\ifpdf\n"
+         "  \\DeclareUnicodeCharacter{207B}{${}^{-}$}% Superscript minus\n"
+         "  \\DeclareUnicodeCharacter{C2B2}{${}^{2}$}% Superscript two\n"
+         "  \\DeclareUnicodeCharacter{C2B3}{${}^{3}$}% Superscript three\n"
+         "\\else\n"
+         "  \\catcode`\\" << pminus << "=13% Superscript minus\n"
+         "  \\def" << pminus << "{${}^{-}$}\n"
+         "  \\catcode`\\" << psup2 << "=13% Superscript two\n"
+         "  \\def" << psup2 << "{${}^{2}$}\n"
+         "  \\catcode`\\"<<psup3<<"=13% Superscript three\n"
+         "  \\def"<<psup3<<"{${}^{3}$}\n"
+         "\\fi\n"
+         "\n"
          "\\hypersetup{%\n"
          "  colorlinks=true,%\n"
          "  linkcolor=blue,%\n"
@@ -765,7 +809,7 @@ static void writeDefaultFooter(FTextStream &t)
   t << "\\newpage\n"
        "\\phantomsection\n"
        "\\clearemptydoublepage\n"
-       "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trRTFGeneralIndex() << "}\n"
+       "\\addcontentsline{toc}{" << unit << "}{\\indexname}\n"
        "\\printindex\n"
        "\n";
   QCString documentPost = theTranslator->latexDocumentPost();

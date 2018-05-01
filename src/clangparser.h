@@ -19,7 +19,7 @@ class ClangParser
      *  @param[in,out] filesInTranslationUnit Other files that are
      *                 part of the input and included by the file.
      *                 The function will return a subset of the files,
-     *                 only including the onces that were actually found 
+     *                 only including the ones that were actually found 
      *                 during parsing.
      */
     void start(const char *fileName,QStrList &filesInTranslationUnit);

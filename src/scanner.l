@@ -2382,10 +2382,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    {
 					      current->protection = Protected;
 					    }
-					    else if (javaLike && qstrcmp(yytext,"internal")==0)
-					    {
-					      current->protection = Package;
-					    }
 					    else if (javaLike && qstrcmp(yytext,"private")==0)
 					    {
 					      current->protection = Private;
@@ -3639,7 +3635,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      current->fileName   = yyFileName;
 					      current->startLine  = yyLineNr;
 					      current->startColumn = yyColNr;
-					      current->type       = "@"; // enum marker
+					      if (!(current_root->spec&Entry::Enum))
+					      {
+					        current->type       = "@"; // enum marker
+					      }
 					      current->args       = current->args.simplifyWhiteSpace();
 					      current->name       = current->name.stripWhiteSpace();
 					      current->section    = Entry::VARIABLE_SEC;

@@ -375,7 +375,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
       mathJaxJs += "\n";
     }
     mathJaxJs += "</script>";
-    mathJaxJs += "<script type=\"text/javascript\" async src=\"" + path + "MathJax.js\"></script>\n";
+    mathJaxJs += "<script type=\"text/javascript\" async=\"async\" src=\"" + path + "MathJax.js\"></script>\n";
   }
 
   // first substitute generic keywords
@@ -2354,7 +2354,7 @@ void HtmlGenerator::writeSearchPage()
   if (cf.open(IO_WriteOnly))
   {
     FTextStream t(&cf);
-    t << "<script language=\"php\">\n\n";
+    t << "<?php\n\n";
     t << "$config = array(\n";
     t << "  'PROJECT_NAME' => \"" << convertToHtml(projectName) << "\",\n";
     t << "  'GENERATE_TREEVIEW' => " << (generateTreeView?"true":"false") << ",\n";
@@ -2372,7 +2372,7 @@ void HtmlGenerator::writeSearchPage()
     t << "  'split_bar' => \"" << substitute(substitute(writeSplitBarAsString("search",""), "\"","\\\""), "\n","\\n") << "\",\n";
     t << "  'logo' => \"" << substitute(substitute(writeLogoAsString(""), "\"","\\\""), "\n","\\n") << "\",\n";
     t << ");\n\n";
-    t << "</script>\n";
+    t << "?>\n";
   }
 
   ResourceMgr::instance().copyResource("search_functions.php",htmlOutput);
@@ -2403,10 +2403,10 @@ void HtmlGenerator::writeSearchPage()
       t << "</div>" << endl;
     }
 
-    t << "<script language=\"php\">\n";
+    t << "<?php\n";
     t << "require_once \"search_functions.php\";\n";
     t << "main();\n";
-    t << "</script>\n";
+    t << "?>\n";
 
     // Write empty navigation path, to make footer connect properly
     if (generateTreeView)

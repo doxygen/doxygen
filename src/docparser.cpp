@@ -451,11 +451,12 @@ static void checkArgumentName(const QCString &name,bool isParam)
 }
 
 /*! Checks if the parameters that have been specified using \@param are
- *  indeed all parameters.
+ *  indeed all parameters and that a parameter does not have multiple
+ *  \@param blocks.
  *  Must be called after checkArgumentName() has been called for each
  *  argument.
  */
-static void checkUndocumentedParams()
+static void checkUnOrMultipleDocumentedParams()
 {
   if (g_memberDef && g_hasParamCommand && Config_getBool(WARN_IF_DOC_ERROR))
   {
@@ -470,18 +471,37 @@ static void checkUndocumentedParams()
       bool found=FALSE;
       for (ali.toFirst();(a=ali.current());++ali)
       {
+        int count = 0;
         QCString argName = g_memberDef->isDefine() ? a->type : a->name;
         if (lang==SrcLangExt_Fortran) argName = argName.lower();
         argName=argName.stripWhiteSpace();
+        QCString aName = argName;
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
-        if (g_memberDef->getLanguage()==SrcLangExt_Python && (argName=="self" || argName=="cls"))
+        if (lang==SrcLangExt_Python && (argName=="self" || argName=="cls"))
         { 
           // allow undocumented self / cls parameter for Python
         }
         else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a->docs.isEmpty()) 
         {
           found = TRUE;
-          break;
+        }
+        else
+        {
+          QDictIterator<void> it1(g_paramsFound);
+          void *item1;
+          for (;(item1=it1.current());++it1)
+          {
+            if (argName == it1.currentKey()) count++;
+          }
+        }
+        if (count > 1)
+        {
+          warn_doc_error(g_memberDef->getDefFileName(),
+                         g_memberDef->getDefLine(),
+                         "argument '" + aName +
+                         "' from the argument list of " +
+                         QCString(g_memberDef->qualifiedName()) +
+                         " has muliple @param documentation sections");
         }
       }
       if (found)
@@ -497,7 +517,7 @@ static void checkUndocumentedParams()
           QCString argName = g_memberDef->isDefine() ? a->type : a->name;
           if (lang==SrcLangExt_Fortran) argName = argName.lower();
           argName=argName.stripWhiteSpace();
-          if (g_memberDef->getLanguage()==SrcLangExt_Python && (argName=="self" || argName=="cls"))
+          if (lang==SrcLangExt_Python && (argName=="self" || argName=="cls"))
           { 
             // allow undocumented self / cls parameter for Python
           }
@@ -6125,16 +6145,15 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
             }
           }
         }
-        else if (findAttribute(tagHtmlAttribs,"langword",&cref)) // <see langword="..."/> or <see langworld="..."></see>
+        else if (findAttribute(tagHtmlAttribs,"langword",&cref)) // <see langword="..."/> or <see langword="..."></see>
         {
-            doctokenizerYYsetStatePara();
-            DocLink *lnk = new DocLink(this,cref);
-            m_children.append(lnk);
-            QCString leftOver = lnk->parse(FALSE,TRUE);
-            if (!leftOver.isEmpty())
-            {
-              m_children.append(new DocWord(this,leftOver));
-            }
+          bool inSeeBlock = g_inSeeBlock;
+          g_token->name = cref;
+          g_inSeeBlock = TRUE;
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,TRUE));
+          handleLinkedWord(this,m_children,TRUE);
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,FALSE));
+          g_inSeeBlock = inSeeBlock;
         }
         else
         {
@@ -7541,7 +7560,7 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
     delete v;
   }
 
-  checkUndocumentedParams();
+  checkUnOrMultipleDocumentedParams();
   detectNoDocumentedParams();
 
   // TODO: These should be called at the end of the program.

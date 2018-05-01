@@ -1034,15 +1034,15 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 
         ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man); 
-        if (!latexSourceCode)
-        {
-          ol.disable(OutputGenerator::Latex);
-        }
-        if (!rtfSourceCode)
-        {
-          ol.disable(OutputGenerator::RTF);
-        }
         ol.disableAllBut(OutputGenerator::Html); 
+        if (latexSourceCode)
+        {
+          ol.enable(OutputGenerator::Latex);
+        }
+        if (rtfSourceCode)
+        {
+          ol.enable(OutputGenerator::RTF);
+        }
         // write line link (HTML only)
         ol.writeObjectLink(0,fn,anchorStr,lineStr);
         ol.enableAll();

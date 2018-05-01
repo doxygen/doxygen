@@ -159,6 +159,9 @@ static char          stringStartSymbol; // single or double quote
 //  declared from referenced names
 static int 	     bracketCount = 0;
 
+// signal when in type / class /procedure declaration
+static int           inTypeDecl = 0;
+
 static bool      g_endComment;
 
 static void endFontClass()
@@ -687,14 +690,14 @@ CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE|CLASS|PROCEDURE)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
-ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|RECURSIVE|PURE|IMPURE|ELEMENTAL|VALUE|NOPASS|DEFERRED|CONTIGUOUS|VOLATILE)
+ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|(NON_)?RECURSIVE|PURE|IMPURE|ELEMENTAL|VALUE|NOPASS|DEFERRED|CONTIGUOUS|VOLATILE)
 ACCESS_SPEC (PROTECTED|PRIVATE|PUBLIC)
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION
 FLOW      (DO|SELECT|CASE|SELECT{BS}(CASE|TYPE)|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT|GO{BS}TO)
 COMMANDS  (FORMAT|CONTAINS|MODULE{BS_}PROCEDURE|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|PRESENT|DEALLOCATE|NULLIFY|SIZE|INQUIRE|OPEN|CLOSE|FLUSH|DATA|COMMON)
 IGNORE    (CALL)
-PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|IMPURE|PURE|ELEMENTAL)?
+PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON_)?RECURSIVE|IMPURE|PURE|ELEMENTAL)?
 
 /* |  */
 
@@ -813,7 +816,8 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           unput(*yytext);
                                           yy_pop_state();YY_FTN_RESET
                                         }
-<Start>"import"{BS_}                    {
+<*>"import"{BS}/"\n"                  |
+<*>"import"{BS_}                        {
                                           startFontClass("keywordtype");
                                           codifyLines(yytext);
                                           endFontClass();
@@ -824,6 +828,11 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           g_insideBody=TRUE;
                                           generateLink(*g_code, yytext);
                                           g_insideBody=FALSE;
+                                        }
+<Import>("ONLY"|"NONE"|"ALL")           {
+                                          startFontClass("keywordtype");
+                                          codifyLines(yytext);
+                                          endFontClass();
                                         }
  /*-------- fortran module  -----------------------------------------*/
 <Start>("block"{BS}"data"|"program"|"module"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
@@ -836,14 +845,14 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 	                                  if (!qstricmp(yytext,"module")) currentModule="module";
 					}
 <Start>("type")/{BS_}|({COMMA}({ACCESS_SPEC}|ABSTRACT|EXTENDS))|\n {  //
-            startScope();
-              startFontClass("keyword");
-              codifyLines(yytext);
-            endFontClass();
+                                          startScope();
+                                          startFontClass("keyword");
+                                          codifyLines(yytext);
+                                          endFontClass();
                                           yy_push_state(YY_START);
-            BEGIN(ClassName);
-            currentClass="class";
-          }
+                                          BEGIN(ClassName);
+                                          currentClass="class";
+                                        }
 <ClassName>{ID}               	        {
 	                                  if (currentModule == "module")
                                           {
@@ -853,7 +862,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  generateLink(*g_code,yytext);
                                           yy_pop_state();
  					}
-<ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable deklaration
+<ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable declaration
               startFontClass("keyword");
             g_code->codify(yytext);
             endFontClass();
@@ -876,7 +885,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
   					  codifyLines(yytext);
 					  endFontClass();
                                        }              
-<Start>({PREFIX}{BS_})?{SUBPROG}{BS_}                  {  // Fortran subroutine or function found
+<Start>({PREFIX}{BS_})?{SUBPROG}{BS_}   {  // Fortran subroutine or function found
    					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -922,7 +931,18 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  endFontClass();
                                         }
  /*-------- variable declaration ----------------------------------*/
+<Start>^{BS}"real"/[,:( ]               { // real is a bit tricky as it is a data type but also a function.
+                                          yy_push_state(YY_START);
+					  BEGIN(Declaration);
+   					  startFontClass("keywordtype");
+					  g_code->codify(yytext);
+					  endFontClass();
+                                       }
 <Start>{TYPE_SPEC}/[,:( ]               { 
+                                          QCString typ = yytext;
+                                          typ = removeRedundantWhiteSpace(typ.lower());
+                                          if (QString(typ).startsWith("real")) YY_FTN_REJECT;
+                                          if (typ == "type" || typ == "class" || typ == "procedure") inTypeDecl = 1;
                                           yy_push_state(YY_START);
 					  BEGIN(Declaration);
    					  startFontClass("keywordtype");
@@ -934,7 +954,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  g_code->codify(yytext);
 					  endFontClass();
                                        }
-<Declaration>({TYPE_SPEC}|{ATTR_SPEC})/[,:( ] { //| variable deklaration
+<Declaration>({TYPE_SPEC}|{ATTR_SPEC})/[,:( ] { //| variable declaration
   					  startFontClass("keywordtype");
 					  g_code->codify(yytext);
 					  endFontClass();
@@ -946,7 +966,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					    g_code->codify(yytext);
 					    endFontClass();
                                           }
-                                          else if (g_currentMemberDef && ((g_currentMemberDef->isFunction() && (g_currentMemberDef->typeString() != QCString("subroutine"))) ||
+                                          else if (g_currentMemberDef && ((g_currentMemberDef->isFunction() && (g_currentMemberDef->typeString() != QCString("subroutine") || inTypeDecl)) ||
                                                                           g_currentMemberDef->isVariable()))
                                           {
                                             generateLink(*g_code, yytext);
@@ -956,22 +976,23 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                             g_code->codify(yytext);
                                             addLocalVar(yytext);
                                           }
-					}
-<Declaration>{BS}("=>"|"="){BS}                        { // Procedure binding
-            BEGIN(DeclarationBinding);
-            g_code->codify(yytext);
-          }
-<DeclarationBinding>{ID}                       { // Type bound procedure link
+                                        }
+<Declaration>{BS}("=>"|"="){BS}         { // Procedure binding
+                                          BEGIN(DeclarationBinding);
+                                          g_code->codify(yytext);
+                                        }
+<DeclarationBinding>{ID}                { // Type bound procedure link
                                           generateLink(*g_code, yytext);
                                           yy_pop_state();
-          }
-<Declaration>[(]			{ // start of array specification
+                                        }
+<Declaration>[(]			{ // start of array or type / class specification
 					  bracketCount++;
 					  g_code->codify(yytext);
 					}
 
 <Declaration>[)]			{ // end array specification
 					  bracketCount--;
+                                          if (!bracketCount) inTypeDecl = 0;
 					  g_code->codify(yytext);
 					}
 
@@ -1175,14 +1196,16 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
  /*-----------------------------------------------------------------------------*/
 
 <*>\n					{
-  					if (g_endComment)
-            {
-            g_endComment=FALSE;
-            }
-            else
-            {
-            codifyLines(yytext);
-            }
+  				  	  if (g_endComment)
+                                          {
+                                            g_endComment=FALSE;
+                                          }
+                                          else
+                                          {
+                                            codifyLines(yytext);
+                                            // comment cannot extend over the end of a line so should always be terminatd at the end of the line.
+                                            if (g_currentFontClass && !strcmp(g_currentFontClass,"comment")) endFontClass();
+                                          }
 					  g_contLineNr++;
                                           YY_FTN_RESET
   					}

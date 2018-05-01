@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="067__using_8cpp" kind="file" language="C++">
-    <compoundname>067_using.cpp</compoundname>
+  <compounddef id="072__using_8cpp" kind="file" language="C++">
+    <compoundname>072_using.cpp</compoundname>
     <sectiondef kind="typedef">
-      <memberdef kind="typedef" id="067__using_8cpp_1a1b01c504448c96cd2191a5184dd31acf" prot="public" static="no">
+      <memberdef kind="typedef" id="072__using_8cpp_1a1b01c504448c96cd2191a5184dd31acf" prot="public" static="no">
         <templateparamlist>
           <param>
             <type>class T</type>
@@ -20,13 +20,13 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="067_using.cpp" line="7" column="1" bodyfile="067_using.cpp" bodystart="7" bodyend="-1"/>
+        <location file="072_using.cpp" line="7" column="1" bodyfile="072_using.cpp" bodystart="7" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="067_using.cpp"/>
+    <location file="072_using.cpp"/>
   </compounddef>
 </doxygen>

@@ -240,7 +240,7 @@ static QCString isBlockCommand(const char *data,int offset,int size)
     {
       return "f]";
     }
-    else if (data[end]=='}')
+    else if (data[end]=='{')
     {
       return "f}";
     }
@@ -483,6 +483,8 @@ static int processNmdash(GrowBuf &out,const char *data,int off,int size)
   {
     count++;
   }
+  if (count==2 && off>=2 && qstrncmp(data-2,"<!",2)==0) return 0; // start HTML comment
+  if (count==2 && (data[2]=='>')) return 0; // end HTML comment
   if (count==2 && (off<8 || qstrncmp(data-8,"operator",8)!=0)) // -- => ndash
   {
     out.addStr("&ndash;");
@@ -2548,7 +2550,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
   // finally process the inline markup (links, emphasis and code spans)
   processInline(out,s,s.length());
   out.addChar(0);
-  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n---------\n",qPrint(input),qPrint(out.get()));
+  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(out.get()));
   return out.get();
 }
 

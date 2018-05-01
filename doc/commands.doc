@@ -697,7 +697,7 @@ Structural indicators
   command are considered to be internal as well. Only a new section at the
   same level will end the fragment that is considered internal.
 
-  You can use \ref cfg_internal_docs "INTERNAL_DOCS" in the config file
+  You can use \ref cfg_internal_docs "INTERNAL_DOCS" in the configuration file
   to show (\c YES) or hide (\c NO) the internal documentation.
 
   \sa section \ref cmdendinternal "\\endinternal".
