@@ -6239,8 +6239,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <CSAccessorDecl>"."			{}
 <CSAccessorDecl>\n			{ lineCount(); }
 <CSString>"\""				{ BEGIN(CSAccessorDecl);}
-<CSString>"//"				{} /* Otherwise the rule <*>"//" will kick in */
-<CSString>"/*"				{} /* Otherwise the rule <*>"/*" will kick in */
+<CSString>"//"				{} // Otherwise the rule <*>"//" will kick in
+<CSString>"/*"				{} // Otherwise the rule <*>"/*" will kick in
 <CSString>\n				{ lineCount(); }
 <CSString>"."				{}
 
