@@ -196,7 +196,6 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
     }
   }
 #endif
-  fprintf(stderr,"AME ==> we should not get here\n");
   return 1; // we should never get here
 
 }
