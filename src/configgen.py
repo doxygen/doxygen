@@ -272,7 +272,7 @@ def parseOption(node):
 				print("              \"%s\"" % (line))
 		print("             );")
 		if defval != '':
-			print("  cs->setDefaultValue(\"%s\");" % (defval))
+			print("  cs->setDefaultValue(\"%s\");" % (defval.replace('\\','\\\\')))
 		if format == 'file':
 			print("  cs->setWidgetType(ConfigString::File);")
 		elif format == 'image':
@@ -529,7 +529,7 @@ def parseOptionDoc(node, first):
 				if defval != '':
 					print("")
 					print("The default value is: <code>%s</code>." % (
-						defval))
+						defval.replace('\\','\\\\')))
 			print("")
 		# depends handling
 		if (node.hasAttribute('depends')):
