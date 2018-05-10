@@ -149,6 +149,7 @@ static QCString         *pCopyRawString;
 
 static QGString         *pCopyCurlyGString;
 static QGString         *pCopyRoundGString;
+static QGString         *pCopySquareGString;
 static QGString         *pCopyQuotedGString;
 static QGString         *pCopyHereDocGString;
 static QGString         *pCopyRawGString;
@@ -734,6 +735,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %x	CopyRound
 %x	CopyCurly
 %x	GCopyRound
+%x	GCopySquare
 %x	GCopyCurly
 %x	SkipUnionSwitch
 %x	Specialization
@@ -2838,6 +2840,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  current->initializer+=*yytext; 
   					  BEGIN(GCopyRound);
   					}
+<ReadInitializer>"["                    {
+                                          if (!insidePHP) REJECT;
+                                          lastSquareContext=YY_START;
+                                          pCopySquareGString=&current->initializer;
+                                          squareCount=0;
+                                          current->initializer+=*yytext; 
+                                          BEGIN(GCopySquare);
+                                        }
 <ReadInitializer>"{"			{
   					  lastCurlyContext=YY_START;
   					  pCopyCurlyGString=&current->initializer;
@@ -3179,6 +3189,56 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <GCopyRound>.				{
   					  *pCopyRoundGString+=*yytext;
   					}
+
+  /* generic square bracket list copy rules for growable strings, we should only enter here in case of php, left the test part as in GCopyRound to keep it compatible with te round bracket version */
+<GCopySquare>\"                         {
+                                          *pCopySquareGString+=*yytext;
+                                            pCopyQuotedGString=pCopySquareGString;
+                                          lastStringContext=YY_START;
+                                          BEGIN(CopyGString);
+                                        }
+<GCopySquare>"["                        {
+                                          *pCopySquareGString+=*yytext;
+                                          squareCount++;
+                                        }
+<GCopySquare>"]"                        {
+                                          *pCopySquareGString+=*yytext;
+                                          if (--squareCount<0)
+                                          BEGIN(lastSquareContext);
+                                        }
+<GCopySquare>\n                         {
+                                          lineCount();
+                                          *pCopySquareGString+=*yytext;
+                                        }
+<GCopySquare>\'                         {
+                                          if (insidePHP)
+                                          {
+                                            current->initializer+=yytext; 
+                                            pCopyQuotedGString = pCopySquareGString;
+                                            lastStringContext=YY_START;
+                                            BEGIN(CopyPHPGString);
+                                          }
+                                          else
+                                          {
+                                            *pCopySquareGString+=yytext;
+                                          }
+                                        }
+<GCopySquare>{CHARLIT}                  { 
+                                          if (insidePHP)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            *pCopySquareGString+=yytext; 
+                                          }
+                                        }
+<GCopySquare>[^"\[\]\n/]+               {
+                                          *pCopySquareGString+=yytext;
+                                        }
+<GCopySquare>.                          {
+                                          *pCopySquareGString+=*yytext;
+                                        }
 
   /* generic curly bracket list copy rules */
 <CopyCurly>\"				{
