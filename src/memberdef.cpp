@@ -2576,7 +2576,7 @@ void MemberDef::writeDocumentation(MemberList *ml,
     else if (getFileDef())      { scopeName=getFileDef()->displayName();      scopedContainer=getFileDef(); }
     ciname = ((GroupDef *)container)->groupTitle();
   }
-  else if (container->definitionType()==TypeFile && getNamespaceDef())
+  else if (container->definitionType()==TypeFile && getNamespaceDef() && lang != SrcLangExt_Python)
   { // member is in a namespace, but is written as part of the file documentation
     // as well, so we need to make sure its label is unique.
     memAnchor.prepend("file_");
