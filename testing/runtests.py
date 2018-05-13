@@ -293,7 +293,8 @@ def main():
 		action="store_true")
 	parser.add_argument('--keep',help='keep result directories',
 		action="store_true")
-	args = parser.parse_args()
+	test_flags = os.getenv('TEST_FLAGS', default='').split()
+	args = parser.parse_args(test_flags + sys.argv[1:])
 
 	# sanity check
 	if (not args.xml) and (not args.pdf) and (not args.xhtml):
