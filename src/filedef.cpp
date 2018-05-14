@@ -1420,7 +1420,6 @@ bool FileDef::generateSourceFile() const
 { 
   static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   static bool verbatimHeaders = Config_getBool(VERBATIM_HEADERS);
-  QCString extension = name().right(4);
   return !isReference() && 
          (sourceBrowser || 
            (verbatimHeaders && guessSection(name())==Entry::HEADER_SEC) 

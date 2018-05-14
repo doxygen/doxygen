@@ -323,7 +323,6 @@ int guessSection(const char *name)
       n.right(4)==".c++"  ||
       n.right(5)==".java" ||
       n.right(2)==".m"    ||
-      n.right(2)==".M"    ||
       n.right(3)==".mm"   ||
       n.right(3)==".ii"   || // inline
       n.right(4)==".ixx"  ||
