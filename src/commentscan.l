@@ -582,7 +582,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     item->listAnchor = anchorLabel;
     docEntry->addSpecialListItem(listName,itemId);
     QCString cmdString;
-    cmdString.sprintf("\\xrefitem %s %d.",listName,itemId);
+    cmdString.sprintf(" \\xrefitem %s %d.",listName,itemId);
     if (inBody)
     {
       docEntry->inbodyDocs += cmdString;
@@ -1086,7 +1086,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  BEGIN(HtmlComment);
 					}
 <Comment>{B}*{CMD}"endinternal"{B}*	{
-                                          addOutput("\\endinternal "); 
+                                          addOutput(" \\endinternal "); 
                                           if (!inInternalDocs)
   					    warn(yyFileName,yyLineNr,
                                                "found \\endinternal without matching \\internal"
@@ -1704,7 +1704,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of the section/subsection/.. commands ------- */
 
-<SectionLabel>{LABELID}			{ // first argyment
+<SectionLabel>{LABELID}			{ // first argument
   					  g_sectionLabel=yytext;
                                           addOutput(yytext);
 					  g_sectionTitle.resize(0);
@@ -2038,7 +2038,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
   					}
 <SkipInternal>[@\\]"endinternal"[ \t]*  {
-                                          addOutput("\\endinternal "); 
+                                          addOutput(" \\endinternal "); 
 					  BEGIN(Comment);
 					}
 <SkipInternal>[^ \\@\n]+		{ // skip non-special characters
@@ -2209,7 +2209,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of the cite command ------- */
 
-<CiteLabel>{CITEID}			{ // found argyment
+<CiteLabel>{CITEID}			{ // found argument
   					  addCite();
                                           addOutput(yytext);
 					  BEGIN(Comment);
@@ -2770,7 +2770,7 @@ static bool handleInternal(const QCString &)
   else
   {
     // re-enabled for bug640828
-    addOutput("\\internal "); 
+    addOutput(" \\internal "); 
     inInternalDocs = TRUE;
   }
   return FALSE;
