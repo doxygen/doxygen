@@ -844,7 +844,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   }
   if (isToc) // special case for [TOC]
   {
-    if (g_current) g_current->stat=TRUE;
+    out.addStr("@tableofcontents");
   }
   else if (isImageLink) 
   {
