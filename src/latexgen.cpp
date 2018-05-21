@@ -694,6 +694,9 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   t << "\\usepackage{caption}\n"
     << "\\captionsetup{labelsep=space,justification=centering,font={bf},singlelinecheck=off,skip=4pt,position=top}\n\n";
 
+  // prevent numbers overlap the titles in toc
+  t << "\\renewcommand{\\numberline}[1]{#1~}\n";
+
   // End of preamble, now comes the document contents
   t << "%===== C O N T E N T S =====\n"
        "\n"
