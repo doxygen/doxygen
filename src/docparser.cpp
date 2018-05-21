@@ -5037,25 +5037,27 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
 
 void DocPara::handleImage(const QCString &cmdName)
 {
+  QCString saveCmdName = cmdName;
+
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
+        qPrint(saveCmdName));
     return;
   }
   tok=doctokenizerYYlex();
   if (tok!=TK_WORD && tok!=TK_LNKWORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
+        tokToString(tok),qPrint(saveCmdName));
     return;
   }
   tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
+        qPrint(saveCmdName));
     return;
   }
   DocImage::Type t;
@@ -5066,9 +5068,9 @@ void DocPara::handleImage(const QCString &cmdName)
   else if (imgType=="rtf")     t=DocImage::Rtf;
   else
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"image type %s specified as the first argument of "
-        "%s is not valid",
-        qPrint(imgType),qPrint(cmdName));
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"output format %s specified as the first argument of "
+        "%s command is not valid",
+        qPrint(imgType),qPrint(saveCmdName));
     return;
   }
   doctokenizerYYsetStateFile();
@@ -5077,7 +5079,7 @@ void DocPara::handleImage(const QCString &cmdName)
   if (tok!=TK_WORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
+        tokToString(tok),qPrint(saveCmdName));
     return;
   }
   HtmlAttribList attrList;
