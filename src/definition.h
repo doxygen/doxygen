@@ -97,6 +97,11 @@ class Definition : public DefinitionIntf
       virtual ~Cookie() {}
     };
 
+    enum outputLocalTocType {
+	    None          = 0,
+	    Html          = 0x01,
+            Latex         = 0x02
+    };
     /*! Create a new definition */
     Definition(
         const char *defFileName,int defLine,int defColumn,
@@ -346,7 +351,7 @@ class Definition : public DefinitionIntf
     void setLocalName(const QCString name);
 
     void addSectionsToIndex();
-    void writeToc(OutputList &ol);
+    void writeToc(OutputList &ol, int localToc);
 
     void setCookie(Cookie *cookie) { delete m_cookie; m_cookie = cookie; }
     Cookie *cookie() const { return m_cookie; }

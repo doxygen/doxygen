@@ -2016,15 +2016,19 @@ Make sure you have first read \ref intro "the introduction".
 \endverbatim
 
 <hr>
-\section cmdtableofcontents \\tableofcontents
+\section cmdtableofcontents \\tableofcontents['{'[option][,option]*'}']
 
   \addindex \\tableofcontents
   Creates a table of contents at the top of a page, listing all
-  sections and subsections in the page. 
+  sections and subsections in the page. The option can be `HTML` or `LaTeX`.
+  In case no option is specified \c \\tableofcontents acts as if just the
+  option `HTML` was specified. In case of multiple \c \\tableofcontents
+  commands in a page the option(s) will be used additional to the already
+  specified option(s).
 
   \warning This command only works inside related page documentation and
            \e not in other documentation blocks and only has effect in the
-           HTML output!
+           the specified output!
 
 <hr>
 \section cmdsection \\section <section-name> (section title)

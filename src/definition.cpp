@@ -1613,10 +1613,12 @@ void Definition::writeNavigationPath(OutputList &ol) const
 }
 
 // TODO: move to htmlgen
-void Definition::writeToc(OutputList &ol)
+void Definition::writeToc(OutputList &ol, int localToc)
 {
   SectionDict *sectionDict = m_impl->sectionDict;
   if (sectionDict==0) return;
+  if (localToc & Definition::Html)
+  {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   ol.writeString("<div class=\"toc\">");
@@ -1675,6 +1677,15 @@ void Definition::writeToc(OutputList &ol)
   ol.writeString("</ul>\n");
   ol.writeString("</div>\n");
   ol.popGeneratorState();
+  }
+
+  if (localToc & Definition::Latex)
+  {
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Latex);
+  ol.writeString("\\localtableofcontents\n");
+  ol.popGeneratorState();
+  }
 }
 
 //----------------------------------------------------------------------------------------

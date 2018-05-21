@@ -73,6 +73,7 @@ Entry::Entry(const Entry &e)
   spec        = e.spec;
   initLines   = e.initLines;
   stat        = e.stat;
+  localToc    = e.localToc;
   explicitExternal = e.explicitExternal;
   proto       = e.proto;
   subGrouping = e.subGrouping;
@@ -253,6 +254,7 @@ void Entry::reset()
   mtype   = Method;
   virt    = Normal;
   stat    = FALSE;
+  localToc = Definition::None;
   proto   = FALSE;
   explicitExternal = FALSE;
   spec  = 0;

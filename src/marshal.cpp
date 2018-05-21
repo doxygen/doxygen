@@ -355,6 +355,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalUInt64(s,e->spec);
   marshalInt(s,e->initLines);
   marshalBool(s,e->stat);
+  marshalInt(s,e->localToc);
   marshalBool(s,e->explicitExternal);
   marshalBool(s,e->proto);
   marshalBool(s,e->subGrouping);
@@ -737,6 +738,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->spec             = unmarshalUInt64(s);
   e->initLines        = unmarshalInt(s);
   e->stat             = unmarshalBool(s);
+  e->localToc         = unmarshalInt(s);
   e->explicitExternal = unmarshalBool(s);
   e->proto            = unmarshalBool(s);
   e->subGrouping      = unmarshalBool(s);

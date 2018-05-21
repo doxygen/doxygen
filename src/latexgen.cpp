@@ -566,7 +566,9 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\hbadness=750\n"
        "\\setlength{\\emergencystretch}{15pt}\n"
        "\\setlength{\\parindent}{0cm}\n"
-       "\\setlength{\\parskip}{3ex plus 2ex minus 2ex}\n";
+       "\\newcommand{\\doxynormalparskip}{\\setlength{\\parskip}{3ex plus 2ex minus 2ex}}\n"
+       "\\newcommand{\\doxytocparskip}{\\setlength{\\parskip}{1ex plus 0ex minus 0ex}}\n"
+       "\\doxynormalparskip\n";
   // Redefine paragraph/subparagraph environments, using sectsty fonts
   t << "\\makeatletter\n"
        "\\renewcommand{\\paragraph}{%\n"
@@ -693,6 +695,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   // caption style definition
   t << "\\usepackage{caption}\n"
     << "\\captionsetup{labelsep=space,justification=centering,font={bf},singlelinecheck=off,skip=4pt,position=top}\n\n";
+
+  // in page table of contents
+  t << "\\usepackage{etoc}\n"
+       "\\etocsettocstyle{\\doxytocparskip}{\\doxynormalparskip}\n";
 
   // End of preamble, now comes the document contents
   t << "%===== C O N T E N T S =====\n"
