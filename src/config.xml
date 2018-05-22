@@ -2533,13 +2533,14 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
 ]]>
       </docs>
     </option>
-    <option type='string' id='LATEX_CMD_NAME' format='file' defval='latex' depends='GENERATE_LATEX'>
+    <option type='string' id='LATEX_CMD_NAME' format='file' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
  The \c LATEX_CMD_NAME tag can be used to specify the \f$\mbox{\LaTeX}\f$ command name to be invoked. 
- <br>Note that when enabling \ref cfg_use_pdflatex "USE_PDFLATEX" this option is only used for
- generating bitmaps for formulas in the HTML output, but not in the
- \c Makefile that is written to the output directory.
+ <br>Note that when  not enabling \ref cfg_use_pdflatex "USE_PDFLATEX" the default is \c latex when
+ enabling \ref cfg_use_pdflatex "USE_PDFLATEX" the default is \c pdflatex and when in the later case
+ \c latex is chosen this is overwritten by \c pdflatex. For specific output languages the default can
+ have been set differently, this depends on the implementation of the output language.
 ]]>
       </docs>
     </option>
