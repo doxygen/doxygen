@@ -477,6 +477,7 @@ void convertProtectionLevel(
 bool mainPageHasTitle();
 bool openOutputFile(const char *outFile,QFile &f);
 void writeExtraLatexPackages(FTextStream &t);
+void writeLatexSpecialFormulaChars(FTextStream &t);
 
 int usedTableLevels();
 void incUsedTableLevels();

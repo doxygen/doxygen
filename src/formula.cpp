@@ -69,8 +69,10 @@ void FormulaList::generateBitmaps(const char *path)
     FTextStream t(&f);
     if (Config_getBool(LATEX_BATCHMODE)) t << "\\batchmode" << endl;
     t << "\\documentclass{article}" << endl;
+    t << "\\usepackage{ifthen}" << endl;
     t << "\\usepackage{epsfig}" << endl; // for those who want to include images
     writeExtraLatexPackages(t);
+    writeLatexSpecialFormulaChars(t);
     t << "\\pagestyle{empty}" << endl; 
     t << "\\begin{document}" << endl;
     int page=0;

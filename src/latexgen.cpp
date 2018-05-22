@@ -181,7 +181,7 @@ void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
   }
   else
   {
-    m_t << name;
+    codify(name);
   }
   m_col+=l;
 }
@@ -633,45 +633,17 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\n";
 
   writeExtraLatexPackages(t);
+  writeLatexSpecialFormulaChars(t);
 
   // Hyperlinks
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (pdfHyperlinks)
   {
-    unsigned char minus[4]; // Superscript minus
-    char *pminus = (char *)minus;
-    unsigned char sup2[3]; // Superscript two
-    char *psup2 = (char *)sup2;
-    unsigned char sup3[3];
-    char *psup3 = (char *)sup3; // Superscript three
-    minus[0]= 0xE2;
-    minus[1]= 0x81;
-    minus[2]= 0xBB;
-    minus[3]= 0;
-    sup2[0]= 0xC2;
-    sup2[1]= 0xB2;
-    sup2[2]= 0;
-    sup3[0]= 0xC2;
-    sup3[1]= 0xB3;
-    sup3[2]= 0;
-
     t << "% Hyperlinks (required, but should be loaded last)\n"
          "\\ifpdf\n"
          "  \\usepackage[pdftex,pagebackref=true]{hyperref}\n"
          "\\else\n"
          "  \\usepackage[ps2pdf,pagebackref=true]{hyperref}\n"
-         "\\fi\n"
-	 "\\ifpdf\n"
-         "  \\DeclareUnicodeCharacter{207B}{${}^{-}$}% Superscript minus\n"
-         "  \\DeclareUnicodeCharacter{C2B2}{${}^{2}$}% Superscript two\n"
-         "  \\DeclareUnicodeCharacter{C2B3}{${}^{3}$}% Superscript three\n"
-         "\\else\n"
-         "  \\catcode`\\" << pminus << "=13% Superscript minus\n"
-         "  \\def" << pminus << "{${}^{-}$}\n"
-         "  \\catcode`\\" << psup2 << "=13% Superscript two\n"
-         "  \\def" << psup2 << "{${}^{2}$}\n"
-         "  \\catcode`\\"<<psup3<<"=13% Superscript three\n"
-         "  \\def"<<psup3<<"{${}^{3}$}\n"
          "\\fi\n"
          "\n"
          "\\hypersetup{%\n"
@@ -2209,6 +2181,11 @@ void LatexGenerator::startCodeFragment()
 
 void LatexGenerator::endCodeFragment()
 {
+  if (DoxyCodeOpen)
+  {
+    t << "}\n";
+    DoxyCodeOpen = FALSE;
+  }
   t << "\\end{DoxyCode}\n";
 }
 
