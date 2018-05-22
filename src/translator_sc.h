@@ -71,6 +71,11 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     virtual QCString latexLanguageSupportCommand()
     {
+      return "\\usepackage[T2A]{fontenc}\n"
+             "\\usepackage[russian]{babel}\n";
+    }
+    virtual QCString latexFontenc()
+    {
       return "";
     }
 
