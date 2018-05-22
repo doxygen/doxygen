@@ -19,12 +19,12 @@
 #include <qdir.h>
 #include "htmldocvisitor.h"
 #include "docparser.h"
-#include "config.h"
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
 #include "dot.h"
 #include "message.h"
+#include "config.h"
 #include "htmlgen.h"
 #include "parserintf.h"
 #include "msc.h"

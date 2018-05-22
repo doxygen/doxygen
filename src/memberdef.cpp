@@ -25,7 +25,6 @@
 #include "code.h"
 #include "message.h"
 #include "htmlhelp.h"
-#include "config.h"
 #include "language.h"
 #include "outputlist.h"
 #include "example.h"
@@ -44,6 +43,7 @@
 #include "memberlist.h"
 #include "namespacedef.h"
 #include "filedef.h"
+#include "config.h"
 
 //-----------------------------------------------------------------------------
 

@@ -22,7 +22,6 @@
 #include "classdef.h"
 #include "namespacedef.h"
 #include "filedef.h"
-#include "config.h"
 #include "language.h"
 #include "groupdef.h"
 #include "doxygen.h"

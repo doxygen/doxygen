@@ -19,6 +19,7 @@
 #define TRANSLATOR_H
 
 #include "classdef.h"
+#include "config.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator

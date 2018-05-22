@@ -20,7 +20,6 @@
 
 #include "docbookvisitor.h"
 #include "docparser.h"
-#include "config.h"
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
@@ -30,6 +29,7 @@
 #include "util.h"
 #include "parserintf.h"
 #include "filename.h"
+#include "config.h"
 #include "filedef.h"
 #include "msc.h"
 #include "dia.h"

@@ -19,7 +19,6 @@
 #include <qfileinfo.h> 
 #include "latexdocvisitor.h"
 #include "docparser.h"
-#include "config.h"
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
@@ -31,6 +30,7 @@
 #include "dia.h"
 #include "cite.h"
 #include "filedef.h"
+#include "config.h"
 #include "htmlentity.h"
 #include "plantuml.h"
 
