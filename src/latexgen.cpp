@@ -1574,7 +1574,7 @@ void LatexGenerator::endGroupHeader(int)
   t << "}" << endl;
 }
 
-void LatexGenerator::startMemberHeader(const char *)
+void LatexGenerator::startMemberHeader(const char *,int)
 {
   if (Config_getBool(COMPACT_LATEX)) 
   {
@@ -1862,7 +1862,7 @@ void LatexGenerator::endMemberItem()
   t << endl; 
 }
 
-void LatexGenerator::startMemberDescription(const char *,const char *) 
+void LatexGenerator::startMemberDescription(const char *,const char *,bool) 
 {
   if (!insideTabbing)
   { 
