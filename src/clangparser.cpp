@@ -4,6 +4,7 @@
 
 #if USE_LIBCLANG
 #include <clang-c/Index.h>
+#include "clang/Tooling/CompilationDatabase.h"
 #include "clang/Tooling/Tooling.h"
 #include <qfileinfo.h>
 #include <stdlib.h>
