@@ -244,7 +244,22 @@ void RTFGenerator::beginRTFDocument()
   t <<"\\red128\\green0\\blue0;";
   t <<"\\red128\\green128\\blue0;";
   t <<"\\red128\\green128\\blue128;";
-  t <<"\\red192\\green192\\blue192;}" << endl;
+  t <<"\\red192\\green192\\blue192;";
+
+  // code highlighting colors. Note order is important see also RTFGenerator::startFontClass
+  t <<"\\red0\\green128\\blue0;";   // keyword = index 17
+  t <<"\\red96\\green64\\blue32;";  // keywordtype
+  t <<"\\rede0\\green128\\blue0;";  // keywordflow
+  t <<"\\red128\\green0\\blue0;";   // comment
+  t <<"\\red128\\green96\\blue32;"; // preprocessor
+  t <<"\\red0\\green32\\blue128;";  // stringliteral
+  t <<"\\red0\\green128\\blue128;"; // charliteral
+  t <<"\\red255\\green0\\blue255;"; // vhdldigit
+  t <<"\\red0\\green0\\blue0;";     // vhdlchar
+  t <<"\\red112\\green0\\blue112;"; // vhdlkeyword
+  t <<"\\red255\\green0\\blue0;";   // vhdllogic
+
+  t <<"}\n";
 
   DBG_RTF(t <<"{\\comment Beginning style list}\n")
   t <<"{\\stylesheet\n";
@@ -3041,5 +3056,25 @@ void RTFGenerator::endLabels()
 {
 }
 
+void RTFGenerator::startFontClass(const char *name)
+{
+  int cod = 2;
+  QCString qname(name);
+  if (qname == "keyword")            cod = 17;
+  else if (qname == "keywordtype")   cod = 18;
+  else if (qname == "keywordflow")   cod = 19;
+  else if (qname == "comment")       cod = 20;
+  else if (qname == "preprocessor")  cod = 21;
+  else if (qname == "stringliteral") cod = 22;
+  else if (qname == "charliteral")   cod = 23;
+  else if (qname == "vhdldigit")     cod = 24;
+  else if (qname == "vhdlchar")      cod = 25;
+  else if (qname == "vhdlkeyword")   cod = 26;
+  else if (qname == "vhdllogic")     cod = 27;
+  t << "{\\cf" << cod << " ";
+}
 
-
+void RTFGenerator::endFontClass()
+{
+  t << "}";
+}

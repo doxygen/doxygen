@@ -258,8 +258,8 @@ class RTFGenerator : public OutputGenerator
     void writeLabel(const char *l,bool isLast);
     void endLabels();
 
-    void startFontClass(const char *) {}
-    void endFontClass() {}
+    void startFontClass(const char *);
+    void endFontClass();
 
     void writeCodeAnchor(const char *) {}
     void setCurrentDoc(Definition *,const char *,bool) {}
