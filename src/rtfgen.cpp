@@ -602,7 +602,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << rtf_Style_Reset << rtf_Style["Title"]->reference << endl; // set to title style
         if (rtf_title)
           // User has overridden document title in extensions file
-          t << "{\\field\\fldedit {\\*\\fldinst " << rtf_title << " \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par" << endl;
+          t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par" << endl;
         else
         {
           DocText *root = validatingParseText(projectName);
