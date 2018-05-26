@@ -218,7 +218,7 @@ void LatexDocVisitor::visit(DocURL *u)
     if (u->isEmail()) m_t << "mailto:";
     m_t << u->url() << "}";
   }
-  m_t << "{\\tt ";
+  m_t << "\\texttt{ ";
   filter(u->url());
   m_t << "}";
 }
@@ -1232,7 +1232,7 @@ void LatexDocVisitor::visitPre(DocHRef *href)
     m_t << href->url();
     m_t << "}";
   }
-  m_t << "{\\tt ";
+  m_t << "\\texttt{ ";
 }
 
 void LatexDocVisitor::visitPost(DocHRef *) 
@@ -1479,7 +1479,7 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
   {
     if (pl->direction()!=DocParamSect::Unspecified)
     {
-      m_t << "\\mbox{\\tt ";
+      m_t << "\\mbox{\\texttt{ ";
       if (pl->direction()==DocParamSect::In)
       {
         m_t << "in";
@@ -1492,7 +1492,7 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
       {
         m_t << "in,out";
       }
-      m_t << "} ";
+      m_t << "}} ";
     }
     if (useTable) m_t << " & ";
   }
