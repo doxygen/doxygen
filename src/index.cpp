@@ -1638,10 +1638,15 @@ static void writeAnnotatedClassList(OutputList &ol)
   ol.endIndexList();
 }
 
+inline bool isId1(int c)
+{
+  return (c<127 && c>31); // printable ASCII character
+}
+
 static QCString letterToLabel(uint startLetter)
 {
   char s[11]; // max 0x12345678 + '\0'
-  if (isId(startLetter)) // printable ASCII character
+  if (isId1(startLetter)) // printable ASCII character
   {
     s[0]=(char)startLetter;
     s[1]=0;

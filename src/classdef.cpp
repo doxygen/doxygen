@@ -2687,7 +2687,7 @@ bool ClassDef::hasNonReferenceSuperClass()
   return found;
 }
 
-/*! called from MemberDef::writeDeclaration() to (recusively) write the
+/*! called from MemberDef::writeDeclaration() to (recursively) write the
  *  definition of an anonymous struct, union or class.
  */
 void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
@@ -2873,7 +2873,7 @@ static bool isStandardFunc(MemberDef *md)
 }
 
 /*!
- * recusively merges the `all members' lists of a class base
+ * recursively merges the `all members' lists of a class base
  * with that of this class. Must only be called for classes without
  * subclasses!
  */

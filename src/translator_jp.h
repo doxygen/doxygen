@@ -77,7 +77,19 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     virtual QCString latexLanguageSupportCommand()
     {
+      return "\\usepackage{CJKutf8}\n";
+    }
+    virtual QCString latexFontenc()
+    {
       return "";
+    }
+    virtual QCString latexDocumentPre()
+    {
+      return "\\begin{CJK}{UTF8}{min}\n";
+    }
+    virtual QCString latexDocumentPost()
+    {
+      return "\\end{CJK}\n";
     }
 
     /*! used in the compound documentation before a list of related functions. */

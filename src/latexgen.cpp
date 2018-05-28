@@ -38,6 +38,7 @@
 #include "filename.h"
 #include "resourcemgr.h"
 
+static bool DoxyCodeOpen = FALSE;
 //-------------------------------
 
 LatexCodeGenerator::LatexCodeGenerator(FTextStream &t,const QCString &relPath,const QCString &sourceFileName)
@@ -77,8 +78,8 @@ void LatexCodeGenerator::codify(const char *str)
     //char cs[5];
     int spacesToNextTabStop;
     static int tabSize = Config_getInt(TAB_SIZE);
-    const int maxLineLen = 108;
-    QCString result(4*maxLineLen+1); // worst case for 1 line of 4-byte chars
+    static char *result = NULL;
+    static int lresult = 0;
     int i;
     while ((c=*p))
     {
@@ -86,9 +87,17 @@ void LatexCodeGenerator::codify(const char *str)
       {
         case 0x0c: p++;  // remove ^L
                    break;
+        case ' ':  m_t <<" ";
+                   m_col++;
+                   p++;
+                   break;
+        case '^':  m_t <<"\\string^";
+                   m_col++;
+                   p++;
+                   break;
         case '\t': spacesToNextTabStop =
                          tabSize - (m_col%tabSize);
-                   m_t << Doxygen::spaces.left(spacesToNextTabStop);
+                   for (i = 0; i < spacesToNextTabStop; i++) m_t <<" ";
                    m_col+=spacesToNextTabStop;
                    p++;
                    break;
@@ -100,6 +109,11 @@ void LatexCodeGenerator::codify(const char *str)
 #undef  COPYCHAR
 // helper macro to copy a single utf8 character, dealing with multibyte chars.
 #define COPYCHAR() do {                                           \
+                     if (lresult < (i + 5))                       \
+                     {                                            \
+                       lresult += 512;                            \
+                       result = (char *)realloc(result, lresult); \
+                     }                                            \
                      result[i++]=c; p++;                          \
                      if (c<0) /* multibyte utf-8 character */     \
                      {                                            \
@@ -116,30 +130,16 @@ void LatexCodeGenerator::codify(const char *str)
                          result[i++]=*p++;                        \
                        }                                          \
                      }                                            \
-                     m_col++;                                       \
+                     m_col++;                                     \
                    } while(0)
 
-                   // gather characters until we find whitespace or are at
-                   // the end of a line
+                   // gather characters until we find whitespace or another special character
                    COPYCHAR();
-                   if (m_col>=maxLineLen) // force line break
+                   while ((c=*p) &&
+                          c!=0x0c && c!='\t' && c!='\n' && c!=' ' && c!='^'
+                         )
                    {
-                     m_t << "\n      ";
-                     m_col=0;
-                   }
-                   else // copy more characters
-                   {
-                     while (m_col<maxLineLen && (c=*p) &&
-                            c!=0x0c && c!='\t' && c!='\n' && c!=' '
-                           )
-                     {
-                       COPYCHAR();
-                     }
-                     if (m_col>=maxLineLen) // force line break
-                     {
-                       m_t << "\n      ";
-                       m_col=0;
-                     }
+                     COPYCHAR();
                    }
                    result[i]=0; // add terminator
                    //if (m_prettyCode)
@@ -190,6 +190,11 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
 {
   static bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  if (!DoxyCodeOpen)
+  {
+    m_t << "\\DoxyCodeLine{";
+    DoxyCodeOpen = TRUE;
+  }
   if (m_prettyCode)
   {
     QCString lineNumber;
@@ -223,10 +228,20 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
 void LatexCodeGenerator::startCodeLine(bool)
 {
   m_col=0;
+  if (!DoxyCodeOpen)
+  {
+    m_t << "\\DoxyCodeLine{";
+    DoxyCodeOpen = TRUE;
+  }
 }
 
 void LatexCodeGenerator::endCodeLine()
 {
+  if (DoxyCodeOpen)
+  {
+    m_t << "}";
+    DoxyCodeOpen = FALSE;
+  }
   codify("\n");
 }
 
@@ -271,13 +286,15 @@ static void writeLatexMakefile()
     exit(1);
   }
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
-  QCString latex_command = Config_getString(LATEX_CMD_NAME);
+  QCString latex_command = theTranslator->latexCommandName();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   FTextStream t(&file);
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "all: refman.dvi" << endl
+    t << "LATEX_CMD=" << latex_command << endl
+      << endl
+      << "all: refman.dvi" << endl
       << endl
       << "ps: refman.ps" << endl
       << endl
@@ -294,7 +311,7 @@ static void writeLatexMakefile()
     t << "\tps2pdf refman.ps refman.pdf" << endl << endl;
     t << "refman.dvi: clean refman.tex doxygen.sty" << endl
       << "\techo \"Running latex...\"" << endl
-      << "\t" << latex_command << " refman.tex" << endl
+      << "\t$(LATEX_CMD) refman.tex" << endl
       << "\techo \"Running makeindex...\"" << endl
       << "\t" << mkidx_command << " refman.idx" << endl;
     if (generateBib)
@@ -302,19 +319,19 @@ static void writeLatexMakefile()
       t << "\techo \"Running bibtex...\"" << endl;
       t << "\tbibtex refman" << endl;
       t << "\techo \"Rerunning latex....\"" << endl;
-      t << "\t" << latex_command << " refman.tex" << endl;
+      t << "\t$(LATEX_CMD) refman.tex" << endl;
     }
     t << "\techo \"Rerunning latex....\"" << endl
-      << "\t" << latex_command << " refman.tex" << endl
+      << "\t$(LATEX_CMD) refman.tex" << endl
       << "\tlatex_count=8 ; \\" << endl
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl
       << "\t      echo \"Rerunning latex....\" ;\\" << endl
-      << "\t      " << latex_command << " refman.tex ;\\" << endl
+      << "\t      $(LATEX_CMD) refman.tex ; \\" << endl
       << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
       << "\t    done" << endl
       << "\t" << mkidx_command << " refman.idx" << endl
-      << "\t" << latex_command << " refman.tex" << endl << endl
+      << "\t$(LATEX_CMD) refman.tex" << endl << endl
       << "refman_2on1.ps: refman.ps" << endl
       << "\tpsnup -2 refman.ps >refman_2on1.ps" << endl
       << endl
@@ -323,26 +340,28 @@ static void writeLatexMakefile()
   }
   else // use pdflatex for higher quality output
   {
+    t << "LATEX_CMD=" << latex_command << endl
+      << endl;
     t << "all: refman.pdf" << endl << endl
       << "pdf: refman.pdf" << endl << endl;
     t << "refman.pdf: clean refman.tex" << endl;
-    t << "\tpdflatex refman" << endl;
+    t << "\t$(LATEX_CMD) refman" << endl;
     t << "\t" << mkidx_command << " refman.idx" << endl;
     if (generateBib)
     {
       t << "\tbibtex refman" << endl;
-      t << "\tpdflatex refman" << endl;
+      t << "\t$(LATEX_CMD) refman" << endl;
     }
-    t << "\tpdflatex refman" << endl
+    t << "\t$(LATEX_CMD) refman" << endl
       << "\tlatex_count=8 ; \\" << endl
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl
       << "\t      echo \"Rerunning latex....\" ;\\" << endl
-      << "\t      pdflatex refman ;\\" << endl
+      << "\t      $(LATEX_CMD) refman ;\\" << endl
       << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
       << "\t    done" << endl
       << "\t" << mkidx_command << " refman.idx" << endl
-      << "\tpdflatex refman" << endl << endl;
+      << "\t$(LATEX_CMD) refman" << endl << endl;
   }
 
   t << endl
@@ -356,7 +375,7 @@ static void writeMakeBat()
 #if defined(_MSC_VER)
   QCString dir=Config_getString(LATEX_OUTPUT);
   QCString fileName=dir+"/make.bat";
-  QCString latex_command = Config_getString(LATEX_CMD_NAME);
+  QCString latex_command = theTranslator->latexCommandName();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   QFile file(fileName);
   bool generateBib = !Doxygen::citeDict->isEmpty();
@@ -371,14 +390,15 @@ static void writeMakeBat()
   t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n\n";
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << latex_command << " refman.tex\n";
+    t << "set LATEX_CMD=" << latex_command << "\n";
+    t << "%LATEX_CMD% refman.tex\n";
     t << "echo ----\n";
     t << mkidx_command << " refman.idx\n";
     if (generateBib)
     {
       t << "bibtex refman\n";
       t << "echo ----\n";
-      t << latex_command << " refman.tex\n";
+      t << "\t%LATEX_CMD% refman.tex\n";
     }
     t << "setlocal enabledelayedexpansion\n";
     t << "set count=8\n";
@@ -390,28 +410,29 @@ static void writeMakeBat()
     t << "set /a count-=1\n";
     t << "if !count! EQU 0 goto :skip\n\n";
     t << "echo ----\n";
-    t << latex_command << " refman.tex\n";
+    t << "%LATEX_CMD% refman.tex\n";
     t << "goto :repeat\n";
     t << ":skip\n";
     t << "endlocal\n";
     t << mkidx_command << " refman.idx\n";
-    t << latex_command << " refman.tex\n";
+    t << "%LATEX_CMD% refman.tex\n";
     t << "dvips -o refman.ps refman.dvi\n";
     t << "gswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
          "-sOutputFile=refman.pdf -c save pop -f refman.ps\n";
   }
   else // use pdflatex
   {
-    t << "pdflatex refman\n";
+    t << "set LATEX_CMD=" << latex_command << "\n";
+    t << "%LATEX_CMD% refman\n";
     t << "echo ----\n";
     t << mkidx_command << " refman.idx\n";
     if (generateBib)
     {
       t << "bibtex refman" << endl;
-      t << "pdflatex refman" << endl;
+      t << "%LATEX_CMD% refman" << endl;
     }
     t << "echo ----\n";
-    t << "pdflatex refman\n\n";
+    t << "%LATEX_CMD% refman\n\n";
     t << "setlocal enabledelayedexpansion\n";
     t << "set count=8\n";
     t << ":repeat\n";
@@ -422,12 +443,12 @@ static void writeMakeBat()
     t << "set /a count-=1\n";
     t << "if !count! EQU 0 goto :skip\n\n";
     t << "echo ----\n";
-    t << "pdflatex refman\n";
+    t << "%LATEX_CMD% refman\n";
     t << "goto :repeat\n";
     t << ":skip\n";
     t << "endlocal\n";
     t << mkidx_command << " refman.idx\n";
-    t << "pdflatex refman\n";
+    t << "%LATEX_CMD% refman\n";
     t << "cd /D %Dir_Old%\n";
     t << "set Dir_Old=\n";
   }
@@ -472,8 +493,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   t << "% Packages required by doxygen\n"
        "\\usepackage{fixltx2e}\n" // for \textsubscript
        "\\usepackage{calc}\n"
-       "\\usepackage{doxygen}\n"
-       "\\usepackage[export]{adjustbox} % also loads graphicx\n";
+       "\\usepackage{doxygen}\n";
   QStrList extraLatexStyle = Config_getList(LATEX_EXTRA_STYLESHEET);
   for (uint i=0; i<extraLatexStyle.count(); ++i)
   {
@@ -504,6 +524,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{textcomp}\n"
        "\\usepackage[nointegrals]{wasysym}\n"
        "\\usepackage[table]{xcolor}\n"
+       "\\usepackage{ifpdf,ifxetex}\n"
        "\n";
 
   // Language support
@@ -516,9 +537,13 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   }
 
   // Define default fonts
-  t << "% Font selection\n"
-       "\\usepackage[T1]{fontenc}\n"
-       "\\usepackage[scaled=.90]{helvet}\n"
+  t << "% Font selection\n";
+  QCString fontenc = theTranslator->latexFontenc();
+  if (!fontenc.isEmpty())
+  {
+    t << "\\usepackage[" << fontenc << "]{fontenc}\n";
+  }
+  t << "\\usepackage[scaled=.90]{helvet}\n"
        "\\usepackage{courier}\n"
        "\\usepackage{amssymb}\n"
        "\\usepackage{sectsty}\n"
@@ -625,13 +650,46 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (pdfHyperlinks)
   {
+    unsigned char minus[4]; // Superscript minus
+    char *pminus = (char *)minus;
+    unsigned char sup2[3]; // Superscript two
+    char *psup2 = (char *)sup2;
+    unsigned char sup3[3];
+    char *psup3 = (char *)sup3; // Superscript three
+    minus[0]= 0xE2;
+    minus[1]= 0x81;
+    minus[2]= 0xBB;
+    minus[3]= 0;
+    sup2[0]= 0xC2;
+    sup2[1]= 0xB2;
+    sup2[2]= 0;
+    sup3[0]= 0xC2;
+    sup3[1]= 0xB3;
+    sup3[2]= 0;
+
     t << "% Hyperlinks (required, but should be loaded last)\n"
-         "\\usepackage{ifpdf}\n"
          "\\ifpdf\n"
          "  \\usepackage[pdftex,pagebackref=true]{hyperref}\n"
          "\\else\n"
-         "  \\usepackage[ps2pdf,pagebackref=true]{hyperref}\n"
+         "  \\ifxetex\n"
+         "    \\usepackage[pagebackref=true]{hyperref}\n"
+         "  \\else\n"
+         "    \\usepackage[ps2pdf,pagebackref=true]{hyperref}\n"
+         "  \\fi\n"
          "\\fi\n"
+	 "\\ifpdf\n"
+         "  \\DeclareUnicodeCharacter{207B}{${}^{-}$}% Superscript minus\n"
+         "  \\DeclareUnicodeCharacter{C2B2}{${}^{2}$}% Superscript two\n"
+         "  \\DeclareUnicodeCharacter{C2B3}{${}^{3}$}% Superscript three\n"
+         "\\else\n"
+         "  \\catcode`\\" << pminus << "=13% Superscript minus\n"
+         "  \\def" << pminus << "{${}^{-}$}\n"
+         "  \\catcode`\\" << psup2 << "=13% Superscript two\n"
+         "  \\def" << psup2 << "{${}^{2}$}\n"
+         "  \\catcode`\\"<<psup3<<"=13% Superscript three\n"
+         "  \\def"<<psup3<<"{${}^{3}$}\n"
+         "\\fi\n"
+         "\n"
          "\\hypersetup{%\n"
          "  colorlinks=true,%\n"
          "  linkcolor=blue,%\n"
@@ -652,12 +710,18 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   t << "\\usepackage{caption}\n"
     << "\\captionsetup{labelsep=space,justification=centering,font={bf},singlelinecheck=off,skip=4pt,position=top}\n\n";
 
+  // prevent numbers overlap the titles in toc
+  t << "\\renewcommand{\\numberline}[1]{#1~}\n";
+
   // End of preamble, now comes the document contents
   t << "%===== C O N T E N T S =====\n"
        "\n"
        "\\begin{document}\n";
-  if (theTranslator->idLanguage()=="greek")
-    t << "\\selectlanguage{greek}\n";
+  QCString documentPre = theTranslator->latexDocumentPre();
+  if (!documentPre.isEmpty())
+  {
+    t << documentPre;
+  }
   t << "\n";
 
   // Front matter
@@ -748,10 +812,15 @@ static void writeDefaultFooter(FTextStream &t)
   t << "\\newpage\n"
        "\\phantomsection\n"
        "\\clearemptydoublepage\n"
-       "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trRTFGeneralIndex() << "}\n"
+       "\\addcontentsline{toc}{" << unit << "}{\\indexname}\n"
        "\\printindex\n"
-       "\n"
-       "\\end{document}\n";
+       "\n";
+  QCString documentPost = theTranslator->latexDocumentPost();
+  if (!documentPost.isEmpty())
+  {
+    t << documentPost;
+  }
+  t << "\\end{document}\n";
 }
 
 void LatexGenerator::writeHeaderFile(QFile &f)
@@ -1505,7 +1574,7 @@ void LatexGenerator::endGroupHeader(int)
   t << "}" << endl;
 }
 
-void LatexGenerator::startMemberHeader(const char *)
+void LatexGenerator::startMemberHeader(const char *,int)
 {
   if (Config_getBool(COMPACT_LATEX)) 
   {
@@ -1793,7 +1862,7 @@ void LatexGenerator::endMemberItem()
   t << endl; 
 }
 
-void LatexGenerator::startMemberDescription(const char *,const char *) 
+void LatexGenerator::startMemberDescription(const char *,const char *,bool) 
 {
   if (!insideTabbing)
   { 

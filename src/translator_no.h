@@ -72,8 +72,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString latexLanguageSupportCommand()
     {
       return
-        "\\usepackage[norwegian]{babel}\n"
-        "\\usepackage[T1]{fontenc}\n";
+        "\\usepackage[norsk]{babel}\n";
     }
 
     // --- Language translation methods -------------------

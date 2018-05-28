@@ -32,7 +32,7 @@ have the following tools installed
 For the HTML output there is also an alternative solution using
 <a href="https://www.mathjax.org">MathJax</a> which does not
 require the above tools. If you enable \ref cfg_use_mathjax "USE_MATHJAX" in
-the config then the latex formulas will be copied to the HTML "as is" and a
+the configuration then the latex formulas will be copied to the HTML "as is" and a
 client side javascript will parse them and turn them into (interactive) images.
 
 There are three ways to include formulas in the documentation.

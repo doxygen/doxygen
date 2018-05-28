@@ -85,7 +85,10 @@ class TranslatorPortuguese : public TranslatorAdapter_1_8_15
      * the empty string is returned in this implementation.
      */
     virtual QCString latexLanguageSupportCommand()
-    { return "Portuguese"; }
+    {
+      return
+        "\\usepackage[portuges]{babel}\n";
+    }
 
     // --- Language translation methods -------------------
 

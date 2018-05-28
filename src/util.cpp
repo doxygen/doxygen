@@ -323,7 +323,6 @@ int guessSection(const char *name)
       n.right(4)==".c++"  ||
       n.right(5)==".java" ||
       n.right(2)==".m"    ||
-      n.right(2)==".M"    ||
       n.right(3)==".mm"   ||
       n.right(3)==".ii"   || // inline
       n.right(4)==".ixx"  ||
@@ -1856,7 +1855,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '&':
         if (i>0 && isId(pc))
         {
-          *dst++=' ';
+          if (nc != '=')
+          // avoid splitting operator&=
+	  {
+            *dst++=' ';
+          }
         }
         *dst++=c;
         break;
@@ -4191,7 +4194,7 @@ bool getDefs(const QCString &scName,
             //}
           }
         }
-        //printf("  >Succes=%d\n",mdist<maxInheritanceDepth);
+        //printf("  >Success=%d\n",mdist<maxInheritanceDepth);
         if (mdist<maxInheritanceDepth) 
         {
           if (!md->isLinkable() || md->isStrongEnumValue()) 
@@ -7913,7 +7916,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
 
   int start=0;
   if (size>=2 &&
-      ((inBuf.at(0)==-1 && inBuf.at(1)==-2) || // Litte endian BOM
+      ((inBuf.at(0)==-1 && inBuf.at(1)==-2) || // Little endian BOM
        (inBuf.at(0)==-2 && inBuf.at(1)==-1)    // big endian BOM
       )
      ) // UCS-2 encoded file
@@ -8077,7 +8080,7 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
   return result;
 }
 
-/** Writes the intensity only bitmap representated by \a data as an image to 
+/** Writes the intensity only bitmap represented by \a data as an image to 
  *  directory \a dir using the colors defined by HTML_COLORSTYLE_*.
  */
 void writeColoredImgData(const char *dir,ColoredImgDataItem data[])

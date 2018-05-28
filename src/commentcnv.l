@@ -294,12 +294,12 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-                                       /* check for fixed format; we might have some conditional as part of multilene if like C<5 .and. & */
+                                       /* check for fixed format; we might have some conditional as part of multiline if like C<5 .and. & */
                                        if (isFixedForm && (g_col == 0))
                                        {
                                          copyToOutput(yytext,(int)yyleng); 
                                          g_nestingCount=0;
-                                         g_commentStack.clear(); /*  to be on the save side */
+                                         g_commentStack.clear(); /* to be on the safe side */
 				         BEGIN(CComment);
                                          g_commentStack.push(new CommentCtx(g_lineNr));
 				       }
@@ -1093,7 +1093,9 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     g_outBuf->at(g_outBuf->curPos())='\0';
-    msg("-------------\n%s\n-------------\n",g_outBuf->data());
+    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
+                 "output=[\n%s]\n-----------\n",fileName,g_outBuf->data()
+                );
   }
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }

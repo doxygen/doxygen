@@ -1,5 +1,5 @@
 // objective: test template parameters for a type alias
-// check: 067__using_8cpp.xml
+// check: 072__using_8cpp.xml
 
 /** \file */
 

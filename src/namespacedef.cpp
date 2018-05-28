@@ -961,7 +961,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
   bool found=FALSE;
   for (ni.toFirst();(nd=ni.current()) && !found;++ni)
   {
-    if (nd->isLinkable())
+    if (nd->isLinkable() && nd->hasDocumentation())
     {
       SrcLangExt lang = nd->getLanguage();
       if (SrcLangExt_IDL==lang)

@@ -246,7 +246,6 @@ class PropertyMapper
 
     /** Add a property to the map
      *  @param[in] name   The name of the property to add.
-     *  @param[in] obj    The object handling access to the property.
      *  @param[in] handle The method to call when the property is accessed.
      */
     void addProperty(const char *name,typename PropertyFunc::Handler handle)
@@ -262,6 +261,7 @@ class PropertyMapper
     }
 
     /** Gets the value of a property.
+     *  @param[in] obj  The object handling access to the property.
      *  @param[in] name The name of the property.
      *  @returns A variant representing the properties value or an
      *  invalid variant if it was not found.

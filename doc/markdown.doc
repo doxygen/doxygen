@@ -300,6 +300,9 @@ to produce a table of contents at the start of the page, listing all sections.
 Note that using `[TOC]` is the same as using a
 \ref cmdtableofcontents "\\tableofcontents" command.
 
+Note that the \ref cfg_toc_include_headings "TOC_INCLUDE_HEADINGS" has to be set
+to a value > 0 otherwise no table of contents is shown when using \ref md_headers "Markdown Headers".
+
 \subsection md_tables Tables
 
 Of the features defined by "Markdown Extra" is support for
@@ -515,7 +518,7 @@ and in other sections that need to be processed without changes
 
 Markdown allows both a single tab or 4 spaces to start a code block.
 Since doxygen already replaces tabs by spaces before doing Markdown
-processing, the effect will only be same if TAB_SIZE in the config file
+processing, the effect will only be same if TAB_SIZE in the configuration file
 has been set to 4. When it is set to a higher value spaces will be
 present in the code block. A lower value will prevent a single tab to be 
 interpreted as the start of a code block.

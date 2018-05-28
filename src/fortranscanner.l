@@ -198,6 +198,8 @@ static SymbolModifiers currentModifiers;
 //! Holds program scope->symbol name->symbol modifiers.
 static QMap<Entry*,QMap<QCString,SymbolModifiers> > modifiers;
 
+static Entry *global_scope = NULL;
+
 //-----------------------------------------------------------------------------
 
 static int yyread(char *buf,int max_size);
@@ -248,6 +250,7 @@ SUBPROG   (subroutine|function)
 B         [ \t]
 BS        [ \t]*
 BS_       [ \t]+
+BT_       ([ \t]+|[ \t]*"(")
 COMMA     {BS},{BS}
 ARGS_L0   ("("[^)]*")")
 ARGS_L1a  [^()]*"("[^)]*")"[^)]*
@@ -271,7 +274,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 EXTERNAL_STMT (EXTERNAL)
 
 CONTAINS  CONTAINS
-PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|IMPURE|PURE|ELEMENTAL)?
+PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON_)?RECURSIVE|IMPURE|PURE|ELEMENTAL)?
 SCOPENAME ({ID}{BS}"::"{BS})*
 
 %option noyywrap
@@ -558,7 +561,18 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 					    if (!endScope(current_root))
 					      yyterminate();
                                             defaultProtection = Public;
-					    yy_pop_state();
+					    if (global_scope)
+                                            {
+                                              if (global_scope != (Entry *) -1)
+                                                yy_push_state(Start);
+                                              else
+                                                yy_pop_state(); // cannot pop artrificial entry
+                                            }
+                                            else
+                                            {
+                                              yy_push_state(Start);
+                                              global_scope = (Entry *)-1; // signal that the global_scope has already been used.
+                                            }
                                        }
 <Module>{ID}                           {  
                                             addModule(yytext, TRUE);
@@ -602,7 +616,7 @@ abstract                                {
                                           current->spec |= Entry::AbstractClass;
                                         }
 extends{ARGS}                           {
-                                          QCString basename = extractFromParens(yytext);
+                                          QCString basename = extractFromParens(yytext).lower();
                                           current->extends->append(new BaseInfo(basename, Public, Normal));
                                         }
 public                                  {
@@ -667,7 +681,8 @@ private                                 {
                                           addCurrentEntry(1);
                                         }
 {BS}"=>"[^(\n|\!)]*                     { /* Specific bindings come after the ID. */
-                                          last_entry->args = yytext;
+                                          QCString args = yytext;
+                                          last_entry->args = args.lower();
                                         }
 "\n"                                    {
                                           currentModifiers = SymbolModifiers();
@@ -773,8 +788,10 @@ private                                 {
   				       }
 {ID}	                               {
                                        }  
-^{BS}"type"{BS_}"is"/{BS_}             { }
+^{BS}"type"{BS_}"is"/{BT_}             { } 
 ^{BS}"type"{BS}"="                     { }
+^{BS}"class"{BS_}"is"/{BT_}            { } 
+^{BS}"class"{BS_}"default"             { } 
 }
 <AttributeList>{
 {COMMA}					{}
@@ -1098,7 +1115,6 @@ private                                 {
                                               yy_push_state(YY_START);
                                               BEGIN(StrIgnore); 
                                               debugStr="*!";
-                                              //fprintf(stderr,"start comment %d\n",yyLineNr);
                                             }      
                                           }
   					 }
@@ -1552,7 +1568,10 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
 	}
         // fallthrough
       default:
-        if(column==6 && emptyLabel) { // continuation
+        if ((column < 6) && ((c - '0') >= 0) && ((c - '0') <= 9)) { // remove numbers, i.e. labels from first 5 positions.
+            newContents[j]=' ';
+        }
+        else if(column==6 && emptyLabel) { // continuation
           if (!commented) fullCommentLine=FALSE;
           if (c != '0') { // 0 not allowed as continuation character, see f95 standard paragraph 3.3.2.3
             newContents[j]=' ';
@@ -2017,14 +2036,23 @@ static void startScope(Entry *scope)
  */
 static bool endScope(Entry *scope, bool isGlobalRoot)
 {
+  if (global_scope == scope)
+  {
+    global_scope = NULL;
+    return TRUE;
+  }
+  if (global_scope == (Entry *) -1)
+  {
+    return TRUE;
+  }
   //cout<<"end scope: "<<scope->name<<endl;
   if (current_root->parent() || isGlobalRoot)
   {
     current_root= current_root->parent(); /* end substructure */
   }
-  else 
+  else // if (current_root != scope)
   {
-    fprintf(stderr,"parse error in end <scopename>");
+    fprintf(stderr,"parse error in end <scopename>\n");
     scanner_abort();
     return FALSE;
   }
@@ -2558,6 +2586,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
     yyFileName = fileName;
     msg("Parsing file %s...\n",yyFileName.data());
 
+    global_scope = rt;
     startScope(rt); // implies current_root = rt
     initParser();
     groupEnterFile(yyFileName,yyLineNr);
@@ -2579,7 +2608,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
     fortranscannerYYlex();
     groupLeaveFile(yyFileName,yyLineNr);
 
-    endScope(current_root, TRUE); // TRUE - global root
+    if (global_scope && global_scope != (Entry *) -1) endScope(current_root, TRUE); // TRUE - global root
 
     //debugCompounds(rt); //debug 
 

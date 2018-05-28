@@ -72,7 +72,19 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString latexLanguageSupportCommand()
     {
+      return "\\usepackage{CJKutf8}\n";
+    }
+    virtual QCString latexFontenc()
+    {
       return "";
+    }
+    virtual QCString latexDocumentPre()
+    {
+      return "\\begin{CJK}{UTF8}{min}\n";
+    }
+    virtual QCString latexDocumentPost()
+    {
+      return "\\end{CJK}\n";
     }
 
     // --- Language translation methods -------------------

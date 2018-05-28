@@ -58,7 +58,7 @@ browser via an URL starting with http:)
 
 How to setup a web server is outside the scope of this document,
 but if you for instance have Apache installed, you could simply copy the 
-`doxysearch.cgi` file from doxygen's `bin` dir to the `cgi-bin` of the
+`doxysearch.cgi` file from doxygen's `bin` directory to the `cgi-bin` directory of the
 Apache web server. Read the <a href="http://httpd.apache.org/docs/2.2/howto/cgi.html">apache documentation</a> for details.
 
 To test if `doxysearch.cgi` is accessible start your web browser and
@@ -73,7 +73,7 @@ You should get the following message:
 If you use Internet Explorer you may be prompted to download a file,
 which will then contain this message. 
 
-Since we didn't create or install a doxysearch.db it is ok for the test to
+Since we didn't create or install a doxysearch.db it is OK for the test to
 fail for this reason. How to correct this is discussed in the next section.
 
 Before continuing with the next section add the above 

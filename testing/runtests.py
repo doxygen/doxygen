@@ -30,6 +30,19 @@ class Tester:
 				return (True,'Difference between generated output and reference:\n%s' % diff)
 		return (False,'')
 
+	def cleanup_xmllint(self,errmsg):
+		msg = errmsg.split('\n')
+		rtnmsg = ""
+		for o in msg:
+			if (o):
+				if (o.startswith("I/O error : Attempt")):
+					pass
+				else:
+					if (rtnmsg):
+						rtnmsg += '\n'
+					rtnmsg += o
+		return rtnmsg
+
 	def get_config(self):
 		config = {}
 		with open(self.args.inputdir+'/'+self.test,'r') as f:
@@ -52,11 +65,23 @@ class Tester:
 		with open(self.test_out+'/Doxyfile','a') as f:
 			print('INPUT=%s/%s' % (self.args.inputdir,self.test), file=f)
 			print('STRIP_FROM_PATH=%s' % self.args.inputdir, file=f)
-			print('XML_OUTPUT=%s/out' % self.test_out, file=f)
 			print('EXAMPLE_PATH=%s' % self.args.inputdir, file=f)
 			if 'config' in self.config:
 				for option in self.config['config']:
 					print(option, file=f)
+			if (self.args.xml):
+				print('GENERATE_XML=YES', file=f)
+				print('XML_OUTPUT=%s/out' % self.test_out, file=f)
+			else:
+				print('GENERATE_XML=NO', file=f)
+			if (self.args.xhtml):
+				print('GENERATE_HTML=YES', file=f)
+			# HTML_OUTPUT can also be set locally
+			print('HTML_OUTPUT=%s/html' % self.test_out, file=f)
+			print('HTML_FILE_EXTENSION=.xhtml', file=f)
+			if (self.args.pdf):
+				print('GENERATE_LATEX=YES', file=f)
+				print('LATEX_OUTPUT=%s/latex' % self.test_out, file=f)
 
 		if 'check' not in self.config or not self.config['check']:
 			print('Test doesn\'t specify any files to check')
@@ -64,10 +89,14 @@ class Tester:
 
 		# run doxygen
 		if (sys.platform == 'win32'):
-			redir=' > nul:'             
+			redir=' > nul:'
 		else:
-			redir=' 2> /dev/null'             
-		if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out, redir))!=0:
+			redir=' 2> /dev/null > /dev/null'
+
+		if (self.args.noredir):
+			redir=''
+
+		if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
 			print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out));
 			sys.exit(1)
 
@@ -98,32 +127,92 @@ class Tester:
 
 	# check the relevant files of a doxygen run with the reference material
 	def perform_test(self,testmgr):
+		if (sys.platform == 'win32'):
+			redir=' > nul:'
+			separ='&'
+		else:
+			redir=' 2> /dev/null'
+			separ=';'
+
+		if (self.args.noredir):
+			redir=''
+
+		failed_xml=False
+		failed_html=False
+		failed_latex=False
+		msg = ()
 		# look for files to check against the reference
-		if 'check' in self.config:
-			for check in self.config['check']:
-				check_file='%s/out/%s' % (self.test_out,check)
-				# check if the file we need to check is actually generated
-				if not os.path.isfile(check_file):
-					testmgr.ok(False,self.test_name,msg='Non-existing file %s after \'check:\' statement' % check_file)
-					return
-				# convert output to canonical form
-				data = os.popen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file)).read()
-				if data:
-					# strip version
-					data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
-				else:
-					testmgr.ok(False,self.test_name,msg='Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out))
-					return
-				out_file='%s/%s' % (self.test_out,check)
-				with open(out_file,'w') as f:
-					print(data,file=f)
-				ref_file='%s/%s/%s' % (self.args.inputdir,self.test_id,check)
-				(failed,msg) = self.compare_ok(out_file,ref_file,self.test_name)
-				if failed:
-					testmgr.ok(False,self.test_name,msg)
-					return
-		shutil.rmtree(self.test_out,ignore_errors=True)
+		if self.args.xml:
+			failed_xml=True
+			if 'check' in self.config:
+				for check in self.config['check']:
+					check_file='%s/out/%s' % (self.test_out,check)
+					# check if the file we need to check is actually generated
+					if not os.path.isfile(check_file):
+						msg += ('Non-existing file %s after \'check:\' statement' % check_file,)
+						break
+					# convert output to canonical form
+					data = os.popen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file)).read()
+					if data:
+						# strip version
+						data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
+					else:
+						msg += ('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out),)
+						break
+					out_file='%s/%s' % (self.test_out,check)
+					with open(out_file,'w') as f:
+						print(data,file=f)
+					ref_file='%s/%s/%s' % (self.args.inputdir,self.test_id,check)
+					(failed_xml,xml_msg) = self.compare_ok(out_file,ref_file,self.test_name)
+					if failed_xml:
+						msg+= (xml_msg,)
+						break
+				if not failed_xml and not self.args.keep:
+					xml_output='%s/out' % self.test_out
+					shutil.rmtree(xml_output,ignore_errors=True)
+
+		if (self.args.xhtml):
+			html_output='%s/html' % self.test_out
+			if (sys.platform == 'win32'):
+				redirx=' 2> %s/temp >nul:'%html_output
+			else:
+				redirx='2>%s/temp >/dev/null'%html_output
+			exe_string = '%s --path dtd --nonet --postvalid %s/*xhtml %s %s ' % (self.args.xmllint,html_output,redirx,separ)
+			exe_string += 'more "%s/temp"' % (html_output)
+			failed_html=False
+			xmllint_out = os.popen(exe_string).read()
+			xmllint_out = self.cleanup_xmllint(xmllint_out)
+			if xmllint_out:
+				msg += (xmllint_out,)
+				failed_html=True
+			elif not self.args.keep:
+				shutil.rmtree(html_output,ignore_errors=True)
+		if (self.args.pdf):
+			failed_latex=False
+			latex_output='%s/latex' % self.test_out
+			if (sys.platform == 'win32'):
+				redirl='>nul: 2>temp'
+			else:
+				redirl='>/dev/null 2>temp'
+			exe_string = 'cd %s %s echo "q" | make %s %s' % (latex_output,separ,redirl,separ)
+			exe_string += 'more temp'
+			latex_out = os.popen(exe_string).read()
+			if latex_out.find("Error")!=-1:
+				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+				failed_html=True
+			elif open(latex_output + "/refman.log",'r').read().find("Emergency stop")!= -1:
+				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+				failed_html=True
+			elif not self.args.keep:
+				shutil.rmtree(latex_output,ignore_errors=True)
+
+		if failed_xml or failed_html or failed_latex:
+			testmgr.ok(False,self.test_name,msg)
+			return
+
 		testmgr.ok(True,self.test_name)
+		if not self.args.keep:
+			shutil.rmtree(self.test_out,ignore_errors=True)
 
 	def run(self,testmgr):
 		if self.update:
@@ -138,6 +227,8 @@ class TestManager:
 		self.num_tests = len(tests)
 		self.count=1
 		self.passed=0
+		if self.args.xhtml:
+			self.prepare_dtd()
 		print('1..%d' % self.num_tests)
 
 	def ok(self,result,test_name,msg='Ok'):
@@ -147,8 +238,9 @@ class TestManager:
 		else:
 			print('not ok %s - %s' % (self.count,test_name))
 			print('-------------------------------------')
-			print(msg)
-			print('-------------------------------------')
+			for o in msg:
+				print(o)
+				print('-------------------------------------')
 		self.count = self.count + 1
 
 	def result(self):
@@ -162,27 +254,57 @@ class TestManager:
 		for test in self.tests:
 			tester = Tester(self.args,test)
 			tester.run(self)
-		return 0 if self.args.updateref else self.result()
+		res=self.result()
+		if self.args.xhtml and not res and not self.args.keep:
+			shutil.rmtree("dtd",ignore_errors=True)
+		return 0 if self.args.updateref else res
+
+	def prepare_dtd(self):
+		shutil.rmtree("dtd",ignore_errors=True)
+		shutil.copytree(self.args.inputdir+"/dtd", "dtd")
 
 def main():
 	# argument handling
 	parser = argparse.ArgumentParser(description='run doxygen tests')
-	parser.add_argument('--updateref',help='update the reference data for a test',action="store_true")
-	parser.add_argument('--doxygen',nargs='?',default='doxygen',help='path/name of the doxygen executable')
-	parser.add_argument('--xmllint',nargs='?',default='xmllint',help='path/name of the xmllint executable')
-	parser.add_argument('--id',nargs='+',dest='ids',action='append',type=int,help='id of the test to perform')
-	parser.add_argument('--all',help='perform all tests',action="store_true")
-	parser.add_argument('--inputdir',nargs='?',default='.',help='input directory containing the tests')
-	parser.add_argument('--outputdir',nargs='?',default='.',help='output directory to write the doxygen output to')
-	args = parser.parse_args()
+	parser.add_argument('--updateref',help=
+		'update the reference files. Should be used in combination with -id to '
+                'update the reference file(s) for the given test',action="store_true")
+	parser.add_argument('--doxygen',nargs='?',default='doxygen',help=
+		'path/name of the doxygen executable')
+	parser.add_argument('--xmllint',nargs='?',default='xmllint',help=
+		'path/name of the xmllint executable')
+	parser.add_argument('--id',nargs='+',dest='ids',action='append',type=int,help=
+		'run test with number n only (the option may be specified run test with '
+		'number n only (the option may be specified')
+	parser.add_argument('--all',help=
+		'can be used in combination with -updateref to update the reference files '
+		'for all tests.',action="store_true")
+	parser.add_argument('--inputdir',nargs='?',default='.',help=
+		'input directory containing the tests')
+	parser.add_argument('--outputdir',nargs='?',default='.',help=
+		'output directory to write the doxygen output to')
+	parser.add_argument('--noredir',help=
+		'disable redirection of doxygen warnings',action="store_true")
+	parser.add_argument('--xml',help='create xml output and check',
+		action="store_true")
+	parser.add_argument('--xhtml',help=
+		'create xhtml output and check with xmllint',action="store_true")
+	parser.add_argument('--pdf',help='create LaTeX output and create pdf from it',
+		action="store_true")
+	parser.add_argument('--keep',help='keep result directories',
+		action="store_true")
+	test_flags = os.getenv('TEST_FLAGS', default='').split()
+	args = parser.parse_args(test_flags + sys.argv[1:])
 
-    # sanity check
+	# sanity check
+	if (not args.xml) and (not args.pdf) and (not args.xhtml):
+		args.xml=True
 	if (not args.updateref is None) and (args.ids is None) and (args.all is None):
 		parser.error('--updateref requires either --id or --all')
 
 	starting_directory = os.getcwd()
 	os.chdir(args.inputdir)
-    # find the tests to run
+	# find the tests to run
 	if args.ids: # test ids are given by user
 		tests = []
 		for id in list(itertools.chain.from_iterable(args.ids)):

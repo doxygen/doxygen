@@ -32,8 +32,8 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
     {
-        return "<pre>\\usepackage[latin]{armtex}\n"
-			   "\\usepackage[armscii8]{inputenc}\n</pre>";
+        return "\\usepackage[latin]{armtex}\n"
+	       "\\usepackage[armscii8]{inputenc}\n";
     }
 
     // --- Language translation methods -------------------

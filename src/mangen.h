@@ -99,9 +99,10 @@ class ManGenerator : public OutputGenerator
     void endMemberSections() {}
     void startHeaderSection() {}
     void endHeaderSection();
-    void startMemberHeader(const char *);
+    void startMemberHeader(const char *,int);
     void endMemberHeader();
     void insertMemberAlign(bool) {}
+    void insertMemberAlignLeft(int,bool){}
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
     //void writeListItem();
@@ -160,7 +161,7 @@ class ManGenerator : public OutputGenerator
     void endCenter()          {}
     void startSmall()         {}
     void endSmall()           {}
-    void startMemberDescription(const char *,const char *) { t << "\n.RI \""; firstCol=FALSE; }
+    void startMemberDescription(const char *,const char *,bool) { t << "\n.RI \""; firstCol=FALSE; }
     void endMemberDescription()   { t << "\""; firstCol=FALSE; }
     void startMemberDeclaration() {} 
     void endMemberDeclaration(const char *,const char *) {}

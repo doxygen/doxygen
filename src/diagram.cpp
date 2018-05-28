@@ -833,7 +833,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             }
             ++rit; di=rit.current();
           }
-          // add last horizonal line and a vertical connection line
+          // add last horizontal line and a vertical connection line
           if (bitmap)
           {
             if (doBase) // base classes

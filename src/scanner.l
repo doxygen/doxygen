@@ -755,6 +755,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %x	CopyHereDocEnd
 %x	RawString
 %x	RawGString
+%x	CSString
 
 %x      IDLAttribute
 %x      IDLProp
@@ -2381,10 +2382,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    {
 					      current->protection = Protected;
 					    }
-					    else if (javaLike && qstrcmp(yytext,"internal")==0)
-					    {
-					      current->protection = Package;
-					    }
 					    else if (javaLike && qstrcmp(yytext,"private")==0)
 					    {
 					      current->protection = Private;
@@ -3638,7 +3635,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      current->fileName   = yyFileName;
 					      current->startLine  = yyLineNr;
 					      current->startColumn = yyColNr;
-					      current->type       = "@"; // enum marker
+					      if (!(current_root->spec&Entry::Enum))
+					      {
+					        current->type       = "@"; // enum marker
+					      }
 					      current->args       = current->args.simplifyWhiteSpace();
 					      current->name       = current->name.stripWhiteSpace();
 					      current->section    = Entry::VARIABLE_SEC;
@@ -6235,8 +6235,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <CSAccessorDecl>"add"			{ if (curlyCount==0) current->spec |= Entry::Addable;   }
 <CSAccessorDecl>"remove"		{ if (curlyCount==0) current->spec |= Entry::Removable; }
 <CSAccessorDecl>"raise"			{ if (curlyCount==0) current->spec |= Entry::Raisable;  }
-<CSAccessorDecl>.			{}
+<CSAccessorDecl>"\""			{ BEGIN(CSString);}
+<CSAccessorDecl>"."			{}
 <CSAccessorDecl>\n			{ lineCount(); }
+<CSString>"\""				{ BEGIN(CSAccessorDecl);}
+<CSString>"//"				{} // Otherwise the rule <*>"//" will kick in
+<CSString>"/*"				{} // Otherwise the rule <*>"/*" will kick in
+<CSString>\n				{ lineCount(); }
+<CSString>"."				{}
 
 
 
@@ -6609,6 +6615,22 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
   					    lastStringContext=YY_START;
 					    BEGIN(SkipString);
+					  }
+  					}
+<*>\?                                   {
+  					  if (insideCS) 
+					  {
+					    if (current->type.isEmpty())
+					    {
+					      if (current->name.isEmpty())
+					        current->name="?";
+					      else
+					        current->name+="?";
+					    }
+					    else
+					    {
+					      current->type+="?";
+					    }
 					  }
   					}
 <*>.

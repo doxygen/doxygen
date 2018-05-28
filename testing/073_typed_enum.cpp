@@ -1,5 +1,5 @@
 // objective: test underlying type and strongness for an enum
-// check: 068__typed__enum_8cpp.xml
+// check: 073__typed__enum_8cpp.xml
 
 /** \file */
 
