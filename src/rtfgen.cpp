@@ -575,7 +575,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isTitlePageAuthor:
       {
-        t << "Doxgyen. }\n";
+        t << " doxygen.}\n";
         t << "{\\creatim " << dateToRTFDateString() << "}\n}";
         DBG_RTF(t << "{\\comment end of infoblock}\n");
         // setup for this section
