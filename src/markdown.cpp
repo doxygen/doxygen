@@ -1590,15 +1590,15 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
   int columns,start,end,cc;
 
   i = findTableColumns(data,size,start,end,columns);
-  
+
+  int headerStart = start;
+  int headerEnd = end;
+
 #ifdef USE_ORIGINAL_TABLES
   out.addStr("<table>");
 
   // write table header, in range [start..end]
   out.addStr("<tr>");
-
-  int headerStart = start;
-  int headerEnd = end;
 #endif
     
   // read cell alignments
@@ -1711,9 +1711,6 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
   // allows us to handle row spanning.
   QVector<QVector<TableCell> > tableContents;
   tableContents.setAutoDelete(TRUE);
-
-  int headerStart = start;
-  int headerEnd = end;
 
   int m=headerStart;
   QVector<TableCell> *headerContents = new QVector<TableCell>(columns);
