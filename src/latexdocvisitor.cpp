@@ -935,7 +935,7 @@ static void writeStartTableCommand(FTextStream &t,const DocNode *n,int cols)
 {
   if (tableIsNested(n))
   {
-    t << "\\begin{tabularx}{\\linewidth}{|*{" << cols << "}{>{\\raggedright\\arraybackslash}X|}}";
+    t << "{\\begin{tabularx}{\\linewidth}{|*{" << cols << "}{>{\\raggedright\\arraybackslash}X|}}";
   }
   else
   {
@@ -948,7 +948,7 @@ static void writeEndTableCommand(FTextStream &t,const DocNode *n)
 {
   if (tableIsNested(n))
   {
-    t << "\\end{tabularx}\n";
+    t << "\\end{tabularx}}\n";
   }
   else
   {
@@ -995,7 +995,8 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
   if (firstRow && firstRow->isHeading())
   {
     setFirstRow(TRUE);
-    firstRow->accept(this);
+    DocNode *n = t->parent();
+    if (!tableIsNested(n)) firstRow->accept(this);
     setFirstRow(FALSE);
   }
 }
@@ -1021,12 +1022,13 @@ void LatexDocVisitor::visitPost(DocHtmlCaption *c)
 void LatexDocVisitor::visitPre(DocHtmlRow *r)
 {
   setCurrentColumn(0);
-  if (r->isHeading()) m_t << "\\rowcolor{\\tableheadbgcolor}";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlRow *row) 
 {
   if (m_hide) return;
+
+  DocNode *n = row->parent() ->parent();
 
   int c=currentColumn();
   while (c<=numCols()) // end of row while inside a row span?
@@ -1045,10 +1047,7 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
         if (span->colSpan>1) // row span is also part of a column span
         {
           m_t << "\\multicolumn{" << span->colSpan << "}{";
-          m_t << "p{(\\linewidth-\\tabcolsep*" 
-            << numCols() << "-\\arrayrulewidth*"
-            << row->visibleCells() << ")*" 
-            << span->colSpan <<"/"<< numCols() << "}|}{}";
+          m_t <<  "}|}{}";
         }
         else // solitary row span
         {
@@ -1089,7 +1088,8 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
 
   m_t << "\n";
 
-  if (row->isHeading() && row->rowIndex()==1)
+
+  if (row->isHeading() && row->rowIndex()==1 && !tableIsNested(n))
   {
     if (firstRow())
     {
@@ -1131,10 +1131,7 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
         {
           m_t << "|";
         }
-        m_t << "p{(\\linewidth-\\tabcolsep*" 
-            << numCols() << "-\\arrayrulewidth*"
-            << row->visibleCells() << ")*" 
-            << span->colSpan <<"/"<< numCols() << "}|}{}";
+        m_t << "l|}{" << (c->isHeading()? "\\columncolor{\\tableheadbgcolor}" : "") << "}"; // alignment not relevant, empty column
         setCurrentColumn(currentColumn()+span->colSpan);
       }
       else
@@ -1146,6 +1143,7 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
   }
 
   int cs = c->colSpan();
+  int a = c->alignment();
   if (cs>1 && row)
   {
     setInColSpan(TRUE);
@@ -1154,11 +1152,18 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
     {
       m_t << "|";
     }
-    m_t << "p{(\\linewidth-\\tabcolsep*" 
-        << numCols() << "-\\arrayrulewidth*"
-        << row->visibleCells() << ")*" 
-        << cs <<"/"<< numCols() << "}|}{";
-    if (c->isHeading()) m_t << "\\cellcolor{\\tableheadbgcolor}";
+    switch (a)
+    {
+      case DocHtmlCell::Right:
+        m_t << "r|}{";
+        break;
+      case DocHtmlCell::Center:
+        break;
+        m_t << "c|}{";
+      default:
+        m_t << "l|}{";
+        break;
+    }
   }
   int rs = c->rowSpan();
   if (rs>0)
@@ -1168,9 +1173,8 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
     //                       c->rowIndex(),c->columnIndex(),c->rowSpan(),c->colSpan(),
     //                       currentColumn());
     addRowSpan(new ActiveRowSpan(c,rs,cs,currentColumn()));
-    m_t << "\\multirow{" << rs << "}{\\linewidth}{";
+    m_t << "\\multirow{" << rs << "}{*}{";
   }
-  int a = c->alignment();
   if (a==DocHtmlCell::Center)
   {
     m_t << "\\PBS\\centering ";
@@ -1181,7 +1185,7 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
   }
   if (c->isHeading())
   {
-    m_t << "\\textbf{ ";
+    m_t << "\\cellcolor{\\tableheadbgcolor}\\textbf{ ";
   }
   if (cs>1)
   {

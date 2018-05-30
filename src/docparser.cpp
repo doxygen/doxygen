@@ -3505,14 +3505,34 @@ DocHtmlCell::Alignment DocHtmlCell::alignment() const
 {
   HtmlAttribList attrs = attribs();
   uint i;
-  for (i=0; i<attrs.count(); ++i) 
+  for (i=0; i<attrs.count(); ++i)
   {
     if (attrs.at(i)->name.lower()=="align")
     {
-      if (attrs.at(i)->value.lower()=="center") 
+      if (attrs.at(i)->value.lower()=="center")
         return Center;
-      else if (attrs.at(i)->value.lower()=="right") 
+      else if (attrs.at(i)->value.lower()=="right")
         return Right;
+      else return Left;
+    }
+    else if (attrs.at(i)->name.lower()=="class")
+    {
+      if (attrs.at(i)->value.lower()=="markdowntableheadcenter")
+        return Center;
+      else if (attrs.at(i)->value.lower()=="markdowntableheadright")
+        return Right;
+      else if (attrs.at(i)->value.lower()=="markdowntableheadleft")
+        return Left;
+      else if (attrs.at(i)->value.lower()=="markdowntableheadnone")
+        return Center;
+      else if (attrs.at(i)->value.lower()=="markdowntablebodycenter")
+        return Center;
+      else if (attrs.at(i)->value.lower()=="markdowntablebodyright")
+        return Right;
+      else if (attrs.at(i)->value.lower()=="markdowntablebodyleft")
+        return Left;
+      else if (attrs.at(i)->value.lower()=="markdowntablebodynone")
+        return Left;
       else return Left;
     }
   }
