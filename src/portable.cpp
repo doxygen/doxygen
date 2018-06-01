@@ -347,6 +347,10 @@ FILE *portable_fopen(const char *fileName,const char *mode)
 #if defined(_WIN32) && !defined(__CYGWIN__)
   QString fn(fileName);
   QString m(mode);
+  wchar_t path[1000];
+  GetFullPathNameW((const wchar_t*)fn.ucs2(), 1000UL, path, NULL);
+  QString prefix = "\\\\?\\";
+  fn = prefix + QString::fromUcs2((const unsigned short *)path);
   return _wfopen((wchar_t*)fn.ucs2(),(wchar_t*)m.ucs2());
 #else
   return fopen(fileName,mode);
