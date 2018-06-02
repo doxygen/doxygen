@@ -440,7 +440,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
 
   if (getLanguage()==SrcLangExt_VHDL)
   {
-    QCString title=VhdlDocGen::trVhdlType(md->getMemberSpecifiers(),FALSE);
+    QCString title=theTranslator->trVhdlType(md->getMemberSpecifiers(),FALSE);
     if (!m_impl->vhdlSummaryTitles.find(title))
     {
       m_impl->vhdlSummaryTitles.append(title,new QCString(title));
@@ -1882,7 +1882,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       }
       else if (lang==SrcLangExt_VHDL)
       {
-        ol.parseText(VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
+        ol.parseText(theTranslator->trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
       }
       else
       {
@@ -2122,7 +2122,7 @@ QCString ClassDef::title() const
   }
   else if (lang==SrcLangExt_VHDL)
   {
-    pageTitle = VhdlDocGen::getClassTitle(this)+" Reference";
+    pageTitle = theTranslator->trCustomReference(VhdlDocGen::getClassTitle(this));
   }
   else if (isJavaEnum())
   {
@@ -2474,7 +2474,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           QStrList sl;
           if (lang==SrcLangExt_VHDL)
           {
-            sl.append(VhdlDocGen::trVhdlType(md->getMemberSpecifiers())); //append vhdl type
+            sl.append(theTranslator->trVhdlType(md->getMemberSpecifiers(),TRUE)); //append vhdl type
           }
           else if (md->isFriend()) sl.append("friend");
           else if (md->isRelated()) sl.append("related");

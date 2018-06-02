@@ -61,7 +61,7 @@
 #include "vhdlcode.h"
 #include "plantuml.h"
 //#define DEBUGFLOW
-#define theTranslator_vhdlType VhdlDocGen::trVhdlType
+#define theTranslator_vhdlType theTranslator->trVhdlType
 
 static QDict<QCString> g_vhdlKeyDict0(17,FALSE);
 static QDict<QCString> g_vhdlKeyDict1(17,FALSE);
@@ -968,7 +968,6 @@ QCString VhdlDocGen::getClassTitle(const ClassDef *cd)
   int ii=cd->protection();
   pageTitle+=" ";
   pageTitle+=theTranslator_vhdlType(ii+2,TRUE);
-  pageTitle+=" ";
   return pageTitle;
 } // getClassTitle
 
@@ -1240,42 +1239,6 @@ QCString VhdlDocGen::getProtectionName(int prot)
 
   return "";
 }
-
-QCString VhdlDocGen::trTypeString(uint64 type)
-{
-  switch(type)
-  {
-    case VhdlDocGen::LIBRARY:        return "Library";
-    case VhdlDocGen::ENTITY:         return "Entity";
-    case VhdlDocGen::PACKAGE_BODY:   return "Package Body";
-    case VhdlDocGen::ATTRIBUTE:      return "Attribute";
-    case VhdlDocGen::PACKAGE:        return "Package";
-    case VhdlDocGen::SIGNAL:         return "Signal";
-    case VhdlDocGen::COMPONENT:      return "Component";
-    case VhdlDocGen::CONSTANT:       return "Constant";
-    case VhdlDocGen::TYPE:           return "Type";
-    case VhdlDocGen::SUBTYPE:        return "Subtype";
-    case VhdlDocGen::FUNCTION:       return "Function";
-    case VhdlDocGen::RECORD:         return "Record";
-    case VhdlDocGen::PROCEDURE:      return "Procedure";
-    case VhdlDocGen::ARCHITECTURE:   return "Architecture";
-    case VhdlDocGen::USE:            return "Package";
-    case VhdlDocGen::PROCESS:        return "Process";
-    case VhdlDocGen::PORT:           return "Port";
-    case VhdlDocGen::GENERIC:        return "Generic";
-    case VhdlDocGen::UNITS:          return "Units";
-                                     //case VhdlDocGen::PORTMAP:        return "Port Map";
-    case VhdlDocGen::SHAREDVARIABLE: return "Shared Variable";
-    case VhdlDocGen::GROUP:          return "Group";
-    case VhdlDocGen::VFILE:          return "File";
-    case VhdlDocGen::INSTANTIATION: return "Instantiation";
-    case VhdlDocGen::ALIAS:          return "Alias";
-    case VhdlDocGen::CONFIG:         return "Configuration";
-    case VhdlDocGen::MISCELLANEOUS:  return "Miscellaneous";
-    case VhdlDocGen::UCF_CONST:      return "Constraints";
-    default:                         return "";
-  }
-} // convertType
 
 /*!
  * deletes a char backwards in a string
@@ -1790,7 +1753,7 @@ void VhdlDocGen::writeVhdlDeclarations(MemberList* ml,
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::GROUP,FALSE),0,FALSE,VhdlDocGen::GROUP);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::INSTANTIATION,FALSE),0,FALSE,VhdlDocGen::INSTANTIATION);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::ALIAS,FALSE),0,FALSE,VhdlDocGen::ALIAS);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::MISCELLANEOUS),0,FALSE,VhdlDocGen::MISCELLANEOUS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::MISCELLANEOUS,TRUE),0,FALSE,VhdlDocGen::MISCELLANEOUS);
 
   // configurations must be added to global file definitions.
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::CONFIG,FALSE),0,FALSE,VhdlDocGen::CONFIG);
@@ -2418,7 +2381,7 @@ bool VhdlDocGen::writeClassType( ClassDef *& cd,
     OutputList &ol ,QCString & cname)
 {
   int id=cd->protection();
-  QCString qcs = VhdlDocGen::trTypeString(id+2);
+  QCString qcs = theTranslator->trVhdlType(id+2,TRUE);
   cname=VhdlDocGen::getClassName(cd);
   ol.startBold();
   ol.writeString(qcs.data());
@@ -2427,128 +2390,6 @@ bool VhdlDocGen::writeClassType( ClassDef *& cd,
   //ol.insertMemberAlign();
   return FALSE;
 }// writeClassLink
-
-QCString VhdlDocGen::trVhdlType(uint64 type,bool sing)
-{
-  switch(type)
-  {
-    case VhdlDocGen::LIBRARY:
-      if (sing) return "Library";
-      else      return "Libraries";
-    case VhdlDocGen::PACKAGE:
-      if (sing) return "Package";
-      else      return "Packages";
-    case VhdlDocGen::SIGNAL:
-      if (sing) return "Signal";
-      else      return "Signals";
-    case VhdlDocGen::COMPONENT:
-      if (sing) return "Component";
-      else      return "Components";
-    case VhdlDocGen::CONSTANT:
-      if (sing) return "Constant";
-      else      return "Constants";
-    case VhdlDocGen::ENTITY:
-      if (sing) return "Entity";
-      else      return "Entities";
-    case VhdlDocGen::TYPE:
-      if (sing) return "Type";
-      else      return "Types";
-    case VhdlDocGen::SUBTYPE:
-      if (sing) return "Subtype";
-      else      return "Subtypes";
-    case VhdlDocGen::FUNCTION:
-      if (sing) return "Function";
-      else      return "Functions";
-    case VhdlDocGen::RECORD:
-      if (sing) return "Record";
-      else      return "Records";
-    case VhdlDocGen::PROCEDURE:
-      if (sing) return "Procedure";
-      else      return "Procedures";
-    case VhdlDocGen::ARCHITECTURE:
-      if (sing) return "Architecture";
-      else      return "Architectures";
-    case VhdlDocGen::ATTRIBUTE:
-      if (sing) return "Attribute";
-      else      return "Attributes";
-    case VhdlDocGen::PROCESS:
-      if (sing) return "Process";
-      else      return "Processes";
-    case VhdlDocGen::PORT:
-      if (sing) return "Port";
-      else      return "Ports";
-    case VhdlDocGen::USE:
-      if (sing) return "use clause";
-      else      return "Use Clauses";
-    case VhdlDocGen::GENERIC:
-      if (sing) return "Generic";
-      else      return "Generics";
-    case VhdlDocGen::PACKAGE_BODY:
-      return "Package Body";
-    case VhdlDocGen::UNITS:
-      return "Units";
-    case VhdlDocGen::SHAREDVARIABLE:
-      if (sing) return "Shared Variable";
-      return "Shared Variables";
-    case VhdlDocGen::VFILE:
-      if (sing) return "File";
-      return "Files";
-    case VhdlDocGen::GROUP:
-      if (sing) return "Group";
-      return "Groups";
-    case VhdlDocGen::INSTANTIATION:
-      if (sing) return "Instantiation";
-      else      return "Instantiations";
-    case VhdlDocGen::ALIAS:
-      if (sing) return "Alias";
-      return "Aliases";
-    case VhdlDocGen::CONFIG:
-      if (sing) return "Configuration";
-      return "Configurations";
-    case VhdlDocGen::MISCELLANEOUS:
-      return "Miscellaneous";
-    case VhdlDocGen::UCF_CONST:
-      return "Constraints";
-    default:
-      return "Class";
-  }
-}
-
-QCString VhdlDocGen::trDesignUnitHierarchy()
-{
-  return "Design Unit Hierarchy";
-}
-
-QCString VhdlDocGen::trDesignUnitList()
-{
-  return "Design Unit List";
-}
-
-QCString VhdlDocGen::trDesignUnitMembers()
-{
-  return "Design Unit Members";
-}
-
-QCString VhdlDocGen::trDesignUnitListDescription()
-{
-  return "Here is a list of all design unit members with links to "
-    "the Entities they belong to:";
-}
-
-QCString VhdlDocGen::trDesignUnitIndex()
-{
-  return "Design Unit Index";
-}
-
-QCString VhdlDocGen::trDesignUnits()
-{
-  return "Design Units";
-}
-
-QCString VhdlDocGen::trFunctionAndProc()
-{
-  return "Functions/Procedures/Processes";
-}
 
 
 /*! writes a link if the string is linkable else a formatted string */
@@ -3995,7 +3836,7 @@ void FlowChart::createSVG()
 
   //const  MemberDef *m=VhdlDocGen::getFlowMember();
   //if (m)
-  //  fprintf(stderr,"\n creating flowchart  : %s  %s in file %s \n",VhdlDocGen::trTypeString(m->getMemberSpecifiers()),m->name().data(),m->getFileDef()->name().data());
+  //  fprintf(stderr,"\n creating flowchart  : %s  %s in file %s \n",theTranslator->trVhdlType(m->getMemberSpecifiers(),TRUE),m->name().data(),m->getFileDef()->name().data());
 
   QCString dir=" -o \""+ov+qcs+"\"";
   ov+="/flow_design.dot";

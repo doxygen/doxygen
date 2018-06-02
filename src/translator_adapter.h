@@ -41,7 +41,40 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_8_4 : public TranslatorAdapterBase
+class TranslatorAdapter_1_8_15 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.8.15"); }
+
+    virtual QCString trDesignUnitHierarchy()
+    { return english.trDesignUnitHierarchy(); }
+
+    virtual QCString trDesignUnitList()
+    { return english.trDesignUnitList(); }
+
+    virtual QCString trDesignUnitMembers()
+    { return english.trDesignUnitMembers(); }
+
+    virtual QCString trDesignUnitListDescription()
+    { return english.trDesignUnitListDescription(); }
+
+    virtual QCString trDesignUnitIndex()
+    { return english.trDesignUnitIndex(); }
+
+    virtual QCString trDesignUnits()
+    { return english.trDesignUnits(); }
+
+    virtual QCString trFunctionAndProc()
+    { return english.trFunctionAndProc(); }
+
+    virtual QCString trVhdlType(uint64 type,bool single)
+    { return english.trVhdlType(type,single); }
+    virtual QCString trCustomReference(const char *name)
+    { return english.trCustomReference(name); }
+};
+
+class TranslatorAdapter_1_8_4 : public TranslatorAdapter_1_8_15
 {
   public:
     virtual QCString updateNeededMessage()

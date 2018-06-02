@@ -224,8 +224,16 @@ class TranslatorEnglish : public Translator
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "This inheritance list is sorted roughly, "
-             "but not completely, alphabetically:";
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Here is a hierarchical list of all entities:";
+      }
+      else
+      {
+        return "This inheritance list is sorted roughly, "
+               "but not completely, alphabetically:";
+      }
     }
 
     /*! This is an introduction to the list with all files. */
@@ -1991,6 +1999,123 @@ class TranslatorEnglish : public Translator
       if (single) result+=":"; else result+="s:";
       return result;
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    virtual QCString trDesignUnitHierarchy()
+    { return "Design Unit Hierarchy"; }
+    /** VHDL design unit list */
+    virtual QCString trDesignUnitList()
+    { return "Design Unit List"; }
+    /** VHDL design unit members */
+    virtual QCString trDesignUnitMembers()
+    { return "Design Unit Members"; }
+    /** VHDL design unit list description */
+    virtual QCString trDesignUnitListDescription()
+    {
+        return "Here is a list of all design unit members with links to "
+            "the Entities they belong to:";
+    }
+    /** VHDL design unit index */
+    virtual QCString trDesignUnitIndex()
+    { return "Design Unit Index"; }
+    /** VHDL design units */
+    virtual QCString trDesignUnits()
+    { return "Design Units"; }
+    /** VHDL functions/procedures/processes */
+    virtual QCString trFunctionAndProc()
+    { return "Functions/Procedures/Processes"; }
+    /** VHDL type */
+    virtual QCString trVhdlType(uint64 type,bool single)
+    {
+      switch(type)
+      {
+        case VhdlDocGen::LIBRARY:
+          if (single) return "Library";
+          else        return "Libraries";
+        case VhdlDocGen::PACKAGE:
+          if (single) return "Package";
+          else        return "Packages";
+        case VhdlDocGen::SIGNAL:
+          if (single) return "Signal";
+          else        return "Signals";
+        case VhdlDocGen::COMPONENT:
+          if (single) return "Component";
+          else        return "Components";
+        case VhdlDocGen::CONSTANT:
+          if (single) return "Constant";
+          else        return "Constants";
+        case VhdlDocGen::ENTITY:
+          if (single) return "Entity";
+          else        return "Entities";
+        case VhdlDocGen::TYPE:
+          if (single) return "Type";
+          else        return "Types";
+        case VhdlDocGen::SUBTYPE:
+          if (single) return "Subtype";
+          else        return "Subtypes";
+        case VhdlDocGen::FUNCTION:
+          if (single) return "Function";
+          else        return "Functions";
+        case VhdlDocGen::RECORD:
+          if (single) return "Record";
+          else        return "Records";
+        case VhdlDocGen::PROCEDURE:
+          if (single) return "Procedure";
+          else        return "Procedures";
+        case VhdlDocGen::ARCHITECTURE:
+          if (single) return "Architecture";
+          else        return "Architectures";
+        case VhdlDocGen::ATTRIBUTE:
+          if (single) return "Attribute";
+          else        return "Attributes";
+        case VhdlDocGen::PROCESS:
+          if (single) return "Process";
+          else        return "Processes";
+        case VhdlDocGen::PORT:
+          if (single) return "Port";
+          else        return "Ports";
+        case VhdlDocGen::USE:
+          if (single) return "use clause";
+          else        return "Use Clauses";
+        case VhdlDocGen::GENERIC:
+          if (single) return "Generic";
+          else        return "Generics";
+        case VhdlDocGen::PACKAGE_BODY:
+          return "Package Body";
+        case VhdlDocGen::UNITS:
+          return "Units";
+        case VhdlDocGen::SHAREDVARIABLE:
+          if (single) return "Shared Variable";
+          else        return "Shared Variables";
+        case VhdlDocGen::VFILE:
+          if (single) return "File";
+          else        return "Files";
+        case VhdlDocGen::GROUP:
+          if (single) return "Group";
+          else        return "Groups";
+        case VhdlDocGen::INSTANTIATION:
+          if (single) return "Instantiation";
+          else        return "Instantiations";
+        case VhdlDocGen::ALIAS:
+          if (single) return "Alias";
+          else        return "Aliases";
+        case VhdlDocGen::CONFIG:
+          if (single) return "Configuration";
+          else        return "Configurations";
+        case VhdlDocGen::MISCELLANEOUS:
+          return "Miscellaneous";
+        case VhdlDocGen::UCF_CONST:
+          return "Constraints";
+        default:
+          return "Class";
+      }
+    }
+    virtual QCString trCustomReference(const char *name)
+    { return QCString(name)+" Reference"; }
 
 //////////////////////////////////////////////////////////////////////////
 

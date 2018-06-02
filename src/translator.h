@@ -20,6 +20,7 @@
 
 #include "classdef.h"
 #include "config.h"
+#include "vhdldocgen.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator
@@ -601,6 +602,20 @@ class Translator
     virtual QCString trSingletonReference(const char *sName) = 0;
     virtual QCString trServiceGeneratedFromFiles(bool single) = 0;
     virtual QCString trSingletonGeneratedFromFiles(bool single) = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDesignUnitHierarchy() = 0;
+    virtual QCString trDesignUnitList() = 0;
+    virtual QCString trDesignUnitMembers() = 0;
+    virtual QCString trDesignUnitListDescription() = 0;
+    virtual QCString trDesignUnitIndex() = 0;
+    virtual QCString trDesignUnits() = 0;
+    virtual QCString trFunctionAndProc() = 0;
+    virtual QCString trVhdlType(uint64 type,bool single) = 0;
+    virtual QCString trCustomReference(const char *name) = 0;
 };
 
 #endif
