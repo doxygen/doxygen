@@ -20,7 +20,7 @@
   {% else %}
     <span style="width:{{ (node.level)*16 }}px;display:inline-block;">&#160;</span>
     <span id="arr_{{ node.id }}" class="arrow" onclick="toggleFolder('{{ node.id}}')">
-       {%if node.level+1<tree.preferredDepth %}&#9660;{% else %}&#9654;{% endif %}
+       {%if node.level+1<tree.preferredDepth %}&#9660;{% else %}&#9658;{% endif %}
     </span>
   {% endif %}
   {% if node.namespace %}
