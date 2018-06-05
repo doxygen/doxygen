@@ -11558,6 +11558,12 @@ void generateOutput()
     Doxygen::formulaList->generateBitmaps(Config_getString(HTML_OUTPUT));
     g_s.end();
   }
+  if (Doxygen::formulaList->count()>0 && generateRtf)
+  {
+    g_s.begin("Generating bitmaps for formulas in RTF...\n");
+    Doxygen::formulaList->generateBitmaps(Config_getString(RTF_OUTPUT));
+    g_s.end();
+  }
 
   if (Config_getBool(SORT_GROUP_NAMES))
   {

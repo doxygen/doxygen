@@ -17,9 +17,8 @@
 /*! \page formulas Including formulas 
 
 Doxygen allows you to put \LaTeX formulas in the
-output (this works only for the HTML and \LaTeX output, 
-not for the RTF nor for the man page output). To be able to include 
-formulas (as images) in the HTML documentation, you will also need to 
+output (this works only for the HTML, \LaTeX and RTF output. To be able to include 
+formulas (as images) in the HTML and RTF documentation, you will also need to 
 have the following tools installed
 <ul>
 <li>\c latex: the \LaTeX compiler, needed to parse the formulas. 
