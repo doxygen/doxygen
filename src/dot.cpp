@@ -1878,10 +1878,10 @@ void DotNode::writeBox(FTextStream &t,
           << m_url.right(m_url.length()-anchorPos) << "\"";
       }
     }
-    if (!m_tooltip.isEmpty())
-    {
-      t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
-    }
+  }
+  if (!m_tooltip.isEmpty())
+  {
+    t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
   }
   t << "];" << endl; 
 }
