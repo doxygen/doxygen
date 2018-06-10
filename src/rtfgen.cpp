@@ -1639,11 +1639,11 @@ void RTFGenerator::endMemberDescription()
 {
   DBG_RTF(t << "{\\comment (endMemberDescription)}"    << endl)
   endEmphasis();
-  newParagraph();
+  //newParagraph();
   decrementIndentLevel();
-  //t << "\\par";
+  t << "\\par";
   t << "}" << endl;
-  //m_omitParagraph = TRUE;
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::startDescList(SectionTypes)
