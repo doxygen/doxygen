@@ -137,7 +137,8 @@ class DotNode
                       bool lrRank, bool renderParents,
                       bool backArrows,
                       const QCString &title,
-                      QCString &graphStr
+                      QCString &graphStr,
+                      const char *rank
                      );
 };
 

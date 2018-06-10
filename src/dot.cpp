@@ -3071,14 +3071,19 @@ QCString computeMd5Signature(DotNode *root,
                    bool renderParents,
                    bool backArrows,
                    const QCString &title,
-                   QCString &graphStr
+                   QCString &graphStr,
+                   const char *rank
                   )
 {
   //printf("computeMd5Signature\n");
   QGString buf;
   FTextStream md5stream(&buf);
   writeGraphHeader(md5stream,title);
-  if (lrRank)
+  if (rank)
+  {
+    md5stream << "  rankdir=\"" << rank << "\";" << endl;
+  }
+  else if (lrRank)
   {
     md5stream << "  rankdir=\"LR\";" << endl;
   }
@@ -3132,14 +3137,15 @@ static bool updateDotGraph(DotNode *root,
                            bool lrRank,
                            bool renderParents,
                            bool backArrows,
-                           const QCString &title=QCString()
+                           const QCString &title=QCString(),
+                           const char *rank = NULL
                           )
 {
   QCString theGraph;
   // TODO: write graph to theGraph, then compute md5 checksum
   QCString md5 = computeMd5Signature(
                    root,gt,format,lrRank,renderParents,
-                   backArrows,title,theGraph);
+                   backArrows,title,theGraph, rank);
   QFile f(baseName+".dot");
   if (f.open(IO_WriteOnly))
   {
@@ -3872,6 +3878,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
   QCString absImgName  = absBaseName+"."+imgExt;
 
   bool regenerate = FALSE;
+
   if (updateDotGraph(m_startNode,
                  DotNode::CallGraph,
                  absBaseName,
@@ -3879,7 +3886,8 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
                  TRUE,         // lrRank
                  FALSE,        // renderParents
                  m_inverse,    // backArrows
-                 m_startNode->label()
+                 m_startNode->label(),
+                 (m_inverse ? "RL" : "LR")
                 ) ||
       !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
                          usePDFLatex ? absPdfName : absEpsName,
