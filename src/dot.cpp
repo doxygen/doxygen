@@ -1883,6 +1883,10 @@ void DotNode::writeBox(FTextStream &t,
   {
     t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
   }
+  else
+  {
+    t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0' is used
+  }
   t << "];" << endl; 
 }
 
