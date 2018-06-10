@@ -11,15 +11,17 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
+          <para>Function to be shown. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="015_cond.c" line="20" column="1" bodyfile="015_cond.c" bodystart="20" bodyend="22"/>
+        <location file="015_cond.c" line="21" column="1" bodyfile="015_cond.c" bodystart="21" bodyend="23"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
+      <para>Text <emphasis>argument</emphasis> more text. </para>
     </detaileddescription>
     <location file="015_cond.c"/>
   </compounddef>
