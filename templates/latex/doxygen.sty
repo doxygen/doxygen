@@ -97,7 +97,7 @@
 }
 
 % Used by @code ... @endcode
-\newenvironment{DoxyCode}{%
+\newenvironment{DoxyCode}[1]{%
   \par%
   \scriptsize%
   \normalfont\ttfamily%
@@ -106,7 +106,13 @@
   \settowidth{\CodeWidthChar}{?}%
   \settoheight{\CodeHeightChar}{?}%
   \setlength{\parskip}{0ex plus 0ex minus 0ex}%
-  {\lccode`~32 \lowercase{\global\let~}\NiceSpace}\obeyspaces%
+  \ifthenelse{\equal{#1}{0}}
+  {
+    {\lccode`~32 \lowercase{\global\let~}\NiceSpace}\obeyspaces%
+  }
+  {
+    {\lccode`~32 \lowercase{\global\let~}}\obeyspaces%
+  }
 
 }{%
   \normalfont%
@@ -128,8 +134,8 @@
 \fi
 
 % Used by @example, @include, @includelineno and @dontinclude
-\newenvironment{DoxyCodeInclude}{%
-  \DoxyCode%
+\newenvironment{DoxyCodeInclude}[1]{%
+	\DoxyCode{#1}%
 }{%
   \endDoxyCode%
 }

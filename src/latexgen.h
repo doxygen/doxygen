@@ -51,6 +51,7 @@ class LatexCodeGenerator : public CodeOutputInterface
     void writeCodeAnchor(const char *) {}
     void setCurrentDoc(Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
+    static void setDoxyCodeOpen(bool val);
 
   private:
     void _writeCodeLink(const char *className,
