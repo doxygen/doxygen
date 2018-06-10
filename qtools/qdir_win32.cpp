@@ -128,7 +128,12 @@ bool QDir::mkdir( const QString &dirName, bool acceptAbsPath ) const
 #if defined(__CYGWIN32_)
     return MKDIR( QFile::encodeName(filePath(dirName,acceptAbsPath)), 0777 ) == 0;
 #else
-    return _wmkdir( ( LPCWSTR ) filePath( dirName, acceptAbsPath ).ucs2() ) == 0;
+    QString str = filePath( dirName, acceptAbsPath );
+    wchar_t path[1000];
+    GetFullPathNameW((const wchar_t*)str.ucs2(), 1000UL, path, NULL);
+    QString prefix = "\\\\?\\";
+    str = prefix + QString::fromUcs2((const unsigned short *)path);
+    return _wmkdir( ( LPCWSTR ) str.ucs2() ) == 0;
 #endif
 }
 

@@ -34,6 +34,8 @@
 # define OPEN_ASYNC O_NDELAY
 #endif
 
+#include <windows.h>
+
 static void reslashify( QString& n )
 {
   for ( int i=0; i<(int)n.length(); i++ ) 
@@ -52,6 +54,10 @@ bool qt_file_access( const QString& fn, int t )
 #else
     QString str = fn;
     reslashify(str);
+    wchar_t path[1000];
+    GetFullPathNameW((const wchar_t*)str.ucs2(), 1000UL, path, NULL);
+    QString prefix = "\\\\?\\";
+    str = prefix + QString::fromUcs2((const unsigned short *)path);
     return ( _waccess( (wchar_t*) str.ucs2(), t ) == 0 );
 #endif
 }
@@ -194,6 +200,10 @@ bool QFile::open( int m )
 #else
         QString str = fn;
         reslashify(str);
+        wchar_t path[1000];
+        GetFullPathNameW((const wchar_t*)str.ucs2(), 1000UL, path, NULL);
+        QString prefix = "\\\\?\\";
+        str = prefix + QString::fromUcs2((const unsigned short *)path);
         fd = _wopen( (wchar_t*) str.ucs2(), oflags, 0666 );
 #endif
 
@@ -236,6 +246,10 @@ bool QFile::open( int m )
             QString str = fn;
             QString prm( perm2 );
             reslashify(str);
+            wchar_t path[1000];
+            GetFullPathNameW((const wchar_t*)str.ucs2(), 1000UL, path, NULL);
+            QString prefix = "\\\\?\\";
+            str = prefix + QString::fromUcs2((const unsigned short *)path);
             fh = _wfopen( (wchar_t*) str.ucs2(), (wchar_t*) prm.ucs2() );
 #endif
 

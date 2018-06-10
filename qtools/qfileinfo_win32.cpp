@@ -25,6 +25,8 @@
 #include "qdatetime.h"
 #include "qdir.h"
 
+#include <windows.h>
+
 static void reslashify( QString& n )
 {
   for ( int i=0; i<(int)n.length(); i++ ) 
@@ -268,6 +270,10 @@ void QFileInfo::doStat() const
     QString file = fn;
     file = QDir::cleanDirPath(file);
     reslashify(file);
+    wchar_t path[1000];
+    GetFullPathNameW((const wchar_t*)file.ucs2(), 1000UL, path, NULL);
+    QString prefix = "\\\\?\\";
+    file = prefix + QString::fromUcs2((const unsigned short *)path);
 #ifdef QT_LARGEFILE_SUPPORT
     if ( _wstati64( (wchar_t*) file.ucs2(), b ) == -1 ) {
 #else
