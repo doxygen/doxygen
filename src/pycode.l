@@ -884,7 +884,7 @@ SHORTSTRINGITEM   ({SHORTSTRINGCHAR}|{ESCAPESEQ})
 SHORTSTRINGCHAR   [^\\\n"]
 STRINGLITERAL     {STRINGPREFIX}?( {SHORTSTRING} | {LONGSTRING})  
 STRINGPREFIX      ("r"|"u"|"ur"|"R"|"U"|"UR"|"Ur"|"uR")
-KEYWORD ("lambda"|"import"|"class"|"assert"|"as"|"from"|"global"|"def"|"True"|"False")
+KEYWORD ("lambda"|"import"|"class"|"assert"|"with"|"as"|"from"|"global"|"def"|"True"|"False")
 FLOWKW  ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"if"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
 QUOTES            ("\""[^"]*"\"")
 SINGLEQUOTES      ("'"[^']*"'")
@@ -1382,21 +1382,43 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                }
    */
 
-<*>{STRINGPREFIX}?{TRISINGLEQUOTE} |
-<*>{STRINGPREFIX}?{TRIDOUBLEQUOTE} {
-  				 startFontClass("stringliteral");
+<*>{STRINGPREFIX}?{TRISINGLEQUOTE} {
+				 if (YY_START==SingleQuoteString) REJECT;
+				 startFontClass("stringliteral");
 				 g_stringContext=YY_START;
 				 g_doubleQuote=yytext[yyleng-1]=='"';
-  		                 codify(yytext);
+				 codify(yytext);
+				 BEGIN(TripleString);
+                               }
+<*>{STRINGPREFIX}?{TRIDOUBLEQUOTE} {
+				 if (YY_START==DoubleQuoteString) REJECT;
+				 startFontClass("stringliteral");
+				 g_stringContext=YY_START;
+				 g_doubleQuote=yytext[yyleng-1]=='"';
+				 codify(yytext);
 				 BEGIN(TripleString);
                                }
 <*>{STRINGPREFIX}?"'"	       { // single quoted string
+				 if (YY_START==SingleQuoteString ||
+				     YY_START==DoubleQuoteString ||
+				     YY_START==TripleString
+				    )
+				 {
+				   REJECT;
+				 }
   				 startFontClass("stringliteral");
 				 g_stringContext=YY_START;
   		                 codify(yytext);
 				 BEGIN(SingleQuoteString);
   			       }
 <*>{STRINGPREFIX}?"\""         { // double quoted string
+				 if (YY_START==SingleQuoteString ||
+				     YY_START==DoubleQuoteString ||
+				     YY_START==TripleString
+				    )
+				 {
+				   REJECT;
+				 }
   				 startFontClass("stringliteral");
 				 g_stringContext=YY_START;
   		                 codify(yytext);

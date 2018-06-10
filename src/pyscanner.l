@@ -487,7 +487,6 @@ SHORTSTRINGITEM   ({SHORTSTRINGCHAR}|{ESCAPESEQ})
 SHORTSTRINGCHAR   [^\\\n"]
 STRINGLITERAL     {STRINGPREFIX}?( {SHORTSTRING} | {LONGSTRING})  
 STRINGPREFIX      ("r"|"u"|"ur"|"R"|"U"|"UR"|"Ur"|"uR")
-KEYWORD           ("lambda"|"import"|"class"|"assert"|"as"|"from"|"global"|"def"|"True"|"False")
 FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"if"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
 POUNDCOMMENT      "#"[^#\n][^\n]* 
 SCRIPTCOMMENT      "#!".* 
