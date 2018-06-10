@@ -25,7 +25,6 @@
 #include "util.h"
 #include "message.h"
 #include "config.h"
-#include "language.h"
 #include "portable.h"
 #include "index.h"
 #include "doxygen.h"
@@ -97,7 +96,7 @@ void FormulaList::generateBitmaps(const char *path)
   {
     //printf("Running latex...\n");
     //system("latex _formulas.tex </dev/null >/dev/null");
-    QCString latexCmd = theTranslator->latexCommandName();
+    QCString latexCmd = "latex";
     portable_sysTimerStart();
     if (portable_system(latexCmd,"_formulas.tex")!=0)
     {
