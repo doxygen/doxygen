@@ -1781,7 +1781,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
               pc = c;
               i++;
               c = src[i];
-              *dst+=c;
+              *dst++=c;
             }
             else if (c=='"')
             {
