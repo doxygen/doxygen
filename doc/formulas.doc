@@ -100,8 +100,8 @@ the section should contain valid command for the specific environment.
 
 \warning Currently, doxygen is not very fault tolerant in recovering 
 from typos in formulas. It may be necessary to remove the
-file <code>formula.repository</code> that is written to the html directory to 
-get rid of an incorrect formula.
+files <code>formula.repository</code> that are written to the html and rtf directories to 
+get rid of an incorrect formula as well as the <code>form_*</code> files.
 
 \htmlonly
 Go to the <a href="tables.html">next</a> section or return to the
