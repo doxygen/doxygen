@@ -75,6 +75,10 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
   {
     text+=strippedContent +"\n";
   }
+  else if (strippedContent == "stdlib")
+  {
+    text+="stdlib\n";
+  }
   else
   {
     text+=content;
