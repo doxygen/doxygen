@@ -3199,7 +3199,7 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='HAVE_DOT' defval='0'>
+    <option type='bool' id='HAVE_DOT' defval='1'>
       <docs>
 <![CDATA[
  If you set the \c HAVE_DOT tag to \c YES then doxygen will assume the \c dot tool is
@@ -3375,7 +3375,7 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='enum' id='DOT_IMAGE_FORMAT' defval='png' depends='HAVE_DOT'>
+    <option type='enum' id='DOT_IMAGE_FORMAT' defval='svg' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
  The \c DOT_IMAGE_FORMAT tag can be used to set the image format of the images
