@@ -322,6 +322,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int position = 0;
   bool needsEntry;
   int lineNr = brief ? current->briefLine : current->docLine;
+  setParseMore(FALSE);
   while (parseCommentBlock(
 	g_thisParser,
 	(docBlockInBody && previous) ? previous : current,

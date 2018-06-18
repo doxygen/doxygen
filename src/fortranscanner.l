@@ -2427,6 +2427,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   }
   DBG_CTX((stderr,"call parseCommentBlock [%s]\n",doc.data()));
   int lineNr = brief ? current->briefLine : current->docLine;
+  setParseMore(FALSE);
   while (parseCommentBlock(
 	g_thisParser,
 	docBlockInBody ? subrCurrent.getFirst() : current,

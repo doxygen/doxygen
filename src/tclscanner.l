@@ -1524,6 +1524,7 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
 
         myPos0=myPos;
         myLine0=myLine;
+        setParseMore(FALSE);
         while (parseCommentBlock(tcl.this_parser, &myEntry0, myDoc, tcl.file_name,
           myLine, FALSE, tcl.config_autobrief, FALSE, myProt, myPos, myNew))
         {
@@ -1568,6 +1569,7 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
       else
       { // new entry
         tcl.entry_current = tcl_entry_new();
+        setParseMore(FALSE);
         while (parseCommentBlock(tcl.this_parser, tcl.entry_current, myDoc,
           tcl.file_name, myLine, FALSE, tcl.config_autobrief, FALSE,
           myProt, myPos, myNew))

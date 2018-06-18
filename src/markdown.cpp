@@ -2611,6 +2611,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
 
   bool needsEntry = FALSE;
   Protection prot=Public;
+  setParseMore(FALSE);
   while (parseCommentBlock(
         this,
         current,

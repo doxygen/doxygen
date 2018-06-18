@@ -2926,8 +2926,8 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   //    isBrief,isAutoBriefOn,lineNr);
 
   initParser();
-  guards.setAutoDelete(TRUE);
-  guards.clear();
+  if (!parseMore)guards.setAutoDelete(TRUE);
+  if (!parseMore)guards.clear();
   langParser     = parser;
   current        = curEntry;
   if (comment.isEmpty()) return FALSE; // avoid empty strings
@@ -2983,7 +2983,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
     addOutput(getOverloadDocs());
   }
 
-  if (!guards.isEmpty())
+  if (!guards.isEmpty() && !parseMore)
   {
     warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
   }
@@ -3039,6 +3039,11 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 }
 
 //---------------------------------------------------------------------------
+
+void setParseMore(const bool state)
+{
+  parseMore = state;
+}
 
 void groupEnterFile(const char *fileName,int)
 {

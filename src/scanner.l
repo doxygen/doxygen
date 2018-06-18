@@ -6695,6 +6695,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
     docEntry->inbodyLine = lineNr;
   }
 
+  setParseMore(FALSE);
   while (parseCommentBlock(
 	g_thisParser,
 	docBlockInBody && previous ? previous : current,
@@ -6754,6 +6755,7 @@ static void handleParametersCommentBlocks(ArgumentList *al)
       current->brief.resize(0);
 
       //printf("handleParametersCommentBlock [%s]\n",doc.data());
+      setParseMore(FALSE);
       while (parseCommentBlock(
 	     g_thisParser,
 	     current,
