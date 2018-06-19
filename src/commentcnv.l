@@ -591,7 +591,15 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 <SkipString>\\.                    { /* escaped character in string */
-                                     copyToOutput(yytext,(int)yyleng); 
+                                     if (g_lang==SrcLangExt_Fortran)
+                                     {
+                                       unput(yytext[1]);
+                                       copyToOutput(yytext,1);
+                                     }
+                                     else
+                                     {
+                                       copyToOutput(yytext,(int)yyleng);
+                                     }
                                    }
 <SkipString>"\""       	           { /* end of string */ 
                                      copyToOutput(yytext,(int)yyleng); 
@@ -604,7 +612,15 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 <SkipChar>\\.		           { /* escaped character */
-                                     copyToOutput(yytext,(int)yyleng); 
+                                     if (g_lang==SrcLangExt_Fortran)
+                                     {
+                                       unput(yytext[1]);
+                                       copyToOutput(yytext,1);
+                                     }
+                                     else
+                                     {
+                                       copyToOutput(yytext,(int)yyleng);
+                                     }
                                    }
 <SkipChar>'                        { /* end of character literal */ 
                                      copyToOutput(yytext,(int)yyleng); 

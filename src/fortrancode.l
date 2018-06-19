@@ -1194,9 +1194,6 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 					    g_insideBody=FALSE;
                                         }
  /*------ strings --------------------------------------------------*/ 
-<*>"\\\\"                               { str+=yytext; /* ignore \\  */}
-<*>"\\\""|\\\'                          { str+=yytext; /* ignore \"  */}
-
 <String>\n                              { // string with \n inside
 					  g_contLineNr++;
                                           str+=yytext;
