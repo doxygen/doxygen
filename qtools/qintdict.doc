@@ -166,7 +166,7 @@
 
   Setting \e size to a suitably large \link primes.html prime number\endlink
   (equal to or greater than the expected number of entries) makes the hash
-  distribution better and hence the loopup faster.
+  distribution better and hence the lookup faster.
 */
 
 /*!
