@@ -9574,7 +9574,7 @@ int readDir(QFileInfo *fi,
   if (fi->isSymLink())
   {
     dirName = resolveSymlink(dirName.data());
-    if (dirName.isEmpty()) return 0;            // recusive symlink
+    if (dirName.isEmpty()) return 0;            // recursive symlink
     if (g_pathsVisited.find(dirName)) return 0; // already visited path
     g_pathsVisited.insert(dirName,(void*)0x8);
   }
