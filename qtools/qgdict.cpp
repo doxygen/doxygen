@@ -1101,7 +1101,7 @@ QDataStream& QGDict::write( QDataStream &s ) const
 QGDictIterator::QGDictIterator( const QGDict &d )
 {
     dict = (QGDict *)&d;			// get reference to dict
-    toFirst();					// set to first noe
+    toFirst();					// set to first node
     if ( !dict->iterators ) {
 	dict->iterators = new QGDItList;	// create iterator list
 	CHECK_PTR( dict->iterators );
