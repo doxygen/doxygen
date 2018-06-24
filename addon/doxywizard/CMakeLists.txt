@@ -4,9 +4,6 @@ if (NOT force_qt4)
   if (Qt5Core_FOUND)
     message(STATUS "Using Qt5")
     find_package(Qt5 COMPONENTS Widgets Gui Xml)
-    macro(qt_use_modules)
-        qt5_use_modules(${ARGN})
-    endmacro()
     macro(qt_wrap_cpp)
         qt5_wrap_cpp(${ARGN})
     endmacro()
@@ -23,8 +20,6 @@ if (NOT Qt5Core_FOUND)
     message(STATUS "Using Qt4")
   endif()
   find_package(Qt4 REQUIRED COMPONENTS QtCore QtXml QtGui)
-  macro(qt_use_modules)
-  endmacro()
   macro(qt_wrap_cpp)
       qt4_wrap_cpp(${ARGN})
   endmacro()
@@ -104,9 +99,11 @@ ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
 )
-qt_use_modules(doxywizard Core Gui Widgets Xml)
-target_link_libraries(doxywizard
-${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY}
-)
+
+if(Qt5Core_FOUND)
+  target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml)
+else()
+  target_link_libraries(doxywizard ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY})
+endif()
 
 install(TARGETS doxywizard DESTINATION bin)
