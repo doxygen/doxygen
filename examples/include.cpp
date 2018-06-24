@@ -8,7 +8,7 @@ class Include_Test
     void example();
 };
 
-/*! \page example
+/*! \page pag_example
  *  \dontinclude include_test.cpp
  *  Our main function starts like this:
  *  \skip main

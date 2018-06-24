@@ -48,7 +48,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorKorean : public Translator
+class TranslatorKorean : public TranslatorAdapter_1_8_15
 {
   protected:
     friend class TranslatorAdapterBase;
@@ -86,7 +86,17 @@ class TranslatorKorean : public Translator
       // I'm not sure what this should be.
       // When I figure it out, I'll update this.
       // see http://www.ktug.or.kr/jsboard/read.php?table=operate&no=4422&page=1
-      return "\\usepackage{hfont}\n";
+      return "\\usepackage{kotex}\n";
+    }
+    virtual QCString latexCommandName()
+    {
+      QCString latex_command = Config_getString(LATEX_CMD_NAME);
+      if (latex_command.isEmpty()) latex_command = "latex";
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        if (latex_command == "latex") latex_command = "xelatex";
+      }
+      return latex_command;
     }
 
     // --- Language translation methods -------------------

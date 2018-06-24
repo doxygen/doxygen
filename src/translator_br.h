@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 1997-2017 by Dimitri van Heesch.
+ * Copyright (C) 1997-2018 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -10,14 +10,16 @@
  * Documents produced by Doxygen are derivative workns derived from the
  * input used in their production; they are not affected by this license.
  *
- * Brazilian Portuguese translation version 20100531
+ * Brazilian Portuguese translation
  *    Maintainer:
- *        Fabio "FJTC" Jun Takada Chino <jun-chino at uol.com.br>
+ *        Fabio "FJTC" Jun Takada Chino <fjtc at brokenbits dot com dot br>
  *    Collaborators:
  *        Emerson Ferreira <nuskorpios at gmail dot com>    
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
+ * 20180612:
+ *	- Updated to 1.8.15;
  * 20170123:
  *  - Full translation revision;
  *  - trLegendDocs() is now synchronized with the English version;
@@ -2082,6 +2084,122 @@ class TranslatorBrazilian : public Translator
 
       return result;
     }
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.8.15
+    //////////////////////////////////////////////////////////////////////////
+
+        /** VHDL design unit hierarchy */
+        virtual QCString trDesignUnitHierarchy()
+        { return "Hierarquia da Unidade de Design"; }
+        /** VHDL design unit list */
+        virtual QCString trDesignUnitList()
+        { return "Lista de Unidades de Design"; }
+        /** VHDL design unit members */
+        virtual QCString trDesignUnitMembers()
+        { return "Membros da Unidade de Design"; }
+        /** VHDL design unit list description */
+        virtual QCString trDesignUnitListDescription()
+        {
+            return "Esta é uma lista de todos os membros de unidades de design "
+            		"com ligações para as entidades às quais pertencem:";
+        }
+        /** VHDL design unit index */
+        virtual QCString trDesignUnitIndex()
+        { return "Índice de Unidades de Design"; }
+        /** VHDL design units */
+        virtual QCString trDesignUnits()
+        { return "Unidades de Design"; }
+        /** VHDL functions/procedures/processes */
+        virtual QCString trFunctionAndProc()
+        { return "Funções/Procedimentos/Processos"; }
+        /** VHDL type */
+        virtual QCString trVhdlType(uint64 type,bool single)
+        {
+          switch(type)
+          {
+            case VhdlDocGen::LIBRARY:
+              if (single) return "Biblioteca";
+              else        return "Bibliotecas";
+            case VhdlDocGen::PACKAGE:
+              if (single) return "Pacote";
+              else        return "Pacotes";
+            case VhdlDocGen::SIGNAL:
+              if (single) return "Sinal";
+              else        return "Sinais";
+            case VhdlDocGen::COMPONENT:
+              if (single) return "Componente";
+              else        return "Componentes";
+            case VhdlDocGen::CONSTANT:
+              if (single) return "Constante";
+              else        return "Constantes";
+            case VhdlDocGen::ENTITY:
+              if (single) return "Entidade";
+              else        return "Entidades";
+            case VhdlDocGen::TYPE:
+              if (single) return "Tipo";
+              else        return "Tipos";
+            case VhdlDocGen::SUBTYPE:
+              if (single) return "Subtipo";
+              else        return "Subtipos";
+            case VhdlDocGen::FUNCTION:
+              if (single) return "Função";
+              else        return "Funções";
+            case VhdlDocGen::RECORD:
+              if (single) return "Registro";
+              else        return "Registros";
+            case VhdlDocGen::PROCEDURE:
+              if (single) return "Procedimento";
+              else        return "Procedimentos";
+            case VhdlDocGen::ARCHITECTURE:
+              if (single) return "Arquitetura";
+              else        return "Arquiteturas";
+            case VhdlDocGen::ATTRIBUTE:
+              if (single) return "Atributo";
+              else        return "Atributos";
+            case VhdlDocGen::PROCESS:
+              if (single) return "Processo";
+              else        return "Processos";
+            case VhdlDocGen::PORT:
+              if (single) return "Porta";
+              else        return "Portas";
+            case VhdlDocGen::USE:
+              if (single) return "cláusula de uso";
+              else        return "cláusulas de uso";
+            case VhdlDocGen::GENERIC:
+              if (single) return "Generico";
+              else        return "Genericos";
+            case VhdlDocGen::PACKAGE_BODY:
+              return "Corpo do Pacote";
+            case VhdlDocGen::UNITS:
+              return "Unidades";
+            case VhdlDocGen::SHAREDVARIABLE:
+              if (single) return "Variável Compartilhada";
+              else        return "Variáveis Compartilhadas";
+            case VhdlDocGen::VFILE:
+              if (single) return "Arquivo";
+              else        return "Arquivos";
+            case VhdlDocGen::GROUP:
+              if (single) return "Grupo";
+              else        return "Grupos";
+            case VhdlDocGen::INSTANTIATION:
+                if (single) return "Instância";
+                else        return "Instâncias";
+            case VhdlDocGen::ALIAS:
+              if (single) return "Apelido";
+              else        return "Apelidos";
+            case VhdlDocGen::CONFIG:
+              if (single) return "Configuração";
+              else        return "Configurações";
+            case VhdlDocGen::MISCELLANEOUS:
+              return "Outros"; // Is this correct for VHDL?
+            case VhdlDocGen::UCF_CONST:
+              return "Restrições";
+            default:
+              return "Classe";
+          }
+        }
+        virtual QCString trCustomReference(const char *name)
+        { return "Referência de " + QCString(name); }
 
 //////////////////////////////////////////////////////////////////////////
 

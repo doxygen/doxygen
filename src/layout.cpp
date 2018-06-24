@@ -310,7 +310,7 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandlerSection(this,LayoutDocEntry::ClassNestedClasses,&LayoutParser::startSectionEntry,
                                          COMPILE_FOR_2_OPTIONS(
                                            theTranslator->trCompounds(),
-                                           SrcLangExt_VHDL,VhdlDocGen::trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                           SrcLangExt_VHDL,theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
                                            SrcLangExt_Fortran,theTranslator->trDataTypes()
                                          )));
       m_sHandler.insert("class/memberdecl/services",
@@ -491,7 +491,7 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandlerSection(this,LayoutDocEntry::NamespaceClasses,&LayoutParser::startSectionEntry,
                                          COMPILE_FOR_2_OPTIONS(
                                            theTranslator->trCompounds(),
-                                           SrcLangExt_VHDL,VhdlDocGen::trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                           SrcLangExt_VHDL,theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
                                            SrcLangExt_Fortran,theTranslator->trDataTypes()
                                          )));
       m_sHandler.insert("namespace/memberdecl/membergroups", 
@@ -508,7 +508,7 @@ class LayoutParser : public QXmlDefaultHandler
                                         COMPILE_FOR_2_OPTIONS(
                                           theTranslator->trFunctions(),
                                           SrcLangExt_Fortran,theTranslator->trSubprograms(),
-                                          SrcLangExt_VHDL,VhdlDocGen::trFunctionAndProc()
+                                          SrcLangExt_VHDL,theTranslator->trFunctionAndProc()
                                         )));
       m_sHandler.insert("namespace/memberdecl/variables", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
@@ -570,7 +570,7 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandlerSection(this,LayoutDocEntry::FileClasses,&LayoutParser::startSectionEntry,
                                          COMPILE_FOR_2_OPTIONS(
                                            theTranslator->trCompounds(),
-                                           SrcLangExt_VHDL,VhdlDocGen::trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                           SrcLangExt_VHDL,theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
                                            SrcLangExt_Fortran,theTranslator->trDataTypes()
                                          )));
       m_sHandler.insert("file/memberdecl/namespaces", 
@@ -599,7 +599,7 @@ class LayoutParser : public QXmlDefaultHandler
                                         COMPILE_FOR_2_OPTIONS(
                                           theTranslator->trFunctions(),
                                           SrcLangExt_Fortran,theTranslator->trSubprograms(),
-                                          SrcLangExt_VHDL,VhdlDocGen::trFunctionAndProc()
+                                          SrcLangExt_VHDL,theTranslator->trFunctionAndProc()
                                         )));
       m_sHandler.insert("file/memberdecl/variables", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
@@ -660,7 +660,7 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandlerSection(this,LayoutDocEntry::GroupClasses,&LayoutParser::startSectionEntry,
                                          COMPILE_FOR_2_OPTIONS(
                                            theTranslator->trCompounds(),
-                                           SrcLangExt_VHDL,VhdlDocGen::trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                           SrcLangExt_VHDL,theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
                                            SrcLangExt_Fortran,theTranslator->trDataTypes()
                                          )));
       m_sHandler.insert("group/memberdecl/namespaces", 
@@ -701,7 +701,7 @@ class LayoutParser : public QXmlDefaultHandler
                                         COMPILE_FOR_2_OPTIONS(
                                           theTranslator->trFunctions(),
                                           SrcLangExt_Fortran,theTranslator->trSubprograms(),
-                                          SrcLangExt_VHDL,VhdlDocGen::trFunctionAndProc()
+                                          SrcLangExt_VHDL,theTranslator->trFunctionAndProc()
                                         )));
       m_sHandler.insert("group/memberdecl/variables", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
@@ -954,35 +954,35 @@ class LayoutParser : public QXmlDefaultHandler
         },
         { "classindex",
           LayoutNavEntry::ClassIndex,
-          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? VhdlDocGen::trDesignUnits() : theTranslator->trCompoundIndex(),
+          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trCompoundIndex(),
           QCString(),
           QCString(),
           "classes"
         },
         { "classes",
           LayoutNavEntry::Classes,
-          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitList() : theTranslator->trClasses(),
+          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? theTranslator->trDesignUnitList() : theTranslator->trClasses(),
           theTranslator->trCompoundList(),
-          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
+          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
           "annotated"
         },
         { "classlist",
           LayoutNavEntry::ClassList,
-          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitList() : theTranslator->trCompoundList(),
+          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? theTranslator->trDesignUnitList() : theTranslator->trCompoundList(),
           QCString(),
-          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
+          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
           "annotated"
         },
         { "hierarchy",
           LayoutNavEntry::ClassHierarchy,
-          vhdlOpt    ? VhdlDocGen::trDesignUnitHierarchy() : theTranslator->trClassHierarchy(),
+          vhdlOpt    ? theTranslator->trDesignUnitHierarchy() : theTranslator->trClassHierarchy(),
           QCString(),
           theTranslator->trClassHierarchyDescription(),
           hasGraphicalHierarchy ? "inherits" : "hierarchy"
         },
         { "classmembers",
           LayoutNavEntry::ClassMembers,
-          fortranOpt ? theTranslator->trCompoundMembersFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitMembers() : theTranslator->trCompoundMembers(),
+          fortranOpt ? theTranslator->trCompoundMembersFortran() : vhdlOpt ? theTranslator->trDesignUnitMembers() : theTranslator->trCompoundMembers(),
           QCString(),
           fortranOpt ? theTranslator->trCompoundMembersDescriptionFortran(extractAll) : theTranslator->trCompoundMembersDescription(extractAll),
           "functions"

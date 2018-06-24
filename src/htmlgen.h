@@ -175,7 +175,7 @@ class HtmlGenerator : public OutputGenerator
     void endMemberSections();
     void startHeaderSection();
     void endHeaderSection();
-    void startMemberHeader(const char *);
+    void startMemberHeader(const char *, int);
     void endMemberHeader();
     void startMemberSubtitle();
     void endMemberSubtitle();
@@ -200,7 +200,8 @@ class HtmlGenerator : public OutputGenerator
     void endMemberGroup(bool);
 
     void insertMemberAlign(bool);
-    void startMemberDescription(const char *anchor,const char *inheritId);
+    void insertMemberAlignLeft(int,bool);
+    void startMemberDescription(const char *anchor,const char *inheritId, bool typ);
     void endMemberDescription();
     void startMemberDeclaration() {}
     void endMemberDeclaration(const char *anchor,const char *inheritId);

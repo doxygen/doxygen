@@ -3195,7 +3195,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   {
     CondCtx *ctx = g_condStack.pop();
     QCString sectionInfo = " ";
-    if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label %s ",ctx->sectionId.data()); 
+    if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx->sectionId.stripWhiteSpace().data());
     warn(fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
     delete ctx;

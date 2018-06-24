@@ -36,7 +36,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage[slovene]{babel}\n\\usepackage[T1]{fontenc}\n";
+      return "\\usepackage[slovene]{babel}\n";
     }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }

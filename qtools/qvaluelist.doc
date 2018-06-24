@@ -199,7 +199,7 @@
   \fn QValueList::~QValueList()
   Destroys the list. References to the values in the list and all iterators
   of this list become invalidated. Since QValueList is highly tuned for performance
-  you wont see warnings if you use invalid iterators,
+  you won't see warnings if you use invalid iterators,
   because it is impossible for
   an iterator to check whether it is valid or not.
 */
