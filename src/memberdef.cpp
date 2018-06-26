@@ -2625,7 +2625,6 @@ void MemberDef::writeDocumentation(MemberList *ml,
   }
   int i=0,l;
   static QRegExp r("@[0-9]+");
-
   //----------------------------------------
 
   ol.pushGeneratorState();
@@ -2678,8 +2677,14 @@ void MemberDef::writeDocumentation(MemberList *ml,
   }
   else // not an enum value or anonymous compound
   {
+     QCString sepPageTitle = title;
+     if (Config_getBool(SEPARATE_MEMBER_PAGES) && !Config_getBool(SEPARATE_MEMBER_PAGES_TITLE))
+     {
+         sepPageTitle = 0;
+     }
+
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-    ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
+    ol.startMemberDoc(ciname, name(), memAnchor, sepPageTitle, memCount, memTotal, showInline);
 
     ClassDef *cd=getClassDef();
     NamespaceDef *nd=getNamespaceDef();

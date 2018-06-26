@@ -1599,15 +1599,20 @@ void HtmlGenerator::startMemberDoc( const char *clName, const char *memName,
                                     int memCount, int memTotal, bool showInline)
 {
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
-  t << "\n<h2 class=\"memtitle\">"
-    << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&#9670;&nbsp;</a></span>";
-  docify(title);
-  if (memTotal>1)
+  // Only if there is a title specified (i.e. != nullptr) add the title area
+  if (title)
   {
-    t << " <span class=\"overload\">[" << memCount << "/" << memTotal <<"]</span>";
+      t << "\n<h2 class=\"memtitle\">"
+        << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&#9670;&nbsp;</a></span>";
+      docify(title);
+      if (memTotal > 1)
+      {
+          t << " <span class=\"overload\">[" << memCount << "/" << memTotal << "]</span>";
+      }
+      t << "</h2>"
+        << endl;
   }
-  t << "</h2>"
-    << endl;
+  
   t << "\n<div class=\"memitem\">" << endl;
   t << "<div class=\"memproto\">" << endl;
 }
@@ -2737,11 +2742,19 @@ void HtmlGenerator::writeInheritedSectionTitle(
 
 void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const char *title,bool first)
 {
+    bool summaryOutsideHeader = Config_getBool(HTML_SUMMARY_OUTSIDE_HEADER);
   if (first)
   {
-    t << "  <div class=\"summary\">\n";
+      if (summaryOutsideHeader)
+      {
+          t << "  <div class=\"summaryFloat\">\n";
+      }
+      else
+      {
+          t << "  <div class=\"summary\">\n";
+      }
   }
-  else
+  else if (!summaryOutsideHeader)
   {
     t << " &#124;\n";
   }
@@ -2759,6 +2772,8 @@ void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const c
   t << "\">";
   t << title;
   t << "</a>";
+  if (summaryOutsideHeader)
+      t << "<br>";
 }
 
 void HtmlGenerator::endMemberDeclaration(const char *anchor,const char *inheritId)

@@ -522,6 +522,14 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+	<option type='bool' id='SEPARATE_MEMBER_PAGES_TITLE' defval='1' depends='SEPARATE_MEMBER_PAGES'>
+      <docs>
+<![CDATA[
+ If the \c SEPARATE_MEMBER_PAGES_TITLE tag is set to \c NO then doxygen will omit
+ the title area on a separate member page. 
+]]>
+      </docs>
+    </option>
     <option type='int' id='TAB_SIZE' minval='1' maxval='16' defval='4'>
       <docs>
 <![CDATA[
@@ -1103,6 +1111,24 @@ Go to the <a href="commands.html">next</a> section or return to the
  Set the \c SHOW_USED_FILES tag to \c NO to disable the list of files generated
  at the bottom of the documentation of classes and structs. If set to \c YES, the
  list will mention the files that were used to generate the documentation.
+]]>
+      </docs>
+    </option>
+	<option type='bool' id='SHOW_USED_FILES_SRC' defval='1' depends='SHOW_USED_FILES'>
+      <docs>
+<![CDATA[
+ Set the \c SHOW_USED_FILES_SRC tag to \c NO to omit the listing of source files
+ at the bottom of the documentation of classes and structs. If set to \c YES
+ the list will mention the source files that were used to generate the documentation 
+ along with the header files in the used files section. 
+]]>
+      </docs>
+    </option>
+	<option type='bool' id='SHOW_USED_FILES_TXT' defval='1' depends='SHOW_USED_FILES'>
+      <docs>
+<![CDATA[
+ Set the \c SHOW_USED_FILES_TXT tag to \c NO to omit the text string before the listing 
+ of source files at the bottom of the documentation of classes and structs. 
 ]]>
       </docs>
     </option>
@@ -1912,6 +1938,14 @@ hr.footer {
       <docs documentation='0'>
 <![CDATA[
  For an example see the documentation.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='HTML_SUMMARY_OUTSIDE_HEADER' defval='0'>
+      <docs>
+<![CDATA[
+ The \c HTML_SUMMARY_OUTSIDE_HEADER tag can be used to let the summary links be generated
+ outside of the header div html tags displayed as a floating block if it is set to YES.
 ]]>
       </docs>
     </option>

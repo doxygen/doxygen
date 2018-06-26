@@ -800,7 +800,7 @@ void ClassDef::findSectionsInDocumentation()
 // add a file name to the used files set
 void ClassDef::insertUsedFile(FileDef *fd)
 {
-  if (fd==0) return;
+  if (fd == 0 || (!Config_getBool(SHOW_USED_FILES_SRC) && fd->isSource())) return;
   if (m_impl->files.find(fd)==-1) m_impl->files.append(fd);
   if (m_impl->templateInstances)
   {
@@ -1107,10 +1107,10 @@ void ClassDef::showUsedFiles(OutputList &ol)
 {
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-
-
+  
   ol.writeRuler();
-  ol.parseText(generatedFromFiles());
+  if(Config_getBool(SHOW_USED_FILES_TXT))
+      ol.parseText(generatedFromFiles());
 
   bool first=TRUE;
   QListIterator<FileDef> li(m_impl->files);
@@ -1172,6 +1172,7 @@ void ClassDef::showUsedFiles(OutputList &ol)
   }
   if (!first) ol.endItemList();
 
+  ol.writeRuler();
   ol.popGeneratorState();
 }
 

@@ -1087,8 +1087,16 @@ void GroupDef::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   startFile(ol,getOutputFileBase(),name(),title,HLI_Modules);
 
-  ol.startHeaderSection();
-  writeSummaryLinks(ol);
+  if (Config_getBool(HTML_SUMMARY_OUTSIDE_HEADER))
+  {
+      writeSummaryLinks(ol);
+      ol.startHeaderSection();
+  }
+  else
+  {
+      ol.startHeaderSection();
+      writeSummaryLinks(ol);
+  }
   ol.startTitleHead(getOutputFileBase());
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);

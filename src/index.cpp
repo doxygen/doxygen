@@ -227,11 +227,19 @@ QCString fixSpaces(const QCString &s)
 
 void startTitle(OutputList &ol,const char *fileName,Definition *def)
 {
-  ol.startHeaderSection();
-  if (def) def->writeSummaryLinks(ol);
-  ol.startTitleHead(fileName);
-  ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Man);
+    if (Config_getBool(HTML_SUMMARY_OUTSIDE_HEADER))
+    {
+        if (def) def->writeSummaryLinks(ol);
+        ol.startHeaderSection();
+    }
+    else
+    {
+        ol.startHeaderSection();
+        if (def) def->writeSummaryLinks(ol);
+    }
+    ol.startTitleHead(fileName);
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Man);
 }
 
 void endTitle(OutputList &ol,const char *fileName,const char *name)
