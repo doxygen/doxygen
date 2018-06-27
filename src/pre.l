@@ -1934,6 +1934,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
   					}
 <CopyLine>"\\"\r?/\n			{ // strip line continuation characters
+                                          if (getLanguageFromFileName(g_yyFileName)==SrcLangExt_Fortran) outputChar(*yytext);
   					}
 <CopyLine>.				{
   					  outputChar(*yytext);
