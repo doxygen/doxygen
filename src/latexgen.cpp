@@ -2150,7 +2150,7 @@ void LatexGenerator::endParameterList()
 void LatexGenerator::startParameterType(bool first,const char *key)
 {
   t << "\\item[{";
-  if (!first && key) t << key;
+  if (!first && key) docify(key);
 }
 
 void LatexGenerator::endParameterType()
