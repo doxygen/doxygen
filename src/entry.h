@@ -112,9 +112,10 @@ class Entry
       PACKAGE_SEC      = 0x15000000,
       PACKAGEDOC_SEC   = 0x16000000,
       OBJCIMPL_SEC     = 0x17000000,
-      DIRDOC_SEC       = 0x18000000
-      ,EXPORTED_INTERFACE_SEC = 0x19000000
-      ,INCLUDED_SERVICE_SEC = 0x1A000000
+      DIRDOC_SEC       = 0x18000000,
+      EXPORTED_INTERFACE_SEC = 0x19000000,
+      INCLUDED_SERVICE_SEC = 0x1a000000,
+      EXAMPLE_LINENO_SEC = 0x1b000000
     };
 
     // class specifiers (add new items to the end)

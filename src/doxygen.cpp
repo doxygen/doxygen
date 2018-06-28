@@ -8922,7 +8922,8 @@ static void generatePageDocs()
 
 static void buildExampleList(EntryNav *rootNav)
 {
-  if (rootNav->section()==Entry::EXAMPLE_SEC && !rootNav->name().isEmpty())
+  if ((rootNav->section()==Entry::EXAMPLE_SEC || rootNav->section()==Entry::EXAMPLE_LINENO_SEC) &&
+      !rootNav->name().isEmpty())
   {
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
@@ -8943,6 +8944,7 @@ static void buildExampleList(EntryNav *rootNav)
       pd->setFileName(convertNameToFile(pd->name()+"-example",FALSE,TRUE));
       pd->addSectionsToDefinition(root->anchors);
       pd->setLanguage(root->lang);
+      pd->setLineNo(rootNav->section()==Entry::EXAMPLE_LINENO_SEC);
       //pi->addSections(root->anchors);
 
       Doxygen::exampleSDict->inSort(root->name,pd);
@@ -8985,6 +8987,7 @@ static void generateExampleDocs()
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
     msg("Generating docs for example %s...\n",pd->name().data());
+    bool withLineNumbers = pd->getLineNo();
     resetCCodeParserState();
     QCString n=pd->getOutputFileBase();
     startFile(*g_outputList,n,n,pd->name());
@@ -8996,7 +8999,7 @@ static void generateExampleDocs()
                          pd->docLine(),                            // startLine
                          pd,                                       // context
                          0,                                        // memberDef
-                         pd->documentation()+"\n\n\\include "+pd->name(),          // docs
+                         pd->documentation()+ (withLineNumbers ? "\n\n\\includelineno " : "\n\n\\include ")+pd->name(),          // docs
                          TRUE,                                     // index words
                          TRUE,                                     // is example
                          pd->name()

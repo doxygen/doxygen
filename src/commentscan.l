@@ -77,6 +77,7 @@ static bool handleMainpage(const QCString &);
 static bool handleFile(const QCString &);
 static bool handleDir(const QCString &);
 static bool handleExample(const QCString &);
+static bool handleExampleWithLineNo(const QCString &);
 static bool handleDetails(const QCString &);
 static bool handleName(const QCString &);
 static bool handleTodo(const QCString &);
@@ -168,6 +169,7 @@ static DocCmdMap docCmdMap[] =
   { "file",            &handleFile,             FALSE },
   { "dir",             &handleDir,              FALSE },
   { "example",         &handleExample,          FALSE },
+  { "examplelineno",   &handleExampleWithLineNo,FALSE },
   { "details",         &handleDetails,          TRUE  },
   { "name",            &handleName,             FALSE },
   { "todo",            &handleTodo,             FALSE }, // end brief will be done differently
@@ -483,6 +485,7 @@ static bool getDocSectionName(int s)
     case Entry::PACKAGEDOC_SEC:
     case Entry::DIRDOC_SEC:
     case Entry::EXAMPLE_SEC:
+    case Entry::EXAMPLE_LINENO_SEC:
     case Entry::MEMBERGRP_SEC:
       return TRUE;
     default: 
@@ -897,7 +900,7 @@ static int yyread(char *buf,int max_size)
        /* start command character */
 CMD	  ("\\"|"@")
 DCMD1     ("arg"|"attention"|"author"|"cite"|"code")
-DCMD2     ("date"|"dot"|"msc"|"dotfile"|"example"|"startuml")
+DCMD2     ("date"|"dot"|"msc"|"dotfile"|"example"|"examplelineno"|"startuml")
 DCMD3     ("htmlinclude"|"htmlonly"|"image"|"include")
 DCMD4     ("includelineno"|"internal"|"invariant")
 DCMD5     ("latexinclude"|"latexonly"|"li"|"line"|"manonly"|"name")
@@ -2442,6 +2445,13 @@ static bool handleDir(const QCString &)
 static bool handleExample(const QCString &)
 {
   bool stop=makeStructuralIndicator(Entry::EXAMPLE_SEC);
+  if (!stop) current->name = yyFileName;
+  BEGIN( FileDocArg1 );
+  return stop;
+}
+static bool handleExampleWithLineNo(const QCString &)
+{
+  bool stop=makeStructuralIndicator(Entry::EXAMPLE_LINENO_SEC);
   if (!stop) current->name = yyFileName;
   BEGIN( FileDocArg1 );
   return stop;
