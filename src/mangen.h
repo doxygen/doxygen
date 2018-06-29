@@ -170,7 +170,7 @@ class ManGenerator : public OutputGenerator
     void startDescList(SectionTypes);
     void endDescList()        {}
     void startSimpleSect(SectionTypes,const char *,const char *,const char *);
-    void endSimpleSect();
+    void endSimpleSect(SectionTypes);
     void startParamList(ParamListTypes,const char *title);
     void endParamList();
     //void writeDescItem();
@@ -199,7 +199,7 @@ class ManGenerator : public OutputGenerator
     
     void startDescTable(const char *t) 
     { startSimpleSect(EnumValues,0,0,t); startDescForItem(); }
-    void endDescTable() { endDescForItem(); endSimpleSect(); }
+    void endDescTable() { endDescForItem(); endSimpleSect(BaseOutputDocInterface::NONE); }
     void startDescTableRow() {}
     void endDescTableRow() {}
     void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }

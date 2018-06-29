@@ -2749,7 +2749,7 @@ void RTFGenerator::startSimpleSect(SectionTypes,const char *file,const char *anc
   t << rtf_Style_Reset << rtf_DList_DepthStyle();
 }
 
-void RTFGenerator::endSimpleSect()
+void RTFGenerator::endSimpleSect(SectionTypes)
 {
   DBG_RTF(t << "{\\comment (endSimpleSect)}"    << endl)
   m_omitParagraph = FALSE;

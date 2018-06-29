@@ -1942,10 +1942,20 @@ void HtmlGenerator::endDescTableData()
   t << "</td>";
 }
 
-void HtmlGenerator::startSimpleSect(SectionTypes,
+void HtmlGenerator::startSimpleSect(SectionTypes sect,
                                 const char *filename,const char *anchor,
                                 const char *title)
 {
+  if (sect == BaseOutputDocInterface::Examples)
+  {
+    QCString className;
+    className="examples";
+    t << "<dl class=\"" << className << "\"><dt>";
+    docify(title);
+    t << "</dt>" << endl;
+    return;
+  }
+
   t << "<dl><dt><b>";
   if (filename)
   {
@@ -1958,8 +1968,13 @@ void HtmlGenerator::startSimpleSect(SectionTypes,
   t << "</b></dt>";
 }
 
-void HtmlGenerator::endSimpleSect()
+void HtmlGenerator::endSimpleSect(SectionTypes sect)
 {
+  if (sect == BaseOutputDocInterface::Examples)
+  {
+    t << "</dl>" << endl;
+    return;
+  }
   t << "</dl>";
 }
 

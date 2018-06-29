@@ -324,8 +324,8 @@ class OutputList : public OutputDocInterface
     void startSimpleSect(SectionTypes t,const char *file,const char *anchor,
                          const char *title) 
     { forall(&OutputGenerator::startSimpleSect,t,file,anchor,title); }
-    void endSimpleSect() 
-    { forall(&OutputGenerator::endSimpleSect); }
+    void endSimpleSect(SectionTypes t) 
+    { forall(&OutputGenerator::endSimpleSect,t); }
     void startParamList(ParamListTypes t,const char *title) 
     { forall(&OutputGenerator::startParamList,t,title); }
     void endParamList() 

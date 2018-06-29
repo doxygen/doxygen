@@ -1013,13 +1013,13 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
   // write examples
   if (hasExamples() && m_impl->exampleSDict)
   {
-    ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
+    ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples());
     ol.startDescForItem();
     //ol.startParagraph();
     writeExample(ol,m_impl->exampleSDict);
     //ol.endParagraph();
     ol.endDescForItem();
-    ol.endSimpleSect();
+    ol.endSimpleSect(BaseOutputDocInterface::Examples);
   }
   //ol.newParagraph();
   writeSourceDef(ol,name());

@@ -2119,7 +2119,7 @@ void LatexGenerator::startSimpleSect(SectionTypes,const char *file,
   t << "]";
 }
 
-void LatexGenerator::endSimpleSect()
+void LatexGenerator::endSimpleSect(SectionTypes)
 {
   t << "\\end{Desc}" << endl;
 }

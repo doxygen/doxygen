@@ -687,7 +687,7 @@ dl.reflist dd {
         line-height: 14px;
 }
 
-.params, .retval, .exception, .tparams {
+.params, .retval, .exception, .tparams, .examples {
         margin-left: 0px;
         padding-left: 0px;
 }       
