@@ -113,6 +113,10 @@ extern void initResources();
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <signal.h>
 #define HAS_SIGNALS
+extern "C"
+{
+  int killpg(pid_t pgrp, int sig);
+}
 #endif
 
 // globally accessible variables
