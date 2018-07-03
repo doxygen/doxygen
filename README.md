@@ -43,11 +43,7 @@ Developers
 
 Issues, bugs, requests, ideas
 ----------------------------------
-Use the bug tracker to report bugs:
-* current list:
-    * [Bugzilla](https://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED)
-* Submit a new bug or feature request 
-    * [Enter bug](https://bugzilla.gnome.org/enter_bug.cgi?product=doxygen)
+Use the [issue](https://github.com/doxygen/doxygen/issues) tracker to report bugs.
 
 Comms
 ----------------------------------
