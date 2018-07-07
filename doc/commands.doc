@@ -1281,6 +1281,8 @@ The output will be different depending on whether or not \ref cfg_enabled_sectio
 contains \c TEST, or \c DEV
 
   \sa sections \ref cmdendcond "\\endcond" and  \ref cfg_enabled_sections "ENABLED_SECTIONS".
+  \note Due to the moment of parsing the \c \\cond and \ref cmdendcond "\\endcond" commands cannot
+  be used in \ref cfg_aliases "ALIASES".
 
 <hr>
 \section cmdcopyright \\copyright { copyright description }
@@ -1357,6 +1359,8 @@ contains \c TEST, or \c DEV
   Ends a conditional section that was started by \ref cmdcond "\\cond".
 
   \sa section \ref cmdcond "\\cond".
+  \note Due to the moment of parsing the \c \\endcond and \ref cmdcond "\\cond" commands cannot
+  be used in \ref cfg_aliases "ALIASES".
 
 <hr>
 \section cmdendif \\endif
