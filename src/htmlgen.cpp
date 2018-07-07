@@ -514,27 +514,6 @@ void HtmlCodeGenerator::docify(const char *str)
   }
 }
 
-void HtmlCodeGenerator::docify_tt(const char *str)
-{
-  m_t << getHtmlDirEmbedingChar(getTextDirByConfig(str));
-
-  if (str && m_streamSet)
-  {
-    const char *p=str;
-    char c;
-    while (*p)
-    {
-      c=*p++;
-      switch(c)
-      {
-        case '<':  m_t << "&lt;"; break;
-        case '>':  m_t << "&gt;"; break;
-        default:   m_t << c;
-      }
-    }
-  }
-}
-
 void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
                                     const char *anchor,int l)
 {
@@ -627,7 +606,7 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
   if (desc)
   {
     m_t << "<div class=\"ttdoc\">";
-    docify_tt(desc); // desc is already HTML escaped; but there are still < and > signs
+    docify(desc);
     m_t << "</div>";
   }
   if (!defInfo.file.isEmpty())
