@@ -1639,7 +1639,7 @@ to disable this feature.
   necessary type information.
 
   @note The availability of this option depends on whether or not doxygen
-  was generated with the `-Duse-libclang=ON` option for CMake.
+  was generated with the `-Duse_libclang=ON` option for CMake.
 ]]>
       </docs>
     </option>
@@ -1663,7 +1663,7 @@ to disable this feature.
  will then be passed to the parser.
 
  @note The availability of this option depends on whether or not doxygen
- was generated with the `-Duse-libclang=ON` option for CMake.
+ was generated with the `-Duse_libclang=ON` option for CMake.
  ]]>
         </docs>
     </option>
