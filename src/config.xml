@@ -1244,6 +1244,8 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  or return value. If set to \c NO, doxygen will only warn about
  wrong or incomplete parameter documentation, but not about the absence of
  documentation.
+ If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
+ automatically be disabled.
 ]]>
       </docs>
     </option>
