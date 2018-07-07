@@ -13,6 +13,10 @@
  *
  */
 
+#if !defined(_WIN32) || defined(__CYGWIN__)
+#define _DEFAULT_SOURCE 1
+#endif
+
 #include <locale.h>
 
 #include <qfileinfo.h>
@@ -113,10 +117,6 @@ extern void initResources();
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <signal.h>
 #define HAS_SIGNALS
-extern "C"
-{
-  int killpg(pid_t pgrp, int sig);
-}
 #endif
 
 // globally accessible variables
