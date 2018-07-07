@@ -383,14 +383,6 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
 
  /*------ ignore strings that are not initialization strings */ 
-<*>"\\\\"				{ if (yy_top_state() == Initialization
-					      || yy_top_state() == ArrayInitializer)
-					    initializer+=yytext;
-					}
-<*>"\\\""|\\\'                          { if (yy_top_state() == Initialization
-					      || yy_top_state() == ArrayInitializer)
-					    initializer+=yytext;
-					}
 <String>\"|\'                           { // string ends with next quote without previous backspace
                                           if (yytext[0]!=stringStartSymbol) { yyColNr -= (int)yyleng; REJECT; } // single vs double quote
 					  if (yy_top_state() == Initialization
