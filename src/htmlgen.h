@@ -61,6 +61,7 @@ class HtmlCodeGenerator : public CodeOutputInterface
                         const char *anchor,const char *name,
                         const char *tooltip);
     void docify(const char *str);
+    void docify_tt(const char *str);
     bool m_streamSet;
     FTextStream m_t;
     int m_col;
