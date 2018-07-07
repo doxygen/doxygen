@@ -2544,12 +2544,23 @@ static bool handleEndParBlock(const QCString &)
 
 static bool handleRelated(const QCString &)
 {
+  if (!current->relates.isEmpty())
+  {
+    warn(yyFileName,yyLineNr,
+	"found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
+  }
+  current->relatesType = Simple;
   BEGIN(RelatesParam1);
   return FALSE;
 }
 
 static bool handleRelatedAlso(const QCString &)
 {
+  if (!current->relates.isEmpty())
+  {
+    warn(yyFileName,yyLineNr,
+	"found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
+  }
   current->relatesType = Duplicate;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2557,6 +2568,11 @@ static bool handleRelatedAlso(const QCString &)
 
 static bool handleMemberOf(const QCString &)
 {
+  if (!current->relates.isEmpty())
+  {
+    warn(yyFileName,yyLineNr,
+	"found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
+  }
   current->relatesType = MemberOf;
   BEGIN(RelatesParam1);
   return FALSE;
