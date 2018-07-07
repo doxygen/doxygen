@@ -1750,3 +1750,8 @@ tt, code, kbd, samp
   direction:ltr; 
 }
 /* @end */
+
+u {
+	text-decoration: underline;
+}
+

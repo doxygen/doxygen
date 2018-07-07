@@ -91,6 +91,12 @@ class PrintDocVisitor : public DocVisitor
         case DocStyleChange::Bold:
           if (s->enable()) printf("<bold>"); else printf("</bold>");
           break;
+        case DocStyleChange::Strike:
+          if (s->enable()) printf("<strike>"); else printf("</strike>");
+          break;
+        case DocStyleChange::Underline:
+          if (s->enable()) printf("<underline>"); else printf("</underline>");
+          break;
         case DocStyleChange::Italic:
           if (s->enable()) printf("<italic>"); else printf("</italic>");
           break;
