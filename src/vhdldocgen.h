@@ -150,33 +150,6 @@ class VhdlDocGen
     static bool isMisc(const MemberDef *mdef);
 
     //-----------------------------------------------------
-    // translatable items
-    
-    static QCString trTypeString(uint64 type);
-    static QCString trVhdlType(uint64 type,bool sing=true);
-
-    // trClassHierarchy.
-    static QCString trDesignUnitHierarchy();
-
-    // trCompoundList
-    static QCString trDesignUnitList();
-
-    // trCompoundMembers.
-    static QCString trDesignUnitMembers();
-
-    // trCompoundListDescription
-    static QCString trDesignUnitListDescription();
-
-    // trCompounds
-    static QCString trDesignUnits();
-
-    // trCompoundIndex
-    static QCString trDesignUnitIndex();
-
-    // trFunctions
-    static QCString trFunctionAndProc();
-
-    //-----------------------------------------------------
 
     static void prepareComment(QCString&);
     static void formatString(const QCString&,OutputList& ol,const MemberDef*);

@@ -120,7 +120,7 @@ Problem!
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public Translator
+class TranslatorSwedish : public TranslatorAdapter_1_8_15
 {
   public:
 

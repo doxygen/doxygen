@@ -167,6 +167,14 @@ ul {
   overflow: hidden; /*Fixed: list item bullets overlap floating elements*/
 }
 
+#side-nav ul {
+  overflow: visible; /* reset ul rule for scroll bar in GENERATE_TREEVIEW window */
+}
+
+#main-nav ul {
+  overflow: visible; /* reset ul rule for the navigation bar drop down lists */
+}
+
 .fragment {
   text-align: left;
   direction: ltr;

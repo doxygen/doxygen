@@ -3573,6 +3573,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    endFontClass();
 					  }
 					}
+<SkipComment>[^\*\n]+                   {
+                                          g_code->codify(yytext);
+                                        }
 <*>"/*"					{ 
 					  startFontClass("comment");
   					  g_code->codify(yytext);

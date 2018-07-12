@@ -549,7 +549,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
   if (docEntry->sli)
   {
     QListIterator<ListItemInfo> slii(*docEntry->sli);
-    for (slii.toFirst();(lii=slii.current());++slii)
+    for (slii.toLast();(lii=slii.current());--slii)
     {
       if (qstrcmp(lii->type,listName)==0) 
       {

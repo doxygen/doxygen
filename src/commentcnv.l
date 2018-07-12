@@ -1068,7 +1068,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   {
     CondCtx *ctx = g_condStack.pop();
     QCString sectionInfo = " ";
-    if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label %s ",ctx->sectionId.data()); 
+    if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx->sectionId.stripWhiteSpace().data());
     warn(g_fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
   }

@@ -44,8 +44,14 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage{polski}\n"
-             "\\usepackage[T1]{fontenc}\n";
+      return "\\usepackage[polish]{babel}\n"
+             "\\let\\lll\\undefined\n"; /* to overcome problems with the <<<
+                                           symbol as defined in the amssymb
+                                           package, and the Polish symbol
+                                           "Latin Small Letter L With Stroke"
+                                           &lstrok; or &#322; or &#x0142;
+                                           We take the amssymb symbol as leading.
+                                         */
     }
 
     // --- Language translation methods -------------------

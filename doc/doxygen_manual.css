@@ -1554,7 +1554,7 @@ table.markdownTable {
 }
 
 table.markdownTable td, table.markdownTable th {
-	border: 1px solid ##37;
+	border: 1px solid #2D4068;
 	padding: 3px 7px 2px;
 }
 

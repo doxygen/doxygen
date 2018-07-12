@@ -159,7 +159,7 @@ void searchInputFiles(StringList &inputFiles);
 void parseInput();
 void generateOutput();
 void readAliases();
-void readFormulaRepository();
+void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
 int readFileOrDirectory(const char *s,
                         FileNameList *fnList,

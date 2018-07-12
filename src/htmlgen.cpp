@@ -1428,13 +1428,7 @@ void HtmlGenerator::startMemberItem(const char *anchor,int annoType,const char *
     t << " inherit " << inheritId;
   }
   t << "\">";
-  switch(annoType)
-  {
-    case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
-    case 1:  t << "<td class=\"memItemLeft\" >"; break;
-    case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
-    default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
-  }
+  insertMemberAlignLeft(annoType, true);
 }
 
 void HtmlGenerator::endMemberItem()
@@ -1466,7 +1460,19 @@ void HtmlGenerator::insertMemberAlign(bool templ)
   t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">";
 }
 
-void HtmlGenerator::startMemberDescription(const char *anchor,const char *inheritId)
+void HtmlGenerator::insertMemberAlignLeft(int annoType, bool initTag)
+{
+  if (!initTag) t << "&#160;</td>";
+  switch(annoType)
+  {
+    case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+    case 1:  t << "<td class=\"memItemLeft\" >"; break;
+    case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
+  }
+}
+
+void HtmlGenerator::startMemberDescription(const char *anchor,const char *inheritId, bool typ)
 {
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
     if (m_emptySection)
@@ -1479,7 +1485,10 @@ void HtmlGenerator::startMemberDescription(const char *anchor,const char *inheri
   {
     t << " inherit " << inheritId;
   }
-  t << "\"><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">";
+  t << "\">";
+  t << "<td class=\"mdescLeft\">&#160;</td>";
+  if (typ) t << "<td class=\"mdescLeft\">&#160;</td>";
+  t << "<td class=\"mdescRight\">";;
 }
 
 void HtmlGenerator::endMemberDescription()
@@ -1505,7 +1514,7 @@ void HtmlGenerator::endMemberSections()
   }
 }
 
-void HtmlGenerator::startMemberHeader(const char *anchor)
+void HtmlGenerator::startMemberHeader(const char *anchor, int typ)
 {
   DBG_HTML(t << "<!-- startMemberHeader -->" << endl)
   if (!m_emptySection)
@@ -1518,7 +1527,7 @@ void HtmlGenerator::startMemberHeader(const char *anchor)
     t << "<table class=\"memberdecls\">" << endl;
     m_emptySection=FALSE;
   }
-  t << "<tr class=\"heading\"><td colspan=\"2\"><h2 class=\"groupheader\">";
+  t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2 class=\"groupheader\">";
   if (anchor)
   {
     t << "<a name=\"" << anchor << "\"></a>" << endl;

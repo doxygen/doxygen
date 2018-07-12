@@ -36,7 +36,19 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     { return "japanese-en"; }
     virtual QCString latexLanguageSupportCommand()
     {
-      return "platex";
+      return "\\usepackage{CJKutf8}\n";
+    }
+    virtual QCString latexFontenc()
+    {
+      return "";
+    }
+    virtual QCString latexDocumentPre()
+    {
+      return "\\begin{CJK}{UTF8}{min}\n";
+    }
+    virtual QCString latexDocumentPost()
+    {
+      return "\\end{CJK}\n";
     }
     virtual QCString trRTFansicp()
     {
