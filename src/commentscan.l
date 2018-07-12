@@ -1094,7 +1094,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               );
                                           inInternalDocs = FALSE;
   					}
-<Comment>{B}*{CMD}[a-z_A-Z]+"{"[a-zA-Z_,\. ]*"}"{B}*  |
+<Comment>{B}*{CMD}[a-z_A-Z]+"{"[a-zA-Z_,:0-9\. ]*"}"{B}*  |
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*	{ // potentially interesting command
                                           // the {B}* in the front was added for bug620924
                                           QCString fullMatch = QCString(yytext);
@@ -2858,14 +2858,48 @@ static bool handleToc(const QCString &, const QCString &opt)
     for ( it = optList.begin(); it != optList.end(); ++it )
     {
       QString opt = (*it).stripWhiteSpace().lower();
+      char dum;
+      int level = 5;
+      int i = opt.find(':');
+      if (i>0)  // found ':' but not on position 0 what would mean just a level
+      {
+        if (sscanf(opt.right(opt.length() - i - 1).data(),"%d%c",&level,&dum) != 1)
+        {
+          warn(yyFileName,yyLineNr,"Unknown option:level specified with \\tableofcontents: `%s'", (*it).stripWhiteSpace().data());
+          opt = "";
+        }
+        else
+        {
+          level = (level > 5 ? 5 : level);
+          level = (level <= 0 ? 5 : level);
+          opt = opt.left(i).stripWhiteSpace();
+        }
+      }
       if (!opt.isEmpty())
       {
-        if (opt == "html") current->localToc |= Definition::Html;
-        else if (opt == "latex") current->localToc |= Definition::Latex;
+        if (opt == "html")
+        {
+          current->localToc |= (1 << Definition::Html);
+          current->localTocLevel[Definition::Html] = level;
+        }
+        else if (opt == "latex")
+        {
+          current->localToc |= (1 << Definition::Latex);
+          current->localTocLevel[Definition::Latex] = level;
+        }
+        else if (opt == "xml")
+        {
+          current->localToc |= (1 << Definition::Xml);
+          current->localTocLevel[Definition::Xml] = level;
+        }
         else warn(yyFileName,yyLineNr,"Unknown option specified with \\tableofcontents: `%s'", (*it).stripWhiteSpace().data());
       }
     }
-    if (current->localToc == Definition::None) current->localToc |= Definition::Html;
+    if (current->localToc == Definition::None)
+    {
+      current->localToc |= (1 << Definition::Html);
+      current->localTocLevel[Definition::Html] = 5;
+    }
   }
   return FALSE;
 }

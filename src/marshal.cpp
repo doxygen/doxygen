@@ -356,6 +356,10 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalInt(s,e->initLines);
   marshalBool(s,e->stat);
   marshalInt(s,e->localToc);
+  for (int i = 0; i < sizeof(e->localTocLevel) / sizeof(*(e->localTocLevel)) ; i++)
+  {
+    marshalInt(s,e->localTocLevel[i]);
+  }
   marshalBool(s,e->explicitExternal);
   marshalBool(s,e->proto);
   marshalBool(s,e->subGrouping);
@@ -739,6 +743,10 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->initLines        = unmarshalInt(s);
   e->stat             = unmarshalBool(s);
   e->localToc         = unmarshalInt(s);
+  for (int i = 0; i < sizeof(e->localTocLevel) / sizeof(*(e->localTocLevel)) ; i++)
+  {
+    e->localTocLevel[i] = unmarshalInt(s);
+  }
   e->explicitExternal = unmarshalBool(s);
   e->proto            = unmarshalBool(s);
   e->subGrouping      = unmarshalBool(s);

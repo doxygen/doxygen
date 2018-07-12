@@ -98,9 +98,11 @@ class Definition : public DefinitionIntf
     };
 
     enum outputLocalTocType {
-	    None          = 0,
-	    Html          = 0x01,
-            Latex         = 0x02
+      None                   = 0, // absolute value
+      Html                   = 0, // index / also to be used as (1 << Definition::Html)
+      Latex                  = 1, // ...
+      Xml                    = 2, // ...
+      numOutputLocalTocType  = 3  // number of outputLocalTocType
     };
     /*! Create a new definition */
     Definition(
@@ -280,6 +282,9 @@ class Definition : public DefinitionIntf
 
     QCString id() const;
 
+    /** returns the section dictionary, only of importance for pagedef */
+    SectionDict * Definition::getSectionDict(void);
+
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
@@ -351,7 +356,7 @@ class Definition : public DefinitionIntf
     void setLocalName(const QCString name);
 
     void addSectionsToIndex();
-    void writeToc(OutputList &ol, int localToc);
+    void writeToc(OutputList &ol, int localToc, int *localTocLevel);
 
     void setCookie(Cookie *cookie) { delete m_cookie; m_cookie = cookie; }
     Cookie *cookie() const { return m_cookie; }

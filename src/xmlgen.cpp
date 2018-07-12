@@ -1838,9 +1838,62 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     }
   }
   writeInnerPages(pd->getSubPages(),t);
-  if(pd->showToc())
+  if (PageDef::isLocalToc(pd->showToc(), Definition::Xml))
   {
-    t << "    <tableofcontents/>" << endl;
+    t << "    <tableofcontents>" << endl;
+    SectionDict *sectionDict = pd->getSectionDict();
+    SDict<SectionInfo>::Iterator li(*sectionDict);
+    SectionInfo *si;
+    int level=1,l;
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+    int maxLevel = (pd -> showTocLevel())[Definition::Xml];
+    for (li.toFirst();(si=li.current());++li)
+    {
+      if (si->type==SectionInfo::Section       ||
+          si->type==SectionInfo::Subsection    ||
+          si->type==SectionInfo::Subsubsection ||
+          si->type==SectionInfo::Paragraph)
+      {
+        //printf("  level=%d title=%s\n",level,si->title.data());
+        int nextLevel = (int)si->type;
+        if (nextLevel>level)
+        {
+          for (l=level;l<nextLevel;l++)
+          {
+            if (l < maxLevel) t << "    <tableofcontents>" << endl;
+          }
+        }
+        else if (nextLevel<level)
+        {
+          for (l=level;l>nextLevel;l--)
+          {
+            if (l <= maxLevel && inLi[l]) t << "    </tocsect>" << endl;
+            inLi[l]=FALSE;
+            if (l <= maxLevel) t << "    </tableofcontents>" << endl;
+          }
+        }
+        if (l <= maxLevel && inLi[nextLevel]) t << "    </tocsect>" << endl;
+        if (nextLevel <= maxLevel)
+        {
+          QCString titleDoc = convertToXML(si->title);
+          t << "      <tocsect>" << endl;
+          t << "        <name>" << (si->title.isEmpty()?si->label:titleDoc) << "</name>" << endl;
+          t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si -> label) << "</reference>" << endl;
+        }
+        inLi[nextLevel]=TRUE;
+        level = nextLevel;
+      }
+    }
+    while (level>1 && level <= maxLevel)
+    {
+      if (inLi[level]) t << "    </tocsect>" << endl;
+      inLi[level]=FALSE;
+      t << "    </tableofcontents>" << endl;
+      level--;
+    }
+    if (level <= maxLevel && inLi[level]) t << "    </tocsect>" << endl;
+    inLi[level]=FALSE;
+    t << "    </tableofcontents>" << endl;
   }
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,pd->briefFile(),pd->briefLine(),pd,0,pd->briefDescription());

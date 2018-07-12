@@ -2016,15 +2016,19 @@ Make sure you have first read \ref intro "the introduction".
 \endverbatim
 
 <hr>
-\section cmdtableofcontents \\tableofcontents['{'[option][,option]*'}']
+\section cmdtableofcontents \\tableofcontents['{'[option[:level]][,option[:level]]*'}']
 
   \addindex \\tableofcontents
   Creates a table of contents at the top of a page, listing all
-  sections and subsections in the page. The option can be `HTML` or `LaTeX`.
-  In case no option is specified \c \\tableofcontents acts as if just the
-  option `HTML` was specified. In case of multiple \c \\tableofcontents
-  commands in a page the option(s) will be used additional to the already
-  specified option(s).
+  sections and subsections in the page. The `option` can be `HTML` or `LaTeX`
+  or `XML`. When a `level` is specified this means the maximum nesting level
+  that is shown. The value of `level` should be in the range 1..5, values outside
+  this range are considered to be 5. In case no `level` is specified `level` is
+  set to 5 (show all)
+  In case no `option. is specified \c \\tableofcontents acts as if just the
+  `option` `HTML` was specified. In case of multiple \c \\tableofcontents
+  commands in a page the `option`(s) will be used additional to the already
+  specified `option`(s), but only the last `level` of an `option` is valid.
 
   \warning This command only works inside related page documentation and
            \e not in other documentation blocks and only has effect in the

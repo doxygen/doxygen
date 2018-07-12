@@ -41,6 +41,7 @@
 #include "namespacedef.h"
 #include "filedef.h"
 #include "dirdef.h"
+#include "pagedef.h"
 
 #define START_MARKER 0x4445465B // DEF[
 #define END_MARKER   0x4445465D // DEF]
@@ -1613,12 +1614,13 @@ void Definition::writeNavigationPath(OutputList &ol) const
 }
 
 // TODO: move to htmlgen
-void Definition::writeToc(OutputList &ol, int localToc)
+void Definition::writeToc(OutputList &ol, int localToc, int *localTocLevel)
 {
   SectionDict *sectionDict = m_impl->sectionDict;
   if (sectionDict==0) return;
-  if (localToc & Definition::Html)
+  if (PageDef::isLocalToc(localToc, Definition::Html))
   {
+  int maxLevel = localTocLevel[Definition::Html];
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   ol.writeString("<div class=\"toc\">");
@@ -1645,44 +1647,48 @@ void Definition::writeToc(OutputList &ol, int localToc)
       {
         for (l=level;l<nextLevel;l++)
         {
-          ol.writeString("<ul>");
+          if (l < maxLevel) ol.writeString("<ul>");
         }
       }
       else if (nextLevel<level)
       {
         for (l=level;l>nextLevel;l--)
         {
-          if (inLi[l]) ol.writeString("</li>\n");
+          if (l <= maxLevel && inLi[l]) ol.writeString("</li>\n");
           inLi[l]=FALSE;
-          ol.writeString("</ul>\n");
+          if (l <= maxLevel) ol.writeString("</ul>\n");
         }
       }
       cs[0]='0'+nextLevel;
-      if (inLi[nextLevel]) ol.writeString("</li>\n");
+      if (nextLevel <= maxLevel && inLi[nextLevel]) ol.writeString("</li>\n");
       QCString titleDoc = convertToHtml(si->title);
-      ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
+      if (nextLevel <= maxLevel) ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
       inLi[nextLevel]=TRUE;
       level = nextLevel;
     }
   }
-  while (level>1)
+  while (level>1 && level <= maxLevel)
   {
     if (inLi[level]) ol.writeString("</li>\n");
     inLi[level]=FALSE;
     ol.writeString("</ul>\n");
     level--;
   }
-  if (inLi[level]) ol.writeString("</li>\n");
+  if (level <= maxLevel && inLi[level]) ol.writeString("</li>\n");
   inLi[level]=FALSE;
   ol.writeString("</ul>\n");
   ol.writeString("</div>\n");
   ol.popGeneratorState();
   }
 
-  if (localToc & Definition::Latex)
+  if (PageDef::isLocalToc(localToc, Definition::Latex))
   {
+  char tmp[100];
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Latex);
+  sprintf(tmp,"\\etocsetnexttocdepth{%d}\n",localTocLevel[Definition::Latex]);
+  ol.writeString(tmp);
+  
   ol.writeString("\\localtableofcontents\n");
   ol.popGeneratorState();
   }
@@ -1690,6 +1696,10 @@ void Definition::writeToc(OutputList &ol, int localToc)
 
 //----------------------------------------------------------------------------------------
 
+SectionDict * Definition::getSectionDict(void)
+{
+  return m_impl->sectionDict;
+}
 
 QCString Definition::symbolName() const 
 { 
