@@ -283,7 +283,7 @@ class Definition : public DefinitionIntf
     QCString id() const;
 
     /** returns the section dictionary, only of importance for pagedef */
-    SectionDict * Definition::getSectionDict(void);
+    SectionDict * getSectionDict(void);
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
