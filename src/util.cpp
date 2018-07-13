@@ -7862,6 +7862,7 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
 //! read a file name \a fileName and optionally filter and transcode it
 bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceCode)
 {
+  static QCString save_utlFiltFileName = "";
   // try to open file
   int size=0;
   //uint oldPos = dest.curPos();
@@ -7889,26 +7890,50 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
   }
   else
   {
-    QCString cmd=filterName+" \""+fileName+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-    FILE *f=portable_popen(cmd,"r");
-    if (!f)
-    {
-      err("could not execute filter %s\n",filterName.data());
-      return FALSE;
-    }
     const int bufSize=1024;
     char buf[bufSize];
     int numRead;
-    while ((numRead=(int)fread(buf,1,bufSize,f))>0)
+    if (save_utlFiltFileName != fileName)
     {
-      //printf(">>>>>>>>Reading %d bytes\n",numRead);
-      inBuf.addArray(buf,numRead),size+=numRead;
+      FILE *fw=0;
+      fw = portable_fopen(Doxygen::utlFiltFileName,"w");
+      if (!fw)
+      {
+        err("Failed to create temporary storage file %s\n", Doxygen::utlFiltFileName.data());
+        exit(1);
+      }
+      QCString cmd=filterName+" \""+fileName+"\"";
+      Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+      FILE *f=portable_popen(cmd,"r");
+      if (!f)
+      {
+	fclose(fw);
+        err("could not execute filter %s\n",filterName.data());
+        return FALSE;
+      }
+      while ((numRead=(int)fread(buf,1,bufSize,f))>0)
+      {
+        //printf(">>>>>>>>Reading %d bytes\n",numRead);
+        fwrite(buf, 1, numRead, fw);
+        inBuf.addArray(buf,numRead),size+=numRead;
+      }
+      portable_pclose(f);
+      Debug::print(Debug::FilterOutput, 0, "Filter output\n");
+      Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(inBuf));
+      fclose(fw);
+      save_utlFiltFileName = fileName;
     }
-    portable_pclose(f);
+    else
+    {
+      FILE *f = portable_fopen(Doxygen::utlFiltFileName,"r");
+      while ((numRead=(int)fread(buf,1,bufSize,f))>0)
+      {
+        //printf(">>>>>>>>Reading %d bytes\n",numRead);
+        inBuf.addArray(buf,numRead),size+=numRead;
+      }
+      fclose(f);
+    }
     inBuf.at(inBuf.curPos()) ='\0';
-    Debug::print(Debug::FilterOutput, 0, "Filter output\n");
-    Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(inBuf));
   }
 
   int start=0;
