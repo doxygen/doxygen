@@ -2717,13 +2717,16 @@ void HtmlGenerator::writeInheritedSectionTitle(
   DBG_HTML(t << "<!-- writeInheritedSectionTitle -->" << endl;)
   QCString a = anchor;
   if (!a.isEmpty()) a.prepend("#");
-  QCString classLink = QCString("<a class=\"el\" href=\"");
+  QCString classLink = QCString("<a class=\"el\" ");
   if (ref)
   {
-    classLink+= externalLinkTarget() + externalRef(relPath,ref,TRUE);
+    classLink+= externalLinkTarget();
+    classLink += " href=\"";
+    classLink+= externalRef(relPath,ref,TRUE);
   }
   else
   {
+    classLink += "href=\"";
     classLink+=relPath;
   }
   classLink+=file+Doxygen::htmlFileExtension+a;
