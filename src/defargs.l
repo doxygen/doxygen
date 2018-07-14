@@ -104,8 +104,10 @@ static int yyread(char *buf,int max_size)
 }
 
 /* bug_520975 */
-static bool checkSpecialType(QCString &typ)
+static bool checkSpecialType(QCString &typ, QCString &nam)
 {
+  if (nam == "unsigned" || nam == "signed" ||
+      nam == "volatile" || nam == "const") return TRUE;
   QStringList qsl=QStringList::split(' ',typ);
   for(uint j=0;j<qsl.count();j++)
   {
@@ -396,7 +398,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						    a->type.mid(sv)=="union"     ||
 						    a->type.mid(sv)=="class"     ||
 						    a->type.mid(sv)=="typename"  ||
-						    checkSpecialType(a->type)
+						    checkSpecialType(a->type,  a->name)
 						   )
 						{ 
 						  a->type = a->type + " " + a->name;
