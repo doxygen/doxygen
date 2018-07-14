@@ -52,6 +52,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <qregexp.h>
+#include <qstringlist.h>
 
 #include "defargs.h"
 #include "entry.h"
@@ -102,6 +103,17 @@ static int yyread(char *buf,int max_size)
     return c;
 }
 
+/* bug_520975 */
+static bool checkSpecialType(QCString &typ)
+{
+  QStringList qsl=QStringList::split(' ',typ);
+  for(uint j=0;j<qsl.count();j++)
+  {
+    if (!(qsl[j] == "unsigned" || qsl[j] == "signed" ||
+          qsl[j] == "volatile" || qsl[j] == "const")) return FALSE;
+  }
+  return TRUE;
+}
 %}
 
 B       [ \t]
@@ -384,8 +396,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						    a->type.mid(sv)=="union"     ||
 						    a->type.mid(sv)=="class"     ||
 						    a->type.mid(sv)=="typename"  ||
-						    a->type=="const"               ||
-						    a->type=="volatile"
+						    checkSpecialType(a->type)
 						   )
 						{ 
 						  a->type = a->type + " " + a->name;
