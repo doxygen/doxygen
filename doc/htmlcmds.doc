@@ -105,7 +105,6 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\</KBD\></tt>  Ends a <tt>\<KBD\></tt> section.
 <li><tt>\<U\></tt> Starts a section of underlined text.
 <li><tt>\</U\></tt> Ends a section of underlined text.
-<li><tt>\<STRONG\></tt> Starts a section of bold text.
 <li><tt>\<UL\></tt>    Starts an unnumbered item list.
 <li><tt>\</UL\></tt>   Ends an unnumbered item list.
 <li><tt>\<VAR\></tt>   Starts a piece of text displayed in an italic font.
