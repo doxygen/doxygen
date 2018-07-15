@@ -36,6 +36,7 @@ PageDef::PageDef(const char *f,int l,const char *n,
   m_nestingLevel = 0;
   m_fileName = ::convertNameToFile(n,FALSE,TRUE);
   m_showToc = FALSE;
+  m_lineNo = FALSE;
 }
 
 PageDef::~PageDef()
