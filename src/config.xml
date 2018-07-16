@@ -779,6 +779,17 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='int' id='FILTER_CACHE_SIZE' minval='1' maxval='100000' defval='1'>
+      <docs>
+<![CDATA[
+ The size of the filter lookup cache can be 
+ set using \c FILTER_CACHE_SIZE. This cache is used to resolve some speed issues
+ when using \ref cfg_filter_cache_size "FILTER_SOURCE_FILE". When using the tag
+ \c FILTER_CACHE_SIZE a FIFO queue is build with the filtered files of size
+ \c FILTER_CACHE_SIZE entries, these files are, temporary, written to disk.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Build' docs='Build related configuration options'>
     <option type='bool' id='EXTRACT_ALL' defval='0'>

@@ -729,8 +729,10 @@ bool readCodeFragment(const char *fileName,
                       int &startLine,int &endLine,QCString &result)
 {
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
+  static int filterCacheSize = Config_getInt(FILTER_CACHE_SIZE);
+  static int filterPtr = 0;
   static int tabSize = Config_getInt(TAB_SIZE);
-  static QCString save_defFiltFileName = "";
+  static QCString *save_defFiltFileName = NULL;
   //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
   QCString filter = getFileFilter(fileName,TRUE);
@@ -738,6 +740,7 @@ bool readCodeFragment(const char *fileName,
   const int maxLineLength=4096;
   char lineStr[maxLineLength];
   bool usePipe = !filter.isEmpty() && filterSourceFiles;
+  char dum[10];
   SrcLangExt lang = getLanguageFromFileName(fileName);
   if (!usePipe) // no filter given or wanted
   {
@@ -745,10 +748,39 @@ bool readCodeFragment(const char *fileName,
   }
   else // use filter
   {
-    if (save_defFiltFileName != fileName)
+    if (!save_defFiltFileName)
     {
+      save_defFiltFileName = new QCString[filterCacheSize];
+    }
+    int found = -1;
+    for (int i = 0; i < filterCacheSize; i++)
+    {
+      if (save_defFiltFileName[i] == fileName)
+      {
+        found = i;
+        break;
+      }
+    }
+    if (found == -1)
+    {
+      for (int i = 0; i < filterCacheSize; i++)
+      {
+        if (save_defFiltFileName[i] == "")
+        {
+          // some place left, use it
+          found = i;
+          break;
+        }
+      }
+      if (found == -1)
+      {
+        // OK take place of oldest file
+        found = filterPtr;
+        filterPtr = (filterPtr + 1) % filterCacheSize;
+      }
       FILE *fw=0;
-      fw = portable_fopen(Doxygen::defFiltFileName,"w");
+      sprintf(dum,"_%d",found);
+      fw = portable_fopen(Doxygen::defFiltFileName + dum,"w");
       if (!fw)
       {
         err("Failed to create temporary storage file %s\n", Doxygen::defFiltFileName.data());
@@ -765,9 +797,10 @@ bool readCodeFragment(const char *fileName,
       fclose(fw);
       Debug::print(Debug::FilterOutput, 0, "Filter output\n");
       Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(result));
-      save_defFiltFileName = fileName;
+      save_defFiltFileName[found] = fileName;
     }
-    f = portable_fopen(Doxygen::defFiltFileName,"r");
+    sprintf(dum,"_%d",found);
+    f = portable_fopen(Doxygen::defFiltFileName + dum,"r");
   }
   bool found = lang==SrcLangExt_VHDL   || 
                lang==SrcLangExt_Tcl    || 

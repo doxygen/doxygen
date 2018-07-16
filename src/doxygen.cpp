@@ -10643,7 +10643,9 @@ void adjustConfiguration()
 #ifdef HAS_SIGNALS
 static void stopDoxygen(int)
 {
+  int filterCacheSize = Config_getInt(FILTER_CACHE_SIZE);
   QDir thisDir;
+  char dum[10];
   msg("Cleaning up...\n");
   if (!Doxygen::entryDBFileName.isEmpty())
   {
@@ -10655,11 +10657,19 @@ static void stopDoxygen(int)
   }
   if (!Doxygen::defFiltFileName.isEmpty())
   {
-    thisDir.remove(Doxygen::defFiltFileName);
+    for (int i = 0; i < filterCacheSize; i++)
+    {
+      sprintf(dum,"_%d",i);
+      thisDir.remove(Doxygen::defFiltFileName + dum);
+    }
   }
   if (!Doxygen::utlFiltFileName.isEmpty())
   {
-    thisDir.remove(Doxygen::utlFiltFileName);
+    for (int i = 0; i < filterCacheSize; i++)
+    {
+      sprintf(dum,"_%d",i);
+      thisDir.remove(Doxygen::utlFiltFileName + dum);
+    }
   }
   killpg(0,SIGINT);
   exit(1);
@@ -10751,7 +10761,9 @@ static void exitDoxygen()
 {
   if (!g_successfulRun)  // premature exit
   {
+    int filterCacheSize = Config_getInt(FILTER_CACHE_SIZE);
     QDir thisDir;
+    char dum[10];
     msg("Exiting...\n");
     if (!Doxygen::entryDBFileName.isEmpty())
     {
@@ -10763,11 +10775,19 @@ static void exitDoxygen()
     }
     if (!Doxygen::defFiltFileName.isEmpty())
     {
-      thisDir.remove(Doxygen::defFiltFileName);
+      for (int i = 0; i < filterCacheSize; i++)
+      {
+        sprintf(dum,"_%d",i);
+        thisDir.remove(Doxygen::defFiltFileName + dum);
+      }
     }
     if (!Doxygen::utlFiltFileName.isEmpty())
     {
-      thisDir.remove(Doxygen::utlFiltFileName);
+      for (int i = 0; i < filterCacheSize; i++)
+      {
+        sprintf(dum,"_%d",i);
+        thisDir.remove(Doxygen::utlFiltFileName + dum);
+      }
     }
   }
 }
@@ -11004,9 +11024,9 @@ void parseInput()
 #endif
 
   uint pid = portable_pid();
-  Doxygen::defFiltFileName.sprintf("doxygen_deffilt_%d.tmp",pid);
+  Doxygen::defFiltFileName.sprintf("doxygen_deffilt_%d",pid);
   Doxygen::defFiltFileName.prepend(outputDirectory+"/");
-  Doxygen::utlFiltFileName.sprintf("doxygen_utlfilt_%d.tmp",pid);
+  Doxygen::utlFiltFileName.sprintf("doxygen_utlfilt_%d",pid);
   Doxygen::utlFiltFileName.prepend(outputDirectory+"/");
   Doxygen::objDBFileName.sprintf("doxygen_objdb_%d.tmp",pid);
   Doxygen::objDBFileName.prepend(outputDirectory+"/");
@@ -11831,8 +11851,14 @@ void generateOutput()
   Doxygen::symbolStorage->close();
   QDir thisDir;
   thisDir.remove(Doxygen::objDBFileName);
-  thisDir.remove(Doxygen::defFiltFileName);
-  thisDir.remove(Doxygen::utlFiltFileName);
+  int filterCacheSize = Config_getInt(FILTER_CACHE_SIZE);
+  char dum[10];
+  for (int i = 0; i < filterCacheSize; i++)
+  {
+    sprintf(dum,"_%d",i);
+    thisDir.remove(Doxygen::defFiltFileName + dum);
+    thisDir.remove(Doxygen::utlFiltFileName + dum);
+  }
   Config::deinit();
   QTextCodec::deleteAllCodecs();
   delete Doxygen::symbolMap;
