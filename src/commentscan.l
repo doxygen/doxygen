@@ -2038,7 +2038,6 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
   					}
 <SkipInternal>[@\\]"endinternal"[ \t]*  {
-                                          addOutput("\\endinternal "); 
 					  BEGIN(Comment);
 					}
 <SkipInternal>[^ \\@\n]+		{ // skip non-special characters
