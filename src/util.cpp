@@ -5290,6 +5290,22 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
   return result;
 }
 
+/// substitute all occurrences of \a srcChar in \a s by \a dstChar
+QCString substitute(const QCString &s,char srcChar,char dstChar)
+{
+  int l=s.length();
+  QCString result(l+1);
+  char *q=result.rawData();
+  if (l>0)
+  {
+    const char *p=s.data();
+    char c;
+    while ((c=*p++)) *q++ = (c==srcChar) ? dstChar : c;
+  }
+  *q='\0';
+  return result;
+}
+
 //----------------------------------------------------------------------
 
 QCString substituteKeywords(const QCString &s,const char *title,

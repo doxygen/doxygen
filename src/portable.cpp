@@ -36,17 +36,8 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
   if (command==0) return 1;
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  const char *p = command;
-  char *q = (char *)malloc(strlen(p) + 1);
-  strcpy(q, p);
-  for (int i = 0 ; i < strlen(q); i++)
-  {
-    if (q[i] == '/')
-    {
-      q[i] = '\\';
-    }
-  }
-  QCString fullCmd=q;
+  QCString commandCorrectedPath = substitute(command,'/','\\');
+  QCString fullCmd=commandCorrectedPath;
 #else
   QCString fullCmd=command;
 #endif
@@ -136,7 +127,6 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
 #else // Win32 specific
   if (commandHasConsole)
   {
-    free(q);
     return system(fullCmd);
   }
   else
@@ -149,7 +139,7 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
     // For that case COM is initialized as follows
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-    QString commandw = QString::fromUtf8( q );
+    QString commandw = QString::fromUtf8( commandCorrectedPath );
     QString argsw = QString::fromUtf8( args );
 
     // gswin32 is a GUI api which will pop up a window and run
@@ -176,7 +166,6 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
       NULL,                       /* ignored: icon */
       NULL                        /* resulting application handle */
     };
-    free(q);
 
     if (!ShellExecuteExW(&sInfo))
     {
@@ -474,18 +463,7 @@ void portable_correct_path(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   const char *p = portable_getenv("PATH");
-  char *q = (char *)malloc(strlen(p) + 1);
-  strcpy(q, p);
-  bool found = false;
-  for (int i = 0 ; i < strlen(q); i++)
-  {
-    if (q[i] == '/')
-    {
-      q[i] = '\\';
-      found = true;
-    }
-  }
-  if (found) portable_setenv("PATH",q);
-  free(q);
+  QCString result = substitute(p,'/','\\');
+  if (result!=p) portable_setenv("PATH",result.data());
 #endif
 }
