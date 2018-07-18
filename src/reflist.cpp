@@ -21,7 +21,6 @@
 #include "util.h"
 #include "ftextstream.h"
 #include "definition.h"
-#include <qregexp.h>
 
 /*! Create a list of items that are cross referenced with documentation blocks
  *  @param listName String representing the name of the list.
@@ -165,7 +164,8 @@ void RefList::generatePage()
     doc += " \\_internalref ";
     doc += item->name;
     doc += " \"";
-    doc += item->title.replace(QRegExp("\\"),"\\\\");
+    // escape \'s in title, see issue #5901
+    doc += substitute(item->title,"\\","\\\\");
     doc += "\" ";
     // write declaration in case a function with arguments
     if (!item->args.isEmpty()) 
