@@ -1046,10 +1046,13 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yytext);
   					}
 <Comment>"</summary>"	                { // start of a .NET XML style detailed description
+					  setOutput(OutputBrief);
                                           addOutput(yytext);
 					  setOutput(OutputDoc);
   					}
 <Comment>"</remarks>"			{ // end of a brief or detailed description
+                                          
+					  setOutput(OutputDoc);
                                           addOutput(yytext);
   					}
 <Comment>"<"{CAPTION}{ATTR}">"          {
