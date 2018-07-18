@@ -22,10 +22,10 @@ extern char **environ;
 #endif
 
 #include "portable.h"
+#include "util.h"
 #ifndef NODEBUG
 #include "debug.h"
 #endif
-//#include "doxygen.h"
 
 static double  g_sysElapsedTime;
 static QTime   g_time;
