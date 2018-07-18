@@ -169,7 +169,8 @@ void RefList::generatePage()
     // write declaration in case a function with arguments
     if (!item->args.isEmpty()) 
     {
-      doc += item->args;
+      // escape @'s in argument list, needed for Java annotations (see issue #6208)
+      doc += substitute(item->args,"@","@@");
     }
     doc += "</dt><dd> ";
     doc += item->text;
