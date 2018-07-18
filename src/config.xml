@@ -1138,6 +1138,8 @@ Go to the <a href="commands.html">next</a> section or return to the
       </docs>
       <docs doxywizard='0' doxyfile='0'>
 <![CDATA[
+<br>
+<br>
 Example of using a shell script as a filter for Unix:
 \verbatim
  FILE_VERSION_FILTER = "/bin/sh versionfilter.sh"
@@ -1157,7 +1159,7 @@ svn stat -v $1 | sed -n 's/^[ A-Z?\*|!]\{1,15\}/r/;s/ \{1,15\}/\/r/;s/ .*//p'
 <br>
 Example filter for ClearCase:
 \verbatim
-FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
+FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 \endverbatim
 ]]>
       </docs>
