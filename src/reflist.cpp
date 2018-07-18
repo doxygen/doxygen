@@ -21,6 +21,7 @@
 #include "util.h"
 #include "ftextstream.h"
 #include "definition.h"
+#include <qregexp.h>
 
 /*! Create a list of items that are cross referenced with documentation blocks
  *  @param listName String representing the name of the list.
@@ -169,7 +170,7 @@ void RefList::generatePage()
     // write declaration in case a function with arguments
     if (!item->args.isEmpty()) 
     {
-      doc += item->args;
+      doc += item->args.replace(QRegExp("@"),"@@");
     }
     doc += "</dt><dd> ";
     doc += item->text;
