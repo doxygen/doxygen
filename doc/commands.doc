@@ -1108,6 +1108,14 @@ Structural indicators
   This command is equivalent to \ref cmdfn "\\fn",
   \ref cmdproperty "\\property", and \ref cmdtypedef "\\typedef".
 
+  Note that for PHP one can also specify the type of the variable.
+  The syntax is similar as for the `phpDocumentor` but the description has to start
+  at the next line, i.e.
+\verbatim
+@var  datatype $varname
+Description
+\endverbatim
+
   \sa section \ref cmdfn "\\fn", \ref cmdproperty "\\property", and \ref cmdtypedef "\\typedef".
 
 <hr>
@@ -1575,7 +1583,7 @@ void setPosition(double x,double y,double z,double t)
   Note that for PHP one can also specify the type (or types if you
   separate them with a pipe symbol) which are allowed for a parameter
   (as this is not part of the definition).
-  The syntax is the same as for phpDocumentor, i.e.
+  The syntax is the same as for the `phpDocumentor`, i.e.
 \verbatim
 @param  datatype1|datatype2 $paramname description
 \endverbatim
