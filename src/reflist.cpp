@@ -164,7 +164,8 @@ void RefList::generatePage()
     doc += " \\_internalref ";
     doc += item->name;
     doc += " \"";
-    doc += item->title;
+    // escape \'s in title, see issue #5901
+    doc += substitute(item->title,"\\","\\\\");
     doc += "\" ";
     // write declaration in case a function with arguments
     if (!item->args.isEmpty()) 
