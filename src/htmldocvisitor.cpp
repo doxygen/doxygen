@@ -38,6 +38,31 @@
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
+enum contexts_t
+{
+    NONE,      // 0
+    STARTLI,   // 1
+    STARTDD,   // 2
+    ENDLI,     // 3
+    ENDDD,     // 4
+    STARTTD,   // 5
+    ENDTD,     // 6
+    INTERLI,   // 7
+    INTERDD,   // 8
+    INTERTD    // 9
+};
+static const char *contexts[10] = 
+{ "",          // 0
+  "startli",   // 1
+  "startdd",   // 2
+  "endli",     // 3
+  "enddd",     // 4
+  "starttd",   // 5
+  "endtd",     // 6
+  "interli",   // 7
+  "interdd",   // 8
+  "intertd"    // 9
+};
 
 static QCString convertIndexWordToAnchor(const QString &word)
 {
@@ -887,24 +912,24 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
           }
           isFirst=isFirstChildNode((DocParBlock*)p->parent(),p);
           isLast =isLastChildNode ((DocParBlock*)p->parent(),p);
-          t=0;
+          t=NONE;
           if (isFirst)
           {
             if (kind==DocNode::Kind_HtmlListItem ||
                 kind==DocNode::Kind_SecRefItem)
             {
-              t=1;
+              t=STARTLI;
             }
             else if (kind==DocNode::Kind_HtmlDescData ||
                      kind==DocNode::Kind_XRefItem ||
                      kind==DocNode::Kind_SimpleSect)
             {
-              t=2;
+              t=STARTDD;
             }
             else if (kind==DocNode::Kind_HtmlCell ||
                      kind==DocNode::Kind_ParamList)
             {
-              t=5;
+              t=STARTTD;
             }
           }
           if (isLast)
@@ -912,18 +937,37 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
             if (kind==DocNode::Kind_HtmlListItem ||
                 kind==DocNode::Kind_SecRefItem)
             {
-              t=3;
+              t=ENDLI;
             }
             else if (kind==DocNode::Kind_HtmlDescData ||
                      kind==DocNode::Kind_XRefItem ||
                      kind==DocNode::Kind_SimpleSect)
             {
-              t=4;
+              t=ENDDD;
             }
             else if (kind==DocNode::Kind_HtmlCell ||
                      kind==DocNode::Kind_ParamList)
             {
-              t=6;
+              t=ENDTD;
+            }
+          }
+          if (!isFirst && !isLast)
+          {
+            if (kind==DocNode::Kind_HtmlListItem ||
+                kind==DocNode::Kind_SecRefItem)
+            {
+              t=INTERLI;
+            }
+            else if (kind==DocNode::Kind_HtmlDescData ||
+                     kind==DocNode::Kind_XRefItem ||
+                     kind==DocNode::Kind_SimpleSect)
+            {
+              t=INTERDD;
+            }
+            else if (kind==DocNode::Kind_HtmlCell ||
+                     kind==DocNode::Kind_ParamList)
+            {
+              t=INTERTD;
             }
           }
           break;
@@ -931,47 +975,51 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
       case DocNode::Kind_AutoListItem:
         isFirst=isFirstChildNode((DocAutoListItem*)p->parent(),p);
         isLast =isLastChildNode ((DocAutoListItem*)p->parent(),p);
-        t=1; // not used
+        t=STARTLI; // not used
         break;
       case DocNode::Kind_SimpleListItem:
         isFirst=TRUE;
         isLast =TRUE;
-        t=1; // not used
+        t=STARTLI; // not used
         break;
       case DocNode::Kind_ParamList:
         isFirst=TRUE;
         isLast =TRUE;
-        t=1; // not used
+        t=STARTLI; // not used
         break;
       case DocNode::Kind_HtmlListItem:
         isFirst=isFirstChildNode((DocHtmlListItem*)p->parent(),p);
         isLast =isLastChildNode ((DocHtmlListItem*)p->parent(),p);
-        if (isFirst) t=1;
-        if (isLast)  t=3;
+        if (isFirst) t=STARTLI;
+        if (isLast)  t=ENDLI;
+        if (!isFirst && !isLast) t = INTERLI;
         break;
       case DocNode::Kind_SecRefItem:
         isFirst=isFirstChildNode((DocSecRefItem*)p->parent(),p);
         isLast =isLastChildNode ((DocSecRefItem*)p->parent(),p);
-        if (isFirst) t=1;
-        if (isLast)  t=3;
+        if (isFirst) t=STARTLI;
+        if (isLast)  t=ENDLI;
+        if (!isFirst && !isLast) t = INTERLI;
         break;
       case DocNode::Kind_HtmlDescData:
         isFirst=isFirstChildNode((DocHtmlDescData*)p->parent(),p);
         isLast =isLastChildNode ((DocHtmlDescData*)p->parent(),p);
-        if (isFirst) t=2;
-        if (isLast)  t=4;
+        if (isFirst) t=STARTDD;
+        if (isLast)  t=ENDDD;
+        if (!isFirst && !isLast) t = INTERDD;
         break;
       case DocNode::Kind_XRefItem:
         isFirst=isFirstChildNode((DocXRefItem*)p->parent(),p);
         isLast =isLastChildNode ((DocXRefItem*)p->parent(),p);
-        if (isFirst) t=2;
-        if (isLast)  t=4;
+        if (isFirst) t=STARTDD;
+        if (isLast)  t=ENDDD;
+        if (!isFirst && !isLast) t = INTERDD;
         break;
       case DocNode::Kind_SimpleSect:
         isFirst=isFirstChildNode((DocSimpleSect*)p->parent(),p);
         isLast =isLastChildNode ((DocSimpleSect*)p->parent(),p);
-        if (isFirst) t=2;
-        if (isLast)  t=4;
+        if (isFirst) t=STARTDD;
+        if (isLast)  t=ENDDD;
         if (isSeparatedParagraph((DocSimpleSect*)p->parent(),p))
           // if the paragraph is enclosed with separators it will
           // be included in <dd>..</dd> so avoid addition paragraph
@@ -979,12 +1027,14 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         {
           isFirst=isLast=TRUE;
         }
+        if (!isFirst && !isLast) t = INTERDD;
         break;
       case DocNode::Kind_HtmlCell:
         isFirst=isFirstChildNode((DocHtmlCell*)p->parent(),p);
         isLast =isLastChildNode ((DocHtmlCell*)p->parent(),p);
-        if (isFirst) t=5;
-        if (isLast)  t=6;
+        if (isFirst) t=STARTTD;
+        if (isLast)  t=ENDTD;
+        if (!isFirst && !isLast) t = INTERTD;
         break;
       default:
         break;
@@ -1052,19 +1102,10 @@ void HtmlDocVisitor::visitPre(DocPara *p)
     }
   }
 
-  // check if this paragraph is the first or last child of a <li> or <dd>.
+  // check if this paragraph is the first or last or intermediate child of a <li> or <dd>.
   // this allows us to mark the tag with a special class so we can
   // fix the otherwise ugly spacing.
   int t;
-  static const char *contexts[7] = 
-  { "",          // 0
-    "startli",   // 1
-    "startdd",   // 2
-    "endli",     // 3
-    "enddd",     // 4
-    "starttd",   // 5
-    "endtd"      // 6
-  };
   bool isFirst;
   bool isLast;
   t = getParagraphContext(p,isFirst,isLast);
