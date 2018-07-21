@@ -36,7 +36,7 @@ if (use_sqlite3)
 	set(sqlite3  "1" CACHE INTERNAL "used in settings.h")
 endif()
 
-set(MACOS_VERSION_MIN 10.5)
+set(MACOS_VERSION_MIN 10.9)
 if (use_libclang)
 	set(clang    "1" CACHE INTERNAL "used in settings.h")
         find_package(LLVM CONFIG REQUIRED)

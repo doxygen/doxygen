@@ -1878,10 +1878,14 @@ void DotNode::writeBox(FTextStream &t,
           << m_url.right(m_url.length()-anchorPos) << "\"";
       }
     }
-    if (!m_tooltip.isEmpty())
-    {
-      t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
-    }
+  }
+  if (!m_tooltip.isEmpty())
+  {
+    t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
+  }
+  else
+  {
+    t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0' is used
   }
   t << "];" << endl; 
 }
@@ -3483,9 +3487,10 @@ DotInclDepGraph::DotInclDepGraph(FileDef *fd,bool inverse)
   m_inclDepFileName   = fd->includeDependencyGraphFileName();
   m_inclByDepFileName = fd->includedByDependencyGraphFileName();
   QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
+  QCString tooltip = fd->briefDescriptionAsTooltip();
   m_startNode = new DotNode(m_curNodeNumber++,
                             fd->docName(),
-                            "",
+                            tooltip,
                             tmp_url.data(),
                             TRUE     // root node
                            );
@@ -3812,9 +3817,10 @@ DotCallGraph::DotCallGraph(MemberDef *md,bool inverse)
   {
     name = md->qualifiedName();
   }
+  QCString tooltip = md->briefDescriptionAsTooltip();
   m_startNode = new DotNode(m_curNodeNumber++,
                             linkToText(md->getLanguage(),name,FALSE),
-                            "",
+                            tooltip,
                             uniqueId.data(),
                             TRUE     // root node
                            );
@@ -4336,7 +4342,8 @@ DotGroupCollaboration::DotGroupCollaboration(GroupDef* gd)
 {
     QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
     m_usedNodes = new QDict<DotNode>(1009);
-    m_rootNode = new DotNode(m_curNodeNumber++, gd->groupTitle(), "", tmp_url, TRUE );
+    QCString tooltip = gd->briefDescriptionAsTooltip();
+    m_rootNode = new DotNode(m_curNodeNumber++, gd->groupTitle(), tooltip, tmp_url, TRUE );
     m_rootNode->markAsVisible();
     m_usedNodes->insert(gd->name(), m_rootNode );
     m_edges.setAutoDelete(TRUE);

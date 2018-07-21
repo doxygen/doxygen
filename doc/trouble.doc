@@ -89,14 +89,13 @@ know why.
 
 \section bug_reports How to report a bug
 
-Bugs are tracked in GNOME's <a href="http://bugzilla.gnome.org">bugzilla</a> database.
+Bugs are tracked in GitHub's <a href="https://github.com/doxygen/doxygen/issues">issue tracker</a>.
 Before submitting a 
-<a href="http://bugzilla.gnome.org/enter_bug.cgi?product=doxygen">new bug</a>,
-first <a href="http://bugzilla.gnome.org/query.cgi?format=advanced&product=doxygen">search</a>
-through the database if the same bug has already been submitted by others (the doxygen
-product will be preselected).
+<a href="https://github.com/doxygen/doxygen/issues/new">new bug</a>,
+first <a href="https://github.com/doxygen/doxygen/issues">search</a>
+through the database if the same bug has already been submitted by others.
 If you believe you have found a new bug, 
-please <a href="http://bugzilla.gnome.org/enter_bug.cgi?product=doxygen">report it</a>.
+please <a href="https://github.com/doxygen/doxygen/issues/new">report it</a>.
 
 If you are unsure whether or not something is a bug, please ask help
 on the <a href="http://sourceforge.net/mail/?group_id=5971">users mailing list</a> 
@@ -109,7 +108,7 @@ always try to include the following information in your bug report:
 - The version of doxygen you are using (for instance 1.5.3, use 
   `doxygen --version` if you are not sure).
 - The name and version number of your operating system (for instance 
-  SuSE Linux 6.4)
+  Ubuntu Linux 18.04 LTS)
 - It is usually a good idea to send along the configuration file as well, 
   but please use doxygen with the <code>-s</code> flag while generating it
   to keep it small (use <code>doxygen -s -u [configName]</code> to strip

@@ -1740,6 +1740,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	CopyLine
 %x	CopyString
 %x	CopyStringFtn
+%x	CopyStringFtnDouble
 %x      Include
 %x      IncludeID
 %x      EndImport
@@ -1851,7 +1852,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <CopyLine>\"				{
 					  outputChar(*yytext);
-					  BEGIN( CopyString );
+                                          if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_Fortran)
+                                          {
+					    BEGIN( CopyString );
+                                          }
+                                          else
+                                          {
+					    BEGIN( CopyStringFtnDouble );
+                                          }
 					}
 <CopyLine>\'				{
                                           if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_Fortran) REJECT;
@@ -1859,7 +1867,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN( CopyStringFtn );
 					}
 <CopyString>[^\"\\\r\n]+		{
-  					  outputArray(yytext,(int)yyleng);
+					  outputArray(yytext,(int)yyleng);
 					}
 <CopyString>\\.				{
 					  outputArray(yytext,(int)yyleng);
@@ -1868,8 +1876,18 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  outputChar(*yytext);
 					  BEGIN( CopyLine );
 					}
+<CopyStringFtnDouble>[^\"\\\r\n]+	{
+					  outputArray(yytext,(int)yyleng);
+					}
+<CopyStringFtnDouble>\\.		{
+					  outputArray(yytext,(int)yyleng);
+					}
+<CopyStringFtnDouble>\"			{
+					  outputChar(*yytext);
+					  BEGIN( CopyLine );
+					}
 <CopyStringFtn>[^\'\\\r\n]+		{
-  					  outputArray(yytext,(int)yyleng);
+					  outputArray(yytext,(int)yyleng);
 					}
 <CopyStringFtn>\\.			{
 					  outputArray(yytext,(int)yyleng);
@@ -3195,7 +3213,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   {
     CondCtx *ctx = g_condStack.pop();
     QCString sectionInfo = " ";
-    if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label %s ",ctx->sectionId.data()); 
+    if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx->sectionId.stripWhiteSpace().data());
     warn(fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
     delete ctx;

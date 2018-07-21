@@ -548,7 +548,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
   if (docEntry->sli)
   {
     QListIterator<ListItemInfo> slii(*docEntry->sli);
-    for (slii.toFirst();(lii=slii.current());++slii)
+    for (slii.toLast();(lii=slii.current());--slii)
     {
       if (qstrcmp(lii->type,listName)==0) 
       {
@@ -1046,10 +1046,13 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yytext);
   					}
 <Comment>"</summary>"	                { // start of a .NET XML style detailed description
+					  setOutput(OutputBrief);
                                           addOutput(yytext);
 					  setOutput(OutputDoc);
   					}
 <Comment>"</remarks>"			{ // end of a brief or detailed description
+                                          
+					  setOutput(OutputDoc);
                                           addOutput(yytext);
   					}
 <Comment>"<"{CAPTION}{ATTR}">"          {
@@ -2038,7 +2041,6 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
   					}
 <SkipInternal>[@\\]"endinternal"[ \t]*  {
-                                          addOutput(" \\endinternal "); 
 					  BEGIN(Comment);
 					}
 <SkipInternal>[^ \\@\n]+		{ // skip non-special characters
@@ -2544,12 +2546,23 @@ static bool handleEndParBlock(const QCString &)
 
 static bool handleRelated(const QCString &)
 {
+  if (!current->relates.isEmpty())
+  {
+    warn(yyFileName,yyLineNr,
+	"found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
+  }
+  current->relatesType = Simple;
   BEGIN(RelatesParam1);
   return FALSE;
 }
 
 static bool handleRelatedAlso(const QCString &)
 {
+  if (!current->relates.isEmpty())
+  {
+    warn(yyFileName,yyLineNr,
+	"found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
+  }
   current->relatesType = Duplicate;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2557,6 +2570,11 @@ static bool handleRelatedAlso(const QCString &)
 
 static bool handleMemberOf(const QCString &)
 {
+  if (!current->relates.isEmpty())
+  {
+    warn(yyFileName,yyLineNr,
+	"found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
+  }
   current->relatesType = MemberOf;
   BEGIN(RelatesParam1);
   return FALSE;

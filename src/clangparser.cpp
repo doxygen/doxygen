@@ -4,6 +4,7 @@
 
 #if USE_LIBCLANG
 #include <clang-c/Index.h>
+#include "clang/Tooling/CompilationDatabase.h"
 #include "clang/Tooling/Tooling.h"
 #include <qfileinfo.h>
 #include <stdlib.h>
@@ -196,32 +197,32 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
       std::vector<std::string> options = command[command.size()-1].CommandLine;
       // copy each compiler option used from the database. Skip the first which is compiler exe.
       for (auto option = options.begin()+1; option != options.end(); option++) {
-          argv[argc++] = strdup(option->c_str());
+          argv[argc++] = qstrdup(option->c_str());
       }
       // this extra addition to argv is accounted for as we are skipping the first entry in
-      argv[argc++]=strdup("-w"); // finally, turn off warnings.
+      argv[argc++]=qstrdup("-w"); // finally, turn off warnings.
   } else {
   // add include paths for input files
   for (di.toFirst();di.current();++di,++argc)
   {
     QCString inc = QCString("-I")+di.currentKey();
-    argv[argc]=strdup(inc.data());
+    argv[argc]=qstrdup(inc.data());
     //printf("argv[%d]=%s\n",argc,argv[argc]);
   }
   // add external include paths
   for (uint i=0;i<includePath.count();i++)
   {
     QCString inc = QCString("-I")+includePath.at(i);
-    argv[argc++]=strdup(inc.data());
+    argv[argc++]=qstrdup(inc.data());
   }
   // user specified options
   for (uint i=0;i<clangOptions.count();i++)
   {
-    argv[argc++]=strdup(clangOptions.at(i));
+    argv[argc++]=qstrdup(clangOptions.at(i));
   }
   // extra options
-  argv[argc++]=strdup("-ferror-limit=0");
-  argv[argc++]=strdup("-x");
+  argv[argc++]=qstrdup("-ferror-limit=0");
+  argv[argc++]=qstrdup("-x");
 
   // Since we can be presented with a .h file that can contain C/C++ or
   // Objective C code and we need to configure the parser before knowing this,
@@ -249,19 +250,19 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   switch(p->detectedLang)
   {
     case ClangParser::Private::Detected_Cpp: 
-      argv[argc++]=strdup("c++"); 
+      argv[argc++]=qstrdup("c++"); 
       break;
     case ClangParser::Private::Detected_ObjC: 
-      argv[argc++]=strdup("objective-c"); 
+      argv[argc++]=qstrdup("objective-c"); 
       break;
     case ClangParser::Private::Detected_ObjCpp: 
-      argv[argc++]=strdup("objective-c++"); 
+      argv[argc++]=qstrdup("objective-c++"); 
       break;
   }
 
   // provide the input and and its dependencies as unsaved files so we can
   // pass the filtered versions
-  argv[argc++]=strdup(fileName);
+  argv[argc++]=qstrdup(fileName);
   }
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   //printf("source %s ----------\n%s\n-------------\n\n",
@@ -271,7 +272,7 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   p->sources = new QCString[numUnsavedFiles];
   p->ufs     = new CXUnsavedFile[numUnsavedFiles];
   p->sources[0]      = detab(fileToString(fileName,filterSourceFiles,TRUE));
-  p->ufs[0].Filename = strdup(fileName);
+  p->ufs[0].Filename = qstrdup(fileName);
   p->ufs[0].Contents = p->sources[0].data();
   p->ufs[0].Length   = p->sources[0].length();
   QStrListIterator it(filesInTranslationUnit);
@@ -280,7 +281,7 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   {
     p->fileMapping.insert(it.current(),new uint(i));
     p->sources[i]      = detab(fileToString(it.current(),filterSourceFiles,TRUE));
-    p->ufs[i].Filename = strdup(it.current());
+    p->ufs[i].Filename = qstrdup(it.current());
     p->ufs[i].Contents = p->sources[i].data();
     p->ufs[i].Length   = p->sources[i].length();
   }

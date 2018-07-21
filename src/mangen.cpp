@@ -283,7 +283,7 @@ void ManGenerator::endGroupHeader(int)
   upperCase=FALSE;
 }
 
-void ManGenerator::startMemberHeader(const char *)
+void ManGenerator::startMemberHeader(const char *,int)
 {
   if (!firstCol) t << endl;
   t << ".SS \"";
@@ -619,9 +619,9 @@ void ManGenerator::startSection(const char *,const char *,SectionInfo::SectionTy
     {
       case SectionInfo::Page:          startGroupHeader(FALSE); break;
       case SectionInfo::Section:       startGroupHeader(FALSE); break;
-      case SectionInfo::Subsection:    startMemberHeader(0); break;
-      case SectionInfo::Subsubsection: startMemberHeader(0); break;
-      case SectionInfo::Paragraph:     startMemberHeader(0); break;
+      case SectionInfo::Subsection:    startMemberHeader(0, -1); break;
+      case SectionInfo::Subsubsection: startMemberHeader(0, -1); break;
+      case SectionInfo::Paragraph:     startMemberHeader(0, -1); break;
       default: ASSERT(0); break;
     }
   }

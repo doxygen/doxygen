@@ -164,12 +164,14 @@ void RefList::generatePage()
     doc += " \\_internalref ";
     doc += item->name;
     doc += " \"";
-    doc += item->title;
+    // escape \'s in title, see issue #5901
+    doc += substitute(item->title,"\\","\\\\");
     doc += "\" ";
     // write declaration in case a function with arguments
     if (!item->args.isEmpty()) 
     {
-      doc += item->args;
+      // escape @'s in argument list, needed for Java annotations (see issue #6208)
+      doc += substitute(item->args,"@","@@");
     }
     doc += "</dt><dd> ";
     doc += item->text;

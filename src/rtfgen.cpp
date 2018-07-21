@@ -244,7 +244,22 @@ void RTFGenerator::beginRTFDocument()
   t <<"\\red128\\green0\\blue0;";
   t <<"\\red128\\green128\\blue0;";
   t <<"\\red128\\green128\\blue128;";
-  t <<"\\red192\\green192\\blue192;}" << endl;
+  t <<"\\red192\\green192\\blue192;";
+
+  // code highlighting colors. Note order is important see also RTFGenerator::startFontClass
+  t <<"\\red0\\green128\\blue0;";   // keyword = index 17
+  t <<"\\red96\\green64\\blue32;";  // keywordtype
+  t <<"\\rede0\\green128\\blue0;";  // keywordflow
+  t <<"\\red128\\green0\\blue0;";   // comment
+  t <<"\\red128\\green96\\blue32;"; // preprocessor
+  t <<"\\red0\\green32\\blue128;";  // stringliteral
+  t <<"\\red0\\green128\\blue128;"; // charliteral
+  t <<"\\red255\\green0\\blue255;"; // vhdldigit
+  t <<"\\red0\\green0\\blue0;";     // vhdlchar
+  t <<"\\red112\\green0\\blue112;"; // vhdlkeyword
+  t <<"\\red255\\green0\\blue0;";   // vhdllogic
+
+  t <<"}\n";
 
   DBG_RTF(t <<"{\\comment Beginning style list}\n")
   t <<"{\\stylesheet\n";
@@ -575,7 +590,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isTitlePageAuthor:
       {
-        t << "Doxgyen. }\n";
+        t << " doxygen.}\n";
         t << "{\\creatim " << dateToRTFDateString() << "}\n}";
         DBG_RTF(t << "{\\comment end of infoblock}\n");
         // setup for this section
@@ -602,7 +617,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << rtf_Style_Reset << rtf_Style["Title"]->reference << endl; // set to title style
         if (rtf_title)
           // User has overridden document title in extensions file
-          t << "{\\field\\fldedit {\\*\\fldinst " << rtf_title << " \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par" << endl;
+          t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par" << endl;
         else
         {
           DocText *root = validatingParseText(projectName);
@@ -703,7 +718,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       }
       else if (vhdlOpt)
       {
-        t << "{\\tc \\v " << VhdlDocGen::trDesignUnitIndex() << "}"<< endl;
+        t << "{\\tc \\v " << theTranslator->trDesignUnitIndex() << "}"<< endl;
       }
       else
       {
@@ -1626,7 +1641,7 @@ void RTFGenerator::endDescItem()
   newParagraph();
 }
 
-void RTFGenerator::startMemberDescription(const char *,const char *)
+void RTFGenerator::startMemberDescription(const char *,const char *,bool)
 {
   DBG_RTF(t << "{\\comment (startMemberDescription)}"    << endl)
   t << "{" << endl;
@@ -1639,11 +1654,11 @@ void RTFGenerator::endMemberDescription()
 {
   DBG_RTF(t << "{\\comment (endMemberDescription)}"    << endl)
   endEmphasis();
-  newParagraph();
+  //newParagraph();
   decrementIndentLevel();
-  //t << "\\par";
+  t << "\\par";
   t << "}" << endl;
-  //m_omitParagraph = TRUE;
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::startDescList(SectionTypes)
@@ -3041,5 +3056,25 @@ void RTFGenerator::endLabels()
 {
 }
 
+void RTFGenerator::startFontClass(const char *name)
+{
+  int cod = 2;
+  QCString qname(name);
+  if (qname == "keyword")            cod = 17;
+  else if (qname == "keywordtype")   cod = 18;
+  else if (qname == "keywordflow")   cod = 19;
+  else if (qname == "comment")       cod = 20;
+  else if (qname == "preprocessor")  cod = 21;
+  else if (qname == "stringliteral") cod = 22;
+  else if (qname == "charliteral")   cod = 23;
+  else if (qname == "vhdldigit")     cod = 24;
+  else if (qname == "vhdlchar")      cod = 25;
+  else if (qname == "vhdlkeyword")   cod = 26;
+  else if (qname == "vhdllogic")     cod = 27;
+  t << "{\\cf" << cod << " ";
+}
 
-
+void RTFGenerator::endFontClass()
+{
+  t << "}";
+}

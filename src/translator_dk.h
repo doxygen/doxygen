@@ -116,8 +116,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     virtual QCString latexLanguageSupportCommand()
     {
       return
-	"\\usepackage[danish]{babel}\n"
-	"\\usepackage[T1]{fontenc}\n";
+	"\\usepackage[danish]{babel}\n";
     }
 
     // --- Language translation methods -------------------

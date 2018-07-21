@@ -2,6 +2,7 @@ language: cpp
 compiler:
   - gcc
   - clang
+sudo: required
 
 before_install:
     - sudo apt-add-repository ppa:smspillaz/cmake-2.8.12 -y

@@ -85,7 +85,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_8_15
 {
   public:
     // --- Language control methods -------------------
@@ -96,7 +96,13 @@ class TranslatorCzech : public Translator
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[T2A]{fontenc}\n"
-             "\\usepackage[czech]{babel}\n";
+             "\\usepackage[czech]{babel}\n"
+             "\\usepackage{regexpatch}\n"
+             "\\makeatletter\n"
+             "% Change the `-` delimiter to an active character\n"
+             "\\xpatchparametertext\\@@@cmidrule{-}{\\cA-}{}{}\n"
+             "\\xpatchparametertext\\@cline{-}{\\cA-}{}{}\n"
+             "\\makeatother\n";
     }
 
     // --- Language translation methods -------------------

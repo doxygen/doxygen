@@ -13,6 +13,10 @@
  *
  */
 
+#if !defined(_WIN32) || defined(__CYGWIN__)
+#define _DEFAULT_SOURCE 1
+#endif
+
 #include <locale.h>
 
 #include <qfileinfo.h>
@@ -9574,7 +9578,7 @@ int readDir(QFileInfo *fi,
   if (fi->isSymLink())
   {
     dirName = resolveSymlink(dirName.data());
-    if (dirName.isEmpty()) return 0;            // recusive symlink
+    if (dirName.isEmpty()) return 0;            // recursive symlink
     if (g_pathsVisited.find(dirName)) return 0; // already visited path
     g_pathsVisited.insert(dirName,(void*)0x8);
   }
@@ -9752,14 +9756,17 @@ int readFileOrDirectory(const char *s,
 
 //----------------------------------------------------------------------------
 
-void readFormulaRepository()
+void readFormulaRepository(QCString dir, bool cmp)
 {
-  QFile f(Config_getString(HTML_OUTPUT)+"/formula.repository");
+  static int current_repository = 0; 
+  int new_repository = 0; 
+  QFile f(dir+"/formula.repository");
   if (f.open(IO_ReadOnly)) // open repository
   {
     msg("Reading formula repository...\n");
     QTextStream t(&f);
     QCString line;
+    Formula *f;
     while (!t.eof())
     {
       line=t.readLine().utf8();
@@ -9773,13 +9780,41 @@ void readFormulaRepository()
       {
         QCString formName = line.left(se);
         QCString formText = line.right(line.length()-se-1);
-        Formula *f=new Formula(formText);
-        Doxygen::formulaList->setAutoDelete(TRUE);
-        Doxygen::formulaList->append(f);
-        Doxygen::formulaDict->insert(formText,f);
-        Doxygen::formulaNameDict->insert(formName,f);
+        if (cmp)
+        {
+          if ((f=Doxygen::formulaDict->find(formText))==0)
+          {
+            err("discrepancy between formula repositories! Remove "
+                "formula.repository and from_* files from output directories.");
+            exit(1);
+          }
+          QCString formLabel;
+          formLabel.sprintf("\\form#%d",f->getId());
+          if (formLabel != formName)
+          {
+            err("discrepancy between formula repositories! Remove "
+                "formula.repository and from_* files from output directories.");
+            exit(1);
+          }
+          new_repository++;
+        }
+        else
+        {
+          f=new Formula(formText);
+          Doxygen::formulaList->setAutoDelete(TRUE);
+          Doxygen::formulaList->append(f);
+          Doxygen::formulaDict->insert(formText,f);
+          Doxygen::formulaNameDict->insert(formName,f);
+          current_repository++;
+        }
       }
     }
+  }
+  if (cmp && (current_repository != new_repository))
+  {
+    err("size discrepancy between formula repositories! Remove "
+        "formula.repository and from_* files from output directories.");
+    exit(1);
   }
 }
 
@@ -11070,7 +11105,12 @@ void parseInput()
 
   if (Config_getBool(GENERATE_HTML))
   {
-    readFormulaRepository();
+    readFormulaRepository(Config_getString(HTML_OUTPUT));
+  }
+  if (Config_getBool(GENERATE_RTF))
+  {
+    // in case GENERRATE_HTML is set we just have to compare, both repositories should be identical
+    readFormulaRepository(Config_getString(RTF_OUTPUT),Config_getBool(GENERATE_HTML));
   }
 
   /**************************************************************************
@@ -11556,6 +11596,12 @@ void generateOutput()
   {
     g_s.begin("Generating bitmaps for formulas in HTML...\n");
     Doxygen::formulaList->generateBitmaps(Config_getString(HTML_OUTPUT));
+    g_s.end();
+  }
+  if (Doxygen::formulaList->count()>0 && generateRtf)
+  {
+    g_s.begin("Generating bitmaps for formulas in RTF...\n");
+    Doxygen::formulaList->generateBitmaps(Config_getString(RTF_OUTPUT));
     g_s.end();
   }
 

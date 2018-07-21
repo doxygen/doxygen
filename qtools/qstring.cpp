@@ -10768,7 +10768,7 @@ otherwise.
 
 These functions are: isNull() (returns TRUE if the character is
 U+0000), isPrint() (TRUE if the character is any sort of printable
-character, including whitespace), isPunct() (any sort of punctation),
+character, including whitespace), isPunct() (any sort of punctuation),
 isMark() (Unicode Marks), isLetter (letters), isNumber() (any sort of
 numeric characters), isLetterOrNumber(),  and isDigit() (decimal digits).
 All of these are wrappers around category(), which returns the

@@ -22,10 +22,10 @@ extern char **environ;
 #endif
 
 #include "portable.h"
+#include "util.h"
 #ifndef NODEBUG
 #include "debug.h"
 #endif
-//#include "doxygen.h"
 
 static double  g_sysElapsedTime;
 static QTime   g_time;
@@ -35,7 +35,12 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
 
   if (command==0) return 1;
 
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  QCString commandCorrectedPath = substitute(command,'/','\\');
+  QCString fullCmd=commandCorrectedPath;
+#else
   QCString fullCmd=command;
+#endif
   fullCmd=fullCmd.stripWhiteSpace();
   if (fullCmd.at(0)!='"' && fullCmd.find(' ')!=-1)
   {
@@ -134,7 +139,7 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
     // For that case COM is initialized as follows
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-    QString commandw = QString::fromUtf8( command );
+    QString commandw = QString::fromUtf8( commandCorrectedPath );
     QString argsw = QString::fromUtf8( args );
 
     // gswin32 is a GUI api which will pop up a window and run
@@ -458,18 +463,7 @@ void portable_correct_path(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   const char *p = portable_getenv("PATH");
-  char *q = (char *)malloc(strlen(p) + 1);
-  strcpy(q, p);
-  bool found = false;
-  for (int i = 0 ; i < strlen(q); i++)
-  {
-    if (q[i] == '/')
-    {
-      q[i] = '\\';
-      found = true;
-    }
-  }
-  if (found) portable_setenv("PATH",q);
-  free(q);
+  QCString result = substitute(p,'/','\\');
+  if (result!=p) portable_setenv("PATH",result.data());
 #endif
 }

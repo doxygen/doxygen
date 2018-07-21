@@ -1108,6 +1108,14 @@ Structural indicators
   This command is equivalent to \ref cmdfn "\\fn",
   \ref cmdproperty "\\property", and \ref cmdtypedef "\\typedef".
 
+  Note that for PHP one can also specify the type of the variable.
+  The syntax is similar as for the `phpDocumentor` but the description has to start
+  at the next line, i.e.
+\verbatim
+@var  datatype $varname
+Description
+\endverbatim
+
   \sa section \ref cmdfn "\\fn", \ref cmdproperty "\\property", and \ref cmdtypedef "\\typedef".
 
 <hr>
@@ -1281,6 +1289,8 @@ The output will be different depending on whether or not \ref cfg_enabled_sectio
 contains \c TEST, or \c DEV
 
   \sa sections \ref cmdendcond "\\endcond" and  \ref cfg_enabled_sections "ENABLED_SECTIONS".
+  \note Due to the moment of parsing the \c \\cond and \ref cmdendcond "\\endcond" commands cannot
+  be used in \ref cfg_aliases "ALIASES".
 
 <hr>
 \section cmdcopyright \\copyright { copyright description }
@@ -1357,6 +1367,8 @@ contains \c TEST, or \c DEV
   Ends a conditional section that was started by \ref cmdcond "\\cond".
 
   \sa section \ref cmdcond "\\cond".
+  \note Due to the moment of parsing the \c \\endcond and \ref cmdcond "\\cond" commands cannot
+  be used in \ref cfg_aliases "ALIASES".
 
 <hr>
 \section cmdendif \\endif
@@ -1571,7 +1583,7 @@ void setPosition(double x,double y,double z,double t)
   Note that for PHP one can also specify the type (or types if you
   separate them with a pipe symbol) which are allowed for a parameter
   (as this is not part of the definition).
-  The syntax is the same as for phpDocumentor, i.e.
+  The syntax is the same as for the `phpDocumentor`, i.e.
 \verbatim
 @param  datatype1|datatype2 $paramname description
 \endverbatim
