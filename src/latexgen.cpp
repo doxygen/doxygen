@@ -1350,7 +1350,7 @@ void LatexGenerator::startHtmlLink(const char *url)
     t << url;
     t << "}";
   }
-  t << "{\\tt ";
+  t << "\\texttt{ ";
 }
 
 void LatexGenerator::endHtmlLink()
@@ -1366,7 +1366,7 @@ void LatexGenerator::endHtmlLink()
 //    t << url;
 //    t << "}";
 //  }
-//  t << "{\\tt "; 
+//  t << "\\texttt{ ";
 //  docify(url);
 //  t << "}";
 //}
@@ -1374,7 +1374,7 @@ void LatexGenerator::endHtmlLink()
 void LatexGenerator::writeStartAnnoItem(const char *,const char *,
                                         const char *path,const char *name)
 {
-  t << "\\item\\contentsline{section}{\\bf ";
+  t << "\\item\\contentsline{section}\\textbf{ ";
   if (path) docify(path);
   docify(name); 
   t << "} ";
@@ -1409,7 +1409,7 @@ void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
 //void LatexGenerator::writeClassLink(const char *,const char *,
 //                                    const char *,const char *name)
 //{
-//  t << "{\\bf ";
+//  t << "\\textbf{ ";
 //  docify(name);
 //  t << "}"; 
 //}
