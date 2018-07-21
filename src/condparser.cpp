@@ -100,9 +100,9 @@ static bool isAlpha(const char c)
   return (c>='A' && c<='Z') || (c>='a' && c<='z') || c=='_';
 }
 
-static bool isAlphaNum(const char c)
+static bool isAlphaNumSpec(const char c)
 {
-  return isAlpha(c) || (c>='0' && c<='9');
+  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' || (c>=0x80 && c<=0xFF);
 }
 
 /**
@@ -170,7 +170,7 @@ void CondParser::getToken()
   if (isAlpha(*m_e))
   {
     m_tokenType = VARIABLE;
-    while (isAlphaNum(*m_e))
+    while (isAlphaNumSpec(*m_e))
     {
       m_token += *m_e++;
     }
