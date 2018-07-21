@@ -46,7 +46,43 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
     err("Could not open file %s for writing\n",baseName.data());
   }
   QCString text = "@startuml\n";
-  text+=content;
+  QCString strippedContent = content.stripWhiteSpace();
+  if (strippedContent == "version")
+  {
+    text+="version\n";
+  }
+  else if (strippedContent == "checkversion")
+  {
+    text+="checkversion\n";
+  }
+  else if (strippedContent == "license")
+  {
+    text+="license\n";
+  }
+  else if (strippedContent == "licence")
+  {
+    text+="licence\n";
+  }
+  else if (strippedContent == "testdot")
+  {
+    text+="testdot\n";
+  }
+  else if (strippedContent == "author")
+  {
+    text+="author\n";
+  }
+  else if (QString(strippedContent).startsWith("sudoku"))
+  {
+    text+=strippedContent +"\n";
+  }
+  else if (strippedContent == "stdlib")
+  {
+    text+="stdlib\n";
+  }
+  else
+  {
+    text+=content;
+  }
   text+="@enduml\n";
   file.writeBlock( text, text.length() );
   file.close();
