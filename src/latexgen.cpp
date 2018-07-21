@@ -2211,11 +2211,11 @@ void LatexGenerator::startCodeFragment()
 
 void LatexGenerator::endCodeFragment()
 {
-  if (DoxyCodeOpen)
-  {
-    t << "}\n";
-    DoxyCodeOpen = FALSE;
-  }
+  //if (DoxyCodeOpen)
+  //{
+  //  t << "}\n";
+  //  DoxyCodeOpen = FALSE;
+  //}
   t << "\\end{DoxyCode}\n";
   DoxyCodeOpen = FALSE;
 }
