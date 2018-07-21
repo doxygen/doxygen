@@ -8846,6 +8846,41 @@ void writeExtraLatexPackages(FTextStream &t)
   }
 }
 
+void writeLatexSpecialFormulaChars(FTextStream &t)
+{
+    unsigned char minus[4]; // Superscript minus
+    char *pminus = (char *)minus;
+    unsigned char sup2[3]; // Superscript two
+    char *psup2 = (char *)sup2;
+    unsigned char sup3[3];
+    char *psup3 = (char *)sup3; // Superscript three
+    minus[0]= 0xE2;
+    minus[1]= 0x81;
+    minus[2]= 0xBB;
+    minus[3]= 0;
+    sup2[0]= 0xC2;
+    sup2[1]= 0xB2;
+    sup2[2]= 0;
+    sup3[0]= 0xC2;
+    sup3[1]= 0xB3;
+    sup3[2]= 0;
+
+    t << "\\ifthenelse{\\isundefined{\\DeclareUnicodeCharacter}}{%\n"
+         "  \\catcode`\\" << pminus << "=13% Superscript minus\n"
+         "  \\def" << pminus << "{${}^{-}$}\n"
+         "  \\catcode`\\" << psup2 << "=13% Superscript two\n"
+         "  \\def" << psup2 << "{${}^{2}$}\n"
+         "  \\catcode`\\"<<psup3<<"=13% Superscript three\n"
+         "  \\def"<<psup3<<"{${}^{3}$}\n"
+         "}{%\n"
+         "  \\DeclareUnicodeCharacter{207B}{${}^{-}$}% Superscript minus\n"
+         "  \\DeclareUnicodeCharacter{C2B2}{${}^{2}$}% Superscript two\n"
+         "  \\DeclareUnicodeCharacter{C2B3}{${}^{3}$}% Superscript three\n"
+         "  \\DeclareUnicodeCharacter{2212}{-}% Just a minus sign\n"
+         "}\n"
+         "\n";
+}
+
 //------------------------------------------------------
 
 static int g_usedTableLevels = 0;

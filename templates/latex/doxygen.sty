@@ -119,19 +119,19 @@
   \normalsize%
 }
 
-% Redefining not defined charcaters, i.e. "Replacement Character" in tex output.
+% Redefining not defined characters, i.e. "Replacement Character" in tex output.
 \def\ucr{\adjustbox{width=\CodeWidthChar,height=\CodeHeightChar}{\stackinset{c}{}{c}{-.2pt}{%
    \textcolor{white}{\sffamily\bfseries\small ?}}{%
    \rotatebox{45}{$\blacksquare$}}}}
 
 % Choosing right setup for "Replacement character"
-\ifpdf
-  \RequirePackage[utf8]{inputenc}
-  \DeclareUnicodeCharacter{FFFD}{\ucr}
-\else
+\ifthenelse{\isundefined{\DeclareUnicodeCharacter}}{%
   \catcode`\�=13
   \def�{\ucr}
-\fi
+}{%
+  \RequirePackage[utf8]{inputenc}
+  \DeclareUnicodeCharacter{FFFD}{\ucr}
+}
 
 % Used by @example, @include, @includelineno and @dontinclude
 \newenvironment{DoxyCodeInclude}[1]{%
