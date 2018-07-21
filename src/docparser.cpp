@@ -5635,7 +5635,8 @@ int DocPara::handleCommand(const QCString &cmdName)
         defaultHandleTitleAndSize(CMD_STARTUML,dv,dv->children(),width,height);
         doctokenizerYYsetStatePlantUML();
         retval = doctokenizerYYlex();
-        dv->setText(g_token->verb);
+        int line=0;
+        dv->setText(stripLeadingAndTrailingEmptyLines(g_token->verb,line));
         dv->setWidth(width);
         dv->setHeight(height);
         if (jarPath.isEmpty())
