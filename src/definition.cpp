@@ -1614,83 +1614,83 @@ void Definition::writeNavigationPath(OutputList &ol) const
 }
 
 // TODO: move to htmlgen
-void Definition::writeToc(OutputList &ol, int localToc, int *localTocLevel)
+void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
 {
   SectionDict *sectionDict = m_impl->sectionDict;
   if (sectionDict==0) return;
-  if (PageDef::isLocalToc(localToc, Definition::Html))
+  if (localToc.isHtmlEnabled())
   {
-  int maxLevel = localTocLevel[Definition::Html];
-  ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
-  ol.writeString("<div class=\"toc\">");
-  ol.writeString("<h3>");
-  ol.writeString(theTranslator->trRTFTableOfContents());
-  ol.writeString("</h3>\n");
-  ol.writeString("<ul>");
-  SDict<SectionInfo>::Iterator li(*sectionDict);
-  SectionInfo *si;
-  int level=1,l;
-  char cs[2];
-  cs[1]='\0';
-  bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
-  for (li.toFirst();(si=li.current());++li)
-  {
-    if (si->type==SectionInfo::Section       || 
-        si->type==SectionInfo::Subsection    || 
-        si->type==SectionInfo::Subsubsection ||
-        si->type==SectionInfo::Paragraph)
+    int maxLevel = localToc.htmlLevel();
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.writeString("<div class=\"toc\">");
+    ol.writeString("<h3>");
+    ol.writeString(theTranslator->trRTFTableOfContents());
+    ol.writeString("</h3>\n");
+    ol.writeString("<ul>");
+    SDict<SectionInfo>::Iterator li(*sectionDict);
+    SectionInfo *si;
+    int level=1,l;
+    char cs[2];
+    cs[1]='\0';
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+    for (li.toFirst();(si=li.current());++li)
     {
-      //printf("  level=%d title=%s\n",level,si->title.data());
-      int nextLevel = (int)si->type;
-      if (nextLevel>level)
+      if (si->type==SectionInfo::Section       || 
+          si->type==SectionInfo::Subsection    || 
+          si->type==SectionInfo::Subsubsection ||
+          si->type==SectionInfo::Paragraph)
       {
-        for (l=level;l<nextLevel;l++)
+        //printf("  level=%d title=%s\n",level,si->title.data());
+        int nextLevel = (int)si->type;
+        if (nextLevel>level)
         {
-          if (l < maxLevel) ol.writeString("<ul>");
+          for (l=level;l<nextLevel;l++)
+          {
+            if (l < maxLevel) ol.writeString("<ul>");
+          }
         }
-      }
-      else if (nextLevel<level)
-      {
-        for (l=level;l>nextLevel;l--)
+        else if (nextLevel<level)
         {
-          if (l <= maxLevel && inLi[l]) ol.writeString("</li>\n");
-          inLi[l]=FALSE;
-          if (l <= maxLevel) ol.writeString("</ul>\n");
+          for (l=level;l>nextLevel;l--)
+          {
+            if (l <= maxLevel && inLi[l]) ol.writeString("</li>\n");
+            inLi[l]=FALSE;
+            if (l <= maxLevel) ol.writeString("</ul>\n");
+          }
         }
+        cs[0]='0'+nextLevel;
+        if (nextLevel <= maxLevel && inLi[nextLevel]) ol.writeString("</li>\n");
+        QCString titleDoc = convertToHtml(si->title);
+        if (nextLevel <= maxLevel) ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
+        inLi[nextLevel]=TRUE;
+        level = nextLevel;
       }
-      cs[0]='0'+nextLevel;
-      if (nextLevel <= maxLevel && inLi[nextLevel]) ol.writeString("</li>\n");
-      QCString titleDoc = convertToHtml(si->title);
-      if (nextLevel <= maxLevel) ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
-      inLi[nextLevel]=TRUE;
-      level = nextLevel;
     }
-  }
-  while (level>1 && level <= maxLevel)
-  {
-    if (inLi[level]) ol.writeString("</li>\n");
+    while (level>1 && level <= maxLevel)
+    {
+      if (inLi[level]) ol.writeString("</li>\n");
+      inLi[level]=FALSE;
+      ol.writeString("</ul>\n");
+      level--;
+    }
+    if (level <= maxLevel && inLi[level]) ol.writeString("</li>\n");
     inLi[level]=FALSE;
     ol.writeString("</ul>\n");
-    level--;
-  }
-  if (level <= maxLevel && inLi[level]) ol.writeString("</li>\n");
-  inLi[level]=FALSE;
-  ol.writeString("</ul>\n");
-  ol.writeString("</div>\n");
-  ol.popGeneratorState();
+    ol.writeString("</div>\n");
+    ol.popGeneratorState();
   }
 
-  if (PageDef::isLocalToc(localToc, Definition::Latex))
+  if (localToc.isLatexEnabled())
   {
-  char tmp[100];
-  ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Latex);
-  sprintf(tmp,"\\etocsetnexttocdepth{%d}\n",localTocLevel[Definition::Latex]);
-  ol.writeString(tmp);
-  
-  ol.writeString("\\localtableofcontents\n");
-  ol.popGeneratorState();
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Latex);
+    int maxLevel = localToc.latexLevel();
+
+    ol.writeString("\\etocsetnexttocdepth{"+QCString().setNum(maxLevel)+"}\n");
+
+    ol.writeString("\\localtableofcontents\n");
+    ol.popGeneratorState();
   }
 }
 

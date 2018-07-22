@@ -1838,7 +1838,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     }
   }
   writeInnerPages(pd->getSubPages(),t);
-  if (PageDef::isLocalToc(pd->showToc(), Definition::Xml))
+  if (pd->localToc().isXmlEnabled())
   {
     t << "    <tableofcontents>" << endl;
     SectionDict *sectionDict = pd->getSectionDict();
@@ -1846,7 +1846,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     SectionInfo *si;
     int level=1,l;
     bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
-    int maxLevel = (pd -> showTocLevel())[Definition::Xml];
+    int maxLevel = pd->localToc().xmlLevel();
     for (li.toFirst();(si=li.current());++li)
     {
       if (si->type==SectionInfo::Section       ||

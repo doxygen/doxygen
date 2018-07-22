@@ -35,11 +35,6 @@ PageDef::PageDef(const char *f,int l,const char *n,
   m_pageScope = 0;
   m_nestingLevel = 0;
   m_fileName = ::convertNameToFile(n,FALSE,TRUE);
-  m_showToc = Definition::None;
-  for (int i = 0; i < sizeof(m_localTocLevel) / sizeof(*m_localTocLevel) ; i++)
-  {
-    m_localTocLevel[i] = 0;
-  }
 }
 
 PageDef::~PageDef()
@@ -211,9 +206,9 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
   //2.}
 
-  if (m_showToc && hasSections())
+  if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled()) && hasSections())
   {
-    writeToc(ol, m_showToc, m_localTocLevel);
+    writeToc(ol, m_localToc);
   }
 
   writePageDocumentation(ol);
@@ -330,11 +325,7 @@ void PageDef::setNestingLevel(int l)
   m_nestingLevel = l;
 }
 
-void PageDef::setShowToc(int localToc, int *localTocLevel)
+void PageDef::setLocalToc(const LocalToc &lt)
 {
-  m_showToc |= localToc;
-  for (int i = 0; i < sizeof(m_localTocLevel) / sizeof(*m_localTocLevel) ; i++)
-  {
-    m_localTocLevel[i] += localTocLevel[i];
-  }
+  m_localToc = lt;
 }

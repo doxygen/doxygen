@@ -2897,26 +2897,22 @@ static bool handleToc(const QCString &, const QCString &opt)
       {
         if (opt == "html")
         {
-          current->localToc |= (1 << Definition::Html);
-          current->localTocLevel[Definition::Html] = level;
+          current->localToc.enableHtml(level);
         }
         else if (opt == "latex")
         {
-          current->localToc |= (1 << Definition::Latex);
-          current->localTocLevel[Definition::Latex] = level;
+          current->localToc.enableLatex(level);
         }
         else if (opt == "xml")
         {
-          current->localToc |= (1 << Definition::Xml);
-          current->localTocLevel[Definition::Xml] = level;
+          current->localToc.enableXml(level);
         }
         else warn(yyFileName,yyLineNr,"Unknown option specified with \\tableofcontents: `%s'", (*it).stripWhiteSpace().data());
       }
     }
-    if (current->localToc == Definition::None)
+    if (current->localToc.nothingEnabled())
     {
-      current->localToc |= (1 << Definition::Html);
-      current->localTocLevel[Definition::Html] = 5;
+      current->localToc.enableHtml(5); // for backward compatibility
     }
   }
   return FALSE;

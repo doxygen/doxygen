@@ -34,7 +34,7 @@ class PageDef : public Definition
 
     // setters
     void setFileName(const char *name);
-    void setShowToc(int localToc, int *localTocLevel);
+    void setLocalToc(const LocalToc &tl);
 
     // getters
     DefType definitionType() const { return TypePage; }
@@ -59,9 +59,7 @@ class PageDef : public Definition
     bool documentedPage() const;
     bool hasSubPages() const;
     bool hasParentPage() const;
-    int showToc() const { return m_showToc; }
-    int *showTocLevel() { return m_localTocLevel; }
-    static bool isLocalToc(int localToc, int tocType) { return(localToc & (1 << tocType)); }
+    LocalToc localToc() const { return m_localToc; }
     void setPageScope(Definition *d){ m_pageScope = d; }
     Definition *getPageScope() const { return m_pageScope; }
     QCString displayName(bool=TRUE) const { return !m_title.isEmpty() ? m_title : Definition::name(); }
@@ -77,8 +75,7 @@ class PageDef : public Definition
     PageSDict *m_subPageDict;                 // list of pages in the group
     Definition *m_pageScope;
     int m_nestingLevel;
-    int m_showToc;
-    int m_localTocLevel[numOutputLocalTocType];
+    LocalToc m_localToc;
 };
 
 class PageSDict : public SDict<PageDef>
