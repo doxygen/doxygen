@@ -275,6 +275,9 @@ class Definition : public DefinitionIntf
 
     QCString id() const;
 
+    /** returns the section dictionary, only of importance for pagedef */
+    SectionDict * getSectionDict(void);
+
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
@@ -346,7 +349,7 @@ class Definition : public DefinitionIntf
     void setLocalName(const QCString name);
 
     void addSectionsToIndex();
-    void writeToc(OutputList &ol);
+    void writeToc(OutputList &ol, const LocalToc &lt);
 
     void setCookie(Cookie *cookie) { delete m_cookie; m_cookie = cookie; }
     Cookie *cookie() const { return m_cookie; }

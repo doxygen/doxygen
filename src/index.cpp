@@ -3883,9 +3883,9 @@ static void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     Doxygen::insideMainPage=TRUE;
-    if (Doxygen::mainPage->showToc() && Doxygen::mainPage->hasSections())
+    if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections())
     {
-      Doxygen::mainPage->writeToc(ol);
+      Doxygen::mainPage->writeToc(ol,Doxygen::mainPage->localToc());
     }
 
     ol.startTextBlock();

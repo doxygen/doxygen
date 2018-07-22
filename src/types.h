@@ -16,6 +16,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <string.h>
 #include <qcstring.h>
 
 /** @file
@@ -216,6 +217,50 @@ enum FortranFormat
   FortranFormat_Unknown,
   FortranFormat_Free,
   FortranFormat_Fixed
+};
+
+class LocalToc
+{
+  public:
+    enum Type {
+      None                   = 0, // initial value
+      Html                   = 0, // index / also to be used as (1 << Definition::Html)
+      Latex                  = 1, // ...
+      Xml                    = 2, // ...
+      numTocTypes            = 3  // number of enum values
+    };
+    LocalToc() : m_mask(None) { memset(m_level,0,sizeof(m_level)); }
+
+    // setters
+    void enableHtml(int level)
+    {
+      m_mask|=(1<<Html);
+      m_level[Html]=level;
+    }
+    void enableLatex(int level)
+    {
+      m_mask|=(1<<Latex);
+      m_level[Latex]=level;
+    }
+    void enableXml(int level)
+    {
+      m_mask|=(1<<Xml);
+      m_level[Xml]=level;
+    }
+
+    // getters
+    bool isHtmlEnabled()  const { return (m_mask & Html)!=0;  }
+    bool isLatexEnabled() const { return (m_mask & Latex)!=0; }
+    bool isXmlEnabled()   const { return (m_mask & Xml)!=0;   }
+    bool nothingEnabled() const { return m_mask == None; }
+    int htmlLevel()       const { return m_level[Html]; }
+    int latexLevel()      const { return m_level[Latex]; }
+    int xmlLevel()        const { return m_level[Xml]; }
+    int mask()            const { return m_mask; }
+
+  private:
+    int m_mask;
+    int m_level[numTocTypes];
 };
 
 #endif

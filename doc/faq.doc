@@ -16,7 +16,7 @@
  */
 /*! \page faq Frequently Asked Questions
 
-\tableofcontents
+\tableofcontents{html,latex}
 
 
 \section faq_index How to get information on the index page in HTML?

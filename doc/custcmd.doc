@@ -16,7 +16,7 @@
  */
 /*! \page custcmd Custom Commands
 
-\tableofcontents
+\tableofcontents{html,latex}
 
 Doxygen provides a large number of \ref commands "special commands", 
 \ref xmlcmds "XML commands", and \ref htmlcmds "HTML commands".

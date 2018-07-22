@@ -15,7 +15,7 @@
  *
  */
 /*! \page starting Getting started
-\tableofcontents
+\tableofcontents{html,latex}
 
 The executable \c doxygen is the main program that parses the sources and 
 generates the documentation. See section \ref doxygen_usage for more

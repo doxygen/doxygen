@@ -17,7 +17,7 @@
 /*! \page install Installation
 
 \addindex installation
-\tableofcontents
+\tableofcontents{html,latex}
 
 First go to the 
 <a href="http://www.doxygen.org/download.html">download</a> page

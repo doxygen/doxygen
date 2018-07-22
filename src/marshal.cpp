@@ -344,6 +344,14 @@ void marshalMemberLists(StorageIntf *s,SDict<MemberList> *mls)
   }
 }
 
+void marshalLocalToc(StorageIntf *s,const LocalToc &lt)
+{
+  marshalInt(s,lt.mask());
+  marshalInt(s,lt.htmlLevel());
+  marshalInt(s,lt.latexLevel());
+  marshalInt(s,lt.xmlLevel());
+}
+
 void marshalEntry(StorageIntf *s,Entry *e)
 {
   marshalUInt(s,HEADER);
@@ -355,6 +363,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalUInt64(s,e->spec);
   marshalInt(s,e->initLines);
   marshalBool(s,e->stat);
+  marshalLocalToc(s,e->localToc);
   marshalBool(s,e->explicitExternal);
   marshalBool(s,e->proto);
   marshalBool(s,e->subGrouping);
@@ -724,6 +733,28 @@ SDict<MemberList> *unmarshalMemberLists(StorageIntf *s)
   return result;
 }
 
+LocalToc unmarshalLocalToc(StorageIntf *s)
+{
+  LocalToc result;
+  int mask       = unmarshalInt(s);
+  int htmlLevel  = unmarshalInt(s);
+  int latexLevel = unmarshalInt(s);
+  int xmlLevel   = unmarshalInt(s);
+  if ((mask & LocalToc::Html)!=0)
+  {
+    result.enableHtml(htmlLevel);
+  }
+  if ((mask & LocalToc::Latex)!=0)
+  {
+    result.enableLatex(latexLevel);
+  }
+  if ((mask & LocalToc::Xml)!=0)
+  {
+    result.enableXml(xmlLevel);
+  }
+  return result;
+}
+
 Entry * unmarshalEntry(StorageIntf *s)
 {
   Entry *e = new Entry;
@@ -737,6 +768,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->spec             = unmarshalUInt64(s);
   e->initLines        = unmarshalInt(s);
   e->stat             = unmarshalBool(s);
+  e->localToc         = unmarshalLocalToc(s);
   e->explicitExternal = unmarshalBool(s);
   e->proto            = unmarshalBool(s);
   e->subGrouping      = unmarshalBool(s);
