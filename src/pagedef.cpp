@@ -35,7 +35,11 @@ PageDef::PageDef(const char *f,int l,const char *n,
   m_pageScope = 0;
   m_nestingLevel = 0;
   m_fileName = ::convertNameToFile(n,FALSE,TRUE);
-  m_showToc = FALSE;
+  m_showToc = Definition::None;
+  for (int i = 0; i < sizeof(m_localTocLevel) / sizeof(*m_localTocLevel) ; i++)
+  {
+    m_localTocLevel[i] = 0;
+  }
 }
 
 PageDef::~PageDef()
@@ -209,7 +213,7 @@ void PageDef::writeDocumentation(OutputList &ol)
 
   if (m_showToc && hasSections())
   {
-    writeToc(ol);
+    writeToc(ol, m_showToc, m_localTocLevel);
   }
 
   writePageDocumentation(ol);
@@ -326,8 +330,11 @@ void PageDef::setNestingLevel(int l)
   m_nestingLevel = l;
 }
 
-void PageDef::setShowToc(bool b)
+void PageDef::setShowToc(int localToc, int *localTocLevel)
 {
-  m_showToc |= b;
+  m_showToc |= localToc;
+  for (int i = 0; i < sizeof(m_localTocLevel) / sizeof(*m_localTocLevel) ; i++)
+  {
+    m_localTocLevel[i] += localTocLevel[i];
+  }
 }
-

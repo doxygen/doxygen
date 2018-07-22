@@ -3885,7 +3885,7 @@ static void writeIndex(OutputList &ol)
     Doxygen::insideMainPage=TRUE;
     if (Doxygen::mainPage->showToc() && Doxygen::mainPage->hasSections())
     {
-      Doxygen::mainPage->writeToc(ol);
+      Doxygen::mainPage->writeToc(ol,Doxygen::mainPage->showToc(),Doxygen::mainPage->showTocLevel());
     }
 
     ol.startTextBlock();

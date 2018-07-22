@@ -4,7 +4,7 @@
 /** \page mypage Page Title
  *  \brief Page brief description.
  *
- *  @tableofcontents
+ *  @tableofcontents{xml,html,latex}
  *
  *  Text at page level. See \ref mysect for more.
  *  \section mysect Section Title.

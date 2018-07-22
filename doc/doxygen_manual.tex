@@ -70,9 +70,13 @@
 \hfuzz=15pt
 \setlength{\emergencystretch}{15pt}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.2cm}
+\newcommand{\doxynormalparskip}{\setlength{\parskip}{0.2cm}}
+\newcommand{\doxytocparskip}{\setlength{\parskip}{0.2cm}}
+\doxynormalparskip
 \hbadness=750
 \tolerance=750
+\usepackage{etoc}
+\etocsettocstyle{\doxytocparskip}{\doxynormalparskip}
 \begin{document}
 \pagenumbering{alph}
 \begin{titlepage}
@@ -85,6 +89,7 @@ Written by Dimitri van Heesch\\[2ex]
 \end{titlepage}
 \clearemptydoublepage
 \pagenumbering{Roman}
+\chapter*{Contents}
 \tableofcontents
 \clearemptydoublepage
 \pagenumbering{arabic}

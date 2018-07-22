@@ -609,7 +609,7 @@ static void addRelatedPage(EntryNav *rootNav)
   {
     pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     pd->addSectionsToDefinition(root->anchors);
-    pd->setShowToc(root->stat);
+    pd->setShowToc(root->localToc, root->localTocLevel);
     addPageToContext(pd,rootNav);
   }
 }
@@ -8716,7 +8716,7 @@ static void findMainPage(EntryNav *rootNav)
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       Doxygen::mainPage->setFileName(indexName);
-      Doxygen::mainPage->setShowToc(root->stat);
+      Doxygen::mainPage->setShowToc(root->localToc, root->localTocLevel);
       addPageToContext(Doxygen::mainPage,rootNav);
 
       SectionInfo *si = Doxygen::sectionDict->find(Doxygen::mainPage->name());

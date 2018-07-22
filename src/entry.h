@@ -288,6 +288,8 @@ class Entry
     bool        artificial;   //!< Artificially introduced item
     GroupDocType groupDocType;
     QCString    id;           //!< libclang id
+    int         localToc;     //!< types of local TOC, command \tableofcontents
+    int         localTocLevel[3];//!< depth of local TOC, command \tableofcontents
 
 
     static int  num;          //!< counts the total number of entries

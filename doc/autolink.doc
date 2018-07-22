@@ -16,7 +16,7 @@
  */
 /*! \page autolink Automatic link generation
 
-  \tableofcontents
+  \tableofcontents{html,latex}
 
   Most documentation systems have special `see also' sections where links
   to other pieces of documentation can be inserted.

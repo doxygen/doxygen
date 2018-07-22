@@ -16,7 +16,7 @@
  */
 /*! \page customize Customizing the output
 
-\tableofcontents
+\tableofcontents{html,latex}
 
 Doxygen provides various levels of customization. 
 The section \ref minor_tweaks "Minor Tweaks" discusses what to 

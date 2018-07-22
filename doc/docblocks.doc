@@ -15,7 +15,7 @@
  *
  */
 /*! \page docblocks Documenting the code
-\tableofcontents
+\tableofcontents{html,latex}
 
 This chapter covers two topics:
 1. How to put comments in your code such that doxygen incorporates them in
