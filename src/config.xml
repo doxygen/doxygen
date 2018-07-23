@@ -2553,6 +2553,20 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
 <![CDATA[
  The \c MAKEINDEX_CMD_NAME tag can be used to specify the command name to 
  generate index for \f$\mbox{\LaTeX}\f$.
+
+ @note This tag is used in the `Makefile` / `make.bat`.
+ \sa  \ref cfg_latex_makeindex_cmd "LATEX_MAKEINDEX_CMD" for the part in the generated output file (`.tex`).
+]]>
+      </docs>
+    </option>
+    <option type='string' id='LATEX_MAKEINDEX_CMD' defval='\makeindex' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ The \c LATEX_MAKEINDEX_CMD tag can be used to specify the command name to 
+ generate index for \f$\mbox{\LaTeX}\f$.
+
+ @note This tag is used in the generated output file (`.tex`).
+ \sa  \ref cfg_makeindex_cmd_name "MAKEINDEX_CMD_NAME" for the part in the `Makefile` / `make.bat`.
 ]]>
       </docs>
     </option>

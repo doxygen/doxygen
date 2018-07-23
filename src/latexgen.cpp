@@ -647,9 +647,21 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{natbib}\n"
        "\\usepackage[titles]{tocloft}\n"
        "\\setcounter{tocdepth}{3}\n"
-       "\\setcounter{secnumdepth}{5}\n"
-       "\\makeindex\n"
-       "\n";
+       "\\setcounter{secnumdepth}{5}\n";
+
+  QCString latex_mkidx_command = Config_getString(LATEX_MAKEINDEX_CMD);
+  if (!latex_mkidx_command.isEmpty())
+  {
+    if (latex_mkidx_command[0] == '\\')
+      t << latex_mkidx_command << "\n";
+    else
+      t << '\\' << latex_mkidx_command << "\n";
+  }
+  else
+  {
+    t << "\\makeindex\n";
+  }
+  t << "\n";
 
   writeExtraLatexPackages(t);
   writeLatexSpecialFormulaChars(t);
