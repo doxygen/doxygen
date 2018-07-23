@@ -6741,6 +6741,16 @@ void filterLatexString(FTextStream &t,const char *str,
     {
       switch(c)
       {
+        case 0xef: // handle U+FFFD i.e. "Replacement character" caused by octal: 357 277 275 / hexadecimal 0xef 0xbf 0xbd
+                   // the LaTeX command \ucr has been defined in doxygen.sty
+          if ((unsigned char)*(p) == 0xbf && (unsigned char)*(p+1) == 0xbd)
+          {
+            t << "{\\ucr}";
+            p += 2;
+          }
+          else
+            t << (char)c;
+          break;
         case '\\': t << "\\(\\backslash\\)"; break;
         case '{':  t << "\\{"; break;
         case '}':  t << "\\}"; break;
@@ -6762,6 +6772,16 @@ void filterLatexString(FTextStream &t,const char *str,
     {
       switch(c)
       {
+        case 0xef: // handle U+FFFD i.e. "Replacement character" caused by octal: 357 277 275 / hexadecimal 0xef 0xbf 0xbd
+                   // the LaTeX command \ucr has been defined in doxygen.sty
+          if ((unsigned char)*(p) == 0xbf && (unsigned char)*(p+1) == 0xbd)
+          {
+            t << "{\\ucr}";
+            p += 2;
+          }
+          else
+            t << (char)c;
+          break;
         case '#':  t << "\\#";           break;
         case '$':  t << "\\$";           break;
         case '%':  t << "\\%";           break;
@@ -8865,19 +8885,10 @@ void writeLatexSpecialFormulaChars(FTextStream &t)
     sup3[1]= 0xB3;
     sup3[2]= 0;
 
-    t << "\\ifthenelse{\\isundefined{\\DeclareUnicodeCharacter}}{%\n"
-         "  \\catcode`\\" << pminus << "=13% Superscript minus\n"
-         "  \\def" << pminus << "{${}^{-}$}\n"
-         "  \\catcode`\\" << psup2 << "=13% Superscript two\n"
-         "  \\def" << psup2 << "{${}^{2}$}\n"
-         "  \\catcode`\\"<<psup3<<"=13% Superscript three\n"
-         "  \\def"<<psup3<<"{${}^{3}$}\n"
-         "}{%\n"
-         "  \\DeclareUnicodeCharacter{207B}{${}^{-}$}% Superscript minus\n"
-         "  \\DeclareUnicodeCharacter{C2B2}{${}^{2}$}% Superscript two\n"
-         "  \\DeclareUnicodeCharacter{C2B3}{${}^{3}$}% Superscript three\n"
-         "  \\DeclareUnicodeCharacter{2212}{-}% Just a minus sign\n"
-         "}\n"
+    t << "\\usepackage{newunicodechar}\n"
+         "  \\newunicodechar{" << pminus << "}{${}^{-}$}% Superscript minus\n"
+         "  \\newunicodechar{" << psup2  << "}{${}^{2}$}% Superscript two\n"
+         "  \\newunicodechar{" << psup3  << "}{${}^{3}$}% Superscript three\n"
          "\n";
 }
 
