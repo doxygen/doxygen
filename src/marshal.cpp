@@ -740,15 +740,15 @@ LocalToc unmarshalLocalToc(StorageIntf *s)
   int htmlLevel  = unmarshalInt(s);
   int latexLevel = unmarshalInt(s);
   int xmlLevel   = unmarshalInt(s);
-  if ((mask & LocalToc::Html)!=0)
+  if ((mask & (1<<LocalToc::Html))!=0)
   {
     result.enableHtml(htmlLevel);
   }
-  if ((mask & LocalToc::Latex)!=0)
+  if ((mask & (1<<LocalToc::Latex))!=0)
   {
     result.enableLatex(latexLevel);
   }
-  if ((mask & LocalToc::Xml)!=0)
+  if ((mask & (1<<LocalToc::Xml))!=0)
   {
     result.enableXml(xmlLevel);
   }

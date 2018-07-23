@@ -224,7 +224,7 @@ class LocalToc
   public:
     enum Type {
       None                   = 0, // initial value
-      Html                   = 0, // index / also to be used as (1 << Definition::Html)
+      Html                   = 0, // index / also to be used as bit position in mask (1 << Html)
       Latex                  = 1, // ...
       Xml                    = 2, // ...
       numTocTypes            = 3  // number of enum values
@@ -249,9 +249,9 @@ class LocalToc
     }
 
     // getters
-    bool isHtmlEnabled()  const { return (m_mask & Html)!=0;  }
-    bool isLatexEnabled() const { return (m_mask & Latex)!=0; }
-    bool isXmlEnabled()   const { return (m_mask & Xml)!=0;   }
+    bool isHtmlEnabled()  const { return (m_mask & (1<<Html))!=0;  }
+    bool isLatexEnabled() const { return (m_mask & (1<<Latex))!=0; }
+    bool isXmlEnabled()   const { return (m_mask & (1<<Xml))!=0;   }
     bool nothingEnabled() const { return m_mask == None; }
     int htmlLevel()       const { return m_level[Html]; }
     int latexLevel()      const { return m_level[Latex]; }
