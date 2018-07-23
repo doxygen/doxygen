@@ -289,7 +289,12 @@ The following generic elements are possible for each page:
 <dt>\c detaileddescription
   <dd>Represents the detailed description on a page.
 <dt>\c authorsection
-  <dd>Represents the author section of a page (only used for man pages).
+  <dd>Represents the author section of a page (only used for man pages). This is
+      a separate section for man pages with a text like:
+      `Generated automatically by Doxygen for My Project from the source code.`
+      This should not be misinterpreted with the doxygen commands \ref cmdauthor
+      "\\author" or \ref cmdauthors "\\authors" that generate an author paragraph
+      inside a detailed description.
 <dt>\c memberdecl
   <dd>Represents the quick overview of members on a page (member declarations).
       This elements has child elements per type of member list.
