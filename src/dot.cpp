@@ -3071,25 +3071,20 @@ DotClassGraph::~DotClassGraph()
 QCString computeMd5Signature(DotNode *root,
                    DotNode::GraphType gt,
                    GraphOutputFormat format,
-                   bool lrRank,
+                   const QCString &rank, // either "LR", "RL", or ""
                    bool renderParents,
                    bool backArrows,
                    const QCString &title,
-                   QCString &graphStr,
-                   const char *rank
+                   QCString &graphStr
                   )
 {
   //printf("computeMd5Signature\n");
   QGString buf;
   FTextStream md5stream(&buf);
   writeGraphHeader(md5stream,title);
-  if (rank)
+  if (!rank.isEmpty())
   {
     md5stream << "  rankdir=\"" << rank << "\";" << endl;
-  }
-  else if (lrRank)
-  {
-    md5stream << "  rankdir=\"LR\";" << endl;
   }
   root->clearWriteFlag();
   root->write(md5stream, 
@@ -3138,18 +3133,17 @@ static bool updateDotGraph(DotNode *root,
                            DotNode::GraphType gt,
                            const QCString &baseName,
                            GraphOutputFormat format,
-                           bool lrRank,
+                           const QCString &rank,
                            bool renderParents,
                            bool backArrows,
-                           const QCString &title=QCString(),
-                           const char *rank = NULL
+                           const QCString &title=QCString()
                           )
 {
   QCString theGraph;
   // TODO: write graph to theGraph, then compute md5 checksum
   QCString md5 = computeMd5Signature(
-                   root,gt,format,lrRank,renderParents,
-                   backArrows,title,theGraph, rank);
+                   root,gt,format,rank,renderParents,
+                   backArrows,title,theGraph);
   QFile f(baseName+".dot");
   if (f.open(IO_WriteOnly))
   {
@@ -3209,7 +3203,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
                  m_graphType,
                  absBaseName,
                  graphFormat,
-                 m_lrRank,
+                 m_lrRank ? "LR" : "",
                  m_graphType==DotNode::Inheritance,
                  TRUE,
                  m_startNode->label()
@@ -3569,7 +3563,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
                  DotNode::Dependency,
                  absBaseName,
                  graphFormat,
-                 FALSE,        // lrRank
+                 "",           // lrRank
                  FALSE,        // renderParents
                  m_inverse,    // backArrows
                  m_startNode->label()
@@ -3887,11 +3881,10 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
                  DotNode::CallGraph,
                  absBaseName,
                  graphFormat,
-                 TRUE,         // lrRank
+                 m_inverse ? "RL" : "LR",   // lrRank
                  FALSE,        // renderParents
                  m_inverse,    // backArrows
-                 m_startNode->label(),
-                 (m_inverse ? "RL" : "LR")
+                 m_startNode->label()
                 ) ||
       !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
                          usePDFLatex ? absPdfName : absEpsName,

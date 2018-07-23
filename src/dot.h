@@ -133,12 +133,12 @@ class DotNode
 
     friend QCString computeMd5Signature(
                       DotNode *root, GraphType gt,
-                      GraphOutputFormat f, 
-                      bool lrRank, bool renderParents,
+                      GraphOutputFormat f,
+                      const QCString &rank,
+                      bool renderParents,
                       bool backArrows,
                       const QCString &title,
-                      QCString &graphStr,
-                      const char *rank
+                      QCString &graphStr
                      );
 };
 
