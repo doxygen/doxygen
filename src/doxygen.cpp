@@ -10218,11 +10218,6 @@ void readConfiguration(int argc, char **argv)
     {
       case 'g':
         genConfig=TRUE;
-        configName=getArg(argc,argv,optind);
-        if (optind+1<argc && qstrcmp(argv[optind+1],"-")==0)
-        { configName="-"; optind++; }
-        if (!configName)
-        { configName="Doxyfile"; }
         break;
       case 'l':
         genLayout=TRUE;
@@ -10461,26 +10456,6 @@ void readConfiguration(int argc, char **argv)
 
   Config::init();
 
-  if (genConfig && g_useOutputTemplate)
-  {
-    generateTemplateFiles("templates");
-    cleanUpDoxygen();
-    exit(0);
-  }
-
-  if (genConfig)
-  {
-    generateConfigFile(configName,shortList);
-    cleanUpDoxygen();
-    exit(0);
-  }
-  if (genLayout)
-  {
-    writeDefaultLayoutFile(layoutName);
-    cleanUpDoxygen();
-    exit(0);
-  }
-
   QFileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
   if (optind>=argc)
   {
@@ -10502,7 +10477,7 @@ void readConfiguration(int argc, char **argv)
   else
   {
     QFileInfo fi(argv[optind]);
-    if (fi.exists() || qstrcmp(argv[optind],"-")==0)
+    if (fi.exists() || qstrcmp(argv[optind],"-")==0 || genConfig)
     {
       configName=argv[optind];
     }
@@ -10513,7 +10488,25 @@ void readConfiguration(int argc, char **argv)
       exit(1);
     }
   }
+  if (genConfig && g_useOutputTemplate)
+  {
+    generateTemplateFiles("templates");
+    cleanUpDoxygen();
+    exit(0);
+  }
 
+  if (genConfig)
+  {
+    generateConfigFile(configName,shortList);
+    cleanUpDoxygen();
+    exit(0);
+  }
+  if (genLayout)
+  {
+    writeDefaultLayoutFile(layoutName);
+    cleanUpDoxygen();
+    exit(0);
+  }
 
   if (!Config::parse(configName,updateConfig))
   {
