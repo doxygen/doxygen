@@ -266,6 +266,9 @@ class ClassDef : public Definition
     /** Returns TRUE if this class is implemented in Objective-C */
     bool isObjectiveC() const;
 
+    /** Returns TRUE if this class is implemented in Fortran */
+    bool isFortran() const;
+
     /** Returns TRUE if this class is implemented in C# */
     bool isCSharp() const;
 
