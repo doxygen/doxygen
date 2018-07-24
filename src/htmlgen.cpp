@@ -1117,7 +1117,8 @@ void HtmlGenerator::startIndexItem(const char *ref,const char *f)
     }
     t << "href=\"";
     t << externalRef(relPath,ref,TRUE);
-    if (f) t << f << Doxygen::htmlFileExtension << "\">";
+    if (f) t << f << Doxygen::htmlFileExtension;
+    t << "\">";
   }
   else
   {
