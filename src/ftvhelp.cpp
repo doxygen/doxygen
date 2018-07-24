@@ -304,7 +304,7 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
     }
     else
     {
-      t << ">";
+      t << "\">";
     }
     t << convertToHtml(n->name);
     t << "</a>";
