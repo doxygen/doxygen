@@ -10467,6 +10467,10 @@ void readConfiguration(int argc, char **argv)
     {
       configName="doxyfile";
     }
+    else if (genConfig)
+    {
+      configName="Doxyfile";
+    }
     else
     {
       err("Doxyfile not found and no input file specified!\n");
