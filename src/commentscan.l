@@ -990,6 +990,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 %x	CiteLabel
 %x	CopyDoc
 %x      GuardExpr
+%x      CdataSection
 
 %%
 
@@ -1082,13 +1083,16 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           insidePre=FALSE;
                                           addOutput(yytext);
                                         }
-<Comment>{RCSTAG}			{ // RCS tag which end a brief description
-  					  setOutput(OutputDoc);
-					  REJECT;
-  					}
-<Comment>"<!--"				{ 
-  					  BEGIN(HtmlComment);
-					}
+<Comment>{RCSTAG}                       { // RCS tag which end a brief description
+                                          setOutput(OutputDoc);
+                                          REJECT;
+                                        }
+<Comment>"<!--"                         { 
+                                          BEGIN(HtmlComment);
+                                        }
+<Comment>"<!\[CDATA\["                  {
+                                          BEGIN(CdataSection);
+                                        }
 <Comment>{B}*{CMD}"endinternal"{B}*	{
                                           addOutput(" \\endinternal "); 
                                           if (!inInternalDocs)
@@ -1331,6 +1335,24 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					}
 <HtmlComment>.				{ // ignore every else
   					}
+
+<CdataSection>"\]\]>"                   {
+                                          BEGIN( Comment );
+                                        }
+<CdataSection>{DOCNL}                   { 
+                                          addOutput('\n');
+                                          if (*yytext=='\n') yyLineNr++;
+                                        }
+<CdataSection>[<>&]                     { // the special XML characters for iwhich the CDATA section is especially used
+                                          addOutput('\\');
+                                          addOutput(*yytext);
+                                        }
+<CdataSection>[^\\\n\]<>&]+             {
+                                          addOutput(yytext);
+                                        }
+<CdataSection>.                         { 
+                                          addOutput(*yytext);
+                                        }
 
  /* --------------   Rules for handling formulas ---------------- */
  
