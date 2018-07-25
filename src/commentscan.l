@@ -1341,7 +1341,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           formulaText+=*yytext; 
 					  yyLineNr++; 
 					}
-<ReadFormulaLong,ReadFormulaShort>.     { // any othe character
+<ReadFormulaLong,ReadFormulaShort>.     { // any other character
                                           formulaText+=*yytext; 
 					}
 
