@@ -2645,6 +2645,18 @@ void MemberDef::writeDocumentation(MemberList *ml,
       if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
+        if (sl.count()>0)
+        {
+          ol.pushGeneratorState();
+          ol.disableAll();
+          ol.enable(OutputGenerator::Html);
+          ol.writeString("<table class=\"mlabels\">\n");
+          ol.writeString("  <tr>\n");
+          ol.writeString("  <td class=\"mlabels-left\">\n");
+          ol.popGeneratorState();
+          htmlEndLabelTable=TRUE;
+        }
+
         ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
         linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
@@ -2667,6 +2679,18 @@ void MemberDef::writeDocumentation(MemberList *ml,
         ei=i+l;
       }
       // first si characters of ldef contain compound type name
+      if (sl.count()>0)
+      {
+        ol.pushGeneratorState();
+        ol.disableAll();
+        ol.enable(OutputGenerator::Html);
+        ol.writeString("<table class=\"mlabels\">\n");
+        ol.writeString("  <tr>\n");
+        ol.writeString("  <td class=\"mlabels-left\">\n");
+        ol.popGeneratorState();
+        htmlEndLabelTable=TRUE;
+      }
+
       ol.startMemberDocName(isObjCMethod());
       ol.docify(ldef.left(si));
       ol.docify(" { ... } ");

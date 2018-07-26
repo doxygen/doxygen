@@ -6917,7 +6917,7 @@ static void parseCompounds(Entry *rt)
 	  }
 	  else
 	  {
-	    current->protection = protection = Public ;
+	    current->protection = protection = ce->protection;
 	  }
 	}
 	else 
