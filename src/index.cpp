@@ -1579,8 +1579,8 @@ static void writeAnnotatedClassList(OutputList &ol)
 {
   //LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::ClassList);
   //bool addToIndex = lne==0 || lne->visible();
+  bool first=TRUE;
 
-  ol.startIndexList();
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
 
@@ -1592,6 +1592,11 @@ static void writeAnnotatedClassList(OutputList &ol)
        ) // no architecture
     {
       continue;
+    }
+    if (first)
+    {
+      ol.startIndexList();
+      first=FALSE;
     }
 
     ol.pushGeneratorState();
@@ -1635,7 +1640,7 @@ static void writeAnnotatedClassList(OutputList &ol)
     }
     ol.popGeneratorState();
   }
-  ol.endIndexList();
+  if (!first) ol.endIndexList();
 }
 
 inline bool isId1(int c)
