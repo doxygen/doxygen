@@ -1797,6 +1797,11 @@ static QCString escapeComment(const char *s)
   return result;
 }
 
+static bool skipLanguageSpecificKeyword(const QCString &kw)
+{
+  return g_insideCpp && (kw == "remove" || kw == "set" || kw == "get");
+}
+
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
@@ -2417,7 +2422,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                         }
 <Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
                                           if (g_insideJava && qstrcmp("internal",yytext) ==0) REJECT;
-                                          if (g_insideCpp && (QCString(yytext) == "remove" ||QCString(yytext) =="set" ||QCString(yytext) =="get")) REJECT;
+                                          if (skipLanguageSpecificKeyword(yytext)) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  if (QCString(yytext)=="typedef")
@@ -2428,13 +2433,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  endFontClass();
   					}
 <Body>{KEYWORD}/{B}* 			{
-                                          if (g_insideCpp && (QCString(yytext) == "remove" ||QCString(yytext) =="set" ||QCString(yytext) =="get")) REJECT;
+                                          if (skipLanguageSpecificKeyword(yytext)) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
   					}
 <Body>{KEYWORD}/{BN}*"(" 		{
-                                          if (g_insideCpp && (QCString(yytext) == "remove" ||QCString(yytext) =="set" ||QCString(yytext) =="get")) REJECT;
+                                          if (skipLanguageSpecificKeyword(yytext)) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -2989,7 +2994,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <MemberCall2,FuncCall>{KEYWORD}/([^a-z_A-Z0-9]) {
 					  //addParmType();
 					  //g_parmName=yytext; 
-                                          if (g_insideCpp && (QCString(yytext) == "remove" ||QCString(yytext) =="set" ||QCString(yytext) =="get")) REJECT;
+                                          if (skipLanguageSpecificKeyword(yytext)) REJECT;
   					  startFontClass("keyword");
   					  g_code->codify(yytext);
 					  endFontClass();
