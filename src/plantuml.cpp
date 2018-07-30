@@ -88,7 +88,9 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   {
     pumlArgs += "-graphvizdot \"";
     pumlArgs += dotPath;
-    pumlArgs += "dot\" ";
+    pumlArgs += "dot";
+    pumlArgs += portable_commandExtension();
+    pumlArgs += "\" ";
   }
   pumlArgs+="-o \"";
   pumlArgs+=outDir;

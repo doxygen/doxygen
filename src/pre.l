@@ -1739,6 +1739,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	SkipString
 %x	CopyLine
 %x	CopyString
+%x	CopyStringCs
 %x	CopyStringFtn
 %x	CopyStringFtnDouble
 %x      Include
@@ -1850,6 +1851,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <CopyLine>"'"."'"			{ 
   					  outputArray(yytext,(int)yyleng);
 					}
+<CopyLine>@\"				{
+                                          if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_CSharp) REJECT;
+					  outputArray(yytext,(int)yyleng);
+					  BEGIN( CopyStringCs );
+					}
 <CopyLine>\"				{
 					  outputChar(*yytext);
                                           if (getLanguageFromFileName(g_yyFileName)!=SrcLangExt_Fortran)
@@ -1869,10 +1875,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <CopyString>[^\"\\\r\n]+		{
 					  outputArray(yytext,(int)yyleng);
 					}
+<CopyStringCs>[^\"\r\n]+		{
+  					  outputArray(yytext,(int)yyleng);
+					}
 <CopyString>\\.				{
 					  outputArray(yytext,(int)yyleng);
 					}
-<CopyString>\"				{
+<CopyString,CopyStringCs>\"		{
 					  outputChar(*yytext);
 					  BEGIN( CopyLine );
 					}
@@ -1952,6 +1961,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
   					}
 <CopyLine>"\\"\r?/\n			{ // strip line continuation characters
+                                          if (getLanguageFromFileName(g_yyFileName)==SrcLangExt_Fortran) outputChar(*yytext);
   					}
 <CopyLine>.				{
   					  outputChar(*yytext);

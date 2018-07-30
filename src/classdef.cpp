@@ -1582,7 +1582,11 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
 void ClassDef::writeTagFile(FTextStream &tagFile)
 {
   if (!isLinkableInProject()) return;
-  tagFile << "  <compound kind=\"" << compoundTypeString();
+  tagFile << "  <compound kind=\"";
+  if (isFortran() && (compoundTypeString() == "type")) 
+    tagFile << "struct";
+  else
+    tagFile << compoundTypeString();
   tagFile << "\"";
   if (isObjectiveC()) { tagFile << " objc=\"yes\""; }
   tagFile << ">" << endl;
@@ -4498,6 +4502,11 @@ bool ClassDef::isForwardDeclared() const
 bool ClassDef::isObjectiveC() const
 {
   return getLanguage()==SrcLangExt_ObjC;
+}
+
+bool ClassDef::isFortran() const
+{
+  return getLanguage()==SrcLangExt_Fortran;
 }
 
 bool ClassDef::isCSharp() const

@@ -10218,11 +10218,6 @@ void readConfiguration(int argc, char **argv)
     {
       case 'g':
         genConfig=TRUE;
-        configName=getArg(argc,argv,optind);
-        if (optind+1<argc && qstrcmp(argv[optind+1],"-")==0)
-        { configName="-"; optind++; }
-        if (!configName)
-        { configName="Doxyfile"; }
         break;
       case 'l':
         genLayout=TRUE;
@@ -10461,6 +10456,42 @@ void readConfiguration(int argc, char **argv)
 
   Config::init();
 
+  QFileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
+  if (optind>=argc)
+  {
+    if (configFileInfo1.exists())
+    {
+      configName="Doxyfile";
+    }
+    else if (configFileInfo2.exists())
+    {
+      configName="doxyfile";
+    }
+    else if (genConfig)
+    {
+      configName="Doxyfile";
+    }
+    else
+    {
+      err("Doxyfile not found and no input file specified!\n");
+      usage(argv[0]);
+      exit(1);
+    }
+  }
+  else
+  {
+    QFileInfo fi(argv[optind]);
+    if (fi.exists() || qstrcmp(argv[optind],"-")==0 || genConfig)
+    {
+      configName=argv[optind];
+    }
+    else
+    {
+      err("configuration file %s not found!\n",argv[optind]);
+      usage(argv[0]);
+      exit(1);
+    }
+  }
   if (genConfig && g_useOutputTemplate)
   {
     generateTemplateFiles("templates");
@@ -10480,40 +10511,6 @@ void readConfiguration(int argc, char **argv)
     cleanUpDoxygen();
     exit(0);
   }
-
-  QFileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
-  if (optind>=argc)
-  {
-    if (configFileInfo1.exists())
-    {
-      configName="Doxyfile";
-    }
-    else if (configFileInfo2.exists())
-    {
-      configName="doxyfile";
-    }
-    else
-    {
-      err("Doxyfile not found and no input file specified!\n");
-      usage(argv[0]);
-      exit(1);
-    }
-  }
-  else
-  {
-    QFileInfo fi(argv[optind]);
-    if (fi.exists() || qstrcmp(argv[optind],"-")==0)
-    {
-      configName=argv[optind];
-    }
-    else
-    {
-      err("configuration file %s not found!\n",argv[optind]);
-      usage(argv[0]);
-      exit(1);
-    }
-  }
-
 
   if (!Config::parse(configName,updateConfig))
   {

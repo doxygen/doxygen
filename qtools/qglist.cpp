@@ -235,7 +235,7 @@ QGList& QGList::operator=( const QGList &list )
 }
 
 /*!
-  Compares this list with \a list. Retruns TRUE if the lists
+  Compares this list with \a list. Returns TRUE if the lists
   contain the same data, else FALSE.
 */
 
