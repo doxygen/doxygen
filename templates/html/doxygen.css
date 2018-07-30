@@ -134,12 +134,12 @@ a.qindex {
 a.qindexHL {
 	font-weight: bold;
 	background-color: ##AA;
-	color: #ffffff;
+	color: ##ff;
 	border: 1px double ##98;
 }
 
 .contents a.qindexHL:visited {
-        color: #ffffff;
+        color: ##ff;
 }
 
 a.el {
@@ -150,11 +150,11 @@ a.elRef {
 }
 
 a.code, a.code:visited, a.line, a.line:visited {
-	color: #4665A2; 
+	color: ##60; 
 }
 
 a.codeRef, a.codeRef:visited, a.lineRef, a.lineRef:visited {
-	color: #4665A2; 
+	color: ##60; 
 }
 
 /* @end */
@@ -183,8 +183,8 @@ ul {
 }
 
 pre.fragment {
-        border: 1px solid #C4CFE5;
-        background-color: #FBFCFD;
+        border: 1px solid ##CC;
+        background-color: ##FC;
         padding: 4px 6px;
         margin: 4px 8px 4px 2px;
         overflow: auto;
@@ -267,7 +267,7 @@ span.lineno a:hover {
 div.ah, span.ah {
 	background-color: black;
 	font-weight: bold;
-	color: #ffffff;
+	color: ##ff;
 	margin-bottom: 3px;
 	margin-top: 3px;
 	padding: 0.2em;
@@ -423,7 +423,7 @@ blockquote {
 
 blockquote.DocNodeRTL {
    border-left: 0;
-   border-right: 2px solid #9CAFD4;
+   border-right: 2px solid ##AA;
    margin: 0 4px 0 24px;
    padding: 0 16px 0 12px;
 }
@@ -514,7 +514,7 @@ table.memberdecls {
 }
 
 .memSeparator {
-        border-bottom: 1px solid #DEE4F0;
+        border-bottom: 1px solid ##E2;
         line-height: 1px;
         margin: 0px;
         padding: 0px;
@@ -644,7 +644,7 @@ table.memberdecls {
         border-top-width: 0;
         background-image:url('nav_g.png');
         background-repeat:repeat-x;
-        background-color: #FFFFFF;
+        background-color: ##ff;
         /* opera specific markup */
         border-bottom-left-radius: 4px;
         border-bottom-right-radius: 4px;
@@ -916,7 +916,7 @@ table.doxtable td, table.doxtable th {
 
 table.doxtable th {
 	background-color: ##47;
-	color: #FFFFFF;
+	color: ##ff;
 	font-size: 110%;
 	padding-bottom: 4px;
 	padding-top: 5px;
@@ -1543,7 +1543,7 @@ tr.heading h2 {
 }
 
 #powerTip.n:after, #powerTip.ne:after, #powerTip.nw:after {
-	border-top-color: #ffffff;
+	border-top-color: ##ff;
 	border-width: 10px;
 	margin: 0px -10px;
 }
@@ -1571,7 +1571,7 @@ tr.heading h2 {
 }
 
 #powerTip.s:after, #powerTip.se:after, #powerTip.sw:after {
-	border-bottom-color: #ffffff;
+	border-bottom-color: ##ff;
 	border-width: 10px;
 	margin: 0px -10px;
 }
@@ -1598,7 +1598,7 @@ tr.heading h2 {
 	left: 100%;
 }
 #powerTip.e:after {
-	border-left-color: #ffffff;
+	border-left-color: ##ff;
 	border-width: 10px;
 	top: 50%;
 	margin-top: -10px;
@@ -1614,7 +1614,7 @@ tr.heading h2 {
 	right: 100%;
 }
 #powerTip.w:after {
-	border-right-color: #ffffff;
+	border-right-color: ##ff;
 	border-width: 10px;
 	top: 50%;
 	margin-top: -10px;
@@ -1669,7 +1669,7 @@ table.markdownTableBodyLeft td, table.markdownTable th {
 
 th.markdownTableHeadLeft th.markdownTableHeadRight th.markdownTableHeadCenter th.markdownTableHeadNone {
 	background-color: ##47;
-	color: #FFFFFF;
+	color: ##ff;
 	font-size: 110%;
 	padding-bottom: 4px;
 	padding-top: 5px;
@@ -1703,8 +1703,8 @@ table.markdownTable tr {
 }
 
 th.markdownTableHeadLeft, th.markdownTableHeadRight, th.markdownTableHeadCenter, th.markdownTableHeadNone {
-	background-color: #374F7F;
-	color: #FFFFFF;
+	background-color: ##47;
+	color: ##ff;
 	font-size: 110%;
 	padding-bottom: 4px;
 	padding-top: 5px;
