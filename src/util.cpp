@@ -2591,7 +2591,7 @@ QCString dateToString(bool includeTime)
       static bool warnedOnce=FALSE;
       if (!warnedOnce)
       {
-        warn_uncond("Environment variable SOURCE_DATA_EPOCH must have a value smaller than or equal to %llu; actual value %llu\n",UINT_MAX,epoch);
+        warn_uncond("Environment variable SOURCE_DATE_EPOCH must have a value smaller than or equal to %llu; actual value %llu\n",UINT_MAX,epoch);
         warnedOnce=TRUE;
       }
     }
