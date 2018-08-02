@@ -658,8 +658,8 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->text = tagName.mid(text_begin,text_end-text_begin);
 			 return TK_RCSTAG;
   		       }
-<St_Para,St_HtmlOnly>"$("{ID}")"   | /* environment variable */
-<St_Para,St_HtmlOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
+<St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}")"   | /* environment variable */
+<St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
                          QCString name = &yytext[2];
 			 name = name.left(name.length()-1);
 			 QCString value = portable_getenv(name);
