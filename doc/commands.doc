@@ -1839,7 +1839,7 @@ void setPosition(double x,double y,double z,double t)
  same key. The keys \c "todo", \c "test", \c "bug" and \c "deprecated" are predefined.
 
  To get an idea on how to use the \c \\xrefitem command and what its effect
- is, consider the todo list, which (for English output) can be seen an
+is, consider the todo list, which (for English output) can be seen an
  alias for the command
  \verbatim \xrefitem todo "Todo" "Todo List" \endverbatim
 
@@ -2606,6 +2606,10 @@ only copy the detailed documentation, not the brief description.
   generated docbook documentation only. The block ends with a
   \ref cmdenddocbookonly "\\enddocbookonly" command.
 
+  \note environment variables (like \$(HOME) ) are resolved inside a
+  docbook-only block and the content of the environment variable is 
+  placed as-is (without further processing) in the docbook-only block.
+
   \sa section \ref cmdmanonly "\\manonly", 
               \ref cmdlatexonly "\\latexonly", 
               \ref cmdrtfonly "\\rtfonly", 
@@ -3043,7 +3047,8 @@ class Receiver
   end the current paragraph and restart it after \\endhtmlonly.
 
   \note environment variables (like \$(HOME) ) are resolved inside a
-  HTML-only block.
+  HTML-only block and the content of the environment variable is 
+  placed as-is (without further processing) in the HTML-only block.
 
   \sa section \ref cmdmanonly "\\manonly", 
               \ref cmdlatexonly "\\latexonly", 
@@ -3120,9 +3125,9 @@ class Receiver
   use the \ref cmdhtmlonly "\\htmlonly" and \ref cmdendhtmlonly "\\endhtmlonly"
   pair to provide a proper HTML alternative.
 
-  \b Note:
-    environment variables (like \$(HOME) ) are resolved inside a
-    \LaTeX-only block.
+  \note environment variables (like \$(HOME) ) are resolved inside a
+  \LaTeX-only block and the content of the environment variable is 
+  placed as-is (without further processing) in the \LaTeX-only block.
 
   \sa sections \ref cmdrtfonly "\\rtfonly",
                \ref cmdxmlonly "\\xmlonly",
@@ -3144,6 +3149,10 @@ class Receiver
   \ref cmdlatexonly "\\latexonly" and
   \ref cmdendlatexonly "\\endlatexonly" pairs to provide proper
   HTML and \LaTeX alternatives.
+
+  \note environment variables (like \$(HOME) ) are resolved inside a
+  MAN-only block and the content of the environment variable is 
+  placed as-is (without further processing) in the MAN-only block.
 
   \sa sections \ref cmdhtmlonly "\\htmlonly",
                \ref cmdxmlonly "\\xmlonly",
@@ -3219,9 +3228,9 @@ class Receiver
   This command can be used to include RTF code that is too complex
   for doxygen.
 
-  \b Note:
-    environment variables (like \$(HOME) ) are resolved inside a
-    RTF-only block.
+  \note environment variables (like \$(HOME) ) are resolved inside a
+  RTF-only block and the content of the environment variable is 
+  placed as-is (without further processing) in the RTF-only block.
 
   \sa sections \ref cmdmanonly "\\manonly",
                \ref cmdxmlonly "\\xmlonly",
@@ -3254,6 +3263,10 @@ class Receiver
   \ref cmdendxmlonly "\\endxmlonly" command.
 
   This command can be used to include custom XML tags.
+
+  \note environment variables (like \$(HOME) ) are resolved inside a
+  XML-only block and the content of the environment variable is 
+  placed as-is (without further processing) in the XML-only block.
 
   \sa sections \ref cmdmanonly "\\manonly",
                \ref cmdrtfonly "\\rtfonly",
