@@ -146,6 +146,9 @@ struct DocParserContext
 static QStack<DocParserContext> g_parserStack;
 
 //---------------------------------------------------------------------------
+static void handleImg(DocNode *parent,QList<DocNode> &children,const HtmlAttribList &tagHtmlAttribs);
+
+//---------------------------------------------------------------------------
 static void docParserPushContext(bool saveParamInfo=TRUE)
 {
   //QCString indent;
@@ -1643,6 +1646,10 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Small,tokenName);
             }
             break;
+          case HTML_IMG:
+            if (!g_token->endTag)
+              handleImg(parent,children,g_token->attribs);
+	    break;
           default:
             return FALSE;
             break;
