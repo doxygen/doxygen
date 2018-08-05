@@ -65,7 +65,7 @@ static void visitPreStart(FTextStream &t, const char *cmd, const bool doCaption,
   {
     t << " width=\"" << convertToXML(width) << "\"";
   }
-  else if (!height.isEmpty())
+  if (!height.isEmpty())
   {
     t << " height=\"" << convertToXML(height) << "\"";
   }
