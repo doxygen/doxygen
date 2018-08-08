@@ -1,19 +1,25 @@
 language: cpp
+os:
+    - linux-ppc64le 
+    - linux
+dist: xenial
 compiler:
   - gcc
   - clang
 sudo: required
 
-before_install:
-    - sudo apt-add-repository ppa:smspillaz/cmake-2.8.12 -y
-    - sudo apt-get update -qq
-
-install:
-    - sudo apt-get install -qq texlive
-    - sudo apt-get install -qq texlive-extra-utils
-    - sudo apt-get install -q -y texlive-latex-extra
-    - sudo apt-get install -qq libxml2-utils
-    - sudo apt-get install -qq cmake cmake-data
+addons:
+    apt:
+        update: true
+        packages:
+            - texlive
+            - texlive-extra-utils
+            - texlive-latex-extra
+            - texlive-font-utils
+            - ghostscript
+            - libxml2-utils
+            - cmake
+            - cmake-data
 
 script:
     - mkdir build
