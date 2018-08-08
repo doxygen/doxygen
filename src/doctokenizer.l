@@ -39,6 +39,11 @@
 #include "doxygen.h"
 #include "portable.h"
 
+#include "configimpl.h"
+#include "configoptions.h"
+#include "growbuf.h"
+#include "util.h"
+
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
   
@@ -61,6 +66,8 @@ static QCString     g_secTitle;
 static SectionInfo::SectionType g_secType;
 static QCString     g_endMarker;
 static int          g_autoListLevel;
+
+static ConfigImpl      *config;
 
 struct DocLexerContext
 {
@@ -307,6 +314,117 @@ static QCString stripEmptyLines(const QCString &s)
   return s.mid(start,end-start);
 }
 
+//--------------------------------------------------------------------------
+// note that this function is not reentrant due to the use of static growBuf!
+static QCString escapeConfigCharsInString(const char *name)
+{
+  static bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
+  static GrowBuf growBuf;
+  growBuf.clear();
+  char inside = '\0';
+  char c;
+  const char *p=name;
+  while ((c=*p++)!=0)
+  {
+    switch(c)
+    {
+      case '@':
+        if (!inside)
+          growBuf.addChar('@');
+        growBuf.addChar('@');
+        break;
+      case '\\': 
+        if (!inside)
+          growBuf.addChar('\\');
+        growBuf.addChar('\\');
+        break;
+      case '"':
+        if (inside == '"')
+          inside = '\0';
+        else
+        {
+          inside = '"';
+          growBuf.addChar('\\');
+        }
+        growBuf.addChar('\\');
+        growBuf.addChar(c);
+        break;
+      case '\'':
+        if (inside == '\'')
+          inside = '\0';
+        else
+        {
+          inside = '\'';
+          growBuf.addChar('\\');
+        }
+        growBuf.addChar('\\');
+        growBuf.addChar(c);
+        break;
+      default: 
+        if (c<0)
+        {
+          char ids[5];
+          const unsigned char uc = (unsigned char)c;
+          bool doEscape = TRUE;
+          if (allowUnicodeNames && uc <= 0xf7)
+          {
+            const char* pt = p;
+            ids[ 0 ] = c;
+            int l = 0;
+            if ((uc&0xE0)==0xC0)
+            {
+              l=2; // 11xx.xxxx: >=2 byte character
+            }
+            if ((uc&0xF0)==0xE0)
+            {
+              l=3; // 111x.xxxx: >=3 byte character
+            }
+            if ((uc&0xF8)==0xF0)
+            {
+              l=4; // 1111.xxxx: >=4 byte character
+            }
+            doEscape = l==0;
+            for (int m=1; m<l && !doEscape; ++m)
+            {
+              unsigned char ct = (unsigned char)*pt;
+              if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
+              {
+                doEscape=TRUE;
+              }
+              else
+              {
+                ids[ m ] = *pt++;
+              }
+            }
+            if ( !doEscape ) // got a valid unicode character
+            {
+              ids[ l ] = 0;
+              growBuf.addStr( ids );
+              p += l - 1;
+            }
+          }
+          if (doEscape) // not a valid unicode char or escaping needed
+          {
+            static char map[] = "0123456789ABCDEF";
+            unsigned char id = (unsigned char)c;
+            ids[0]='_';
+            ids[1]='x';
+            ids[2]=map[id>>4];
+            ids[3]=map[id&0xF];
+            ids[4]=0;
+            growBuf.addStr(ids);
+          }
+        }
+        else
+        {
+          growBuf.addChar(c);
+        }
+        break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
 //--------------------------------------------------------------------------
 
 #undef  YY_INPUT
@@ -658,6 +776,63 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->text = tagName.mid(text_begin,text_end-text_begin);
 			 return TK_RCSTAG;
   		       }
+<St_Para>"$["{ID}"]"   { /* configuration variable */
+                         QCString name = &yytext[2];
+                         name = name.left(name.length()-1);
+                         config = ConfigImpl::instance();
+                         ConfigString *opt = (ConfigString*)config->get("DOXYFILE_ENCODING");
+                         QCString encoding = *opt->valueRef();
+
+                         QCString value;
+                         ConfigOption *option = config->get(name.data());
+                         if (option)
+                         {
+                           option->setUserComment(config->takeUserComment());
+                           option->setEncoding(encoding);
+                           int val;
+                           const char *p;
+                           QStrList list;
+                           switch(option->kind())
+                           {
+                             case ConfigOption::O_List:
+                               list = ConfigImpl::instance()->getList(__FILE__,__LINE__,name.data());
+                               p = list.first();
+                               while (p)
+                               {
+                                 value += escapeConfigCharsInString(p);
+                                 p = list.next();
+                                 if (p) value += "\\n ";
+                               }
+                               break;
+                             case ConfigOption::O_Enum:
+                               value = escapeConfigCharsInString(ConfigImpl::instance()->getString(__FILE__,__LINE__,name.data()));
+                               break;
+                             case ConfigOption::O_String:
+                               value = escapeConfigCharsInString(ConfigImpl::instance()->getString(__FILE__,__LINE__,name.data()));
+                               break;
+                             case ConfigOption::O_Int:
+                               val = ConfigImpl::instance()->getInt(__FILE__,__LINE__,name.data());
+                               char tmp[100];
+                               sprintf(tmp,"%d",val);
+                               value = tmp;
+                               break;
+                             case ConfigOption::O_Bool:
+                               if (ConfigImpl::instance()->getBool(__FILE__,__LINE__,name.data()))
+                                 value = "YES";
+                               else
+                                 value = "NO";
+                               break;
+                             default:
+                               REJECT;
+                               break;
+                           }
+                           for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
+                         }
+                         else
+                         {
+                           REJECT;
+                         }
+                       }
 <St_Para,St_HtmlOnly>"$("{ID}")"   { /* environment variable */
                          QCString name = &yytext[2];
 			 name = name.left(name.length()-1);
@@ -1553,4 +1728,3 @@ extern "C" { // some bogus code to keep the compiler happy
     void doctokenizerYYdummy() { yy_flex_realloc(0,0); }
 }
 #endif
-
