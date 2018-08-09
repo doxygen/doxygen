@@ -1561,6 +1561,9 @@ reparsetoken:
             doctokenizerYYsetStatePara();
           }
           break;
+        case CMD_IMAGE:
+          ((DocPara *)parent) -> handleImage("image");
+          break;
         default:
           return FALSE;
       }
