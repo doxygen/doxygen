@@ -36,7 +36,7 @@
 #include "htmlentity.h"
 #include "plantuml.h"
 
-static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCString width,  QCString height)
+static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCString width,  QCString height, const bool inlineImage = FALSE)
 {
   QCString tmpStr;
   t << "    <figure>" << endl;
@@ -50,7 +50,7 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
   }
   else
   {
-    t << " width=\"50%\"";
+    if (!inlineImage) t << " width=\"50%\"";
   }
   if (!height.isEmpty())
   {
@@ -65,7 +65,7 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
   }
 }
 
-static void visitPostEnd(FTextStream &t, const bool hasCaption)
+static void visitPostEnd(FTextStream &t, const bool hasCaption, const bool inlineImage = FALSE)
 {
   t << endl;
   if (hasCaption)
@@ -910,7 +910,7 @@ void DocbookDocVisitor::visitPre(DocImage *img)
     {
       baseName=baseName.right(baseName.length()-i-1);
     }
-    visitPreStart(m_t, img -> hasCaption(), baseName, img -> width(), img -> height());
+    visitPreStart(m_t, img -> hasCaption(), baseName, img -> width(), img -> height(),img -> isInlineImage());
   }
   else
   {
@@ -924,7 +924,7 @@ void DocbookDocVisitor::visitPost(DocImage *img)
   if (img->type()==DocImage::DocBook)
   {
     if (m_hide) return;
-    visitPostEnd(m_t, img -> hasCaption());
+    visitPostEnd(m_t, img -> hasCaption(),img -> isInlineImage());
     // copy the image to the output dir
     QCString baseName=img->name();
     int i;
