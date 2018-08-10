@@ -7949,8 +7949,8 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
 
   int start=0;
   if (size>=2 &&
-      ((inBuf.at(0)==-1 && inBuf.at(1)==-2) || // Little endian BOM
-       (inBuf.at(0)==-2 && inBuf.at(1)==-1)    // big endian BOM
+      (((uchar)inBuf.at(0)==0xFF && (uchar)inBuf.at(1)==0xFE) || // Little endian BOM
+       ((uchar)inBuf.at(0)==0xFE && (uchar)inBuf.at(1)==0xFF)    // big endian BOM
       )
      ) // UCS-2 encoded file
   {
