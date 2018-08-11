@@ -1588,8 +1588,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <PageDocArg1>.				{ // ignore other stuff
   					}
 <PageDocArg2>.*"\n"			{ // second argument; page title
-  				          yyLineNr++;
-					  current->args = yytext;
+					  yyLineNr++;
+					  // bug 748927
+					  QCString tmp = yytext;
+					  tmp = substitute(substitute(tmp,"@<","&lt;"),"@>","&gt;");
+					  tmp = substitute(substitute(tmp,"\\<","&lt;"),"\\>","&gt;");
+					  current->args = tmp;
 					  addOutput('\n');
 					  BEGIN( Comment );
 					}
