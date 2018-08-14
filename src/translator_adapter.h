@@ -72,6 +72,9 @@ class TranslatorAdapter_1_8_15 : public TranslatorAdapterBase
     { return english.trVhdlType(type,single); }
     virtual QCString trCustomReference(const char *name)
     { return english.trCustomReference(name); }
+
+    virtual QCString trDocumentationStructFile(DocbookGen::DocbookCompoundType type)
+    { return english.trDocumentationStructFile(type); }
 };
 
 class TranslatorAdapter_1_8_4 : public TranslatorAdapter_1_8_15

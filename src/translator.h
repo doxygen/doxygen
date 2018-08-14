@@ -21,6 +21,7 @@
 #include "classdef.h"
 #include "config.h"
 #include "vhdldocgen.h"
+#include "docbookgen.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator
@@ -616,6 +617,7 @@ class Translator
     virtual QCString trFunctionAndProc() = 0;
     virtual QCString trVhdlType(uint64 type,bool single) = 0;
     virtual QCString trCustomReference(const char *name) = 0;
+    virtual QCString trDocumentationStructFile(DocbookGen::DocbookCompoundType type) = 0;
 };
 
 #endif
