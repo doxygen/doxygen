@@ -1780,22 +1780,20 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
   QCString cellTag("th"), cellClass("class=\"markdownTableHead");
   for (unsigned row = 0; row < tableContents.size(); row++)
   {
-    out.addStr("  <tr class=\"markdownTable");
     if (row)
     {
-      out.addStr("Body\"");
       if (row % 2)
       {
-        out.addStr(" class=\"markdownTableRowOdd\">\n");
+        out.addStr("<tr class=\"markdownTableRowOdd\">\n");
       }
       else
       {
-        out.addStr(" class=\"markdownTableRowEven\">\n");
+        out.addStr("<tr class=\"markdownTableRowEven\">\n");
       }
     }
     else
     {
-      out.addStr("Head\">\n");
+      out.addStr("  <tr class=\"markdownTableHead\">\n");
     }
     for (int c = 0; c < columns; c++)
     {
