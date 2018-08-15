@@ -10207,7 +10207,6 @@ void readConfiguration(int argc, char **argv)
   bool genConfig=FALSE;
   bool shortList=FALSE;
   bool updateConfig=FALSE;
-  bool genLayout=FALSE;
   int retVal;
   while (optind<argc && argv[optind][0]=='-' &&
                (isalpha(argv[optind][1]) || argv[optind][1]=='?' ||
@@ -10220,10 +10219,12 @@ void readConfiguration(int argc, char **argv)
         genConfig=TRUE;
         break;
       case 'l':
-        genLayout=TRUE;
         layoutName=getArg(argc,argv,optind);
         if (!layoutName)
         { layoutName="DoxygenLayout.xml"; }
+        writeDefaultLayoutFile(layoutName);
+        cleanUpDoxygen();
+        exit(0);
         break;
       case 'd':
         debugLabel=getArg(argc,argv,optind);
@@ -10502,12 +10503,6 @@ void readConfiguration(int argc, char **argv)
   if (genConfig)
   {
     generateConfigFile(configName,shortList);
-    cleanUpDoxygen();
-    exit(0);
-  }
-  if (genLayout)
-  {
-    writeDefaultLayoutFile(layoutName);
     cleanUpDoxygen();
     exit(0);
   }
