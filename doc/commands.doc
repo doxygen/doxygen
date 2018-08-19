@@ -2157,7 +2157,7 @@ Commands for displaying examples
                \ref cmdinclude "\\include".
 
 </p><hr>
-\section cmdinclude[{lineno|doc}] \\include <file-name>
+\section cmdinclude \\include[{lineno|doc}] <file-name>
 
   \addindex \\include
   This command can be used to include a source file as a block of code.
@@ -2210,8 +2210,8 @@ Commands for displaying examples
 \section cmdincludelineno \\includelineno <file-name>
 
   \addindex \\includelineno
-  This command works the same way as \ref cmdinclude "\\include", but will add line
-  numbers to the included file.
+  This command is obsolete and is still supported for backward compatibility reasons,
+  it works the same way as \ref cmdinclude "\\include{lineno}"
 
   \sa sections \ref cmdinclude "\\include{lineno}".
 
@@ -2222,7 +2222,7 @@ Commands for displaying examples
   This command is obsolete and is still supported for backward compatibility reasons,
   it works the same way as \ref cmdinclude "\\include{doc}"
 
-  \sa section \ref cmdinclude "\\include".
+  \sa section \ref cmdinclude "\\include{doc}".
 
 <hr>
 \section cmdline \\line ( pattern )
