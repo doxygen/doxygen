@@ -10398,11 +10398,11 @@ s+=",";s+=s1;
     jj_consume_token(SEMI_T);
     }
     
-QStringList ql1=QStringList::split(",",s,FALSE);
+QCStringList ql1=QCStringList::split(",",s);
                    for (uint j=0;j<ql1.count();j++)
                    {
-                    QStringList ql=QStringList::split(".",ql1[j],FALSE);
-                    QCString it=ql[1].utf8();
+                     QCStringList ql=QCStringList::split(".",ql1[j]);
+                     QCString it=ql[1];
                      if ( parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
                      {
                        VhdlParser::addVhdlType(it.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_",Public);
