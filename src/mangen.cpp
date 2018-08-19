@@ -665,7 +665,7 @@ void ManGenerator::startSimpleSect(SectionTypes,const char *,
   paragraph=TRUE;
 }
 
-void ManGenerator::endSimpleSect()
+void ManGenerator::endSimpleSect(SectionTypes)
 {
 }
 

@@ -145,7 +145,9 @@ class BaseOutputDocInterface : public CodeOutputInterface
                         Since, Date, Bug, Note,
                         Warning, Par, Deprecated, Pre, 
                         Post, Invar, Remark, Attention, 
-                        Todo, Test, RCS, */ EnumValues, 
+                        Todo, Test, RCS, */
+	                NONE, 
+	                EnumValues, 
                         Examples 
                       };
 
@@ -281,7 +283,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
 
     virtual void startSimpleSect(SectionTypes t,const char *file,
                                  const char *anchor,const char *title) = 0;
-    virtual void endSimpleSect() = 0;
+    virtual void endSimpleSect(SectionTypes t = NONE) = 0;
     virtual void startParamList(ParamListTypes t,const char *title) = 0;
     virtual void endParamList() = 0;
 
