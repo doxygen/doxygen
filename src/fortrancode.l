@@ -37,7 +37,7 @@
 #include <ctype.h>
 #include <qregexp.h>
 #include <qdir.h>
-#include <qstringlist.h>
+#include <qcstringlist.h>
 #include "entry.h"
 #include "doxygen.h"
 #include "message.h"
@@ -86,7 +86,7 @@ class UseEntry
 {
  public: 
    QCString module; // just for debug
-   QStringList onlyNames;   /* entries of the ONLY-part */
+   QCStringList onlyNames;   /* entries of the ONLY-part */
 };
 
 /**
@@ -105,7 +105,7 @@ class UseSDict : public SDict<UseEntry>
 class Scope 
 {
   public:
-    QStringList useNames; //!< contains names of used modules
+    QCStringList useNames; //!< contains names of used modules
     QDict<void> localVars; //!< contains names of local variables
 
     Scope() : localVars(7, FALSE /*caseSensitive*/) {}
@@ -122,7 +122,7 @@ static QCString  currentClass=0;             //!< name of the current enclosing 
 static UseSDict  *useMembers= new UseSDict;  //!< info about used modules
 static UseEntry  *useEntry = 0;              //!< current use statement info
 static QList<Scope> scopeStack;
-// static QStringList *currentUseNames= new QStringList; //! contains names of used modules of current program unit
+// static QCStringList *currentUseNames= new QCStringList; //! contains names of used modules of current program unit
 static QCString str="";         //!> contents of fortran string
 
 static CodeOutputInterface * g_code;
@@ -478,7 +478,7 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
 	     if (ue) 
 	     {
                // check if only-list exists and if current entry exists is this list
-	       QStringList &only= ue->onlyNames;
+	       QCStringList &only= ue->onlyNames;
 	       if (only.isEmpty()) 
 	       {
                //cout << " found in module " << moduleName << " entry " << memberName <<  endl;
@@ -486,10 +486,10 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
                }
                else
 	       {
-	         for ( QStringList::Iterator it = only.begin(); it != only.end(); ++it)
+	         for ( QCStringList::Iterator it = only.begin(); it != only.end(); ++it)
                  {
                    //cout << " search in only: " << moduleName << ":: " << memberName << "==" << (*it)<<  endl;
-		   if (memberName == (*it).utf8())
+		   if (memberName == *it)
 	           {
                      return TRUE; // found in ONLY-part of use list
 	           }
@@ -632,9 +632,9 @@ static void endScope()
 
   Scope *scope = scopeStack.getLast();
   scopeStack.removeLast();
-  for ( QStringList::Iterator it = scope->useNames.begin(); it != scope->useNames.end(); ++it) 
+  for ( QCStringList::Iterator it = scope->useNames.begin(); it != scope->useNames.end(); ++it) 
   {
-    useMembers->remove((*it).utf8());
+    useMembers->remove(*it);
   }
   delete scope;
 }

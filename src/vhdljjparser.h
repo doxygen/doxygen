@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <qarray.h>
+#include <qcstringlist.h>
 
 #include <qfile.h>
 #include <qdict.h>
@@ -14,7 +15,6 @@
 #include "types.h"
 #include "entry.h"
 #include "vhdldocgen.h"
-#include "qstringlist.h"
 #include "vhdlcode.h"
 #include "memberlist.h"
 #include "config.h"
@@ -30,7 +30,6 @@ class ClassSDict;
 class FileStorage;
 class ClassDef;
 class MemberDef;
-class QStringList;
 struct VhdlConfNode;
 
 

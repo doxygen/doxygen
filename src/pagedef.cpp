@@ -35,6 +35,7 @@ PageDef::PageDef(const char *f,int l,const char *n,
   m_pageScope = 0;
   m_nestingLevel = 0;
   m_fileName = ::convertNameToFile(n,FALSE,TRUE);
+  m_showLineNo = FALSE;
 }
 
 PageDef::~PageDef()
@@ -328,4 +329,14 @@ void PageDef::setNestingLevel(int l)
 void PageDef::setLocalToc(const LocalToc &lt)
 {
   m_localToc = lt;
+}
+
+void PageDef::setShowLineNo(bool b)
+{
+  m_showLineNo = b;
+}
+
+bool PageDef::showLineNo() const
+{
+  return m_showLineNo;
 }

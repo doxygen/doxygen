@@ -26,6 +26,7 @@
 #include <qdict.h>
 #include <qregexp.h>
 #include <ctype.h>
+#include <qcstringlist.h>
 
 #include "doxygen.h"
 #include "debug.h"
@@ -5197,7 +5198,31 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 {
   DBG(("handleInclude(%s)\n",qPrint(cmdName)));
   int tok=doctokenizerYYlex();
-  if (tok!=TK_WHITESPACE)
+  if (tok==TK_WORD && g_token->name=="{")
+  {
+    doctokenizerYYsetStateOptions();
+    tok=doctokenizerYYlex();
+    doctokenizerYYsetStatePara();
+    QCStringList optList=QCStringList::split(",",g_token->name);
+    if (t==DocInclude::Include && optList.contains("lineno"))
+    {
+      t = DocInclude::IncWithLines;
+    }
+    else if (t==DocInclude::Snippet && optList.contains("lineno"))
+    {
+      t = DocInclude::SnipWithLines;
+    }
+    else if (t==DocInclude::Include && optList.contains("doc"))
+    {
+      t = DocInclude::IncludeDoc;
+    }
+    else if (t==DocInclude::Snippet && optList.contains("doc"))
+    {
+      t = DocInclude::SnippetDoc;
+    }
+    tok=doctokenizerYYlex();
+  }
+  else if (tok!=TK_WHITESPACE)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
         qPrint(cmdName));

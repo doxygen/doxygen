@@ -27,7 +27,7 @@
 #include <qfileinfo.h>
 #include <qlist.h>
 #include <qstring.h>
-#include <qstringlist.h>
+#include <qcstringlist.h>
 
 #include "entry.h"
 #include "classdef.h"
@@ -105,7 +105,7 @@ class TagClassInfo
     QList<BaseInfo> *bases;
     QList<TagMemberInfo> members;
     QList<QCString> *templateArguments;
-    QStringList classList;
+    QCStringList classList;
     Kind kind;
     bool isObjC;
 };
@@ -118,8 +118,8 @@ class TagNamespaceInfo
     QCString name;
     QCString filename;
     QCString clangId;
-    QStringList classList;
-    QStringList namespaceList;
+    QCStringList classList;
+    QCStringList namespaceList;
     TagAnchorInfoList docAnchors;
     QList<TagMemberInfo> members;
 };
@@ -133,7 +133,7 @@ class TagPackageInfo
     QCString filename;
     TagAnchorInfoList docAnchors;
     QList<TagMemberInfo> members;
-    QStringList classList;
+    QCStringList classList;
 };
 
 /** Container for include info that can be read from a tagfile */
@@ -157,8 +157,8 @@ class TagFileInfo
     QCString filename;
     TagAnchorInfoList docAnchors;
     QList<TagMemberInfo> members;
-    QStringList classList;
-    QStringList namespaceList;
+    QCStringList classList;
+    QCStringList namespaceList;
     QList<TagIncludeInfo> includes;
 };
 
@@ -172,12 +172,12 @@ class TagGroupInfo
     QCString filename;
     TagAnchorInfoList docAnchors;
     QList<TagMemberInfo> members;
-    QStringList subgroupList;
-    QStringList classList;
-    QStringList namespaceList;
-    QStringList fileList;
-    QStringList pageList;
-    QStringList dirList;
+    QCStringList subgroupList;
+    QCStringList classList;
+    QCStringList namespaceList;
+    QCStringList fileList;
+    QCStringList pageList;
+    QCStringList dirList;
 };
 
 /** Container for page specific info that can be read from a tagfile */
@@ -197,8 +197,8 @@ class TagDirInfo
     QCString name;
     QCString filename;
     QCString path;
-    QStringList subdirList;
-    QStringList fileList;
+    QCStringList subdirList;
+    QCStringList fileList;
     TagAnchorInfoList docAnchors;
 };
 
@@ -1009,11 +1009,11 @@ void TagFileParser::dump()
   {
     msg("namespace `%s'\n",nd->name.data());
     msg("  filename `%s'\n",nd->filename.data());
-    QStringList::Iterator it;
+    QCStringList::Iterator it;
     for ( it = nd->classList.begin(); 
         it != nd->classList.end(); ++it ) 
     {
-      msg( "  class: %s \n", (*it).latin1() );
+      msg( "  class: %s \n", (*it).data() );
     }
 
     QListIterator<TagMemberInfo> mci(nd->members);
@@ -1034,16 +1034,16 @@ void TagFileParser::dump()
   {
     msg("file `%s'\n",fd->name.data());
     msg("  filename `%s'\n",fd->filename.data());
-    QStringList::Iterator it;
+    QCStringList::Iterator it;
     for ( it = fd->namespaceList.begin(); 
         it != fd->namespaceList.end(); ++it ) 
     {
-      msg( "  namespace: %s \n", (*it).latin1() );
+      msg( "  namespace: %s \n", (*it).data() );
     }
     for ( it = fd->classList.begin(); 
         it != fd->classList.end(); ++it ) 
     {
-      msg( "  class: %s \n", (*it).latin1() );
+      msg( "  class: %s \n", (*it).data() );
     }
 
     QListIterator<TagMemberInfo> mci(fd->members);
@@ -1072,31 +1072,31 @@ void TagFileParser::dump()
   {
     msg("group `%s'\n",gd->name.data());
     msg("  filename `%s'\n",gd->filename.data());
-    QStringList::Iterator it;
+    QCStringList::Iterator it;
     for ( it = gd->namespaceList.begin(); 
         it != gd->namespaceList.end(); ++it ) 
     {
-      msg( "  namespace: %s \n", (*it).latin1() );
+      msg( "  namespace: %s \n", (*it).data() );
     }
     for ( it = gd->classList.begin(); 
         it != gd->classList.end(); ++it ) 
     {
-      msg( "  class: %s \n", (*it).latin1() );
+      msg( "  class: %s \n", (*it).data() );
     }
     for ( it = gd->fileList.begin(); 
         it != gd->fileList.end(); ++it ) 
     {
-      msg( "  file: %s \n", (*it).latin1() );
+      msg( "  file: %s \n", (*it).data() );
     }
     for ( it = gd->subgroupList.begin(); 
         it != gd->subgroupList.end(); ++it ) 
     {
-      msg( "  subgroup: %s \n", (*it).latin1() );
+      msg( "  subgroup: %s \n", (*it).data() );
     }
     for ( it = gd->pageList.begin(); 
         it != gd->pageList.end(); ++it ) 
     {
-      msg( "  page: %s \n", (*it).latin1() );
+      msg( "  page: %s \n", (*it).data() );
     }
 
     QListIterator<TagMemberInfo> mci(gd->members);
@@ -1126,16 +1126,16 @@ void TagFileParser::dump()
   {
     msg("dir `%s'\n",dd->name.data());
     msg("  path `%s'\n",dd->path.data());
-    QStringList::Iterator it;
+    QCStringList::Iterator it;
     for ( it = dd->fileList.begin(); 
         it != dd->fileList.end(); ++it ) 
     {
-      msg( "  file: %s \n", (*it).latin1() );
+      msg( "  file: %s \n", (*it).data() );
     }
     for ( it = dd->subdirList.begin(); 
         it != dd->subdirList.end(); ++it ) 
     {
-      msg( "  subdir: %s \n", (*it).latin1() );
+      msg( "  subdir: %s \n", (*it).data() );
     }
   }
 }

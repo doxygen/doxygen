@@ -12,7 +12,7 @@
 
 #include <qcstring.h>
 #include <qfileinfo.h>
-#include <qstringlist.h>
+#include <qcstringlist.h>
 #include "vhdljjparser.h"
 #include "vhdlcode.h"
 #include "vhdldocgen.h"
@@ -381,11 +381,11 @@ void VhdlParser::addVhdlType(const char *n,int startLine,int section,
     spec= VhdlDocGen::GENERIC;
   }
 
-  QStringList ql=QStringList::split(",",name,FALSE);
+  QCStringList ql=QCStringList::split(",",name);
 
   for (uint u=0;u<ql.count();u++)
   {
-    current->name=ql[u].utf8();
+    current->name=ql[u];
     current->startLine=startLine;
     current->bodyLine=startLine;
     current->section=section;
@@ -442,11 +442,11 @@ void VhdlParser::createFunction(const char *imp,uint64 spec,const char *fn)
     VhdlDocGen::deleteAllChars(current->args,' ');
     if (!fname.isEmpty())
     {
-      QStringList q1=QStringList::split(",",fname);
+      QCStringList q1=QCStringList::split(",",fname);
       for (uint ii=0;ii<q1.count();ii++)
       {
         Argument *arg=new Argument;
-        arg->name=q1[ii].utf8();
+        arg->name=q1[ii];
         current->argList->append(arg);
       }
     }
@@ -540,12 +540,12 @@ void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
 {
   (void)s5; // avoid unused warning
   QCString name=s2;
-  QStringList ql=QStringList::split(",",name,FALSE);
+  QCStringList ql=QCStringList::split(",",name);
 
   for (uint u=0;u<ql.count();u++)
   {
     Argument *arg=new Argument;
-    arg->name=ql[u].utf8();
+    arg->name=ql[u];
     if (s3)
     {
       arg->type=s3;

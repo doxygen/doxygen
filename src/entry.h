@@ -91,14 +91,14 @@ class Entry
 
       ENUMDOC_SEC      = 0x01000000,
       ENUM_SEC         = 0x02000000,
-      EMPTY_SEC        = 0x03000000, 
-      PAGEDOC_SEC      = 0x04000000, 
+      EMPTY_SEC        = 0x03000000,
+      PAGEDOC_SEC      = 0x04000000,
       VARIABLE_SEC     = 0x05000000,
       FUNCTION_SEC     = 0x06000000,
       TYPEDEF_SEC      = 0x07000000,
-      MEMBERDOC_SEC    = 0x08000000, 
+      MEMBERDOC_SEC    = 0x08000000,
       OVERLOADDOC_SEC  = 0x09000000,
-      EXAMPLE_SEC      = 0x0a000000, 
+      EXAMPLE_SEC      = 0x0a000000,
       VARIABLEDOC_SEC  = 0x0b000000,
       FILEDOC_SEC      = 0x0c000000,
       DEFINEDOC_SEC    = 0x0d000000,
@@ -112,9 +112,10 @@ class Entry
       PACKAGE_SEC      = 0x15000000,
       PACKAGEDOC_SEC   = 0x16000000,
       OBJCIMPL_SEC     = 0x17000000,
-      DIRDOC_SEC       = 0x18000000
-      ,EXPORTED_INTERFACE_SEC = 0x19000000
-      ,INCLUDED_SERVICE_SEC = 0x1A000000
+      DIRDOC_SEC       = 0x18000000,
+      EXPORTED_INTERFACE_SEC = 0x19000000,
+      INCLUDED_SERVICE_SEC   = 0x1A000000,
+      EXAMPLE_LINENO_SEC     = 0x1B000000,
     };
 
     // class specifiers (add new items to the end)

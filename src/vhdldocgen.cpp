@@ -26,7 +26,7 @@
 #include <string.h>
 #include <qcstring.h>
 #include <qfileinfo.h>
-#include <qstringlist.h>
+#include <qcstringlist.h>
 #include <qmap.h>
 
 /* --------------------------------------------------------------- */
@@ -299,10 +299,10 @@ static QCString formatBriefNote(const QCString &brief,ClassDef * cd)
 
   int k=cd->briefLine();
 
-  QStringList qsl=QStringList::split(ep,brief);
+  QCStringList qsl=QCStringList::split(ep,brief);
   for(uint j=0;j<qsl.count();j++)
   {
-    QCString qcs=qsl[j].data();
+    QCString qcs=qsl[j];
     vForm+=parseCommentAsText(cd,NULL,qcs,file,k);
     k++;
     vForm+='\n';
@@ -1028,8 +1028,8 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
   }
   else if (ii==VhdlDocGen::ARCHITECTURE)
   {
-    QStringList qlist=QStringList::split("-",nn,FALSE);
-    nn=qlist[1].utf8();
+    QCStringList qlist=QCStringList::split("-",nn);
+    nn=qlist[1];
     cd=VhdlDocGen::getClass(nn.data());
   }
 
@@ -1041,9 +1041,9 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
     for (int i=0;i<j;i++)
     {
       QCString *temp=ql.at(i);
-      QStringList qlist=QStringList::split("-",*temp,FALSE);
-      QCString s1=qlist[0].utf8();
-      QCString s2=qlist[1].utf8();
+      QCStringList qlist=QCStringList::split("-",*temp);
+      QCString s1=qlist[0];
+      QCString s2=qlist[1];
       s1.stripPrefix("_");
       if (j==1) s1.resize(0);
       ClassDef*cc = getClass(temp->data());
@@ -1075,8 +1075,8 @@ void VhdlDocGen::findAllArchitectures(QList<QCString>& qll,const ClassDef *cd)
     QCString jj=citer->className();
     if (cd != citer && jj.contains('-')!=-1)
     {
-      QStringList ql=QStringList::split("-",jj,FALSE);
-      QCString temp=ql[1].utf8();
+      QCStringList ql=QCStringList::split("-",jj);
+      QCString temp=ql[1];
       if (qstricmp(cd->className(),temp)==0)
       {
         QCString *cl=new QCString(jj);
@@ -1095,10 +1095,10 @@ ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
   for ( ; (citer=cli.current()) ; ++cli )
   {
     QCString jj=citer->name();
-    QStringList ql=QStringList::split(":",jj,FALSE);
+    QCStringList ql=QCStringList::split(":",jj);
     if (ql.count()>1)
     {
-      if (ql[0].utf8()==nn )
+      if (ql[0]==nn )
       {
         return citer;
       }
@@ -1211,15 +1211,15 @@ void VhdlDocGen::parseFuncProto(const char* text,QList<Argument>& qlist,
 
 QCString VhdlDocGen::getIndexWord(const char* c,int index)
 {
-  QStringList ql;
+  QCStringList ql;
   QCString temp(c);
   QRegExp reg("[\\s:|]");
 
-  ql=QStringList::split(reg,temp,FALSE);
+  ql=QCStringList::split(reg,temp);
 
   if (ql.count() > (unsigned int)index)
   {
-    return ql[index].utf8();
+    return ql[index];
   }
 
   return "";
@@ -2678,11 +2678,11 @@ QCString  VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
   if (!entity.contains(":")) return "";
 
   QRegExp exp("[:()\\s]");
-  QStringList ql=QStringList::split(exp,entity,FALSE);
+  QCStringList ql=QCStringList::split(exp,entity);
   //int ii=ql.findIndex(ent);
   assert(ql.count()>=2);
-  label = ql[0].utf8();
-  entity = ql[1].utf8();
+  label  = ql[0];
+  entity = ql[1];
   if ((index=entity.findRev("."))>=0)
   {
     entity.remove(0,index+1);
@@ -2690,8 +2690,8 @@ QCString  VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 
   if (ql.count()==3)
   {
-    arch= ql[2].utf8();
-    ql=QStringList::split(exp,arch,FALSE);
+    arch= ql[2];
+    ql=QCStringList::split(exp,arch);
     if (ql.count()>1) // expression
     {
       arch="";
@@ -2708,16 +2708,16 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
   QRegExp exp("[()\\s]");
 
   QCString label="";
-  QStringList ql=QStringList::split(exp,entity,FALSE);
+  QCStringList ql=QCStringList::split(exp,entity);
 
   if (ql.contains("open"))
   {
     return "open";
   }
 
-  label=ql[0].utf8();
+  label=ql[0];
 
-  entity = ql[1].utf8();
+  entity = ql[1];
   if ((index=entity.findRev("."))>=0)
   {
     entity.remove(0,index+1);
@@ -2725,7 +2725,7 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
 
   if (ql.count()==3)
   {
-    arch=ql[2].utf8();
+    arch=ql[2];
   }
   return label;
 }
@@ -2843,7 +2843,7 @@ void assignBinding(VhdlConfNode * conf)
       QCString	  inst1=VhdlDocGen::getIndexWord(archy.data(),0).lower();
       QCString	  comp=VhdlDocGen::getIndexWord(archy.data(),1).lower();
 
-      QStringList ql=QStringList::split(",",inst1);
+      QCStringList ql=QCStringList::split(",",inst1);
 
       for (uint j=0;j<ql.count();j++)
       {
@@ -2855,7 +2855,7 @@ void assignBinding(VhdlConfNode * conf)
         }
         else
         {
-          archy1=comp+":"+ql[j].utf8();
+          archy1=comp+":"+ql[j];
           sign1=cur->type+":"+cur->name;
         }
 
@@ -3029,11 +3029,11 @@ ferr:
 
 void  VhdlDocGen::writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef)
 {
-  QStringList ql=QStringList::split("#",largs,FALSE);
+  QCStringList ql=QCStringList::split("#",largs,FALSE);
   uint len=ql.count();
   for(uint i=0;i<len;i++)
   {
-    QCString n=ql[i].utf8();
+    QCString n=ql[i];
     VhdlDocGen::formatString(n,ol,mdef);
     if ((len-i)>1) ol.lineBreak();
   }
@@ -3046,14 +3046,14 @@ void VhdlDocGen::writeRecUnitDocu(
     QCString largs)
 {
 
-  QStringList ql=QStringList::split("#",largs,FALSE);
+  QCStringList ql=QCStringList::split("#",largs);
   uint len=ql.count();
   ol.startParameterList(TRUE);
   bool first=TRUE;
 
   for(uint i=0;i<len;i++)
   {
-    QCString n=ql[i].utf8();
+    QCString n=ql[i];
     ol.startParameterType(first,"");
     ol.endParameterType();
     ol.startParameterName(TRUE);
@@ -3486,14 +3486,14 @@ void FlowChart::alignCommentNode(FTextStream &t,QCString com)
 {
   uint max=0;
   QCString s;
-  QStringList ql=QStringList::split("\n",com);
+  QCStringList ql=QCStringList::split("\n",com);
   for (uint j=0;j<ql.count();j++)
   {
-    s=(QCString)ql[j].utf8();
+    s=(QCString)ql[j];
     if (max<s.length()) max=s.length();
   }
 
-  s=ql.last().utf8();
+  s=ql.last();
   int diff=max-s.length();
 
   QCString n(1);
@@ -3508,7 +3508,7 @@ void FlowChart::alignCommentNode(FTextStream &t,QCString com)
 
   for (uint j=0;j<ql.count();j++)
   {
-    s=(QCString)ql[j].utf8();
+    s=ql[j];
     if (j<ql.count()-1)
     {
       s+="\n";

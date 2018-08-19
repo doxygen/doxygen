@@ -447,6 +447,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 %x St_Snippet
 %x St_SetScope
 %x St_SetScopeEnd
+%x St_Options
 
 %x St_Sections
 %s St_SecLabel1
@@ -1147,6 +1148,16 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->chars=yytext;
                          return TK_WHITESPACE;
                        }
+<St_Options>{ID}       {
+                         g_token->name+=yytext;
+                       }
+<St_Options>{WS}*","{WS}*
+<St_Options>{WS}       { /* option separator */
+                         g_token->name+=",";
+                       }
+<St_Options>"}"        {
+                         return TK_WORD;
+                       }
 <St_File>{FILEMASK}    {
   			 g_token->name = yytext;
 			 return TK_WORD;  
@@ -1507,6 +1518,12 @@ void doctokenizerYYsetStateSnippet()
 void doctokenizerYYsetStateSetScope()
 {
   BEGIN(St_SetScope);
+}
+
+void doctokenizerYYsetStateOptions()
+{
+  g_token->name="";
+  BEGIN(St_Options);
 }
 
 void doctokenizerYYcleanup()

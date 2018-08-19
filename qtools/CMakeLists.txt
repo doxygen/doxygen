@@ -22,6 +22,7 @@ qstring.cpp
 qtextstream.cpp
 qtextcodec.cpp
 qstringlist.cpp
+qcstringlist.cpp
 qxml.cpp
 qmap.cpp
 qthread.cpp

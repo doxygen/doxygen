@@ -35,6 +35,7 @@ class PageDef : public Definition
     // setters
     void setFileName(const char *name);
     void setLocalToc(const LocalToc &tl);
+    void setShowLineNo(bool);
 
     // getters
     DefType definitionType() const { return TypePage; }
@@ -63,6 +64,7 @@ class PageDef : public Definition
     void setPageScope(Definition *d){ m_pageScope = d; }
     Definition *getPageScope() const { return m_pageScope; }
     QCString displayName(bool=TRUE) const { return !m_title.isEmpty() ? m_title : Definition::name(); }
+    bool showLineNo() const;
 
     void writeDocumentation(OutputList &ol);
     void writeTagFile(FTextStream &);
@@ -76,6 +78,7 @@ class PageDef : public Definition
     Definition *m_pageScope;
     int m_nestingLevel;
     LocalToc m_localToc;
+    bool m_showLineNo;
 };
 
 class PageSDict : public SDict<PageDef>
