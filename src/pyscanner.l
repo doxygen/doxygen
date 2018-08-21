@@ -1508,7 +1508,7 @@ STARTDOCSYMS      "##"
     \\.			       { // espaced char
       			         addToString(yytext);
                                }
-    "\"\"\""		       { // tripple double quotes
+    "\"\"\""		       { // triple double quotes
       			         addToString(yytext);
       			       }
     "'"			       { // end of the string
@@ -1531,7 +1531,7 @@ STARTDOCSYMS      "##"
     \\.			       { // espaced char
       			         addToString(yytext);
                                }
-    "'''"		       { // tripple single quotes
+    "'''"		       { // triple single quotes
       			         addToString(yytext);
       			       }
     "\""		       { // end of the string
