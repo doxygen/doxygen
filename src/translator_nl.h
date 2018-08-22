@@ -1709,6 +1709,27 @@ class TranslatorDutch : public Translator
     virtual QCString trCustomReference(const char *name)
     { return QCString(name)+" Referentie"; }
 
+    virtual QCString trDocumentationStructFile(DocbookGen::DocbookCompoundType type)
+    {
+      QCString txt;
+      switch(type)
+      {
+        case DocbookGen::CLASS:
+          txt = "klasse";
+          break;
+        case DocbookGen::VARIABLE:
+          txt = "variabele";
+          break;
+        case DocbookGen::NAMESPACE:
+          txt = "namespace";
+          break;
+        case DocbookGen::DEFINE:
+          txt = "define";
+          break;
+      }
+      return("De documentatie voor deze " + txt + " was gegenereerd uit het volgende bestand:");
+    }
+
 //////////////////////////////////////////////////////////////////////////
 };
 

@@ -17,4 +17,16 @@
 
 void generateDocbook();
 
+class DocbookGen
+{
+  public:
+    enum DocbookCompoundType
+    {
+      CLASS,
+      VARIABLE,
+      NAMESPACE,
+      DEFINE
+    };
+};
+
 #endif

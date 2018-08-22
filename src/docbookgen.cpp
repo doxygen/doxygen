@@ -389,6 +389,35 @@ static QCString memberOutputFileBase(MemberDef *md)
   return md->getOutputFileBase();
 }
 
+static void definedAtLine(int line, QCString fileName, FTextStream &t)
+{
+  QCString refText = theTranslator->trDefinedAtLineInSourceFile();
+  int lineMarkerPos = refText.find("@0");
+  int fileMarkerPos = refText.find("@1");
+  if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
+  {
+    if (lineMarkerPos<fileMarkerPos) // line marker before file marker
+    {
+      t << refText.left(lineMarkerPos)
+        << line
+        << refText.mid(lineMarkerPos+2, fileMarkerPos-lineMarkerPos-2)
+        << fileName
+        << refText.right(refText.length()-fileMarkerPos-2);
+    }
+    else // file marker before line marker
+    {
+      t << refText.left(fileMarkerPos)
+        << fileName
+        << refText.mid(fileMarkerPos+2, lineMarkerPos-fileMarkerPos-2)
+        << line
+        << refText.right(refText.length()-lineMarkerPos-2);
+    }
+  }
+  else
+  {
+    err("translation error: invalid markers in trDefinedAtLineInSourceFile()\n");
+  }
+}
 
 static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *def, bool detailed=0)
 {
@@ -675,7 +704,8 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
         t << "                     </variablelist>" << endl;
         t << "                </formalpara>" << endl;
         t << "                <para>";
-        t << "Definition at line " << md->getDefLine() << " of file " << stripPath(md->getDefFileName()) << endl;
+        definedAtLine(md->getDefLine(),stripPath(md->getDefFileName()),t);
+        t << endl;
         t << "                    <computeroutput><literallayout>" << endl;
         t << "{" << endl;
         for (emli.toFirst();(emd=emli.current());++emli) 
@@ -759,8 +789,10 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
         t << "                ";
         writeDocbookDocBlock(t,md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
         t << endl;
-        t << "                <para>Definition at line " << md->getDefLine() << " of file " << stripPath(md->getDefFileName()) << "</para>" << endl;
-        t << "                <para>The Documentation for this define was generated from the following file: </para>" << endl;
+        t << "                <para>";
+        definedAtLine(md->getDefLine(),stripPath(md->getDefFileName()),t);
+        t << "</para>" << endl;
+        t << "                <para>" + theTranslator->trDocumentationStructFile(DocbookGen::DEFINE) +  "</para>" << endl;
         t << "                <para><itemizedlist><listitem><para>" << stripPath(md->getDefFileName()) << "</para></listitem></itemizedlist></para>" << endl;
         t << "            </section>" << endl;
       }
@@ -776,8 +808,10 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
           t << "                ";
           writeDocbookDocBlock(t,md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
           t << endl;
-          t << "                <para>Definition at line " << md->getDefLine() << " of file " << stripPath(md->getDefFileName()) << "</para>" << endl;
-          t << "                <para>The Documentation for this struct was generated from the following file: </para>" << endl;
+          t << "                <para>";
+          definedAtLine(md->getDefLine(),stripPath(md->getDefFileName()),t);
+          t << "</para>" << endl;
+          t << "                <para>" + theTranslator->trDocumentationStructFile(DocbookGen::VARIABLE) +  "</para>" << endl;
           t << "                <para><itemizedlist><listitem><para>" << stripPath(md->getDefFileName()) << "</para></listitem></itemizedlist></para>" << endl;
           t << "            </simplesect>" << endl;
         }
@@ -1196,14 +1230,14 @@ static void generateDocbookForClass(ClassDef *cd,FTextStream &ti)
 
   if (Config_getBool(HAVE_DOT) && (Config_getBool(CLASS_DIAGRAMS) || Config_getBool(CLASS_GRAPH)))
   {
-    t << "<para>Inheritance diagram for " << convertToXML(cd->name()) << "</para>" << endl;
+    t << "<para>" << theTranslator->trClassDiagram(convertToXML(cd->name())) << "</para>" << endl;
     DotClassGraph inheritanceGraph(cd,DotNode::Inheritance);
     inheritanceGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,TRUE,FALSE);
   }
 
   if (Config_getBool(HAVE_DOT) && Config_getBool(COLLABORATION_GRAPH))
   {
-    t << "<para>Collaboration diagram for " << convertToXML(cd->name()) << "</para>" << endl;
+    t << "<para>" << theTranslator->trCollaborationDiagram(convertToXML(cd->name())) << "</para>" << endl;
     DotClassGraph collaborationGraph(cd,DotNode::Collaboration);
     collaborationGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,TRUE,FALSE);
   }
@@ -1250,8 +1284,10 @@ static void generateDocbookForClass(ClassDef *cd,FTextStream &ti)
     t << "        <simplesect>" << endl;
     t << "            <title>" << theTranslator->trDetailedDescription() << "</title>" << endl;
     writeDocbookDocBlock(t,cd->docFile(),cd->docLine(),cd,0,cd->documentation());
-    t << "                <para>Definition at line " << cd->getDefLine() << " of file " << stripPath(cd->getDefFileName()) << "</para>" << endl;
-    t << "                <para>The Documentation for this struct was generated from the following file: </para>" << endl;
+    t << "                <para>";
+    definedAtLine(cd->getDefLine(),stripPath(cd->getDefFileName()),t);
+    t << "</para>" << endl;
+    t << "                <para>" + theTranslator->trDocumentationStructFile(DocbookGen::CLASS) +  "</para>" << endl;
     t << "                <para><itemizedlist><listitem><para>" << stripPath(cd->getDefFileName()) << "</para></listitem></itemizedlist></para>" << endl;
     t << "        </simplesect>" << endl;
   }
@@ -1263,7 +1299,7 @@ static void generateDocbookForClass(ClassDef *cd,FTextStream &ti)
     }
   }
 
-  /*// TODO: Handling of Inheritance and Colloboration graph for Docbook to be implemented
+  /*// TODO: Handling of Inheritance and Collaboration graph for Docbook to be implemented
     DotClassGraph inheritanceGraph(cd,DotNode::Inheritance);
     if (!inheritanceGraph.isTrivial())
     {
@@ -1372,8 +1408,10 @@ static void generateDocbookForNamespace(NamespaceDef *nd,FTextStream &ti)
     t << "        <simplesect>" << endl;
     t << "            <title>" << theTranslator->trDetailedDescription() << "</title>" << endl;
     writeDocbookDocBlock(t,nd->docFile(),nd->docLine(),nd,0,nd->documentation());
-    t << "                <para>Definition at line " << nd->getDefLine() << " of file " << stripPath(nd->getDefFileName()) << "</para>" << endl;
-    t << "                <para>The Documentation for this struct was generated from the following file: </para>" << endl;
+    t << "                <para>";
+    definedAtLine(nd->getDefLine(),stripPath(nd->getDefFileName()),t);
+    t << "</para>" << endl;
+    t << "                <para>" + theTranslator->trDocumentationStructFile(DocbookGen::NAMESPACE) +  "</para>" << endl;
     t << "                <para><itemizedlist><listitem><para>" << stripPath(nd->getDefFileName()) << "</para></listitem></itemizedlist></para>" << endl;
     t << "        </simplesect>" << endl;
   }
@@ -1417,8 +1455,7 @@ static void generateDocbookForFile(FileDef *fd,FTextStream &ti)
   writeDocbookHeader_ID(t, fd->getOutputFileBase());
 
   t << "    <title>";
-  writeDocbookString(t,fd->name());
-  t << " File Reference";
+  writeDocbookString(t,theTranslator->trFileReference(fd->name()));
   t << "</title>" << endl;
 
   IncludeInfo *inc;
@@ -1453,13 +1490,13 @@ static void generateDocbookForFile(FileDef *fd,FTextStream &ti)
   {
     if (Config_getBool(INCLUDE_GRAPH))
     {
-      t << "<para>Include dependency diagram for " << convertToXML(fd->name()) << "</para>" << endl;
+      t << "<para>" << theTranslator->trInclDepGraph(convertToXML(fd->name())) << "</para>" << endl;
       DotInclDepGraph idepGraph(fd, FALSE);
       idepGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
     }
     if (Config_getBool(INCLUDED_BY_GRAPH))
     {
-      t << "<para>Included by dependency diagram for " << convertToXML(fd->name()) << "</para>" << endl;
+      t << "<para>" << theTranslator->trInclByDepGraph() << "</para>" << endl;
       DotInclDepGraph ibdepGraph(fd, TRUE);
       ibdepGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
     }
@@ -1499,14 +1536,27 @@ static void generateDocbookForFile(FileDef *fd,FTextStream &ti)
   t << "        <title>" << theTranslator->trDetailedDescription() << "</title>" << endl;
   writeDocbookDocBlock(t,fd->briefFile(),fd->briefLine(),fd,0,fd->briefDescription());
   writeDocbookDocBlock(t,fd->docFile(),fd->docLine(),fd,0,fd->documentation());
-  if (Config_getBool(FULL_PATH_NAMES)) 
+  t << "    <para>";
+  QCString refText = theTranslator->trDefinedInSourceFile();
+  int fileMarkerPos = refText.find("@0");
+  if (fileMarkerPos!=-1) // should always pass this.
   {
-    t << "    <para>Definition in file " << fd->getDefFileName() << "</para>" << endl;
+    t << refText.left(fileMarkerPos);
+    if (Config_getBool(FULL_PATH_NAMES))
+    {
+      t << fd->getDefFileName();
+    }
+    else
+    {
+      t << stripPath(fd->getDefFileName());
+    }
+    t << refText.right(refText.length()-fileMarkerPos-2); // text right from marker 2
   }
   else
   {
-    t << "    <para>Definition in file " << stripPath(fd->getDefFileName()) << "</para>" << endl;
+    err("translation error: invalid marker in trDefinedInSourceFile()\n");
   }
+  t << "</para>" << endl;
   t << "    </simplesect>" << endl;
 
   if (Config_getBool(DOCBOOK_PROGRAMLISTING))
@@ -1561,7 +1611,7 @@ static void generateDocbookForGroup(GroupDef *gd,FTextStream &ti)
 
   if (Config_getBool(GROUP_GRAPHS) && Config_getBool(HAVE_DOT))
   {
-    t << "<para>Collaboration diagram for " << convertToXML(gd->groupTitle()) << "</para>" << endl;
+    t << "<para>" << theTranslator->trCollaborationDiagram(convertToXML(gd->groupTitle())) << "</para>" << endl;
     DotGroupCollaboration collaborationGraph(gd);
     collaborationGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
   }
@@ -1650,7 +1700,7 @@ static void generateDocbookForDir(DirDef *dd,FTextStream &ti)
   t << "</title>" << endl;
   if (Config_getBool(DIRECTORY_GRAPH) && Config_getBool(HAVE_DOT))
   {
-    t << "<para>Directory dependency diagram for " << convertToXML(dd->displayName()) << "</para>" << endl;
+    t << "<para>" << theTranslator->trDirDepGraph(convertToXML(dd->displayName())) << "</para>" << endl;
     DotDirDeps dirdepGraph(dd);
     dirdepGraph.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
   }
@@ -1835,7 +1885,7 @@ void generateDocbook()
   if (nli.toFirst()) 
   {
     t << "    <chapter>" << endl;
-    t << "        <title>Namespace Documentation</title>" << endl;
+    t << "        <title>" << theTranslator->trNamespaceDocumentation() << "</title>" << endl;
   }
 
   for (nli.toFirst();(nd=nli.current());++nli)
@@ -2007,5 +2057,3 @@ void generateDocbook()
   t << "</book>" << endl;
 
 }
-
-
