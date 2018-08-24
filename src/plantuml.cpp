@@ -19,8 +19,13 @@
 #include "doxygen.h"
 #include "index.h"
 #include "message.h"
+#include "util.h"
 
 #include <qdir.h>
+#include <string>
+#include <map>
+
+#include <dirent.h>
 
 static const int maxCmdLine = 40960;
 
@@ -53,11 +58,31 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
   return baseName;
 }
 
+
+struct comparer
+{
+    public:
+    bool operator()(const std::string x, const std::string y) const
+    {
+         return x.compare(y)<0;
+    }
+};
+
+extern void restoreCacheFromFile(std::string *path);
+static std::map<std::string, std::string, comparer> *puMap = nullptr;	//* plantuml Map < plantuml_contents , plantuml.[format] binary name> 
+static std::map<std::string, int, comparer> *puDir = nullptr;		//* directory Map
+
 void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutputFormat format)
 {
   static QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   static QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
   static QCString dotPath = Config_getString(DOT_PATH);
+
+  if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+	  printf("config PLANTUML_CACHE : %d\n",Config_getBool(PLANTUML_CACHE));
+    printf("config PLANTUML_CACHE_DEBUG_PRINT : %d\n",Config_getBool(PLANTUML_CACHE_DEBUG_PRINT));
+    printf("config DOT_CLEANUP : %d\n",Config_getBool(DOT_CLEANUP));
+  }
 
   QCString pumlExe = "java";
   QCString pumlArgs = "";
@@ -96,6 +121,7 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   pumlArgs+=outDir;
   pumlArgs+="\" ";
   QCString imgName = baseName;
+  QCString imgExt = "";
   // The basename contains path, we need to strip the path from the filename in order
   // to create the image file name which should be included in the index.qhp (Qt help index file).
   int i;
@@ -108,14 +134,17 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
     case PUML_BITMAP:
       pumlArgs+="-tpng";
       imgName+=".png";
+      imgExt=".png";
       break;
     case PUML_EPS:
       pumlArgs+="-teps";
       imgName+=".eps";
+      imgExt=".eps";
       break;
     case PUML_SVG:
       pumlArgs+="-tsvg";
       imgName+=".svg";
+      imgExt=".svg";
       break;
   }
   pumlArgs+=" \"";
@@ -123,19 +152,96 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   pumlArgs+=".pu\" ";
   pumlArgs+="-charset UTF-8 ";
   int exitCode;
-  //printf("*** running: %s %s outDir:%s %s\n",pumlExe.data(),pumlArgs.data(),outDir,baseName);
   msg("Running PlantUML on generated file %s.pu\n",baseName);
+  if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+	  printf("*** running PlantUML on generated file %s.pu  ext=%s  img=%s\n",baseName,imgExt.data() , imgName.data());
+  }
+
+  std::string puData;
+  std::size_t pos;
+  bool puCacheMatchFlag = false;
   portable_sysTimerStart();
-  if ((exitCode=portable_system(pumlExe,pumlArgs,TRUE))!=0)
-  {
-    err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
-        plantumlJarPath.data(),exitCode);
+  if (Config_getBool(PLANTUML_CACHE)){
+    if(puMap == nullptr){
+      puMap = new (std::map<std::string,std::string,comparer>);
+      puDir = new (std::map<std::string,int,comparer>);
+    }
+
+    std::string dirname(baseName);
+	  if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){ printf("*** basename : [%s]\n",baseName); }
+    std::size_t found = dirname.find_last_of("/");
+	  if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){ printf("*** path : [%s]\n",dirname.substr(0,found).c_str());  }		 // " file: " << str.substr(found+1)
+    std::string path = dirname.substr(0,found);
+    std::map<std::string, int, comparer>::iterator dir=puDir->find(path);
+    if(dir == puDir->end()){
+      (*puDir)[path] = 1;
+      restoreCacheFromFile(&path);			// ex. *.[format].cache.pu			*.[format].cache
+    } 
+
+    QFile pu( QCString(baseName)+".pu");
+    if(!pu.open(0x0011)){ 
+      err("\n\n\nError : Can Not open %s%s file.\n\n\n",baseName,".pu");  
+      return; 
+    }
+    puData = pu.readAll().data();
+    pu.close();
+
+	  if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+		  //printf("%s%s contents (readAll) = [[%s]]\n", baseName,".pu",puData.c_str());
+	  }
+    pos = puData.find("@enduml\n");
+    if(pos != std::string::npos){
+		  if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){ printf("*** @enduml pos:%lu\n",pos); }
+      puData.erase (puData.begin()+pos+sizeof("@enduml"), puData.end());
+      puData += imgExt;
+	    if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+		    printf("*** key = {{%s}}\n", puData.c_str());
+      }
+      std::map<std::string, std::string, comparer>::iterator it=puMap->find(puData);
+      if( (it!=puMap->end()) && (QFile(QCString(it->second.c_str())).exists()) ){
+	      if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+		      printf("*** value = %s\n", it->second.c_str());
+        }
+        msg("Running copy  %s -> %s%s\n\n" , it->second.c_str(),baseName,imgExt.data() );
+        //QFile(QCString(baseName)+imgExt).remove();
+        if(copyFile( QCString(it->second.c_str()) , QCString(baseName)+imgExt ) == true){
+          if (Config_getBool(DOT_CLEANUP)) {
+            QFile(QCString(baseName)+".pu").remove();
+          }
+          puCacheMatchFlag = true;
+        } else {
+          err("\n\n\nError : copy fail  %s%s -> %s%s\n\n\n" , it->second.c_str(),imgExt.data() ,baseName,imgExt.data() );
+        }
+      }
+    }
   }
-  else if (Config_getBool(DOT_CLEANUP))
-  {
-    QFile(QCString(baseName)+".pu").remove();
-  }
+  if (puCacheMatchFlag == false){
+    msg("Running JAVA PlantUML on generated file %s\n", imgName.data());
+	  if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+      printf("*** running: %s %s outDir:%s %s\n",pumlExe.data(),pumlArgs.data(),outDir,baseName);
+    }
+    if ((exitCode=portable_system(pumlExe,pumlArgs,TRUE))!=0)
+    {
+      err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
+          plantumlJarPath.data(),exitCode);
+    }
+    else {
+      if (Config_getBool(PLANTUML_CACHE)){ 
+        if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+          printf("*** create file : %s.cache%s.pu  and %s.cache%s\n",baseName,imgExt.data(),baseName,imgExt.data());
+        }
+        puMap->insert(std::pair<std::string,std::string>(puData,std::string(baseName)+imgExt.data()));
+        copyFile( QCString(baseName)+".pu" , QCString(baseName)+imgExt+".cache.pu");           // ex. inline.._5.cache.png.pu
+        copyFile( QCString(baseName)+imgExt , QCString(baseName)+imgExt+".cache");      // ex. inline.._5.cache.png
+      }
+      if (Config_getBool(DOT_CLEANUP))
+      {
+        QFile(QCString(baseName)+".pu").remove();
+      } 
+    }
+  } 
   portable_sysTimerStop();
+
   if ( (format==PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine);
@@ -150,3 +256,72 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   Doxygen::indexList->addImageFile(imgName);
 }
 
+void restoreCacheFromFile(std::string *path)   // ex. path+*.[format].cache.pu			path+*.[format].cache
+{
+  DIR* dirp;
+  struct dirent* direntp;
+
+  if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+    printf("====== start of restoreCacheFromFile()\n");
+    printf( "*** restoreCacheFromFile path: %s\n", path->c_str());
+  }
+
+  dirp = opendir( path->c_str() );
+  if( dirp == NULL ) {
+    printf( "can't open %s" , path->c_str());
+  } else {
+    for(;;) {
+      direntp = readdir( dirp );
+      if( direntp == NULL ) break;
+      std::string str(direntp->d_name);
+      std::size_t found = str.rfind(".cache.pu");
+
+      if(found != std::string::npos){
+        if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+          printf( "*** matched filename : %s\n", direntp->d_name );
+          printf( "*** extension : %s\n", str.substr(found-4,4).c_str());
+        }
+        std::string extension = str.substr(found-4,4);
+        std::size_t myfound = str.find_last_of(".");
+        str.erase(str.begin() + myfound,str.end());   // erase .pu
+        //printf( "%lu %s\n", myfound , str.c_str() );
+        std::string baseName = *path + "/" + str;   // path /  *.[format].cache
+        //printf( "%s\n", baseName.c_str() );
+
+        QFile pu( QCString(baseName.c_str())+".pu");
+        if (!pu.open(0x0011)){ 
+          err("\n\n\nError : Can Not open %s%s file.\n\n\n",baseName.c_str(), ".pu");  
+          return; 
+        }
+
+        std::string puData = pu.readAll().data();
+        pu.close();
+        std::size_t pos;
+        //printf("restoreCacheFromFile[[%s]]\n", puData.c_str());
+        pos = puData.find("@enduml\n");
+        if(pos != std::string::npos){
+          //printf("pos:%lu\n",pos);
+          puData.erase (puData.begin()+pos+sizeof("@enduml"), puData.end());
+          puData += extension;
+          //printf("restoreCacheFromFile{{%s}}\n", puData.c_str());
+          std::map<std::string, std::string, comparer>::iterator it=puMap->find(puData);
+          if( it == puMap->end() ){
+            puMap->insert(std::pair<std::string,std::string>(puData,baseName));
+          }
+        }
+        puData.clear();
+      }
+    }
+
+    closedir( dirp );
+  }
+
+  if(Config_getBool(PLANTUML_CACHE_DEBUG_PRINT)){
+    for(std::map<std::string, std::string, comparer>::iterator it = puMap->begin(); it != puMap->end(); it++) {
+      printf("***key:[%s]\n",it->first.c_str());
+      printf("***value:[%s]\n",it->second.c_str());
+    }
+    printf("====== end of restoreCacheFromFile()\n");
+  }
+
+}
