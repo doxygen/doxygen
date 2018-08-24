@@ -69,8 +69,8 @@ struct comparer
 };
 
 extern void restoreCacheFromFile(std::string *path);
-static std::map<std::string, std::string, comparer> *puMap = nullptr;	//* plantuml Map < plantuml_contents , plantuml.[format] binary name> 
-static std::map<std::string, int, comparer> *puDir = nullptr;		//* directory Map
+static std::map<std::string, std::string, comparer> *puMap = NULL;	//* plantuml Map < plantuml_contents , plantuml.[format] binary name> 
+static std::map<std::string, int, comparer> *puDir = NULL;		//* directory Map
 
 void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutputFormat format)
 {
@@ -162,7 +162,7 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   bool puCacheMatchFlag = false;
   portable_sysTimerStart();
   if (Config_getBool(PLANTUML_CACHE)){
-    if(puMap == nullptr){
+    if(puMap == NULL){
       puMap = new (std::map<std::string,std::string,comparer>);
       puDir = new (std::map<std::string,int,comparer>);
     }
