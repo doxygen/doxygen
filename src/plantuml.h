@@ -30,6 +30,12 @@ enum PlantUMLOutputFormat { PUML_BITMAP, PUML_EPS, PUML_SVG };
 QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,const QCString &content);
 
 /** Convert a PlantUML file to an image.
+ *  @details if PLANTUML_CACHE = YES , doxygen performance will be improved from running second trials.
+ *     Process of using cache
+ *     1. restoreCacheFromFile() : caching files - *.png.cache.pu (plantuml)   *.png.cache (png binary)
+ *     2. if plantuml is matched in caches (puMap) , you reuse cached file.   (print "Running copy")
+ *     3. if plantuml is not matched in caches (puMap), you generate png with JAVA and save generate png(image) file for cache. (print "Running JAVA")
+ *
  *  @param[in] baseName the name of the generated file (as returned by writePlantUMLSource())
  *  @param[in] outDir   the directory to write the resulting image into.
  *  @param[in] format   the image format to generate.

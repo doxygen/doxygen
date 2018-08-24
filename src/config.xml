@@ -3491,6 +3491,22 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='PLANTUML_CACHE' defval='0'>
+      <docs>
+<![CDATA[
+If the \c PLANTUML_CACHE tag is set to \c YES, doxygen will
+create the intermediate plantuml files (*.cache.pu & others) that are used to improve the performance.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='PLANTUML_CACHE_DEBUG_PRINT' defval='0' depends='PLANTUML_CACHE'>
+      <docs>
+<![CDATA[
+If the \c PLANTUML_CACHE_DEBUG_PRINT tag is set to \c YES, doxygen will
+print how to reuse this cache and how to improve the performance.
+]]>
+      </docs>
+    </option>
     <option type='int' id='DOT_GRAPH_MAX_NODES' minval='0' maxval='10000' defval='50' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
