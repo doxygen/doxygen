@@ -1369,12 +1369,12 @@ void LatexGenerator::startHtmlLink(const char *url)
     t << url;
     t << "}";
   }
-  t << "\\texttt{ ";
+  t << "{\\texttt{ ";
 }
 
 void LatexGenerator::endHtmlLink()
 {
-  t << "}";
+  t << "}}";
 }
 
 //void LatexGenerator::writeMailLink(const char *url)
