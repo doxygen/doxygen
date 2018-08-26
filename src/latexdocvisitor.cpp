@@ -242,7 +242,13 @@ void LatexDocVisitor::visit(DocStyleChange *s)
   switch (s->style())
   {
     case DocStyleChange::Bold:
-      if (s->enable()) m_t << "{\\bfseries ";      else m_t << "}";
+      if (s->enable()) m_t << "{\\bfseries{";      else m_t << "}}";
+      break;
+    case DocStyleChange::Strike:
+      if (s->enable()) m_t << "\\sout{";     else m_t << "}";
+      break;
+    case DocStyleChange::Underline:
+      if (s->enable()) m_t << "\\uline{";     else m_t << "}";
       break;
     case DocStyleChange::Italic:
       if (s->enable()) m_t << "{\\itshape ";     else m_t << "}";

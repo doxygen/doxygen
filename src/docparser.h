@@ -367,7 +367,9 @@ class DocStyleChange : public DocNode
                  Superscript   = (1<<6),
                  Preformatted  = (1<<7),
                  Span          = (1<<8),
-                 Div           = (1<<9)
+                 Div           = (1<<9),
+                 Strike        = (1<<10),
+                 Underline     = (1<<11)
                };
 
     DocStyleChange(DocNode *parent,uint position,Style s,bool enable,
