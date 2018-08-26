@@ -321,11 +321,10 @@ class OutputList : public OutputDocInterface
                                     const char *title,const char *name)
     { forall(&OutputGenerator::writeInheritedSectionTitle,id,ref,
                                     file,anchor,title,name); }
-    void startSimpleSect(SectionTypes t,const char *file,const char *anchor,
-                         const char *title) 
-    { forall(&OutputGenerator::startSimpleSect,t,file,anchor,title); }
-    void endSimpleSect(SectionTypes t) 
-    { forall(&OutputGenerator::endSimpleSect,t); }
+    void startExamples()
+    { forall(&OutputGenerator::startExamples); }
+    void endExamples()
+    { forall(&OutputGenerator::endExamples); }
     void startParamList(ParamListTypes t,const char *title) 
     { forall(&OutputGenerator::startParamList,t,title); }
     void endParamList() 

@@ -2095,22 +2095,14 @@ void LatexGenerator::endDescItem()
   }
 }
 
-void LatexGenerator::startSimpleSect(SectionTypes,const char *file,
-                                     const char *anchor,const char *title)
+void LatexGenerator::startExamples()
 {
   t << "\\begin{Desc}\n\\item[";
-  if (file)
-  {
-    writeObjectLink(0,file,anchor,title);
-  }
-  else
-  {
-    docify(title);
-  }
+  docify(theTranslator->trExamples());
   t << "]";
 }
 
-void LatexGenerator::endSimpleSect(SectionTypes)
+void LatexGenerator::endExamples()
 {
   t << "\\end{Desc}" << endl;
 }
