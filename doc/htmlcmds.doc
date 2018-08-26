@@ -83,6 +83,8 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\</SMALL\></tt> Ends a <tt>\<SMALL\></tt> section.
 <li><tt>\<SPAN></tt>   Starts an inline text fragment with a specific style (HTML only)
 <li><tt>\</SPAN></tt>  Ends an inline text fragment with a specific style (HTML only)
+<li><tt>\<STRIKE\></tt> Starts a section of strike through text.
+<li><tt>\</STRIKE\></tt> Ends a section of strike through text.
 <li><tt>\<STRONG\></tt> Starts a section of bold text.
 <li><tt>\</STRONG\></tt> Ends a section of bold text.
 <li><tt>\<SUB\></tt>   Starts a piece of text displayed in subscript.
@@ -101,6 +103,8 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\</TT\></tt>   Ends a <tt>\<TT\></tt> section.
 <li><tt>\<KBD\></tt>   Starts a piece of text displayed in a typewriter font.
 <li><tt>\</KBD\></tt>  Ends a <tt>\<KBD\></tt> section.
+<li><tt>\<U\></tt> Starts a section of underlined text.
+<li><tt>\</U\></tt> Ends a section of underlined text.
 <li><tt>\<UL\></tt>    Starts an unnumbered item list.
 <li><tt>\</UL\></tt>   Ends an unnumbered item list.
 <li><tt>\<VAR\></tt>   Starts a piece of text displayed in an italic font.
