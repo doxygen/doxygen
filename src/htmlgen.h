@@ -246,13 +246,10 @@ class HtmlGenerator : public OutputGenerator
     void endCenter()          { t << "</center>" << endl; }
     void startSmall()         { t << "<small>" << endl; }
     void endSmall()           { t << "</small>" << endl; }
-    //void startDescList(SectionTypes)      { t << "<dl compact><dt><b>" << endl; }
-    //void endDescList()        { t << "</dl>"; }
-    void startSimpleSect(SectionTypes,const char *,const char *,const char *);
-    void endSimpleSect();
+    void startExamples();
+    void endExamples();
     void startParamList(ParamListTypes,const char *);
     void endParamList();
-    //void writeDescItem()      { t << "<dd>" << endl; }
     void startSection(const char *,const char *,SectionInfo::SectionType);
     void endSection(const char *,SectionInfo::SectionType);
     void addIndexItem(const char *,const char *);
