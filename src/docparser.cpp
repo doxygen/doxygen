@@ -1051,15 +1051,16 @@ const char *DocStyleChange::styleString() const
 {
   switch (m_style)
   {
-    case DocStyleChange::Bold:         return "b"; 
-    case DocStyleChange::Italic:       return "em"; 
-    case DocStyleChange::Code:         return "code"; 
-    case DocStyleChange::Center:       return "center"; 
-    case DocStyleChange::Small:        return "small"; 
-    case DocStyleChange::Subscript:    return "subscript"; 
-    case DocStyleChange::Superscript:  return "superscript"; 
-    case DocStyleChange::Preformatted: return "pre"; 
+    case DocStyleChange::Bold:         return "b";
+    case DocStyleChange::Italic:       return "em";
+    case DocStyleChange::Code:         return "code";
+    case DocStyleChange::Center:       return "center";
+    case DocStyleChange::Small:        return "small";
+    case DocStyleChange::Subscript:    return "subscript";
+    case DocStyleChange::Superscript:  return "superscript";
+    case DocStyleChange::Preformatted: return "pre";
     case DocStyleChange::Div:          return "div";
+    case DocStyleChange::Span:         return "span";
     case DocStyleChange::Strike:       return "strike";
     case DocStyleChange::Underline:    return "u";
   }
