@@ -866,7 +866,30 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   return FALSE;
 }
 //---------------------------------------------------------------------------
+inline void errorHandleDefaultToken(DocNode *parent,int tok, 
+                               QList<DocNode> &children,const char *txt)
+{
+  switch (tok)
+  {
+    case TK_COMMAND: 
+    case TK_COMMAND1: 
+      children.append(new DocWord(parent,(tok == TK_COMMAND ? '@' : '\\') + g_token->name));
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a %s",
+       qPrint((tok == TK_COMMAND ? '@' : '\\') + g_token->name), txt);
+      break;
+    case TK_SYMBOL: 
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found found as part of a %s",
+           qPrint(g_token->name), txt);
+      break;
+    default:
+      children.append(new DocWord(parent,g_token->name));
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s found as part of a %s",
+        tokToString(tok), txt);
+      break;
+  }
+}
 
+//---------------------------------------------------------------------------
 // forward declaration
 static bool defaultHandleToken(DocNode *parent,int tok, 
                                QList<DocNode> &children,bool
@@ -876,6 +899,7 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
                                const QCString &cmdName)
 {
   DBG(("handleStyleArgument(%s)\n",qPrint(cmdName)));
+  QCString saveCmdName = cmdName;
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
@@ -901,14 +925,6 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
     {
       switch (tok)
       {
-        case TK_COMMAND: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command \\%s as the argument of a \\%s command",
-	       qPrint(g_token->name),qPrint(cmdName));
-          break;
-        case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found while handling command %s",
-               qPrint(g_token->name),qPrint(cmdName));
-          break;
         case TK_HTMLTAG:
           if (insideLI(parent) && Mappers::htmlTagMapper->map(g_token->name) && g_token->endTag)
           { // ignore </li> as the end of a style command
@@ -917,8 +933,7 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
           return tok;
           break;
         default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s while handling command %s",
-	       tokToString(tok),qPrint(cmdName));
+	  errorHandleDefaultToken(parent,tok,children,"\\" + saveCmdName + " command");
           break;
       }
       break;
@@ -1295,21 +1310,7 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
     }
     if (!defaultHandleToken(parent,tok,children))
     {
-      switch (tok)
-      {
-        case TK_COMMAND:
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\%s",
-              qPrint(g_token->name), Mappers::cmdMapper->find(cmd).data());
-          break;
-        case TK_SYMBOL:
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
-              qPrint(g_token->name));
-          break;
-        default:
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
-              tokToString(tok));
-          break;
-      }
+      errorHandleDefaultToken(parent,tok,children,Mappers::cmdMapper->find(cmd).data());
     }
   }
   // parse size attributes
@@ -1368,7 +1369,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
 {
   DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
   if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL || 
-      tok==TK_COMMAND || tok==TK_HTMLTAG
+      tok==TK_COMMAND || tok==TK_COMMAND1 || tok==TK_HTMLTAG
      )
   {
     DBG((" name=%s",qPrint(g_token->name)));
@@ -1379,6 +1380,7 @@ reparsetoken:
   switch (tok)
   {
     case TK_COMMAND: 
+    case TK_COMMAND1: 
       switch (Mappers::cmdMapper->map(tokenName))
       {
         case CMD_BSLASH:
@@ -2308,21 +2310,7 @@ void DocSecRefItem::parse()
   {
     if (!defaultHandleToken(this,tok,m_children))
     {
-      switch (tok)
-      {
-        case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\refitem",
-	       qPrint(g_token->name));
-          break;
-        case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
-               qPrint(g_token->name));
-          break;
-        default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
-	       tokToString(tok));
-          break;
-      }
+      errorHandleDefaultToken(this,tok,m_children,"\\refitem");
     }
   }
   doctokenizerYYsetStatePara();
@@ -2370,7 +2358,7 @@ void DocSecRefList::parse()
   // handle items
   while (tok)
   {
-    if (tok==TK_COMMAND)
+    if (tok==TK_COMMAND || tok == TK_COMMAND1)
     {
       switch (Mappers::cmdMapper->map(g_token->name))
       {
@@ -2450,21 +2438,7 @@ void DocInternalRef::parse()
   {
     if (!defaultHandleToken(this,tok,m_children))
     {
-      switch (tok)
-      {
-        case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\ref",
-	       qPrint(g_token->name));
-          break;
-        case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
-               qPrint(g_token->name));
-          break;
-        default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
-		tokToString(tok));
-          break;
-      }
+      errorHandleDefaultToken(this,tok,m_children,"\\ref");
     }
   }
 
@@ -2608,19 +2582,10 @@ void DocRef::parse()
     {
       switch (tok)
       {
-        case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\ref",
-	       qPrint(g_token->name));
-          break;
-        case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
-               qPrint(g_token->name));
-          break;
         case TK_HTMLTAG:
           break;
         default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
-		tokToString(tok));
+          errorHandleDefaultToken(this,tok,m_children,"\\ref");
           break;
       }
     }
@@ -2732,6 +2697,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
       switch (tok)
       {
         case TK_COMMAND: 
+        case TK_COMMAND1: 
           switch (Mappers::cmdMapper->map(g_token->name))
           {
             case CMD_ENDLINK:
@@ -2747,13 +2713,13 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
           }
           break;
         case TK_SYMBOL: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found as part of a \\link",
               qPrint(g_token->name));
           break;
         case TK_HTMLTAG:
           if (g_token->name!="see" || !isXmlLink)
           {
-            warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected xml/html command %s found",
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected xml/html command %s found as part of a \\link",
                 qPrint(g_token->name));
           }
           goto endlink;
@@ -2931,21 +2897,7 @@ void DocVhdlFlow::parse()
   {
     if (!defaultHandleToken(this,tok,m_children))
     {
-      switch (tok)
-      {
-        case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\vhdlflow",
-	       qPrint(g_token->name));
-          break;
-        case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
-               qPrint(g_token->name));
-          break;
-        default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
-		tokToString(tok));
-          break;
-      }
+      errorHandleDefaultToken(this,tok,m_children,"\\vhdlflow");
     }
   }
   tok=doctokenizerYYlex();
@@ -2992,10 +2944,6 @@ int DocHtmlHeader::parse()
     {
       switch (tok)
       {
-        case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a <h%d> tag",
-	       qPrint(g_token->name),m_level);
-          break;
         case TK_HTMLTAG:
           {
             int tagId=Mappers::htmlTagMapper->map(g_token->name);
@@ -3073,14 +3021,10 @@ int DocHtmlHeader::parse()
             
           }
           break;
-        case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
-               qPrint(g_token->name));
-          break;
         default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
-		tokToString(tok));
-          break;
+	  char tmp[20];
+	  sprintf(tmp,"<h%d>tag",m_level);
+          errorHandleDefaultToken(this,tok,m_children,tmp);
       }
     }
   }
@@ -3112,14 +3056,6 @@ int DocHRef::parse()
     {
       switch (tok)
       {
-        case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a <a>..</a> block",
-	       qPrint(g_token->name));
-          break;
-        case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
-               qPrint(g_token->name));
-          break;
         case TK_HTMLTAG:
 
           {
@@ -3136,8 +3072,7 @@ int DocHRef::parse()
           }
           break;
         default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
-		tokToString(tok),doctokenizerYYlineno);
+          errorHandleDefaultToken(this,tok,m_children,"<a>..</a> block");
           break;
       }
     }
@@ -3271,6 +3206,7 @@ int DocIndexEntry::parse()
         }
         break;
     case TK_COMMAND: 
+    case TK_COMMAND1: 
       switch (Mappers::cmdMapper->map(g_token->name))
       {
         case CMD_BSLASH:  m_entry+='\\'; break;
@@ -3358,14 +3294,6 @@ int DocHtmlCaption::parse()
     {
       switch (tok)
       {
-        case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a <caption> tag",
-              qPrint(g_token->name));
-          break;
-        case TK_SYMBOL: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
-              qPrint(g_token->name));
-          break;
         case TK_HTMLTAG:
           {
             int tagId=Mappers::htmlTagMapper->map(g_token->name);
@@ -3382,9 +3310,7 @@ int DocHtmlCaption::parse()
           }
           break;
         default:
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
-              tokToString(tok));
-          break;
+         errorHandleDefaultToken(this,tok,m_children,"<caption> tag");
       }
     }
   }
@@ -3898,6 +3824,7 @@ int DocHtmlDescTitle::parse()
       switch (tok)
       {
         case TK_COMMAND: 
+        case TK_COMMAND1: 
           {
             QCString cmdName=g_token->name;
             bool isJavaLink=FALSE;
@@ -3908,7 +3835,7 @@ int DocHtmlDescTitle::parse()
                   int tok=doctokenizerYYlex();
                   if (tok!=TK_WHITESPACE)
                   {
-                    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+                    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
                         qPrint(g_token->name));
                   }
                   else
@@ -3917,7 +3844,7 @@ int DocHtmlDescTitle::parse()
                     tok=doctokenizerYYlex(); // get the reference id
                     if (tok!=TK_WORD)
                     {
-                      warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
+                      warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of \\%s command",
                           tokToString(tok),qPrint(cmdName));
                     }
                     else
@@ -3938,7 +3865,7 @@ int DocHtmlDescTitle::parse()
                   int tok=doctokenizerYYlex();
                   if (tok!=TK_WHITESPACE)
                   {
-                    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+                    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
                         qPrint(cmdName));
                   }
                   else
@@ -3947,7 +3874,7 @@ int DocHtmlDescTitle::parse()
                     tok=doctokenizerYYlex();
                     if (tok!=TK_WORD)
                     {
-                      warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
+                      warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of \\%s command",
                           tokToString(tok),qPrint(cmdName));
                     }
                     else
@@ -3966,13 +3893,13 @@ int DocHtmlDescTitle::parse()
 
                 break;
               default:
-                warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a <dt> tag",
+                warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command \\%s found as part of a <dt> tag",
                                qPrint(g_token->name));
             }
           }
           break;
         case TK_SYMBOL: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol \\%s found as part of a <dt> tag",
               qPrint(g_token->name));
           break;
         case TK_HTMLTAG:
@@ -4013,7 +3940,7 @@ int DocHtmlDescTitle::parse()
           }
           break;
         default:
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s found as part of a <dt> tag",
               tokToString(tok));
           break;
       }
@@ -4518,21 +4445,7 @@ void DocTitle::parse()
   {
     if (!defaultHandleToken(this,tok,m_children))
     {
-      switch (tok)
-      {
-        case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a title section",
-	       qPrint(g_token->name));
-          break;
-        case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
-               qPrint(g_token->name));
-          break;
-        default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
-		tokToString(tok));
-          break;
-      }
+     errorHandleDefaultToken(this,tok,m_children,"title section");
     }
   }
   doctokenizerYYsetStatePara();
@@ -5393,7 +5306,7 @@ void DocPara::handleInheritDoc()
 }
 
 
-int DocPara::handleCommand(const QCString &cmdName)
+int DocPara::handleCommand(const QCString &cmdName, const int tok)
 {
   DBG(("handleCommand(%s)\n",qPrint(cmdName)));
   int retval = RetVal_OK;
@@ -5401,6 +5314,7 @@ int DocPara::handleCommand(const QCString &cmdName)
   switch (cmdId)
   {
     case CMD_UNKNOWN:
+      m_children.append(new DocWord(this,(tok == TK_COMMAND ? '@' : '\\') + cmdName));
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Found unknown command `\\%s'",qPrint(cmdName));
       break;
     case CMD_EMPHASIS:
@@ -6491,7 +6405,7 @@ int DocPara::parse()
 reparsetoken:
     DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
     if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL || 
-        tok==TK_COMMAND || tok==TK_HTMLTAG
+        tok==TK_COMMAND || tok == TK_COMMAND1 || tok==TK_HTMLTAG
        )
     {
       DBG((" name=%s",qPrint(g_token->name)));
@@ -6589,7 +6503,7 @@ reparsetoken:
             }
             else // other section
             {
-              tok = TK_COMMAND;
+              tok = TK_COMMAND1;
             }
             DBG(("reparsing command %s\n",qPrint(g_token->name)));
             goto reparsetoken;
@@ -6635,6 +6549,7 @@ reparsetoken:
         }
         break;
       case TK_COMMAND:    
+      case TK_COMMAND1: 
         {
           // see if we have to start a simple section
           int cmd = Mappers::cmdMapper->map(g_token->name);
@@ -6670,7 +6585,7 @@ reparsetoken:
           }
 
           // handle the command
-          retval=handleCommand(g_token->name);
+          retval=handleCommand(g_token->name,tok);
           DBG(("handleCommand returns %x\n",retval));
 
           // check the return value
@@ -6688,7 +6603,7 @@ reparsetoken:
             }
             else // other section
             {
-              tok = TK_COMMAND;
+              tok = TK_COMMAND1;
             }
             DBG(("reparsing command %s\n",qPrint(g_token->name)));
             goto reparsetoken;
@@ -6961,6 +6876,7 @@ void DocText::parse()
         }
         break;
       case TK_COMMAND: 
+      case TK_COMMAND1: 
         switch (Mappers::cmdMapper->map(g_token->name))
         {
           case CMD_BSLASH:
