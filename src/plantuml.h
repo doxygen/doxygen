@@ -16,6 +16,9 @@
 #ifndef PLANTUML_H
 #define PLANTUML_H
 
+#include <qdict.h>
+#include <qlist.h>
+
 class QCString;
 
 /** Plant UML output image formats */
@@ -35,6 +38,25 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
  *  @param[in] format   the image format to generate.
  */
 void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutputFormat format);
+
+/** Singleton that manages plantuml relation actions */
+class PlantumlManager
+{
+  public:
+    static PlantumlManager *instance();
+    void run();
+	void insert(const QCString key , const QCString value,PlantUMLOutputFormat format);
+  private:
+    PlantumlManager();
+    virtual ~PlantumlManager();
+	void addPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const QCString key , const QCString value);
+	void print(QDict< QList <QCString> > &PlantumlFiles);
+	void runPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const char *type);
+    static PlantumlManager     *m_theInstance;
+    QDict< QList<QCString> >       m_pngPlantumlFiles;
+    QDict< QList<QCString> >       m_svgPlantumlFiles;
+    QDict< QList<QCString> >       m_epsPlantumlFiles;
+};
 
 #endif
 

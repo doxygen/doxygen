@@ -103,6 +103,7 @@
 #include "settings.h"
 #include "context.h"
 #include "fileparser.h"
+#include "plantuml.h"
 
 // provided by the generated file resources.cpp
 extern void initResources();
@@ -11704,6 +11705,13 @@ void generateOutput()
     {
       err("An error occurred during post-processing the RTF files!\n");
     }
+    g_s.end();
+  }
+
+  if (Config_getBool(PLANTUML_RUN_JAVA_ONCE))
+  {
+    g_s.begin("Running plantuml with JAVA...\n");
+    PlantumlManager::instance()->run();
     g_s.end();
   }
 

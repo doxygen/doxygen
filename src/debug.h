@@ -37,7 +37,8 @@ class Debug
                      ExtCmd       = 0x00000400,
                      Markdown     = 0x00000800,
                      FilterOutput = 0x00001000,
-                     Lex          = 0x00002000
+                     Lex          = 0x00002000,
+                     Plantuml     = 0x00004000
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
     static int  setFlag(const char *label);
