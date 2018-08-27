@@ -134,22 +134,12 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   msg("Running PlantUML on generated file %s.pu\n",baseName);
   portable_sysTimerStart();
   if(Config_getBool(PLANTUML_RUN_JAVA_ONCE)){
-    //Debug::print(Debug::Plantuml,0,"*** imgName %s\n",qPrint(imgName));
-		//Debug::print(Debug::Plantuml,0,"*** running: %s %s outDir:%s %s\n",qPrint(pumlExe),qPrint(pumlArgs),outDir,baseName);
-    //Debug::print(Debug::Plantuml,0,"*** baseName: %s\n",baseName);
-    //Debug::print(Debug::Plantuml,0,"*** outDir: %s\n",outDir);
-    //Debug::print(Debug::Plantuml,0,"*** project name: %s\n",qPrint(Config_getString(PROJECT_NAME)) );
-    //Debug::print(Debug::Plantuml,0,"*** output directory: %s\n",qPrint(Config_getString(OUTPUT_DIRECTORY)) );
     QCString qcOutDir(outDir);
     uint pos = qcOutDir.findRev("/");
-    //Debug::print(Debug::Plantuml,0,"*** right: %d\n",pos );
-    //QCString baseDirectoryName(qcOutDir.left(pos));
-    //Debug::print(Debug::Plantuml,0,"*** baseDirectoryName: %s\n",qPrint(baseDirectoryName));
     QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
     Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n",__PRETTY_FUNCTION__,qPrint(generateType));
     QCString qcBaseName(baseName);
     pos = qcBaseName.findRev("/");
-    //Debug::print(Debug::Plantuml,0,"*** right: %d\n",pos );
     QCString baseFileName(qcBaseName.right(qcBaseName.length() - (pos + 1)) );
     Debug::print(Debug::Plantuml,0,"*** %s baseFileName: %s\n",__PRETTY_FUNCTION__,qPrint(baseFileName));
     PlantumlManager::instance()->insert(generateType,baseFileName,format);
@@ -212,7 +202,7 @@ PlantumlManager::~PlantumlManager()
 
 void PlantumlManager::runPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const char *type)
 {
-  /* *** running: java -Djava.awt.headless=true -jar "/Users/cheoljoo/code/common_telltale/GP/Apps/Src/MgrTelltale/tools/plantuml.jar" -o "/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html" -tpng "/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html/A.pu" -charset UTF-8  outDir:/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html /Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html/A
+  /* example : running: java -Djava.awt.headless=true -jar "/Users/cheoljoo/code/common_telltale/GP/Apps/Src/MgrTelltale/tools/plantuml.jar" -o "/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html" -tpng "/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html/A.pu" -charset UTF-8  outDir:/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html /Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html/A
    */
   int exitCode;
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);

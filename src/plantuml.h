@@ -45,13 +45,13 @@ class PlantumlManager
   public:
     static PlantumlManager *instance();
     void run();
-	void insert(const QCString key , const QCString value,PlantUMLOutputFormat format);
+   	void insert(const QCString key , const QCString value,PlantUMLOutputFormat format);
   private:
     PlantumlManager();
     virtual ~PlantumlManager();
-	void addPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const QCString key , const QCString value);
-	void print(QDict< QList <QCString> > &PlantumlFiles);
-	void runPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const char *type);
+	  void addPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const QCString key , const QCString value);
+	  void print(QDict< QList <QCString> > &PlantumlFiles);
+	  void runPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const char *type);
     static PlantumlManager     *m_theInstance;
     QDict< QList<QCString> >       m_pngPlantumlFiles;
     QDict< QList<QCString> >       m_svgPlantumlFiles;
