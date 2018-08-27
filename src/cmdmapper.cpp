@@ -193,6 +193,8 @@ CommandMap htmlTagMap[] =
   { "span",       HTML_SPAN },
   { "div",        HTML_DIV },
   { "blockquote", HTML_BLOCKQUOTE },
+  { "strike",     HTML_STRIKE },
+  { "u",          HTML_UNDERLINE },
 
   { "c",            XML_C },
   // { "code",       XML_CODE },  <= ambiguous <code> is also a HTML tag

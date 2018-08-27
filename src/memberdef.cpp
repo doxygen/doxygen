@@ -2309,11 +2309,11 @@ void MemberDef::_writeExamples(OutputList &ol)
   // write the list of examples that use this member
   if (hasExamples())
   {
-    ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
+    ol.startExamples();
     ol.startDescForItem();
     writeExample(ol,m_impl->exampleSDict);
     ol.endDescForItem();
-    ol.endSimpleSect();
+    ol.endExamples();
   }
 }
 
@@ -2346,8 +2346,6 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
         {
           if (first)
           {
-            //ol.startSimpleSect(BaseOutputDocInterface::EnumValues,0,0,theTranslator->trEnumerationValues()+": ");
-            //ol.startDescForItem();
             ol.startDescTable(theTranslator->trEnumerationValues());
           }
 
@@ -2355,28 +2353,17 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
           ol.addIndexItem(fmd->name(),ciname);
           ol.addIndexItem(ciname,fmd->name());
 
-          //Doxygen::indexList->addIndexItem(
-          //                       ciname,                                // level1
-          //                       fmd->name(),                           // level2
-          //                       separateMemPages ? cfname : cfiname,   // contRef
-          //                       cfname,                                // memRef
-          //                       fmd->anchor(),                         // anchor
-          //                       fmd);                                  // memberdef
           Doxygen::indexList->addIndexItem(container,fmd);
 
-          //ol.writeListItem();
           ol.startDescTableTitle();
           ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
           first=FALSE;
-          //ol.startEmphasis();
           ol.docify(fmd->name());
-          //ol.endEmphasis();
           ol.disableAllBut(OutputGenerator::Man);
           ol.writeString(" ");
           ol.enableAll();
           ol.endDoxyAnchor(cfname,fmd->anchor());
           ol.endDescTableTitle();
-          //ol.newParagraph();
           ol.startDescTableData();
 
           bool hasBrief = !fmd->briefDescription().isEmpty();
@@ -2407,11 +2394,7 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
     }
     if (!first)
     {
-      //ol.endItemList();
       ol.endDescTable();
-      //ol.endDescForItem();
-      //ol.endSimpleSect();
-      //ol.writeChar('\n');
     }
   }
 }

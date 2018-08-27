@@ -235,8 +235,8 @@ class LatexGenerator : public OutputGenerator
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes)     { t << "\\begin{Desc}\n\\item["; }
     void endDescList()       { t << "\\end{Desc}" << endl; }
-    void startSimpleSect(SectionTypes,const char *,const char *,const char *);
-    void endSimpleSect();
+    void startExamples();
+    void endExamples();
     void startParamList(ParamListTypes,const char *title);
     void endParamList();
     void startDescForItem()     { t << "\\par" << endl; }

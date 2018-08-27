@@ -13,6 +13,7 @@ addons:
         update: true
         packages:
             - texlive
+            - texlive-generic-recommended
             - texlive-extra-utils
             - texlive-latex-extra
             - texlive-font-utils

@@ -2727,21 +2727,14 @@ void RTFGenerator::endMemberGroup(bool hasHeader)
   t << "}";
 }
 
-void RTFGenerator::startSimpleSect(SectionTypes,const char *file,const char *anchor,const char *title)
+void RTFGenerator::startExamples()
 {
-  DBG_RTF(t << "{\\comment (startSimpleSect)}"    << endl)
+  DBG_RTF(t << "{\\comment (startExamples)}"    << endl)
   t << "{"; // ends at endDescList
   t << "{"; // ends at endDescTitle
   startBold();
   newParagraph();
-  if (file)
-  {
-    writeObjectLink(0,file,anchor,title);
-  }
-  else
-  {
-    docify(title);
-  }
+  docify(theTranslator->trExamples());
   endBold();
   t << "}";
   newParagraph();
@@ -2749,9 +2742,9 @@ void RTFGenerator::startSimpleSect(SectionTypes,const char *file,const char *anc
   t << rtf_Style_Reset << rtf_DList_DepthStyle();
 }
 
-void RTFGenerator::endSimpleSect()
+void RTFGenerator::endExamples()
 {
-  DBG_RTF(t << "{\\comment (endSimpleSect)}"    << endl)
+  DBG_RTF(t << "{\\comment (endExamples)}"    << endl)
   m_omitParagraph = FALSE;
   newParagraph();
   decrementIndentLevel();

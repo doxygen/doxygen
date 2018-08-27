@@ -271,6 +271,12 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Bold:
       if (s->enable()) m_t << "<b" << htmlAttribsToString(s->attribs()) << ">";      else m_t << "</b>";
       break;
+    case DocStyleChange::Strike:
+      if (s->enable()) m_t << "<strike" << htmlAttribsToString(s->attribs()) << ">";      else m_t << "</strike>";
+      break;
+    case DocStyleChange::Underline:
+      if (s->enable()) m_t << "<u" << htmlAttribsToString(s->attribs()) << ">";      else m_t << "</u>";
+      break;
     case DocStyleChange::Italic:
       if (s->enable()) m_t << "<em" << htmlAttribsToString(s->attribs()) << ">";     else m_t << "</em>";
       break;

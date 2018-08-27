@@ -1051,16 +1051,18 @@ const char *DocStyleChange::styleString() const
 {
   switch (m_style)
   {
-    case DocStyleChange::Bold:         return "b"; 
-    case DocStyleChange::Italic:       return "em"; 
-    case DocStyleChange::Code:         return "code"; 
-    case DocStyleChange::Center:       return "center"; 
-    case DocStyleChange::Small:        return "small"; 
-    case DocStyleChange::Subscript:    return "subscript"; 
-    case DocStyleChange::Superscript:  return "superscript"; 
-    case DocStyleChange::Preformatted: return "pre"; 
+    case DocStyleChange::Bold:         return "b";
+    case DocStyleChange::Italic:       return "em";
+    case DocStyleChange::Code:         return "code";
+    case DocStyleChange::Center:       return "center";
+    case DocStyleChange::Small:        return "small";
+    case DocStyleChange::Subscript:    return "subscript";
+    case DocStyleChange::Superscript:  return "superscript";
+    case DocStyleChange::Preformatted: return "pre";
     case DocStyleChange::Div:          return "div";
     case DocStyleChange::Span:         return "span";
+    case DocStyleChange::Strike:       return "strike";
+    case DocStyleChange::Underline:    return "u";
   }
   return "<invalid>";
 }
@@ -1584,6 +1586,26 @@ reparsetoken:
             else
             {
               handleStyleLeave(parent,children,DocStyleChange::Bold,tokenName);
+            }
+            break;
+          case HTML_STRIKE:
+            if (!g_token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Strike,&g_token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Strike,tokenName);
+            }
+            break;
+          case HTML_UNDERLINE:
+            if (!g_token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Underline,&g_token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Underline,tokenName);
             }
             break;
           case HTML_CODE:
@@ -5938,6 +5960,12 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case HTML_BOLD:
       handleStyleEnter(this,m_children,DocStyleChange::Bold,&g_token->attribs);
       break;
+    case HTML_STRIKE:
+      handleStyleEnter(this,m_children,DocStyleChange::Strike,&g_token->attribs);
+      break;
+    case HTML_UNDERLINE:
+      handleStyleEnter(this,m_children,DocStyleChange::Underline,&g_token->attribs);
+      break;
     case HTML_CODE:
       if (/*getLanguageFromFileName(g_fileName)==SrcLangExt_CSharp ||*/ g_xmlComment) 
         // for C# source or inside a <summary> or <remark> section we 
@@ -6346,6 +6374,12 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     //  break;
     case HTML_BOLD:
       handleStyleLeave(this,m_children,DocStyleChange::Bold,"b");
+      break;
+    case HTML_STRIKE:
+      handleStyleLeave(this,m_children,DocStyleChange::Strike,"strike");
+      break;
+    case HTML_UNDERLINE:
+      handleStyleLeave(this,m_children,DocStyleChange::Underline,"u");
       break;
     case HTML_CODE:
       handleStyleLeave(this,m_children,DocStyleChange::Code,"code");

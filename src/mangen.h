@@ -169,8 +169,8 @@ class ManGenerator : public OutputGenerator
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes);
     void endDescList()        {}
-    void startSimpleSect(SectionTypes,const char *,const char *,const char *);
-    void endSimpleSect();
+    void startExamples();
+    void endExamples();
     void startParamList(ParamListTypes,const char *title);
     void endParamList();
     //void writeDescItem();
@@ -197,9 +197,8 @@ class ManGenerator : public OutputGenerator
     void endContents() {}
     void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }
     
-    void startDescTable(const char *t) 
-    { startSimpleSect(EnumValues,0,0,t); startDescForItem(); }
-    void endDescTable() { endDescForItem(); endSimpleSect(); }
+    void startDescTable(const char *t);
+    void endDescTable();
     void startDescTableRow() {}
     void endDescTableRow() {}
     void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }

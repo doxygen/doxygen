@@ -196,6 +196,8 @@ void DocbookDocVisitor::visit(DocStyleChange *s)
       /* There is no equivalent Docbook tag for rendering Small text */
     case DocStyleChange::Small: /* XSLT Stylesheets can be used */ break;
                                                                    /* HTML only */
+    case DocStyleChange::Strike:  break;
+    case DocStyleChange::Underline:  break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
   }

@@ -1943,25 +1943,16 @@ void HtmlGenerator::endDescTableData()
   t << "</td>";
 }
 
-void HtmlGenerator::startSimpleSect(SectionTypes,
-                                const char *filename,const char *anchor,
-                                const char *title)
+void HtmlGenerator::startExamples()
 {
-  t << "<dl><dt><b>";
-  if (filename)
-  {
-    writeObjectLink(0,filename,anchor,title);
-  }
-  else
-  {
-    docify(title);
-  }
-  t << "</b></dt>";
+  t << "<dl class=\"section examples\"><dt>";
+  docify(theTranslator->trExamples());
+  t << "</dt>";
 }
 
-void HtmlGenerator::endSimpleSect()
+void HtmlGenerator::endExamples()
 {
-  t << "</dl>";
+  t << "</dl>" << endl;
 }
 
 void HtmlGenerator::startParamList(ParamListTypes,

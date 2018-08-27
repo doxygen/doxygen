@@ -120,6 +120,13 @@ void ManDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "\\fB";      else m_t << "\\fP";
       m_firstCol=FALSE;
       break;
+    case DocStyleChange::Strike:
+      /* not supported */
+      break;
+    case DocStyleChange::Underline: //underline is shown as emphasis
+      if (s->enable()) m_t << "\\fI";     else m_t << "\\fP";
+      m_firstCol=FALSE;
+      break;
     case DocStyleChange::Italic:
       if (s->enable()) m_t << "\\fI";     else m_t << "\\fP";
       m_firstCol=FALSE;
