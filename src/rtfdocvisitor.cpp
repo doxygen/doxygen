@@ -340,7 +340,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::PlantUML:
       {
         static QCString rtfOutput = Config_getString(RTF_OUTPUT);
-        QCString baseName = writePlantUMLSource(rtfOutput,s->exampleFile(),s->text());
+        QCString baseName = writePlantUMLSource(rtfOutput,s->exampleFile(),s->text(),PUML_BITMAP);
 
         writePlantUMLFile(baseName, s->hasCaption());
         visitCaption(this, s->children());
