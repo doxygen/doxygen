@@ -34,6 +34,7 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
   QCString imgName(4096);
   static int umlindex=1;
 
+  //printf("*** %s fileName: %s\n","writePlantUMLSource",qPrint(fileName));
   Debug::print(Debug::Plantuml,0,"*** %s fileName: %s\n","writePlantUMLSource",qPrint(fileName));
   Debug::print(Debug::Plantuml,0,"*** %s outDir: %s\n","writePlantUMLSource",qPrint(outDir));
 
@@ -103,6 +104,7 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   QCString pumlExe = "java";
   QCString pumlArgs = "";
 
+  //printf("*** %s %s\n","generatePlantUMLOutput",baseName);
   QStrList &pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
   char *s=pumlIncludePathList.first();
   if (s)
@@ -503,7 +505,7 @@ void PlantumlManager::print(QDict<QCString> &PlantumlContent)
     for (it.toFirst();(nb=it.current());++it)
     {
       Debug::print(Debug::Plantuml,0,"*** %s PlantumlContent key:%s\n","PlantumlManager::print",qPrint(it.currentKey()));
-      Debug::print(Debug::Plantuml,0,"***      Content :%s\n\n\n",qPrint(*nb));
+      Debug::print(Debug::Plantuml,0,"***      Content :%s\n",qPrint(*nb));
     }
   }
 }
@@ -525,7 +527,7 @@ void PlantumlManager::addPlantumlContent(QDict< QCString > &PlantumlContent,cons
   QCString* content = PlantumlContent.find(key);
   if(content == 0){
     content = new QCString("");
-    m_pngPlantumlContent.insert(key,content);
+    PlantumlContent.insert(key,content);
   }
   (*content)+=puContent;
 }
