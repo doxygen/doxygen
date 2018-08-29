@@ -54,7 +54,6 @@ class PlantumlManager
 	  void print(QDict< QList <QCString> > &PlantumlFiles);
 	  void addPlantumlContent(QDict< QCString > &PlantumlContent,const QCString key , const QCString &puContent);
 	  void print(QDict< QCString > &PlantumlContent);
-	  void runPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const char *type);
 	  void runPlantumlContent(QDict< QList <QCString> > &PlantumlFiles,QDict< QCString > &PlantumlContent, const char *type);
     static PlantumlManager     *m_theInstance;
     QDict< QList<QCString> >       m_pngPlantumlFiles;
