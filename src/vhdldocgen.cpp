@@ -3773,7 +3773,7 @@ void  FlowChart::printUmlTree()
 
   QCString n=convertNameToFileName();
   QCString tmp=htmlOutDir;
-  n=writePlantUMLSource(tmp,n,qcs);
+  n=writePlantUMLSource(tmp,n,qcs,PUML_SVG);
   generatePlantUMLOutput(n.data(),tmp.data(),PUML_SVG);
 }
 

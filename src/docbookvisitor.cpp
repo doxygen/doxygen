@@ -287,7 +287,7 @@ void DocbookDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::PlantUML:
       {
         static QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
-        QCString baseName = writePlantUMLSource(docbookOutput,s->exampleFile(),s->text());
+        QCString baseName = writePlantUMLSource(docbookOutput,s->exampleFile(),s->text(),PUML_BITMAP);
         QCString shortName = baseName;
         int i;
         if ((i=shortName.findRev('/'))!=-1)

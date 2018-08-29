@@ -48,6 +48,7 @@ static LabelMap s_labels[] =
   { "markdown",     Debug::Markdown     },
   { "filteroutput", Debug::FilterOutput },
   { "lex",          Debug::Lex },
+  { "plantuml",     Debug::Plantuml },
   { 0,             (Debug::DebugMask)0  }
 };
 
