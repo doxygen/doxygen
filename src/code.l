@@ -2627,6 +2627,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  addType();
   					  g_name=varname; 
 					}
+<Body>{SCOPETNAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"/{BN}*"(" |
 <Body>{SCOPETNAME}/{BN}*"("		{ // a() or c::a() or t<A,B>::a() or A\B\foo()
   					  addType();
 					  generateFunctionLink(*g_code,yytext);
