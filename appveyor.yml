@@ -1,0 +1,36 @@
+image: Visual Studio 2017
+
+configuration:
+  - Release
+  - Debug
+
+platform:
+  - x64
+  - Win32
+
+environment:
+  # VS VERSION IN CMAKE STYLE
+  matrix:
+    - VSVERSION: "15 2017"
+    - VSVERSION: "14 2015"
+
+init:
+  - cmake --version
+
+install:
+  - ps: Invoke-WebRequest https://github.com/lexxmark/winflexbison/releases/download/v2.5.15/win_flex_bison-2.5.15.zip -OutFile flex.zip
+  - 7z x flex.zip -oC:\deps\flex
+  - rename C:\deps\flex\win_bison.exe bison.exe
+  - rename C:\deps\flex\win_flex.exe flex.exe
+  - set "PATH=%PATH%;C:\deps\flex"
+
+before_build:
+  - if "%platform%"=="Win32" ( set "CMAKE_GENERATOR_NAME=Visual Studio %VSVERSION%" )
+  - if "%platform%"=="x64" ( set "CMAKE_GENERATOR_NAME=Visual Studio %VSVERSION% Win64")
+  - mkdir build
+  - cd build
+  - cmake .. -G "%CMAKE_GENERATOR_NAME%
+
+build:
+  project: "build\\PACKAGE.vcxproj"
+  parallel: true
