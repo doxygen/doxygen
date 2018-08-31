@@ -2795,7 +2795,7 @@ void RTFGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 {
   DBG_RTF(t << "{\\comment (exceptionEntry)}"    << endl)
   if (prefix)
-      t << " " << prefix;
+      t << " " << prefix << "(";
   else if (closeBracket)
       t << ")";
   t << " ";
