@@ -110,7 +110,7 @@ SEARCHENGINE     = NO
 \endverbatim
 
 To generate the documentation for the 
-<a href="http://www.stack.nl/~dimitri/qdbttabular/index.html">QdbtTabular</a> package
+<a href="https://sourceforge.net/projects/qdbttabular/">QdbtTabular</a> package
 I have used the following configuration file:
 \verbatim
 PROJECT_NAME     = QdbtTabular

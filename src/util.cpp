@@ -2665,7 +2665,7 @@ Protection classInheritedProtectionLevel(ClassDef *cd,ClassDef *bcd,Protection p
   if (level==256)
   {
     err("Internal inconsistency: found class %s seem to have a recursive "
-        "inheritance relation! Please send a bug report to dimitri@stack.nl\n",cd->name().data());
+        "inheritance relation! Please send a bug report to doxygen@gmail.com\n",cd->name().data());
   }
   else if (cd->baseClasses())
   {

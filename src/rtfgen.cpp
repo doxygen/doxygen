@@ -2632,7 +2632,7 @@ void testRTFOutput(const char *name)
 err:
   err("RTF integrity test failed at line %d of %s due to a bracket mismatch.\n"
       "       Please try to create a small code example that produces this error \n"
-      "       and send that to dimitri@stack.nl.\n",line,name);
+      "       and send that to doxygen@gmail.com.\n",line,name);
 }
 
 /**

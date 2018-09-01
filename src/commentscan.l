@@ -1005,7 +1005,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
    *   words and whitespace and other characters (#,?!, etc).
    *   grouping commands (e.g. @{ and @})
    *   language switch (e.g. \~english or \~).
-   *   mail address (e.g. dimitri@stack.nl).
+   *   mail address (e.g. doxygen@gmail.com).
    *   quoted text, such as "foo@bar"
    *   XML commands, <summary></summary><remarks></remarks>
    */
