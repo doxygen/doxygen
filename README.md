@@ -65,4 +65,4 @@ subversion to git hosted at GitHub
 
 Enjoy,
 
-Dimitri van Heesch (dimitri at stack.nl)
+Dimitri van Heesch (doxygen at gmail.com)
