@@ -406,7 +406,7 @@ static int processEmphasis2(GrowBuf &out, const char *data, int size, char c)
   return 0;
 }
 
-/** Parsing tripple emphasis.
+/** Parsing triple emphasis.
  *  Finds the first closing tag, and delegates to the other emph 
  */
 static int processEmphasis3(GrowBuf &out, const char *data, int size, char c)

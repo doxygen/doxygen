@@ -1,4 +1,4 @@
-Doxygen regession test suite
+Doxygen regression test suite
 ============================
 
 This directory contains a set of regression tests. Each test consists of a
@@ -7,7 +7,7 @@ has the same 3 digit number. The directory contains one or more reference
 files that are compared against the XML output produced by doxygen. If the
 result is the same, there is no regression and the test passes. If there is a
 difference the test fails and the difference (in diff -u format) will be shown.
-It is also possible to see whether or not the test can be build to a xhtml set
+It is also possible to see whether or not the test can be built to an xhtml set
 of files (and tested against a DTD), it is also possible to create a pdf file
 for each test to see if the LaTeX / pdf generation is possible.
 
@@ -57,4 +57,3 @@ There is also a CMakeLists.txt, which can be used from the build directory
 to run all tests by simply invoking 'make tests', to use the specific options use
 the flag TEST_FLAGS with make
   e.g. make tests TEST_FLAGS="--id=5 --id=10 --pdf --xhtml"
-

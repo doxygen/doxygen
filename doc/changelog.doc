@@ -718,7 +718,7 @@
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5569">5569</a> - Fix a potential null pointer dereference in src/searchindex.cpp [<a href="http://github.com/doxygen/doxygen/commit/e21aaadb920775f431a27957542da80e39d0c947">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5570">5570</a> - Fix wrong pointer initialization in src/definition.cpp [<a href="http://github.com/doxygen/doxygen/commit/cb5d8e6198fe0d0852fb06d6fa18b8ae2682e2c0">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5571">5571</a> - Fix potential modulo by zero in src/template.cpp [<a href="http://github.com/doxygen/doxygen/commit/c4007c3abea9c8494bf32181a1352b5366bede69">view</a>]</li>
-<li>Bug <a href="https://github.com/doxygen/doxygen/issues/5572">5572</a> - Reached end of file while still insided a (nested) comment in Markdown [<a href="http://github.com/doxygen/doxygen/commit/c7f7c954ec1356e7f361da0d655c72ca0012a0cf">view</a>]</li>
+<li>Bug <a href="https://github.com/doxygen/doxygen/issues/5572">5572</a> - Reached end of file while still inside a (nested) comment in Markdown [<a href="http://github.com/doxygen/doxygen/commit/c7f7c954ec1356e7f361da0d655c72ca0012a0cf">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5573">5573</a> - Fix a terminating null character after fread in src/filedef.cpp [<a href="http://github.com/doxygen/doxygen/commit/a4003db44dfb624c03b7e0a518e368d3e4b8c1ca">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5574">5574</a> - Remove not needed variable initialization in src/classdef.cpp [<a href="http://github.com/doxygen/doxygen/commit/5f01852bbfd3c81320ee4aa8cd45875a80b50ee1">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5575">5575</a> - Remove not needed pointer initialization in src/entry.cpp [<a href="http://github.com/doxygen/doxygen/commit/88832b15f1256846b1228ac411d270c6d092a50b">view</a>]</li>
@@ -2803,7 +2803,7 @@ make sure you add the following:
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3190">3190</a>: dropped support for a4wide paper format for LaTeX, since
        it is on the LaTeX taboo list.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3261">3261</a>: Behaviour of CLASS_DIAGRAM=NO in combination with
-       HAVE_DOT=YES, was not propely documented.</li>
+       HAVE_DOT=YES, was not properly documented.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3332">3332</a>: Python comments for next class or method could end up in
        code of a method/class when enabling INLINE_SOURCES.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3688">3688</a>: Fixed problem handling nested classes in Python.</li>
