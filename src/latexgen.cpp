@@ -2159,7 +2159,7 @@ void LatexGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBra
 void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 {
   if (prefix)
-      t << " " << prefix;
+      t << " " << prefix << "(";
   else if (closeBracket)
       t << ")";
   t << " ";
