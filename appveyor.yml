@@ -22,9 +22,7 @@ init:
 install:
   - ps: Invoke-WebRequest https://github.com/lexxmark/winflexbison/releases/download/v2.5.15/win_flex_bison-2.5.15.zip -OutFile flex.zip
   - 7z x flex.zip -oC:\deps\flex
-  - rename C:\deps\flex\win_bison.exe bison.exe
-  - rename C:\deps\flex\win_flex.exe flex.exe
-  - ps: Invoke-WebRequest https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs923/gs923w32.exe -OutFile gswin32c.exe
+  - ps: Invoke-WebRequest https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs924/gs924w32.exe -OutFile gswin32c.exe
   - gswin32c /S /D=C:\deps\ghostscript
   - ps: choco install -y miktex
   - refreshenv
