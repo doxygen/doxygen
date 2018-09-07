@@ -921,6 +921,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 {
   static bool latexSourceCode = Config_getBool(LATEX_SOURCE_CODE);
   static bool rtfSourceCode = Config_getBool(RTF_SOURCE_CODE);
+  static bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
   QCString fn = getSourceFileBase();
@@ -945,17 +946,25 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
+        if (!docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
+        }
         if (!rtfSourceCode)
         {
           ol.disable(OutputGenerator::RTF);
         }
-        // write line link (HTML, LaTeX optionally, RTF optionally)
+        // write line link (HTML and  optionally LaTeX, Docbook, RTF)
         ol.writeObjectLink(0,fn,anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         if (latexSourceCode) 
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
         }
         if (rtfSourceCode)
         {
@@ -975,6 +984,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
+        if (!docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
+        }
         if (!rtfSourceCode)
         {
           ol.disable(OutputGenerator::RTF);
@@ -986,6 +999,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         if (latexSourceCode) 
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
         }
         if (rtfSourceCode)
         {
@@ -1009,6 +1026,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
+        if (!docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
+        }
         if (!rtfSourceCode)
         {
           ol.disable(OutputGenerator::RTF);
@@ -1020,6 +1041,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         if (latexSourceCode) 
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
         }
         if (rtfSourceCode)
         {
@@ -1040,6 +1065,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.enable(OutputGenerator::Latex);
         }
+        if (docbookSourceCode)
+        {
+          ol.enable(OutputGenerator::Docbook);
+        }
         if (rtfSourceCode)
         {
           ol.enable(OutputGenerator::RTF);
@@ -1051,6 +1080,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         if (latexSourceCode) 
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
         }
         if (rtfSourceCode)
         {
@@ -1145,6 +1178,7 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
     const QCString &text,MemberSDict *members,bool /*funcOnly*/)
 {
   static bool latexSourceCode = Config_getBool(LATEX_SOURCE_CODE); 
+  static bool docbookSourceCode   = Config_getBool(DOCBOOK_PROGRAMLISTING);
   static bool rtfSourceCode   = Config_getBool(RTF_SOURCE_CODE);
   static bool sourceBrowser   = Config_getBool(SOURCE_BROWSER);
   static bool refLinkSource   = Config_getBool(REFERENCES_LINK_SOURCE);
@@ -1203,6 +1237,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
+          if (!docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
           if (!rtfSourceCode)
           {
             ol.disable(OutputGenerator::RTF);
@@ -1221,6 +1259,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
+          if (docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
           if (rtfSourceCode)
           {
             ol.disable(OutputGenerator::RTF);
@@ -1238,6 +1280,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
+          if (!docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
           if (!rtfSourceCode)
           {
             ol.disable(OutputGenerator::RTF);
@@ -1254,6 +1300,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           if (latexSourceCode)
           {
             ol.disable(OutputGenerator::Latex);
+          }
+          if (docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
           }
           if (rtfSourceCode)
           {
@@ -1633,7 +1683,7 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
     int level=1,l;
     char cs[2];
     cs[1]='\0';
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     for (li.toFirst();(si=li.current());++li)
     {
       if (si->type==SectionInfo::Section       || 
@@ -1678,6 +1728,55 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
     inLi[level]=FALSE;
     ol.writeString("</ul>\n");
     ol.writeString("</div>\n");
+    ol.popGeneratorState();
+  }
+
+  if (localToc.isDocbookEnabled())
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Docbook);
+    ol.writeString("    <toc>\n");
+    ol.writeString("    <title>" + theTranslator->trRTFTableOfContents() + "</title>\n");
+    SectionDict *sectionDict = getSectionDict();
+    SDict<SectionInfo>::Iterator li(*sectionDict);
+    SectionInfo *si;
+    int level=1,l;
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
+    int maxLevel = localToc.docbookLevel();
+    for (li.toFirst();(si=li.current());++li)
+    {
+      if (si->type==SectionInfo::Section       ||
+          si->type==SectionInfo::Subsection    ||
+          si->type==SectionInfo::Subsubsection ||
+          si->type==SectionInfo::Paragraph)
+      {
+        //printf("  level=%d title=%s\n",level,si->title.data());
+        int nextLevel = (int)si->type;
+        if (nextLevel>level)
+        {
+          for (l=level;l<nextLevel;l++)
+          {
+            if (l < maxLevel) ol.writeString("    <tocdiv>\n");
+          }
+        }
+        else if (nextLevel<level)
+        {
+          for (l=level;l>nextLevel;l--)
+          {
+            inLi[l]=FALSE;
+            if (l <= maxLevel) ol.writeString("    </tocdiv>\n");
+          }
+        }
+        if (nextLevel <= maxLevel)
+        {
+          QCString titleDoc = convertToDocBook(si->title);
+          ol.writeString("      <tocentry>" + (si->title.isEmpty()?si->label:titleDoc) + "</tocentry>\n");
+        }
+        inLi[nextLevel]=TRUE;
+        level = nextLevel;
+      }
+    }
+    ol.writeString("    </toc>\n");
     ol.popGeneratorState();
   }
 

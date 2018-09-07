@@ -2949,6 +2949,10 @@ static bool handleToc(const QCString &, const QCStringList &optList)
         {
           current->localToc.enableXml(level);
         }
+        else if (opt == "docbook")
+        {
+          current->localToc.enableDocbook(level);
+        }
         else
         {
           warn(yyFileName,yyLineNr,"Unknown option specified with \\tableofcontents: `%s'", (*it).stripWhiteSpace().data());

@@ -251,6 +251,7 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn)
   
   od.disable(OutputGenerator::Html);
   od.disable(OutputGenerator::Man);
+  od.disable(OutputGenerator::Docbook);
   if (Config_getBool(PDF_HYPERLINKS)) od.disable(OutputGenerator::Latex);
   if (Config_getBool(RTF_HYPERLINKS)) od.disable(OutputGenerator::RTF);
   od.startPageRef();
@@ -2215,6 +2216,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
       //if (latexEnabled) ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputGenerator::Docbook);
       // link for Html / man
       //printf("writeObjectLink(file=%s)\n",e->file.data());
       ol.writeObjectLink(0,e->file,e->anchor,e->name);
@@ -5921,6 +5923,66 @@ QCString convertToXML(const char *s)
       case '\'': growBuf.addStr("&apos;"); break; 
       case '"':  growBuf.addStr("&quot;"); break;
       case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8:
+      case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
+      case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
+      case 27: case 28: case 29: case 30: case 31:
+        break; // skip invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
+      default:   growBuf.addChar(c);       break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
+
+/*! Converts a string to an DocBook-encoded string */
+QCString convertToDocBook(const char *s)
+{
+  static GrowBuf growBuf;
+  growBuf.clear();
+  if (s==0) return "";
+  const unsigned char *q;
+  int cnt;
+  const unsigned char *p=(const unsigned char *)s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '<':  growBuf.addStr("&lt;");   break;
+      case '>':  growBuf.addStr("&gt;");   break;
+      case '&':  // possibility to have a special symbol
+        q = p;
+        cnt = 2; // we have to count & and ; as well
+        while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+        {
+          cnt++;
+          q++;
+        }
+        if (*q == ';')
+        {
+           --p; // we need & as well
+           DocSymbol::SymType res = HtmlEntityMapper::instance()->name2sym(QCString((char *)p).left(cnt));
+           if (res == DocSymbol::Sym_Unknown)
+           {
+             p++;
+             growBuf.addStr("&amp;");
+           }
+           else
+           {
+             growBuf.addStr(HtmlEntityMapper::instance()->docbook(res));
+             q++;
+             p = q;
+           }
+        }
+        else
+        {
+          growBuf.addStr("&amp;");
+        }
+        break;
+      case '\'': growBuf.addStr("&apos;"); break;
+      case '"':  growBuf.addStr("&quot;"); break;
+      case '\007':  growBuf.addStr("&#x2407;"); break;
+      case  1: case  2: case  3: case  4: case  5: case  6:          case  8:
       case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
       case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
       case 27: case 28: case 29: case 30: case 31:

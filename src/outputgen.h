@@ -322,7 +322,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
 class OutputGenerator : public BaseOutputDocInterface
 {
   public:
-    enum OutputType { Html, Latex, Man, RTF, XML, DEF, Perl };
+    enum OutputType { Html, Latex, Man, RTF, XML, DEF, Perl , Docbook};
 
     OutputGenerator();
     virtual ~OutputGenerator();

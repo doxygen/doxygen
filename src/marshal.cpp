@@ -350,6 +350,7 @@ void marshalLocalToc(StorageIntf *s,const LocalToc &lt)
   marshalInt(s,lt.htmlLevel());
   marshalInt(s,lt.latexLevel());
   marshalInt(s,lt.xmlLevel());
+  marshalInt(s,lt.docbookLevel());
 }
 
 void marshalEntry(StorageIntf *s,Entry *e)
@@ -740,6 +741,7 @@ LocalToc unmarshalLocalToc(StorageIntf *s)
   int htmlLevel  = unmarshalInt(s);
   int latexLevel = unmarshalInt(s);
   int xmlLevel   = unmarshalInt(s);
+  int docbookLevel   = unmarshalInt(s);
   if ((mask & (1<<LocalToc::Html))!=0)
   {
     result.enableHtml(htmlLevel);
@@ -751,6 +753,10 @@ LocalToc unmarshalLocalToc(StorageIntf *s)
   if ((mask & (1<<LocalToc::Xml))!=0)
   {
     result.enableXml(xmlLevel);
+  }
+  if ((mask & (1<<LocalToc::Docbook))!=0)
+  {
+    result.enableDocbook(docbookLevel);
   }
   return result;
 }

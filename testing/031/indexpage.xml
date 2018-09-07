@@ -8,6 +8,7 @@
     <detaileddescription>
       <para>Some text. <image type="html" name="sample.png"/>
  <image type="latex" name="sample.png" width="5cm">Doxygen logo</image>
+ <image type="docbook" name="sample.png"/>
  More text. </para>
     </detaileddescription>
   </compounddef>
