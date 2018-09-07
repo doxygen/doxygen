@@ -38,6 +38,14 @@
 #include "filename.h"
 #include "resourcemgr.h"
 
+#if 0
+#define LATEX_GEN_C LATEX_GEN_C1(t)
+#define LATEX_GEN_C1(x) x << "%% LATEX_GEN_C " << __LINE__ << "\n";
+#else
+#define LATEX_GEN_C
+#define LATEX_GEN_C1(x)
+#endif
+
 static bool DoxyCodeOpen = FALSE;
 static bool DoxyCodeLineOpen = FALSE;
 //-------------------------------
@@ -846,6 +854,7 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
 
 void LatexGenerator::startFile(const char *name,const char *,const char *)
 {
+LATEX_GEN_C
 #if 0
   setEncoding(Config_getString(LATEX_OUTPUT_ENCODING));
 #endif
@@ -860,6 +869,7 @@ void LatexGenerator::startFile(const char *name,const char *,const char *)
 
 void LatexGenerator::endFile()
 {
+LATEX_GEN_C
   endPlainFile();
   m_codeGen.setSourceFileName("");
 }
@@ -871,11 +881,13 @@ void LatexGenerator::endFile()
   
 void LatexGenerator::startProjectNumber()
 {
+LATEX_GEN_C
   t << "\\\\[1ex]\\large "; 
 }
 
 void LatexGenerator::startIndexSection(IndexSections is)
 {
+LATEX_GEN_C
   bool &compactLatex = Config_getBool(COMPACT_LATEX);
   QCString &latexHeader = Config_getString(LATEX_HEADER);
   switch (is)
@@ -1051,6 +1063,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
 
 void LatexGenerator::endIndexSection(IndexSections is)
 {
+LATEX_GEN_C
   //static bool compactLatex = Config_getBool(COMPACT_LATEX);
   static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   static QCString latexHeader = Config_getString(LATEX_HEADER);
@@ -1298,6 +1311,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
 
 void LatexGenerator::writePageLink(const char *name, bool /*first*/)
 {
+LATEX_GEN_C
   //bool &compactLatex = Config_getBool(COMPACT_LATEX);
   // next is remove for bug615957
   //if (compactLatex || first) t << "\\input" ; else t << "\\include";
@@ -1308,6 +1322,7 @@ void LatexGenerator::writePageLink(const char *name, bool /*first*/)
 
 void LatexGenerator::writeStyleInfo(int part)
 {
+LATEX_GEN_C
   if (part > 0)
     return;
 
@@ -1318,26 +1333,31 @@ void LatexGenerator::writeStyleInfo(int part)
 
 void LatexGenerator::newParagraph()
 {
+LATEX_GEN_C
   t << endl << endl;
 }
 
 void LatexGenerator::startParagraph(const char *)
 {
+LATEX_GEN_C
   t << endl << endl;
 }
 
 void LatexGenerator::endParagraph()
 {
+LATEX_GEN_C
   t << endl << endl;
 }
 
 void LatexGenerator::writeString(const char *text)
 {
+LATEX_GEN_C
   t << text;
 }
 
 void LatexGenerator::startIndexItem(const char *ref,const char *fn)
 {
+LATEX_GEN_C
   t << "\\item ";
   if (!ref && fn)
   {
@@ -1347,6 +1367,7 @@ void LatexGenerator::startIndexItem(const char *ref,const char *fn)
 
 void LatexGenerator::endIndexItem(const char *ref,const char *fn)
 {
+LATEX_GEN_C
   if (!ref && fn)
   {
     t << "}{\\pageref{" << stripPath(fn) << "}}{}" << endl;
@@ -1363,6 +1384,7 @@ void LatexGenerator::endIndexItem(const char *ref,const char *fn)
 
 void LatexGenerator::startHtmlLink(const char *url)
 {
+LATEX_GEN_C
   if (Config_getBool(PDF_HYPERLINKS))
   {
     t << "\\href{";
@@ -1374,6 +1396,7 @@ void LatexGenerator::startHtmlLink(const char *url)
 
 void LatexGenerator::endHtmlLink()
 {
+LATEX_GEN_C
   t << "}";
 }
 
@@ -1393,6 +1416,7 @@ void LatexGenerator::endHtmlLink()
 void LatexGenerator::writeStartAnnoItem(const char *,const char *,
                                         const char *path,const char *name)
 {
+LATEX_GEN_C
   t << "\\item\\contentsline{section}\\textbf{ ";
   if (path) docify(path);
   docify(name); 
@@ -1401,26 +1425,31 @@ void LatexGenerator::writeStartAnnoItem(const char *,const char *,
 
 void LatexGenerator::writeEndAnnoItem(const char *name)
 {
+LATEX_GEN_C
   t << "}{\\pageref{" << stripPath(name) << "}}{}" << endl;
 }
 
 void LatexGenerator::startIndexKey()
 {
+LATEX_GEN_C
   t << "\\item\\contentsline{section}{";
 }
 
 void LatexGenerator::endIndexKey()
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::startIndexValue(bool hasBrief)
 {
+LATEX_GEN_C
   t << " ";
   if (hasBrief) t << "\\\\*";
 }
 
 void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
 {
+LATEX_GEN_C
   //if (hasBrief) t << ")";
   t << "}{\\pageref{" << stripPath(name) << "}}{}" << endl;
 }
@@ -1435,6 +1464,7 @@ void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
 
 void LatexGenerator::startTextLink(const char *f,const char *anchor)
 {
+LATEX_GEN_C
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!disableLinks && pdfHyperlinks)
   {
@@ -1451,6 +1481,7 @@ void LatexGenerator::startTextLink(const char *f,const char *anchor)
 
 void LatexGenerator::endTextLink()
 {
+LATEX_GEN_C
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!disableLinks && pdfHyperlinks)
   {
@@ -1462,6 +1493,7 @@ void LatexGenerator::endTextLink()
 void LatexGenerator::writeObjectLink(const char *ref, const char *f,
                                      const char *anchor, const char *text)
 {
+LATEX_GEN_C
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!disableLinks && !ref && pdfHyperlinks)
   {
@@ -1483,11 +1515,13 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
 
 void LatexGenerator::startPageRef()
 {
+LATEX_GEN_C
   t << " \\doxyref{}{";
 }
 
 void LatexGenerator::endPageRef(const char *clname, const char *anchor)
 {
+LATEX_GEN_C
   t << "}{";
   if (clname) t << clname; 
   if (anchor) t << "_" << anchor;
@@ -1497,6 +1531,7 @@ void LatexGenerator::endPageRef(const char *clname, const char *anchor)
 
 void LatexGenerator::startTitleHead(const char *fileName)
 {
+LATEX_GEN_C
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks && fileName)
@@ -1515,6 +1550,7 @@ void LatexGenerator::startTitleHead(const char *fileName)
 
 void LatexGenerator::endTitleHead(const char *fileName,const char *name)
 {
+LATEX_GEN_C
   t << "}" << endl;
   if (name)
   {
@@ -1528,6 +1564,7 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
 
 void LatexGenerator::startTitle()
 {
+LATEX_GEN_C
   if (Config_getBool(COMPACT_LATEX)) 
   {
     t << "\\subsection{"; 
@@ -1540,6 +1577,7 @@ void LatexGenerator::startTitle()
 
 void LatexGenerator::startGroupHeader(int extraIndentLevel)
 {
+LATEX_GEN_C
   if (Config_getBool(COMPACT_LATEX)) 
   {
     extraIndentLevel++;
@@ -1566,12 +1604,14 @@ void LatexGenerator::startGroupHeader(int extraIndentLevel)
 
 void LatexGenerator::endGroupHeader(int)
 {
+LATEX_GEN_C
   disableLinks=FALSE;
   t << "}" << endl;
 }
 
 void LatexGenerator::startMemberHeader(const char *,int)
 {
+LATEX_GEN_C
   if (Config_getBool(COMPACT_LATEX)) 
   {
     t << "\\subsubsection*{"; 
@@ -1585,6 +1625,7 @@ void LatexGenerator::startMemberHeader(const char *,int)
 
 void LatexGenerator::endMemberHeader()
 {
+LATEX_GEN_C
   disableLinks=FALSE;
   t << "}" << endl;
 }
@@ -1597,6 +1638,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
                                     int memTotal,
                                     bool showInline)
 {
+LATEX_GEN_C
   if (memname && memname[0]!='@')
   {
     t << "\\index{";
@@ -1656,6 +1698,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
 
 void LatexGenerator::endMemberDoc(bool)
 {
+LATEX_GEN_C
   disableLinks=FALSE;
   t << "}\n\n";
   //if (Config_getBool(COMPACT_LATEX)) t << "\\hfill";
@@ -1665,6 +1708,7 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
                                      const char *anchor, const char *,
                                      const char *)
 {
+LATEX_GEN_C
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   t << "\\mbox{";
@@ -1683,10 +1727,12 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
 
 void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::writeAnchor(const char *fName,const char *name)
-{ 
+{
+LATEX_GEN_C 
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
   t << "\\label{" << stripPath(name) << "}" << endl; 
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
@@ -1712,6 +1758,7 @@ void LatexGenerator::writeAnchor(const char *fName,const char *name)
 
 void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 {
+LATEX_GEN_C
   if (s1)
   {
     t << "\\index{";
@@ -1734,6 +1781,7 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 
 void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
 {
+LATEX_GEN_C
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
@@ -1771,17 +1819,20 @@ void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::Sect
 
 void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
 {
+LATEX_GEN_C
   t << "}\\label{" << lab << "}" << endl;
 }
 
 
 void LatexGenerator::docify(const char *str)
 {
+LATEX_GEN_C
   filterLatexString(t,str,insideTabbing,FALSE,FALSE);
 }
 
 void LatexGenerator::writeChar(char c)
 {
+LATEX_GEN_C
   char cs[2];
   cs[0]=c;
   cs[1]=0;
@@ -1790,6 +1841,7 @@ void LatexGenerator::writeChar(char c)
 
 void LatexGenerator::startClassDiagram()
 {
+LATEX_GEN_C
   //if (Config_getBool(COMPACT_LATEX)) t << "\\subsubsection"; else t << "\\subsection";
   //t << "{";
 }
@@ -1797,12 +1849,14 @@ void LatexGenerator::startClassDiagram()
 void LatexGenerator::endClassDiagram(const ClassDiagram &d,
                                        const char *fileName,const char *)
 {
+LATEX_GEN_C
   d.writeFigure(t,dir,fileName);
 }
 
 
 void LatexGenerator::startAnonTypeScope(int indent)
 {
+LATEX_GEN_C
   if (indent==0)
   {
     t << "\\begin{tabbing}" << endl;
@@ -1814,6 +1868,7 @@ void LatexGenerator::startAnonTypeScope(int indent)
 
 void LatexGenerator::endAnonTypeScope(int indent)
 {
+LATEX_GEN_C
   if (indent==0)
   {
     t << endl << "\\end{tabbing}";
@@ -1824,6 +1879,7 @@ void LatexGenerator::endAnonTypeScope(int indent)
 
 void LatexGenerator::startMemberTemplateParams()
 {
+LATEX_GEN_C
   if (templateMemberItem)
   {
     t << "{\\footnotesize ";
@@ -1832,6 +1888,7 @@ void LatexGenerator::startMemberTemplateParams()
 
 void LatexGenerator::endMemberTemplateParams(const char *,const char *)
 {
+LATEX_GEN_C
   if (templateMemberItem)
   {
     t << "}\\\\";
@@ -1839,7 +1896,8 @@ void LatexGenerator::endMemberTemplateParams(const char *,const char *)
 }
 
 void LatexGenerator::startMemberItem(const char *,int annoType,const char *) 
-{ 
+{
+LATEX_GEN_C 
   //printf("LatexGenerator::startMemberItem(%d)\n",annType);
   if (!insideTabbing)
   {
@@ -1850,6 +1908,7 @@ void LatexGenerator::startMemberItem(const char *,int annoType,const char *)
 
 void LatexGenerator::endMemberItem() 
 {
+LATEX_GEN_C
   if (insideTabbing)
   {
     t << "\\\\";
@@ -1860,6 +1919,7 @@ void LatexGenerator::endMemberItem()
 
 void LatexGenerator::startMemberDescription(const char *,const char *,bool) 
 {
+LATEX_GEN_C
   if (!insideTabbing)
   { 
     t << "\\begin{DoxyCompactList}\\small\\item\\em "; 
@@ -1872,7 +1932,8 @@ void LatexGenerator::startMemberDescription(const char *,const char *,bool)
 }
 
 void LatexGenerator::endMemberDescription() 
-{ 
+{
+LATEX_GEN_C 
   if (!insideTabbing)
   {
     //t << "\\item\\end{DoxyCompactList}"; 
@@ -1887,6 +1948,7 @@ void LatexGenerator::endMemberDescription()
 
 void LatexGenerator::writeNonBreakableSpace(int) 
 {
+LATEX_GEN_C
   //printf("writeNonBreakbleSpace()\n");
   if (insideTabbing)
   {
@@ -1914,18 +1976,21 @@ void LatexGenerator::writeNonBreakableSpace(int)
 
 void LatexGenerator::startDescTable(const char *title)
 {
+LATEX_GEN_C
   incUsedTableLevels();
   t << "\\begin{DoxyEnumFields}{" << title << "}" << endl;
 }
 
 void LatexGenerator::endDescTable()
 {
+LATEX_GEN_C
   decUsedTableLevels();
   t << "\\end{DoxyEnumFields}" << endl;
 }
 
 void LatexGenerator::startDescTableRow()
 {
+LATEX_GEN_C
   // this is needed to prevent the \hypertarget, \label, and \index commands from messing up
   // the row height (based on http://tex.stackexchange.com/a/186102)
   t << "\\raisebox{\\heightof{T}}[0pt][0pt]{";
@@ -1933,34 +1998,41 @@ void LatexGenerator::startDescTableRow()
 
 void LatexGenerator::endDescTableRow()
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::startDescTableTitle()
 {
+LATEX_GEN_C
   t << "}";
 }
 
 void LatexGenerator::endDescTableTitle()
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::startDescTableData()
 {
+LATEX_GEN_C
   t << "&";
 }
 
 void LatexGenerator::endDescTableData()
 {
+LATEX_GEN_C
   t << "\\\\\n\\hline\n" << endl;
 }
 
 void LatexGenerator::lastIndexPage() 
 {
+LATEX_GEN_C
 }
 
 
 void LatexGenerator::startMemberList()  
-{ 
+{
+LATEX_GEN_C 
   if (!insideTabbing)
   {
     t << "\\begin{DoxyCompactItemize}" << endl; 
@@ -1969,6 +2041,7 @@ void LatexGenerator::startMemberList()
 
 void LatexGenerator::endMemberList()    
 {
+LATEX_GEN_C
   //printf("LatexGenerator::endMemberList(%d)\n",insideTabbing);
   if (!insideTabbing)
   {
@@ -1979,6 +2052,7 @@ void LatexGenerator::endMemberList()
 
 void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 {
+LATEX_GEN_C
   if (hasHeader) t << "\\begin{Indent}";
   t << "\\textbf{ ";
   // changed back to rev 756 due to bug 660501
@@ -1994,6 +2068,7 @@ void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 
 void LatexGenerator::endMemberGroupHeader()
 {
+LATEX_GEN_C
   // changed back to rev 756 due to bug 660501
   t << "}\\par" << endl;
   //t << "}" << endl;
@@ -2001,89 +2076,107 @@ void LatexGenerator::endMemberGroupHeader()
 
 void LatexGenerator::startMemberGroupDocs()
 {
+LATEX_GEN_C
   t << "{\\em ";
 }
 
 void LatexGenerator::endMemberGroupDocs()
 {
+LATEX_GEN_C
   t << "}";
 }
 
 void LatexGenerator::startMemberGroup()
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::endMemberGroup(bool hasHeader)
 {
+LATEX_GEN_C
   if (hasHeader)t << "\\end{Indent}"; 
   t << endl;
 }
 
 void LatexGenerator::startDotGraph() 
 {
+LATEX_GEN_C
   newParagraph();
 }
 
 void LatexGenerator::endDotGraph(const DotClassGraph &g) 
 {
+LATEX_GEN_C
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
 
 void LatexGenerator::startInclDepGraph() 
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::endInclDepGraph(const DotInclDepGraph &g) 
 {
+LATEX_GEN_C
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
 
 void LatexGenerator::startGroupCollaboration() 
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::endGroupCollaboration(const DotGroupCollaboration &g) 
 {
+LATEX_GEN_C
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
 
 void LatexGenerator::startCallGraph() 
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::endCallGraph(const DotCallGraph &g) 
 {
+LATEX_GEN_C
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
 
 void LatexGenerator::startDirDepGraph() 
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::endDirDepGraph(const DotDirDeps &g) 
 {
+LATEX_GEN_C
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
 
 void LatexGenerator::startDescription() 
-{ 
+{
+LATEX_GEN_C 
   t << "\\begin{description}" << endl; 
 }
 
 void LatexGenerator::endDescription()   
-{ 
+{
+LATEX_GEN_C 
   t << "\\end{description}" << endl; 
   firstDescItem=TRUE;
 }
 
 void LatexGenerator::startDescItem()    
-{ 
+{
+LATEX_GEN_C 
   firstDescItem=TRUE;
   t << "\\item["; 
 }
 
 void LatexGenerator::endDescItem()      
-{ 
+{
+LATEX_GEN_C 
   if (firstDescItem) 
   {
     t << "]" << endl;
@@ -2097,6 +2190,7 @@ void LatexGenerator::endDescItem()
 
 void LatexGenerator::startExamples()
 {
+LATEX_GEN_C
   t << "\\begin{Desc}\n\\item[";
   docify(theTranslator->trExamples());
   t << "]";
@@ -2104,11 +2198,13 @@ void LatexGenerator::startExamples()
 
 void LatexGenerator::endExamples()
 {
+LATEX_GEN_C
   t << "\\end{Desc}" << endl;
 }
 
 void LatexGenerator::startParamList(ParamListTypes,const char *title)
 {
+LATEX_GEN_C
   t << "\\begin{Desc}\n\\item[";
   docify(title);
   t << "]";
@@ -2116,11 +2212,13 @@ void LatexGenerator::startParamList(ParamListTypes,const char *title)
 
 void LatexGenerator::endParamList()
 {
+LATEX_GEN_C
   t << "\\end{Desc}" << endl;
 }
 
 void LatexGenerator::startParameterList(bool openBracket)
 {
+LATEX_GEN_C
   /* start of ParameterType ParameterName list */
   if (openBracket) t << "(";
   t << "\\begin{DoxyParamCaption}";
@@ -2128,26 +2226,31 @@ void LatexGenerator::startParameterList(bool openBracket)
 
 void LatexGenerator::endParameterList()
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::startParameterType(bool first,const char *key)
 {
+LATEX_GEN_C
   t << "\\item[{";
   if (!first && key) docify(key);
 }
 
 void LatexGenerator::endParameterType()
 {
+LATEX_GEN_C
   t << "}]";
 }
 
 void LatexGenerator::startParameterName(bool /*oneArgOnly*/)
 {
+LATEX_GEN_C
   t << "{";
 }
 
 void LatexGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
 {
+LATEX_GEN_C
   t << " }";
   if (last)
   {
@@ -2158,6 +2261,7 @@ void LatexGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBra
 
 void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 {
+LATEX_GEN_C
   if (prefix)
       t << " " << prefix << "(";
   else if (closeBracket)
@@ -2167,6 +2271,7 @@ void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 
 void LatexGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
+LATEX_GEN_C
   LatexDocVisitor *visitor =
     new LatexDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""),insideTabbing);
   n->accept(visitor);
@@ -2175,6 +2280,7 @@ void LatexGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 
 void LatexGenerator::startConstraintList(const char *header)
 {
+LATEX_GEN_C
   t << "\\begin{Desc}\n\\item[";
   docify(header);
   t << "]";
@@ -2183,45 +2289,54 @@ void LatexGenerator::startConstraintList(const char *header)
 
 void LatexGenerator::startConstraintParam()
 {
+LATEX_GEN_C
   t << "\\item[{\\em ";
 }
 
 void LatexGenerator::endConstraintParam()
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::startConstraintType()
 {
+LATEX_GEN_C
   t << "} : {\\em ";
 }
 
 void LatexGenerator::endConstraintType()
 {
+LATEX_GEN_C
   t << "}]";
 }
 
 void LatexGenerator::startConstraintDocs()
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::endConstraintDocs()
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::endConstraintList()
 {
+LATEX_GEN_C
   t << "\\end{description}" << endl;
   t << "\\end{Desc}" << endl;
 }
 
 void LatexGenerator::startCodeFragment()
 {
+LATEX_GEN_C
   t << "\n\\begin{DoxyCode}{" << usedTableLevels() << "}\n";
   DoxyCodeOpen = TRUE;
 }
 
 void LatexGenerator::endCodeFragment()
 {
+LATEX_GEN_C
   //if (DoxyCodeOpen)
   //{
   //  t << "}\n";
@@ -2233,6 +2348,7 @@ void LatexGenerator::endCodeFragment()
 
 void LatexGenerator::startInlineHeader()
 {
+LATEX_GEN_C
   if (Config_getBool(COMPACT_LATEX)) 
   {
     t << "\\paragraph*{"; 
@@ -2245,11 +2361,13 @@ void LatexGenerator::startInlineHeader()
 
 void LatexGenerator::endInlineHeader()
 {
+LATEX_GEN_C
   t << "}" << endl;
 }
 
 void LatexGenerator::lineBreak(const char *)
 {
+LATEX_GEN_C
   if (insideTabbing)
   {
     t << "\\\\\n";
@@ -2262,6 +2380,7 @@ void LatexGenerator::lineBreak(const char *)
 
 void LatexGenerator::startMemberDocSimple(bool isEnum)
 {
+LATEX_GEN_C
   incUsedTableLevels();
   if (isEnum)
   {
@@ -2278,6 +2397,7 @@ void LatexGenerator::startMemberDocSimple(bool isEnum)
 
 void LatexGenerator::endMemberDocSimple(bool isEnum)
 {
+LATEX_GEN_C
   decUsedTableLevels();
   if (isEnum)
   {
@@ -2291,48 +2411,57 @@ void LatexGenerator::endMemberDocSimple(bool isEnum)
 
 void LatexGenerator::startInlineMemberType()
 {
+LATEX_GEN_C
   insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
 }
 
 void LatexGenerator::endInlineMemberType()
 {
+LATEX_GEN_C
   t << "&" << endl;
   insideTabbing = FALSE;
 }
 
 void LatexGenerator::startInlineMemberName()
 {
+LATEX_GEN_C
   insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
 }
 
 void LatexGenerator::endInlineMemberName()
 {
+LATEX_GEN_C
   t << "&" << endl;
   insideTabbing = FALSE;
 }
 
 void LatexGenerator::startInlineMemberDoc()
 {
+LATEX_GEN_C
 }
 
 void LatexGenerator::endInlineMemberDoc()
 {
+LATEX_GEN_C
   t << "\\\\\n\\hline\n" << endl;
 }
 
 void LatexGenerator::startLabels()
 {
+LATEX_GEN_C
   t << "\\hspace{0.3cm}";
 }
 
 void LatexGenerator::writeLabel(const char *l,bool isLast)
 {
+LATEX_GEN_C
   t << "{\\ttfamily [" << l << "]}";
   if (!isLast) t << ", ";
 }
 
 void LatexGenerator::endLabels()
 {
+LATEX_GEN_C
 }
 
 
