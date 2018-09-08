@@ -6340,10 +6340,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  BEGIN(docBlockContext);
   					}
 <DocBlock>^{B}*"*"+/[^/]		{ 
-
-                                          QCString indent;
-                                          indent.fill(' ',computeIndent(yytext,g_column));
-                                          docBlock+=indent;
+                                          // issue 6473
+                                          // QCString indent;
+                                          // indent.fill(' ',computeIndent(yytext,g_column));
+                                          // docBlock+=indent;
   					}
 <DocBlock>^{B}*("//")?{B}*"*"+/[^//a-z_A-Z0-9*]	{ // start of a comment line
                                           QCString indent;
