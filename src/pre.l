@@ -1172,6 +1172,11 @@ QCString removeIdsAndMarkers(const char *s)
 	{
 	  // skip
 	}
+	else if (*(p+1)=='\000')
+	{
+	  result+=c;
+	  return result;
+	}
 	p+=2;
       }
       else if (isdigit(c)) // number
