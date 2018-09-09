@@ -30,7 +30,7 @@ The latest binaries and source of Doxygen can be downloaded from:
 Developers
 ---------
 * Linux Build Status: <a href="https://travis-ci.org/doxygen/doxygen"><img src="https://secure.travis-ci.org/doxygen/doxygen.png?branch=master"/></a>
-* Windows Build Status: <a href="https://ci.appveyor.com/api/projects/status/github/doxygen/doxygen"><img src="https://ci.appveyor.com/api/projects/status/github/doxygen/doxygen"/></a>
+* Windows Build Status: <a href="https://ci.appveyor.com/project/doxygen/doxygen"><img src="https://ci.appveyor.com/api/projects/status/github/doxygen/doxygen"/></a>
 
 * Coverity Scan Build Status: <a href="https://scan.coverity.com/projects/2860"> <img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/2860/badge.svg"/> </a>
 
