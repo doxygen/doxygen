@@ -98,10 +98,11 @@ def main():
 	directory = sys.argv[1]
 	files = []
 	for dirName, subdirList, fileList in walk(directory):
-		for fname in sorted(fileList):
+		for fname in fileList:
 			subdir = dirName[len(directory)+1:] if dirName.startswith(directory) else dirName
 			if subdir:
 				files.append(File.factory(directory,subdir,fname))
+	files.sort(key=lambda f: f.subdir + "/" + f.fileName)
 	outputFile = open(sys.argv[2],"w")
 	print("#include \"resourcemgr.h\"\n",file=outputFile)
 	for f in files:
