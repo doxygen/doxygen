@@ -2597,6 +2597,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_name+=yytext+7; 
                                         }
 <Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"("::"{ID})*/{B}* { // A<T> *pt;
+					  if (YY_START==Body)
+					  {
+					    // check for special case that starts with: operator{B}*<[=]?{B}*(
+					    static QRegExp re("operator[ \t]*<[=]?[ \t]*(");
+					    QString qq = yytext;
+					    if (qq.find(re) == 0) REJECT;
+					  }
 					  int i=QCString(yytext).find('<');
 					  QCString kw = QCString(yytext).left(i).stripWhiteSpace();
 					  if (kw.right(5)=="_cast" && YY_START==Body)
