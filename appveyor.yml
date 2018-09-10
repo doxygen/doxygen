@@ -1,4 +1,4 @@
-image: Visual Studio 2017
+image: Visual Studio 2015
 
 configuration:
   - Release
@@ -11,7 +11,7 @@ platform:
 environment:
   # VS VERSION IN CMAKE STYLE
   matrix:
-    - VSVERSION: "15 2017"
+#    - VSVERSION: "15 2017", disabled until it starts working
     - VSVERSION: "14 2015"
 
 init:
