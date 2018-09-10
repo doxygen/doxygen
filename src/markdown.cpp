@@ -2343,7 +2343,7 @@ static QCString processBlocks(const QCString &s,int indent)
       else if (isCodeBlock(data+i,i,end-i,blockIndent))
       {
         // skip previous line (it is empty anyway)
-        i+=writeCodeBlock(out,data+i,size-i,blockIndent);
+        i+=writeCodeBlock(out,data+i,end-i,blockIndent);
         pi=-1;
         end=i+1;
         continue;
