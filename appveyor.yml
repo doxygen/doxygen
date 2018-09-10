@@ -1,8 +1,8 @@
-image: Visual Studio 2015
+image: Visual Studio 2017
 
 configuration:
   - Release
-  - Debug
+#  - Debug
 
 platform:
   - x64
@@ -11,7 +11,7 @@ platform:
 environment:
   # VS VERSION IN CMAKE STYLE
   matrix:
-#    - VSVERSION: "15 2017", disabled until it starts working
+    - VSVERSION: "15 2017"
     - VSVERSION: "14 2015"
 
 init:
@@ -42,7 +42,7 @@ build:
   project: "build\\PACKAGE.vcxproj"
   parallel: false
 
-test_script:
-  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-  - cmake -G "%CMAKE_GENERATOR_NAME%" -D build_doc=ON ..
-  - msbuild "doc\docs.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#test_script:
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - cmake -G "%CMAKE_GENERATOR_NAME%" -D build_doc=ON ..
+#  - msbuild "doc\docs.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
