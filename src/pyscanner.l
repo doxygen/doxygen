@@ -1430,7 +1430,7 @@ STARTDOCSYMS      "##"
 			        actualDoc.prepend("\\verbatim ");
 			        actualDoc.append("\\endverbatim ");
 			      }
-			      actualDoc.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
+			      actualDoc.prepend("\\namespace "+g_moduleScope+" ");
 			      handleCommentBlock(actualDoc, FALSE);
 			    }
 			    if ((docBlockContext==ClassBody /*&& !g_hideClassDocs*/) ||
