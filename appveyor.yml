@@ -43,7 +43,7 @@ build:
   parallel: false
 
 test_script:
-# first test (-h) to see if set 'trick' works.
+# first test (-h) to see if set 'trick' works
   - set TEST_FLAGS=-h
   - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - set TEST_FLAGS=-id 1
