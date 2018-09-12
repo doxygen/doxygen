@@ -1,6 +1,6 @@
 language: cpp
 os:
-    - linux-ppc64le 
+    - linux-ppc64le
     - linux
 dist: xenial
 compiler:
@@ -21,6 +21,32 @@ addons:
             - libxml2-utils
             - cmake
             - cmake-data
+
+jobs:
+    include:
+        - os: osx
+          compiler: clang
+
+before_script:
+    - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+        pip install --quiet conan;
+        export HOMEBREW_NO_AUTO_UPDATE=1;
+        brew install ghostscript;
+
+        travis_wait brew cask install mactex-no-gui;
+        curl -O -L http://mirrors.ctan.org/support/epstopdf.zip;
+        unzip epstopdf.zip;
+        mkdir -p /Users/travis/Library/TeX/texbin/;
+        mv epstopdf/epstopdf.pl /Users/travis/Library/TeX/texbin/epstopdf;
+        chmod a+x /Users/travis/Library/TeX/texbin/epstopdf;
+        rm -rf epstopdf*;
+        export PATH=/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH;
+
+        conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
+        printf "[requires] \nlibxml2/2.9.8@bincrafters/stable \nQt/5.11.1@bincrafters/stable" >> conanfile.txt;
+        conan install . -g virtualrunenv;
+        source activate_run.sh;
+      fi;
 
 script:
     - mkdir build
