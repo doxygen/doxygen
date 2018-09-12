@@ -8156,36 +8156,51 @@ static void inheritDocumentation()
 {
   MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
   MemberName *mn;
+ msg(" ==> %d\n",__LINE__);
   //int count=0;
   for (;(mn=mnli.current());++mnli)
   {
+ msg(" ==> %d memberName #%s#\n",__LINE__,mn->memberName());
     MemberNameIterator mni(*mn);
     MemberDef *md;
     for (;(md=mni.current());++mni)
     {
+ msg(" ==> %d memberDef #%s#\n",__LINE__,md->name().data());
       //printf("%04d Member `%s'\n",count++,md->name().data());
       if (md->documentation().isEmpty() && md->briefDescription().isEmpty())
       { // no documentation yet
+ msg(" ==> %d\n",__LINE__);
         MemberDef *bmd = md->reimplements();
+ msg(" ==> %d\n",__LINE__);
         while (bmd && bmd->documentation().isEmpty() &&
                       bmd->briefDescription().isEmpty()
               )
         { // search up the inheritance tree for a documentation member
           //printf("bmd=%s class=%s\n",bmd->name().data(),bmd->getClassDef()->name().data());
+ msg(" ==> %d bmd #%s#\n",__LINE__,bmd->name().data());
           bmd = bmd->reimplements();
+ msg(" ==> %d\n",__LINE__);
         }
         if (bmd) // copy the documentation from the reimplemented member
         {
+ msg(" ==> %d copy bmd #%s#\n",__LINE__,bmd->name().data());
           md->setInheritsDocsFrom(bmd);
+ msg(" ==> %d\n",__LINE__);
           md->setDocumentation(bmd->documentation(),bmd->docFile(),bmd->docLine());
+ msg(" ==> %d\n",__LINE__);
           md->setDocsForDefinition(bmd->isDocsForDefinition());
+ msg(" ==> %d\n",__LINE__);
           md->setBriefDescription(bmd->briefDescription(),bmd->briefFile(),bmd->briefLine());
+ msg(" ==> %d\n",__LINE__);
           md->copyArgumentNames(bmd);
+ msg(" ==> %d\n",__LINE__);
           md->setInbodyDocumentation(bmd->inbodyDocumentation(),bmd->inbodyFile(),bmd->inbodyLine());
+ msg(" ==> %d\n",__LINE__);
         }
       }
     }
   }
+ msg(" ==> %d\n",__LINE__);
 }
 
 //----------------------------------------------------------------------------
@@ -11369,31 +11384,46 @@ void parseInput()
   computeMemberReferences();
   g_s.end();
 
+#define MSG for (int iii = 0; iii < 100; iii++) msg("==========================================================================\n");
   if (Config_getBool(INHERIT_DOCS))
   {
     g_s.begin("Inheriting documentation...\n");
+MSG
+msg(" ==> %d\n",__LINE__);
     inheritDocumentation();
+MSG
+msg(" ==> %d\n",__LINE__);
     g_s.end();
   }
+MSG
+msg(" ==> %d\n",__LINE__);
 
   // compute the shortest possible names of all files
   // without losing the uniqueness of the file names.
   g_s.begin("Generating disk names...\n");
   Doxygen::inputNameList->generateDiskNames();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   g_s.begin("Adding source references...\n");
   addSourceReferences();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   g_s.begin("Adding xrefitems...\n");
   addListReferences();
   generateXRefPages();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   g_s.begin("Sorting member lists...\n");
   sortMemberLists();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   if (Config_getBool(DIRECTORY_GRAPH))
   {
@@ -11401,6 +11431,8 @@ void parseInput()
     computeDirDependencies();
     g_s.end();
   }
+MSG
+msg(" ==> %d\n",__LINE__);
 
   //g_s.begin("Resolving citations...\n");
   //Doxygen::citeDict->resolve();
@@ -11408,30 +11440,44 @@ void parseInput()
   g_s.begin("Generating citations page...\n");
   Doxygen::citeDict->generatePage();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   g_s.begin("Counting data structures...\n");
   countDataStructures();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   g_s.begin("Resolving user defined references...\n");
   resolveUserReferences();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   g_s.begin("Finding anchors and sections in the documentation...\n");
   findSectionsInDocumentation();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   g_s.begin("Transferring function references...\n");
   transferFunctionReferences();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   g_s.begin("Combining using relations...\n");
   combineUsingRelations();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 
   g_s.begin("Adding members to index pages...\n");
   addMembersToIndex();
   g_s.end();
+MSG
+msg(" ==> %d\n",__LINE__);
 }
 
 void generateOutput()
