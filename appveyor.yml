@@ -141,9 +141,9 @@ test_script:
 #  - set TEST_FLAGS=--id 41
 #  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 #  - set TEST_FLAGS=--id 42
-  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-  - set TEST_FLAGS=--id 43 --noredir
 #  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - set TEST_FLAGS=--id 43 --noredir
+  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 ##- start msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 ##  - timeout /t 300
 ##- taskkill /im doxygen.exe /f

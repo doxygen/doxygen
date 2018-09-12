@@ -1781,13 +1781,10 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
   // + name
   // + title
   // + documentation
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
 
   const char *kindName = isExample ? "example" : "page";
 
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   if (pd->isReference()) return;
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   
   QCString pageName = pd->getOutputFileBase();
   if (pd->getGroupDef())
@@ -1808,21 +1805,17 @@ msg(" ==> xmlgen.cpp %d\n",__LINE__);
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
 
   FTextStream t(&f);
   //t.setEncoding(FTextStream::UnicodeUTF8);
   writeXMLHeader(t);
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   t << "  <compounddef id=\"" << pageName;
   t << "\" kind=\"" << kindName << "\">" << endl;
   t << "    <compoundname>" << convertToXML(pd->name()) 
     << "</compoundname>" << endl;
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
 
   if (pd==Doxygen::mainPage) // main page is special
   {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     QCString title;
     if (!pd->title().isEmpty() && pd->title().lower()!="notitle")
     {
@@ -1832,30 +1825,21 @@ msg(" ==> xmlgen.cpp %d\n",__LINE__);
     {
       title = Config_getString(PROJECT_NAME);
     }
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(title)) 
       << "</title>" << endl;
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   }
   else
   {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     SectionInfo *si = Doxygen::sectionDict->find(pd->name());
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     if (si)
     {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
       t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(filterTitle(si->title))) 
         << "</title>" << endl;
     }
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   }
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   writeInnerPages(pd->getSubPages(),t);
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   if (pd->localToc().isXmlEnabled())
   {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     t << "    <tableofcontents>" << endl;
     SectionDict *sectionDict = pd->getSectionDict();
     SDict<SectionInfo>::Iterator li(*sectionDict);
@@ -1865,37 +1849,29 @@ msg(" ==> xmlgen.cpp %d\n",__LINE__);
     int maxLevel = pd->localToc().xmlLevel();
     for (li.toFirst();(si=li.current());++li)
     {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
       if (si->type==SectionInfo::Section       ||
           si->type==SectionInfo::Subsection    ||
           si->type==SectionInfo::Subsubsection ||
           si->type==SectionInfo::Paragraph)
       {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
         //printf("  level=%d title=%s\n",level,si->title.data());
         int nextLevel = (int)si->type;
         if (nextLevel>level)
         {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
           for (l=level;l<nextLevel;l++)
           {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
             if (l < maxLevel) t << "    <tableofcontents>" << endl;
           }
         }
         else if (nextLevel<level)
         {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
           for (l=level;l>nextLevel;l--)
           {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
             if (l <= maxLevel && inLi[l]) t << "    </tocsect>" << endl;
             inLi[l]=FALSE;
             if (l <= maxLevel) t << "    </tableofcontents>" << endl;
           }
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
         }
-        //if (l <= maxLevel && inLi[nextLevel]) t << "    </tocsect>" << endl;
         if (nextLevel <= maxLevel)
         {
           if (inLi[nextLevel]) t << "    </tocsect>" << endl;
@@ -1903,48 +1879,35 @@ msg(" ==> xmlgen.cpp %d\n",__LINE__);
           t << "      <tocsect>" << endl;
           t << "        <name>" << (si->title.isEmpty()?si->label:titleDoc) << "</name>" << endl;
           t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si -> label) << "</reference>" << endl;
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
           inLi[nextLevel]=TRUE;
           level = nextLevel;
         }
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
       }
     }
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     while (level>1 && level <= maxLevel)
     {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
       if (inLi[level]) t << "    </tocsect>" << endl;
       inLi[level]=FALSE;
       t << "    </tableofcontents>" << endl;
       level--;
     }
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     if (level <= maxLevel && inLi[level]) t << "    </tocsect>" << endl;
     inLi[level]=FALSE;
     t << "    </tableofcontents>" << endl;
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   }
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   t << "    <briefdescription>" << endl;
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   writeXMLDocBlock(t,pd->briefFile(),pd->briefLine(),pd,0,pd->briefDescription());
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   t << "    </briefdescription>" << endl;
   t << "    <detaileddescription>" << endl;
   if (isExample)
   {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,0,
         pd->documentation()+"\n\\include "+pd->name());
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   }
   else
   {
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,0,
         pd->documentation());
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   }
   t << "    </detaileddescription>" << endl;
 
@@ -1952,7 +1915,6 @@ msg(" ==> xmlgen.cpp %d\n",__LINE__);
   t << "</doxygen>" << endl;
 
   ti << "  </compound>" << endl;
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
 }
 
 void generateXML()
@@ -2065,66 +2027,43 @@ void generateXML()
     msg("Generating XML output for group %s\n",gd->name().data());
     generateXMLForGroup(gd,t);
   }
-#define MSG 
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   {
     PageSDict::Iterator pdi(*Doxygen::pageSDict);
     PageDef *pd=0;
     for (pdi.toFirst();(pd=pdi.current());++pdi)
     {
       msg("Generating XML output for page %s\n",pd->name().data());
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
       generateXMLForPage(pd,t,FALSE);
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     }
   }
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   {
     DirDef *dir;
     DirSDict::Iterator sdi(*Doxygen::directories);
     for (sdi.toFirst();(dir=sdi.current());++sdi)
     {
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
       msg("Generate XML output for dir %s\n",dir->name().data());
       generateXMLForDir(dir,t);
     }
   }
   {
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     PageSDict::Iterator pdi(*Doxygen::exampleSDict);
     PageDef *pd=0;
     for (pdi.toFirst();(pd=pdi.current());++pdi)
     {
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
       msg("Generating XML output for example %s\n",pd->name().data());
       generateXMLForPage(pd,t,TRUE);
     }
   }
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
   if (Doxygen::mainPage)
   {
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
     msg("Generating XML output for the main page\n");
     generateXMLForPage(Doxygen::mainPage,t,FALSE);
   }
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
 
   //t << "  </compoundlist>" << endl;
   t << "</doxygenindex>" << endl;
 
   writeCombineScript();
-MSG
-msg(" ==> xmlgen.cpp %d\n",__LINE__);
 }
 
 

@@ -82,7 +82,6 @@ class Tester:
 			if (self.args.pdf):
 				print('GENERATE_LATEX=YES', file=f)
 				print('LATEX_OUTPUT=%s/latex' % self.test_out, file=f)
-			print('QUIET=NO', file=f)
 
 		if 'check' not in self.config or not self.config['check']:
 			print('Test doesn\'t specify any files to check')
