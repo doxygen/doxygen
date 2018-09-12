@@ -44,7 +44,6 @@ build:
 
 test_script:
 # Assumption we are in the build directory
- - mkdir testing
  - chdir testing
  - echo QUIET=NO > Doxyfile
  - echo GENERATE_HTML = NO >> Doxyfile
