@@ -2751,7 +2751,6 @@ DB_GEN_C2("IndexSections " << is)
         }
         for (++pdi;(pd=pdi.current());++pdi)
         {
-	fprintf(stderr,"==> Done calling from HTML\n");
           t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
         }
       }
