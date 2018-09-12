@@ -44,17 +44,17 @@ build:
 
 test_script:
 # Assumption we are in the build directory
- - chdir testing
- - echo QUIET=NO > Doxyfile
- - echo GENERATE_HTML = NO >> Doxyfile
- - echo GENERATE_LATEX = NO >> Doxyfile
- - echo GENERATE_XML = YES >> Doxyfile
- - echo XML_PROGRAMLISTING = NO >> Doxyfile
- - echo CASE_SENSE_NAMES = NO >> Doxyfile
- - echo INPUT=../../testing/043_page.dox >> Doxyfile
- - echo EXAMPLE_PATH=. >> Doxyfile
- - type Doxyfile
- - ..\bin\doxygen.exe
+# - chdir testing
+# - echo QUIET=NO > Doxyfile
+# - echo GENERATE_HTML = NO >> Doxyfile
+# - echo GENERATE_LATEX = NO >> Doxyfile
+# - echo GENERATE_XML = YES >> Doxyfile
+# - echo XML_PROGRAMLISTING = NO >> Doxyfile
+# - echo CASE_SENSE_NAMES = NO >> Doxyfile
+# - echo INPUT=../../testing/043_page.dox >> Doxyfile
+# - echo EXAMPLE_PATH=. >> Doxyfile
+# - type Doxyfile
+# - ..\bin\doxygen.exe
 # first test (-h) to see if set 'trick' works
 #  - set TEST_FLAGS=-h
 #  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
@@ -141,8 +141,8 @@ test_script:
 #  - set TEST_FLAGS=--id 41
 #  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 #  - set TEST_FLAGS=--id 42
-#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-#  - set TEST_FLAGS=--id 43 --noredir
+  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - set TEST_FLAGS=--id 43 --noredir
 #  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 ##- start msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 ##  - timeout /t 300
