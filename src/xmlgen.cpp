@@ -1861,7 +1861,7 @@ msg(" ==> xmlgen.cpp %d\n",__LINE__);
     SDict<SectionInfo>::Iterator li(*sectionDict);
     SectionInfo *si;
     int level=1,l;
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     int maxLevel = pd->localToc().xmlLevel();
     for (li.toFirst();(si=li.current());++li)
     {
@@ -1895,20 +1895,22 @@ msg(" ==> xmlgen.cpp %d\n",__LINE__);
           }
 msg(" ==> xmlgen.cpp %d\n",__LINE__);
         }
-        if (l <= maxLevel && inLi[nextLevel]) t << "    </tocsect>" << endl;
+        //if (l <= maxLevel && inLi[nextLevel]) t << "    </tocsect>" << endl;
         if (nextLevel <= maxLevel)
         {
+          if (inLi[nextLevel]) t << "    </tocsect>" << endl;
           QCString titleDoc = convertToXML(si->title);
           t << "      <tocsect>" << endl;
           t << "        <name>" << (si->title.isEmpty()?si->label:titleDoc) << "</name>" << endl;
           t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si -> label) << "</reference>" << endl;
-        }
 msg(" ==> xmlgen.cpp %d\n",__LINE__);
-        inLi[nextLevel]=TRUE;
-        level = nextLevel;
+          inLi[nextLevel]=TRUE;
+          level = nextLevel;
+        }
 msg(" ==> xmlgen.cpp %d\n",__LINE__);
       }
     }
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
     while (level>1 && level <= maxLevel)
     {
 msg(" ==> xmlgen.cpp %d\n",__LINE__);
