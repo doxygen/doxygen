@@ -2027,43 +2027,66 @@ void generateXML()
     msg("Generating XML output for group %s\n",gd->name().data());
     generateXMLForGroup(gd,t);
   }
+#define MSG 
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
   {
     PageSDict::Iterator pdi(*Doxygen::pageSDict);
     PageDef *pd=0;
     for (pdi.toFirst();(pd=pdi.current());++pdi)
     {
       msg("Generating XML output for page %s\n",pd->name().data());
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
       generateXMLForPage(pd,t,FALSE);
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
     }
   }
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
   {
     DirDef *dir;
     DirSDict::Iterator sdi(*Doxygen::directories);
     for (sdi.toFirst();(dir=sdi.current());++sdi)
     {
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
       msg("Generate XML output for dir %s\n",dir->name().data());
       generateXMLForDir(dir,t);
     }
   }
   {
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
     PageSDict::Iterator pdi(*Doxygen::exampleSDict);
     PageDef *pd=0;
     for (pdi.toFirst();(pd=pdi.current());++pdi)
     {
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
       msg("Generating XML output for example %s\n",pd->name().data());
       generateXMLForPage(pd,t,TRUE);
     }
   }
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
   if (Doxygen::mainPage)
   {
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
     msg("Generating XML output for the main page\n");
     generateXMLForPage(Doxygen::mainPage,t,FALSE);
   }
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
 
   //t << "  </compoundlist>" << endl;
   t << "</doxygenindex>" << endl;
 
   writeCombineScript();
+MSG
+msg(" ==> xmlgen.cpp %d\n",__LINE__);
 }
 
 
