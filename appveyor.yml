@@ -51,7 +51,7 @@ test_script:
  - echo GENERATE_XML = YES >> Doxyfile
  - echo XML_PROGRAMLISTING = NO >> Doxyfile
  - echo CASE_SENSE_NAMES = NO >> Doxyfile
- - echo INPUT=../testing/043_page.dox >> Doxyfile
+ - echo INPUT=../../testing/043_page.dox >> Doxyfile
  - echo EXAMPLE_PATH=. >> Doxyfile
  - type Doxyfile
  - ..\bin\doxygen.exe
