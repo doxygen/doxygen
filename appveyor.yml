@@ -1,18 +1,18 @@
 image: Visual Studio 2017
 
 configuration:
-  - Release
-#  - Debug
+#  - Release
+  - Debug
 
 platform:
-  - x64
+#  - x64
   - Win32
 
 environment:
   # VS VERSION IN CMAKE STYLE
   matrix:
     - VSVERSION: "15 2017"
-    - VSVERSION: "14 2015"
+#    - VSVERSION: "14 2015"
 
 init:
   - cmake --version
@@ -24,7 +24,7 @@ install:
   - 7z x flex.zip -oC:\deps\flex
   - ps: Invoke-WebRequest https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs924/gs924w32.exe -OutFile gswin32c.exe
   - gswin32c /S /D=C:\deps\ghostscript
-  - ps: choco install -y miktex
+#  - ps: choco install -y miktex
   - refreshenv
   - pip install conan
   - conan install libxml2/2.9.8@bincrafters/stable -g virtualrunenv
@@ -42,7 +42,169 @@ build:
   project: "build\\PACKAGE.vcxproj"
   parallel: false
 
-#test_script:
+test_script:
+# Assumption we are in the build directory
+# - chdir testing
+# - echo QUIET=NO > Doxyfile
+# - echo GENERATE_HTML = NO >> Doxyfile
+# - echo GENERATE_LATEX = NO >> Doxyfile
+# - echo GENERATE_XML = YES >> Doxyfile
+# - echo XML_PROGRAMLISTING = NO >> Doxyfile
+# - echo CASE_SENSE_NAMES = NO >> Doxyfile
+# - echo INPUT=../../testing/043_page.dox >> Doxyfile
+# - echo EXAMPLE_PATH=. >> Doxyfile
+# - type Doxyfile
+# - ..\bin\doxygen.exe
+# first test (-h) to see if set 'trick' works
+#  - set TEST_FLAGS=-h
 #  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 1
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 2
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 3
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 4
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 5
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 6
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 7
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 8
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 9
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 10
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 11
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 12
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 13
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 14
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 15
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 16
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 17
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 18
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 19
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 20
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 21
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 22
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 23
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 24
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 25
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 26
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 27
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 28
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 29
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 30
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 31
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 32
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 33
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 34
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 35
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 36
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 37
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 38
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 39
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 40
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 41
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 42
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - set TEST_FLAGS=--id 43 --noredir
+  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+##- start msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+##  - timeout /t 300
+##- taskkill /im doxygen.exe /f
+#  - set TEST_FLAGS=--id 44
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 45
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 46
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 47
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 48
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 49
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 50
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 51
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 52
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 53
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 54
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 55
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 56
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 57
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 58
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 59
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 60
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 61
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 62
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 63
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 64
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 65
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 66
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 67
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 68
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 69
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 70
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 71
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 72
+#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#  - set TEST_FLAGS=--id 73
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" -D build_doc=ON ..
 #  - msbuild "doc\docs.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"

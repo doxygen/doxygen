@@ -8156,36 +8156,51 @@ static void inheritDocumentation()
 {
   MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
   MemberName *mn;
+ msg(" ==> %d\n",__LINE__);
   //int count=0;
   for (;(mn=mnli.current());++mnli)
   {
+ msg(" ==> %d memberName #%s#\n",__LINE__,mn->memberName());
     MemberNameIterator mni(*mn);
     MemberDef *md;
     for (;(md=mni.current());++mni)
     {
+ msg(" ==> %d memberDef #%s#\n",__LINE__,md->name().data());
       //printf("%04d Member `%s'\n",count++,md->name().data());
       if (md->documentation().isEmpty() && md->briefDescription().isEmpty())
       { // no documentation yet
+ msg(" ==> %d\n",__LINE__);
         MemberDef *bmd = md->reimplements();
+ msg(" ==> %d\n",__LINE__);
         while (bmd && bmd->documentation().isEmpty() &&
                       bmd->briefDescription().isEmpty()
               )
         { // search up the inheritance tree for a documentation member
           //printf("bmd=%s class=%s\n",bmd->name().data(),bmd->getClassDef()->name().data());
+ msg(" ==> %d bmd #%s#\n",__LINE__,bmd->name().data());
           bmd = bmd->reimplements();
+ msg(" ==> %d\n",__LINE__);
         }
         if (bmd) // copy the documentation from the reimplemented member
         {
+ msg(" ==> %d copy bmd #%s#\n",__LINE__,bmd->name().data());
           md->setInheritsDocsFrom(bmd);
+ msg(" ==> %d\n",__LINE__);
           md->setDocumentation(bmd->documentation(),bmd->docFile(),bmd->docLine());
+ msg(" ==> %d\n",__LINE__);
           md->setDocsForDefinition(bmd->isDocsForDefinition());
+ msg(" ==> %d\n",__LINE__);
           md->setBriefDescription(bmd->briefDescription(),bmd->briefFile(),bmd->briefLine());
+ msg(" ==> %d\n",__LINE__);
           md->copyArgumentNames(bmd);
+ msg(" ==> %d\n",__LINE__);
           md->setInbodyDocumentation(bmd->inbodyDocumentation(),bmd->inbodyFile(),bmd->inbodyLine());
+ msg(" ==> %d\n",__LINE__);
         }
       }
     }
   }
+ msg(" ==> %d\n",__LINE__);
 }
 
 //----------------------------------------------------------------------------
@@ -11636,20 +11651,32 @@ void generateOutput()
       removeDoxFont(Config_getString(LATEX_OUTPUT));
   }
 
+//#define MSG for (int iii = 0; iii < 100; iii++) msg("==========================================================================\n");
+#define MSG 
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   if (Config_getBool(GENERATE_XML))
   {
     g_s.begin("Generating XML output...\n");
     Doxygen::generatingXmlOutput=TRUE;
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
     generateXML();
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
     Doxygen::generatingXmlOutput=FALSE;
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   if (USE_SQLITE3)
   {
     g_s.begin("Generating SQLITE3 output...\n");
     generateSqlite3();
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   if (Config_getBool(GENERATE_DOCBOOK))
   {
@@ -11657,6 +11684,8 @@ void generateOutput()
     generateDocbook();
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   if (Config_getBool(GENERATE_AUTOGEN_DEF))
   {
@@ -11664,12 +11693,16 @@ void generateOutput()
     generateDEF();
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   if (Config_getBool(GENERATE_PERLMOD))
   {
     g_s.begin("Generating Perl module output...\n");
     generatePerlMod();
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   if (generateHtml && searchEngine && serverBasedSearch)
   {
     g_s.begin("Generating search index\n");
@@ -11694,8 +11727,12 @@ void generateOutput()
     }
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   if (g_useOutputTemplate) generateOutputViaTemplate();
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   if (generateRtf)
   {
@@ -11706,6 +11743,8 @@ void generateOutput()
     }
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   if (Config_getBool(HAVE_DOT))
   {
@@ -11713,6 +11752,8 @@ void generateOutput()
     DotManager::instance()->run();
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   // copy static stuff
   if (generateHtml)
@@ -11722,16 +11763,22 @@ void generateOutput()
     copyLogo(Config_getString(HTML_OUTPUT));
     copyExtraFiles(Config_getList(HTML_EXTRA_FILES),"HTML_EXTRA_FILES",Config_getString(HTML_OUTPUT));
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   if (generateLatex)
   {
     copyLatexStyleSheet();
     copyLogo(Config_getString(LATEX_OUTPUT));
     copyExtraFiles(Config_getList(LATEX_EXTRA_FILES),"LATEX_EXTRA_FILES",Config_getString(LATEX_OUTPUT));
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   if (generateRtf)
   {
     copyLogo(Config_getString(RTF_OUTPUT));
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   if (generateHtml &&
       Config_getBool(GENERATE_HTMLHELP) &&
@@ -11749,6 +11796,8 @@ void generateOutput()
     QDir::setCurrent(oldDir);
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   if ( generateHtml &&
        Config_getBool(GENERATE_QHP) &&
       !Config_getString(QHG_LOCATION).isEmpty())
@@ -11769,6 +11818,8 @@ void generateOutput()
     QDir::setCurrent(oldDir);
     g_s.end();
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   int cacheParam;
   msg("lookup cache used %d/%d hits=%d misses=%d\n",
@@ -11781,6 +11832,8 @@ void generateOutput()
   {
     msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   if (Debug::isFlagSet(Debug::Time))
   {
@@ -11794,6 +11847,8 @@ void generateOutput()
   {
     msg("finished...\n");
   }
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
 
   /**************************************************************************
@@ -11801,16 +11856,36 @@ void generateOutput()
    **************************************************************************/
 
   cleanUpDoxygen();
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 
   finializeSearchIndexer();
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   Doxygen::symbolStorage->close();
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   QDir thisDir;
   thisDir.remove(Doxygen::objDBFileName);
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   Config::deinit();
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   QTextCodec::deleteAllCodecs();
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   delete Doxygen::symbolMap;
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   delete Doxygen::clangUsrMap;
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   delete Doxygen::symbolStorage;
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
   g_successfulRun=TRUE;
+MSG
+msg(" ==> doxygen.cpp %d\n",__LINE__);
 }
 

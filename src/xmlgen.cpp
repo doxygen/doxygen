@@ -1845,7 +1845,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     SDict<SectionInfo>::Iterator li(*sectionDict);
     SectionInfo *si;
     int level=1,l;
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     int maxLevel = pd->localToc().xmlLevel();
     for (li.toFirst();(si=li.current());++li)
     {
@@ -1872,16 +1872,16 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
             if (l <= maxLevel) t << "    </tableofcontents>" << endl;
           }
         }
-        if (l <= maxLevel && inLi[nextLevel]) t << "    </tocsect>" << endl;
         if (nextLevel <= maxLevel)
         {
+          if (inLi[nextLevel]) t << "    </tocsect>" << endl;
           QCString titleDoc = convertToXML(si->title);
           t << "      <tocsect>" << endl;
           t << "        <name>" << (si->title.isEmpty()?si->label:titleDoc) << "</name>" << endl;
           t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si -> label) << "</reference>" << endl;
+          inLi[nextLevel]=TRUE;
+          level = nextLevel;
         }
-        inLi[nextLevel]=TRUE;
-        level = nextLevel;
       }
     }
     while (level>1 && level <= maxLevel)
