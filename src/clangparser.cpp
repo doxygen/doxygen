@@ -964,6 +964,7 @@ void ClangParser::writeSources(CodeOutputInterface &,FileDef *)
 
 ClangParser::ClangParser()
 {
+  p = NULL;
 }
 
 ClangParser::~ClangParser()

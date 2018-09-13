@@ -1370,7 +1370,7 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>
 {
   public:
     DocHtmlTable(DocNode *parent,const HtmlAttribList &attribs) 
-      : m_attribs(attribs) { m_caption=0; m_parent = parent; }
+      : m_attribs(attribs) { m_caption=0; m_numCols=0; m_parent = parent; }
     ~DocHtmlTable()         { delete m_caption; }
     Kind kind() const       { return Kind_HtmlTable; }
     uint numRows() const    { return m_children.count(); }

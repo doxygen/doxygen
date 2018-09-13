@@ -95,8 +95,8 @@ class TagMemberInfo
 class TagClassInfo
 {
   public:
-    enum Kind { Class, Struct, Union, Interface, Exception, Protocol, Category, Enum, Service, Singleton };
-    TagClassInfo() { bases=0, templateArguments=0; members.setAutoDelete(TRUE); isObjC=FALSE; }
+    enum Kind { None=-1, Class, Struct, Union, Interface, Exception, Protocol, Category, Enum, Service, Singleton };
+    TagClassInfo() { bases=0, templateArguments=0; members.setAutoDelete(TRUE); isObjC=FALSE; kind = None; }
    ~TagClassInfo() { delete bases; delete templateArguments; }
     QCString name;
     QCString filename;

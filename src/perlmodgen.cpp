@@ -428,7 +428,7 @@ private:
 };
 
 PerlModDocVisitor::PerlModDocVisitor(PerlModOutput &output)
-  : DocVisitor(DocVisitor_Other), m_output(output), m_textmode(false)
+  : DocVisitor(DocVisitor_Other), m_output(output), m_textmode(false), m_textblockstart(FALSE)
 {
   m_output.openList("doc");
 }

@@ -304,6 +304,7 @@ Definition::Definition(const Definition &d) : DefinitionIntf(), m_cookie(0)
 {
   m_name = d.m_name;
   m_defLine = d.m_defLine;
+  m_defColumn = d.m_defColumn;
   m_impl = new DefinitionImpl;
   *m_impl = *d.m_impl;
   m_impl->sectionDict = 0;
