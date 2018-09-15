@@ -116,6 +116,12 @@ class Tester:
 				print('LATEX_OUTPUT=%s/latex' % self.test_out, file=f)
 			if self.args.subdirs:
 				print('CREATE_SUBDIRS=YES', file=f)
+			if (self.args.cfgs):
+				for cfg in list(itertools.chain.from_iterable(self.args.cfgs)):
+					if cfg.find('=') == -1:
+						print("Not a doxygen configuration item, missing '=' sign: '%s'."%cfg)
+						sys.exit(1)
+					print(cfg, file=f)
 
 		if 'check' not in self.config or not self.config['check']:
 			print('Test doesn\'t specify any files to check')
@@ -373,6 +379,9 @@ def main():
 		action="store_true")
 	parser.add_argument('--keep',help='keep result directories',
 		action="store_true")
+	parser.add_argument('--cfg',nargs='+',dest='cfgs',action='append',help=
+		'run test with extra doxygen configuration settings '
+		'(the option may be specified multiple times')
 	test_flags = os.getenv('TEST_FLAGS', default='').split()
 	args = parser.parse_args(test_flags + sys.argv[1:])
 

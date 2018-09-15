@@ -171,11 +171,10 @@ void FTVHelp::decContentsDepth()
 
 /*! Add a list item to the contents file.
  *  \param isDir TRUE if the item is a directory, FALSE if it is a text
- *  \param name The name of the item.
+ *  \param name the name of the item.
  *  \param ref  the URL of to the item.
  *  \param file the file containing the definition of the item
  *  \param anchor the anchor within the file.
- *  \param name the name of the item.
  *  \param separateIndex put the entries in a separate index file
  *  \param addToNavIndex add this entry to the quick navigation index
  *  \param def Definition corresponding to this entry

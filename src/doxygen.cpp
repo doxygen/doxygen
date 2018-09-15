@@ -9151,7 +9151,24 @@ static void generateConfigFile(const char *configFile,bool shortList,
     exit(1);
   }
 }
-
+static void compareDoxyfile()
+{
+  QFile f;
+  char configFile[2];
+  configFile[0] = '-';
+  configFile[1] = '\0';
+  bool fileOpened=openOutputFile(configFile,f);
+  if (fileOpened)
+  {
+    FTextStream t(&f);
+    Config::compareDoxyfile(t);
+  }
+  else
+  {
+    err("Cannot open file %s for writing\n",configFile);
+    exit(1);
+  }
+}
 //----------------------------------------------------------------------------
 // read and parse a tag file
 
@@ -10009,6 +10026,8 @@ static void usage(const char *name)
   msg("    LaTeX:      %s -w latex headerFile footerFile styleSheetFile [configFile]\n\n",name);
   msg("6) Use doxygen to generate a rtf extensions file\n");
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
+  msg("7) Use doxygen to compare the used configuration file with the template configuration file\n");
+  msg("    %s -x [configFile]\n\n",name);
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
   msg("-v print version string\n");
@@ -10211,6 +10230,7 @@ void readConfiguration(int argc, char **argv)
   const char *formatName;
   bool genConfig=FALSE;
   bool shortList=FALSE;
+  bool diffList=FALSE;
   bool updateConfig=FALSE;
   int retVal;
   while (optind<argc && argv[optind][0]=='-' &&
@@ -10247,6 +10267,9 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(1);
         }
+        break;
+      case 'x':
+        diffList=TRUE;
         break;
       case 's':
         shortList=TRUE;
@@ -10498,6 +10521,7 @@ void readConfiguration(int argc, char **argv)
       exit(1);
     }
   }
+
   if (genConfig && g_useOutputTemplate)
   {
     generateTemplateFiles("templates");
@@ -10517,6 +10541,13 @@ void readConfiguration(int argc, char **argv)
     err("could not open or read configuration file %s!\n",configName);
     cleanUpDoxygen();
     exit(1);
+  }
+
+  if (diffList)
+  {
+    compareDoxyfile();
+    cleanUpDoxygen();
+    exit(0);
   }
 
   if (updateConfig)

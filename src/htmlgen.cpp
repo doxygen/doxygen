@@ -690,6 +690,7 @@ HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
   dir=Config_getString(HTML_OUTPUT);
   m_emptySection=FALSE;
+  m_sectionCount=0;
 }
 
 HtmlGenerator::~HtmlGenerator()

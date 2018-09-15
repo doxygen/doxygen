@@ -326,6 +326,7 @@ void NamespaceDef::writeTagFile(FTextStream &tagFile)
             }
           }
         }
+        break;
       case LayoutDocEntry::MemberDecl:
         {
           LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;

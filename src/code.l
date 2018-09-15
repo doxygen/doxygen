@@ -2598,7 +2598,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  generatePHPVariableLink(*g_code,yytext);
   					  g_name+=yytext+7; 
                                         }
-<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"("::"{ID})*/{B}* { // A<T> *pt;
+<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(]*">"("::"{ID})*/{B}* { // A<T> *pt;
 					  int i=QCString(yytext).find('<');
 					  QCString kw = QCString(yytext).left(i).stripWhiteSpace();
 					  if (kw.right(5)=="_cast" && YY_START==Body)

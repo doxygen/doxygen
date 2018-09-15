@@ -304,6 +304,7 @@ Definition::Definition(const Definition &d) : DefinitionIntf(), m_cookie(0)
 {
   m_name = d.m_name;
   m_defLine = d.m_defLine;
+  m_defColumn = d.m_defColumn;
   m_impl = new DefinitionImpl;
   *m_impl = *d.m_impl;
   m_impl->sectionDict = 0;
@@ -1633,7 +1634,7 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
     int level=1,l;
     char cs[2];
     cs[1]='\0';
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     for (li.toFirst();(si=li.current());++li)
     {
       if (si->type==SectionInfo::Section       || 
