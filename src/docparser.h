@@ -707,6 +707,7 @@ class DocTitle : public CompAccept<DocTitle>
     void parse();
     void parseFromString(const QCString &title);
     Kind kind() const          { return Kind_Title; }
+    bool hasTitle() const      { return !m_children.isEmpty(); }
 
   private:
 };
@@ -1092,6 +1093,7 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>
     int parseRcs();
     int parseXml();
     void appendLinkWord(const QCString &word);
+    bool hasTitle() const      { return m_title->hasTitle(); }
 
   private:
     Type            m_type;

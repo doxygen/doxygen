@@ -5,5 +5,6 @@
  * Some text.
  * \image html sample.png
  * \image latex sample.png "Doxygen logo" width=5cm
+ * \image docbook sample.png
  * More text.
  */

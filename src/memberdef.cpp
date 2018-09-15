@@ -161,10 +161,12 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
   //ol.disableAllBut(OutputGenerator::Html);
   bool htmlOn  = ol.isEnabled(OutputGenerator::Html);
   bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+  bool docbookOn = ol.isEnabled(OutputGenerator::Docbook);
   {
     // html and latex
     if (htmlOn)  ol.enable(OutputGenerator::Html);
     if (latexOn) ol.enable(OutputGenerator::Latex);
+    if (docbookOn) ol.enable(OutputGenerator::Docbook);
 
     ol.endMemberDocName();
     ol.startParameterList(!md->isObjCMethod());
@@ -172,6 +174,7 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
   ol.enableAll();
   ol.disable(OutputGenerator::Html);
   ol.disable(OutputGenerator::Latex);
+  ol.disable(OutputGenerator::Docbook);
   {
     // other formats
     if (!md->isObjCMethod()) ol.docify("("); // start argument list
@@ -270,6 +273,7 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
       //  ol.docify(" ");
       //}
       ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Docbook);
       ol.disable(OutputGenerator::Html);
       ol.docify(" "); /* man page */
       if (htmlOn) ol.enable(OutputGenerator::Html);
@@ -277,12 +281,15 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
       ol.startEmphasis();
       ol.enable(OutputGenerator::Man);
       if (latexOn) ol.enable(OutputGenerator::Latex);
+      if (docbookOn) ol.enable(OutputGenerator::Docbook);
       if (a->name.isEmpty()) ol.docify(a->type); else ol.docify(a->name);
       ol.disable(OutputGenerator::Man);
       ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Docbook);
       ol.endEmphasis();
       ol.enable(OutputGenerator::Man);
       if (latexOn) ol.enable(OutputGenerator::Latex);
+      if (docbookOn) ol.enable(OutputGenerator::Docbook);
     }
     if (!a->array.isEmpty())
     {
@@ -338,10 +345,12 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Html);
   ol.disable(OutputGenerator::Latex);
+  ol.disable(OutputGenerator::Docbook);
   if (!md->isObjCMethod()) ol.docify(")"); // end argument list
   ol.enableAll();
   if (htmlOn) ol.enable(OutputGenerator::Html);
   if (latexOn) ol.enable(OutputGenerator::Latex);
+  if (docbookOn) ol.enable(OutputGenerator::Docbook);
   if (first) ol.startParameterName(defArgList->count()<2);
   ol.endParameterName(TRUE,defArgList->count()<2,!md->isObjCMethod());
   ol.popGeneratorState();
@@ -1478,6 +1487,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Man);
     ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::Docbook);
     ol.docify("\n");
     ol.popGeneratorState();
   }
@@ -3836,8 +3846,10 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
             typeDecl.pushGeneratorState();
             typeDecl.disableAllBut(OutputGenerator::Html);
             typeDecl.enable(OutputGenerator::Latex);
+            typeDecl.enable(OutputGenerator::Docbook);
             typeDecl.lineBreak();
             typeDecl.disable(OutputGenerator::Latex);
+            typeDecl.disable(OutputGenerator::Docbook);
             typeDecl.writeString("&#160;&#160;");
             typeDecl.popGeneratorState();
           }

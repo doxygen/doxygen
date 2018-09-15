@@ -284,6 +284,8 @@ QCString convertToLaTeX(const QCString &s,bool insideTabbing=FALSE,bool keepSpac
 
 QCString convertToXML(const char *s);
 
+QCString convertToDocBook(const char *s);
+
 QCString convertToJSString(const char *s, bool applyTextDir = true);
 
 QCString getOverloadDocs();

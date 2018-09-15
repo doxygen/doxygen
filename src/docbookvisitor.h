@@ -26,11 +26,15 @@ class FTextStream;
 class CodeOutputInterface;
 class QCString;
 
+void visitPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCString width,  QCString height);
+void visitPostEnd(FTextStream &t, const bool hasCaption);
+
 /*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor : public DocVisitor
 {
     public:
     DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci);
+    ~DocbookDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes
     //--------------------------------------

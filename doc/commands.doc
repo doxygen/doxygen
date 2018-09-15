@@ -2034,7 +2034,7 @@ Make sure you have first read \ref intro "the introduction".
   \addindex \\tableofcontents
   Creates a table of contents at the top of a page, listing all
   sections and subsections in the page. The `option` can be `HTML` or `LaTeX`
-  or `XML`. When a `level` is specified this means the maximum nesting level
+  or `XML` or `DocBook`. When a `level` is specified this means the maximum nesting level
   that is shown. The value of `level` should be in the range 1..5, values outside
   this range are considered to be 5. In case no `level` is specified `level` is
   set to 5 (show all)
