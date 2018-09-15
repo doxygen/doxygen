@@ -73,6 +73,7 @@ class ConfigOption
 
   protected:
     virtual void writeTemplate(FTextStream &t,bool sl,bool upd) = 0;
+    virtual void compareDoxyfile(FTextStream &t) = 0;
     virtual void convertStrToVal() {}
     virtual void substEnvVars() = 0;
     virtual void init() {}
@@ -103,6 +104,7 @@ class ConfigInfo : public ConfigOption
       m_doc = doc;
     }
     void writeTemplate(FTextStream &t, bool sl,bool);
+    void compareDoxyfile(FTextStream &){};
     void substEnvVars() {}
 };
 
@@ -124,6 +126,7 @@ class ConfigList : public ConfigOption
     WidgetType widgetType() const { return m_widgetType; }
     QStrList *valueRef() { return &m_value; }
     void writeTemplate(FTextStream &t,bool sl,bool);
+    void compareDoxyfile(FTextStream &t);
     void substEnvVars();
     void init() { m_value = m_defaultValue; }
   private:
@@ -153,6 +156,7 @@ class ConfigEnum : public ConfigOption
     QCString *valueRef() { return &m_value; }
     void substEnvVars();
     void writeTemplate(FTextStream &t,bool sl,bool);
+    void compareDoxyfile(FTextStream &t);
     void init() { m_value = m_defValue.copy(); }
 
   private:
@@ -182,6 +186,7 @@ class ConfigString : public ConfigOption
     void setDefaultValue(const char *v) { m_defValue = v; }
     QCString *valueRef() { return &m_value; }
     void writeTemplate(FTextStream &t,bool sl,bool);
+    void compareDoxyfile(FTextStream &t);
     void substEnvVars();
     void init() { m_value = m_defValue.copy(); }
   
@@ -213,6 +218,7 @@ class ConfigInt : public ConfigOption
     void convertStrToVal();
     void substEnvVars();
     void writeTemplate(FTextStream &t,bool sl,bool upd);
+    void compareDoxyfile(FTextStream &t);
     void init() { m_value = m_defValue; }
   private:
     int m_value;
@@ -241,6 +247,7 @@ class ConfigBool : public ConfigOption
     void substEnvVars();
     void setValueString(const QCString &v) { m_valueString = v; }
     void writeTemplate(FTextStream &t,bool sl,bool upd);
+    void compareDoxyfile(FTextStream &t);
     void init() { m_value = m_defValue; }
   private:
     bool m_value;
@@ -256,6 +263,7 @@ class ConfigObsolete : public ConfigOption
     ConfigObsolete(const char *name) : ConfigOption(O_Obsolete)  
     { m_name = name; }
     void writeTemplate(FTextStream &,bool,bool);
+    void compareDoxyfile(FTextStream &) {}
     void substEnvVars() {}
 };
 
@@ -267,6 +275,7 @@ class ConfigDisabled : public ConfigOption
     ConfigDisabled(const char *name) : ConfigOption(O_Disabled)  
     { m_name = name; }
     void writeTemplate(FTextStream &,bool,bool);
+    void compareDoxyfile(FTextStream &) {}
     void substEnvVars() {}
 };
 
@@ -465,6 +474,11 @@ class ConfigImpl
      *  be omitted.
      */
     void writeTemplate(FTextStream &t,bool shortIndex,bool updateOnly);
+
+    /*! Writes a the differences between the current configuration and the
+     *  template configuration to stream \a t.
+     */
+    void compareDoxyfile(FTextStream &t);
 
     void setHeader(const char *header) { m_header = header; }
 
