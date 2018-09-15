@@ -1633,7 +1633,7 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
     int level=1,l;
     char cs[2];
     cs[1]='\0';
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     for (li.toFirst();(si=li.current());++li)
     {
       if (si->type==SectionInfo::Section       || 
