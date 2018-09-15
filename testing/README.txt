@@ -27,6 +27,9 @@ optional parameters:
   --xhtml               create xhtml output and check with xmllint
   --pdf                 create LaTeX output and create pdf from it
   --keep                keep result directories
+  --cfg CFGS [CFGS ...]
+                        run test with extra doxygen configuration settings
+                        (the option may be specified multiple times
 In case neither --xml, --pdf or --xhtml is used the default is set to --xml.
 
 The runtest.pl has the following dependencies on 3rd party tools:
