@@ -248,7 +248,21 @@ Note that by running doxygen with `-d lex` you get information about which
 <h3>Testing</h3>
 
 Doxygen has a small set of tests available to test, some, code integrity.
-The tests can be run by means of the command `make tests`. When only one or a few tests are required one can set the variable \c TEST_FLAGS when running the test e.g. `make TEST_FLAGS="--id 5" tests` or for multiple tests `make TEST_FLAGS="--id 5 --id 7" tests`.
+The tests can be run by means of the command `make tests`. When only one or a
+few tests are required one can set the variable \c TEST_FLAGS when running the
+test e.g. `make TEST_FLAGS="--id 5" tests` or for multiple tests
+`make TEST_FLAGS="--id 5 --id 7" tests`. For a full set of possibilities give the
+command `make TEST_FLAGS="--help" tests`. It is also possible to specify the
+`TEST_FLAGS` as an environment variable (works also for testing through Visual
+Studio projects), e.g. `setenv TEST_FLAGS "--id 5 --id 7"` and `make tests`.
+
+<h3>Doxyfile differences</h3>
+
+In case one has to communicate through e.g. a forum the configuration settings that 
+are different from the standard doxygen configuration file settings one can run the
+doxygen command: with the `-x` option and the name of the configuration file (default
+is `Doxyfile`). The output will be a list of the not default settings (in `Doxyfile`
+format).
 
 \htmlonly
 Return to the <a href="index.html">index</a>.
