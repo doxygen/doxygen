@@ -1401,7 +1401,6 @@ STARTDOCSYMS      "##"
                         BEGIN(Search);
       		      }
     <<EOF>>           { yyterminate();
-                        newEntry();
                       }
 }
 

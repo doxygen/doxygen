@@ -1177,8 +1177,8 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
         m_t << "r|}{";
         break;
       case DocHtmlCell::Center:
-        break;
         m_t << "c|}{";
+        break;
       default:
         m_t << "l|}{";
         break;

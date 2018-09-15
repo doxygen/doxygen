@@ -119,6 +119,7 @@ struct LayoutNavEntry
 {
   public:
     enum Kind { 
+      None = -1, 
       MainPage, 
       Pages,
       Modules, 
@@ -158,7 +159,7 @@ struct LayoutNavEntry
     LayoutNavEntry *find(LayoutNavEntry::Kind k,const char *file=0) const;
 
   private:
-    LayoutNavEntry() : m_parent(0) {}
+    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(FALSE) {}
     LayoutNavEntry *m_parent;
     Kind m_kind;
     bool m_visible;
