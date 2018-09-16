@@ -34,7 +34,12 @@ install:
 #  - C:\tmpmiktex\miktexsetup --verbose --local-package-repository=C:\temp\miktex --package-set=basic install
   - refreshenv
   - pip install conan
-  - conan install libxml2/2.9.8@bincrafters/stable -g virtualrunenv
+  - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
+  - ps: |
+     "[requires]
+      libxml2/2.9.8@bincrafters/stable
+      winflexbison/2.5.15@bincrafters/stable" | Out-File -Encoding ASCII -FilePath conanfile.txt
+  - conan install . -g virtualrunenv
   - activate_run.bat
   - set "PATH=%PATH%;C:\deps\ghostscript\bin;C:\deps\flex;C:\deps\miktex\miktex\bin"
 
