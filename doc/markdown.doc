@@ -301,7 +301,8 @@ Note that using `[TOC]` is the same as using a
 \ref cmdtableofcontents "\\tableofcontents" command.
 
 Note that the \ref cfg_toc_include_headings "TOC_INCLUDE_HEADINGS" has to be set
-to a value > 0 otherwise no table of contents is shown when using \ref md_headers "Markdown Headers".
+to a value > 0 otherwise no table of contents is shown when using \ref md_headers "Markdown Headers"
+or the \ref md_headers "Markdown Headers" have to have \ref md_header_id "Header Id Attributes".
 
 \subsection md_tables Tables
 
