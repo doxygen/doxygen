@@ -1888,7 +1888,7 @@ Commands to create links
 \section cmdaddindex \\addindex (text)
 
   \addindex \\addindex
-  This command adds (text) to the \LaTeX index.
+  This command adds (text) to the \LaTeX , DocBook and RTF index.
 
 <hr>
 \section cmdanchor \\anchor <word>
@@ -2608,7 +2608,7 @@ only copy the detailed documentation, not the brief description.
 
   \addindex \\docbookonly
   Starts a block of text that will be verbatim included in the
-  generated docbook documentation only. The block ends with a
+  generated DocBook documentation only. The block ends with a
   \ref cmdenddocbookonly "\\enddocbookonly" command.
 
   \sa section \ref cmdmanonly "\\manonly", 
@@ -3082,7 +3082,7 @@ class Receiver
   spaces. The quotes are stripped before the caption is displayed.
 
   The fourth argument is also optional and can be used to specify the
-  width or height of the image. This can be useful for \LaTeX or docbook output
+  width or height of the image. This can be useful for \LaTeX or DocBook output
   (i.e. format=<code>latex</code> or format=<code>docbook</code>).
   \anchor image_sizeindicator \par Size indication
   The \c sizeindication can specify the width or height to be used (or a combination).
