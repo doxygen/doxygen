@@ -350,16 +350,16 @@ private:
  
     QCString relPath;
     DocbookCodeGenerator m_codeGen;
-    bool m_prettyCode = FALSE;
-    bool m_denseText = FALSE;
-    bool m_inGroup = FALSE;
-    bool m_inDetail = FALSE;
-    int  m_levelListItem = 0;
+    bool m_prettyCode;
+    bool m_denseText;
+    bool m_inGroup;
+    bool m_inDetail;
+    int  m_levelListItem;
     bool m_inListItem[20];
     bool m_inSimpleSect[20];
-    bool m_descTable = FALSE;
-    int m_inLevel = -1;
-    bool m_firstMember = FALSE;
+    bool m_descTable;
+    int m_inLevel;
+    bool m_firstMember;
 };
 
 #endif

@@ -18,6 +18,7 @@
 
 #include "tagreader.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -1322,6 +1323,9 @@ void TagFileParser::buildLists(Entry *root)
       case TagClassInfo::Category:  ce->spec = Entry::Category;  break;
       case TagClassInfo::Service:   ce->spec = Entry::Service;   break;
       case TagClassInfo::Singleton: ce->spec = Entry::Singleton; break;
+      case TagClassInfo::None:      // should never happen, means not properly initialized
+        assert(tci->kind != TagClassInfo::None);
+        break;
     }
     ce->name     = tci->name;
     if (tci->kind==TagClassInfo::Protocol)

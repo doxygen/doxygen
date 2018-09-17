@@ -2406,6 +2406,13 @@ DB_GEN_C
   //m_indent=0;
   //templateMemberItem = FALSE;
   m_prettyCode=Config_getBool(DOCBOOK_PROGRAMLISTING);
+  m_denseText = FALSE;
+  m_inGroup = FALSE;
+  m_inDetail = FALSE;
+  m_levelListItem = 0;
+  m_descTable = FALSE;
+  m_inLevel = -1;
+  m_firstMember = FALSE;
   for (int i = 0 ; i < sizeof(m_inListItem) / sizeof(*m_inListItem) ; i++) m_inListItem[i] = FALSE;
   for (int i = 0 ; i < sizeof(m_inSimpleSect) / sizeof(*m_inSimpleSect) ; i++) m_inSimpleSect[i] = FALSE;
 }

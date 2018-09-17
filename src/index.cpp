@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 
+#include <assert.h>
 #include <qtextstream.h>
 #include <qdatetime.h>
 #include <qdir.h>
@@ -4308,6 +4309,9 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
           }
           writeUserGroupStubPage(ol,lne);
           break;
+        case LayoutNavEntry::None:
+          assert(kind != LayoutNavEntry::None); // should never happen, means not properly initialized
+          break;
       }
       if (kind!=LayoutNavEntry::User && kind!=LayoutNavEntry::UserGroup) // User entry may appear multiple times
       {
@@ -4357,6 +4361,9 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::FileGlobals:      return documentedFileMembers[FMHL_All]>0;
     //case LayoutNavEntry::Dirs:             return documentedDirs>0;
     case LayoutNavEntry::Examples:         return Doxygen::exampleSDict->count()>0;
+    case LayoutNavEntry::None:             // should never happen, means not properly initialized
+      assert(kind != LayoutNavEntry::None);
+      return FALSE;
   }
   return FALSE;
 }
