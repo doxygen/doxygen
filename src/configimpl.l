@@ -317,22 +317,71 @@ void ConfigList::writeTemplate(FTextStream &t,bool sl,bool)
 
 void ConfigList::compareDoxyfile(FTextStream &t)
 {
-  if ( m_value.count() != m_defaultValue.count())
+  const char *p = m_value.first();
+  const char *q = m_defaultValue.first();
+  int defCnt = 0;
+  int valCnt = 0;
+
+  // count non empty elements
+  while (p)
+  {
+    QCString s=p;
+    if (!s.stripWhiteSpace().isEmpty()) valCnt += 1;
+    p = m_value.next();
+  }
+
+  while (q)
+  {
+    QCString s=q;
+    if (!s.stripWhiteSpace().isEmpty()) defCnt += 1;
+    q = m_defaultValue.next();
+  }
+  if ( valCnt != defCnt)
   {
     writeTemplate(t,TRUE,TRUE);
     return;
   }
 
-  const char *p = m_value.first();
-  const char *q = m_defaultValue.first();
-  while (p)
+  // get first non empry element
+  q =  m_defaultValue.first();
+  p =  m_value.first();
+  QCString sp = p;
+  while (p && sp.stripWhiteSpace().isEmpty())
   {
     p = m_value.next();
-    q = m_defaultValue.next();
-    if (QCString(p).stripWhiteSpace() != QCString(q).stripWhiteSpace())
+    sp = p;
+  }
+  QCString sq = q;
+  while (q && sq.stripWhiteSpace().isEmpty())
+  {
+    q = m_value.next();
+    sq = q;
+  }
+  while (p)
+  {
+    // skip empty elements
+    sp = p;
+    while (p && sp.stripWhiteSpace().isEmpty())
     {
-      writeTemplate(t,TRUE,TRUE);
-      return;
+      p = m_value.next();
+      sp = p;
+    }
+    sq = q;
+    while (q && sq.stripWhiteSpace().isEmpty())
+    {
+      q = m_value.next();
+      sq = q;
+    }
+    // be sure we have still an element (p and q have same number of 'filled' elements)
+    if (p)
+    {
+      if (sp.stripWhiteSpace() != sq.stripWhiteSpace())
+      {
+        writeTemplate(t,TRUE,TRUE);
+        return;
+      }
+      p = m_value.next();
+      q = m_defaultValue.next();
     }
   }
 }
