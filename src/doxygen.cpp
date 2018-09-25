@@ -167,6 +167,7 @@ bool             Doxygen::suppressDocWarnings = FALSE;
 Store           *Doxygen::symbolStorage;
 QCString         Doxygen::objDBFileName;
 QCString         Doxygen::entryDBFileName;
+QCString         Doxygen::filterDBFileName;
 bool             Doxygen::gatherDefines = TRUE;
 IndexList       *Doxygen::indexList;
 int              Doxygen::subpageNestingLevel = 0;
@@ -10679,6 +10680,10 @@ static void stopDoxygen(int)
   {
     thisDir.remove(Doxygen::objDBFileName);
   }
+  if (!Doxygen::filterDBFileName.isEmpty())
+  {
+    thisDir.remove(Doxygen::filterDBFileName);
+  }
   killpg(0,SIGINT);
   exit(1);
 }
@@ -10778,6 +10783,10 @@ static void exitDoxygen()
     if (!Doxygen::objDBFileName.isEmpty())
     {
       thisDir.remove(Doxygen::objDBFileName);
+    }
+    if (!Doxygen::filterDBFileName.isEmpty())
+    {
+      thisDir.remove(Doxygen::filterDBFileName);
     }
   }
 }
@@ -11018,6 +11027,8 @@ void parseInput()
   Doxygen::objDBFileName.prepend(outputDirectory+"/");
   Doxygen::entryDBFileName.sprintf("doxygen_entrydb_%d.tmp",pid);
   Doxygen::entryDBFileName.prepend(outputDirectory+"/");
+  Doxygen::filterDBFileName.sprintf("doxygen_filterdb_%d.tmp",pid);
+  Doxygen::filterDBFileName.prepend(outputDirectory+"/");
 
   if (Doxygen::symbolStorage->open(Doxygen::objDBFileName)==-1)
   {
@@ -11867,6 +11878,7 @@ void generateOutput()
   Doxygen::symbolStorage->close();
   QDir thisDir;
   thisDir.remove(Doxygen::objDBFileName);
+  thisDir.remove(Doxygen::filterDBFileName);
   Config::deinit();
   QTextCodec::deleteAllCodecs();
   delete Doxygen::symbolMap;
