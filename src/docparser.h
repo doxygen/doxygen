@@ -140,7 +140,8 @@ class DocNode
                 Kind_HtmlBlockQuote = 49,
                 Kind_VhdlFlow       = 50,
                 Kind_ParBlock       = 51,
-                Kind_DiaFile        = 52
+                Kind_DiaFile        = 52,
+                Kind_Emoji          = 53
               };
     /*! Creates a new node */
     DocNode() : m_parent(0), m_insidePre(FALSE) {}
@@ -454,7 +455,7 @@ class DocSymbol : public DocNode
                    /* doxygen commands mapped */
                    Sym_BSlash, Sym_At, Sym_Less, Sym_Greater, Sym_Amp,
                    Sym_Dollar, Sym_Hash, Sym_DoubleColon, Sym_Percent, Sym_Pipe,
-                   Sym_Quot, Sym_Minus, Sym_Plus, Sym_Dot
+                   Sym_Quot, Sym_Minus, Sym_Plus, Sym_Dot, Sym_Colon
                  };
     enum PerlType { Perl_unknown = 0, Perl_string, Perl_char, Perl_symbol, Perl_umlaut,
                     Perl_acute, Perl_grave, Perl_circ, Perl_slash, Perl_tilde,
@@ -473,6 +474,21 @@ class DocSymbol : public DocNode
 
   private:
     SymType  m_symbol;
+};
+
+/** Node representing a n emoji */
+class DocEmoji : public DocNode
+{
+  public:
+    DocEmoji(DocNode *parent,int  s) : 
+      m_symbol(s) { m_parent = parent; }
+    int  emoji() const     { return m_symbol; }
+    Kind kind() const          { return Kind_Emoji; }
+    void accept(DocVisitor *v) { v->visit(this); }
+    static int  decodeEmoji(const QCString &symName);
+
+  private:
+    int   m_symbol;
 };
 
 /** Node representing some amount of white space */

@@ -214,6 +214,7 @@ documentation:
 \refitem cmdperc \\\%
 \refitem cmdquot \\\"
 \refitem cmdchardot \\\.
+\refitem cmdcolon \:
 \refitem cmddcolon \::
 \refitem cmdpipe \\|
 \refitem cmdndash \\\--
@@ -3360,6 +3361,14 @@ class Receiver
   prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" is enabled
   or to prevent starting a numbered list when the dot follows a number at
   the start of a line.
+
+<hr>
+\section cmdcolon \:
+
+  \addindex \\:
+  This command writes a single colon (\c \:) to the output. This
+  character sequence has to be escaped in some cases, because it is used
+  to define `emoji` see also \ref emojisup "Emoji support".
 
 <hr>
 \section cmddcolon \\::

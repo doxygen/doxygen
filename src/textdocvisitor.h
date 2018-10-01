@@ -40,6 +40,7 @@ class TextDocVisitor : public DocVisitor
     void visit(DocLinkedWord *w)  { filter(w->word()); }
     void visit(DocWhiteSpace *)   { m_t << " ";       }
     void visit(DocSymbol *);
+    void visit(DocEmoji *);
     void visit(DocURL *u)         { filter(u->url());  }
     void visit(DocLineBreak *)    { m_t << " ";       }
     void visit(DocHorRuler *)     {}

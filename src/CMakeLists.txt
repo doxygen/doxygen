@@ -183,6 +183,7 @@ add_library(_doxygen STATIC
     dot.cpp
     doxygen.cpp
     eclipsehelp.cpp
+    emoji.cpp
     entry.cpp
     filedef.cpp
     filename.cpp

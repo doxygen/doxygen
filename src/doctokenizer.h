@@ -40,6 +40,7 @@ enum Tokens
   TK_NEWPARA       = 9,
   TK_RCSTAG        = 10,
   TK_URL           = 11,
+  TK_EMOJI         = 12,
 
   RetVal_OK             = 0x10000,
   RetVal_SimpleSec      = 0x10001,

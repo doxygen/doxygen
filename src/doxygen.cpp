@@ -103,6 +103,7 @@
 #include "settings.h"
 #include "context.h"
 #include "fileparser.h"
+#include "emoji.h"
 
 // provided by the generated file resources.cpp
 extern void initResources();
@@ -10029,6 +10030,9 @@ static void usage(const char *name)
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
   msg("7) Use doxygen to compare the used configuration file with the template configuration file\n");
   msg("    %s -x [configFile]\n\n",name);
+  msg("8) Use doxygen to show a list of build in emoji.\n");
+  msg("    %s -f emoji outputFileName\n\n",name);
+  msg("    If - is used for outputFileName doxygen will write to standard output.\n\n");
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
   msg("-v print version string\n");
@@ -10229,6 +10233,7 @@ void readConfiguration(int argc, char **argv)
   const char *layoutName=0;
   const char *debugLabel;
   const char *formatName;
+  const char *listName;
   bool genConfig=FALSE;
   bool shortList=FALSE;
   bool diffList=FALSE;
@@ -10303,6 +10308,34 @@ void readConfiguration(int argc, char **argv)
           exit(0);
         }
         err("option \"-e\" has invalid format specifier.\n");
+        cleanUpDoxygen();
+        exit(1);
+        break;
+      case 'f':
+        listName=getArg(argc,argv,optind);
+        if (!listName)
+        {
+          err("option \"-f\" is missing list specifier.\n");
+          cleanUpDoxygen();
+          exit(1);
+        }
+        if (qstricmp(listName,"emoji")==0)
+        {
+          if (optind+1>=argc)
+          {
+            err("option \"-f emoji\" is missing an output file name\n");
+            cleanUpDoxygen();
+            exit(1);
+          }
+          QFile f;
+          if (openOutputFile(argv[optind+1],f))
+          {
+            EmojiEntityMapper::instance()->writeEmojiFile(f);
+          }
+          cleanUpDoxygen();
+          exit(0);
+        }
+        err("option \"-f\" has invalid list specifier.\n");
         cleanUpDoxygen();
         exit(1);
         break;

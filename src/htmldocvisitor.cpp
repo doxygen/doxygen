@@ -34,6 +34,7 @@
 #include "filedef.h"
 #include "memberdef.h"
 #include "htmlentity.h"
+#include "emoji.h"
 #include "plantuml.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
@@ -231,6 +232,20 @@ void HtmlDocVisitor::visit(DocSymbol *s)
   else
   {
     err("HTML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+  }
+}
+
+void HtmlDocVisitor::visit(DocEmoji *s)
+{
+  if (m_hide) return;
+  const char *res = EmojiEntityMapper::instance()->html(s->emoji());
+  if (res)
+  {
+    m_t << res;
+  }
+  else
+  {
+    err("HTML: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
   }
 }
 
