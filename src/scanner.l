@@ -3079,6 +3079,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  *pCopyQuotedGString+=*yytext;
   					  BEGIN( lastStringContext ); 
 					}
+<CopyGString,CopyPHPGString>"<?php"	{ // we had an odd number of quotes.
+					  *pCopyQuotedGString += yytext;
+  					  BEGIN( lastStringContext ); 
+					}
 <CopyGString,CopyPHPGString>"/*"|"*/"|"//" {
   					  *pCopyQuotedGString+=yytext;
   					}
