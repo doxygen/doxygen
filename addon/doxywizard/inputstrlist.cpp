@@ -264,7 +264,7 @@ bool InputStrList::isEmpty()
 {
   foreach (QString s, m_strList)
   {
-    if (!s.isEmpty()) return FALSE;
+    if (!s.isEmpty()) return false;
   }
-  return TRUE;
+  return true;
 }
