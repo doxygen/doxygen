@@ -60,6 +60,7 @@ class InputString : public QObject, public Input
     void updateDependencies() {}
     void writeValue(QTextStream &t,QTextCodec *codec);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
+    bool isEmpty() { return m_str.isEmpty(); }
 
   public slots:
     void reset();
