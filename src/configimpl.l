@@ -983,6 +983,15 @@ void ConfigImpl::convertStrToVal()
     option->convertStrToVal();
   }
 }
+void ConfigImpl::emptyValueToDefault()
+{
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (;(option=it.current());++it)
+  {
+    option->emptyValueToDefault();
+  }
+}
 
 static void substEnvVarsInString(QCString &s)
 {
@@ -1854,7 +1863,7 @@ void Config::writeTemplate(FTextStream &t,bool shortList,bool update)
 
 void Config::compareDoxyfile(FTextStream &t)
 {
-  postProcess(FALSE);
+  postProcess(FALSE, TRUE);
   ConfigImpl::instance()->compareDoxyfile(t);
 }
 
@@ -1863,9 +1872,10 @@ bool Config::parse(const char *fileName,bool update)
   return ConfigImpl::instance()->parse(fileName,update);
 }
 
-void Config::postProcess(bool clearHeaderAndFooter)
+void Config::postProcess(bool clearHeaderAndFooter, bool compare)
 {
   ConfigImpl::instance()->substituteEnvironmentVars();
+  if (!compare)ConfigImpl::instance()->emptyValueToDefault();
   ConfigImpl::instance()->convertStrToVal();
 
   // avoid bootstrapping issues when the config file already
