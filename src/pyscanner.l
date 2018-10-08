@@ -1059,12 +1059,13 @@ STARTDOCSYMS      "##"
 			  g_defVal+=*yytext;
        			}
      ")"		|
+     "="		|
      ","		{
 			  if (g_braceCount == 0)
 			  {
 			    if (current->argList->getLast())
 			      current->argList->getLast()->type += g_defVal.data();
-			    if (*yytext == ')')
+			    if (*yytext != ',')
 			      unput(*yytext);
 			    BEGIN(FunctionParams);
 			  }
