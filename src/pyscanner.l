@@ -1007,11 +1007,13 @@ STARTDOCSYMS      "##"
 }
 
 <FunctionTypeAnnotation>{
+     "{"		|
      "["		|
      "("		{
      			  ++g_braceCount;
      			  g_defVal+=*yytext;
      			}
+     "}"		|
      "]"		|
      ")"		{
 			  --g_braceCount;
@@ -1049,11 +1051,13 @@ STARTDOCSYMS      "##"
 }
 
 <FunctionAnnotation>{
+     "{"		|
      "["		|
      "("		{
      			  ++g_braceCount;
      			  g_defVal+=*yytext;
      			}
+     "}"		|
      "]"		{
 			  --g_braceCount;
 			  g_defVal+=*yytext;
@@ -1098,11 +1102,13 @@ STARTDOCSYMS      "##"
 }
 
 <FunctionParamDefVal>{
+     "{"		| 
      "["		| 
      "("		{ // internal opening brace, assumption is that we have correct code so braces do match
        			  ++g_braceCount;
 			  g_defVal+=*yytext;
        			}
+     "}"		|
      "]"		{
 			  --g_braceCount;
 			  g_defVal+=*yytext;
