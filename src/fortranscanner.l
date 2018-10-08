@@ -1638,7 +1638,7 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
 	}
         // fallthrough
       default:
-        if ((column < 6) && ((c - '0') >= 0) && ((c - '0') <= 9)) { // remove numbers, i.e. labels from first 5 positions.
+        if (!commented && (column < 6) && ((c - '0') >= 0) && ((c - '0') <= 9)) { // remove numbers, i.e. labels from first 5 positions.
             newContents[j]=' ';
         }
         else if(column==6 && emptyLabel) { // continuation
