@@ -874,7 +874,7 @@ void LatexGenerator::startProjectNumber()
   t << "\\\\[1ex]\\large "; 
 }
 
-void LatexGenerator::startIndexSection(IndexSections is)
+void LatexGenerator::startIndexSection(IndexSections is, bool isMP)
 {
   bool &compactLatex = Config_getBool(COMPACT_LATEX);
   QCString &latexHeader = Config_getString(LATEX_HEADER);
@@ -905,6 +905,8 @@ void LatexGenerator::startIndexSection(IndexSections is)
     case isMainPage:
       if (compactLatex) t << "\\section"; else t << "\\chapter";
       t << "{"; //Introduction}\n"
+      break;
+    case isMainPage2:
       break;
     //case isPackageIndex:
     //  if (compactLatex) t << "\\section"; else t << "\\chapter";
@@ -1038,18 +1040,20 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isPageDocumentation:
       {
-        if (compactLatex) t << "\\section"; else t << "\\chapter";
+        if (compactLatex || isMP) t << "\\section"; else t << "\\chapter";
         t << "{"; //Page Documentation}\n";
       }
       break;
     case isPageDocumentation2:
+      break;
+    case isSection:
       break;
     case isEndIndex:
       break;
   }
 }
 
-void LatexGenerator::endIndexSection(IndexSections is)
+void LatexGenerator::endIndexSection(IndexSections is, bool isMP)
 {
   //static bool compactLatex = Config_getBool(COMPACT_LATEX);
   static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
@@ -1073,6 +1077,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         if (Config_getBool(PDF_HYPERLINKS)) t << "\\hypertarget{index}{}";
         t << "\\input{" << indexName << "}\n";
       }
+      break;
+    case isMainPage2:
       break;
     case isModuleIndex:
       t << "}\n\\input{modules}\n";
@@ -1278,6 +1284,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
       }
       break;
     case isPageDocumentation2:
+      break;
+    case isSection:
       break;
     case isEndIndex:
       if (latexFooter.isEmpty())

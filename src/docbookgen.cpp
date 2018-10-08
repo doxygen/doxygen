@@ -2451,6 +2451,22 @@ DB_GEN_C
     fileName="mainpage";
     fileType="chapter";
   }
+  else
+  {
+    PageSDict::Iterator pdi(*Doxygen::pageSDict);
+    PageDef *pd = pdi.toFirst();
+    for (pd = pdi.toFirst();(pd=pdi.current());++pdi)
+    {
+      if (!pd->getGroupDef() && !pd->isReference() && convertNameToFile(pd->name(), FALSE, TRUE) == stripPath(fileName))
+      {
+        if (pd->getOuterScope() == Doxygen::globalScope)
+        {
+          fileType="chapter";
+        }
+      }
+    }
+  }
+ 
   pageName = fileName;
   relPath = relativePathToRoot(fileName);
   if (fileName.right(4)!=".xml") fileName+=".xml";
@@ -2463,6 +2479,22 @@ DB_GEN_C
   t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
   if (!pageName.isEmpty()) t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
   t << ">" << endl;
+  PageSDict::Iterator pdi(*Doxygen::pageSDict);
+  PageDef *pd = pdi.toFirst();
+  for (pd = pdi.toFirst();(pd=pdi.current());++pdi)
+  {
+    if (!pd->getGroupDef() && !pd->isReference() && convertNameToFile(pd->name(), FALSE, TRUE) == stripPath(pageName))
+    {
+      if (!pd->title().isEmpty())
+      {
+        t << "    <title>" << convertToDocBook(pd->title()) << "</title>" << endl;
+      }
+      else
+      {
+        t << "    <title>" << convertToDocBook(pd->name()) << "</title>" << endl;
+      }
+    }
+  }
 }
 
 void DocbookGenerator::endFile()
@@ -2488,12 +2520,28 @@ DB_GEN_C
   {
     fileType="chapter";
   }
+  else
+  {
+    PageSDict::Iterator pdi(*Doxygen::pageSDict);
+    PageDef *pd = pdi.toFirst();
+    for (pd = pdi.toFirst();(pd=pdi.current());++pdi)
+    {
+      if (!pd->getGroupDef() && !pd->isReference() && convertNameToFile(pd->name(), FALSE, TRUE) == stripExtensionGeneral(stripPath(fileName),".xml"))
+      {
+        if (pd->getOuterScope() == Doxygen::globalScope)
+        {
+          fileType="chapter";
+        }
+      }
+    }
+  }
+ 
   t << "</" << fileType << ">" << endl;
   endPlainFile();
   m_codeGen.setSourceFileName("");
 }
 
-void DocbookGenerator::startIndexSection(IndexSections is)
+void DocbookGenerator::startIndexSection(IndexSections is, bool )
 {
 DB_GEN_C2("IndexSections " << is)
   switch (is)
@@ -2511,6 +2559,8 @@ DB_GEN_C2("IndexSections " << is)
     case isMainPage:
       t << "<chapter>" << endl;
       t << "    <title>";
+      break;
+    case isMainPage2:
       break;
     case isModuleIndex:
       //Module Index}\n"
@@ -2561,12 +2611,14 @@ DB_GEN_C2("IndexSections " << is)
       break;
     case isPageDocumentation2:
       break;
+    case isSection:
+      break;
     case isEndIndex:
       break;
   }
 }
 
-void DocbookGenerator::endIndexSection(IndexSections is)
+void DocbookGenerator::endIndexSection(IndexSections is, bool )
 {
 DB_GEN_C2("IndexSections " << is)
   static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
@@ -2579,6 +2631,8 @@ DB_GEN_C2("IndexSections " << is)
     case isMainPage:
       t << "</title>" << endl;
       t << "    <xi:include href=\"mainpage.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+      break;
+    case isMainPage2:
       t << "</chapter>" << endl;
       break;
     case isModuleIndex:
@@ -2767,31 +2821,24 @@ DB_GEN_C2("IndexSections " << is)
       break;
     case isPageDocumentation2:
       break;
+    case isSection:
+      t << "</section>" << endl;
+      break;
     case isEndIndex:
       t << "<index/>" << endl;
       break;
   }
 }
-void DocbookGenerator::writePageLink(const char *name, bool /*first*/)
+void DocbookGenerator::writePageLink(const char *name, bool first)
 {
 DB_GEN_C
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
   PageDef *pd = pdi.toFirst();
   for (pd = pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    if (!pd->getGroupDef() && !pd->isReference() && pd->name() == stripPath(name))
+    if (!pd->getGroupDef() && !pd->isReference() && convertNameToFile(pd->name(), FALSE, TRUE) == stripPath(name))
     {
-      t << "<chapter>\n";
-      if (!pd->title().isEmpty())
-      {
-        t << "    <title>" << convertToDocBook(pd->title()) << "</title>" << endl;
-      }
-      else
-      {
-        t << "    <title>" << convertToDocBook(pd->name()) << "</title>" << endl;
-      }
       t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
-      t << "</chapter>\n";
     }
   }
 }
@@ -3166,7 +3213,6 @@ void DocbookGenerator::endSection(const char *lab,SectionInfo::SectionType)
 {
 DB_GEN_C
   t << "</title>";
-  t << "    </section>";
 }
 void DocbookGenerator::addIndexItem(const char *prim,const char *sec)
 {
@@ -3324,4 +3370,90 @@ void DocbookGenerator::endConstraintList()
 {
 DB_GEN_C
   t << "</simplesect>" << endl;
+}
+
+bool DocbookGenerator::combineFilesInplace(const char *path)
+{
+  const int maxLineLength = 10240;
+  static QCString lineBuf(maxLineLength);
+  int len;
+
+  QDir d(path);
+  // store the original directory
+  if (!d.exists())
+  {
+    err("Output dir %s does not exist!\n",path);
+    return FALSE;
+  }
+  QCString oldDir = QDir::currentDirPath().utf8();
+
+  // go to the docbook output directory (i.e. path)
+  QDir::setCurrent(d.absPath());
+  QDir thisDir;
+
+  QCString combinedName = (QCString)path+"/combined.tmp";
+  QCString mainpageName  = (QCString)path+"/mainpage.xml";
+  QCString indexName  = (QCString)path+"/index.xml";
+
+  QFile outindex(indexName);
+  QFile outmain(mainpageName);
+  QFile outf(combinedName);
+
+  if (!outindex.open(IO_ReadOnly))
+  {
+    QDir::setCurrent(oldDir);
+    return TRUE;
+  }
+  if (!outmain.open(IO_ReadOnly))
+  {
+    outindex.close();
+    QDir::setCurrent(oldDir);
+    return TRUE;
+  }
+  if (!outf.open(IO_WriteOnly))
+  {
+    err("Failed to open %s for writing!\n",combinedName.data());
+    outmain.close();
+    outindex.close();
+    QDir::setCurrent(oldDir);
+    return FALSE;
+  }
+  FTextStream outt(&outf);
+
+  for(;;)
+  {
+    lineBuf.resize(maxLineLength);
+    if ((len=outindex.readLine(lineBuf.rawData(),maxLineLength))==-1) break;
+    lineBuf.resize(len+1);
+    lineBuf[len]= '\0';
+    if (lineBuf.find("mainpage.xml")!=-1)
+    {
+      for(;;)
+      {
+        lineBuf.resize(maxLineLength);
+        if ((len=outmain.readLine(lineBuf.rawData(),maxLineLength))==-1) break;
+        lineBuf.resize(len+1);
+        lineBuf[len]= '\0';
+        if ((lineBuf.find("<chapter")==-1) && (lineBuf.find("</chapter")==-1) &&
+            (lineBuf.find("<?xml")==-1))
+	{
+          outt << lineBuf;
+        }
+      }
+    }
+    else
+    {
+      outt << lineBuf;
+    }
+  }
+
+  outf.close();
+  outindex.close();
+  outmain.close();
+  thisDir.remove(mainpageName);
+  thisDir.remove(indexName);
+  thisDir.rename(combinedName,indexName);
+
+  QDir::setCurrent(oldDir);
+  return TRUE;
 }

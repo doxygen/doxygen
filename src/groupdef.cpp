@@ -969,6 +969,7 @@ void GroupDef::writePageDocumentation(OutputList &ol)
         ol.startSection(si->label,si->title,SectionInfo::Subsection);
         ol.docify(si->title);
         ol.endSection(si->label,SectionInfo::Subsection);
+	ol.endIndexSection(isSection,false);
       }
       ol.startTextBlock();
       ol.generateDoc(pd->docFile(),pd->docLine(),pd,0,pd->documentation()+pd->inbodyDocumentation(),TRUE,FALSE,0,TRUE,FALSE);

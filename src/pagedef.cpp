@@ -294,6 +294,7 @@ void PageDef::writePageDocumentation(OutputList &ol)
       Doxygen::subpageNestingLevel++;
       subPage->writePageDocumentation(ol);
       Doxygen::subpageNestingLevel--;
+      ol.endIndexSection(isSection,false);
     }
 
     ol.popGeneratorState();

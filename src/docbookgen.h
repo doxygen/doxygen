@@ -149,8 +149,8 @@ class DocbookGenerator : public OutputGenerator
     void writeSearchInfo(){DB_GEN_EMPTY};
     void writeFooter(const char *navPath){DB_GEN_NEW};
     void endFile();
-    void startIndexSection(IndexSections);
-    void endIndexSection(IndexSections);
+    void startIndexSection(IndexSections, bool isMainPage);
+    void endIndexSection(IndexSections, bool isMainPage);
     void writePageLink(const char *,bool);
     void startProjectNumber(){DB_GEN_NEW};
     void endProjectNumber(){DB_GEN_NEW};
@@ -343,6 +343,8 @@ class DocbookGenerator : public OutputGenerator
 
     void setCurrentDoc(Definition *,const char *,bool) {DB_GEN_EMPTY}
     void addWord(const char *,bool) {DB_GEN_EMPTY}
+
+    static bool combineFilesInplace(const char *path);
 
 private:
     DocbookGenerator(const DocbookGenerator &o);

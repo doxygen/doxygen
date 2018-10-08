@@ -325,24 +325,27 @@ void RTFGenerator::beginRTFDocument()
 
 }
 
-void RTFGenerator::beginRTFChapter()
+void RTFGenerator::beginRTFChapter(bool isMP)
 {
   t <<"\n";
   DBG_RTF(t << "{\\comment BeginRTFChapter}\n")
   t << rtf_Style_Reset;
 
   // if we are compact, no extra page breaks...
-  if (Config_getBool(COMPACT_RTF))
+  if (Config_getBool(COMPACT_RTF) || isMP)
   {
     //      t <<"\\sect\\sectd\\sbknone\n";
     t <<"\\sect\\sbknone\n";
-    rtfwriteRuler_thick();
+    if (!isMP) rtfwriteRuler_thick();
   }
   else
     t <<"\\sect\\sbkpage\n";
   //t <<"\\sect\\sectd\\sbkpage\n";
 
-  t << rtf_Style["Heading1"]->reference << "\n";
+  if (isMP)
+    t << rtf_Style["Heading2"]->reference << "\n";
+  else
+    t << rtf_Style["Heading1"]->reference << "\n";
 }
 
 void RTFGenerator::beginRTFSection()
@@ -395,7 +398,7 @@ void RTFGenerator::endProjectNumber()
   DBG_RTF(t <<"{\\comment endProjectNumber }" << endl)
 }
 
-void RTFGenerator::startIndexSection(IndexSections is)
+void RTFGenerator::startIndexSection(IndexSections is, bool isMP)
 {
   //QCString paperName;
 
@@ -423,40 +426,42 @@ void RTFGenerator::startIndexSection(IndexSections is)
       break;
     case isMainPage:
       //Introduction
-      beginRTFChapter();
+      beginRTFChapter(false);
+      break;
+    case isMainPage2:
       break;
     //case isPackageIndex:
     //  //Package Index
-    //  beginRTFChapter();
+    //  beginRTFChapter(false);
     //  break;
     case isModuleIndex:
       //Module Index
-      beginRTFChapter();
+      beginRTFChapter(false);
       break;
     case isDirIndex:
       //Directory Index
-      beginRTFChapter();
+      beginRTFChapter(false);
       break;
     case isNamespaceIndex:
       //Namespace Index
-      beginRTFChapter();
+      beginRTFChapter(false);
       break;
     case isClassHierarchyIndex:
       //Hierarchical Index
       DBG_RTF(t << "{\\comment start classhierarchy}\n")
-      beginRTFChapter();
+      beginRTFChapter(false);
       break;
     case isCompoundIndex:
       //Annotated Compound Index
-      beginRTFChapter();
+      beginRTFChapter(false);
       break;
     case isFileIndex:
       //Annotated File Index
-      beginRTFChapter();
+      beginRTFChapter(false);
       break;
     case isPageIndex:
       //Related Page Index
-      beginRTFChapter();
+      beginRTFChapter(false);
       break;
     case isModuleDocumentation:
       {
@@ -468,7 +473,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         {
           if (!gd->isReference())
           {
-            beginRTFChapter();
+            beginRTFChapter(false);
             found=TRUE;
           }
         }
@@ -484,7 +489,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         {
           if (dd->isLinkableInProject())
           {
-            beginRTFChapter();
+            beginRTFChapter(false);
             found=TRUE;
           }
         }
@@ -500,7 +505,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         {
           if (nd->isLinkableInProject())
           {
-            beginRTFChapter();
+            beginRTFChapter(false);
             found=TRUE;
           }
         }
@@ -519,7 +524,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
              !cd->isEmbeddedInOuterScope()
              )
           {
-            beginRTFChapter();
+            beginRTFChapter(false);
             found=TRUE;
           }
         }
@@ -541,7 +546,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
             {
               if (isFirst)
               {
-                beginRTFChapter();
+                beginRTFChapter(false);
                 isFirst=FALSE;
                 break;
               }
@@ -553,13 +558,13 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isExampleDocumentation:
       {
         //Example Documentation
-        beginRTFChapter();
+        beginRTFChapter(false);
       }
       break;
     case isPageDocumentation:
       {
         //Page Documentation
-        beginRTFChapter();
+        beginRTFChapter(isMP);
       }
       break;
     case isPageDocumentation2:
@@ -567,12 +572,14 @@ void RTFGenerator::startIndexSection(IndexSections is)
         t << "{\\tc \\v ";
       }
       break;
+    case isSection:
+      break;
     case isEndIndex:
       break;
   }
 }
 
-void RTFGenerator::endIndexSection(IndexSections is)
+void RTFGenerator::endIndexSection(IndexSections is, bool isMP)
 {
   bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);  
@@ -676,6 +683,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
       //if (Config_getBool(GENERATE_TREEVIEW)) t << "main"; else t << "index";
       t << "index";
       t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      break;
+    case isMainPage2:
       break;
     //case isPackageIndex:
     //  t << "\\par " << rtf_Style_Reset << endl;
@@ -939,8 +948,10 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "\\par " << rtf_Style_Reset << endl;
       }
       break;
+    case isSection:
+      break;
     case isEndIndex:
-      beginRTFChapter();
+      beginRTFChapter(false);
       t << rtf_Style["Heading1"]->reference;
       t << theTranslator->trRTFGeneralIndex() << "\\par "<< endl;
       t << rtf_Style_Reset << endl;
@@ -1484,7 +1495,7 @@ void RTFGenerator::startTitle()
   if (Config_getBool(COMPACT_RTF))
     beginRTFSection();
   else
-    beginRTFChapter();
+    beginRTFChapter(false);
 }
 
 void RTFGenerator::startGroupHeader(int extraIndent)
