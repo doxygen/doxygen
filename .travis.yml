@@ -1,7 +1,7 @@
 language: cpp
 os:
-    - linux-ppc64le
     - linux
+    - linux-ppc64le
 dist: xenial
 compiler:
   - gcc
@@ -18,7 +18,6 @@ addons:
             - texlive-latex-extra
             - texlive-font-utils
             - ghostscript
-            - libxml2-utils
             - cmake
             - cmake-data
 
@@ -28,7 +27,19 @@ jobs:
           compiler: clang
 
 before_script:
+    - if [ "${TRAVIS_OS_NAME}" == "linux" ] || [ "${TRAVIS_OS_NAME}" == "linux-ppc64le" ]; then
+        conanQt="";
+        conanQtOptions="";
+      fi;
+      if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+        conanQt="qt/5.11.3@bincrafters/stable";
+        conanQtOptions="qt:shared=False";
+      fi;
+    - if [ "${TRAVIS_OS_NAME}" == "linux" ] || [ "${TRAVIS_OS_NAME}" == "linux-ppc64le" ]; then
+        pip install --quiet --user conan;
+      fi;
     - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+        pip install --upgrade pip;
         sudo mkdir -p /usr/local/man;
         sudo chown -R "${USER}:admin" /usr/local/man;
         pip install --quiet conan;
@@ -43,14 +54,17 @@ before_script:
         chmod a+x /Users/travis/Library/TeX/texbin/epstopdf;
         rm -rf epstopdf*;
         export PATH=/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH;
-
+      fi;
+    - |
         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
         printf "[requires]
         libxml2/2.9.8@bincrafters/stable
-        qt/5.11.3@bincrafters/stable" >> conanfile.txt;
-        conan install . -g virtualrunenv;
+        libiconv/1.15@bincrafters/stable
+        $conanQt
+        [options]
+        $conanQtOptions" >> conanfile.txt;
+        conan install . -g virtualrunenv --build missing --update;
         source activate_run.sh;
-      fi;
 
 script:
     - mkdir build
