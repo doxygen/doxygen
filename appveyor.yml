@@ -38,8 +38,8 @@ install:
   - ps: |
      "[requires]
       libxml2/2.9.8@bincrafters/stable
-      winflexbison/2.5.15@bincrafters/stable" | Out-File -Encoding ASCII -FilePath conanfile.txt
-  - conan install . -g virtualrunenv
+      winflexbison/2.5.16@bincrafters/stable" | Out-File -Encoding ASCII -FilePath conanfile.txt
+  - conan install . -g virtualrunenv --build missing
   - activate_run.bat
   - set "PATH=%PATH%;C:\deps\ghostscript\bin;C:\deps\flex;C:\deps\miktex\miktex\bin"
 
