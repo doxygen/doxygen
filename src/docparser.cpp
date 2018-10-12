@@ -266,7 +266,7 @@ static void unescapeCRef(QCString &s)
  * copies the image to the output directory (which depends on the \a type
  * parameter).
  */
-static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
+static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool warn = true)
 {
   QCString result;
   bool ambig;
@@ -334,7 +334,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
       }
       else
       {
-        printf("Source & Destination are the same!\n");
+        printf("Source and Destination are the same!\n");
       }
     }
     else
@@ -362,7 +362,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
       return baseName;
     }
   }
-  else if (ambig)
+  else if (ambig && warn)
   {
     QCString text;
     text.sprintf("image file name %s is ambiguous.\n",qPrint(fileName));
@@ -373,7 +373,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
   else
   {
     result=fileName;
-    if (result.left(5)!="http:" && result.left(6)!="https:")
+    if (result.left(5)!="http:" && result.left(6)!="https:" && warn)
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,
            "image file %s is not found in IMAGE_PATH: "  
@@ -1750,7 +1750,8 @@ static void handleImg(DocNode *parent,QList<DocNode> &children,const HtmlAttribL
       // and remove the src attribute
       bool result = attrList.remove(index);
       ASSERT(result);
-      DocImage *img = new DocImage(parent,attrList,opt->value,DocImage::Html,opt->value);
+      DocImage::Type t = DocImage::Html;
+      DocImage *img = new DocImage(parent,attrList,findAndCopyImage(opt->value,t,false),t,opt->value);
       children.append(img);
       found = TRUE;
     }
