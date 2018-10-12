@@ -647,6 +647,27 @@ static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
   return 0;
 }
 
+static void writeMarkdownImage(GrowBuf &out, const char *fmt, bool explicitTitle, QCString title, QCString content, QCString link, FileDef *fd)
+{
+  out.addStr("@image ");
+  out.addStr(fmt);
+  out.addStr(" ");
+  out.addStr(link.mid(fd ? 0 : 5));
+  if (!explicitTitle && !content.isEmpty())
+  {
+    out.addStr(" \"");
+    out.addStr(content);
+    out.addStr("\"");
+  }
+  else if ((content.isEmpty() || explicitTitle) && !title.isEmpty())
+  {
+    out.addStr(" \"");
+    out.addStr(title);
+    out.addStr("\"");
+  }
+  out.addStr("\n");
+}
+
 static int processLink(GrowBuf &out,const char *data,int,int size)
 {
   QCString content;
@@ -854,20 +875,10 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
         (fd=findFileDef(Doxygen::imageNameDict,link,ambig))) 
         // assume doxygen symbol link or local image link
     {
-      out.addStr("@image html ");
-      out.addStr(link.mid(fd ? 0 : 5));
-      if (!explicitTitle && !content.isEmpty())
-      {
-        out.addStr(" \"");
-        out.addStr(content);
-        out.addStr("\"");
-      }
-      else if ((content.isEmpty() || explicitTitle) && !title.isEmpty())
-      {
-        out.addStr(" \"");
-        out.addStr(title);
-        out.addStr("\"");
-      }
+      writeMarkdownImage(out, "html", explicitTitle, title, content, link, fd);
+      writeMarkdownImage(out, "latex", explicitTitle, title, content, link, fd);
+      writeMarkdownImage(out, "rtf", explicitTitle, title, content, link, fd);
+      writeMarkdownImage(out, "docbook", explicitTitle, title, content, link, fd);
     }
     else
     {
