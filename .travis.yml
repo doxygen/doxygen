@@ -29,7 +29,8 @@ jobs:
 
 before_script:
     - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-        mkdir -p /usr/local/man;
+        sudo mkdir -p /usr/local/man;
+        sudo chown -R "${USER}:admin" /usr/local/man;
         pip install --quiet conan;
         export HOMEBREW_NO_AUTO_UPDATE=1;
         brew install ghostscript;
