@@ -370,6 +370,7 @@ const char * table_schema[][2] = {
     ")\n"
     "as SELECT \n"
       "\tpath.rowid,\n"
+      "\tpath.found,\n"
       "\tpath.name\n"
     "FROM path WHERE path.type=1 AND path.local=0;\n"
   },
