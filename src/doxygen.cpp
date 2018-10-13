@@ -9889,7 +9889,7 @@ static void escapeAliases()
     while ((in=value.find("^^",p))!=-1)
     {
       newValue+=value.mid(p,in-p);
-      newValue+="\n";
+      newValue+="\\_linebr";
       p=in+2;
     }
     newValue+=value.mid(p,value.length()-p);
