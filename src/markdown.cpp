@@ -76,7 +76,7 @@
 // so for example *bla (*.txt) is cool*
 #define ignoreCloseEmphChar(i) \
   (data[i]=='('  || data[i]=='{' || data[i]=='[' || data[i]=='<' || \
-   data[i]=='='  || data[i]=='+' || data[i]=='-' || data[i]=='\\' || \
+   data[i]=='\\' || \
    data[i]=='@')
 
 //----------
