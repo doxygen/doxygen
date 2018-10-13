@@ -396,9 +396,11 @@ static int processEmphasis2(GrowBuf &out, const char *data, int size, char c)
         data[i-1]!='\n'
        )
     {
-      out.addStr("<strong>");
+      if (c == '~') out.addStr("<strike>");
+      else out.addStr("<strong>");
       processInline(out,data,i);
-      out.addStr("</strong>");
+      if (c == '~') out.addStr("</strike>");
+      else out.addStr("</strong>");
       return i + 2;
     }
     i++;
@@ -616,7 +618,7 @@ static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
 
   char c = data[0];
   int ret;
-  if (size>2 && data[1]!=c) // _bla or *bla
+  if (size>2 && c!='~' && data[1]!=c) // _bla or *bla
   {
     // whitespace cannot follow an opening emphasis
     if (data[1]==' ' || data[1]=='\n' || 
@@ -635,7 +637,7 @@ static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
     }
     return ret+2;
   }
-  if (size>4 && data[1]==c && data[2]==c && data[3]!=c) // ___bla or ***bla
+  if (size>4 && c!='~' && data[1]==c && data[2]==c && data[3]!=c) // ___bla or ***bla
   {
     if (data[3]==' ' || data[3]=='\n' || 
         (ret = processEmphasis3(out, data+3, size-3, c)) == 0)
@@ -2513,6 +2515,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
     // setup callback table for special characters
     g_actions[(unsigned int)'_']=processEmphasis;
     g_actions[(unsigned int)'*']=processEmphasis;
+    g_actions[(unsigned int)'~']=processEmphasis;
     g_actions[(unsigned int)'`']=processCodeSpan;
     g_actions[(unsigned int)'\\']=processSpecialCommand;
     g_actions[(unsigned int)'@']=processSpecialCommand;
