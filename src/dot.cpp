@@ -139,7 +139,7 @@ static const char svgZoomFooter[] =
 "                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
 "                </g>\n"
 "        </g>\n"
-// link to orginial SVG
+// link to original SVG
 "        <svg viewBox=\"0 0 15 15\" width=\"100%\" height=\"30px\" preserveAspectRatio=\"xMaxYMin meet\">\n"
 "         <g id=\"arrow_out\" transform=\"scale(0.3 0.3)\">\n"
 "          <a xlink:href=\"$orgname\" target=\"_base\">\n"
