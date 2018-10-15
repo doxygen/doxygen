@@ -1819,6 +1819,13 @@ void Config::checkAndCorrect()
 
   checkFileName(ConfigImpl_getString("GENERATE_TAGFILE"),"GENERATE_TAGFILE");
 
+  QStrList &pythonProtection = ConfigImpl_getList("PYTHON_PROTECTION");
+  if (pythonProtection.isEmpty())
+  {
+    pythonProtection.append("public=(__,__)");
+    pythonProtection.append("private=_");
+  }
+
 #if 0 // TODO: this breaks test 25; SOURCEBROWSER = NO and SOURCE_TOOLTIPS = YES.
       // So this and other regressions should be analysed and fixed before this can be enabled
   // disable any boolean options that depend on disabled options
