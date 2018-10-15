@@ -1163,7 +1163,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
     NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymouse scopes
+      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
       {
         t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
           << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
