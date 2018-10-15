@@ -586,6 +586,19 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='list' id='PYTHON_PROTECTION' format='string'>
+      <docs>
+<![CDATA[
+This tag can be used to specify the protection indicators for Python methods and variables. An indicator hast the basic form <code>\<keyword\>=(\<start\>,\<end\>)</code>) or <code>\<keyword\>=\<start\></code>. The `<keyword>` can have the values `public`, `private` or `protected`.
+In case the name of the function / variable starts with \c \<start\> and ends with \c \<end\> the protection as specified with  \c \<keyword\> is applied. In case \c \<start\> or \c \<end\> is not specified the correcsponding test (on start or end) is not executed.
+\note by just setting `public=` the complete automatic detection is disabled.
+
+<br>If left blank, the following values are used:
+]]>
+      </docs>
+      <value name='public=(__,__)'/>
+      <value name='private=_'/>
+    </option>
     <option type='bool' id='OPTIMIZE_OUTPUT_FOR_C' defval='0'>
       <docs>
 <![CDATA[

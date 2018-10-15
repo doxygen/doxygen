@@ -119,6 +119,20 @@ static bool             g_start_init = FALSE;
 static int              g_search_count = 0;
 
 static QCString         g_argType = "";
+
+class PyProt
+{
+  public:
+    PyProt(QCString protKey,QCString protValStart,QCString protValEnd,Protection prot) :
+      m_protKey(protKey), m_protValStart(protValStart), m_protValEnd(protValEnd), m_prot(prot) { }
+
+    QCString m_protKey;
+    QCString m_protValStart;
+    QCString m_protValEnd;
+    Protection m_prot;
+};
+static QList<PyProt> listPyProt;
+
 //-----------------------------------------------------------------------------
 
 
@@ -154,12 +168,83 @@ static void newEntry()
   initEntry();
 }
 
+static void getPythonProtections()
+{
+  static bool first = true;
+  if (!first) return;
+  first = false;
+  QStrList protList = Config_getList(PYTHON_PROTECTION);
+  for (uint cnt=0; cnt < protList.count(); ++cnt)
+  {
+    QCString prot = protList.at(cnt);
+    prot = prot.stripWhiteSpace();
+    QCString protKey = prot;
+    QCString protValStart;
+    QCString protValEnd;
+    int i = prot.find('=');
+    if (i>=0)  // found '='
+    {
+      protKey = prot.left(i);
+      protValStart = prot.right(prot.length() - i - 1).stripWhiteSpace();
+      // lets see if brackets are present at first and last position
+      if (protValStart.at(0) == '(' &&  protValStart.at(protValStart.length() - 1) == ')')
+      {
+        protValStart = protValStart.mid(1,protValStart.length() - 2);
+        i = protValStart.find(',');
+        if (i>=0)
+        {
+          protValEnd = protValStart.right(protValStart.length() - i - 1).stripWhiteSpace();
+          protValStart = protValStart.left(i).stripWhiteSpace();
+        }
+      }
+    }
+    if (protKey == "private")
+    {
+      if (!protValStart.isEmpty() || !protValEnd.isEmpty())
+      {
+        listPyProt.append(new PyProt(protKey,protValStart,protValEnd,Private));
+      }
+    }
+    else if (protKey == "protected")
+    {
+      if (!protValStart.isEmpty() || !protValEnd.isEmpty())
+      {
+        listPyProt.append(new PyProt(protKey,protValStart,protValEnd,Protected));
+      }
+    }
+    else if (protKey == "public")
+    {
+      if (!protValStart.isEmpty() || !protValEnd.isEmpty())
+      {
+        listPyProt.append(new PyProt(protKey,protValStart,protValEnd,Public));
+      }
+    }
+    else
+    {
+      warn(yyFileName,yyLineNr,"Unknown option specified with PYTHON_PROTECTION : `%s'", prot.stripWhiteSpace().data());
+    }
+  }
+}
+
+static void setPythonProtections()
+{
+  for (uint j = 0; j < listPyProt.count(); j++)
+  {
+    if ((listPyProt.at(j)->m_protValStart.isEmpty() ||
+         current->name.left(listPyProt.at(j)->m_protValStart.length())==listPyProt.at(j)->m_protValStart) &&
+        (listPyProt.at(j)->m_protValEnd.isEmpty() ||
+         current->name.right(listPyProt.at(j)->m_protValEnd.length())==listPyProt.at(j)->m_protValEnd))
+    {
+      current->protection=listPyProt.at(j)->m_prot;
+      return;
+    }
+  }
+}
+
 static void newVariable()
 {
-  if (!current->name.isEmpty() && current->name.at(0)=='_') // mark as private
-  {
-    current->protection=Private;
-  }
+  getPythonProtections();
+  setPythonProtections();
   if (current_root->section&Entry::COMPOUND_MASK) // mark as class variable
   {
     current->stat = TRUE;
@@ -169,16 +254,8 @@ static void newVariable()
 
 static void newFunction()
 {
-  if (current->name.left(2)=="__" && current->name.right(2)=="__")
-  {
-    // special method name, see
-    // http://docs.python.org/ref/specialnames.html
-    current->protection=Public;
-  }
-  else if (current->name.at(0)=='_')
-  {
-    current->protection=Private;
-  }
+  getPythonProtections();
+  setPythonProtections();
 }
 
 static inline int computeIndent(const char *s)

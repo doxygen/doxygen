@@ -883,7 +883,7 @@ Structural indicators
   Note that doxygen automatically detects the protection level of members
   in object-oriented languages. This command is intended for use only when
   the language does not support the concept of protection level natively
-  (e.g. C, PHP 4).
+  (e.g. C, PHP 4). For Python see see also \ref cfg_python_protection "PYTHON_PROTECTION".
 
   For starting a section of private members, in a way similar to the
   "private:" class marker in C++, use \ref cmdprivatesection "\\privatesection".
@@ -926,7 +926,7 @@ Structural indicators
   Note that doxygen automatically detects the protection level of members
   in object-oriented languages. This command is intended for use only when
   the language does not support the concept of protection level natively
-  (e.g. C, PHP 4).
+  (e.g. C, PHP 4). For Python see see also \ref cfg_python_protection "PYTHON_PROTECTION".
 
   For starting a section of protected members, in a way similar to the
   "protected:" class marker in C++, use \ref cmdprotectedsection "\\protectedsection".
@@ -967,7 +967,7 @@ Structural indicators
   Note that doxygen automatically detects the protection level of members
   in object-oriented languages. This command is intended for use only when
   the language does not support the concept of protection level natively
-  (e.g. C, PHP 4).
+  (e.g. C, PHP 4). For Python see see also \ref cfg_python_protection "PYTHON_PROTECTION".
 
   For starting a section of public members, in a way similar to the
   "public:" class marker in C++, use \ref cmdpublicsection "\\publicsection".
