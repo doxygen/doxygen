@@ -11532,13 +11532,11 @@ void generateOutput()
     g_outputList->add(new LatexGenerator);
     LatexGenerator::init();
   }
-#if 1
   if (generateDocbook)
   {
     g_outputList->add(new DocbookGenerator);
     DocbookGenerator::init();
   }
-#endif
   if (generateMan)
   {
     g_outputList->add(new ManGenerator);
@@ -11716,15 +11714,6 @@ void generateOutput()
     generateSqlite3();
     g_s.end();
   }
-
-#if 0
-  if (generateDocbook)
-  {
-    g_s.begin("Generating Docbook output...\n");
-    generateDocbook_v1();
-    g_s.end();
-  }
-#endif
 
   if (Config_getBool(GENERATE_AUTOGEN_DEF))
   {
