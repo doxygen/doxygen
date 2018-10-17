@@ -2466,8 +2466,8 @@ void VhdlDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
   if (cname.isEmpty()) return;
 
   mdef->writeSourceDef(ol,cname);
-  mdef->writeSourceRefs(ol,cname);
-  mdef->writeSourceReffedBy(ol,cname);
+  if (mdef->hasReferencesRelation()) mdef->writeSourceRefs(ol,cname);
+  if (mdef->hasReferencedByRelation()) mdef->writeSourceReffedBy(ol,cname);
 }
 
 

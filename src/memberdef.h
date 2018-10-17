@@ -237,6 +237,9 @@ class MemberDef : public Definition
     bool hasCallGraph() const;
     bool hasCallerGraph() const;
     bool visibleMemberGroup(bool hideNoHeader);
+    // refrenced related members
+    bool hasReferencesRelation() const;
+    bool hasReferencedByRelation() const;
 
     MemberDef *templateMaster() const;
     QCString getScopeString() const;
@@ -348,6 +351,9 @@ class MemberDef : public Definition
 
     void enableCallGraph(bool e);
     void enableCallerGraph(bool e);
+
+    void enableReferencedByRelation(bool e);
+    void enableReferencesRelation(bool e);
 
     void setTemplateMaster(MemberDef *mt);
     void addListReference(Definition *d);

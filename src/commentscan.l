@@ -107,6 +107,10 @@ static bool handleCallgraph(const QCString &, const QCStringList &);
 static bool handleHideCallgraph(const QCString &, const QCStringList &);
 static bool handleCallergraph(const QCString &, const QCStringList &);
 static bool handleHideCallergraph(const QCString &, const QCStringList &);
+static bool handleReferencedByRelation(const QCString &, const QCStringList &);
+static bool handleHideReferencedByRelation(const QCString &, const QCStringList &);
+static bool handleReferencesRelation(const QCString &, const QCStringList &);
+static bool handleHideReferencesRelation(const QCString &, const QCStringList &);
 static bool handleInternal(const QCString &, const QCStringList &);
 static bool handleLineBr(const QCString &, const QCStringList &);
 static bool handleStatic(const QCString &, const QCStringList &);
@@ -214,6 +218,10 @@ static DocCmdMap docCmdMap[] =
   { "hidecallgraph",   &handleHideCallgraph,    FALSE },
   { "callergraph",     &handleCallergraph,      FALSE },
   { "hidecallergraph", &handleHideCallergraph,  FALSE },
+  { "referencedbyrelation",       &handleReferencedByRelation,     FALSE },
+  { "hidereferencedbyrelation",   &handleHideReferencedByRelation, FALSE },
+  { "referencesrelation",         &handleReferencesRelation,       FALSE },
+  { "hidereferencesrelation",     &handleHideReferencesRelation,   FALSE },
   { "internal",        &handleInternal,         TRUE  },
   { "_linebr",         &handleLineBr,           FALSE },
   { "static",          &handleStatic,           FALSE },
@@ -2828,6 +2836,30 @@ static bool handleCallergraph(const QCString &, const QCStringList &)
 static bool handleHideCallergraph(const QCString &, const QCStringList &)
 {
   current->callerGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleReferencedByRelation(const QCString &, const QCStringList &)
+{
+  current->referencedByRelation = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideReferencedByRelation(const QCString &, const QCStringList &)
+{
+  current->referencedByRelation = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleReferencesRelation(const QCString &, const QCStringList &)
+{
+  current->referencesRelation = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideReferencesRelation(const QCString &, const QCStringList &)
+{
+  current->referencesRelation = FALSE; // OFF
   return FALSE;
 }
 

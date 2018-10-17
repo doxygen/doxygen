@@ -1446,18 +1446,12 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
 
 void Definition::writeSourceReffedBy(OutputList &ol,const char *scopeName)
 {
-  if (Config_getBool(REFERENCED_BY_RELATION))
-  {
-    _writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_impl->sourceRefByDict,FALSE);
-  }
+  _writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_impl->sourceRefByDict,FALSE);
 }
 
 void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 {
-  if (Config_getBool(REFERENCES_RELATION))
-  {
-    _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_impl->sourceRefsDict,TRUE);
-  }
+  _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_impl->sourceRefsDict,TRUE);
 }
 
 bool Definition::hasDocumentation() const
