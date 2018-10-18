@@ -868,7 +868,7 @@ static void readIncludeFile(const char *incName)
 					  }
 					  BEGIN(Start); 
 					}
-<GetStrList>[ \t]+			{
+<GetStrList>[ \t,]+			{
   				          if (!elemStr.isEmpty())
 					  {
 					    //printf("elemStr2=`%s'\n",elemStr.data());
@@ -922,7 +922,7 @@ static void readIncludeFile(const char *incName)
 						 bs.data(),yyLineNr,yyFileName.data());
 					  }
 					}
-<GetStrList>[^ \#\"\t\r\n]+		{
+<GetStrList>[^ \#\"\t\r\n,]+		{
   					  elemStr+=configStringRecode(yytext,encoding,"UTF-8");
   					}
 <SkipComment>\n				{ yyLineNr++; BEGIN(Start); }
