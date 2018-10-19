@@ -146,6 +146,8 @@ class ManDocVisitor : public DocVisitor
     
     void filter(const char *str);
 
+    void writePlantUMLFile(const QCString &fileName);
+
     void pushEnabled();
     void popEnabled();
 
