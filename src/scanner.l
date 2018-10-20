@@ -3840,6 +3840,28 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else
 					  {
 					    current->endBodyLine = yyLineNr;
+                                            if (current->section == Entry::NAMESPACE_SEC && current->type == "namespace")
+                                            {
+                                              int split_point;
+                                              while ((split_point = current->name.find("::")) != -1)
+                                              {
+                                                Entry *new_current = new Entry(*current);
+                                                current->program = "";
+                                                new_current->doc = "";
+                                                new_current->docLine = 0;
+                                                new_current->docFile = "";
+                                                new_current->brief = "";
+                                                new_current->briefLine = 0;
+                                                new_current->briefFile = "";
+                                                new_current->name  = current->name.mid(split_point + 2);
+                                                current->name  = current->name.left(split_point);
+                                                if (!current_root->name.isEmpty()) current->name.prepend(current_root->name+"::");
+
+                                                current_root->addSubEntry(current);
+                                                current_root = current;
+                                                current = new_current;
+                                              }
+                                            }
 					    QCString &cn = current->name;
 					    QCString rn = current_root->name.copy();
 					    //printf("cn=`%s' rn=`%s' isTypedef=%d\n",cn.data(),rn.data(),isTypedef);
