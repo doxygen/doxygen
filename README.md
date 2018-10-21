@@ -36,9 +36,7 @@ Developers
 
 * Doxygen's Doxygen Documentation: <a href="https://codedocs.xyz/doxygen/doxygen/"><img src="https://codedocs.xyz/doxygen/doxygen.svg"/></a>
 
-* Install
-  * Quick install see (./INSTALL)
-  * else http://www.doxygen.org/manual/install.html
+* Install: Please read the installation section of the manual (http://www.doxygen.org/manual/install.html)
 
 * Project stats: https://www.openhub.net/p/doxygen
 
