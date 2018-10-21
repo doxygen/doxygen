@@ -2172,8 +2172,12 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_code->codify(yytext);
 					  endFontClass();
 					}
+<ClassName>{ID}("."{ID})*	        |
 <ClassName>{ID}("::"{ID})*	        {
-                                          g_curClassName=yytext;
+                                          if(g_insideCS)
+                                            g_curClassName=substitute(yytext,".","::");
+                                          else
+                                            g_curClassName=yytext;
 					  addType();
                                           if (g_curClassName=="alignas")
                                           {
