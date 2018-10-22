@@ -812,7 +812,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl)
     NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymouse scopes
+      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
       {
         int refid = insertRefid(nd->getOutputFileBase());
         bindIntParameter(innernamespace_insert,":refid",refid);
