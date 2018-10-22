@@ -7697,7 +7697,7 @@ static void computeMemberRelations()
           //       bmcd->name().data(),bmd->name().data(),bmd
           //      );
           if (md!=bmd && bmcd && mcd && bmcd!=mcd &&
-              (bmd->virtualness()!=Normal ||
+              (bmd->virtualness()!=Normal || bmd->getLanguage()==SrcLangExt_Python ||
                bmcd->compoundType()==ClassDef::Interface ||
                bmcd->compoundType()==ClassDef::Protocol
               ) &&
