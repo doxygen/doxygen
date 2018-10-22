@@ -2560,7 +2560,7 @@ void MemberDef::writeDocumentation(MemberList *ml,
 
   QCString scopeName = scName;
   QCString memAnchor = anchor();
-  QCString ciname = container->name();
+  QCString ciname = container->displayName();
   Definition *scopedContainer = container; // see bug 753608
   if (container->definitionType()==TypeGroup)
   {
