@@ -107,8 +107,9 @@ class Scope
   public:
     QCStringList useNames; //!< contains names of used modules
     QDict<void> localVars; //!< contains names of local variables
+    QDict<void> externalVars; //!< contains names of external entities
 
-    Scope() : localVars(7, FALSE /*caseSensitive*/) {}
+    Scope() : localVars(7, FALSE /*caseSensitive*/), externalVars(7, FALSE /*caseSensitive*/) {}
 };
 
 /*===================================================================*/
@@ -122,6 +123,7 @@ static QCString  currentClass=0;             //!< name of the current enclosing 
 static UseSDict  *useMembers= new UseSDict;  //!< info about used modules
 static UseEntry  *useEntry = 0;              //!< current use statement info
 static QList<Scope> scopeStack;
+static bool      g_isExternal = false;
 // static QCStringList *currentUseNames= new QCStringList; //! contains names of used modules of current program unit
 static QCString str="";         //!> contents of fortran string
 
@@ -434,7 +436,7 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
   Scope *scope;
   for (it.toLast();(scope=it.current());--it)
   {
-    if (scope->localVars.find(memberName))
+    if (scope->localVars.find(memberName) && (!scope->externalVars.find(memberName)))
       return FALSE;
   }
 
@@ -648,7 +650,10 @@ static void addUse(const QCString &moduleName)
 static void addLocalVar(const QCString &varName) 
 {
   if (!scopeStack.isEmpty())
+  {
     scopeStack.getLast()->localVars.insert(varName, (void*)1);
+    if (g_isExternal) scopeStack.getLast()->externalVars.insert(varName, (void*)1);
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -969,11 +974,18 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 					  endFontClass();
                                        }
 <Start>{ATTR_SPEC}		       { 
+                                          if (QCString(yytext) == "external")
+                                          {
+                                            yy_push_state(YY_START);
+                                            BEGIN(Declaration);
+                                            g_isExternal = true;
+                                          }
    					  startFontClass("keywordtype");
 					  g_code->codify(yytext);
 					  endFontClass();
                                        }
 <Declaration>({TYPE_SPEC}|{ATTR_SPEC})/[,:( ] { //| variable declaration
+					  if (QCString(yytext) == "external") g_isExternal = true;
   					  startFontClass("keywordtype");
 					  g_code->codify(yytext);
 					  endFontClass();
@@ -1046,6 +1058,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 					  g_contLineNr++;
                                           if (!(g_hasContLine && g_hasContLine[g_contLineNr - 1]))
                                           {
+                                            g_isExternal = false;
                                             yy_pop_state();
                                           }
                                           YY_FTN_RESET
