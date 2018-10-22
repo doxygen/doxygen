@@ -17,19 +17,19 @@ import json
 import re
 
 class MemberType:
-  Define="0"
-  Function="1"
-  Variable="2"
-  Typedef="3"
-  Enumeration="4"
-  EnumValue="5"
-  Signal="6"
-  Slot="7"
-  Friend="8"
-  DCOP="9"
-  Property="10"
-  Event="11"
-  File="12"
+  Define="macro definition"
+  Function="function"
+  Variable="variable"
+  Typedef="typedef"
+  Enumeration="enumeration"
+  EnumValue="enumvalue"
+  Signal="signal"
+  Slot="slot"
+  Friend="friend"
+  DCOP="dcop"
+  Property="property"
+  Event="event"
+  File="file"
 
 class RequestType:
   References="9901"
@@ -69,27 +69,27 @@ class Finder:
 
     def match(self,row):
         if self.row_type is int:
-            return " id=?"
+            return " rowid=?"
         else:
             if g_use_regexp == True:
                 return " REGEXP (?,%s)" %row
             else:
                 return " %s=?" %row
 
-    def fileName(self,id_file):
-        if self.cn.execute("SELECT COUNT(*) FROM files WHERE rowid=?",[id_file]).fetchone()[0] > 1:
-            print >>sys.stderr,"WARNING: non-uniq fileid [%s]. Considering only the first match." % id_file
+    def fileName(self,file_id):
+        if self.cn.execute("SELECT COUNT(*) FROM path WHERE rowid=?",[file_id]).fetchone()[0] > 1:
+            sys.stderr.write("WARNING: non-uniq fileid [%s]. Considering only the first match." % file_id)
 
-        for r in self.cn.execute("SELECT * FROM files WHERE rowid=?",[id_file]).fetchall():
+        for r in self.cn.execute("SELECT * FROM path WHERE rowid=?",[file_id]).fetchall():
                 return r['name']
 
         return ""
 
     def fileId(self,name):
-        if self.cn.execute("SELECT COUNT(*) FROM files WHERE"+self.match("name"),[name]).fetchone()[0] > 1:
-            print >>sys.stderr,"WARNING: non-uniq file name [%s]. Considering only the first match." % name
+        if self.cn.execute("SELECT COUNT(*) FROM path WHERE"+self.match("name"),[name]).fetchone()[0] > 1:
+            sys.stderr.write("WARNING: non-uniq file name [%s]. Considering only the first match." % name)
 
-        for r in self.cn.execute("SELECT rowid FROM files WHERE"+self.match("name"),[name]).fetchall():
+        for r in self.cn.execute("SELECT rowid FROM path WHERE"+self.match("name"),[name]).fetchall():
                 return r[0]
 
         return -1
@@ -97,23 +97,24 @@ class Finder:
     def references(self):
         o=[]
         cur = self.cn.cursor()
-        cur.execute("SELECT refid FROM memberdef WHERE"+self.match("name"),[self.name])
-        refids = cur.fetchall()
+        cur.execute("SELECT rowid FROM memberdef WHERE"+self.match("name"),[self.name])
+        rowids = cur.fetchall()
 
-        if len(refids) == 0:
+        if len(rowids) == 0:
             return o
 
-        refid = refids[0]['refid']
+        rowid = rowids[0]['rowid']
         cur = self.cn.cursor()
-        #TODO:SELECT rowid from refids where refid=refid
-        for info in cur.execute("SELECT * FROM xrefs WHERE refid_dst LIKE '%"+refid+"%'"):
+        #TODO:SELECT rowid from refid where refid=refid
+        for info in cur.execute("SELECT * FROM xrefs WHERE dst_rowid=?", [rowid]):
             item={}
             cur = self.cn.cursor()
-            for i2 in cur.execute("SELECT * FROM memberdef WHERE refid=?",[info['src']]):
+            for i2 in cur.execute("SELECT * FROM memberdef WHERE rowid=?",[info['src_rowid']]):
                 item['name']=i2['name']
-                item['src']=info['src']
-                item['file']=self.fileName(info['id_file'])
-                item['line']=info['line']
+                item['src']=info['src_rowid']
+                # Below no longer directly supported on this entry; can be found from either memberdef
+                #item['file']=self.fileName(info['file_id'])
+                #item['line']=info['line']
 
             o.append(item)
         return o
@@ -126,7 +127,7 @@ class Finder:
             item['name'] = r['name']
             item['definition'] = r['definition']
             item['argsstring'] = r['argsstring']
-            item['file'] = self.fileName(r['id_file'])
+            item['file'] = self.fileName(r['file_id'])
             item['line'] = r['line']
             item['detaileddescription'] = r['detaileddescription']
             o.append(item)
@@ -134,7 +135,7 @@ class Finder:
 ###############################################################################
     def file(self):
         o=[]
-        for r in self.cn.execute("SELECT rowid,* FROM files WHERE"+self.match("name"),[self.name]).fetchall():
+        for r in self.cn.execute("SELECT rowid,name FROM local_file WHERE"+self.match("name"),[self.name]).fetchall():
             item={}
             item['name'] = r['name']
             item['id'] =   r['rowid']
@@ -151,7 +152,7 @@ class Finder:
             if r['argsstring']:
                 item['argsstring'] = r['argsstring']
             item['definition'] = r['initializer']
-            item['file'] = self.fileName(r['id_file'])
+            item['file'] = self.fileName(r['file_id'])
             item['line'] = r['line']
             o.append(item)
         return o
@@ -163,7 +164,7 @@ class Finder:
             item={}
             item['name'] = r['name']
             item['definition'] = r['definition']
-            item['file'] = self.fileName(r['id_file'])
+            item['file'] = self.fileName(r['file_id'])
             item['line'] = r['line']
             o.append(item)
         return o
@@ -175,16 +176,16 @@ class Finder:
             item={}
             item['name'] = r['name']
             item['definition'] = r['definition']
-            item['file'] = self.fileName(r['id_file'])
+            item['file'] = self.fileName(r['file_id'])
             item['line'] = r['line']
             o.append(item)
         return o
 ###############################################################################
     def params(self):
         o=[]
-        c=self.cn.execute('SELECT id FROM memberdef WHERE'+self.match("name"),[self.name])
+        c=self.cn.execute('SELECT rowid FROM memberdef WHERE'+self.match("name"),[self.name])
         for r in c.fetchall():
-            #a=("SELECT * FROM params where id=(SELECT id_param FROM memberdef_params where id_memberdef=?",[id_memberdef])
+            #a=("SELECT * FROM param where id=(SELECT param_id FROM memberdef_param where memberdef_id=?",[memberdef_id])
             item={}
             item['id'] = r['id']
             o.append(item)
@@ -202,20 +203,20 @@ class Finder:
     def includers(self):
         o=[]
         fid = self.fileId(self.name)
-        c=self.cn.execute('SELECT * FROM includes WHERE id_dst=?',[fid])
+        c=self.cn.execute('SELECT * FROM includes WHERE dst_id=?',[fid])
         for r in c.fetchall():
             item={}
-            item['name'] = self.fileName(r['id_src'])
+            item['name'] = self.fileName(r['src_id'])
             o.append(item)
         return o
 ###############################################################################
     def includees(self):
         o=[]
         fid = self.fileId(self.name)
-        c=self.cn.execute('SELECT * FROM includes WHERE id_src=?',[fid])
+        c=self.cn.execute('SELECT * FROM includes WHERE src_id=?',[fid])
         for r in c.fetchall():
             item={}
-            item['name'] = self.fileName(r['id_dst'])
+            item['name'] = self.fileName(r['dst_id'])
             o.append(item)
         return o
 ###############################################################################
@@ -227,7 +228,7 @@ class Finder:
             item['name'] = r['name']
             item['definition'] = r['definition']
             item['argsstring'] = r['argsstring']
-            item['file'] = self.fileName(r['id_file'])
+            item['file'] = self.fileName(r['file_id'])
             item['line'] = r['line']
             #item['documentation'] = r['documentation']
             o.append(item)
@@ -235,19 +236,19 @@ class Finder:
 ###############################################################################
     def baseClasses(self):
         o=[]
-        c=self.cn.execute('SELECT base FROM basecompoundref WHERE'+self.match("derived"),[self.name])
+        c=self.cn.execute('SELECT compounddef.name FROM compounddef JOIN compoundref ON compounddef.rowid=compoundref.base_rowid WHERE compoundref.derived_rowid IN (SELECT rowid FROM compounddef WHERE'+self.match("name")+')',[self.name])
         for r in c.fetchall():
             item={}
-            item['name'] = r['base']
+            item['name'] = r['name']
             o.append(item)
         return o
 ###############################################################################
     def subClasses(self):
         o=[]
-        c=self.cn.execute('SELECT derived FROM basecompoundref WHERE'+self.match("base"),[self.name])
+        c=self.cn.execute('SELECT compounddef.name FROM compounddef JOIN compoundref ON compounddef.rowid=compoundref.derived_rowid WHERE compoundref.base_rowid IN (SELECT rowid FROM compounddef WHERE'+self.match("name")+')',[self.name])
         for r in c.fetchall():
             item={}
-            item['name'] = r['derived']
+            item['name'] = r['name']
             o.append(item)
         return o
 ###############################################################################
@@ -268,21 +269,23 @@ def process(f,kind):
     }
     return request_processors[kind]()
 ###############################################################################
+
+# the -H option isn't documented. It's one of the more recent additions, but it's treating refids as if they would be a string. I'm just taking a stab at updating it for now, converting to use rowid, and making other edits necessary to get it to run.
 def processHref(cn,ref):
     j={}
 
     # is it in memberdef ?
     table="memberdef"
-    if ( cn.execute("SELECT count(*) from %s WHERE refid=?"%table,[ref] ).fetchone()[0] > 0 ):
-        for r in cn.execute("SELECT kind,id FROM %s WHERE refid='%s'" % (table,ref) ).fetchall():
-            f=Finder(cn,r['id'],int)
+    if ( cn.execute("SELECT count(*) from %s WHERE rowid=?"%table,[ref] ).fetchone()[0] > 0 ):
+        for r in cn.execute("SELECT kind,rowid FROM %s WHERE rowid=?" % table,[ref]).fetchall():
+            f=Finder(cn,r['rowid'],int)
             j=process(f,str(r['kind']))
 
     # is it in compounddef ?
     table="compounddef"
-    if ( cn.execute("SELECT count(*) from %s WHERE refid=?"%table,[ref]).fetchone()[0] > 0 ):
-        for r in cn.execute("SELECT id FROM %s WHERE refid=?"%table,[ref] ).fetchall():
-            f=Finder(cn,r['id'],int)
+    if ( cn.execute("SELECT count(*) from %s WHERE rowid=?"%table,[ref]).fetchone()[0] > 0 ):
+        for r in cn.execute("SELECT rowid FROM %s WHERE rowid=?"%table,[ref] ).fetchall():
+            f=Finder(cn,r[0],int)
             j=process(f,RequestType.Struct)
 
     return j
@@ -290,7 +293,7 @@ def processHref(cn,ref):
 def serveCgi():
     import cgi
 
-    print 'Content-Type: application/json\n'
+    print('Content-Type: application/json\n')
 
     fieldStorage = cgi.FieldStorage()
     form = dict((key, fieldStorage.getvalue(key)) for key in fieldStorage.keys())
@@ -298,17 +301,17 @@ def serveCgi():
     if 'href' in form:
         ref = form['href']
     else:
-        print '{"result": null, "error": "no refid given"}'
+        print('{"result": null, "error": "no refid given"}')
         sys.exit(0)
 
     cn=openDb('doxygen_sqlite3.db')
 
     j = processHref(cn,ref)
 
-    print json.dumps({"result":j,"error":None})
+    print(json.dumps({"result":j,"error":None}))
 ###############################################################################
 def usage():
-  print >>sys.stderr,"""Usage: search.py [Options]
+  sys.stderr.write("""Usage: search.py [Options]
 Options:
     -h, --help
     -d <D>    Use database <D> for queries.
@@ -323,7 +326,7 @@ Options:
     -M <C>    Get all members of class <C>.
     -S <C>    Get the sub classes of class <C>.
     -R        Consider the search <term> to be a regex.
-"""
+""")
 ###############################################################################
 def serveCli(argv):
     try:
@@ -362,6 +365,8 @@ def serveCli(argv):
         elif a in ('-f'):
             kind=MemberType.Function
         elif a in ('-F'):
+            # undocumented
+            # seems to fit with the lower case "search" patterns?
             kind=MemberType.File
         elif a in ('-m'):
             kind=MemberType.Define
@@ -370,6 +375,7 @@ def serveCli(argv):
         elif a in ('-v'):
             kind=MemberType.Variable
         elif a in ('-H'):
+            # undocumented
             ref = o
 
         cn=openDb(dbname)
@@ -378,7 +384,7 @@ def serveCli(argv):
           j=processHref(cn,ref)
         else:
           j=process(f,kind)
-        print json.dumps(j,indent=4)
+        print(json.dumps(j,indent=4))
 
 
 def main(argv):
