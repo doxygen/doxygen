@@ -231,6 +231,8 @@ static void updateVariablePrepassComment(int from, int to);
 static void newLine();
 static void initEntry();
 
+static const char *stateToString(int state);
+
 //-----------------------------------------------------------------------------
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -2759,7 +2761,7 @@ void FortranLanguageScanner::parsePrototype(const char *text)
 static void scanner_abort() 
 {
   fprintf(stderr,"********************************************************************\n");
-  fprintf(stderr,"Error in file %s line: %d, state: %d\n",yyFileName.data(),yyLineNr,YY_START);
+  fprintf(stderr,"Error in file %s line: %d, state: %d(%s)\n",yyFileName.data(),yyLineNr,YY_START,stateToString(YY_START));
   fprintf(stderr,"********************************************************************\n");
    
   EntryListIterator eli(*global_root->children());
@@ -2788,3 +2790,47 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(Subprog)
+    scanStateToString(SubprogPrefix)
+    scanStateToString(Parameterlist)
+    scanStateToString(SubprogBody)
+    scanStateToString(SubprogBodyContains)
+    scanStateToString(Start)
+    scanStateToString(Comment)
+    scanStateToString(Module)
+    scanStateToString(Program)
+    scanStateToString(ModuleBody)
+    scanStateToString(ModuleBodyContains)
+    scanStateToString(AttributeList)
+    scanStateToString(Variable)
+    scanStateToString(Initialization)
+    scanStateToString(ArrayInitializer)
+    scanStateToString(Enum)
+    scanStateToString(Typedef)
+    scanStateToString(TypedefBody)
+    scanStateToString(TypedefBodyContains)
+    scanStateToString(InterfaceBody)
+    scanStateToString(StrIgnore)
+    scanStateToString(String)
+    scanStateToString(Use)
+    scanStateToString(UseOnly)
+    scanStateToString(ModuleProcedure)
+    scanStateToString(Prepass)
+    scanStateToString(DocBlock)
+    scanStateToString(DocBackLine)
+    scanStateToString(EndDoc)
+    scanStateToString(BlockData)
+    scanStateToString(Prototype)
+    scanStateToString(PrototypeSubprog)
+    scanStateToString(PrototypeArgs)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}
