@@ -88,18 +88,23 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
     }
 
     t << "{" << name << "}";
-
+    
     if (hasCaption)
     {
       t << "\n\\doxyfigcaption{";
     }
 }
 
-
-
-static void visitPostEnd(FTextStream &t, const bool hasCaption)
+static void visitLabel(FTextStream &t, QCString label)
 {
     t << "}\n"; // end mbox or caption
+    if (!label.isEmpty())
+        t << "\\label{" << label << "}\n";
+}
+
+static void visitPostEnd(FTextStream &t, const bool hasCaption, QCString label)
+{
+    visitLabel(t, label);
     if (hasCaption)
     {
       t << "\\end{DoxyImage}\n";
@@ -342,9 +347,9 @@ void LatexDocVisitor::visit(DocVerbatim *s)
           file.writeBlock( s->text(), s->text().length() );
           file.close();
 
-          startDotFile(fileName,s->width(),s->height(),s->hasCaption());
+          startDotFile(fileName,s->width(),s->height(), s->hasCaption());
           visitCaption(this, s->children());
-          endDotFile(s->hasCaption());
+          endDotFile(s->hasCaption(), s->label());
 
           if (Config_getBool(DOT_CLEANUP)) file.remove();
         }
@@ -1300,7 +1305,7 @@ void LatexDocVisitor::visitPost(DocImage *img)
   if (img->type()==DocImage::Latex)
   {
     if (m_hide) return;
-    visitPostEnd(m_t,img->hasCaption());
+    visitPostEnd(m_t,img->hasCaption(), img->label());
   }
   else // other format
   {
@@ -1317,7 +1322,7 @@ void LatexDocVisitor::visitPre(DocDotFile *df)
 void LatexDocVisitor::visitPost(DocDotFile *df) 
 {
   if (m_hide) return;
-  endDotFile(df->hasCaption());
+  endDotFile(df->hasCaption(),df->label());
 }
 void LatexDocVisitor::visitPre(DocMscFile *df)
 {
@@ -1328,7 +1333,7 @@ void LatexDocVisitor::visitPre(DocMscFile *df)
 void LatexDocVisitor::visitPost(DocMscFile *df) 
 {
   if (m_hide) return;
-  endMscFile(df->hasCaption());
+  endMscFile(df->hasCaption(),df->label());
 }
 
 void LatexDocVisitor::visitPre(DocDiaFile *df)
@@ -1340,7 +1345,7 @@ void LatexDocVisitor::visitPre(DocDiaFile *df)
 void LatexDocVisitor::visitPost(DocDiaFile *df)
 {
   if (m_hide) return;
-  endDiaFile(df->hasCaption());
+  endDiaFile(df->hasCaption(),df->label());
 }
 void LatexDocVisitor::visitPre(DocLink *lnk)
 {
@@ -1777,10 +1782,10 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
-void LatexDocVisitor::endDotFile(bool hasCaption)
+void LatexDocVisitor::endDotFile(bool hasCaption,QCString label)
 {
   if (m_hide) return;
-  visitPostEnd(m_t,hasCaption);
+  visitPostEnd(m_t,hasCaption,label);
 }
 
 void LatexDocVisitor::startMscFile(const QCString &fileName,
@@ -1806,10 +1811,10 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
-void LatexDocVisitor::endMscFile(bool hasCaption)
+void LatexDocVisitor::endMscFile(bool hasCaption,QCString label)
 {
   if (m_hide) return;
-  visitPostEnd(m_t,hasCaption);
+  visitPostEnd(m_t,hasCaption,label);
 }
 
 
@@ -1825,7 +1830,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(),s->height());
   visitCaption(this, s->children());
-  visitPostEnd(m_t, s->hasCaption());
+  visitPostEnd(m_t, s->hasCaption(),s->label());
 }
 
 
@@ -1852,10 +1857,10 @@ void LatexDocVisitor::startDiaFile(const QCString &fileName,
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
-void LatexDocVisitor::endDiaFile(bool hasCaption)
+void LatexDocVisitor::endDiaFile(bool hasCaption,QCString label)
 {
   if (m_hide) return;
-  visitPostEnd(m_t,hasCaption);
+  visitPostEnd(m_t,hasCaption,label);
 }
 
 
@@ -1871,7 +1876,7 @@ void LatexDocVisitor::writeDiaFile(const QCString &baseName, DocVerbatim *s)
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_EPS);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
   visitCaption(this, s->children());
-  visitPostEnd(m_t, s->hasCaption());
+  visitPostEnd(m_t, s->hasCaption(),s->label());
 }
 
 void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim *s)
@@ -1886,6 +1891,6 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim *s
   generatePlantUMLOutput(baseName,outDir,PUML_EPS);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
   visitCaption(this, s->children());
-  visitPostEnd(m_t, s->hasCaption());
+  visitPostEnd(m_t, s->hasCaption(),s->label());
 }
 

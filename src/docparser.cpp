@@ -1281,7 +1281,7 @@ static DocAnchor *handleAnchor(DocNode *parent)
  * @param[out] width     the extracted width specifier
  * @param[out] height    the extracted height specifier
  */
-static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocNode> &children, QCString &width,QCString &height)
+static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocNode> &children, QCString &width,QCString &height,QCString &label)
 {
   g_nodeStack.push(parent);
 
@@ -1290,9 +1290,9 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
   int tok;
   while ((tok=doctokenizerYYlex()))
   {
-    if (tok==TK_WORD && (g_token->name=="width=" || g_token->name=="height="))
+    if (tok==TK_WORD && (g_token->name=="width=" || g_token->name=="height=" || g_token->name=="label="))
     {
-      // special case: no title, but we do have a size indicator
+      // special case: no title, but we do have a size/label indicator
       break;
     }
     if (!defaultHandleToken(parent,tok,children))
@@ -1323,7 +1323,7 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
   {
     if(tok == TK_WORD)
     {
-      if (g_token->name=="width=" || g_token->name=="height=")
+      if (g_token->name=="width=" || g_token->name=="height=" || g_token->name=="label=")
       {
         doctokenizerYYsetStateTitleAttrValue();
         g_token->name = g_token->name.left(g_token->name.length()-1);
@@ -1336,6 +1336,10 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
       else if (g_token->name=="height")
       {
         height = g_token->chars;
+      }
+      else if (g_token->name=="label")
+      {
+          label = g_token->chars;
       }
       else
       {
@@ -2840,7 +2844,7 @@ DocDotFile::DocDotFile(DocNode *parent,const QCString &name,const QCString &cont
 
 void DocDotFile::parse()
 {
-  defaultHandleTitleAndSize(CMD_DOTFILE,this,m_children,m_width,m_height);
+  defaultHandleTitleAndSize(CMD_DOTFILE,this,m_children,m_width,m_height,m_label);
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::dotFileNameDict,m_name,ambig);
@@ -2874,7 +2878,7 @@ DocMscFile::DocMscFile(DocNode *parent,const QCString &name,const QCString &cont
 
 void DocMscFile::parse()
 {
-  defaultHandleTitleAndSize(CMD_MSCFILE,this,m_children,m_width,m_height);
+  defaultHandleTitleAndSize(CMD_MSCFILE,this,m_children,m_width,m_height,m_label);
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::mscFileNameDict,m_name,ambig);
@@ -2910,7 +2914,7 @@ DocDiaFile::DocDiaFile(DocNode *parent,const QCString &name,const QCString &cont
 
 void DocDiaFile::parse()
 {
-  defaultHandleTitleAndSize(CMD_DIAFILE,this,m_children,m_width,m_height);
+  defaultHandleTitleAndSize(CMD_DIAFILE,this,m_children,m_width,m_height,m_label);
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::diaFileNameDict,m_name,ambig);
@@ -2996,7 +3000,7 @@ DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString 
 
 void DocImage::parse()
 {
-  defaultHandleTitleAndSize(CMD_IMAGE,this,m_children,m_width,m_height);
+  defaultHandleTitleAndSize(CMD_IMAGE,this,m_children,m_width,m_height,m_label);
 }
 
 
@@ -5650,13 +5654,14 @@ int DocPara::handleCommand(const QCString &cmdName)
       {
         DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Dot,g_isExample,g_exampleName);
         doctokenizerYYsetStatePara();
-        QCString width,height;
-        defaultHandleTitleAndSize(CMD_DOT,dv,dv->children(),width,height);
+        QCString width,height,label;
+        defaultHandleTitleAndSize(CMD_DOT,dv,dv->children(),width,height,label);
         doctokenizerYYsetStateDot();
         retval = doctokenizerYYlex();
         dv->setText(g_token->verb);
         dv->setWidth(width);
         dv->setHeight(height);
+        dv->setLabel(label);
         m_children.append(dv);
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"dot section ended without end marker");
         doctokenizerYYsetStatePara();
@@ -5666,13 +5671,14 @@ int DocPara::handleCommand(const QCString &cmdName)
       {
         DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Msc,g_isExample,g_exampleName);
         doctokenizerYYsetStatePara();
-        QCString width,height;
-        defaultHandleTitleAndSize(CMD_MSC,dv,dv->children(),width,height);
+        QCString width,height,label;
+        defaultHandleTitleAndSize(CMD_MSC,dv,dv->children(),width,height,label);
         doctokenizerYYsetStateMsc();
         retval = doctokenizerYYlex();
         dv->setText(g_token->verb);
         dv->setWidth(width);
         dv->setHeight(height);
+        dv->setLabel(label);
         m_children.append(dv);
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"msc section ended without end marker");
         doctokenizerYYsetStatePara();
@@ -5686,14 +5692,15 @@ int DocPara::handleCommand(const QCString &cmdName)
         QCString plantFile(g_token->sectionId);
         DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::PlantUML,FALSE,plantFile);
         doctokenizerYYsetStatePara();
-        QCString width,height;
-        defaultHandleTitleAndSize(CMD_STARTUML,dv,dv->children(),width,height);
+        QCString width,height,label;
+        defaultHandleTitleAndSize(CMD_STARTUML,dv,dv->children(),width,height,label);
         doctokenizerYYsetStatePlantUML();
         retval = doctokenizerYYlex();
         int line=0;
         dv->setText(stripLeadingAndTrailingEmptyLines(g_token->verb,line));
         dv->setWidth(width);
         dv->setHeight(height);
+        dv->setLabel(label);
         if (jarPath.isEmpty())
         {
           warn_doc_error(g_fileName,doctokenizerYYlineno,"ignoring \\startuml command because PLANTUML_JAR_PATH is not set");
