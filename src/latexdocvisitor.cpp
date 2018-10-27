@@ -215,13 +215,14 @@ void LatexDocVisitor::visit(DocURL *u)
   if (m_hide) return;
   if (Config_getBool(PDF_HYPERLINKS))
   {
+	m_t << endl << "%% AME " << u->url() <<endl;
     m_t << "\\href{";
     if (u->isEmail()) m_t << "mailto:";
-    m_t << u->url() << "}";
+    m_t << latexFilterURL(u->url()) << "}";
   }
-  m_t << "\\texttt{ ";
+  m_t << "{\\texttt{ ";
   filter(u->url());
-  m_t << "}";
+  m_t << "}}";
 }
 
 void LatexDocVisitor::visit(DocLineBreak *)
@@ -1251,17 +1252,18 @@ void LatexDocVisitor::visitPre(DocHRef *href)
   if (m_hide) return;
   if (Config_getBool(PDF_HYPERLINKS))
   {
+	m_t << endl << "%% AME " << href->url() <<endl;
     m_t << "\\href{";
-    m_t << href->url();
+    m_t << latexFilterURL(href->url());
     m_t << "}";
   }
-  m_t << "\\texttt{ ";
+  m_t << "{\\texttt{ ";
 }
 
 void LatexDocVisitor::visitPost(DocHRef *) 
 {
   if (m_hide) return;
-  m_t << "}";
+  m_t << "}}";
 }
 
 void LatexDocVisitor::visitPre(DocHtmlHeader *header)

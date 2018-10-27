@@ -7026,6 +7026,25 @@ QCString latexEscapePDFString(const char *s)
   return result.data();
 }
 
+QCString latexFilterURL(const char *s)
+{
+  QGString result;
+  FTextStream t(&result);
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '#':  t << "\\#"; break;
+      default:
+        t << c;
+        break;
+    }
+  }
+  return result.data();
+}
+
 
 QCString rtfFormatBmkStr(const char *name)
 {
