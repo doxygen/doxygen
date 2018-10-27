@@ -9651,7 +9651,7 @@ int readDir(QFileInfo *fi,
             {
               fn = new FileName(cfi->absFilePath().utf8(),name);
               fn->append(fd);
-              if (fnList) fnList->inSort(fn);
+              if (fnList) fnList->append(fn);
               fnDict->insert(name,fn);
             }
           }
@@ -9750,7 +9750,7 @@ int readFileOrDirectory(const char *s,
               {
                 fn = new FileName(filePath,name);
                 fn->append(fd);
-                if (fnList) fnList->inSort(fn);
+                if (fnList) fnList->append(fn);
                 fnDict->insert(name,fn);
               }
             }
@@ -10963,6 +10963,7 @@ void searchInputFiles()
     }
     s=inputList.next();
   }
+  Doxygen::inputNameList->sort();
   delete killDict;
   g_s.end();
 }
