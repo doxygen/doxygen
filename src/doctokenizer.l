@@ -122,6 +122,7 @@ const char *tokToString(int token)
     case TK_NEWPARA:     return "TK_NEWPARA";
     case TK_RCSTAG:      return "TK_RCSTAG";
     case TK_URL:         return "TK_URL";
+    case TK_COMMAND1:    return "TK_COMMAND1";
   }
   return "ERROR";
 }
@@ -572,14 +573,14 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 bool ok;
 			 g_token->id = QCString(yytext).right((int)yyleng-6).toInt(&ok);
 			 ASSERT(ok);
-			 return TK_COMMAND;
+			 return (yytext[0] == '@' ? TK_COMMAND : TK_COMMAND1);
   		       }
 <St_Para>{CMD}"n"\n    { /* \n followed by real newline */
                          yylineno++;
                          g_token->name = yytext+1;
 			 g_token->name = g_token->name.stripWhiteSpace();
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+			 return (yytext[0] == '@' ? TK_COMMAND : TK_COMMAND1);
                        }
 <St_Para>{SPCMD1}      |
 <St_Para>{SPCMD2}      |
@@ -587,7 +588,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = yytext+1;
 			 g_token->name = g_token->name.stripWhiteSpace();
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+                         return (yytext[0] == '@' ? TK_COMMAND : TK_COMMAND1);
   		       }
 <St_Para>{PARAMIO}     { /* param [in,out] command */
   			 g_token->name = "param";
@@ -613,7 +614,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 {
 			   g_token->paramDir=TokenInfo::Unspecified;
 			 }
-			 return TK_COMMAND;
+			 return (yytext[0] == '@' ? TK_COMMAND : TK_COMMAND1);
   		       }
 <St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK}/\. { // URL.
                          g_token->name=yytext;
@@ -733,7 +734,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                        }
 <St_Text>[\\@<>&$#%~]  {
                          g_token->name = yytext;
-                         return TK_COMMAND;
+                         return (yytext[0] == '@' ? TK_COMMAND : TK_COMMAND1);
   		       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (g_insidePre || g_autoListLevel==0)
@@ -926,7 +927,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_TitleN>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+                         return (yytext[0] == '@' ? TK_COMMAND : TK_COMMAND1);
                        }
 <St_TitleN>{ID}"="     { /* attribute */
                          if (yytext[0]=='%') // strip % if present
@@ -960,7 +961,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_TitleQ>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+                         return (yytext[0] == '@' ? TK_COMMAND : TK_COMMAND1);
                        }
 <St_TitleQ>{WORD1NQ}   |
 <St_TitleQ>{WORD2NQ}   { /* word */
@@ -1091,7 +1092,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Ref2>{SPCMD2}      { /* special command */ 
                          g_token->name = yytext+1;
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+                         return (yytext[0] == '@' ? TK_COMMAND : TK_COMMAND1);
                        }
 <St_Ref2>{WORD1NQ}     |
 <St_Ref2>{WORD2NQ}     {
@@ -1323,7 +1324,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
                          //warn(g_fileName,yylineno,"Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
-			 return TK_COMMAND;
+			 return (yytext[0] == '@' ? TK_COMMAND : TK_COMMAND1);
                        }
 <*>.                   { 
                          warn(g_fileName,yylineno,"Unexpected character `%s'",yytext);
