@@ -41,7 +41,7 @@ the extensions that doxygen supports.
 Finally section \ref markdown_dox discusses some specifics for doxygen's
 implementation of the Markdown standard.
 
-[markdown]: http://daringfireball.net/projects/markdown/ 
+[markdown]: https://daringfireball.net/projects/markdown/ 
 [mdextra]:  https://michelf.ca/projects/php-markdown/extra/
 [github]:   https://github.github.com/github-flavored-markdown/
 

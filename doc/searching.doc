@@ -126,7 +126,7 @@ has its own advantages and disadvantages:
    options you may want to set. After doxygen has finished you will find
    a Makefile in the HTML output directory. Running "make install" on this
    Makefile will compile and install the doc set.
-   See <a href="https://developer.apple.com/library/mac/#featuredarticles/DoxygenXcode/_index.html">this 
+   See <a href="https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html">this 
    article</a> for more info.
 
    Advantage of this method is that it nicely integrates with the Xcode
@@ -139,7 +139,7 @@ has its own advantages and disadvantages:
 <h2>6. Qt Compressed Help</h2> 
    If you develop for or want to install the Qt application framework,
    you will get an application 
-   called <a href="http://qt-project.org/doc/qt-4.8/assistant-manual.html">Qt assistant</a>. 
+   called <a href="http://doc.qt.io/archives/qt-4.8/assistant-manual.html">Qt assistant</a>. 
    This is a help viewer for Qt Compressed Help files (<code>.qch</code>).
 
    To enable this feature set \ref cfg_generate_qhp "GENERATE_QHP" to \c YES.

@@ -632,7 +632,7 @@ and is ideal for a short description.
 For longer descriptions you often will find the 
 need for some more structure, like a block of verbatim text, a list, or a 
 simple table. For this doxygen supports the 
-<a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a> 
+<a href="https://daringfireball.net/projects/markdown/syntax">Markdown</a> 
 syntax, including parts of the
 <a href="https://michelf.ca/projects/php-markdown/extra/">Markdown Extra</a>
 extension. 
@@ -648,8 +648,9 @@ forms of additional markup on top of Markdown formatting.
 
 1. <a href="https://en.wikipedia.org/wiki/Javadoc">Javadoc</a> like markup.
    See \ref commands for a complete overview of all commands supported by doxygen.
-2. <a href="https://en.wikipedia.org/wiki/C_Sharp_(programming_language)#XML_documentation_system">XML</a> markup
-   as specified in the C# standard. See \ref xmlcmds for the XML commands supported by doxygen.
+2. <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/xmldoc/recommended-tags-for-documentation-comments">XML</a> markup
+   as specified in the <a href="http://standards.iso.org/ittf/PubliclyAvailableStandards/c042926_ISO_IEC_23270_2006(E).zip">C# standard</a>.
+   See \ref xmlcmds for the XML commands supported by doxygen.
 
 If this is still not enough doxygen also supports a \ref htmlcmds "subset" of 
 the <a href="https://en.wikipedia.org/wiki/HTML">HTML</a> markup language.
