@@ -47,7 +47,7 @@ tools should be installed.
 
 <ul>
 <li>Qt Software's GUI toolkit 
-    <a href="http://qt-project.org/">Qt</A>
+    <a href="https://www.qt.io/developers/">Qt</A>
     \addindex Qt
     version 4.3 or higher (including Qt 5).
     This is needed to build the GUI front-end doxywizard. 
@@ -211,12 +211,12 @@ If you want to produce compressed HTML files (see \ref
 cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the configuration file, then 
 you need the Microsoft HTML help workshop. 
 You can download it from 
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=21138">Microsoft</a>.
+<a href="https://www.microsoft.com/en-us/download/details.aspx?id=21138">Microsoft</a>.
 
 If you want to produce Qt Compressed Help files (see \ref 
 cfg_qhg_location "QHG_LOCATION") in the configuration file, then 
 you need qhelpgenerator which is part of Qt. 
-You can download Qt from <a href="http://qt-project.org/downloads">Qt Software Downloads</a>.
+You can download Qt from <a href="https://www.qt.io/download">Qt Software Downloads</a>.
 
 In order to generate PDF output or use scientific formulas you will also need to
 install <a href="https://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and 
