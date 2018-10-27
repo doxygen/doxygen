@@ -56,6 +56,8 @@
 #include "markdown.h"
 #include "htmlentity.h"
 
+#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? '@' : '\\')
+
 // debug off
 #define DBG(x) do {} while(0)
 
@@ -871,11 +873,12 @@ inline void errorHandleDefaultToken(DocNode *parent,int tok,
 {
   switch (tok)
   {
-    case TK_COMMAND: 
-    case TK_COMMAND1: 
-      children.append(new DocWord(parent,(tok == TK_COMMAND ? '@' : '\\') + g_token->name));
+    case TK_COMMAND_AT:
+        // fall through
+    case TK_COMMAND_BS:
+      children.append(new DocWord(parent,TK_COMMAND_CHAR(tok) + g_token->name));
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a %s",
-       qPrint((tok == TK_COMMAND ? '@' : '\\') + g_token->name), txt);
+       qPrint(TK_COMMAND_CHAR(tok) + g_token->name), txt);
       break;
     case TK_SYMBOL: 
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found found as part of a %s",
@@ -1371,7 +1374,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
 {
   DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
   if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL || 
-      tok==TK_COMMAND || tok==TK_COMMAND1 || tok==TK_HTMLTAG
+      tok==TK_COMMAND_AT || tok==TK_COMMAND_BS || tok==TK_HTMLTAG
      )
   {
     DBG((" name=%s",qPrint(g_token->name)));
@@ -1381,8 +1384,9 @@ reparsetoken:
   QCString tokenName = g_token->name;
   switch (tok)
   {
-    case TK_COMMAND: 
-    case TK_COMMAND1: 
+    case TK_COMMAND_AT:
+        // fall through
+    case TK_COMMAND_BS:
       switch (Mappers::cmdMapper->map(tokenName))
       {
         case CMD_BSLASH:
@@ -2384,7 +2388,7 @@ void DocSecRefList::parse()
   // handle items
   while (tok)
   {
-    if (tok==TK_COMMAND || tok == TK_COMMAND1)
+    if (tok==TK_COMMAND_AT || tok == TK_COMMAND_BS)
     {
       switch (Mappers::cmdMapper->map(g_token->name))
       {
@@ -2722,8 +2726,9 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
     {
       switch (tok)
       {
-        case TK_COMMAND: 
-        case TK_COMMAND1: 
+        case TK_COMMAND_AT:
+        // fall through
+        case TK_COMMAND_BS:
           switch (Mappers::cmdMapper->map(g_token->name))
           {
             case CMD_ENDLINK:
@@ -3231,8 +3236,9 @@ int DocIndexEntry::parse()
           }
         }
         break;
-    case TK_COMMAND: 
-    case TK_COMMAND1: 
+    case TK_COMMAND_AT:
+        // fall through
+    case TK_COMMAND_BS:
       switch (Mappers::cmdMapper->map(g_token->name))
       {
         case CMD_BSLASH:  m_entry+='\\'; break;
@@ -3849,8 +3855,9 @@ int DocHtmlDescTitle::parse()
     {
       switch (tok)
       {
-        case TK_COMMAND: 
-        case TK_COMMAND1: 
+        case TK_COMMAND_AT:
+        // fall through
+        case TK_COMMAND_BS:
           {
             QCString cmdName=g_token->name;
             bool isJavaLink=FALSE;
@@ -5340,7 +5347,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
   switch (cmdId)
   {
     case CMD_UNKNOWN:
-      m_children.append(new DocWord(this,(tok == TK_COMMAND ? '@' : '\\') + cmdName));
+      m_children.append(new DocWord(this,TK_COMMAND_CHAR(tok) + cmdName));
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Found unknown command `\\%s'",qPrint(cmdName));
       break;
     case CMD_EMPHASIS:
@@ -6443,7 +6450,7 @@ int DocPara::parse()
 reparsetoken:
     DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
     if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL || 
-        tok==TK_COMMAND || tok == TK_COMMAND1 || tok==TK_HTMLTAG
+        tok==TK_COMMAND_AT || tok == TK_COMMAND_BS || tok==TK_HTMLTAG
        )
     {
       DBG((" name=%s",qPrint(g_token->name)));
@@ -6541,7 +6548,7 @@ reparsetoken:
             }
             else // other section
             {
-              tok = TK_COMMAND1;
+              tok = TK_COMMAND_BS;
             }
             DBG(("reparsing command %s\n",qPrint(g_token->name)));
             goto reparsetoken;
@@ -6586,8 +6593,9 @@ reparsetoken:
               "list items");
         }
         break;
-      case TK_COMMAND:    
-      case TK_COMMAND1: 
+      case TK_COMMAND_AT:
+        // fall through
+      case TK_COMMAND_BS:
         {
           // see if we have to start a simple section
           int cmd = Mappers::cmdMapper->map(g_token->name);
@@ -6641,7 +6649,7 @@ reparsetoken:
             }
             else // other section
             {
-              tok = TK_COMMAND1;
+              tok = TK_COMMAND_BS;
             }
             DBG(("reparsing command %s\n",qPrint(g_token->name)));
             goto reparsetoken;
@@ -6913,8 +6921,9 @@ void DocText::parse()
           }
         }
         break;
-      case TK_COMMAND: 
-      case TK_COMMAND1: 
+      case TK_COMMAND_AT:
+        // fall through
+      case TK_COMMAND_BS:
         switch (Mappers::cmdMapper->map(g_token->name))
         {
           case CMD_BSLASH:
