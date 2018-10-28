@@ -2180,11 +2180,12 @@ void RTFGenerator::newParagraph()
   m_omitParagraph = FALSE;
 }
 
-void RTFGenerator::startParagraph(const char *)
+void RTFGenerator::startParagraph(const char *txt)
 {
   DBG_RTF(t << "{\\comment startParagraph}" << endl)
   newParagraph();
   t << "{" << endl;
+  if (QCString(txt) == "reference") t << "\\ql" << endl;
 }
 
 void RTFGenerator::endParagraph()
