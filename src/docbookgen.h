@@ -17,8 +17,6 @@
 
 #include "outputgen.h"
 
-void generateDocbook_v1();
-
 class DocbookCodeGenerator : public CodeOutputInterface
 {
   public:
