@@ -171,7 +171,8 @@ void RefList::generatePage()
     if (!item->args.isEmpty()) 
     {
       // escape @'s in argument list, needed for Java annotations (see issue #6208)
-      doc += substitute(item->args,"@","@@");
+      // escape \'s in argument list (see issue #6533)
+      doc += substitute(substitute(item->args,"@","@@"),"\\","\\\\");
     }
     doc += "</dt><dd> ";
     doc += item->text;
