@@ -494,7 +494,7 @@ void XmlDocVisitor::visitPre(DocPara *)
 void XmlDocVisitor::visitPost(DocPara *)
 {
   if (m_hide) return;
-  m_t << "</para>";
+  m_t << "</para>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocRoot *)

@@ -1910,11 +1910,8 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Empty anchor label");
   }
-  if (newAnchor) // found <a name="label">
-  {
-    m_anchor = id;
-  }
-  else if (id.left(CiteConsts::anchorPrefix.length()) == CiteConsts::anchorPrefix) 
+
+  if (id.left(CiteConsts::anchorPrefix.length()) == CiteConsts::anchorPrefix) 
   {
     CiteInfo *cite = Doxygen::citeDict->find(id.mid(CiteConsts::anchorPrefix.length()));
     if (cite) 
@@ -1928,6 +1925,10 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
       m_anchor = "invalid";
       m_file = "invalid";
     }
+  }
+  else if (newAnchor) // found <a name="label">
+  {
+    m_anchor = id;
   }
   else // found \anchor label
   {
