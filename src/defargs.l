@@ -52,7 +52,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <qregexp.h>
-#include <qstringlist.h>
+#include <qcstringlist.h>
 
 #include "defargs.h"
 #include "entry.h"
@@ -108,8 +108,8 @@ static bool checkSpecialType(QCString &typ, QCString &nam)
 {
   if (nam == "unsigned" || nam == "signed" ||
       nam == "volatile" || nam == "const") return TRUE;
-  QStringList qsl=QStringList::split(' ',typ);
-  for(uint j=0;j<qsl.count();j++)
+  QCStringList qsl=QCStringList::split(' ',typ);
+  for (uint j=0;j<qsl.count();j++)
   {
     if (!(qsl[j] == "unsigned" || qsl[j] == "signed" ||
           qsl[j] == "volatile" || qsl[j] == "const")) return FALSE;
@@ -398,7 +398,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						    a->type.mid(sv)=="union"     ||
 						    a->type.mid(sv)=="class"     ||
 						    a->type.mid(sv)=="typename"  ||
-						    checkSpecialType(a->type,  a->name)
+						    checkSpecialType(a->type, a->name)
 						   )
 						{ 
 						  a->type = a->type + " " + a->name;
