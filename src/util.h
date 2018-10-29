@@ -345,8 +345,8 @@ void filterLatexString(FTextStream &t,const char *str,
                        bool insideItem=FALSE,
                        bool keepSpaces=FALSE);
 
-QCString latexEscapeLabelName(const char *s,bool insideTabbing);
-QCString latexEscapeIndexChars(const char *s,bool insideTabbing);
+QCString latexEscapeLabelName(const char *s);
+QCString latexEscapeIndexChars(const char *s);
 QCString latexEscapePDFString(const char *s);
 QCString latexFilterURL(const char *s);
 

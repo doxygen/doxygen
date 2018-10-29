@@ -1519,9 +1519,9 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
   if (name)
   {
     t << "\\label{" << stripPath(fileName) << "}\\index{";
-    t << latexEscapeLabelName(name,insideTabbing);
+    t << latexEscapeLabelName(name);
     t << "@{";
-    t << latexEscapeIndexChars(name,insideTabbing);
+    t << latexEscapeIndexChars(name);
     t << "}}" << endl;
   }
 }
@@ -1602,27 +1602,27 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "\\index{";
     if (clname)
     {
-      t << latexEscapeLabelName(clname,insideTabbing);
+      t << latexEscapeLabelName(clname);
       t << "@{";
-      t << latexEscapeIndexChars(clname,insideTabbing);
+      t << latexEscapeIndexChars(clname);
       t << "}!";
     }
-    t << latexEscapeLabelName(memname,insideTabbing);
+    t << latexEscapeLabelName(memname);
     t << "@{";
-    t << latexEscapeIndexChars(memname,insideTabbing);
+    t << latexEscapeIndexChars(memname);
     t << "}}" << endl;
 
     t << "\\index{";
-    t << latexEscapeLabelName(memname,insideTabbing);
+    t << latexEscapeLabelName(memname);
     t << "@{";
-    t << latexEscapeIndexChars(memname,insideTabbing);
+    t << latexEscapeIndexChars(memname);
     t << "}";
     if (clname)
     {
       t << "!";
-      t << latexEscapeLabelName(clname,insideTabbing);
+      t << latexEscapeLabelName(clname);
       t << "@{";
-      t << latexEscapeIndexChars(clname,insideTabbing);
+      t << latexEscapeIndexChars(clname);
       t << "}";
     }
     t << "}" << endl;
@@ -1640,7 +1640,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
   {
     t << "\\texorpdfstring{";
   }
-  t << latexEscapeIndexChars(title,insideTabbing);
+  t << latexEscapeIndexChars(title);
   if (pdfHyperlinks)
   {
     t << "}{" << latexEscapePDFString(title) << "}";
@@ -1715,16 +1715,16 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
   if (s1)
   {
     t << "\\index{";
-    t << latexEscapeLabelName(s1,insideTabbing);
+    t << latexEscapeLabelName(s1);
     t << "@{";
-    t << latexEscapeIndexChars(s1,insideTabbing);
+    t << latexEscapeIndexChars(s1);
     t << "}";
     if (s2)
     {
       t << "!";
-      t << latexEscapeLabelName(s2,insideTabbing);
+      t << latexEscapeLabelName(s2);
       t << "@{";
-      t << latexEscapeIndexChars(s2,insideTabbing);
+      t << latexEscapeIndexChars(s2);
       t << "}";
     }
     t << "}";
