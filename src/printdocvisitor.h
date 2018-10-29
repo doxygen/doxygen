@@ -640,13 +640,13 @@ class PrintDocVisitor : public DocVisitor
     void visitPre(DocXRefItem *x)
     {
       indent_pre();
-      printf("<xrefitem file=\"%s\" anchor=\"%s\" title=\"%s\"/>\n",
+      printf("<xrefitem file=\"%s\" anchor=\"%s\" title=\"%s\">\n",
           x->file().data(),x->anchor().data(),x->title().data());
     }
     void visitPost(DocXRefItem *)
     {
       indent_post();
-      printf("<xrefitem/>\n");
+      printf("</xrefitem>\n");
     }
     void visitPre(DocInternalRef *r)
     {
