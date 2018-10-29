@@ -33,7 +33,7 @@
 <li>Supports documentation of files, namespaces, packages, classes, 
     structs, unions, templates, variables, functions, typedefs, enums and 
     defines. 
-<li>JavaDoc (1.1), qdoc3 (partially), and ECMA-334 (C# spec.) compatible.
+<li>Javadoc (1.1), qdoc3 (partially), and ECMA-334 (C# spec.) compatible.
 <li>Comes with a GUI frontend (Doxywizard) to ease editing the options and 
     run doxygen. The GUI is available on Windows, Linux, and MacOSX.
 <li>Automatically generates class and collaboration diagrams in HTML (as clickable 

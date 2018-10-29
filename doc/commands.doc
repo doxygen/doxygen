@@ -3280,7 +3280,7 @@ class Receiver
   \addindex \\\@
   This command writes an at-sign (\c \@) to the output.
   The at-sign has to be escaped in some cases
-  because doxygen uses it to detect JavaDoc commands.
+  because doxygen uses it to detect Javadoc commands.
 
 <hr>
 \section cmdtilde \\~[LanguageId]
