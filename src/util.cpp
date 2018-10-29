@@ -6927,7 +6927,7 @@ void filterLatexString(FTextStream &t,const char *str,
   }
 }
 
-QCString latexEscapeLabelName(const char *s,bool insideTabbing)
+QCString latexEscapeLabelName(const char *s)
 {
   QGString result;
   QCString tmp(qstrlen(s)+1);
@@ -6957,14 +6957,14 @@ QCString latexEscapeLabelName(const char *s,bool insideTabbing)
           p++;
         }
         tmp[i]=0;
-        filterLatexString(t,tmp.data(),insideTabbing);
+        filterLatexString(t,tmp,TRUE);
         break;
     }
   }
   return result.data();
 }
 
-QCString latexEscapeIndexChars(const char *s,bool insideTabbing)
+QCString latexEscapeIndexChars(const char *s)
 {
   QGString result;
   QCString tmp(qstrlen(s)+1);
@@ -6995,7 +6995,7 @@ QCString latexEscapeIndexChars(const char *s,bool insideTabbing)
           p++;
         }
         tmp[i]=0;
-        filterLatexString(t,tmp.data(),insideTabbing);
+        filterLatexString(t,tmp.data(),TRUE);
         break;
     }
   }

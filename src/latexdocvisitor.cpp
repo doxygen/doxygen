@@ -565,9 +565,9 @@ void LatexDocVisitor::visit(DocIndexEntry *i)
 {
   if (m_hide) return;
   m_t << "\\index{";
-  m_t << latexEscapeLabelName(i->entry(),false);
+  m_t << latexEscapeLabelName(i->entry());
   m_t << "@{";
-  m_t << latexEscapeIndexChars(i->entry(),false);
+  m_t << latexEscapeIndexChars(i->entry());
   m_t << "}}";
 }
 
