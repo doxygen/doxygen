@@ -106,8 +106,8 @@ documentation:
 \refitem cmdheaderfile \\headerfile
 \refitem cmdhidecallergraph \\hidecallergraph
 \refitem cmdhidecallgraph \\hidecallgraph
-\refitem cmdhidereferencedbyrelation \\hidereferencedbyrelation
-\refitem cmdhidereferencesrelation \\hidereferencesrelation
+\refitem cmdhiderefby \\hiderefby
+\refitem cmdhiderefs \\hiderefs
 \refitem cmdhideinitializer \\hideinitializer
 \refitem cmdhtmlinclude \\htmlinclude
 \refitem cmdhtmlonly \\htmlonly
@@ -158,9 +158,7 @@ documentation:
 \refitem cmdpublicsection \\publicsection
 \refitem cmdpure \\pure
 \refitem cmdref \\ref
-\refitem cmdreferencedbyrelation \\refitem
-\refitem cmdrefitem \\referencedbyrelation
-\refitem cmdreferencesrelation \\referencesrelation
+\refitem cmdrefitem \\refitem
 \refitem cmdrelated \\related
 \refitem cmdrelates \\relates
 \refitem cmdrelatedalso \\relatedalso
@@ -178,6 +176,8 @@ documentation:
 \refitem cmdsee \\see
 \refitem cmdshort \\short
 \refitem cmdshowinitializer \\showinitializer
+\refitem cmdshowrefby \\showrefby
+\refitem cmdshowrefs \\showrefs
 \refitem cmdsince \\since
 \refitem cmdskip \\skip
 \refitem cmdskipline \\skipline
@@ -337,9 +337,9 @@ Structural indicators
       option \ref cfg_caller_graph "CALLER_GRAPH"
 
 <hr>
-\section cmdreferencedbyrelation \\referencedbyrelation
+\section cmdshowrefby \\showrefby
 
-  \addindex \\referencedbyrelation
+  \addindex \\showrefby
   When this command is put in a comment block of a function, method or variable,
   then doxygen will generate an overview for that function, method, variable of
   the, documented, funcions and methods that call / use it.
@@ -348,15 +348,15 @@ Structural indicators
   \note The completeness (and correctness) of the overview depends on the
   doxygen code parser which is not perfect.
 
-  \sa section \ref cmdreferencesrelation "\\referencesrelation",
-      section \ref cmdhidereferencedbyrelation "\\hidereferencedbyrelation",
-      section \ref cmdhidereferencesrelation "\\hidereferencesrelation" and
+  \sa section \ref cmdshowrefs "\\showrefs",
+      section \ref cmdhiderefby "\\hiderefby",
+      section \ref cmdhiderefs "\\hiderefs" and
       option \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION"
 
 <hr>
-\section cmdhidereferencedbyrelation \\hidereferencedbyrelation
+\section cmdhiderefby \\hiderefby
 
-  \addindex \\hidereferencedbyrelation
+  \addindex \\hiderefby
   When this command is put in a comment block of a function, method or variable
   then doxygen will not generate an overview for that function, method or
   variable of the functions and methods that call / use it.
@@ -365,15 +365,15 @@ Structural indicators
   \note The completeness (and correctness) of the overview depends on the
   doxygen code parser which is not perfect.
 
-  \sa section \ref cmdreferencesrelation "\\referencesrelation",
-      section \ref cmdreferencedbyrelation "\\referencedbyrelation",
-      section \ref cmdhidereferencesrelation "\\hidereferencesrelation" and
+  \sa section \ref cmdshowrefs "\\showrefs",
+      section \ref cmdshowrefby "\\showrefby",
+      section \ref cmdhiderefs "\\hiderefs" and
       option \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION"
 
 <hr>
-\section cmdreferencesrelation \\referencesrelation
+\section cmdshowrefs \\showrefs
 
-  \addindex \\referencesrelation
+  \addindex \\showrefs
   When this command is put in a comment block of a function or method,
   then doxygen will generate an overview for that function or method of the 
   functions and methods that call it.
@@ -382,15 +382,15 @@ Structural indicators
   \note The completeness (and correctness) of the overview depends on the
   doxygen code parser which is not perfect.
 
-  \sa section \ref cmdreferencedbyrelation "\\referencedbyrelation",
-      section \ref cmdhidereferencedbyrelation "\\hidereferencedbyrelation",
-      section \ref cmdhidereferencesrelation "\\hidereferencesrelation" and
+  \sa section \ref cmdshowrefby "\\showrefby",
+      section \ref cmdhiderefby "\\hiderefby",
+      section \ref cmdhiderefs "\\hiderefs" and
       option \ref cfg_references_relation "REFERENCES_RELATION"
 
 <hr>
-\section cmdhidereferencesrelation \\hidereferencesrelation
+\section cmdhiderefs \\hiderefs
 
-  \addindex \\hidereferencesrelation
+  \addindex \\hiderefs
   When this command is put in a comment block of a function or method
   and then doxygen will not generate an overview for that function or method of
   the functions and methods that call it.
@@ -399,9 +399,9 @@ Structural indicators
   \note The completeness (and correctness) of the overview depends on the
   doxygen code parser which is not perfect.
 
-  \sa section \ref cmdreferencesrelation "\\referencesrelation",
-      section \ref cmdreferencedbyrelation "\\referencedbyrelation",
-      section \ref cmdhidereferencedbyrelation "\\hidereferencedbyrelation" and
+  \sa section \ref cmdshowrefs "\\showrefs",
+      section \ref cmdshowrefby "\\showrefby",
+      section \ref cmdhiderefby "\\hiderefby" and
       option \ref cfg_references_relation "REFERENCES_RELATION"
 
 <hr>
