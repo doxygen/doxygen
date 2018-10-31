@@ -148,8 +148,6 @@ void RefList::generatePage()
   for (it.toFirst();(item=it.current());++it)
   {
     doc += " <dt>";
-    doc +=  "\\anchor ";
-    doc += item->listAnchor;
     doc += "\n";
     if (item->scope)
     {
@@ -174,13 +172,18 @@ void RefList::generatePage()
       // escape \'s in argument list (see issue #6533)
       doc += substitute(substitute(item->args,"@","@@"),"\\","\\\\");
     }
-    doc += "</dt><dd> ";
+    doc += "</dt><dd> \\anchor ";
+    doc += item->listAnchor;
+    doc += " ";
     doc += item->text;
     QListIterator<RefItem> li(item->extraItems);
     RefItem *extraItem;
     for (li.toFirst();(extraItem=li.current());++li)
     {
-      doc += "<p>" + extraItem->text;
+      doc += "<p> \\anchor ";
+      doc += extraItem->listAnchor;
+      doc += " ";
+      doc += extraItem->text;
     }
     doc += "</dd>";
   }
