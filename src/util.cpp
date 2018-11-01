@@ -6638,6 +6638,8 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     // append documentation block to the page.
     pd->setDocumentation(doc,fileName,startLine);
     //printf("Adding page docs `%s' pi=%p name=%s\n",doc.data(),pd,name);
+    // append (x)refitems to the page.
+    pd->setRefItems(sli);
   }
   else // new page
   {
