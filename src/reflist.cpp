@@ -131,7 +131,15 @@ void RefList::insertIntoList(const char *key,RefItem *item)
   {
     if (ri!=item)
     {
-      ri->extraItems.append(item);
+      // We also have to check if the item is not already in the "extra" list
+      QListIterator<RefItem> li(ri->extraItems);
+      RefItem *extraItem;
+      bool doubleItem = false;
+      for (li.toFirst();(extraItem=li.current());++li)
+      {
+        if (item == extraItem) doubleItem = true;
+      }
+      if (!doubleItem) ri->extraItems.append(item);
     }
   }
 }
