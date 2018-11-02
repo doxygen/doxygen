@@ -6639,6 +6639,8 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     // append documentation block to the page.
     pd->setDocumentation(doc,fileName,startLine);
     //printf("Adding page docs `%s' pi=%p name=%s\n",doc.data(),pd,name);
+    // append (x)refitems to the page.
+    pd->setRefItems(sli);
   }
   else // new page
   {
@@ -6928,7 +6930,7 @@ void filterLatexString(FTextStream &t,const char *str,
   }
 }
 
-QCString latexEscapeLabelName(const char *s,bool insideTabbing)
+QCString latexEscapeLabelName(const char *s)
 {
   QGString result;
   QCString tmp(qstrlen(s)+1);
@@ -6958,14 +6960,14 @@ QCString latexEscapeLabelName(const char *s,bool insideTabbing)
           p++;
         }
         tmp[i]=0;
-        filterLatexString(t,tmp.data(),insideTabbing);
+        filterLatexString(t,tmp,TRUE);
         break;
     }
   }
   return result.data();
 }
 
-QCString latexEscapeIndexChars(const char *s,bool insideTabbing)
+QCString latexEscapeIndexChars(const char *s)
 {
   QGString result;
   QCString tmp(qstrlen(s)+1);
@@ -6996,7 +6998,7 @@ QCString latexEscapeIndexChars(const char *s,bool insideTabbing)
           p++;
         }
         tmp[i]=0;
-        filterLatexString(t,tmp.data(),insideTabbing);
+        filterLatexString(t,tmp.data(),TRUE);
         break;
     }
   }
@@ -7019,6 +7021,25 @@ QCString latexEscapePDFString(const char *s)
       case '_':  t << "\\_"; break;
       case '%':  t << "\\%"; break;
       case '&':  t << "\\&"; break;
+      default:
+        t << c;
+        break;
+    }
+  }
+  return result.data();
+}
+
+QCString latexFilterURL(const char *s)
+{
+  QGString result;
+  FTextStream t(&result);
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '#':  t << "\\#"; break;
       default:
         t << c;
         break;

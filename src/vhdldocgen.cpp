@@ -602,7 +602,7 @@ const char* g_vhdlKeyWordMap1[] =
 {
   "natural","unsigned","signed","string","boolean", "bit","bit_vector","character",
   "std_ulogic","std_ulogic_vector","std_logic","std_logic_vector","integer",
-  "real","float","ufixed","sfixed","time",0
+  "real","float","ufixed","sfixed","time","positive",0
 };
 
 // logic
@@ -667,7 +667,7 @@ const char* g_vhdlKeyWordMap3[] =
 QCString* VhdlDocGen::findKeyWord(const QCString& tmp)
 {
   static  QCString vhdlkeyword("vhdlkeyword");
-  static  QCString vhdltype("comment");
+  static  QCString vhdltype("keywordtype");
   static  QCString vhdllogic("vhdllogic");
   static  QCString preprocessor("keywordflow");
 

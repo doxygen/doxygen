@@ -2182,7 +2182,7 @@ make sure you add the following:
 <h3>New features</h3>
 <ul>
 <li>   Added support for 
-       <a href="http://daringfireball.net/projects/markdown/">Markdown</a>
+       <a href="https://daringfireball.net/projects/markdown/">Markdown</a>
        formatting.
        This is enabled by default, but can be disabled by 
        setting MARKDOWN_SUPPORT to NO. When enabled the following is 

@@ -131,7 +131,15 @@ void RefList::insertIntoList(const char *key,RefItem *item)
   {
     if (ri!=item)
     {
-      ri->extraItems.append(item);
+      // We also have to check if the item is not already in the "extra" list
+      QListIterator<RefItem> li(ri->extraItems);
+      RefItem *extraItem;
+      bool doubleItem = false;
+      for (li.toFirst();(extraItem=li.current());++li)
+      {
+        if (item == extraItem) doubleItem = true;
+      }
+      if (!doubleItem) ri->extraItems.append(item);
     }
   }
 }
@@ -148,8 +156,6 @@ void RefList::generatePage()
   for (it.toFirst();(item=it.current());++it)
   {
     doc += " <dt>";
-    doc +=  "\\anchor ";
-    doc += item->listAnchor;
     doc += "\n";
     if (item->scope)
     {
@@ -171,15 +177,21 @@ void RefList::generatePage()
     if (!item->args.isEmpty()) 
     {
       // escape @'s in argument list, needed for Java annotations (see issue #6208)
-      doc += substitute(item->args,"@","@@");
+      // escape \'s in argument list (see issue #6533)
+      doc += substitute(substitute(item->args,"@","@@"),"\\","\\\\");
     }
-    doc += "</dt><dd> ";
+    doc += "</dt><dd> \\anchor ";
+    doc += item->listAnchor;
+    doc += " ";
     doc += item->text;
     QListIterator<RefItem> li(item->extraItems);
     RefItem *extraItem;
     for (li.toFirst();(extraItem=li.current());++li)
     {
-      doc += "<p>" + extraItem->text;
+      doc += "<p> \\anchor ";
+      doc += extraItem->listAnchor;
+      doc += " ";
+      doc += extraItem->text;
     }
     doc += "</dd>";
   }

@@ -9,16 +9,16 @@
       <para>
         <variablelist>
           <varlistentry>
-            <term><anchor id="test_1_test000001"/>Class <ref refid="class_test" kindref="compound">Test</ref></term>
+            <term>Class <ref refid="class_test" kindref="compound">Test</ref></term>
           </varlistentry>
           <listitem>
-            <para>This is part of testing  </para>
+            <para><anchor id="test_1_test000001"/>This is part of testing  </para>
           </listitem>
           <varlistentry>
-            <term><anchor id="test_1_test000002"/>Member <ref refid="class_test_1a9fc54b716f326514a4c5f434137f4fc0" kindref="member">Test::test</ref>  ()</term>
+            <term>Member <ref refid="class_test_1a9fc54b716f326514a4c5f434137f4fc0" kindref="member">Test::test</ref>  ()</term>
           </varlistentry>
           <listitem>
-            <para>more things to test. </para>
+            <para><anchor id="test_1_test000002"/>more things to test. </para>
           </listitem>
         </variablelist>
       </para>

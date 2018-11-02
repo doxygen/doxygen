@@ -66,7 +66,7 @@ namespace Config
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
    */
-  void postProcess(bool clearHeaderAndFooter);
+  void postProcess(bool clearHeaderAndFooter, bool compare = FALSE);
 
   /*! Check the validity of the parsed options and correct or warn the user where needed. */
   void checkAndCorrect();

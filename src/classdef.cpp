@@ -674,6 +674,10 @@ void ClassDef::internalInsertMember(MemberDef *md,
               case MemberType_Variable:
                 addMemberToList(MemberListType_variableMembers,md,FALSE);
                 break;
+              case MemberType_Define:
+                warn(md->getDefFileName(),md->getDefLine()-1,"A define (%s) cannot be made a member of %s",
+                     md->name().data(), this->name().data());
+                break;
               default:
                 err("Unexpected member type %d found!\n",md->memberType());
             }

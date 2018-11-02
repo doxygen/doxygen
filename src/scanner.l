@@ -602,15 +602,11 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"callgraph"|"callergraph"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"manonly"|"{"|"verbatim"|"dotfile"|"dot"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"details"|"typedef"|"def"|"overload")|("<"{PRE}">")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
-BS        ^(({B}*"//")?)(({B}*"*"+)?){B}*
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
-SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)(((~|!){BN}*)?{ID})
-PHPSCOPENAME ({ID}"\\")+{ID}
 TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,:]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 PRE       [pP][rR][eE]
@@ -3135,6 +3131,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <CopyPHPGString>\'			{ 
   					  *pCopyQuotedGString+=*yytext;
+  					  BEGIN( lastStringContext ); 
+					}
+<CopyGString,CopyPHPGString>"<?php"	{ // we had an odd number of quotes.
+					  *pCopyQuotedGString += yytext;
   					  BEGIN( lastStringContext ); 
 					}
 <CopyGString,CopyPHPGString>"/*"|"*/"|"//" {

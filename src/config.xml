@@ -660,7 +660,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 <![CDATA[
  If the \c MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all
  comments according to the Markdown format, which allows for more readable
- documentation. See http://daringfireball.net/projects/markdown/ for details.
+ documentation. See https://daringfireball.net/projects/markdown/ for details.
  The output of markdown processing is further processed by doxygen, so you
  can mix doxygen, HTML, and XML commands with Markdown formatting.
  Disable only in case of backward compatibilities issues.
@@ -2050,15 +2050,15 @@ hr.footer {
 <![CDATA[
  If the \c GENERATE_DOCSET tag is set to \c YES, additional index files
  will be generated that can be used as input for
- <a href="https://developer.apple.com/tools/xcode/">Apple's Xcode 3
+ <a href="https://developer.apple.com/xcode/">Apple's Xcode 3
  integrated development environment</a>, introduced with OSX 10.5 (Leopard).
  To create a documentation set, doxygen will generate a Makefile in the
  HTML output directory. Running \c make will produce the docset in that
  directory and running <code>make install</code> will install the docset in
  <code>~/Library/Developer/Shared/Documentation/DocSets</code>
  so that Xcode will find it at startup. See
- https://developer.apple.com/tools/creatingdocsetswithdoxygen.html for
- more information.
+ https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html
+ for more information.
 ]]>
       </docs>
     </option>
@@ -2106,7 +2106,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  doxygen generates three additional HTML index files:
  \c index.hhp, \c index.hhc, and \c index.hhk. The \c index.hhp is a
  project file that can be read by
- <a href="http://www.microsoft.com/en-us/download/details.aspx?id=21138">
+ <a href="https://www.microsoft.com/en-us/download/details.aspx?id=21138">
  Microsoft's HTML Help Workshop</a>
  on Windows.
 <br>
@@ -2202,7 +2202,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
  The \c QHP_NAMESPACE tag specifies the namespace to use when generating
  Qt Help Project output. For more information please see
- <a href="http://doc.qt.io/qt-4.8/qthelpproject.html#namespace">Qt Help Project / Namespace</a>.
+ <a href="http://doc.qt.io/archives/qt-4.8/qthelpproject.html#namespace">Qt Help Project / Namespace</a>.
 ]]>
       </docs>
     </option>
@@ -2211,7 +2211,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
  The \c QHP_VIRTUAL_FOLDER tag specifies the namespace to use when
  generating Qt Help Project output. For more information please see
- <a href="http://doc.qt.io/qt-4.8/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.
+ <a href="http://doc.qt.io/archives/qt-4.8/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.
 ]]>
       </docs>
     </option>
@@ -2219,7 +2219,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
   If the \c QHP_CUST_FILTER_NAME tag is set, it specifies the name of a custom filter to add. For more information please see
-  <a href="http://doc.qt.io/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+  <a href="http://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
 ]]>
       </docs>
     </option>
@@ -2228,7 +2228,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
   The \c QHP_CUST_FILTER_ATTRS tag specifies the list of the attributes of the custom filter to add.
   For more information please see
-  <a href="http://doc.qt.io/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+  <a href="http://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
 ]]>
       </docs>
     </option>
@@ -2236,7 +2236,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
   The \c QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this project's filter section matches.
-  <a href="http://doc.qt.io/qt-4.8/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.
+  <a href="http://doc.qt.io/archives/qt-4.8/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.
 ]]>
       </docs>
     </option>
@@ -2386,7 +2386,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <value name="NativeMML" desc="(i.e. MathML)"/>
       <value name="SVG"/>
     </option>
-    <option type='string' id='MATHJAX_RELPATH' format='string' defval='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/' depends='USE_MATHJAX'>
+    <option type='string' id='MATHJAX_RELPATH' format='string' defval='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
  When MathJax is enabled you need to specify the location relative to the

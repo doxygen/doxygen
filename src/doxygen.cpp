@@ -347,6 +347,7 @@ static STLInfo g_stlinfo[] =
   { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // deprecated
   { "smart_ptr",            0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
   { "unique_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
+  { "shared_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++14
   { "weak_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
   { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
   { "error_code",           0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
@@ -520,7 +521,7 @@ static void addSTLClasses(EntryNav *rootNav)
     {
       addSTLMember(classEntryNav,info->templType2,info->templName2);
     }
-    if (fullName=="std::auto_ptr" || fullName=="std::smart_ptr" ||
+    if (fullName=="std::auto_ptr" || fullName=="std::smart_ptr" || fullName=="std::shared_ptr" ||
         fullName=="std::unique_ptr" || fullName=="std::weak_ptr")
     {
       Entry *memEntry = new Entry;
@@ -9729,7 +9730,7 @@ int readDir(QFileInfo *fi,
             {
               fn = new FileName(cfi->absFilePath().utf8(),name);
               fn->append(fd);
-              if (fnList) fnList->inSort(fn);
+              if (fnList) fnList->append(fn);
               fnDict->insert(name,fn);
             }
           }
@@ -9828,7 +9829,7 @@ int readFileOrDirectory(const char *s,
               {
                 fn = new FileName(filePath,name);
                 fn->append(fd);
-                if (fnList) fnList->inSort(fn);
+                if (fnList) fnList->append(fn);
                 fnDict->insert(name,fn);
               }
             }
@@ -11041,6 +11042,7 @@ void searchInputFiles()
     }
     s=inputList.next();
   }
+  Doxygen::inputNameList->sort();
   delete killDict;
   g_s.end();
 }
@@ -11621,13 +11623,11 @@ void generateOutput()
     g_outputList->add(new LatexGenerator);
     LatexGenerator::init();
   }
-#if 1
   if (generateDocbook)
   {
     g_outputList->add(new DocbookGenerator);
     DocbookGenerator::init();
   }
-#endif
   if (generateMan)
   {
     g_outputList->add(new ManGenerator);
@@ -11805,15 +11805,6 @@ void generateOutput()
     generateSqlite3();
     g_s.end();
   }
-
-#if 0
-  if (generateDocbook)
-  {
-    g_s.begin("Generating Docbook output...\n");
-    generateDocbook_v1();
-    g_s.end();
-  }
-#endif
 
   if (Config_getBool(GENERATE_AUTOGEN_DEF))
   {

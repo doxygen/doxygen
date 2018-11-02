@@ -75,6 +75,7 @@ class ConfigOption
     virtual void writeTemplate(FTextStream &t,bool sl,bool upd) = 0;
     virtual void compareDoxyfile(FTextStream &t) = 0;
     virtual void convertStrToVal() {}
+    virtual void emptyValueToDefault() {}
     virtual void substEnvVars() = 0;
     virtual void init() {}
 
@@ -189,6 +190,7 @@ class ConfigString : public ConfigOption
     void compareDoxyfile(FTextStream &t);
     void substEnvVars();
     void init() { m_value = m_defValue.copy(); }
+    void emptyValueToDefault() { if(m_value.isEmpty()) m_value=m_defValue; };
   
   private:
     QCString m_value;
@@ -490,6 +492,10 @@ class ConfigImpl
      *  to real values for non-string type options (like int, and bools)
      */
     void convertStrToVal();
+
+    /*! Sets default value in case value is empty
+     */
+    void emptyValueToDefault();
 
     /*! Replaces references to environment variable by the actual value
      *  of the environment variable.

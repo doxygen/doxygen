@@ -1072,7 +1072,7 @@ void RTFDocVisitor::visitPre(DocHtmlHeader *header)
   m_t << "{" // start section
       << rtf_Style_Reset;
   QCString heading;
-  int level = QMIN(header->level()+2,4);
+  int level = QMIN(header->level(),5);
   heading.sprintf("Heading%d",level);
   // set style
   m_t << rtf_Style[heading]->reference;
