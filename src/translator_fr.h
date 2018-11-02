@@ -2156,7 +2156,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     }
     virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
     {
-      QCString resut = "Référence de ";
+      QCString result = "Référence de ";
 
       switch(compType)
       {
@@ -2169,7 +2169,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
 
       if(isLocal)
       {
-        result += "locale "
+        result += "locale ";
       }
 
       result += (QCString)clName;
