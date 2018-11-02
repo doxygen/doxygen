@@ -6414,7 +6414,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
  /* ---- Slice-specific rules ------ */
 
-<SliceSequence>{SCOPEID}                {
+<SliceSequence>{SCOPENAME}                {
                                             if (current->spec&Entry::Local)
                                             {
                                               current->type = "local ";
@@ -6443,7 +6443,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN(FindMembers);
                                         }
 
-<SliceDictionary>{SCOPEID}{BN}*","{BN}*{SCOPEID} {
+<SliceDictionary>{SCOPENAME}{BN}*","{BN}*{SCOPENAME} {
                                             lineCount();
                                             if (current->spec&Entry::Local)
                                             {
