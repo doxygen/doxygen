@@ -2060,27 +2060,27 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
 
     virtual QCString trConstants()
     {
-        return "Constants";
+        return "Constantes";
     }
     virtual QCString trConstantDocumentation()
     {
-        return "Constant Documentation";
+        return "Documentation des constantes";
     }
     virtual QCString trSequences()
     {
-        return "Sequences";
+        return "Séquences";
     }
     virtual QCString trSequenceDocumentation()
     {
-        return "Sequence Documentation";
+        return "Documentation des séquences";
     }
     virtual QCString trDictionaries()
     {
-        return "Dictionaries";
+        return "Dictionnaires";
     }
     virtual QCString trDictionaryDocumentation()
     {
-        return "Dictionary Documentation";
+        return "Documentation des dictionnaires";
     }
     virtual QCString trSliceInterfaces()
     {
@@ -2088,105 +2088,109 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     }
     virtual QCString trInterfaceIndex()
     {
-        return "Interface Index";
+        return "Index des interfaces";
     }
     virtual QCString trInterfaceList()
     {
-        return "Interface List";
+        return "Liste des interfaces";
     }
     virtual QCString trInterfaceListDescription()
     {
-        return "Here are the interfaces with brief descriptions:";
+        return "Liste des interfaces avec une brève description :";
     }
     virtual QCString trInterfaceHierarchy()
     {
-        return "Interface Hierarchy";
+        return "Hiérarchies des interfaces";
     }
     virtual QCString trInterfaceHierarchyDescription()
     {
-        return "This inheritance list is sorted roughly, but not completely, alphabetically:";
+        return "Cette liste d'héritage est classée approximativement par ordre alphabétique :";
     }
     virtual QCString trInterfaceDocumentation()
     {
-        return "Interface Documentation";
+        return "Documentation des interfaces";
     }
     virtual QCString trStructs()
     {
-        return "Structs";
+        return "Structures";
     }
     virtual QCString trStructIndex()
     {
-        return "Struct Index";
+        return "Index des structures";
     }
     virtual QCString trStructList()
     {
-        return "Struct List";
+        return "Liste des structures";
     }
     virtual QCString trStructListDescription()
     {
-        return "Here are the structs with brief descriptions:";
+        return "Liste des structures avec une brève description :";
     }
     virtual QCString trStructDocumentation()
     {
-        return "Struct Documentation";
+        return "Documentation des structures";
     }
     virtual QCString trExceptionIndex()
     {
-        return "Exception Index";
+        return "Index des exceptions";
     }
     virtual QCString trExceptionList()
     {
-        return "Exception List";
+        return "Liste des exceptions";
     }
     virtual QCString trExceptionListDescription()
     {
-        return "Here are the exceptions with brief descriptions:";
+        return "Liste des exceptions avec une brève description :";
     }
     virtual QCString trExceptionHierarchy()
     {
-        return "Exception Hierarchy";
+        return "Hiérarchies des exceptions";
     }
     virtual QCString trExceptionHierarchyDescription()
     {
-        return "This inheritance list is sorted roughly, but not completely, alphabetically:";
+        return "Cette liste d'héritage est classée approximativement par ordre alphabétique :";
     }
     virtual QCString trExceptionDocumentation()
     {
-        return "Exception Documentation";
+        return "Documentation des exceptions";
     }
     virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
     {
-      QCString result=(QCString)clName;
-      if (isLocal) result+=" Local";
+      QCString resut = "Référence de ";
+
       switch(compType)
       {
-        case ClassDef::Class:      result+=" Class"; break;
-        case ClassDef::Struct:     result+=" Struct"; break;
-        case ClassDef::Union:      result+=" Union"; break;
-        case ClassDef::Interface:  result+=" Interface"; break;
-        case ClassDef::Protocol:   result+=" Protocol"; break;
-        case ClassDef::Category:   result+=" Category"; break;
-        case ClassDef::Exception:  result+=" Exception"; break;
+        case ClassDef::Class:      result+="la classe "; break;
+        case ClassDef::Struct:     result+="la structure "; break;
+        case ClassDef::Interface:  result+="l'interface "; break;
+        case ClassDef::Exception:  result+="l'exception "; break;
         default: break;
       }
-      result+=" Reference";
+
+      if(isLocal)
+      {
+        result += "locale "
+      }
+
+      result += (QCString)clName;
+
       return result;
     }
     virtual QCString trOperations()
     {
-        return "Operations";
+        return "Opérations";
     }
     virtual QCString trOperationDocumentation()
     {
-        return "Operation Documentation";
+        return "Documentation des opérations";
     }
     virtual QCString trDataMembers()
     {
-        return "Data Members";
+        return "Champs de données";
     }
     virtual QCString trDataMemberDocumentation()
     {
-        return "Data Member Documentation";
+        return "Documentation des champs de données";
     }
 
 //////////////////////////////////////////////////////////////////////////
