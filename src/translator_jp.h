@@ -158,7 +158,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
     { return " の全メンバ一覧です。"; }
-    /* trThisIsTheListOfAllMembers から続くように定義すること */    
+    /* trThisIsTheListOfAllMembers から続くように定義すること */
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
@@ -268,7 +268,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       }
       return "詳解が付けられているファイルの一覧です。";
     }
-    
+
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
@@ -844,7 +844,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return "非推奨";
     }
-    
+
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
@@ -1851,7 +1851,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool)
-    { 
+    {
       return "次のファイルからこの列挙についての詳解を抽出しました:";
     }
 
@@ -1879,7 +1879,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      
+
       QCString opt = enable ? "有効" : "無効";
       return "クリックで同期表示が"+opt+"になります";
     }
@@ -1984,144 +1984,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       return "次のファイルからこの Singleton について"
              "の詳解を抽出しました:";
     }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.14
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trConstants()
-    {
-        return "Constants";
-    }
-    virtual QCString trConstantDocumentation()
-    {
-        return "Constant Documentation";
-    }
-    virtual QCString trSequences()
-    {
-        return "Sequences";
-    }
-    virtual QCString trSequenceDocumentation()
-    {
-        return "Sequence Documentation";
-    }
-    virtual QCString trDictionaries()
-    {
-        return "Dictionaries";
-    }
-    virtual QCString trDictionaryDocumentation()
-    {
-        return "Dictionary Documentation";
-    }
-    virtual QCString trSliceInterfaces()
-    {
-        return "Interfaces";
-    }
-    virtual QCString trInterfaceIndex()
-    {
-        return "Interface Index";
-    }
-    virtual QCString trInterfaceList()
-    {
-        return "Interface List";
-    }
-    virtual QCString trInterfaceListDescription()
-    {
-        return "Here are the interfaces with brief descriptions:";
-    }
-    virtual QCString trInterfaceHierarchy()
-    {
-        return "Interface Hierarchy";
-    }
-    virtual QCString trInterfaceHierarchyDescription()
-    {
-        return "This inheritance list is sorted roughly, but not completely, alphabetically:";
-    }
-    virtual QCString trInterfaceDocumentation()
-    {
-        return "Interface Documentation";
-    }
-    virtual QCString trStructs()
-    {
-        return "Structs";
-    }
-    virtual QCString trStructIndex()
-    {
-        return "Struct Index";
-    }
-    virtual QCString trStructList()
-    {
-        return "Struct List";
-    }
-    virtual QCString trStructListDescription()
-    {
-        return "Here are the structs with brief descriptions:";
-    }
-    virtual QCString trStructDocumentation()
-    {
-        return "Struct Documentation";
-    }
-    virtual QCString trExceptionIndex()
-    {
-        return "Exception Index";
-    }
-    virtual QCString trExceptionList()
-    {
-        return "Exception List";
-    }
-    virtual QCString trExceptionListDescription()
-    {
-        return "Here are the exceptions with brief descriptions:";
-    }
-    virtual QCString trExceptionHierarchy()
-    {
-        return "Exception Hierarchy";
-    }
-    virtual QCString trExceptionHierarchyDescription()
-    {
-        return "This inheritance list is sorted roughly, but not completely, alphabetically:";
-    }
-    virtual QCString trExceptionDocumentation()
-    {
-        return "Exception Documentation";
-    }
-    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
-    {
-      QCString result=(QCString)clName;
-      if (isLocal) result+=" Local";
-      switch(compType)
-      {
-        case ClassDef::Class:      result+=" Class"; break;
-        case ClassDef::Struct:     result+=" Struct"; break;
-        case ClassDef::Union:      result+=" Union"; break;
-        case ClassDef::Interface:  result+=" Interface"; break;
-        case ClassDef::Protocol:   result+=" Protocol"; break;
-        case ClassDef::Category:   result+=" Category"; break;
-        case ClassDef::Exception:  result+=" Exception"; break;
-        default: break;
-      }
-      result+=" Reference";
-      return result;
-    }
-    virtual QCString trOperations()
-    {
-        return "Operations";
-    }
-    virtual QCString trOperationDocumentation()
-    {
-        return "Operation Documentation";
-    }
-    virtual QCString trDataMembers()
-    {
-        return "Data Members";
-    }
-    virtual QCString trDataMemberDocumentation()
-    {
-        return "Data Member Documentation";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-
 };
 
 #endif
