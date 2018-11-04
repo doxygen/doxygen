@@ -941,7 +941,8 @@ void DocbookDocVisitor::visitPost(DocHtmlTable *)
 {
 DB_VIS_C
   if (m_hide) return;
-  m_t << "    </tbody>" << endl;
+  if (bodySet) m_t << "    </tbody>" << endl;
+  bodySet = FALSE;
   m_t << "    </tgroup>" << endl;
   m_t << "</informaltable>" << endl;
 }
