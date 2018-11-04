@@ -584,6 +584,8 @@ class MemberDefImpl
     bool annUsed;
     bool hasCallGraph;
     bool hasCallerGraph;
+    bool hasReferencedByRelation;
+    bool hasReferencesRelation;
     bool explExt;             // member was explicitly declared external
     bool tspec;               // member is a template specialization
     bool groupHasDocs;        // true if the entry that caused the grouping was documented
@@ -647,6 +649,8 @@ void MemberDefImpl::init(Definition *def,
   defTmpArgLists=0;
   hasCallGraph = FALSE;
   hasCallerGraph = FALSE;
+  hasReferencedByRelation = FALSE;
+  hasReferencesRelation = FALSE;
   initLines=0;
   type=t;
   if (mt==MemberType_Typedef) type.stripPrefix("typedef ");
@@ -2984,9 +2988,9 @@ void MemberDef::writeDocumentation(MemberList *ml,
   _writeExamples(ol);
   _writeTypeConstraints(ol);
   writeSourceDef(ol,cname);
-  writeSourceRefs(ol,cname);
-  writeSourceReffedBy(ol,cname);
   writeInlineCode(ol,cname);
+  if (hasReferencesRelation()) writeSourceRefs(ol,cname);
+  if (hasReferencedByRelation()) writeSourceReffedBy(ol,cname);
   _writeCallGraph(ol);
   _writeCallerGraph(ol);
 
@@ -3960,6 +3964,18 @@ void MemberDef::enableCallerGraph(bool e)
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
+void MemberDef::enableReferencedByRelation(bool e)
+{
+  m_impl->hasReferencedByRelation=e;
+  if (e) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+void MemberDef::enableReferencesRelation(bool e)
+{
+  m_impl->hasReferencesRelation=e;
+  if (e) Doxygen::parseSourcesNeeded = TRUE;
+}
+
 #if 0
 bool MemberDef::protectionVisible() const
 {
@@ -4592,6 +4608,16 @@ bool MemberDef::hasCallerGraph() const
   return m_impl->hasCallerGraph;
 }
 
+bool MemberDef::hasReferencedByRelation() const
+{
+  return m_impl->hasReferencedByRelation;
+}
+
+bool MemberDef::hasReferencesRelation() const
+{
+  return m_impl->hasReferencesRelation;
+}
+
 MemberDef *MemberDef::templateMaster() const
 {
   return m_impl->templateMaster;
@@ -5104,6 +5130,11 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       mdef->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
       mdec->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
       mdec->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
+
+      mdef->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
+      mdef->enableCallerGraph(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
+      mdec->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
+      mdec->enableCallerGraph(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
     }
   }
 }

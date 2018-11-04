@@ -2188,6 +2188,8 @@ static void findUsingDeclImports(EntryNav *rootNav)
                   newMd->setDefinition(md->definition());
                   newMd->enableCallGraph(root->callGraph);
                   newMd->enableCallerGraph(root->callerGraph);
+                  newMd->enableReferencedByRelation(root->referencedByRelation);
+                  newMd->enableReferencesRelation(root->referencesRelation);
                   newMd->setBitfields(md->bitfieldString());
                   newMd->addSectionsToDefinition(root->anchors);
                   newMd->setBodySegment(md->getStartBodyLine(),md->getEndBodyLine());
@@ -2384,6 +2386,8 @@ static MemberDef *addVariableToClass(
   md->setWriteAccessor(root->write);
   md->enableCallGraph(root->callGraph);
   md->enableCallerGraph(root->callerGraph);
+  md->enableReferencedByRelation(root->referencedByRelation);
+  md->enableReferencesRelation(root->referencesRelation);
   md->setHidden(root->hidden);
   md->setArtificial(root->artificial);
   md->setLanguage(root->lang);
@@ -2621,6 +2625,8 @@ static MemberDef *addVariableToFile(
   md->setId(root->id);
   md->enableCallGraph(root->callGraph);
   md->enableCallerGraph(root->callerGraph);
+  md->enableReferencedByRelation(root->referencedByRelation);
+  md->enableReferencesRelation(root->referencesRelation);
   md->setExplicitExternal(root->explicitExternal);
   //md->setOuterScope(fd);
   if (!root->explicitExternal)
@@ -3134,6 +3140,8 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   md->setDefinition(def);
   md->enableCallGraph(root->callGraph);
   md->enableCallerGraph(root->callerGraph);
+  md->enableReferencedByRelation(root->referencedByRelation);
+  md->enableReferencesRelation(root->referencesRelation);
 
   Debug::print(Debug::Functions,0,
       "  Interface Member:\n"
@@ -3386,6 +3394,8 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   md->setDefinition(def);
   md->enableCallGraph(root->callGraph);
   md->enableCallerGraph(root->callerGraph);
+  md->enableReferencedByRelation(root->referencedByRelation);
+  md->enableReferencesRelation(root->referencesRelation);
 
   Debug::print(Debug::Functions,0,
       "  Func Member:\n"
@@ -3653,6 +3663,8 @@ static void buildFunctionList(EntryNav *rootNav)
 
                 md->enableCallGraph(md->hasCallGraph() || root->callGraph);
                 md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
+                md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
+                md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
 
                 // merge ingroup specifiers
                 if (md->getGroupDef()==0 && root->groups->getFirst()!=0)
@@ -3772,6 +3784,8 @@ static void buildFunctionList(EntryNav *rootNav)
           md->setDefinition(def);
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
+          md->enableReferencedByRelation(root->referencedByRelation);
+          md->enableReferencesRelation(root->referencesRelation);
           //if (root->mGrpId!=-1)
           //{
           //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
@@ -3923,8 +3937,13 @@ static void findFriends()
 
             mmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
             mmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
+            mmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
+            mmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
+
             fmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
             fmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
+            fmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
+            fmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
           }
         }
       }
@@ -5324,6 +5343,8 @@ static void addMemberDocs(EntryNav *rootNav,
   md->setDefinition(fDecl);
   md->enableCallGraph(root->callGraph);
   md->enableCallerGraph(root->callerGraph);
+  md->enableReferencedByRelation(root->referencedByRelation);
+  md->enableReferencesRelation(root->referencesRelation);
   ClassDef     *cd=md->getClassDef();
   NamespaceDef *nd=md->getNamespaceDef();
   QCString fullName;
@@ -5416,6 +5437,8 @@ static void addMemberDocs(EntryNav *rootNav,
 
   md->enableCallGraph(md->hasCallGraph() || root->callGraph);
   md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
+  md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
+  md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
 
   md->mergeMemberSpecifiers(root->spec);
   md->addSectionsToDefinition(root->anchors);
@@ -6448,6 +6471,8 @@ static void findMember(EntryNav *rootNav,
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
+          md->enableReferencedByRelation(root->referencedByRelation);
+          md->enableReferencesRelation(root->referencesRelation);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -6513,6 +6538,8 @@ static void findMember(EntryNav *rootNav,
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
+          md->enableReferencedByRelation(root->referencedByRelation);
+          md->enableReferencesRelation(root->referencesRelation);
           QCString doc=getOverloadDocs();
           doc+="<p>";
           doc+=root->doc;
@@ -6717,6 +6744,8 @@ static void findMember(EntryNav *rootNav,
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
+          md->enableReferencedByRelation(root->referencedByRelation);
+          md->enableReferencesRelation(root->referencesRelation);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
@@ -6789,6 +6818,8 @@ localObjCMethod:
         md->setDefinition(funcDecl);
         md->enableCallGraph(root->callGraph);
         md->enableCallerGraph(root->callerGraph);
+        md->enableReferencedByRelation(root->referencedByRelation);
+        md->enableReferencesRelation(root->referencesRelation);
         md->setDocumentation(root->doc,root->docFile,root->docLine);
         md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -7131,6 +7162,8 @@ static void findEnums(EntryNav *rootNav)
       md->setMemberGroupId(root->mGrpId);
       md->enableCallGraph(root->callGraph);
       md->enableCallerGraph(root->callerGraph);
+      md->enableReferencedByRelation(root->referencedByRelation);
+      md->enableReferencesRelation(root->referencesRelation);
       //printf("%s::setRefItems(%d)\n",md->name().data(),root->sli?root->sli->count():-1);
       md->setRefItems(root->sli);
       //printf("found enum %s nd=%p\n",md->name().data(),nd);

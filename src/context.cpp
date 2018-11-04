@@ -856,6 +856,14 @@ class TranslateContext::Private
     {
       return theTranslator->trCallerGraph();
     }
+    TemplateVariant referencedByRelation() const
+    {
+      return theTranslator->trReferencedBy();
+    }
+    TemplateVariant referencesRelation() const
+    {
+      return theTranslator->trReferences();
+    }
     TemplateVariant inheritedFrom() const
     {
       return theTranslator->trInheritedFrom("@0","@1");
@@ -1112,6 +1120,10 @@ class TranslateContext::Private
         s_inst.addProperty("callGraph",          &Private::callGraph);
         //%% string callerGraph
         s_inst.addProperty("callerGraph",        &Private::callerGraph);
+        //%% string referencedByRelation
+        s_inst.addProperty("referencedByRelation", &Private::referencedByRelation);
+        //%% string referencesRelation
+        s_inst.addProperty("referencesRelation",   &Private::referencesRelation);
         //%% markerstring inheritedFrom
         s_inst.addProperty("inheritedFrom",      &Private::inheritedFrom);
         //%% string addtionalInheritedMembers
@@ -3994,6 +4006,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         s_inst.addProperty("callGraph",           &Private::callGraph);
         s_inst.addProperty("hasCallerGraph",      &Private::hasCallerGraph);
         s_inst.addProperty("callerGraph",         &Private::callerGraph);
+        s_inst.addProperty("hasReferencedByRelation", &Private::hasReferencedByRelation);
+        s_inst.addProperty("referencedByRelation",    &Private::referencedByRelation);
+        s_inst.addProperty("hasReferencesRelation",   &Private::hasReferencesRelation);
+        s_inst.addProperty("referencesRelation",      &Private::referencesRelation);
         s_inst.addProperty("fieldType",           &Private::fieldType);
         s_inst.addProperty("type",                &Private::type);
         s_inst.addProperty("detailsVisibleFor",   &Private::detailsVisibleFor);
@@ -4918,6 +4934,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       }
       return TemplateVariant(FALSE);
     }
+    TemplateVariant hasReferencedByRelation() const
+    {
+      return TemplateVariant(m_memberDef->hasReferencedByRelation());
+    }
     TemplateVariant callGraph() const
     {
       if (hasCallGraph().toBool())
@@ -4958,6 +4978,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         return TemplateVariant("");
       }
     }
+    TemplateVariant referencedByRelation() const
+    {
+      if (hasReferencedByRelation().toBool())
+      {
+        err("context.cpp: output format not yet supported");
+      }
+      return TemplateVariant("");
+    }
     DotCallGraph *getCallerGraph() const
     {
       Cachable &cache = getCache();
@@ -4977,6 +5005,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         return !cg->isTooBig() && !cg->isTrivial();
       }
       return TemplateVariant(FALSE);
+    }
+    TemplateVariant hasReferencesRelation() const
+    {
+      return TemplateVariant(m_memberDef->hasReferencesRelation());
     }
     TemplateVariant callerGraph() const
     {
@@ -5017,6 +5049,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         return TemplateVariant("");
       }
+    }
+    TemplateVariant referencesRelation() const
+    {
+      if (hasReferencesRelation().toBool())
+      {
+         err("context.cpp: output format not yet supported");
+      }
+      return TemplateVariant("");
     }
     TemplateVariant type() const
     {
