@@ -1446,18 +1446,12 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
 
 void Definition::writeSourceReffedBy(OutputList &ol,const char *scopeName)
 {
-  if (Config_getBool(REFERENCED_BY_RELATION))
-  {
-    _writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_impl->sourceRefByDict,FALSE);
-  }
+  _writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_impl->sourceRefByDict,FALSE);
 }
 
 void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 {
-  if (Config_getBool(REFERENCES_RELATION))
-  {
-    _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_impl->sourceRefsDict,TRUE);
-  }
+  _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_impl->sourceRefsDict,TRUE);
 }
 
 bool Definition::hasDocumentation() const
@@ -1644,13 +1638,21 @@ void Definition::mergeRefItems(Definition *d)
       m_impl->xrefListItems->setAutoDelete(TRUE);
     }
     QListIterator<ListItemInfo> slii(*xrefList);
+    QListIterator<ListItemInfo> mlii(*m_impl->xrefListItems);
     ListItemInfo *lii;
+    ListItemInfo *mii;
     for (slii.toFirst();(lii=slii.current());++slii)
     {
-      if (_getXRefListId(lii->type)==-1)
+      bool found = false;
+      for (mlii.toFirst();(mii=mlii.current());++mlii)
       {
-        m_impl->xrefListItems->append(new ListItemInfo(*lii));
+        if ((qstrcmp(lii->type,mii->type)==0) && (lii->itemId == mii->itemId))
+	{
+          found = true;
+          break;
+	}
       }
+      if (!found) m_impl->xrefListItems->append(new ListItemInfo(*lii));
     } 
   }
 }

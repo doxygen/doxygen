@@ -370,6 +370,8 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalBool(s,e->subGrouping);
   marshalBool(s,e->callGraph);
   marshalBool(s,e->callerGraph);
+  marshalBool(s,e->referencedByRelation);
+  marshalBool(s,e->referencesRelation);
   marshalInt(s,(int)e->virt);
   marshalQCString(s,e->args);
   marshalQCString(s,e->bitfields);
@@ -781,6 +783,8 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->subGrouping      = unmarshalBool(s);
   e->callGraph        = unmarshalBool(s);
   e->callerGraph      = unmarshalBool(s);
+  e->referencedByRelation = unmarshalBool(s);
+  e->referencesRelation   = unmarshalBool(s);
   e->virt             = (Specifier)unmarshalInt(s);
   e->args             = unmarshalQCString(s);
   e->bitfields        = unmarshalQCString(s);

@@ -79,6 +79,8 @@ Entry::Entry(const Entry &e)
   subGrouping = e.subGrouping;
   callGraph   = e.callGraph;
   callerGraph = e.callerGraph;
+  referencedByRelation = e.referencedByRelation;
+  referencesRelation   = e.referencesRelation;
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
@@ -219,6 +221,8 @@ void Entry::reset()
 {
   static bool entryCallGraph   = Config_getBool(CALL_GRAPH);
   static bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
+  static bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
+  static bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
   //printf("Entry::reset()\n");
   name.resize(0);
   type.resize(0);
@@ -250,6 +254,8 @@ void Entry::reset()
   mGrpId = -1;
   callGraph   = entryCallGraph;
   callerGraph = entryCallerGraph;
+  referencedByRelation = entryReferencedByRelation;
+  referencesRelation   = entryReferencesRelation;
   section = EMPTY_SEC;
   mtype   = Method;
   virt    = Normal;
