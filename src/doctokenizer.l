@@ -54,6 +54,7 @@ static const char *g_inputString;
 static QCString g_fileName;
 static bool g_insidePre;
 static int g_sharpCount=0;
+static int g_roundCount=0;
 
 // context for section finding phase
 static Definition  *g_definition;
@@ -449,6 +450,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 %x St_Anchor
 %x St_Snippet
 %x St_SetScope
+%x St_SetScopeRoundEnd
 %x St_SetScopeEnd
 %x St_Options
 
@@ -1069,6 +1071,12 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_sharpCount=1;
                          BEGIN(St_SetScopeEnd);
                        }
+<St_SetScope>{SCOPEMASK}"(" {
+                         g_token->name = yytext;
+                         g_token->name = g_token->name.stripWhiteSpace();
+                         g_roundCount=1;
+                         BEGIN(St_SetScopeRoundEnd);
+                       }
 <St_SetScope>{BLANK}   {
                        }
 <St_SetScopeEnd>"<"    {
@@ -1084,6 +1092,21 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          }
                        }
 <St_SetScopeEnd>.      {
+                         g_token->name += yytext;
+                       }
+<St_SetScopeRoundEnd>")"    {
+                         g_token->name += yytext;
+                         g_roundCount++;
+                       }
+<St_SetScopeRoundEnd>")"    {
+                         g_token->name += yytext;
+                         g_roundCount--;
+                         if (g_roundCount<=0)
+                         {
+                           return TK_WORD;
+                         }
+                       }
+<St_SetScopeRoundEnd>.      {
                          g_token->name += yytext;
                        }
 <St_Ref2>"&"{ID}";"    { /* symbol */
