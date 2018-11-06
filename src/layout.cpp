@@ -497,9 +497,9 @@ class LayoutParser : public QXmlDefaultHandler
                                            SrcLangExt_VHDL,theTranslator->trPackages(),
                                            SrcLangExt_IDL,theTranslator->trModules(),
                                            SrcLangExt_Fortran,theTranslator->trModules(),
-                                           SrcLangExt_Slice,sliceOpt ? theTranslator->trModules() :
-                                             theTranslator->trNamespaces()
-                                         )));
+                                           SrcLangExt_Slice,(sliceOpt ?
+                                                             theTranslator->trModules() :
+                                                             theTranslator->trNamespaces()))));
       m_sHandler.insert("namespace/memberdecl/constantgroups",
           new StartElementHandlerSection(this,LayoutDocEntry::NamespaceNestedConstantGroups,&LayoutParser::startSectionEntry,
                                          theTranslator->trConstantGroups()));
