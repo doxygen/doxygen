@@ -1892,7 +1892,7 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
   QCString id;
   if (isHRuler(data,size))
   {
-    out.addStr("<hr>\n");
+    out.addStr("\n<hr>\n");
   }
   else if ((level=isAtxHeader(data,size,header,id)))
   {
@@ -2327,7 +2327,7 @@ static QCString processBlocks(const QCString &s,int indent)
         }
         else
         {
-          out.addStr("<hr>\n");
+          out.addStr("\n<hr>\n");
         }
         pi=-1;
         i=end;
