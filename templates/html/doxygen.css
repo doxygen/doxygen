@@ -701,17 +701,17 @@ dl.reflist dd {
         padding-left: 0px;
 }       
 
-.params .paramname, .retval .paramname {
+.params .paramname, .retval .paramname, .tparams .paramname {
         font-weight: bold;
         vertical-align: top;
 }
         
-.params .paramtype {
+.params .paramtype, .tparams .paramtype {
         font-style: italic;
         vertical-align: top;
 }       
         
-.params .paramdir {
+.params .paramdir, .tparams .paramdir {
         font-family: "courier new",courier,monospace;
         vertical-align: top;
 }
