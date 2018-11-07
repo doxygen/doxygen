@@ -1437,6 +1437,9 @@ reparsetoken:
         case CMD_MINUS:
           children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
           break;
+        case CMD_EQUAL:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Equal));
+          break;
         case CMD_EMPHASIS:
           {
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
@@ -3257,6 +3260,7 @@ int DocIndexEntry::parse()
         case CMD_PUNT:    m_entry+='.';  break;
         case CMD_PLUS:    m_entry+='+';  break;
         case CMD_MINUS:   m_entry+='-';  break;
+        case CMD_EQUAL:   m_entry+='=';  break;
         default:
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command %s found as argument of \\addindex",
                     qPrint(g_token->name));
@@ -5420,6 +5424,9 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_MINUS:
       m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
       break;
+    case CMD_EQUAL:
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Equal));
+      break;
     case CMD_SA:
       g_inSeeBlock=TRUE;
       retval = handleSimpleSection(DocSimpleSect::See);
@@ -6974,6 +6981,9 @@ void DocText::parse()
             break;
           case CMD_MINUS:
             m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+            break;
+          case CMD_EQUAL:
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Equal));
             break;
           default:
             warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command `%s' found",

@@ -111,6 +111,7 @@ CommandMap cmdMap[] =
   { "\\",            CMD_BSLASH },
   { "@",             CMD_AT },
   { "<",             CMD_LESS },
+  { "=",             CMD_EQUAL },
   { ">",             CMD_GREATER },
   { "&",             CMD_AMP },
   { "$",             CMD_DOLLAR },

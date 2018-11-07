@@ -213,6 +213,7 @@ documentation:
 \refitem cmdamp \\\&
 \refitem cmdtilde \\~
 \refitem cmdlt \\\<
+\refitem cmdeq \\=
 \refitem cmdgt \\\>
 \refitem cmdhash \\\#
 \refitem cmdperc \\\%
@@ -3432,6 +3433,14 @@ class Receiver
   prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" is enabled
   or to prevent starting a numbered list when the dot follows a number at
   the start of a line.
+
+<hr>
+\section cmdeq \\=
+
+  \addindex \\=
+  This command writes an equal sign (`=`) to the output. This
+  character sequence has to be escaped in some cases, because it is used
+  in Markdown header processing.
 
 <hr>
 \section cmddcolon \\::
