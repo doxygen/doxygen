@@ -1837,6 +1837,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const char *name)
     { return QCString("Graf de dependència de directoris per a ")+name+":"; }
+
 };
 
 #endif

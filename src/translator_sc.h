@@ -1764,6 +1764,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     {
       return "Ограничења типова";
     }
+
 };
 
 #endif

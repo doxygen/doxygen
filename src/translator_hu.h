@@ -2020,6 +2020,9 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       result+="lett létrehozva:";
       return result;
     }
+
+//////////////////////////////////////////////////////////////////////////
+
 };
 
 #endif

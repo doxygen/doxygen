@@ -2040,6 +2040,9 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
       else        result+="z následujících souborů:";
       return result;
     }
+
+//////////////////////////////////////////////////////////////////////////
+
 };
 
 #endif // TRANSLATOR_CZ_H

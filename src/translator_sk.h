@@ -1970,6 +1970,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       else        result+="z nasledujúcich súborov:";
       return result;
     }
+
+//////////////////////////////////////////////////////////////////////////
 };
 
 #endif // TRANSLATOR_SK_H

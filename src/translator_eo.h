@@ -1940,6 +1940,9 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     {
       return "Fasona Superrigardo";
     }
+
+//////////////////////////////////////////////////////////////////////////
+
 };
 
 #endif

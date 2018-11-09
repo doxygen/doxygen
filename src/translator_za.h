@@ -1717,6 +1717,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     {
       return "Tipe Limiete";
     }
+
 };
 
 #endif

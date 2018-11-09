@@ -1811,6 +1811,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const char *name)
     { return QCString("Bagan dependensi directori untuk ")+name+":"; }
+
 };
 
 #endif

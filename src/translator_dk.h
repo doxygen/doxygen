@@ -1765,6 +1765,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
       return QCString("Afhængighedsgraf for katalog ")+name+":";
     }
 
+
 /*---------- For internal use: ----------------------------------------*/
   protected:
 	/*! For easy flexible-noun implementation.

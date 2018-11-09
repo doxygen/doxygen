@@ -1976,6 +1976,9 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
       result+=":";
       return result;
     }
+
+//////////////////////////////////////////////////////////////////////////
+
 };
 
 #endif

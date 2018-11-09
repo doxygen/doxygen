@@ -1778,6 +1778,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       }
       return convertDigitsToFarsi(sdate);
     }
+
 };
 
 #endif

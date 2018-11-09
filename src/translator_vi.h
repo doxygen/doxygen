@@ -1749,6 +1749,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return "Ràng buộc của kiểu (Type)";
     }
+
 };
 
 #endif

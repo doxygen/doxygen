@@ -2137,6 +2137,8 @@ class TranslatorPortuguese : public TranslatorAdapter_1_8_15
         }
         virtual QCString trCustomReference(const char *name)
         { return "Referência de " + QCString(name); }
+
+        //////////////////////////////////////////////////////////////////////////
 };
 
 #endif

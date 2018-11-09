@@ -1566,6 +1566,11 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "Dodatni naslijeđeni članovi"; }
+
+//////////////////////////////////////////////////////////////////////////
+
 };
 
 #endif
+
+

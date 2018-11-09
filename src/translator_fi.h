@@ -1853,6 +1853,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     {
       return "Tyyppien rajoitteet"; // "Type Constraints"
     }
+
 };
 
 #endif

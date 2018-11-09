@@ -1508,6 +1508,8 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
        return "Perkraunamas metodas sukurtas patogumui. "
               "Jis skiriasi nuo aukščiau minėto tik argumetais.";
     }
+
+
 };
 
 #endif

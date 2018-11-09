@@ -1919,6 +1919,9 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
       // single is true implies a single file
       return "该单例的文档由下列文件生成:";
     }
+
+//////////////////////////////////////////////////////////////////////////
 };
 
 #endif
+

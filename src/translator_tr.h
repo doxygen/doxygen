@@ -1815,6 +1815,8 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 		}
 		return sdate;
     }
+
+
 };
 
 #endif

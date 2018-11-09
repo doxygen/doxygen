@@ -1967,6 +1967,8 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       if (single) result+="а:"; else result+="ов:";
       return result;
     }
+
+///////////////////////////////////////////////////////////////////////
 };
 
 #endif

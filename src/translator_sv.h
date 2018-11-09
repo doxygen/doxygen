@@ -1952,7 +1952,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_8_15
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      QCString opt = enable ? "aktivera" : "inaktivera";
+      QCString opt = enable ? "aktivera" : "inaktivera"; 
       return "klicka för att "+opt+" panelsynkronisering";
     }
 
@@ -2060,6 +2060,8 @@ class TranslatorSwedish : public TranslatorAdapter_1_8_15
       if (single) result+=":"; else result+="er:";
       return result;
     }
+
+
 };
 
 #endif

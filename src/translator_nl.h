@@ -1708,6 +1708,8 @@ class TranslatorDutch : public TranslatorAdapter_1_8_15
     }
     virtual QCString trCustomReference(const char *name)
     { return QCString(name)+" Referentie"; }
+
+    //////////////////////////////////////////////////////////////////////////
 };
 
 #endif
