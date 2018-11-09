@@ -923,6 +923,7 @@ P	  [pP]
 UL        [uU][lL]
 OL	  [oO][lL]
 DL	  [dD][lL]
+TABLECMDS ([tT][dDhHrR])|{TABLE}
 IMG       [iI][mM][gG]
 HR        [hH][rR]
 PARA      [pP][aA][rR][aA]
@@ -1033,6 +1034,17 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>("\\"[a-z_A-Z]+)+"\\"		{ // directory (or chain of commands!)
   					  addOutput(yytext);
   					}
+<Comment>"<"[/]?{TABLECMDS}{ATTR}">"	{ // HTML command that ends a xref description
+					   if (inContext==OutputXRef)
+					   {
+					    setOutput(OutputDoc);
+					    addOutput(yytext);
+					   }
+					   else
+					   {
+					     REJECT;
+					   }
+					}
 <Comment>"<"{DETAILEDHTML}{ATTR}">"	{ // HTML command that ends a brief description
 					  setOutput(OutputDoc);
 					  // continue with the same input
