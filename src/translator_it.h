@@ -1975,6 +1975,11 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
       if (single) result+="dal seguente file:"; else result+="dai seguenti file:";
       return result;
     }
+
+//////////////////////////////////////////////////////////////////////////
+
 };
 
 #endif
+
+

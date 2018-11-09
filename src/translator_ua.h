@@ -1908,6 +1908,10 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     {
       return "Огляд дизайну проекту";
     }
+
+//////////////////////////////////////////////////////////////////////////
+
 };
 
 #endif
+
