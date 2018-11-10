@@ -1017,7 +1017,7 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
 {
   ArgumentList *declAl = md->declArgumentList();
   ArgumentList *defAl = md->argumentList();
-  if (declAl!=0 && declAl->count()>0)
+  if (declAl!=0 && defAl!=0 && declAl->count()>0)
   {
     ArgumentListIterator declAli(*declAl);
     ArgumentListIterator defAli(*defAl);
