@@ -152,7 +152,7 @@ static bool mustBeOutsideParagraph(DocNode *n)
   return FALSE;
 }
 
-static QString htmlAttribsToString(const HtmlAttribList &attribs, const bool img_tag = FALSE)
+static QString htmlAttribsToString(const HtmlAttribList &attribs, bool img_tag = FALSE)
 {
   QString result;
   HtmlAttribListIterator li(attribs);
@@ -1547,7 +1547,19 @@ void HtmlDocVisitor::visitPre(DocImage *img)
 {
   if (img->type()==DocImage::Html)
   {
-    forceEndParagraph(img);
+    bool inlineImage = img->isInlineImage();
+    bool typeSVG = FALSE;
+
+    QCString url = img->url();
+    if (url.isEmpty())
+    {
+      typeSVG = (img->name().right(4)==".svg");
+    }
+    else
+    {
+      typeSVG = (url.right(4)==".svg");
+    }
+    if (!inlineImage && !typeSVG) forceEndParagraph(img);
     if (m_hide) return;
     QString baseName=img->name();
     int i;
@@ -1555,8 +1567,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       baseName=baseName.right(baseName.length()-i-1);
     }
-    m_t << "<div class=\"image\">" << endl;
-    QCString url = img->url();
+    if (!inlineImage && !typeSVG) m_t << "<div class=\"image\">" << endl;
     QCString sizeAttribs;
     if (!img->width().isEmpty())
     {
@@ -1578,7 +1589,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       {
         m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\""
             << baseName << "\"" << sizeAttribs << htmlAttribsToString(img->attribs())
-            << "/>" << endl;
+	    << (inlineImage ? " class=\"inline\"" : "/>\n");
       }
     }
     else
@@ -1592,13 +1603,24 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       {
         m_t << "<img src=\"" << correctURL(url,img->relPath()) << "\""
             << sizeAttribs << htmlAttribsToString(img->attribs(), TRUE)
-            << "/>" << endl;
+	    << (inlineImage ? " class=\"inline\"" : "/>\n");
       }
     }
     if (img->hasCaption())
     {
-      m_t << "<div class=\"caption\">" << endl;
-      m_t << getHtmlDirEmbedingChar(getTextDirByConfig(img));
+      if (inlineImage)
+      {
+       m_t << " title=\"";
+      }
+      else
+      {
+        m_t << "<div class=\"caption\">" << endl;
+        m_t << getHtmlDirEmbedingChar(getTextDirByConfig(img));
+      }
+    }
+    else if (inlineImage)
+    {
+      m_t << "/>" << endl;
     }
   }
   else // other format -> skip
@@ -1613,12 +1635,30 @@ void HtmlDocVisitor::visitPost(DocImage *img)
   if (img->type()==DocImage::Html)
   {
     if (m_hide) return;
+    bool inlineImage = img->isInlineImage();
+    bool typeSVG = FALSE;
+    QCString url = img->url();
+    if (url.isEmpty())
+    {
+      typeSVG = (img->name().right(4)==".svg");
+    }
+    else
+    {
+      typeSVG = (url.right(4)==".svg");
+    }
+    //if (!inlineImage && img->hasCaption())
     if (img->hasCaption())
     {
-      m_t << "</div>";
+      if (inlineImage)
+        m_t << "\"/>\n ";
+      else
+        m_t << "</div>";
     }
-    m_t << "</div>" << endl;
-    forceStartParagraph(img);
+    if (!inlineImage && !typeSVG)
+    {
+      m_t << "</div>" << endl;
+      forceStartParagraph(img);
+    }
   }
   else // other format
   {

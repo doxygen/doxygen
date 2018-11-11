@@ -153,14 +153,14 @@ class RTFDocVisitor : public DocVisitor
 
     void pushEnabled();
     void popEnabled();
-    void includePicturePreRTF(const QCString name, const bool isTypeRTF, const bool hasCaption);
-    void includePicturePostRTF(const bool isTypeRTF, const bool hasCaption);
-    void writeDotFile(const QCString &fileName, const bool hasCaption);
+    void includePicturePreRTF(const QCString name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
+    void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
+    void writeDotFile(const QCString &fileName, bool hasCaption);
     void writeDotFile(DocDotFile *);
-    void writeMscFile(const QCString &fileName, const bool hasCaption);
+    void writeMscFile(const QCString &fileName, bool hasCaption);
     void writeMscFile(DocMscFile *);
     void writeDiaFile(DocDiaFile *);
-    void writePlantUMLFile(const QCString &fileName, const bool hasCaption);
+    void writePlantUMLFile(const QCString &fileName, bool hasCaption);
 
     //--------------------------------------
     // state variables

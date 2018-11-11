@@ -2978,10 +2978,10 @@ void DocVhdlFlow::parse()
 //---------------------------------------------------------------------------
 
 DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString &name,
-                   Type t,const QCString &url) : 
-      m_attribs(attribs), m_name(name), 
+                   Type t,const QCString &url, bool inlineImage) :
+      m_attribs(attribs), m_name(name),
       m_type(t), m_relPath(g_relPath),
-      m_url(url)
+      m_url(url), m_inlineImage(inlineImage)
 {
   m_parent = parent;
 }
@@ -5061,13 +5061,50 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
 void DocPara::handleImage(const QCString &cmdName)
 {
   QCString saveCmdName = cmdName;
+  bool inlineImage = FALSE;
 
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+    if (tok==TK_WORD)
+    {
+      if (g_token->name == "{")
+      {
+        while ((tok=doctokenizerYYlex())==TK_WHITESPACE);
+        if (g_token->name != "}") // non-empty option string
+	{
+          if (g_token->name.lower() != "inline")
+          {
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"currently only 'inline' suported as option of %s command",
+              qPrint(saveCmdName));
+          }
+          else
+          {
+            inlineImage = TRUE;
+          }
+          while ((tok=doctokenizerYYlex())==TK_WHITESPACE);
+	}
+        if (!((tok==TK_WORD) && (g_token->name == "}")))
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"expected closing '}' at option of %s command",
+            qPrint(saveCmdName));
+          return;
+        }
+        tok=doctokenizerYYlex();
+        if (tok!=TK_WHITESPACE)
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command with option",
+            qPrint(saveCmdName));
+          return;
+        }
+      }
+    }
+    else
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
         qPrint(saveCmdName));
-    return;
+      return;
+    }
   }
   tok=doctokenizerYYlex();
   if (tok!=TK_WORD && tok!=TK_LNKWORD)
@@ -5106,7 +5143,7 @@ void DocPara::handleImage(const QCString &cmdName)
     return;
   }
   HtmlAttribList attrList;
-  DocImage *img = new DocImage(this,attrList,findAndCopyImage(g_token->name,t),t);
+  DocImage *img = new DocImage(this,attrList,findAndCopyImage(g_token->name,t),t,"",inlineImage);
   m_children.append(img);
   img->parse();
 }

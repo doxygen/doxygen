@@ -510,7 +510,7 @@ class PrintDocVisitor : public DocVisitor
         case DocImage::Rtf:     printf("rtf"); break;
         case DocImage::DocBook: printf("docbook"); break;
       }
-      printf("\" %s %s>\n",img->width().data(),img->height().data());
+      printf("\" %s %s inline=\"%s\">\n",img->width().data(),img->height().data(),img->isInlineImage() ? "yes" : "no");
     }
     void visitPost(DocImage *) 
     {

@@ -40,10 +40,10 @@ static void visitCaption(XmlDocVisitor *parent, QList<DocNode> children)
   for (cli.toFirst();(n=cli.current());++cli) n->accept(parent);
 }
 
-static void visitPreStart(FTextStream &t, const char *cmd, const bool doCaption, 
+static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption, 
                           XmlDocVisitor *parent, QList<DocNode> children, 
                           const QCString &name, bool writeType, DocImage::Type type, const QCString &width, 
-                          const QCString &height)
+                          const QCString &height, bool inlineImage = FALSE)
 {
   t << "<" << cmd;
   if (writeType)
@@ -70,6 +70,7 @@ static void visitPreStart(FTextStream &t, const char *cmd, const bool doCaption,
   {
     t << " height=\"" << convertToXML(height) << "\"";
   }
+  if (inlineImage) t << " inline=\"yes\">";
   if (doCaption)
   {
     t << " caption=\"";
@@ -788,7 +789,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
-  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height());
+  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height(), img ->isInlineImage());
 
   // copy the image to the output dir
   FileDef *fd;

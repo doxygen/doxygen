@@ -26,8 +26,8 @@ class FTextStream;
 class CodeOutputInterface;
 class QCString;
 
-void visitPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCString width,  QCString height);
-void visitPostEnd(FTextStream &t, const bool hasCaption);
+void visitPreStart(FTextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage=FALSE);
+void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage = FALSE);
 
 /*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor : public DocVisitor

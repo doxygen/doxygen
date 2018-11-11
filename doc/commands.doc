@@ -3130,7 +3130,7 @@ class Receiver
               \ref cmddocbookonly "\\docbookonly".
 
 <hr>
-\section cmdimage \\image <format> <file> ["caption"] [<sizeindication>=<size>]
+\section cmdimage \\image['{'[option]'}'] <format> <file> ["caption"] [<sizeindication>=<size>]
 
   \addindex \\image
   Inserts an image into the documentation. This command is format
@@ -3161,6 +3161,10 @@ class Receiver
   The \c sizeindication can specify the width or height to be used (or a combination).
   The size specifier in \LaTeX (for example `10cm` or
   `4in` or a symbolic width like `\\textwidth`).
+
+  Currently only the option `inline` is supported. In case the option `inline` is
+  specified the image is placed "in the line", when a caption s present it is shown 
+  in HTML as tooltip (ignored for the other formats).
 
   Here is example of a comment block:
 

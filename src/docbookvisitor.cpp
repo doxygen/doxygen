@@ -48,7 +48,8 @@
 #define DB_VIS_C2(y)
 #define DB_VIS_C2a(x,y)
 #endif
-void visitPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCString width,  QCString height)
+
+void visitPreStart(FTextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage)
 {
   QCString tmpStr;
   if (hasCaption)
@@ -68,7 +69,7 @@ void visitPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCStri
   }
   else
   {
-    t << " width=\"50%\"";
+    if (!inlineImage) t << " width=\"50%\"";
   }
   if (!height.isEmpty())
   {
@@ -83,7 +84,7 @@ void visitPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCStri
   }
 }
 
-void visitPostEnd(FTextStream &t, const bool hasCaption)
+void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage)
 {
   t << endl;
   if (hasCaption)
@@ -1164,7 +1165,7 @@ DB_VIS_C
     {
       baseName=baseName.right(baseName.length()-i-1);
     }
-    visitPreStart(m_t, img -> hasCaption(), img->relPath() + baseName, img -> width(), img -> height());
+    visitPreStart(m_t, img -> hasCaption(), img->relPath() + baseName, img -> width(), img -> height(),img -> isInlineImage());
   }
   else
   {
@@ -1179,7 +1180,7 @@ DB_VIS_C
   if (img->type()==DocImage::DocBook)
   {
     if (m_hide) return;
-    visitPostEnd(m_t, img -> hasCaption());
+    visitPostEnd(m_t, img -> hasCaption(),img -> isInlineImage());
     // copy the image to the output dir
     QCString baseName=img->name();
     int i;
