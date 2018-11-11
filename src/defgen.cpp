@@ -146,7 +146,7 @@ void generateDEFForMember(MemberDef *md,
     stringToArgumentList(md->argsString(),declAl);
     QCString fcnPrefix = "  " + memPrefix + "param-";
 
-    if (declAl->count()>0)
+    if (defAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);

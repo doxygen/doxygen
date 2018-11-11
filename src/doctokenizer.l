@@ -1074,7 +1074,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_IntRef>{BLANK}+"\"" {
                          BEGIN(St_Ref2);
                        }
-<St_SetScope>({SCOPEMASK}|{ANONNS}){BLANK} {
+<St_SetScope>({SCOPEMASK}|{ANONNS}){BLANK}|{FILEMASK} {
                          g_token->name = yytext;
                          g_token->name = g_token->name.stripWhiteSpace();
 			 return TK_WORD;

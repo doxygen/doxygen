@@ -1616,7 +1616,7 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
     m_output.openList("parameters");
     ArgumentList *declAl = md->declArgumentList();
     ArgumentList *defAl  = md->argumentList();
-    if (declAl && declAl->count()>0)
+    if (declAl && defAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
