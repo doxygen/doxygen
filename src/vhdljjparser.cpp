@@ -290,6 +290,7 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
     current->stat=true;
   }
 
+  setParseMore(FALSE);
   while (parseCommentBlock(
         g_thisParser,
         current,

@@ -71,6 +71,10 @@ bool parseCommentBlock(ParserInterface *parser,
                        int &position,
                        bool &newEntryNeeded
 		     );
+/**
+ * Routine to set the state of the `parseCommentBlock` in respect to `\if` stack
+ */
+void setParseMore(const bool state);
 
 void groupEnterFile(const char *file,int line);
 void groupLeaveFile(const char *file,int line);
