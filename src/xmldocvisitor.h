@@ -41,6 +41,7 @@ class XmlDocVisitor : public DocVisitor
     void visit(DocLinkedWord *);
     void visit(DocWhiteSpace *);
     void visit(DocSymbol *);
+    void visit(DocEmoji *);
     void visit(DocURL *);
     void visit(DocLineBreak *);
     void visit(DocHorRuler *);

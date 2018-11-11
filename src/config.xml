@@ -2769,6 +2769,16 @@ or
 ]]>
       </docs>
     </option>
+    <option type='string' id='LATEX_EMOJI_DIRECTORY' format='dir' defval='' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute) 
+ path from which the emoji images will be read.
+ If a relative path is entered, it will be relative to the \ref cfg_latex_output "LATEX_OUTPUT"
+ directory. If left blank the \ref cfg_latex_output "LATEX_OUTPUT" directory will be used.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='RTF' docs='Configuration options related to the RTF output'>
     <option type='bool' id='GENERATE_RTF' defval='0'>

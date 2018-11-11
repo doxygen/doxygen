@@ -1,0 +1,166 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2018 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page emojisup Emoji support
+
+The [Unicode consortium](http://www.unicode.org/) has defined a set of
+[emoji](https://en.wikipedia.org/wiki/Emoji) with the corresponding unicode
+sequences and a so called "CLDR short name". The current version a v11.0 and can be found at
+[Full Emoji List, v11.0](https://unicode.org/emoji/charts/full-emoji-list.html) furthermore there is the list with 
+[Full Emoji Modifier Sequences, v11.0](http://www.unicode.org/emoji/charts/full-emoji-modifiers.html).
+
+A common way to denote an emoji is by means of `:<text>:`,
+doxygen supports the emoji as mentioned in the above mentioned unicode emoji lists in this way
+by means of the "CLDR short name" with the exception that in case a colon (`:`) is in the
+"CLDR short name" this colon has to be removed.
+Furthermore doxygen supports the list of emoji as used by github (based on the list 
+https://api.github.com/emojis). In this list also a reference is given to the unicode codes (just the
+first and last) and these unicodes are mapped onto the official unicode sequences.
+In case the "CLDR short name" and the "github name" are the same the reference from the 
+"CLDR short name" has precedence.
+
+Implementation
+
+For the different doxygen output types there is an output defined:
+- Unicode code sequence, the actual representation is depending on the possibilities of the fonts loaded:
+  - HTML
+  - XML
+  - DocBook
+  - RTF, converted to UTF-16 representation.
+- Image
+  - \LaTeX, in case the image can be found (see \ref emojiimage "Emoji image retrieval") otherwise the plain emoji text (i.e. `:<text>:`) is displayed
+- plain emoji text (i.e. `:<text>:`)
+  - man
+  - perl
+
+\anchor emojiimage Emoji image retrieval
+
+In the  lists 
+[Full Emoji List, v11.0](https://unicode.org/emoji/charts/full-emoji-list.html) and
+[Full Emoji Modifier Sequences, v11.0](http://www.unicode.org/emoji/charts/full-emoji-modifiers.html).
+define images for the different vendors. These images can be retrieved by means of the following procedure (based on the code from Henning Pohl, https://github.com/henningpohl/latex-emoji):
+\code{.py}
+from bs4 import BeautifulSoup
+import base64
+import os
+import requests
+
+# http://www.unicode.org/emoji/charts/index.html
+# http://www.unicode.org/emoji/charts/full-emoji-list.html
+PAGE_URL = 'http://www.unicode.org/emoji/charts/full-emoji-list.html'
+PAGE_URL_SKIN = 'http://www.unicode.org/emoji/charts/full-emoji-modifiers.html'
+PAGE = 'full-emoji-list.html'
+PAGE_SKIN = 'full-emoji-modifiers.html'
+
+
+def get_header_names(header):
+    cols = header.find_all('th')
+    cols = [c.get_text() for c in cols]
+    cols = [c.replace('*','') for c in cols]
+    cols = [c.lower() for c in cols]
+    return cols
+
+def extract_image(column):
+    if 'miss' in column['class']:
+        return None
+
+    if 'miss7' in column['class']:
+        return None
+
+    data = column.img['src']
+    data_start = data.find("base64,")
+    if data_start == -1:
+        return None
+    
+    data = base64.b64decode(data[data_start + len("base64,"):])
+    return data
+
+def save_image(folder, imgSrc, filename):
+    if os.path.exists(folder) is False:
+        os.mkdir(folder)
+
+    filename = os.path.join(folder, filename)
+    if os.path.exists(filename):
+        return
+
+    img = extract_image(imgSrc)
+    if img is not None:
+        with open(filename, 'wb') as out:
+            out.write(img)
+
+def scrape(page_url, page):
+    # Possibilities to obtain the basic data:
+    # - use request.get directly
+    soup = BeautifulSoup(requests.get(page_url).text, "html5lib")
+    # - download file (e.g. with wget http://www.unicode.org/emoji/charts/full-emoji-list.html)
+    # with open(page) as fp:
+    #     soup = BeautifulSoup(fp,"html5lib")
+
+    table = soup('table')[0]
+
+    # for version 11.0
+    # first row: smileys
+    # second row: face smileys
+    # third row: row with vendors, i.e. the one we want
+    header = table.find_all('tr')[2]
+    keys = get_header_names(header)
+
+    for row in header.find_next_siblings('tr'):
+        fields = {k:c for k, c in zip(keys, row.find_all('td')) }
+        if 'code' not in fields:
+            continue
+
+        codes = fields['code'].text.replace('U+', '').split(' ')
+        filename = "-".join(codes) + ".png"
+
+        save_image('ios', fields['appl'], filename)
+        save_image('android', fields['goog'], filename)
+        save_image('twitter', fields['twtr'], filename)
+        save_image('windows', fields['wind'], filename)
+        save_image('one', fields['one'], filename)
+        save_image('facebook', fields['fb'], filename)
+        save_image('samsung', fields['sams'], filename)
+        #save_image('gmail', fields['gmail'], filename)
+        #save_image('softbank', fields['sb'], filename)
+        #save_image('docomo', fields['dcm'], filename)
+        #save_image('kddi', fields['kddi'], filename)
+        #save_image('bw', fields['chart'], filename)
+
+if __name__ == '__main__':
+    scrape(PAGE_URL, PAGE)
+    scrape(PAGE_URL_SKIN, PAGE_SKIN)
+\endcode
+This results in a number of directories with the supported images. By means of the doxygen configuration parameter
+\ref cfg_latex_emoji_directory "LATEX_EMOJI_DIRECTORY" the requested directory can be selected.
+
+It is also possible to use images from other sources or mix images from different sources, the only requirement is that the filename represents the unicode of the emoji. e.g. if we have the emoji <tt>\:grinning face with big eyes\:</tt> (also known as <tt>\:smiley\:</tt>) the coresponding unicode is `U+1F603` and the name of the file is `1F603.png`.<br>
+For a more complex emoji like <tt>\:keycap 1\:</tt> (also known as <tt>\:one\:</tt>) the coresponding unicode sequence is `U+0031U+FE0FU+20E3` and the name of the file is `0031-FE0F-20E3.png`.
+
+
+Note that when you want to use a colon (`:`) in your text it might be necessary to escape the colon (see \ref cmdcolon "\\:") as it might conflict with a, possible, emoji sequence.
+  
+
+For a overview of the supported emoji one can issue the comand:<br>
+`doxygen.exe -f emoji <outputFileName>`
+
+
+\htmlonly
+Go to the <a href="langhowto.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+ 

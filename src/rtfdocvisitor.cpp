@@ -34,6 +34,7 @@
 #include "filedef.h"
 #include "config.h"
 #include "htmlentity.h"
+#include "emoji.h"
 #include "plantuml.h"
 
 //#define DBG_RTF(x) m_t << x
@@ -132,6 +133,48 @@ void RTFDocVisitor::visit(DocSymbol *s)
   else
   {
     err("RTF: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+  }
+  m_lastIsPara=FALSE;
+}
+
+void RTFDocVisitor::visit(DocEmoji *s)
+{
+  if (m_hide) return;
+  DBG_RTF("{\\comment RTFDocVisitor::visit(DocEmoji)}\n");
+  const char *res = EmojiEntityMapper::instance()->rtf(s->emoji());
+  if (res)
+  {
+    const char *p = res;
+    int val = 0;
+    int val1 = 0;
+    while (*p)
+    {
+      switch(*p)
+      {
+        case '&': case '#': case 'x':
+          break;
+        case ';':
+	  val1 = val;
+	  val = 0xd800 + ( ( val1 - 0x10000 ) & 0xffc00 ) / 0x400 - 0x10000;
+          m_t << "\\u" << val << "?";
+          val = 0xdC00 + ( ( val1 - 0x10000 ) & 0x3ff ) - 0x10000 ;
+          m_t << "\\u" << val << "?";
+          val = 0;
+          break;
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+          val = val * 16 + *p - '0';
+          break;
+        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+          val = val * 16 + *p - 'a' + 10;
+          break;
+      }
+      p++;
+    }
+  }
+  else
+  {
+    err("RTF: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
   }
   m_lastIsPara=FALSE;
 }

@@ -22,6 +22,7 @@
 #include <qglobal.h>
 #include "docvisitor.h"
 #include "htmlentity.h"
+#include "emoji.h"
 #include "message.h"
 
 /*! Concrete visitor implementation for pretty printing */
@@ -66,6 +67,19 @@ class PrintDocVisitor : public DocVisitor
       else
       {
         printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+      }
+    }
+    void visit(DocEmoji *s)
+    {
+      indent_leaf();
+      const char *res = EmojiEntityMapper::instance()->utf8(s->emoji());
+      if (res)
+      {
+        printf("%s",res);
+      }
+      else
+      {
+        printf("print: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
       }
     }
     void visit(DocURL *u)

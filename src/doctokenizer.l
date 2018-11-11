@@ -125,6 +125,7 @@ const char *tokToString(int token)
     case TK_RCSTAG:      return "TK_RCSTAG";
     case TK_URL:         return "TK_URL";
     case TK_COMMAND_BS:  return "TK_COMMAND_BS";
+    case TK_EMOJI:       return "TK_EMOJI";
   }
   return "ERROR";
 }
@@ -335,6 +336,7 @@ CMD       ("\\"|"@")
 WS        [ \t\r\n]
 NONWS     [^ \t\r\n]
 BLANK     [ \t\r]
+EMOJI     (":"[a-z_A-Z0-9\x80-\xFF"'+()&\*\.!,#-]":"|":"[a-z_A-Z0-9\x80-\xFF"'+()&\*\.!,#-][a-z_A-Z0-9\x80-\xFF "'+()&\*\.!,#-]*[a-z_A-Z0-9\x80-\xFF"'+()&\*\.!,#-]":")
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
@@ -361,6 +363,7 @@ SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
 SPCMD2    {CMD}[\\@<>&$#%~".+|-]
 SPCMD3    {CMD}form#[0-9]+
 SPCMD4    {CMD}"::"
+SPCMD5    {CMD}":"
 INOUT	  "inout"|"in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 VARARGS   "..."
@@ -586,6 +589,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                        }
 <St_Para>{SPCMD1}      |
 <St_Para>{SPCMD2}      |
+<St_Para>{SPCMD5}      |
 <St_Para>{SPCMD4}      { /* special command */
                          g_token->name = yytext+1;
 			 g_token->name = g_token->name.stripWhiteSpace();
@@ -676,6 +680,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Para,St_Text>"&"{ID}";" { /* special symbol */ 
                          g_token->name = yytext;
                          return TK_SYMBOL;
+                       }
+<St_Para,St_Text>{EMOJI} { /* emoji symbol */ 
+                         g_token->name = yytext;
+                         return TK_EMOJI;
                        }
 
   /********* patterns for linkable words ******************/
@@ -923,6 +931,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = yytext;
   		         return TK_SYMBOL;
                        }
+<St_TitleN>{EMOJI}     { /* emoji */
+                         g_token->name = yytext;
+  		         return TK_EMOJI;
+                       }
 <St_TitleN>{HTMLTAG}   {
   		       }
 <St_TitleN>{SPCMD1}    |   
@@ -958,6 +970,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_TitleQ>"&"{ID}";"  { /* symbol */
                          g_token->name = yytext;
   		         return TK_SYMBOL;
+                       }
+<St_TitleQ>{EMOJI}  { /* emoji */
+                         g_token->name = yytext;
+  		         return TK_EMOJI;
                        }
 <St_TitleQ>{SPCMD1}    |   
 <St_TitleQ>{SPCMD2}    { /* special command */ 
@@ -1089,6 +1105,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Ref2>"&"{ID}";"    { /* symbol */
                          g_token->name = yytext;
   		         return TK_SYMBOL;
+                       }
+<St_Ref2>{EMOJI}    { /* emoji */
+                         g_token->name = yytext;
+  		         return TK_EMOJI;
                        }
 <St_Ref2>{SPCMD1}      |   
 <St_Ref2>{SPCMD2}      { /* special command */ 

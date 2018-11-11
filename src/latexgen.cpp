@@ -485,6 +485,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   if (Config_getBool(LATEX_BATCHMODE))
     t << "\\batchmode\n";
 
+  // to overcome  problems wit too many open files
+  t << "\\let\\mypdfximage\\pdfximage"
+       "\\def\\pdfximage{\\immediate\\mypdfximage}";
+
   // Set document class depending on configuration
   QCString documentClass;
   if (Config_getBool(COMPACT_LATEX))
@@ -563,6 +567,18 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "}\n"
        "\\newcommand{\\+}{\\discretionary{\\mbox{\\scriptsize$\\hookleftarrow$}}{}{}}\n"
        "\n";
+
+   QCString emojiDir=Config_getString(LATEX_EMOJI_DIRECTORY);
+   if (emojiDir.isEmpty()) emojiDir = ".";
+   emojiDir = substitute(emojiDir,"\\","/");
+   t << "% Arguments of doxygenemoji:\n"
+        "% 1) ':<text>:' form of the emoji, already \"LaTeX\"-escaped\n"
+        "% 2) unicode of the emoji inlorm like: 'U+1F603' or 'U+0031U+FE0FU+20E3' depending on the emoji\n"
+        "% 3) file name in form like: '1F603' or '0031-FE0F-20E3' depending on the emoji\n"
+	"% in case image exist use this otherwise use the ':<text>:' form\n";
+   t << "\\newcommand{\\doxygenemoji}[3]{%\n"
+        "  \\IfFileExists{" << emojiDir << "/#3.png}{\\raisebox{-0.1em}{\\includegraphics[height=0.9em]{" << emojiDir << "/#3.png}}}{#1}%\n"
+        "}\n";
 
   // Define page & text layout
   QCString paperName=Config_getEnum(PAPER_TYPE);

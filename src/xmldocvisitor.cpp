@@ -31,6 +31,7 @@
 #include "filename.h"
 #include "config.h"
 #include "htmlentity.h"
+#include "emoji.h"
 
 static void visitCaption(XmlDocVisitor *parent, QList<DocNode> children)
 {
@@ -130,6 +131,20 @@ void XmlDocVisitor::visit(DocSymbol *s)
   else
   {
     err("XML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+  }
+}
+
+void XmlDocVisitor::visit(DocEmoji *s)
+{
+  if (m_hide) return;
+  const char *res = EmojiEntityMapper::instance()->xml(s->emoji());
+  if (res)
+  {
+    m_t << res;
+  }
+  else
+  {
+    err("XML: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
   }
 }
 

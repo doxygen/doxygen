@@ -37,6 +37,7 @@ class DocAutoListItem;
 class DocPara;
 class DocRoot;
 class DocSymbol;
+class DocEmoji;
 class DocURL;
 class DocStyleChange;
 class DocSimpleSect;
@@ -101,6 +102,7 @@ class DocVisitor
     virtual void visit(DocWord *) = 0;
     virtual void visit(DocWhiteSpace *) = 0;
     virtual void visit(DocSymbol *) = 0;
+    virtual void visit(DocEmoji *) = 0;
     virtual void visit(DocURL *) = 0;
     virtual void visit(DocStyleChange *) = 0;
     virtual void visit(DocVerbatim *) = 0;

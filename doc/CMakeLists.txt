@@ -80,6 +80,7 @@ set(DOC_FILES
         starting.doc
         trouble.doc
         xmlcmds.doc
+        emojisup.doc
         language.tpl
         maintainers.txt
         translator.py

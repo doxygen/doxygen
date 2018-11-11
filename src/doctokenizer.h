@@ -41,6 +41,7 @@ enum Tokens
   TK_RCSTAG        = 10,
   TK_URL           = 11,
   TK_COMMAND_BS    = 12, //! Command starting with `\`
+  TK_EMOJI         = 13,
 
   RetVal_OK             = 0x10000,
   RetVal_SimpleSec      = 0x10001,
