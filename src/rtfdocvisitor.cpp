@@ -1137,27 +1137,37 @@ void RTFDocVisitor::visitPost(DocHtmlHeader *)
 void RTFDocVisitor::visitPre(DocImage *img)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocImage)}\n");
-  includePicturePreRTF(img->name(), img->type()==DocImage::Rtf, img->hasCaption());
+  includePicturePreRTF(img->name(), img->type()==DocImage::Rtf, img->hasCaption(), img->isInlineImage());
 }
-
-void RTFDocVisitor::includePicturePreRTF(const QCString name, const bool isTypeRTF, const bool hasCaption)
+void RTFDocVisitor::includePicturePreRTF(const QCString name, bool isTypeRTF, bool hasCaption, bool inlineImage)
 {
   if (isTypeRTF)
   {
-    m_t << "\\par" << endl;
-    m_t << "{" << endl;
-    m_t << rtf_Style_Reset << endl;
-    if (hasCaption || m_lastIsPara) m_t << "\\par" << endl;
-    m_t << "\\pard \\qc { \\field\\flddirty {\\*\\fldinst  INCLUDEPICTURE \"";
+    if (!inlineImage)
+    {
+      m_t << "\\par" << endl;
+      m_t << "{" << endl;
+      m_t << rtf_Style_Reset << endl;
+      if (hasCaption || m_lastIsPara) m_t << "\\par" << endl;
+      m_t << "\\pard \\qc ";
+    }
+    m_t << "{ \\field\\flddirty {\\*\\fldinst  INCLUDEPICTURE \"";
     m_t << name;
     m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt Image}}" << endl;
-    m_t << "\\par" << endl;
-    if (hasCaption)
+    if (!inlineImage)
     {
-       m_t << "\\pard \\qc \\b";
-       m_t << "{Image \\field\\flddirty{\\*\\fldinst { SEQ Image \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+      m_t << "\\par" << endl;
+      if (hasCaption)
+      {
+         m_t << "\\pard \\qc \\b";
+         m_t << "{Image \\field\\flddirty{\\*\\fldinst { SEQ Image \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+      }
+      m_lastIsPara=TRUE;
     }
-    m_lastIsPara=TRUE;
+    else
+    {
+      if (hasCaption) m_t << "{\\comment "; // to prevent caption to be shown
+    }
   }
   else // other format -> skip
   {
@@ -1169,22 +1179,29 @@ void RTFDocVisitor::includePicturePreRTF(const QCString name, const bool isTypeR
 void RTFDocVisitor::visitPost(DocImage *img)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocImage)}\n");
-  includePicturePostRTF(img->type()==DocImage::Rtf, img->hasCaption());
+  includePicturePostRTF(img->type()==DocImage::Rtf, img->hasCaption(), img->isInlineImage());
 }
 
-void RTFDocVisitor::includePicturePostRTF(const bool isTypeRTF, const bool hasCaption)
+void RTFDocVisitor::includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage)
 {
   if (isTypeRTF)
   {
     if (m_hide) return;
-    if (hasCaption)
+    if (inlineImage)
     {
-       m_t << "}" <<endl;
-       m_t << "\\par}" <<endl;
+      if (hasCaption) m_t << " }";
     }
     else
     {
-       m_t << "}" <<endl;
+      if (hasCaption)
+      {
+        m_t << "}" <<endl;
+        m_t << "\\par}" <<endl;
+      }
+      else
+      {
+        m_t << "}" <<endl;
+      }
     }
   }
   else
@@ -1800,7 +1817,7 @@ void RTFDocVisitor::writeDotFile(DocDotFile *df)
 {
   writeDotFile(df->file(), df->hasCaption());
 }
-void RTFDocVisitor::writeDotFile(const QCString &filename, const bool hasCaption)
+void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption)
 {
   QCString baseName=filename;
   int i;
@@ -1818,7 +1835,7 @@ void RTFDocVisitor::writeMscFile(DocMscFile *df)
 {
   writeMscFile(df->file(), df->hasCaption());
 }
-void RTFDocVisitor::writeMscFile(const QCString &fileName, const bool hasCaption)
+void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption)
 {
   QCString baseName=fileName;
   int i;
@@ -1844,7 +1861,7 @@ void RTFDocVisitor::writeDiaFile(DocDiaFile *df)
   includePicturePreRTF(baseName + ".png", true, df->hasCaption());
 }
 
-void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, const bool hasCaption)
+void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
 {
   QCString baseName=fileName;
   int i;

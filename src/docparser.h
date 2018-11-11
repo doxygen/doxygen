@@ -756,7 +756,7 @@ class DocImage : public CompAccept<DocImage>
   public:
     enum Type { Html, Latex, Rtf, DocBook };
     DocImage(DocNode *parent,const HtmlAttribList &attribs,
-             const QCString &name,Type t,const QCString &url=QCString());
+             const QCString &name,Type t,const QCString &url=QCString(), bool inlineImage = TRUE);
     Kind kind() const           { return Kind_Image; }
     Type type() const           { return m_type; }
     QCString name() const       { return m_name; }
@@ -765,6 +765,7 @@ class DocImage : public CompAccept<DocImage>
     QCString height() const     { return m_height; }
     QCString relPath() const    { return m_relPath; }
     QCString url() const        { return m_url; }
+    bool isInlineImage() const  { return m_inlineImage; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     void parse();
 
@@ -776,6 +777,7 @@ class DocImage : public CompAccept<DocImage>
     QCString  m_height;
     QCString  m_relPath;
     QCString  m_url;
+    bool      m_inlineImage;
 };
 
 /** Node representing a dot file */
