@@ -102,6 +102,8 @@ The second part forms a reference manual:
               can be used within the documentation.
 <li>Section \ref xmlcmds shows an overview of the C# style XML commands that
               can be used within the documentation.
+<li>Section \ref emojisup shows an introduction how emoji can be used within
+              the documentation.
 </ul>
 
 The third part provides information for developers:

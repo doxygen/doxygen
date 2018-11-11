@@ -43,6 +43,7 @@
 #include "section.h"
 #include "util.h"
 #include "htmlentity.h"
+#include "emoji.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
@@ -299,6 +300,7 @@ public:
   void visit(DocLinkedWord *);
   void visit(DocWhiteSpace *);
   void visit(DocSymbol *);
+  void visit(DocEmoji *);
   void visit(DocURL *);
   void visit(DocLineBreak *);
   void visit(DocHorRuler *);
@@ -608,6 +610,11 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
   {
     err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(sy->symbol(),TRUE));
   }
+}
+void PerlModDocVisitor::visit(DocEmoji *sy)
+{
+  enterText();
+  m_output.add(EmojiEntityMapper::instance()->perl(sy->emoji()));
 }
 
 void PerlModDocVisitor::visit(DocURL *u)

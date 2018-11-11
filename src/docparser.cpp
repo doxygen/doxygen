@@ -55,6 +55,7 @@
 #include "growbuf.h"
 #include "markdown.h"
 #include "htmlentity.h"
+#include "emoji.h"
 
 #define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? '@' : '\\')
 
@@ -868,7 +869,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   return FALSE;
 }
 //---------------------------------------------------------------------------
-inline void errorHandleDefaultToken(DocNode *parent,int tok, 
+inline void errorHandleDefaultToken(DocNode *parent,int tok,
                                QList<DocNode> &children,const char *txt)
 {
   switch (tok)
@@ -880,9 +881,13 @@ inline void errorHandleDefaultToken(DocNode *parent,int tok,
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a %s",
        qPrint(TK_COMMAND_CHAR(tok) + g_token->name), txt);
       break;
-    case TK_SYMBOL: 
+    case TK_SYMBOL:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found found as part of a %s",
            qPrint(g_token->name), txt);
+      break;
+    case TK_EMOJI:
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported emoji '%s' found while handling command %s",
+           qPrint(g_token->name),txt);
       break;
     default:
       children.append(new DocWord(parent,g_token->name));
@@ -1373,7 +1378,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
     handleWord)
 {
   DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
-  if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL || 
+  if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_EMOJI || tok==TK_URL ||
       tok==TK_COMMAND_AT || tok==TK_COMMAND_BS || tok==TK_HTMLTAG
      )
   {
@@ -1409,6 +1414,9 @@ reparsetoken:
           break;
         case CMD_HASH:
           children.append(new DocSymbol(parent,DocSymbol::Sym_Hash));
+          break;
+        case CMD_COLON:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Colon));
           break;
         case CMD_DCOLON:
           children.append(new DocSymbol(parent,DocSymbol::Sym_DoubleColon));
@@ -1701,6 +1709,19 @@ reparsetoken:
         }
       }
       break;
+    case TK_EMOJI: 
+      {
+        int s = DocEmoji::decodeEmoji(tokenName);
+        if (s!=0)
+        {
+          children.append(new DocEmoji(parent,s));
+        }
+        else
+        {
+          return FALSE;
+        }
+      }
+      break;
     case TK_WHITESPACE: 
     case TK_NEWPARA: 
 handlepara:
@@ -1777,6 +1798,12 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName)
 {
   DBG(("decodeSymbol(%s)\n",qPrint(symName)));
   return HtmlEntityMapper::instance()->name2sym(symName);
+}
+
+int DocEmoji::decodeEmoji(const QCString &symName)
+{
+  DBG(("decodeSymbol(%s)\n",qPrint(symName)));
+  return EmojiEntityMapper::instance()->name2sym(symName);
 }
 
 //---------------------------------------------------------------------------
@@ -2748,6 +2775,10 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found as part of a \\link",
               qPrint(g_token->name));
           break;
+        case TK_EMOJI: 
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported emoji '%s' found",
+              qPrint(g_token->name));
+          break;
         case TK_HTMLTAG:
           if (g_token->name!="see" || !isXmlLink)
           {
@@ -3050,7 +3081,6 @@ int DocHtmlHeader::parse()
               warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected html tag <%s%s> found within <h%d> context",
                   g_token->endTag?"/":"",qPrint(g_token->name),m_level);
             }
-            
           }
           break;
         default:
@@ -3089,7 +3119,6 @@ int DocHRef::parse()
       switch (tok)
       {
         case TK_HTMLTAG:
-
           {
             int tagId=Mappers::htmlTagMapper->map(g_token->name);
             if (tagId==HTML_A && g_token->endTag) // found </a> tag
@@ -3237,31 +3266,45 @@ int DocIndexEntry::parse()
           }
         }
         break;
-    case TK_COMMAND_AT:
+      case TK_EMOJI:
+        {
+          int s = DocEmoji::decodeEmoji(g_token->name);
+          if (s != 0)
+          {
+            m_entry+=g_token->name;
+          }
+          else
+          {
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected emoji found as argument of \\addindex");
+          }
+        }
+        break;
+      case TK_COMMAND_AT:
         // fall through
-    case TK_COMMAND_BS:
-      switch (Mappers::cmdMapper->map(g_token->name))
-      {
-        case CMD_BSLASH:  m_entry+='\\'; break;
-        case CMD_AT:      m_entry+='@';  break;
-        case CMD_LESS:    m_entry+='<';  break;
-        case CMD_GREATER: m_entry+='>';  break;
-        case CMD_AMP:     m_entry+='&';  break;
-        case CMD_DOLLAR:  m_entry+='$';  break;
-        case CMD_HASH:    m_entry+='#';  break;
-        case CMD_DCOLON:  m_entry+="::"; break;
-        case CMD_PERCENT: m_entry+='%';  break;
-        case CMD_NDASH:   m_entry+="--";  break;
-        case CMD_MDASH:   m_entry+="---";  break;
-        case CMD_QUOTE:   m_entry+='"';  break;
-        case CMD_PUNT:    m_entry+='.';  break;
-        case CMD_PLUS:    m_entry+='+';  break;
-        case CMD_MINUS:   m_entry+='-';  break;
-        default:
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command %s found as argument of \\addindex",
-                    qPrint(g_token->name));
-          break;
-      }
+      case TK_COMMAND_BS:
+        switch (Mappers::cmdMapper->map(g_token->name))
+        {
+          case CMD_BSLASH:  m_entry+='\\';  break;
+          case CMD_AT:      m_entry+='@';   break;
+          case CMD_LESS:    m_entry+='<';   break;
+          case CMD_GREATER: m_entry+='>';   break;
+          case CMD_AMP:     m_entry+='&';   break;
+          case CMD_DOLLAR:  m_entry+='$';   break;
+          case CMD_HASH:    m_entry+='#';   break;
+          case CMD_COLON:   m_entry+=":";   break;
+          case CMD_DCOLON:  m_entry+="::";  break;
+          case CMD_PERCENT: m_entry+='%';   break;
+          case CMD_NDASH:   m_entry+="--";  break;
+          case CMD_MDASH:   m_entry+="---"; break;
+          case CMD_QUOTE:   m_entry+='"';   break;
+          case CMD_PUNT:    m_entry+='.';   break;
+          case CMD_PLUS:    m_entry+='+';   break;
+          case CMD_MINUS:   m_entry+='-';   break;
+          default:
+               warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command %s found as argument of \\addindex",
+                              qPrint(g_token->name));
+               break;
+        }
       break;
       default:
         warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
@@ -3343,7 +3386,8 @@ int DocHtmlCaption::parse()
           }
           break;
         default:
-         errorHandleDefaultToken(this,tok,m_children,"<caption> tag");
+          errorHandleDefaultToken(this,tok,m_children,"<caption> tag");
+          break;
       }
     }
   }
@@ -3936,6 +3980,10 @@ int DocHtmlDescTitle::parse()
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol \\%s found as part of a <dt> tag",
               qPrint(g_token->name));
           break;
+        case TK_EMOJI: 
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported emoji '%s' found",
+              qPrint(g_token->name));
+          break;
         case TK_HTMLTAG:
           {
             int tagId=Mappers::htmlTagMapper->map(g_token->name);
@@ -4479,7 +4527,7 @@ void DocTitle::parse()
   {
     if (!defaultHandleToken(this,tok,m_children))
     {
-     errorHandleDefaultToken(this,tok,m_children,"title section");
+      errorHandleDefaultToken(this,tok,m_children,"title section");
     }
   }
   doctokenizerYYsetStatePara();
@@ -5392,6 +5440,9 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_PIPE:
       m_children.append(new DocSymbol(this,DocSymbol::Sym_Pipe));
+      break;
+    case CMD_COLON:
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Colon));
       break;
     case CMD_DCOLON:
       m_children.append(new DocSymbol(this,DocSymbol::Sym_DoubleColon));
@@ -6450,7 +6501,7 @@ int DocPara::parse()
   {
 reparsetoken:
     DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
-    if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL || 
+    if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_EMOJI || tok==TK_URL ||
         tok==TK_COMMAND_AT || tok == TK_COMMAND_BS || tok==TK_HTMLTAG
        )
     {
@@ -6708,6 +6759,20 @@ reparsetoken:
           }
           break;
         }
+      case TK_EMOJI:     
+        {
+          int s = DocEmoji::decodeEmoji(g_token->name);
+          if (s!=0)
+          {
+            m_children.append(new DocEmoji(this,s));
+          }
+          else
+          {
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported emoji '%s' found",
+                qPrint(g_token->name));
+          }
+          break;
+        }
       case TK_NEWPARA:     
         retval=TK_NEWPARA;
         goto endparagraph;
@@ -6922,6 +6987,20 @@ void DocText::parse()
           }
         }
         break;
+      case TK_EMOJI:
+        {
+          int s = DocSymbol::decodeSymbol(g_token->name);
+          if (s!=0)
+          {
+            m_children.append(new DocEmoji(this,s));
+          }
+          else
+          {
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported emoji '%s' found",
+                qPrint(g_token->name));
+          }
+        }
+        break;
       case TK_COMMAND_AT:
         // fall through
       case TK_COMMAND_BS:
@@ -6947,6 +7026,9 @@ void DocText::parse()
             break;
           case CMD_HASH:
             m_children.append(new DocSymbol(this,DocSymbol::Sym_Hash));
+            break;
+          case CMD_COLON:
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Colon));
             break;
           case CMD_DCOLON:
             m_children.append(new DocSymbol(this,DocSymbol::Sym_DoubleColon));

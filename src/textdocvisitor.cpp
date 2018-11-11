@@ -21,6 +21,7 @@
 #include "message.h"
 #include "util.h"
 #include "htmlentity.h"
+#include "emoji.h"
 
 //-------------------------------------------------------------------------
 
@@ -37,6 +38,18 @@ void TextDocVisitor::visit(DocSymbol *s)
   }
 }
 
+void TextDocVisitor::visit(DocEmoji *s)
+{
+  const char *res = EmojiEntityMapper::instance()->html(s->emoji());
+  if (res)
+  {
+    filter(res);
+  }
+  else
+  {
+    err("text: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
+  }
+}
 
 void TextDocVisitor::filter(const char *str)
 { 

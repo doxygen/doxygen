@@ -34,6 +34,7 @@
 #include "msc.h"
 #include "dia.h"
 #include "htmlentity.h"
+#include "emoji.h"
 #include "plantuml.h"
 
 #if 0
@@ -165,6 +166,21 @@ DB_VIS_C
   else
   {
     err("DocBook: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+  }
+}
+
+void DocbookDocVisitor::visit(DocEmoji *s)
+{
+DB_VIS_C
+  if (m_hide) return;
+  const char *res = EmojiEntityMapper::instance()->docbook(s->emoji());
+  if (res)
+  {
+    m_t << res;
+  }
+  else
+  {
+    err("DocBook: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
   }
 }
 
