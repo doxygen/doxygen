@@ -38,6 +38,7 @@
 #include "definition.h"
 #include "doxygen.h"
 #include "portable.h"
+#include "cite.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -395,9 +396,9 @@ CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
 ESCWORD   ("%"{ID}(("::"|"."){ID})*)|("%'")
 CHARWORDQ1 [^ \-+0-9\t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
 WORD1     {ESCWORD}|{CHARWORDQ1}{CHARWORDQ}*|"{"|"}"|"'\"'"|("\""[^"\n]*\n?[^"\n]*"\"")
-WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="|"'"
+WORD2     "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
 WORD1NQ   {ESCWORD}|{CHARWORDQ}+|"{"|"}"
-WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="|"'"
+WORD2NQ   "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"|"strike"|"u"
@@ -682,8 +683,15 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          return TK_SYMBOL;
                        }
 <St_Para,St_Text>{EMOJI} { /* emoji symbol */ 
-                         g_token->name = yytext;
-                         return TK_EMOJI;
+                         if (g_fileName == CiteConsts::fileName)
+                         {
+                           REJECT;
+                         }
+                         else
+                         {
+                           g_token->name = yytext;
+                           return TK_EMOJI;
+                         }
                        }
 
   /********* patterns for linkable words ******************/
@@ -932,8 +940,15 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   		         return TK_SYMBOL;
                        }
 <St_TitleN>{EMOJI}     { /* emoji */
-                         g_token->name = yytext;
-  		         return TK_EMOJI;
+                         if (g_fileName == CiteConsts::fileName)
+                         {
+                           REJECT;
+                         }
+                         else
+                         {
+                           g_token->name = yytext;
+                           return TK_EMOJI;
+                         }
                        }
 <St_TitleN>{HTMLTAG}   {
   		       }
@@ -972,8 +987,15 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   		         return TK_SYMBOL;
                        }
 <St_TitleQ>{EMOJI}  { /* emoji */
-                         g_token->name = yytext;
-  		         return TK_EMOJI;
+                         if (g_fileName == CiteConsts::fileName)
+                         {
+                           REJECT;
+                         }
+                         else
+                         {
+                           g_token->name = yytext;
+                           return TK_EMOJI;
+                         }
                        }
 <St_TitleQ>{SPCMD1}    |   
 <St_TitleQ>{SPCMD2}    { /* special command */ 
@@ -1107,8 +1129,15 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   		         return TK_SYMBOL;
                        }
 <St_Ref2>{EMOJI}    { /* emoji */
-                         g_token->name = yytext;
-  		         return TK_EMOJI;
+                         if (g_fileName == CiteConsts::fileName)
+                         {
+                           REJECT;
+                         }
+                         else
+                         {
+                           g_token->name = yytext;
+                           return TK_EMOJI;
+                         }
                        }
 <St_Ref2>{SPCMD1}      |   
 <St_Ref2>{SPCMD2}      { /* special command */ 
