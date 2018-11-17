@@ -269,7 +269,7 @@ static void unescapeCRef(QCString &s)
  * copies the image to the output directory (which depends on the \a type
  * parameter).
  */
-static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool warn = true)
+static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool dowarn = true)
 {
   QCString result;
   bool ambig;
@@ -337,7 +337,8 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       }
       else
       {
-        printf("Source and Destination are the same!\n");
+        warn(g_fileName,doctokenizerYYlineno,
+             "Prevented to copy file %s onto itself!\n",qPrint(inputFile));
       }
     }
     else
@@ -365,7 +366,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       return baseName;
     }
   }
-  else if (ambig && warn)
+  else if (ambig && dowarn)
   {
     QCString text;
     text.sprintf("image file name %s is ambiguous.\n",qPrint(fileName));
@@ -376,7 +377,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
   else
   {
     result=fileName;
-    if (result.left(5)!="http:" && result.left(6)!="https:" && warn)
+    if (result.left(5)!="http:" && result.left(6)!="https:" && dowarn)
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,
            "image file %s is not found in IMAGE_PATH: "  
