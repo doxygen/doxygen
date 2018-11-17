@@ -541,7 +541,7 @@ DB_GEN_C2("IndexSections " << is)
         bool found=FALSE;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
-          if (cd->isLinkableInProject() && 
+          if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
              !cd->isEmbeddedInOuterScope()
              )
@@ -552,13 +552,13 @@ DB_GEN_C2("IndexSections " << is)
         }
         for (;(cd=cli.current());++cli)
         {
-          if (cd->isLinkableInProject() && 
+          if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
              !cd->isEmbeddedInOuterScope()
              )
           {
             t << "    <xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
-          } 
+          }
         }
       }
       t << "</chapter>\n";
@@ -567,7 +567,7 @@ DB_GEN_C2("IndexSections " << is)
       {
         t << "</title>" << endl;
         bool isFirst=TRUE;
-        FileNameListIterator fnli(*Doxygen::inputNameList); 
+        FileNameListIterator fnli(*Doxygen::inputNameList);
         FileName *fn;
         for (fnli.toFirst();(fn=fnli.current());++fnli)
         {
@@ -745,7 +745,7 @@ void DocbookGenerator::startGroupHeader(int extraIndentLevel)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
-  m_firstMember = TRUE; 
+  m_firstMember = TRUE;
   if (m_inSimpleSect[m_levelListItem]) t << "</simplesect>" << endl;
   m_inSimpleSect[m_levelListItem] = FALSE;
   if (m_inLevel != -1) m_inGroup = TRUE;

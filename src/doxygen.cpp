@@ -1305,6 +1305,8 @@ static void addClassToContext(EntryNav *rootNav)
     }
 
     cd->setCompoundType(convertToCompoundType(root->section,root->spec));
+
+    cd->setMetaData(root->metaData);
   }
   else // new class
   {
@@ -1368,6 +1370,8 @@ static void addClassToContext(EntryNav *rootNav)
     // file definition containing the class cd
     cd->setBodySegment(root->bodyLine,root->endBodyLine);
     cd->setBodyDef(fd);
+
+    cd->setMetaData(root->metaData);
 
     // see if the class is found inside a namespace
     //bool found=addNamespace(root,cd);
@@ -1588,7 +1592,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
                                      md->typeString(),md->name(),md->argsString(),md->excpString(),
                                      md->protection(),md->virtualness(),md->isStatic(),Member,
                                      md->memberType(),
-                                     0,0);
+                                     0,0,"");
       imd->setMemberClass(cd);
       imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
       imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
@@ -1760,6 +1764,7 @@ static void buildNamespaceList(EntryNav *rootNav)
           nd->setReference("");
           nd->setFileName(fullName);
         }
+        nd->setMetaData(root->metaData);
 
         // file definition containing the namespace nd
         FileDef *fd=rootNav->fileDef();
@@ -1789,6 +1794,7 @@ static void buildNamespaceList(EntryNav *rootNav)
         nd->setArtificial(root->artificial);
         nd->setLanguage(root->lang);
         nd->setId(root->id);
+        nd->setMetaData(root->metaData);
 
         //printf("Adding namespace to group\n");
         addNamespaceToGroups(root,nd);
@@ -1964,6 +1970,7 @@ static void findUsingDirectives(EntryNav *rootNav)
         nd->setArtificial(TRUE);
         nd->setLanguage(root->lang);
         nd->setId(root->id);
+        nd->setMetaData(root->metaData);
 
         QListIterator<Grouping> gli(*root->groups);
         Grouping *g;
@@ -2169,7 +2176,7 @@ static void findUsingDeclImports(EntryNav *rootNav)
                       md->typeString(),memName,md->argsString(),
                       md->excpString(),root->protection,root->virt,
                       md->isStatic(),Member,md->memberType(),
-                      templAl,al
+                      templAl,al,root->metaData
                       );
                   }
                   newMd->setMemberClass(cd);
@@ -2364,7 +2371,7 @@ static MemberDef *addVariableToClass(
       fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
       prot,Normal,root->stat,related,
-      mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0);
+      mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0, root->metaData);
   md->setTagInfo(rootNav->tagInfo());
   md->setMemberClass(cd); // also sets outer scope (i.e. getOuterScope())
   //md->setDefFile(root->fileName);
@@ -2609,7 +2616,7 @@ static MemberDef *addVariableToFile(
       fileName,root->startLine,root->startColumn,
       root->type,name,root->args,0,
       root->protection, Normal,root->stat,Member,
-      mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0);
+      mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0, root->metaData);
   md->setTagInfo(rootNav->tagInfo());
   md->setMemberSpecifiers(root->spec);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -2829,6 +2836,8 @@ done:
 
 static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
 {
+    static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
 
@@ -2948,6 +2957,10 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
       mtype=MemberType_Property;
     else if (root->mtype==Event)
       mtype=MemberType_Event;
+    else if (type.find("sequence<") != -1)
+      mtype=sliceOpt ? MemberType_Sequence : MemberType_Typedef;
+    else if (type.find("dictionary<") != -1)
+      mtype=sliceOpt ? MemberType_Dictionary : MemberType_Typedef;
     else
       mtype=MemberType_Variable;
 
@@ -3062,6 +3075,58 @@ static void buildTypedefList(EntryNav *rootNav)
 }
 
 //----------------------------------------------------------------------
+// Searches the Entry tree for sequence documentation sections.
+// If found they are stored in the global list.
+static void buildSequenceList(EntryNav *rootNav)
+{
+  if (!rootNav->name().isEmpty() &&
+      rootNav->section()==Entry::VARIABLE_SEC &&
+      rootNav->type().find("sequence<")!=-1 // it's a sequence
+     )
+  {
+    addVariable(rootNav);
+  }
+  if (rootNav->children())
+  {
+    EntryNavListIterator eli(*rootNav->children());
+    EntryNav *e;
+    for (;(e=eli.current());++eli)
+    {
+      if (e->section()!=Entry::ENUM_SEC)
+      {
+        buildSequenceList(e);
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------
+// Searches the Entry tree for dictionary documentation sections.
+// If found they are stored in the global list.
+static void buildDictionaryList(EntryNav *rootNav)
+{
+  if (!rootNav->name().isEmpty() &&
+      rootNav->section()==Entry::VARIABLE_SEC &&
+      rootNav->type().find("dictionary<")!=-1 // it's a dictionary
+     )
+  {
+    addVariable(rootNav);
+  }
+  if (rootNav->children())
+  {
+    EntryNavListIterator eli(*rootNav->children());
+    EntryNav *e;
+    for (;(e=eli.current());++eli)
+    {
+      if (e->section()!=Entry::ENUM_SEC)
+      {
+        buildDictionaryList(e);
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------
 // Searches the Entry tree for Variable documentation sections.
 // If found they are stored in their class or in the global list.
 
@@ -3122,7 +3187,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   MemberDef *const md = new MemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
       "", "", root->protection, root->virt, root->stat, Member,
-      type, 0, root->argList);
+      type, 0, root->argList, root->metaData);
   md->setTagInfo(rootNav->tagInfo());
   md->setMemberClass(cd);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -3311,7 +3376,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
       root->stat && root->relatesType != MemberOf,
       root->relates.isEmpty() ? Member :
           root->relatesType == MemberOf ? Foreign : Related,
-      mtype,root->tArgLists ? root->tArgLists->getLast() : 0,root->argList);
+      mtype,root->tArgLists ? root->tArgLists->getLast() : 0,root->argList, root->metaData);
   md->setTagInfo(rootNav->tagInfo());
   md->setMemberClass(cd);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -3705,7 +3770,7 @@ static void buildFunctionList(EntryNav *rootNav)
               root->fileName,root->startLine,root->startColumn,
               root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,Member,
-              MemberType_Function,tArgList,root->argList);
+              MemberType_Function,tArgList,root->argList,root->metaData);
 
           md->setTagInfo(rootNav->tagInfo());
           md->setLanguage(root->lang);
@@ -6461,7 +6526,7 @@ static void findMember(EntryNav *rootNav,
               funcType,funcName,funcArgs,exceptions,
               declMd ? declMd->protection() : root->protection,
               root->virt,root->stat,Member,
-              mtype,tArgList,root->argList);
+              mtype,tArgList,root->argList,root->metaData);
           //printf("new specialized member %s args=`%s'\n",md->name().data(),funcArgs.data());
           md->setTagInfo(rootNav->tagInfo());
           md->setLanguage(root->lang);
@@ -6530,7 +6595,7 @@ static void findMember(EntryNav *rootNav,
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,Related,
-              mtype,tArgList,root->argList);
+              mtype,tArgList,root->argList,root->metaData);
           md->setTagInfo(rootNav->tagInfo());
           md->setLanguage(root->lang);
           md->setId(root->id);
@@ -6670,7 +6735,7 @@ static void findMember(EntryNav *rootNav,
               isMemberOf ? Foreign : Related,
               mtype,
               (root->tArgLists ? root->tArgLists->getLast() : 0),
-              funcArgs.isEmpty() ? 0 : root->argList);
+              funcArgs.isEmpty() ? 0 : root->argList,root->metaData);
 
           if (isDefine && mdDefine)
           {
@@ -6810,7 +6875,7 @@ localObjCMethod:
             root->fileName,root->startLine,root->startColumn,
             funcType,funcName,funcArgs,exceptions,
             root->protection,root->virt,root->stat,Member,
-            MemberType_Function,0,root->argList);
+            MemberType_Function,0,root->argList,root->metaData);
         md->setTagInfo(rootNav->tagInfo());
         md->setLanguage(root->lang);
         md->setId(root->id);
@@ -7148,7 +7213,7 @@ static void findEnums(EntryNav *rootNav)
           root->protection,Normal,FALSE,
           isMemberOf ? Foreign : isRelated ? Related : Member,
           MemberType_Enumeration,
-          0,0);
+          0,0,root->metaData);
       md->setTagInfo(rootNav->tagInfo());
       md->setLanguage(root->lang);
       md->setId(root->id);
@@ -7372,7 +7437,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                       fileName,root->startLine,root->startColumn,
                       root->type,root->name,root->args,0,
                       root->protection, Normal,root->stat,Member,
-                      MemberType_EnumValue,0,0);
+                      MemberType_EnumValue,0,0,root->metaData);
                   if      (md->getClassDef())     fmd->setMemberClass(md->getClassDef());
                   else if (md->getNamespaceDef()) fmd->setNamespace(md->getNamespaceDef());
                   else if (md->getFileDef())      fmd->setFileDef(md->getFileDef());
@@ -8502,7 +8567,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
     {
       MemberDef *md=new MemberDef(rootNav->tagInfo()->tagName,1,1,
                     "#define",root->name,root->args,0,
-                    Public,Normal,FALSE,Member,MemberType_Define,0,0);
+                    Public,Normal,FALSE,Member,MemberType_Define,0,0,"");
       md->setTagInfo(rootNav->tagInfo());
       md->setLanguage(root->lang);
       //printf("Searching for `%s' fd=%p\n",filePathName.data(),fd);
@@ -9087,8 +9152,33 @@ static void generateGroupDocs()
 //----------------------------------------------------------------------------
 // generate module pages
 
+static void generateNamespaceClassDocs(ClassSDict *d)
+{
+  // for each class in the namespace...
+  ClassSDict::Iterator cli(*d);
+  ClassDef *cd;
+  for ( ; (cd=cli.current()) ; ++cli )
+  {
+    if ( ( cd->isLinkableInProject() &&
+           cd->templateMaster()==0
+         ) // skip external references, anonymous compounds and
+           // template instances and nested classes
+         && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
+       )
+    {
+      msg("Generating docs for compound %s...\n",cd->name().data());
+
+      cd->writeDocumentation(*g_outputList);
+      cd->writeMemberList(*g_outputList);
+    }
+    cd->writeDocumentationForInnerClasses(*g_outputList);
+  }
+}
+
 static void generateNamespaceDocs()
 {
+  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+
   //writeNamespaceIndex(*g_outputList);
 
   NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
@@ -9103,24 +9193,12 @@ static void generateNamespaceDocs()
       nd->writeDocumentation(*g_outputList);
     }
 
-    // for each class in the namespace...
-    ClassSDict::Iterator cli(*nd->getClassSDict());
-    ClassDef *cd;
-    for ( ; (cd=cli.current()) ; ++cli )
+    generateNamespaceClassDocs(nd->getClassSDict());
+    if (sliceOpt)
     {
-      if ( ( cd->isLinkableInProject() &&
-             cd->templateMaster()==0
-           ) // skip external references, anonymous compounds and
-             // template instances and nested classes
-           && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
-         )
-      {
-        msg("Generating docs for compound %s...\n",cd->name().data());
-
-        cd->writeDocumentation(*g_outputList);
-        cd->writeMemberList(*g_outputList);
-      }
-      cd->writeDocumentationForInnerClasses(*g_outputList);
+      generateNamespaceClassDocs(nd->getInterfaceSDict());
+      generateNamespaceClassDocs(nd->getStructSDict());
+      generateNamespaceClassDocs(nd->getExceptionSDict());
     }
   }
 }
@@ -11342,6 +11420,17 @@ void parseInput()
   g_s.begin("Searching for documented typedefs...\n");
   buildTypedefList(rootNav);
   g_s.end();
+
+  if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+  {
+    g_s.begin("Searching for documented sequences...\n");
+    buildSequenceList(rootNav);
+    g_s.end();
+
+    g_s.begin("Searching for documented dictionaries...\n");
+    buildDictionaryList(rootNav);
+    g_s.end();
+  }
 
   g_s.begin("Searching for members imported via using declarations...\n");
   // this should be after buildTypedefList in order to properly import

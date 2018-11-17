@@ -133,7 +133,7 @@
 //   2017/10/12 Arnd Weber (arnd dot weber at bafg dot de)
 //              Beatrix Konz
 //    - Updated for 1.8.13
-//    - Resynced trMemberDataDocumentation() and trFileMembers() to include the 
+//    - Resynced trMemberDataDocumentation() and trFileMembers() to include the
 //      boolean switch OPTIMIZE_OUTPUT_FOR_C
 //    - Replaced "\t" by "    "
 //
@@ -143,7 +143,7 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public Translator
+class TranslatorGerman : public TranslatorAdapter_1_8_15
 {
   public:
 
@@ -1995,7 +1995,7 @@ class TranslatorGerman : public Translator
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool single)
     { QCString result = "Die Dokumentation für diesen enum wurde aus ";
-      if (single) 
+      if (single)
         result += "der folgenden Datei";
       else
         result += "den folgenden Dateien";
@@ -2254,7 +2254,7 @@ class TranslatorGerman : public Translator
     virtual QCString trCustomReference(const char *name)
     { return QCString(name)+"-Referenz"; }
 
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
 };
 

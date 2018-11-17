@@ -14,7 +14,7 @@
  *    Maintainer:
  *        Fabio "FJTC" Jun Takada Chino <fjtc at brokenbits dot com dot br>
  *    Collaborators:
- *        Emerson Ferreira <nuskorpios at gmail dot com>    
+ *        Emerson Ferreira <nuskorpios at gmail dot com>
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
@@ -47,7 +47,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public Translator
+class TranslatorBrazilian : public TranslatorAdapter_1_8_15
 {
   public:
 
@@ -610,7 +610,7 @@ class TranslatorBrazilian : public Translator
     {
       QCString result="Referência";
       if (isTemplate) result+=" do <em>Template</em>";
-      if (compType == ClassDef::Protocol) 
+      if (compType == ClassDef::Protocol)
       {
         result+=" do ";
       }
@@ -836,7 +836,7 @@ class TranslatorBrazilian : public Translator
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
-    { 
+    {
       // Decidi mudar de página para "p." para ficar mais compacto.
       return "p.";
     }
@@ -2200,9 +2200,6 @@ class TranslatorBrazilian : public Translator
         }
         virtual QCString trCustomReference(const char *name)
         { return "Referência de " + QCString(name); }
-
-//////////////////////////////////////////////////////////////////////////
-
 };
 
 #endif

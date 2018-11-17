@@ -201,7 +201,7 @@ class FileDef : public Definition
     void writeSourceLink(OutputList &ol);
     void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
             bool isConstantGroup);
-    void writeClassDeclarations(OutputList &ol,const QCString &title);
+    void writeClassDeclarations(OutputList &ol,const QCString &title,ClassSDict *d);
     void writeInlineClasses(OutputList &ol);
     void startMemberDeclarations(OutputList &ol);
     void endMemberDeclarations(OutputList &ol);
@@ -209,6 +209,7 @@ class FileDef : public Definition
     void endMemberDocumentation(OutputList &ol);
     void writeDetailedDescription(OutputList &ol,const QCString &title);
     void writeBriefDescription(OutputList &ol);
+    void writeClassesToTagFile(FTextStream &t,ClassSDict *d);
 
     QDict<IncludeInfo>   *m_includeDict;
     QList<IncludeInfo>   *m_includeList;
@@ -233,6 +234,9 @@ class FileDef : public Definition
     MemberGroupSDict     *m_memberGroupSDict;
     NamespaceSDict       *m_namespaceSDict;
     ClassSDict           *m_classSDict;
+    ClassSDict           *m_interfaceSDict;
+    ClassSDict           *m_structSDict;
+    ClassSDict           *m_exceptionSDict;
     bool                  m_subGrouping;
 };
 

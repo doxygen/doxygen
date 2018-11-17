@@ -76,6 +76,8 @@ class MemberGroup
     int enumCount() const;
     int enumValueCount() const;
     int typedefCount() const;
+    int sequenceCount() const;
+    int dictionaryCount() const;
     int protoCount() const;
     int defineCount() const;
     int friendCount() const;

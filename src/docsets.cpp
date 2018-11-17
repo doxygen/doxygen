@@ -334,6 +334,7 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
     case SrcLangExt_SQL:     lang="sql"; break;        // Sql
     case SrcLangExt_Tcl:     lang="tcl"; break;        // Tcl
     case SrcLangExt_Markdown:lang="markdown"; break;   // Markdown
+    case SrcLangExt_Slice:   lang="slice"; break;      // Slice
     case SrcLangExt_Unknown: lang="unknown"; break;    // should not happen!
   }
 
@@ -401,6 +402,10 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
         type="ifc"; break;
       case MemberType_Service:
         type="svc"; break;
+      case MemberType_Sequence:
+        type="sequence"; break;
+      case MemberType_Dictionary:
+        type="dictionary"; break;
     }
     cd = md->getClassDef();
     nd = md->getNamespaceDef();

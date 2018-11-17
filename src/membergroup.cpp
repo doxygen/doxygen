@@ -278,6 +278,16 @@ int MemberGroup::typedefCount() const
   return memberList->typedefCount(); 
 }
 
+int MemberGroup::sequenceCount() const   
+{ 
+  return memberList->sequenceCount(); 
+}
+
+int MemberGroup::dictionaryCount() const   
+{ 
+  return memberList->dictionaryCount(); 
+}
+
 int MemberGroup::protoCount() const     
 { 
   return memberList->protoCount(); 
