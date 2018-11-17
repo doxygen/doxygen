@@ -582,7 +582,14 @@ void MemberList::writeDeclarations(OutputList &ol,
       }
       else
       {
-        ol.startMemberHeader(listTypeAsString(m_listType));
+	if (m_listType==MemberListType_memberGroup)
+	{
+          ol.startMemberHeader(listTypeAsString(m_listType) + "_" + title);
+	}
+	else
+	{
+          ol.startMemberHeader(listTypeAsString(m_listType));
+	}
       }
       ol.parseText(title);
       if (showInline)

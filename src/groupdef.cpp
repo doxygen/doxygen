@@ -1069,7 +1069,14 @@ void GroupDef::writeSummaryLinks(OutputList &ol)
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
-        ol.writeSummaryLink(0,MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+        if (ml->listType()==MemberListType_memberGroup)
+        {
+          ol.writeSummaryLink(0,MemberList::listTypeAsString(ml->listType()) + "_" + lmd->title(lang),lmd->title(lang),first);
+	}
+	else
+        {
+          ol.writeSummaryLink(0,MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+	}
         first=FALSE;
       }
     }
