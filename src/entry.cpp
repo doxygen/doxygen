@@ -270,6 +270,7 @@ void Entry::reset()
   protection = Public;
   groupDocType = GROUPDOC_NORMAL;
   id.resize(0);
+  metaData.resize(0);
   m_sublist->clear();
   extends->clear();
   groups->clear();

@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <qfile.h>
+#include <qfileinfo.h>
 #include <qregexp.h>
 #include "classdef.h"
 #include "classlist.h"
@@ -201,6 +202,8 @@ class ClassDefImpl
     bool isAnonymous;
 
     uint64 spec;
+
+    QCString metaData;
 };
 
 void ClassDefImpl::init(const char *defFileName, const char *name,
@@ -1372,10 +1375,165 @@ QCString ClassDef::includeStatement() const
   }
 }
 
+void ClassDef::writeIncludeFilesForSlice(OutputList &ol)
+{
+  if (m_impl->incInfo)
+  {
+    QCString nm;
+    QStrList paths = Config_getList(STRIP_FROM_PATH);
+    if (!paths.isEmpty() && m_impl->incInfo->fileDef)
+    {
+      QCString abs = m_impl->incInfo->fileDef->absFilePath();
+      const char *s = paths.first();
+      QCString potential;
+      unsigned int length = 0;
+      while (s)
+      {
+        QFileInfo info(s);
+        if (info.exists())
+        {
+          QString prefix = info.absFilePath();
+          if (prefix.at(prefix.length() - 1) != '/')
+          {
+            prefix += '/';
+          }
+
+          if (prefix.length() > length &&
+              qstricmp(abs.left(prefix.length()).data(), prefix.data()) == 0) // case insensitive compare
+          {
+            length = prefix.length();
+            potential = abs.right(abs.length() - prefix.length());
+          }
+          s = paths.next();
+        }
+      }
+
+      if (length > 0)
+      {
+        nm = potential;
+      }
+    }
+
+    if (nm.isEmpty())
+    {
+      nm = m_impl->incInfo->includeName.data();
+    }
+
+    ol.startParagraph();
+    ol.docify(theTranslator->trDefinedIn()+" ");
+    ol.startTypewriter();
+    ol.docify("<");
+    if (m_impl->incInfo->fileDef)
+    {
+      ol.writeObjectLink(0,m_impl->incInfo->fileDef->includeName(),0,nm);
+    }
+    else
+    {
+      ol.docify(nm);
+    }
+    ol.docify(">");
+    ol.endTypewriter();
+    ol.endParagraph();
+  }
+
+  // Write a summary of the Slice definition including metadata.
+  ol.startParagraph();
+  ol.startTypewriter();
+  if (!m_impl->metaData.isEmpty())
+  {
+    ol.docify(m_impl->metaData);
+    ol.lineBreak();
+  }
+  if (m_impl->spec & Entry::Local)
+  {
+    ol.docify("local ");
+  }
+  if (m_impl->spec & Entry::Interface)
+  {
+    ol.docify("interface ");
+  }
+  else if (m_impl->spec & Entry::Struct)
+  {
+    ol.docify("struct ");
+  }
+  else if (m_impl->spec & Entry::Exception)
+  {
+    ol.docify("exception ");
+  }
+  else
+  {
+    ol.docify("class ");
+  }
+  ol.docify(stripScope(name()));
+  if (m_impl->inherits)
+  {
+    if (m_impl->spec & (Entry::Interface|Entry::Exception))
+    {
+      ol.docify(" extends ");
+      BaseClassListIterator it(*m_impl->inherits);
+      BaseClassDef *ibcd;
+      for (;(ibcd=it.current());++it)
+      {
+        ClassDef *icd = ibcd->classDef;
+        ol.docify(icd->name());
+        if (!it.atLast())
+        {
+          ol.docify(", ");
+        }
+      }
+    }
+    else
+    {
+      // Must be a class.
+      bool implements = false;
+      BaseClassListIterator it(*m_impl->inherits);
+      BaseClassDef *ibcd;
+      for (;(ibcd=it.current());++it)
+      {
+        ClassDef *icd = ibcd->classDef;
+        if (icd->m_impl->spec & Entry::Interface)
+        {
+          implements = true;
+        }
+        else
+        {
+          ol.docify(" extends ");
+          ol.docify(icd->name());
+        }
+      }
+      if (implements)
+      {
+        ol.docify(" implements ");
+        bool first = true;
+        for (ibcd=it.toFirst();(ibcd=it.current());++it)
+        {
+          ClassDef *icd = ibcd->classDef;
+          if (icd->m_impl->spec & Entry::Interface)
+          {
+            if (!first)
+            {
+              ol.docify(", ");
+            }
+            else
+            {
+              first = false;
+            }
+            ol.docify(icd->name());
+          }
+        }
+      }
+    }
+  }
+  ol.docify(" { ... }");
+  ol.endTypewriter();
+  ol.endParagraph();
+}
+
 void ClassDef::writeIncludeFiles(OutputList &ol)
 {
   if (m_impl->incInfo /*&& Config_getBool(SHOW_INCLUDE_FILES)*/)
   {
+    SrcLangExt lang = getLanguage();
     QCString nm=m_impl->incInfo->includeName.isEmpty() ?
       (m_impl->incInfo->fileDef ?
        m_impl->incInfo->fileDef->docName().data() : ""
@@ -1386,7 +1544,6 @@ void ClassDef::writeIncludeFiles(OutputList &ol)
       ol.startParagraph();
       ol.startTypewriter();
       ol.docify(includeStatement());
-      SrcLangExt lang = getLanguage();
       bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
       if (m_impl->incInfo->local || isIDLorJava)
         ol.docify("\"");
@@ -1887,12 +2044,35 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
 {
   //static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   //static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   SrcLangExt lang = getLanguage();
   if (visibleInParentsDeclList())
   {
     if (!found) // first class
     {
-      ol.startMemberHeader("nested-classes");
+      if (sliceOpt)
+      {
+        if (compoundType()==Interface)
+        {
+          ol.startMemberHeader("interfaces");
+        }
+        else if (compoundType()==Struct)
+        {
+          ol.startMemberHeader("structs");
+        }
+        else if (compoundType()==Exception)
+        {
+          ol.startMemberHeader("exceptions");
+        }
+        else // compoundType==Class
+        {
+          ol.startMemberHeader("nested-classes");
+        }
+      }
+      else // non-Slice optimization: single header for class/struct/..
+      {
+        ol.startMemberHeader("nested-classes");
+      }
       if (header)
       {
         ol.parseText(header);
@@ -1918,6 +2098,10 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
 
     if (lang!=SrcLangExt_VHDL) // for VHDL we swap the name and the type
     {
+      if (isSliceLocal())
+      {
+        ol.writeString("local ");
+      }
       ol.writeString(ctype);
       ol.writeString(" ");
       ol.insertMemberAlign();
@@ -2021,7 +2205,14 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*page
         writeBriefDescription(ol,exampleFlag);
         break;
       case LayoutDocEntry::ClassIncludes:
-        writeIncludeFiles(ol);
+        if (lang==SrcLangExt_Slice)
+        {
+          writeIncludeFilesForSlice(ol);
+        }
+        else
+        {
+          writeIncludeFiles(ol);
+        }
         break;
       case LayoutDocEntry::ClassInheritanceGraph:
         writeInheritanceGraph(ol);
@@ -2083,8 +2274,14 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*page
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceNestedConstantGroups:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceInterfaces:
+      case LayoutDocEntry::NamespaceStructs:
+      case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::FileClasses:
+      case LayoutDocEntry::FileInterfaces:
+      case LayoutDocEntry::FileStructs:
+      case LayoutDocEntry::FileExceptions:
       case LayoutDocEntry::FileNamespaces:
       case LayoutDocEntry::FileConstantGroups:
       case LayoutDocEntry::FileIncludes:
@@ -2122,6 +2319,12 @@ QCString ClassDef::title() const
     pageTitle = theTranslator->trCompoundReferenceFortran(displayName(),
               m_impl->compType,
               m_impl->tempArgs != 0);
+  }
+  else if (lang==SrcLangExt_Slice)
+  {
+    pageTitle = theTranslator->trCompoundReferenceSlice(displayName(),
+              m_impl->compType,
+              isSliceLocal());
   }
   else if (lang==SrcLangExt_VHDL)
   {
@@ -2161,9 +2364,35 @@ void ClassDef::writeDocumentation(OutputList &ol)
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   //static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   //static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   QCString pageTitle = title();
 
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ClassVisible,!generateTreeView);
+  HighlightedItem hli;
+  if (sliceOpt)
+  {
+    if (compoundType()==Interface)
+    {
+      hli = HLI_InterfaceVisible;
+    }
+    else if (compoundType()==Struct)
+    {
+      hli = HLI_StructVisible;
+    }
+    else if (compoundType()==Exception)
+    {
+      hli = HLI_ExceptionVisible;
+    }
+    else
+    {
+      hli = HLI_ClassVisible;
+    }
+  }
+  else
+  {
+    hli = HLI_ClassVisible;
+  }
+
+  startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView);
   if (!generateTreeView)
   {
     if (getOuterScope()!=Doxygen::globalScope)
@@ -2290,15 +2519,40 @@ void ClassDef::writeMemberList(OutputList &ol)
 {
   static bool cOpt    = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
   //static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   if (m_impl->allMemberNameInfoSDict==0 || cOpt) return;
   // only for HTML
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
+  HighlightedItem hli;
+  if (sliceOpt)
+  {
+    if (compoundType()==Interface)
+    {
+      hli = HLI_InterfaceVisible;
+    }
+    else if (compoundType()==Struct)
+    {
+      hli = HLI_StructVisible;
+    }
+    else if (compoundType()==Exception)
+    {
+      hli = HLI_ExceptionVisible;
+    }
+    else
+    {
+      hli = HLI_ClassVisible;
+    }
+  }
+  else
+  {
+    hli = HLI_ClassVisible;
+  }
+
   QCString memListFile = getMemberListFileName();
-  startFile(ol,memListFile,memListFile,theTranslator->trMemberList(),
-            HLI_ClassVisible,!generateTreeView,getOutputFileBase());
+  startFile(ol,memListFile,memListFile,theTranslator->trMemberList(),hli,!generateTreeView,getOutputFileBase());
   if (!generateTreeView)
   {
     if (getOuterScope()!=Doxygen::globalScope)
@@ -4750,10 +5004,20 @@ bool ClassDef::subGrouping() const
   return m_impl->subGrouping;
 }
 
+bool ClassDef::isSliceLocal() const
+{
+  return m_impl->spec&Entry::Local;
+}
+
 void ClassDef::setName(const char *name)
 {
   m_impl->isAnonymous = QCString(name).find('@')!=-1;
   Definition::setName(name);
+}
+
+void ClassDef::setMetaData(const char *md)
+{
+  m_impl->metaData = md;
 }
 
 bool ClassDef::isAnonymous() const

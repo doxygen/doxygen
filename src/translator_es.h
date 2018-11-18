@@ -2057,6 +2057,141 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
     }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trConstants()
+    {
+        return "Constantes";
+    }
+    virtual QCString trConstantDocumentation()
+    {
+        return "Documentación de constante";
+    }
+    virtual QCString trSequences()
+    {
+        return "Secuencias";
+    }
+    virtual QCString trSequenceDocumentation()
+    {
+        return "Documentación de secuencia";
+    }
+    virtual QCString trDictionaries()
+    {
+        return "Diccionarios";
+    }
+    virtual QCString trDictionaryDocumentation()
+    {
+        return "Documentación de diccionario";
+    }
+    virtual QCString trSliceInterfaces()
+    {
+        return "Interfaces";
+    }
+    virtual QCString trInterfaceIndex()
+    {
+        return "Indice de interfaces";
+    }
+    virtual QCString trInterfaceList()
+    {
+        return "Lista de interfaces";
+    }
+    virtual QCString trInterfaceListDescription()
+    {
+        return "Aquí están las interfaces con una breve descripción:";
+    }
+    virtual QCString trInterfaceHierarchy()
+    {
+        return "Jerarquía de interfaces";
+    }
+    virtual QCString trInterfaceHierarchyDescription()
+    {
+        return "Este listado de herencia está ordenado de forma aproximada, pero no completamente en orden alfabético:";
+    }
+    virtual QCString trInterfaceDocumentation()
+    {
+        return "Documentación de interfaz";
+    }
+    virtual QCString trStructs()
+    {
+        return "Estructuras";
+    }
+    virtual QCString trStructIndex()
+    {
+        return "Indice de estructuras";
+    }
+    virtual QCString trStructList()
+    {
+        return "Lista de estructuras";
+    }
+    virtual QCString trStructListDescription()
+    {
+        return "Aquí están las estructuras de datos con una breve descripción:";
+    }
+    virtual QCString trStructDocumentation()
+    {
+        return "Documentación estructura";
+    }
+    virtual QCString trExceptionIndex()
+    {
+        return "Indice de excepciones";
+    }
+    virtual QCString trExceptionList()
+    {
+        return "Lista de excepciones";
+    }
+    virtual QCString trExceptionListDescription()
+    {
+        return "Aquí están las excepciones con una breve descripción:";
+    }
+    virtual QCString trExceptionHierarchy()
+    {
+        return "Jerarquía de excepciones";
+    }
+    virtual QCString trExceptionHierarchyDescription()
+    {
+        return "Este listado de herencia está ordenado de forma aproximada, pero no completamente en orden alfabético:";
+    }
+    virtual QCString trExceptionDocumentation()
+    {
+        return "Documentación de excepción";
+    }
+    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    {
+      QCString result="Referencia de";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" la Clase"; break;
+        case ClassDef::Struct:     result+=" la Estructura"; break;
+        case ClassDef::Union:      result+=" la Unión"; break;
+        case ClassDef::Interface:  result+=" la Interfaz"; break;
+        case ClassDef::Protocol:   result+="l Protocolo"; break;
+        case ClassDef::Category:   result+=" la Categoría"; break;
+        case ClassDef::Exception:  result+=" la Excepción"; break;
+        default: break;
+      }
+      if (isLocal) result+=" Local";
+      result+=(QCString)clName;
+      return result;
+    }
+    virtual QCString trOperations()
+    {
+        return "Operaciones";
+    }
+    virtual QCString trOperationDocumentation()
+    {
+        return "Documentación de operación";
+    }
+    virtual QCString trDataMembers()
+    {
+        return "Miembros de datos";
+    }
+    virtual QCString trDataMemberDocumentation()
+    {
+        return "Documentación miembro de datos";
+    }
+
+//////////////////////////////////////////////////////////////////////////
 
 };
 

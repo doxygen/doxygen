@@ -70,8 +70,96 @@ class TranslatorAdapter_1_8_15 : public TranslatorAdapterBase
 
     virtual QCString trVhdlType(uint64 type,bool single)
     { return english.trVhdlType(type,single); }
+
     virtual QCString trCustomReference(const char *name)
     { return english.trCustomReference(name); }
+
+    virtual QCString trConstants()
+    { return english.trConstants(); }
+
+    virtual QCString trConstantDocumentation()
+    { return english.trConstantDocumentation(); }
+
+    virtual QCString trSequences()
+    { return english.trSequences(); }
+
+    virtual QCString trSequenceDocumentation()
+    { return english.trSequenceDocumentation(); }
+
+    virtual QCString trDictionaries()
+    { return english.trDictionaries(); }
+
+    virtual QCString trDictionaryDocumentation()
+    { return english.trDictionaryDocumentation(); }
+
+    virtual QCString trSliceInterfaces()
+    { return english.trSliceInterfaces(); }
+
+    virtual QCString trInterfaceIndex()
+    { return english.trInterfaceIndex(); }
+
+    virtual QCString trInterfaceList()
+    { return english.trInterfaceList(); }
+
+    virtual QCString trInterfaceListDescription()
+    { return english.trInterfaceListDescription(); }
+
+    virtual QCString trInterfaceHierarchy()
+    { return english.trInterfaceHierarchy(); }
+
+    virtual QCString trInterfaceHierarchyDescription()
+    { return english.trInterfaceHierarchyDescription(); }
+
+    virtual QCString trInterfaceDocumentation()
+    { return english.trInterfaceDocumentation(); }
+
+    virtual QCString trStructs()
+    { return english.trStructs(); }
+
+    virtual QCString trStructIndex()
+    { return english.trStructIndex(); }
+
+    virtual QCString trStructList()
+    { return english.trStructList(); }
+
+    virtual QCString trStructListDescription()
+    { return english.trStructListDescription(); }
+
+    virtual QCString trStructDocumentation()
+    { return english.trStructDocumentation(); }
+
+    virtual QCString trExceptionIndex()
+    { return english.trExceptionIndex(); }
+
+    virtual QCString trExceptionList()
+    { return english.trExceptionList(); }
+
+    virtual QCString trExceptionListDescription()
+    { return english.trExceptionListDescription(); }
+
+    virtual QCString trExceptionHierarchy()
+    { return english.trExceptionHierarchy(); }
+
+    virtual QCString trExceptionHierarchyDescription()
+    { return english.trExceptionHierarchyDescription(); }
+
+    virtual QCString trExceptionDocumentation()
+    { return english.trExceptionDocumentation(); }
+
+    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    { return english.trCompoundReferenceSlice(clName,compType,isLocal); }
+
+    virtual QCString trOperations()
+    { return english.trOperations(); }
+
+    virtual QCString trOperationDocumentation()
+    { return english.trOperationDocumentation(); }
+
+    virtual QCString trDataMembers()
+    { return english.trDataMembers(); }
+
+    virtual QCString trDataMemberDocumentation()
+    { return english.trDataMemberDocumentation(); }
 };
 
 class TranslatorAdapter_1_8_4 : public TranslatorAdapter_1_8_15
@@ -328,4 +416,3 @@ class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4
 };
 
 #endif
-

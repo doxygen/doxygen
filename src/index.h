@@ -184,9 +184,17 @@ enum HighlightedItem
   HLI_Modules,
   //HLI_Directories,
   HLI_Namespaces,
-  HLI_Hierarchy,
+  HLI_ClassHierarchy,
+  HLI_InterfaceHierarchy,
+  HLI_ExceptionHierarchy,
   HLI_Classes,
-  HLI_Annotated,
+  HLI_Interfaces,
+  HLI_Structs,
+  HLI_Exceptions,
+  HLI_AnnotatedClasses,
+  HLI_AnnotatedInterfaces,
+  HLI_AnnotatedStructs,
+  HLI_AnnotatedExceptions,
   HLI_Files,
   HLI_NamespaceMembers,
   HLI_Functions,
@@ -197,6 +205,9 @@ enum HighlightedItem
   HLI_UserGroup,
 
   HLI_ClassVisible,
+  HLI_InterfaceVisible,
+  HLI_StructVisible,
+  HLI_ExceptionVisible,
   HLI_NamespaceVisible,
   HLI_FileVisible
 };
@@ -221,6 +232,8 @@ enum FileMemberHighlight
   FMHL_Functions,
   FMHL_Variables,
   FMHL_Typedefs,
+  FMHL_Sequences,
+  FMHL_Dictionaries,
   FMHL_Enums,
   FMHL_EnumValues,
   FMHL_Defines,
@@ -233,6 +246,8 @@ enum NamespaceMemberHighlight
   NMHL_Functions,
   NMHL_Variables,
   NMHL_Typedefs,
+  NMHL_Sequences,
+  NMHL_Dictionaries,
   NMHL_Enums,
   NMHL_EnumValues,
   NMHL_Total = NMHL_EnumValues+1
@@ -257,7 +272,12 @@ void writeIndexHierarchy(OutputList &ol);
 void countDataStructures();
 
 extern int annotatedClasses;
+extern int annotatedInterfaces;
+extern int annotatedStructs;
+extern int annotatedExceptions;
 extern int hierarchyClasses;
+extern int hierarchyInterfaces;
+extern int hierarchyExceptions;
 extern int documentedFiles;
 extern int documentedGroups;
 extern int documentedNamespaces;

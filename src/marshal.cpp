@@ -411,6 +411,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalBool(s,e->artificial);
   marshalInt(s,(int)e->groupDocType);
   marshalQCString(s,e->id);
+  marshalQCString(s,e->metaData);
 }
 
 void marshalEntryTree(StorageIntf *s,Entry *e)
@@ -827,6 +828,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->artificial       = unmarshalBool(s);
   e->groupDocType     = (Entry::GroupDocType)unmarshalInt(s);
   e->id               = unmarshalQCString(s);
+  e->metaData         = unmarshalQCString(s);
   return e;
 }
 

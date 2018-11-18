@@ -2990,7 +2990,8 @@ ferr:
       Public, Normal, cur->stat,Member,
       MemberType_Variable,
       0,
-      0);
+      0,
+      "");
 
   if (ar->getOutputFileBase())
   {

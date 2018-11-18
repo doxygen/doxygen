@@ -56,7 +56,8 @@ enum SrcLangExt
   SrcLangExt_XML      = 0x04000,
   SrcLangExt_Tcl      = 0x08000,
   SrcLangExt_Markdown = 0x10000,
-  SrcLangExt_SQL = 0x20000
+  SrcLangExt_SQL      = 0x20000,
+  SrcLangExt_Slice    = 0x40000
 };
 
 /** Grouping info */
@@ -192,15 +193,20 @@ enum MemberListType
   MemberListType_interfaceMembers        = 71 + MemberListType_detailedLists,
   MemberListType_services                = 72,
   MemberListType_serviceMembers          = 73 + MemberListType_detailedLists,
+
+  MemberListType_decSequenceMembers      = 74 + MemberListType_declarationLists,
+  MemberListType_docSequenceMembers      = 75 + MemberListType_documentationLists,
+  MemberListType_decDictionaryMembers    = 76 + MemberListType_declarationLists,
+  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists
 };
 
-enum MemberType 
-{ 
+enum MemberType
+{
   MemberType_Define,
-  MemberType_Function, 
-  MemberType_Variable, 
-  MemberType_Typedef, 
-  MemberType_Enumeration, 
+  MemberType_Function,
+  MemberType_Variable,
+  MemberType_Typedef,
+  MemberType_Enumeration,
   MemberType_EnumValue,
   MemberType_Signal,
   MemberType_Slot,
@@ -210,6 +216,8 @@ enum MemberType
   MemberType_Event,
   MemberType_Interface,
   MemberType_Service,
+  MemberType_Sequence,
+  MemberType_Dictionary
 };
 
 enum FortranFormat

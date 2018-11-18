@@ -1577,21 +1577,22 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
   bool isFunc=FALSE;
   switch (md->memberType())
   {
-  case MemberType_Define:      memType="define";    break;
-  case MemberType_EnumValue:   memType="enumvalue"; break;
-  case MemberType_Property:    memType="property";  break;
-  case MemberType_Variable:    memType="variable";  break;
-  case MemberType_Typedef:     memType="typedef";   break;
-  case MemberType_Enumeration: memType="enum";      break;
-  case MemberType_Function:    memType="function";  isFunc=TRUE; break;
-  case MemberType_Signal:      memType="signal";    isFunc=TRUE; break;
-  //case MemberType_Prototype:   memType="prototype"; isFunc=TRUE; break;
-  case MemberType_Friend:      memType="friend";    isFunc=TRUE; break;
-  case MemberType_DCOP:        memType="dcop";      isFunc=TRUE; break;
-  case MemberType_Slot:        memType="slot";      isFunc=TRUE; break;
-  case MemberType_Event:       memType="event";     break;
-  case MemberType_Interface:   memType="interface"; break;
-  case MemberType_Service:     memType="service";   break;
+    case MemberType_Define:      memType="define";     break;
+    case MemberType_EnumValue:   memType="enumvalue";  break;
+    case MemberType_Property:    memType="property";   break;
+    case MemberType_Variable:    memType="variable";   break;
+    case MemberType_Typedef:     memType="typedef";    break;
+    case MemberType_Enumeration: memType="enum";       break;
+    case MemberType_Function:    memType="function";   isFunc=TRUE; break;
+    case MemberType_Signal:      memType="signal";     isFunc=TRUE; break;
+    case MemberType_Friend:      memType="friend";     isFunc=TRUE; break;
+    case MemberType_DCOP:        memType="dcop";       isFunc=TRUE; break;
+    case MemberType_Slot:        memType="slot";       isFunc=TRUE; break;
+    case MemberType_Event:       memType="event";      break;
+    case MemberType_Interface:   memType="interface";  break;
+    case MemberType_Service:     memType="service";    break;
+    case MemberType_Sequence:    memType="sequence";   break;
+    case MemberType_Dictionary:  memType="dictionary"; break;
   }
 
   m_output.openHash()

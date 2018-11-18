@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-class TranslatorDutch : public Translator
+class TranslatorDutch : public TranslatorAdapter_1_8_15
 {
   public:
     QCString idLanguage()
@@ -1709,7 +1709,7 @@ class TranslatorDutch : public Translator
     virtual QCString trCustomReference(const char *name)
     { return QCString(name)+" Referentie"; }
 
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 };
 
 #endif

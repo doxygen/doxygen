@@ -35,6 +35,7 @@
 #include "docparser.h"
 #include "htmldocvisitor.h"
 #include "filedef.h"
+#include "classdef.h"
 #include "util.h"
 #include "resourcemgr.h"
 
@@ -331,6 +332,27 @@ static void generateBriefDoc(FTextStream &t,Definition *def)
   }
 }
 
+static char compoundIcon(ClassDef *cd)
+{
+  char icon='C';
+  if (cd->getLanguage() == SrcLangExt_Slice)
+  {
+    if (cd->compoundType()==ClassDef::Interface)
+    {
+      icon='I';
+    }
+    else if (cd->compoundType()==ClassDef::Struct)
+    {
+      icon='S';
+    }
+    else if (cd->compoundType()==ClassDef::Exception)
+    {
+      icon='E';
+    }
+  }
+  return icon;
+}
+
 void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,int maxLevel,int &index)
 {
   QListIterator<FTVNode> nli(nl);
@@ -359,11 +381,19 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
+        if (n->def->getLanguage() == SrcLangExt_Slice)
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
+        }
+        else
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
+        }
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
+        char icon=compoundIcon(dynamic_cast<ClassDef*>(n->def));
+        t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
       else
       {
@@ -407,11 +437,19 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
+        if (n->def->getLanguage() == SrcLangExt_Slice)
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
+        }
+        else
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
+        }
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
+        char icon=compoundIcon(dynamic_cast<ClassDef*>(n->def));
+        t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
       else
       {
