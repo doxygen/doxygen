@@ -2751,7 +2751,9 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
           ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
-            if (sliceOpt && (cd->isStruct() || cd->isInterface() || cd->isException()))
+            if (sliceOpt && (cd->compoundType()==ClassDef::Struct    ||
+                             cd->compoundType()==ClassDef::Interface ||
+                             cd->compoundType()==ClassDef::Exception))
             {
               continue; // These types appear in their own sections.
             }

@@ -272,7 +272,12 @@ void writeIndexHierarchy(OutputList &ol);
 void countDataStructures();
 
 extern int annotatedClasses;
+extern int annotatedInterfaces;
+extern int annotatedStructs;
+extern int annotatedExceptions;
 extern int hierarchyClasses;
+extern int hierarchyInterfaces;
+extern int hierarchyExceptions;
 extern int documentedFiles;
 extern int documentedGroups;
 extern int documentedNamespaces;

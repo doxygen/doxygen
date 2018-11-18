@@ -332,6 +332,27 @@ static void generateBriefDoc(FTextStream &t,Definition *def)
   }
 }
 
+static char compoundIcon(ClassDef *cd)
+{
+  char icon='C';
+  if (cd->getLanguage() == SrcLangExt_Slice)
+  {
+    if (cd->compoundType()==ClassDef::Interface)
+    {
+      icon='I';
+    }
+    else if (cd->compoundType()==ClassDef::Struct)
+    {
+      icon='S';
+    }
+    else if (cd->compoundType()==ClassDef::Exception)
+    {
+      icon='E';
+    }
+  }
+  return icon;
+}
+
 void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,int maxLevel,int &index)
 {
   QListIterator<FTVNode> nli(nl);
@@ -371,30 +392,8 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        if (n->def->getLanguage() == SrcLangExt_Slice)
-        {
-          ClassDef *cd = dynamic_cast<ClassDef*>(n->def);
-          if (cd->isInterface())
-          {
-            t << "<span class=\"icona\"><span class=\"icon\">I</span></span>";
-          }
-          else if (cd->isStruct())
-          {
-            t << "<span class=\"icona\"><span class=\"icon\">S</span></span>";
-          }
-          else if (cd->isException())
-          {
-            t << "<span class=\"icona\"><span class=\"icon\">E</span></span>";
-          }
-          else
-          {
-            t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
-          }
-        }
-        else
-        {
-          t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
-        }
+        char icon=compoundIcon(dynamic_cast<ClassDef*>(n->def));
+        t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
       else
       {
@@ -449,30 +448,8 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        if (n->def->getLanguage() == SrcLangExt_Slice)
-        {
-          ClassDef *cd = dynamic_cast<ClassDef*>(n->def);
-          if (cd->isInterface())
-          {
-            t << "<span class=\"icona\"><span class=\"icon\">I</span></span>";
-          }
-          else if (cd->isStruct())
-          {
-            t << "<span class=\"icona\"><span class=\"icon\">S</span></span>";
-          }
-          else if (cd->isException())
-          {
-            t << "<span class=\"icona\"><span class=\"icon\">E</span></span>";
-          }
-          else
-          {
-            t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
-          }
-        }
-        else
-        {
-          t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
-        }
+        char icon=compoundIcon(dynamic_cast<ClassDef*>(n->def));
+        t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
       else
       {

@@ -795,24 +795,24 @@ void createJavascriptSearchIndex()
       g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,cd);
       if (sliceOpt)
       {
-        if (cd->isInterface())
+        if (cd->compoundType()==ClassDef::Interface)
         {
           g_searchIndexInfo[SEARCH_INDEX_INTERFACES].symbolList.append(letter,cd);
         }
-        else if (cd->isStruct())
+        else if (cd->compoundType()==ClassDef::Struct)
         {
           g_searchIndexInfo[SEARCH_INDEX_STRUCTS].symbolList.append(letter,cd);
         }
-        else if (cd->isException())
+        else if (cd->compoundType()==ClassDef::Exception)
         {
           g_searchIndexInfo[SEARCH_INDEX_EXCEPTIONS].symbolList.append(letter,cd);
         }
-        else
+        else // cd->compoundType()==ClassDef::Class
         {
           g_searchIndexInfo[SEARCH_INDEX_CLASSES].symbolList.append(letter,cd);
         }
       }
-      else
+      else // non slice optimisation: group all types under classes
       {
         g_searchIndexInfo[SEARCH_INDEX_CLASSES].symbolList.append(letter,cd);
       }

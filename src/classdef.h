@@ -336,9 +336,6 @@ class ClassDef : public Definition
     QCString getMemberListFileName() const;
     bool subGrouping() const;
 
-    bool isInterface() const;
-    bool isStruct() const;
-    bool isException() const;
     bool isSliceLocal() const;
 
     //-----------------------------------------------------------------------------------
@@ -435,6 +432,7 @@ class ClassDef : public Definition
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
                                   const QCString &title,const QCString &anchor=QCString());
     void writeIncludeFiles(OutputList &ol);
+    void writeIncludeFilesForSlice(OutputList &ol);
     //void writeAllMembersLink(OutputList &ol);
     void writeInheritanceGraph(OutputList &ol);
     void writeCollaborationGraph(OutputList &ol);

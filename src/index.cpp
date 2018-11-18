@@ -1694,7 +1694,7 @@ static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
             writeNamespaceTree(nd->getNamespaceSDict(),ftv,FALSE,showClasses,addToIndex,ct);
             if (showClasses)
             {
-              ClassSDict *d;
+              ClassSDict *d = nd->getClassSDict();
               if (sliceOpt)
               {
                 if (ct == ClassDef::Interface)
@@ -1709,14 +1709,6 @@ static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
                 {
                   d = nd->getExceptionSDict();
                 }
-                else
-                {
-                  d = nd->getClassSDict();
-                }
-              }
-              else
-              {
-                d = nd->getClassSDict();
               }
               writeClassTree(d,ftv,addToIndex,FALSE,ct);
             }
@@ -5153,7 +5145,6 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::Files:              return documentedHtmlFiles>0 && showFiles;
     case LayoutNavEntry::FileList:           return documentedHtmlFiles>0 && showFiles;
     case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
-    //case LayoutNavEntry::Dirs:             return documentedDirs>0;
     case LayoutNavEntry::Examples:           return Doxygen::exampleSDict->count()>0;
     case LayoutNavEntry::None:             // should never happen, means not properly initialized
       assert(kind != LayoutNavEntry::None);

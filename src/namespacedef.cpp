@@ -170,28 +170,34 @@ void NamespaceDef::addInnerCompound(Definition *d)
 
 void NamespaceDef::insertClass(ClassDef *cd)
 {
-  ClassSDict *d;
+  ClassSDict *d = classSDict;
 
   if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
   {
-    if (cd->isInterface())
+    if (cd->compoundType()==ClassDef::Interface)
+    {
       d = interfaceSDict;
-    else if (cd->isStruct())
+    }
+    else if (cd->compoundType()==ClassDef::Struct)
+    {
       d = structSDict;
-    else if (cd->isException())
+    }
+    else if (cd->compoundType()==ClassDef::Exception)
+    {
       d = exceptionSDict;
-    else
-      d = classSDict;
+    }
   }
-  else
-    d = classSDict;
 
   if (d->find(cd->name())==0)
   {
     if (Config_getBool(SORT_BRIEF_DOCS))
+    {
       d->inSort(cd->name(),cd);
+    }
     else
+    {
       d->append(cd->name(),cd);
+    }
   }
 }
 

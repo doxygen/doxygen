@@ -1265,41 +1265,27 @@ void FileDef::insertClass(ClassDef *cd)
 {
   if (cd->isHidden()) return;
 
-  ClassSDict *d;
+  ClassSDict *d=0;
+  ClassSDict **dd=&m_classSDict;
 
   if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
   {
-    if (cd->isInterface())
+    if (cd->compoundType()==ClassDef::Interface)
     {
-      if (m_interfaceSDict==0)
-        m_interfaceSDict = new ClassSDict(17);
-      d = m_interfaceSDict;
+      dd = &m_interfaceSDict;
     }
-    else if (cd->isStruct())
+    else if (cd->compoundType()==ClassDef::Struct)
     {
-      if (m_structSDict==0)
-        m_structSDict = new ClassSDict(17);
-      d = m_structSDict;
+      dd = &m_structSDict;
     }
-    else if (cd->isException())
+    else if (cd->compoundType()==ClassDef::Exception)
     {
-      if (m_exceptionSDict==0)
-        m_exceptionSDict = new ClassSDict(17);
-      d = m_exceptionSDict;
-    }
-    else
-    {
-      if (m_classSDict==0)
-        m_classSDict = new ClassSDict(17);
-      d = m_classSDict;
+      dd = &m_exceptionSDict;
     }
   }
-  else
-  {
-    if (m_classSDict==0)
-      m_classSDict = new ClassSDict(17);
-    d = m_classSDict;
-  }
+
+  if (*dd==0) *dd = new ClassSDict(17);
+  d = *dd;
 
   if (Config_getBool(SORT_BRIEF_DOCS))
   {

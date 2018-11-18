@@ -6414,64 +6414,64 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
  /* ---- Slice-specific rules ------ */
 
-<SliceSequence>{SCOPENAME}                {
-                                            if (current->spec&Entry::Local)
-                                            {
-                                              current->type = "local ";
-                                            }
-  					    current->type += "sequence<";
-  					    current->type += yytext;
-  					    current->type += ">";
+<SliceSequence>{SCOPENAME}              {
+                                          if (current->spec&Entry::Local)
+                                          {
+                                            current->type = "local ";
+                                          }
+                                          current->type += "sequence<";
+                                          current->type += yytext;
+                                          current->type += ">";
                                         }
 
 <SliceSequence>{BN}*">"{BN}*            {
-                                            lineCount();
-					    BEGIN(SliceSequenceName);
+                                          lineCount();
+                                          BEGIN(SliceSequenceName);
                                         }
 
 <SliceSequenceName>{ID}{BN}*            {
-                                            lineCount();
-					    current->name = yytext ;
-					    current->name = current->name.stripWhiteSpace();
+                                          lineCount();
+                                          current->name = yytext ;
+                                          current->name = current->name.stripWhiteSpace();
                                         }
 
 <SliceSequenceName>";"                  {
-					    current->section = Entry::VARIABLE_SEC;
-					    current_root->addSubEntry(current);
-					    current = new Entry;
-					    initEntry();
-					    BEGIN(FindMembers);
+                                          current->section = Entry::VARIABLE_SEC;
+                                          current_root->addSubEntry(current);
+                                          current = new Entry;
+                                          initEntry();
+                                          BEGIN(FindMembers);
                                         }
 
 <SliceDictionary>{SCOPENAME}{BN}*","{BN}*{SCOPENAME} {
-                                            lineCount();
-                                            if (current->spec&Entry::Local)
-                                            {
-                                              current->type = "local ";
-                                            }
-  					    current->type += "dictionary<";
-  					    current->type += yytext;
-  					    current->type += ">";
-                                            current->type = current->type.simplifyWhiteSpace();
+                                          lineCount();
+                                          if (current->spec&Entry::Local)
+                                          {
+                                            current->type = "local ";
+                                          }
+                                          current->type += "dictionary<";
+                                          current->type += yytext;
+                                          current->type += ">";
+                                          current->type = current->type.simplifyWhiteSpace();
                                         }
 
 <SliceDictionary>{BN}*">"{BN}*          {
-                                            lineCount();
-					    BEGIN(SliceDictionaryName);
+                                          lineCount();
+                                          BEGIN(SliceDictionaryName);
                                         }
 
 <SliceDictionaryName>{ID}{BN}*          {
-                                            lineCount();
-					    current->name = yytext ;
-					    current->name = current->name.stripWhiteSpace();
+                                          lineCount();
+                                          current->name = yytext ;
+                                          current->name = current->name.stripWhiteSpace();
                                         }
 
 <SliceDictionaryName>";"                {
-					    current->section = Entry::VARIABLE_SEC;
-					    current_root->addSubEntry(current);
-					    current = new Entry;
-					    initEntry();
-					    BEGIN(FindMembers);
+                                          current->section = Entry::VARIABLE_SEC;
+                                          current_root->addSubEntry(current);
+                                          current = new Entry;
+                                          initEntry();
+                                          BEGIN(FindMembers);
                                         }
 
  /**********************************************************************************/

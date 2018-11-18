@@ -197,16 +197,16 @@ enum MemberListType
   MemberListType_decSequenceMembers      = 74 + MemberListType_declarationLists,
   MemberListType_docSequenceMembers      = 75 + MemberListType_documentationLists,
   MemberListType_decDictionaryMembers    = 76 + MemberListType_declarationLists,
-  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists,
+  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists
 };
 
-enum MemberType 
-{ 
+enum MemberType
+{
   MemberType_Define,
-  MemberType_Function, 
-  MemberType_Variable, 
-  MemberType_Typedef, 
-  MemberType_Enumeration, 
+  MemberType_Function,
+  MemberType_Variable,
+  MemberType_Typedef,
+  MemberType_Enumeration,
   MemberType_EnumValue,
   MemberType_Signal,
   MemberType_Slot,
@@ -217,7 +217,7 @@ enum MemberType
   MemberType_Interface,
   MemberType_Service,
   MemberType_Sequence,
-  MemberType_Dictionary,
+  MemberType_Dictionary
 };
 
 enum FortranFormat

@@ -8655,7 +8655,7 @@ bool namespaceHasVisibleChild(NamespaceDef *nd,bool includeClasses,bool filterCl
   }
   if (includeClasses)
   {
-    ClassSDict *d;
+    ClassSDict *d = nd->getClassSDict();
     if (filterClasses)
     {
       if (ct == ClassDef::Interface)
@@ -8670,14 +8670,6 @@ bool namespaceHasVisibleChild(NamespaceDef *nd,bool includeClasses,bool filterCl
       {
         d = nd->getExceptionSDict();
       }
-      else
-      {
-        d = nd->getClassSDict();
-      }
-    }
-    else
-    {
-      d = nd->getClassSDict();
     }
 
     if (d)
@@ -8686,8 +8678,8 @@ bool namespaceHasVisibleChild(NamespaceDef *nd,bool includeClasses,bool filterCl
       ClassDef *cd;
       for (;(cd=cli.current());++cli)
       {
-        if (cd->isLinkableInProject() && cd->templateMaster()==0) 
-        { 
+        if (cd->isLinkableInProject() && cd->templateMaster()==0)
+        {
           return TRUE;
         }
       }

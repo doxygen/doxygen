@@ -1375,57 +1375,185 @@ QCString ClassDef::includeStatement() const
   }
 }
 
+void ClassDef::writeIncludeFilesForSlice(OutputList &ol)
+{
+  if (m_impl->incInfo)
+  {
+    QCString nm;
+    QStrList paths = Config_getList(STRIP_FROM_PATH);
+    if (!paths.isEmpty() && m_impl->incInfo->fileDef)
+    {
+      QCString abs = m_impl->incInfo->fileDef->absFilePath();
+      const char *s = paths.first();
+      QCString potential;
+      unsigned int length = 0;
+      while (s)
+      {
+        QFileInfo info(s);
+        if (info.exists())
+        {
+          QString prefix = info.absFilePath();
+          if (prefix.at(prefix.length() - 1) != '/')
+          {
+            prefix += '/';
+          }
+
+          if (prefix.length() > length &&
+              qstricmp(abs.left(prefix.length()).data(), prefix.data()) == 0) // case insensitive compare
+          {
+            length = prefix.length();
+            potential = abs.right(abs.length() - prefix.length());
+          }
+          s = paths.next();
+        }
+      }
+
+      if (length > 0)
+      {
+        nm = potential;
+      }
+    }
+
+    if (nm.isEmpty())
+    {
+      nm = m_impl->incInfo->includeName.data();
+    }
+
+    ol.startParagraph();
+    ol.docify(theTranslator->trDefinedIn()+" ");
+    ol.startTypewriter();
+    ol.docify("<");
+    if (m_impl->incInfo->fileDef)
+    {
+      ol.writeObjectLink(0,m_impl->incInfo->fileDef->includeName(),0,nm);
+    }
+    else
+    {
+      ol.docify(nm);
+    }
+    ol.docify(">");
+    ol.endTypewriter();
+    ol.endParagraph();
+  }
+
+  // Write a summary of the Slice definition including metadata.
+  ol.startParagraph();
+  ol.startTypewriter();
+  if (!m_impl->metaData.isEmpty())
+  {
+    ol.docify(m_impl->metaData);
+    ol.lineBreak();
+  }
+  if (m_impl->spec & Entry::Local)
+  {
+    ol.docify("local ");
+  }
+  if (m_impl->spec & Entry::Interface)
+  {
+    ol.docify("interface ");
+  }
+  else if (m_impl->spec & Entry::Struct)
+  {
+    ol.docify("struct ");
+  }
+  else if (m_impl->spec & Entry::Exception)
+  {
+    ol.docify("exception ");
+  }
+  else
+  {
+    ol.docify("class ");
+  }
+  ol.docify(stripScope(name()));
+  if (m_impl->inherits)
+  {
+    if (m_impl->spec & (Entry::Interface|Entry::Exception))
+    {
+      ol.docify(" extends ");
+      BaseClassListIterator it(*m_impl->inherits);
+      BaseClassDef *ibcd;
+      for (;(ibcd=it.current());++it)
+      {
+        ClassDef *icd = ibcd->classDef;
+        ol.docify(icd->name());
+        if (!it.atLast())
+        {
+          ol.docify(", ");
+        }
+      }
+    }
+    else
+    {
+      // Must be a class.
+      bool implements = false;
+      BaseClassListIterator it(*m_impl->inherits);
+      BaseClassDef *ibcd;
+      for (;(ibcd=it.current());++it)
+      {
+        ClassDef *icd = ibcd->classDef;
+        if (icd->m_impl->spec & Entry::Interface)
+        {
+          implements = true;
+        }
+        else
+        {
+          ol.docify(" extends ");
+          ol.docify(icd->name());
+        }
+      }
+      if (implements)
+      {
+        ol.docify(" implements ");
+        bool first = true;
+        for (ibcd=it.toFirst();(ibcd=it.current());++it)
+        {
+          ClassDef *icd = ibcd->classDef;
+          if (icd->m_impl->spec & Entry::Interface)
+          {
+            if (!first)
+            {
+              ol.docify(", ");
+            }
+            else
+            {
+              first = false;
+            }
+            ol.docify(icd->name());
+          }
+        }
+      }
+    }
+  }
+  ol.docify(" { ... }");
+  ol.endTypewriter();
+  ol.endParagraph();
+}
+
 void ClassDef::writeIncludeFiles(OutputList &ol)
 {
   if (m_impl->incInfo /*&& Config_getBool(SHOW_INCLUDE_FILES)*/)
   {
     SrcLangExt lang = getLanguage();
-    if (lang==SrcLangExt_Slice)
+    QCString nm=m_impl->incInfo->includeName.isEmpty() ?
+      (m_impl->incInfo->fileDef ?
+       m_impl->incInfo->fileDef->docName().data() : ""
+      ) :
+      m_impl->incInfo->includeName.data();
+    if (!nm.isEmpty())
     {
-      QCString nm;
-      QStrList paths = Config_getList(STRIP_FROM_PATH);
-      if (!paths.isEmpty() && m_impl->incInfo->fileDef)
-      {
-        QCString abs = m_impl->incInfo->fileDef->absFilePath();
-        const char *s = paths.first();
-        QCString potential;
-        unsigned int length = 0;
-        while (s)
-        {
-          QFileInfo info(s);
-          if (info.exists())
-          {
-            QString prefix = info.absFilePath();
-            if (prefix.at(prefix.length() - 1) != '/')
-            {
-              prefix += '/';
-            }
-
-            if (prefix.length() > length &&
-                qstricmp(abs.left(prefix.length()).data(), prefix.data()) == 0) // case insensitive compare
-            {
-              length = prefix.length();
-              potential = abs.right(abs.length() - prefix.length());
-            }
-            s = paths.next();
-          }
-        }
-
-        if (length > 0)
-        {
-          nm = potential;
-        }
-      }
-
-      if (nm.isEmpty())
-      {
-        nm = m_impl->incInfo->includeName.data();
-      }
-
       ol.startParagraph();
-      ol.docify("Defined in ");
       ol.startTypewriter();
-      ol.docify("<");
+      ol.docify(includeStatement());
+      bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+      if (m_impl->incInfo->local || isIDLorJava)
+        ol.docify("\"");
+      else
+        ol.docify("<");
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Html);
+      ol.docify(nm);
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.enable(OutputGenerator::Html);
       if (m_impl->incInfo->fileDef)
       {
         ol.writeObjectLink(0,m_impl->incInfo->fileDef->includeName(),0,nm);
@@ -1434,143 +1562,13 @@ void ClassDef::writeIncludeFiles(OutputList &ol)
       {
         ol.docify(nm);
       }
-      ol.docify(">");
-      ol.endTypewriter();
-      ol.endParagraph();
-    }
-    else
-    {
-      QCString nm=m_impl->incInfo->includeName.isEmpty() ?
-        (m_impl->incInfo->fileDef ?
-         m_impl->incInfo->fileDef->docName().data() : ""
-        ) :
-        m_impl->incInfo->includeName.data();
-      if (!nm.isEmpty())
-      {
-        ol.startParagraph();
-        ol.startTypewriter();
-        ol.docify(includeStatement());
-        bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
-        if (m_impl->incInfo->local || isIDLorJava)
-          ol.docify("\"");
-        else
-          ol.docify("<");
-        ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Html);
-        ol.docify(nm);
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.enable(OutputGenerator::Html);
-        if (m_impl->incInfo->fileDef)
-        {
-          ol.writeObjectLink(0,m_impl->incInfo->fileDef->includeName(),0,nm);
-        }
-        else
-        {
-          ol.docify(nm);
-        }
-        ol.popGeneratorState();
-        if (m_impl->incInfo->local || isIDLorJava)
-          ol.docify("\"");
-        else
-          ol.docify(">");
-        if (isIDLorJava)
-          ol.docify(";");
-        ol.endTypewriter();
-        ol.endParagraph();
-      }
-    }
-
-    // Write a summary of the Slice definition including metadata.
-    if (lang == SrcLangExt_Slice)
-    {
-      ol.startParagraph();
-      ol.startTypewriter();
-      if (!m_impl->metaData.isEmpty())
-      {
-        ol.docify(m_impl->metaData);
-        ol.lineBreak();
-      }
-      if (m_impl->spec & Entry::Local)
-      {
-        ol.docify("local ");
-      }
-      if (m_impl->spec & Entry::Interface)
-      {
-        ol.docify("interface ");
-      }
-      else if (m_impl->spec & Entry::Struct)
-      {
-        ol.docify("struct ");
-      }
-      else if (m_impl->spec & Entry::Exception)
-      {
-        ol.docify("exception ");
-      }
+      ol.popGeneratorState();
+      if (m_impl->incInfo->local || isIDLorJava)
+        ol.docify("\"");
       else
-      {
-        ol.docify("class ");
-      }
-      ol.docify(stripScope(name()));
-      if (m_impl->inherits)
-      {
-        if (m_impl->spec & (Entry::Interface|Entry::Exception))
-        {
-          ol.docify(" extends ");
-          BaseClassListIterator it(*m_impl->inherits);
-          BaseClassDef *ibcd;
-          for (;(ibcd=it.current());++it)
-          {
-            ClassDef *icd = ibcd->classDef;
-            ol.docify(icd->name());
-            if (!it.atLast())
-            {
-              ol.docify(", ");
-            }
-          }
-        }
-        else
-        {
-          // Must be a class.
-          bool implements = false;
-          BaseClassListIterator it(*m_impl->inherits);
-          BaseClassDef *ibcd;
-          for (;(ibcd=it.current());++it)
-          {
-            ClassDef *icd = ibcd->classDef;
-            if (icd->m_impl->spec & Entry::Interface)
-            {
-              implements = true;
-            }
-            else
-            {
-              ol.docify(" extends ");
-              ol.docify(icd->name());
-            }
-          }
-          if (implements)
-          {
-            ol.docify(" implements ");
-            bool first = true;
-            for (ibcd=it.toFirst();(ibcd=it.current());++it)
-            {
-              ClassDef *icd = ibcd->classDef;
-              if (icd->m_impl->spec & Entry::Interface)
-              {
-                if (!first)
-                {
-                  ol.docify(", ");
-                }
-                else
-                {
-                  first = false;
-                }
-                ol.docify(icd->name());
-              }
-            }
-          }
-        }
-      }
-      ol.docify(" { ... }");
+        ol.docify(">");
+      if (isIDLorJava)
+        ol.docify(";");
       ol.endTypewriter();
       ol.endParagraph();
     }
@@ -2054,24 +2052,24 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
     {
       if (sliceOpt)
       {
-        if (isInterface())
+        if (compoundType()==Interface)
         {
           ol.startMemberHeader("interfaces");
         }
-        else if (isStruct())
+        else if (compoundType()==Struct)
         {
           ol.startMemberHeader("structs");
         }
-        else if (isException())
+        else if (compoundType()==Exception)
         {
           ol.startMemberHeader("exceptions");
         }
-        else
+        else // compoundType==Class
         {
           ol.startMemberHeader("nested-classes");
         }
       }
-      else
+      else // non-Slice optimization: single header for class/struct/..
       {
         ol.startMemberHeader("nested-classes");
       }
@@ -2207,7 +2205,14 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*page
         writeBriefDescription(ol,exampleFlag);
         break;
       case LayoutDocEntry::ClassIncludes:
-        writeIncludeFiles(ol);
+        if (lang==SrcLangExt_Slice)
+        {
+          writeIncludeFilesForSlice(ol);
+        }
+        else
+        {
+          writeIncludeFiles(ol);
+        }
         break;
       case LayoutDocEntry::ClassInheritanceGraph:
         writeInheritanceGraph(ol);
@@ -2365,15 +2370,15 @@ void ClassDef::writeDocumentation(OutputList &ol)
   HighlightedItem hli;
   if (sliceOpt)
   {
-    if (isInterface())
+    if (compoundType()==Interface)
     {
       hli = HLI_InterfaceVisible;
     }
-    else if (isStruct())
+    else if (compoundType()==Struct)
     {
       hli = HLI_StructVisible;
     }
-    else if (isException())
+    else if (compoundType()==Exception)
     {
       hli = HLI_ExceptionVisible;
     }
@@ -2524,15 +2529,15 @@ void ClassDef::writeMemberList(OutputList &ol)
   HighlightedItem hli;
   if (sliceOpt)
   {
-    if (isInterface())
+    if (compoundType()==Interface)
     {
       hli = HLI_InterfaceVisible;
     }
-    else if (isStruct())
+    else if (compoundType()==Struct)
     {
       hli = HLI_StructVisible;
     }
-    else if (isException())
+    else if (compoundType()==Exception)
     {
       hli = HLI_ExceptionVisible;
     }
@@ -3802,21 +3807,19 @@ QCString ClassDef::compoundTypeString() const
   }
   else
   {
-    QCString type;
     switch (m_impl->compType)
     {
-      case Class:     type += isJavaEnum() ? "enum" : "class"; break;
-      case Struct:    type += "struct"; break;
-      case Union:     type += "union"; break;
-      case Interface: type += getLanguage()==SrcLangExt_ObjC ? "class" : "interface"; break;
-      case Protocol:  type += "protocol"; break;
-      case Category:  type += "category"; break;
-      case Exception: type += "exception"; break;
-      case Service:   type += "service"; break;
-      case Singleton: type += "singleton"; break;
+      case Class:     return isJavaEnum() ? "enum" : "class";
+      case Struct:    return "struct";
+      case Union:     return "union";
+      case Interface: return getLanguage()==SrcLangExt_ObjC ? "class" : "interface";
+      case Protocol:  return "protocol";
+      case Category:  return "category";
+      case Exception: return "exception";
+      case Service:   return "service";
+      case Singleton: return "singleton";
       default:        return "unknown";
     }
-    return type;
   }
 }
 
@@ -4999,21 +5002,6 @@ const ExampleSDict *ClassDef::exampleList() const
 bool ClassDef::subGrouping() const
 {
   return m_impl->subGrouping;
-}
-
-bool ClassDef::isInterface() const
-{
-  return m_impl->compType == Interface;
-}
-
-bool ClassDef::isStruct() const
-{
-  return m_impl->compType == Struct;
-}
-
-bool ClassDef::isException() const
-{
-  return m_impl->compType == Exception;
 }
 
 bool ClassDef::isSliceLocal() const
