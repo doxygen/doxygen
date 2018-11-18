@@ -287,21 +287,22 @@ void RTFGenerator::beginRTFDocument()
   t << "\\margl1800\\margr1800\\margt1440\\margb1440\\gutter0\\ltrsect}\n";
 
   // sort styles ascending by \s-number via an intermediate QArray
-  QArray<const StyleData*> array(128);
-  array.fill(0);
   QDictIterator<StyleData> iter(rtf_Style);
   const StyleData* style;
+  unsigned maxIndex = 0;
   for(; (style = iter.current()); ++iter)
   {
     unsigned index = style->index;
-    unsigned size = array.size();
-    if (index >= size)
-    {
-      // +1 to add at least one element, then align up to multiple of 8
-      array.resize((index + 1 + 7) & ~7);
-      array.fill(0, size);
-      ASSERT(index < array.size());
-    }
+    if (maxIndex < index) maxIndex = index;
+  }
+  QArray<const StyleData*> array(maxIndex + 1);
+  array.fill(0);
+  ASSERT(maxIndex < array.size());
+
+  iter.toFirst();
+  for(; (style = iter.current()); ++iter)
+  {
+    unsigned index = style->index;
     if (array.at(index) != 0)
     {
       QCString key(iter.currentKey());
