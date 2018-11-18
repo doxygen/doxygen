@@ -294,7 +294,6 @@ void LatexDocVisitor::visit(DocURL *u)
   if (m_hide) return;
   if (Config_getBool(PDF_HYPERLINKS))
   {
-	m_t << endl << "%% AME " << u->url() <<endl;
     m_t << "\\href{";
     if (u->isEmail()) m_t << "mailto:";
     m_t << latexFilterURL(u->url()) << "}";
@@ -1331,7 +1330,6 @@ void LatexDocVisitor::visitPre(DocHRef *href)
   if (m_hide) return;
   if (Config_getBool(PDF_HYPERLINKS))
   {
-	m_t << endl << "%% AME " << href->url() <<endl;
     m_t << "\\href{";
     m_t << latexFilterURL(href->url());
     m_t << "}";

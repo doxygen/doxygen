@@ -223,7 +223,6 @@ void CiteDict::generatePage() const
 
     if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
     else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;
-    else if (insideBib) doc+=line+"\n";
     int i;
     // determine text to use at the location of the @cite command
     if (insideBib && (i=line.find("name=\"CITEREF_"))!=-1)
@@ -234,14 +233,17 @@ void CiteDict::generatePage() const
       {
         QCString label = line.mid(i+14,j-i-14);
         QCString number = line.mid(j+2,k-j-1);
+        label = substitute(substitute(label,"&ndash;","--"),"&mdash;","---");
         CiteInfo *ci = m_entries.find(label);
         //printf("label='%s' number='%s' => %p\n",label.data(),number.data(),ci);
+        line = line.left(i+14) + label + line.right(line.length()-j);
         if (ci)
         {
           ci->text = number;
         }
       }
     }
+    if (insideBib) doc+=line+"\n";
   }
   //printf("doc=[%s]\n",doc.data());
 
