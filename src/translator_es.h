@@ -2060,6 +2060,119 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
 // new since 1.8.15
 //////////////////////////////////////////////////////////////////////////
 
+    /** VHDL design unit hierarchy */
+    virtual QCString trDesignUnitHierarchy()
+    { return "Jerarquía de unidades de diseño"; }
+    /** VHDL design unit list */
+    virtual QCString trDesignUnitList()
+    { return "Lista de unidades de diseño"; }
+    /** VHDL design unit members */
+    virtual QCString trDesignUnitMembers()
+    { return "Miembros de las unidades de diseño"; }
+    /** VHDL design unit list description */
+    virtual QCString trDesignUnitListDescription()
+    {
+        return "Aquí hay una lista de todos los miembros de la unidad de diseño con "
+            "enlaces a las entidades a las que pertenecen:";
+    }
+    /** VHDL design unit index */
+    virtual QCString trDesignUnitIndex()
+    { return "Indice de unidades de diseño"; }
+    /** VHDL design units */
+    virtual QCString trDesignUnits()
+    { return "Unidades de Diseño"; }
+    /** VHDL functions/procedures/processes */
+    virtual QCString trFunctionAndProc()
+    { return "Funciones/Procedimientos/Procesos"; }
+    /** VHDL type */
+    virtual QCString trVhdlType(uint64 type,bool single)
+    {
+      switch(type)
+      {
+        case VhdlDocGen::LIBRARY:
+          if (single) return "Libreria";
+          else        return "Librerias";
+        case VhdlDocGen::PACKAGE:
+          if (single) return "Paquete";
+          else        return "Paquetes";
+        case VhdlDocGen::SIGNAL:
+          if (single) return "Señal";
+          else        return "Señales";
+        case VhdlDocGen::COMPONENT:
+          if (single) return "Componente";
+          else        return "Componentes";
+        case VhdlDocGen::CONSTANT:
+          if (single) return "Constante";
+          else        return "Constantes";
+        case VhdlDocGen::ENTITY:
+          if (single) return "Entidad";
+          else        return "Entidades";
+        case VhdlDocGen::TYPE:
+          if (single) return "Tipo";
+          else        return "Tipos";
+        case VhdlDocGen::SUBTYPE:
+          if (single) return "Subtipo";
+          else        return "Subtipos";
+        case VhdlDocGen::FUNCTION:
+          if (single) return "Función";
+          else        return "Funciones";
+        case VhdlDocGen::RECORD:
+          if (single) return "Registro";
+          else        return "Registros";
+        case VhdlDocGen::PROCEDURE:
+          if (single) return "Procedimiento";
+          else        return "Procedimientos";
+        case VhdlDocGen::ARCHITECTURE:
+          if (single) return "Arquitectura";
+          else        return "Arquitecturas";
+        case VhdlDocGen::ATTRIBUTE:
+          if (single) return "Atributo";
+          else        return "Atributos";
+        case VhdlDocGen::PROCESS:
+          if (single) return "Proceso";
+          else        return "Procesos";
+        case VhdlDocGen::PORT:
+          if (single) return "Puerto";
+          else        return "Puertos";
+        case VhdlDocGen::USE:
+          if (single) return "cláusula de uso";
+          else        return "Cláusulas de uso";
+        case VhdlDocGen::GENERIC:
+          if (single) return "Genérico";
+          else        return "Genéricos";
+        case VhdlDocGen::PACKAGE_BODY:
+          return "Cuerpo del paquete";
+        case VhdlDocGen::UNITS:
+          return "Unidades";
+        case VhdlDocGen::SHAREDVARIABLE:
+          if (single) return "Variable Compartida";
+          else        return "Variable Compartidas";
+        case VhdlDocGen::VFILE:
+          if (single) return "Fichero";
+          else        return "Ficheros";
+        case VhdlDocGen::GROUP:
+          if (single) return "Grupo";
+          else        return "Grupos";
+        case VhdlDocGen::INSTANTIATION:
+          if (single) return "Instanciación";
+          else        return "Instanciaciones";
+        case VhdlDocGen::ALIAS:
+          if (single) return "Alias";
+          else        return "Aliases";
+        case VhdlDocGen::CONFIG:
+          if (single) return "Configuración";
+          else        return "Configuraciones";
+        case VhdlDocGen::MISCELLANEOUS:
+          return "Varios";
+        case VhdlDocGen::UCF_CONST:
+          return "Restricciones";
+        default:
+          return "Clase";
+      }
+    }
+    virtual QCString trCustomReference(const char *name)
+    { return "Referencia"+QCString(name); }
+
     virtual QCString trConstants()
     {
         return "Constantes";
