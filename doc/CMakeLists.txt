@@ -114,7 +114,7 @@ configure_file(${CMAKE_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/
 
 # doc/language.doc (see tag Doxyfile:INPUT)
 add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} translator.py
+        COMMAND ${PYTHON_EXECUTABLE} translator.py ${CMAKE_SOURCE_DIR}
         DEPENDS ${PROJECT_BINARY_DIR}/doc/maintainers.txt ${PROJECT_BINARY_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py
         OUTPUT language.doc
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc
