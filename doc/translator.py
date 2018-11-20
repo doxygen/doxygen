@@ -1226,12 +1226,20 @@ class TrManager:
         doxy_default = os.path.join(self.script_path, '..')
         self.doxy_path = os.path.abspath(os.getenv('DOXYGEN', doxy_default))
 
-        # Get the explicit arguments of the script.
-        self.script_argLst = sys.argv[1:]
-
         # Build the path names based on the Doxygen's root knowledge.
         self.doc_path = os.path.join(self.doxy_path, 'doc')
         self.src_path = os.path.join(self.doxy_path, 'src')
+        #  Normally the original sources aren't in the current directory
+        # (as we are in the build directory) so we have to specify the
+        # original source directory.
+        self.org_src_path = self.src_path
+        if (len(sys.argv) > 1 and os.path.isdir(os.path.join(sys.argv[1], 'src'))):
+            self.org_src_path = os.path.join(sys.argv[1], 'src')
+            # Get the explicit arguments of the script.
+            self.script_argLst = sys.argv[2:]
+        else:
+            # Get the explicit arguments of the script.
+            self.script_argLst = sys.argv[1:]
 
         # Create the empty dictionary for Transl object identified by the
         # class identifier of the translator.
@@ -1413,15 +1421,15 @@ class TrManager:
         are searched in doxygen/src directory.
         """
         files = []
-        for item in os.listdir(self.src_path):
+        for item in os.listdir(self.org_src_path):
             # Split the bare name to get the extension.
             name, ext = os.path.splitext(item)
             ext = ext.lower()
 
             # Include only .cpp and .h files (case independent) and exclude
             # the files where the checked identifiers are defined.
-            if ext == '.cpp' or (ext == '.h' and name.find('translator') == -1):
-                fname = os.path.join(self.src_path, item)
+            if ext == '.cpp' or ext ==  '.l' or (ext == '.h' and name.find('translator') == -1):
+                fname = os.path.join(self.org_src_path, item)
                 assert os.path.isfile(fname) # assumes no directory with the ext
                 files.append(fname)          # full name
         return files
@@ -1444,12 +1452,14 @@ class TrManager:
         assert os.path.isfile(fname)
         f = xopen(fname)
         cont = f.read()
+        cont = ''.join(cont.split('\n')) # otherwise the 'match' function won't work.
         f.close()
 
         # Remove the items for identifiers that were found in the file.
         while lst_in:
             item = lst_in.pop(0)
-            if cont.find(item) != -1:
+            rexItem = re.compile('.*' + item + ' *\(')
+            if rexItem.match(cont):
                 del dic[item]
 
 
