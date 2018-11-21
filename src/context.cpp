@@ -1935,7 +1935,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (cache.inheritanceNodes==-1)
       {
-        cache.inheritanceNodes=m_classDef->countInheritanceNodes();
+        cache.inheritanceNodes=m_classDef->countInheritanceNodes(ClassDef::INHERITED_BOTH);
       }
       return cache.inheritanceNodes>0;
     }

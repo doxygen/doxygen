@@ -1190,11 +1190,11 @@ void ClassDef::showUsedFiles(OutputList &ol)
   ol.popGeneratorState();
 }
 
-int ClassDef::countInheritanceNodes()
+int ClassDef::countInheritanceNodes(inheritaceType inher)
 {
   int count=0;
   BaseClassDef *ibcd;
-  if (m_impl->inheritedBy)
+  if (m_impl->inheritedBy && (inher & INHERITED_BY))
   {
     BaseClassListIterator it(*m_impl->inheritedBy);
     for (;(ibcd=it.current());++it)
@@ -1203,7 +1203,7 @@ int ClassDef::countInheritanceNodes()
       if ( icd->isVisibleInHierarchy()) count++;
     }
   }
-  if (m_impl->inherits)
+  if (m_impl->inherits && (inher & INHERITS))
   {
     BaseClassListIterator it(*m_impl->inherits);
     for (;(ibcd=it.current());++it)
@@ -1218,7 +1218,7 @@ int ClassDef::countInheritanceNodes()
 void ClassDef::writeInheritanceGraph(OutputList &ol)
 {
   // count direct inheritance relations
-  const int count=countInheritanceNodes();
+  int count=countInheritanceNodes(INHERITED_BOTH);
 
   bool renderDiagram = FALSE;
   if (Config_getBool(HAVE_DOT) &&
@@ -1255,22 +1255,26 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
     ol.disableAllBut(OutputGenerator::Man);
   }
 
-  if (m_impl->inherits && m_impl->inherits->count()>0)
+  count=countInheritanceNodes(INHERITS);
+  if (count)
   {
     ol.startParagraph();
     //parseText(ol,theTranslator->trInherits()+" ");
 
-    QCString inheritLine = theTranslator->trInheritsList(m_impl->inherits->count());
+    QCString inheritLine = theTranslator->trInheritsList(count);
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
+    bool alreadyParsed = false;
+    int skipped = 0;
     // now replace all markers in inheritLine with links to the classes
     while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
     {
-      ol.parseText(inheritLine.mid(index,newIndex-index));
+      if (!alreadyParsed) ol.parseText(inheritLine.mid(index,newIndex-index));
+      alreadyParsed = true;
       bool ok;
-      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok) + skipped;
       BaseClassDef *bcd=m_impl->inherits->at(entryIndex);
-      if (ok && bcd)
+      if (ok && bcd && bcd->classDef->isVisibleInHierarchy())
       {
         ClassDef *cd=bcd->classDef;
 
@@ -1290,32 +1294,37 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
         {
           ol.docify(displayName);
         }
+        alreadyParsed = false;
+        index=newIndex+matchLen;
       }
       else
       {
-        err("invalid marker %d in inherits list!\n",entryIndex);
+        skipped++;
       }
-      index=newIndex+matchLen;
     }
     ol.parseText(inheritLine.right(inheritLine.length()-index));
     ol.endParagraph();
   }
 
   // write subclasses
-  if (m_impl->inheritedBy && m_impl->inheritedBy->count()>0)
+  count=countInheritanceNodes(INHERITED_BY);
+  if (count)
   {
     ol.startParagraph();
-    QCString inheritLine = theTranslator->trInheritedByList(m_impl->inheritedBy->count());
+    QCString inheritLine = theTranslator->trInheritedByList(count);
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
+    bool alreadyParsed = false;
+    int skipped = 0;
     // now replace all markers in inheritLine with links to the classes
     while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
     {
-      ol.parseText(inheritLine.mid(index,newIndex-index));
+      if (!alreadyParsed) ol.parseText(inheritLine.mid(index,newIndex-index));
+      alreadyParsed = true;
       bool ok;
-      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok) + skipped;
       BaseClassDef *bcd=m_impl->inheritedBy->at(entryIndex);
-      if (ok && bcd)
+      if (ok && bcd && bcd->classDef->isVisibleInHierarchy())
       {
         ClassDef *cd=bcd->classDef;
         if (cd->isLinkable())
@@ -1327,8 +1336,13 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
           ol.docify(cd->displayName());
         }
         writeInheritanceSpecifier(ol,bcd);
+        index=newIndex+matchLen;
+        alreadyParsed = false;
       }
-      index=newIndex+matchLen;
+      else
+      {
+         skipped++;
+      }
     }
     ol.parseText(inheritLine.right(inheritLine.length()-index));
     ol.endParagraph();
