@@ -162,7 +162,10 @@ void RefList::generatePage()
       if (item->scope->name() != "<globalScope>")
       {
         doc += "\\_setscope ";
-        doc += item->scope->name();
+	if (item->scope->name().right(3)==" -p")
+	  doc += item->scope->name().left(item->scope->name().length()-3) + "-p";
+        else
+          doc += item->scope->name();
         doc += " ";
       }
     }
