@@ -444,9 +444,12 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       forceStartParagraph(s);
       break;
     case DocVerbatim::HtmlOnly: 
-      if (s->isBlock()) forceEndParagraph(s);
-      m_t << s->text(); 
-      if (s->isBlock()) forceStartParagraph(s);
+      {
+        bool forced = false;
+        if (s->isBlock()) forced  = forceEndParagraph(s);
+        m_t << s->text();
+        if (s->isBlock()) forceStartParagraph(s, forced);
+      }
       break;
     case DocVerbatim::ManOnly: 
     case DocVerbatim::LatexOnly: 
@@ -2277,7 +2280,7 @@ static bool insideStyleChangeThatIsOutsideParagraph(DocPara *para,int nodeIndex)
  *  have to be outside of the paragraph. This method will forcefully end
  *  the current paragraph and forceStartParagraph() will restart it.
  */
-void HtmlDocVisitor::forceEndParagraph(DocNode *n)
+bool HtmlDocVisitor::forceEndParagraph(DocNode *n)
 {
   //printf("forceEndParagraph(%p) %d\n",n,n->kind());
   if (n->parent() && n->parent()->kind()==DocNode::Kind_Para)
@@ -2285,7 +2288,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
     DocPara *para = (DocPara*)n->parent();
     int nodeIndex = para->children().findRef(n);
     nodeIndex--;
-    if (nodeIndex<0) return; // first node
+    if (nodeIndex<0) return false; // first node
     while (nodeIndex>=0 &&
            para->children().at(nodeIndex)->kind()==DocNode::Kind_WhiteSpace
           )
@@ -2296,7 +2299,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
     {
       DocNode *n = para->children().at(nodeIndex);
       //printf("n=%p kind=%d outside=%d\n",n,n->kind(),mustBeOutsideParagraph(n));
-      if (mustBeOutsideParagraph(n)) return;
+      if (mustBeOutsideParagraph(n)) return false;
     }
     nodeIndex--;
     bool styleOutsideParagraph=insideStyleChangeThatIsOutsideParagraph(para,nodeIndex);
@@ -2304,18 +2307,20 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
     bool isLast;
     getParagraphContext(para,isFirst,isLast);
     //printf("forceEnd first=%d last=%d styleOutsideParagraph=%d\n",isFirst,isLast,styleOutsideParagraph);
-    if (isFirst && isLast) return;
-    if (styleOutsideParagraph) return;
+    if (isFirst && isLast) return false;
+    if (styleOutsideParagraph) return false;
 
     m_t << "</p>";
+    return true;
   }
+  return false;
 }
 
 /** Used for items found inside a paragraph, which due to XHTML restrictions
  *  have to be outside of the paragraph. This method will forcefully start
  *  the paragraph, that was previously ended by forceEndParagraph().
  */
-void HtmlDocVisitor::forceStartParagraph(DocNode *n)
+void HtmlDocVisitor::forceStartParagraph(DocNode *n, bool forced)
 {
   //printf("forceStartParagraph(%p) %d\n",n,n->kind());
   if (n->parent() && n->parent()->kind()==DocNode::Kind_Para) // if we are inside a paragraph
@@ -2324,9 +2329,9 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     int nodeIndex = para->children().findRef(n);
     int numNodes  = para->children().count();
     bool styleOutsideParagraph=insideStyleChangeThatIsOutsideParagraph(para,nodeIndex);
-    if (styleOutsideParagraph) return;
+    if (!forced && styleOutsideParagraph) return;
     nodeIndex++;
-    if (nodeIndex==numNodes) return; // last node
+    if (!forced && nodeIndex==numNodes) return; // last node
     while (nodeIndex<numNodes &&
            para->children().at(nodeIndex)->kind()==DocNode::Kind_WhiteSpace
           )
@@ -2336,9 +2341,9 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     if (nodeIndex<numNodes)
     {
       DocNode *n = para->children().at(nodeIndex);
-      if (mustBeOutsideParagraph(n)) return;
+      if (!forced && mustBeOutsideParagraph(n)) return;
     }
-    else
+    else if (!forced)
     {
       return; // only whitespace at the end!
     }
@@ -2348,7 +2353,7 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     bool isLast;
     getParagraphContext(para,isFirst,isLast);
     //printf("forceStart first=%d last=%d\n",isFirst,isLast);
-    if (isFirst && isLast) needsTag = FALSE;
+    if (!forced && isFirst && isLast) needsTag = FALSE;
 
     if (needsTag)
       m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(para, nodeIndex)) << ">";
