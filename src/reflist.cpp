@@ -169,29 +169,19 @@ void RefList::generatePage()
     doc += item->prefix;
     doc += " \\_internalref ";
     doc += item->name;
-    doc += " \"";
     // escape \'s in title, see issue #5901
-    // prevent Obj-C names in e.g. todo list are seen as emoji
-    if (item->scope)
+    QCString escapedTitle = substitute(item->title,"\\","\\\\");
+    if (item->scope &&
+        (item->scope->definitionType()==Definition::TypeClass ||
+         item->scope->definitionType()==Definition::TypeNamespace ||
+         item->scope->definitionType()==Definition::TypeMember ||
+         item->scope->definitionType()==Definition::TypePackage)
+       )
     {
-      switch(item->scope->definitionType())
-      {
-        case Definition::TypeClass:
-        case Definition::TypeNamespace:
-        case Definition::TypeMember:
-        case Definition::TypePackage:
-          doc += substitute(substitute(item->title,"\\","\\\\"),":","&Colon;");
-          break;
-        default:
-          doc += substitute(item->title,"\\","\\\\");
-          break;
-      }
+      // prevent Obj-C names in e.g. todo list are seen as emoji
+      escapedTitle = substitute(escapedTitle,":","&Colon;");
     }
-    else
-    {
-      doc += substitute(item->title,"\\","\\\\");
-    }
-    doc += "\" ";
+    doc += " \""+escapedTitle+"\" ";
     // write declaration in case a function with arguments
     if (!item->args.isEmpty()) 
     {
