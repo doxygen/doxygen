@@ -5457,7 +5457,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  BEGIN( FindMembers ) ;
 					}
-<CompoundName>{SCOPENAME}{BN}*/"<"	{
+<CompoundName>{SCOPENAME}/{BN}*"<"	{
   					  sharpCount = 0;
   					  current->name = yytext ;
 					  if (current->spec & Entry::Protocol)

@@ -1424,12 +1424,8 @@ static ClassDef *getResolvedClassRec(const Definition *scope,
       di = Doxygen::symbolMap->find(name+"-p");
       if (di==0)
       {
-        di = Doxygen::symbolMap->find(name+" -p");
-        if (di==0)
-        {
-          //printf("no such symbol!\n");
-          return 0;
-        }
+        //printf("no such symbol!\n");
+        return 0;
       }
     //}
   }
@@ -4560,8 +4556,7 @@ static bool getScopeDefs(const char *docScope,const char *scope,
     if (scopeOffset>0) fullName.prepend(docScopeName.left(scopeOffset)+"::");
 
     if (((cd=getClass(fullName)) ||         // normal class
-         (cd=getClass(fullName+"-p")) ||    // ObjC protocol
-         (cd=getClass(fullName+" -p")) //||    // ObjC protocol
+         (cd=getClass(fullName+"-p")) //||    // ObjC protocol
          //(cd=getClass(fullName+"-g"))       // C# generic
         ) && cd->isLinkable())
     {
