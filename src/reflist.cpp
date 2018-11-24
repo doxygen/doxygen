@@ -171,7 +171,26 @@ void RefList::generatePage()
     doc += item->name;
     doc += " \"";
     // escape \'s in title, see issue #5901
-    doc += substitute(item->title,"\\","\\\\");
+    // prevent Obj-C names in e.g. todo list are seen as emoji
+    if (item->scope)
+    {
+      switch(item->scope->definitionType())
+      {
+        case Definition::TypeClass:
+        case Definition::TypeNamespace:
+        case Definition::TypeMember:
+        case Definition::TypePackage:
+          doc += substitute(substitute(item->title,"\\","\\\\"),":","&Colon;");
+          break;
+        default:
+          doc += substitute(item->title,"\\","\\\\");
+          break;
+      }
+    }
+    else
+    {
+      doc += substitute(item->title,"\\","\\\\");
+    }
     doc += "\" ";
     // write declaration in case a function with arguments
     if (!item->args.isEmpty()) 
