@@ -904,10 +904,15 @@ DB_GEN_C
 void DocbookGenerator::endClassDiagram(const ClassDiagram &d, const char *fileName,const char *)
 {
 DB_GEN_C
-  QList<DocNode> dummy;
-  visitPreStart(t, FALSE, NULL, dummy, relPath + fileName + ".png", NULL, NULL);
+  t << "    <informalfigure>" << endl;
+  t << "        <mediaobject>" << endl;
+  t << "            <imageobject>" << endl;
+  t << "                <imagedata width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" 
+                         << relPath << fileName << ".png\">" << "</imagedata>" << endl;
+  t << "            </imageobject>" << endl;
   d.writeImage(t,dir,relPath,fileName,FALSE);
-  visitPostEnd(t, FALSE);
+  t << "        </mediaobject>" << endl;
+  t << "    </informalfigure>" << endl;
   t << "</para>" << endl;
 }
 void  DocbookGenerator::startLabels()

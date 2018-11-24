@@ -49,21 +49,26 @@
 #define DB_VIS_C2a(x,y)
 #endif
 
-static void visitCaption(DocbookDocVisitor *parent, QList<DocNode> children)
+void DocbookDocVisitor::visitCaption(const QList<DocNode> &children)
 {
   QListIterator<DocNode> cli(children);
   DocNode *n;
-  for (cli.toFirst();(n=cli.current());++cli) n->accept(parent);
+  for (cli.toFirst();(n=cli.current());++cli) n->accept(this);
 }
 
-void visitPreStart(FTextStream &t, bool hasCaption, DocbookDocVisitor *parent, QList<DocNode> children, QCString name,  QCString width,  QCString height, bool inlineImage)
+void DocbookDocVisitor::visitPreStart(FTextStream &t,
+                   const QList<DocNode> &children,
+                   bool hasCaption,
+                   const QCString &name,
+                   const QCString &width,
+                   const QCString &height,
+                   bool inlineImage)
 {
-  QCString tmpStr;
   if (hasCaption)
   {
     t << "    <figure>" << endl;
     t << "        <title>" << endl;
-    visitCaption(parent, children);
+    visitCaption(children);
     t << "        </title>" << endl;
   }
   else
@@ -83,7 +88,7 @@ void visitPreStart(FTextStream &t, bool hasCaption, DocbookDocVisitor *parent, Q
   }
   if (!height.isEmpty())
   {
-    t << " depth=\"" << convertToDocBook(tmpStr) << "\"";
+    t << " depth=\"" << convertToDocBook(height) << "\"";
   }
   t << " align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << name << "\">";
   t << "</imagedata>" << endl;
@@ -94,7 +99,7 @@ void visitPreStart(FTextStream &t, bool hasCaption, DocbookDocVisitor *parent, Q
   }
 }
 
-void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage)
+void DocbookDocVisitor::visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage)
 {
   t << endl;
   if (hasCaption)
@@ -1168,7 +1173,7 @@ DB_VIS_C
     {
       baseName=baseName.right(baseName.length()-i-1);
     }
-    visitPreStart(m_t, img -> hasCaption(), this, img->children(), img->relPath() + baseName, img -> width(), img -> height(),img -> isInlineImage());
+    visitPreStart(m_t, img->children(), img->hasCaption(), img->relPath() + baseName, img->width(), img->height(), img->isInlineImage());
   }
   else
   {
@@ -1622,8 +1627,8 @@ DB_VIS_C
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_BITMAP);
-  visitPreStart(m_t, s->hasCaption(), this, s->children(), s->relPath() + shortName + ".png", s->width(),s->height());
-  visitCaption(this, s->children());
+  visitPreStart(m_t, s->children(), s->hasCaption(), s->relPath() + shortName + ".png", s->width(), s->height());
+  visitCaption(s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 
@@ -1638,8 +1643,8 @@ DB_VIS_C
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   generatePlantUMLOutput(baseName,outDir,PUML_BITMAP);
-  visitPreStart(m_t, s->hasCaption(), this, s->children(), s->relPath() + shortName + ".png", s->width(),s->height());
-  visitCaption(this, s->children());
+  visitPreStart(m_t, s->children(), s->hasCaption(), s->relPath() + shortName + ".png", s->width(),s->height());
+  visitCaption(s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 
@@ -1647,7 +1652,7 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
     const QCString &width,
     const QCString &height,
     bool hasCaption,
-    QList<DocNode> childs
+    const QList<DocNode> &children
     )
 {
 DB_VIS_C
@@ -1665,7 +1670,7 @@ DB_VIS_C
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
   m_t << "<para>" << endl;
-  visitPreStart(m_t, hasCaption,this, childs,  baseName + ".png",  width,  height);
+  visitPreStart(m_t, children, hasCaption, baseName + ".png",  width,  height);
 }
 
 void DocbookDocVisitor::endMscFile(bool hasCaption)
@@ -1687,8 +1692,8 @@ DB_VIS_C
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_BITMAP);
-  visitPreStart(m_t, s->hasCaption(), this, s->children(), shortName, s->width(),s->height());
-  visitCaption(this, s->children());
+  visitPreStart(m_t, s->children(), s->hasCaption(), shortName, s->width(),s->height());
+  visitCaption(s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 
@@ -1696,7 +1701,7 @@ void DocbookDocVisitor::startDiaFile(const QCString &fileName,
     const QCString &width,
     const QCString &height,
     bool hasCaption,
-    QList<DocNode> childs
+    const QList<DocNode> &children
     )
 {
 DB_VIS_C
@@ -1714,7 +1719,7 @@ DB_VIS_C
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
   m_t << "<para>" << endl;
-  visitPreStart(m_t, hasCaption, this, childs, baseName + ".png",  width,  height);
+  visitPreStart(m_t, children, hasCaption, baseName + ".png",  width,  height);
 }
 
 void DocbookDocVisitor::endDiaFile(bool hasCaption)
@@ -1736,8 +1741,8 @@ DB_VIS_C
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP);
-  visitPreStart(m_t, s->hasCaption(), this, s->children(), s->relPath() + shortName + "." + getDotImageExtension(), s->width(),s->height());
-  visitCaption(this, s->children());
+  visitPreStart(m_t, s->children(), s->hasCaption(), s->relPath() + shortName + "." + getDotImageExtension(), s->width(),s->height());
+  visitCaption(s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 
@@ -1745,7 +1750,7 @@ void DocbookDocVisitor::startDotFile(const QCString &fileName,
     const QCString &width,
     const QCString &height,
     bool hasCaption,
-    QList<DocNode> childs
+    const QList<DocNode> &children
     )
 {
 DB_VIS_C
@@ -1764,7 +1769,7 @@ DB_VIS_C
   QCString imgExt = getDotImageExtension();
   writeDotGraphFromFile(fileName,outDir,baseName,GOF_BITMAP);
   m_t << "<para>" << endl;
-  visitPreStart(m_t, hasCaption, this, childs, baseName + "." + imgExt,  width,  height);
+  visitPreStart(m_t, children, hasCaption, baseName + "." + imgExt,  width,  height);
 }
 
 void DocbookDocVisitor::endDotFile(bool hasCaption)

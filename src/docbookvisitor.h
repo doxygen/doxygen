@@ -28,6 +28,7 @@ class FTextStream;
 class CodeOutputInterface;
 class QCString;
 
+/*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor : public DocVisitor
 {
     public:
@@ -148,18 +149,27 @@ class DocbookDocVisitor : public DocVisitor
     void pushEnabled();
     void popEnabled();
     void startMscFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,QList<DocNode> childs);
+    const QCString &height, bool hasCaption,const QList<DocNode> &children);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, DocVerbatim *s);
     void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,QList<DocNode> childs);
+                      const QCString &height, bool hasCaption,const QList<DocNode> &children);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,QList<DocNode> childs);
+    const QCString &height, bool hasCaption,const QList<DocNode> &children);
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
+    void visitPreStart(FTextStream &t,
+                   const QList<DocNode> &children,
+                   bool hasCaption,
+                   const QCString &name,
+                   const QCString &width,
+                   const QCString &height,
+                   bool inlineImage = FALSE);
+    void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage = FALSE);
+    void visitCaption(const QList<DocNode> &children);
     //--------------------------------------
     // state variables
     //--------------------------------------
@@ -170,10 +180,5 @@ class DocbookDocVisitor : public DocVisitor
     QStack<bool> m_enabled;
     QCString m_langExt;
 };
-
-void visitPreStart(FTextStream &t, bool hasCaption, DocbookDocVisitor *parent, QList<DocNode> children, QCString name,  QCString width,  QCString height, bool inlineImage=FALSE);
-void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage = FALSE);
-
-/*! @brief Concrete visitor implementation for Docbook output. */
 
 #endif
