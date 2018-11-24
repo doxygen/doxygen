@@ -1866,7 +1866,6 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
 
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
-  ol.startIndexList();
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
 
