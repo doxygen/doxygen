@@ -159,8 +159,8 @@ class HtmlDocVisitor : public DocVisitor
     void pushEnabled();
     void popEnabled();
 
-    void forceEndParagraph(DocNode *n);
-    void forceStartParagraph(DocNode *n);
+    bool forceEndParagraph(DocNode *n);
+    void forceStartParagraph(DocNode *n, bool forced = false);
 
     //--------------------------------------
     // state variables
