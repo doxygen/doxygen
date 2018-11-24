@@ -904,7 +904,8 @@ DB_GEN_C
 void DocbookGenerator::endClassDiagram(const ClassDiagram &d, const char *fileName,const char *)
 {
 DB_GEN_C
-  visitPreStart(t, FALSE, relPath + fileName + ".png", NULL, NULL);
+  QList<DocNode> dummy;
+  visitPreStart(t, FALSE, NULL, dummy, relPath + fileName + ".png", NULL, NULL);
   d.writeImage(t,dir,relPath,fileName,FALSE);
   visitPostEnd(t, FALSE);
   t << "</para>" << endl;
