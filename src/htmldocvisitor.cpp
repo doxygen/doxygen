@@ -403,7 +403,6 @@ static void visitCaption(HtmlDocVisitor *parent, QList<DocNode> children)
   for (cli.toFirst();(n=cli.current());++cli) n->accept(parent);
 }
 
-
 void HtmlDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
@@ -443,12 +442,11 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       m_t << "</pre>" /*<< PREFRAG_END*/;
       forceStartParagraph(s);
       break;
-    case DocVerbatim::HtmlOnly: 
+    case DocVerbatim::HtmlOnly:
       {
-        bool forced = false;
-        if (s->isBlock()) forced  = forceEndParagraph(s);
+        if (s->isBlock()) forceEndParagraph(s);
         m_t << s->text();
-        if (s->isBlock()) forceStartParagraph(s, forced);
+        if (s->isBlock()) forceStartParagraph(s);
       }
       break;
     case DocVerbatim::ManOnly: 
@@ -1546,7 +1544,6 @@ void HtmlDocVisitor::visitPost(DocHtmlHeader *header)
   forceStartParagraph(header);
 }
 
-static bool htmlImageForced = false; // problem with doxygen test 31
 void HtmlDocVisitor::visitPre(DocImage *img)
 {
   if (img->type()==DocImage::Html)
@@ -1563,8 +1560,10 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       typeSVG = (url.right(4)==".svg");
     }
-    htmlImageForced = false;
-    if (!inlineImage && !typeSVG) htmlImageForced  = forceEndParagraph(img);
+    if (!inlineImage && !typeSVG)
+    {
+      forceEndParagraph(img);
+    }
     if (m_hide) return;
     QString baseName=img->name();
     int i;
@@ -1578,13 +1577,13 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       sizeAttribs+=" width=\""+img->width()+"\"";
     }
-    if (!img->height().isEmpty())
+    if (!img->height().isEmpty()) // link to local file
     {
       sizeAttribs+=" height=\""+img->height()+"\"";
     }
     if (url.isEmpty())
     {
-      if (img->name().right(4)==".svg")
+      if (typeSVG)
       {
         m_t << "<object type=\"image/svg+xml\" data=\"" << img->relPath() << img->name()
             << "\"" << sizeAttribs << htmlAttribsToString(img->attribs()) << ">" << baseName
@@ -1597,12 +1596,13 @@ void HtmlDocVisitor::visitPre(DocImage *img)
 	    << (inlineImage ? " class=\"inline\"" : "/>\n");
       }
     }
-    else
+    else // link to URL
     {
-      if (url.right(4)==".svg")
+      if (typeSVG)
       {
         m_t << "<object type=\"image/svg+xml\" data=\"" << correctURL(url,img->relPath())
-            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs()) << "></object>" << endl;
+            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs())
+            << "></object>" << endl;
       }
       else
       {
@@ -1635,7 +1635,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
   }
 }
 
-void HtmlDocVisitor::visitPost(DocImage *img) 
+void HtmlDocVisitor::visitPost(DocImage *img)
 {
   if (img->type()==DocImage::Html)
   {
@@ -1651,7 +1651,6 @@ void HtmlDocVisitor::visitPost(DocImage *img)
     {
       typeSVG = (url.right(4)==".svg");
     }
-    //if (!inlineImage && img->hasCaption())
     if (img->hasCaption())
     {
       if (inlineImage)
@@ -1662,7 +1661,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
     if (!inlineImage && !typeSVG)
     {
       m_t << "</div>" << endl;
-      forceStartParagraph(img, htmlImageForced);
+      forceStartParagraph(img);
     }
   }
   else // other format
@@ -2278,11 +2277,35 @@ static bool insideStyleChangeThatIsOutsideParagraph(DocPara *para,int nodeIndex)
   return styleOutsideParagraph;
 }
 
+static bool isDocVerbatimVisible(DocVerbatim *s)
+{
+  switch(s->type())
+  {
+    case DocVerbatim::ManOnly:
+    case DocVerbatim::LatexOnly:
+    case DocVerbatim::XmlOnly:
+    case DocVerbatim::RtfOnly:
+    case DocVerbatim::DocbookOnly:
+      return FALSE;
+    default:
+      return TRUE;
+  }
+}
+
+static bool isInvisibleNode(DocNode *node)
+{
+  return (node->kind()==DocNode::Kind_WhiteSpace) ||
+         // skip over image nodes that are not for HTML output
+         (node->kind()==DocNode::Kind_Image && ((DocImage*)node)->type()!=DocImage::Html) ||
+         // skip over verbatim nodes that are not visible in the HTML output
+         (node->kind()==DocNode::Kind_Verbatim && !isDocVerbatimVisible((DocVerbatim*)node));
+}
+
 /** Used for items found inside a paragraph, which due to XHTML restrictions
  *  have to be outside of the paragraph. This method will forcefully end
  *  the current paragraph and forceStartParagraph() will restart it.
  */
-bool HtmlDocVisitor::forceEndParagraph(DocNode *n)
+void HtmlDocVisitor::forceEndParagraph(DocNode *n)
 {
   //printf("forceEndParagraph(%p) %d\n",n,n->kind());
   if (n->parent() && n->parent()->kind()==DocNode::Kind_Para)
@@ -2290,18 +2313,15 @@ bool HtmlDocVisitor::forceEndParagraph(DocNode *n)
     DocPara *para = (DocPara*)n->parent();
     int nodeIndex = para->children().findRef(n);
     nodeIndex--;
-    if (nodeIndex<0) return false; // first node
-    while (nodeIndex>=0 &&
-           para->children().at(nodeIndex)->kind()==DocNode::Kind_WhiteSpace
-          )
+    if (nodeIndex<0) return; // first node
+    while (nodeIndex>=0 && isInvisibleNode(para->children().at(nodeIndex)))
     {
-      nodeIndex--;
+        nodeIndex--;
     }
     if (nodeIndex>=0)
     {
       DocNode *n = para->children().at(nodeIndex);
-      //printf("n=%p kind=%d outside=%d\n",n,n->kind(),mustBeOutsideParagraph(n));
-      if (mustBeOutsideParagraph(n)) return false;
+      if (mustBeOutsideParagraph(n)) return;
     }
     nodeIndex--;
     bool styleOutsideParagraph=insideStyleChangeThatIsOutsideParagraph(para,nodeIndex);
@@ -2309,20 +2329,18 @@ bool HtmlDocVisitor::forceEndParagraph(DocNode *n)
     bool isLast;
     getParagraphContext(para,isFirst,isLast);
     //printf("forceEnd first=%d last=%d styleOutsideParagraph=%d\n",isFirst,isLast,styleOutsideParagraph);
-    if (isFirst && isLast) return false;
-    if (styleOutsideParagraph) return false;
+    if (isFirst && isLast) return;
+    if (styleOutsideParagraph) return;
 
     m_t << "</p>";
-    return true;
   }
-  return false;
 }
 
 /** Used for items found inside a paragraph, which due to XHTML restrictions
  *  have to be outside of the paragraph. This method will forcefully start
  *  the paragraph, that was previously ended by forceEndParagraph().
  */
-void HtmlDocVisitor::forceStartParagraph(DocNode *n, bool forced)
+void HtmlDocVisitor::forceStartParagraph(DocNode *n)
 {
   //printf("forceStartParagraph(%p) %d\n",n,n->kind());
   if (n->parent() && n->parent()->kind()==DocNode::Kind_Para) // if we are inside a paragraph
@@ -2331,21 +2349,19 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n, bool forced)
     int nodeIndex = para->children().findRef(n);
     int numNodes  = para->children().count();
     bool styleOutsideParagraph=insideStyleChangeThatIsOutsideParagraph(para,nodeIndex);
-    if (!forced && styleOutsideParagraph) return;
+    if (styleOutsideParagraph) return;
     nodeIndex++;
-    if (!forced && nodeIndex==numNodes) return; // last node
-    while (nodeIndex<numNodes &&
-           para->children().at(nodeIndex)->kind()==DocNode::Kind_WhiteSpace
-          )
+    if (nodeIndex==numNodes) return; // last node
+    while (nodeIndex<numNodes && isInvisibleNode(para->children().at(nodeIndex)))
     {
       nodeIndex++;
     }
     if (nodeIndex<numNodes)
     {
       DocNode *n = para->children().at(nodeIndex);
-      if (!forced && mustBeOutsideParagraph(n)) return;
+      if (mustBeOutsideParagraph(n)) return; // next element also outside paragraph
     }
-    else if (!forced)
+    else
     {
       return; // only whitespace at the end!
     }
@@ -2354,8 +2370,8 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n, bool forced)
     bool isFirst;
     bool isLast;
     getParagraphContext(para,isFirst,isLast);
-    //printf("forceStart first=%d last=%d\n",isFirst,isLast);
-    if (!forced && isFirst && isLast) needsTag = FALSE;
+    if (isFirst && isLast) needsTag = FALSE;
+    //printf("forceStart first=%d last=%d needsTag=%d\n",isFirst,isLast,needsTag);
 
     if (needsTag)
       m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(para, nodeIndex)) << ">";

@@ -37,7 +37,7 @@ class SectionDict;
 QString::Direction getTextDirByConfig(const QString &text);
 QString::Direction getTextDirByConfig(const DocNode *node);
 QString::Direction getTextDirByConfig(const DocPara *para, int nodeIndex);
-QCString getDirHtmlClassOfNode(QString::Direction textDir, const char *initValue = NULL);
+QCString getDirHtmlClassOfNode(QString::Direction textDir, const QCString &initValue="");
 QCString getDirHtmlClassOfPage(QCString pageTitle);
 QCString getHtmlDirEmbedingChar(QString::Direction textDir);
 QCString getJsDirEmbedingChar(QString::Direction textDir);
