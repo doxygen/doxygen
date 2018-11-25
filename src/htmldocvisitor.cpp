@@ -608,7 +608,12 @@ void HtmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::DontInclude: 
       break;
     case DocInclude::HtmlInclude: 
-      m_t << inc->text(); 
+      {
+        bool forced = false;
+        if (inc->isBlock()) forced  = forceEndParagraph(inc);
+        m_t << inc->text();
+        if (inc->isBlock()) forceStartParagraph(inc, forced);
+      }
       break;
     case DocInclude::LatexInclude:
       break;

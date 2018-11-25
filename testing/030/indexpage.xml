@@ -6,7 +6,7 @@
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-      <para>Some text. <htmlonly>&lt;h1&gt;Hello world&lt;/h1&gt;
+      <para>Some text. <htmlonly block="yes">&lt;h1&gt;Hello world&lt;/h1&gt;
 </htmlonly> More text. </para>
     </detaileddescription>
   </compounddef>

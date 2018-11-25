@@ -555,10 +555,10 @@ class DocInclude : public DocNode
     DocInclude(DocNode *parent,const QCString &file,
                const QCString context, Type t,
                bool isExample,const QCString exampleFile,
-               const QCString blockId) : 
+               const QCString blockId, bool isBlock) : 
       m_file(file), m_context(context), m_type(t),
       m_isExample(isExample), m_exampleFile(exampleFile),
-      m_blockId(blockId) { m_parent = parent; }
+      m_blockId(blockId), m_isBlock(isBlock) { m_parent = parent; }
     Kind kind() const            { return Kind_Include; }
     QCString file() const        { return m_file; }
     QCString extension() const   { int i=m_file.findRev('.'); 
@@ -573,6 +573,7 @@ class DocInclude : public DocNode
     QCString blockId() const     { return m_blockId; }
     bool isExample() const       { return m_isExample; }
     QCString exampleFile() const { return m_exampleFile; }
+    bool isBlock() const         { return m_isBlock; }
     void accept(DocVisitor *v)   { v->visit(this); }
     void parse();
 
@@ -582,6 +583,7 @@ class DocInclude : public DocNode
     QCString  m_text;
     Type      m_type;
     bool      m_isExample;
+    bool      m_isBlock;
     QCString  m_exampleFile;
     QCString  m_blockId;
 };
