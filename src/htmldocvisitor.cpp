@@ -1546,6 +1546,7 @@ void HtmlDocVisitor::visitPost(DocHtmlHeader *header)
   forceStartParagraph(header);
 }
 
+static bool htmlImageForced = false; // problem with doxygen test 31
 void HtmlDocVisitor::visitPre(DocImage *img)
 {
   if (img->type()==DocImage::Html)
@@ -1562,7 +1563,8 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       typeSVG = (url.right(4)==".svg");
     }
-    if (!inlineImage && !typeSVG) forceEndParagraph(img);
+    htmlImageForced = false;
+    if (!inlineImage && !typeSVG) htmlImageForced  = forceEndParagraph(img);
     if (m_hide) return;
     QString baseName=img->name();
     int i;
@@ -1660,7 +1662,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
     if (!inlineImage && !typeSVG)
     {
       m_t << "</div>" << endl;
-      forceStartParagraph(img);
+      forceStartParagraph(img, htmlImageForced);
     }
   }
   else // other format
