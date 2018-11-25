@@ -64,7 +64,7 @@ void DocbookDocVisitor::visitPreStart(FTextStream &t,
                    const QCString &height,
                    bool inlineImage)
 {
-  if (hasCaption)
+  if (hasCaption && !inlineImage)
   {
     t << "    <figure>" << endl;
     t << "        <title>" << endl;
@@ -84,7 +84,7 @@ void DocbookDocVisitor::visitPreStart(FTextStream &t,
   }
   else
   {
-    if (!inlineImage) t << " width=\"50%\"";
+    if (!height.isEmpty() && !inlineImage) t << " width=\"50%\"";
   }
   if (!height.isEmpty())
   {
@@ -93,7 +93,7 @@ void DocbookDocVisitor::visitPreStart(FTextStream &t,
   t << " align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << name << "\">";
   t << "</imagedata>" << endl;
   t << "            </imageobject>" << endl;
-  if (hasCaption)
+  if (hasCaption && !inlineImage)
   {
     t << "        <!--" << endl; // Needed for general formatting with title for other formats
   }
@@ -102,12 +102,12 @@ void DocbookDocVisitor::visitPreStart(FTextStream &t,
 void DocbookDocVisitor::visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage)
 {
   t << endl;
-  if (hasCaption)
+  if (hasCaption && !inlineImage)
   {
     t << "        -->" << endl; // Needed for general formatting with title for other formats
   }
   t << "        </mediaobject>" << endl;
-  if (hasCaption)
+  if (hasCaption && !inlineImage)
   {
     t << "    </figure>" << endl;
   }
