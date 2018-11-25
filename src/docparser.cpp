@@ -7463,7 +7463,7 @@ QString::Direction getTextDirByConfig(const DocPara *para, int nodeIndex)
   return QString::DirNeutral;
 }
 
-QCString getDirHtmlClassOfNode(QString::Direction textDir, const char *initValue)
+QCString getDirHtmlClassOfNode(QString::Direction textDir, const QCString &initValue)
 {
   QCString classFromDir;
   if (textDir == QString::DirLTR)
@@ -7473,9 +7473,9 @@ QCString getDirHtmlClassOfNode(QString::Direction textDir, const char *initValue
   else
     classFromDir = "";
 
-  if (initValue != NULL && !classFromDir.isEmpty())
+  if (initValue && !classFromDir.isEmpty())
     return QCString(" class=\"") + initValue + " " + classFromDir + "\"";
-  if (initValue != NULL)
+  if (initValue)
     return QCString(" class=\"") + initValue + "\"";
   if (!classFromDir.isEmpty())
     return QCString(" class=\"") + classFromDir + "\"";
