@@ -1397,6 +1397,7 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   t << "_map\">" << endl;
 
   d.writeImage(t,dir,relPath,fileName);
+  t << "<div/></map>" << endl;
   t << " </div>";
   endSectionContent(t);
   m_sectionCount++;
