@@ -980,7 +980,7 @@ void writeJavascriptSearchIndex()
           FTextStream t(&outFile);
 
           t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
-            " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
+            " \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
           t << "<html><head><title></title>" << endl;
           t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
           t << "<meta name=\"generator\" content=\"Doxygen " << versionString << "\"/>" << endl;
@@ -1284,7 +1284,7 @@ void writeJavascriptSearchIndex()
     {
       FTextStream t(&f);
       t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
-           "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
+           "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
       t << "<html><head><title></title>" << endl;
       t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
       t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
