@@ -165,11 +165,6 @@ void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   int l = qstrlen(name);
-  if (m_col+l>80)
-  {
-    m_t << "\n      ";
-    m_col=0;
-  }
   if (!ref && usePDFLatex && pdfHyperlinks)
   {
     m_t << "\\mbox{\\hyperlink{";
