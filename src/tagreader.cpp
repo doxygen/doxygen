@@ -40,6 +40,7 @@
 #include "filedef.h"
 #include "filename.h"
 #include "section.h"
+#include "groupdef.h"
 
 /** Information about an linkable anchor */
 class TagAnchorInfo
@@ -1467,6 +1468,22 @@ void TagFileParser::buildLists(Entry *root)
 
     buildMemberList(ge,tgi->members);
     root->addSubEntry(ge);
+  }
+
+  // set subgroup relations bug_774118
+  for (git.toFirst();(tgi=git.current());++git)
+  {
+    QCStringList::Iterator it;
+    for ( it = tgi->subgroupList.begin(); it != tgi->subgroupList.end(); ++it )
+    {
+      QListIterator<Entry> eli(*(root->children()));
+      Entry *childNode;
+      for (eli.toFirst();(childNode=eli.current());++eli)
+      {
+        if (childNode->name == (*it)) break;
+      }
+      childNode->groups->append(new Grouping(tgi->name,Grouping::GROUPING_INGROUP));
+    }
   }
 
   // build page list
