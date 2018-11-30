@@ -159,6 +159,7 @@ enum IndexSections
   isTitlePageStart,
   isTitlePageAuthor,
   isMainPage,
+  isMainPage2,
   isModuleIndex,
   isDirIndex,
   isNamespaceIndex,
@@ -174,6 +175,7 @@ enum IndexSections
   isExampleDocumentation,
   isPageDocumentation,
   isPageDocumentation2,
+  isSection,
   isEndIndex
 };
 

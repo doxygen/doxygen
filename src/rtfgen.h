@@ -50,8 +50,8 @@ class RTFGenerator : public OutputGenerator
     void clearBuffer();
     //void postProcess(QByteArray &);
     
-    void startIndexSection(IndexSections);
-    void endIndexSection(IndexSections);
+    void startIndexSection(IndexSections, bool);
+    void endIndexSection(IndexSections, bool);
     void writePageLink(const char *,bool);
     void startProjectNumber();
     void endProjectNumber();
@@ -289,7 +289,7 @@ class RTFGenerator : public OutputGenerator
     QCString relPath;
 
     void beginRTFDocument();
-    void beginRTFChapter();
+    void beginRTFChapter(bool);
     void beginRTFSection();
     void rtfwriteRuler_doubleline();
     void rtfwriteRuler_emboss();

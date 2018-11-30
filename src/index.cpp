@@ -2836,6 +2836,7 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
           ol.startSection(anchor,title,SectionInfo::Subsection);
           ol.docify(title);
           ol.endSection(anchor,SectionInfo::Subsection);
+	  ol.endIndexSection(isSection,false);
           ol.startItemList();
           firstSection=FALSE;
           firstItem=TRUE;
@@ -4431,6 +4432,7 @@ static void writeIndex(OutputList &ol)
   static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   static QCString projectName = Config_getString(PROJECT_NAME);
+  bool mainOpen = false;
   // save old generator state
   ol.pushGeneratorState();
 
@@ -4561,7 +4563,7 @@ static void writeIndex(OutputList &ol)
   ol.enable(OutputGenerator::RTF);
 
   ol.startFile("refman",0,0);
-  ol.startIndexSection(isTitlePageStart);
+  ol.startIndexSection(isTitlePageStart,false);
   if (!Config_getString(LATEX_HEADER).isEmpty())
   {
     ol.disable(OutputGenerator::Latex);
@@ -4583,17 +4585,17 @@ static void writeIndex(OutputList &ol)
     ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,Config_getString(PROJECT_NUMBER),FALSE,FALSE);
     ol.endProjectNumber();
   }
-  ol.endIndexSection(isTitlePageStart);
-  ol.startIndexSection(isTitlePageAuthor);
+  ol.endIndexSection(isTitlePageStart,false);
+  ol.startIndexSection(isTitlePageAuthor,false);
   ol.parseText(theTranslator->trGeneratedBy());
-  ol.endIndexSection(isTitlePageAuthor);
+  ol.endIndexSection(isTitlePageAuthor,false);
   ol.enable(OutputGenerator::Latex);
   ol.enable(OutputGenerator::Docbook);
 
   ol.lastIndexPage();
   if (Doxygen::mainPage)
   {
-    ol.startIndexSection(isMainPage);
+    ol.startIndexSection(isMainPage,false);
     if (mainPageHasTitle())
     {
       ol.parseText(Doxygen::mainPage->title());
@@ -4602,12 +4604,13 @@ static void writeIndex(OutputList &ol)
     {
       ol.parseText(/*projPrefix+*/theTranslator->trMainPage());
     }
-    ol.endIndexSection(isMainPage);
+    ol.endIndexSection(isMainPage,false);
+    mainOpen = true;
   }
   if (documentedPages>0)
   {
     //ol.parseText(projPrefix+theTranslator->trPageDocumentation());
-    //ol.endIndexSection(isPageDocumentation);
+    //ol.endIndexSection(isPageDocumentation,false);
     PageSDict::Iterator pdi(*Doxygen::pageSDict);
     PageDef *pd=pdi.toFirst();
     bool first=Doxygen::mainPage==0;
@@ -4629,20 +4632,25 @@ static void writeIndex(OutputList &ol)
         if (title.isEmpty()) title=pd->name();
 
         ol.disable(OutputGenerator::Docbook);
-        ol.startIndexSection(isPageDocumentation);
+        ol.startIndexSection(isPageDocumentation, Doxygen::mainPage==pd->getOuterScope());
         ol.parseText(title);
-        ol.endIndexSection(isPageDocumentation);
+        ol.endIndexSection(isPageDocumentation, Doxygen::mainPage==pd->getOuterScope());
         ol.enable(OutputGenerator::Docbook);
 
         ol.pushGeneratorState(); // write TOC title (RTF only)
           ol.disableAllBut(OutputGenerator::RTF);
-          ol.startIndexSection(isPageDocumentation2);
+          ol.startIndexSection(isPageDocumentation2,false);
           ol.parseText(title);
-          ol.endIndexSection(isPageDocumentation2);
+          ol.endIndexSection(isPageDocumentation2,false);
         ol.popGeneratorState();
 
         ol.writeAnchor(0,pd->getOutputFileBase());
 
+	if (Doxygen::mainPage!=pd->getOuterScope() && mainOpen)
+	{
+          ol.endIndexSection(isMainPage2,false);
+	  mainOpen = false;
+	}
         ol.writePageLink(pd->getOutputFileBase(),first);
         first=FALSE;
 
@@ -4653,27 +4661,32 @@ static void writeIndex(OutputList &ol)
       }
     }
   }
+  if (mainOpen)
+  {
+    ol.endIndexSection(isMainPage2,false);
+    mainOpen = false;
+  }
 
   ol.disable(OutputGenerator::Docbook);
   if (!Config_getBool(LATEX_HIDE_INDICES))
   {
     //if (indexedPages>0)
     //{
-    //  ol.startIndexSection(isPageIndex);
+    //  ol.startIndexSection(isPageIndex,false);
     //  ol.parseText(/*projPrefix+*/ theTranslator->trPageIndex());
-    //  ol.endIndexSection(isPageIndex);
+    //  ol.endIndexSection(isPageIndex,false);
     //}
     if (documentedGroups>0)
     {
-      ol.startIndexSection(isModuleIndex);
+      ol.startIndexSection(isModuleIndex,false);
       ol.parseText(/*projPrefix+*/ theTranslator->trModuleIndex());
-      ol.endIndexSection(isModuleIndex);
+      ol.endIndexSection(isModuleIndex,false);
     }
     if (documentedNamespaces>0)
     {
-      ol.startIndexSection(isNamespaceIndex);
+      ol.startIndexSection(isNamespaceIndex,false);
       ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trModulesIndex():theTranslator->trNamespaceIndex()));
-      ol.endIndexSection(isNamespaceIndex);
+      ol.endIndexSection(isNamespaceIndex,false);
     }
     if (hierarchyInterfaces>0)
     {
@@ -4683,13 +4696,13 @@ static void writeIndex(OutputList &ol)
     }
     if (hierarchyClasses>0)
     {
-      ol.startIndexSection(isClassHierarchyIndex);
+      ol.startIndexSection(isClassHierarchyIndex,false);
       ol.parseText(/*projPrefix+*/
           (fortranOpt ? theTranslator->trCompoundIndexFortran() :
            vhdlOpt    ? theTranslator->trHierarchicalIndex()    :
                         theTranslator->trHierarchicalIndex()
           ));
-      ol.endIndexSection(isClassHierarchyIndex);
+      ol.endIndexSection(isClassHierarchyIndex,false);
     }
     if (hierarchyExceptions>0)
     {
@@ -4705,13 +4718,13 @@ static void writeIndex(OutputList &ol)
     }
     if (annotatedClassesPrinted>0)
     {
-      ol.startIndexSection(isCompoundIndex);
+      ol.startIndexSection(isCompoundIndex,false);
       ol.parseText(/*projPrefix+*/
           (fortranOpt ? theTranslator->trCompoundIndexFortran() :
               vhdlOpt ? theTranslator->trDesignUnitIndex()      :
                         theTranslator->trCompoundIndex()
           ));
-      ol.endIndexSection(isCompoundIndex);
+      ol.endIndexSection(isCompoundIndex,false);
     }
     if (annotatedStructsPrinted>0)
     {
@@ -4727,24 +4740,24 @@ static void writeIndex(OutputList &ol)
     }
     if (documentedFiles>0)
     {
-      ol.startIndexSection(isFileIndex);
+      ol.startIndexSection(isFileIndex,false);
       ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
-      ol.endIndexSection(isFileIndex);
+      ol.endIndexSection(isFileIndex,false);
     }
   }
   ol.enable(OutputGenerator::Docbook);
 
   if (documentedGroups>0)
   {
-    ol.startIndexSection(isModuleDocumentation);
+    ol.startIndexSection(isModuleDocumentation,false);
     ol.parseText(/*projPrefix+*/theTranslator->trModuleDocumentation());
-    ol.endIndexSection(isModuleDocumentation);
+    ol.endIndexSection(isModuleDocumentation,false);
   }
   if (documentedNamespaces>0)
   {
-    ol.startIndexSection(isNamespaceDocumentation);
+    ol.startIndexSection(isNamespaceDocumentation,false);
     ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trModuleDocumentation():theTranslator->trNamespaceDocumentation()));
-    ol.endIndexSection(isNamespaceDocumentation);
+    ol.endIndexSection(isNamespaceDocumentation,false);
   }
   if (annotatedInterfacesPrinted>0)
   {
@@ -4754,9 +4767,9 @@ static void writeIndex(OutputList &ol)
   }
   if (annotatedClassesPrinted>0)
   {
-    ol.startIndexSection(isClassDocumentation);
+    ol.startIndexSection(isClassDocumentation,false);
     ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trTypeDocumentation():theTranslator->trClassDocumentation()));
-    ol.endIndexSection(isClassDocumentation);
+    ol.endIndexSection(isClassDocumentation,false);
   }
   if (annotatedStructsPrinted>0)
   {
@@ -4772,17 +4785,17 @@ static void writeIndex(OutputList &ol)
   }
   if (documentedFiles>0)
   {
-    ol.startIndexSection(isFileDocumentation);
+    ol.startIndexSection(isFileDocumentation,false);
     ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
-    ol.endIndexSection(isFileDocumentation);
+    ol.endIndexSection(isFileDocumentation,false);
   }
   if (Doxygen::exampleSDict->count()>0)
   {
-    ol.startIndexSection(isExampleDocumentation);
+    ol.startIndexSection(isExampleDocumentation,false);
     ol.parseText(/*projPrefix+*/theTranslator->trExampleDocumentation());
-    ol.endIndexSection(isExampleDocumentation);
+    ol.endIndexSection(isExampleDocumentation,false);
   }
-  ol.endIndexSection(isEndIndex);
+  ol.endIndexSection(isEndIndex,false);
   endFile(ol);
 
   if (Doxygen::mainPage)

@@ -82,10 +82,10 @@ class OutputList : public OutputDocInterface
     bool parseText(const QCString &textStr);
     
 
-    void startIndexSection(IndexSections is)
-    { forall(&OutputGenerator::startIndexSection,is); }
-    void endIndexSection(IndexSections is)
-    { forall(&OutputGenerator::endIndexSection,is); }
+    void startIndexSection(IndexSections is,bool isMP)
+    { forall(&OutputGenerator::startIndexSection,is,isMP); }
+    void endIndexSection(IndexSections is,bool isMP)
+    { forall(&OutputGenerator::endIndexSection,is,isMP); }
     void writePageLink(const char *name,bool first)
     { forall(&OutputGenerator::writePageLink,name,first); }
     void startProjectNumber()
@@ -518,7 +518,7 @@ class OutputList : public OutputDocInterface
     void forall(void (OutputGenerator::*func)());
     FORALLPROTO1(const char *);
     FORALLPROTO1(char);
-    FORALLPROTO1(IndexSections);
+    FORALLPROTO2(IndexSections,bool);
     FORALLPROTO1(int);
     FORALLPROTO1(const DotClassGraph &);
     FORALLPROTO1(const DotInclDepGraph &);

@@ -11911,6 +11911,16 @@ void generateOutput()
 
   if (g_useOutputTemplate) generateOutputViaTemplate();
 
+  if (generateDocbook)
+  {
+    g_s.begin("Combining DocBook output...\n");
+    if (!DocbookGenerator::combineFilesInplace(Config_getString(DOCBOOK_OUTPUT)))
+    {
+      err("An error occurred during post-processing the DocBook files!\n");
+    }
+    g_s.end();
+  }
+
   if (generateRtf)
   {
     g_s.begin("Combining RTF output...\n");

@@ -356,8 +356,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeSearchInfo() = 0;
     virtual void writeFooter(const char *navPath) = 0;
     virtual void endFile() = 0;
-    virtual void startIndexSection(IndexSections) = 0;
-    virtual void endIndexSection(IndexSections) = 0;
+    virtual void startIndexSection(IndexSections, bool) = 0;
+    virtual void endIndexSection(IndexSections, bool) = 0;
     virtual void writePageLink(const char *,bool) = 0;
     virtual void startProjectNumber() = 0;
     virtual void endProjectNumber() = 0;

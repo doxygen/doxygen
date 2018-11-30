@@ -50,8 +50,8 @@ class ManGenerator : public OutputGenerator
     void endFile();
     void clearBuffer();
 
-    void startIndexSection(IndexSections) {}
-    void endIndexSection(IndexSections) {}
+    void startIndexSection(IndexSections, bool) {}
+    void endIndexSection(IndexSections, bool) {}
     void writePageLink(const char *,bool) {}
     void startProjectNumber() {}
     void endProjectNumber() {}
