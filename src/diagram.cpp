@@ -1380,7 +1380,5 @@ void ClassDiagram::writeImage(FTextStream &t,const char *path,
 #define IMAGE_EXT ".png"
   image.save((QCString)path+"/"+fileName+IMAGE_EXT);
   Doxygen::indexList->addImageFile(QCString(fileName)+IMAGE_EXT);
-  
-  if (generateMap) t << "</map>" << endl;
 }
 

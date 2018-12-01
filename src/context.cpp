@@ -2010,6 +2010,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
               d.writeImage(t,g_globals.outputDir,
                            relPathAsString(),
                            m_classDef->getOutputFileBase());
+	      t << "<div/></map>" << endl;
               t << "</div>";
             }
             break;
