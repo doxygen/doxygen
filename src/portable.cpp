@@ -211,8 +211,8 @@ void portable_setenv(const char *name,const char *value)
 #if defined(_WIN32) && !defined(__CYGWIN__)
     SetEnvironmentVariable(name,value);
 #else
-    register char **ep = 0;
-    register size_t size;
+    char **ep = 0;
+    size_t size;
     const size_t namelen=qstrlen(name);
     const size_t vallen=qstrlen(value) + 1;
 

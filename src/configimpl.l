@@ -1263,7 +1263,7 @@ static void cleanUpPaths(QStrList &str)
   char *sfp = str.first();
   while (sfp)
   {
-    register char *p = sfp;
+    char *p = sfp;
     if (p)
     {
       char c;
