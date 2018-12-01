@@ -22,6 +22,8 @@ init:
 install:
   - ps: Invoke-WebRequest https://github.com/lexxmark/winflexbison/releases/download/v2.5.15/win_flex_bison-2.5.15.zip -OutFile flex.zip
   - 7z x flex.zip -oC:\deps\flex
+  - ps: Invoke-WebRequest http://doxygen.nl/testing/miktex.zip -OutFile miktex.zip
+  - 7z x miktex.zip -oC:\deps\miktex
 # Disabled MikTeX installed due to unreliable download
 #  - ps: Invoke-WebRequest https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs924/gs924w32.exe -OutFile gswin32c.exe
 #  - gswin32c /S /D=C:\deps\ghostscript
@@ -34,7 +36,7 @@ install:
   - pip install conan
   - conan install libxml2/2.9.8@bincrafters/stable -g virtualrunenv
   - activate_run.bat
-  - set "PATH=%PATH%;C:\deps\ghostscript\bin;C:\deps\flex"
+  - set "PATH=%PATH%;C:\deps\ghostscript\bin;C:\deps\flex;C:\deps\miktex\miktex\bin"
 
 before_build:
   - if "%platform%"=="Win32" ( set "CMAKE_GENERATOR_NAME=Visual Studio %VSVERSION%" )
