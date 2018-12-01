@@ -867,7 +867,15 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   }
   if (isToc) // special case for [TOC]
   {
-    out.addStr("@tableofcontents");
+    int level = Config_getInt(TOC_INCLUDE_HEADINGS);
+    if (level > 0 && level <=5)
+    {
+      char levStr[10];
+      sprintf(levStr,"%d",level);
+      out.addStr("@tableofcontents{html:");
+      out.addStr(levStr);
+      out.addStr("}");
+    }
   }
   else if (isImageLink) 
   {
@@ -1921,27 +1929,6 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
       out.addStr(" ");
       out.addStr(header);
       out.addStr("\n");
-      SectionInfo *si = Doxygen::sectionDict->find(id);
-      if (si)
-      {
-        if (si->lineNr != -1)
-        {
-          warn(g_fileName,g_lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",header.data(),si->fileName.data(),si->lineNr);
-        }
-        else
-        {
-          warn(g_fileName,g_lineNr,"multiple use of section label '%s', (first occurrence: %s)",header.data(),si->fileName.data());
-        }
-      }
-      else
-      {
-        si = new SectionInfo(g_fileName,g_lineNr,id,header,type,level);
-        if (g_current)
-        {
-          g_current->anchors->append(si);
-        }
-        Doxygen::sectionDict->append(id,si);
-      }
     }
     else
     {
