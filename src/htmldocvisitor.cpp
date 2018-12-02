@@ -134,6 +134,7 @@ static bool mustBeOutsideParagraph(DocNode *n)
         case DocNode::Kind_HtmlBlockQuote:
           /* \parblock */
         case DocNode::Kind_ParBlock:
+        case DocNode::Kind_IncOperator:
           return TRUE;
         case DocNode::Kind_Verbatim:
           {
@@ -150,6 +151,57 @@ static bool mustBeOutsideParagraph(DocNode *n)
           break;
   }
   return FALSE;
+}
+
+static bool isDocVerbatimVisible(DocVerbatim *s)
+{
+  switch(s->type())
+  {
+    case DocVerbatim::ManOnly:
+    case DocVerbatim::LatexOnly:
+    case DocVerbatim::XmlOnly:
+    case DocVerbatim::RtfOnly:
+    case DocVerbatim::DocbookOnly:
+      return FALSE;
+    default:
+      return TRUE;
+  }
+}
+
+static bool isDocIncludeVisible(DocInclude *s)
+{
+  switch (s->type())
+  {
+    case DocInclude::DontInclude:
+      return FALSE;
+    default:
+      return TRUE;
+  }
+}
+
+static bool isDocIncOperatorVisible(DocIncOperator *s)
+{
+  switch (s->type())
+  {
+    case DocIncOperator::Skip:
+      return FALSE;
+    default:
+      return TRUE;
+  }
+}
+
+static bool isInvisibleNode(DocNode *node)
+{
+  return (node->kind()==DocNode::Kind_WhiteSpace)
+      || // skip over image nodes that are not for HTML output
+         (node->kind()==DocNode::Kind_Image && ((DocImage*)node)->type()!=DocImage::Html)
+      || // skip over verbatim nodes that are not visible in the HTML output
+         (node->kind()==DocNode::Kind_Verbatim && !isDocVerbatimVisible((DocVerbatim*)node))
+      || // skip over include nodes that are not visible in the HTML output
+         (node->kind()==DocNode::Kind_Include && !isDocIncludeVisible((DocInclude*)node))
+      || // skip over include operator nodes that are not visible in the HTML output
+         (node->kind()==DocNode::Kind_IncOperator && !isDocIncOperatorVisible((DocIncOperator*)node))
+      ;
 }
 
 static QString htmlAttribsToString(const HtmlAttribList &attribs, bool img_tag = FALSE)
@@ -679,7 +731,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    forceStartParagraph(op);
+    forceEndParagraph(op);
     if (!m_hide) m_t << PREFRAG_START;
     pushEnabled();
     m_hide=TRUE;
@@ -1108,8 +1160,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   uint nodeIndex = 0;
   if (p && nodeIndex<p->children().count())
   {
-    while (nodeIndex<p->children().count() && 
-           p->children().at(nodeIndex)->kind()==DocNode::Kind_WhiteSpace)
+    while (nodeIndex<p->children().count() && isInvisibleNode(p->children().at(nodeIndex)))
     {
       nodeIndex++;
     }
@@ -1177,7 +1228,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
   int nodeIndex = p->children().count()-1;
   if (nodeIndex>=0)
   {
-    while (nodeIndex>=0 && p->children().at(nodeIndex)->kind()==DocNode::Kind_WhiteSpace)
+    while (nodeIndex>=0 && isInvisibleNode(p->children().at(nodeIndex)))
     {
       nodeIndex--;
     }
@@ -2275,30 +2326,6 @@ static bool insideStyleChangeThatIsOutsideParagraph(DocPara *para,int nodeIndex)
     nodeIndex--;
   }
   return styleOutsideParagraph;
-}
-
-static bool isDocVerbatimVisible(DocVerbatim *s)
-{
-  switch(s->type())
-  {
-    case DocVerbatim::ManOnly:
-    case DocVerbatim::LatexOnly:
-    case DocVerbatim::XmlOnly:
-    case DocVerbatim::RtfOnly:
-    case DocVerbatim::DocbookOnly:
-      return FALSE;
-    default:
-      return TRUE;
-  }
-}
-
-static bool isInvisibleNode(DocNode *node)
-{
-  return (node->kind()==DocNode::Kind_WhiteSpace) ||
-         // skip over image nodes that are not for HTML output
-         (node->kind()==DocNode::Kind_Image && ((DocImage*)node)->type()!=DocImage::Html) ||
-         // skip over verbatim nodes that are not visible in the HTML output
-         (node->kind()==DocNode::Kind_Verbatim && !isDocVerbatimVisible((DocVerbatim*)node));
 }
 
 /** Used for items found inside a paragraph, which due to XHTML restrictions
