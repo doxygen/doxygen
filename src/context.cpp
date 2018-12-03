@@ -2001,17 +2001,32 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         {
           case ContextOutputFormat_Html:
             {
+              QGString result;
+              FTextStream tt(&result);
+
               QCString name = convertToHtml(m_classDef->displayName());
-              t << "<div class=\"center\">" << endl;
-              t << "<img src=\"";
-              t << relPathAsString() << m_classDef->getOutputFileBase();
-              t << ".png\" usemap=\"#" << convertToId(name) << "_map\" alt=\"\"/>" << endl;
-              t << "<map id=\"" << convertToId(name) << "_map\" name=\"" << convertToId(name) << "_map\">" << endl;
-              d.writeImage(t,g_globals.outputDir,
+              d.writeImage(tt,g_globals.outputDir,
                            relPathAsString(),
                            m_classDef->getOutputFileBase());
-	      t << "<div/></map>" << endl;
-              t << "</div>";
+              if (!result.isEmpty())
+              {
+                t << "<div class=\"center\">" << endl;
+                t << "  <img src=\"";
+                t << relPathAsString() << m_classDef->getOutputFileBase();
+                t << ".png\" usemap=\"#" << convertToId(name) << "_map\" alt=\"\"/>" << endl;
+                t << "  <map id=\"" << convertToId(name) << "_map\" name=\"" << convertToId(name) << "_map\">" << endl;
+	        t << result;
+	        t << "  </map>" << endl;
+                t << "</div>";
+              }
+              else
+              {
+                t << "<div class=\"center\">" << endl;
+                t << "  <img src=\"";
+                t << relPathAsString() << m_classDef->getOutputFileBase();
+                t << ".png\" alt=\"\"/>" << endl;
+                t << "</div>";
+              }
             }
             break;
           case ContextOutputFormat_Latex:
