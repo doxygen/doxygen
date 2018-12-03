@@ -1108,12 +1108,18 @@ bool DotFilePatcher::run()
       int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
       if (n==1 && mapId>=0 && mapId<(int)m_maps.count())
       {
+        QGString result;
+        FTextStream tt(&result);
         Map *map = m_maps.at(mapId);
         //printf("patching MAP %d in file %s with contents of %s\n",
         //   mapId,m_patchFile.data(),map->mapFile.data());
-        t << "<map name=\"" << map->label << "\" id=\"" << map->label << "\">" << endl;
-        convertMapFile(t,map->mapFile,map->relPath,map->urlOnly,map->context);
-        t << "</map>" << endl;
+        convertMapFile(tt,map->mapFile,map->relPath,map->urlOnly,map->context);
+        if (!result.isEmpty())
+        {
+          t << "<map name=\"" << map->label << "\" id=\"" << map->label << "\">" << endl;
+          t << result;
+          t << "</map>" << endl;
+        }
       }
       else // error invalid map id!
       {
@@ -4315,13 +4321,18 @@ void writeDotImageMapFromFile(FTextStream &t,
   }
   else // bitmap graphics
   {
+    QGString result;
+    FTextStream tt(&result);
+
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
-      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl
-      << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
-
-    convertMapFile(t, absOutFile, relPath ,TRUE, context);
-
-    t << "</map>" << endl;
+      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
+    convertMapFile(tt, absOutFile, relPath ,TRUE, context);
+    if (!result.isEmpty())
+    {
+      t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
+      t << result;
+      t << "</map>" << endl;
+    }
   }
   d.remove(absOutFile);
 }

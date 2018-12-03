@@ -1384,21 +1384,34 @@ void HtmlGenerator::startClassDiagram()
 void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
                                 const char *fileName,const char *name)
 {
+  QGString result;
+  FTextStream tt(&result);
+
   endSectionHeader(t);
   startSectionSummary(t,m_sectionCount);
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
-  t << " <div class=\"center\">" << endl;
-  t << "  <img src=\"";
-  t << relPath << fileName << ".png\" usemap=\"#" << convertToId(name);
-  t << "_map\" alt=\"\"/>" << endl;
-  t << "  <map id=\"" << convertToId(name);
-  t << "_map\" name=\"" << convertToId(name);
-  t << "_map\">" << endl;
-
-  d.writeImage(t,dir,relPath,fileName);
-  t << "<div/></map>" << endl;
-  t << " </div>";
+  d.writeImage(tt,dir,relPath,fileName);
+  if (!result.isEmpty())
+  {
+    t << " <div class=\"center\">" << endl;
+    t << "  <img src=\"";
+    t << relPath << fileName << ".png\" usemap=\"#" << convertToId(name);
+    t << "_map\" alt=\"\"/>" << endl;
+    t << "  <map id=\"" << convertToId(name);
+    t << "_map\" name=\"" << convertToId(name);
+    t << "_map\">" << endl;
+    t << result;
+    t << "  </map>" << endl;
+    t << "</div>";
+  }
+  else
+  {
+    t << " <div class=\"center\">" << endl;
+    t << "  <img src=\"";
+    t << relPath << fileName << ".png\" alt=\"\"/>" << endl;
+    t << " </div>";
+  }
   endSectionContent(t);
   m_sectionCount++;
 }
