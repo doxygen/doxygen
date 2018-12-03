@@ -5238,6 +5238,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 {
   DBG(("handleInclude(%s)\n",qPrint(cmdName)));
   int tok=doctokenizerYYlex();
+  bool isBlock = false;
   if (tok==TK_WORD && g_token->name=="{")
   {
     doctokenizerYYsetStateOptions();
@@ -5260,6 +5261,14 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     {
       t = DocInclude::SnippetDoc;
     }
+    tok=doctokenizerYYlex();
+  }
+  else if (tok==TK_WORD && g_token->name=="[")
+  {
+    doctokenizerYYsetStateBlock();
+    tok=doctokenizerYYlex();
+    isBlock = (g_token->name.stripWhiteSpace() == "block");
+    doctokenizerYYsetStatePara();
     tok=doctokenizerYYlex();
   }
   else if (tok!=TK_WHITESPACE)
@@ -5320,7 +5329,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   }
   else
   {
-    DocInclude *inc = new DocInclude(this,fileName,g_context,t,g_isExample,g_exampleName,blockId);
+    DocInclude *inc = new DocInclude(this,fileName,g_context,t,g_isExample,g_exampleName,blockId,isBlock);
     m_children.append(inc);
     inc->parse();
   }

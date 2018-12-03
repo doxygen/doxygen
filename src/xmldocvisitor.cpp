@@ -329,7 +329,14 @@ void XmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::DontInclude: 
       break;
     case DocInclude::HtmlInclude: 
-      m_t << "<htmlonly>";
+      if (inc->isBlock())
+      {
+        m_t << "<htmlonly block=\"yes\">";
+      }
+      else
+      {
+        m_t << "<htmlonly>";
+      }
       filter(inc->text());
       m_t << "</htmlonly>";
       break;

@@ -2457,7 +2457,7 @@ Commands for displaying examples
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
 <hr>
-\section cmdhtmlinclude \\htmlinclude <file-name>
+\section cmdhtmlinclude \\htmlinclude ["[block]"] <file-name>
 
   \addindex \\htmlinclude
   This command includes the file \<file-name\> as is in the HTML documentation.
@@ -2465,9 +2465,17 @@ Commands for displaying examples
   placing \ref cmdhtmlonly "\\htmlonly" and \ref cmdendhtmlonly "\\endhtmlonly"
   commands around it.
 
+  Normally the contents of the file indicated by \ref cmdhtmlinclude "\\htmlinclude"
+  is inserted as-is. When you
+  want to insert a HTML fragment that has block scope like a table or list
+  which should appear outside \<p\>..\</p\>, this can lead to invalid HTML.
+  You can use \\htmlinclude[block] to make doxygen
+  end the current paragraph and restart after the file is included.
+
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
+  \sa section \ref cmdhtmlonly "\\htmlonly". 
 <hr>
 
 \section cmdlatexinclude \\latexinclude <file-name>
@@ -3126,8 +3134,9 @@ class Receiver
   \sa section \ref cmdmanonly "\\manonly", 
               \ref cmdlatexonly "\\latexonly", 
               \ref cmdrtfonly "\\rtfonly", 
-              \ref cmdxmlonly "\\xmlonly", and 
-              \ref cmddocbookonly "\\docbookonly".
+              \ref cmdxmlonly "\\xmlonly",
+              \ref cmddocbookonly "\\docbookonly", and
+              \ref cmdhtmlinclude "\\htmlinclude".
 
 <hr>
 \section cmdimage \\image['{'[option]'}'] <format> <file> ["caption"] [<sizeindication>=<size>]

@@ -187,7 +187,10 @@ class PrintDocVisitor : public DocVisitor
         case DocInclude::Include: printf("include"); break;
         case DocInclude::IncWithLines: printf("incwithlines"); break;
         case DocInclude::DontInclude: printf("dontinclude"); break;
-        case DocInclude::HtmlInclude: printf("htmlinclude"); break;
+        case DocInclude::HtmlInclude:
+               printf("htmlinclude");
+               if (inc->isBlock()) printf(" block=\"yes\"");
+               break;
         case DocInclude::LatexInclude: printf("latexinclude"); break;
         case DocInclude::VerbInclude: printf("verbinclude"); break;
         case DocInclude::Snippet: printf("snippet"); break;

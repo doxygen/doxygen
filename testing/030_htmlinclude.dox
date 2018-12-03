@@ -2,6 +2,6 @@
 // check: indexpage.xml
 /** \mainpage
  * Some text.
- * \htmlinclude sample.html
+ * \htmlinclude[block] sample.html
  * More text.
  */
