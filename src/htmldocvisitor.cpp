@@ -173,6 +173,7 @@ static bool isDocIncludeVisible(DocInclude *s)
   switch (s->type())
   {
     case DocInclude::DontInclude:
+    case DocInclude::LatexInclude:
       return FALSE;
     default:
       return TRUE;
