@@ -1524,11 +1524,8 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
       filter(theTranslator->trExceptions());
       break;
     case DocParamSect::TemplateParam: 
-      /* TODO: add this 
-      filter(theTranslator->trTemplateParam()); break;
-      */
       m_t << "\n\\begin{DoxyTemplParams}{";
-      filter("Template Parameters");
+      filter(theTranslator->trTemplateParameters());
       break;
     default:
       ASSERT(0);

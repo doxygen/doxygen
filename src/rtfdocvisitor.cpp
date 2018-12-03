@@ -1354,10 +1354,7 @@ void RTFDocVisitor::visitPre(DocParamSect *s)
     case DocParamSect::Exception: 
       m_t << theTranslator->trExceptions(); break;
     case DocParamSect::TemplateParam: 
-      /* TODO: add this 
-      m_t << theTranslator->trTemplateParam(); break;
-      */
-      m_t << "Template Parameters"; break;
+      m_t << theTranslator->trTemplateParameters(); break;
     default:
       ASSERT(0);
   }
