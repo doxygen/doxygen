@@ -170,7 +170,8 @@ bool GroupDef::addClass(const ClassDef *cd)
         // add nested classes (e.g. A::B, A::C) after their parent (A) in 
         // order of insertion
         QCString scope = qn.left(i);
-        int j=classSDict->findAt(scope);
+        int j=-1;
+        if (!scope.isEmpty()) j=classSDict->findAt(scope);
         if (j!=-1)
         {
           while (j<(int)classSDict->count() && 
