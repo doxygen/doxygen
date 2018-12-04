@@ -165,7 +165,7 @@ bool GroupDef::addClass(const ClassDef *cd)
       if (i==-1) i=qn.find('.');
       bool found=FALSE;
       //printf("i=%d\n",i);
-      if (i!=-1)
+      if (i>0)
       {
         // add nested classes (e.g. A::B, A::C) after their parent (A) in 
         // order of insertion
