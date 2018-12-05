@@ -34,7 +34,6 @@ install:
 #  - C:\tmpmiktex\miktexsetup --verbose --local-package-repository=C:\temp\miktex --package-set=basic install
   - refreshenv
   - pip install conan
-  - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
   - ps: |
      "[requires]
       libxml2/2.9.8@bincrafters/stable
