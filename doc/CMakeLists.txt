@@ -27,6 +27,17 @@ else()
     # doxygen project variables are unknown so look for doxygen in PATH
     find_package(Doxygen)
 endif()
+#
+# set output directory for some extra HTML files
+#
+file(STRINGS Doxyfile DOXY_HTML_OUTPUT REGEX "HTML_OUTPUT.*")
+string(LENGTH "${DOXY_HTML_OUTPUT}" DOXY_HTML_OUTPUT_LEN)
+if (${DOXY_HTML_OUTPUT_LEN})
+  string(REGEX REPLACE ".*HTML_OUTPUT *= *\([^ ]*\)" "\\1" DOXY_HTML_OUTPUT ${DOXY_HTML_OUTPUT})
+else()
+  set(DOXY_HTML_OUTPUT "html")
+endif()
+set(PROJECT_BINARY_HTML_DIR ${PROJECT_BINARY_DIR}/${DOXY_HTML_OUTPUT}/)
 
 set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path where to install the documentation")
 set(DOC_FILES
@@ -153,8 +164,8 @@ add_custom_target(doxygen_pdf
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
 )
 add_custom_target(docs
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/doxygen_logo.gif      ${PROJECT_BINARY_DIR}/html/
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/doxygen_logo_low.gif  ${PROJECT_BINARY_DIR}/html/
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/doxygen_logo.gif      ${PROJECT_BINARY_HTML_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/doxygen_logo_low.gif  ${PROJECT_BINARY_HTML_DIR}
         DEPENDS ${PROJECT_BINARY_DIR}/man/doxygen.1
                 ${PROJECT_BINARY_DIR}/man/doxywizard.1
                 ${PROJECT_BINARY_DIR}/man/doxysearch.1
