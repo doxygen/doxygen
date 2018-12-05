@@ -47,7 +47,7 @@ before_script:
         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
         printf "[requires]
         libxml2/2.9.8@bincrafters/stable
-        Qt/5.11.1@bincrafters/stable" >> conanfile.txt;
+        qt/5.11.3@bincrafters/stable" >> conanfile.txt;
         conan install . -g virtualrunenv;
         source activate_run.sh;
       fi;
