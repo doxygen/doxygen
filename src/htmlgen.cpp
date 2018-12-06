@@ -1547,7 +1547,7 @@ void HtmlGenerator::startMemberHeader(const char *anchor, int typ)
   t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2 class=\"groupheader\">";
   if (anchor)
   {
-    t << "<a name=\"" << anchor << "\"></a>" << endl;
+    t << "<a name=\"" << convertToId(anchor) << "\"></a>" << endl;
   }
 }
 
@@ -2792,7 +2792,7 @@ void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const c
   else
   {
     t << "#";
-    t << anchor;
+    t << convertToId(anchor);
   }
   t << "\">";
   t << title;
