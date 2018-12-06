@@ -20,8 +20,6 @@ init:
   - msbuild /version
 
 install:
-  - ps: Invoke-WebRequest https://github.com/lexxmark/winflexbison/releases/download/v2.5.15/win_flex_bison-2.5.15.zip -OutFile flex.zip
-  - 7z x flex.zip -oC:\deps\flex
   - ps: Invoke-WebRequest http://doxygen.nl/testing/miktex.zip -OutFile miktex.zip
   - 7z x miktex.zip -oC:\deps\miktex
 # Disabled MikTeX installed due to unreliable download
@@ -40,7 +38,7 @@ install:
       winflexbison/2.5.16@bincrafters/stable" | Out-File -Encoding ASCII -FilePath conanfile.txt
   - conan install . -g virtualrunenv --build missing
   - activate_run.bat
-  - set "PATH=%PATH%;C:\deps\ghostscript\bin;C:\deps\flex;C:\deps\miktex\miktex\bin"
+  - set "PATH=%PATH%;C:\deps\ghostscript\bin;C:\deps\miktex\miktex\bin"
 
 before_build:
   - if "%platform%"=="Win32" ( set "CMAKE_GENERATOR_NAME=Visual Studio %VSVERSION%" )
