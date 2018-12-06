@@ -2284,11 +2284,12 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
               }
               ol.writeNonBreakableSpace(3);
             }
-            ++(*colIterators[j]);
-            if (cell->letter()!=0 || cell->classDef()!=(ClassDef*)0x8)
-            {
-              ol.writeString("</td>");
+	    else 
+	    {
+              ol.writeString("<td>");
             }
+            ++(*colIterators[j]);
+            ol.writeString("</td>");
           }
         }
         else
