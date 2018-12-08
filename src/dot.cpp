@@ -24,6 +24,7 @@
 #include <qthread.h>
 #include <qmutex.h>
 #include <qwaitcondition.h>
+#include <qregexp.h>
 
 #include "dot.h"
 #include "doxygen.h"
@@ -376,6 +377,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
                            const QCString &context=QCString())
 {
   QFile f(mapName);
+  static QRegExp re("id=\"node[0-9]*\"");
   if (!f.open(IO_ReadOnly)) 
   {
     err("problems opening map file %s for inclusion in the docs!\n"
@@ -394,7 +396,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
 
       if (buf.left(5)=="<area")
       {
-        t << replaceRef(buf,relPath,urlOnly,context);
+        t << replaceRef(buf,relPath,urlOnly,context).replace(re,"");
       }
     }
   }
