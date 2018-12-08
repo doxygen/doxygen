@@ -1505,7 +1505,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                              {
                                codifyLines(text,0,FALSE,TRUE);
                              }
-                             g_yyLineNr++; // skip complete line
+                             else g_yyLineNr++; // skip complete line, but count line
                            }
                            else // normal comment
                            {
