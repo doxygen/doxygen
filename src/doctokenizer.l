@@ -262,6 +262,12 @@ static void handleHtmlTag()
 	if (i<(int)yyleng) c=tagText.at(++i);
       }
       opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib); 
+      if (opt.name == "align") opt.value = opt.value.lower();
+      else if (opt.name == "valign")
+      {
+        opt.value = opt.value.lower();
+        if (opt.value == "center") opt.value="middle";
+      }
     }
     else // start next option
     {
