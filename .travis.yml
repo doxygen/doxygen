@@ -45,7 +45,9 @@ before_script:
         export PATH=/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH;
 
         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
-        printf "[requires] \nlibxml2/2.9.8@bincrafters/stable \nQt/5.11.1@bincrafters/stable" >> conanfile.txt;
+        printf "[requires]\n
+        libxml2/2.9.8@bincrafters/stable\n
+        qt/5.11.3@bincrafters/stable" >> conanfile.txt;
         conan install . -g virtualrunenv;
         source activate_run.sh;
       fi;
