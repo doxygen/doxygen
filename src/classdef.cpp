@@ -1737,7 +1737,7 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
     SDict<QCString>::Iterator li(m_impl->vhdlSummaryTitles);
     for (li.toFirst();li.current();++li)
     {
-      ol.writeSummaryLink(0,li.current()->data(),li.current()->data(),first);
+      ol.writeSummaryLink(0,convertToId(li.current()->data()),li.current()->data(),first);
       first=FALSE;
     }
   }
