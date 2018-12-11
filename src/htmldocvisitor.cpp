@@ -1616,7 +1616,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       typeSVG = (url.right(4)==".svg");
     }
-    if (!inlineImage && !typeSVG)
+    if (!inlineImage)
     {
       forceEndParagraph(img);
     }
@@ -1627,7 +1627,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       baseName=baseName.right(baseName.length()-i-1);
     }
-    if (!inlineImage && !typeSVG) m_t << "<div class=\"image\">" << endl;
+    if (!inlineImage) m_t << "<div class=\"image\">" << endl;
     QCString sizeAttribs;
     if (!img->width().isEmpty())
     {
@@ -1697,16 +1697,6 @@ void HtmlDocVisitor::visitPost(DocImage *img)
   {
     if (m_hide) return;
     bool inlineImage = img->isInlineImage();
-    bool typeSVG = FALSE;
-    QCString url = img->url();
-    if (url.isEmpty())
-    {
-      typeSVG = (img->name().right(4)==".svg");
-    }
-    else
-    {
-      typeSVG = (url.right(4)==".svg");
-    }
     if (img->hasCaption())
     {
       if (inlineImage)
@@ -1714,7 +1704,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
       else
         m_t << "</div>";
     }
-    if (!inlineImage && !typeSVG)
+    if (!inlineImage)
     {
       m_t << "</div>" << endl;
       forceStartParagraph(img);
