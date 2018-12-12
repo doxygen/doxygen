@@ -556,7 +556,7 @@ void NamespaceDef::writeMemberGroups(OutputList &ol)
     for (;(mg=mgli.current());++mgli)
     {
       if ((!mg->allMembersInSameSection() || !m_subGrouping) 
-          && mg->header()!="[NOHEADER]")
+          && !mg->header().isEmpty())
       {
         mg->writeDeclarations(ol,0,this,0,0);
       }

@@ -112,7 +112,8 @@ void MemberGroup::writeDeclarations(OutputList &ol,
 {
   //printf("MemberGroup::writeDeclarations() %s\n",grpHeader.data());
   QCString ldoc = doc;
-  if (!ldoc.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\" id=\""+anchor()+"\"></a>");
+  QCString anc = anchor();
+  if (!ldoc.isEmpty() & !anc.isEmpty()) ldoc.prepend("<a name=\""+anc+"\" id=\""+anc+"\"></a>");
   memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,FALSE,showInline);
 }
 
@@ -322,9 +323,8 @@ QCString MemberGroup::anchor() const
 {
   uchar md5_sig[16];
   QCString sigStr(33);
-  QCString locHeader = grpHeader;
-  if (locHeader.isEmpty()) locHeader="[NOHEADER]";
-  MD5Buffer((const unsigned char *)locHeader.data(),locHeader.length(),md5_sig);
+  if (grpHeader.isEmpty()) return "";
+  MD5Buffer((const unsigned char *)grpHeader.data(),grpHeader.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr.rawData(),33);
   return "amgrp"+sigStr;
 }
@@ -334,7 +334,9 @@ void MemberGroup::addListReferences(Definition *def)
   memberList->addListReferences(def);
   if (m_xrefListItems && def)
   {
-    QCString name = def->getOutputFileBase()+"#"+anchor();
+    QCString name = def->getOutputFileBase();
+    QCString anc = anchor();
+    if (!anc.isEmpty()) name += "#"+anc;
     addRefItem(m_xrefListItems,
         name,
         theTranslator->trGroup(TRUE,TRUE),

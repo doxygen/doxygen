@@ -646,7 +646,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       MemberGroup *mg;
       while ((mg=mgli.current()))
       {
-        bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
+        bool hasHeader=!mg->header().isEmpty();
         if (inheritId.isEmpty())
         {
           //printf("mg->header=%s hasHeader=%d\n",mg->header().data(),hasHeader);
