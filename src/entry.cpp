@@ -45,6 +45,7 @@ Entry::Entry()
   extends->setAutoDelete(TRUE);
   groups = new QList<Grouping>;
   groups->setAutoDelete(TRUE);
+  autogroupName = "";
   anchors = new QList<SectionInfo>; // Doxygen::sectionDict takes ownership of the items!
   argList = new ArgumentList;
   argList->setAutoDelete(TRUE);
@@ -113,6 +114,7 @@ Entry::Entry(const Entry &e)
   extends->setAutoDelete(TRUE);
   groups      = new QList<Grouping>;
   groups->setAutoDelete(TRUE);
+  autogroupName = e.autogroupName;
   anchors     = new QList<SectionInfo>;
   fileName    = e.fileName;
   startLine   = e.startLine;
@@ -165,6 +167,8 @@ Entry::Entry(const Entry &e)
   {
     groups->append(new Grouping(*g));
   }
+
+
   
   QListIterator<SectionInfo> sli2(*e.anchors);
   SectionInfo *s;
@@ -274,6 +278,7 @@ void Entry::reset()
   m_sublist->clear();
   extends->clear();
   groups->clear();
+  autogroupName.resize(0);
   anchors->clear();
   argList->clear();
   if (tagInfo)    { delete tagInfo; tagInfo=0; }

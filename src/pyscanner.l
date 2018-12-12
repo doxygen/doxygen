@@ -1717,6 +1717,7 @@ static void parseCompounds(Entry *rt)
   //printf("parseCompounds(%s)\n",rt->name.data());
   EntryListIterator eli(*rt->children());
   Entry *ce;
+  groupPushAutoGroup(rt);
   for (;(ce=eli.current());++eli)
   {
     if (!ce->program.isEmpty())
@@ -1757,6 +1758,7 @@ static void parseCompounds(Entry *rt)
     }
     parseCompounds(ce);
   }
+  groupPopAutoGroup(rt);
 }
 
 //----------------------------------------------------------------------------

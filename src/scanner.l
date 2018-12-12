@@ -7022,8 +7022,10 @@ static void parseCompounds(Entry *rt)
   //printf("parseCompounds(%s)\n",rt->name.data());
   EntryListIterator eli(*rt->children());
   Entry *ce;
+
   for (;(ce=eli.current());++eli)
   {
+    groupPushAutoGroup(ce);
     if (!ce->program.isEmpty())
     {
       //printf("-- %s ---------\n%s\n---------------\n",
@@ -7054,8 +7056,8 @@ static void parseCompounds(Entry *rt)
 
       // deep copy group list from parent (see bug 727732)
       static bool autoGroupNested = Config_getBool(GROUP_NESTED_COMPOUNDS);
-      if (autoGroupNested && rt->groups && ce->section!=Entry::ENUM_SEC && !(ce->spec&Entry::Enum))
-      {
+      if (autoGroupNested && rt->groups && ce->section != Entry::ENUM_SEC &&
+          !(ce->spec & Entry::Enum)) {
         QListIterator<Grouping> gli(*rt->groups);
         Grouping *g;
         for (;(g=gli.current());++gli)
@@ -7133,7 +7135,9 @@ static void parseCompounds(Entry *rt)
       //}
     }
     parseCompounds(ce);
+    groupPopAutoGroup(ce);
   }
+
 }
 
 //----------------------------------------------------------------------------
