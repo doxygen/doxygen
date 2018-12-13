@@ -2572,8 +2572,8 @@ void ClassDef::writeMemberList(OutputList &ol)
   ol.endParagraph();
 
   //ol.startItemList();
-  ol.writeString("<table class=\"directory\">\n");
 
+  bool first = true; // to prevent empty table
   int idx=0;
   //MemberNameInfo *mni=m_impl->allMemberNameInfoList->first();
   MemberNameInfoSDict::Iterator mnii(*m_impl->allMemberNameInfoSDict);
@@ -2600,6 +2600,11 @@ void ClassDef::writeMemberList(OutputList &ol)
         {
           QCString name=mi->ambiguityResolutionScope+md->name();
           //ol.writeListItem();
+          if (first)
+          {
+            ol.writeString("<table class=\"directory\">\n");
+            first = false;
+          }
           ol.writeString("  <tr");
           if ((idx&1)==0) ol.writeString(" class=\"even\"");
           idx++;
@@ -2653,6 +2658,11 @@ void ClassDef::writeMemberList(OutputList &ol)
                   // generate link to the class instead.
         {
           //ol.writeListItem();
+          if (first)
+          {
+            ol.writeString("<table class=\"directory\">\n");
+            first = false;
+          }
           ol.writeString("  <tr bgcolor=\"#f0f0f0\"");
           if ((idx&1)==0) ol.writeString(" class=\"even\"");
           idx++;
@@ -2782,7 +2792,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   }
   //ol.endItemList();
 
-  ol.writeString("</table>");
+  if (!first) ol.writeString("</table>");
 
   endFile(ol);
   ol.popGeneratorState();
