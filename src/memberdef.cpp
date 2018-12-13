@@ -3374,8 +3374,9 @@ void MemberDef::setMemberGroup(MemberGroup *grp)
 
 bool MemberDef::visibleMemberGroup(bool hideNoHeader)
 {
-  return m_impl->memberGroup!=0 &&
-          (!hideNoHeader || !m_impl->memberGroup->header().isEmpty());
+  return m_impl->memberGroup!=0;
+  //return m_impl->memberGroup!=0 &&
+  //        (!hideNoHeader || m_impl->memberGroup->header()!="[NOHEADER]");
 }
 
 QCString MemberDef::getScopeString() const
