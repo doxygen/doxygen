@@ -122,6 +122,7 @@ class DotNode
     bool             m_visible;   //!< is the node visible in the output
     TruncState       m_truncated; //!< does the node have non-visible children/parents
     int              m_distance;  //!< shortest path to the root node
+    bool             m_renumbered;//!< indicates if the node has been renumbered (to prevent endless loops)
 
     friend class DotGfxHierarchyTable;
     friend class DotClassGraph;

@@ -1515,6 +1515,7 @@ DotNode::DotNode(int n,const char *lab,const char *tip, const char *url,
   , m_visible(FALSE)
   , m_truncated(Unknown)
   , m_distance(1000)
+  , m_renumbered(false)
 {
 }
 
@@ -2287,7 +2288,11 @@ void DotNode::renumberNodes(int &number)
     DotNode *cn;
     for (dnlic.toFirst();(cn=dnlic.current());++dnlic)
     {
-      cn->renumberNodes(number);
+      if (!cn->m_renumbered)
+      {
+        cn->m_renumbered = true;
+        cn->renumberNodes(number);
+      }
     }
   }
 }
