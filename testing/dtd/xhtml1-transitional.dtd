@@ -20,6 +20,21 @@
    $Date: 2002/08/01 18:37:55 $
 
 -->
+<!--
+     Note:
+     This is an adjusted version of the official document only to be used
+     for validation of doxygen generated documents.
+
+     Adjustments:
+     - in
+         <!ATTLIST script
+       added 
+         async       (async)        #IMPLIED
+     - in
+         <!ATTLIST a
+       added 
+         doxygen     %URI;          #IMPLIED
+-->
 
 <!--================ Character mnemonic entities =========================-->
 
@@ -363,6 +378,7 @@
   >
 
 <!-- script statements, which may include CDATA sections -->
+<!-- added for doxygen:  async       (async)        #IMPLIED -->
 <!ELEMENT script (#PCDATA)>
 <!ATTLIST script
   id          ID             #IMPLIED
@@ -370,6 +386,7 @@
   type        %ContentType;  #REQUIRED
   language    CDATA          #IMPLIED
   src         %URI;          #IMPLIED
+  async       (async)        #IMPLIED
   defer       (defer)        #IMPLIED
   xml:space   (preserve)     #FIXED 'preserve'
   >
@@ -633,6 +650,7 @@
 <!--================== The Anchor Element ================================-->
 
 <!-- content is %Inline; except that anchors shouldn't be nested -->
+<!-- added for doxygen: doxygen     %URI;          #IMPLIED -->
 
 <!ELEMENT a %a.content;>
 <!ATTLIST a
@@ -641,6 +659,7 @@
   charset     %Charset;      #IMPLIED
   type        %ContentType;  #IMPLIED
   name        NMTOKEN        #IMPLIED
+  doxygen     %URI;          #IMPLIED
   href        %URI;          #IMPLIED
   hreflang    %LanguageCode; #IMPLIED
   rel         %LinkTypes;    #IMPLIED
