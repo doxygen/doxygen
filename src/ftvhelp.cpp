@@ -828,10 +828,13 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
   }
   //printf("preferred depth=%d\n",preferredDepth);
 
-  t << "<table class=\"directory\">\n";
-  int index=0;
-  generateTree(t,m_indentNodes[0],0,preferredDepth,index);
-  t << "</table>\n";
+  if (m_indentNodes[0].count())
+  {
+    t << "<table class=\"directory\">\n";
+    int index=0;
+    generateTree(t,m_indentNodes[0],0,preferredDepth,index);
+    t << "</table>\n";
+  }
 
   t << "</div><!-- directory -->\n";
 }
