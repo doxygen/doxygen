@@ -2958,6 +2958,7 @@ static bool handleToc(const QCString &, const QCStringList &optList)
   if (current->section==Entry::PAGEDOC_SEC || 
       current->section==Entry::MAINPAGEDOC_SEC)
   {
+    current->localToc.setDynamicHtml(LocalToc::HtmlStatic); // default setting
     QCStringList::ConstIterator it;
     for ( it = optList.begin(); it != optList.end(); ++it )
     {
@@ -2996,6 +2997,14 @@ static bool handleToc(const QCString &, const QCStringList &optList)
         else if (opt == "docbook")
         {
           current->localToc.enableDocbook(level);
+        }
+        else if (opt == "dyn")
+        {
+          current->localToc.setDynamicHtml(LocalToc::HtmlDynamicExpanded);
+        }
+        else if (opt == "dync")
+        {
+          current->localToc.setDynamicHtml(LocalToc::HtmlDynamicCollapsed);
         }
         else
         {

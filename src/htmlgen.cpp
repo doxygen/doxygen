@@ -748,6 +748,7 @@ void HtmlGenerator::init()
   {
     mgr.copyResourceAs("fixed_tabs.css",dname,"tabs.css");
   }
+  mgr.copyResource("dyntoc.js",dname);
   mgr.copyResource("jquery.js",dname);
   if (Config_getBool(INTERACTIVE_SVG))
   {
