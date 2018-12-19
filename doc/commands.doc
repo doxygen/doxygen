@@ -2110,7 +2110,7 @@ Make sure you have first read \ref intro "the introduction".
   this range are considered to be 5. In case no `level` is specified `level` is
   set to 5 (show all)
   In case no `option`. is specified \c \\tableofcontents acts as if just the
-  `option` `HTML` was specified. In case of multiple \c \\tableofcontents
+  `option` `HTML` and `XML` was specified. In case of multiple \c \\tableofcontents
   commands in a page the `option`(s) will be used additional to the already
   specified `option`(s), but only the last `level` of an `option` is valid.
 
