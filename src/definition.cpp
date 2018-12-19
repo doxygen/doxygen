@@ -1837,6 +1837,7 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
         level = nextLevel;
       }
     }
+    if (level > maxLevel) level = maxLevel;
     while (level>1 && level <= maxLevel)
     {
       if (inLi[level]) ol.writeString("</li>\n");
