@@ -1896,6 +1896,14 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
         level = nextLevel;
       }
     }
+    if (level > maxLevel) level = maxLevel;
+    while (level>1 && level <= maxLevel)
+    {
+      inLi[level]=FALSE;
+      ol.writeString("</tocdiv>\n");
+      level--;
+    }
+    inLi[level]=FALSE;
     ol.writeString("    </toc>\n");
     ol.popGeneratorState();
   }
