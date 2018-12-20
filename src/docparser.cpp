@@ -2779,6 +2779,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
         case TK_EMOJI: 
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported emoji '%s' found",
               qPrint(g_token->name));
+          m_children.append(new DocWord(this,g_token->name));
           break;
         case TK_HTMLTAG:
           if (g_token->name!="see" || !isXmlLink)
@@ -3984,6 +3985,7 @@ int DocHtmlDescTitle::parse()
         case TK_EMOJI: 
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported emoji '%s' found",
               qPrint(g_token->name));
+          m_children.append(new DocWord(this,g_token->name));
           break;
         case TK_HTMLTAG:
           {
@@ -6817,6 +6819,7 @@ reparsetoken:
           {
             warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported emoji '%s' found",
                 qPrint(g_token->name));
+            m_children.append(new DocWord(this,g_token->name));
           }
           break;
         }
@@ -7045,6 +7048,7 @@ void DocText::parse()
           {
             warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported emoji '%s' found",
                 qPrint(g_token->name));
+            m_children.append(new DocWord(this,g_token->name));
           }
         }
         break;
