@@ -689,7 +689,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = yytext;
                          return TK_SYMBOL;
                        }
-<St_Para,St_Text>{EMOJI} { /* emoji symbol */ 
+<St_Para,St_Text>{EMOJI}/[^:] { /* emoji symbol */ 
                          if (g_fileName == CiteConsts::fileName)
                          {
                            REJECT;
@@ -946,7 +946,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = yytext;
   		         return TK_SYMBOL;
                        }
-<St_TitleN>{EMOJI}     { /* emoji */
+<St_TitleN>{EMOJI}/[^:]     { /* emoji */
                          if (g_fileName == CiteConsts::fileName)
                          {
                            REJECT;
@@ -993,7 +993,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = yytext;
   		         return TK_SYMBOL;
                        }
-<St_TitleQ>{EMOJI}  { /* emoji */
+<St_TitleQ>{EMOJI}/[^:]  { /* emoji */
                          if (g_fileName == CiteConsts::fileName)
                          {
                            REJECT;
@@ -1143,7 +1143,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = yytext;
   		         return TK_SYMBOL;
                        }
-<St_Ref2>{EMOJI}    { /* emoji */
+<St_Ref2>{EMOJI}/[^:]    { /* emoji */
                          if (g_fileName == CiteConsts::fileName)
                          {
                            REJECT;
