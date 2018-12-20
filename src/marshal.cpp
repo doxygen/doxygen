@@ -351,6 +351,7 @@ void marshalLocalToc(StorageIntf *s,const LocalToc &lt)
   marshalInt(s,lt.latexLevel());
   marshalInt(s,lt.xmlLevel());
   marshalInt(s,lt.docbookLevel());
+  marshalInt(s,lt.dynamicHtml());
 }
 
 void marshalEntry(StorageIntf *s,Entry *e)
@@ -744,7 +745,8 @@ LocalToc unmarshalLocalToc(StorageIntf *s)
   int htmlLevel  = unmarshalInt(s);
   int latexLevel = unmarshalInt(s);
   int xmlLevel   = unmarshalInt(s);
-  int docbookLevel   = unmarshalInt(s);
+  int docbookLevel = unmarshalInt(s);
+  int dynHtml      = unmarshalInt(s);
   if ((mask & (1<<LocalToc::Html))!=0)
   {
     result.enableHtml(htmlLevel);
@@ -761,6 +763,7 @@ LocalToc unmarshalLocalToc(StorageIntf *s)
   {
     result.enableDocbook(docbookLevel);
   }
+  result.setDynamicHtml(dynHtml);
   return result;
 }
 

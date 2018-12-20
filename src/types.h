@@ -230,6 +230,11 @@ enum FortranFormat
 class LocalToc
 {
   public:
+    enum HtmlDynamic {
+      HtmlStatic           = 0,
+      HtmlDynamicCollapsed = 1,
+      HtmlDynamicExpanded  = 2
+    };
     enum Type {
       None                   = 0, // initial value
       Html                   = 0, // index / also to be used as bit position in mask (1 << Html)
@@ -238,7 +243,7 @@ class LocalToc
       Docbook                = 3, // ...
       numTocTypes            = 4  // number of enum values
     };
-    LocalToc() : m_mask(None) { memset(m_level,0,sizeof(m_level)); }
+    LocalToc() : m_mask(None), m_htmldyn(HtmlStatic) { memset(m_level,0,sizeof(m_level)); }
 
     // setters
     void enableHtml(int level)
@@ -262,6 +267,11 @@ class LocalToc
       m_level[Docbook]=level;
     }
 
+    void setDynamicHtml(int dyn)
+    {
+      m_htmldyn=dyn;
+    }
+
     // getters
     bool isHtmlEnabled()  const { return (m_mask & (1<<Html))!=0;  }
     bool isLatexEnabled() const { return (m_mask & (1<<Latex))!=0; }
@@ -273,10 +283,12 @@ class LocalToc
     int xmlLevel()        const { return m_level[Xml]; }
     int docbookLevel()    const { return m_level[Docbook]; }
     int mask()            const { return m_mask; }
+    int dynamicHtml()     const { return m_htmldyn; }
 
   private:
     int m_mask;
     int m_level[numTocTypes];
+    int m_htmldyn;
 };
 
 #endif

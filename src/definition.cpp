@@ -1790,10 +1790,26 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
   if (sectionDict==0) return;
   if (localToc.isHtmlEnabled())
   {
+    int dynHtml = localToc.dynamicHtml();
+    QCString spanStr = "";
+    QCString nestStr = "";
+    switch (dynHtml)
+    {
+      case LocalToc::HtmlStatic:
+        break;
+      case LocalToc::HtmlDynamicExpanded:
+	spanStr = "<span class=\"caret caret-down\"></span>";
+	nestStr = " class=\"nested active\"";
+        break;
+      case LocalToc::HtmlDynamicCollapsed:
+	spanStr = "<span class=\"caret\"></span>";
+	nestStr = " class=\"nested\"";
+        break;
+    }
     int maxLevel = localToc.htmlLevel();
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString("<div class=\"toc\">");
+    ol.writeString(QCString("<div class=\"") + ((dynHtml != LocalToc::HtmlStatic) ? "dyntoc" : "toc") + "\">");
     ol.writeString("<h3>");
     ol.writeString(theTranslator->trRTFTableOfContents());
     ol.writeString("</h3>\n");
@@ -1817,7 +1833,7 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
         {
           for (l=level;l<nextLevel;l++)
           {
-            if (l < maxLevel) ol.writeString("<ul>");
+            if (l < maxLevel) ol.writeString(QCString("<ul") + nestStr + ">");
           }
         }
         else if (nextLevel<level)
@@ -1832,7 +1848,19 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
         cs[0]='0'+nextLevel;
         if (nextLevel <= maxLevel && inLi[nextLevel]) ol.writeString("</li>\n");
         QCString titleDoc = convertToHtml(si->title);
-        if (nextLevel <= maxLevel) ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
+        if (nextLevel <= maxLevel)
+	{
+	  ++li; /* temporary move pointer to see what the next level is, if any at least */
+	  if (li.current())
+	  {
+	    ol.writeString("<li class=\"level"+QCString(cs)+"\">"+(((nextLevel < li.current()->type) && (li.current()->type <= maxLevel)) ? spanStr : "")+"<a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
+	  }
+	  else
+	  {
+	    ol.writeString("<li class=\"level"+QCString(cs)+"\">"+"<a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
+	  }
+	  --li;
+	}
         inLi[nextLevel]=TRUE;
         level = nextLevel;
       }
@@ -1848,6 +1876,11 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
     inLi[level]=FALSE;
     ol.writeString("</ul>\n");
     ol.writeString("</div>\n");
+
+    if (dynHtml != LocalToc::HtmlStatic)
+    {
+      ol.writeNavigationPath("<script type=\"text/javascript\" src=\"$relpath^dyntoc.js\"></script>\n");
+    }
     ol.popGeneratorState();
   }
 

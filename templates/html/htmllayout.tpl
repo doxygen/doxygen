@@ -27,6 +27,7 @@
 {% resource 'navtree.js' %}
 {% resource 'resize.js' %}
 {% resource 'menu.js' %}
+{% resource 'dyntoc.js' %}
 {% resource 'doc.luma' %}
 {% resource 'folderopen.luma' %}
 {% resource 'folderclosed.luma' %}
