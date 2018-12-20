@@ -107,12 +107,12 @@ static int yyread(char *buf,int max_size)
 static bool checkSpecialType(QCString &typ, QCString &nam)
 {
   if (nam == "unsigned" || nam == "signed" ||
+      nam == "int" || nam == "long" ||
       nam == "volatile" || nam == "const") return TRUE;
   QCStringList qsl=QCStringList::split(' ',typ);
   for (uint j=0;j<qsl.count();j++)
   {
-    if (!(qsl[j] == "unsigned" || qsl[j] == "signed" ||
-          qsl[j] == "volatile" || qsl[j] == "const")) return FALSE;
+    if (!(qsl[j] == "volatile" || qsl[j] == "const")) return FALSE;
   }
   return TRUE;
 }
