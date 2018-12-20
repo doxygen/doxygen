@@ -3313,6 +3313,14 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='string' id='DOT_SHAPE' format='string' defval='record' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ Define 'none' to have cleaner dot graph with text and edges only, without default box around nodes.
+ More shapes are described here: https://www.graphviz.org/doc/info/shapes.html
+]]>
+      </docs>
+    </option>
     <option type='bool' id='CLASS_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>
 <![CDATA[

@@ -249,6 +249,14 @@ static int getDotFontSize()
   return dotFontSize;
 }
 
+static QCString getDotShape()
+{
+  static QCString dotShape = Config_getString(DOT_SHAPE);
+  if (dotShape.isEmpty())
+    dotShape="rect";
+  return dotShape;
+}
+
 static void writeGraphHeader(FTextStream &t,const QCString &title=QCString())
 {
   static bool interactiveSVG = Config_getBool(INTERACTIVE_SVG);
@@ -277,7 +285,7 @@ static void writeGraphHeader(FTextStream &t,const QCString &title=QCString())
        "labelfontname=\"" << FONTNAME << "\","
        "labelfontsize=\"" << FONTSIZE << "\"];\n";
   t << "  node [fontname=\"" << FONTNAME << "\","
-       "fontsize=\"" << FONTSIZE << "\",shape=record];\n";
+       "fontsize=\"" << FONTSIZE << "\",shape=" << getDotShape() << "];\n";
 }
 
 static void writeGraphFooter(FTextStream &t)
