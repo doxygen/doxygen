@@ -3005,7 +3005,9 @@ static bool handleToc(const QCString &, const QCStringList &optList)
     }
     if (current->localToc.nothingEnabled())
     {
-      current->localToc.enableHtml(5); // for backward compatibility
+      // for backward compatibility
+      current->localToc.enableHtml(5);
+      current->localToc.enableXml(5);
     }
   }
   return FALSE;
