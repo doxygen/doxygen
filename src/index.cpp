@@ -2832,7 +2832,7 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
           if (!firstSection) ol.endItemList();
           QCString cs = letterToLabel(ml->letter());
           QCString cl = QString(QChar(ml->letter())).utf8();
-          QCString anchor=(QCString)"index_"+cs;
+          QCString anchor=(QCString)"index_"+convertToId(cs);
           QCString title=(QCString)"- "+cl+" -";
           ol.startSection(anchor,title,SectionInfo::Subsection);
           ol.docify(title);
@@ -3123,7 +3123,7 @@ static void writeQuickMemberIndex(OutputList &ol,
       anchor=fullName+extension+"#index_";
     else
       anchor=fullName+"_"+letterToLabel(i)+extension+"#index_";
-    startQuickIndexItem(ol,anchor+is,i==page,TRUE,first);
+    startQuickIndexItem(ol,anchor+convertToId(is),i==page,TRUE,first);
     ol.writeString(ci);
     endQuickIndexItem(ol);
     first=FALSE;
@@ -5201,7 +5201,7 @@ void renderMemberIndicesAsJs(FTextStream &t,
           else // other pages of multi page index
             anchor=fullName+"_"+is+extension+"#index_";
           t << "{text:\"" << convertToJSString(ci) << "\",url:\""
-            << convertToJSString(anchor+is, false) << "\"}";
+            << convertToJSString(anchor+convertToId(is), false) << "\"}";
           firstLetter=FALSE;
         }
         t << "]";
