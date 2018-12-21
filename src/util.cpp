@@ -1930,7 +1930,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     pc=c;
   }
   *dst++='\0';
-  printf("removeRedundantWhitespace(%s)->%s\n",s.data(),growBuf);
+  //printf("removeRedundantWhitespace(%s)->%s\n",s.data(),growBuf);
   return growBuf;
 }
 
