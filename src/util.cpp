@@ -1847,7 +1847,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '*':
         if (i>0 && pc!=' ' && pc!='\t' && pc!=':' &&
                    pc!='*' && pc!='&'  && pc!='(' && pc!='/' &&
-                   pc!='.' && (osp<9 || (pc=='>' && osp==11)))
+                   pc!='.' && (osp<9 || !(pc=='>' && osp==11)))
           // avoid splitting &&, **, .*, operator*, operator->*
         {
           *dst++=' ';
@@ -1930,7 +1930,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     pc=c;
   }
   *dst++='\0';
-  //printf("removeRedundantWhitespace(%s)->%s\n",s.data(),growBuf);
+  printf("removeRedundantWhitespace(%s)->%s\n",s.data(),growBuf);
   return growBuf;
 }
 
