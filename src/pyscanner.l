@@ -949,7 +949,6 @@ STARTDOCSYMS      "##"
     {B}":"{B}		    { // function without arguments
 			      g_specialBlock = TRUE; // expecting a docstring
 			      bodyEntry = current;
-                              current->bodyLine  = yyLineNr;
                               BEGIN(FunctionBody);
 			    }
 
@@ -960,6 +959,7 @@ STARTDOCSYMS      "##"
 		            }
     {B}"("                  {
 			      g_funcParamsEnd = FALSE;
+                              current->bodyLine  = yyLineNr;
 			      BEGIN(FunctionParams);
 		            }
     ")"                     { // end of parameter list
