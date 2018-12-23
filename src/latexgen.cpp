@@ -568,11 +568,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
    emojiDir = substitute(emojiDir,"\\","/");
    t << "% Arguments of doxygenemoji:\n"
         "% 1) ':<text>:' form of the emoji, already \"LaTeX\"-escaped\n"
-        "% 2) unicode of the emoji inlorm like: 'U+1F603' or 'U+0031U+FE0FU+20E3' depending on the emoji\n"
-        "% 3) file name in form like: '1F603' or '0031-FE0F-20E3' depending on the emoji\n"
+        "% 2) file with the name of the emoji without the .png extension\n"
 	"% in case image exist use this otherwise use the ':<text>:' form\n";
-   t << "\\newcommand{\\doxygenemoji}[3]{%\n"
-        "  \\IfFileExists{" << emojiDir << "/#3.png}{\\raisebox{-0.1em}{\\includegraphics[height=0.9em]{" << emojiDir << "/#3.png}}}{#1}%\n"
+   t << "\\newcommand{\\doxygenemoji}[2]{%\n"
+        "  \\IfFileExists{" << emojiDir << "/#2.png}{\\raisebox{-0.1em}{\\includegraphics[height=0.9em]{" << emojiDir << "/#2.png}}}{#1}%\n"
         "}\n";
 
   // Define page & text layout

@@ -72,6 +72,8 @@
 \setlength{\parindent}{0pt}
 \newcommand{\doxynormalparskip}{\setlength{\parskip}{0.2cm}}
 \newcommand{\doxytocparskip}{\setlength{\parskip}{0.2cm}}
+\newcommand{\doxygenemoji}[2]{%
+\IfFileExists{../doc/#2.png}{\raisebox{-0.1em}{\includegraphics[height=0.9em]{../doc/#2.png}}}{#1}}
 \doxynormalparskip
 \hbadness=750
 \tolerance=750

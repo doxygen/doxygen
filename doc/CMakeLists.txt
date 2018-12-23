@@ -95,6 +95,7 @@ set(DOC_FILES
         language.tpl
         maintainers.txt
         translator.py
+        smile.png
 )
 file(GLOB LANG_FILES "${TOP}/src/translator_??.h")
 

@@ -26,25 +26,16 @@ class EmojiEntityMapper
   public:
     static EmojiEntityMapper *instance();
     static void deleteInstance();
-    int name2sym(const QCString &symName) const;
-    const char *utf8(int symb) const;
-    const char *html(int symb) const;
-    const char *xml(int symb) const;
-    const char *docbook(int symb) const;
-    const char *latex(int symb) const;
-    const char *man(int symb) const;
-    const char *rtf(int symb) const;
-    const char *perl(int symb) const;
-    const char *code(int symb) const;
-    const char *text(int symb) const;
+    const char *name(int index) const;
+    const char *unicode(int index) const;
     void writeEmojiFile(QFile &file);
+    int symbol2index(const QCString &symName) const;
+
   private:
     EmojiEntityMapper();
    ~EmojiEntityMapper();
     static EmojiEntityMapper *s_instance;
     QDict<int> *m_name2symGh;
-    QDict<int> *m_name2symUni;
-    QDict<int> *m_name2symStripUni;
 };
 
 #endif

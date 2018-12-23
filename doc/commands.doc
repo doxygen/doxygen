@@ -75,6 +75,7 @@ documentation:
 \refitem cmdelse \\else
 \refitem cmdelseif \\elseif
 \refitem cmdem \\em
+\refitem cmdemoji \\emoji
 \refitem cmdendcode \\endcode
 \refitem cmdendcond \\endcond
 \refitem cmdenddocbookonly \\enddocbookonly
@@ -218,7 +219,6 @@ documentation:
 \refitem cmdperc \\\%
 \refitem cmdquot \\\"
 \refitem cmdchardot \\\.
-\refitem cmdcolon \:
 \refitem cmddcolon \::
 \refitem cmdpipe \\|
 \refitem cmdndash \\\--
@@ -2743,6 +2743,22 @@ class C {};
 \endcode
 
 <hr>
+\section cmdemoji \\emoji "name"
+
+This command will produce an emoji character given its name.
+
+The supported names are the ones also supported by GitHub and listed here
+https://gist.github.com/rxaviers/7360908
+
+You can use the name with or without colons, i.e.
+`\emoji smile` is the same as writing `\emoji :smile:`.
+When an emoji is not supported the name with by places in the
+text with in between colons, i.e. `\emoji unsupported` will produce
+`:unsupported:` in the output. Doxygen will also give a warning message.
+
+See also the \ref emojisup "emoji support page" for details.
+
+<hr>
 \section cmdmsc \\msc ["caption"] [<sizeindication>=<size>]
 
   \addindex \\msc
@@ -3444,14 +3460,6 @@ class Receiver
   prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" is enabled
   or to prevent starting a numbered list when the dot follows a number at
   the start of a line.
-
-<hr>
-\section cmdcolon \:
-
-  \addindex \\:
-  This command writes a single colon (\c \:) to the output. This
-  character sequence has to be escaped in some cases, because it is used
-  to define `emoji` see also \ref emojisup "Emoji support".
 
 <hr>
 \section cmddcolon \\::

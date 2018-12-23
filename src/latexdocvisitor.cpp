@@ -243,49 +243,15 @@ void LatexDocVisitor::visit(DocSymbol *s)
 void LatexDocVisitor::visit(DocEmoji *s)
 {
   if (m_hide) return;
-  const char *res_text = EmojiEntityMapper::instance()->text(s->emoji());
-  if (res_text)
+  QCString emojiName = EmojiEntityMapper::instance()->name(s->index());
+  if (!emojiName.isEmpty())
   {
-    const char *res_code = EmojiEntityMapper::instance()->code(s->emoji());
-    m_t << "\\doxygenemoji{";
-    filter(res_text);
-    m_t << "}{";
-    m_t << res_code;
-    m_t << "}{";
-    const char *p = res_code;
-    char res[10];
-    int i = 0;
-    bool first = TRUE;
-    while (*p)
-    {
-      switch(*p)
-      {
-        case '&': case '#': case 'x':
-          break;
-        case ';':
-	  res[i] = '\0';
-	  if (!first) m_t << "-";
-          m_t << res;
-	  first = FALSE;
-          i = 0;
-          break;
-        case '0': case '1': case '2': case '3': case '4':
-        case '5': case '6': case '7': case '8': case '9':
-	  res[i] = *p;
-	  i++;
-          break;
-        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-	  res[i] = *p -'a' + 'A'; // so it is uppercase
-	  i++;
-          break;
-      }
-      p++;
-    }
-    m_t << "}";
+    QCString imageName=emojiName.mid(1,emojiName.length()-2); // strip : at start and end
+    m_t << "\\doxygenemoji{" << emojiName << "}{" << imageName << "}";
   }
   else
   {
-    err("LaTeX: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
+    m_t << s->name();
   }
 }
 

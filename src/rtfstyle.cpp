@@ -42,7 +42,7 @@ char rtf_Style_Reset[] = "\\pard\\plain ";
 
 #define RTF_LatexToc(lvl,nest,nxt,pos,twps)                                                                 \
                                                                                                             \
-  { "Latex"#lvl,                                                                                            \
+  { "LatexTOC"#lvl,                                                                                            \
     "\\s"#nest"\\li"#pos"\\sa"#twps"\\sb"#twps"\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",\
     "\\sbasedon0 \\snext"#nxt" LatexTOC "#lvl                                                               \
   }

@@ -55,3 +55,4 @@ ALIASES           = LaTeX="\f$\mbox{\LaTeX}\f$"
 ALIASES          += TeX="\f$\mbox{\TeX}\f$"
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty
+LATEX_EMOJI_DIRECTORY  = ../doc

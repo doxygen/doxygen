@@ -182,14 +182,14 @@ void DocbookDocVisitor::visit(DocEmoji *s)
 {
 DB_VIS_C
   if (m_hide) return;
-  const char *res = EmojiEntityMapper::instance()->docbook(s->emoji());
+  const char *res = EmojiEntityMapper::instance()->unicode(s->index());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("DocBook: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
+    m_t << s->name();
   }
 }
 

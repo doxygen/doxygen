@@ -291,14 +291,14 @@ void HtmlDocVisitor::visit(DocSymbol *s)
 void HtmlDocVisitor::visit(DocEmoji *s)
 {
   if (m_hide) return;
-  const char *res = EmojiEntityMapper::instance()->html(s->emoji());
+  const char *res = EmojiEntityMapper::instance()->unicode(s->index());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("HTML: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
+    m_t << s->name();
   }
 }
 

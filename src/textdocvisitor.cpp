@@ -40,14 +40,14 @@ void TextDocVisitor::visit(DocSymbol *s)
 
 void TextDocVisitor::visit(DocEmoji *s)
 {
-  const char *res = EmojiEntityMapper::instance()->html(s->emoji());
+  const char *res = EmojiEntityMapper::instance()->name(s->index());
   if (res)
   {
     filter(res);
   }
   else
   {
-    err("text: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
+    filter(s->name());
   }
 }
 

@@ -18,21 +18,12 @@
 
 The [Unicode consortium](http://www.unicode.org/) has defined a set of
 [emoji](https://en.wikipedia.org/wiki/Emoji) with the corresponding unicode
-sequences and a so called "CLDR short name". The current version a v11.0 and can be found at
-[Full Emoji List, v11.0](https://unicode.org/emoji/charts/full-emoji-list.html) furthermore there is the list with 
-[Full Emoji Modifier Sequences, v11.0](http://www.unicode.org/emoji/charts/full-emoji-modifiers.html).
+sequences. Doxygen supports the subset of emoji characters as used by GitHub (based on the list
+https://api.github.com/emojis).
+An emoji is created using the \ref cmdemoji "\\emoji" command.
+For example `\emoji smile` (or `\emoji :smile:`) both produce \emoji smile.
 
-A common way to denote an emoji is by means of `:<text>:`,
-doxygen supports the emoji as mentioned in the above mentioned unicode emoji lists in this way
-by means of the "CLDR short name" with the exception that in case a colon (`:`) is in the
-"CLDR short name" this colon has to be removed.
-Furthermore doxygen supports the list of emoji as used by github (based on the list 
-https://api.github.com/emojis). In this list also a reference is given to the unicode codes (just the
-first and last) and these unicodes are mapped onto the official unicode sequences.
-In case the "CLDR short name" and the "github name" are the same the reference from the 
-"CLDR short name" has precedence.
-
-Implementation
+\section emojirep Representation
 
 For the different doxygen output types there is an output defined:
 - Unicode code sequence, the actual representation is depending on the possibilities of the fonts loaded:
@@ -46,116 +37,79 @@ For the different doxygen output types there is an output defined:
   - man
   - perl
 
-\anchor emojiimage Emoji image retrieval
+\section emojiimage Emoji image retrieval
 
-In the  lists 
-[Full Emoji List, v11.0](https://unicode.org/emoji/charts/full-emoji-list.html) and
-[Full Emoji Modifier Sequences, v11.0](http://www.unicode.org/emoji/charts/full-emoji-modifiers.html).
-define images for the different vendors. These images can be retrieved by means of the following procedure (based on the code from Henning Pohl, https://github.com/henningpohl/latex-emoji):
+In the list of images can be downloaded via the following Python script:
 \code{.py}
-from bs4 import BeautifulSoup
-import base64
+# script to download the emoticons from GitHub and to produce a table for
+# inclusion in doxygen. Works with python 2.7+ and python 3.x
+import json
 import os
-import requests
+import argparse
+import re
+try:
+    import urllib.request as urlrequest
+except ImportError:
+    import urllib as urlrequest
 
-# http://www.unicode.org/emoji/charts/index.html
-# http://www.unicode.org/emoji/charts/full-emoji-list.html
-PAGE_URL = 'http://www.unicode.org/emoji/charts/full-emoji-list.html'
-PAGE_URL_SKIN = 'http://www.unicode.org/emoji/charts/full-emoji-modifiers.html'
-PAGE = 'full-emoji-list.html'
-PAGE_SKIN = 'full-emoji-modifiers.html'
+unicode_re = re.compile(r'.*?/unicode/(.*?).png\?.*')
 
+def get_emojis():
+    response  = urlrequest.urlopen('https://api.github.com/emojis')
+    raw_data  = response.read()
+    return json.loads(raw_data)
 
-def get_header_names(header):
-    cols = header.find_all('th')
-    cols = [c.get_text() for c in cols]
-    cols = [c.replace('*','') for c in cols]
-    cols = [c.lower() for c in cols]
-    return cols
+def download_images(dir_name):
+    json_data = get_emojis()
+    num_items = len(json_data)
+    cur_item=0
+    for image,url in sorted(json_data.items()):
+        image_name = image+'.png'
+        cur_item=cur_item+1
+        if url.find('/unicode/')==-1 or not os.path.isfile(dir_name+'/'+image_name):
+            with open(dir_name+'/'+image_name,'wb') as file:
+                print('%s/%s: fetching %s' % (cur_item,num_items,image_name))
+                file.write(urlrequest.urlopen(url).read())
+        else:
+            print('%s/%s: skipping %s' % (cur_item,num_items,image_name))
 
-def extract_image(column):
-    if 'miss' in column['class']:
-        return None
+def produce_table():
+    json_data = get_emojis()
+    lines = []
+    for image,url in sorted(json_data.items()):
+        match = unicode_re.match(url)
+        if match:
+            unicodes = match.group(1).split('-')
+            unicodes_html = ''.join(["&#x"+x+";" for x in unicodes])
+            image_str = "\":"+image+":\","
+            unicode_str = "\""+unicodes_html+"\""
+            lines.append('  { %-42s %-38s }' % (image_str,unicode_str))
+    out_str = ',\n'.join(lines)
+    print("{")
+    print(out_str)
+    print("};")
 
-    if 'miss7' in column['class']:
-        return None
+if __name__=="__main__":
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-d','--dir',help='directory to place images in')
+    group.add_argument('-t','--table',help='generate code fragment',action='store_true')
+    args = parser.parse_args()
+    if args.table:
+        produce_table()
+    else:
+        download_images(args.dir)
 
-    data = column.img['src']
-    data_start = data.find("base64,")
-    if data_start == -1:
-        return None
-    
-    data = base64.b64decode(data[data_start + len("base64,"):])
-    return data
-
-def save_image(folder, imgSrc, filename):
-    if os.path.exists(folder) is False:
-        os.mkdir(folder)
-
-    filename = os.path.join(folder, filename)
-    if os.path.exists(filename):
-        return
-
-    img = extract_image(imgSrc)
-    if img is not None:
-        with open(filename, 'wb') as out:
-            out.write(img)
-
-def scrape(page_url, page):
-    # Possibilities to obtain the basic data:
-    # - use request.get directly
-    soup = BeautifulSoup(requests.get(page_url).text, "html5lib")
-    # - download file (e.g. with wget http://www.unicode.org/emoji/charts/full-emoji-list.html)
-    # with open(page) as fp:
-    #     soup = BeautifulSoup(fp,"html5lib")
-
-    table = soup('table')[0]
-
-    # for version 11.0
-    # first row: smileys
-    # second row: face smileys
-    # third row: row with vendors, i.e. the one we want
-    header = table.find_all('tr')[2]
-    keys = get_header_names(header)
-
-    for row in header.find_next_siblings('tr'):
-        fields = {k:c for k, c in zip(keys, row.find_all('td')) }
-        if 'code' not in fields:
-            continue
-
-        codes = fields['code'].text.replace('U+', '').split(' ')
-        filename = "-".join(codes) + ".png"
-
-        save_image('ios', fields['appl'], filename)
-        save_image('android', fields['goog'], filename)
-        save_image('twitter', fields['twtr'], filename)
-        save_image('windows', fields['wind'], filename)
-        save_image('one', fields['one'], filename)
-        save_image('facebook', fields['fb'], filename)
-        save_image('samsung', fields['sams'], filename)
-        #save_image('gmail', fields['gmail'], filename)
-        #save_image('softbank', fields['sb'], filename)
-        #save_image('docomo', fields['dcm'], filename)
-        #save_image('kddi', fields['kddi'], filename)
-        #save_image('bw', fields['chart'], filename)
-
-if __name__ == '__main__':
-    scrape(PAGE_URL, PAGE)
-    scrape(PAGE_URL_SKIN, PAGE_SKIN)
 \endcode
-This results in a number of directories with the supported images. By means of the doxygen configuration parameter
+When invoking it with the `-d image_dir` option the images will by downloaded in the `image_dir` directory.
+By means of the doxygen configuration parameter
 \ref cfg_latex_emoji_directory "LATEX_EMOJI_DIRECTORY" the requested directory can be selected.
 
-It is also possible to use images from other sources or mix images from different sources, the only requirement is that the filename represents the unicode of the emoji. e.g. if we have the emoji <tt>\:grinning face with big eyes\:</tt> (also known as <tt>\:smiley\:</tt>) the coresponding unicode is `U+1F603` and the name of the file is `1F603.png`.<br>
-For a more complex emoji like <tt>\:keycap 1\:</tt> (also known as <tt>\:one\:</tt>) the coresponding unicode sequence is `U+0031U+FE0FU+20E3` and the name of the file is `0031-FE0F-20E3.png`.
-
-
-Note that when you want to use a colon (`:`) in your text it might be necessary to escape the colon (see \ref cmdcolon "\\:") as it might conflict with a, possible, emoji sequence.
-  
+For convenience a zip with the result of running the script can also be downloaded from 
+http://www.doxygen.nl/dl/github_emojis.zip
 
 For a overview of the supported emoji one can issue the comand:<br>
-`doxygen.exe -f emoji <outputFileName>`
-
+`doxygen -f emoji <outputFileName>`
 
 \htmlonly
 Go to the <a href="langhowto.html">next</a> section or return to the

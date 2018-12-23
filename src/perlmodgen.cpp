@@ -614,7 +614,15 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
 void PerlModDocVisitor::visit(DocEmoji *sy)
 {
   enterText();
-  m_output.add(EmojiEntityMapper::instance()->perl(sy->emoji()));
+  const char *name = EmojiEntityMapper::instance()->name(sy->index());
+  if (name)
+  {
+    m_output.add(name);
+  }
+  else
+  {
+    m_output.add(sy->name());
+  }
 }
 
 void PerlModDocVisitor::visit(DocURL *u)

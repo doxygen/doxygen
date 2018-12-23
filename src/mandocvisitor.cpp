@@ -93,15 +93,14 @@ void ManDocVisitor::visit(DocSymbol *s)
 void ManDocVisitor::visit(DocEmoji *s)
 {
   if (m_hide) return;
-  const char *res = EmojiEntityMapper::instance()->man(s->emoji());
+  const char *res = EmojiEntityMapper::instance()->name(s->index());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    // no error or warning to be supplied
-    // err("man: non supported HTML-entity found: &%s;\n",get_symbol_item(s->emoji()));
+    m_t << s->name();
   }
   m_firstCol=FALSE;
 }

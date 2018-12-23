@@ -141,7 +141,7 @@ void RTFDocVisitor::visit(DocEmoji *s)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocEmoji)}\n");
-  const char *res = EmojiEntityMapper::instance()->rtf(s->emoji());
+  const char *res = EmojiEntityMapper::instance()->unicode(s->index());
   if (res)
   {
     const char *p = res;
@@ -174,7 +174,7 @@ void RTFDocVisitor::visit(DocEmoji *s)
   }
   else
   {
-    err("RTF: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
+    m_t << s->name();
   }
   m_lastIsPara=FALSE;
 }

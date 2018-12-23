@@ -480,15 +480,15 @@ class DocSymbol : public DocNode
 class DocEmoji : public DocNode
 {
   public:
-    DocEmoji(DocNode *parent,int  s) : 
-      m_symbol(s) { m_parent = parent; }
-    int  emoji() const     { return m_symbol; }
+    DocEmoji(DocNode *parent,const QCString &symName);
+    QCString name() const      { return m_symName; }
+    int index() const          { return m_index; }
     Kind kind() const          { return Kind_Emoji; }
     void accept(DocVisitor *v) { v->visit(this); }
-    static int  decodeEmoji(const QCString &symName);
 
   private:
-    int   m_symbol;
+    QCString m_symName;
+    int m_index;
 };
 
 /** Node representing some amount of white space */
@@ -498,7 +498,7 @@ class DocWhiteSpace : public DocNode
     DocWhiteSpace(DocNode *parent,const QCString &chars) : 
       m_chars(chars) { m_parent = parent; }
     Kind kind() const          { return Kind_WhiteSpace; }
-    QCString chars() const      { return m_chars; }
+    QCString chars() const     { return m_chars; }
     void accept(DocVisitor *v) { v->visit(this); }
   private:
     QCString  m_chars;
@@ -1189,6 +1189,7 @@ class DocPara : public CompAccept<DocPara>
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
     void handleCite();
+    void handleEmoji();
     void handleRef(const QCString &cmdName);
     void handleSection(const QCString &cmdName);
     void handleInheritDoc();

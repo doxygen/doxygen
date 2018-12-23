@@ -138,14 +138,18 @@ void XmlDocVisitor::visit(DocSymbol *s)
 void XmlDocVisitor::visit(DocEmoji *s)
 {
   if (m_hide) return;
-  const char *res = EmojiEntityMapper::instance()->xml(s->emoji());
+  const char *res = EmojiEntityMapper::instance()->name(s->index());
   if (res)
   {
-    m_t << res;
+    QCString name=res;
+    name = name.mid(1,name.length()-2);
+    m_t << "<emoji name=\"" << name << "\" unicode=\"";
+    filter(EmojiEntityMapper::instance()->unicode(s->index()));
+    m_t << "\"/>";
   }
   else
   {
-    err("XML: non supported Emoji-entity found: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
+    m_t << s->name();
   }
 }
 
