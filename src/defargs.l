@@ -133,7 +133,7 @@ static bool nameIsActuallyPartOfType(QCString &name)
     keywords.insert("volatile", DUMMY_ADDR); // foo(... volatile)
     first=FALSE;
   }
-  return keywords.find(name)!=0;
+  return name.length()>0 && keywords.find(name)!=0;
 }
 %}
 
