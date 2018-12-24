@@ -104,6 +104,7 @@
 #include "context.h"
 #include "fileparser.h"
 #include "emoji.h"
+#include "plantuml.h"
 
 // provided by the generated file resources.cpp
 extern void initResources();
