@@ -28,7 +28,6 @@ For example `\emoji smile` (or `\emoji :smile:`) both produce \emoji smile.
 For the different doxygen output types there is an output defined:
 - Unicode code sequence, the actual representation is depending on the possibilities of the fonts loaded:
   - HTML
-  - XML
   - DocBook
   - RTF, converted to UTF-16 representation.
 - Image
@@ -36,6 +35,7 @@ For the different doxygen output types there is an output defined:
 - plain emoji text (i.e. `:<text>:`)
   - man
   - perl
+- For XML there is a dedicated `<emoji>` tag with name and unicode attributes.
 
 \section emojiimage Emoji image retrieval
 
