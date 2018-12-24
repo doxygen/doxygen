@@ -1617,20 +1617,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* --------- handle arguments of the param command ------------ */
 <ParamArg1>{ID}/{B}*","                 {
-                                          if (yytext[0]=='_' && Config_getBool(MARKDOWN_SUPPORT))
-                                          {
-                                            addOutput('\\');
-                                          }
                                           addOutput(yytext);
                                         }
 <ParamArg1>","                          {
                                           addOutput(" , ");
                                         }
 <ParamArg1>{ID}                         {
-                                          if (yytext[0]=='_' && Config_getBool(MARKDOWN_SUPPORT))
-                                          {
-                                            addOutput('\\');
-                                          }
                                           addOutput(yytext);
                                           BEGIN( Comment );
                                         }
@@ -3104,12 +3096,19 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   if (comment.isEmpty()) return FALSE; // avoid empty strings
   if (Doxygen::markdownSupport)
   {
-    inputString      = processMarkdown(fileName,lineNr,NULL,comment);
-    QString qq(inputString);
-    while (qq.startsWith(" ")) qq = qq.mid(1);
-    while (qq.startsWith("\n")) qq = qq.mid(1);
-    if (qq.startsWith("<br>")) qq = qq.mid(4);
-    inputString = QCString(qq.data());
+    inputString = processMarkdown(fileName,lineNr,NULL,comment);
+    const char *p = inputString.data();
+    if (p)
+    {
+      while (*p==' ')  p++; // skip over spaces
+      while (*p=='\n') p++; // skip over newlines
+      if (qstrncmp(p,"<br>",4)==0) p+=4; // skip over <br>
+    }
+    if (p>inputString.data())
+    {
+      // strip part of the input
+      inputString = inputString.mid(p-inputString.data());
+    }
   }
   else
   {

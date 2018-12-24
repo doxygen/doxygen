@@ -431,7 +431,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
     }
     if (!found && isParam)
     {
-      //printf("member type=%d\n",memberDef->memberType());
+      //printf("member type=%d\n",g_memberDef->memberType());
       QCString scope=g_memberDef->getScopeString();
       if (!scope.isEmpty()) scope+="::"; else scope="";
       QCString inheritedFrom = "";
