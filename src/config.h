@@ -51,6 +51,11 @@ namespace Config
    */
   void writeTemplate(FTextStream &t,bool shortList,bool updateOnly=FALSE);
 
+  /*! Writes a the differences between the current configuration and the
+   *  template configuration to stream \a t.
+   */
+  void compareDoxyfile(FTextStream &t);
+
   /*! Parses a configuration file with name \a fn.
    *  \returns TRUE if successful, FALSE if the file could not be
    *  opened or read.
@@ -61,7 +66,7 @@ namespace Config
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
    */
-  void postProcess(bool clearHeaderAndFooter);
+  void postProcess(bool clearHeaderAndFooter, bool compare = FALSE);
 
   /*! Check the validity of the parsed options and correct or warn the user where needed. */
   void checkAndCorrect();

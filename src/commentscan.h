@@ -40,7 +40,7 @@ class ParserInterface;
  *  @param[in,out] lineNr The line number at which the comment block was found.
  *         When the function returns it will be set to the last line parsed.
  *  @param[in] isBrief TRUE iff this comment block represents a brief description.
- *  @param[in] isJavaDocStyle TRUE iff this comment block is in "JavaDoc" style.
+ *  @param[in] isJavadocStyle TRUE iff this comment block is in "Javadoc" style.
  *         This means that it starts as a brief description until the end of
  *         the sentences is found and then proceeds as a detailed description.
  *  @param[in] isInbody TRUE iff this comment block is located in the body of
@@ -65,7 +65,7 @@ bool parseCommentBlock(ParserInterface *parser,
 	               const QCString &fileName,
 		       int  &lineNr,
 		       bool isBrief,
-		       bool isJavaDocStyle,
+		       bool isJavadocStyle,
                        bool isInbody,
 		       Protection &prot,
                        int &position,

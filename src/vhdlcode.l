@@ -370,7 +370,7 @@ static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE,b
       //g_code->codify(sp);
       if (comment)
       {
-        writeFont("keyword",line.data());
+        writeFont("comment",line.data());
       }
       else
       {
@@ -381,7 +381,7 @@ static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE,b
     else
     {
       if (comment)
-        writeFont("keyword",sp);
+        writeFont("comment",sp);
       else
         writeWord(sp,cl,classlink);
       done=TRUE;
@@ -1478,11 +1478,11 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       writeFont("keyword",vhdlcodeYYtext);
                                     }
                                      
-<Bases>^{B}*{XILINX}[^\n]*  { 
-                            writeWord(yytext);
-                            //codifyLines(vhdlcodeYYtext,g_CurrClass.data(),TRUE);
-                         }           
-                             
+<Bases>^{B}*{XILINX}/[^a-zA-Z0-9_] {
+                                      writeWord(yytext);
+                                      //codifyLines(vhdlcodeYYtext,g_CurrClass.data(),TRUE);
+                                   }
+
 <Bases>^{B}*"set_"[^\n]*  { 
                                       writeWord(yytext);
                                     }
@@ -1497,36 +1497,37 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                          }
 
 <*>\n{TEXTT}             { // found normal or special comment on its own line
-			   QCString text(vhdlcodeYYtext);
-			   int i=text.find("--");
-			   if (text.mid(i,3)=="--!" && // hide special comment
-                               Config_getBool(STRIP_CODE_COMMENTS)) 
-			   { 
-			     g_yyLineNr++; // skip complete line
-			   }  
-			   else // normal comment
-			   {
-			     //    startFontClass("keyword");
-			     codifyLines(text,0,FALSE,TRUE);
-			     //    endFontClass();
-			   }
+                           QCString text(vhdlcodeYYtext);
+                           int i=text.find("--");
+                           if (text.mid(i,3)=="--!") // && // hide special comment
+                           {
+                             if (!Config_getBool(STRIP_CODE_COMMENTS))
+                             {
+                               codifyLines(text,0,FALSE,TRUE);
+                             }
+                             else g_yyLineNr++; // skip complete line, but count line
+                           }
+                           else // normal comment
+                           {
+                             codifyLines(text,0,FALSE,TRUE);
+                           }
                          }
 <*>{TEXTT}               { // found normal or special comment after something
-			   QCString text(vhdlcodeYYtext);
-			   int i=text.find("--");
-			   if (text.mid(i,3)=="--!" &&
-                               Config_getBool(STRIP_CODE_COMMENTS)) 
-			   { 
-			      // hide special comment
-			   }  
-			   else // normal comment
-			   {
-			     //   startFontClass("keyword");
-			     codifyLines(text,0,FALSE,TRUE);
-			     //   endFontClass();
-			   }
+                           QCString text(vhdlcodeYYtext);
+                           int i=text.find("--");
+                           if (text.mid(i,3)=="--!")
+                           {
+                             // hide special comment
+                             if (!Config_getBool(STRIP_CODE_COMMENTS))
+                             {
+                               codifyLines(text,0,FALSE,TRUE);
+                             }
+                           }
+                           else // normal comment
+                           {
+                             codifyLines(text,0,FALSE,TRUE);
+                           }
                          }
-
 
 %%
 

@@ -1431,7 +1431,6 @@ tcl_inf("(%d) ?%s?\n",what,tcl.string_last.data());
     yyless(0);
 tcl_inf("(.%d) ?%s?\n",what,tcl.string_last.data());
     return;
-    myWhite=0;
   break;
   default:
     tcl_err("wrong state: %d\n",what);

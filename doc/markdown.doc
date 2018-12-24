@@ -41,7 +41,7 @@ the extensions that doxygen supports.
 Finally section \ref markdown_dox discusses some specifics for doxygen's
 implementation of the Markdown standard.
 
-[markdown]: http://daringfireball.net/projects/markdown/ 
+[markdown]: https://daringfireball.net/projects/markdown/ 
 [mdextra]:  https://michelf.ca/projects/php-markdown/extra/
 [github]:   https://github.github.com/github-flavored-markdown/
 
@@ -173,7 +173,18 @@ Examples:
 *    __double underscores__
 
 See section \ref mddox_emph_spans for more info how doxygen handles
-emphasis spans slightly different than standard Markdown.
+emphasis / strikethrough spans slightly different than standard / Markdown GitHub Flavored Markdown.
+
+\subsection md_strikethrough Strikethrough
+
+To strikethrough a text fragment you start and end the fragment with two tildes.
+
+Examples:
+
+*    ~~double tilde~~
+
+See section \ref mddox_emph_spans for more info how doxygen handles
+emphasis / strikethrough spans slightly different than standard Markdown / GitHub Flavored Markdown.
 
 \subsection md_codespan code spans
 
@@ -567,22 +578,22 @@ For Item1 the indentation is 4 (when treating the list marker as whitespace),
 so the next paragraph "More text..." starts at the same indentation level 
 and is therefore not seen as a code block.
 
-\subsection mddox_emph_spans Emphasis limits
+\subsection mddox_emph_spans Emphasis and strikethrough limits
 
-Unlike standard Markdown, doxygen will not touch internal underscores or
-stars, so the following will appear as-is:
+Unlike standard Markdown and Github Flavored Markdown doxygen will not touch internal underscores or
+stars or tildes, so the following will appear as-is:
 
     a_nice_identifier
 
-Furthermore, a `*` or `_` only starts an emphasis if
+Furthermore, a `*` or `_` only starts an emphasis  and a `~` only starts a strikethrough if
 - it is followed by an alphanumerical character, and
 - it is preceded by a space, newline, or one the following characters `<{([,:;`
 
-An emphasis ends if
+An emphasis or a strikethrough ends if
 - it is not followed by an alphanumerical character, and
 - it is not preceded by a space, newline, or one the following characters `({[<=+-\@`
 
-Lastly, the span of the emphasis is limited to a single paragraph.
+Lastly, the span of the emphasis or strikethrough is limited to a single paragraph.
 
 
 \subsection mddox_code_spans Code Spans Limits

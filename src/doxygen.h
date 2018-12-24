@@ -140,6 +140,7 @@ class Doxygen
     static Store                    *symbolStorage;
     static QCString                  objDBFileName;
     static QCString                  entryDBFileName;
+    static QCString                  filterDBFileName;
     static CiteDict                 *citeDict;
     static bool                      gatherDefines;
     static bool                      userComments;

@@ -106,38 +106,32 @@ To omit all \c test directories from a source tree for instance, one could use:
 Doxygen looks at the file's extension to determine how to parse a file,
 using the following table:
 
-Extension | Language
----------:|---------
-.idl      |IDL
-.ddl      |IDL
-.odl      |IDL
-.java     |Java
-.cs       |C#
-.d        |D
-.php      |PHP
-.php4     |PHP
-.php5     |PHP
-.inc      |PHP
-.phtml    |PHP
-.m        |Objective-C
-.M        |Objective-C
-.mm       |Objective-C
-.py       |Python
-.f        |Fortran
-.for      |Fortran
-.f90      |Fortran
-.f95      |Fortran
-.f03      |Fortran
-.f08      |Fortran
-.vhd      |VHDL
-.vhdl     |VHDL
-.tcl      |TCL
-.ucf      |VHDL
-.qsf      |VHDL
-.md       |Markdown
-.markdown |Markdown
+Extension | Language | Extension | Language     | Extension | Language
+---------:|--------- | ---------:|------------- | ---------:|---------
+.dox      |C / C++   | .idl      |IDL           | .f        |Fortran
+.doc      |C / C++   | .ddl      |IDL           | .for      |Fortran
+.c        |C / C++   | .odl      |IDL           | .f90      |Fortran
+.cc       |C / C++   | .java     |Java          | .f95      |Fortran
+.cxx      |C / C++   | .cs       |C#            | .f03      |Fortran
+.cpp      |C / C++   | .d        |D             | .f08      |Fortran
+.c++      |C / C++   | .php      |PHP           | .vhd      |VHDL
+.ii       |C / C++   | .php4     |PHP           | .vhdl     |VHDL
+.ixx      |C / C++   | .php5     |PHP           | .ucf      |VHDL
+.ipp      |C / C++   | .inc      |PHP           | .qsf      |VHDL
+.i++      |C / C++   | .phtml    |PHP           | .tcl      |TCL
+.inl      |C / C++   | .m        |Objective-C   | .md       |Markdown
+.h        |C / C++   | .M        |Objective-C   | .markdown |Markdown
+.H        |C / C++   | .py       |Python        | .ice      |Slice
+.hh       |C / C++   | .pyw      |Python        | | |
+.HH       |C / C++   | | | | |
+.hxx      |C / C++   | | | | |
+.hpp      |C / C++   | | | | |
+.h++      |C / C++   | | | | |
+.mm       |C / C++   | | | | |
 
-Any other extension is parsed as if it is a C/C++ file.
+Any other extension is not parsed unless it is added to
+\ref cfg_file_patterns "FILE_PATTERNS" and the appropriate
+\ref cfg_extension_mapping "EXTENSION_MAPPING" is set.
 
 \anchor extract_all
 If you start using doxygen for an existing project (thus without any 
@@ -263,7 +257,7 @@ capabilities of the man page format, so some information
 \subsection docbook_out DocBook output
 \addindex docbook
 Doxygen can also generate output in the 
-<a href="http://docbook.org/">DocBook</a> format. How to process the
+<a href="https://docbook.org/">DocBook</a> format. How to process the
 DocBook output is beyond the scope of this manual.
 
 \section step3 Step 3: Documenting the sources

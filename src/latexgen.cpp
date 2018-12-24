@@ -165,11 +165,6 @@ void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   int l = qstrlen(name);
-  if (m_col+l>80)
-  {
-    m_t << "\n      ";
-    m_col=0;
-  }
   if (!ref && usePDFLatex && pdfHyperlinks)
   {
     m_t << "\\mbox{\\hyperlink{";
@@ -485,6 +480,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   if (Config_getBool(LATEX_BATCHMODE))
     t << "\\batchmode\n";
 
+  // to overcome  problems wit too many open files
+  t << "\\let\\mypdfximage\\pdfximage"
+       "\\def\\pdfximage{\\immediate\\mypdfximage}";
+
   // Set document class depending on configuration
   QCString documentClass;
   if (Config_getBool(COMPACT_LATEX))
@@ -563,6 +562,17 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "}\n"
        "\\newcommand{\\+}{\\discretionary{\\mbox{\\scriptsize$\\hookleftarrow$}}{}{}}\n"
        "\n";
+
+   QCString emojiDir=Config_getString(LATEX_EMOJI_DIRECTORY);
+   if (emojiDir.isEmpty()) emojiDir = ".";
+   emojiDir = substitute(emojiDir,"\\","/");
+   t << "% Arguments of doxygenemoji:\n"
+        "% 1) ':<text>:' form of the emoji, already \"LaTeX\"-escaped\n"
+        "% 2) file with the name of the emoji without the .png extension\n"
+	"% in case image exist use this otherwise use the ':<text>:' form\n";
+   t << "\\newcommand{\\doxygenemoji}[2]{%\n"
+        "  \\IfFileExists{" << emojiDir << "/#2.png}{\\raisebox{-0.1em}{\\includegraphics[height=0.9em]{" << emojiDir << "/#2.png}}}{#1}%\n"
+        "}\n";
 
   // Define page & text layout
   QCString paperName=Config_getEnum(PAPER_TYPE);
@@ -1369,12 +1379,12 @@ void LatexGenerator::startHtmlLink(const char *url)
     t << url;
     t << "}";
   }
-  t << "\\texttt{ ";
+  t << "{\\texttt{ ";
 }
 
 void LatexGenerator::endHtmlLink()
 {
-  t << "}";
+  t << "}}";
 }
 
 //void LatexGenerator::writeMailLink(const char *url)
@@ -1519,9 +1529,9 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
   if (name)
   {
     t << "\\label{" << stripPath(fileName) << "}\\index{";
-    t << latexEscapeLabelName(name,insideTabbing);
+    t << latexEscapeLabelName(name);
     t << "@{";
-    t << latexEscapeIndexChars(name,insideTabbing);
+    t << latexEscapeIndexChars(name);
     t << "}}" << endl;
   }
 }
@@ -1602,27 +1612,27 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "\\index{";
     if (clname)
     {
-      t << latexEscapeLabelName(clname,insideTabbing);
+      t << latexEscapeLabelName(clname);
       t << "@{";
-      t << latexEscapeIndexChars(clname,insideTabbing);
+      t << latexEscapeIndexChars(clname);
       t << "}!";
     }
-    t << latexEscapeLabelName(memname,insideTabbing);
+    t << latexEscapeLabelName(memname);
     t << "@{";
-    t << latexEscapeIndexChars(memname,insideTabbing);
+    t << latexEscapeIndexChars(memname);
     t << "}}" << endl;
 
     t << "\\index{";
-    t << latexEscapeLabelName(memname,insideTabbing);
+    t << latexEscapeLabelName(memname);
     t << "@{";
-    t << latexEscapeIndexChars(memname,insideTabbing);
+    t << latexEscapeIndexChars(memname);
     t << "}";
     if (clname)
     {
       t << "!";
-      t << latexEscapeLabelName(clname,insideTabbing);
+      t << latexEscapeLabelName(clname);
       t << "@{";
-      t << latexEscapeIndexChars(clname,insideTabbing);
+      t << latexEscapeIndexChars(clname);
       t << "}";
     }
     t << "}" << endl;
@@ -1640,7 +1650,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
   {
     t << "\\texorpdfstring{";
   }
-  t << latexEscapeIndexChars(title,insideTabbing);
+  t << latexEscapeIndexChars(title);
   if (pdfHyperlinks)
   {
     t << "}{" << latexEscapePDFString(title) << "}";
@@ -1715,16 +1725,16 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
   if (s1)
   {
     t << "\\index{";
-    t << latexEscapeLabelName(s1,insideTabbing);
+    t << latexEscapeLabelName(s1);
     t << "@{";
-    t << latexEscapeIndexChars(s1,insideTabbing);
+    t << latexEscapeIndexChars(s1);
     t << "}";
     if (s2)
     {
       t << "!";
-      t << latexEscapeLabelName(s2,insideTabbing);
+      t << latexEscapeLabelName(s2);
       t << "@{";
-      t << latexEscapeIndexChars(s2,insideTabbing);
+      t << latexEscapeIndexChars(s2);
       t << "}";
     }
     t << "}";
@@ -2159,7 +2169,7 @@ void LatexGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBra
 void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 {
   if (prefix)
-      t << " " << prefix;
+      t << " " << prefix << "(";
   else if (closeBracket)
       t << ")";
   t << " ";
@@ -2222,11 +2232,9 @@ void LatexGenerator::startCodeFragment()
 
 void LatexGenerator::endCodeFragment()
 {
-  //if (DoxyCodeOpen)
-  //{
-  //  t << "}\n";
-  //  DoxyCodeOpen = FALSE;
-  //}
+  //endCodeLine checks is there is still an open code line, if so closes it.
+  endCodeLine();
+
   t << "\\end{DoxyCode}\n";
   DoxyCodeOpen = FALSE;
 }

@@ -97,6 +97,8 @@ class XmlSectionMapper : public QIntDict<char>
       insert(MemberListType_decDefineMembers,"define");
       insert(MemberListType_decProtoMembers,"prototype");
       insert(MemberListType_decTypedefMembers,"typedef");
+      insert(MemberListType_decSequenceMembers,"sequence");
+      insert(MemberListType_decDictionaryMembers,"dictionary");
       insert(MemberListType_decEnumMembers,"enum");
       insert(MemberListType_decFuncMembers,"func");
       insert(MemberListType_decVarMembers,"var");
@@ -222,146 +224,117 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 
 
 /** Generator for producing XML formatted source code. */
-class XMLCodeGenerator : public CodeOutputInterface
+void XMLCodeGenerator::codify(const char *text)
 {
-  public:
-
-    XMLCodeGenerator(FTextStream &t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
-      m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE) {}
-    virtual ~XMLCodeGenerator() { }
-
-    void codify(const char *text)
+  XML_DB(("(codify \"%s\")\n",text));
+  if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
+  {
+    m_t << "<highlight class=\"normal\">";
+    m_normalHLNeedStartTag=FALSE;
+  }
+  writeXMLCodeString(m_t,text,m_col);
+}
+void XMLCodeGenerator::writeCodeLink(const char *ref,const char *file,
+                   const char *anchor,const char *name,
+                   const char *tooltip)
+{
+  XML_DB(("(writeCodeLink)\n"));
+  if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
+  {
+    m_t << "<highlight class=\"normal\">";
+    m_normalHLNeedStartTag=FALSE;
+  }
+  writeXMLLink(m_t,ref,file,anchor,name,tooltip);
+  m_col+=qstrlen(name);
+}
+void XMLCodeGenerator::writeTooltip(const char *, const DocLinkInfo &, const char *,
+                  const char *, const SourceLinkInfo &, const SourceLinkInfo &
+                 )
+{
+  XML_DB(("(writeToolTip)\n"));
+}
+void XMLCodeGenerator::startCodeLine(bool)
+{
+  XML_DB(("(startCodeLine)\n"));
+  m_t << "<codeline";
+  if (m_lineNumber!=-1)
+  {
+    m_t << " lineno=\"" << m_lineNumber << "\"";
+    if (!m_refId.isEmpty())
     {
-      XML_DB(("(codify \"%s\")\n",text));
-      if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
+      m_t << " refid=\"" << m_refId << "\"";
+      if (m_isMemberRef)
       {
-        m_t << "<highlight class=\"normal\">";
-        m_normalHLNeedStartTag=FALSE;
+        m_t << " refkind=\"member\"";
       }
-      writeXMLCodeString(m_t,text,m_col);
-    }
-    void writeCodeLink(const char *ref,const char *file,
-                       const char *anchor,const char *name,
-                       const char *tooltip)
-    {
-      XML_DB(("(writeCodeLink)\n"));
-      if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
+      else
       {
-        m_t << "<highlight class=\"normal\">";
-        m_normalHLNeedStartTag=FALSE;
-      }
-      writeXMLLink(m_t,ref,file,anchor,name,tooltip);
-      m_col+=qstrlen(name);
-    }
-    void writeTooltip(const char *, const DocLinkInfo &, const char *,
-                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
-                     )
-    {
-      XML_DB(("(writeToolTip)\n"));
-    }
-    void startCodeLine(bool)
-    {
-      XML_DB(("(startCodeLine)\n"));
-      m_t << "<codeline";
-      if (m_lineNumber!=-1)
-      {
-        m_t << " lineno=\"" << m_lineNumber << "\"";
-        if (!m_refId.isEmpty())
-        {
-          m_t << " refid=\"" << m_refId << "\"";
-          if (m_isMemberRef)
-          {
-            m_t << " refkind=\"member\"";
-          }
-          else
-          {
-            m_t << " refkind=\"compound\"";
-          }
-        }
-        if (!m_external.isEmpty())
-        {
-          m_t << " external=\"" << m_external << "\"";
-        }
-      }
-      m_t << ">";
-      m_insideCodeLine=TRUE;
-      m_col=0;
-    }
-    void endCodeLine()
-    {
-      XML_DB(("(endCodeLine)\n"));
-      if (!m_insideSpecialHL && !m_normalHLNeedStartTag)
-      {
-        m_t << "</highlight>";
-        m_normalHLNeedStartTag=TRUE;
-      }
-      m_t << "</codeline>" << endl; // non DocBook
-      m_lineNumber = -1;
-      m_refId.resize(0);
-      m_external.resize(0);
-      m_insideCodeLine=FALSE;
-    }
-    void startFontClass(const char *colorClass)
-    {
-      XML_DB(("(startFontClass)\n"));
-      if (m_insideCodeLine && !m_insideSpecialHL && !m_normalHLNeedStartTag)
-      {
-        m_t << "</highlight>";
-        m_normalHLNeedStartTag=TRUE;
-      }
-      m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
-      m_insideSpecialHL=TRUE;
-    }
-    void endFontClass()
-    {
-      XML_DB(("(endFontClass)\n"));
-      m_t << "</highlight>"; // non DocBook
-      m_insideSpecialHL=FALSE;
-    }
-    void writeCodeAnchor(const char *)
-    {
-      XML_DB(("(writeCodeAnchor)\n"));
-    }
-    void writeLineNumber(const char *extRef,const char *compId,
-                         const char *anchorId,int l)
-    {
-      XML_DB(("(writeLineNumber)\n"));
-      // we remember the information provided here to use it
-      // at the <codeline> start tag.
-      m_lineNumber = l;
-      if (compId)
-      {
-        m_refId=compId;
-        if (anchorId) m_refId+=(QCString)"_1"+anchorId;
-        m_isMemberRef = anchorId!=0;
-        if (extRef) m_external=extRef;
+        m_t << " refkind=\"compound\"";
       }
     }
-    void setCurrentDoc(Definition *,const char *,bool)
+    if (!m_external.isEmpty())
     {
+      m_t << " external=\"" << m_external << "\"";
     }
-    void addWord(const char *,bool)
-    {
-    }
-
-    void finish()
-    {
-      if (m_insideCodeLine) endCodeLine();
-    }
-
-  private:
-    FTextStream &m_t;
-    QCString m_refId;
-    QCString m_external;
-    int m_lineNumber;
-    bool m_isMemberRef;
-    int m_col;
-
-    bool m_insideCodeLine;
-    bool m_normalHLNeedStartTag;
-    bool m_insideSpecialHL;
-};
-
+  }
+  m_t << ">";
+  m_insideCodeLine=TRUE;
+  m_col=0;
+}
+void XMLCodeGenerator::endCodeLine()
+{
+  XML_DB(("(endCodeLine)\n"));
+  if (!m_insideSpecialHL && !m_normalHLNeedStartTag)
+  {
+    m_t << "</highlight>";
+    m_normalHLNeedStartTag=TRUE;
+  }
+  m_t << "</codeline>" << endl; // non DocBook
+  m_lineNumber = -1;
+  m_refId.resize(0);
+  m_external.resize(0);
+  m_insideCodeLine=FALSE;
+}
+void XMLCodeGenerator::startFontClass(const char *colorClass)
+{
+  XML_DB(("(startFontClass)\n"));
+  if (m_insideCodeLine && !m_insideSpecialHL && !m_normalHLNeedStartTag)
+  {
+    m_t << "</highlight>";
+    m_normalHLNeedStartTag=TRUE;
+  }
+  m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
+  m_insideSpecialHL=TRUE;
+}
+void XMLCodeGenerator::endFontClass()
+{
+  XML_DB(("(endFontClass)\n"));
+  m_t << "</highlight>"; // non DocBook
+  m_insideSpecialHL=FALSE;
+}
+void XMLCodeGenerator::writeCodeAnchor(const char *)
+{
+  XML_DB(("(writeCodeAnchor)\n"));
+}
+void XMLCodeGenerator::writeLineNumber(const char *extRef,const char *compId,
+                     const char *anchorId,int l)
+{
+  XML_DB(("(writeLineNumber)\n"));
+  // we remember the information provided here to use it
+  // at the <codeline> start tag.
+  m_lineNumber = l;
+  if (compId)
+  {
+    m_refId=compId;
+    if (anchorId) m_refId+=(QCString)"_1"+anchorId;
+    m_isMemberRef = anchorId!=0;
+    if (extRef) m_external=extRef;
+  }
+}
+void XMLCodeGenerator::finish()
+{
+  if (m_insideCodeLine) endCodeLine();
+}
 
 static void writeTemplateArgumentList(ArgumentList *al,
                                       FTextStream &t,
@@ -554,20 +527,22 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   bool isFunc=FALSE;
   switch (md->memberType())
   {
-    case MemberType_Define:      memType="define";    break;
-    case MemberType_Function:    memType="function";  isFunc=TRUE; break;
-    case MemberType_Variable:    memType="variable";  break;
-    case MemberType_Typedef:     memType="typedef";   break;
-    case MemberType_Enumeration: memType="enum";      break;
-    case MemberType_EnumValue:   ASSERT(0);           break;
-    case MemberType_Signal:      memType="signal";    isFunc=TRUE; break;
-    case MemberType_Slot:        memType="slot";      isFunc=TRUE; break;
-    case MemberType_Friend:      memType="friend";    isFunc=TRUE; break;
-    case MemberType_DCOP:        memType="dcop";      isFunc=TRUE; break;
-    case MemberType_Property:    memType="property";  break;
-    case MemberType_Event:       memType="event";     break;
-    case MemberType_Interface:   memType="interface"; break;
-    case MemberType_Service:     memType="service";   break;
+    case MemberType_Define:      memType="define";      break;
+    case MemberType_Function:    memType="function";    isFunc=TRUE; break;
+    case MemberType_Variable:    memType="variable";    break;
+    case MemberType_Typedef:     memType="typedef";     break;
+    case MemberType_Enumeration: memType="enum";        break;
+    case MemberType_EnumValue:   ASSERT(0);             break;
+    case MemberType_Signal:      memType="signal";      isFunc=TRUE; break;
+    case MemberType_Slot:        memType="slot";        isFunc=TRUE; break;
+    case MemberType_Friend:      memType="friend";      isFunc=TRUE; break;
+    case MemberType_DCOP:        memType="dcop";        isFunc=TRUE; break;
+    case MemberType_Property:    memType="property";    break;
+    case MemberType_Event:       memType="event";       break;
+    case MemberType_Interface:   memType="interface";   break;
+    case MemberType_Service:     memType="service";     break;
+    case MemberType_Sequence:    memType="sequence";    break;
+    case MemberType_Dictionary:  memType="dictionary";  break;
   }
 
   ti << "    <member refid=\"" << memberOutputFileBase(md) 
@@ -1163,7 +1138,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
     NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymouse scopes
+      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
       {
         t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
           << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
@@ -1845,7 +1820,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     SDict<SectionInfo>::Iterator li(*sectionDict);
     SectionInfo *si;
     int level=1,l;
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     int maxLevel = pd->localToc().xmlLevel();
     for (li.toFirst();(si=li.current());++li)
     {
@@ -1872,16 +1847,16 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
             if (l <= maxLevel) t << "    </tableofcontents>" << endl;
           }
         }
-        if (l <= maxLevel && inLi[nextLevel]) t << "    </tocsect>" << endl;
         if (nextLevel <= maxLevel)
         {
+          if (inLi[nextLevel]) t << "    </tocsect>" << endl;
           QCString titleDoc = convertToXML(si->title);
           t << "      <tocsect>" << endl;
           t << "        <name>" << (si->title.isEmpty()?si->label:titleDoc) << "</name>" << endl;
           t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si -> label) << "</reference>" << endl;
+          inLi[nextLevel]=TRUE;
+          level = nextLevel;
         }
-        inLi[nextLevel]=TRUE;
-        level = nextLevel;
       }
     }
     while (level>1 && level <= maxLevel)

@@ -89,20 +89,22 @@ void generateDEFForMember(MemberDef *md,
   bool isFunc=FALSE;
   switch (md->memberType())
   {
-    case MemberType_Define:      memType="define";    break;
-    case MemberType_EnumValue:   ASSERT(0);           break;
-    case MemberType_Property:    memType="property";  break;
-    case MemberType_Event:       memType="event";     break;
-    case MemberType_Variable:    memType="variable";  break;
-    case MemberType_Typedef:     memType="typedef";   break;
-    case MemberType_Enumeration: memType="enum";      break;
-    case MemberType_Interface:   memType="interface"; break;
-    case MemberType_Service:     memType="service";   break;
-    case MemberType_Function:    memType="function";  isFunc=TRUE; break;
-    case MemberType_Signal:      memType="signal";    isFunc=TRUE; break;
-    case MemberType_Friend:      memType="friend";    isFunc=TRUE; break;
-    case MemberType_DCOP:        memType="dcop";      isFunc=TRUE; break;
-    case MemberType_Slot:        memType="slot";      isFunc=TRUE; break;
+    case MemberType_Define:      memType="define";     break;
+    case MemberType_EnumValue:   ASSERT(0);            break;
+    case MemberType_Property:    memType="property";   break;
+    case MemberType_Event:       memType="event";      break;
+    case MemberType_Variable:    memType="variable";   break;
+    case MemberType_Typedef:     memType="typedef";    break;
+    case MemberType_Enumeration: memType="enum";       break;
+    case MemberType_Interface:   memType="interface";  break;
+    case MemberType_Service:     memType="service";    break;
+    case MemberType_Sequence:    memType="sequence";   break;
+    case MemberType_Dictionary:  memType="dictionary"; break;
+    case MemberType_Function:    memType="function";   isFunc=TRUE; break;
+    case MemberType_Signal:      memType="signal";     isFunc=TRUE; break;
+    case MemberType_Friend:      memType="friend";     isFunc=TRUE; break;
+    case MemberType_DCOP:        memType="dcop";       isFunc=TRUE; break;
+    case MemberType_Slot:        memType="slot";       isFunc=TRUE; break;
   }
 
   t << memPrefix << "kind = '" << memType << "';" << endl;
@@ -146,7 +148,7 @@ void generateDEFForMember(MemberDef *md,
     stringToArgumentList(md->argsString(),declAl);
     QCString fcnPrefix = "  " + memPrefix + "param-";
 
-    if (declAl->count()>0)
+    if (defAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
@@ -511,6 +513,8 @@ void generateDEFForNamespace(NamespaceDef *nd,FTextStream &t)
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decDefineMembers),"define");
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decProtoMembers),"prototype");
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decTypedefMembers),"typedef");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decSequenceMembers),"sequence");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decDictionaryMembers),"dictionary");
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decEnumMembers),"enum");
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decFuncMembers),"func");
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decVarMembers),"var");
@@ -538,6 +542,8 @@ void generateDEFForFile(FileDef *fd,FTextStream &t)
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decDefineMembers),"define");
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decProtoMembers),"prototype");
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decTypedefMembers),"typedef");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decSequenceMembers),"sequence");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decDictionaryMembers),"dictionary");
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decEnumMembers),"enum");
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decFuncMembers),"func");
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decVarMembers),"var");

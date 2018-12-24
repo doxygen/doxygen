@@ -1709,7 +1709,82 @@ class TranslatorDutch : public Translator
     virtual QCString trCustomReference(const char *name)
     { return QCString(name)+" Referentie"; }
 
-//////////////////////////////////////////////////////////////////////////
+    /* Slice */
+    virtual QCString trConstants()
+    { return "Konstanten"; }
+    virtual QCString trConstantDocumentation()
+    { return "Documentatie van konstanten"; }
+    virtual QCString trSequences()
+    { return "Reeksen"; }
+    virtual QCString trSequenceDocumentation()
+    { return "Documentatie van reeksen"; }
+    virtual QCString trDictionaries()
+    { return "Vertalingslijsten"; }
+    virtual QCString trDictionaryDocumentation()
+    { return "Documentatie van vertalingslijsten"; }
+    virtual QCString trSliceInterfaces()
+    { return "Interfaces"; }
+    virtual QCString trInterfaceIndex()
+    { return "Index van interfaces"; }
+    virtual QCString trInterfaceList()
+    { return "Lijst van interfaces"; }
+    virtual QCString trInterfaceListDescription()
+    { return "Hieronder volgt de lijst met alle interfaces, elk met een korte beschrijving:"; }
+    virtual QCString trInterfaceHierarchy()
+    { return "Interface Hi&euml;rarchie"; }
+    virtual QCString trInterfaceHierarchyDescription()
+    { return "Deze inheritance lijst is min of meer alfabetisch gesorteerd:"; }
+    virtual QCString trInterfaceDocumentation()
+    { return "Documentatie van interfaces"; }
+    virtual QCString trStructs()
+    { return "Structs"; }
+    virtual QCString trStructIndex()
+    { return "Index van struct"; }
+    virtual QCString trStructList()
+    { return "Lijst van struct"; }
+    virtual QCString trStructListDescription()
+    { return "Hieronder volgt de lijst met alle structs, elk met een korte beschrijving:"; }
+    virtual QCString trStructDocumentation()
+    { return "Documentatie van structs"; }
+    virtual QCString trExceptionIndex()
+    { return "Index van exceptions"; }
+    virtual QCString trExceptionList()
+    { return "Lijst van exceptions"; }
+    virtual QCString trExceptionListDescription()
+    { return "Hieronder volgt de lijst met alle exeptions, elk met een korte beschrijving:"; }
+    virtual QCString trExceptionHierarchy()
+    { return "Exception Hi&euml;rarchie"; }
+    virtual QCString trExceptionHierarchyDescription()
+    { return "Deze inheritance lijst is min of meer alfabetisch gesorteerd:"; }
+    virtual QCString trExceptionDocumentation()
+    { return "Documentatie van exceptions"; }
+    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    {
+      QCString result=(QCString)clName;
+      if (isLocal) result+=" Lokale";
+      switch(compType)
+      {
+        case ClassDef::Class:  result+=" Class"; break;
+        case ClassDef::Struct: result+=" Struct"; break;
+        case ClassDef::Union:  result+=" Union"; break;
+        case ClassDef::Interface:  result+=" Interface"; break;
+        case ClassDef::Protocol:  result+=" Protocol"; break;
+        case ClassDef::Category:  result+=" Category"; break;
+        case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
+      }
+      result+=" Referentie";
+      return result;
+    }
+    virtual QCString trOperations()
+    { return "Bewerkingen"; }
+    virtual QCString trOperationDocumentation()
+    { return "Documentatie van bewerkingen"; }
+    virtual QCString trDataMembers()
+    { return "Data members"; }
+    virtual QCString trDataMemberDocumentation()
+    { return "Documentatie van data members"; }
+    //////////////////////////////////////////////////////////////////////////
 };
 
 #endif

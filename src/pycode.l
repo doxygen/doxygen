@@ -1311,7 +1311,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
     \\.			       { // espaced char
   		                 codify(yytext);
                                }
-    {STRINGPREFIX}?{TRIDOUBLEQUOTE} { // tripple double quotes
+    {STRINGPREFIX}?{TRIDOUBLEQUOTE} { // triple double quotes
   		                 codify(yytext);
       			       }
     "'"			       { // end of the string
@@ -1334,7 +1334,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
     \\.			       { // espaced char
   		                 codify(yytext);
                                }
-    {STRINGPREFIX}?{TRISINGLEQUOTE} { // tripple single quotes
+    {STRINGPREFIX}?{TRISINGLEQUOTE} { // triple single quotes
   		                 codify(yytext);
       			       }
     "\""		       { // end of the string

@@ -50,10 +50,10 @@ Poul-Erik Hansen: pouhan at gnotometrics dot dk
 Erik Søe Sørensen: eriksoe+doxygen at daimi dot au dot dk
 
 TranslatorDutch
-Dimitri van Heesch: dimitri at stack dot nl
+Dimitri van Heesch: doxygen at gmail dot com
 
 TranslatorEnglish
-Dimitri van Heesch: dimitri at stack dot nl
+Dimitri van Heesch: doxygen at gmail dot com
 
 TranslatorEsperanto
 Ander Martínez: ander dot basaundi at gmail dot com

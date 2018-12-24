@@ -217,9 +217,16 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
     default:
       t << "unknown";
   }
-  t << "\" alt=\""
-    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
   QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context);
-  t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
+  if (!imap.isEmpty())
+  {
+    t << "\" alt=\""
+      << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
+    t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
+  }
+  else
+  {
+    t << "\" alt=\"" << baseName << "\" border=\"0\"/>" << endl;
+  }
 }
 

@@ -620,6 +620,14 @@ static void addMemberToSearchIndex(MemberDef *md)
       {
         g_searchIndexInfo[SEARCH_INDEX_VARIABLES].symbolList.append(letter,md);
       }
+      else if (md->isSequence())
+      {
+        g_searchIndexInfo[SEARCH_INDEX_SEQUENCES].symbolList.append(letter,md);
+      }
+      else if (md->isDictionary())
+      {
+        g_searchIndexInfo[SEARCH_INDEX_DICTIONARIES].symbolList.append(letter,md);
+      }
       else if (md->isTypedef())
       {
         g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].symbolList.append(letter,md);
@@ -666,6 +674,14 @@ static void addMemberToSearchIndex(MemberDef *md)
       else if (md->isVariable())
       {
         g_searchIndexInfo[SEARCH_INDEX_VARIABLES].symbolList.append(letter,md);
+      }
+      else if (md->isSequence())
+      {
+        g_searchIndexInfo[SEARCH_INDEX_SEQUENCES].symbolList.append(letter,md);
+      }
+      else if (md->isDictionary())
+      {
+        g_searchIndexInfo[SEARCH_INDEX_DICTIONARIES].symbolList.append(letter,md);
       }
       else if (md->isTypedef())
       {
@@ -717,39 +733,54 @@ static QCString searchId(const QCString &s)
 
 void createJavascriptSearchIndex()
 {
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+
   // set index names
-  g_searchIndexInfo[SEARCH_INDEX_ALL].name        = "all";
-  g_searchIndexInfo[SEARCH_INDEX_CLASSES].name    = "classes";
-  g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].name = "namespaces";
-  g_searchIndexInfo[SEARCH_INDEX_FILES].name      = "files";
-  g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].name  = "functions";
-  g_searchIndexInfo[SEARCH_INDEX_VARIABLES].name  = "variables";
-  g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].name   = "typedefs";
-  g_searchIndexInfo[SEARCH_INDEX_ENUMS].name      = "enums";
-  g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].name = "enumvalues";
-  g_searchIndexInfo[SEARCH_INDEX_PROPERTIES].name = "properties";
-  g_searchIndexInfo[SEARCH_INDEX_EVENTS].name     = "events";
-  g_searchIndexInfo[SEARCH_INDEX_RELATED].name    = "related";
-  g_searchIndexInfo[SEARCH_INDEX_DEFINES].name    = "defines";
-  g_searchIndexInfo[SEARCH_INDEX_GROUPS].name     = "groups";
-  g_searchIndexInfo[SEARCH_INDEX_PAGES].name      = "pages";
+  g_searchIndexInfo[SEARCH_INDEX_ALL].name          = "all";
+  g_searchIndexInfo[SEARCH_INDEX_CLASSES].name      = "classes";
+  g_searchIndexInfo[SEARCH_INDEX_INTERFACES].name   = "interfaces";
+  g_searchIndexInfo[SEARCH_INDEX_STRUCTS].name      = "structs";
+  g_searchIndexInfo[SEARCH_INDEX_EXCEPTIONS].name   = "exceptions";
+  g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].name   = "namespaces";
+  g_searchIndexInfo[SEARCH_INDEX_FILES].name        = "files";
+  g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].name    = "functions";
+  g_searchIndexInfo[SEARCH_INDEX_VARIABLES].name    = "variables";
+  g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].name     = "typedefs";
+  g_searchIndexInfo[SEARCH_INDEX_SEQUENCES].name    = "sequences";
+  g_searchIndexInfo[SEARCH_INDEX_DICTIONARIES].name = "dictionaries";
+  g_searchIndexInfo[SEARCH_INDEX_ENUMS].name        = "enums";
+  g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].name   = "enumvalues";
+  g_searchIndexInfo[SEARCH_INDEX_PROPERTIES].name   = "properties";
+  g_searchIndexInfo[SEARCH_INDEX_EVENTS].name       = "events";
+  g_searchIndexInfo[SEARCH_INDEX_RELATED].name      = "related";
+  g_searchIndexInfo[SEARCH_INDEX_DEFINES].name      = "defines";
+  g_searchIndexInfo[SEARCH_INDEX_GROUPS].name       = "groups";
+  g_searchIndexInfo[SEARCH_INDEX_PAGES].name        = "pages";
 
   // set index texts
-  g_searchIndexInfo[SEARCH_INDEX_ALL].text        = theTranslator->trAll();
-  g_searchIndexInfo[SEARCH_INDEX_CLASSES].text    = theTranslator->trClasses();
-  g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].text = theTranslator->trNamespace(TRUE,FALSE);
-  g_searchIndexInfo[SEARCH_INDEX_FILES].text      = theTranslator->trFile(TRUE,FALSE);
-  g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].text  = theTranslator->trFunctions();
-  g_searchIndexInfo[SEARCH_INDEX_VARIABLES].text  = theTranslator->trVariables();
-  g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].text   = theTranslator->trTypedefs();
-  g_searchIndexInfo[SEARCH_INDEX_ENUMS].text      = theTranslator->trEnumerations();
-  g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].text = theTranslator->trEnumerationValues();
-  g_searchIndexInfo[SEARCH_INDEX_PROPERTIES].text = theTranslator->trProperties();
-  g_searchIndexInfo[SEARCH_INDEX_EVENTS].text     = theTranslator->trEvents();
-  g_searchIndexInfo[SEARCH_INDEX_RELATED].text    = theTranslator->trFriends();
-  g_searchIndexInfo[SEARCH_INDEX_DEFINES].text    = theTranslator->trDefines();
-  g_searchIndexInfo[SEARCH_INDEX_GROUPS].text     = theTranslator->trGroup(TRUE,FALSE);
-  g_searchIndexInfo[SEARCH_INDEX_PAGES].text      = theTranslator->trPage(TRUE,FALSE);
+  g_searchIndexInfo[SEARCH_INDEX_ALL].text          = theTranslator->trAll();
+  g_searchIndexInfo[SEARCH_INDEX_CLASSES].text      = theTranslator->trClasses();
+  g_searchIndexInfo[SEARCH_INDEX_INTERFACES].text   = theTranslator->trSliceInterfaces();
+  g_searchIndexInfo[SEARCH_INDEX_STRUCTS].text      = theTranslator->trStructs();
+  g_searchIndexInfo[SEARCH_INDEX_EXCEPTIONS].text   = theTranslator->trExceptions();
+  g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].text   = sliceOpt ? theTranslator->trModules() :
+                                                        theTranslator->trNamespace(TRUE,FALSE);
+  g_searchIndexInfo[SEARCH_INDEX_FILES].text        = theTranslator->trFile(TRUE,FALSE);
+  g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].text    = sliceOpt ? theTranslator->trOperations() :
+                                                        theTranslator->trFunctions();
+  g_searchIndexInfo[SEARCH_INDEX_VARIABLES].text    = sliceOpt ? theTranslator->trConstants() :
+                                                        theTranslator->trVariables();
+  g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].text     = theTranslator->trTypedefs();
+  g_searchIndexInfo[SEARCH_INDEX_SEQUENCES].text    = theTranslator->trSequences();
+  g_searchIndexInfo[SEARCH_INDEX_DICTIONARIES].text = theTranslator->trDictionaries();
+  g_searchIndexInfo[SEARCH_INDEX_ENUMS].text        = theTranslator->trEnumerations();
+  g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].text   = theTranslator->trEnumerationValues();
+  g_searchIndexInfo[SEARCH_INDEX_PROPERTIES].text   = theTranslator->trProperties();
+  g_searchIndexInfo[SEARCH_INDEX_EVENTS].text       = theTranslator->trEvents();
+  g_searchIndexInfo[SEARCH_INDEX_RELATED].text      = theTranslator->trFriends();
+  g_searchIndexInfo[SEARCH_INDEX_DEFINES].text      = theTranslator->trDefines();
+  g_searchIndexInfo[SEARCH_INDEX_GROUPS].text       = theTranslator->trGroup(TRUE,FALSE);
+  g_searchIndexInfo[SEARCH_INDEX_PAGES].text        = theTranslator->trPage(TRUE,FALSE);
 
   // add symbols to letter -> symbol list map
 
@@ -762,7 +793,29 @@ void createJavascriptSearchIndex()
     if (cd->isLinkable() && isId(letter))
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,cd);
-      g_searchIndexInfo[SEARCH_INDEX_CLASSES].symbolList.append(letter,cd);
+      if (sliceOpt)
+      {
+        if (cd->compoundType()==ClassDef::Interface)
+        {
+          g_searchIndexInfo[SEARCH_INDEX_INTERFACES].symbolList.append(letter,cd);
+        }
+        else if (cd->compoundType()==ClassDef::Struct)
+        {
+          g_searchIndexInfo[SEARCH_INDEX_STRUCTS].symbolList.append(letter,cd);
+        }
+        else if (cd->compoundType()==ClassDef::Exception)
+        {
+          g_searchIndexInfo[SEARCH_INDEX_EXCEPTIONS].symbolList.append(letter,cd);
+        }
+        else // cd->compoundType()==ClassDef::Class
+        {
+          g_searchIndexInfo[SEARCH_INDEX_CLASSES].symbolList.append(letter,cd);
+        }
+      }
+      else // non slice optimisation: group all types under classes
+      {
+        g_searchIndexInfo[SEARCH_INDEX_CLASSES].symbolList.append(letter,cd);
+      }
     }
   }
 
@@ -927,7 +980,7 @@ void writeJavascriptSearchIndex()
           FTextStream t(&outFile);
 
           t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
-            " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
+            " \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
           t << "<html><head><title></title>" << endl;
           t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
           t << "<meta name=\"generator\" content=\"Doxygen " << versionString << "\"/>" << endl;
@@ -1231,7 +1284,7 @@ void writeJavascriptSearchIndex()
     {
       FTextStream t(&f);
       t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
-           "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
+           "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
       t << "<html><head><title></title>" << endl;
       t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
       t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;

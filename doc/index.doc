@@ -102,6 +102,8 @@ The second part forms a reference manual:
               can be used within the documentation.
 <li>Section \ref xmlcmds shows an overview of the C# style XML commands that
               can be used within the documentation.
+<li>Section \ref emojisup shows an introduction how emoji can be used within
+              the documentation.
 </ul>
 
 The third part provides information for developers:
@@ -119,7 +121,7 @@ The third part provides information for developers:
 \addindex GPL
 
 Copyright &copy; 1997-2016 by 
-<a href="mailto:dimitri@stack.nl">Dimitri van Heesch</a>.<p>
+<a href="mailto:doxygen@gmail.com">Dimitri van Heesch</a>.<p>
 
 Permission to use, copy, modify, and distribute this software and its
 documentation under the terms of the GNU General Public License is hereby 
@@ -143,7 +145,7 @@ of real-life projects using doxygen.
 These are part of a larger
 <a href="http://www.doxygen.org/projects.html">list of projects</a> 
 that use doxygen.
-If you know other projects, let <a href="mailto:dimitri@stack.nl?subject=New%20project%20using%20Doxygen">me</a> 
+If you know other projects, let <a href="mailto:doxygen@gmail.com?subject=New%20project%20using%20Doxygen">me</a> 
 know and I'll add them. 
 
 <h2>Future work</h2>

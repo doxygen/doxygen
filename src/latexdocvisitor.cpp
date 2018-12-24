@@ -33,6 +33,7 @@
 #include "filedef.h"
 #include "config.h"
 #include "htmlentity.h"
+#include "emoji.h"
 #include "plantuml.h"
 
 const int maxLevels=5;
@@ -48,16 +49,23 @@ static const char *getSectionName(int level)
   return secLabels[QMIN(maxLevels-1,l)];
 }
 
-static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCString width,  QCString height)
+static void visitPreStart(FTextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
 {
-    if (hasCaption)
+    if (inlineImage)
     {
-      t << "\n\\begin{DoxyImage}\n";
+      t << "\n\\begin{DoxyInlineImage}\n";
     }
     else
     {
-      t << "\n\\begin{DoxyImageNoCaption}\n"
-             "  \\mbox{";
+      if (hasCaption)
+      {
+        t << "\n\\begin{DoxyImage}\n";
+      }
+      else
+      {
+        t << "\n\\begin{DoxyImageNoCaption}\n"
+               "  \\mbox{";
+      }
     }
 
     t << "\\includegraphics";
@@ -80,7 +88,14 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
     if (width.isEmpty() && height.isEmpty())
     {
       /* default setting */
-      t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+      if (inlineImage)
+      {
+        t << "[height=\\baselineskip,keepaspectratio=true]";
+      }
+      else
+      {
+        t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+      }
     }
     else
     {
@@ -91,21 +106,36 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
 
     if (hasCaption)
     {
-      t << "\n\\doxyfigcaption{";
+      if (!inlineImage)
+      {
+        t << "\n\\doxyfigcaption{";
+      }
+      else
+      {
+        t << "%"; // to catch the caption
+      }
     }
 }
 
 
 
-static void visitPostEnd(FTextStream &t, const bool hasCaption)
+static void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage = FALSE)
 {
-    t << "}\n"; // end mbox or caption
-    if (hasCaption)
+    if (inlineImage)
     {
-      t << "\\end{DoxyImage}\n";
+      t << "\n\\end{DoxyInlineImage}\n";
     }
-    else{
-      t << "\\end{DoxyImageNoCaption}\n";
+    else
+    {
+      t << "}\n"; // end mbox or caption
+      if (hasCaption)
+      {
+        t << "\\end{DoxyImage}\n";
+      }
+      else
+      {
+        t << "\\end{DoxyImageNoCaption}\n";
+      }
     }
 }
 
@@ -210,6 +240,21 @@ void LatexDocVisitor::visit(DocSymbol *s)
   }
 }
 
+void LatexDocVisitor::visit(DocEmoji *s)
+{
+  if (m_hide) return;
+  QCString emojiName = EmojiEntityMapper::instance()->name(s->index());
+  if (!emojiName.isEmpty())
+  {
+    QCString imageName=emojiName.mid(1,emojiName.length()-2); // strip : at start and end
+    m_t << "\\doxygenemoji{" << emojiName << "}{" << imageName << "}";
+  }
+  else
+  {
+    m_t << s->name();
+  }
+}
+
 void LatexDocVisitor::visit(DocURL *u)
 {
   if (m_hide) return;
@@ -217,11 +262,11 @@ void LatexDocVisitor::visit(DocURL *u)
   {
     m_t << "\\href{";
     if (u->isEmail()) m_t << "mailto:";
-    m_t << u->url() << "}";
+    m_t << latexFilterURL(u->url()) << "}";
   }
-  m_t << "\\texttt{ ";
+  m_t << "{\\texttt{ ";
   filter(u->url());
-  m_t << "}";
+  m_t << "}}";
 }
 
 void LatexDocVisitor::visit(DocLineBreak *)
@@ -564,9 +609,9 @@ void LatexDocVisitor::visit(DocIndexEntry *i)
 {
   if (m_hide) return;
   m_t << "\\index{";
-  m_t << latexEscapeLabelName(i->entry(),false);
+  m_t << latexEscapeLabelName(i->entry());
   m_t << "@{";
-  m_t << latexEscapeIndexChars(i->entry(),false);
+  m_t << latexEscapeIndexChars(i->entry());
   m_t << "}}";
 }
 
@@ -1177,8 +1222,8 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
         m_t << "r|}{";
         break;
       case DocHtmlCell::Center:
-        break;
         m_t << "c|}{";
+        break;
       default:
         m_t << "l|}{";
         break;
@@ -1252,16 +1297,16 @@ void LatexDocVisitor::visitPre(DocHRef *href)
   if (Config_getBool(PDF_HYPERLINKS))
   {
     m_t << "\\href{";
-    m_t << href->url();
+    m_t << latexFilterURL(href->url());
     m_t << "}";
   }
-  m_t << "\\texttt{ ";
+  m_t << "{\\texttt{ ";
 }
 
 void LatexDocVisitor::visitPost(DocHRef *) 
 {
   if (m_hide) return;
-  m_t << "}";
+  m_t << "}}";
 }
 
 void LatexDocVisitor::visitPre(DocHtmlHeader *header)
@@ -1286,7 +1331,7 @@ void LatexDocVisitor::visitPre(DocImage *img)
       gfxName=gfxName.left(gfxName.length()-4);
     }
 
-    visitPreStart(m_t,img->hasCaption(), gfxName, img->width(),  img->height());
+    visitPreStart(m_t,img->hasCaption(), gfxName, img->width(),  img->height(), img->isInlineImage());
   }
   else // other format -> skip
   {
@@ -1300,7 +1345,7 @@ void LatexDocVisitor::visitPost(DocImage *img)
   if (img->type()==DocImage::Latex)
   {
     if (m_hide) return;
-    visitPostEnd(m_t,img->hasCaption());
+    visitPostEnd(m_t,img->hasCaption(), img->isInlineImage());
   }
   else // other format
   {
@@ -1445,11 +1490,8 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
       filter(theTranslator->trExceptions());
       break;
     case DocParamSect::TemplateParam: 
-      /* TODO: add this 
-      filter(theTranslator->trTemplateParam()); break;
-      */
       m_t << "\n\\begin{DoxyTemplParams}{";
-      filter("Template Parameters");
+      filter(theTranslator->trTemplateParameters());
       break;
     default:
       ASSERT(0);

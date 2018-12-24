@@ -41,7 +41,7 @@ QCString &QCString::sprintf( const char *format, ... )
 int QCString::find( char c, int index, bool cs ) const
 {
   if (index<0 || index>=(int)length()) return -1; // index outside string
-  register const char *pos;
+  const char *pos;
   if (cs)
   {
     pos = strchr(data()+index,c);
@@ -62,7 +62,7 @@ int QCString::find( const char *str, int index, bool cs ) const
   if (index<0 || index>=l) return -1; // index outside string
   if (!str)  return -1;               // no string to search for
   if (!*str) return index;           // empty string matching at index
-  register const char *pos;
+  const char *pos;
   if (cs) // case sensitive
   {
     pos = strstr(data()+index,str);
@@ -132,7 +132,7 @@ int QCString::findRev( const char *str, int index, bool cs) const
   else if (index>len) return -1; // bad index
   else if (index+slen>len) index=len-slen; // str would be too long
   if (index<0) return -1; // no match possible
-  register const char *pos = data()+index;
+  const char *pos = data()+index;
   if (cs) // case sensitive
   {
     for (int i=index; i>=0; i--) if (qstrncmp(pos--,str,slen)==0) return i;
@@ -253,7 +253,7 @@ QCString QCString::mid( uint index, uint len) const
   }
   else
   {
-    register const char *p = data()+index;
+    const char *p = data()+index;
     QCString s(len+1);
     qstrncpy( s.rawData(), p, len+1 );
     return s;
@@ -264,7 +264,7 @@ QCString QCString::lower() const
 {
   if (length()==0) return QCString();
   QCString s(data());
-  register char *pos = s.rawData();
+  char *pos = s.rawData();
   if (pos)
   {
     while (*pos)
@@ -280,7 +280,7 @@ QCString QCString::upper() const
 {
   if (length()==0) return QCString();
   QCString s(data());
-  register char *pos = s.rawData();
+  char *pos = s.rawData();
   if (pos)
   {
     while (*pos)
@@ -297,13 +297,13 @@ QCString QCString::stripWhiteSpace() const
   if ( isEmpty() )                            // nothing to do
     return *this;
 
-  register const char *cs = data();
+  const char *cs = data();
   int reslen = length();
   if ( !isspace((uchar)cs[0]) && !isspace((uchar)cs[reslen-1]) )
     return *this;                             // returns a copy
 
   QCString result(cs);
-  register char *s = result.rawData();
+  char *s = result.rawData();
   int start = 0;
   int end = reslen - 1;
   while ( isspace((uchar) s[start]) )                 // skip white space from start
@@ -489,7 +489,7 @@ QCString &QCString::setNum(uint n)
 QCString &QCString::setNum(long n)
 {
   char buf[20];
-  register char *p = &buf[19];
+  char *p = &buf[19];
   bool neg;
   if ( n < 0 )
   {
@@ -514,7 +514,7 @@ QCString &QCString::setNum(long n)
 QCString &QCString::setNum( ulong n)
 {
   char buf[20];
-  register char *p = &buf[19];
+  char *p = &buf[19];
   *p = '\0';
   do
   {
@@ -529,8 +529,8 @@ QCString &QCString::setNum( ulong n)
 
 void *qmemmove( void *dst, const void *src, uint len )
 {
-    register char *d;
-    register char *s;
+    char *d;
+    char *s;
     if ( dst > src ) {
 	d = (char *)dst + len - 1;
 	s = (char *)src + len - 1;
@@ -566,8 +566,8 @@ char *qstrncpy( char *dst, const char *src, uint len )
 
 int qstricmp( const char *str1, const char *str2 )
 {
-    register const uchar *s1 = (const uchar *)str1;
-    register const uchar *s2 = (const uchar *)str2;
+    const uchar *s1 = (const uchar *)str1;
+    const uchar *s2 = (const uchar *)str2;
     int res;
     uchar c;
     if ( !s1 || !s2 )
@@ -580,8 +580,8 @@ int qstricmp( const char *str1, const char *str2 )
 
 int qstrnicmp( const char *str1, const char *str2, uint len )
 {
-    register const uchar *s1 = (const uchar *)str1;
-    register const uchar *s2 = (const uchar *)str2;
+    const uchar *s1 = (const uchar *)str1;
+    const uchar *s2 = (const uchar *)str2;
     int res;
     uchar c;
     if ( !s1 || !s2 )

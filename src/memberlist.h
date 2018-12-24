@@ -50,17 +50,19 @@ class MemberList : private QList<MemberDef>
     MemberDef *take(uint index);
 
 
-    int varCount() const       { ASSERT(m_numDecMembers!=-1); return m_varCnt;     }
-    int funcCount() const      { ASSERT(m_numDecMembers!=-1); return m_funcCnt;    }
-    int enumCount() const      { ASSERT(m_numDecMembers!=-1); return m_enumCnt;    }
-    int enumValueCount() const { ASSERT(m_numDecMembers!=-1); return m_enumValCnt; }
-    int typedefCount() const   { ASSERT(m_numDecMembers!=-1); return m_typeCnt;    }
-    int protoCount() const     { ASSERT(m_numDecMembers!=-1); return m_protoCnt;   }
-    int defineCount() const    { ASSERT(m_numDecMembers!=-1); return m_defCnt;     }
-    int friendCount() const    { ASSERT(m_numDecMembers!=-1); return m_friendCnt;  }
-    int numDecMembers() const  { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
-    int numDocMembers() const  { ASSERT(m_numDocMembers!=-1); return m_numDocMembers; }
-    bool needsSorting() const  { return m_needsSorting; }
+    int varCount() const         { ASSERT(m_numDecMembers!=-1); return m_varCnt;     }
+    int funcCount() const        { ASSERT(m_numDecMembers!=-1); return m_funcCnt;    }
+    int enumCount() const        { ASSERT(m_numDecMembers!=-1); return m_enumCnt;    }
+    int enumValueCount() const   { ASSERT(m_numDecMembers!=-1); return m_enumValCnt; }
+    int typedefCount() const     { ASSERT(m_numDecMembers!=-1); return m_typeCnt;    }
+    int sequenceCount() const    { ASSERT(m_numDecMembers!=-1); return m_seqCnt;     }
+    int dictionaryCount() const  { ASSERT(m_numDecMembers!=-1); return m_dictCnt;    }
+    int protoCount() const       { ASSERT(m_numDecMembers!=-1); return m_protoCnt;   }
+    int defineCount() const      { ASSERT(m_numDecMembers!=-1); return m_defCnt;     }
+    int friendCount() const      { ASSERT(m_numDecMembers!=-1); return m_friendCnt;  }
+    int numDecMembers() const    { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
+    int numDocMembers() const    { ASSERT(m_numDocMembers!=-1); return m_numDocMembers; }
+    bool needsSorting() const    { return m_needsSorting; }
     void countDecMembers(bool countEnumValues=FALSE,GroupDef *gd=0);
     void countDocMembers(bool countEnumValues=FALSE);
     int countInheritableMembers(ClassDef *inheritedFrom) const;
@@ -98,6 +100,8 @@ class MemberList : private QList<MemberDef>
     int m_enumCnt;
     int m_enumValCnt;
     int m_typeCnt;
+    int m_seqCnt;
+    int m_dictCnt;
     int m_protoCnt;
     int m_defCnt;
     int m_friendCnt; 

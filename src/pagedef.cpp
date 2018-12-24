@@ -187,6 +187,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //2.{
   ol.disable(OutputGenerator::Latex);
+  ol.disable(OutputGenerator::Docbook);
   ol.disable(OutputGenerator::RTF);
   ol.disable(OutputGenerator::Man);
   if (!title().isEmpty() && !name().isEmpty() && si!=0)
@@ -207,7 +208,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
   //2.}
 
-  if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled()) && hasSections())
+  if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled() || m_localToc.isDocbookEnabled()) && hasSections())
   {
     writeToc(ol, m_localToc);
   }
@@ -269,6 +270,7 @@ void PageDef::writePageDocumentation(OutputList &ol)
     ol.pushGeneratorState();
     ol.disableAll();
     ol.enable(OutputGenerator::Latex);
+    ol.enable(OutputGenerator::Docbook);
     ol.enable(OutputGenerator::RTF);
 
     PageSDict::Iterator pdi(*m_subPageDict);

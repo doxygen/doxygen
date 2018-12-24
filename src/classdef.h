@@ -336,6 +336,7 @@ class ClassDef : public Definition
     QCString getMemberListFileName() const;
     bool subGrouping() const;
 
+    bool isSliceLocal() const;
 
     //-----------------------------------------------------------------------------------
     // --- setters ----
@@ -375,6 +376,8 @@ class ClassDef : public Definition
     void addTaggedInnerClass(ClassDef *cd);
     void setTagLessReference(ClassDef *cd);
     void setName(const char *name);
+
+    void setMetaData(const char *md);
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
@@ -429,6 +432,7 @@ class ClassDef : public Definition
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
                                   const QCString &title,const QCString &anchor=QCString());
     void writeIncludeFiles(OutputList &ol);
+    void writeIncludeFilesForSlice(OutputList &ol);
     //void writeAllMembersLink(OutputList &ol);
     void writeInheritanceGraph(OutputList &ol);
     void writeCollaborationGraph(OutputList &ol);

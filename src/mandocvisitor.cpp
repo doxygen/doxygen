@@ -30,6 +30,7 @@
 #include "parserintf.h"
 #include "filedef.h"
 #include "htmlentity.h"
+#include "emoji.h"
 
 ManDocVisitor::ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                              const char *langExt) 
@@ -85,6 +86,21 @@ void ManDocVisitor::visit(DocSymbol *s)
   {
     // no error or warning to be supplied
     // err("man: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
+  }
+  m_firstCol=FALSE;
+}
+
+void ManDocVisitor::visit(DocEmoji *s)
+{
+  if (m_hide) return;
+  const char *res = EmojiEntityMapper::instance()->name(s->index());
+  if (res)
+  {
+    m_t << res;
+  }
+  else
+  {
+    m_t << s->name();
   }
   m_firstCol=FALSE;
 }
@@ -906,10 +922,7 @@ void ManDocVisitor::visitPre(DocParamSect *s)
     case DocParamSect::Exception: 
       m_t << theTranslator->trExceptions(); break;
     case DocParamSect::TemplateParam: 
-      /* TODO: add this 
-      m_t << theTranslator->trTemplateParam(); break;
-      */
-      m_t << "Template Parameters"; break;
+      m_t << theTranslator->trTemplateParameters(); break;
     default:
       ASSERT(0);
   }

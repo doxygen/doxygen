@@ -38,9 +38,12 @@
 #include "definition.h"
 #include "doxygen.h"
 #include "portable.h"
+#include "cite.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
+
+#define TK_COMMAND_SEL() (yytext[0] == '@' ? TK_COMMAND_AT : TK_COMMAND_BS)
   
 //--------------------------------------------------------------------------
 
@@ -116,12 +119,13 @@ const char *tokToString(int token)
     case TK_WHITESPACE:  return "TK_WHITESPACE";
     case TK_LISTITEM:    return "TK_LISTITEM";
     case TK_ENDLIST:     return "TK_ENDLIST";
-    case TK_COMMAND:     return "TK_COMMAND";
+    case TK_COMMAND_AT:  return "TK_COMMAND_AT";
     case TK_HTMLTAG:     return "TK_HTMLTAG";
     case TK_SYMBOL:      return "TK_SYMBOL";
     case TK_NEWPARA:     return "TK_NEWPARA";
     case TK_RCSTAG:      return "TK_RCSTAG";
     case TK_URL:         return "TK_URL";
+    case TK_COMMAND_BS:  return "TK_COMMAND_BS";
   }
   return "ERROR";
 }
@@ -257,6 +261,12 @@ static void handleHtmlTag()
 	if (i<(int)yyleng) c=tagText.at(++i);
       }
       opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib); 
+      if (opt.name == "align") opt.value = opt.value.lower();
+      else if (opt.name == "valign")
+      {
+        opt.value = opt.value.lower();
+        if (opt.value == "center") opt.value="middle";
+      }
     }
     else // start next option
     {
@@ -335,9 +345,9 @@ BLANK     [ \t\r]
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
-CITESCHAR [a-z_A-Z0-9\x80-\xFF]
-CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/]*
-CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*
+CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
+CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
+CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
 MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 OPTSTARS  ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
@@ -350,7 +360,7 @@ URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+@&#]
 FILEECHAR [a-z_A-Z0-9\-\+@&#]
-HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)*
+HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)+
 FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
 VERBATIM  "verbatim"{BLANK}*
@@ -358,6 +368,7 @@ SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
 SPCMD2    {CMD}[\\@<>&$#%~".+|-]
 SPCMD3    {CMD}form#[0-9]+
 SPCMD4    {CMD}"::"
+SPCMD5    {CMD}":"
 INOUT	  "inout"|"in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 VARARGS   "..."
@@ -388,10 +399,10 @@ LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
 CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
 ESCWORD   ("%"{ID}(("::"|"."){ID})*)|("%'")
 CHARWORDQ1 [^ \-+0-9\t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
-WORD1     {ESCWORD}|{CHARWORDQ1}+|"{"|"}"|"'\"'"|("\""[^"\n]*\n?[^"\n]*"\"")
-WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="|"'"
+WORD1     {ESCWORD}|{CHARWORDQ1}{CHARWORDQ}*|"{"|"}"|"'\"'"|("\""[^"\n]*\n?[^"\n]*"\"")
+WORD2     "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
 WORD1NQ   {ESCWORD}|{CHARWORDQ}+|"{"|"}"
-WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="|"'"
+WORD2NQ   "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"|"strike"|"u"
@@ -403,8 +414,8 @@ REFWORD2_NOCV  {REFWORD2_PRE}("("{FUNCPART}")")?
 REFWORD3       ({ID}":")*{ID}":"?
 REFWORD4_NOCV  (({SCOPEPRE}*"operator"{OPMASKOP2})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOP2}))
 REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
-REFWORD        {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
-REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
+REFWORD        {FILEMASK}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
+REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 
 %option noyywrap
 %option yylineno
@@ -448,6 +459,8 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 %x St_SetScope
 %x St_SetScopeEnd
 %x St_Options
+%x St_Block
+%x St_Emoji
 
 %x St_Sections
 %s St_SecLabel1
@@ -558,11 +571,11 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                        }
 <St_Para>"{"{BLANK}*"@link"/{BLANK}+ {
   			 g_token->name = "javalink";
-			 return TK_COMMAND;
+			 return TK_COMMAND_AT;
   		       }
 <St_Para>"{"{BLANK}*"@inheritDoc"{BLANK}*"}" {
   			 g_token->name = "inheritdoc";
-			 return TK_COMMAND;
+			 return TK_COMMAND_AT;
 		       }
 <St_Para>"@_fakenl"     { // artificial new line
                              yylineno++; 
@@ -572,22 +585,23 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 bool ok;
 			 g_token->id = QCString(yytext).right((int)yyleng-6).toInt(&ok);
 			 ASSERT(ok);
-			 return TK_COMMAND;
+			 return TK_COMMAND_SEL();
   		       }
 <St_Para>{CMD}"n"\n    { /* \n followed by real newline */
                          yylineno++;
                          g_token->name = yytext+1;
 			 g_token->name = g_token->name.stripWhiteSpace();
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+			 return TK_COMMAND_SEL();
                        }
 <St_Para>{SPCMD1}      |
 <St_Para>{SPCMD2}      |
+<St_Para>{SPCMD5}      |
 <St_Para>{SPCMD4}      { /* special command */
                          g_token->name = yytext+1;
 			 g_token->name = g_token->name.stripWhiteSpace();
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+                         return TK_COMMAND_SEL();
   		       }
 <St_Para>{PARAMIO}     { /* param [in,out] command */
   			 g_token->name = "param";
@@ -613,7 +627,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 {
 			   g_token->paramDir=TokenInfo::Unspecified;
 			 }
-			 return TK_COMMAND;
+			 return TK_COMMAND_SEL();
   		       }
 <St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK}/\. { // URL.
                          g_token->name=yytext;
@@ -659,7 +673,8 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->text = tagName.mid(text_begin,text_end-text_begin);
 			 return TK_RCSTAG;
   		       }
-<St_Para,St_HtmlOnly>"$("{ID}")"   { /* environment variable */
+<St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}")"   | /* environment variable */
+<St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
                          QCString name = &yytext[2];
 			 name = name.left(name.length()-1);
 			 QCString value = portable_getenv(name);
@@ -732,7 +747,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                        }
 <St_Text>[\\@<>&$#%~]  {
                          g_token->name = yytext;
-                         return TK_COMMAND;
+                         return TK_COMMAND_SEL();
   		       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (g_insidePre || g_autoListLevel==0)
@@ -925,7 +940,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_TitleN>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+                         return TK_COMMAND_SEL();
                        }
 <St_TitleN>{ID}"="     { /* attribute */
                          if (yytext[0]=='%') // strip % if present
@@ -959,7 +974,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_TitleQ>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+                         return TK_COMMAND_SEL();
                        }
 <St_TitleQ>{WORD1NQ}   |
 <St_TitleQ>{WORD2NQ}   { /* word */
@@ -1005,7 +1020,15 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 return 0;
   		       }
 <St_Cite>{CITEID}      { // label to cite
-  			 g_token->name=yytext;
+                         if (yytext[0] =='"')
+                         {
+                           g_token->name=yytext+1;
+                           g_token->name=g_token->name.left(yyleng-2);
+                         }
+                         else
+                         {
+                           g_token->name=yytext;
+                         }
 			 return TK_WORD;
   		       }
 <St_Cite>{BLANK}       { // white space
@@ -1054,7 +1077,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_IntRef>{BLANK}+"\"" {
                          BEGIN(St_Ref2);
                        }
-<St_SetScope>({SCOPEMASK}|{ANONNS}){BLANK} {
+<St_SetScope>({SCOPEMASK}|{ANONNS}){BLANK}|{FILEMASK} {
                          g_token->name = yytext;
                          g_token->name = g_token->name.stripWhiteSpace();
 			 return TK_WORD;
@@ -1090,7 +1113,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Ref2>{SPCMD2}      { /* special command */ 
                          g_token->name = yytext+1;
 			 g_token->paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND;
+                         return TK_COMMAND_SEL();
                        }
 <St_Ref2>{WORD1NQ}     |
 <St_Ref2>{WORD2NQ}     {
@@ -1157,6 +1180,19 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                        }
 <St_Options>"}"        {
                          return TK_WORD;
+                       }
+<St_Block>{ID}         {
+                         g_token->name+=yytext;
+                       }
+<St_Block>"]"          {
+                         return TK_WORD;
+                       }
+<St_Emoji>[:0-9_a-z+-]+  {
+                         g_token->name=yytext;
+                         return TK_WORD;
+                       }
+<St_Emoji>.            {
+                         return 0;
                        }
 <St_File>{FILEMASK}    {
   			 g_token->name = yytext;
@@ -1322,7 +1358,7 @@ REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
                          //warn(g_fileName,yylineno,"Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
-			 return TK_COMMAND;
+			 return TK_COMMAND_SEL();
                        }
 <*>.                   { 
                          warn(g_fileName,yylineno,"Unexpected character `%s'",yytext);
@@ -1524,6 +1560,18 @@ void doctokenizerYYsetStateOptions()
 {
   g_token->name="";
   BEGIN(St_Options);
+}
+
+void doctokenizerYYsetStateBlock()
+{
+  g_token->name="";
+  BEGIN(St_Block);
+}
+
+void doctokenizerYYsetStateEmoji()
+{
+  g_token->name="";
+  BEGIN(St_Emoji);
 }
 
 void doctokenizerYYcleanup()

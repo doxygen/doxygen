@@ -165,7 +165,7 @@ bool GroupDef::addClass(const ClassDef *cd)
       if (i==-1) i=qn.find('.');
       bool found=FALSE;
       //printf("i=%d\n",i);
-      if (i!=-1)
+      if (i>0)
       {
         // add nested classes (e.g. A::B, A::C) after their parent (A) in 
         // order of insertion
@@ -1220,8 +1220,14 @@ void GroupDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceNestedConstantGroups:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceInterfaces:
+      case LayoutDocEntry::NamespaceStructs:
+      case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::FileClasses:
+      case LayoutDocEntry::FileInterfaces:
+      case LayoutDocEntry::FileStructs:
+      case LayoutDocEntry::FileExceptions:
       case LayoutDocEntry::FileNamespaces:
       case LayoutDocEntry::FileConstantGroups:
       case LayoutDocEntry::FileIncludes:

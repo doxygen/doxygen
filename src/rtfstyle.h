@@ -42,7 +42,7 @@ struct RTFListItemInfo
   int number;
 };
 
-const int rtf_maxIndentLevels = 10;
+const int rtf_maxIndentLevels = 13;
 
 extern RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
 

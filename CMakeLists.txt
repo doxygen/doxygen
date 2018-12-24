@@ -86,7 +86,10 @@ find_package(BISON REQUIRED)
 find_package(Threads)
 
 if (sqlite3)
-    find_package(SQLite3 REQUIRED)
+  find_package(SQLite3 REQUIRED)
+  if (SQLITE3_VERSION VERSION_LESS 3.9.0)
+    message(SEND_ERROR "Doxygen requires at least sqlite3 version 3.9.0 (installed: ${SQLITE3_VERSION})")
+  endif()
 endif()
 
 find_package(Iconv REQUIRED)

@@ -112,22 +112,27 @@ class SearchIndexExternal : public SearchIndexIntf
 
 //------- client side search index ----------------------
 
-#define SEARCH_INDEX_ALL         0
-#define SEARCH_INDEX_CLASSES     1
-#define SEARCH_INDEX_NAMESPACES  2
-#define SEARCH_INDEX_FILES       3
-#define SEARCH_INDEX_FUNCTIONS   4
-#define SEARCH_INDEX_VARIABLES   5
-#define SEARCH_INDEX_TYPEDEFS    6
-#define SEARCH_INDEX_ENUMS       7
-#define SEARCH_INDEX_ENUMVALUES  8
-#define SEARCH_INDEX_PROPERTIES  9
-#define SEARCH_INDEX_EVENTS     10
-#define SEARCH_INDEX_RELATED    11
-#define SEARCH_INDEX_DEFINES    12
-#define SEARCH_INDEX_GROUPS     13
-#define SEARCH_INDEX_PAGES      14
-#define NUM_SEARCH_INDICES      15
+#define SEARCH_INDEX_ALL           0
+#define SEARCH_INDEX_CLASSES       1
+#define SEARCH_INDEX_INTERFACES    2
+#define SEARCH_INDEX_STRUCTS       3
+#define SEARCH_INDEX_EXCEPTIONS    4
+#define SEARCH_INDEX_NAMESPACES    5
+#define SEARCH_INDEX_FILES         6
+#define SEARCH_INDEX_FUNCTIONS     7
+#define SEARCH_INDEX_VARIABLES     8
+#define SEARCH_INDEX_TYPEDEFS      9
+#define SEARCH_INDEX_SEQUENCES    10
+#define SEARCH_INDEX_DICTIONARIES 11
+#define SEARCH_INDEX_ENUMS        12
+#define SEARCH_INDEX_ENUMVALUES   13
+#define SEARCH_INDEX_PROPERTIES   14
+#define SEARCH_INDEX_EVENTS       15
+#define SEARCH_INDEX_RELATED      16
+#define SEARCH_INDEX_DEFINES      17
+#define SEARCH_INDEX_GROUPS       18
+#define SEARCH_INDEX_PAGES        19
+#define NUM_SEARCH_INDICES        20
 
 class SearchDefinitionList : public QList<Definition>
 {

@@ -34,12 +34,13 @@ enum Tokens
   TK_WHITESPACE    = 3,
   TK_LISTITEM      = 4,
   TK_ENDLIST       = 5,
-  TK_COMMAND       = 6,
+  TK_COMMAND_AT    = 6, //! Command starting with `@`
   TK_HTMLTAG       = 7,
   TK_SYMBOL        = 8,
   TK_NEWPARA       = 9,
   TK_RCSTAG        = 10,
   TK_URL           = 11,
+  TK_COMMAND_BS    = 12, //! Command starting with `\`
 
   RetVal_OK             = 0x10000,
   RetVal_SimpleSec      = 0x10001,
@@ -164,5 +165,7 @@ void doctokenizerYYsetStatePlantUML();
 void doctokenizerYYsetStateSetScope();
 void doctokenizerYYsetStatePlantUMLOpt();
 void doctokenizerYYsetStateOptions();
+void doctokenizerYYsetStateBlock();
+void doctokenizerYYsetStateEmoji();
 
 #endif

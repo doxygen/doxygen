@@ -350,6 +350,7 @@ void marshalLocalToc(StorageIntf *s,const LocalToc &lt)
   marshalInt(s,lt.htmlLevel());
   marshalInt(s,lt.latexLevel());
   marshalInt(s,lt.xmlLevel());
+  marshalInt(s,lt.docbookLevel());
 }
 
 void marshalEntry(StorageIntf *s,Entry *e)
@@ -369,6 +370,8 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalBool(s,e->subGrouping);
   marshalBool(s,e->callGraph);
   marshalBool(s,e->callerGraph);
+  marshalBool(s,e->referencedByRelation);
+  marshalBool(s,e->referencesRelation);
   marshalInt(s,(int)e->virt);
   marshalQCString(s,e->args);
   marshalQCString(s,e->bitfields);
@@ -408,6 +411,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalBool(s,e->artificial);
   marshalInt(s,(int)e->groupDocType);
   marshalQCString(s,e->id);
+  marshalQCString(s,e->metaData);
 }
 
 void marshalEntryTree(StorageIntf *s,Entry *e)
@@ -740,6 +744,7 @@ LocalToc unmarshalLocalToc(StorageIntf *s)
   int htmlLevel  = unmarshalInt(s);
   int latexLevel = unmarshalInt(s);
   int xmlLevel   = unmarshalInt(s);
+  int docbookLevel   = unmarshalInt(s);
   if ((mask & (1<<LocalToc::Html))!=0)
   {
     result.enableHtml(htmlLevel);
@@ -751,6 +756,10 @@ LocalToc unmarshalLocalToc(StorageIntf *s)
   if ((mask & (1<<LocalToc::Xml))!=0)
   {
     result.enableXml(xmlLevel);
+  }
+  if ((mask & (1<<LocalToc::Docbook))!=0)
+  {
+    result.enableDocbook(docbookLevel);
   }
   return result;
 }
@@ -774,6 +783,8 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->subGrouping      = unmarshalBool(s);
   e->callGraph        = unmarshalBool(s);
   e->callerGraph      = unmarshalBool(s);
+  e->referencedByRelation = unmarshalBool(s);
+  e->referencesRelation   = unmarshalBool(s);
   e->virt             = (Specifier)unmarshalInt(s);
   e->args             = unmarshalQCString(s);
   e->bitfields        = unmarshalQCString(s);
@@ -817,6 +828,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->artificial       = unmarshalBool(s);
   e->groupDocType     = (Entry::GroupDocType)unmarshalInt(s);
   e->id               = unmarshalQCString(s);
+  e->metaData         = unmarshalQCString(s);
   return e;
 }
 

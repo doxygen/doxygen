@@ -31,6 +31,7 @@
 #include "filename.h"
 #include "config.h"
 #include "htmlentity.h"
+#include "emoji.h"
 
 static void visitCaption(XmlDocVisitor *parent, QList<DocNode> children)
 {
@@ -39,10 +40,10 @@ static void visitCaption(XmlDocVisitor *parent, QList<DocNode> children)
   for (cli.toFirst();(n=cli.current());++cli) n->accept(parent);
 }
 
-static void visitPreStart(FTextStream &t, const char *cmd, const bool doCaption, 
+static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption, 
                           XmlDocVisitor *parent, QList<DocNode> children, 
                           const QCString &name, bool writeType, DocImage::Type type, const QCString &width, 
-                          const QCString &height)
+                          const QCString &height, bool inlineImage = FALSE)
 {
   t << "<" << cmd;
   if (writeType)
@@ -65,10 +66,11 @@ static void visitPreStart(FTextStream &t, const char *cmd, const bool doCaption,
   {
     t << " width=\"" << convertToXML(width) << "\"";
   }
-  else if (!height.isEmpty())
+  if (!height.isEmpty())
   {
     t << " height=\"" << convertToXML(height) << "\"";
   }
+  if (inlineImage) t << " inline=\"yes\">";
   if (doCaption)
   {
     t << " caption=\"";
@@ -130,6 +132,24 @@ void XmlDocVisitor::visit(DocSymbol *s)
   else
   {
     err("XML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+  }
+}
+
+void XmlDocVisitor::visit(DocEmoji *s)
+{
+  if (m_hide) return;
+  const char *res = EmojiEntityMapper::instance()->name(s->index());
+  if (res)
+  {
+    QCString name=res;
+    name = name.mid(1,name.length()-2);
+    m_t << "<emoji name=\"" << name << "\" unicode=\"";
+    filter(EmojiEntityMapper::instance()->unicode(s->index()));
+    m_t << "\"/>";
+  }
+  else
+  {
+    m_t << s->name();
   }
 }
 
@@ -313,7 +333,14 @@ void XmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::DontInclude: 
       break;
     case DocInclude::HtmlInclude: 
-      m_t << "<htmlonly>";
+      if (inc->isBlock())
+      {
+        m_t << "<htmlonly block=\"yes\">";
+      }
+      else
+      {
+        m_t << "<htmlonly>";
+      }
       filter(inc->text());
       m_t << "</htmlonly>";
       break;
@@ -494,7 +521,7 @@ void XmlDocVisitor::visitPre(DocPara *)
 void XmlDocVisitor::visitPost(DocPara *)
 {
   if (m_hide) return;
-  m_t << "</para>";
+  m_t << "</para>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocRoot *)
@@ -773,7 +800,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
-  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height());
+  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height(), img ->isInlineImage());
 
   // copy the image to the output dir
   FileDef *fd;

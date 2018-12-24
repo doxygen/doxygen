@@ -107,6 +107,10 @@ static bool handleCallgraph(const QCString &, const QCStringList &);
 static bool handleHideCallgraph(const QCString &, const QCStringList &);
 static bool handleCallergraph(const QCString &, const QCStringList &);
 static bool handleHideCallergraph(const QCString &, const QCStringList &);
+static bool handleReferencedByRelation(const QCString &, const QCStringList &);
+static bool handleHideReferencedByRelation(const QCString &, const QCStringList &);
+static bool handleReferencesRelation(const QCString &, const QCStringList &);
+static bool handleHideReferencesRelation(const QCString &, const QCStringList &);
 static bool handleInternal(const QCString &, const QCStringList &);
 static bool handleLineBr(const QCString &, const QCStringList &);
 static bool handleStatic(const QCString &, const QCStringList &);
@@ -214,6 +218,10 @@ static DocCmdMap docCmdMap[] =
   { "hidecallgraph",   &handleHideCallgraph,    FALSE },
   { "callergraph",     &handleCallergraph,      FALSE },
   { "hidecallergraph", &handleHideCallergraph,  FALSE },
+  { "showrefby",       &handleReferencedByRelation,     FALSE },
+  { "hiderefby",       &handleHideReferencedByRelation, FALSE },
+  { "showrefs",        &handleReferencesRelation,       FALSE },
+  { "hiderefs",        &handleHideReferencesRelation,   FALSE },
   { "internal",        &handleInternal,         TRUE  },
   { "_linebr",         &handleLineBr,           FALSE },
   { "static",          &handleStatic,           FALSE },
@@ -688,7 +696,13 @@ static void addSection()
 
 static void addCite()
 {
-  Doxygen::citeDict->insert(yytext);
+  QCString name=yytext;
+  if (yytext[0] =='"')
+  {
+    name=yytext+1;
+    name=name.left(yyleng-2);
+  }
+  Doxygen::citeDict->insert(name.data());
 }
 
 //-----------------------------------------------------------------------------
@@ -920,7 +934,9 @@ HR        [hH][rR]
 PARA      [pP][aA][rR][aA]
 CODE      [cC][oO][dD][eE]
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
-DETAILEDHTML {PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
+CENTER    [cC][eE][nN][tT][eE][rR]
+DIV       [dD][iI][vV]
+DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
 DETAILEDHTMLOPT {CODE}
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
@@ -935,9 +951,9 @@ FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+@&#]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
-CITESCHAR [a-z_A-Z0-9\x80-\xFF]
-CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/]*
-CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*
+CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
+CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]*
+CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
 TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
@@ -1005,7 +1021,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
    *   words and whitespace and other characters (#,?!, etc).
    *   grouping commands (e.g. @{ and @})
    *   language switch (e.g. \~english or \~).
-   *   mail address (e.g. dimitri@stack.nl).
+   *   mail address (e.g. doxygen@gmail.com).
    *   quoted text, such as "foo@bar"
    *   XML commands, <summary></summary><remarks></remarks>
    */
@@ -1589,8 +1605,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <PageDocArg1>.				{ // ignore other stuff
   					}
 <PageDocArg2>.*"\n"			{ // second argument; page title
-  				          yyLineNr++;
-					  current->args = yytext;
+					  yyLineNr++;
+					  // bug 748927
+					  QCString tmp = yytext;
+					  tmp = substitute(substitute(tmp,"@<","&lt;"),"@>","&gt;");
+					  tmp = substitute(substitute(tmp,"\\<","&lt;"),"\\>","&gt;");
+					  current->args = tmp;
 					  addOutput('\n');
 					  BEGIN( Comment );
 					}
@@ -2831,6 +2851,30 @@ static bool handleHideCallergraph(const QCString &, const QCStringList &)
   return FALSE;
 }
 
+static bool handleReferencedByRelation(const QCString &, const QCStringList &)
+{
+  current->referencedByRelation = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideReferencedByRelation(const QCString &, const QCStringList &)
+{
+  current->referencedByRelation = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleReferencesRelation(const QCString &, const QCStringList &)
+{
+  current->referencesRelation = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideReferencesRelation(const QCString &, const QCStringList &)
+{
+  current->referencesRelation = FALSE; // OFF
+  return FALSE;
+}
+
 static bool handleInternal(const QCString &, const QCStringList &)
 {
   if (!Config_getBool(INTERNAL_DOCS))
@@ -2949,6 +2993,10 @@ static bool handleToc(const QCString &, const QCStringList &optList)
         {
           current->localToc.enableXml(level);
         }
+        else if (opt == "docbook")
+        {
+          current->localToc.enableDocbook(level);
+        }
         else
         {
           warn(yyFileName,yyLineNr,"Unknown option specified with \\tableofcontents: `%s'", (*it).stripWhiteSpace().data());
@@ -2957,7 +3005,9 @@ static bool handleToc(const QCString &, const QCStringList &optList)
     }
     if (current->localToc.nothingEnabled())
     {
-      current->localToc.enableHtml(5); // for backward compatibility
+      // for backward compatibility
+      current->localToc.enableHtml(5);
+      current->localToc.enableXml(5);
     }
   }
   return FALSE;

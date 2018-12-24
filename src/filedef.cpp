@@ -85,6 +85,9 @@ FileDef::FileDef(const char *p,const char *nm,
   setReference(lref);
   setDiskName(dn?dn:nm);
   m_classSDict        = 0;
+  m_interfaceSDict    = 0;
+  m_structSDict       = 0;
+  m_exceptionSDict    = 0;
   m_includeList       = 0;
   m_includeDict       = 0; 
   m_includedByList    = 0;
@@ -112,6 +115,9 @@ FileDef::FileDef(const char *p,const char *nm,
 FileDef::~FileDef()
 {
   delete m_classSDict;
+  delete m_interfaceSDict;
+  delete m_structSDict;
+  delete m_exceptionSDict;
   delete m_includeDict;
   delete m_includeList;
   delete m_includedByDict;
@@ -239,18 +245,25 @@ void FileDef::writeTagFile(FTextStream &tagFile)
       case LayoutDocEntry::FileClasses:
         {
           if (m_classSDict)
-          {
-            SDict<ClassDef>::Iterator ci(*m_classSDict);
-            ClassDef *cd;
-            for (ci.toFirst();(cd=ci.current());++ci)
-            {
-              if (cd->isLinkableInProject())
-              {
-                tagFile << "    <class kind=\"" << cd->compoundTypeString() <<
-                  "\">" << convertToXML(cd->name()) << "</class>" << endl;
-              }
-            }
-          }
+            writeClassesToTagFile(tagFile, m_classSDict);
+        }
+        break;
+      case LayoutDocEntry::FileInterfaces:
+        {
+          if (m_interfaceSDict)
+            writeClassesToTagFile(tagFile, m_interfaceSDict);
+        }
+        break;
+      case LayoutDocEntry::FileStructs:
+        {
+          if (m_structSDict)
+            writeClassesToTagFile(tagFile, m_structSDict);
+        }
+        break;
+      case LayoutDocEntry::FileExceptions:
+        {
+          if (m_exceptionSDict)
+            writeClassesToTagFile(tagFile, m_exceptionSDict);
         }
         break;
       case LayoutDocEntry::FileNamespaces:
@@ -348,6 +361,10 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       { 
         ol.disable(OutputGenerator::Latex);
       }
+      if (ol.isEnabled(OutputGenerator::Docbook) && !Config_getBool(DOCBOOK_PROGRAMLISTING))
+      { 
+        ol.disable(OutputGenerator::Docbook);
+      }
       if (ol.isEnabled(OutputGenerator::RTF) && !Config_getBool(RTF_SOURCE_CODE))
       { 
         ol.disable(OutputGenerator::RTF);
@@ -411,6 +428,20 @@ void FileDef::writeBriefDescription(OutputList &ol)
     delete rootNode;
   }
   ol.writeSynopsis();
+}
+
+void FileDef::writeClassesToTagFile(FTextStream &tagFile, ClassSDict *d)
+{
+  SDict<ClassDef>::Iterator ci(*d);
+  ClassDef *cd;
+  for (ci.toFirst();(cd=ci.current());++ci)
+  {
+    if (cd->isLinkableInProject())
+    {
+      tagFile << "    <class kind=\"" << cd->compoundTypeString() <<
+        "\">" << convertToXML(cd->name()) << "</class>" << endl;
+    }
+  }
 }
 
 void FileDef::writeIncludeFiles(OutputList &ol)
@@ -553,10 +584,10 @@ void FileDef::writeNamespaceDeclarations(OutputList &ol,const QCString &title,
   if (m_namespaceSDict) m_namespaceSDict->writeDeclaration(ol,title,isConstantGroup);
 }
 
-void FileDef::writeClassDeclarations(OutputList &ol,const QCString &title)
+void FileDef::writeClassDeclarations(OutputList &ol,const QCString &title,ClassSDict *d)
 {
   // write list of classes
-  if (m_classSDict) m_classSDict->writeDeclaration(ol,0,title,FALSE);
+  if (d) d->writeDeclaration(ol,0,title,FALSE);
 }
 
 void FileDef::writeInlineClasses(OutputList &ol)
@@ -642,14 +673,38 @@ void FileDef::writeSummaryLinks(OutputList &ol)
   SrcLangExt lang=getLanguage();
   for (eli.toFirst();(lde=eli.current());++eli)
   {
-    if ((lde->kind()==LayoutDocEntry::FileClasses && 
-         m_classSDict && m_classSDict->declVisible()) || 
-        (lde->kind()==LayoutDocEntry::FileNamespaces && 
-         m_namespaceSDict && m_namespaceSDict->declVisible())
-       )
+    if (lde->kind()==LayoutDocEntry::FileClasses && m_classSDict && m_classSDict->declVisible())
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-      QCString label = lde->kind()==LayoutDocEntry::FileClasses ? "nested-classes" : "namespaces";
+      QCString label = "nested-classes";
+      ol.writeSummaryLink(0,label,ls->title(lang),first);
+      first=FALSE;
+    }
+    else if (lde->kind()==LayoutDocEntry::FileInterfaces && m_interfaceSDict && m_interfaceSDict->declVisible())
+    {
+      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+      QCString label = "interfaces";
+      ol.writeSummaryLink(0,label,ls->title(lang),first);
+      first=FALSE;
+    }
+    else if (lde->kind()==LayoutDocEntry::FileStructs && m_structSDict && m_structSDict->declVisible())
+    {
+      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+      QCString label = "structs";
+      ol.writeSummaryLink(0,label,ls->title(lang),first);
+      first=FALSE;
+    }
+    else if (lde->kind()==LayoutDocEntry::FileExceptions && m_exceptionSDict && m_exceptionSDict->declVisible())
+    {
+      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+      QCString label = "exceptions";
+      ol.writeSummaryLink(0,label,ls->title(lang),first);
+      first=FALSE;
+    }
+    else if (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaceSDict && m_namespaceSDict->declVisible())
+    {
+      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+      QCString label = "namespaces";
       ol.writeSummaryLink(0,label,ls->title(lang),first);
       first=FALSE;
     }
@@ -777,9 +832,27 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileClasses: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeClassDeclarations(ol,ls->title(lang));
+          writeClassDeclarations(ol,ls->title(lang),m_classSDict);
         }
-        break; 
+        break;
+      case LayoutDocEntry::FileInterfaces: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title(lang),m_interfaceSDict);
+        }
+        break;
+      case LayoutDocEntry::FileStructs: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title(lang),m_structSDict);
+        }
+        break;
+      case LayoutDocEntry::FileExceptions: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title(lang),m_exceptionSDict);
+        }
+        break;
       case LayoutDocEntry::FileNamespaces: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
@@ -838,6 +911,9 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceNestedConstantGroups:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceInterfaces:
+      case LayoutDocEntry::NamespaceStructs:
+      case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::GroupClasses: 
       case LayoutDocEntry::GroupInlineClasses: 
@@ -937,6 +1013,7 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   static bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   static bool latexSourceCode   = Config_getBool(LATEX_SOURCE_CODE);
+  static bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
   static bool rtfSourceCode     = Config_getBool(RTF_SOURCE_CODE);
   DevNullCodeDocInterface devNullIntf;
   QCString title = m_docname;
@@ -947,6 +1024,7 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disable(OutputGenerator::Man);
   if (!latexSourceCode) ol.disable(OutputGenerator::Latex);
+  if (!docbookSourceCode) ol.disable(OutputGenerator::Docbook);
   if (!rtfSourceCode) ol.disable(OutputGenerator::RTF);
 
   bool isDocFile = isDocumentationFile();
@@ -978,13 +1056,14 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
 
   if (isLinkable())
   {
+    ol.pushGeneratorState();
     if (latexSourceCode) ol.disable(OutputGenerator::Latex);
     if (rtfSourceCode) ol.disable(OutputGenerator::RTF);
+    if (docbookSourceCode) ol.disable(OutputGenerator::Docbook);
     ol.startTextLink(getOutputFileBase(),0);
     ol.parseText(theTranslator->trGotoDocumentation());
     ol.endTextLink();
-    if (latexSourceCode) ol.enable(OutputGenerator::Latex);
-    if (rtfSourceCode) ol.enable(OutputGenerator::RTF);
+    ol.popGeneratorState();
   }
 
   (void)sameTu;
@@ -1153,6 +1232,14 @@ void FileDef::insertMember(MemberDef *md)
       addMemberToList(MemberListType_decTypedefMembers,md);
       addMemberToList(MemberListType_docTypedefMembers,md);
       break;
+    case MemberType_Sequence:      
+      addMemberToList(MemberListType_decSequenceMembers,md);
+      addMemberToList(MemberListType_docSequenceMembers,md);
+      break;
+    case MemberType_Dictionary:      
+      addMemberToList(MemberListType_decDictionaryMembers,md);
+      addMemberToList(MemberListType_docDictionaryMembers,md);
+      break;
     case MemberType_Enumeration:  
       addMemberToList(MemberListType_decEnumMembers,md);
       addMemberToList(MemberListType_docEnumMembers,md);
@@ -1177,17 +1264,36 @@ void FileDef::insertMember(MemberDef *md)
 void FileDef::insertClass(ClassDef *cd)
 {
   if (cd->isHidden()) return;
-  if (m_classSDict==0)
+
+  ClassSDict *d=0;
+  ClassSDict **dd=&m_classSDict;
+
+  if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
   {
-    m_classSDict = new ClassSDict(17);
+    if (cd->compoundType()==ClassDef::Interface)
+    {
+      dd = &m_interfaceSDict;
+    }
+    else if (cd->compoundType()==ClassDef::Struct)
+    {
+      dd = &m_structSDict;
+    }
+    else if (cd->compoundType()==ClassDef::Exception)
+    {
+      dd = &m_exceptionSDict;
+    }
   }
+
+  if (*dd==0) *dd = new ClassSDict(17);
+  d = *dd;
+
   if (Config_getBool(SORT_BRIEF_DOCS))
   {
-    m_classSDict->inSort(cd->name(),cd);
+    d->inSort(cd->name(),cd);
   }
   else
   {
-    m_classSDict->append(cd->name(),cd);
+    d->append(cd->name(),cd);
   }
 }
 

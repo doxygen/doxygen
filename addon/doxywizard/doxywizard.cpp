@@ -267,7 +267,7 @@ void MainWindow::saveConfig(const QString &fileName)
 {
   if (fileName.isEmpty()) return;
   QFile f(fileName);
-  if (!f.open(QIODevice::WriteOnly)) 
+  if (!f.open(QIODevice::WriteOnly | QIODevice::Text ))
   {
     QMessageBox::warning(this,
         tr("Error saving"),

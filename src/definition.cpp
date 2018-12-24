@@ -42,6 +42,7 @@
 #include "filedef.h"
 #include "dirdef.h"
 #include "pagedef.h"
+#include "bufstr.h"
 
 #define START_MARKER 0x4445465B // DEF[
 #define END_MARKER   0x4445465D // DEF]
@@ -304,6 +305,7 @@ Definition::Definition(const Definition &d) : DefinitionIntf(), m_cookie(0)
 {
   m_name = d.m_name;
   m_defLine = d.m_defLine;
+  m_defColumn = d.m_defColumn;
   m_impl = new DefinitionImpl;
   *m_impl = *d.m_impl;
   m_impl->sectionDict = 0;
@@ -715,6 +717,139 @@ void Definition::setInbodyDocumentation(const char *d,const char *inbodyFile,int
   _setInbodyDocumentation(d,inbodyFile,inbodyLine);
 }
 
+//---------------------------------------
+
+struct FilterCacheItem
+{
+  portable_off_t filePos;
+  uint fileSize;
+};
+
+/*! Cache for storing the result of filtering a file */
+class FilterCache
+{
+  public:
+    FilterCache() : m_endPos(0) { m_cache.setAutoDelete(TRUE); }
+    bool getFileContents(const QCString &fileName,BufStr &str)
+    {
+      static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
+      QCString filter = getFileFilter(fileName,TRUE);
+      bool usePipe = !filter.isEmpty() && filterSourceFiles;
+      FILE *f=0;
+      const int blockSize = 4096;
+      char buf[blockSize];
+      FilterCacheItem *item=0;
+      if (usePipe && (item = m_cache.find(fileName))) // cache hit: reuse stored result
+      {
+        //printf("getFileContents(%s): cache hit\n",qPrint(fileName));
+        // file already processed, get the results after filtering from the tmp file
+        Debug::print(Debug::FilterOutput,0,"Reusing filter result for %s from %s at offset=%d size=%d\n",
+               qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
+        f = portable_fopen(Doxygen::filterDBFileName,"rb");
+        if (f)
+        {
+          bool success=TRUE;
+          str.resize(item->fileSize+1);
+          if (portable_fseek(f,item->filePos,SEEK_SET)==-1)
+          {
+            err("Failed to seek to position %d in filter database file %s\n",(int)item->filePos,qPrint(Doxygen::filterDBFileName));
+            success=FALSE;
+          }
+          if (success)
+          {
+            int numBytes = fread(str.data(),1,item->fileSize,f);
+            if (numBytes!=item->fileSize)
+            {
+              err("Failed to read %d bytes from position %d in filter database file %s: got %d bytes\n",
+                 (int)item->fileSize,(int)item->filePos,qPrint(Doxygen::filterDBFileName),numBytes);
+              success=FALSE;
+            }
+          }
+          str.addChar('\0');
+          fclose(f);
+          return success;
+        }
+        else
+        {
+          err("Failed to open filter database file %s\n",qPrint(Doxygen::filterDBFileName));
+          return FALSE;
+        }
+      }
+      else if (usePipe) // cache miss: filter active but file not previously processed
+      {
+        //printf("getFileContents(%s): cache miss\n",qPrint(fileName));
+        // filter file
+        QCString cmd=filter+" \""+fileName+"\"";
+        Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+        f = portable_popen(cmd,"r");
+        FILE *bf = portable_fopen(Doxygen::filterDBFileName,"a+b");
+        FilterCacheItem *item = new FilterCacheItem;
+        item->filePos = m_endPos;
+        if (bf==0)
+        {
+          // handle error
+          err("Error opening filter database file %s\n",qPrint(Doxygen::filterDBFileName));
+          str.addChar('\0');
+          delete item;
+          portable_pclose(f);
+          return FALSE;
+        }
+        // append the filtered output to the database file
+        int size=0;
+        while (!feof(f))
+        {
+          int bytesRead = fread(buf,1,blockSize,f);
+          int bytesWritten = fwrite(buf,1,bytesRead,bf);
+          if (bytesRead!=bytesWritten)
+          {
+            // handle error
+            err("Failed to write to filter database %s. Wrote %d out of %d bytes\n",
+                qPrint(Doxygen::filterDBFileName),bytesWritten,bytesRead);
+            str.addChar('\0');
+            delete item;
+            portable_pclose(f);
+            fclose(bf);
+            return FALSE;
+          }
+          size+=bytesWritten;
+          str.addArray(buf,bytesWritten);
+        }
+        str.addChar('\0');
+        item->fileSize = size;
+        // add location entry to the dictionary
+        m_cache.append(fileName,item);
+        Debug::print(Debug::FilterOutput,0,"Storing new filter result for %s in %s at offset=%d size=%d\n",
+               qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
+        // update end of file position
+        m_endPos += size;
+        portable_pclose(f);
+        fclose(bf);
+      }
+      else // no filtering
+      {
+        // normal file
+        //printf("getFileContents(%s): no filter\n",qPrint(fileName));
+        f = portable_fopen(fileName,"r");
+        while (!feof(f))
+        {
+          int bytesRead = fread(buf,1,blockSize,f);
+          str.addArray(buf,bytesRead);
+        }
+        str.addChar('\0');
+        fclose(f);
+      }
+      return TRUE;
+    }
+  private:
+    SDict<FilterCacheItem> m_cache;
+    portable_off_t m_endPos;
+};
+
+static FilterCache g_filterCache;
+
+//-----------------------------------------
+
+
 /*! Reads a fragment of code from file \a fileName starting at 
  * line \a startLine and ending at line \a endLine (inclusive). The fragment is
  * stored in \a result. If FALSE is returned the code fragment could not be
@@ -729,67 +864,60 @@ void Definition::setInbodyDocumentation(const char *d,const char *inbodyFile,int
 bool readCodeFragment(const char *fileName,
                       int &startLine,int &endLine,QCString &result)
 {
+  //printf("readCodeFragment(%s,startLine=%d,endLine=%d)\n",fileName,startLine,endLine);
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
-  static int tabSize = Config_getInt(TAB_SIZE);
-  //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
-  if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
   QCString filter = getFileFilter(fileName,TRUE);
-  FILE *f=0;
   bool usePipe = !filter.isEmpty() && filterSourceFiles;
+  int tabSize = Config_getInt(TAB_SIZE);
   SrcLangExt lang = getLanguageFromFileName(fileName);
-  if (!usePipe) // no filter given or wanted
-  {
-    f = portable_fopen(fileName,"r");
-  }
-  else // use filter
-  {
-    QCString cmd=filter+" \""+fileName+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-    f = portable_popen(cmd,"r");
-  }
-  bool found = lang==SrcLangExt_VHDL   || 
-               lang==SrcLangExt_Tcl    || 
-               lang==SrcLangExt_Python || 
-               lang==SrcLangExt_Fortran;  
+  const int blockSize = 4096;
+  BufStr str(blockSize);
+  g_filterCache.getFileContents(fileName,str);
+
+  bool found = lang==SrcLangExt_VHDL   ||
+               lang==SrcLangExt_Tcl    ||
+               lang==SrcLangExt_Python ||
+               lang==SrcLangExt_Fortran;
                // for VHDL, TCL, Python, and Fortran no bracket search is possible
-  if (f)
+  char *p=str.data();
+  if (p)
   {
     int c=0;
     int col=0;
     int lineNr=1;
     // skip until the startLine has reached
-    while (lineNr<startLine && !feof(f))
+    while (lineNr<startLine && *p)
     {
-      while ((c=fgetc(f))!='\n' && c!=EOF) /* skip */;
-      lineNr++; 
+      while ((c=*p++)!='\n' && c!=0) /* skip */;
+      lineNr++;
       if (found && c == '\n') c = '\0';
     }
-    if (!feof(f))
+    if (*p)
     {
       // skip until the opening bracket or lonely : is found
       char cn=0;
-      while (lineNr<=endLine && !feof(f) && !found)
+      while (lineNr<=endLine && *p && !found)
       {
         int pc=0;
-        while ((c=fgetc(f))!='{' && c!=':' && c!=EOF)  // } so vi matching brackets has no problem
+        while ((c=*p++)!='{' && c!=':' && c!=0)
         {
           //printf("parsing char `%c'\n",c);
-          if (c=='\n') 
+          if (c=='\n')
           {
-            lineNr++,col=0; 
+            lineNr++,col=0;
           }
-          else if (c=='\t') 
+          else if (c=='\t')
           {
             col+=tabSize - (col%tabSize);
           }
           else if (pc=='/' && c=='/') // skip single line comment
           {
-            while ((c=fgetc(f))!='\n' && c!=EOF) pc=c;
+            while ((c=*p++)!='\n' && c!=0) pc=c;
             if (c=='\n') lineNr++,col=0;
           }
           else if (pc=='/' && c=='*') // skip C style comment
           {
-            while (((c=fgetc(f))!='/' || pc!='*') && c!=EOF) 
+            while (((c=*p++)!='/' || pc!='*') && c!=0)
             {
               if (c=='\n') lineNr++,col=0;
               pc=c;
@@ -803,16 +931,16 @@ bool readCodeFragment(const char *fileName,
         }
         if (c==':')
         {
-          cn=fgetc(f);
+          cn=*p++;
           if (cn!=':') found=TRUE;
         }
-        else if (c=='{')   // } so vi matching brackets has no problem
+        else if (c=='{')
         {
           found=TRUE;
         }
       }
       //printf(" -> readCodeFragment(%s,%d,%d) lineNr=%d\n",fileName,startLine,endLine,lineNr);
-      if (found) 
+      if (found)
       {
         // For code with more than one line,
         // fill the line with spaces until we are at the right column
@@ -826,56 +954,46 @@ bool readCodeFragment(const char *fileName,
         // copy until end of line
         if (c) result+=c;
         startLine=lineNr;
-        if (c==':') 
+        if (c==':')
         {
           result+=cn;
           if (cn=='\n') lineNr++;
         }
-        const int maxLineLength=4096;
-        char lineStr[maxLineLength];
-        do 
+        char lineStr[blockSize];
+        do
         {
           //printf("reading line %d in range %d-%d\n",lineNr,startLine,endLine);
           int size_read;
-          do 
+          do
           {
             // read up to maxLineLength-1 bytes, the last byte being zero
-            char *p = fgets(lineStr, maxLineLength,f);
-            //printf("  read %s",p);
-            if (p) 
+            int i=0;
+            while ((c=*p++) && i<blockSize-1)
             {
-              size_read=qstrlen(p); 
+              lineStr[i++]=c;
+              if (c=='\n') break; // stop at end of the line
             }
-            else  // nothing read
-            {
-              size_read=-1;
-              lineStr[0]='\0';
-            }
-            result+=lineStr;
-          } while (size_read == (maxLineLength-1));
-
-          lineNr++; 
-        } while (lineNr<=endLine && !feof(f));
+            lineStr[i]=0;
+            size_read=i;
+            result+=lineStr; // append line to the output
+          } while (size_read == (blockSize-1)); // append more if line does not fit in buffer
+          lineNr++;
+        } while (lineNr<=endLine && *p);
 
         // strip stuff after closing bracket
         int newLineIndex = result.findRev('\n');
         int braceIndex   = result.findRev('}');
-        if (braceIndex > newLineIndex) 
+        if (braceIndex > newLineIndex)
         {
           result.truncate(braceIndex+1);
         }
         endLine=lineNr-1;
       }
     }
-    if (usePipe) 
+    if (usePipe)
     {
-      portable_pclose(f); 
       Debug::print(Debug::FilterOutput, 0, "Filter output\n");
       Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(result));
-    }
-    else 
-    {
-      fclose(f);
     }
   }
   result = transcodeCharacterStringToUTF8(result);
@@ -921,6 +1039,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 {
   static bool latexSourceCode = Config_getBool(LATEX_SOURCE_CODE);
   static bool rtfSourceCode = Config_getBool(RTF_SOURCE_CODE);
+  static bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
   QCString fn = getSourceFileBase();
@@ -945,17 +1064,25 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
+        if (!docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
+        }
         if (!rtfSourceCode)
         {
           ol.disable(OutputGenerator::RTF);
         }
-        // write line link (HTML, LaTeX optionally, RTF optionally)
+        // write line link (HTML and  optionally LaTeX, Docbook, RTF)
         ol.writeObjectLink(0,fn,anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         if (latexSourceCode) 
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
         }
         if (rtfSourceCode)
         {
@@ -975,6 +1102,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
+        if (!docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
+        }
         if (!rtfSourceCode)
         {
           ol.disable(OutputGenerator::RTF);
@@ -986,6 +1117,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         if (latexSourceCode) 
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
         }
         if (rtfSourceCode)
         {
@@ -1009,6 +1144,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
+        if (!docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
+        }
         if (!rtfSourceCode)
         {
           ol.disable(OutputGenerator::RTF);
@@ -1020,6 +1159,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         if (latexSourceCode) 
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
         }
         if (rtfSourceCode)
         {
@@ -1040,6 +1183,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.enable(OutputGenerator::Latex);
         }
+        if (docbookSourceCode)
+        {
+          ol.enable(OutputGenerator::Docbook);
+        }
         if (rtfSourceCode)
         {
           ol.enable(OutputGenerator::RTF);
@@ -1051,6 +1198,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         if (latexSourceCode) 
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (docbookSourceCode)
+        {
+          ol.disable(OutputGenerator::Docbook);
         }
         if (rtfSourceCode)
         {
@@ -1145,6 +1296,7 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
     const QCString &text,MemberSDict *members,bool /*funcOnly*/)
 {
   static bool latexSourceCode = Config_getBool(LATEX_SOURCE_CODE); 
+  static bool docbookSourceCode   = Config_getBool(DOCBOOK_PROGRAMLISTING);
   static bool rtfSourceCode   = Config_getBool(RTF_SOURCE_CODE);
   static bool sourceBrowser   = Config_getBool(SOURCE_BROWSER);
   static bool refLinkSource   = Config_getBool(REFERENCES_LINK_SOURCE);
@@ -1203,6 +1355,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
+          if (!docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
           if (!rtfSourceCode)
           {
             ol.disable(OutputGenerator::RTF);
@@ -1221,6 +1377,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
+          if (docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
           if (rtfSourceCode)
           {
             ol.disable(OutputGenerator::RTF);
@@ -1238,6 +1398,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
+          if (!docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
           if (!rtfSourceCode)
           {
             ol.disable(OutputGenerator::RTF);
@@ -1254,6 +1418,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           if (latexSourceCode)
           {
             ol.disable(OutputGenerator::Latex);
+          }
+          if (docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
           }
           if (rtfSourceCode)
           {
@@ -1278,18 +1446,12 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
 
 void Definition::writeSourceReffedBy(OutputList &ol,const char *scopeName)
 {
-  if (Config_getBool(REFERENCED_BY_RELATION))
-  {
-    _writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_impl->sourceRefByDict,FALSE);
-  }
+  _writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_impl->sourceRefByDict,FALSE);
 }
 
 void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 {
-  if (Config_getBool(REFERENCES_RELATION))
-  {
-    _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_impl->sourceRefsDict,TRUE);
-  }
+  _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_impl->sourceRefsDict,TRUE);
 }
 
 bool Definition::hasDocumentation() const
@@ -1476,13 +1638,21 @@ void Definition::mergeRefItems(Definition *d)
       m_impl->xrefListItems->setAutoDelete(TRUE);
     }
     QListIterator<ListItemInfo> slii(*xrefList);
+    QListIterator<ListItemInfo> mlii(*m_impl->xrefListItems);
     ListItemInfo *lii;
+    ListItemInfo *mii;
     for (slii.toFirst();(lii=slii.current());++slii)
     {
-      if (_getXRefListId(lii->type)==-1)
+      bool found = false;
+      for (mlii.toFirst();(mii=mlii.current());++mlii)
       {
-        m_impl->xrefListItems->append(new ListItemInfo(*lii));
+        if ((qstrcmp(lii->type,mii->type)==0) && (lii->itemId == mii->itemId))
+	{
+          found = true;
+          break;
+	}
       }
+      if (!found) m_impl->xrefListItems->append(new ListItemInfo(*lii));
     } 
   }
 }
@@ -1633,7 +1803,7 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
     int level=1,l;
     char cs[2];
     cs[1]='\0';
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     for (li.toFirst();(si=li.current());++li)
     {
       if (si->type==SectionInfo::Section       || 
@@ -1667,6 +1837,7 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
         level = nextLevel;
       }
     }
+    if (level > maxLevel) level = maxLevel;
     while (level>1 && level <= maxLevel)
     {
       if (inLi[level]) ol.writeString("</li>\n");
@@ -1678,6 +1849,63 @@ void Definition::writeToc(OutputList &ol, const LocalToc &localToc)
     inLi[level]=FALSE;
     ol.writeString("</ul>\n");
     ol.writeString("</div>\n");
+    ol.popGeneratorState();
+  }
+
+  if (localToc.isDocbookEnabled())
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Docbook);
+    ol.writeString("    <toc>\n");
+    ol.writeString("    <title>" + theTranslator->trRTFTableOfContents() + "</title>\n");
+    SectionDict *sectionDict = getSectionDict();
+    SDict<SectionInfo>::Iterator li(*sectionDict);
+    SectionInfo *si;
+    int level=1,l;
+    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
+    int maxLevel = localToc.docbookLevel();
+    for (li.toFirst();(si=li.current());++li)
+    {
+      if (si->type==SectionInfo::Section       ||
+          si->type==SectionInfo::Subsection    ||
+          si->type==SectionInfo::Subsubsection ||
+          si->type==SectionInfo::Paragraph)
+      {
+        //printf("  level=%d title=%s\n",level,si->title.data());
+        int nextLevel = (int)si->type;
+        if (nextLevel>level)
+        {
+          for (l=level;l<nextLevel;l++)
+          {
+            if (l < maxLevel) ol.writeString("    <tocdiv>\n");
+          }
+        }
+        else if (nextLevel<level)
+        {
+          for (l=level;l>nextLevel;l--)
+          {
+            inLi[l]=FALSE;
+            if (l <= maxLevel) ol.writeString("    </tocdiv>\n");
+          }
+        }
+        if (nextLevel <= maxLevel)
+        {
+          QCString titleDoc = convertToDocBook(si->title);
+          ol.writeString("      <tocentry>" + (si->title.isEmpty()?si->label:titleDoc) + "</tocentry>\n");
+        }
+        inLi[nextLevel]=TRUE;
+        level = nextLevel;
+      }
+    }
+    if (level > maxLevel) level = maxLevel;
+    while (level>1 && level <= maxLevel)
+    {
+      inLi[level]=FALSE;
+      ol.writeString("</tocdiv>\n");
+      level--;
+    }
+    inLi[level]=FALSE;
+    ol.writeString("    </toc>\n");
     ol.popGeneratorState();
   }
 

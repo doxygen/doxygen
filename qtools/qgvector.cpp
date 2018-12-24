@@ -411,8 +411,8 @@ void QGVector::sort()				// sort vector
 {
     if ( count() == 0 )				// no elements
 	return;
-    register Item *start = &vec[0];
-    register Item *end	= &vec[len-1];
+    Item *start = &vec[0];
+    Item *end	= &vec[len-1];
     Item tmp;
     while ( TRUE ) {				// put all zero elements behind
 	while ( start < end && *start != 0 )

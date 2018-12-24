@@ -72,6 +72,8 @@
 \setlength{\parindent}{0pt}
 \newcommand{\doxynormalparskip}{\setlength{\parskip}{0.2cm}}
 \newcommand{\doxytocparskip}{\setlength{\parskip}{0.2cm}}
+\newcommand{\doxygenemoji}[2]{%
+\IfFileExists{../doc/#2.png}{\raisebox{-0.1em}{\includegraphics[height=0.9em]{../doc/#2.png}}}{#1}}
 \doxynormalparskip
 \hbadness=750
 \tolerance=750
@@ -96,21 +98,21 @@ Written by Dimitri van Heesch\\[2ex]
 \part{User Manual}
 \chapter{Introduction}\label{intro}\hypertarget{intro}{}\input{index}
 \chapter{Installation}\label{install}\hypertarget{install}{}\input{install}
-\chapter{Getting Started}\label{starting}\hypertarget{starting}{}\input{starting}
+\chapter{Getting started}\label{starting}\hypertarget{starting}{}\input{starting}
 \chapter{Documenting the code}\label{docblocks}\hypertarget{docblocks}{}\input{docblocks}
-\chapter{Markdown}\label{markdown}\hypertarget{markdown}{}\input{markdown}
+\chapter{Markdown support}\label{markdown}\hypertarget{markdown}{}\input{markdown}
 \chapter{Lists}\label{lists}\hypertarget{lists}{}\input{lists}
 \chapter{Grouping}\label{grouping}\hypertarget{grouping}{}\input{grouping}
-\chapter{Including Formulas}\label{formulas}\hypertarget{formulas}{}\input{formulas}
-\chapter{Including Tables}\label{tables}\hypertarget{tables}{}\input{tables}
+\chapter{Including formulas}\label{formulas}\hypertarget{formulas}{}\input{formulas}
+\chapter{Including tables}\label{tables}\hypertarget{tables}{}\input{tables}
 \chapter{Graphs and diagrams}\label{diagrams}\hypertarget{diagrams}{}\input{diagrams}
 \chapter{Preprocessing}\label{preprocessing}\hypertarget{preprocessing}{}\input{preprocessing}
 \chapter{Automatic link generation}\label{autolink}\hypertarget{autolink}{}\input{autolink}
 \chapter{Output Formats}\label{output}\hypertarget{output}{}\input{output}
 \chapter{Searching}\label{searching}\hypertarget{searching}{}\input{searching}
-\chapter{Customizing the Output}\label{customize}\hypertarget{customize}{}\input{customize}
-\chapter{Custom Commands}\label{custcmd}\hypertarget{custcmd}{}\input{custcmd}
-\chapter{Link to external documentation}\label{external}\hypertarget{external}{}\input{external}
+\chapter{Customizing the output}\label{customize}\hypertarget{customize}{}\input{customize}
+\chapter{Custom commands}\label{custcmd}\hypertarget{custcmd}{}\input{custcmd}
+\chapter{Linking to external documentation}\label{external}\hypertarget{external}{}\input{external}
 \chapter{Frequently Asked Questions}\label{faq}\hypertarget{faq}{}\input{faq}
 \chapter{Troubleshooting}\label{trouble}\hypertarget{trouble}{}\input{trouble}
 \part{Reference Manual}
@@ -119,12 +121,13 @@ Written by Dimitri van Heesch\\[2ex]
 \chapter{Doxywizard usage}\label{doxywizard_usage}\hypertarget{doxywizard_usage}{}\input{doxywizard_usage}
 \chapter{Configuration}\label{config}\hypertarget{config}{}\input{config}
 \chapter{Special Commands}\label{commands}\hypertarget{commands}{}\input{commands}
-\chapter{HTML commands}\label{htmlcmds}\hypertarget{htmlcmds}{}\input{htmlcmds}
-\chapter{XML commands}\label{xmlcmds}\hypertarget{xmlcmds}{}\input{xmlcmds}
+\chapter{HTML Commands}\label{htmlcmds}\hypertarget{htmlcmds}{}\input{htmlcmds}
+\chapter{XML Commands}\label{xmlcmds}\hypertarget{xmlcmds}{}\input{xmlcmds}
+\chapter{Emoji support}\label{emojisup}\hypertarget{emojisup}{}\input{emojisup}
 \part{Developers Manual}
-\chapter{Doxygen's internals}\label{arch}\hypertarget{arch}{}\input{arch}
-\chapter{Perl Module Output format}\label{perlmod}\hypertarget{perlmod}{}\input{perlmod}
 \chapter{Internationalization}\label{langhowto}\hypertarget{langhowto}{}\input{langhowto}
+\chapter{Perl Module Output}\label{perlmod}\hypertarget{perlmod}{}\input{perlmod}
+\chapter{Doxygen's internals}\label{arch}\hypertarget{arch}{}\input{arch}
 \renewcommand{\thepart}{}
 \part{Appendices}
 \appendix

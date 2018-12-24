@@ -48,7 +48,7 @@ class MemberDef : public Definition
               const char *type,const char *name,const char *args,
               const char *excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList *tal,
-              const ArgumentList *al);
+              const ArgumentList *al,const char *metaData);
    ~MemberDef(); 
     DefType definitionType() const        { return TypeMember; }
     // move this member into a different scope
@@ -109,6 +109,8 @@ class MemberDef : public Definition
     bool isEnumerate() const;
     bool isEnumValue() const;
     bool isTypedef() const;
+    bool isSequence() const;
+    bool isDictionary() const;
     bool isFunction() const;
     bool isFunctionPtr() const;
     bool isDefine() const;
@@ -177,6 +179,7 @@ class MemberDef : public Definition
     bool showInCallGraph() const;
     bool isStrongEnumValue() const;
     bool livesInsideEnum() const;
+    bool isSliceLocal() const;
 
     int numberOfFlowKeyWords();
     // derived getters
@@ -237,6 +240,9 @@ class MemberDef : public Definition
     bool hasCallGraph() const;
     bool hasCallerGraph() const;
     bool visibleMemberGroup(bool hideNoHeader);
+    // refrenced related members
+    bool hasReferencesRelation() const;
+    bool hasReferencedByRelation() const;
 
     MemberDef *templateMaster() const;
     QCString getScopeString() const;
@@ -348,6 +354,9 @@ class MemberDef : public Definition
 
     void enableCallGraph(bool e);
     void enableCallerGraph(bool e);
+
+    void enableReferencedByRelation(bool e);
+    void enableReferencesRelation(bool e);
 
     void setTemplateMaster(MemberDef *mt);
     void addListReference(Definition *d);

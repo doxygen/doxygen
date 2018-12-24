@@ -402,6 +402,7 @@
       <xsd:element name="anchor" type="docAnchorType" />
       <xsd:element name="formula" type="docFormulaType" />
       <xsd:element name="ref" type="docRefTextType" />
+      <xsd:element name="emoji" type="docEmojiType" />
       <!-- Automatically insert here the HTML entities -->
     </xsd:choice>
   </xsd:group>
@@ -643,6 +644,25 @@
 
   <xsd:complexType name="docEmptyType"/>
 
+  <xsd:complexType name="tableofcontentsType">
+    <xsd:sequence>
+      <xsd:element name="tocsect" type="tableofcontentsKindType" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="tableofcontentsKindType">
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="reference" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="tableofcontents" type="tableofcontentsType" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="docEmojiType">
+    <xsd:attribute name="name" type="xsd:string"/>
+    <xsd:attribute name="unicode" type="xsd:string"/>
+  </xsd:complexType>
+
   <!-- Simple types -->
 
   <xsd:simpleType name="DoxBool">
@@ -880,20 +900,6 @@
       <xsd:enumeration value="unretained"/>
     </xsd:restriction>
   </xsd:simpleType>
-
-  <xsd:complexType name="tableofcontentsType">
-    <xsd:sequence>
-      <xsd:element name="tocsect" type="tableofcontentsKindType" minOccurs="1" maxOccurs="unbounded" />
-    </xsd:sequence>
-  </xsd:complexType>
-
-  <xsd:complexType name="tableofcontentsKindType">
-    <xsd:sequence>
-      <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
-      <xsd:element name="reference" type="xsd:string" minOccurs="1" maxOccurs="1"/>
-      <xsd:element name="tableofcontents" type="tableofcontentsType" minOccurs="0" maxOccurs="unbounded" />
-    </xsd:sequence>
-  </xsd:complexType>
 
 </xsd:schema>
 

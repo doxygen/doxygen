@@ -26,8 +26,8 @@
 #include <qqueue.h>
 #include <qthread.h>
 #include "sortdict.h"
+#include "classdef.h"
 
-class ClassDef;
 class FileDef;
 class FTextStream;
 class DotNodeList;
@@ -122,6 +122,7 @@ class DotNode
     bool             m_visible;   //!< is the node visible in the output
     TruncState       m_truncated; //!< does the node have non-visible children/parents
     int              m_distance;  //!< shortest path to the root node
+    bool             m_renumbered;//!< indicates if the node has been renumbered (to prevent endless loops)
 
     friend class DotGfxHierarchyTable;
     friend class DotClassGraph;
@@ -156,7 +157,7 @@ class DotNodeList : public QList<DotNode>
 class DotGfxHierarchyTable
 {
   public:
-    DotGfxHierarchyTable();
+    DotGfxHierarchyTable(const char *prefix="",ClassDef::CompoundType ct=ClassDef::Class);
    ~DotGfxHierarchyTable();
     void writeGraph(FTextStream &t,const char *path, const char *fileName) const;
     void createGraph(DotNode *rootNode,FTextStream &t,const char *path,const char *fileName,int id) const;
@@ -166,10 +167,12 @@ class DotGfxHierarchyTable
     void addHierarchy(DotNode *n,ClassDef *cd,bool hide);
     void addClassList(ClassSDict *cl);
 
-    QList<DotNode> *m_rootNodes; 
-    QDict<DotNode> *m_usedNodes; 
-    int             m_curNodeNumber;
-    DotNodeList    *m_rootSubgraphs;
+    QCString               m_prefix;
+    ClassDef::CompoundType m_classType;
+    QList<DotNode>        *m_rootNodes; 
+    QDict<DotNode>        *m_usedNodes; 
+    int                    m_curNodeNumber;
+    DotNodeList           *m_rootSubgraphs;
 };
 
 /** Representation of a class inheritance or dependency graph */

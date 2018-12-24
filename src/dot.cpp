@@ -24,6 +24,7 @@
 #include <qthread.h>
 #include <qmutex.h>
 #include <qwaitcondition.h>
+#include <qregexp.h>
 
 #include "dot.h"
 #include "doxygen.h"
@@ -139,7 +140,7 @@ static const char svgZoomFooter[] =
 "                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
 "                </g>\n"
 "        </g>\n"
-// link to orginial SVG
+// link to original SVG
 "        <svg viewBox=\"0 0 15 15\" width=\"100%\" height=\"30px\" preserveAspectRatio=\"xMaxYMin meet\">\n"
 "         <g id=\"arrow_out\" transform=\"scale(0.3 0.3)\">\n"
 "          <a xlink:href=\"$orgname\" target=\"_base\">\n"
@@ -376,6 +377,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
                            const QCString &context=QCString())
 {
   QFile f(mapName);
+  static QRegExp re("id=\"node[0-9]*\"");
   if (!f.open(IO_ReadOnly)) 
   {
     err("problems opening map file %s for inclusion in the docs!\n"
@@ -394,7 +396,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
 
       if (buf.left(5)=="<area")
       {
-        t << replaceRef(buf,relPath,urlOnly,context);
+        t << replaceRef(buf,relPath,urlOnly,context).replace(re,"");
       }
     }
   }
@@ -1108,12 +1110,18 @@ bool DotFilePatcher::run()
       int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
       if (n==1 && mapId>=0 && mapId<(int)m_maps.count())
       {
+        QGString result;
+        FTextStream tt(&result);
         Map *map = m_maps.at(mapId);
         //printf("patching MAP %d in file %s with contents of %s\n",
         //   mapId,m_patchFile.data(),map->mapFile.data());
-        t << "<map name=\"" << map->label << "\" id=\"" << map->label << "\">" << endl;
-        convertMapFile(t,map->mapFile,map->relPath,map->urlOnly,map->context);
-        t << "</map>" << endl;
+        convertMapFile(tt,map->mapFile,map->relPath,map->urlOnly,map->context);
+        if (!result.isEmpty())
+        {
+          t << "<map name=\"" << map->label << "\" id=\"" << map->label << "\">" << endl;
+          t << result;
+          t << "</map>" << endl;
+        }
       }
       else // error invalid map id!
       {
@@ -1383,6 +1391,11 @@ bool DotManager::run()
     setDotFontPath(Config_getString(RTF_OUTPUT));
     setPath=TRUE;
   }
+  else if (Config_getBool(GENERATE_DOCBOOK))
+  {
+    setDotFontPath(Config_getString(DOCBOOK_OUTPUT));
+    setPath=TRUE;
+  }
   portable_sysTimerStart();
   // fill work queue with dot operations
   DotRunner *dr;
@@ -1502,6 +1515,7 @@ DotNode::DotNode(int n,const char *lab,const char *tip, const char *url,
   , m_visible(FALSE)
   , m_truncated(Unknown)
   , m_distance(1000)
+  , m_renumbered(false)
 {
 }
 
@@ -2274,7 +2288,11 @@ void DotNode::renumberNodes(int &number)
     DotNode *cn;
     for (dnlic.toFirst();(cn=dnlic.current());++dnlic)
     {
-      cn->renumberNodes(number);
+      if (!cn->m_renumbered)
+      {
+        cn->m_renumbered = true;
+        cn->renumberNodes(number);
+      }
     }
   }
 }
@@ -2323,7 +2341,10 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
   QCString baseName;
   QCString imgExt = getDotImageExtension();
   QCString imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
-  baseName.sprintf("inherit_graph_%d",id);
+  if (m_prefix.isEmpty())
+    baseName.sprintf("inherit_graph_%d",id);
+  else
+    baseName.sprintf("%sinherit_graph_%d",m_prefix.data(),id);
   QCString imgName = baseName+"."+ imgExt;
   QCString mapName = baseName+".map";
   QCString absImgName = QCString(d.absPath().data())+"/"+imgName;
@@ -2515,6 +2536,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
 
 void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
 {
+  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   ClassSDict::Iterator cli(*cl);
   ClassDef *cd;
   for (cli.toLast();(cd=cli.current());--cli)
@@ -2523,6 +2545,10 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
     if (cd->getLanguage()==SrcLangExt_VHDL &&
         (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS
        )
+    {
+      continue;
+    }
+    if (sliceOpt && cd->compoundType() != m_classType)
     {
       continue;
     }
@@ -2558,7 +2584,10 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
   }
 }
 
-DotGfxHierarchyTable::DotGfxHierarchyTable() : m_curNodeNumber(1)
+DotGfxHierarchyTable::DotGfxHierarchyTable(const char *prefix,ClassDef::CompoundType ct)
+  : m_prefix(prefix)
+  , m_classType(ct)
+  , m_curNodeNumber(1)
 {
   m_rootNodes = new QList<DotNode>;
   m_usedNodes = new QDict<DotNode>(1009); 
@@ -3242,29 +3271,15 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
   {
     out << "<para>" << endl;
-    out << "    <figure>" << endl;
-    out << "        <title>";
-    switch (m_graphType)
-    {
-      case DotNode::Collaboration:
-        out << "Collaboration graph";
-        break;
-      case DotNode::Inheritance:
-        out << "Inheritance graph";
-        break;
-      default:
-        ASSERT(0);
-        break;
-    }
-    out << "</title>" << endl;
+    out << "    <informalfigure>" << endl;
     out << "        <mediaobject>" << endl;
     out << "            <imageobject>" << endl;
     out << "                <imagedata";
-    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
     out << "</imagedata>" << endl;
     out << "            </imageobject>" << endl;
     out << "        </mediaobject>" << endl;
-    out << "    </figure>" << endl;
+    out << "    </informalfigure>" << endl;
     out << "</para>" << endl;
   }
   else if (graphFormat==GOF_BITMAP && generateImageMap) // produce HTML to include the image
@@ -3601,17 +3616,15 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
   {
     out << "<para>" << endl;
-    out << "    <figure>" << endl;
-    out << "        <title>Dependency diagram";
-    out << "</title>" << endl;
+    out << "    <informalfigure>" << endl;
     out << "        <mediaobject>" << endl;
     out << "            <imageobject>" << endl;
     out << "                <imagedata";
-    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
     out << "</imagedata>" << endl;
     out << "            </imageobject>" << endl;
     out << "        </mediaobject>" << endl;
-    out << "    </figure>" << endl;
+    out << "    </informalfigure>" << endl;
     out << "</para>" << endl;
   }
   else if (graphFormat==GOF_BITMAP && generateImageMap)
@@ -3922,17 +3935,15 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
   {
     out << "<para>" << endl;
-    out << "    <figure>" << endl;
-    out << "        <title>Call diagram";
-    out << "</title>" << endl;
+    out << "    <informalfigure>" << endl;
     out << "        <mediaobject>" << endl;
     out << "            <imageobject>" << endl;
     out << "                <imagedata";
-    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
     out << "</imagedata>" << endl;
     out << "            </imageobject>" << endl;
     out << "        </mediaobject>" << endl;
-    out << "    </figure>" << endl;
+    out << "    </informalfigure>" << endl;
     out << "</para>" << endl;
   }
   else if (graphFormat==GOF_BITMAP && generateImageMap)
@@ -4087,17 +4098,15 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
   {
     out << "<para>" << endl;
-    out << "    <figure>" << endl;
-    out << "        <title>Directory Dependency diagram";
-    out << "</title>" << endl;
+    out << "    <informalfigure>" << endl;
     out << "        <mediaobject>" << endl;
     out << "            <imageobject>" << endl;
     out << "                <imagedata";
-    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
     out << "</imagedata>" << endl;
     out << "            </imageobject>" << endl;
     out << "        </mediaobject>" << endl;
-    out << "    </figure>" << endl;
+    out << "    </informalfigure>" << endl;
     out << "</para>" << endl;
   }
   else if (graphFormat==GOF_BITMAP && generateImageMap)
@@ -4319,13 +4328,18 @@ void writeDotImageMapFromFile(FTextStream &t,
   }
   else // bitmap graphics
   {
+    QGString result;
+    FTextStream tt(&result);
+
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
-      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl
-      << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
-
-    convertMapFile(t, absOutFile, relPath ,TRUE, context);
-
-    t << "</map>" << endl;
+      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
+    convertMapFile(tt, absOutFile, relPath ,TRUE, context);
+    if (!result.isEmpty())
+    {
+      t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
+      t << result;
+      t << "</map>" << endl;
+    }
   }
   d.remove(absOutFile);
 }
@@ -4650,17 +4664,15 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
   {
     t << "<para>" << endl;
-    t << "    <figure>" << endl;
-    t << "        <title>Group Collaboration diagram";
-    t << "</title>" << endl;
+    t << "    <informalfigure>" << endl;
     t << "        <mediaobject>" << endl;
     t << "            <imageobject>" << endl;
     t << "                <imagedata";
-    t << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    t << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
     t << "</imagedata>" << endl;
     t << "            </imageobject>" << endl;
     t << "        </mediaobject>" << endl;
-    t << "    </figure>" << endl;
+    t << "    </informalfigure>" << endl;
     t << "</para>" << endl;
   }
   else if (graphFormat==GOF_BITMAP && writeImageMap)

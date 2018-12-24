@@ -55,6 +55,7 @@ class InputStrList : public QObject, public Input
     void updateDependencies() {}
     void writeValue(QTextStream &t,QTextCodec *codec);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
+    bool isEmpty();
 
   public slots:
     void reset();

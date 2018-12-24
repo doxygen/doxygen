@@ -161,10 +161,12 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
   //ol.disableAllBut(OutputGenerator::Html);
   bool htmlOn  = ol.isEnabled(OutputGenerator::Html);
   bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+  bool docbookOn = ol.isEnabled(OutputGenerator::Docbook);
   {
     // html and latex
     if (htmlOn)  ol.enable(OutputGenerator::Html);
     if (latexOn) ol.enable(OutputGenerator::Latex);
+    if (docbookOn) ol.enable(OutputGenerator::Docbook);
 
     ol.endMemberDocName();
     ol.startParameterList(!md->isObjCMethod());
@@ -172,6 +174,7 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
   ol.enableAll();
   ol.disable(OutputGenerator::Html);
   ol.disable(OutputGenerator::Latex);
+  ol.disable(OutputGenerator::Docbook);
   {
     // other formats
     if (!md->isObjCMethod()) ol.docify("("); // start argument list
@@ -270,6 +273,7 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
       //  ol.docify(" ");
       //}
       ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Docbook);
       ol.disable(OutputGenerator::Html);
       ol.docify(" "); /* man page */
       if (htmlOn) ol.enable(OutputGenerator::Html);
@@ -277,12 +281,15 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
       ol.startEmphasis();
       ol.enable(OutputGenerator::Man);
       if (latexOn) ol.enable(OutputGenerator::Latex);
+      if (docbookOn) ol.enable(OutputGenerator::Docbook);
       if (a->name.isEmpty()) ol.docify(a->type); else ol.docify(a->name);
       ol.disable(OutputGenerator::Man);
       ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Docbook);
       ol.endEmphasis();
       ol.enable(OutputGenerator::Man);
       if (latexOn) ol.enable(OutputGenerator::Latex);
+      if (docbookOn) ol.enable(OutputGenerator::Docbook);
     }
     if (!a->array.isEmpty())
     {
@@ -338,10 +345,12 @@ static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Html);
   ol.disable(OutputGenerator::Latex);
+  ol.disable(OutputGenerator::Docbook);
   if (!md->isObjCMethod()) ol.docify(")"); // end argument list
   ol.enableAll();
   if (htmlOn) ol.enable(OutputGenerator::Html);
   if (latexOn) ol.enable(OutputGenerator::Latex);
+  if (docbookOn) ol.enable(OutputGenerator::Docbook);
   if (first) ol.startParameterName(defArgList->count()<2);
   ol.endParameterName(TRUE,defArgList->count()<2,!md->isObjCMethod());
   ol.popGeneratorState();
@@ -475,7 +484,7 @@ class MemberDefImpl
     void init(Definition *def,const char *t,const char *a,const char *e,
               Protection p,Specifier v,bool s,Relationship r,
               MemberType mt,const ArgumentList *tal,
-              const ArgumentList *al
+              const ArgumentList *al,const char *meta
              );
 
     ClassDef     *classDef;   // member of or related to
@@ -530,6 +539,8 @@ class MemberDefImpl
     QList<ArgumentList> *defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
 
+    QCString metaData;        // Slice metadata.
+
     ClassDef *cachedAnonymousType; // if the member has an anonymous compound
                                    // as its type then this is computed by
                                    // getClassDefOfAnonymousType() and
@@ -575,6 +586,8 @@ class MemberDefImpl
     bool annUsed;
     bool hasCallGraph;
     bool hasCallerGraph;
+    bool hasReferencedByRelation;
+    bool hasReferencesRelation;
     bool explExt;             // member was explicitly declared external
     bool tspec;               // member is a template specialization
     bool groupHasDocs;        // true if the entry that caused the grouping was documented
@@ -617,7 +630,7 @@ void MemberDefImpl::init(Definition *def,
                      const char *t,const char *a,const char *e,
                      Protection p,Specifier v,bool s,Relationship r,
                      MemberType mt,const ArgumentList *tal,
-                     const ArgumentList *al
+                     const ArgumentList *al,const char *meta
                     )
 {
   classDef=0;
@@ -638,6 +651,8 @@ void MemberDefImpl::init(Definition *def,
   defTmpArgLists=0;
   hasCallGraph = FALSE;
   hasCallerGraph = FALSE;
+  hasReferencedByRelation = FALSE;
+  hasReferencesRelation = FALSE;
   initLines=0;
   type=t;
   if (mt==MemberType_Typedef) type.stripPrefix("typedef ");
@@ -700,6 +715,7 @@ void MemberDefImpl::init(Definition *def,
   {
     declArgList = 0;
   }
+  metaData = meta;
   templateMaster = 0;
   classSectionSDict = 0;
   docsForDefinition = TRUE;
@@ -739,17 +755,18 @@ void MemberDefImpl::init(Definition *def,
  * \param tal The template arguments of this member.
  * \param al  The arguments of this member. This is a structured form of
  *            the string past as argument \a a.
+ * \param meta Slice metadata.
  */
 
 MemberDef::MemberDef(const char *df,int dl,int dc,
                      const char *t,const char *na,const char *a,const char *e,
                      Protection p,Specifier v,bool s,Relationship r,MemberType mt,
-                     const ArgumentList *tal,const ArgumentList *al
+                     const ArgumentList *tal,const ArgumentList *al,const char *meta
                     ) : Definition(df,dl,dc,removeRedundantWhiteSpace(na)), visited(FALSE)
 {
   //printf("MemberDef::MemberDef(%s)\n",na);
   m_impl = new MemberDefImpl;
-  m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al);
+  m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al,meta);
   number_of_flowkw = 1;
   m_isLinkableCached    = 0;
   m_isConstructorCached = 0;
@@ -1392,7 +1409,7 @@ bool MemberDef::isBriefSectionVisible() const
 QCString MemberDef::getDeclType() const
 {
   QCString ltype(m_impl->type);
-  if (m_impl->mtype==MemberType_Typedef)
+  if (isTypedef() && getLanguage() != SrcLangExt_Slice)
   {
     ltype.prepend("typedef ");
   }
@@ -1478,6 +1495,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Man);
     ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::Docbook);
     ol.docify("\n");
     ol.popGeneratorState();
   }
@@ -1501,7 +1519,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   // *** write type
   QCString ltype(m_impl->type);
-  if (m_impl->mtype==MemberType_Typedef) ltype.prepend("typedef ");
+  if (isTypedef() && getLanguage() != SrcLangExt_Slice)
+  {
+    ltype.prepend("typedef ");
+  }
   if (isAlias())
   {
     ltype="using";
@@ -2416,6 +2437,10 @@ QCString MemberDef::displayDefinition() const
     else
     {
       ldef.prepend("enum ");
+      if (isSliceLocal())
+      {
+        ldef.prepend("local ");
+      }
     }
   }
   else if (isEnumValue())
@@ -2550,7 +2575,7 @@ void MemberDef::writeDocumentation(MemberList *ml,
 
   QCString scopeName = scName;
   QCString memAnchor = anchor();
-  QCString ciname = container->name();
+  QCString ciname = container->displayName();
   Definition *scopedContainer = container; // see bug 753608
   if (container->definitionType()==TypeGroup)
   {
@@ -2593,6 +2618,10 @@ void MemberDef::writeDocumentation(MemberList *ml,
     else
     {
       ldef.prepend("enum ");
+      if (isSliceLocal())
+      {
+        ldef.prepend("local ");
+      }
     }
   }
   else if (isEnumValue())
@@ -2608,6 +2637,17 @@ void MemberDef::writeDocumentation(MemberList *ml,
   }
   int i=0,l;
   static QRegExp r("@[0-9]+");
+
+  if (lang == SrcLangExt_Slice)
+  {
+    // Remove the container scope from the member name.
+    QCString prefix = scName + sep;
+    int pos = ldef.findRev(prefix.data());
+    if(pos != -1)
+    {
+      ldef.remove(pos, prefix.length());
+    }
+  }
 
   //----------------------------------------
 
@@ -2663,6 +2703,13 @@ void MemberDef::writeDocumentation(MemberList *ml,
   {
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
     ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
+
+    if (!m_impl->metaData.isEmpty() && getLanguage()==SrcLangExt_Slice)
+    {
+      ol.startMemberDocPrefixItem();
+      ol.docify(m_impl->metaData);
+      ol.endMemberDocPrefixItem();
+    }
 
     ClassDef *cd=getClassDef();
     NamespaceDef *nd=getNamespaceDef();
@@ -2767,6 +2814,21 @@ void MemberDef::writeDocumentation(MemberList *ml,
     if (optVhdl)
     {
       hasParameterList=VhdlDocGen::writeVHDLTypeDocumentation(this,scopedContainer,ol);
+    }
+    else if (lang==SrcLangExt_Slice)
+    {
+      // Eliminate the self-reference.
+      int pos = ldef.findRev(' ');
+      linkifyText(TextGeneratorOLImpl(ol),
+                  scopedContainer,
+                  getBodyDef(),
+                  this,
+                  ldef.left(pos)
+                 );
+      ol.docify(ldef.mid(pos));
+      Definition *scope = cd;
+      if (scope==0) scope = nd;
+      hasParameterList=writeDefArgumentList(ol,scope,this);
     }
     else
     {
@@ -2974,9 +3036,9 @@ void MemberDef::writeDocumentation(MemberList *ml,
   _writeExamples(ol);
   _writeTypeConstraints(ol);
   writeSourceDef(ol,cname);
-  writeSourceRefs(ol,cname);
-  writeSourceReffedBy(ol,cname);
   writeInlineCode(ol,cname);
+  if (hasReferencesRelation()) writeSourceRefs(ol,cname);
+  if (hasReferencedByRelation()) writeSourceReffedBy(ol,cname);
   _writeCallGraph(ol);
   _writeCallerGraph(ol);
 
@@ -3072,7 +3134,7 @@ QCString MemberDef::fieldType() const
     type = m_impl->type;
   }
 
-  if (isTypedef()) type.prepend("typedef ");
+  if (isTypedef() && getLanguage() != SrcLangExt_Slice) type.prepend("typedef ");
   return simplifyTypeForTable(type);
 }
 
@@ -3189,6 +3251,8 @@ QCString MemberDef::memberTypeName() const
     case MemberType_Event:       return "event";
     case MemberType_Interface:   return "interface";
     case MemberType_Service:     return "service";
+    case MemberType_Sequence:    return "sequence";
+    case MemberType_Dictionary:  return "dictionary";
     default:          return "unknown";
   }
 }
@@ -3451,7 +3515,7 @@ MemberDef *MemberDef::createTemplateInstanceMember(
                        methodName,
                        substituteTemplateArgumentsInString(m_impl->args,formalArgs,actualArgs),
                        m_impl->exception, m_impl->prot,
-                       m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype, 0, 0
+                       m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype, 0, 0, ""
                    );
   imd->setArgumentList(actualArgList);
   imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def,formalArgs,actualArgs));
@@ -3613,6 +3677,8 @@ void MemberDef::writeTagFile(FTextStream &tagFile)
     case MemberType_Slot:        tagFile << "slot";        break;
     case MemberType_Interface:   tagFile << "interface";   break;
     case MemberType_Service:     tagFile << "service";     break;
+    case MemberType_Sequence:    tagFile << "sequence";    break;
+    case MemberType_Dictionary:  tagFile << "dictionary";  break;
   }
   if (m_impl->prot!=Public)
   {
@@ -3836,8 +3902,10 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
             typeDecl.pushGeneratorState();
             typeDecl.disableAllBut(OutputGenerator::Html);
             typeDecl.enable(OutputGenerator::Latex);
+            typeDecl.enable(OutputGenerator::Docbook);
             typeDecl.lineBreak();
             typeDecl.disable(OutputGenerator::Latex);
+            typeDecl.disable(OutputGenerator::Docbook);
             typeDecl.writeString("&#160;&#160;");
             typeDecl.popGeneratorState();
           }
@@ -3945,6 +4013,18 @@ void MemberDef::enableCallGraph(bool e)
 void MemberDef::enableCallerGraph(bool e)
 {
   m_impl->hasCallerGraph=e;
+  if (e) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+void MemberDef::enableReferencedByRelation(bool e)
+{
+  m_impl->hasReferencedByRelation=e;
+  if (e) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+void MemberDef::enableReferencesRelation(bool e)
+{
+  m_impl->hasReferencesRelation=e;
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
@@ -4171,6 +4251,16 @@ bool MemberDef::isEnumValue() const
 bool MemberDef::isTypedef() const
 {
   return m_impl->mtype==MemberType_Typedef;
+}
+
+bool MemberDef::isSequence() const
+{
+  return m_impl->mtype==MemberType_Sequence;
+}
+
+bool MemberDef::isDictionary() const
+{
+  return m_impl->mtype==MemberType_Dictionary;
 }
 
 bool MemberDef::isFunction() const
@@ -4510,6 +4600,11 @@ bool MemberDef::livesInsideEnum() const
   return m_impl->livesInsideEnum;
 }
 
+bool MemberDef::isSliceLocal() const
+{
+  return (m_impl->memSpec&Entry::Local)!=0;
+}
+
 MemberList *MemberDef::enumFieldList() const
 {
   return m_impl->enumFields;
@@ -4578,6 +4673,16 @@ bool MemberDef::hasCallGraph() const
 bool MemberDef::hasCallerGraph() const
 {
   return m_impl->hasCallerGraph;
+}
+
+bool MemberDef::hasReferencedByRelation() const
+{
+  return m_impl->hasReferencedByRelation;
+}
+
+bool MemberDef::hasReferencesRelation() const
+{
+  return m_impl->hasReferencesRelation;
 }
 
 MemberDef *MemberDef::templateMaster() const
@@ -5092,6 +5197,11 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       mdef->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
       mdec->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
       mdec->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
+
+      mdef->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
+      mdef->enableCallerGraph(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
+      mdec->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
+      mdec->enableCallerGraph(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
     }
   }
 }

@@ -56,7 +56,8 @@ enum SrcLangExt
   SrcLangExt_XML      = 0x04000,
   SrcLangExt_Tcl      = 0x08000,
   SrcLangExt_Markdown = 0x10000,
-  SrcLangExt_SQL = 0x20000
+  SrcLangExt_SQL      = 0x20000,
+  SrcLangExt_Slice    = 0x40000
 };
 
 /** Grouping info */
@@ -192,15 +193,20 @@ enum MemberListType
   MemberListType_interfaceMembers        = 71 + MemberListType_detailedLists,
   MemberListType_services                = 72,
   MemberListType_serviceMembers          = 73 + MemberListType_detailedLists,
+
+  MemberListType_decSequenceMembers      = 74 + MemberListType_declarationLists,
+  MemberListType_docSequenceMembers      = 75 + MemberListType_documentationLists,
+  MemberListType_decDictionaryMembers    = 76 + MemberListType_declarationLists,
+  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists
 };
 
-enum MemberType 
-{ 
+enum MemberType
+{
   MemberType_Define,
-  MemberType_Function, 
-  MemberType_Variable, 
-  MemberType_Typedef, 
-  MemberType_Enumeration, 
+  MemberType_Function,
+  MemberType_Variable,
+  MemberType_Typedef,
+  MemberType_Enumeration,
   MemberType_EnumValue,
   MemberType_Signal,
   MemberType_Slot,
@@ -210,6 +216,8 @@ enum MemberType
   MemberType_Event,
   MemberType_Interface,
   MemberType_Service,
+  MemberType_Sequence,
+  MemberType_Dictionary
 };
 
 enum FortranFormat
@@ -227,7 +235,8 @@ class LocalToc
       Html                   = 0, // index / also to be used as bit position in mask (1 << Html)
       Latex                  = 1, // ...
       Xml                    = 2, // ...
-      numTocTypes            = 3  // number of enum values
+      Docbook                = 3, // ...
+      numTocTypes            = 4  // number of enum values
     };
     LocalToc() : m_mask(None) { memset(m_level,0,sizeof(m_level)); }
 
@@ -247,15 +256,22 @@ class LocalToc
       m_mask|=(1<<Xml);
       m_level[Xml]=level;
     }
+    void enableDocbook(int level)
+    {
+      m_mask|=(1<<Docbook);
+      m_level[Docbook]=level;
+    }
 
     // getters
     bool isHtmlEnabled()  const { return (m_mask & (1<<Html))!=0;  }
     bool isLatexEnabled() const { return (m_mask & (1<<Latex))!=0; }
     bool isXmlEnabled()   const { return (m_mask & (1<<Xml))!=0;   }
+    bool isDocbookEnabled()   const { return (m_mask & (1<<Docbook))!=0;   }
     bool nothingEnabled() const { return m_mask == None; }
     int htmlLevel()       const { return m_level[Html]; }
     int latexLevel()      const { return m_level[Latex]; }
     int xmlLevel()        const { return m_level[Xml]; }
+    int docbookLevel()    const { return m_level[Docbook]; }
     int mask()            const { return m_mask; }
 
   private:

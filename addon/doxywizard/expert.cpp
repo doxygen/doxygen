@@ -765,9 +765,10 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
           t << convertToComment(option->templateDocs());
           t << endl;
         }
-        t << name.leftJustified(MAX_OPTION_LENGTH) << "= ";
-        if (option)
+        t << name.leftJustified(MAX_OPTION_LENGTH) << "=";
+        if (option && !option->isEmpty())
         {
+          t << " ";
           option->writeValue(t,codec);
         }
         t << endl;

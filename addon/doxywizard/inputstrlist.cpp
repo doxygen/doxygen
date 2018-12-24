@@ -260,3 +260,11 @@ void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
   }
 }
 
+bool InputStrList::isEmpty()
+{
+  foreach (QString s, m_strList)
+  {
+    if (!s.isEmpty()) return false;
+  }
+  return true;
+}
