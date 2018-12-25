@@ -247,7 +247,9 @@ void LatexDocVisitor::visit(DocEmoji *s)
   if (!emojiName.isEmpty())
   {
     QCString imageName=emojiName.mid(1,emojiName.length()-2); // strip : at start and end
-    m_t << "\\doxygenemoji{" << emojiName << "}{" << imageName << "}";
+    m_t << "\\doxygenemoji{";
+    filter(emojiName);
+    m_t << "}{" << imageName << "}";
   }
   else
   {

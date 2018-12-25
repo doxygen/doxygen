@@ -1791,8 +1791,8 @@ DocEmoji::DocEmoji(DocNode *parent,const QCString &symName) :
   int len=locSymName.length();
   if (len>0)
   {
-    if (locSymName.at(0)!=':')     locSymName.prepend(":");
     if (locSymName.at(len-1)!=':') locSymName.append(":");
+    if (locSymName.at(0)!=':')     locSymName.prepend(":");
   }
   m_symName = locSymName;
   m_index = EmojiEntityMapper::instance()->symbol2index(m_symName);
