@@ -271,6 +271,7 @@ void Definition::removeFromMap(Definition *d)
         if (dl->isEmpty())
         {
           Doxygen::symbolMap->take(symbolName);
+          delete dl;
         }
       }
       else // symbolName unique
