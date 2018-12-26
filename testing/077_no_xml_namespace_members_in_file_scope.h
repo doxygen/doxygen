@@ -1,5 +1,5 @@
 // objective: test that namespace members are not put to file docs by default
-// check: 072__no__xml__namespace__members__in__file__scope_8h.xml
+// check: 077__no__xml__namespace__members__in__file__scope_8h.xml
 
 namespace Namespace {
 

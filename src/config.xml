@@ -2945,10 +2945,10 @@ or
 ]]>
       </docs>
     </option>
-    <option type='bool' id='XML_NAMESPACE_MEMBERS_IN_FILE_SCOPE' defval='0' depends='GENERATE_XML'>
+    <option type='bool' id='XML_NS_MEMB_FILE_SCOPE' defval='0' depends='GENERATE_XML'>
       <docs>
 <![CDATA[
- If the \c XML_NAMESPACE_MEMBERS_IN_FILE_SCOPE tag is set to \c YES, doxygen
+ If the \c XML_NS_MEMB_FILE_SCOPE tag is set to \c YES, doxygen
  will include namespace members in file scope as well, matching the HTML
  output.
 ]]>
