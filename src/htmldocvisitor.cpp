@@ -586,7 +586,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
 
         static QCString htmlOutput = Config_getString(HTML_OUTPUT);
 		QCString imgExt = getDotImageExtension();
-		PlantUMLOutputFormat format = PUML_BITMAP;
+		PlantUMLOutputFormat format = PUML_BITMAP;		// default : PUML_BITMAP
 		if (imgExt=="svg"){    format = PUML_SVG;   }
         QCString baseName = writePlantUMLSource(htmlOutput,s->exampleFile(),s->text(),format);
         m_t << "<div class=\"plantumlgraph\">" << endl;

@@ -79,7 +79,7 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
   file.close();
   //Debug::print(Debug::Plantuml,0,"*** %s baseFileName text: %s\n","writePlantUMLSource",qPrint(text));
 
-  if(Config_getBool(PLANTUML_RUN_JAVA_ONCE)){
+  if(Config_getBool(PLANTUML_RUN_FAST)){
     QCString qcOutDir(outDir);
     uint pos = qcOutDir.findRev("/");
     QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
@@ -163,7 +163,7 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   int exitCode;
   msg("Running PlantUML on generated file %s.pu\n",baseName);
   portable_sysTimerStart();
-  if(!Config_getBool(PLANTUML_RUN_JAVA_ONCE)){    // ! Config_getBool(PLANTUML_RUN_JAVA_ONCE)
+  if(!Config_getBool(PLANTUML_RUN_FAST)){    // ! Config_getBool(PLANTUML_RUN_FAST)
     Debug::print(Debug::Plantuml,0,"*** running: %s %s outDir:%s %s\n",qPrint(pumlExe),qPrint(pumlArgs),outDir,baseName);
     if ((exitCode=portable_system(pumlExe,pumlArgs,TRUE))!=0)
     {

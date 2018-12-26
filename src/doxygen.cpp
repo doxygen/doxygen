@@ -11922,7 +11922,7 @@ void generateOutput()
     g_s.end();
   }
 
-  if (Config_getBool(PLANTUML_RUN_JAVA_ONCE))
+  if (Config_getBool(PLANTUML_RUN_FAST))
   {
     g_s.begin("Running plantuml with JAVA...\n");
     PlantumlManager::instance()->run();
