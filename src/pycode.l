@@ -1091,8 +1091,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                       char *s=g_curClassBases.first();
                                       while (s) 
 				      {
-                                        ClassDef *baseDefToAdd;
-                                        baseDefToAdd=g_codeClassSDict[s];
+                                        ClassDef *baseDefToAdd=g_codeClassSDict[s];
 
 					// Try to find class in global
 					// scope
@@ -1517,6 +1516,8 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
 void resetPythonCodeParserState() 
 {
+  g_codeClassSDict.setAutoDelete(TRUE);
+  g_codeClassSDict.clear();
   g_currentDefinition = 0;
   g_currentMemberDef = 0;
   g_doubleStringIsDoc = FALSE;
@@ -1567,6 +1568,7 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   //--------------------------------------
   if (s.isEmpty()) return;
   printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
+  g_codeClassSDict.setAutoDelete(TRUE);
   TooltipManager::instance()->clearTooltips();
   g_code = &od;
   g_inputString   = s;

@@ -9937,7 +9937,6 @@ void readFormulaRepository(QCString dir, bool cmp)
         else
         {
           f=new Formula(formText);
-          Doxygen::formulaList->setAutoDelete(TRUE);
           Doxygen::formulaList->append(f);
           Doxygen::formulaDict->insert(formText,f);
           Doxygen::formulaNameDict->insert(formName,f);
@@ -10231,6 +10230,7 @@ void initDoxygen()
   Doxygen::genericsDict = new GenericsSDict;
   Doxygen::indexList = new IndexList;
   Doxygen::formulaList = new FormulaList;
+  Doxygen::formulaList->setAutoDelete(TRUE);
   Doxygen::formulaDict = new FormulaDict(1009);
   Doxygen::formulaNameDict = new FormulaDict(1009);
   Doxygen::sectionDict = new SectionDict(257);
@@ -10729,8 +10729,11 @@ void adjustConfiguration()
   Doxygen::imageNameDict = new FileNameDict(257);
   Doxygen::imageNameDict->setAutoDelete(TRUE);
   Doxygen::dotFileNameDict = new FileNameDict(257);
+  Doxygen::dotFileNameDict->setAutoDelete(TRUE);
   Doxygen::mscFileNameDict = new FileNameDict(257);
+  Doxygen::mscFileNameDict->setAutoDelete(TRUE);
   Doxygen::diaFileNameDict = new FileNameDict(257);
+  Doxygen::diaFileNameDict->setAutoDelete(TRUE);
 
   QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
   if (!setTranslator(outputLanguage))

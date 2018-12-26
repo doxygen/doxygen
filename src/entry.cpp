@@ -170,7 +170,7 @@ Entry::Entry(const Entry &e)
   SectionInfo *s;
   for (;(s=sli2.current());++sli2)
   {
-    anchors->append(new SectionInfo(*s));
+    anchors->append(s); // shallow copy, object are owned by Doxygen::sectionDict
   }
 
   // deep copy type constraint list
