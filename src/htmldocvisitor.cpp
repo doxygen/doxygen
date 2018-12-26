@@ -68,7 +68,12 @@ static const char *contexts[10] =
 static QCString convertIndexWordToAnchor(const QString &word)
 {
   static char hex[] = "0123456789abcdef";
+  static int cnt = 0;
   QCString result="a";
+  QCString cntStr;
+  result += cntStr.setNum(cnt);
+  result += "_";
+  cnt++;
   const char *str = word.data();
   unsigned char c;
   if (str)
