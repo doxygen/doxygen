@@ -745,7 +745,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   }
   if (memberGroupList)
   {
-    printf("MemberList::writeDocumentation()  --  member groups %d\n",memberGroupList->count());
+    //printf("MemberList::writeDocumentation()  --  member groups %d\n",memberGroupList->count());
     MemberGroupListIterator mgli(*memberGroupList);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)

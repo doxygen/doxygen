@@ -712,7 +712,7 @@ static void readIncludeFile(const char *incName)
 					   if (option==0) // oops not known
 					   {
 					     config_warn("ignoring unsupported tag `%s' at line %d, file %s\n",
-						 yytext,yyLineNr,yyFileName.data()); 
+						 cmd.data(),yyLineNr,yyFileName.data()); 
 					     BEGIN(SkipInvalid);
 					   }
 					   else // known tag
@@ -788,7 +788,7 @@ static void readIncludeFile(const char *incName)
 					  if (option==0) // oops not known
 					  {
 					    config_warn("ignoring unsupported tag `%s' at line %d, file %s\n",
-						yytext,yyLineNr,yyFileName.data()); 
+						cmd.data(),yyLineNr,yyFileName.data()); 
 					    BEGIN(SkipInvalid);
 					  }
 					  else // known tag

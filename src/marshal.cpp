@@ -142,7 +142,6 @@ void marshalSectionInfoList(StorageIntf *s, QList<SectionInfo> *anchors)
       marshalQCString(s,si->fileName);
       marshalInt(s,si->lineNr);
       marshalInt(s,si->level);
-      delete Doxygen::sectionDict->take(si->label); // this dict owns the anchor objects
     }
     anchors->clear();
   }
@@ -564,11 +563,17 @@ QList<SectionInfo> *unmarshalSectionInfoList(StorageIntf *s)
     QCString fileName = unmarshalQCString(s);
     int lineNr = unmarshalInt(s);
     int level = unmarshalInt(s);
-    if (Doxygen::sectionDict->find(label)==0)
+    SectionInfo *si = Doxygen::sectionDict->find(label);
+    if (si==0) // This should actually never be true since all anchors should be in sectionDict.
+               // Could still optimize the marshaling routine by only storing label.
     {
       SectionInfo *si = new SectionInfo(fileName,lineNr,label,title,type,level,ref);
       anchors->append(si);
       Doxygen::sectionDict->append(label,si); // this dict owns the anchor objects
+    }
+    else
+    {
+      anchors->append(si);
     }
   }
   return anchors;
