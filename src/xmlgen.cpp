@@ -1015,6 +1015,15 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   t << "      </memberdef>" << endl;
 }
 
+// namespace members are also inserted in the file scope, but
+// to prevent this duplication in the XML output, we optionally filter those here.
+static bool memberVisible(Definition *d,MemberDef *md)
+{
+    return Config_getBool(XML_NS_MEMB_FILE_SCOPE) ||
+           d->definitionType()!=Definition::TypeFile ||
+           md->getNamespaceDef()==0;
+}
+
 static void generateXMLSection(Definition *d,FTextStream &ti,FTextStream &t,
                       MemberList *ml,const char *kind,const char *header=0,
                       const char *documentation=0)
@@ -1025,9 +1034,7 @@ static void generateXMLSection(Definition *d,FTextStream &ti,FTextStream &t,
   int count=0;
   for (mli.toFirst();(md=mli.current());++mli)
   {
-    // namespace members are also inserted in the file scope, but 
-    // to prevent this duplication in the XML output, we filter those here.
-    if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0)
+    if (memberVisible(d,md))
     {
       count++;
     }
@@ -1047,9 +1054,7 @@ static void generateXMLSection(Definition *d,FTextStream &ti,FTextStream &t,
   }
   for (mli.toFirst();(md=mli.current());++mli)
   {
-    // namespace members are also inserted in the file scope, but 
-    // to prevent this duplication in the XML output, we filter those here.
-    if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0)
+    if (memberVisible(d,md))
     {
       generateXMLForMember(md,ti,t,d);
     }
