@@ -428,7 +428,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::PlantUML: 
       {
         QCString latexOutput = Config_getString(LATEX_OUTPUT);
-        QCString baseName = writePlantUMLSource(latexOutput,s->exampleFile(),s->text());
+        QCString baseName = writePlantUMLSource(latexOutput,s->exampleFile(),s->text(),PUML_EPS);
 
         writePlantUMLFile(baseName, s);
       }

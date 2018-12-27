@@ -590,7 +590,10 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         forceEndParagraph(s);
 
         static QCString htmlOutput = Config_getString(HTML_OUTPUT);
-        QCString baseName = writePlantUMLSource(htmlOutput,s->exampleFile(),s->text());
+		QCString imgExt = getDotImageExtension();
+		PlantUMLOutputFormat format = PUML_BITMAP;		// default : PUML_BITMAP
+		if (imgExt=="svg"){    format = PUML_SVG;   }
+        QCString baseName = writePlantUMLSource(htmlOutput,s->exampleFile(),s->text(),format);
         m_t << "<div class=\"plantumlgraph\">" << endl;
         writePlantUMLFile(baseName,s->relPath(),s->context());
         visitPreCaption(m_t, s);
