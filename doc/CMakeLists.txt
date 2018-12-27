@@ -144,7 +144,7 @@ set_source_files_properties(config.doc PROPERTIES GENERATED 1)
 ################################################################################
 add_custom_target(run_doxygen
         COMMENT "Generating Latex and HTML documentation."
-        COMMAND ${DOXYGEN_EXECUTABLE}
+        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${DOXYGEN_EXECUTABLE}
         DEPENDS ${PROJECT_BINARY_DIR}/doc/language.doc ${PROJECT_BINARY_DIR}/doc/config.doc
         DEPENDS ${OUT_DOC_FILES}
         DEPENDS examples

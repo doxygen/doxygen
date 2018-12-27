@@ -98,6 +98,7 @@ ${GENERATED_SRC_WIZARD}/config_doxyw.cpp
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
+doxywizard.rc
 )
 
 if(Qt5Core_FOUND)
