@@ -1692,7 +1692,7 @@ to disable this feature.
 ]]>
       </docs>
     </option>
-    <option type='string' id='CLANG_COMPILATION_DATABASE_PATH' setting='USE_LIBCLANG' defval='0'>
+    <option type='string' id='CLANG_DATABASE_PATH' setting='USE_LIBCLANG' defval=''>
       <docs>
 <![CDATA[
  If clang assisted parsing is enabled you can provide the clang parser with the
