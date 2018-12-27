@@ -29,9 +29,9 @@ static const int maxCmdLine = 40960;
 
 QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,const QCString &content,PlantUMLOutputFormat format)
 {
-  QCString baseName(4096);
-  QCString puName(4096);
-  QCString imgName(4096);
+  QCString baseName;
+  QCString puName;
+  QCString imgName;
   static int umlindex=1;
 
   Debug::print(Debug::Plantuml,0,"*** %s fileName: %s\n","writePlantUMLSource",qPrint(fileName));
@@ -79,13 +79,14 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
   file.close();
   //Debug::print(Debug::Plantuml,0,"*** %s baseFileName text: %s\n","writePlantUMLSource",qPrint(text));
 
-  if(Config_getBool(PLANTUML_RUN_FAST)){
+  if (Config_getBool(PLANTUML_RUN_FAST))
+  {
     QCString qcOutDir(outDir);
     uint pos = qcOutDir.findRev("/");
     QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
     Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
     PlantumlManager::instance()->insert(generateType,puName,format,text);
-  } 
+  }
 
   return baseName;
 }
@@ -162,8 +163,9 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   pumlArgs+="-charset UTF-8 ";
   int exitCode;
   msg("Running PlantUML on generated file %s.pu\n",baseName);
-  portable_sysTimerStart();
-  if(!Config_getBool(PLANTUML_RUN_FAST)){    // ! Config_getBool(PLANTUML_RUN_FAST)
+  if (!Config_getBool(PLANTUML_RUN_FAST))
+  {
+    portable_sysTimerStart();
     Debug::print(Debug::Plantuml,0,"*** running: %s %s outDir:%s %s\n",qPrint(pumlExe),qPrint(pumlArgs),outDir,baseName);
     if ((exitCode=portable_system(pumlExe,pumlArgs,TRUE))!=0)
     {
@@ -174,18 +176,18 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
     {
       QFile(QCString(baseName)+".pu").remove();
     }
-  }
-  portable_sysTimerStop();
-  if ( (format==PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
-  {
-    QCString epstopdfArgs(maxCmdLine);
-    epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",baseName,baseName);
-    portable_sysTimerStart();
-    if ((exitCode=portable_system("epstopdf",epstopdfArgs))!=0)
-    {
-      err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
-    }
     portable_sysTimerStop();
+    if (format==PUML_EPS && Config_getBool(USE_PDFLATEX))
+    {
+      QCString epstopdfArgs(maxCmdLine);
+      epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",baseName,baseName);
+      portable_sysTimerStart();
+      if ((exitCode=portable_system("epstopdf",epstopdfArgs))!=0)
+      {
+        err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
+      }
+      portable_sysTimerStop();
+    }
   }
   Doxygen::indexList->addImageFile(imgName);
 }
@@ -241,7 +243,9 @@ PlantumlManager::~PlantumlManager()
   }
 }
 
-void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFiles,QDict< QCString > &PlantumlContent, const char *type)
+static void runPlantumlContent(const QDict< QList <QCString> > &plantumlFiles,
+                               const QDict< QCString > &plantumlContent, 
+                               const char *type)
 {
   /* example : running: java -Djava.awt.headless=true -jar "/Users/cheoljoo/code/common_telltale/GP/Apps/Src/MgrTelltale/tools/plantuml.jar" -o "/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html" -tpng "/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html/A.pu" -charset UTF-8  outDir:/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html /Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html/A
    */
@@ -259,13 +263,13 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
   {
     pumlArgs += "-Dplantuml.include.path=\"";
     pumlArgs += s;
-    s = pumlIncludePathList.next(); 
+    s = pumlIncludePathList.next();
   }
   while (s)
   {
     pumlArgs += portable_pathListSeparator();
     pumlArgs += s;
-    s = pumlIncludePathList.next(); 
+    s = pumlIncludePathList.next();
   }
   if (pumlIncludePathList.first()) pumlArgs += "\" ";
   pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"plantuml.jar\" ";
@@ -285,12 +289,12 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
   }
 
   {
-    QDictIterator< QCString > it( PlantumlContent); // See QDictIterator
+    QDictIterator< QCString > it( plantumlContent); // See QDictIterator
     QCString *nb;
     for (it.toFirst();(nb=it.current());++it)
     {
       QCString pumlArguments(pumlArgs);
-      msg("Running PlantUML on png PlantumlFiles in %s\n",qPrint(it.currentKey()));
+      msg("Running PlantUML on png plantumlFiles in %s\n",qPrint(it.currentKey()));
       pumlArguments+="-o \"";
       pumlArguments+=Config_getString(OUTPUT_DIRECTORY);
       pumlArguments+="/";
@@ -335,7 +339,7 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
   }
 
   {
-    QDictIterator< QList<QCString> > it( PlantumlFiles); // See QDictIterator
+    QDictIterator< QList<QCString> > it( plantumlFiles); // See QDictIterator
     QList<QCString> *list;
     for (it.toFirst();(list=it.current());++it)
     {
@@ -359,18 +363,11 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
   }
 }
 
-void PlantumlManager::run()
+static void print(const QDict< QList <QCString> > &plantumlFiles)
 {
-  Debug::print(Debug::Plantuml,0,"*** %s\n","PlantumlManager::run");
-  runPlantumlContent(m_pngPlantumlFiles, m_pngPlantumlContent, "png");
-  runPlantumlContent(m_svgPlantumlFiles, m_svgPlantumlContent, "svg");
-  runPlantumlContent(m_epsPlantumlFiles, m_epsPlantumlContent, "eps");
-}
-
-void PlantumlManager::print(QDict< QList <QCString> > &PlantumlFiles)
-{
-  if (Debug::isFlagSet(Debug::Plantuml)){
-    QDictIterator< QList<QCString> > it( PlantumlFiles); // See QDictIterator
+  if (Debug::isFlagSet(Debug::Plantuml))
+  {
+    QDictIterator< QList<QCString> > it( plantumlFiles); // See QDictIterator
     QList<QCString> *list;
     for (it.toFirst();(list=it.current());++it)
     {
@@ -385,10 +382,11 @@ void PlantumlManager::print(QDict< QList <QCString> > &PlantumlFiles)
   }
 }
 
-void PlantumlManager::print(QDict<QCString> &PlantumlContent)
+static void print(const QDict<QCString> &plantumlContent)
 {
-  if (Debug::isFlagSet(Debug::Plantuml)){
-    QDictIterator< QCString > it( PlantumlContent); // See QDictIterator
+  if (Debug::isFlagSet(Debug::Plantuml))
+  {
+    QDictIterator< QCString > it( plantumlContent); // See QDictIterator
     QCString *nb;
     for (it.toFirst();(nb=it.current());++it)
     {
@@ -398,28 +396,40 @@ void PlantumlManager::print(QDict<QCString> &PlantumlContent)
   }
 }
 
-void PlantumlManager::addPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const QCString key , const QCString value)
+static void addPlantumlFiles(QDict< QList<QCString> > &plantumlFiles,
+                                       const QCString &key , const QCString &value)
 {
-  QList<QCString> *list = PlantumlFiles.find(key);
+  QList<QCString> *list = plantumlFiles.find(key);
   if (list==0)
   {
     list = new QList<QCString>;
-    PlantumlFiles.insert(key,list);
+    plantumlFiles.insert(key,list);
   }
   list->append(new QCString(value));
 }
 
-void PlantumlManager::addPlantumlContent(QDict< QCString > &PlantumlContent,const QCString key , const QCString &puContent)
+static void addPlantumlContent(QDict< QCString > &plantumlContent,
+                                         const QCString &key, const QCString &puContent)
 {
-  QCString* content = PlantumlContent.find(key);
-  if(content == 0){
+  QCString* content = plantumlContent.find(key);
+  if (content == 0)
+  {
     content = new QCString("");
-    PlantumlContent.insert(key,content);
+    plantumlContent.insert(key,content);
   }
   (*content)+=puContent;
 }
 
-void PlantumlManager::insert(const QCString key , const QCString value, PlantUMLOutputFormat format,const QCString &puContent)
+void PlantumlManager::run()
+{
+  Debug::print(Debug::Plantuml,0,"*** %s\n","PlantumlManager::run");
+  runPlantumlContent(m_pngPlantumlFiles, m_pngPlantumlContent, "png");
+  runPlantumlContent(m_svgPlantumlFiles, m_svgPlantumlContent, "svg");
+  runPlantumlContent(m_epsPlantumlFiles, m_epsPlantumlContent, "eps");
+}
+
+void PlantumlManager::insert(const QCString &key, const QCString &value,
+                             PlantUMLOutputFormat format,const QCString &puContent)
 {
   Debug::print(Debug::Plantuml,0,"*** %s key:%s ,value:%s\n","PlantumlManager::insert",qPrint(key),qPrint(value));
   switch (format)

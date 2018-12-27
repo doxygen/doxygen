@@ -46,22 +46,20 @@ class PlantumlManager
   public:
     static PlantumlManager *instance();
     void run();
-   	void insert(const QCString key , const QCString value,PlantUMLOutputFormat format,const QCString &puContent);
+    void insert(const QCString &key, 
+                const QCString &value,
+                PlantUMLOutputFormat format,
+                const QCString &puContent);
   private:
     PlantumlManager();
     virtual ~PlantumlManager();
-	  void addPlantumlFiles(QDict< QList <QCString> > &PlantumlFiles,const QCString key , const QCString value);
-	  void print(QDict< QList <QCString> > &PlantumlFiles);
-	  void addPlantumlContent(QDict< QCString > &PlantumlContent,const QCString key , const QCString &puContent);
-	  void print(QDict< QCString > &PlantumlContent);
-	  void runPlantumlContent(QDict< QList <QCString> > &PlantumlFiles,QDict< QCString > &PlantumlContent, const char *type);
     static PlantumlManager     *m_theInstance;
-    QDict< QList<QCString> >       m_pngPlantumlFiles;
-    QDict< QList<QCString> >       m_svgPlantumlFiles;
-    QDict< QList<QCString> >       m_epsPlantumlFiles;
-    QDict< QCString >       m_pngPlantumlContent;
-    QDict< QCString >       m_svgPlantumlContent;
-    QDict< QCString >       m_epsPlantumlContent;
+    QDict< QList<QCString> >    m_pngPlantumlFiles;
+    QDict< QList<QCString> >    m_svgPlantumlFiles;
+    QDict< QList<QCString> >    m_epsPlantumlFiles;
+    QDict< QCString >           m_pngPlantumlContent;
+    QDict< QCString >           m_svgPlantumlContent;
+    QDict< QCString >           m_epsPlantumlContent;
 };
 
 #endif
