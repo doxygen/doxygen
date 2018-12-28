@@ -14,6 +14,7 @@
  */
 
 #include "plantuml.h"
+#include "util.h"
 #include "portable.h"
 #include "config.h"
 #include "doxygen.h"
@@ -85,6 +86,7 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
     QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
     Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
     PlantumlManager::instance()->insert(generateType,puName,format,text);
+    Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
   } 
 
   return baseName;
@@ -162,8 +164,8 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   pumlArgs+="-charset UTF-8 ";
   int exitCode;
   msg("Running PlantUML on generated file %s.pu\n",baseName);
-  portable_sysTimerStart();
   if(!Config_getBool(PLANTUML_RUN_FAST)){    // ! Config_getBool(PLANTUML_RUN_FAST)
+    portable_sysTimerStart();
     Debug::print(Debug::Plantuml,0,"*** running: %s %s outDir:%s %s\n",qPrint(pumlExe),qPrint(pumlArgs),outDir,baseName);
     if ((exitCode=portable_system(pumlExe,pumlArgs,TRUE))!=0)
     {
@@ -174,19 +176,21 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
     {
       QFile(QCString(baseName)+".pu").remove();
     }
-  }
-  portable_sysTimerStop();
-  if ( (format==PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
-  {
-    QCString epstopdfArgs(maxCmdLine);
-    epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",baseName,baseName);
-    portable_sysTimerStart();
-    if ((exitCode=portable_system("epstopdf",epstopdfArgs))!=0)
-    {
-      err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
-    }
     portable_sysTimerStop();
+
+    if ( (format==PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
+    {
+        QCString epstopdfArgs(maxCmdLine);
+        epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",baseName,baseName);
+        portable_sysTimerStart();
+        if ((exitCode=portable_system("epstopdf",epstopdfArgs))!=0)
+        {
+            err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
+        }
+        portable_sysTimerStop();
+    }
   }
+
   Doxygen::indexList->addImageFile(imgName);
 }
 
@@ -199,6 +203,17 @@ PlantumlManager *PlantumlManager::instance()
   if (!m_theInstance)
   {
     m_theInstance = new PlantumlManager;
+    QCString outputFilename = Config_getString(OUTPUT_DIRECTORY) + "/" + CACHE_FILENAME;
+    QFileInfo fi(outputFilename);
+    if (fi.exists()) {
+        m_theInstance->m_cachedPlantumlAllContent = fileToString(outputFilename);
+    } else {
+        m_theInstance->m_cachedPlantumlAllContent = "";
+    }
+    Debug::print(Debug::Plantuml,0,"*** instance() : m_cachedPlantumlAllContent = [%s]\n",qPrint(m_theInstance->m_cachedPlantumlAllContent));
+    m_theInstance->m_pngPlantumlContent.clear();
+    m_theInstance->m_svgPlantumlContent.clear();
+    m_theInstance->m_epsPlantumlContent.clear();
   }
   return m_theInstance;
 }
@@ -241,7 +256,7 @@ PlantumlManager::~PlantumlManager()
   }
 }
 
-void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFiles,QDict< QCString > &PlantumlContent, const char *type)
+void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFiles,QDict< QCString > &PlantumlContent,PlantUMLOutputFormat format )
 {
   /* example : running: java -Djava.awt.headless=true -jar "/Users/cheoljoo/code/common_telltale/GP/Apps/Src/MgrTelltale/tools/plantuml.jar" -o "/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html" -tpng "/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html/A.pu" -charset UTF-8  outDir:/Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html /Users/cheoljoo/Code/LG/test_doxygen/DOXYGEN_OUTPUT/html/A
    */
@@ -252,6 +267,8 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
 
   QCString pumlExe = "java";
   QCString pumlArgs = "";
+  QCString pumlType = "";
+  QCString pumlOutDir = "";
 
   QStrList &pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
   char *s=pumlIncludePathList.first();
@@ -283,6 +300,18 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
     pumlArgs += portable_commandExtension();
     pumlArgs += "\" ";
   }
+  switch (format)
+  {
+    case PUML_BITMAP:
+      pumlType="png";
+      break;
+    case PUML_EPS:
+      pumlType="eps";
+      break;
+    case PUML_SVG:
+      pumlType="svg";
+      break;
+  }
 
   {
     QDictIterator< QCString > it( PlantumlContent); // See QDictIterator
@@ -290,14 +319,17 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
     for (it.toFirst();(nb=it.current());++it)
     {
       QCString pumlArguments(pumlArgs);
-      msg("Running PlantUML on png PlantumlFiles in %s\n",qPrint(it.currentKey()));
+      msg("Running PlantUML on %s PlantumlFiles in %s\n",qPrint(pumlType),qPrint(it.currentKey()));
+      QList<QCString> *list = PlantumlFiles[it.currentKey()];
+      Debug::print(Debug::Plantuml,0,"*** %s PlantumlFiles key:%s size:%d\n","PlantumlManager::print Files",qPrint(it.currentKey()),(*list).count());
+      QListIterator<QCString> li(*list);
       pumlArguments+="-o \"";
       pumlArguments+=Config_getString(OUTPUT_DIRECTORY);
       pumlArguments+="/";
       pumlArguments+=it.currentKey();
       pumlArguments+="\" ";
       pumlArguments+="-charset UTF-8 -t";
-      pumlArguments+=type;
+      pumlArguments+=pumlType;
       pumlArguments+=" ";
 
       QCString puFileName("");
@@ -305,8 +337,9 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
       puFileName+="/";
       puFileName+=it.currentKey();
       puFileName+="/";
+      pumlOutDir=puFileName;
       puFileName+="inline_umlgraph_";
-      puFileName+=type;
+      puFileName+=pumlType;
       puFileName+=it.currentKey();
       puFileName+=".pu";
 
@@ -322,6 +355,8 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
       file.writeBlock( *nb, nb->length() );
       file.close();
       Debug::print(Debug::Plantuml,0,"*** %s Running Plantuml arguments:%s\n","PlantumlManager::runPlantumlContent",qPrint(pumlArguments));
+
+      portable_sysTimerStart();
       if ((exitCode=portable_system(pumlExe,pumlArguments,TRUE))!=0)
       {
         err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
@@ -329,42 +364,70 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
       }
       else if (Config_getBool(DOT_CLEANUP))
       {
-        file.remove();
+          file.remove();
+      }
+      portable_sysTimerStop();
+
+      if ( (format==PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
+      {
+          Debug::print(Debug::Plantuml,0,"*** %s Running epstopdf\n","PlantumlManager::runPlantumlContent");
+          QList<QCString> *list = PlantumlFiles[it.currentKey()];
+          QListIterator<QCString> li(*list);
+          QCString *nb;
+          for (li.toFirst();(nb=li.current());++li)
+          {
+              QCString epstopdfArgs(maxCmdLine);
+              epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",qPrint(pumlOutDir),qPrint(*nb),qPrint(pumlOutDir),qPrint(*nb));
+              portable_sysTimerStart();
+              if ((exitCode=portable_system("epstopdf",epstopdfArgs))!=0)
+              {
+                  err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
+              }
+              portable_sysTimerStop();
+          }
       }
     }
   }
 
+  if (Config_getBool(DOT_CLEANUP))
   {
+    Debug::print(Debug::Plantuml,0,"*** %s Remove pu files\n","PlantumlManager::runPlantumlContent");
     QDictIterator< QList<QCString> > it( PlantumlFiles); // See QDictIterator
     QList<QCString> *list;
     for (it.toFirst();(list=it.current());++it)
     {
       QListIterator<QCString> li(*list);
       QCString *nb;
-      if (Config_getBool(DOT_CLEANUP))
+      for (li.toFirst();(nb=li.current());++li)
       {
-        for (li.toFirst();(nb=li.current());++li)
-        {
-          QCString pumlName = "";
-          pumlName+=Config_getString(OUTPUT_DIRECTORY);
-          pumlName+="/";
-          pumlName+=it.currentKey();
-          pumlName+="/";
-          pumlName+=*nb;
-          pumlName+=".pu";
-          QFile(pumlName).remove();
-        }
+        QCString pumlName = "";
+        pumlName+=Config_getString(OUTPUT_DIRECTORY);
+        pumlName+="/";
+        pumlName+=it.currentKey();
+        pumlName+="/";
+        pumlName+=*nb;
+        pumlName+=".pu";
+        QFile(pumlName).remove();
       }
     }
   }
+
 }
 
 void PlantumlManager::run()
 {
   Debug::print(Debug::Plantuml,0,"*** %s\n","PlantumlManager::run");
-  runPlantumlContent(m_pngPlantumlFiles, m_pngPlantumlContent, "png");
-  runPlantumlContent(m_svgPlantumlFiles, m_svgPlantumlContent, "svg");
-  runPlantumlContent(m_epsPlantumlFiles, m_epsPlantumlContent, "eps");
+  runPlantumlContent(m_pngPlantumlFiles, m_pngPlantumlContent, PUML_BITMAP);
+  runPlantumlContent(m_svgPlantumlFiles, m_svgPlantumlContent, PUML_SVG);
+  runPlantumlContent(m_epsPlantumlFiles, m_epsPlantumlContent, PUML_EPS);
+  QCString outputFilename = Config_getString(OUTPUT_DIRECTORY) + "/" + CACHE_FILENAME;
+  QFile file(outputFilename);
+  if (!file.open(IO_WriteOnly))
+  {
+    err("Could not open file %s for writing\n",CACHE_FILENAME);
+  }
+  file.writeBlock( m_currentPlantumlAllContent, m_currentPlantumlAllContent.length() );
+  file.close();
 }
 
 void PlantumlManager::print(QDict< QList <QCString> > &PlantumlFiles)
@@ -374,7 +437,7 @@ void PlantumlManager::print(QDict< QList <QCString> > &PlantumlFiles)
     QList<QCString> *list;
     for (it.toFirst();(list=it.current());++it)
     {
-      Debug::print(Debug::Plantuml,0,"*** %s PlantumlFiles key:%s\n","PlantumlManager::print",qPrint(it.currentKey()));
+      Debug::print(Debug::Plantuml,0,"*** %s PlantumlFiles key:%s size:%d\n","PlantumlManager::print Files",qPrint(it.currentKey()),(*list).count());
       QListIterator<QCString> li(*list);
       QCString *nb;
       for (li.toFirst();(nb=li.current());++li)
@@ -392,7 +455,7 @@ void PlantumlManager::print(QDict<QCString> &PlantumlContent)
     QCString *nb;
     for (it.toFirst();(nb=it.current());++it)
     {
-      Debug::print(Debug::Plantuml,0,"*** %s PlantumlContent key:%s\n","PlantumlManager::print",qPrint(it.currentKey()));
+      Debug::print(Debug::Plantuml,0,"*** %s PlantumlContent key:%s\n","PlantumlManager::print Content",qPrint(it.currentKey()));
       Debug::print(Debug::Plantuml,0,"*** %s                 Content :%s\n","PlantumlManager::print",qPrint(*nb));
     }
   }
@@ -421,7 +484,18 @@ void PlantumlManager::addPlantumlContent(QDict< QCString > &PlantumlContent,cons
 
 void PlantumlManager::insert(const QCString key , const QCString value, PlantUMLOutputFormat format,const QCString &puContent)
 {
+  int find;
+
   Debug::print(Debug::Plantuml,0,"*** %s key:%s ,value:%s\n","PlantumlManager::insert",qPrint(key),qPrint(value));
+
+  m_currentPlantumlAllContent+=puContent;
+
+  find = m_cachedPlantumlAllContent.find(puContent);
+  Debug::print(Debug::Plantuml,0,"*** %s find: %d\n","PlantumlManager::addPlantumlContent",find);
+  if(find >=0){         // matched in cache. so we skip to run java for this plantuml
+      return ;
+  }
+
   switch (format)
   {
     case PUML_BITMAP:
