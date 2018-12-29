@@ -1,0 +1,9 @@
+// objective: test TOC generation for an empty page
+// check: empty.xml
+/**
+@page empty An empty page
+
+@tableofcontents
+
+With an empty TOC.
+*/
