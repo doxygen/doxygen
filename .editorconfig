@@ -1,0 +1,5 @@
+# See https://editorconfig.org/ for more information.
+
+[*]
+indent_style = space
+indent_size = 2
