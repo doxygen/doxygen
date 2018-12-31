@@ -1,0 +1,26 @@
+// objective: test TOC generation for an empty page
+// check: empty.xml
+// check: levels.xml
+/**
+@page empty An empty page
+
+@tableofcontents
+
+With an empty TOC.
+*/
+
+/**
+@page levels A page with two-level TOC
+
+@tableofcontents{xml:2}
+
+@section first A section that's in TOC
+@subsection first2 A subsection that's in TOC
+@subsubsection first3 A subsubsection that's not in TOC
+
+Nay!
+
+@section second A section that's in TOC again
+
+Yay!
+*/
