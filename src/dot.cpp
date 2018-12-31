@@ -396,8 +396,9 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
       if (buf.left(5)=="<area")
       {
 	QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
+        // strip id="..." from replBuf since the id's are not needed and not unique.
         int indexS = replBuf.find("id=\""), indexE;
-        if (indexS>=0 && (indexE=replBuf.find('"',indexS+4))!=-1)
+        if (indexS>0 && (indexE=replBuf.find('"',indexS+4))!=-1)
 	{
 	  t << replBuf.left(indexS-1) << replBuf.right(replBuf.length() - indexE - 1);
 	}
