@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="struct_foo_1_1_struct" kind="struct" language="C++" prot="public">
+    <compoundname>Foo::Struct</compoundname>
+      <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="struct_foo_1_1_struct_1afcc2cc5f3a13fcf5ed68a1a2942984c0" prot="public" static="yes" mutable="no">
+        <type>int</type>
+        <definition>int Foo::Struct::Var</definition>
+        <argsstring/>
+        <name>Var</name>
+        <initializer>= 42</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A var, declared at 080_declaration_definition_order.cpp:64 and defined at 080_declaration_definition_order.cpp:15 </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="080_declaration_definition_order.cpp" line="64" column="1" bodyfile="080_declaration_definition_order.cpp" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="struct_foo_1_1_struct_1a03020a9929d0639af8b9b117e92f84f1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>Foo::Struct::foo</definition>
+        <argsstring>()</argsstring>
+        <name>foo</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A foo, declared at 080_declaration_definition_order.cpp:58 and defined at 080_declaration_definition_order.cpp:12 </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="080_declaration_definition_order.cpp" line="58" column="1" bodyfile="080_declaration_definition_order.cpp" bodystart="12" bodyend="12"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+      <para>A struct. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="080_declaration_definition_order.cpp" line="53" column="1" bodyfile="080_declaration_definition_order.cpp" bodystart="53" bodyend="65"/>
+    <listofallmembers>
+      <member refid="struct_foo_1_1_struct_1a03020a9929d0639af8b9b117e92f84f1" prot="public" virt="non-virtual">
+        <scope>Foo::Struct</scope>
+        <name>foo</name>
+      </member>
+      <member refid="struct_foo_1_1_struct_1afcc2cc5f3a13fcf5ed68a1a2942984c0" prot="public" virt="non-virtual">
+        <scope>Foo::Struct</scope>
+        <name>Var</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

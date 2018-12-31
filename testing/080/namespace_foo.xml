@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="namespace_foo" kind="namespace" language="C++">
+    <compoundname>Foo</compoundname>
+    <innerclass refid="struct_foo_1_1_struct" prot="public">Foo::Struct</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="namespace_foo_1a2c8abbc84bb41d8ddb8a5a57e3191e28" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Foo::Var</definition>
+        <argsstring/>
+        <name>Var</name>
+        <initializer>= 1337</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A var, declared at 080_declaration_definition_order.cpp:44 and defined at 080_declaration_definition_order.cpp:16 </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="080_declaration_definition_order.cpp" line="44" column="1" bodyfile="080_declaration_definition_order.cpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespace_foo_1aece4ee53bd9801f9d8fd41257afbb25e" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Foo::War</definition>
+        <argsstring/>
+        <name>War</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A war, declared at 080_declaration_definition_order.cpp:17 and defined at 080_declaration_definition_order.cpp:50 </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="080_declaration_definition_order.cpp" line="17" column="1" bodyfile="080_declaration_definition_order.cpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespace_foo_1a1d0dde98446ce72fbaebef84c86efe1a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Foo::foo</definition>
+        <argsstring>()</argsstring>
+        <name>foo</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A foo, declared at 080_declaration_definition_order.cpp:32 and defined at 080_declaration_definition_order.cpp:11 </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="080_declaration_definition_order.cpp" line="32" column="1" bodyfile="080_declaration_definition_order.cpp" bodystart="11" bodyend="11"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_foo_1a809d062bb88fcd3bd6cf38be250aa348" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Foo::bar</definition>
+        <argsstring>()</argsstring>
+        <name>bar</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A bar, declared at 080_declaration_definition_order.cpp:13 and defined at 080_declaration_definition_order.cpp:38 </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="080_declaration_definition_order.cpp" line="13" column="1" bodyfile="080_declaration_definition_order.cpp" bodystart="38" bodyend="38"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+      <para>A namespace. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="080_declaration_definition_order.cpp" line="9" column="1"/>
+  </compounddef>
+</doxygen>
