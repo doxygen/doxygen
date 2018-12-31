@@ -1818,10 +1818,10 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     }
   }
   writeInnerPages(pd->getSubPages(),t);
-  if (pd->localToc().isXmlEnabled())
+  SectionDict *sectionDict = pd->getSectionDict();
+  if (sectionDict && pd->localToc().isXmlEnabled())
   {
     t << "    <tableofcontents>" << endl;
-    SectionDict *sectionDict = pd->getSectionDict();
     SDict<SectionInfo>::Iterator li(*sectionDict);
     SectionInfo *si;
     int level=1,l;
