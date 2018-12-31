@@ -657,7 +657,7 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
     QCString &projName = Config_getString(PROJECT_NAME);
     if (projName.isEmpty())
     {
-      if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty()) // Use title of main page as root
+      if (mainPageHasTitle()) // Use title of main page as root
       {
         t << "\"" << convertToJSString(Doxygen::mainPage->title()) << "\", ";
       }

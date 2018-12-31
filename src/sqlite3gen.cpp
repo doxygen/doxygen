@@ -2478,7 +2478,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   QCString title;
   if (pd==Doxygen::mainPage) // main page is special
   {
-    if (!pd->title().isEmpty() && pd->title().lower()!="notitle")
+    if (mainPageHasTitle())
     {
       title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
     }

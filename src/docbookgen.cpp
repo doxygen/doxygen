@@ -635,7 +635,7 @@ DB_GEN_C
     if (!pd->getGroupDef() && !pd->isReference() && pd->name() == stripPath(name))
     {
       t << "<chapter>\n";
-      if (!pd->title().isEmpty())
+      if (pd->hasTitle())
       {
         t << "    <title>" << convertToDocBook(pd->title()) << "</title>" << endl;
       }

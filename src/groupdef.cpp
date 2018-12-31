@@ -963,7 +963,7 @@ void GroupDef::writePageDocumentation(OutputList &ol)
     if (!pd->isReference())
     {
       SectionInfo *si=0;
-      if (!pd->title().isEmpty() && !pd->name().isEmpty() &&
+      if (pd->hasTitle() && !pd->name().isEmpty() &&
           (si=Doxygen::sectionDict->find(pd->name()))!=0)
       {
         ol.startSection(si->label,si->title,SectionInfo::Subsection);

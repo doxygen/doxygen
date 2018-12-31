@@ -60,10 +60,12 @@ class PageDef : public Definition
     bool documentedPage() const;
     bool hasSubPages() const;
     bool hasParentPage() const;
+    bool hasTitle() const;
     LocalToc localToc() const { return m_localToc; }
     void setPageScope(Definition *d){ m_pageScope = d; }
     Definition *getPageScope() const { return m_pageScope; }
-    QCString displayName(bool=TRUE) const { return !m_title.isEmpty() ? m_title : Definition::name(); }
+    QCString displayName(bool=TRUE) const 
+    { return hasTitle() ? m_title : Definition::name(); }
     bool showLineNo() const;
 
     void writeDocumentation(OutputList &ol);

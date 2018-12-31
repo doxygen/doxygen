@@ -7586,7 +7586,7 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
       case Definition::TypePage:
         {
           PageDef *pd = (PageDef *)ctx;
-          if (!pd->title().isEmpty())
+          if (pd->hasTitle())
           {
             name = theTranslator->trPage(TRUE,TRUE)+" "+pd->title();
           }

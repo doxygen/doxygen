@@ -190,7 +190,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.disable(OutputGenerator::Docbook);
   ol.disable(OutputGenerator::RTF);
   ol.disable(OutputGenerator::Man);
-  if (!title().isEmpty() && !name().isEmpty() && si!=0)
+  if (hasTitle() && !name().isEmpty() && si!=0)
   {
     ol.startPageDoc(si->title);
     //ol.startSection(si->label,si->title,si->type);
@@ -342,3 +342,9 @@ bool PageDef::showLineNo() const
 {
   return m_showLineNo;
 }
+
+bool PageDef::hasTitle() const
+{
+  return !m_title.isEmpty() && m_title.lower()!="notitle";
+}
+

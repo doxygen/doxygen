@@ -665,7 +665,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isMainPage:
       t << "\\par " << rtf_Style_Reset << endl;
-      if (!Doxygen::mainPage || Doxygen::mainPage->title().isEmpty())
+      if (!mainPageHasTitle())
       {
         t << "{\\tc \\v " << theTranslator->trMainPage() << "}"<< endl;
       }
