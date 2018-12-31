@@ -7807,7 +7807,7 @@ class NavPathElemContext::Private
       {
         text = ((const GroupDef*)m_def)->groupTitle();
       }
-      else if (type==Definition::TypePage && !(((const PageDef*)m_def)->title().isEmpty()))
+      else if (type==Definition::TypePage && (((const PageDef*)m_def)->hasTitle()))
       {
         text = ((const PageDef*)m_def)->title();
       }

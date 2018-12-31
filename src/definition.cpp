@@ -1694,7 +1694,7 @@ QCString Definition::pathFragment() const
     {
       result+=((const GroupDef*)this)->groupTitle();
     }
-    else if (definitionType()==Definition::TypePage && !((const PageDef*)this)->title().isEmpty())
+    else if (definitionType()==Definition::TypePage && ((const PageDef*)this)->hasTitle())
     {
       result+=((const PageDef*)this)->title();
     }
@@ -1737,10 +1737,10 @@ QCString Definition::navigationPathAsString() const
       result+="<a class=\"el\" href=\"$relpath^"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
               convertToHtml(((const GroupDef*)this)->groupTitle())+"</a>";
     }
-    else if (definitionType()==Definition::TypePage && !((const PageDef*)this)->title().isEmpty())
+    else if (definitionType()==Definition::TypePage && ((const PageDef*)this)->hasTitle())
     {
       result+="<a class=\"el\" href=\"$relpath^"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
-              convertToHtml(((const PageDef*)this)->title())+"</a>";
+            convertToHtml(((const PageDef*)this)->title())+"</a>";
     }
     else if (definitionType()==Definition::TypeClass)
     {

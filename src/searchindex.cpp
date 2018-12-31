@@ -117,7 +117,7 @@ void SearchIndex::setCurrentDoc(Definition *ctx,const char *anchor,bool isSource
       case Definition::TypePage:
         {
           PageDef *pd = (PageDef *)ctx;
-          if (!pd->title().isEmpty())
+          if (pd->hasTitle())
           {
             name = theTranslator->trPage(TRUE,TRUE)+" "+pd->title();
           }

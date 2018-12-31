@@ -1797,11 +1797,11 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
   if (pd==Doxygen::mainPage) // main page is special
   {
     QCString title;
-    if (!pd->title().isEmpty() && pd->title().lower()!="notitle")
+    if (mainPageHasTitle())
     {
       title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
     }
-    else 
+    else
     {
       title = Config_getString(PROJECT_NAME);
     }
