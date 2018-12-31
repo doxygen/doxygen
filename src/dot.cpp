@@ -397,8 +397,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
       {
 	QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
         int indexS = replBuf.find("id=\""), indexE;
-        indexE=replBuf.find('"',indexS+4);
-        if (indexS>=0 && (indexE=buf.find('"',indexS))!=-1)
+        if (indexS>=0 && (indexE=replBuf.find('"',indexS+4))!=-1)
 	{
 	  t << replBuf.left(indexS-1) << replBuf.right(replBuf.length() - indexE - 1);
 	}
