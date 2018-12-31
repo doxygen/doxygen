@@ -377,7 +377,6 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
                            const QCString &context=QCString())
 {
   QFile f(mapName);
-  static QRegExp re("id=\"node[0-9]*\"");
   if (!f.open(IO_ReadOnly)) 
   {
     err("problems opening map file %s for inclusion in the docs!\n"
@@ -396,7 +395,17 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
 
       if (buf.left(5)=="<area")
       {
-        t << replaceRef(buf,relPath,urlOnly,context).replace(re,"");
+	QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
+        // strip id="..." from replBuf since the id's are not needed and not unique.
+        int indexS = replBuf.find("id=\""), indexE;
+        if (indexS>0 && (indexE=replBuf.find('"',indexS+4))!=-1)
+	{
+	  t << replBuf.left(indexS-1) << replBuf.right(replBuf.length() - indexE - 1);
+	}
+	else
+	{
+          t << replBuf;
+	}
       }
     }
   }
