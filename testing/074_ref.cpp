@@ -1,5 +1,9 @@
 // objective: test \ref command in combination with const
 // check: struct_foo.xml
+// check: namespacens.xml
+
+#include <initializer_list>
+
 /** @brief Foo class.
  *
  *  @see @ref Foo::Foo() constructor for details.
@@ -47,3 +51,24 @@ struct Foo {
   /** @brief Fun with itself */
   Foo fun() const;
 };
+
+/**
+@brief A namespace
+
+- Link to an UDL w/o spaces: @link operator""_op @endlink
+- Link to an UDL with spaces: @link operator""_oq @endlink
+- Link to a function with spaces: @ref foo(std::initializer_list< int* >)
+- Link to a function w/o spaces: @ref foo(std::initializer_list<int*>)
+*/
+namespace ns {
+
+/** @brief An operator */
+int operator""_op(unsigned long long);
+
+/** @brief Another operator */
+int operator "" _oq(unsigned long long);
+
+/** @brief Function */
+void foo(std::initializer_list<int*>);
+
+}
