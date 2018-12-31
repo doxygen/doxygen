@@ -1739,7 +1739,8 @@ QCString Definition::navigationPathAsString() const
     }
     else if (definitionType()==Definition::TypePage && !((const PageDef*)this)->title().isEmpty())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      if ((this==Doxygen::mainPage && mainPageHasTitle()) || this!=Doxygen::mainPage)
+        result+="<a class=\"el\" href=\"$relpath^"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
               convertToHtml(((const PageDef*)this)->title())+"</a>";
     }
     else if (definitionType()==Definition::TypeClass)
