@@ -282,6 +282,9 @@ class Definition : public DefinitionIntf
     // ----  setters -----
     //-----------------------------------------------------------------------------------
 
+    /*! Set a new file name and position */
+    void setDefFile(const QCString& df,int defLine,int defColumn);
+
     /*! Sets a new \a name for the definition */
     virtual void setName(const char *name);
 

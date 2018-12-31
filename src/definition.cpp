@@ -56,6 +56,7 @@ class DefinitionImpl
   public:
     DefinitionImpl();
    ~DefinitionImpl();
+    void setDefFileName(const QCString &df);
     void init(const char *df, const char *n);
 
     SectionDict *sectionDict;  // dictionary of all sections, not accessible
@@ -112,7 +113,7 @@ DefinitionImpl::~DefinitionImpl()
   delete inbodyDocs;
 }
 
-void DefinitionImpl::init(const char *df, const char *n)
+void DefinitionImpl::setDefFileName(const QCString &df)
 {
   defFileName = df;
   int lastDot = defFileName.findRev('.');
@@ -120,6 +121,11 @@ void DefinitionImpl::init(const char *df, const char *n)
   {
     defFileExt = defFileName.mid(lastDot);
   }
+}
+
+void DefinitionImpl::init(const char *df, const char *n)
+{
+  setDefFileName(df);
   QCString name = n;
   if (name!="<globalScope>") 
   {
@@ -395,6 +401,13 @@ Definition::~Definition()
   }
   delete m_cookie;
   m_cookie=0;
+}
+
+void Definition::setDefFile(const QCString& df, int defLine, int defColumn)
+{
+  m_impl->setDefFileName(df);
+  m_defLine = defLine;
+  m_defColumn = defColumn;
 }
 
 void Definition::setName(const char *name)

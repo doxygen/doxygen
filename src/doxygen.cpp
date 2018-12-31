@@ -2597,6 +2597,15 @@ static MemberDef *addVariableToFile(
               "    variable already found: scope=%s\n",qPrint(md->getOuterScope()->name()));
           addMemberDocs(rootNav,md,def,0,FALSE);
           md->setRefItems(root->sli);
+
+          // If md is not external and current is, update declaration location
+          // to current. In case md is external and current isn't, declaration
+          // and definition location is already correct.
+          if(root->explicitExternal && !md->isExternal())
+          {
+            md->setDefFile(root->fileName,root->startLine,root->startColumn);
+          }
+
           return md;
         }
       }
@@ -3748,10 +3757,22 @@ static void buildFunctionList(EntryNav *rootNav)
                 }
 
                 // if md is a declaration and root is the corresponding
-                // definition, then turn md into a definition.
+                // definition, then turn md into a definition. Declaration
+                // location and definition location is already correct in this
+                // case.
                 if (md->isPrototype() && !root->proto)
                 {
                   md->setPrototype(FALSE);
+                }
+                // If md is a definition and we are merging it with a
+                // declaration, update declaration location. Definition
+                // location is already correct. This is a bit random when there
+                // are multiple declarations for a single definition, but such
+                // behavior is still better than conflating everything to a
+                // single location.
+                else if(!md->isPrototype() && root->proto)
+                {
+                  md->setDefFile(root->fileName,root->startLine,root->startColumn);
                 }
               }
             }
