@@ -370,21 +370,21 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
 
       if ( (format==PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
       {
-          Debug::print(Debug::Plantuml,0,"*** %s Running epstopdf\n","PlantumlManager::runPlantumlContent");
-          QList<QCString> *list = PlantumlFiles[it.currentKey()];
-          QListIterator<QCString> li(*list);
-          QCString *nb;
-          for (li.toFirst();(nb=li.current());++li)
+        Debug::print(Debug::Plantuml,0,"*** %s Running epstopdf\n","PlantumlManager::runPlantumlContent");
+        QList<QCString> *list = PlantumlFiles[it.currentKey()];
+        QListIterator<QCString> li(*list);
+        QCString *nb;
+        for (li.toFirst();(nb=li.current());++li)
+        {
+          QCString epstopdfArgs(maxCmdLine);
+          epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",qPrint(pumlOutDir),qPrint(*nb),qPrint(pumlOutDir),qPrint(*nb));
+          portable_sysTimerStart();
+          if ((exitCode=portable_system("epstopdf",epstopdfArgs))!=0)
           {
-              QCString epstopdfArgs(maxCmdLine);
-              epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",qPrint(pumlOutDir),qPrint(*nb),qPrint(pumlOutDir),qPrint(*nb));
-              portable_sysTimerStart();
-              if ((exitCode=portable_system("epstopdf",epstopdfArgs))!=0)
-              {
-                  err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
-              }
-              portable_sysTimerStop();
+            err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
           }
+          portable_sysTimerStop();
+        }
       }
     }
   }
