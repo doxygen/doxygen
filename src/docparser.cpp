@@ -509,7 +509,7 @@ static void checkUnOrMultipleDocumentedParams()
                          "argument '" + aName +
                          "' from the argument list of " +
                          QCString(g_memberDef->qualifiedName()) +
-                         " has muliple @param documentation sections");
+                         " has multiple @param documentation sections");
         }
       }
       if (found)
