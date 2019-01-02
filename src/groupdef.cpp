@@ -708,7 +708,7 @@ void GroupDef::writeTagFile(FTextStream &tagFile)
 void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   if ((!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF)) 
-      || !documentation().isEmpty() || !inbodyDocumentation().isEmpty()
+      || !documentation().stripWhiteSpace().isEmpty() || !inbodyDocumentation().isEmpty()
      )
   {
     ol.pushGeneratorState();
@@ -739,7 +739,7 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     }
     // write separator between brief and details
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
-        !documentation().isEmpty())
+        !documentation().stripWhiteSpace().isEmpty())
     {
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
@@ -753,7 +753,7 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     }
 
     // write detailed documentation
-    if (!documentation().isEmpty())
+    if (!documentation().stripWhiteSpace().isEmpty())
     {
       ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }
@@ -786,7 +786,7 @@ void GroupDef::writeBriefDescription(OutputList &ol)
       ol.enable(OutputGenerator::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
-          !documentation().isEmpty()
+          !documentation().stripWhiteSpace().isEmpty()
          )
       {
         ol.disableAllBut(OutputGenerator::Html);
@@ -1461,11 +1461,11 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       {
         if (md->getGroupPri()==pri)
         {
-          if (!root->doc.isEmpty() && !md->getGroupHasDocs())
+          if (!root->doc.stripWhiteSpace().isEmpty() && !md->getGroupHasDocs())
           {
             moveit = TRUE;
           }
-          else if (!root->doc.isEmpty() && md->getGroupHasDocs())
+          else if (!root->doc.stripWhiteSpace().isEmpty() && md->getGroupHasDocs())
           {
             warn(md->getGroupFileName(),md->getGroupStartLine(),
                 "Member documentation for %s found several times in %s groups!\n"
@@ -1497,7 +1497,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       {
         //printf("insertMember successful\n");
         md->setGroupDef(fgd,pri,root->fileName,root->startLine,
-            !root->doc.isEmpty());
+            !root->doc.stripWhiteSpace().isEmpty());
         ClassDef *cd = md->getClassDefOfAnonymousType();
         if (cd) 
         {
@@ -1670,6 +1670,6 @@ bool GroupDef::hasDetailedDescription() const
 {
   static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
-          !documentation().isEmpty());
+          !documentation().stripWhiteSpace().isEmpty());
 }
 

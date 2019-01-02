@@ -316,7 +316,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   // TODO: Fix me
   docBlockInBody=FALSE;
   
-  if (docBlockInBody && previous && !previous->doc.isEmpty())
+  if (docBlockInBody && previous && !previous->doc.stripWhiteSpace().isEmpty())
   {
     previous->doc=previous->doc.stripWhiteSpace()+"\n\n";
   }

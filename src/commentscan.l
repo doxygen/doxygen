@@ -721,7 +721,7 @@ static void stripTrailingWhiteSpace(QCString &s)
 }
 
 // selects the output to write to
-static inline void setOutput(OutputContext ctx)
+static inline void setOutput(OutputContext ctx, bool force = false)
 {
   bool xrefAppendToPrev = xrefAppendFlag;
   // determine append flag for the next item (i.e. the end of this item)
@@ -816,7 +816,7 @@ static inline void setOutput(OutputContext ctx)
 	  current->briefLine = yyLineNr;
 	}
       }
-      if (current->brief.stripWhiteSpace().isEmpty()) // we only want one brief
+      if (force || current->brief.stripWhiteSpace().isEmpty()) // we only want one brief
 	                                              // description even if multiple
 	                                              // are given...
       {
@@ -1055,7 +1055,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           REJECT;
 					}
 <Comment>"<summary>"			{ // start of a .NET XML style brief description
-					  setOutput(OutputBrief);
+					  setOutput(OutputBrief, true);
                                           addOutput(yytext);
   					}
 <Comment>"<remarks>"            	{ // start of a .NET XML style detailed description
@@ -1063,7 +1063,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yytext);
   					}
 <Comment>"</summary>"	                { // start of a .NET XML style detailed description
-					  setOutput(OutputBrief);
+					  setOutput(OutputBrief, true);
                                           addOutput(yytext);
 					  setOutput(OutputDoc);
   					}
@@ -3019,7 +3019,7 @@ static bool handleExtends(const QCString &, const QCStringList &)
 
 static bool handleCopyBrief(const QCString &, const QCStringList &)
 {
-  if (current->brief.isEmpty() && current->doc.isEmpty())
+  if (current->brief.isEmpty() && current->doc.stripWhiteSpace().isEmpty())
   { // if we don't have a brief or detailed description yet,
     // then the @copybrief should end up in the brief description.
     // otherwise it will be copied inline (see bug691315 & bug700788)
@@ -3166,7 +3166,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 
   current->doc=stripLeadingAndTrailingEmptyLines(current->doc,current->docLine);
 
-  if (current->section==Entry::FILEDOC_SEC && current->doc.isEmpty())
+  if (current->section==Entry::FILEDOC_SEC && current->doc.stripWhiteSpace().isEmpty())
   {
     // to allow a comment block with just a @file command.
     current->doc="\n\n";
@@ -3369,7 +3369,7 @@ static void groupAddDocs(Entry *e)
   {
     g_memberGroupDocs=e->brief.stripWhiteSpace();
     e->doc = stripLeadingAndTrailingEmptyLines(e->doc,e->docLine);
-    if (!g_memberGroupDocs.isEmpty() && !e->doc.isEmpty())
+    if (!g_memberGroupDocs.isEmpty() && !e->doc.stripWhiteSpace().isEmpty())
     {
       g_memberGroupDocs+="\n\n";
     }

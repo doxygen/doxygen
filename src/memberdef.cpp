@@ -1331,7 +1331,7 @@ bool MemberDef::isBriefSectionVisible() const
   //QCString *pMemGrp = Doxygen::memberDocDict[grpId];
   bool hasDocs = hasDocumentation() ||
                   // part of a documented member group
-                 (m_impl->grpId!=-1 && info && !(info->doc.isEmpty() && info->header.isEmpty()));
+                 (m_impl->grpId!=-1 && info && !(info->doc.stripWhiteSpace().isEmpty() && info->header.isEmpty()));
 
   // only include static members with file/namespace scope if
   // explicitly enabled in the config file
@@ -1350,7 +1350,7 @@ bool MemberDef::isBriefSectionVisible() const
   // hide members with no detailed description and brief descriptions
   // explicitly disabled.
   bool visibleIfEnabled = !(hideUndocMembers &&
-                            documentation().isEmpty() &&
+                            documentation().stripWhiteSpace().isEmpty() &&
                             !briefMemberDesc &&
                             !repeatBrief
                            );
@@ -1902,7 +1902,7 @@ bool MemberDef::isDetailedSectionLinkable() const
          // treat everything as documented
          extractAll ||
          // has detailed docs
-         !documentation().isEmpty() ||
+         !documentation().stripWhiteSpace().isEmpty() ||
          // has inbody docs
          !inbodyDocumentation().isEmpty() ||
          // is an enum with values that are documented
@@ -2388,7 +2388,7 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
           ol.startDescTableData();
 
           bool hasBrief = !fmd->briefDescription().isEmpty();
-          bool hasDetails = !fmd->documentation().isEmpty();
+          bool hasDetails = !fmd->documentation().stripWhiteSpace().isEmpty();
 
           if (hasBrief)
           {
@@ -2398,7 +2398,7 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
           }
           // FIXME:PARA
           //if (!fmd->briefDescription().isEmpty() &&
-          //    !fmd->documentation().isEmpty())
+          //    !fmd->documentation().stripWhiteSpace().isEmpty())
           //{
           //  ol.newParagraph();
           //}
@@ -5112,7 +5112,7 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       {
         mdec->setBriefDescription(mdef->briefDescription(),mdef->briefFile(),mdef->briefLine());
       }
-      if (!mdef->documentation().isEmpty())
+      if (!mdef->documentation().stripWhiteSpace().isEmpty())
       {
         //printf("transferring docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
         mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
@@ -5125,7 +5125,7 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
           mdec->setArgumentList(mdefAlComb);
         }
       }
-      else if (!mdec->documentation().isEmpty())
+      else if (!mdec->documentation().stripWhiteSpace().isEmpty())
       {
         //printf("transferring docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
         mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());

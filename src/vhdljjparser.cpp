@@ -248,7 +248,7 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
   QCString doc;
   doc.append(doc1);
  // fprintf(stderr,"\n %s",doc.data());
-  if (doc.isEmpty()) return;
+  if (doc.stripWhiteSpace().isEmpty()) return;
 
   if (checkMultiComment(doc,yyLineNr))
   {

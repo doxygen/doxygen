@@ -4218,7 +4218,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    if (!isTypedef && msName.isEmpty() && memspecEntry && (current->section&Entry::COMPOUND_MASK))
 					    { // case where a class/struct has a doc block after it
-					      if (!current->doc.isEmpty())
+					      if (!current->doc.stripWhiteSpace().isEmpty())
 					      {
 					        memspecEntry->doc += current->doc;
 					      }
@@ -6205,7 +6205,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
-					  if (!current->doc.isEmpty())
+					  if (!current->doc.stripWhiteSpace().isEmpty())
 					  {
 					    current->doc+="\n\n";
 					  }

@@ -1812,7 +1812,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 {
   int retval = RetVal_OK;
 
-  if (doc.isEmpty()) return retval;
+  if (doc.stripWhiteSpace().isEmpty()) return retval;
 
   doctokenizerYYinit(doc,g_fileName);
 

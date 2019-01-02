@@ -588,7 +588,7 @@ void Definition::_setDocumentation(const char *d,const char *docFile,int docLine
     {
       m_impl->details = new DocInfo;
     }
-    if (m_impl->details->doc.isEmpty()) // fresh detailed description
+    if (m_impl->details->doc.stripWhiteSpace().isEmpty()) // fresh detailed description
     {
       m_impl->details->doc = doc;
     }
@@ -657,7 +657,7 @@ void Definition::_setBriefDescription(const char *b,const char *briefFile,int br
 
   if (!_docsAlreadyAdded(brief,m_impl->briefSignatures))
   {
-    if (m_impl->brief && !m_impl->brief->doc.isEmpty())
+    if (m_impl->brief && !m_impl->brief->doc.stripWhiteSpace().isEmpty())
     {
        //printf("adding to details\n");
        _setDocumentation(brief,briefFile,briefLine,FALSE,TRUE);
@@ -700,7 +700,7 @@ void Definition::_setInbodyDocumentation(const char *doc,const char *inbodyFile,
   {
     m_impl->inbodyDocs = new DocInfo;
   }
-  if (m_impl->inbodyDocs->doc.isEmpty()) // fresh inbody docs
+  if (m_impl->inbodyDocs->doc.stripWhiteSpace().isEmpty()) // fresh inbody docs
   {
     m_impl->inbodyDocs->doc  = doc;
     m_impl->inbodyDocs->file = inbodyFile;
@@ -1460,9 +1460,9 @@ bool Definition::hasDocumentation() const
   static bool extractAll    = Config_getBool(EXTRACT_ALL); 
   //static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   bool hasDocs = 
-         (m_impl->details    && !m_impl->details->doc.isEmpty())    || // has detailed docs
-         (m_impl->brief      && !m_impl->brief->doc.isEmpty())      || // has brief description
-         (m_impl->inbodyDocs && !m_impl->inbodyDocs->doc.isEmpty()) || // has inbody docs
+         (m_impl->details    && !m_impl->details->doc.stripWhiteSpace().isEmpty())    || // has detailed docs
+         (m_impl->brief      && !m_impl->brief->doc.stripWhiteSpace().isEmpty())      || // has brief description
+         (m_impl->inbodyDocs && !m_impl->inbodyDocs->doc.stripWhiteSpace().isEmpty()) || // has inbody docs
          extractAll //||                   // extract everything
   //       (sourceBrowser && m_impl->body && 
   //        m_impl->body->startLine!=-1 && m_impl->body->fileDef)
@@ -2015,7 +2015,7 @@ QCString Definition::briefDescriptionAsTooltip() const
 {
   if (m_impl->brief)
   {
-    if (m_impl->brief->tooltip.isEmpty() && !m_impl->brief->doc.isEmpty())
+    if (m_impl->brief->tooltip.isEmpty() && !m_impl->brief->doc.stripWhiteSpace().isEmpty())
     {
       static bool reentering=FALSE; 
       if (!reentering)

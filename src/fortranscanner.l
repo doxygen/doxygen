@@ -2545,6 +2545,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   // analogous to the [in] case; here no direction specified
   else
   {
+    loc_doc.stripWhiteSpace();
     if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
     {
       current=tmp_entry;

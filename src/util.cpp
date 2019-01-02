@@ -7565,7 +7565,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
     const QCString &doc,const QCString &fileName,int lineNr)
 {
   QGString s;
-  if (doc.isEmpty()) return s.data();
+  if (doc.stripWhiteSpace().isEmpty()) return s.data();
   FTextStream t(&s);
   DocNode *root = validatingParseDoc(fileName,lineNr,
       (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE);

@@ -656,7 +656,7 @@ void MemberList::writeDeclarations(OutputList &ol,
             ol.parseText(mg->header());
           }
           ol.endMemberGroupHeader();
-          if (!mg->documentation().isEmpty())
+          if (!mg->documentation().stripWhiteSpace().isEmpty())
           {
             //printf("Member group has docs!\n");
             ol.startMemberGroupDocs();

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="namespace_system_1_1_runtime_1_1_interop_services" kind="namespace" language="Unknown">
+    <compoundname>System::Runtime::InteropServices</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="080_xml_summary.cs" line="13" column="1"/>
+  </compounddef>
+</doxygen>

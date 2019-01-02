@@ -1428,7 +1428,7 @@ QCString getSQLDocBlock(const Definition *scope,
   int lineNr)
 {
   QGString s;
-  if (doc.isEmpty()) return s.data();
+  if (doc.stripWhiteSpace().isEmpty()) return s.data();
   FTextStream t(&s);
   DocNode *root = validatingParseDoc(
     fileName,

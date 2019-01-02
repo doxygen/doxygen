@@ -112,7 +112,7 @@ void MemberGroup::writeDeclarations(OutputList &ol,
 {
   //printf("MemberGroup::writeDeclarations() %s\n",grpHeader.data());
   QCString ldoc = doc;
-  if (!ldoc.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\" id=\""+anchor()+"\"></a>");
+  if (!ldoc.stripWhiteSpace().isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\" id=\""+anchor()+"\"></a>");
   memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,FALSE,showInline);
 }
 
@@ -224,7 +224,7 @@ void MemberGroup::distributeMemberGroupDocumentation()
   {
     //printf("checking md=%s\n",md->name().data());
     // find the first member of the group with documentation
-    if (!md->documentation().isEmpty()       ||
+    if (!md->documentation().stripWhiteSpace().isEmpty()       ||
         !md->briefDescription().isEmpty()    ||
         !md->inbodyDocumentation().isEmpty()
        )
@@ -239,7 +239,7 @@ void MemberGroup::distributeMemberGroupDocumentation()
     MemberDef *omd;
     for (li.toFirst();(omd=li.current());++li)
     {
-      if (md!=omd && omd->documentation().isEmpty() &&
+      if (md!=omd && omd->documentation().stripWhiteSpace().isEmpty() &&
                      omd->briefDescription().isEmpty() &&
                      omd->inbodyDocumentation().isEmpty()
          )

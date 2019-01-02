@@ -1002,7 +1002,7 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
     ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
   }
   if (!briefDescription().isEmpty() && repeatBrief &&
-      !documentation().isEmpty())
+      !documentation().stripWhiteSpace().isEmpty())
   {
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Html);
@@ -1010,7 +1010,7 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
     ol.popGeneratorState();
   }
   // write documentation
-  if (!documentation().isEmpty())
+  if (!documentation().stripWhiteSpace().isEmpty())
   {
     ol.generateDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE);
   }
@@ -1038,7 +1038,7 @@ bool ClassDef::hasDetailedDescription() const
   static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
-          !documentation().isEmpty() ||
+          !documentation().stripWhiteSpace().isEmpty() ||
           (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()));
 }
 

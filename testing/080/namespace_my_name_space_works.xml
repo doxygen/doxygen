@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="namespace_my_name_space_works" kind="namespace" language="C#">
+    <compoundname>MyNameSpaceWorks</compoundname>
+    <innerclass refid="class_my_name_space_works_1_1_my_class_which_works" prot="public">MyNameSpaceWorks::MyClassWhichWorks</innerclass>
+    <briefdescription>
+      <para>The workspace which works. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="080_xml_summary.cs" line="17" column="1"/>
+  </compounddef>
+</doxygen>
