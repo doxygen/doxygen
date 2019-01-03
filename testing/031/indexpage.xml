@@ -9,7 +9,39 @@
       <para>Some text. <image type="html" name="sample.png"/>
  <image type="latex" name="sample.png" width="5cm">Doxygen logo</image>
  <image type="docbook" name="sample.png"/>
- More text. </para>
+ More text.</para>
+      <para>SVG image with caption:<linebreak/>
+<image type="html" name="license-MIT-brightgreen.svg">A caption</image>
+</para>
+      <para>PNG image with caption:<linebreak/>
+<image type="html" name="license-MIT-brightgreen.png">A caption</image>
+</para>
+      <para>SVG image without caption:<linebreak/>
+<image type="html" name="license-MIT-brightgreen.svg"/>
+</para>
+      <para>PNG image without caption:<linebreak/>
+<image type="html" name="license-MIT-brightgreen.png"/>
+</para>
+      <para>Inline SVG image with caption:<linebreak/>
+This image is inline <image type="html" name="license-MIT-brightgreen.svg" inline="yes">MIT license</image>
+ within the text.</para>
+      <para>Inline PNG image with caption:<linebreak/>
+This image is inline <image type="html" name="license-MIT-brightgreen.png" inline="yes">MIT license</image>
+ within the text.</para>
+      <para>Markdown style linked SVG image:<linebreak/>
+<ulink url="http://opensource.org/licenses/MIT"><image type="html" name="license-MIT-brightgreen.svg" inline="yes"/></ulink></para>
+      <para>Markdown style linked PNG image:<linebreak/>
+<ulink url="http://opensource.org/licenses/MIT"><image type="html" name="license-MIT-brightgreen.png" inline="yes"/></ulink></para>
+      <para>HTML style linked SVG image:<linebreak/>
+<ulink url="http://opensource.org/licenses/MIT"><image type="html" name="license-MIT-brightgreen.svg" inline="yes"/></ulink></para>
+      <para>HTML style linked PNG image:<linebreak/>
+<ulink url="http://opensource.org/licenses/MIT"><image type="html" name="license-MIT-brightgreen.png" inline="yes"/></ulink></para>
+      <para>HTML style unlinked SVG image:<linebreak/>
+<image type="html" name="license-MIT-brightgreen.svg" inline="yes"/>
+</para>
+      <para>HTML style unlined PNG image:<linebreak/>
+<image type="html" name="license-MIT-brightgreen.png" inline="yes"/>
+ </para>
     </detaileddescription>
   </compounddef>
 </doxygen>

@@ -1008,6 +1008,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 return 0;
                        }
 <St_TitleV,St_TitleA>\n	 {
+  			 unput(*yytext);
   			 return 0;
                        }
 

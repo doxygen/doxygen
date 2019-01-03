@@ -768,6 +768,7 @@ class DocImage : public CompAccept<DocImage>
     QCString relPath() const    { return m_relPath; }
     QCString url() const        { return m_url; }
     bool isInlineImage() const  { return m_inlineImage; }
+    bool isSVG() const;
     const HtmlAttribList &attribs() const { return m_attribs; }
     void parse();
 

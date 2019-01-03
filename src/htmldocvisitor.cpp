@@ -1610,17 +1610,9 @@ void HtmlDocVisitor::visitPre(DocImage *img)
   if (img->type()==DocImage::Html)
   {
     bool inlineImage = img->isInlineImage();
-    bool typeSVG = FALSE;
-
+    bool typeSVG = img->isSVG();
     QCString url = img->url();
-    if (url.isEmpty())
-    {
-      typeSVG = (img->name().right(4)==".svg");
-    }
-    else
-    {
-      typeSVG = (url.right(4)==".svg");
-    }
+
     if (!inlineImage)
     {
       forceEndParagraph(img);
@@ -1642,41 +1634,70 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       sizeAttribs+=" height=\""+img->height()+"\"";
     }
+    // 16 cases: url.isEmpty() | typeSVG | inlineImage | img->hasCaption()
     if (url.isEmpty())
     {
       if (typeSVG)
       {
-        m_t << "<object type=\"image/svg+xml\" data=\"" << img->relPath() << img->name()
-            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs()) << ">" << baseName
-            << "</object>" << endl;
+        m_t << "<object type=\"image/svg+xml\" style=\"pointer-events: none;\" data=\"" << img->relPath() << img->name()
+            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs());
+        if (inlineImage)
+        {
+          // skip closing tag
+        }
+        else
+        {
+          m_t << "></object>" << endl;
+        }
       }
       else
       {
         m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\""
-            << baseName << "\"" << sizeAttribs << htmlAttribsToString(img->attribs())
-	    << (inlineImage ? " class=\"inline\"" : "/>\n");
+            << baseName << "\"" << sizeAttribs << htmlAttribsToString(img->attribs());
+        if (inlineImage)
+        {
+	   m_t << " class=\"inline\"";
+        }
+        else
+        {
+           m_t << "/>\n";
+        }
       }
     }
     else // link to URL
     {
       if (typeSVG)
       {
-        m_t << "<object type=\"image/svg+xml\" data=\"" << correctURL(url,img->relPath())
-            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs())
-            << "></object>" << endl;
+        m_t << "<object type=\"image/svg+xml\" style=\"pointer-events: none;\" data=\"" << correctURL(url,img->relPath())
+            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs());
+        if (inlineImage)
+        {
+          // skip closing >
+        }
+        else
+        {
+          m_t << "></object>" << endl;
+        }
       }
       else
       {
         m_t << "<img src=\"" << correctURL(url,img->relPath()) << "\""
-            << sizeAttribs << htmlAttribsToString(img->attribs(), TRUE)
-	    << (inlineImage ? " class=\"inline\"" : "/>\n");
+            << sizeAttribs << htmlAttribsToString(img->attribs(), TRUE);
+        if (inlineImage)
+        {
+          m_t << " class=\"inline\""; // skip closing >
+        }
+        else
+        {
+          m_t << "/>\n";
+        }
       }
     }
     if (img->hasCaption())
     {
       if (inlineImage)
       {
-       m_t << " title=\"";
+        m_t << " title=\"";
       }
       else
       {
@@ -1686,7 +1707,14 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     else if (inlineImage)
     {
-      m_t << "/>" << endl;
+      if (typeSVG)
+      {
+        m_t << "></object>";
+      }
+      else
+      {
+        m_t << "/>";
+      }
     }
   }
   else // other format -> skip
@@ -1705,11 +1733,22 @@ void HtmlDocVisitor::visitPost(DocImage *img)
     if (img->hasCaption())
     {
       if (inlineImage)
-        m_t << "\"/>\n ";
-      else
+      {
+        if (img->isSVG())
+        {
+          m_t << "\"></object>";
+        }
+        else
+        {
+          m_t << "\"/>";
+        }
+      }
+      else // end <div class="caption">
+      {
         m_t << "</div>";
+      }
     }
-    if (!inlineImage)
+    if (!inlineImage) // end <div class="image">
     {
       m_t << "</div>" << endl;
       forceStartParagraph(img);

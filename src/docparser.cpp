@@ -2981,6 +2981,11 @@ DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString 
   m_parent = parent;
 }
 
+bool DocImage::isSVG() const
+{
+  return m_url.isEmpty() ? m_name.right(4)==".svg" : m_url.right(4)==".svg";
+}
+
 void DocImage::parse()
 {
   defaultHandleTitleAndSize(CMD_IMAGE,this,m_children,m_width,m_height);

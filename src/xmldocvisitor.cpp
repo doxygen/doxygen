@@ -70,7 +70,10 @@ static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
   {
     t << " height=\"" << convertToXML(height) << "\"";
   }
-  if (inlineImage) t << " inline=\"yes\">";
+  if (inlineImage)
+  {
+    t << " inline=\"yes\"";
+  }
   if (doCaption)
   {
     t << " caption=\"";
