@@ -211,28 +211,30 @@ static bool isInvisibleNode(DocNode *node)
       ;
 }
 
-static QString htmlAttribsToString(const HtmlAttribList &attribs, bool img_tag = FALSE)
+static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAltValue = 0)
 {
-  QString result;
+  QCString result;
   HtmlAttribListIterator li(attribs);
   HtmlAttrib *att;
-  bool alt_set = FALSE;
-
   for (li.toFirst();(att=li.current());++li)
   {
     if (!att->value.isEmpty())  // ignore attribute without values as they
                                 // are not XHTML compliant, with the exception
 				// of the alt attribute with the img tag
     {
-      result+=" ";
-      result+=att->name;
-      result+="=\""+convertToXML(att->value)+"\"";
-      if (att->name == "alt") alt_set = TRUE;
+      if (att->name=="alt" && pAltValue) // optionally return the value of alt separately
+                                         // need to convert <img> to <object> for SVG images,
+                                         // which do not support the alt attribute
+      {
+        *pAltValue = att->value;
+      }
+      else
+      {
+        result+=" ";
+        result+=att->name;
+        result+="=\""+convertToXML(att->value)+"\"";
+      }
     }
-  }
-  if (!alt_set && img_tag)
-  {
-      result+=" alt=\"\"";
   }
   return result;
 }
@@ -1640,62 +1642,40 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       sizeAttribs+=" height=\""+img->height()+"\"";
     }
     // 16 cases: url.isEmpty() | typeSVG | inlineImage | img->hasCaption()
+    QCString alt;
+    QCString attrs = htmlAttribsToString(img->attribs(),&alt);
+    QCString src;
     if (url.isEmpty())
     {
-      if (typeSVG)
+      src = img->relPath()+img->name();
+    }
+    else
+    {
+      src = correctURL(url,img->relPath());
+    }
+    if (typeSVG)
+    {
+      m_t << "<object type=\"image/svg+xml\" style=\"pointer-events: none;\" data=\"" << src
+        << "\"" << sizeAttribs << attrs;
+      if (inlineImage)
       {
-        m_t << "<object type=\"image/svg+xml\" style=\"pointer-events: none;\" data=\"" << img->relPath() << img->name()
-            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs());
-        if (inlineImage)
-        {
-          // skip closing tag
-        }
-        else
-        {
-          m_t << "></object>" << endl;
-        }
+        // skip closing tag
       }
       else
       {
-        m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\""
-            << baseName << "\"" << sizeAttribs << htmlAttribsToString(img->attribs());
-        if (inlineImage)
-        {
-	   m_t << " class=\"inline\"";
-        }
-        else
-        {
-           m_t << "/>\n";
-        }
+        m_t << ">" << alt << "</object>" << endl;
       }
     }
-    else // link to URL
+    else
     {
-      if (typeSVG)
+      m_t << "<img src=\"" << src << "\" alt=\"" << alt << "\"" << sizeAttribs << attrs;
+      if (inlineImage)
       {
-        m_t << "<object type=\"image/svg+xml\" style=\"pointer-events: none;\" data=\"" << correctURL(url,img->relPath())
-            << "\"" << sizeAttribs << htmlAttribsToString(img->attribs());
-        if (inlineImage)
-        {
-          // skip closing >
-        }
-        else
-        {
-          m_t << "></object>" << endl;
-        }
+        m_t << " class=\"inline\"";
       }
       else
       {
-        m_t << "<img src=\"" << correctURL(url,img->relPath()) << "\""
-            << sizeAttribs << htmlAttribsToString(img->attribs(), TRUE);
-        if (inlineImage)
-        {
-          m_t << " class=\"inline\""; // skip closing >
-        }
-        else
-        {
-          m_t << "/>\n";
-        }
+        m_t << "/>\n";
       }
     }
     if (img->hasCaption())
@@ -1714,7 +1694,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       if (typeSVG)
       {
-        m_t << "></object>";
+        m_t << ">" << alt << "</object>";
       }
       else
       {
@@ -1741,7 +1721,9 @@ void HtmlDocVisitor::visitPost(DocImage *img)
       {
         if (img->isSVG())
         {
-          m_t << "\"></object>";
+          QCString alt;
+          QCString attrs = htmlAttribsToString(img->attribs(),&alt);
+          m_t << "\">" << alt << "</object>";
         }
         else
         {
