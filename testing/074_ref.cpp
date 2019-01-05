@@ -13,6 +13,7 @@
  *  @see @ref operator()(int) "call operator".
  *  @see @ref operator()(int) const "const call operator".
  *  @see @ref operator&=(const Foo&) "and equal operator".
+ *  @see @ref operator&=(const Foo&) const "const and equal operator".
  *  @see @ref operator->*(int *) "member pointer operator".
  */
 struct Foo {
@@ -43,7 +44,7 @@ struct Foo {
   Foo& operator&=(const Foo& rhs);
 
   /** and equal operator */
-  Foo& operator&=(const Foo& rhs);
+  const Foo& operator&=(const Foo& rhs) const;
 
   /** Member pointer operator */
   int* operator->*(int *p);

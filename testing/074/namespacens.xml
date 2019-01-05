@@ -2,7 +2,7 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
   <compounddef id="namespacens" kind="namespace" language="C++">
     <compoundname>ns</compoundname>
-      <sectiondef kind="func">
+    <sectiondef kind="func">
       <memberdef kind="function" id="namespacens_1afd2e8a8437eff630f52a452ea6dc6e82" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
         <definition>int ns::operator""_op</definition>
@@ -18,7 +18,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="66" column="1"/>
+        <location file="074_ref.cpp" line="67" column="1"/>
       </memberdef>
       <memberdef kind="function" id="namespacens_1a47f70e51e66b81b8383a4e2da66f1e09" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -35,7 +35,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="69" column="1"/>
+        <location file="074_ref.cpp" line="70" column="1"/>
       </memberdef>
       <memberdef kind="function" id="namespacens_1aaa9eb8a7b40d4ed0edbe5e163b4e6e8d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -52,11 +52,11 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="72" column="1"/>
+        <location file="074_ref.cpp" line="73" column="1"/>
       </memberdef>
-      </sectiondef>
+    </sectiondef>
     <briefdescription>
-<para>A namespace. </para>
+      <para>A namespace. </para>
     </briefdescription>
     <detaileddescription>
       <para>
@@ -76,6 +76,6 @@
         </itemizedlist>
       </para>
     </detaileddescription>
-    <location file="074_ref.cpp" line="63" column="1"/>
+    <location file="074_ref.cpp" line="64" column="1"/>
   </compounddef>
 </doxygen>
