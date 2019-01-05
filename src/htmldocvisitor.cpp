@@ -126,7 +126,6 @@ static bool mustBeOutsideParagraph(DocNode *n)
         case DocNode::Kind_Internal:
           /* <div> */
         case DocNode::Kind_Include:
-        case DocNode::Kind_Image:
         case DocNode::Kind_SecRefList:
           /* <hr> */
         case DocNode::Kind_HorRuler:
@@ -152,6 +151,8 @@ static bool mustBeOutsideParagraph(DocNode *n)
                  ((DocStyleChange*)n)->style()==DocStyleChange::Center;
         case DocNode::Kind_Formula:
           return !((DocFormula*)n)->isInline();
+        case DocNode::Kind_Image:
+          return !((DocImage*)n)->isInlineImage();
         default:
           break;
   }
@@ -1205,6 +1206,10 @@ void HtmlDocVisitor::visitPre(DocPara *p)
 
 void HtmlDocVisitor::visitPost(DocPara *p)
 {
+
+  //printf("DocPara::visitPost: parent of kind %d ",
+  //       p->parent() ? p->parent()->kind() : -1);
+
   bool needsTag = FALSE;
   if (p->parent()) 
   {

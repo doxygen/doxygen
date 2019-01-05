@@ -336,8 +336,9 @@ class TestManager:
 		return 0 if self.args.updateref else res
 
 	def prepare_dtd(self):
-		shutil.rmtree("dtd",ignore_errors=True)
-		shutil.copytree(self.args.inputdir+"/dtd", "dtd")
+		if self.args.inputdir!='.':
+			shutil.rmtree("dtd",ignore_errors=True)
+			shutil.copytree(self.args.inputdir+"/dtd", "dtd")
 
 def main():
 	# argument handling
