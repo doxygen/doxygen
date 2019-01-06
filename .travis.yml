@@ -18,6 +18,8 @@ addons:
 
 linux-ppc64le: &linux-ppc64le
   os: linux-ppc64le
+  env:
+      - OS_NAME="linux-ppc64le"
   addons:
       apt:
           update: true
@@ -28,6 +30,7 @@ linux-ppc64le: &linux-ppc64le
               - texlive-latex-extra
               - texlive-font-utils
               - ghostscript
+              - libxml2-utils
               - cmake
               - cmake-data
 
@@ -42,16 +45,12 @@ jobs:
 
 before_script:
     - |
-      if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+      if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
         printf "[requires]
         libxml2/2.9.8@bincrafters/stable
         libiconv/1.15@bincrafters/stable
         [build_requires]
         cmake_installer/3.10.0@conan/stable" >> conanfile.txt;
-      fi;
-      if [ "${TRAVIS_OS_NAME}" == "linux-ppc64le" ]; then
-        printf "[requires]
-        libxml2/2.9.8@bincrafters/stable" >> conanfile.txt;
       fi;
       if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
         printf "[requires]
@@ -61,7 +60,7 @@ before_script:
         [options]
         qt:shared=False" >> conanfile.txt;
       fi;
-    - if [ "${TRAVIS_OS_NAME}" == "linux" ] || [ "${TRAVIS_OS_NAME}" == "linux-ppc64le" ]; then
+    - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
         pip install --quiet --user conan;
       fi;
     - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
@@ -81,10 +80,11 @@ before_script:
         rm -rf epstopdf*;
         export PATH=/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH;
       fi;
-    - |
+    - if [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
         conan install . -g virtualrunenv --build missing --update;
         source activate_run.sh;
+      fi;
 
 script:
     - mkdir build
