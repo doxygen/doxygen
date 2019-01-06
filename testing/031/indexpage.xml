@@ -39,9 +39,16 @@ This image is inline <image type="html" name="license-MIT-brightgreen.png" inlin
       <para>HTML style unlinked SVG image:<linebreak/>
 <image type="html" name="license-MIT-brightgreen.svg" inline="yes"/>
 </para>
-      <para>HTML style unlined PNG image:<linebreak/>
+      <para>HTML style unlinked PNG image:<linebreak/>
 <image type="html" name="license-MIT-brightgreen.png" inline="yes"/>
- </para>
+</para>
+      <para>Some markdown image tests<linebreak/>
+<image type="html" name="docs-Doxygen-blue.svg?foo&amp;bar" inline="yes"/>
+ <ulink url="http://www.doxygen.nl?foo&amp;bar">Some normal link</ulink></para>
+      <para>
+        <image type="html" name="docs-Doxygen-blue.svg?foo&amp;bar" inline="yes"/>
+        <ulink url="http://www.doxygen.nl?foo&amp;bar">Some normal link</ulink>
+      </para>
     </detaileddescription>
   </compounddef>
 </doxygen>

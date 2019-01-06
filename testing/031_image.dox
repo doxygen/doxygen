@@ -47,7 +47,13 @@ HTML style linked PNG image:\n
 HTML style unlinked SVG image:\n
 <img src="http://img.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT license"/>
 
-HTML style unlined PNG image:\n
+HTML style unlinked PNG image:\n
 <img src="http://img.shields.io/badge/license-MIT-brightgreen.png" alt="MIT license"/>
 
+Some markdown image tests\n
+![Some SVG image](https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&bar)
+[Some normal link](http://www.doxygen.nl?foo&bar)
+
+![Some SVG image](https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar)
+[Some normal link](http://www.doxygen.nl?foo&amp;bar)
 */
