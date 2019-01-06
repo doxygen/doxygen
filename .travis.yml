@@ -58,7 +58,7 @@ before_script:
         libiconv/1.15@bincrafters/stable
         qt/5.12.0@bincrafters/stable
         [options]
-        qt:shared=False" >> conanfile.txt;
+        qt:shared=True" >> conanfile.txt;
       fi;
     - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
         pip install --quiet --user conan;
