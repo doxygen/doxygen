@@ -284,7 +284,7 @@ QCString convertToHtml(const char *s,bool keepEntities=TRUE);
 
 QCString convertToLaTeX(const QCString &s,bool insideTabbing=FALSE,bool keepSpaces=FALSE);
 
-QCString convertToXML(const char *s);
+QCString convertToXML(const char *s, bool keepEntities=FALSE);
 
 QCString convertToDocBook(const char *s);
 
