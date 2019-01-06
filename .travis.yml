@@ -6,7 +6,6 @@ dist: xenial
 compiler:
   - gcc
   - clang
-sudo: required
 
 addons:
     apt:
