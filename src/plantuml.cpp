@@ -68,26 +68,16 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
   Debug::print(Debug::Plantuml,0,"*** %s puName: %s\n","writePlantUMLSource",qPrint(puName));
   Debug::print(Debug::Plantuml,0,"*** %s imgName: %s\n","writePlantUMLSource",qPrint(imgName));
 
-  QFile file(baseName+".pu");
-  if (!file.open(IO_WriteOnly))
-  {
-    err("Could not open file %s for writing\n",baseName.data());
-  }
   QCString text = "@startuml "+imgName+"\n";
   text+=content;
   text+="\n@enduml\n";
-  file.writeBlock( text, text.length() );
-  file.close();
-  //Debug::print(Debug::Plantuml,0,"*** %s baseFileName text: %s\n","writePlantUMLSource",qPrint(text));
 
-  if(Config_getBool(PLANTUML_RUN_FAST)){
-    QCString qcOutDir(outDir);
-    uint pos = qcOutDir.findRev("/");
-    QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
-    Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
-    PlantumlManager::instance()->insert(generateType,puName,format,text);
-    Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
-  } 
+  QCString qcOutDir(outDir);
+  uint pos = qcOutDir.findRev("/");
+  QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
+  Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
+  PlantumlManager::instance()->insert(generateType,puName,format,text);
+  Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
 
   return baseName;
 }
@@ -98,43 +88,6 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
   QCString dotPath = Config_getString(DOT_PATH);
 
-  QCString pumlExe = "java";
-  QCString pumlArgs = "";
-
-  //printf("*** %s %s\n","generatePlantUMLOutput",baseName);
-  QStrList &pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
-  char *s=pumlIncludePathList.first();
-  if (s)
-  {
-    pumlArgs += "-Dplantuml.include.path=\"";
-    pumlArgs += s;
-    s = pumlIncludePathList.next(); 
-  }
-  while (s)
-  {
-    pumlArgs += portable_pathListSeparator();
-    pumlArgs += s;
-    s = pumlIncludePathList.next(); 
-  }
-  if (pumlIncludePathList.first()) pumlArgs += "\" ";
-  pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"plantuml.jar\" ";
-  if (!plantumlConfigFile.isEmpty())
-  {
-    pumlArgs += "-config \"";
-    pumlArgs += plantumlConfigFile;
-    pumlArgs += "\" ";
-  }
-  if (Config_getBool(HAVE_DOT) && !dotPath.isEmpty())
-  {
-    pumlArgs += "-graphvizdot \"";
-    pumlArgs += dotPath;
-    pumlArgs += "dot";
-    pumlArgs += portable_commandExtension();
-    pumlArgs += "\" ";
-  }
-  pumlArgs+="-o \"";
-  pumlArgs+=outDir;
-  pumlArgs+="\" ";
   QCString imgName = baseName;
   // The basename contains path, we need to strip the path from the filename in order
   // to create the image file name which should be included in the index.qhp (Qt help index file).
@@ -146,49 +99,14 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   switch (format)
   {
     case PUML_BITMAP:
-      pumlArgs+="-tpng";
       imgName+=".png";
       break;
     case PUML_EPS:
-      pumlArgs+="-teps";
       imgName+=".eps";
       break;
     case PUML_SVG:
-      pumlArgs+="-tsvg";
       imgName+=".svg";
       break;
-  }
-  pumlArgs+=" \"";
-  pumlArgs+=baseName;
-  pumlArgs+=".pu\" ";
-  pumlArgs+="-charset UTF-8 ";
-  int exitCode;
-  msg("Running PlantUML on generated file %s.pu\n",baseName);
-  if(!Config_getBool(PLANTUML_RUN_FAST)){    // ! Config_getBool(PLANTUML_RUN_FAST)
-    portable_sysTimerStart();
-    Debug::print(Debug::Plantuml,0,"*** running: %s %s outDir:%s %s\n",qPrint(pumlExe),qPrint(pumlArgs),outDir,baseName);
-    if ((exitCode=portable_system(pumlExe,pumlArgs,TRUE))!=0)
-    {
-      err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
-          plantumlJarPath.data(),exitCode);
-    }
-    else if (Config_getBool(DOT_CLEANUP))
-    {
-      QFile(QCString(baseName)+".pu").remove();
-    }
-    portable_sysTimerStop();
-
-    if ( (format==PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
-    {
-        QCString epstopdfArgs(maxCmdLine);
-        epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",baseName,baseName);
-        portable_sysTimerStart();
-        if ((exitCode=portable_system("epstopdf",epstopdfArgs))!=0)
-        {
-            err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
-        }
-        portable_sysTimerStop();
-    }
   }
 
   Doxygen::indexList->addImageFile(imgName);
@@ -319,7 +237,7 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
     for (it.toFirst();(nb=it.current());++it)
     {
       QCString pumlArguments(pumlArgs);
-      msg("Running PlantUML on %s PlantumlFiles in %s\n",qPrint(pumlType),qPrint(it.currentKey()));
+      msg("Generating PlantUML %s Files in %s\n",qPrint(pumlType),qPrint(it.currentKey()));
       QList<QCString> *list = PlantumlFiles[it.currentKey()];
       Debug::print(Debug::Plantuml,0,"*** %s PlantumlFiles key:%s size:%d\n","PlantumlManager::print Files",qPrint(it.currentKey()),(*list).count());
       QListIterator<QCString> li(*list);
@@ -364,6 +282,7 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
       }
       else if (Config_getBool(DOT_CLEANUP))
       {
+          Debug::print(Debug::Plantuml,0,"*** %s Remove %s file\n","PlantumlManager::runPlantumlContent",qPrint(puFileName));
           file.remove();
       }
       portable_sysTimerStop();
@@ -385,29 +304,6 @@ void PlantumlManager::runPlantumlContent(QDict< QList <QCString> > &PlantumlFile
           }
           portable_sysTimerStop();
         }
-      }
-    }
-  }
-
-  if (Config_getBool(DOT_CLEANUP))
-  {
-    Debug::print(Debug::Plantuml,0,"*** %s Remove pu files\n","PlantumlManager::runPlantumlContent");
-    QDictIterator< QList<QCString> > it( PlantumlFiles); // See QDictIterator
-    QList<QCString> *list;
-    for (it.toFirst();(list=it.current());++it)
-    {
-      QListIterator<QCString> li(*list);
-      QCString *nb;
-      for (li.toFirst();(nb=li.current());++li)
-      {
-        QCString pumlName = "";
-        pumlName+=Config_getString(OUTPUT_DIRECTORY);
-        pumlName+="/";
-        pumlName+=it.currentKey();
-        pumlName+="/";
-        pumlName+=*nb;
-        pumlName+=".pu";
-        QFile(pumlName).remove();
       }
     }
   }

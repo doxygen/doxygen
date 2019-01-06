@@ -3536,16 +3536,6 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='PLANTUML_RUN_FAST' defval='0'>
-      <docs>
-<![CDATA[
-If the \c PLANTUML_RUN_FAST tag is set to \c YES, doxygen will run java once for improving the performance.
-This will run once at the end of process like dot graphics processing. 
-It will remove duplicated runs when you edit a little and it will support multiple thread for multi processor.
-Finally it will reduce the doxygen running time about plantuml.
-]]>
-      </docs>
-    </option>
     <option type='int' id='DOT_GRAPH_MAX_NODES' minval='0' maxval='10000' defval='50' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
