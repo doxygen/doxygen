@@ -55,5 +55,4 @@ test_script:
   - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 # Disabled building document due to unreliable MikTeX installation
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" -D build_doc=ON ..
-  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
 #  - msbuild "doc\docs.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
