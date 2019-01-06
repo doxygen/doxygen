@@ -56,7 +56,7 @@ before_script:
         printf "[requires]
         libxml2/2.9.8@bincrafters/stable
         libiconv/1.15@bincrafters/stable
-        qt/5.11.3@bincrafters/stable
+        qt/5.12.0@bincrafters/stable
         [options]
         qt:shared=False" >> conanfile.txt;
       fi;
