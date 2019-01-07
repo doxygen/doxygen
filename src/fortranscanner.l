@@ -2411,9 +2411,7 @@ static void startCommentBlock(bool brief)
 
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
-  bool needsEntry = FALSE;
   static bool hideInBodyDocs = Config_getBool(HIDE_IN_BODY_DOCS);
-  int position=0;
   if (docBlockInBody && hideInBodyDocs)
   {
     docBlockInBody = FALSE;
@@ -2421,10 +2419,13 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   }
   DBG_CTX((stderr,"call parseCommentBlock [%s]\n",doc.data()));
   int lineNr = brief ? current->briefLine : current->docLine;
+  int position=0;
+  bool needsEntry = FALSE;
+  QCString processedDoc = preprocessCommentBlock(doc,yyFileName,lineNr);
   while (parseCommentBlock(
 	g_thisParser,
 	docBlockInBody ? subrCurrent.getFirst() : current,
-	doc,        // text
+	processedDoc, // text
 	yyFileName, // file
 	lineNr,
 	docBlockInBody ? FALSE : brief, 

@@ -244,7 +244,6 @@ void VhdlParser::handleFlowComment(const char* doc)
 
 void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
 {
-  int position=0;
   QCString doc;
   doc.append(doc1);
  // fprintf(stderr,"\n %s",doc.data());
@@ -258,7 +257,6 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
 
   VhdlDocGen::prepareComment(doc);
 
-  bool needsEntry=FALSE;
   Protection protection=Public;
 
   if (oldEntry==current)
@@ -290,10 +288,13 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
     current->stat=true;
   }
 
+  int position=0;
+  bool needsEntry=FALSE;
+  QCString processedDoc = preprocessCommentBlock(doc,yyFileName,iDocLine);
   while (parseCommentBlock(
         g_thisParser,
         current,
-        doc,        // text
+        processedDoc, // text
         yyFileName, // file
         iDocLine,   // line of block start
         brief,

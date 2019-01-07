@@ -1507,6 +1507,7 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
       myO.shrink(myO.curPos()-2);
       myO.addChar('\0');
       QCString myDoc = myO.data();
+      QCString processedDoc;
       if (what==99)
       { // inbody comment file or namespace or class or proc/method
         int myPos0;
@@ -1526,14 +1527,16 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
 
         myPos0=myPos;
         myLine0=myLine;
-        while (parseCommentBlock(tcl.this_parser, &myEntry0, myDoc, tcl.file_name,
+        processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine);
+        while (parseCommentBlock(tcl.this_parser, &myEntry0, processedDoc, tcl.file_name,
           myLine, FALSE, tcl.config_autobrief, FALSE, myProt, myPos, myNew))
         {
           if (myNew)
           { // we need a new entry in this case
             myNew=0;
             myEntry = tcl_entry_new();
-            parseCommentBlock(tcl.this_parser, myEntry, myDoc, tcl.file_name,
+            processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
+            parseCommentBlock(tcl.this_parser, myEntry, processedDoc, tcl.file_name,
               myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
             tcl.entry_inside->addSubEntry(myEntry);
           }
@@ -1543,7 +1546,8 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
             {
               myEntry1=tcl_entry_namespace(tcl.scan.at(0)->ns);
             }
-            parseCommentBlock(tcl.this_parser, myEntry1, myDoc, tcl.file_name,
+            processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
+            parseCommentBlock(tcl.this_parser, myEntry1, processedDoc, tcl.file_name,
               myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
           }
           myPos0=myPos;
@@ -1553,7 +1557,8 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
         { // we need a new entry
           myNew=0;
           myEntry = tcl_entry_new();
-          parseCommentBlock(tcl.this_parser, myEntry, myDoc, tcl.file_name,
+          processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
+          parseCommentBlock(tcl.this_parser, myEntry, processedDoc, tcl.file_name,
             myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
           tcl.entry_inside->addSubEntry(myEntry);
         }
@@ -1563,14 +1568,16 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
           {
             myEntry1=tcl_entry_namespace(tcl.scan.at(0)->ns);
           }
-          parseCommentBlock(tcl.this_parser, myEntry1, myDoc, tcl.file_name,
+          processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
+          parseCommentBlock(tcl.this_parser, myEntry1, processedDoc, tcl.file_name,
             myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
         }
       }
       else
       { // new entry
         tcl.entry_current = tcl_entry_new();
-        while (parseCommentBlock(tcl.this_parser, tcl.entry_current, myDoc,
+        processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine);
+        while (parseCommentBlock(tcl.this_parser, tcl.entry_current, processedDoc,
           tcl.file_name, myLine, FALSE, tcl.config_autobrief, FALSE,
           myProt, myPos, myNew))
         {

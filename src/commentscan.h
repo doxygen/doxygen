@@ -24,6 +24,19 @@ class ParserInterface;
 /** @file
  *  @brief Interface for the comment block parser */
 
+/** Invokes the comment block parser with the request to preprocess a 
+ *  single comment block.
+ *  @param[in] comment A string representing the actual comment block.
+ *         Note that leading *'s are already stripped from the comment block.
+ *  @param[in] fileName The name of the file in which the comment is found.
+ *         Mainly used for producing warnings.
+ *  @param[in] lineNr The line number at which the comment block was found.
+ *  @returns The prepocessed comment block
+ */
+QCString preprocessCommentBlock(const QCString &comment,
+                                const QCString &fileName,
+                                int lineNr);
+
 /** Invokes the comment block parser with the request to parse a 
  *  single comment block.
  *  @param[in] parser The language parse that invoked this function.

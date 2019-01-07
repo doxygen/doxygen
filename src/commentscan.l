@@ -3074,6 +3074,33 @@ static void checkFormula()
 
 //----------------------------------------------------------------------------
 
+QCString preprocessCommentBlock(const QCString &comment,
+                                const QCString &fileName,
+                                int lineNr)
+{
+  if (!comment.isEmpty() && Doxygen::markdownSupport)
+  {
+    QCString result = processMarkdown(fileName,lineNr,0,comment);
+    const char *p = result.data();
+    if (p)
+    {
+      while (*p==' ')  p++; // skip over spaces
+      while (*p=='\n') p++; // skip over newlines
+      if (qstrncmp(p,"<br>",4)==0) p+=4; // skip over <br>
+    }
+    if (p>result.data())
+    {
+      // strip part of the input
+      result = result.mid(p-result.data());
+    }
+    return result;
+  }
+  else
+  {
+    return comment;
+  }
+}
+
 bool parseCommentBlock(/* in */     ParserInterface *parser,
                        /* in */     Entry *curEntry,
                        /* in */     const QCString &comment,
@@ -3096,26 +3123,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   langParser     = parser;
   current        = curEntry;
   if (comment.isEmpty()) return FALSE; // avoid empty strings
-  if (Doxygen::markdownSupport)
-  {
-    inputString = processMarkdown(fileName,lineNr,NULL,comment);
-    const char *p = inputString.data();
-    if (p)
-    {
-      while (*p==' ')  p++; // skip over spaces
-      while (*p=='\n') p++; // skip over newlines
-      if (qstrncmp(p,"<br>",4)==0) p+=4; // skip over <br>
-    }
-    if (p>inputString.data())
-    {
-      // strip part of the input
-      inputString = inputString.mid(p-inputString.data());
-    }
-  }
-  else
-  {
-    inputString    = comment;
-  }
+  inputString    = comment;
   inputString.append(" ");
   inputPosition  = position;
   yyLineNr       = lineNr;

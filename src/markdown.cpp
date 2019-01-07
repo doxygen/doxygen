@@ -2451,8 +2451,8 @@ static QCString extractPageTitle(QCString &docs,QCString &id)
 static QCString detab(const QCString &s,int &refIndent)
 {
   static int tabSize = Config_getInt(TAB_SIZE);
-  GrowBuf out;
   int size = s.length();
+  GrowBuf out(size);
   const char *data = s.data();
   int i=0;
   int col=0;
@@ -2601,19 +2601,20 @@ void MarkdownFileParser::parseInput(const char *fileName,
     }
   }
   int lineNr=1;
-  int position=0;
 
   // even without markdown support enabled, we still 
   // parse markdown files as such
   bool markdownEnabled = Doxygen::markdownSupport;
   Doxygen::markdownSupport = TRUE;
 
-  bool needsEntry = FALSE;
   Protection prot=Public;
+  bool needsEntry = FALSE;
+  int position=0;
+  QCString processedDocs = preprocessCommentBlock(docs,fileName,lineNr);
   while (parseCommentBlock(
         this,
         current,
-        docs,
+        processedDocs,
         fileName,
         lineNr,
         FALSE,     // isBrief

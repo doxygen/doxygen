@@ -324,11 +324,12 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int position = 0;
   bool needsEntry;
   int lineNr = brief ? current->briefLine : current->docLine;
+  QCString processedDoc = preprocessCommentBlock(doc,yyFileName,lineNr);
   while (parseCommentBlock(
 	g_thisParser,
 	(docBlockInBody && previous) ? previous : current,
-	doc,     // text
-	yyFileName, // file
+	processedDoc, // text
+	yyFileName,   // file
 	lineNr,
 	docBlockInBody ? FALSE : brief, 
     docBlockJavaStyle, // javadoc style // or FALSE,
