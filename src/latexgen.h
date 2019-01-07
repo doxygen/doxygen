@@ -124,8 +124,8 @@ class LatexGenerator : public OutputGenerator
     void endFile();
     void clearBuffer();
     
-    void startIndexSection(IndexSections, bool isMainPage);
-    void endIndexSection(IndexSections, bool isMainPage);
+    void startIndexSection(IndexSections, bool);
+    void endIndexSection(IndexSections,bool);
     void writePageLink(const char *,bool);
     void startProjectNumber();
     void endProjectNumber() {}

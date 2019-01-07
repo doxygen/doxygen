@@ -289,7 +289,7 @@ class RTFGenerator : public OutputGenerator
     QCString relPath;
 
     void beginRTFDocument();
-    void beginRTFChapter(bool);
+    void beginRTFChapter(bool isPageAndInMainpage = false);
     void beginRTFSection();
     void rtfwriteRuler_doubleline();
     void rtfwriteRuler_emboss();

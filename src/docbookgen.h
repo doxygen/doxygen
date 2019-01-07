@@ -149,8 +149,8 @@ class DocbookGenerator : public OutputGenerator
     void writeSearchInfo(){DB_GEN_EMPTY};
     void writeFooter(const char *navPath){DB_GEN_NEW};
     void endFile();
-    void startIndexSection(IndexSections, bool isMainPage);
-    void endIndexSection(IndexSections, bool isMainPage);
+    void startIndexSection(IndexSections,bool);
+    void endIndexSection(IndexSections,bool);
     void writePageLink(const char *,bool);
     void startProjectNumber(){DB_GEN_NEW};
     void endProjectNumber(){DB_GEN_NEW};

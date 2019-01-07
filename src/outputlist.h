@@ -82,10 +82,10 @@ class OutputList : public OutputDocInterface
     bool parseText(const QCString &textStr);
     
 
-    void startIndexSection(IndexSections is,bool isMP)
-    { forall(&OutputGenerator::startIndexSection,is,isMP); }
-    void endIndexSection(IndexSections is,bool isMP)
-    { forall(&OutputGenerator::endIndexSection,is,isMP); }
+    void startIndexSection(IndexSections is,bool isPageAndInMainpage=false)
+    { forall(&OutputGenerator::startIndexSection,is,isPageAndInMainpage); }
+    void endIndexSection(IndexSections is, bool dummy=false)
+    { forall(&OutputGenerator::endIndexSection,is,dummy); }
     void writePageLink(const char *name,bool first)
     { forall(&OutputGenerator::writePageLink,name,first); }
     void startProjectNumber()

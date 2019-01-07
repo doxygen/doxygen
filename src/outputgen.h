@@ -356,8 +356,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeSearchInfo() = 0;
     virtual void writeFooter(const char *navPath) = 0;
     virtual void endFile() = 0;
-    virtual void startIndexSection(IndexSections, bool) = 0;
-    virtual void endIndexSection(IndexSections, bool) = 0;
+    virtual void startIndexSection(IndexSections is, bool isPageAndInMainpage=false) = 0;
+    virtual void endIndexSection(IndexSections, bool dummy=false) = 0; // needed, unfortunately, dummy to get outputlist generation working
     virtual void writePageLink(const char *,bool) = 0;
     virtual void startProjectNumber() = 0;
     virtual void endProjectNumber() = 0;

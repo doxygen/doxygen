@@ -874,7 +874,7 @@ void LatexGenerator::startProjectNumber()
   t << "\\\\[1ex]\\large "; 
 }
 
-void LatexGenerator::startIndexSection(IndexSections is, bool isMP)
+void LatexGenerator::startIndexSection(IndexSections is, bool isPageAndInMainpage)
 {
   bool &compactLatex = Config_getBool(COMPACT_LATEX);
   QCString &latexHeader = Config_getString(LATEX_HEADER);
@@ -1040,7 +1040,7 @@ void LatexGenerator::startIndexSection(IndexSections is, bool isMP)
       break;
     case isPageDocumentation:
       {
-        if (compactLatex || isMP) t << "\\section"; else t << "\\chapter";
+        if (compactLatex || isPageAndInMainpage) t << "\\section"; else t << "\\chapter";
         t << "{"; //Page Documentation}\n";
       }
       break;
@@ -1053,7 +1053,7 @@ void LatexGenerator::startIndexSection(IndexSections is, bool isMP)
   }
 }
 
-void LatexGenerator::endIndexSection(IndexSections is, bool isMP)
+void LatexGenerator::endIndexSection(IndexSections is, bool)
 {
   //static bool compactLatex = Config_getBool(COMPACT_LATEX);
   static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
