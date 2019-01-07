@@ -280,7 +280,7 @@ void LatexDocVisitor::visit(DocLineBreak *)
 void LatexDocVisitor::visit(DocHorRuler *)
 {
   if (m_hide) return;
-  m_t << "\n\n";
+  m_t << "\\DoxyHorRuler\n";
 }
 
 void LatexDocVisitor::visit(DocStyleChange *s)

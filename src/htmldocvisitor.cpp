@@ -1584,7 +1584,7 @@ void HtmlDocVisitor::visitPre(DocHRef *href)
   else
   {
     QCString url = correctURL(href->url(),href->relPath());
-    m_t << "<a href=\"" << convertToXML(url)  << "\""
+    m_t << "<a href=\"" << convertToHtml(url)  << "\""
         << htmlAttribsToString(href->attribs()) << ">";
   }
 }
@@ -1668,7 +1668,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     else
     {
-      m_t << "<img src=\"" << src << "\" alt=\"" << alt << "\"" << sizeAttribs << attrs;
+      m_t << "<img src=\"" << convertToHtml(src) << "\" alt=\"" << alt << "\"" << sizeAttribs << attrs;
       if (inlineImage)
       {
         m_t << " class=\"inline\"";

@@ -54,7 +54,7 @@ There are three mailing lists:
 * doxygen-users@lists.sourceforge.net        - for doxygen users
 * doxygen-develop@lists.sourceforge.net      - for doxygen developers
 * To subscribe follow the link to
-    * http://sourceforge.net/projects/doxygen
+    * https://sourceforge.net/projects/doxygen/
 
 Source Code
 ----------------------------------

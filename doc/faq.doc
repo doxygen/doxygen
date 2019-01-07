@@ -247,7 +247,7 @@ option \ref cfg_builtin_stl_support "BUILTIN_STL_SUPPORT" is turned on.
 
 \section faq_search I have problems getting the search engine to work with PHP5 and/or windows
 
-Please read <a href="http://www.doxygen.org/searchengine.html">this</a> for hints on where to look. 
+Please read <a href="searching.html">this</a> for hints on where to look. 
 
 \section faq_cmdline Can I configure doxygen from the command line?
 
