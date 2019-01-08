@@ -1,6 +1,6 @@
 // objective: allow linking to private virtual functions
 // check: class_interface.xml
-// config: EXTRACT_PRIVATE_VIRTUAL = YES
+// config: EXTRACT_PRIV_VIRTUAL = YES
 
 /** @brief An interface */
 class Interface {
