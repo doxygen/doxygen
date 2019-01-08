@@ -2438,6 +2438,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    {
 					      current->protection = Protected;
 					    }
+					    else if ((insideCS || insideD || insidePHP || insideJS) && qstrcmp(yytext,"internal")==0)
+					    {
+					      current->protection = Package;
+					    }
 					    else if (javaLike && qstrcmp(yytext,"private")==0)
 					    {
 					      current->protection = Private;
