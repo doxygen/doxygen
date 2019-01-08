@@ -422,7 +422,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
       argName=argName.stripWhiteSpace();
       //printf("argName=`%s' aName=%s\n",argName.data(),aName.data());
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
-      if (aName==argName) 
+      if (aName==argName && isParam)
       {
 	g_paramsFound.insert(aName,(void *)(0x8));
 	found=TRUE;
