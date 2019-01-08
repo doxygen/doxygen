@@ -588,12 +588,14 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::PlantUML:
       {
         forceEndParagraph(s);
-
         static QCString htmlOutput = Config_getString(HTML_OUTPUT);
-		QCString imgExt = getDotImageExtension();
-		PlantUMLOutputFormat format = PUML_BITMAP;		// default : PUML_BITMAP
-		if (imgExt=="svg"){    format = PUML_SVG;   }
-        QCString baseName = writePlantUMLSource(htmlOutput,s->exampleFile(),s->text(),format);
+        QCString imgExt = getDotImageExtension();
+        PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP;	// default : PUML_BITMAP
+        if (imgExt=="svg")
+        {
+          format = PlantumlManager::PUML_SVG;
+        }
+        QCString baseName = PlantumlManager::instance()->writePlantUMLSource(htmlOutput,s->exampleFile(),s->text(),format);
         m_t << "<div class=\"plantumlgraph\">" << endl;
         writePlantUMLFile(baseName,s->relPath(),s->context());
         visitPreCaption(m_t, s);
@@ -2282,7 +2284,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
   QCString imgExt = getDotImageExtension();
   if (imgExt=="svg")
   {
-    generatePlantUMLOutput(fileName,outDir,PUML_SVG);
+    PlantumlManager::instance()->generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_SVG);
     //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />" << endl;
     //m_t << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
     //m_t << "</iframe>" << endl;
@@ -2290,7 +2292,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
   }
   else
   {
-    generatePlantUMLOutput(fileName,outDir,PUML_BITMAP);
+    PlantumlManager::instance()->generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
     m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />" << endl;
   }
 }
