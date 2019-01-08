@@ -1,12 +1,9 @@
 language: cpp
-os:
-    - linux-ppc64le
-    - linux
+os: linux
 dist: xenial
 compiler:
   - gcc
   - clang
-sudo: required
 
 addons:
     apt:
@@ -18,24 +15,64 @@ addons:
             - texlive-latex-extra
             - texlive-font-utils
             - ghostscript
-            - libxml2-utils
-            - cmake
-            - cmake-data
+
+linux-ppc64le: &linux-ppc64le
+  os: linux-ppc64le
+  env:
+      - OS_NAME="linux-ppc64le"
+  addons:
+      apt:
+          update: true
+          packages:
+              - texlive
+              - texlive-generic-recommended
+              - texlive-extra-utils
+              - texlive-latex-extra
+              - texlive-font-utils
+              - ghostscript
+              - libxml2-utils
+              - cmake
+              - cmake-data
 
 jobs:
     include:
+        - <<: *linux-ppc64le
+          compiler: gcc
+        - <<: *linux-ppc64le
+          compiler: clang
         - os: osx
           compiler: clang
+          addons:
+              homebrew:
+                  packages:
+                      - ghostscript
+                  casks:
+                      - mactex-no-gui
 
 before_script:
+    - |
+      if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
+        printf "[requires]
+        libxml2/2.9.8@bincrafters/stable
+        libiconv/1.15@bincrafters/stable
+        [build_requires]
+        cmake_installer/3.10.0@conan/stable" >> conanfile.txt;
+      fi;
+      if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+        printf "[requires]
+        libxml2/2.9.8@bincrafters/stable
+        libiconv/1.15@bincrafters/stable
+        qt/5.12.0@bincrafters/stable
+        [options]
+        qt:shared=True" >> conanfile.txt;
+      fi;
+    - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+        pip install --quiet --user conan;
+      fi;
     - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-        sudo mkdir -p /usr/local/man;
-        sudo chown -R "${USER}:admin" /usr/local/man;
+        pip install --upgrade pip;
         pip install --quiet conan;
-        export HOMEBREW_NO_AUTO_UPDATE=1;
-        brew install ghostscript;
 
-        travis_wait brew cask install mactex-no-gui;
         curl -O -L http://mirrors.ctan.org/support/epstopdf.zip;
         unzip epstopdf.zip;
         mkdir -p /Users/travis/Library/TeX/texbin/;
@@ -43,18 +80,17 @@ before_script:
         chmod a+x /Users/travis/Library/TeX/texbin/epstopdf;
         rm -rf epstopdf*;
         export PATH=/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH;
-
+      fi;
+    - if [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
-        printf "[requires]\n
-        libxml2/2.9.8@bincrafters/stable\n
-        qt/5.11.3@bincrafters/stable" >> conanfile.txt;
-        conan install . -g virtualrunenv;
+        conan install . -g virtualrunenv --build missing --update;
         source activate_run.sh;
       fi;
 
 script:
     - mkdir build
     - cd build
+    - cmake --version;
     - cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
     - make
     - make tests
