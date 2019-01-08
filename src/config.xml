@@ -838,6 +838,14 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='EXTRACT_PRIV_VIRTUAL' defval='0'>
+      <docs>
+<![CDATA[
+ If the \c EXTRACT_PRIV_VIRTUAL tag is set to \c YES, documented private
+ virtual methods of a class will be included in the documentation.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='EXTRACT_PACKAGE' defval='0'>
       <docs>
 <![CDATA[

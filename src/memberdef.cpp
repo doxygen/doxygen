@@ -1080,6 +1080,7 @@ QCString MemberDef::anchor() const
 void MemberDef::_computeLinkableInProject()
 {
   static bool extractStatic  = Config_getBool(EXTRACT_STATIC);
+  static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
   m_isLinkableCached = 2; // linkable
   //printf("MemberDef::isLinkableInProject(name=%s)\n",name().data());
   if (isHidden())
@@ -1133,7 +1134,8 @@ void MemberDef::_computeLinkableInProject()
     m_isLinkableCached = 1; // in file (and not in namespace) but file not linkable
     return;
   }
-  if (!protectionLevelVisible(m_impl->prot) && m_impl->mtype!=MemberType_Friend)
+  if ((!protectionLevelVisible(m_impl->prot) && m_impl->mtype!=MemberType_Friend) &&
+       !(m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual))
   {
     //printf("private and invisible!\n");
     m_isLinkableCached = 1; // hidden due to protection
@@ -1315,6 +1317,7 @@ ClassDef *MemberDef::getClassDefOfAnonymousType()
 bool MemberDef::isBriefSectionVisible() const
 {
   static bool extractStatic       = Config_getBool(EXTRACT_STATIC);
+  static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
   static bool hideUndocMembers    = Config_getBool(HIDE_UNDOC_MEMBERS);
   static bool briefMemberDesc     = Config_getBool(BRIEF_MEMBER_DESC);
   static bool repeatBrief         = Config_getBool(REPEAT_BRIEF);
@@ -1365,9 +1368,12 @@ bool MemberDef::isBriefSectionVisible() const
                                   );
 
   // only include members that are non-private unless EXTRACT_PRIVATE is
-  // set to YES or the member is part of a group
+  // set to YES or the member is part of a group. And as a special case,
+  // private *documented* virtual members are shown if EXTRACT_PRIV_VIRTUAL
+  // is set to YES
   bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
-                           m_impl->mtype==MemberType_Friend
+                           m_impl->mtype==MemberType_Friend ||
+                           (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual && hasDocs)
                           );
 
   // hide member if it overrides a member in a superclass and has no
@@ -1639,11 +1645,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (!name().isEmpty() && name().at(0)!='@') // hide anonymous stuff
   {
     static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
+    static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
     static bool extractStatic  = Config_getBool(EXTRACT_STATIC);
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
     if (!(name().isEmpty() || name().at(0)=='@') && // name valid
         (hasDocumentation() || isReference()) && // has docs
-        !(m_impl->prot==Private && !extractPrivate && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
+        !(m_impl->prot==Private && !extractPrivate && (m_impl->virt==Normal || !extractPrivateVirtual) && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
         !(isStatic() && m_impl->classDef==0 && !extractStatic) // hidden due to static-ness
        )
     {
@@ -1896,6 +1903,7 @@ bool MemberDef::isDetailedSectionLinkable() const
   static bool briefMemberDesc   = Config_getBool(BRIEF_MEMBER_DESC);
   static bool hideUndocMembers  = Config_getBool(HIDE_UNDOC_MEMBERS);
   static bool extractStatic     = Config_getBool(EXTRACT_STATIC);
+  static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
 
   // the member has details documentation for any of the following reasons
   bool docFilter =
@@ -1933,7 +1941,8 @@ bool MemberDef::isDetailedSectionLinkable() const
 
   // only include members that are non-private unless EXTRACT_PRIVATE is
   // set to YES or the member is part of a   group
-  bool privateFilter = protectionLevelVisible(protection()) || m_impl->mtype==MemberType_Friend;
+  bool privateFilter = protectionLevelVisible(protection()) || m_impl->mtype==MemberType_Friend ||
+                       (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual);
 
   // member is part of an anonymous scope that is the type of
   // another member in the list.
