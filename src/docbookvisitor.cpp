@@ -353,7 +353,7 @@ DB_VIS_C
     case DocVerbatim::PlantUML:
       {
         static QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
-        QCString baseName = writePlantUMLSource(docbookOutput,s->exampleFile(),s->text());
+        QCString baseName = PlantumlManager::instance()->writePlantUMLSource(docbookOutput,s->exampleFile(),s->text(),PlantumlManager::PUML_BITMAP);
         QCString shortName = baseName;
         int i;
         if ((i=shortName.findRev('/'))!=-1)
@@ -1642,7 +1642,7 @@ DB_VIS_C
     shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  generatePlantUMLOutput(baseName,outDir,PUML_BITMAP);
+  PlantumlManager::instance()->generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
   visitPreStart(m_t, s->children(), s->hasCaption(), s->relPath() + shortName + ".png", s->width(),s->height());
   visitCaption(s->children());
   visitPostEnd(m_t, s->hasCaption());

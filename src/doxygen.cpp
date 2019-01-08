@@ -104,6 +104,7 @@
 #include "context.h"
 #include "fileparser.h"
 #include "emoji.h"
+#include "plantuml.h"
 
 // provided by the generated file resources.cpp
 extern void initResources();
@@ -11923,6 +11924,10 @@ void generateOutput()
     }
     g_s.end();
   }
+
+  g_s.begin("Running plantuml with JAVA...\n");
+  PlantumlManager::instance()->run();
+  g_s.end();
 
   if (Config_getBool(HAVE_DOT))
   {
