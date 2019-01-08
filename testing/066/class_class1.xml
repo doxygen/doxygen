@@ -10,12 +10,13 @@
         <name>Property1</name>
         <initializer>= 1</initializer>
         <briefdescription>
+          <para>Documentation of first property. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="066_property_initializer.cs" line="5" column="1" bodyfile="066_property_initializer.cs" bodystart="5" bodyend="5"/>
+        <location file="066_property_initializer.cs" line="7" column="1" bodyfile="066_property_initializer.cs" bodystart="7" bodyend="7"/>
       </memberdef>
       <memberdef kind="property" id="class_class1_1a0d5b843d48ebc2c078e003d6ff3a1610" prot="public" static="no" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="yes" privatesettable="no" protectedsettable="no">
         <type>string</type>
@@ -23,19 +24,21 @@
         <argsstring/>
         <name>Property2</name>
         <briefdescription>
+          <para>Documentation of second property. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="066_property_initializer.cs" line="6" column="1" bodyfile="066_property_initializer.cs" bodystart="6" bodyend="6"/>
+        <location file="066_property_initializer.cs" line="8" column="1" bodyfile="066_property_initializer.cs" bodystart="8" bodyend="8"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
+      <para>Documentation of the class. </para>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="066_property_initializer.cs" line="4" column="1" bodyfile="066_property_initializer.cs" bodystart="3" bodyend="7"/>
+    <location file="066_property_initializer.cs" line="6" column="1" bodyfile="066_property_initializer.cs" bodystart="5" bodyend="9"/>
     <listofallmembers>
       <member refid="class_class1_1a6b0b2ab73516e37adb38b8ff33f97c40" prot="public" virt="non-virtual">
         <scope>Class1</scope>
