@@ -277,6 +277,8 @@ static DocCmdMap docCmdMap[] =
   { "verbinclude",     0,                       FALSE },
   { "version",         0,                       TRUE  },
   { "warning",         0,                       TRUE  },
+  { "snippet",         0,                       TRUE  },
+  { "snippetlineno",   0,                       TRUE  },
   { 0, 0, FALSE }
 };
 
@@ -1191,6 +1193,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 				          }
   					}
 <Comment>{B}*{CMD}"f{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
+					  setOutput(OutputDoc);
 					  formulaText="\\begin";
 					  formulaEnv=QString(yytext).stripWhiteSpace().data()+2;
 					  if (formulaEnv.at(formulaEnv.length()-1)=='{')
@@ -1208,6 +1211,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  BEGIN(ReadFormulaShort);
   					}
 <Comment>{B}*{CMD}"f["			{ // start of a block formula
+					  setOutput(OutputDoc);
 					  formulaText="\\[";
 					  formulaNewLines=0;
 					  BEGIN(ReadFormulaLong);
