@@ -4670,7 +4670,7 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/ theTranslator->trModuleIndex());
       ol.endIndexSection(isModuleIndex);
     }
-    if (documentedNamespaces>0)
+    if (Config_getBool(SHOW_NAMESPACES) && (documentedNamespaces>0))
     {
       ol.startIndexSection(isNamespaceIndex);
       ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trModulesIndex():theTranslator->trNamespaceIndex()));
