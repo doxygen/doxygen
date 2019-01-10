@@ -325,6 +325,7 @@ static void runPlantumlContent(const QDict< QList <QCString> > &plantumlFiles,
 void PlantumlManager::run()
 {
   Debug::print(Debug::Plantuml,0,"*** %s\n","PlantumlManager::run");
+  if (m_currentPlantumlAllContent.isEmpty()) return;
   runPlantumlContent(m_pngPlantumlFiles, m_pngPlantumlContent, PUML_BITMAP);
   runPlantumlContent(m_svgPlantumlFiles, m_svgPlantumlContent, PUML_SVG);
   runPlantumlContent(m_epsPlantumlFiles, m_epsPlantumlContent, PUML_EPS);
