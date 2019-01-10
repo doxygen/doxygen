@@ -549,7 +549,7 @@ FUNCTION {format.tr.number}
 
 FUNCTION {format.article.crossref}
 {
-  "In <a href=" quote$ * "#" * crossref * quote$ * ">" *
+  "In <a href=" quote$ * "#" * "CITEREF_" * crossref * quote$ * ">" *
   key empty$
     { journal empty$
 	{ "need key or journal for " cite$ * " to crossref " * crossref *
@@ -561,7 +561,7 @@ FUNCTION {format.article.crossref}
     }
     { key * }
   if$
-  "</a> \citelabel{" * crossref * "}" *
+  "</a> \citelabel{" * "CITEREF_" * crossref * "}" *
 }
 
 FUNCTION {format.crossref.editor}
@@ -590,7 +590,7 @@ FUNCTION {format.book.crossref}
       " of " *
     }
   if$
-  "<a href=" * quote$ * "#" * crossref * quote$ * ">" *
+  "<a href=" * "CITEREF_" * quote$ * "#" * crossref * quote$ * ">" *
   editor empty$
   editor field.or.null author field.or.null =
   or
@@ -608,12 +608,12 @@ FUNCTION {format.book.crossref}
     }
     { format.crossref.editor * }
   if$
-  "</a> \citelabel{" * crossref * "}" *
+  "</a> \citelabel{" * "CITEREF_" * crossref * "}" *
 }
 
 FUNCTION {format.incoll.inproc.crossref}
 {
-  "In <a href=" quote$ * "#" * crossref * quote$ * ">" *
+  "In <a href=" quote$ * "#" * "CITEREF_" * crossref * quote$ * ">" *
   editor empty$
   editor field.or.null author field.or.null =
   or
@@ -631,7 +631,7 @@ FUNCTION {format.incoll.inproc.crossref}
     }
     { format.crossref.editor * }
   if$
-  "</a> \citelabel{" * crossref * "}" *
+  "</a> \citelabel{" * "CITEREF_" * crossref * "}" *
 }
 
 FUNCTION {article}
