@@ -84,6 +84,7 @@ void TooltipManager::addTooltip(Definition *d)
   {
     id+="_"+anc;
   }
+  id = "a" + id;
   if (p->tooltipInfo.find(id)==0)
   {
     p->tooltipInfo.insert(id,d);
