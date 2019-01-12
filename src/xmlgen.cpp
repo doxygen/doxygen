@@ -975,7 +975,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   {
     t << "        <location file=\"" 
       << stripFromPath(md->getDefFileName()) << "\" line=\"" 
-      << md->getDefLine() << "\"" << " column=\"" 
+      << md->getDefLine() << "\" column=\"" 
       << md->getDefColumn() << "\"" ;
     if (md->getStartBodyLine()!=-1)
     {
@@ -986,6 +986,12 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       }
       t << " bodystart=\"" << md->getStartBodyLine() << "\" bodyend=\"" 
         << md->getEndBodyLine() << "\"";
+    }
+    if (md->getDeclLine()!=-1)
+    {
+      t << " declfile=\"" << stripFromPath(md->getDeclFileName()) << "\" declline=\""
+        << md->getDeclLine() << "\" declcolumn=\""
+        << md->getDeclColumn() << "\"";
     }
     t << "/>" << endl;
   }

@@ -57,6 +57,7 @@ class DefinitionImpl
     DefinitionImpl();
    ~DefinitionImpl();
     void init(const char *df, const char *n);
+    void setDefFileName(const QCString &df);
 
     SectionDict *sectionDict;  // dictionary of all sections, not accessible
 
@@ -82,7 +83,7 @@ class DefinitionImpl
 
     Definition *outerScope;  // not owner
 
-    // where the item was found
+    // where the item was defined
     QCString defFileName;
     QCString defFileExt;
 
@@ -112,7 +113,7 @@ DefinitionImpl::~DefinitionImpl()
   delete inbodyDocs;
 }
 
-void DefinitionImpl::init(const char *df, const char *n)
+void DefinitionImpl::setDefFileName(const QCString &df)
 {
   defFileName = df;
   int lastDot = defFileName.findRev('.');
@@ -120,6 +121,11 @@ void DefinitionImpl::init(const char *df, const char *n)
   {
     defFileExt = defFileName.mid(lastDot);
   }
+}
+
+void DefinitionImpl::init(const char *df, const char *n)
+{
+  setDefFileName(df);
   QCString name = n;
   if (name!="<globalScope>") 
   {
@@ -145,6 +151,13 @@ void DefinitionImpl::init(const char *df, const char *n)
   hidden          = FALSE;
   isArtificial    = FALSE;
   lang            = SrcLangExt_Unknown;
+}
+
+void Definition::setDefFile(const QCString &df,int defLine,int defCol)
+{
+  m_impl->setDefFileName(df);
+  m_defLine = defLine;
+  m_defColumn = defCol;
 }
 
 //-----------------------------------------------------------------------------------------

@@ -2449,7 +2449,8 @@ static MemberDef *addVariableToFile(
   Entry *root = rootNav->entry();
   Debug::print(Debug::Variables,0,
       "  global variable:\n"
-      "    type=`%s' scope=`%s' name=`%s' args=`%s' prot=`%d mtype=%d lang=%d\n",
+      "    file='%s' type=`%s' scope=`%s' name=`%s' args=`%s' prot=`%d mtype=%d lang=%d\n",
+      qPrint(root->fileName),
       qPrint(root->type),
       qPrint(scope),
       qPrint(name),
@@ -2593,11 +2594,23 @@ static MemberDef *addVariableToFile(
            )
           // not a php array variable
         {
-
           Debug::print(Debug::Variables,0,
               "    variable already found: scope=%s\n",qPrint(md->getOuterScope()->name()));
           addMemberDocs(rootNav,md,def,0,FALSE);
           md->setRefItems(root->sli);
+          // if md is a variable forward declaration and root is the definition that
+          // turn md into the defintion
+          if (!root->explicitExternal && md->isExternal())
+          {
+            md->setDeclFile(md->getDefFileName(),md->getDefLine(),md->getDefColumn());
+            md->setExplicitExternal(FALSE,root->fileName,root->startLine,root->startColumn);
+          }
+          // if md is the definition and root point at a declaration, then add the
+          // declaration info
+          else if (root->explicitExternal && !md->isExternal())
+          {
+            md->setDeclFile(root->fileName,root->startLine,root->startColumn);
+          }
           return md;
         }
       }
@@ -2636,7 +2649,7 @@ static MemberDef *addVariableToFile(
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
-  md->setExplicitExternal(root->explicitExternal);
+  md->setExplicitExternal(root->explicitExternal,fileName,root->startLine,root->startColumn);
   //md->setOuterScope(fd);
   if (!root->explicitExternal)
   {
@@ -3752,7 +3765,13 @@ static void buildFunctionList(EntryNav *rootNav)
                 // definition, then turn md into a definition.
                 if (md->isPrototype() && !root->proto)
                 {
-                  md->setPrototype(FALSE);
+                  md->setDeclFile(md->getDefFileName(),md->getDefLine(),md->getDefColumn());
+                  md->setPrototype(FALSE,root->fileName,root->startLine,root->startColumn);
+                }
+                // if md is already the definition, then add the declaration info
+                else if (!md->isPrototype() && root->proto)
+                {
+                  md->setDeclFile(root->fileName,root->startLine,root->startColumn);
                 }
               }
             }
@@ -3781,7 +3800,7 @@ static void buildFunctionList(EntryNav *rootNav)
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-          md->setPrototype(root->proto);
+          md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
           md->setDocsForDefinition(!root->proto);
           md->setTypeConstraints(root->typeConstr);
           //md->setBody(root->body);
@@ -6544,7 +6563,7 @@ static void findMember(EntryNav *rootNav,
           md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
-          md->setPrototype(root->proto);
+          md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
           md->addSectionsToDefinition(root->anchors);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           FileDef *fd=rootNav->fileDef();
@@ -6614,7 +6633,7 @@ static void findMember(EntryNav *rootNav,
           md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
-          md->setPrototype(root->proto);
+          md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
           md->addSectionsToDefinition(root->anchors);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           FileDef *fd=rootNav->fileDef();
@@ -6816,7 +6835,7 @@ static void findMember(EntryNav *rootNav,
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
-          md->setPrototype(root->proto);
+          md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
           md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberGroupId(root->mGrpId);
@@ -6891,7 +6910,7 @@ localObjCMethod:
         md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
         md->setDocsForDefinition(!root->proto);
-        md->setPrototype(root->proto);
+        md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
         md->addSectionsToDefinition(root->anchors);
         md->setBodySegment(root->bodyLine,root->endBodyLine);
         FileDef *fd=rootNav->fileDef();
@@ -7452,7 +7471,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                   fmd->setInitializer(root->initializer);
                   fmd->setMaxInitLines(root->initLines);
                   fmd->setMemberGroupId(root->mGrpId);
-                  fmd->setExplicitExternal(root->explicitExternal);
+                  fmd->setExplicitExternal(root->explicitExternal,fileName,root->startLine,root->startColumn);
                   fmd->setRefItems(root->sli);
                   fmd->setAnchor();
                   md->insertEnumField(fmd);

@@ -18,7 +18,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="67" column="1"/>
+        <location file="074_ref.cpp" line="67" column="1" declfile="074_ref.cpp" declline="67" declcolumn="1"/>
       </memberdef>
       <memberdef kind="function" id="namespacens_1a47f70e51e66b81b8383a4e2da66f1e09" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -35,7 +35,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="70" column="1"/>
+        <location file="074_ref.cpp" line="70" column="1" declfile="074_ref.cpp" declline="70" declcolumn="1"/>
       </memberdef>
       <memberdef kind="function" id="namespacens_1aaa9eb8a7b40d4ed0edbe5e163b4e6e8d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -52,7 +52,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="73" column="1"/>
+        <location file="074_ref.cpp" line="73" column="1" declfile="074_ref.cpp" declline="73" declcolumn="1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

@@ -288,6 +288,9 @@ class Definition : public DefinitionIntf
     /*! Sets a unique id for the symbol. Used for libclang integration. */
     void setId(const char *name);
 
+    /*! Set a new file name and position */
+    void setDefFile(const QCString& df,int defLine,int defColumn);
+
     /*! Sets the documentation of this definition to \a d. */
     virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
 

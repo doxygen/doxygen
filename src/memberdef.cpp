@@ -596,6 +596,9 @@ class MemberDefImpl
                               // FALSE => block is put before declaration.
     ClassDef *category;
     MemberDef *categoryRelation;
+    QCString declFileName;
+    int declLine;
+    int declColumn;
 };
 
 MemberDefImpl::MemberDefImpl() :
@@ -609,7 +612,9 @@ MemberDefImpl::MemberDefImpl() :
     defTmpArgLists(0),
     classSectionSDict(0),
     category(0),
-    categoryRelation(0)
+    categoryRelation(0),
+    declLine(-1),
+    declColumn(-1)
 {
 }
 
@@ -4740,6 +4745,24 @@ MemberDef *MemberDef::getGroupAlias() const
   return m_impl->groupAlias;
 }
 
+QCString MemberDef::getDeclFileName() const
+{
+  return m_impl->declFileName;
+}
+
+int MemberDef::getDeclLine() const
+{
+  return m_impl->declLine;
+}
+
+int MemberDef::getDeclColumn() const
+{
+  return m_impl->declColumn;
+}
+
+
+//----------------------------------------------
+
 void MemberDef::setMemberType(MemberType t)
 {
   m_impl->mtype=t;
@@ -4786,11 +4809,6 @@ void MemberDef::setMaxInitLines(int lines)
   {
     m_impl->userInitLines=lines;
   }
-}
-
-void MemberDef::setExplicitExternal(bool b)
-{
-  m_impl->explExt=b;
 }
 
 void MemberDef::setReadAccessor(const char *r)
@@ -4862,9 +4880,38 @@ void MemberDef::setAnonymousEnumType(MemberDef *md)
   m_impl->annEnumType = md;
 }
 
-void MemberDef::setPrototype(bool p)
+void MemberDef::setPrototype(bool p,const QCString &df,int line,int column)
 {
   m_impl->proto=p;
+  if (p)
+  {
+    setDeclFile(df,line,column);
+  }
+  else
+  {
+    setDefFile(df,line,column);
+  }
+}
+
+void MemberDef::setExplicitExternal(bool b,const QCString &df,int line,int column)
+{
+  m_impl->explExt=b;
+  if (b)
+  {
+    setDeclFile(df,line,column);
+  }
+  else
+  {
+    setDefFile(df,line,column);
+  }
+}
+
+
+void MemberDef::setDeclFile(const QCString &df,int line,int column)
+{
+  m_impl->declFileName = df;
+  m_impl->declLine = line;
+  m_impl->declColumn = column;
 }
 
 void MemberDef::setMemberGroupId(int id)
