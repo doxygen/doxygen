@@ -1,6 +1,6 @@
-// objective: test for declation and definition order independence: decl first
+// objective: test for declation and definition order independence: def first
 // check: namespace_n.xml
-// config: INPUT = $INPUTDIR/decl_def.h $INPUTDIR/081_decl_def.cpp
+// config: INPUT = $INPUTDIR/083_decl_def.cpp $INPUTDIR/decl_def.h
 #include "test.h"
 
 /** Namespace */
