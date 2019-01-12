@@ -1282,6 +1282,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(insidePre || Doxygen::markdownSupport ? yytext : "&ndash;");
                                         }
 <Comment>"-#"{B}+                       { // numbered item
+                                          if (inContext!=OutputXRef)
+                                          {
+                                            briefEndsAtDot=FALSE;
+                                            setOutput(OutputDoc);
+                                          }
                                           addOutput(yytext);
                                         }
 <Comment>("."+)[a-z_A-Z0-9\)]		{ // . at start or in the middle of a word, or ellipsis
