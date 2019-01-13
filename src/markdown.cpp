@@ -2536,7 +2536,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
   int refIndent;
   // for replace tabs by spaces
   QCString s = input;
-  if (s.find('\n',s.length()-1) == -1) s += "\n";
+  if (s.at(s.length()-1)!='\n') s += "\n"; // see PR #6766
   s = detab(s,refIndent);
   //printf("======== DeTab =========\n---- output -----\n%s\n---------\n",s.data());
   // then process quotation blocks (as these may contain other blocks)

@@ -1,5 +1,5 @@
 ! // objective: test <pre> in Fortran, no translation of markdown
-! // check: 081__markdown__pre_8f90.xml
+! // check: 084__markdown__pre_8f90.xml
 !> \file
 
 !> subr1
