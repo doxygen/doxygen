@@ -582,6 +582,11 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   if (md->isStatic()) t << "yes"; else t << "no";
   t << "\"";
 
+  if (md->isConstExpr())
+  {
+    t << " constexpr=\"yes\"";
+  }
+
   if (isFunc)
   {
     ArgumentList *al = md->argumentList();

@@ -2034,6 +2034,7 @@ void MemberDef::getLabels(QStrList &sl,Definition *container) const
           if    (isPrivateGettable())     sl.append("private get");
           if    (isPrivateSettable())     sl.append("private set");
         }
+        if      (isConstExpr())           sl.append("constexpr");
         if      (isAddable())             sl.append("add");
         if      (!isUNOProperty() && isRemovable()) sl.append("remove");
         if      (isRaisable())            sl.append("raise");
@@ -4617,6 +4618,11 @@ bool MemberDef::livesInsideEnum() const
 bool MemberDef::isSliceLocal() const
 {
   return (m_impl->memSpec&Entry::Local)!=0;
+}
+
+bool MemberDef::isConstExpr() const
+{
+  return (m_impl->memSpec&Entry::ConstExpr)!=0;
 }
 
 MemberList *MemberDef::enumFieldList() const

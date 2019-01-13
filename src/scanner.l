@@ -1394,6 +1394,18 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->virt = Virtual;
 					  lineCount();
 					}
+<FindMembers>{B}*"constexpr"{BN}+    	{ 
+                                          if (insideCpp)
+                                          {
+                                            current->type += " constexpr ";
+                                            current->spec |= Entry::ConstExpr;
+                                            lineCount();
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+					}
 <FindMembers>{B}*"published"{BN}+	{ // UNO IDL published keyword
 					  if (insideIDL)
 					  {

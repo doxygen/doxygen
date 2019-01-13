@@ -180,6 +180,7 @@ class MemberDef : public Definition
     bool isStrongEnumValue() const;
     bool livesInsideEnum() const;
     bool isSliceLocal() const;
+    bool isConstExpr() const;
 
     int numberOfFlowKeyWords();
     // derived getters
