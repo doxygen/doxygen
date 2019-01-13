@@ -629,6 +629,11 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       t << " required=\"yes\"";
     }
 
+    if (md->isNoExcept())
+    {
+      t << " noexcept=\"yes\"";
+    }
+
     if (al && al->volatileSpecifier)
     {
       t << " volatile=\"yes\"";
