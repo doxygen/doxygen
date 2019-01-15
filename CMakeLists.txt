@@ -11,7 +11,7 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 project(doxygen)
 
 option(build_wizard    "Build the GUI frontend for doxygen." OFF)
