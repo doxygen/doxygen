@@ -188,7 +188,6 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 // \dot .. \enddot
 // \code .. \endcode
 // \msc .. \endmsc
-// \f$..\f$
 // \f[..\f]
 // \f{..\f}
 // \verbatim..\endverbatim
@@ -232,11 +231,7 @@ static QCString isBlockCommand(const char *data,int offset,int size)
   }
   else if (blockName=="f" && end<size)
   {
-    if (data[end]=='$')
-    {
-      return "f$";
-    }
-    else if (data[end]=='[')
+    if (data[end]=='[')
     {
       return "f]";
     }
