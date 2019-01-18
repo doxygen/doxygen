@@ -355,8 +355,6 @@ void parseSqlCode(
 {  
   if (s.isEmpty()) return;
   
-  TooltipManager::instance()->clearTooltips();
-  
   g_code = &od;
   g_inputString   = s;
   g_inputPosition = 0;
@@ -403,10 +401,6 @@ void parseSqlCode(
   if (g_needsTermination)
   {
     endCodeLine();
-  }
-  if (fd)
-  {
-    TooltipManager::instance()->writeTooltips(*g_code);
   }
   if (cleanupSourceDef)
   {

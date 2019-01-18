@@ -825,7 +825,6 @@ static void detectFunctionBody(const char *s)
 
 void ClangParser::writeSources(CodeOutputInterface &ol,FileDef *fd)
 {
-  TooltipManager::instance()->clearTooltips();
   // (re)set global parser state
   g_currentDefinition=0;
   g_currentMemberDef=0;
@@ -934,7 +933,6 @@ void ClangParser::writeSources(CodeOutputInterface &ol,FileDef *fd)
     clang_disposeString(tokenString);
   }
   ol.endCodeLine();
-  TooltipManager::instance()->writeTooltips(ol);
 }
 
 ClangParser::ClangParser()

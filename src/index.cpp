@@ -48,6 +48,7 @@
 #include "classlist.h"
 #include "namespacedef.h"
 #include "filename.h"
+#include "tooltip.h"
 
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30
@@ -301,9 +302,11 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
       ol.writeString("</div><!-- doc-content -->\n");
     }
   }
+
   ol.writeFooter(navPath); // write the footer
   ol.popGeneratorState();
   ol.endFile();
+  TooltipManager::instance()->clearTooltips(); // Only clear after the last is written
 }
 
 void endFileWithNavPath(Definition *d,OutputList &ol)

@@ -3745,7 +3745,6 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
 
   printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
 
-  TooltipManager::instance()->clearTooltips();
   if (g_codeClassSDict==0)
   {
     resetCCodeParserState();
@@ -3827,10 +3826,6 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
     endFontClass();
     DBG_CTX((stderr,"endCodeLine(%d)\n",g_yyLineNr));
     g_code->endCodeLine();
-  }
-  if (fd)
-  {
-    TooltipManager::instance()->writeTooltips(*g_code);
   }
   if (cleanupSourceDef)
   {
