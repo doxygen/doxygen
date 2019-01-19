@@ -2282,28 +2282,6 @@ static QCString processBlocks(const QCString &s,int indent)
             out.addStr(" ");
             out.addStr(header);
             out.addStr("\n\n");
-            SectionInfo *si = Doxygen::sectionDict->find(id);
-            if (si)
-            {
-              if (si->lineNr != -1)
-              {
-                warn(g_fileName,g_lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",header.data(),si->fileName.data(),si->lineNr);
-              }
-              else
-              {
-                warn(g_fileName,g_lineNr,"multiple use of section label '%s', (first occurrence: %s)",header.data(),si->fileName.data());
-              }
-            }
-            else
-            {
-              si = new SectionInfo(g_fileName,g_lineNr,id,header,
-                      level==1 ? SectionInfo::Section : SectionInfo::Subsection,level);
-              if (g_current)
-              {
-                g_current->anchors->append(si);
-              }
-              Doxygen::sectionDict->append(id,si);
-            }
           }
           else
           {
