@@ -51,6 +51,7 @@
 #include "config.h"
 #include "section.h"
 #include "message.h"
+#include "portable.h"
 
 //-----------
 
@@ -893,7 +894,22 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     else
     {
       out.addStr("<img src=\"");
-      out.addStr(link);
+      if (portable_isAbsolutePath(link) || isURL(link))
+      {
+        out.addStr(link);
+      }
+      else
+      {
+        // lets see if the file exists based on the path of the input file and the image file name (is a relative path / local filename)
+        QFileInfo fi(g_fileName);
+        QCString imgFile = g_fileName.left(g_fileName.length()-fi.fileName().length()) + link;
+        QFileInfo fimg(imgFile);
+        if (fimg.exists() && fimg.isReadable())
+        {
+          link = imgFile.right(fimg.fileName().length());
+        }
+        out.addStr(link);
+      }
       out.addStr("\" alt=\"");
       out.addStr(content);
       out.addStr("\"");

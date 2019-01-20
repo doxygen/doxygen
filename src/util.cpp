@@ -8470,6 +8470,13 @@ QCString correctURL(const QCString &url,const QCString &relPath)
   return result;
 }
 
+bool isURL(const QCString fileName)
+{
+  return(
+      fileName.left(5)=="http:" || fileName.left(6)=="https:" ||
+      fileName.left(4)=="ftp:"  || fileName.left(5)=="file:");
+}
+
 //---------------------------------------------------------------------------
 
 bool protectionLevelVisible(Protection prot)

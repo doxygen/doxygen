@@ -455,6 +455,8 @@ int lineBlock(const QCString text,const QCString marker);
 
 QCString correctURL(const QCString &url,const QCString &relPath);
 
+bool isURL(const QCString fileName);
+
 QCString processMarkup(const QCString &s);
 
 bool protectionLevelVisible(Protection prot);
