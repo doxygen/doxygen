@@ -71,6 +71,7 @@ void FormulaList::generateBitmaps(const char *path)
     t << "\\documentclass{article}" << endl;
     t << "\\usepackage{ifthen}" << endl;
     t << "\\usepackage{epsfig}" << endl; // for those who want to include images
+    t << "\\usepackage[utf8]{inputenc}" << endl; // looks like some older distributions with newunicode package 1.1 need this option.
     writeExtraLatexPackages(t);
     writeLatexSpecialFormulaChars(t);
     t << "\\pagestyle{empty}" << endl; 
