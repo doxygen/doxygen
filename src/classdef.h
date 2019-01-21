@@ -174,7 +174,7 @@ class ClassDef : public Definition
     bool isLinkable() const;
 
     /** the class is visible in a class diagram, or class hierarchy */
-    bool isVisibleInHierarchy();
+    bool isVisibleInHierarchy() const;
     
     /** show this class in the declaration section of its parent? */
     bool visibleInParentsDeclList() const;
@@ -203,17 +203,17 @@ class ClassDef : public Definition
      *  class. This function will recursively traverse all branches of the
      *  inheritance tree.
      */
-    bool isBaseClass(ClassDef *bcd,bool followInstances,int level=0);
+    bool isBaseClass(ClassDef *bcd,bool followInstances,int level=0) const;
 
     /** Returns TRUE iff \a bcd is a direct or indirect sub class of this
      *  class.
      */
-    bool isSubClass(ClassDef *bcd,int level=0);
+    bool isSubClass(ClassDef *bcd,int level=0) const;
 
     /** returns TRUE iff \a md is a member of this class or of the
      *  the public/protected members of a base class 
      */
-    bool isAccessibleMember(MemberDef *md);
+    bool isAccessibleMember(MemberDef *md) const;
 
     /** Returns a sorted dictionary with all template instances found for
      *  this template class. Returns 0 if not a template or no instances.
@@ -296,7 +296,7 @@ class ClassDef : public Definition
     QCString className() const;
 
     /** Returns the members in the list identified by \a lt */
-    MemberList *getMemberList(MemberListType lt);
+    MemberList *getMemberList(MemberListType lt) const;
 
     /** Returns the list containing the list of members sorted per type */
     const QList<MemberList> &getMemberLists() const;
@@ -414,7 +414,7 @@ class ClassDef : public Definition
 
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
-    bool hasNonReferenceSuperClass();
+    bool hasNonReferenceSuperClass() const;
     void showUsedFiles(OutputList &ol);
 
   private: 
