@@ -67,10 +67,12 @@ class NamespaceDef : public Definition
     void combineUsingRelations();
     QCString displayName(bool=TRUE) const;
     QCString localName() const;
+    void setInline(bool isInline) { m_inline = isInline; }
 
     bool isConstantGroup() const { return CONSTANT_GROUP == m_type; }
     bool isModule()        const { return MODULE == m_type; }
     bool isLibrary() const { return LIBRARY == m_type; }
+    bool isInline() const { return m_inline; }
 
     bool isLinkableInProject() const;
     bool isLinkable() const;
@@ -108,6 +110,7 @@ class NamespaceDef : public Definition
 
     /*! Returns the namespaces contained in this namespace */
     NamespaceSDict *getNamespaceSDict() const { return namespaceSDict; }
+
 
     QCString title() const;
     QCString compoundTypeString() const;
@@ -156,6 +159,7 @@ class NamespaceDef : public Definition
     enum { NAMESPACE, MODULE, CONSTANT_GROUP, LIBRARY } m_type;
     bool m_isPublished;
     QCString              metaData;
+    bool                  m_inline;
 };
 
 /** A list of NamespaceDef objects. */
