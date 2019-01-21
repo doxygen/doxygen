@@ -182,7 +182,6 @@ class MemberDef : public Definition
     bool isSliceLocal() const;
     bool isConstExpr() const;
 
-    int numberOfFlowKeyWords();
     // derived getters
     bool isFriendToHide() const;
     bool isNotFriend() const;
@@ -282,8 +281,6 @@ class MemberDef : public Definition
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
-
-    void addFlowKeyWord();
 
     // set functions
     void setMemberType(MemberType t);
@@ -441,8 +438,6 @@ class MemberDef : public Definition
     void _addToSearchIndex();
 
     static int s_indentLevel;
-
-    int number_of_flowkw;
 
     // disable copying of member defs
     MemberDef(const MemberDef &);
