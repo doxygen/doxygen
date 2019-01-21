@@ -101,6 +101,7 @@ static QCString               g_relPath;
 
 static bool                   g_hasParamCommand;
 static bool                   g_hasReturnCommand;
+static QDict<void>            g_retvalsFound;
 static QDict<void>            g_paramsFound;
 static MemberDef *            g_memberDef;
 static bool                   g_isExample;
@@ -133,6 +134,7 @@ struct DocParserContext
 
   bool         hasParamCommand;
   bool         hasReturnCommand;
+  QDict<void>  retvalsFound;
   MemberDef *  memberDef;
   QDict<void>  paramsFound;
   bool         isExample;
@@ -179,6 +181,7 @@ static void docParserPushContext(bool saveParamInfo=TRUE)
     ctx->hasParamCommand    = g_hasParamCommand;
     ctx->hasReturnCommand   = g_hasReturnCommand;
     ctx->paramsFound        = g_paramsFound;
+    ctx->retvalsFound       = g_retvalsFound;
   }
 
   ctx->memberDef          = g_memberDef;
@@ -217,6 +220,7 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
   {
     g_hasParamCommand     = ctx->hasParamCommand;
     g_hasReturnCommand    = ctx->hasReturnCommand;
+    g_retvalsFound        = ctx->retvalsFound;
     g_paramsFound         = ctx->paramsFound;
   }
   g_memberDef           = ctx->memberDef;
@@ -388,13 +392,13 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
   return result;
 }
 
-/*! Collects the parameters found with \@param or \@retval commands
- *  in a global list g_paramsFound. If \a isParam is set to TRUE
- *  and the parameter is not an actual parameter of the current
+/*! Collects the parameters found with \@param command
+ *  in a global list g_paramsFound. If
+ *  the parameter is not an actual parameter of the current
  *  member g_memberDef, then a warning is raised (unless warnings
  *  are disabled altogether).
  */
-static void checkArgumentName(const QCString &name,bool isParam)
+static void checkArgumentName(const QCString &name)
 {                
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0) return; // not a member
@@ -422,14 +426,14 @@ static void checkArgumentName(const QCString &name,bool isParam)
       argName=argName.stripWhiteSpace();
       //printf("argName=`%s' aName=%s\n",argName.data(),aName.data());
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
-      if (aName==argName && isParam)
+      if (aName==argName)
       {
 	g_paramsFound.insert(aName,(void *)(0x8));
 	found=TRUE;
 	break;
       }
     }
-    if (!found && isParam)
+    if (!found)
     {
       //printf("member type=%d\n",g_memberDef->memberType());
       QCString scope=g_memberDef->getScopeString();
@@ -456,6 +460,15 @@ static void checkArgumentName(const QCString &name,bool isParam)
     }
     p=i+l;
   }
+}
+/*! Collects the return values found with \@retval command
+ *  in a global list g_retvalsFound.
+ */
+static void checkRetvalName(const QCString &name)
+{
+  if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
+  if (g_memberDef==0) return; // not a member
+  g_retvalsFound.insert(name,(void *)(0x8));
 }
 
 /*! Checks if the parameters that have been specified using \@param are
@@ -545,6 +558,46 @@ static void checkUnOrMultipleDocumentedParams()
         warn_doc_error(g_memberDef->getDefFileName(),
                        g_memberDef->getDefLine(),
                        substitute(errMsg,"%","%%"));
+      }
+    }
+  }
+}
+/*! Checks if the retvals that have been specified using \@retval are
+ *  not multiple defined.
+ */
+static void checkMultipleDocumentedRetvals()
+{
+  if (g_memberDef && Config_getBool(WARN_IF_DOC_ERROR))
+  {
+    QDictIterator<void> it0(g_retvalsFound);
+    QDictIterator<void> it1(g_retvalsFound);
+    for (;it0.current();++it0)
+    {
+      bool found = false;
+      QCString rVal0 = it0.currentKey();
+      for (it1.toFirst();it1.currentKey()!=it0.currentKey();++it1)
+      {
+        if (rVal0 == it1.currentKey())
+        {
+          found = true;
+          break;
+        }
+      }
+      if (!found)
+      {
+        int count = 0;
+        for (it1=it0;it1.current();++it1)
+        {
+          if (rVal0 == it1.currentKey()) count++;
+        }
+        if (count > 1)
+        {
+          warn_doc_error(g_memberDef->getDefFileName(),
+                         g_memberDef->getDefLine(),
+                         "return value '" + rVal0 + "' of " +
+                         QCString(g_memberDef->qualifiedName()) +
+                         " has multiple documentation sections");
+        }
       }
     }
   }
@@ -2172,9 +2225,10 @@ void DocCopy::parse(QList<DocNode> &children)
     {
       bool         hasParamCommand  = g_hasParamCommand;
       bool         hasReturnCommand = g_hasReturnCommand;
+      QDict<void>  retvalsFound     = g_retvalsFound;
       QDict<void>  paramsFound      = g_paramsFound;
-      //printf("..1 hasParamCommand=%d hasReturnCommand=%d paramsFound=%d\n",
-      //      g_hasParamCommand,g_hasReturnCommand,g_paramsFound.count());
+      //printf("..1 hasParamCommand=%d hasReturnCommand=%d paramsFound=%d retvalsFound=%d\n",
+      //      g_hasParamCommand,g_hasReturnCommand,g_paramsFound.count(),g_retvalsFound.count());
 
       docParserPushContext(FALSE);
       g_scope = def;
@@ -2191,6 +2245,7 @@ void DocCopy::parse(QList<DocNode> &children)
       }
       g_styleStack.clear();
       g_nodeStack.clear();
+      g_retvalsFound.clear();
       g_paramsFound.clear();
       g_copyStack.append(def);
       // make sure the descriptions end with a newline, so the parser will correctly
@@ -2212,6 +2267,11 @@ void DocCopy::parse(QList<DocNode> &children)
         {
           paramsFound.insert(it.currentKey(),it.current());
         }
+        QDictIterator<void> itr(g_retvalsFound);
+        for (;(item=itr.current());++itr)
+        {
+          retvalsFound.insert(itr.currentKey(),itr.current());
+        }
       }
       if (m_copyDetails)
       {
@@ -2228,6 +2288,11 @@ void DocCopy::parse(QList<DocNode> &children)
         {
           paramsFound.insert(it.currentKey(),it.current());
         }
+        QDictIterator<void> itr(g_retvalsFound);
+        for (;(item=itr.current());++itr)
+        {
+          retvalsFound.insert(itr.currentKey(),itr.current());
+        }
       }
       g_copyStack.remove(def);
       ASSERT(g_styleStack.isEmpty());
@@ -2236,6 +2301,7 @@ void DocCopy::parse(QList<DocNode> &children)
 
       g_hasParamCommand  = hasParamCommand;
       g_hasReturnCommand = hasReturnCommand;
+      g_retvalsFound     = retvalsFound;
       g_paramsFound      = paramsFound;
 
       //printf("..4 hasParamCommand=%d hasReturnCommand=%d paramsFound=%d\n",
@@ -4720,19 +4786,19 @@ int DocParamList::parse(const QCString &cmdName)
         handleParameterType(this,m_paramTypes,g_token->name.left(typeSeparator));
         g_token->name = g_token->name.mid(typeSeparator+1);
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name,TRUE);
+        checkArgumentName(g_token->name);
         ((DocParamSect*)parent())->m_hasTypeSpecifier=TRUE;
       }
       else
       {
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name,TRUE);
+        checkArgumentName(g_token->name);
       }
     }
     else if (m_type==DocParamSect::RetVal)
     {
       g_hasReturnCommand=TRUE;
-      checkArgumentName(g_token->name,FALSE);
+      checkRetvalName(g_token->name);
     }
     //m_params.append(g_token->name);
     handleLinkedWord(this,m_params);
@@ -4777,12 +4843,12 @@ int DocParamList::parseXml(const QCString &paramName)
   if (m_type==DocParamSect::Param)
   {
     g_hasParamCommand=TRUE;
-    checkArgumentName(g_token->name,TRUE);
+    checkArgumentName(g_token->name);
   }
   else if (m_type==DocParamSect::RetVal)
   {
     g_hasReturnCommand=TRUE;
-    checkArgumentName(g_token->name,FALSE);
+    checkRetvalName(g_token->name);
   }
   
   handleLinkedWord(this,m_params);
@@ -7666,6 +7732,8 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   g_exampleName = exampleName;
   g_hasParamCommand = FALSE;
   g_hasReturnCommand = FALSE;
+  g_retvalsFound.setAutoDelete(FALSE);
+  g_retvalsFound.clear();
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
   g_sectionDict = 0; //sections;
@@ -7695,6 +7763,7 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   }
 
   checkUnOrMultipleDocumentedParams();
+  checkMultipleDocumentedRetvals();
   detectNoDocumentedParams();
 
   // TODO: These should be called at the end of the program.
@@ -7736,6 +7805,8 @@ DocText *validatingParseText(const char *input)
   g_exampleName = "";
   g_hasParamCommand = FALSE;
   g_hasReturnCommand = FALSE;
+  g_retvalsFound.setAutoDelete(FALSE);
+  g_retvalsFound.clear();
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
   g_searchUrl="";
