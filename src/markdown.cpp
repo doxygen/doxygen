@@ -107,6 +107,7 @@ static action_t       g_actions[256];
 static Entry         *g_current;
 static QCString       g_fileName;
 static int            g_lineNr;
+static int            g_sect_number = 0;
 
 // In case a markdown page starts with a level1 header, that header is used
 // as a title of the page, in effect making it a level0 header, so the
@@ -1907,22 +1908,18 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
     //if (level==1) g_correctSectionLevel=FALSE;
     //if (g_correctSectionLevel) level--;
     QCString hTag;
-    if (level<5 && !id.isEmpty())
+    if (id.isEmpty()) id = QCString(GENERATED_NAME) + QCString().setNum(g_sect_number++);
+    if (level<5)
     {
-      SectionInfo::SectionType type = SectionInfo::Anchor;
       switch(level)
       {
         case 1:  out.addStr("@section ");       
-                 type=SectionInfo::Section; 
                  break;
         case 2:  out.addStr("@subsection ");    
-                 type=SectionInfo::Subsection; 
                  break;
         case 3:  out.addStr("@subsubsection "); 
-                 type=SectionInfo::Subsubsection;
                  break;
         default: out.addStr("@paragraph "); 
-                 type=SectionInfo::Paragraph;
                  break;
       }
       out.addStr(id);
@@ -2275,9 +2272,24 @@ static QCString processBlocks(const QCString &s,int indent)
         //printf("header='%s' is='%s'\n",header.data(),id.data());
         if (!header.isEmpty())
         {
-          if (!id.isEmpty())
+          if (id.isEmpty()) id = QCString(GENERATED_NAME) + QCString().setNum(g_sect_number++);
+          if (level<5)
           {
-            out.addStr(level==1?"@section ":"@subsection ");
+            switch (level)
+            {
+              case 1:
+                out.addStr("@section ");
+                break;
+              case 2:
+                out.addStr("@subsection ");
+                break;
+              case 3:
+                out.addStr("@subsubsection ");
+                break;
+              default:
+                out.addStr("@paragraph ");
+                break;
+            }
             out.addStr(id);
             out.addStr(" ");
             out.addStr(header);
@@ -2285,9 +2297,9 @@ static QCString processBlocks(const QCString &s,int indent)
           }
           else
           {
-            out.addStr(level==1?"<h1>":"<h2>");
+            out.addStr("<h" + QCString().setNum(level) + ">");
             out.addStr(header);
-            out.addStr(level==1?"\n</h1>\n":"\n</h2>\n");
+            out.addStr("</h" + QCString().setNum(level) + ">");
           }
         }
         else

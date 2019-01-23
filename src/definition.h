@@ -36,6 +36,8 @@ class Definition;
 class DefinitionImpl;
 class FTextStream;
   
+#define GENERATED_NAME "doxy_generated_"
+
 /** Data associated with a detailed description. */
 struct DocInfo
 {

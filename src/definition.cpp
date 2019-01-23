@@ -547,12 +547,15 @@ void Definition::writeDocAnchorsToTagFile(FTextStream &tagFile)
       {
         //printf("write an entry!\n");
         if (definitionType()==TypeMember) tagFile << "  ";
-        tagFile << "    <docanchor file=\"" << si->fileName << "\"";
-        if (!si->title.isEmpty())
-        {
-          tagFile << " title=\"" << convertToXML(si->title) << "\"";
+	if (si->label.left(strlen(GENERATED_NAME)) != GENERATED_NAME)
+	{
+          tagFile << "    <docanchor file=\"" << si->fileName << "\"";
+          if (!si->title.isEmpty())
+          {
+            tagFile << " title=\"" << convertToXML(si->title) << "\"";
+          }
+          tagFile << ">" << si->label << "</docanchor>" << endl;
         }
-        tagFile << ">" << si->label << "</docanchor>" << endl;
       }
     }
   }
