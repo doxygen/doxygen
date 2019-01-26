@@ -6542,7 +6542,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           // middle of a comment block
   					  docBlock+=yytext;
   					}
-<DocBlock>("@@"|"\\\\"){ID}/[^a-z_A-Z0-9] { // escaped command
+<DocBlock>({CMD}{CMD}){ID}/[^a-z_A-Z0-9] { // escaped command
   					  docBlock+=yytext;
   					}
 <DocBlock>{CMD}("f$"|"f["|"f{")	        {
