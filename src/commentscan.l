@@ -1181,7 +1181,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					    addOutput(yytext);
 					  }
   					}
-<Comment>{B}*("\\\\"|"@@")"f"[$\[{]	{ // escaped formula command
+<Comment>{B}*({CMD}{CMD})"f"[$\[{]	{ // escaped formula command
   					  addOutput(yytext);
   					}
 <Comment>{B}*{CMD}"~"[a-z_A-Z-]*		{ // language switch command
@@ -1805,7 +1805,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  g_sectionTitle+=yytext;
 					  addOutput(yytext);
   					}
-<SectionTitle>("\\\\"|"@@"){ID}		{ // unescape escaped command
+<SectionTitle>({CMD}{CMD}){ID}		{ // unescape escaped command
   					  g_sectionTitle+=&yytext[1];
 					  addOutput(yytext);
   					}
