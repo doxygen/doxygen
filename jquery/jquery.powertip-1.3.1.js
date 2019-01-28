@@ -1,20 +1,23 @@
 /*!
- PowerTip - v1.2.0 - 2013-04-03
- http://stevenbenner.github.com/jquery-powertip/
- Copyright (c) 2013 Steven Benner (http://stevenbenner.com/).
+ PowerTip v1.3.1 (2018-04-15)
+ https://stevenbenner.github.io/jquery-powertip/
+ Copyright (c) 2018 Steven Benner (http://stevenbenner.com/).
  Released under MIT license.
  https://raw.github.com/stevenbenner/jquery-powertip/master/LICENSE.txt
 */
-(function(factory) {
+(function(root, factory) {
+	// support loading the plugin via common patterns
 	if (typeof define === 'function' && define.amd) {
-		// AMD. Register as an anonymous module.
-		define(['jquery'], factory);
+		// load the plugin as an amd module
+		define([ 'jquery' ], factory);
+	} else if (typeof module === 'object' && module.exports) {
+		// load the plugin as a commonjs module
+		module.exports = factory(require('jquery'));
 	} else {
-		// Browser globals
-		factory(jQuery);
+		// load the plugin as a global
+		factory(root.jQuery);
 	}
-}(function($) {
-
+}(this, function($) {
 	// useful private variables
 	var $document = $(document),
 		$window = $(window),
@@ -30,13 +33,28 @@
 		DATA_POWERTIP = 'powertip',
 		DATA_POWERTIPJQ = 'powertipjq',
 		DATA_POWERTIPTARGET = 'powertiptarget',
-		RAD2DEG = 180 / Math.PI;
+		EVENT_NAMESPACE = '.powertip',
+		RAD2DEG = 180 / Math.PI,
+		MOUSE_EVENTS = [
+			'click',
+			'dblclick',
+			'mousedown',
+			'mouseup',
+			'mousemove',
+			'mouseover',
+			'mouseout',
+			'mouseenter',
+			'mouseleave',
+			'contextmenu'
+		];
 
 	/**
 	 * Session data
 	 * Private properties global to all powerTip instances
 	 */
 	var session = {
+		elements: null,
+		tooltips: null,
 		isTipOpen: false,
 		isFixedTipOpen: false,
 		isClosing: false,
@@ -47,6 +65,7 @@
 		previousX: 0,
 		previousY: 0,
 		desyncTimeout: null,
+		closeDelayTimeout: null,
 		mouseTrackingActive: false,
 		delayInProgress: false,
 		windowWidth: 0,
@@ -69,47 +88,50 @@
 
 	/**
 	 * Display hover tooltips on the matched elements.
-	 * @param {(Object|string)} opts The options object to use for the plugin, or
+	 * @param {(Object|string)=} opts The options object to use for the plugin, or
 	 *     the name of a method to invoke on the first matched element.
 	 * @param {*=} [arg] Argument for an invoked method (optional).
 	 * @return {jQuery} jQuery object for the matched selectors.
 	 */
 	$.fn.powerTip = function(opts, arg) {
+		var targetElements = this,
+			options,
+			tipController;
+
 		// don't do any work if there were no matched elements
-		if (!this.length) {
-			return this;
+		if (!targetElements.length) {
+			return targetElements;
 		}
 
 		// handle api method calls on the plugin, e.g. powerTip('hide')
 		if ($.type(opts) === 'string' && $.powerTip[opts]) {
-			return $.powerTip[opts].call(this, this, arg);
+			return $.powerTip[opts].call(targetElements, targetElements, arg);
 		}
 
-		// extend options and instantiate TooltipController
-		var options = $.extend({}, $.fn.powerTip.defaults, opts),
-			tipController = new TooltipController(options);
+		// extend options
+		options = $.extend({}, $.fn.powerTip.defaults, opts);
+
+		// handle repeated powerTip calls on the same element by destroying any
+		// original instance hooked to it and replacing it with this call
+		$.powerTip.destroy(targetElements);
+
+		// instantiate the TooltipController for this instance
+		tipController = new TooltipController(options);
 
 		// hook mouse and viewport dimension tracking
 		initTracking();
 
 		// setup the elements
-		this.each(function elementSetup() {
+		targetElements.each(function elementSetup() {
 			var $this = $(this),
 				dataPowertip = $this.data(DATA_POWERTIP),
 				dataElem = $this.data(DATA_POWERTIPJQ),
 				dataTarget = $this.data(DATA_POWERTIPTARGET),
-				title;
-
-			// handle repeated powerTip calls on the same element by destroying the
-			// original instance hooked to it and replacing it with this call
-			if ($this.data(DATA_DISPLAYCONTROLLER)) {
-				$.powerTip.destroy($this);
-			}
+				title = $this.attr('title');
 
 			// attempt to use title attribute text if there is no data-powertip,
 			// data-powertipjq or data-powertiptarget. If we do use the title
 			// attribute, delete the attribute so the browser will not show it
-			title = $this.attr('title');
 			if (!dataPowertip && !dataTarget && !dataElem && title) {
 				$this.data(DATA_POWERTIP, title);
 				$this.data(DATA_ORIGINALTITLE, title);
@@ -123,33 +145,45 @@
 			);
 		});
 
-		// attach events to matched elements if the manual options is not enabled
+		// attach events to matched elements if the manual option is not enabled
 		if (!options.manual) {
-			this.on({
-				// mouse events
-				'mouseenter.powertip': function elementMouseEnter(event) {
-					$.powerTip.show(this, event);
-				},
-				'mouseleave.powertip': function elementMouseLeave() {
-					$.powerTip.hide(this);
-				},
-				// keyboard events
-				'focus.powertip': function elementFocus() {
-					$.powerTip.show(this);
-				},
-				'blur.powertip': function elementBlur() {
+			// attach open events
+			$.each(options.openEvents, function(idx, evt) {
+				if ($.inArray(evt, options.closeEvents) > -1) {
+					// event is in both openEvents and closeEvents, so toggle it
+					targetElements.on(evt + EVENT_NAMESPACE, function elementToggle(event) {
+						$.powerTip.toggle(this, event);
+					});
+				} else {
+					targetElements.on(evt + EVENT_NAMESPACE, function elementOpen(event) {
+						$.powerTip.show(this, event);
+					});
+				}
+			});
+
+			// attach close events
+			$.each(options.closeEvents, function(idx, evt) {
+				if ($.inArray(evt, options.openEvents) < 0) {
+					targetElements.on(evt + EVENT_NAMESPACE, function elementClose(event) {
+						// set immediate to true for any event without mouse info
+						$.powerTip.hide(this, !isMouseEvent(event));
+					});
+				}
+			});
+
+			// attach escape key close event
+			targetElements.on('keydown' + EVENT_NAMESPACE, function elementKeyDown(event) {
+				// always close tooltip when the escape key is pressed
+				if (event.keyCode === 27) {
 					$.powerTip.hide(this, true);
-				},
-				'keydown.powertip': function elementKeyDown(event) {
-					// close tooltip when the escape key is pressed
-					if (event.keyCode === 27) {
-						$.powerTip.hide(this, true);
-					}
 				}
 			});
 		}
 
-		return this;
+		// remember elements that the plugin is attached to
+		session.elements = session.elements ? session.elements.add(targetElements) : targetElements;
+
+		return targetElements;
 	};
 
 	/**
@@ -160,6 +194,7 @@
 		fadeOutTime: 100,
 		followMouse: false,
 		popupId: 'powerTip',
+		popupClass: null,
 		intentSensitivity: 7,
 		intentPollInterval: 100,
 		closeDelay: 100,
@@ -167,7 +202,9 @@
 		smartPlacement: false,
 		offset: 10,
 		mouseOnToPopup: false,
-		manual: false
+		manual: false,
+		openEvents: [ 'mouseenter', 'focus' ],
+		closeEvents: [ 'mouseleave', 'blur' ]
 	};
 
 	/**
@@ -177,18 +214,18 @@
 	 * do not fit.
 	 */
 	$.fn.powerTip.smartPlacementLists = {
-		n: ['n', 'ne', 'nw', 's'],
-		e: ['e', 'ne', 'se', 'w', 'nw', 'sw', 'n', 's', 'e'],
-		s: ['s', 'se', 'sw', 'n'],
-		w: ['w', 'nw', 'sw', 'e', 'ne', 'se', 'n', 's', 'w'],
-		nw: ['nw', 'w', 'sw', 'n', 's', 'se', 'nw'],
-		ne: ['ne', 'e', 'se', 'n', 's', 'sw', 'ne'],
-		sw: ['sw', 'w', 'nw', 's', 'n', 'ne', 'sw'],
-		se: ['se', 'e', 'ne', 's', 'n', 'nw', 'se'],
-		'nw-alt': ['nw-alt', 'n', 'ne-alt', 'sw-alt', 's', 'se-alt', 'w', 'e'],
-		'ne-alt': ['ne-alt', 'n', 'nw-alt', 'se-alt', 's', 'sw-alt', 'e', 'w'],
-		'sw-alt': ['sw-alt', 's', 'se-alt', 'nw-alt', 'n', 'ne-alt', 'w', 'e'],
-		'se-alt': ['se-alt', 's', 'sw-alt', 'ne-alt', 'n', 'nw-alt', 'e', 'w']
+		n: [ 'n', 'ne', 'nw', 's' ],
+		e: [ 'e', 'ne', 'se', 'w', 'nw', 'sw', 'n', 's', 'e' ],
+		s: [ 's', 'se', 'sw', 'n' ],
+		w: [ 'w', 'nw', 'sw', 'e', 'ne', 'se', 'n', 's', 'w' ],
+		nw: [ 'nw', 'w', 'sw', 'n', 's', 'se', 'nw' ],
+		ne: [ 'ne', 'e', 'se', 'n', 's', 'sw', 'ne' ],
+		sw: [ 'sw', 'w', 'nw', 's', 'n', 'ne', 'sw' ],
+		se: [ 'se', 'e', 'ne', 's', 'n', 'nw', 'se' ],
+		'nw-alt': [ 'nw-alt', 'n', 'ne-alt', 'sw-alt', 's', 'se-alt', 'w', 'e' ],
+		'ne-alt': [ 'ne-alt', 'n', 'nw-alt', 'se-alt', 's', 'sw-alt', 'e', 'w' ],
+		'sw-alt': [ 'sw-alt', 's', 'se-alt', 'nw-alt', 'n', 'ne-alt', 'w', 'e' ],
+		'se-alt': [ 'se-alt', 's', 'sw-alt', 'ne-alt', 'n', 'nw-alt', 'e', 'w' ]
 	};
 
 	/**
@@ -200,9 +237,12 @@
 		 * @param {jQuery|Element} element The element to open the tooltip for.
 		 * @param {jQuery.Event=} event jQuery event for hover intent and mouse
 		 *     tracking (optional).
+		 * @return {jQuery|Element} The original jQuery object or DOM Element.
 		 */
 		show: function apiShowTip(element, event) {
-			if (event) {
+			// if we were given a mouse event then run the hover intent testing,
+			// otherwise, simply show the tooltip asap
+			if (isMouseEvent(event)) {
 				trackMouse(event);
 				session.previousX = event.pageX;
 				session.previousY = event.pageY;
@@ -216,6 +256,7 @@
 		/**
 		 * Repositions the tooltip on the element.
 		 * @param {jQuery|Element} element The element the tooltip is shown for.
+		 * @return {jQuery|Element} The original jQuery object or DOM Element.
 		 */
 		reposition: function apiResetPosition(element) {
 			$(element).first().data(DATA_DISPLAYCONTROLLER).resetPosition();
@@ -227,24 +268,80 @@
 		 * @param {(jQuery|Element)=} element The element with the tooltip that
 		 *     should be closed (optional).
 		 * @param {boolean=} immediate Disable close delay (optional).
+		 * @return {jQuery|Element|undefined} The original jQuery object or DOM
+		 *     Element, if one was specified.
 		 */
 		hide: function apiCloseTip(element, immediate) {
+			var displayController;
+
+			// set immediate to true when no element is specified
+			immediate = element ? immediate : true;
+
+			// find the relevant display controller
 			if (element) {
-				$(element).first().data(DATA_DISPLAYCONTROLLER).hide(immediate);
+				displayController = $(element).first().data(DATA_DISPLAYCONTROLLER);
+			} else if (session.activeHover) {
+				displayController = session.activeHover.data(DATA_DISPLAYCONTROLLER);
+			}
+
+			// if found, hide the tip
+			if (displayController) {
+				displayController.hide(immediate);
+			}
+
+			return element;
+		},
+
+		/**
+		 * Toggles the tooltip for the specified element. This will open a closed
+		 * tooltip, or close an open tooltip.
+		 * @param {jQuery|Element} element The element with the tooltip that
+		 *     should be toggled.
+		 * @param {jQuery.Event=} event jQuery event for hover intent and mouse
+		 *     tracking (optional).
+		 * @return {jQuery|Element} The original jQuery object or DOM Element.
+		 */
+		toggle: function apiToggle(element, event) {
+			if (session.activeHover && session.activeHover.is(element)) {
+				// tooltip for element is active, so close it
+				$.powerTip.hide(element, !isMouseEvent(event));
 			} else {
-				if (session.activeHover) {
-					session.activeHover.data(DATA_DISPLAYCONTROLLER).hide(true);
-				}
+				// tooltip for element is not active, so open it
+				$.powerTip.show(element, event);
 			}
 			return element;
 		},
 
 		/**
-		 * Destroy and roll back any powerTip() instance on the specified element.
-		 * @param {jQuery|Element} element The element with the powerTip instance.
+		 * Destroy and roll back any powerTip() instance on the specified elements.
+		 * If no elements are specified then all elements that the plugin is
+		 * currently attached to will be rolled back.
+		 * @param {(jQuery|Element)=} element The element with the powerTip instance.
+		 * @return {jQuery|Element|undefined} The original jQuery object or DOM
+		 *     Element, if one was specified.
 		 */
 		destroy: function apiDestroy(element) {
-			$(element).off('.powertip').each(function destroy() {
+			var $element = element ? $(element) : session.elements;
+
+			// if the plugin is not hooked to any elements then there is no point
+			// trying to destroy anything, or dealing with the possible errors
+			if (!session.elements || session.elements.length === 0) {
+				return element;
+			}
+
+			// if a tooltip is currently open for an element we are being asked to
+			// destroy then it should be forced to close
+			if (session.isTipOpen && !session.isClosing && $element.filter(session.activeHover).length > 0) {
+				// if the tooltip is waiting to close then cancel that delay timer
+				if (session.delayInProgress) {
+					session.activeHover.data(DATA_DISPLAYCONTROLLER).cancel();
+				}
+				// hide the tooltip, immediately
+				$.powerTip.hide(session.activeHover, true);
+			}
+
+			// unhook events and destroy plugin changes to each element
+			$element.off(EVENT_NAMESPACE).each(function destroy() {
 				var $this = $(this),
 					dataAttributes = [
 						DATA_ORIGINALTITLE,
@@ -253,13 +350,29 @@
 						DATA_FORCEDOPEN
 					];
 
+				// revert title attribute
 				if ($this.data(DATA_ORIGINALTITLE)) {
 					$this.attr('title', $this.data(DATA_ORIGINALTITLE));
 					dataAttributes.push(DATA_POWERTIP);
 				}
 
+				// remove data attributes
 				$this.removeData(dataAttributes);
 			});
+
+			// remove destroyed element from active elements collection
+			session.elements = session.elements.not($element);
+
+			// if there are no active elements left then we will unhook all of the
+			// events that we've bound code to and remove the tooltip elements
+			if (session.elements.length === 0) {
+				$window.off(EVENT_NAMESPACE);
+				$document.off(EVENT_NAMESPACE);
+				session.mouseTrackingActive = false;
+				session.tooltips.remove();
+				session.tooltips = null;
+			}
+
 			return element;
 		}
 	};
@@ -305,7 +418,8 @@
 	 *     this instance.
 	 */
 	function DisplayController(element, options, tipController) {
-		var hoverTimer = null;
+		var hoverTimer = null,
+			myCloseDelay = null;
 
 		/**
 		 * Begins the process of showing a tooltip.
@@ -330,8 +444,12 @@
 					if (forceOpen) {
 						element.data(DATA_FORCEDOPEN, true);
 					}
+					closeAnyDelayed();
 					tipController.showTip(element);
 				}
+			} else {
+				// cursor left and returned to this element, cancel close
+				cancelClose();
 			}
 		}
 
@@ -341,20 +459,29 @@
 		 * @param {boolean=} disableDelay Disable close delay (optional).
 		 */
 		function closeTooltip(disableDelay) {
+			// if this instance already has a close delay in progress then halt it
+			if (myCloseDelay) {
+				myCloseDelay = session.closeDelayTimeout = clearTimeout(myCloseDelay);
+				session.delayInProgress = false;
+			}
 			cancelTimer();
 			session.tipOpenImminent = false;
 			if (element.data(DATA_HASACTIVEHOVER)) {
 				element.data(DATA_FORCEDOPEN, false);
 				if (!disableDelay) {
 					session.delayInProgress = true;
-					hoverTimer = setTimeout(
+					session.closeDelayTimeout = setTimeout(
 						function closeDelay() {
-							hoverTimer = null;
+							session.closeDelayTimeout = null;
 							tipController.hideTip(element);
 							session.delayInProgress = false;
+							myCloseDelay = null;
 						},
 						options.closeDelay
 					);
+					// save internal reference close delay id so we can check if the
+					// active close delay belongs to this instance
+					myCloseDelay = session.closeDelayTimeout;
 				} else {
 					tipController.hideTip(element);
 				}
@@ -374,6 +501,8 @@
 
 			// check if difference has passed the sensitivity threshold
 			if (totalDifference < options.intentSensitivity) {
+				cancelClose();
+				closeAnyDelayed();
 				tipController.showTip(element);
 			} else {
 				// try again
@@ -386,10 +515,37 @@
 		/**
 		 * Cancels active hover timer.
 		 * @private
+		 * @param {boolean=} stopClose Cancel any active close delay timer.
 		 */
-		function cancelTimer() {
+		function cancelTimer(stopClose) {
 			hoverTimer = clearTimeout(hoverTimer);
+			// cancel the current close delay if the active close delay is for this
+			// element or the stopClose argument is true
+			if (session.closeDelayTimeout && myCloseDelay === session.closeDelayTimeout || stopClose) {
+				cancelClose();
+			}
+		}
+
+		/**
+		 * Cancels any active close delay timer.
+		 * @private
+		 */
+		function cancelClose() {
+			session.closeDelayTimeout = clearTimeout(session.closeDelayTimeout);
 			session.delayInProgress = false;
+		}
+
+		/**
+		 * Asks any tooltips waiting on their close delay to close now.
+		 * @private
+		 */
+		function closeAnyDelayed() {
+			// if another element is waiting for its close delay then we should ask
+			// it to close immediately so we can proceed without unexpected timeout
+			// code being run during this tooltip's lifecycle
+			if (session.delayInProgress && session.activeHover && !session.activeHover.is(element)) {
+				session.activeHover.data(DATA_DISPLAYCONTROLLER).hide(true);
+			}
 		}
 
 		/**
@@ -437,54 +593,54 @@
 
 			// calculate the appropriate x and y position in the document
 			switch (placement) {
-			case 'n':
-				coords.set('left', position.left - (tipWidth / 2));
-				coords.set('bottom', session.windowHeight - position.top + offset);
-				break;
-			case 'e':
-				coords.set('left', position.left + offset);
-				coords.set('top', position.top - (tipHeight / 2));
-				break;
-			case 's':
-				coords.set('left', position.left - (tipWidth / 2));
-				coords.set('top', position.top + offset);
-				break;
-			case 'w':
-				coords.set('top', position.top - (tipHeight / 2));
-				coords.set('right', session.windowWidth - position.left + offset);
-				break;
-			case 'nw':
-				coords.set('bottom', session.windowHeight - position.top + offset);
-				coords.set('right', session.windowWidth - position.left - 20);
-				break;
-			case 'nw-alt':
-				coords.set('left', position.left);
-				coords.set('bottom', session.windowHeight - position.top + offset);
-				break;
-			case 'ne':
-				coords.set('left', position.left - 20);
-				coords.set('bottom', session.windowHeight - position.top + offset);
-				break;
-			case 'ne-alt':
-				coords.set('bottom', session.windowHeight - position.top + offset);
-				coords.set('right', session.windowWidth - position.left);
-				break;
-			case 'sw':
-				coords.set('top', position.top + offset);
-				coords.set('right', session.windowWidth - position.left - 20);
-				break;
-			case 'sw-alt':
-				coords.set('left', position.left);
-				coords.set('top', position.top + offset);
-				break;
-			case 'se':
-				coords.set('left', position.left - 20);
-				coords.set('top', position.top + offset);
-				break;
-			case 'se-alt':
-				coords.set('top', position.top + offset);
-				coords.set('right', session.windowWidth - position.left);
-				break;
+				case 'n':
+					coords.set('left', position.left - (tipWidth / 2));
+					coords.set('bottom', session.windowHeight - position.top + offset);
+					break;
+				case 'e':
+					coords.set('left', position.left + offset);
+					coords.set('top', position.top - (tipHeight / 2));
+					break;
+				case 's':
+					coords.set('left', position.left - (tipWidth / 2));
+					coords.set('top', position.top + offset);
+					break;
+				case 'w':
+					coords.set('top', position.top - (tipHeight / 2));
+					coords.set('right', session.windowWidth - position.left + offset);
+					break;
+				case 'nw':
+					coords.set('bottom', session.windowHeight - position.top + offset);
+					coords.set('right', session.windowWidth - position.left - 20);
+					break;
+				case 'nw-alt':
+					coords.set('left', position.left);
+					coords.set('bottom', session.windowHeight - position.top + offset);
+					break;
+				case 'ne':
+					coords.set('left', position.left - 20);
+					coords.set('bottom', session.windowHeight - position.top + offset);
+					break;
+				case 'ne-alt':
+					coords.set('bottom', session.windowHeight - position.top + offset);
+					coords.set('right', session.windowWidth - position.left);
+					break;
+				case 'sw':
+					coords.set('top', position.top + offset);
+					coords.set('right', session.windowWidth - position.left - 20);
+					break;
+				case 'sw-alt':
+					coords.set('left', position.left);
+					coords.set('top', position.top + offset);
+					break;
+				case 'se':
+					coords.set('left', position.left - 20);
+					coords.set('top', position.top + offset);
+					break;
+				case 'se-alt':
+					coords.set('top', position.top + offset);
+					coords.set('right', session.windowWidth - position.left);
+					break;
 			}
 
 			return coords;
@@ -507,38 +663,38 @@
 
 			// calculate the appropriate x and y position in the document
 			switch (placement) {
-			case 'n':
-				left = objectOffset.left + objectWidth / 2;
-				top = objectOffset.top;
-				break;
-			case 'e':
-				left = objectOffset.left + objectWidth;
-				top = objectOffset.top + objectHeight / 2;
-				break;
-			case 's':
-				left = objectOffset.left + objectWidth / 2;
-				top = objectOffset.top + objectHeight;
-				break;
-			case 'w':
-				left = objectOffset.left;
-				top = objectOffset.top + objectHeight / 2;
-				break;
-			case 'nw':
-				left = objectOffset.left;
-				top = objectOffset.top;
-				break;
-			case 'ne':
-				left = objectOffset.left + objectWidth;
-				top = objectOffset.top;
-				break;
-			case 'sw':
-				left = objectOffset.left;
-				top = objectOffset.top + objectHeight;
-				break;
-			case 'se':
-				left = objectOffset.left + objectWidth;
-				top = objectOffset.top + objectHeight;
-				break;
+				case 'n':
+					left = objectOffset.left + objectWidth / 2;
+					top = objectOffset.top;
+					break;
+				case 'e':
+					left = objectOffset.left + objectWidth;
+					top = objectOffset.top + objectHeight / 2;
+					break;
+				case 's':
+					left = objectOffset.left + objectWidth / 2;
+					top = objectOffset.top + objectHeight;
+					break;
+				case 'w':
+					left = objectOffset.left;
+					top = objectOffset.top + objectHeight / 2;
+					break;
+				case 'nw':
+					left = objectOffset.left;
+					top = objectOffset.top;
+					break;
+				case 'ne':
+					left = objectOffset.left + objectWidth;
+					top = objectOffset.top;
+					break;
+				case 'sw':
+					left = objectOffset.left;
+					top = objectOffset.top + objectHeight;
+					break;
+				case 'se':
+					left = objectOffset.left + objectWidth;
+					top = objectOffset.top + objectHeight;
+					break;
 			}
 
 			return {
@@ -564,12 +720,16 @@
 				halfWidth = boundingBox.width / 2,
 				halfHeight = boundingBox.height / 2,
 				placements = [],
-				placementKeys = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'],
+				placementKeys = [ 'nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w' ],
 				coords,
 				rotation,
 				steps,
 				x;
 
+			/**
+			 * Transform and append the current points to the placements list.
+			 * @private
+			 */
 			function pushPlacement() {
 				placements.push(point.matrixTransform(matrix));
 			}
@@ -642,42 +802,18 @@
 				$body = $('body');
 			}
 			$body.append(tipElement);
+			// remember the tooltip elements that the plugin has created
+			session.tooltips = session.tooltips ? session.tooltips.add(tipElement) : tipElement;
 		}
 
 		// hook mousemove for cursor follow tooltips
 		if (options.followMouse) {
 			// only one positionTipOnCursor hook per tooltip element, please
 			if (!tipElement.data(DATA_HASMOUSEMOVE)) {
-				$document.on('mousemove', positionTipOnCursor);
-				$window.on('scroll', positionTipOnCursor);
+				$document.on('mousemove' + EVENT_NAMESPACE, positionTipOnCursor);
+				$window.on('scroll' + EVENT_NAMESPACE, positionTipOnCursor);
 				tipElement.data(DATA_HASMOUSEMOVE, true);
 			}
-		}
-
-		// if we want to be able to mouse onto the tooltip then we need to attach
-		// hover events to the tooltip that will cancel a close request on hover and
-		// start a new close request on mouseleave
-		if (options.mouseOnToPopup) {
-			tipElement.on({
-				mouseenter: function tipMouseEnter() {
-					// we only let the mouse stay on the tooltip if it is set to let
-					// users interact with it
-					if (tipElement.data(DATA_MOUSEONTOTIP)) {
-						// check activeHover in case the mouse cursor entered the
-						// tooltip during the fadeOut and close cycle
-						if (session.activeHover) {
-							session.activeHover.data(DATA_DISPLAYCONTROLLER).cancel();
-						}
-					}
-				},
-				mouseleave: function tipMouseLeave() {
-					// check activeHover in case the mouse cursor entered the
-					// tooltip during the fadeOut and close cycle
-					if (session.activeHover) {
-						session.activeHover.data(DATA_DISPLAYCONTROLLER).hide();
-					}
-				}
-			});
 		}
 
 		/**
@@ -745,12 +881,58 @@
 
 			tipElement.data(DATA_MOUSEONTOTIP, options.mouseOnToPopup);
 
+			// add custom class to tooltip element
+			tipElement.addClass(options.popupClass);
+
 			// set tooltip position
-			if (!options.followMouse) {
+			// revert to static placement when the "force open" flag was set because
+			// that flag means that we do not have accurate mouse position info
+			if (!options.followMouse || element.data(DATA_FORCEDOPEN)) {
 				positionTipOnElement(element);
 				session.isFixedTipOpen = true;
 			} else {
 				positionTipOnCursor();
+			}
+
+			// close tooltip when clicking anywhere on the page, with the exception
+			// of the tooltip's trigger element and any elements that are within a
+			// tooltip that has 'mouseOnToPopup' option enabled
+			// always enable this feature when the "force open" flag is set on a
+			// followMouse tooltip because we reverted to static placement above
+			if (!element.data(DATA_FORCEDOPEN) && !options.followMouse) {
+				$document.on('click' + EVENT_NAMESPACE, function documentClick(event) {
+					var target = event.target;
+					if (target !== element[0]) {
+						if (options.mouseOnToPopup) {
+							if (target !== tipElement[0] && !$.contains(tipElement[0], target)) {
+								$.powerTip.hide();
+							}
+						} else {
+							$.powerTip.hide();
+						}
+					}
+				});
+			}
+
+			// if we want to be able to mouse on to the tooltip then we need to
+			// attach hover events to the tooltip that will cancel a close request
+			// on mouseenter and start a new close request on mouseleave
+			// only hook these listeners if we're not in manual mode
+			if (options.mouseOnToPopup && !options.manual) {
+				tipElement.on('mouseenter' + EVENT_NAMESPACE, function tipMouseEnter() {
+					// check activeHover in case the mouse cursor entered the
+					// tooltip during the fadeOut and close cycle
+					if (session.activeHover) {
+						session.activeHover.data(DATA_DISPLAYCONTROLLER).cancel();
+					}
+				});
+				tipElement.on('mouseleave' + EVENT_NAMESPACE, function tipMouseLeave() {
+					// check activeHover in case the mouse cursor left the tooltip
+					// during the fadeOut and close cycle
+					if (session.activeHover) {
+						session.activeHover.data(DATA_DISPLAYCONTROLLER).hide();
+					}
+				});
 			}
 
 			// fadein
@@ -773,7 +955,6 @@
 		function hideTip(element) {
 			// reset session
 			session.isClosing = true;
-			session.activeHover = null;
 			session.isTipOpen = false;
 
 			// stop desync polling
@@ -783,11 +964,18 @@
 			element.data(DATA_HASACTIVEHOVER, false);
 			element.data(DATA_FORCEDOPEN, false);
 
+			// remove document click handler
+			$document.off('click' + EVENT_NAMESPACE);
+
+			// unbind the mouseOnToPopup events if they were set
+			tipElement.off(EVENT_NAMESPACE);
+
 			// fade out
 			tipElement.fadeOut(options.fadeOutTime, function fadeOutCallback() {
 				var coords = new CSSCoordinates();
 
 				// reset session and tooltip element
+				session.activeHover = null;
 				session.isClosing = false;
 				session.isFixedTipOpen = false;
 				tipElement.removeClass();
@@ -808,6 +996,12 @@
 		 * @private
 		 */
 		function positionTipOnCursor() {
+			var tipWidth,
+				tipHeight,
+				coords,
+				collisions,
+				collisionCount;
+
 			// to support having fixed tooltips on the same page as cursor tooltips,
 			// where both instances are referencing the same tooltip element, we
 			// need to keep track of the mouse position constantly, but we should
@@ -816,11 +1010,9 @@
 			// have a mouse-follow using it.
 			if (!session.isFixedTipOpen && (session.isTipOpen || (session.tipOpenImminent && tipElement.data(DATA_HASMOUSEMOVE)))) {
 				// grab measurements
-				var tipWidth = tipElement.outerWidth(),
-					tipHeight = tipElement.outerHeight(),
-					coords = new CSSCoordinates(),
-					collisions,
-					collisionCount;
+				tipWidth = tipElement.outerWidth();
+				tipHeight = tipElement.outerHeight();
+				coords = new CSSCoordinates();
 
 				// grab collisions
 				coords.set('top', session.currentY + options.offset);
@@ -838,7 +1030,7 @@
 						// if there is only one collision (bottom or right) then
 						// simply constrain the tooltip to the view port
 						if (collisions === Collision.right) {
-							coords.set('left', session.windowWidth - tipWidth);
+							coords.set('left', session.scrollLeft + session.windowWidth - tipWidth);
 						} else if (collisions === Collision.bottom) {
 							coords.set('top', session.scrollTop + session.windowHeight - tipHeight);
 						}
@@ -866,7 +1058,10 @@
 			var priorityList,
 				finalPlacement;
 
-			if (options.smartPlacement) {
+			// when the followMouse option is enabled and the "force open" flag is
+			// set we revert to static positioning. since the developer may not have
+			// considered this scenario we should use smart placement
+			if (options.smartPlacement || (options.followMouse && element.data(DATA_FORCEDOPEN))) {
 				priorityList = $.fn.powerTip.smartPlacementLists[options.placement];
 
 				// iterate over the priority list and use the first placement option
@@ -884,9 +1079,7 @@
 					finalPlacement = pos;
 
 					// break if there were no collisions
-					if (collisions === Collision.none) {
-						return false;
-					}
+					return collisions !== Collision.none;
 				});
 			} else {
 				// if we're not going to use the smart placement feature then just
@@ -896,6 +1089,7 @@
 			}
 
 			// add placement as class for CSS arrows
+			tipElement.removeClass('w nw sw e ne se n s w se-alt sw-alt ne-alt nw-alt');
 			tipElement.addClass(finalPlacement);
 		}
 
@@ -953,18 +1147,25 @@
 		 * @private
 		 */
 		function closeDesyncedTip() {
-			var isDesynced = false;
+			var isDesynced = false,
+				hasDesyncableCloseEvent = $.grep(
+					[ 'mouseleave', 'mouseout', 'blur', 'focusout' ],
+					function(eventType) {
+						return $.inArray(eventType, options.closeEvents) !== -1;
+					}
+				).length > 0;
+
 			// It is possible for the mouse cursor to leave an element without
 			// firing the mouseleave or blur event. This most commonly happens when
 			// the element is disabled under mouse cursor. If this happens it will
 			// result in a desynced tooltip because the tooltip was never asked to
 			// close. So we should periodically check for a desync situation and
 			// close the tip if such a situation arises.
-			if (session.isTipOpen && !session.isClosing && !session.delayInProgress) {
-				// user moused onto another tip or active hover is disabled
+			if (session.isTipOpen && !session.isClosing && !session.delayInProgress && hasDesyncableCloseEvent) {
 				if (session.activeHover.data(DATA_HASACTIVEHOVER) === false || session.activeHover.is(':disabled')) {
+					// user moused onto another tip or active hover is disabled
 					isDesynced = true;
-				} else {
+				} else if (!isMouseOver(session.activeHover) && !session.activeHover.is(':focus') && !session.activeHover.data(DATA_FORCEDOPEN)) {
 					// hanging tip - have to test if mouse position is not over the
 					// active hover and not over a tooltip set to let the user
 					// interact with it.
@@ -972,14 +1173,12 @@
 					// not have focus.
 					// for tooltips opened via the api: we need to check if it has
 					// the forcedOpen flag.
-					if (!isMouseOver(session.activeHover) && !session.activeHover.is(':focus') && !session.activeHover.data(DATA_FORCEDOPEN)) {
-						if (tipElement.data(DATA_MOUSEONTOTIP)) {
-							if (!isMouseOver(tipElement)) {
-								isDesynced = true;
-							}
-						} else {
+					if (tipElement.data(DATA_MOUSEONTOTIP)) {
+						if (!isMouseOver(tipElement)) {
 							isDesynced = true;
 						}
+					} else {
+						isDesynced = true;
 					}
 				}
 
@@ -1003,7 +1202,18 @@
 	 * @return {boolean} Whether this is an SVG element
 	 */
 	function isSvgElement(element) {
-		return window.SVGElement && element[0] instanceof SVGElement;
+		return Boolean(window.SVGElement && element[0] instanceof SVGElement);
+	}
+
+	/**
+	 * Determines if the specified jQuery.Event object has mouse data.
+	 * @private
+	 * @param {jQuery.Event=} event The jQuery.Event object to test.
+	 * @return {boolean} True if there is mouse data, otherwise false.
+	 */
+	function isMouseEvent(event) {
+		return Boolean(event && $.inArray(event.type, MOUSE_EVENTS) > -1 &&
+			typeof event.pageX === 'number');
 	}
 
 	/**
@@ -1017,35 +1227,52 @@
 			session.mouseTrackingActive = true;
 
 			// grab the current viewport dimensions on load
-			$(function getViewportDimensions() {
-				session.scrollLeft = $window.scrollLeft();
-				session.scrollTop = $window.scrollTop();
-				session.windowWidth = $window.width();
-				session.windowHeight = $window.height();
-			});
+			getViewportDimensions();
+			$(getViewportDimensions);
 
 			// hook mouse move tracking
-			$document.on('mousemove', trackMouse);
+			$document.on('mousemove' + EVENT_NAMESPACE, trackMouse);
 
 			// hook viewport dimensions tracking
-			$window.on({
-				resize: function trackResize() {
-					session.windowWidth = $window.width();
-					session.windowHeight = $window.height();
-				},
-				scroll: function trackScroll() {
-					var x = $window.scrollLeft(),
-						y = $window.scrollTop();
-					if (x !== session.scrollLeft) {
-						session.currentX += x - session.scrollLeft;
-						session.scrollLeft = x;
-					}
-					if (y !== session.scrollTop) {
-						session.currentY += y - session.scrollTop;
-						session.scrollTop = y;
-					}
-				}
-			});
+			$window.on('resize' + EVENT_NAMESPACE, trackResize);
+			$window.on('scroll' + EVENT_NAMESPACE, trackScroll);
+		}
+	}
+
+	/**
+	 * Updates the viewport dimensions cache.
+	 * @private
+	 */
+	function getViewportDimensions() {
+		session.scrollLeft = $window.scrollLeft();
+		session.scrollTop = $window.scrollTop();
+		session.windowWidth = $window.width();
+		session.windowHeight = $window.height();
+	}
+
+	/**
+	 * Updates the window size info in the viewport dimensions cache.
+	 * @private
+	 */
+	function trackResize() {
+		session.windowWidth = $window.width();
+		session.windowHeight = $window.height();
+	}
+
+	/**
+	 * Updates the scroll offset info in the viewport dimensions cache.
+	 * @private
+	 */
+	function trackScroll() {
+		var x = $window.scrollLeft(),
+			y = $window.scrollTop();
+		if (x !== session.scrollLeft) {
+			session.currentX += x - session.scrollLeft;
+			session.scrollLeft = x;
+		}
+		if (y !== session.scrollTop) {
+			session.currentY += y - session.scrollTop;
+			session.scrollTop = y;
 		}
 	}
 
@@ -1063,7 +1290,7 @@
 	 * Tests if the mouse is currently over the specified element.
 	 * @private
 	 * @param {jQuery} element The element to check for hover.
-	 * @return {boolean}
+	 * @return {boolean} True if the mouse is over the element, otherwise false.
 	 */
 	function isMouseOver(element) {
 		// use getBoundingClientRect() because jQuery's width() and height()
@@ -1128,7 +1355,7 @@
 	 */
 	function getViewportCollisions(coords, elementWidth, elementHeight) {
 		var viewportTop = session.scrollTop,
-			viewportLeft =  session.scrollLeft,
+			viewportLeft = session.scrollLeft,
 			viewportBottom = viewportTop + session.windowHeight,
 			viewportRight = viewportLeft + session.windowWidth,
 			collisions = Collision.none;
@@ -1163,4 +1390,6 @@
 		return count;
 	}
 
+	// return api for commonjs and amd environments
+	return $.powerTip;
 }));
