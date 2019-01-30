@@ -9,7 +9,7 @@ packages:
     - jquery.ui.resizable
 - jquery.hashchange:   1.3: http://benalman.com/projects/jquery-hashchange-plugin/
 - jquery.scrollTo:   1.4.2: https://github.com/flesler/jquery.scrollTo
-- jquery.powertip:   1.2.0: https://stevenbenner.github.io/jquery-powertip/
+- jquery.powertip:   1.3.1: https://stevenbenner.github.io/jquery-powertip/
 - jquery.touchpunch: 0.2.3: http://touchpunch.furf.com/
 - jquery.smartmenus: 1.0.0: https://www.smartmenus.org/
 
