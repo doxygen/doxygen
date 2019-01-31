@@ -1227,7 +1227,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
      /* State for the pass used to find the anchors and sections */ 
 
 <St_Sections>[^\n@\\<]+
-<St_Sections>"@@"|"\\\\"|"@<"|"\\<"
+<St_Sections>{CMD}("<"|{CMD})
 <St_Sections>"<"{CAPTION}({WS}+{ATTRIB})*">" {
                                       QCString tag=yytext;
                                       int s=tag.find("id=");
