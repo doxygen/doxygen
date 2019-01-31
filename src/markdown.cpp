@@ -1886,10 +1886,16 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
 static int hasLineBreak(const char *data,int size)
 {
   int i=0;
-  while (i<size && data[i]!='\n') i++;
+  int j=0;
+  // search for end of line and also check if it is not a completely blank
+  while (i<size && data[i]!='\n')
+  {
+    if (data[i]!=' ' && data[i]!='\t') j++; // some non whitespace
+    i++;
+  }
   if (i>=size) return 0; // empty line
   if (i<2) return 0; // not long enough
-  return (data[i-1]==' ' && data[i-2]==' ');
+  return (j>0 && data[i-1]==' ' && data[i-2]==' '); // non blank line with at two spaces at the end
 }
 
 
@@ -1947,7 +1953,7 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
     out.addStr(data,size);
     if (hasLineBreak(data,size))
     {
-      out.addStr("\n");
+      out.addStr("<br>");
     }
   }
 }
