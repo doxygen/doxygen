@@ -767,14 +767,12 @@ DB_VIS_C
       }
       break;
     case DocSimpleSect::User:
+    case DocSimpleSect::Rcs:
+    case DocSimpleSect::Unknown:
       if (s->hasTitle())
         m_t << "<formalpara>" << endl;
       else
         m_t << "<para>" << endl;
-      break;
-    case DocSimpleSect::Rcs:
-    case DocSimpleSect::Unknown:
-      m_t << "<para>" << endl;
       break;
   }
 }
@@ -785,11 +783,9 @@ DB_VIS_C
   if (m_hide) return;
   switch(s->type())
   {
+    case DocSimpleSect::User:
     case DocSimpleSect::Rcs:
     case DocSimpleSect::Unknown:
-      m_t << "</para>" << endl;
-      break;
-    case DocSimpleSect::User:
       if (s->hasTitle())
         m_t << "</formalpara>" << endl;
       else
