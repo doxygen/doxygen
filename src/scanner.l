@@ -6651,7 +6651,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             docBlock+=indent;
                                           }
   					}
-<DocCopyBlock>^{B}*"*"+/{BN}+"*"{BN}*	{ // start of a comment line with two *'s
+<DocCopyBlock>^{B}*"*"+/{B}+"*"{BN}*	{ // start of a comment line with two *'s
   					  if (docBlockName=="code")
                                           {
                                             QCString indent;
