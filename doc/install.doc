@@ -116,6 +116,26 @@ Compilation is now done by performing the following steps:
     documentation (just point a HTML browser to the file
     <code>index.html</code> in the html directory).
     
+<li>Optional: static linking
+
+    If you want to build a statically linked version of doxygen that embeds libclang
+    you need to first build LLVM and clang from sources using the following options:
+
+        cmake -DLIBCLANG_BUILD_STATIC=ON \
+              -DBUILD_SHARED_LIBS=OFF \
+              -DLLVM_ENABLE_PIC=OFF \
+              -DLLVM_BUILD_LLVM_DYLIB=OFF \
+              -DLLVM_BUILD_LLVM_C_DYLIB=OFF \
+              path_to_llvm_root_source_dir
+
+    and then build doxygen with these options:
+
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a" \
+              "-ldl;-lz;-lncurses;-lpthread" \
+              -Duse_libclang=YES \
+              path_to_doxygen_root_source_dir
+
 </ol>
 
 \section install_bin_unix    Installing the binaries on UNIX
