@@ -1037,7 +1037,12 @@ static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttrib
     {
       if (!opt->value.isEmpty())
       {
-        DocAnchor *anc = new DocAnchor(parent,opt->value,TRUE);
+        // copy attributes
+        HtmlAttribList attrList = tagHtmlAttribs;
+        // and remove the href attribute
+        bool result = attrList.remove(index);
+        ASSERT(result);
+        DocAnchor *anc = new DocAnchor(parent,opt->value,TRUE,attrList);
         children.append(anc);
         break; // stop looking for other tag attribs
       }
@@ -1929,7 +1934,7 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QCString &word,
 
 //---------------------------------------------------------------------------
 
-DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor) 
+void DocAnchor::docAnchorInit(DocNode *parent,const QCString &id,bool newAnchor)
 {
   m_parent = parent; 
   if (id.isEmpty())
@@ -3073,7 +3078,7 @@ int DocHtmlHeader::parse()
             }
             else if (tagId==HTML_BR)
             {
-              DocLineBreak *lb = new DocLineBreak(this);
+              DocLineBreak *lb = new DocLineBreak(this,g_token->attribs);
               m_children.append(lb);
             }
             else
@@ -6080,13 +6085,13 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_BR:
       {
-        DocLineBreak *lb = new DocLineBreak(this);
+        DocLineBreak *lb = new DocLineBreak(this,tagHtmlAttribs);
         m_children.append(lb);
       }
       break;
     case HTML_HR:
       {
-        DocHorRuler *hr = new DocHorRuler(this);
+        DocHorRuler *hr = new DocHorRuler(this,tagHtmlAttribs);
         m_children.append(hr);
       }
       break;
@@ -6861,6 +6866,10 @@ endparagraph:
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
   DBG(("DocPara::parse() end retval=%x\n",retval));
+  if (!g_token->endTag && retval == TK_NEWPARA && g_token->name.lower() == "p")
+  {
+    ((DocPara *)n) -> m_attribs = g_token->attribs;
+  }
   INTERNAL_ASSERT(retval==0 || retval==TK_NEWPARA || retval==TK_LISTITEM || 
          retval==TK_ENDLIST || retval>RetVal_OK 
 	);
@@ -7128,7 +7137,7 @@ void DocRoot::parse()
     DocPara *par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (!par->isEmpty()) 
+    if (!par->isEmpty() || par->attribs().count()) 
     {
       m_children.append(par);
       lastPar=par;

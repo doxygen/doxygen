@@ -350,17 +350,17 @@ void HtmlDocVisitor::visit(DocURL *u)
   }
 }
 
-void HtmlDocVisitor::visit(DocLineBreak *)
+void HtmlDocVisitor::visit(DocLineBreak *br)
 {
   if (m_hide) return;
-  m_t << "<br />\n";
+  m_t << "<br "<< htmlAttribsToString(br->attribs()) << " />\n";
 }
 
 void HtmlDocVisitor::visit(DocHorRuler *hr)
 {
   if (m_hide) return;
   forceEndParagraph(hr);
-  m_t << "<hr/>\n";
+  m_t << "<hr "<< htmlAttribsToString(hr->attribs()) << " />\n";
   forceStartParagraph(hr);
 }
 
@@ -614,7 +614,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
 void HtmlDocVisitor::visit(DocAnchor *anc)
 {
   if (m_hide) return;
-  m_t << "<a class=\"anchor\" id=\"" << anc->anchor() << "\"></a>";
+  m_t << "<a class=\"anchor\" id=\"" << anc->anchor() << "\"" << htmlAttribsToString(anc->attribs()) << "></a>";
 }
 
 void HtmlDocVisitor::visit(DocInclude *inc)
@@ -1206,9 +1206,9 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   //printf("  needsTag=%d\n",needsTag);
   // write the paragraph tag (if needed)
   if (needsTag)
-    m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(p), contexts[t]) << ">";
+    m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(p), contexts[t]) << htmlAttribsToString(p->attribs()) << ">";
   else if(!paragraphAlreadyStarted)
-    m_t << getHtmlDirEmbedingChar(getTextDirByConfig(p));
+    m_t << getHtmlDirEmbedingChar(getTextDirByConfig(p)) << htmlAttribsToString(p->attribs());
 }
 
 void HtmlDocVisitor::visitPost(DocPara *p)
@@ -1492,7 +1492,9 @@ void HtmlDocVisitor::visitPre(DocHtmlTable *t)
 
   if (t->hasCaption())
   {
-    m_t << "<a class=\"anchor\" id=\"" << t->caption()->anchor() << "\"></a>\n";
+    QCString anc =  t->caption()->anchor();
+    if (!anc.isEmpty())
+      m_t << "<a class=\"anchor\" id=\"" << anc << "\"></a>\n";
   }
 
   QString attrs = htmlAttribsToString(t->attribs());
