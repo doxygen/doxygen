@@ -616,27 +616,16 @@ static void detectNoDocumentedParams()
         g_memberDef->setHasDocumentedParams(TRUE);
       }
     }
-    //printf("Member %s hadDocumentedReturnType()=%d hasReturnCommand=%d\n",
+    //printf("Member %s hasDocumentedReturnType()=%d hasReturnCommand=%d\n",
     //    g_memberDef->name().data(),g_memberDef->hasDocumentedReturnType(),g_hasReturnCommand);
     if (!g_memberDef->hasDocumentedReturnType() && // docs not yet found
         g_hasReturnCommand)
     {
       g_memberDef->setHasDocumentedReturnType(TRUE);
     }
-    else if ( // see if return needs to documented 
-        g_memberDef->hasDocumentedReturnType() ||
-        returnType.isEmpty()         || // empty return type
-        returnType.find("void")!=-1  || // void return type
-        returnType.find("subroutine")!=-1 || // fortran subroutine
-        g_memberDef->isConstructor() || // a constructor
-        g_memberDef->isDestructor()     // or destructor
-       )
-    {
-      g_memberDef->setHasDocumentedReturnType(TRUE);
-    }
     else if ( // see if return type is documented in a function w/o return type
-        g_memberDef->hasDocumentedReturnType() &&
-        (returnType.isEmpty()              || // empty return type
+        g_hasReturnCommand &&
+        (//returnType.isEmpty()              || // empty return type
          returnType.find("void")!=-1       || // void return type
          returnType.find("subroutine")!=-1 || // fortran subroutine
          g_memberDef->isConstructor()      || // a constructor
@@ -644,7 +633,18 @@ static void detectNoDocumentedParams()
         )
        )
     {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"documented empty return type");
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"documented empty return type of  %s",g_memberDef->qualifiedName().data());
+    }
+    else if ( // see if return needs to documented 
+        g_memberDef->hasDocumentedReturnType() ||
+        //returnType.isEmpty()         || // empty return type
+        returnType.find("void")!=-1  || // void return type
+        returnType.find("subroutine")!=-1 || // fortran subroutine
+        g_memberDef->isConstructor() || // a constructor
+        g_memberDef->isDestructor()     // or destructor
+       )
+    {
+      g_memberDef->setHasDocumentedReturnType(TRUE);
     }
   }
 }
