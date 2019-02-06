@@ -7818,6 +7818,7 @@ static void computeMemberRelations()
           //      );
           if (md!=bmd && bmcd && mcd && bmcd!=mcd &&
               (bmd->virtualness()!=Normal || bmd->getLanguage()==SrcLangExt_Python ||
+               bmd->getLanguage()==SrcLangExt_Java || bmd->getLanguage()==SrcLangExt_PHP ||
                bmcd->compoundType()==ClassDef::Interface ||
                bmcd->compoundType()==ClassDef::Protocol
               ) &&
