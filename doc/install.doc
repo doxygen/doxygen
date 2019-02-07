@@ -126,13 +126,14 @@ Compilation is now done by performing the following steps:
               -DLLVM_ENABLE_PIC=OFF \
               -DLLVM_BUILD_LLVM_DYLIB=OFF \
               -DLLVM_BUILD_LLVM_C_DYLIB=OFF \
+              -DLLVM_ENABLE_TERMINFO=OFF \
               path_to_llvm_root_source_dir
 
     and then build doxygen with these options:
 
         cmake -DCMAKE_BUILD_TYPE=Release \
               "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a" \
-              "-ldl;-lz;-lncurses;-lpthread" \
+              "-ldl;-lz;-lpthread" \
               -Duse_libclang=YES \
               path_to_doxygen_root_source_dir
 
