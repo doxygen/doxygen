@@ -43,7 +43,7 @@
 #include "ftvhelp.h"
 #include "bufstr.h"
 #include "resourcemgr.h"
-
+#include "tooltip.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -989,6 +989,9 @@ void HtmlGenerator::writePageFooter(FTextStream &t,const QCString &lastTitle,
 
 void HtmlGenerator::writeFooter(const char *navPath)
 {
+  // Currently only tooltips in HTML
+  TooltipManager::instance()->writeTooltips(m_codeGen);
+
   writePageFooter(t,lastTitle,relPath,navPath);
 }
 
