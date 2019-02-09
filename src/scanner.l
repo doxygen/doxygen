@@ -6829,6 +6829,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <SkipComment>[^\*\n]+
 
 <*>"[["                                 { // C++11 attribute
+                                          if (!insideCpp) REJECT;
+                                          if (YY_START == CopyGString || YY_START == CopyGString) REJECT;
                                           lastC11AttributeContext = YY_START;
                                           BEGIN( SkipC11Attribute );
                                         }
