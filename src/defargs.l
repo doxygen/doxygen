@@ -615,7 +615,7 @@ void stringToArgumentList(const char *argsString,ArgumentList* al,QCString *extr
   BEGIN( Start );
   defargsYYlex();
   if (extraTypeChars) *extraTypeChars=g_extraTypeChars;
-  printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
+  //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
   printlex(yy_flex_debug, FALSE, __FILE__, NULL);
 }
 
