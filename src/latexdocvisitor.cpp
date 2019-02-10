@@ -38,7 +38,7 @@
 
 const int maxLevels=5;
 static const char *secLabels[maxLevels] = 
-   { "section","subsection","subsubsection","paragraph","subparagraph" };
+   { "doxysection","doxysubsection","doxysubsubsection","doxyparagraph","doxysubparagraph" };
 
 static const char *getSectionName(int level)
 {
