@@ -1569,7 +1569,6 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   if (s.isEmpty()) return;
   printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
   g_codeClassSDict.setAutoDelete(TRUE);
-  TooltipManager::instance()->clearTooltips();
   g_code = &od;
   g_inputString   = s;
   g_inputPosition = 0;
@@ -1619,10 +1618,6 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   if (g_needsTermination)
   {
     endCodeLine();
-  }
-  if (fd)
-  {
-    TooltipManager::instance()->writeTooltips(*g_code);
   }
   if (cleanupSourceDef)
   {
