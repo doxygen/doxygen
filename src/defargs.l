@@ -282,6 +282,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <CopyArgSharp>"<<"                      {
                                           if (g_argRoundCount>0)
                                           {
+                                            // for e.g. < typename A = (i<<3) >
 					    *g_copyArgValue += yytext;
                                           }
                                           else
@@ -289,17 +290,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                             REJECT;
                                           }
                                         }
-<CopyArgSharp>">>)"                     { // combined token (see bug 790320)
-					  *g_copyArgValue += yytext;
-					  if (g_argSharpCount>0) g_argSharpCount--;
-					  else BEGIN( g_readArgContext );
-					  if (g_argSharpCount>0) g_argSharpCount--;
-					  else BEGIN( g_readArgContext );
-                                          g_argRoundCount--;
-                                        }
 <CopyArgSharp>">>"                      {
                                           if (g_argRoundCount>0)
                                           {
+                                            // for e.g. < typename A = (i>>3) >
 					    *g_copyArgValue += yytext;
                                           }
                                           else
@@ -308,12 +302,14 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           }
                                         }
 <CopyArgSharp>"<"			{
-  					  g_argSharpCount++;
+                                          // don't count < inside (, e.g. for things like: < typename A=(i<6) >
+  					  if (g_argRoundCount==0) g_argSharpCount++;
 					  *g_copyArgValue += *yytext;
   					}
 <CopyArgSharp>">"			{
 					  *g_copyArgValue += *yytext;
-					  if (g_argSharpCount>0) g_argSharpCount--;
+                                          // don't count > inside )
+					  if (g_argSharpCount>0 && g_argRoundCount==0) g_argSharpCount--;
 					  else BEGIN( g_readArgContext );
   					}
 <CopyArgSharp>"("                       {
@@ -619,7 +615,7 @@ void stringToArgumentList(const char *argsString,ArgumentList* al,QCString *extr
   BEGIN( Start );
   defargsYYlex();
   if (extraTypeChars) *extraTypeChars=g_extraTypeChars;
-  //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
+  printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
   printlex(yy_flex_debug, FALSE, __FILE__, NULL);
 }
 
