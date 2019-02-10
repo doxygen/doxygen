@@ -335,11 +335,11 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
               "could not write output image %s",qPrint(outputFile));
         }
       }
-      else
-      {
-        warn(g_fileName,doctokenizerYYlineno,
-             "Prevented to copy file %s onto itself!\n",qPrint(inputFile));
-      }
+      //else
+      //{
+      //  warn(g_fileName,doctokenizerYYlineno,
+      //       "Prevented to copy file %s onto itself!\n",qPrint(inputFile));
+      //}
     }
     else
     {
