@@ -20,7 +20,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="40" column="1" declfile="070_ref_variadic_template.cpp" declline="40" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="40" column="6" declfile="070_ref_variadic_template.cpp" declline="40" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="070__ref__variadic__template_8cpp_1aa7e4936a17759246bce60256cf224e16" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -49,7 +49,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="45" column="1" declfile="070_ref_variadic_template.cpp" declline="45" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="45" column="6" declfile="070_ref_variadic_template.cpp" declline="45" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="070__ref__variadic__template_8cpp_1ad6fc2d2a6cb8980f3e0eaacbd2ae41fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -78,7 +78,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="50" column="1" declfile="070_ref_variadic_template.cpp" declline="50" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="50" column="6" declfile="070_ref_variadic_template.cpp" declline="50" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="070__ref__variadic__template_8cpp_1a708a5bf22646ed7233fe61b83182811a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -107,7 +107,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="55" column="1" declfile="070_ref_variadic_template.cpp" declline="55" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="55" column="6" declfile="070_ref_variadic_template.cpp" declline="55" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="070__ref__variadic__template_8cpp_1aed64c596fea5f4f5e719006539922f7c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -136,7 +136,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="60" column="1" declfile="070_ref_variadic_template.cpp" declline="60" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="60" column="6" declfile="070_ref_variadic_template.cpp" declline="60" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="070__ref__variadic__template_8cpp_1a0ad18d95a1dc2dbacee657c43f719187" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -165,7 +165,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="65" column="1" declfile="070_ref_variadic_template.cpp" declline="65" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="65" column="6" declfile="070_ref_variadic_template.cpp" declline="65" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="070__ref__variadic__template_8cpp_1a2331eedd0a1db9da5de0ad0faef78a4e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -194,7 +194,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="70" column="1" declfile="070_ref_variadic_template.cpp" declline="70" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="70" column="6" declfile="070_ref_variadic_template.cpp" declline="70" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="070__ref__variadic__template_8cpp_1a72bd94e61df947347f98a2a6214e9342" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -223,7 +223,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="75" column="1" declfile="070_ref_variadic_template.cpp" declline="75" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="75" column="6" declfile="070_ref_variadic_template.cpp" declline="75" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="070__ref__variadic__template_8cpp_1a0bd03c39aa36ae51d2b8d87e04cf7eab" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -252,7 +252,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="80" column="1" declfile="070_ref_variadic_template.cpp" declline="80" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="80" column="6" declfile="070_ref_variadic_template.cpp" declline="80" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="070__ref__variadic__template_8cpp_1abb1e0338f72ae46a1240ada65d6a397c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -281,7 +281,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="070_ref_variadic_template.cpp" line="85" column="1" declfile="070_ref_variadic_template.cpp" declline="85" declcolumn="1"/>
+        <location file="070_ref_variadic_template.cpp" line="85" column="6" declfile="070_ref_variadic_template.cpp" declline="85" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

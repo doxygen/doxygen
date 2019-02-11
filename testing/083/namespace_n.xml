@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="083_decl_def.cpp" line="11" column="1" bodyfile="083_decl_def.cpp" bodystart="11" bodyend="-1" declfile="decl_def.h" declline="5" declcolumn="1"/>
+        <location file="083_decl_def.cpp" line="11" column="5" bodyfile="083_decl_def.cpp" bodystart="11" bodyend="-1" declfile="decl_def.h" declline="5" declcolumn="12"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
@@ -37,7 +37,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="083_decl_def.cpp" line="14" column="1" bodyfile="083_decl_def.cpp" bodystart="14" bodyend="16" declfile="decl_def.h" declline="8" declcolumn="1"/>
+        <location file="083_decl_def.cpp" line="14" column="6" bodyfile="083_decl_def.cpp" bodystart="14" bodyend="16" declfile="decl_def.h" declline="8" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

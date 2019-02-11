@@ -25,7 +25,6 @@
 #include "config.h"
 #include "util.h"
 #include "doxygen.h"
-#include "logos.h"
 #include "diagram.h"
 #include "version.h"
 #include "dot.h"

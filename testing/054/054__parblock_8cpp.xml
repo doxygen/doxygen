@@ -91,7 +91,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="054_parblock.cpp" line="33" column="1" declfile="054_parblock.cpp" declline="33" declcolumn="1"/>
+        <location file="054_parblock.cpp" line="33" column="6" declfile="054_parblock.cpp" declline="33" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="054__parblock_8cpp_1a5cded03ec9e6fd626da35ab05f624f39" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -181,7 +181,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="054_parblock.cpp" line="60" column="1" declfile="054_parblock.cpp" declline="60" declcolumn="1"/>
+        <location file="054_parblock.cpp" line="60" column="6" declfile="054_parblock.cpp" declline="60" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

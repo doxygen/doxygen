@@ -25,7 +25,6 @@
 
 struct SectionInfo;
 class QFile;
-class EntryNav;
 class FileDef;
 class FileStorage;
 class StorageIntf;
@@ -199,7 +198,6 @@ class Entry
     int getSize();
 
     void addSpecialListItem(const char *listName,int index);
-    void createNavigationIndex(EntryNav *rootNav,FileStorage *storage,FileDef *fd);
 
     // while parsing a file these function can be used to navigate/build the tree
     void setParent(Entry *parent) { m_parent = parent; }
@@ -226,11 +224,9 @@ class Entry
      */
     void reset();
 
-    /*! Serialize this entry to a persistent storage stream. */
-    void marshall(StorageIntf *);
-
-    /*! Reinitialize this entry from a persistent storage stream. */
-    void unmarshall(StorageIntf *);
+    void changeSection(int sec) { section = sec; }
+    void setFileDef(FileDef *fd);
+    FileDef *fileDef() const { return m_fileDef; }
 
   public:
 
@@ -326,64 +322,13 @@ class Entry
     }
 
   private:
-    void createSubtreeIndex(EntryNav *nav,FileStorage *storage,FileDef *fd);
     Entry         *m_parent;    //!< parent node in the tree
     QList<Entry>  *m_sublist;   //!< entries that are children of this one
     Entry &operator=(const Entry &);
+    FileDef       *m_fileDef;
 };
-
-/** Wrapper for a node in the Entry tree.
- *
- *  Allows navigating through the Entry tree and load and storing Entry
- *  objects persistently to disk.
- */
-class EntryNav
-{
-  public:
-    EntryNav(EntryNav *parent,Entry *e);
-   ~EntryNav();
-    void addChild(EntryNav *);
-    bool loadEntry(FileStorage *storage);
-    bool saveEntry(Entry *e,FileStorage *storage);
-    void setEntry(Entry *e);
-    void releaseEntry();
-    void changeSection(int section) { m_section = section; }
-    void setFileDef(FileDef *fd) { m_fileDef = fd; }
-
-    Entry *entry() const { return m_info; }
-    int section() const { return m_section; }
-    SrcLangExt lang() const { return m_lang; }
-    const QCString &type() const { return m_type; }
-    const QCString &name() const { return m_name; }
-    TagInfo *tagInfo() const { return m_tagInfo; }
-    const QList<EntryNav> *children() const { return m_subList; }
-    EntryNav *parent() const { return m_parent; }
-    FileDef *fileDef() const { return m_fileDef; }
-
-  private:
-
-    // navigation
-    EntryNav        *m_parent;    //!< parent node in the tree
-    QList<EntryNav> *m_subList;   //!< entries that are children of this one
-
-    // identification
-    int          m_section;     //!< entry type (see Sections);
-    QCString	 m_type;        //!< member type
-    QCString	 m_name;        //!< member name
-    TagInfo     *m_tagInfo;      //!< tag file info
-    FileDef     *m_fileDef;
-    SrcLangExt   m_lang;         //!< programming language in which this entry was found
-
-    Entry       *m_info;
-    int64        m_offset;
-    bool         m_noLoad;
-};
-
 
 typedef QList<Entry> EntryList;
 typedef QListIterator<Entry> EntryListIterator;
-
-typedef QList<EntryNav> EntryNavList;
-typedef QListIterator<EntryNav> EntryNavListIterator;
 
 #endif

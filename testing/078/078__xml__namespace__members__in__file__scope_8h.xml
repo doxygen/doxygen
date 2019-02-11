@@ -14,7 +14,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="078_xml_namespace_members_in_file_scope.h" line="15" column="1" bodyfile="078_xml_namespace_members_in_file_scope.h" bodystart="15" bodyend="15"/>
+        <location file="078_xml_namespace_members_in_file_scope.h" line="15" column="16" bodyfile="078_xml_namespace_members_in_file_scope.h" bodystart="15" bodyend="15"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="078_xml_namespace_members_in_file_scope.h" line="12" column="1" declfile="078_xml_namespace_members_in_file_scope.h" declline="12" declcolumn="1"/>
+        <location file="078_xml_namespace_members_in_file_scope.h" line="12" column="6" declfile="078_xml_namespace_members_in_file_scope.h" declline="12" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

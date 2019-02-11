@@ -15,7 +15,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="21" column="1"/>
+        <location file="074_ref.cpp" line="21" column="3"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a279debd94d894223fa8468933e2d6188" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
@@ -33,7 +33,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="32" column="1"/>
+        <location file="074_ref.cpp" line="32" column="3"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a48bcc3de9b2f1ad09a3518a0c9f0da61" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
         <type>const <ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
@@ -51,7 +51,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="35" column="1"/>
+        <location file="074_ref.cpp" line="35" column="9"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a3a41dcf8c53f777d50676ea28400a640" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -69,7 +69,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="38" column="1"/>
+        <location file="074_ref.cpp" line="38" column="7"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1ae3c9c1f33cdb8b932c6eb104660a262b" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -87,7 +87,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="41" column="1"/>
+        <location file="074_ref.cpp" line="41" column="7"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1aa20bd44b1bb87a652ac65170ddfa1a5a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
@@ -105,7 +105,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="44" column="1"/>
+        <location file="074_ref.cpp" line="44" column="7"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1ab1a2a53ad5b2a0f97422630330c151fe" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
         <type>const <ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
@@ -123,7 +123,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="47" column="1"/>
+        <location file="074_ref.cpp" line="47" column="13"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a0514e1f5b30cbf77e1c39d7aba308656" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int *</type>
@@ -141,7 +141,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="50" column="1"/>
+        <location file="074_ref.cpp" line="50" column="7"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a978acd73e910ce56cc169ebec8736669" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
         <type>
@@ -157,7 +157,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="53" column="1"/>
+        <location file="074_ref.cpp" line="53" column="7"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-static-func">
@@ -206,7 +206,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="29" column="1"/>
+        <location file="074_ref.cpp" line="29" column="14"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -243,7 +243,7 @@
         </simplesect>
       </para>
     </detaileddescription>
-    <location file="074_ref.cpp" line="19" column="1" bodyfile="074_ref.cpp" bodystart="19" bodyend="54"/>
+    <location file="074_ref.cpp" line="19" column="10" bodyfile="074_ref.cpp" bodystart="19" bodyend="54"/>
     <listofallmembers>
       <member refid="struct_foo_1a5c036d1b3561a0e1beffe8c6799a4276" prot="public" virt="non-virtual">
         <scope>Foo</scope>

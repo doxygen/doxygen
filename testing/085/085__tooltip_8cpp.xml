@@ -54,7 +54,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="085_tooltip.cpp" line="8" column="1" bodyfile="085_tooltip.cpp" bodystart="8" bodyend="-1"/>
+        <location file="085_tooltip.cpp" line="8" column="6" bodyfile="085_tooltip.cpp" bodystart="8" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

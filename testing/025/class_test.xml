@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="025_example.cpp" line="17" column="1" bodyfile="025_example.cpp" bodystart="20" bodyend="20"/>
+        <location file="025_example.cpp" line="17" column="10" bodyfile="025_example.cpp" bodystart="20" bodyend="20"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

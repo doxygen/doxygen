@@ -7,6 +7,6 @@
     <detaileddescription>
       <para>A test package. </para>
     </detaileddescription>
-    <location file="042_package.java" line="4" column="1"/>
+    <location file="042_package.java" line="4" column="15"/>
   </compounddef>
 </doxygen>

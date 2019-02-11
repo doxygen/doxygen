@@ -89,9 +89,6 @@ class MemberList : private QList<MemberDef>
     void setNeedsSorting(bool b);
     MemberGroupList *getMemberGroupList() const { return memberGroupList; }
 
-    void marshal(StorageIntf *s);
-    void unmarshal(StorageIntf *s);
-
   private:
     int compareValues(const MemberDef *item1,const MemberDef *item2) const;
     int countEnumValues(MemberDef *md,bool setAnonEnumType) const;

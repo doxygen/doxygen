@@ -35,7 +35,6 @@
 #include "dot.h"
 #include "searchindex.h"
 #include "parserintf.h"
-#include "marshal.h"
 #include "objcache.h"
 
 #include "vhdldocgen.h"

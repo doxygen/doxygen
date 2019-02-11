@@ -115,9 +115,6 @@ class ArgumentList : public QList<Argument>
     bool isDeleted;
     /*! C++11 ref qualifier */
     RefQualifierType refQualifier;
-
-    static ArgumentList *unmarshal(StorageIntf *s);
-    static void marshal(StorageIntf *s,ArgumentList *argList);
 };
 
 typedef QListIterator<Argument> ArgumentListIterator;

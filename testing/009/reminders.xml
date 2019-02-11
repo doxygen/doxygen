@@ -9,16 +9,16 @@
       <para>
         <variablelist>
           <varlistentry>
-            <term>Class <ref refid="class_reminder" kindref="compound">Reminder</ref></term>
+            <term>Class <ref refid="class_reminder" kindref="compound">Reminder</ref>  </term>
           </varlistentry>
           <listitem>
-            <para><anchor id="reminders_1_reminders000001"/>A reminder  </para>
+            <para><anchor id="reminders_1_reminders000001"/> A reminder  </para>
           </listitem>
           <varlistentry>
             <term>Member <ref refid="class_reminder_1a173b5218bb11287b0e86a550d9f0728d" kindref="member">Reminder::reminder</ref>  ()</term>
           </varlistentry>
           <listitem>
-            <para><anchor id="reminders_1_reminders000002"/>Need to rework this before the next release. </para>
+            <para><anchor id="reminders_1_reminders000002"/> Need to rework this before the next release. </para>
           </listitem>
         </variablelist>
       </para>

@@ -6,9 +6,9 @@
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-      <para>Text. 
+      <para>Text.       
 XML
-More text. </para>
+  More text. </para>
     </detaileddescription>
   </compounddef>
 </doxygen>

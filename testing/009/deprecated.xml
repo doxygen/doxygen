@@ -9,7 +9,7 @@
       <para>
         <variablelist>
           <varlistentry>
-            <term>Class <ref refid="class_deprecated" kindref="compound">Deprecated</ref></term>
+            <term>Class <ref refid="class_deprecated" kindref="compound">Deprecated</ref>  </term>
           </varlistentry>
           <listitem>
             <para><anchor id="deprecated_1_deprecated000001"/>This class is deprecated  </para>

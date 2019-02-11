@@ -42,7 +42,7 @@
       <para>
         <programlisting>
           <codeline>
-            <highlight class="normal">//<sp />implicit<sp />code<sp />language</highlight>
+            <highlight class="normal">//<sp/>implicit<sp/>code<sp/>language</highlight>
           </codeline>
         </programlisting>
       </para>

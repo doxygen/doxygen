@@ -9,7 +9,7 @@
       <para>
         <variablelist>
           <varlistentry>
-            <term>Class <ref refid="class_test" kindref="compound">Test</ref></term>
+            <term>Class <ref refid="class_test" kindref="compound">Test</ref>  </term>
           </varlistentry>
           <listitem>
             <para><anchor id="test_1_test000001"/>This is part of testing  </para>

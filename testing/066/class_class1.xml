@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="066_property_initializer.cs" line="7" column="1" bodyfile="066_property_initializer.cs" bodystart="7" bodyend="7"/>
+        <location file="066_property_initializer.cs" line="7" column="14" bodyfile="066_property_initializer.cs" bodystart="7" bodyend="7"/>
       </memberdef>
       <memberdef kind="property" id="class_class1_1a0d5b843d48ebc2c078e003d6ff3a1610" prot="public" static="no" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="yes" privatesettable="no" protectedsettable="no">
         <type>string</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="066_property_initializer.cs" line="8" column="1" bodyfile="066_property_initializer.cs" bodystart="8" bodyend="8"/>
+        <location file="066_property_initializer.cs" line="8" column="17" bodyfile="066_property_initializer.cs" bodystart="8" bodyend="8"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
