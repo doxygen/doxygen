@@ -2222,6 +2222,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
     // the last column may contain less items then the others
     //int colsInRow = (i<rows-1) ? columns : itemsInLastRow;
     //printf("row [%d]\n",i);
+    bool cellCont = false;
     for (j=0;j<columns;j++) // foreach table column
     {
       if (colIterators[j])
@@ -2233,6 +2234,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
           {
             if (cell->letter()!=0)
             {
+              cellCont = true;
               QCString s = letterToLabel(cell->letter());
               ol.writeString("<td rowspan=\"2\" valign=\"bottom\">");
               ol.writeString("<a name=\"letter_");
@@ -2249,6 +2251,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
             }
             else if (cell->classDef()!=(ClassDef*)0x8)
             {
+              cellCont = true;
               cd = cell->classDef();
               ol.writeString("<td valign=\"top\">");
               QCString namesp,cname;
@@ -2287,20 +2290,21 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
               }
               ol.writeNonBreakableSpace(3);
             }
-	    else 
-	    {
-              ol.writeString("<td>");
-            }
             ++(*colIterators[j]);
-            ol.writeString("</td>");
+            if (cell->letter()!=0 || cell->classDef()!=(ClassDef*)0x8)
+	    {
+              ol.writeString("</td>\n");
+            }
           }
         }
         else
         {
+          cellCont = true;
           ol.writeString("<td></td>");
         }
       }
     }
+    if (!cellCont) ol.writeString("<td></td>"); // we need at least one cell in case of xhtml
     ol.writeString("</tr>\n");
   }
   ol.writeString("</table>\n");
