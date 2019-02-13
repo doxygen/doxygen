@@ -34,6 +34,10 @@
          <!ATTLIST a
        added 
          doxygen     %URI;          #IMPLIED
+     - in
+         <!ATTLIST area
+       added
+         doxygen     %URI;          #IMPLIED
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -885,12 +889,14 @@
   name        CDATA          #IMPLIED
   >
 
+<!-- added for doxygen: doxygen     %URI;          #IMPLIED -->
 <!ELEMENT area EMPTY>
 <!ATTLIST area
   %attrs;
   %focus;
   shape       %Shape;        "rect"
   coords      %Coords;       #IMPLIED
+  doxygen     %URI;          #IMPLIED
   href        %URI;          #IMPLIED
   nohref      (nohref)       #IMPLIED
   alt         %Text;         #REQUIRED
