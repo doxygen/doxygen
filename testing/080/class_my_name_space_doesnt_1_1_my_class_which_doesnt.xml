@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_my_name_space_doesnt_1_1_my_class_which_doesnt" kind="class" language="C#" prot="public">
+    <compoundname>MyNameSpaceDoesnt::MyClassWhichDoesnt</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_my_name_space_doesnt_1_1_my_class_which_doesnt_1ad00a5b068767595072087d330f3ed6fb" prot="public" static="no" mutable="no">
+        <type>const int</type>
+        <definition>const int MyNameSpaceDoesnt.MyClassWhichDoesnt.MyOtherConstant</definition>
+        <argsstring/>
+        <name>MyOtherConstant</name>
+        <initializer>= 1</initializer>
+        <briefdescription>
+          <para>The idea is that this is the brief description without a detail section </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="080_xml_summary.cs" line="36" column="1" bodyfile="080_xml_summary.cs" bodystart="36" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>The class which doesn't</para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="080_xml_summary.cs" line="31" column="1" bodyfile="080_xml_summary.cs" bodystart="30" bodyend="37"/>
+    <listofallmembers>
+      <member refid="class_my_name_space_doesnt_1_1_my_class_which_doesnt_1ad00a5b068767595072087d330f3ed6fb" prot="public" virt="non-virtual">
+        <scope>MyNameSpaceDoesnt::MyClassWhichDoesnt</scope>
+        <name>MyOtherConstant</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

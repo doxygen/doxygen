@@ -667,7 +667,7 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional, bool inclu
         }
         gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         // allow empty docs for group
-        gd->setDocumentation(!root->doc.isEmpty() ? root->doc : QCString(" "),root->docFile,root->docLine,FALSE);
+        gd->setDocumentation(!root->doc.stripWhiteSpace().isEmpty() ? root->doc : QCString(" "),root->docFile,root->docLine,FALSE);
         gd->setInbodyDocumentation( root->inbodyDocs, root->inbodyFile, root->inbodyLine );
         gd->addSectionsToDefinition(root->anchors);
         Doxygen::groupSDict->append(root->name,gd);
@@ -788,7 +788,7 @@ static void buildFileList(EntryNav *rootNav)
     if (fd && !ambig)
     {
 #if 0
-      if ((!root->doc.isEmpty() && !fd->documentation().isEmpty()) ||
+      if ((!root->doc.stripWhiteSpace().isEmpty() && !fd->documentation().stripWhiteSpace().isEmpty()) ||
           (!root->brief.isEmpty() && !fd->briefDescription().isEmpty()))
       {
         warn(
@@ -2182,7 +2182,7 @@ static void findUsingDeclImports(EntryNav *rootNav)
                   }
                   newMd->setMemberClass(cd);
                   cd->insertMember(newMd);
-                  if (!root->doc.isEmpty() || !root->brief.isEmpty())
+                  if (!root->doc.stripWhiteSpace().isEmpty() || !root->brief.isEmpty())
                   {
                     newMd->setDocumentation(root->doc,root->docFile,root->docLine);
                     newMd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -3707,9 +3707,9 @@ static void buildFunctionList(EntryNav *rootNav)
               if (found)
               {
                 // merge argument lists
-                mergeArguments(mdAl,root->argList,!root->doc.isEmpty());
+                mergeArguments(mdAl,root->argList,!root->doc.stripWhiteSpace().isEmpty());
                 // merge documentation
-                if (md->documentation().isEmpty() && !root->doc.isEmpty())
+                if (md->documentation().stripWhiteSpace().isEmpty() && !root->doc.stripWhiteSpace().isEmpty())
                 {
                   ArgumentList *argList = new ArgumentList;
                   stringToArgumentList(root->args,argList);
@@ -3982,11 +3982,11 @@ static void findFriends()
                // function is actually a friend.
           {
             mergeArguments(mmdAl,fmdAl);
-            if (!fmd->documentation().isEmpty())
+            if (!fmd->documentation().stripWhiteSpace().isEmpty())
             {
               mmd->setDocumentation(fmd->documentation(),fmd->docFile(),fmd->docLine());
             }
-            else if (!mmd->documentation().isEmpty())
+            else if (!mmd->documentation().stripWhiteSpace().isEmpty())
             {
               fmd->setDocumentation(mmd->documentation(),mmd->docFile(),mmd->docLine());
             }
@@ -5449,8 +5449,8 @@ static void addMemberDocs(EntryNav *rootNav,
   ArgumentList *mdAl = md->argumentList();
   if (al)
   {
-    //printf("merging arguments (1) docs=%d\n",root->doc.isEmpty());
-    mergeArguments(mdAl,al,!root->doc.isEmpty());
+    //printf("merging arguments (1) docs=%d\n",root->doc.stripWhiteSpace().isEmpty());
+    mergeArguments(mdAl,al,!root->doc.stripWhiteSpace().isEmpty());
   }
   else
   {
@@ -5462,13 +5462,13 @@ static void addMemberDocs(EntryNav *rootNav,
        )
     {
       //printf("merging arguments (2)\n");
-      mergeArguments(mdAl,root->argList,!root->doc.isEmpty());
+      mergeArguments(mdAl,root->argList,!root->doc.stripWhiteSpace().isEmpty());
     }
   }
   if (over_load)  // the \overload keyword was used
   {
     QCString doc=getOverloadDocs();
-    if (!root->doc.isEmpty())
+    if (!root->doc.stripWhiteSpace().isEmpty())
     {
       doc+="<p>";
       doc+=root->doc;
@@ -8286,10 +8286,10 @@ static void inheritDocumentation()
     for (;(md=mni.current());++mni)
     {
       //printf("%04d Member `%s'\n",count++,md->name().data());
-      if (md->documentation().isEmpty() && md->briefDescription().isEmpty())
+      if (md->documentation().stripWhiteSpace().isEmpty() && md->briefDescription().isEmpty())
       { // no documentation yet
         MemberDef *bmd = md->reimplements();
-        while (bmd && bmd->documentation().isEmpty() &&
+        while (bmd && bmd->documentation().stripWhiteSpace().isEmpty() &&
                       bmd->briefDescription().isEmpty()
               )
         { // search up the inheritance tree for a documentation member
@@ -8640,7 +8640,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
         }
       }
       else if (count>1 &&
-               (!root->doc.isEmpty() ||
+               (!root->doc.stripWhiteSpace().isEmpty() ||
                 !root->brief.isEmpty() ||
                 root->bodyLine!=-1
                )
@@ -8657,7 +8657,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
               // doc and define in the same file assume they belong together.
             {
 #if 0
-              if (md->documentation().isEmpty())
+              if (md->documentation().stripWhiteSpace().isEmpty())
 #endif
               {
                 md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -8689,7 +8689,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
         //     root->startLine,root->fileName.data());
       }
     }
-    else if (!root->doc.isEmpty() || !root->brief.isEmpty()) // define not found
+    else if (!root->doc.stripWhiteSpace().isEmpty() || !root->brief.isEmpty()) // define not found
     {
       static bool preEnabled = Config_getBool(ENABLE_PREPROCESSING);
       if (preEnabled)

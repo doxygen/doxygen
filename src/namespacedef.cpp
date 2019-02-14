@@ -310,7 +310,7 @@ bool NamespaceDef::hasDetailedDescription() const
 {
   static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
-          !documentation().isEmpty());
+          !documentation().stripWhiteSpace().isEmpty());
 }
 
 void NamespaceDef::writeTagFile(FTextStream &tagFile)
@@ -423,7 +423,7 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
       ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
-        !documentation().isEmpty())
+        !documentation().stripWhiteSpace().isEmpty())
     {
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man);
@@ -435,7 +435,7 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
-    if (!documentation().isEmpty())
+    if (!documentation().stripWhiteSpace().isEmpty())
     {
       ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="namespace_my_name_space_doesnt" kind="namespace" language="C#">
+    <compoundname>MyNameSpaceDoesnt</compoundname>
+    <innerclass refid="class_my_name_space_doesnt_1_1_my_class_which_doesnt" prot="public">MyNameSpaceDoesnt::MyClassWhichDoesnt</innerclass>
+    <briefdescription>
+      <para>The namespace which doesn't</para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="080_xml_summary.cs" line="28" column="1"/>
+  </compounddef>
+</doxygen>

@@ -126,7 +126,7 @@ QCString DirDef::getOutputFileBase() const
 void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   if ((!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF)) || 
-      !documentation().isEmpty())
+      !documentation().stripWhiteSpace().isEmpty())
   {
     ol.pushGeneratorState();
       ol.disable(OutputGenerator::Html);
@@ -147,7 +147,7 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     }
     // separator between brief and details
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) && 
-        !documentation().isEmpty())
+        !documentation().stripWhiteSpace().isEmpty())
     {
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man);
@@ -161,7 +161,7 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     }
 
     // write documentation
-    if (!documentation().isEmpty())
+    if (!documentation().stripWhiteSpace().isEmpty())
     {
       ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }
@@ -188,7 +188,7 @@ void DirDef::writeBriefDescription(OutputList &ol)
       ol.enable(OutputGenerator::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
-          !documentation().isEmpty()
+          !documentation().stripWhiteSpace().isEmpty()
          )
       {
         ol.disableAllBut(OutputGenerator::Html);
@@ -365,7 +365,7 @@ QCString DirDef::shortTitle() const
 bool DirDef::hasDetailedDescription() const
 {
   static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
+  return (!briefDescription().isEmpty() && repeatBrief) || !documentation().stripWhiteSpace().isEmpty();
 }
 
 void DirDef::writeTagFile(FTextStream &tagFile)

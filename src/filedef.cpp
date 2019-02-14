@@ -336,7 +336,7 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) && 
-        !documentation().isEmpty())
+        !documentation().stripWhiteSpace().isEmpty())
     {
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man);
@@ -348,7 +348,7 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
-    if (!documentation().isEmpty())
+    if (!documentation().stripWhiteSpace().isEmpty())
     {
       ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }
@@ -414,7 +414,7 @@ void FileDef::writeBriefDescription(OutputList &ol)
       ol.enable(OutputGenerator::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
-          !documentation().isEmpty()
+          !documentation().stripWhiteSpace().isEmpty()
          )
       {
         ol.disableAllBut(OutputGenerator::Html);
