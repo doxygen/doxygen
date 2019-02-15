@@ -1977,10 +1977,8 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
     m_t << "<td class=\"paramtype\">";
     QListIterator<DocNode> li(pl->paramTypes());
     DocNode *type;
-    bool first=TRUE;
     for (li.toFirst();(type=li.current());++li)
     {
-      if (!first) m_t << "&#160;|&#160;"; else first=FALSE;
       if (type->kind()==DocNode::Kind_Word)
       {
         visit((DocWord*)type); 
@@ -1988,6 +1986,10 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
       else if (type->kind()==DocNode::Kind_LinkedWord)
       {
         visit((DocLinkedWord*)type); 
+      }
+      else if (type->kind()==DocNode::Kind_Sep)
+      {
+        m_t << "&#160;" << ((DocSeparator *)type)->chars() << "&#160;";
       }
     }
     m_t << "</td>";

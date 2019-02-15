@@ -5982,7 +5982,7 @@ static void findMember(EntryNav *rootNav,
   else
   {
     // extract information from the declarations
-    parseFuncDecl(funcDecl,root->lang==SrcLangExt_ObjC,scopeName,funcType,funcName,
+    parseFuncDecl(funcDecl,root->lang,scopeName,funcType,funcName,
                 funcArgs,funcTempList,exceptions
                );
   }

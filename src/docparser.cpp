@@ -1229,16 +1229,32 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
 
 static void handleParameterType(DocNode *parent,QList<DocNode> &children,const QCString &paramTypes)
 {
+  static QRegExp re("[ \t\r\n\\[\\]]");
   QCString name = g_token->name;
-  int p=0,i;
+  QCString name1;
+  int p=0,i,l,ii;
   while ((i=paramTypes.find('|',p))!=-1)
   {
-    g_token->name = paramTypes.mid(p,i-p);
+    name1 = paramTypes.mid(p,i-p);
+    ii=re.match(name1,0,&l);
+    if (ii != -1)
+      g_token->name=name1.mid(0,ii);
+    else
+      g_token->name=name1;
     handleLinkedWord(parent,children);
+    if (ii != -1) children.append(new DocWord(parent,name1.mid(ii).data()));
     p=i+1;
+    children.append(new DocSeparator(parent,"|"));
   }
-  g_token->name = paramTypes.mid(p);
+  name1 = paramTypes.mid(p);
+  ii=re.match(name1,0,&l);
+  if (ii != -1)
+    g_token->name=name1.mid(0,ii);
+  else
+    g_token->name=name1;
   handleLinkedWord(parent,children);
+  if (ii != -1) children.append(new DocWord(parent,name1.mid(ii).data()));
+
   g_token->name = name;
 }
 

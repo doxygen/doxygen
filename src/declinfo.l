@@ -30,6 +30,7 @@
 #include "declinfo.h"
 #include "util.h"
 #include "message.h"
+#include "types.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -53,6 +54,7 @@ static bool         classTempListFound;
 static bool         funcTempListFound;
 static QCString      exceptionString;
 static bool          insideObjC;
+static bool          insidePHP;
 
 static void addType()
 {
@@ -131,6 +133,14 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				  {
 				    name += yytext;
 				  }
+  				}
+<Start>([~!]{B}*)?{ID}{B}*"["{B}*"]" { // PHP
+  				  if (!insidePHP) 
+				  {
+				    REJECT;
+				  }
+  				  addTypeName();
+				  name += yytext;
   				}
 <Start>([~!]{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
                                         // the / was add to deal with multi-
@@ -230,7 +240,7 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 /*@ ----------------------------------------------------------------------------
  */
 
-void parseFuncDecl(const QCString &decl,bool objC,QCString &cl,QCString &t,
+void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCString &t,
                    QCString &n,QCString &a,QCString &ftl,QCString &exc)
 {
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);
@@ -240,7 +250,8 @@ void parseFuncDecl(const QCString &decl,bool objC,QCString &cl,QCString &t,
   inputPosition      = 0;
   classTempListFound = FALSE;
   funcTempListFound  = FALSE;
-  insideObjC = objC;
+  insideObjC = lang==SrcLangExt_ObjC;
+  insidePHP  = lang==SrcLangExt_PHP;
   scope.resize(0);
   className.resize(0);
   classTempList.resize(0);
