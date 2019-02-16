@@ -3854,7 +3854,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
       if (ref)
       {
         m_ts << "<a class=\"elRef\" ";
-        m_ts << externalLinkTarget() << externalRef(m_relPath,ref,FALSE);
+        m_ts << externalLinkTarget();
       }
       else
       {

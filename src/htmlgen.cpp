@@ -1122,7 +1122,7 @@ void HtmlGenerator::startIndexItem(const char *ref,const char *f)
     if (ref)
     {
       t << "<a class=\"elRef\" ";
-      t << externalLinkTarget() << externalRef(relPath,ref,FALSE);
+      t << externalLinkTarget();
     }
     else
     {
@@ -1168,7 +1168,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   if (ref)
   {
     t << "<a class=\"elRef\" ";
-    t << externalLinkTarget() << externalRef(relPath,ref,FALSE);
+    t << externalLinkTarget();
   }
   else
   {
