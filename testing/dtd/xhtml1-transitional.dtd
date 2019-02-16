@@ -30,14 +30,6 @@
          <!ATTLIST script
        added 
          async       (async)        #IMPLIED
-     - in
-         <!ATTLIST a
-       added 
-         doxygen     %URI;          #IMPLIED
-     - in
-         <!ATTLIST area
-       added
-         doxygen     %URI;          #IMPLIED
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -654,7 +646,6 @@
 <!--================== The Anchor Element ================================-->
 
 <!-- content is %Inline; except that anchors shouldn't be nested -->
-<!-- added for doxygen: doxygen     %URI;          #IMPLIED -->
 
 <!ELEMENT a %a.content;>
 <!ATTLIST a
@@ -663,7 +654,6 @@
   charset     %Charset;      #IMPLIED
   type        %ContentType;  #IMPLIED
   name        NMTOKEN        #IMPLIED
-  doxygen     %URI;          #IMPLIED
   href        %URI;          #IMPLIED
   hreflang    %LanguageCode; #IMPLIED
   rel         %LinkTypes;    #IMPLIED
@@ -889,14 +879,12 @@
   name        CDATA          #IMPLIED
   >
 
-<!-- added for doxygen: doxygen     %URI;          #IMPLIED -->
 <!ELEMENT area EMPTY>
 <!ATTLIST area
   %attrs;
   %focus;
   shape       %Shape;        "rect"
   coords      %Coords;       #IMPLIED
-  doxygen     %URI;          #IMPLIED
   href        %URI;          #IMPLIED
   nohref      (nohref)       #IMPLIED
   alt         %Text;         #REQUIRED
