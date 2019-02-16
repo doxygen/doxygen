@@ -138,6 +138,7 @@ static QCString escapeSpecialChars(const QCString &s)
       case '>':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('>'); break;
       case '\\': if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('\\'); break;
       case '@':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('@'); break;
+      case '#':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('#'); break;
       default:   growBuf.addChar(c); break;
     }
     pc=c;
