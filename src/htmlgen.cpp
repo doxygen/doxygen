@@ -556,7 +556,7 @@ void HtmlCodeGenerator::_writeCodeLink(const char *className,
   if (ref)
   {
     m_t << "<a class=\"" << className << "Ref\" ";
-    m_t << externalLinkTarget() << externalRef(m_relPath,ref,FALSE);
+    m_t << externalLinkTarget();
   }
   else
   {
