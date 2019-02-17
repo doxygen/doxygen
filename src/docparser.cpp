@@ -1042,7 +1042,7 @@ static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttrib
         // and remove the href attribute
         bool result = attrList.remove(index);
         ASSERT(result);
-        DocAnchor *anc = new DocAnchor(parent,opt->value,TRUE,attrList);
+        DocAnchor *anc = new DocAnchor(parent,opt->value,TRUE);
         children.append(anc);
         break; // stop looking for other tag attribs
       }
@@ -1934,7 +1934,7 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QCString &word,
 
 //---------------------------------------------------------------------------
 
-void DocAnchor::docAnchorInit(DocNode *parent,const QCString &id,bool newAnchor)
+DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
 {
   m_parent = parent; 
   if (id.isEmpty())
@@ -6866,9 +6866,10 @@ endparagraph:
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
   DBG(("DocPara::parse() end retval=%x\n",retval));
-  if (!g_token->endTag && retval == TK_NEWPARA && g_token->name.lower() == "p")
+  if (!g_token->endTag && n->kind()==DocNode::Kind_Para &&
+      retval==TK_NEWPARA && g_token->name.lower() == "p")
   {
-    ((DocPara *)n) -> m_attribs = g_token->attribs;
+    ((DocPara *)n)->setAttribs(g_token->attribs);
   }
   INTERNAL_ASSERT(retval==0 || retval==TK_NEWPARA || retval==TK_LISTITEM || 
          retval==TK_ENDLIST || retval>RetVal_OK 
@@ -7137,7 +7138,7 @@ void DocRoot::parse()
     DocPara *par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (!par->isEmpty() || par->attribs().count()) 
+    if (!par->isEmpty() || par->attribs().count()>0)
     {
       m_children.append(par);
       lastPar=par;

@@ -331,9 +331,7 @@ class DocHorRuler : public DocNode
 class DocAnchor : public DocNode
 {
   public:
-    DocAnchor(DocNode *parent,const QCString &id,bool newAnchor){docAnchorInit(parent,id,newAnchor);}
-    DocAnchor(DocNode *parent,const QCString &id,bool newAnchor,const HtmlAttribList &attribs) : m_attribs(attribs)
-     {docAnchorInit(parent,id,newAnchor);}
+    DocAnchor(DocNode *parent,const QCString &id,bool newAnchor);
     Kind kind() const          { return Kind_Anchor; }
     QCString anchor() const    { return m_anchor; }
     QCString file() const      { return m_file; }
@@ -345,7 +343,6 @@ class DocAnchor : public DocNode
     QCString  m_anchor;
     QCString  m_file;
     HtmlAttribList m_attribs;
-    void docAnchorInit(DocNode *parent,const QCString &id,bool newAnchor);
 };
 
 /** Node representing a citation of some bibliographic reference */
@@ -1215,6 +1212,7 @@ class DocPara : public CompAccept<DocPara>
 
     bool injectToken(int tok,const QCString &tokText);
     const HtmlAttribList &attribs() const { return m_attribs; }
+    void setAttribs(const HtmlAttribList &attribs) { m_attribs = attribs; }
 
   private:
     QCString  m_sectionId;

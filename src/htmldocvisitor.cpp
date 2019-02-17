@@ -1494,7 +1494,9 @@ void HtmlDocVisitor::visitPre(DocHtmlTable *t)
   {
     QCString anc =  t->caption()->anchor();
     if (!anc.isEmpty())
+    {
       m_t << "<a class=\"anchor\" id=\"" << anc << "\"></a>\n";
+    }
   }
 
   QString attrs = htmlAttribsToString(t->attribs());
