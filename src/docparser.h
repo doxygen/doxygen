@@ -300,37 +300,52 @@ class DocURL : public DocNode
 class DocLineBreak : public DocNode
 {
   public:
-    DocLineBreak(DocNode *parent) { m_parent=parent; }
+    DocLineBreak(DocNode *parent) { m_parent = parent; }
+    DocLineBreak(DocNode *parent,const HtmlAttribList &attribs)
+      : m_attribs(attribs) { m_parent = parent; }
     Kind kind() const          { return Kind_LineBreak; }
     void accept(DocVisitor *v) { v->visit(this); }
 
+    const HtmlAttribList &attribs() const { return m_attribs; }
+
   private:
+    HtmlAttribList m_attribs;
 };
 
 /** Node representing a horizontal ruler */
 class DocHorRuler : public DocNode
 {
   public:
-    DocHorRuler(DocNode *parent) { m_parent = parent; }
+    DocHorRuler(DocNode *parent,const HtmlAttribList &attribs)
+      : m_attribs(attribs) { m_parent = parent; }
     Kind kind() const          { return Kind_HorRuler; }
     void accept(DocVisitor *v) { v->visit(this); }
 
+    const HtmlAttribList &attribs() const { return m_attribs; }
+
   private:
+    HtmlAttribList m_attribs;
 };
 
 /** Node representing an anchor */
 class DocAnchor : public DocNode
 {
   public:
-    DocAnchor(DocNode *parent,const QCString &id,bool newAnchor);
+    DocAnchor(DocNode *parent,const QCString &id,bool newAnchor){docAnchorInit(parent,id,newAnchor);}
+    DocAnchor(DocNode *parent,const QCString &id,bool newAnchor,const HtmlAttribList &attribs) : m_attribs(attribs)
+     {docAnchorInit(parent,id,newAnchor);}
     Kind kind() const          { return Kind_Anchor; }
     QCString anchor() const    { return m_anchor; }
     QCString file() const      { return m_file; }
     void accept(DocVisitor *v) { v->visit(this); }
 
+    const HtmlAttribList &attribs() const { return m_attribs; }
+
   private:
     QCString  m_anchor;
     QCString  m_file;
+    HtmlAttribList m_attribs;
+    void docAnchorInit(DocNode *parent,const QCString &id,bool newAnchor);
 };
 
 /** Node representing a citation of some bibliographic reference */
@@ -1199,11 +1214,13 @@ class DocPara : public CompAccept<DocPara>
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
 
     bool injectToken(int tok,const QCString &tokText);
+    const HtmlAttribList &attribs() const { return m_attribs; }
 
   private:
     QCString  m_sectionId;
     bool     m_isFirst;
     bool     m_isLast;
+    HtmlAttribList m_attribs;
 };
 
 /** Node representing a parameter list. */
