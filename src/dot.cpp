@@ -336,7 +336,6 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
         {
           result = externalLinkTarget();
 	  if (result != "") setTarget = TRUE;
-	  result += externalRef(relPath,ref,FALSE);
         }
         result+= href+"=\"";
         result+=externalRef(relPath,ref,TRUE);
@@ -721,7 +720,7 @@ static bool insertMapFile(FTextStream &out,const QCString &mapFile,
   {
     QGString tmpstr;
     FTextStream tmpout(&tmpstr);
-    convertMapFile(tmpout,mapFile,relPath);
+    convertMapFile(tmpout,mapFile,relPath,TRUE);
     if (!tmpstr.isEmpty())
     {
       out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">" << endl;

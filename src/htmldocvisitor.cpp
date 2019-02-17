@@ -2195,7 +2195,7 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
   if (!ref.isEmpty()) // link to entity imported via tag file
   {
     m_t << "<a class=\"elRef\" ";
-    m_t << externalLinkTarget() << externalRef(relPath,ref,FALSE);
+    m_t << externalLinkTarget();
   }
   else // local link
   {

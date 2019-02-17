@@ -286,7 +286,7 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
       t << "<a class=\"elRef\" ";
       QCString result = externalLinkTarget();
       if (result != "") setTarget = TRUE;
-      t << result << externalRef("",n->ref,FALSE);
+      t << result;
     }
     else // local link
     {
