@@ -1966,6 +1966,18 @@ void FileDef::sortMemberLists()
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
+
+  if (m_memberGroupSDict)
+  {
+    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      MemberList *mlg = mg->members();
+      if (mlg->needsSorting()) { mlg->sort(); mlg->setNeedsSorting(FALSE); }
+    }
+  }
+
 }
 
 MemberList *FileDef::getMemberList(MemberListType lt) const

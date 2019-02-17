@@ -43,8 +43,11 @@ MemberGroup::MemberGroup()
 MemberGroup::MemberGroup(Definition *parent,
       int id,const char *hdr,const char *d,const char *docFile,int docLine)
 {
+  static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
+
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
   memberList      = new MemberList(MemberListType_memberGroup);
+  memberList->setNeedsSorting(sortBriefDocs); // detailed sections are already sorted elsewhere.
   grpId           = id;
   grpHeader       = hdr;
   doc             = d;
