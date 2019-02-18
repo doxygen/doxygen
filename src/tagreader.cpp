@@ -1393,8 +1393,8 @@ void TagFileParser::buildLists(Entry *root)
     
     QCString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
     fe->fileName = fullName;
-    //printf("new FileDef() filename=%s\n",tfi->filename.data());
-    FileDef *fd = new FileDef(m_tagName+":"+tfi->path,
+    //printf("createFileDef() filename=%s\n",tfi->filename.data());
+    FileDef *fd = createFileDef(m_tagName+":"+tfi->path,
                               tfi->name,m_tagName,
                               tfi->filename
                              );

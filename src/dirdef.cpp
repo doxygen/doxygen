@@ -12,13 +12,85 @@
 #include "ftextstream.h"
 #include "config.h"
 #include "docparser.h"
+#include "definitionimpl.h"
+
+//----------------------------------------------------------------------
+
+class DirDefImpl : public DefinitionImpl, public DirDef
+{
+  public:
+    DirDefImpl(const char *path);
+    virtual ~DirDefImpl();
+
+    virtual DefType definitionType() const { return TypeDir; }
+    virtual QCString getOutputFileBase() const;
+    virtual QCString anchor() const { return QCString(); }
+    virtual bool isLinkableInProject() const;
+    virtual bool isLinkable() const;
+    virtual QCString displayName(bool=TRUE) const { return m_dispName; }
+    virtual const QCString &shortName() const { return m_shortName; }
+    virtual void addSubDir(DirDef *subdir);
+    virtual FileList *   getFiles() const        { return m_fileList; }
+    virtual void addFile(FileDef *fd);
+    virtual const DirList &subDirs() const { return m_subdirs; }
+    virtual bool isCluster() const { return m_subdirs.count()>0; }
+    virtual int level() const { return m_level; }
+    virtual DirDef *parent() const { return m_parent; }
+    virtual int dirCount() const { return m_dirCount; }
+    virtual const QDict<UsedDir> *usedDirs() const { return m_usedDirs; }
+    virtual bool isParentOf(DirDef *dir) const;
+    virtual bool depGraphIsTrivial() const;
+    virtual QCString shortTitle() const;
+    virtual bool hasDetailedDescription() const;
+    virtual void writeDocumentation(OutputList &ol);
+    virtual void writeTagFile(FTextStream &t);
+    virtual void setDiskName(const QCString &name) { m_diskName = name; }
+    virtual void sort();
+    virtual void setParent(DirDef *parent);
+    virtual void setLevel();
+    virtual void addUsesDependency(DirDef *usedDir,FileDef *srcFd,
+                           FileDef *dstFd,bool inherited);
+    virtual void computeDependencies();
+
+  public:
+    static DirDef *mergeDirectoryInTree(const QCString &path);
+
+  private:
+
+    void writeDetailedDescription(OutputList &ol,const QCString &title);
+    void writeBriefDescription(OutputList &ol);
+    void writeDirectoryGraph(OutputList &ol);
+    void writeSubDirList(OutputList &ol);
+    void writeFileList(OutputList &ol);
+    void startMemberDeclarations(OutputList &ol);
+    void endMemberDeclarations(OutputList &ol);
+
+    static DirDef *createNewDir(const char *path);
+    static bool matchPath(const QCString &path,QStrList &l);
+
+    DirList m_subdirs;
+    QCString m_dispName;
+    QCString m_shortName;
+    QCString m_diskName;
+    FileList *m_fileList;                 // list of files in the group
+    int m_dirCount;
+    int m_level;
+    DirDef *m_parent;
+    QDict<UsedDir> *m_usedDirs;
+};
+
+DirDef *createDirDef(const char *path)
+{
+  return new DirDefImpl(path);
+}
+
 
 //----------------------------------------------------------------------
 // method implementation
 
 static int g_dirCount=0;
 
-DirDef::DirDef(const char *path) : Definition(path,1,1,path), visited(FALSE)
+DirDefImpl::DirDefImpl(const char *path) : DefinitionImpl(path,1,1,path)
 {
   bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
   // get display name (stipping the paths mentioned in STRIP_FROM_PATH)
@@ -49,36 +121,41 @@ DirDef::DirDef(const char *path) : Definition(path,1,1,path), visited(FALSE)
   m_parent=0;
 }
 
-DirDef::~DirDef()
+DirDefImpl::~DirDefImpl()
 {
   delete m_fileList;
   delete m_usedDirs;
 }
 
-bool DirDef::isLinkableInProject() const 
+bool DirDefImpl::isLinkableInProject() const 
 { 
   return !isReference(); 
 }
 
-bool DirDef::isLinkable() const 
+bool DirDefImpl::isLinkable() const 
 { 
   return isReference() || isLinkableInProject(); 
 }
 
-void DirDef::addSubDir(DirDef *subdir)
+void DirDefImpl::addSubDir(DirDef *subdir)
 {
   m_subdirs.append(subdir);
   subdir->setOuterScope(this);
-  subdir->m_parent=this;
+  subdir->setParent(this);
 }
 
-void DirDef::addFile(FileDef *fd)
+void DirDefImpl::setParent(DirDef *p)
+{
+   m_parent=p;
+}
+
+void DirDefImpl::addFile(FileDef *fd)
 {
   m_fileList->append(fd);
   fd->setDirDef(this);
 }
 
-void DirDef::sort()
+void DirDefImpl::sort()
 {
   m_subdirs.sort();
   m_fileList->sort();
@@ -116,14 +193,14 @@ static QCString encodeDirName(const QCString &anchor)
 //  return result;
 }
 
-QCString DirDef::getOutputFileBase() const
+QCString DirDefImpl::getOutputFileBase() const
 {
-  //printf("DirDef::getOutputFileBase() %s->dir_%s\n",
+  //printf("DirDefImpl::getOutputFileBase() %s->dir_%s\n",
   //    m_diskName.data(),encodeDirName(m_diskName).data());
   return "dir_"+encodeDirName(m_diskName);
 }
 
-void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
+void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   if ((!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF)) || 
       !documentation().isEmpty())
@@ -168,7 +245,7 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
   }
 }
 
-void DirDef::writeBriefDescription(OutputList &ol)
+void DirDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
@@ -205,7 +282,7 @@ void DirDef::writeBriefDescription(OutputList &ol)
   ol.writeSynopsis();
 }
 
-void DirDef::writeDirectoryGraph(OutputList &ol)
+void DirDefImpl::writeDirectoryGraph(OutputList &ol)
 {
   // write graph dependency graph
   if (Config_getBool(DIRECTORY_GRAPH) && Config_getBool(HAVE_DOT))
@@ -225,7 +302,7 @@ void DirDef::writeDirectoryGraph(OutputList &ol)
   }
 }
 
-void DirDef::writeSubDirList(OutputList &ol)
+void DirDefImpl::writeSubDirList(OutputList &ol)
 {
   int numSubdirs = 0;
   QListIterator<DirDef> it(m_subdirs);
@@ -275,7 +352,7 @@ void DirDef::writeSubDirList(OutputList &ol)
   }
 }
 
-void DirDef::writeFileList(OutputList &ol)
+void DirDefImpl::writeFileList(OutputList &ol)
 {
   int numFiles = 0;
   QListIterator<FileDef> it(*m_fileList);
@@ -347,28 +424,28 @@ void DirDef::writeFileList(OutputList &ol)
   }
 }
 
-void DirDef::startMemberDeclarations(OutputList &ol)
+void DirDefImpl::startMemberDeclarations(OutputList &ol)
 {
   ol.startMemberSections();
 }
 
-void DirDef::endMemberDeclarations(OutputList &ol)
+void DirDefImpl::endMemberDeclarations(OutputList &ol)
 {
   ol.endMemberSections();
 }
 
-QCString DirDef::shortTitle() const
+QCString DirDefImpl::shortTitle() const
 {
   return theTranslator->trDirReference(m_shortName);
 }
 
-bool DirDef::hasDetailedDescription() const
+bool DirDefImpl::hasDetailedDescription() const
 {
   static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
 }
 
-void DirDef::writeTagFile(FTextStream &tagFile)
+void DirDefImpl::writeTagFile(FTextStream &tagFile)
 {
   tagFile << "  <compound kind=\"dir\">" << endl;
   tagFile << "    <name>" << convertToXML(displayName()) << "</name>" << endl;
@@ -415,7 +492,7 @@ void DirDef::writeTagFile(FTextStream &tagFile)
   tagFile << "  </compound>" << endl;
 }
 
-void DirDef::writeDocumentation(OutputList &ol)
+void DirDefImpl::writeDocumentation(OutputList &ol)
 {
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
@@ -529,7 +606,7 @@ void DirDef::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void DirDef::setLevel()
+void DirDefImpl::setLevel()
 {
   if (m_level==-1) // level not set before
   {
@@ -549,7 +626,7 @@ void DirDef::setLevel()
 /** Add as "uses" dependency between \a this dir and \a dir,
  *  that was caused by a dependency on file \a fd.
  */ 
-void DirDef::addUsesDependency(DirDef *dir,FileDef *srcFd,
+void DirDefImpl::addUsesDependency(DirDef *dir,FileDef *srcFd,
                                FileDef *dstFd,bool inherited)
 {
   if (this==dir) return; // do not add self-dependencies
@@ -603,7 +680,7 @@ void DirDef::addUsesDependency(DirDef *dir,FileDef *srcFd,
 
 /** Computes the dependencies between directories
  */
-void DirDef::computeDependencies()
+void DirDefImpl::computeDependencies()
 {
   FileList *fl = m_fileList;
   if (fl) 
@@ -649,7 +726,7 @@ void DirDef::computeDependencies()
   }
 }
 
-bool DirDef::isParentOf(DirDef *dir) const
+bool DirDefImpl::isParentOf(DirDef *dir) const
 {
   if (dir->parent()==this) // this is a parent of dir 
     return TRUE;
@@ -659,7 +736,7 @@ bool DirDef::isParentOf(DirDef *dir) const
     return FALSE;
 }
 
-bool DirDef::depGraphIsTrivial() const
+bool DirDefImpl::depGraphIsTrivial() const
 {
   return m_usedDirs->count()==0;
 }
@@ -704,21 +781,21 @@ FilePair *UsedDir::findFilePair(const char *name)
   return n.isEmpty() ? 0 : m_filePairs.find(n);
 }
 
-DirDef *DirDef::createNewDir(const char *path)
+DirDef *DirDefImpl::createNewDir(const char *path)
 {
   ASSERT(path!=0);
   DirDef *dir = Doxygen::directories->find(path);
   if (dir==0) // new dir
   {
     //printf("Adding new dir %s\n",path);
-    dir = new DirDef(path);
+    dir = createDirDef(path);
     //printf("createNewDir %s short=%s\n",path,dir->shortName().data());
     Doxygen::directories->append(path,dir);
   }
   return dir;
 }
 
-bool DirDef::matchPath(const QCString &path,QStrList &l)
+bool DirDefImpl::matchPath(const QCString &path,QStrList &l)
 {
   const char *s=l.first();
   while (s)
@@ -736,9 +813,9 @@ bool DirDef::matchPath(const QCString &path,QStrList &l)
 /*! strip part of \a path if it matches
  *  one of the paths in the Config_getList(STRIP_FROM_PATH) list
  */
-DirDef *DirDef::mergeDirectoryInTree(const QCString &path)
+DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
 {
-  //printf("DirDef::mergeDirectoryInTree(%s)\n",path.data());
+  //printf("DirDefImpl::mergeDirectoryInTree(%s)\n",path.data());
   int p=0,i=0;
   DirDef *dir=0;
   while ((i=path.find('/',p))!=-1)
@@ -941,7 +1018,7 @@ void buildDirectories()
         DirDef *dir;
         if ((dir=Doxygen::directories->find(fd->getPath()))==0) // new directory
         {
-          dir = DirDef::mergeDirectoryInTree(fd->getPath());
+          dir = DirDefImpl::mergeDirectoryInTree(fd->getPath());
         }
         if (dir && !fd->isDocumentationFile()) dir->addFile(fd);
       }
@@ -967,7 +1044,7 @@ void buildDirectories()
       if (parent) 
       {
         parent->addSubDir(dir); 
-        //printf("DirDef::addSubdir(): Adding subdir\n%s to\n%s\n",
+        //printf("DirDefImpl::addSubdir(): Adding subdir\n%s to\n%s\n",
         //  dir->displayName().data(), parent->displayName().data());
       }
     }

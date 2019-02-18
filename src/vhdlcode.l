@@ -544,7 +544,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     Definition *d = cd->getOuterScope();
     if (d && d->definitionType()==Definition::TypeClass)
     {
-      cd = (ClassDef*)d;
+      cd = dynamic_cast<ClassDef*>(d);
     }
     else
     {
@@ -1582,7 +1582,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
-    g_sourceFileDef = new FileDef("",exName);
+    g_sourceFileDef = createFileDef("",exName);
     cleanupSourceDef = TRUE;
   }
   if (g_sourceFileDef) 

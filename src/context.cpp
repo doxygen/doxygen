@@ -1582,9 +1582,9 @@ class DefinitionContext
       {
         fillPath(outerScope,list);
       }
-      else if (type==Definition::TypeFile && ((const FileDef*)def)->getDirDef())
+      else if (type==Definition::TypeFile && (dynamic_cast<const FileDef*>(def))->getDirDef())
       {
-        fillPath(((const FileDef*)def)->getDirDef(),list);
+        fillPath((dynamic_cast<const FileDef*>(def))->getDirDef(),list);
       }
       list->append(NavPathElemContext::alloc(def));
     }
@@ -1598,9 +1598,9 @@ class DefinitionContext
         {
           fillPath(m_def->getOuterScope(),list);
         }
-        else if (m_def->definitionType()==Definition::TypeFile && ((const FileDef *)m_def)->getDirDef())
+        else if (m_def->definitionType()==Definition::TypeFile && (dynamic_cast<const FileDef *>(m_def))->getDirDef())
         {
-          fillPath(((const FileDef *)m_def)->getDirDef(),list);
+          fillPath((dynamic_cast<const FileDef *>(m_def))->getDirDef(),list);
         }
         cache.navPath.reset(list);
       }
@@ -2374,7 +2374,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         {
           addTemplateDecls(parent,tl);
         }
-        ClassDef *cd=(ClassDef *)d;
+        ClassDef *cd=dynamic_cast<ClassDef *>(d);
         if (cd->templateArguments())
         {
           ArgumentListContext *al = ArgumentListContext::alloc(cd->templateArguments(),cd,relPathAsString());
@@ -6278,7 +6278,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.classContext && m_def->definitionType()==Definition::TypeClass)
       {
-        m_cache.classContext.reset(ClassContext::alloc((ClassDef*)m_def));
+        m_cache.classContext.reset(ClassContext::alloc(dynamic_cast<ClassDef*>(m_def)));
       }
       if (m_cache.classContext)
       {
@@ -6293,7 +6293,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.namespaceContext && m_def->definitionType()==Definition::TypeNamespace)
       {
-        m_cache.namespaceContext.reset(NamespaceContext::alloc((NamespaceDef*)m_def));
+        m_cache.namespaceContext.reset(NamespaceContext::alloc(dynamic_cast<NamespaceDef*>(m_def)));
       }
       if (m_cache.namespaceContext)
       {
@@ -6308,7 +6308,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.dirContext && m_def->definitionType()==Definition::TypeDir)
       {
-        m_cache.dirContext.reset(DirContext::alloc((DirDef*)m_def));
+        m_cache.dirContext.reset(DirContext::alloc(dynamic_cast<DirDef*>(m_def)));
       }
       if (m_cache.dirContext)
       {
@@ -6323,7 +6323,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.fileContext && m_def->definitionType()==Definition::TypeFile)
       {
-        m_cache.fileContext.reset(FileContext::alloc((FileDef*)m_def));
+        m_cache.fileContext.reset(FileContext::alloc(dynamic_cast<FileDef*>(m_def)));
       }
       if (m_cache.fileContext)
       {
@@ -6338,7 +6338,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.pageContext && m_def->definitionType()==Definition::TypePage)
       {
-        m_cache.pageContext.reset(PageContext::alloc((PageDef*)m_def,FALSE,FALSE));
+        m_cache.pageContext.reset(PageContext::alloc(dynamic_cast<PageDef*>(m_def),FALSE,FALSE));
       }
       if (m_cache.pageContext)
       {
@@ -6353,7 +6353,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.moduleContext && m_def->definitionType()==Definition::TypeGroup)
       {
-        m_cache.moduleContext.reset(ModuleContext::alloc((GroupDef*)m_def));
+        m_cache.moduleContext.reset(ModuleContext::alloc(dynamic_cast<GroupDef*>(m_def)));
       }
       if (m_cache.moduleContext)
       {
@@ -6425,14 +6425,14 @@ class NestingNodeContext::Private
 
     void addClasses(bool inherit, bool hideSuper)
     {
-      ClassDef *cd = m_def->definitionType()==Definition::TypeClass ? (ClassDef*)m_def : 0;
+      ClassDef *cd = dynamic_cast<ClassDef*>(m_def);
       if (cd && inherit)
       {
-        bool hasChildren = !cd->visited && !hideSuper && classHasVisibleChildren(cd);
+        bool hasChildren = !cd->isVisited() && !hideSuper && classHasVisibleChildren(cd);
         if (hasChildren)
         {
-          bool wasVisited=cd->visited;
-          cd->visited=TRUE;
+          bool wasVisited=cd->isVisited();
+          cd->setVisited(TRUE);
           if (cd->getLanguage()==SrcLangExt_VHDL)
           {
             m_children->addDerivedClasses(cd->baseClasses(),wasVisited);
@@ -6453,7 +6453,7 @@ class NestingNodeContext::Private
     }
     void addNamespaces(bool addClasses)
     {
-      NamespaceDef *nd = m_def->definitionType()==Definition::TypeNamespace ? (NamespaceDef*)m_def : 0;
+      NamespaceDef *nd = dynamic_cast<NamespaceDef*>(m_def);
       if (nd && nd->getNamespaceSDict())
       {
         m_children->addNamespaces(*nd->getNamespaceSDict(),FALSE,addClasses);
@@ -6465,7 +6465,7 @@ class NestingNodeContext::Private
     }
     void addDirFiles()
     {
-      DirDef *dd = m_def->definitionType()==Definition::TypeDir ? (DirDef*)m_def : 0;
+      DirDef *dd = dynamic_cast<DirDef*>(m_def);
       if (dd)
       {
         m_children->addDirs(dd->subDirs());
@@ -6477,7 +6477,7 @@ class NestingNodeContext::Private
     }
     void addPages()
     {
-      PageDef *pd = m_def->definitionType()==Definition::TypePage ? (PageDef*)m_def : 0;
+      PageDef *pd = dynamic_cast<PageDef*>(m_def);
       if (pd && pd->getSubPages())
       {
         m_children->addPages(*pd->getSubPages(),FALSE);
@@ -6485,7 +6485,7 @@ class NestingNodeContext::Private
     }
     void addModules()
     {
-      GroupDef *gd = m_def->definitionType()==Definition::TypeGroup ? (GroupDef*)m_def : 0;
+      GroupDef *gd = dynamic_cast<GroupDef*>(m_def);
       if (gd && gd->getSubGroups())
       {
         m_children->addModules(*gd->getSubGroups());
@@ -6744,7 +6744,7 @@ class NestingContext::Private : public GenericNodeListContext
           if (cd->isVisibleInHierarchy()) // should it be visible
           {
             // new root level class
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,TRUE,cd->visited);
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,TRUE,cd->isVisited());
             append(nnc);
             m_index++;
           }
@@ -7805,11 +7805,11 @@ class NavPathElemContext::Private
       QCString text = m_def->localName();
       if (type==Definition::TypeGroup)
       {
-        text = ((const GroupDef*)m_def)->groupTitle();
+        text = (dynamic_cast<const GroupDef*>(m_def))->groupTitle();
       }
-      else if (type==Definition::TypePage && (((const PageDef*)m_def)->hasTitle()))
+      else if (type==Definition::TypePage && ((dynamic_cast<const PageDef*>(m_def))->hasTitle()))
       {
-        text = ((const PageDef*)m_def)->title();
+        text = (dynamic_cast<const PageDef*>(m_def))->title();
       }
       else if (type==Definition::TypeClass)
       {
@@ -9102,7 +9102,7 @@ class MemberListInfoContext::Private
           m_def->definitionType()==Definition::TypeClass)
       {
         InheritedMemberInfoListContext *ctx = InheritedMemberInfoListContext::alloc();
-        ctx->addMemberList((ClassDef*)m_def,m_memberList->listType(),m_title,FALSE);
+        ctx->addMemberList(dynamic_cast<ClassDef*>(m_def),m_memberList->listType(),m_title,FALSE);
         m_cache.inherited.reset(ctx);
       }
       if (m_cache.inherited)
@@ -9614,8 +9614,7 @@ class SymbolContext::Private
       const Definition *prev      = m_prevDef;
       const Definition *nextScope = next ? next->getOuterScope() : 0;
       const Definition *prevScope = prev ? prev->getOuterScope() : 0;
-      bool isMemberDef            = m_def->definitionType()==Definition::TypeMember;
-      const MemberDef  *md        = isMemberDef ? (const MemberDef*)m_def : 0;
+      const MemberDef  *md        = dynamic_cast<const MemberDef*>(m_def);
       bool isFunctionLike   = md && (md->isFunction() || md->isSlot() || md->isSignal());
       bool overloadedFunction = isFunctionLike &&
                                 ((prevScope!=0 && scope==prevScope) || (scope && scope==nextScope));
@@ -10300,7 +10299,7 @@ void generateOutputViaTemplate()
       else
       {
         // TODO: for LaTeX output index should be main... => solve in template
-        Doxygen::mainPage = new PageDef("[generated]",1,"index","",theTranslator->trMainPage());
+        Doxygen::mainPage = createPageDef("[generated]",1,"index","",theTranslator->trMainPage());
         Doxygen::mainPage->setFileName("index");
         SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage,TRUE,FALSE));
         ctx->set("mainPage",mainPage.get());

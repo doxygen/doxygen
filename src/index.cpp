@@ -490,7 +490,7 @@ static void writeClassTree(OutputList &ol,const BaseClassList *bcl,bool hideSupe
       }
       ol.startIndexListItem();
       //printf("Passed...\n");
-      bool hasChildren = !cd->visited && !hideSuper && classHasVisibleChildren(cd);
+      bool hasChildren = !cd->isVisited() && !hideSuper && classHasVisibleChildren(cd);
       //printf("tree4: Has children %s: %d\n",cd->name().data(),hasChildren);
       if (cd->isLinkable())
       {
@@ -537,8 +537,8 @@ static void writeClassTree(OutputList &ol,const BaseClassList *bcl,bool hideSupe
       if (hasChildren)
       {
         //printf("Class %s at %p visited=%d\n",cd->name().data(),cd,cd->visited);
-        bool wasVisited=cd->visited;
-        cd->visited=TRUE;
+        bool wasVisited=cd->isVisited();
+        cd->setVisited(TRUE);
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
           writeClassTree(ol,cd->baseClasses(),wasVisited,level+1,ftv,addToIndex);
@@ -872,7 +872,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           started=TRUE;
         }
         ol.startIndexListItem();
-        bool hasChildren = !cd->visited && classHasVisibleChildren(cd);
+        bool hasChildren = !cd->isVisited() && classHasVisibleChildren(cd);
         //printf("list: Has children %s: %d\n",cd->name().data(),hasChildren);
         if (cd->isLinkable())
         {
@@ -913,13 +913,13 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
         }
         if (cd->getLanguage()==SrcLangExt_VHDL && hasChildren)
         {
-          writeClassTree(ol,cd->baseClasses(),cd->visited,1,ftv,addToIndex);
-          cd->visited=TRUE;
+          writeClassTree(ol,cd->baseClasses(),cd->isVisited(),1,ftv,addToIndex);
+          cd->setVisited(TRUE);
         }
         else if (hasChildren)
         {
-          writeClassTree(ol,cd->subClasses(),cd->visited,1,ftv,addToIndex);
-          cd->visited=TRUE;
+          writeClassTree(ol,cd->subClasses(),cd->isVisited(),1,ftv,addToIndex);
+          cd->setVisited(TRUE);
         }
         ol.endIndexListItem();
       }
@@ -3889,7 +3889,7 @@ static int countGroups()
   {
     if (!gd->isReference())
     {
-      gd->visited=FALSE;
+      //gd->visited=FALSE;
       count++;
     }
   }
@@ -3907,7 +3907,6 @@ static int countDirs()
   {
     if (dd->isLinkableInProject())
     {
-      dd->visited=FALSE;
       count++;
     }
   }
@@ -3947,8 +3946,9 @@ void writeGraphInfo(OutputList &ol)
     legendDocs = legendDocs.left(s+8) + "[!-- SVG 0 --]\n" + legendDocs.mid(e);
     //printf("legendDocs=%s\n",legendDocs.data());
   }
-  FileDef fd("","graph_legend");
-  ol.generateDoc("graph_legend",1,&fd,0,legendDocs,FALSE,FALSE);
+  FileDef *fd = createFileDef("","graph_legend");
+  ol.generateDoc("graph_legend",1,fd,0,legendDocs,FALSE,FALSE);
+  delete fd;
 
   // restore config settings
   stripCommentsStateRef = oldStripCommentsState;

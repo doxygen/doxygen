@@ -25,10 +25,64 @@
 #include "language.h"
 #include "namespacedef.h"
 #include "reflist.h"
+#include "definitionimpl.h"
 
-PageDef::PageDef(const char *f,int l,const char *n,
+//------------------------------------------------------------------------------------------
+
+class PageDefImpl : public DefinitionImpl, public PageDef
+{
+  public:
+    PageDefImpl(const char *f,int l,const char *n,const char *d,const char *t);
+    virtual ~PageDefImpl();
+
+    virtual void setFileName(const char *name);
+    virtual void setLocalToc(const LocalToc &tl);
+    virtual void setShowLineNo(bool);
+    virtual DefType definitionType() const { return TypePage; }
+    virtual bool isLinkableInProject() const { return /*hasDocumentation() &&*/ !isReference(); }
+    virtual bool isLinkable() const { return isLinkableInProject() || isReference(); }
+    virtual QCString getOutputFileBase() const;
+    virtual QCString anchor() const { return QCString(); }
+    virtual void findSectionsInDocumentation();
+    virtual QCString title() const { return m_title; }
+    virtual GroupDef *  getGroupDef() const;
+    virtual PageSDict * getSubPages() const { return m_subPageDict; }
+    virtual void addInnerCompound(Definition *d);
+    virtual bool visibleInIndex() const;
+    virtual bool documentedPage() const;
+    virtual bool hasSubPages() const;
+    virtual bool hasParentPage() const;
+    virtual bool hasTitle() const;
+    virtual LocalToc localToc() const { return m_localToc; }
+    virtual void setPageScope(Definition *d){ m_pageScope = d; }
+    virtual Definition *getPageScope() const { return m_pageScope; }
+    virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionImpl::name(); }
+    virtual bool showLineNo() const;
+    virtual void writeDocumentation(OutputList &ol);
+    virtual void writeTagFile(FTextStream &);
+    virtual void setNestingLevel(int l);
+    virtual void writePageDocumentation(OutputList &ol);
+
+  private:
+    QCString m_fileName;
+    QCString m_title;
+    PageSDict *m_subPageDict;                 // list of pages in the group
+    Definition *m_pageScope;
+    int m_nestingLevel;
+    LocalToc m_localToc;
+    bool m_showLineNo;
+};
+
+PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t)
+{
+  return new PageDefImpl(f,l,n,d,t);
+}
+
+//------------------------------------------------------------------------------------------
+
+PageDefImpl::PageDefImpl(const char *f,int l,const char *n,
                  const char *d,const char *t)
- : Definition(f,l,1,n), m_title(t)
+ : DefinitionImpl(f,l,1,n), m_title(t)
 {
   setDocumentation(d,f,l);
   m_subPageDict = new PageSDict(7);
@@ -38,23 +92,23 @@ PageDef::PageDef(const char *f,int l,const char *n,
   m_showLineNo = FALSE;
 }
 
-PageDef::~PageDef()
+PageDefImpl::~PageDefImpl()
 {
   delete m_subPageDict;
 }
 
-void PageDef::findSectionsInDocumentation()
+void PageDefImpl::findSectionsInDocumentation()
 {
   docFindSections(documentation(),this,0,docFile());
 }
 
-GroupDef *PageDef::getGroupDef() const 
+GroupDef *PageDefImpl::getGroupDef() const 
 { 
   GroupList *groups = partOfGroups();
   return groups!=0 ? groups->getFirst() : 0; 
 }
 
-QCString PageDef::getOutputFileBase() const 
+QCString PageDefImpl::getOutputFileBase() const 
 { 
   if (getGroupDef()) 
     return getGroupDef()->getOutputFileBase();
@@ -62,16 +116,16 @@ QCString PageDef::getOutputFileBase() const
     return m_fileName; 
 }
 
-void PageDef::setFileName(const char *name)
+void PageDefImpl::setFileName(const char *name)
 {
   m_fileName = name;
 }
 
-void PageDef::addInnerCompound(Definition *def)
+void PageDefImpl::addInnerCompound(Definition *def)
 {
   if (def->definitionType()==Definition::TypePage)
   {
-    PageDef *pd = (PageDef*)def;
+    PageDef *pd = dynamic_cast<PageDef*>(def);
     m_subPageDict->append(pd->name(),pd);
     def->setOuterScope(this);
     if (this==Doxygen::mainPage)
@@ -85,13 +139,13 @@ void PageDef::addInnerCompound(Definition *def)
   }
 }
 
-bool PageDef::hasParentPage() const
+bool PageDefImpl::hasParentPage() const
 {
   return getOuterScope() && 
          getOuterScope()->definitionType()==Definition::TypePage;
 }
 
-void PageDef::writeTagFile(FTextStream &tagFile)
+void PageDefImpl::writeTagFile(FTextStream &tagFile)
 {
   bool found = name()=="citelist";
   QDictIterator<RefList> rli(*Doxygen::xrefLists);
@@ -115,7 +169,7 @@ void PageDef::writeTagFile(FTextStream &tagFile)
   }
 }
 
-void PageDef::writeDocumentation(OutputList &ol)
+void PageDefImpl::writeDocumentation(OutputList &ol)
 {
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
@@ -124,7 +178,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   pageName    = escapeCharsInString(name(),FALSE,TRUE);
   manPageName = escapeCharsInString(name(),TRUE,TRUE);
 
-  //printf("PageDef::writeDocumentation: %s\n",getOutputFileBase().data());
+  //printf("PageDefImpl::writeDocumentation: %s\n",getOutputFileBase().data());
 
   ol.pushGeneratorState();
   //1.{ 
@@ -232,7 +286,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   Doxygen::indexList->addIndexItem(this,0,0,filterTitle(title()));
 }
 
-void PageDef::writePageDocumentation(OutputList &ol)
+void PageDefImpl::writePageDocumentation(OutputList &ol)
 {
 
   bool markdownEnabled = Doxygen::markdownSupport;
@@ -300,7 +354,7 @@ void PageDef::writePageDocumentation(OutputList &ol)
   }
 }
 
-bool PageDef::visibleInIndex() const
+bool PageDefImpl::visibleInIndex() const
 {
   static bool externalPages = Config_getBool(EXTERNAL_PAGES);
   return // not part of a group
@@ -310,7 +364,7 @@ bool PageDef::visibleInIndex() const
          ;
 }
 
-bool PageDef::documentedPage() const
+bool PageDefImpl::documentedPage() const
 {
    return // not part of a group
           !getGroupDef() && 
@@ -318,32 +372,32 @@ bool PageDef::documentedPage() const
           !isReference();
 }
 
-bool PageDef::hasSubPages() const
+bool PageDefImpl::hasSubPages() const
 {
   return m_subPageDict->count()>0;
 }
 
-void PageDef::setNestingLevel(int l)
+void PageDefImpl::setNestingLevel(int l)
 {
   m_nestingLevel = l;
 }
 
-void PageDef::setLocalToc(const LocalToc &lt)
+void PageDefImpl::setLocalToc(const LocalToc &lt)
 {
   m_localToc = lt;
 }
 
-void PageDef::setShowLineNo(bool b)
+void PageDefImpl::setShowLineNo(bool b)
 {
   m_showLineNo = b;
 }
 
-bool PageDef::showLineNo() const
+bool PageDefImpl::showLineNo() const
 {
   return m_showLineNo;
 }
 
-bool PageDef::hasTitle() const
+bool PageDefImpl::hasTitle() const
 {
   return !m_title.isEmpty() && m_title.lower()!="notitle";
 }

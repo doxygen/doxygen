@@ -381,7 +381,7 @@ void parseSqlCode(
   if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
-    g_sourceFileDef = new FileDef("",(exName?exName:"generated"));
+    g_sourceFileDef = createFileDef("",(exName?exName:"generated"));
     cleanupSourceDef = TRUE;
   }
   

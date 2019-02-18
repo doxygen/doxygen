@@ -432,15 +432,15 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
   {
     if (fd==0 && context->definitionType()==Definition::TypeFile)
     {
-      fd = (FileDef*)context;
+      fd = dynamic_cast<FileDef*>(context);
     }
     if (cd==0 && context->definitionType()==Definition::TypeClass)
     {
-      cd = (ClassDef*)context;
+      cd = dynamic_cast<ClassDef*>(context);
     }
     if (nd==0 && context->definitionType()==Definition::TypeNamespace)
     {
-      nd = (NamespaceDef*)context;
+      nd = dynamic_cast<NamespaceDef*>(context);
     }
     if (fd)
     {

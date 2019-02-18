@@ -61,184 +61,126 @@ struct IncludeInfo
  *  The member writeDocumentation() can be used to generate the page of
  *  documentation to HTML and LaTeX.
  */
-class FileDef : public Definition
+class FileDef : virtual public Definition
 {
   public:
-    //enum FileType { Source, Header, Unknown };
-
-    FileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);
-   ~FileDef();
+   ~FileDef() {}
 
     // ----------------------------------------------------------------------
 
-    DefType definitionType() const { return TypeFile; }
+    virtual DefType definitionType() const = 0;
 
     /*! Returns the unique file name (this may include part of the path). */
-    QCString name() const;
-    QCString displayName(bool=TRUE) const { return name(); }
-    QCString fileName() const { return m_fileName; }
-    
-    QCString getOutputFileBase() const;
+    virtual QCString name() const = 0;
+    virtual QCString displayName(bool=TRUE) const = 0;
+    virtual QCString fileName() const = 0;
 
-    QCString anchor() const { return QCString(); }
+    virtual QCString getOutputFileBase() const = 0;
 
-    QCString getSourceFileBase() const;
-    
+    virtual QCString anchor() const = 0;
+
+    virtual QCString getSourceFileBase() const = 0;
+
     /*! Returns the name of the verbatim copy of this file (if any). */
-    QCString includeName() const;
+    virtual QCString includeName() const = 0;
 
-    QCString includeDependencyGraphFileName() const;
+    virtual QCString includeDependencyGraphFileName() const = 0;
 
-    QCString includedByDependencyGraphFileName() const;
-    
+    virtual QCString includedByDependencyGraphFileName() const = 0;
+
     /*! Returns the absolute path including the file name. */
-    QCString absFilePath() const { return m_filePath; }
-    
+    virtual QCString absFilePath() const = 0;
+
     /*! Returns the name as it is used in the documentation */
-    const QCString &docName() const { return m_docname; }
+    virtual const QCString &docName() const = 0;
 
     /*! Returns TRUE if this file is a source file. */
-    bool isSource() const { return m_isSource; }
+    virtual bool isSource() const = 0;
 
-    bool isDocumentationFile() const;
-    
-    Definition *getSourceDefinition(int lineNr) const;
-    MemberDef *getSourceMember(int lineNr) const;
+    virtual bool isDocumentationFile() const = 0;
 
-    /*! Returns the absolute path of this file. */ 
-    QCString getPath() const { return m_path; }
+    virtual Definition *getSourceDefinition(int lineNr) const = 0;
+    virtual MemberDef *getSourceMember(int lineNr) const = 0;
+
+    /*! Returns the absolute path of this file. */
+    virtual QCString getPath() const = 0;
 
     /*! Returns version of this file. */
-    QCString getVersion() const { return m_fileVersion; }
-    
-    bool isLinkableInProject() const;
+    virtual QCString getVersion() const = 0;
 
-    bool isLinkable() const { return isLinkableInProject() || isReference(); }
-    bool isIncluded(const QCString &name) const;
+    virtual bool isLinkableInProject() const = 0;
 
-    PackageDef *packageDef() const { return m_package; }
-    DirDef *getDirDef() const      { return m_dir; }
-    NamespaceSDict *getUsedNamespaces() const;
-    SDict<Definition> *getUsedClasses() const      { return m_usingDeclList; }
-    QList<IncludeInfo> *includeFileList() const    { return m_includeList; }
-    QList<IncludeInfo> *includedByFileList() const { return m_includedByList; }
-    void getAllIncludeFilesRecursively(QStrList &incFiles) const;
+    virtual bool isLinkable() const = 0;
+    virtual bool isIncluded(const QCString &name) const = 0;
 
-    MemberList *getMemberList(MemberListType lt) const;
-    const QList<MemberList> &getMemberLists() const { return m_memberLists; }
+    virtual PackageDef *packageDef() const = 0;
+    virtual DirDef *getDirDef() const = 0;
+    virtual NamespaceSDict *getUsedNamespaces() const = 0;
+    virtual SDict<Definition> *getUsedClasses() const = 0;
+    virtual QList<IncludeInfo> *includeFileList() const = 0;
+    virtual QList<IncludeInfo> *includedByFileList() const = 0;
+    virtual void getAllIncludeFilesRecursively(QStrList &incFiles) const = 0;
+
+    virtual MemberList *getMemberList(MemberListType lt) const = 0;
+    virtual const QList<MemberList> &getMemberLists() const = 0;
 
     /* user defined member groups */
-    MemberGroupSDict *getMemberGroupSDict() const { return m_memberGroupSDict; }
-    NamespaceSDict *getNamespaceSDict() const     { return m_namespaceSDict; }
-    ClassSDict *getClassSDict() const             { return m_classSDict; }
+    virtual MemberGroupSDict *getMemberGroupSDict() const = 0;
+    virtual NamespaceSDict *getNamespaceSDict() const = 0;
+    virtual ClassSDict *getClassSDict() const = 0;
 
-    QCString title() const;
-    bool hasDetailedDescription() const;
-    QCString fileVersion() const;
+    virtual QCString title() const = 0;
+    virtual bool hasDetailedDescription() const = 0;
+    virtual QCString fileVersion() const = 0;
 
-    bool subGrouping() const { return m_subGrouping; }
-    
+    virtual bool subGrouping() const = 0;
+
     //---------------------------------
 
-    void addSourceRef(int line,Definition *d,MemberDef *md);
+    virtual void addSourceRef(int line,Definition *d,MemberDef *md) = 0;
 
-    void writeDocumentation(OutputList &ol);
-    void writeMemberPages(OutputList &ol);
-    void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
-    void writeSummaryLinks(OutputList &ol);
-    void writeTagFile(FTextStream &t);
+    virtual void writeDocumentation(OutputList &ol) = 0;
+    virtual void writeMemberPages(OutputList &ol) = 0;
+    virtual void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const = 0;
+    virtual void writeSummaryLinks(OutputList &ol) = 0;
+    virtual void writeTagFile(FTextStream &t) = 0;
 
-    void startParsing();
-    void writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu);
-    void parseSource(bool sameTu,QStrList &filesInSameTu);
-    void finishParsing();
-    void setDiskName(const QCString &name);
+    virtual void startParsing() = 0;
+    virtual void writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu) = 0;
+    virtual void parseSource(bool sameTu,QStrList &filesInSameTu) = 0;
+    virtual void finishParsing() = 0;
+    virtual void setDiskName(const QCString &name) = 0;
 
-    void insertMember(MemberDef *md);
-    void insertClass(ClassDef *cd);
-    void insertNamespace(NamespaceDef *nd);
-    void computeAnchors();
+    virtual void insertMember(MemberDef *md) = 0;
+    virtual void insertClass(ClassDef *cd) = 0;
+    virtual void insertNamespace(NamespaceDef *nd) = 0;
+    virtual void computeAnchors() = 0;
 
-    void setPackageDef(PackageDef *pd) { m_package=pd; }
-    void setDirDef(DirDef *dd) { m_dir=dd; }
+    virtual void setPackageDef(PackageDef *pd) = 0;
+    virtual void setDirDef(DirDef *dd) = 0;
 
-    void addUsingDirective(NamespaceDef *nd);
-    void addUsingDeclaration(Definition *def);
-    void combineUsingRelations();
+    virtual void addUsingDirective(NamespaceDef *nd) = 0;
+    virtual void addUsingDeclaration(Definition *def) = 0;
+    virtual void combineUsingRelations() = 0;
 
-    bool generateSourceFile() const;
-    void sortMemberLists();
+    virtual bool generateSourceFile() const = 0;
+    virtual void sortMemberLists() = 0;
 
-    void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported,bool indirect);
-    void addIncludedByDependency(FileDef *fd,const char *incName,bool local,bool imported);
+    virtual void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported,bool indirect) = 0;
+    virtual void addIncludedByDependency(FileDef *fd,const char *incName,bool local,bool imported) = 0;
 
-    void addMembersToMemberGroup();
-    void distributeMemberGroupDocumentation();
-    void findSectionsInDocumentation();
-    void addIncludedUsingDirectives();
+    virtual void addMembersToMemberGroup() = 0;
+    virtual void distributeMemberGroupDocumentation() = 0;
+    virtual void findSectionsInDocumentation() = 0;
+    virtual void addIncludedUsingDirectives() = 0;
 
-    void addListReferences();
-    //bool includes(FileDef *incFile,QDict<FileDef> *includedFiles) const;
-    //bool includesByName(const QCString &name) const;
-    bool visited;
+    virtual void addListReferences() = 0;
 
-  protected:
-    /**
-     * Retrieves the file version from version control system.
-     */
-    void acquireFileVersion();
-
-  private: 
-    MemberList *createMemberList(MemberListType lt);
-    void addMemberToList(MemberListType lt,MemberDef *md);
-    void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
-    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
-    void writeIncludeFiles(OutputList &ol);
-    void writeIncludeGraph(OutputList &ol);
-    void writeIncludedByGraph(OutputList &ol);
-    void writeMemberGroups(OutputList &ol);
-    void writeAuthorSection(OutputList &ol);
-    void writeSourceLink(OutputList &ol);
-    void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
-            bool isConstantGroup);
-    void writeClassDeclarations(OutputList &ol,const QCString &title,ClassSDict *d);
-    void writeInlineClasses(OutputList &ol);
-    void startMemberDeclarations(OutputList &ol);
-    void endMemberDeclarations(OutputList &ol);
-    void startMemberDocumentation(OutputList &ol);
-    void endMemberDocumentation(OutputList &ol);
-    void writeDetailedDescription(OutputList &ol,const QCString &title);
-    void writeBriefDescription(OutputList &ol);
-    void writeClassesToTagFile(FTextStream &t,ClassSDict *d);
-
-    QDict<IncludeInfo>   *m_includeDict;
-    QList<IncludeInfo>   *m_includeList;
-    QDict<IncludeInfo>   *m_includedByDict;
-    QList<IncludeInfo>   *m_includedByList;
-    NamespaceSDict       *m_usingDirList;
-    SDict<Definition>    *m_usingDeclList;
-    QCString              m_path;
-    QCString              m_filePath;
-    QCString              m_inclDepFileName;
-    QCString              m_inclByDepFileName;
-    QCString              m_outputDiskName;
-    QCString              m_fileName;
-    QCString              m_docname;
-    QIntDict<Definition> *m_srcDefDict;
-    QIntDict<MemberDef>  *m_srcMemberDict;
-    bool                  m_isSource;
-    QCString              m_fileVersion;
-    PackageDef           *m_package;
-    DirDef               *m_dir;
-    QList<MemberList>     m_memberLists;
-    MemberGroupSDict     *m_memberGroupSDict;
-    NamespaceSDict       *m_namespaceSDict;
-    ClassSDict           *m_classSDict;
-    ClassSDict           *m_interfaceSDict;
-    ClassSDict           *m_structSDict;
-    ClassSDict           *m_exceptionSDict;
-    bool                  m_subGrouping;
+    virtual void setVisited(bool v) = 0;
+    virtual bool isVisited() const = 0;
 };
+
+FileDef *createFileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);
 
 /** Class representing a list of FileDef objects. */
 class FileList : public QList<FileDef>

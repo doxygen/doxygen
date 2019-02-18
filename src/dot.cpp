@@ -2530,10 +2530,10 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
           //printf("  inserting %s (%p)\n",bClass->name().data(),bn);
           m_usedNodes->insert(bClass->name(),bn); // add node to the used list
         }
-        if (!bClass->visited && !hideSuper && bClass->subClasses())
+        if (!bClass->isVisited() && !hideSuper && bClass->subClasses())
         {
-          bool wasVisited=bClass->visited;
-          bClass->visited=TRUE;
+          bool wasVisited=bClass->isVisited();
+          bClass->setVisited(TRUE);
           addHierarchy(bn,bClass,wasVisited);
         }
       }
@@ -2583,10 +2583,10 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
       //m_usedNodes->clear();
       m_usedNodes->insert(cd->name(),n);
       m_rootNodes->insert(0,n);   
-      if (!cd->visited && cd->subClasses())
+      if (!cd->isVisited() && cd->subClasses())
       {
-        addHierarchy(n,cd,cd->visited);
-        cd->visited=TRUE;
+        addHierarchy(n,cd,cd->isVisited());
+        cd->setVisited(TRUE);
       }
     }
   }

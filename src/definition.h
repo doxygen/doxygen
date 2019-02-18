@@ -33,7 +33,6 @@ class GroupList;
 struct ListItemInfo;
 struct SectionInfo;
 class Definition;
-class DefinitionImpl;
 class FTextStream;
   
 /** Data associated with a detailed description. */
@@ -97,35 +96,26 @@ class Definition : public DefinitionIntf
       virtual ~Cookie() {}
     };
 
-    /*! Create a new definition */
-    Definition(
-        const char *defFileName,int defLine,int defColumn,
-        const char *name,const char *b=0,const char *d=0,
-        bool isSymbol=TRUE);
-
-    /*! Destroys the definition */
-    virtual ~Definition();
-
     //-----------------------------------------------------------------------------------
     // ----  getters -----
     //-----------------------------------------------------------------------------------
 
     /*! Returns the name of the definition */
-    const QCString& name() const { return m_name; }
+    virtual QCString name() const = 0;
 
     /*! Returns the name of the definition as it appears in the output */
     virtual QCString displayName(bool includeScope=TRUE) const = 0;
 
     /*! Returns the local name without any scope qualifiers. */
-    QCString localName() const;
+    virtual QCString localName() const = 0;
 
     /*! Returns the fully qualified name of this definition
      */
-    virtual QCString qualifiedName() const;
+    virtual QCString qualifiedName() const = 0;
 
     /*! Returns the name of this definition as it appears in the symbol map.
      */
-    QCString symbolName() const;
+    virtual QCString symbolName() const = 0;
 
     /*! Returns the base file name (without extension) of this definition.
      *  as it is referenced to/written to disk.
@@ -136,68 +126,68 @@ class Definition : public DefinitionIntf
     virtual QCString anchor() const = 0;
 
     /*! Returns the name of the source listing of this definition. */
-    virtual QCString getSourceFileBase() const;
+    virtual QCString getSourceFileBase() const = 0;
 
     /*! Returns the anchor of the source listing of this definition. */
-    virtual QCString getSourceAnchor() const;
+    virtual QCString getSourceAnchor() const = 0;
 
     /*! Returns the detailed description of this definition */
-    virtual QCString documentation() const;
+    virtual QCString documentation() const = 0;
 
     /*! Returns the line number at which the detailed documentation was found. */
-    int docLine() const;
+    virtual int docLine() const = 0;
 
     /*! Returns the file in which the detailed documentation block was found.
      *  This can differ from getDefFileName().
      */
-    QCString docFile() const;
+    virtual QCString docFile() const = 0;
 
     /*! Returns the brief description of this definition. This can include commands. */
-    virtual QCString briefDescription(bool abbreviate=FALSE) const;
+    virtual QCString briefDescription(bool abbreviate=FALSE) const = 0;
 
     /*! Returns a plain text version of the brief description suitable for use
      *  as a tool tip. 
      */
-    QCString briefDescriptionAsTooltip() const;
+    virtual QCString briefDescriptionAsTooltip() const = 0;
 
     /*! Returns the line number at which the brief description was found. */
-    int briefLine() const;
+    virtual int briefLine() const = 0;
 
     /*! Returns the documentation found inside the body of a member */
-    QCString inbodyDocumentation() const;
+    virtual QCString inbodyDocumentation() const = 0;
 
     /*! Returns the file in which the in body documentation was found */
-    QCString inbodyFile() const;
+    virtual QCString inbodyFile() const = 0;
 
     /*! Returns the line at which the first in body documentation 
         part was found */
-    int inbodyLine() const;
+    virtual int inbodyLine() const = 0;
 
     /*! Returns the file in which the brief description was found. 
      *  This can differ from getDefFileName().
      */
-    QCString briefFile() const;
+    virtual QCString briefFile() const = 0;
 
     /*! returns the file in which this definition was found */
-    QCString getDefFileName() const;
+    virtual QCString getDefFileName() const = 0;
 
     /*! returns the extension of the file in which this definition was found */
-    QCString getDefFileExtension() const;
+    virtual QCString getDefFileExtension() const = 0;
 
     /*! returns the line number at which the definition was found */
-    int getDefLine() const { return m_defLine; }
+    virtual int getDefLine() const = 0;
 
     /*! returns the column number at which the definition was found */
-    int getDefColumn() const { return m_defColumn; }
+    virtual int getDefColumn() const = 0;
 
     /*! Returns TRUE iff the definition is documented 
      *  (which could be generated documentation) 
      *  @see hasUserDocumentation()
      */
-    virtual bool hasDocumentation() const;
+    virtual bool hasDocumentation() const = 0;
 
     /*! Returns TRUE iff the definition is documented by the user. */
-    virtual bool hasUserDocumentation() const;
+    virtual bool hasUserDocumentation() const = 0;
 
     /*! Returns TRUE iff it is possible to link to this item within this
      *  project. 
@@ -212,175 +202,152 @@ class Definition : public DefinitionIntf
     /*! Returns TRUE iff the name is part of this project and 
      *  may appear in the output 
      */
-    virtual bool isVisibleInProject() const;
+    virtual bool isVisibleInProject() const = 0;
 
     /*! Returns TRUE iff the name may appear in the output */
-    virtual bool isVisible() const;
+    virtual bool isVisible() const = 0;
 
     /*! Returns TRUE iff this item is supposed to be hidden from the output. */
-    bool isHidden() const;
+    virtual bool isHidden() const = 0;
 
     /*! returns TRUE if this entity was artificially introduced, for 
      *  instance because it is used to show a template instantiation relation. 
      */
-    bool isArtificial() const;
+    virtual bool isArtificial() const = 0;
 
     /*! If this definition was imported via a tag file, this function
      *  returns the tagfile for the external project. This can be
      *  translated into an external link target via 
      *  Doxygen::tagDestinationDict
      */
-    virtual QCString getReference() const;
+    virtual QCString getReference() const = 0;
 
     /*! Returns TRUE if this definition is imported via a tag file. */
-    virtual bool isReference() const;
+    virtual bool isReference() const = 0;
 
     /*! Convenience method to return a resolved external link */
-    QCString externalReference(const QCString &relPath) const;
+    virtual QCString externalReference(const QCString &relPath) const = 0;
 
     /*! Returns the first line of the body of this item (applicable to classes and 
      *  functions).
      */
-    int getStartBodyLine() const;
+    virtual int getStartBodyLine() const = 0;
 
     /*! Returns the last line of the body of this item (applicable to classes and 
      *  functions).
      */
-    int getEndBodyLine() const;
+    virtual int getEndBodyLine() const = 0;
 
     /*! Returns the file in which the body of this item is located or 0 if no
      *  body is available.
      */
-    FileDef *getBodyDef() const;
+    virtual FileDef *getBodyDef() const = 0;
 
     /** Returns the programming language this definition was written in. */
-    SrcLangExt getLanguage() const;
+    virtual SrcLangExt getLanguage() const = 0;
 
-    GroupList *partOfGroups() const;
-    bool isLinkableViaGroup() const;
+    virtual GroupList *partOfGroups() const = 0;
+    virtual bool isLinkableViaGroup() const = 0;
 
-    QList<ListItemInfo> *xrefListItems() const;
+    virtual QList<ListItemInfo> *xrefListItems() const = 0;
 
-    virtual Definition *findInnerCompound(const char *name) const ;
-    virtual Definition *getOuterScope() const;
+    virtual Definition *findInnerCompound(const char *name) const = 0;
+    virtual Definition *getOuterScope() const = 0;
 
-    MemberSDict *getReferencesMembers() const;
-    MemberSDict *getReferencedByMembers() const;
+    virtual MemberSDict *getReferencesMembers() const = 0;
+    virtual MemberSDict *getReferencedByMembers() const = 0;
 
-    bool hasSections() const;
-    bool hasSources() const;
+    virtual bool hasSections() const = 0;
+    virtual bool hasSources() const = 0;
 
     /** returns TRUE if this class has a brief description */
-    bool hasBriefDescription() const;
+    virtual bool hasBriefDescription() const = 0;
 
-    QCString id() const;
+    virtual QCString id() const = 0;
 
     /** returns the section dictionary, only of importance for pagedef */
-    SectionDict * getSectionDict(void);
+    virtual SectionDict * getSectionDict(void) = 0;
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
 
     /*! Sets a new \a name for the definition */
-    virtual void setName(const char *name);
+    virtual void setName(const char *name) = 0;
 
     /*! Sets a unique id for the symbol. Used for libclang integration. */
-    void setId(const char *name);
+    virtual void setId(const char *name) = 0;
 
     /*! Set a new file name and position */
-    void setDefFile(const QCString& df,int defLine,int defColumn);
+    virtual void setDefFile(const QCString& df,int defLine,int defColumn) = 0;
 
     /*! Sets the documentation of this definition to \a d. */
-    virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
+    virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
 
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
      */
-    virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine);
+    virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine) = 0;
 
     /*! Set the documentation that was found inside the body of an item.
      *  If there was already some documentation set, the new documentation
      *  will be appended.
      */
-    virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine);
+    virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine) = 0;
 
     /*! Sets the tag file id via which this definition was imported. */
-    void setReference(const char *r);
+    virtual void setReference(const char *r) = 0;
 
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.
      */
-    void addSectionsToDefinition(QList<SectionInfo> *anchorList);
+    virtual void addSectionsToDefinition(QList<SectionInfo> *anchorList) = 0;
 
     // source references
-    void setBodySegment(int bls,int ble);
-    void setBodyDef(FileDef *fd);
-    void addSourceReferencedBy(MemberDef *d);
-    void addSourceReferences(MemberDef *d);
+    virtual void setBodySegment(int bls,int ble) = 0;
+    virtual void setBodyDef(FileDef *fd) = 0;
+    virtual void addSourceReferencedBy(MemberDef *d) = 0;
+    virtual void addSourceReferences(MemberDef *d) = 0;
 
-    void setRefItems(const QList<ListItemInfo> *sli);
-    void mergeRefItems(Definition *d);
-    virtual void addInnerCompound(Definition *d);
-    virtual void setOuterScope(Definition *d);
+    virtual void setRefItems(const QList<ListItemInfo> *sli) = 0;
+    virtual void mergeRefItems(Definition *d) = 0;
+    virtual void addInnerCompound(Definition *d) = 0;
+    virtual void setOuterScope(Definition *d) = 0;
 
-    virtual void setHidden(bool b);
+    virtual void setHidden(bool b) = 0;
 
-    void setArtificial(bool b);
-    void setLanguage(SrcLangExt lang);
+    virtual void setArtificial(bool b) = 0;
+    virtual void setLanguage(SrcLangExt lang) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    void writeSourceDef(OutputList &ol,const char *scopeName);
-    void writeInlineCode(OutputList &ol,const char *scopeName);
-    void writeSourceRefs(OutputList &ol,const char *scopeName);
-    void writeSourceReffedBy(OutputList &ol,const char *scopeName);
-    void makePartOfGroup(GroupDef *gd);
-    //void writePathFragment(OutputList &ol) const;
-    void writeNavigationPath(OutputList &ol) const;
-    QCString navigationPathAsString() const;
-    virtual void writeQuickMemberLinks(OutputList &,MemberDef *) const {}
-    virtual void writeSummaryLinks(OutputList &) {}
-    QCString pathFragment() const;
+    virtual void writeSourceDef(OutputList &ol,const char *scopeName) = 0;
+    virtual void writeInlineCode(OutputList &ol,const char *scopeName) = 0;
+    virtual void writeSourceRefs(OutputList &ol,const char *scopeName) = 0;
+    virtual void writeSourceReffedBy(OutputList &ol,const char *scopeName) = 0;
+    virtual void makePartOfGroup(GroupDef *gd) = 0;
+    virtual void writeNavigationPath(OutputList &ol) const = 0;
+    virtual QCString navigationPathAsString() const = 0;
+    virtual void writeQuickMemberLinks(OutputList &,MemberDef *) const = 0;
+    virtual void writeSummaryLinks(OutputList &) = 0;
+    virtual QCString pathFragment() const = 0;
 
     /*! Writes the documentation anchors of the definition to 
      *  the Doxygen::tagFile stream.
      */
-    void writeDocAnchorsToTagFile(FTextStream &);
-    void setLocalName(const QCString name);
+    virtual void writeDocAnchorsToTagFile(FTextStream &) = 0;
+    virtual void setLocalName(const QCString name) = 0;
 
-    void addSectionsToIndex();
-    void writeToc(OutputList &ol, const LocalToc &lt);
+    virtual void addSectionsToIndex() = 0;
+    virtual void writeToc(OutputList &ol, const LocalToc &lt) = 0;
 
-    void setCookie(Cookie *cookie) { delete m_cookie; m_cookie = cookie; }
-    Cookie *cookie() const { return m_cookie; }
+    virtual void setCookie(Cookie *cookie) = 0;
+    virtual Cookie *cookie() const = 0;
 
-  protected:
-
-    Definition(const Definition &d);
-
-  private: 
-    static void addToMap(const char *name,Definition *d);
-    static void removeFromMap(Definition *d);
-
-    void _setSymbolName(const QCString &name);
-
-    int  _getXRefListId(const char *listName) const;
-    void _writeSourceRefList(OutputList &ol,const char *scopeName,
-                       const QCString &text,MemberSDict *members,bool);
-    void _setBriefDescription(const char *b,const char *briefFile,int briefLine);
-    void _setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace,bool atTop);
-    void _setInbodyDocumentation(const char *d,const char *docFile,int docLine);
-    bool _docsAlreadyAdded(const QCString &doc,QCString &sigList);
-    DefinitionImpl *m_impl; // internal structure holding all private data
-    QCString m_name;
-    bool m_isSymbol;
-    QCString m_symbolName;
-    int m_defLine;
-    int m_defColumn;
-    Cookie *m_cookie;
+    virtual void _setSymbolName(const QCString &name) = 0;
+    virtual QCString _symbolName() const = 0;
 };
 
 /** A list of Definition objects. */
