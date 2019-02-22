@@ -71,6 +71,11 @@ class ClassDef : public Definition
                         Singleton, //=Entry::CLASS_SEC
                       };
 
+    /** The various inheritance types for counting*/
+    enum inheritaceType{INHERITS       = 0x01,
+                        INHERITED_BY   = 0x02,
+                        INHERITED_BOTH = INHERITS | INHERITED_BY
+    };
     /** Creates a new compound definition.
      *  \param fileName  full path and file name in which this compound was
      *                   found.
@@ -407,7 +412,7 @@ class ClassDef : public Definition
     void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                               ClassDef *inheritedFrom,const QCString &inheritId);
     int countMembersIncludingGrouped(MemberListType lt,ClassDef *inheritedFrom,bool additional);
-    int countInheritanceNodes();
+    int countInheritanceNodes(inheritaceType inher);
     void writeTagFile(FTextStream &);
     
     bool visited;
