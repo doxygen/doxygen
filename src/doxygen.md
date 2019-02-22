@@ -2,17 +2,17 @@ Doxygen Internals {#mainpage}
 =================
 
 Introduction
-------------
+============
 
 This page provides a high-level overview of the internals of doxygen, with
 links to the relevant parts of the code. This document is intended for
 developers who want to work on doxygen. Users of doxygen are referred to the
-[User Manual](http://www.doxygen.org/manual.html).
+[User Manual](http://www.doxygen.nl/manual/index.html).
 
 The generic starting point of the application is of course the main() function.
 
 Configuration options
----------------------
+=====================
 
 Configuration file data is stored in singleton class Config and can be
 accessed using wrapper macros 
@@ -22,20 +22,20 @@ option.
 
 The format of the configuration file (options and types) is defined
 by the file `config.xml`. As part of the build process, 
-the python script `configgen.py` will create a file configoptions.cpp 
+the python script `configgen.py` will create a file `configoptions.cpp`
 from this, which serves as the input for the configuration file parser
 that is invoked using Config::parse(). The script `configgen.py` will also
 create the documentation for the configuration items, creating the file
 `config.doc`.
 
 Gathering Input files
----------------------
+=====================
 
 After the configuration is known, the input files are searched using
 searchInputFiles() and any tag files are read using readTagFile()
 
 Parsing Input files
--------------------
+===================
 
 The function parseFiles() takes care of parsing all files.
 It uses the ParserManager singleton factory to create a suitable parser object
@@ -71,7 +71,7 @@ extracted like section labels, xref items, and formulas.
 Also Markdown markup is processed using processMarkdown() during this pass.
 
 Resolving relations
--------------------
+===================
 
 The Entry objects created and filled during parsing are stored on disk 
 (to keep memory needs low). The name, parent/child relation, and 
@@ -98,7 +98,7 @@ Finally the data for members of classes, namespaces, and files is stored in
 the subclass MemberDef.
 
 Producing debug output
-----------------------
+======================
 
 Within doxygen there are a number of ways to obtain debug output. Besides the
 invasive method of  putting print statements in the code there are a number of
@@ -174,12 +174,12 @@ easy ways to get debug information.
     problem occurs. This makes it easier to select the file to be compiled in `lex` debug mode.
 
 Producing output
-----------------
+================
 
 TODO
 
 Topics TODO
------------
+===========
 - Grouping of files in Model / Parser / Generator categories
 - Index files based on IndexIntf
   - HTML navigation
