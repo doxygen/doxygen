@@ -308,7 +308,7 @@
 \newenvironment{DoxyParagraph}[1]{%
   \begin{list}{}{%
     \settowidth{\labelwidth}{40pt}%
-    \setlength{\leftmargin}{\labelwidth}%
+    \setlength{\leftmargin}{\labelwidth+\labelsep}%
     \setlength{\parsep}{0pt}%
     \setlength{\itemsep}{-4pt}%
     \renewcommand{\makelabel}{\entrylabel}%
