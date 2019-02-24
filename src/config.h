@@ -65,6 +65,8 @@ namespace Config
   /*! Post processed the parsed data. Replaces raw string values by the actual values.
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
+   *  \param compare signals if we in Doxyfile compare (`-x`) mode are or not. Influences
+   *  setting of the default value.
    */
   void postProcess(bool clearHeaderAndFooter, bool compare = FALSE);
 

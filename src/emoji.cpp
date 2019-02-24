@@ -1578,7 +1578,7 @@ void EmojiEntityMapper::writeEmojiFile(QFile &file)
 
 /*! @brief Access routine to the unicode sequence for the Emoji entity
  *
- * @param symb code of the requested Emoji entity returned by symbol2index()
+ * @param index code of the requested Emoji entity returned by symbol2index()
  * @return the unicode sequence of the Emoji entity,
  */
 const char *EmojiEntityMapper::unicode(int index) const
@@ -1588,7 +1588,7 @@ const char *EmojiEntityMapper::unicode(int index) const
 
 /*! @brief Access routine to the name of the Emoji entity
  *
- * @param symb code of the requested Emoji entity returned by symbol2index()
+ * @param index code of the requested Emoji entity returned by symbol2index()
  * @return the name of the Emoji entity in GitHub format (i.e. :smile:)
  */
 const char *EmojiEntityMapper::name(int index) const
