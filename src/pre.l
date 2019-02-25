@@ -464,13 +464,10 @@ static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyInclude
     // global guard
     if (g_curlyCount==0) // not #include inside { ... }
     {
-      if (g_allIncludes.find(absName)!=0)
+      if (g_allIncludes.find(absName)==0)
       {
-        alreadyIncluded = TRUE;
-        //printf("  already included 1\n");
-        return 0; // already done
+        g_allIncludes.insert(absName,(void *)0x8);
       }
-      g_allIncludes.insert(absName,(void *)0x8);
     }
     // check include stack for absName
 
