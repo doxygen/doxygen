@@ -1157,7 +1157,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
       }
       else if (compound->definitionType()==Definition::TypeGroup)
       {
-        name=((GroupDef*)compound)->groupTitle();
+        name=(dynamic_cast<GroupDef*>(compound))->groupTitle();
       }
       children.append(new 
           DocLinkedWord(parent,name,
@@ -1169,7 +1169,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
                      );
     }
     else if (compound->definitionType()==Definition::TypeFile &&
-             ((FileDef*)compound)->generateSourceFile()
+             (dynamic_cast<FileDef*>(compound))->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
       children.append(new 
@@ -2569,16 +2569,16 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
     {
       if (anchor.isEmpty() &&                                  /* compound link */
           compound->definitionType()==Definition::TypeGroup && /* is group */
-          ((GroupDef *)compound)->groupTitle()                 /* with title */
+          (dynamic_cast<GroupDef *>(compound))->groupTitle()                 /* with title */
          )
       {
-        m_text=((GroupDef *)compound)->groupTitle(); // use group's title as link
+        m_text=(dynamic_cast<GroupDef *>(compound))->groupTitle(); // use group's title as link
       }
       else if (compound->definitionType()==Definition::TypeMember &&
-          ((MemberDef*)compound)->isObjCMethod())
+          (dynamic_cast<MemberDef*>(compound))->isObjCMethod())
       {
         // Objective C Method
-        MemberDef *member = (MemberDef*)compound;
+        MemberDef *member = dynamic_cast<MemberDef*>(compound);
         bool localLink = g_memberDef ? member->getClassDef()==g_memberDef->getClassDef() : FALSE;
         m_text = member->objCMethodName(localLink,g_inSeeBlock);
       }
@@ -2590,7 +2590,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
       return;
     }
     else if (compound && compound->definitionType()==Definition::TypeFile &&
-             ((FileDef*)compound)->generateSourceFile()
+             (dynamic_cast<FileDef*>(compound))->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
       m_file = compound->getSourceFileBase();
@@ -2729,8 +2729,8 @@ DocLink::DocLink(DocNode *parent,const QCString &target)
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
     }
-    else if (compound && compound->definitionType()==Definition::TypeFile && 
-             ((FileDef*)compound)->generateSourceFile()
+    else if (compound && compound->definitionType()==Definition::TypeFile &&
+             (dynamic_cast<FileDef*>(compound))->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
       m_file = compound->getSourceFileBase();
@@ -7546,12 +7546,12 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   }
   else if (ctx && ctx->definitionType()==Definition::TypePage)
   {
-    Definition *scope = ((PageDef*)ctx)->getPageScope();
+    Definition *scope = (dynamic_cast<PageDef*>(ctx))->getPageScope();
     if (scope && scope!=Doxygen::globalScope) g_context = scope->name();
   }
   else if (ctx && ctx->definitionType()==Definition::TypeGroup)
   {
-    Definition *scope = ((GroupDef*)ctx)->getGroupScope();
+    Definition *scope = (dynamic_cast<GroupDef*>(ctx))->getGroupScope();
     if (scope && scope!=Doxygen::globalScope) g_context = scope->name();
   }
   else

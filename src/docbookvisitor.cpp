@@ -386,13 +386,14 @@ DB_VIS_C
       {
         m_t << "<literallayout><computeroutput>";
         QFileInfo cfi( inc->file() );
-        FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
         Doxygen::parserManager->getParser(inc->extension())
           ->parseCode(m_ci,inc->context(),
               inc->text(),
               langExt,
               inc->isExample(),
-              inc->exampleFile(), &fd);
+              inc->exampleFile(), fd);
+        delete fd;
         m_t << "</computeroutput></literallayout>";
       }
       break;
@@ -432,7 +433,7 @@ DB_VIS_C
     case DocInclude::SnipWithLines:
       {
          QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          m_t << "<literallayout><computeroutput>";
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,
@@ -441,13 +442,14 @@ DB_VIS_C
                                            langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), 
-                                           &fd,
+                                           fd,
                                            lineBlock(inc->text(),inc->blockId()),
                                            -1,    // endLine
                                            FALSE, // inlineFragment
                                            0,     // memberDef
                                            TRUE   // show line number
                                           );
+         delete fd;
          m_t << "</computeroutput></literallayout>";
       }
       break;

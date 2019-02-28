@@ -41,70 +41,44 @@ class DirList : public QList<DirDef>
 };
 
 /** A model of a directory symbol. */
-class DirDef : public Definition
+class DirDef : virtual public Definition
 {
   public:
-    DirDef(const char *path);
-    virtual ~DirDef();
+    virtual ~DirDef() {}
 
     // accessors
-    DefType definitionType() const { return TypeDir; }
-    QCString getOutputFileBase() const;
-    QCString anchor() const { return QCString(); }
-    bool isLinkableInProject() const;
-    bool isLinkable() const;
-    QCString displayName(bool=TRUE) const { return m_dispName; }
-    const QCString &shortName() const { return m_shortName; }
-    void addSubDir(DirDef *subdir);
-    FileList *   getFiles() const        { return m_fileList; }
-    void addFile(FileDef *fd);
-    const DirList &subDirs() const { return m_subdirs; }
-    bool isCluster() const { return m_subdirs.count()>0; }
-    int level() const { return m_level; }
-    DirDef *parent() const { return m_parent; }
-    int dirCount() const { return m_dirCount; }
-    const QDict<UsedDir> *usedDirs() const { return m_usedDirs; }
-    bool isParentOf(DirDef *dir) const;
-    bool depGraphIsTrivial() const;
-    QCString shortTitle() const;
-    bool hasDetailedDescription() const;
+    virtual DefType definitionType() const = 0;
+    virtual QCString getOutputFileBase() const = 0;
+    virtual QCString anchor() const = 0;
+    virtual bool isLinkableInProject() const = 0;
+    virtual bool isLinkable() const = 0;
+    virtual QCString displayName(bool=TRUE) const = 0;
+    virtual const QCString &shortName() const = 0;
+    virtual void addSubDir(DirDef *subdir) = 0;
+    virtual FileList *   getFiles() const = 0;
+    virtual void addFile(FileDef *fd) = 0;
+    virtual const DirList &subDirs() const = 0;
+    virtual bool isCluster() const = 0;
+    virtual int level() const = 0;
+    virtual DirDef *parent() const = 0;
+    virtual int dirCount() const = 0;
+    virtual const QDict<UsedDir> *usedDirs() const = 0;
+    virtual bool isParentOf(DirDef *dir) const = 0;
+    virtual bool depGraphIsTrivial() const = 0;
+    virtual QCString shortTitle() const = 0;
+    virtual bool hasDetailedDescription() const = 0;
 
     // generate output
-    void writeDocumentation(OutputList &ol);
-    void writeTagFile(FTextStream &t);
+    virtual void writeDocumentation(OutputList &ol) = 0;
+    virtual void writeTagFile(FTextStream &t) = 0;
 
-    static DirDef *mergeDirectoryInTree(const QCString &path);
-    bool visited;
-    void setDiskName(const QCString &name) { m_diskName = name; }
-    void sort();
-
-  private:
-    friend void computeDirDependencies();
-
-    void writeDetailedDescription(OutputList &ol,const QCString &title);
-    void writeBriefDescription(OutputList &ol);
-    void writeDirectoryGraph(OutputList &ol);
-    void writeSubDirList(OutputList &ol);
-    void writeFileList(OutputList &ol);
-    void startMemberDeclarations(OutputList &ol);
-    void endMemberDeclarations(OutputList &ol);
-
-    void setLevel();
-    static DirDef *createNewDir(const char *path);
-    static bool matchPath(const QCString &path,QStrList &l);
-    void addUsesDependency(DirDef *usedDir,FileDef *srcFd,
-                           FileDef *dstFd,bool inherited);
-    void computeDependencies();
-
-    DirList m_subdirs;
-    QCString m_dispName;
-    QCString m_shortName;
-    QCString m_diskName;
-    FileList *m_fileList;                 // list of files in the group
-    int m_dirCount;
-    int m_level;
-    DirDef *m_parent;
-    QDict<UsedDir> *m_usedDirs;
+    virtual void setDiskName(const QCString &name) = 0;
+    virtual void sort() = 0;
+    virtual void setParent(DirDef *parent) = 0;
+    virtual void setLevel() = 0;
+    virtual void addUsesDependency(DirDef *usedDir,FileDef *srcFd,
+                           FileDef *dstFd,bool inherited) = 0;
+    virtual void computeDependencies() = 0;
 };
 
 /** Class representing a pair of FileDef objects */

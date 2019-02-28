@@ -786,13 +786,13 @@ static bool findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *s
       sym->getOuterScope()->definitionType()==Definition::TypeClass &&
       g_currentDefinition->definitionType()==Definition::TypeClass)
   {
-    ClassDef *cd = (ClassDef*)sym->getOuterScope();
-    ClassDef *thisCd = (ClassDef *)g_currentDefinition;
+    ClassDef *cd = dynamic_cast<ClassDef*>(sym->getOuterScope());
+    ClassDef *thisCd = dynamic_cast<ClassDef *>(g_currentDefinition);
     if (sym->definitionType()==Definition::TypeMember)
     {
       if (g_currentMemberDef && g_collectXRefs)
       {
-	addDocCrossReference(g_currentMemberDef,(MemberDef*)sym);
+	addDocCrossReference(g_currentMemberDef,dynamic_cast<MemberDef*>(sym));
       }
     }
     DBG_CTX((stderr,"cd=%s thisCd=%s\n",cd?cd->name().data():"<none>",thisCd?thisCd->name().data():"<none>"));
@@ -1086,7 +1086,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
                                       // Push a class scope
 
-                                      ClassDef *classDefToAdd = new ClassDef("<code>",1,1,g_curClassName,ClassDef::Class,0,0,FALSE);
+                                      ClassDef *classDefToAdd = createClassDef("<code>",1,1,g_curClassName,ClassDef::Class,0,0,FALSE);
                                       g_codeClassSDict.append(g_curClassName,classDefToAdd);
                                       char *s=g_curClassBases.first();
                                       while (s) 
@@ -1594,7 +1594,7 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
-    g_sourceFileDef = new FileDef("",(exName?exName:"generated"));
+    g_sourceFileDef = createFileDef("",(exName?exName:"generated"));
     cleanupSourceDef = TRUE;
   }
   if (g_sourceFileDef) 

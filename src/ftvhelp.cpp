@@ -223,7 +223,7 @@ static QCString node2URL(FTVNode *n,bool overruleFile=FALSE,bool srcLink=FALSE)
   {
     if (overruleFile && n->def && n->def->definitionType()==Definition::TypeFile)
     {
-      FileDef *fd = (FileDef*)n->def;
+      FileDef *fd = dynamic_cast<FileDef*>(n->def);
       if (srcLink)
       {
         url = fd->getSourceFileBase();
@@ -417,9 +417,9 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
     {
       FileDef *srcRef=0;
       if (n->def && n->def->definitionType()==Definition::TypeFile &&
-          ((FileDef*)n->def)->generateSourceFile())
+          (dynamic_cast<FileDef*>(n->def))->generateSourceFile())
       {
-        srcRef = (FileDef*)n->def;
+        srcRef = dynamic_cast<FileDef*>(n->def);
       }
       if (srcRef)
       {
@@ -560,7 +560,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
     {
       if (n->def && n->def->definitionType()==Definition::TypeFile)
       {
-        FileDef *fd = (FileDef*)n->def;
+        FileDef *fd = dynamic_cast<FileDef*>(n->def);
         bool doc,src;
         doc = fileVisibleInIndex(fd,src);
         if (doc)

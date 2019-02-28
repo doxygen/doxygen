@@ -649,7 +649,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          forceEndParagraph(inc);
          m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,
                                            inc->context(),
@@ -657,7 +657,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), 
-                                           &fd,   // fileDef,
+                                           fd,   // fileDef,
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
@@ -665,6 +665,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            TRUE,  // show line numbers
                                            m_ctx  // search context
                                            );
+         delete fd;
          m_t << PREFRAG_END;
          forceStartParagraph(inc);
       }
@@ -715,7 +716,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          forceEndParagraph(inc);
          m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,
                                            inc->context(),
@@ -723,7 +724,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), 
-                                           &fd,
+                                           fd,
                                            lineBlock(inc->text(),inc->blockId()),
                                            -1,    // endLine
                                            FALSE, // inlineFragment
@@ -731,6 +732,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            TRUE,  // show line number
                                            m_ctx  // search context
                                           );
+         delete fd;
          m_t << PREFRAG_END;
          forceStartParagraph(inc);
       }

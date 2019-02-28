@@ -1357,7 +1357,7 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
   if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
-    g_sourceFileDef = new FileDef("",exName);
+    g_sourceFileDef = createFileDef("",exName);
   }
   if (g_sourceFileDef) 
   {

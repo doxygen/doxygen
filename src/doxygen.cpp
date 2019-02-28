@@ -650,12 +650,12 @@ static void buildGroupListFiltered(Entry *root,bool additional, bool includeExte
       {
         if (root->tagInfo)
         {
-          gd = new GroupDef(root->fileName,root->startLine,root->name,root->type,root->tagInfo->fileName);
+          gd = createGroupDef(root->fileName,root->startLine,root->name,root->type,root->tagInfo->fileName);
           gd->setReference(root->tagInfo->tagName);
         }
         else
         {
-          gd = new GroupDef(root->fileName,root->startLine,root->name,root->type);
+          gd = createGroupDef(root->fileName,root->startLine,root->name,root->type);
         }
         gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         // allow empty docs for group
@@ -1000,7 +1000,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,
     {
       // introduce bogus namespace
       //printf("++ adding dummy namespace %s to %s tagInfo=%p\n",nsName.data(),prevScope->name().data(),tagInfo);
-      nd=new NamespaceDef(
+      nd=createNamespaceDef(
         "[generated]",1,1,fullScope,
         tagInfo?tagInfo->tagName:QCString(),
         tagInfo?tagInfo->fileName:QCString());
@@ -1309,7 +1309,7 @@ static void addClassToContext(Entry *root)
     {
       tArgList = getTemplateArgumentsFromName(fullName,root->tArgLists);
     }
-    cd=new ClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
+    cd=createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
         fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum);
     Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p\n",
         qPrint(fullName),sec,root->tArgLists ? (int)root->tArgLists->count() : -1, tagInfo);
@@ -1400,7 +1400,7 @@ static void buildClassDocList(Entry *root)
 static void resolveClassNestingRelations()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+  for (cli.toFirst();cli.current();++cli) cli.current()->setVisited(FALSE);
 
   bool done=FALSE;
   int iteration=0;
@@ -1411,7 +1411,7 @@ static void resolveClassNestingRelations()
     ClassDef *cd=0;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
-      if (!cd->visited)
+      if (!cd->isVisited())
       {
         QCString name = stripAnonymousNamespaceScope(cd->name());
         //printf("processing=%s, iteration=%d\n",cd->name().data(),iteration);
@@ -1423,7 +1423,7 @@ static void resolveClassNestingRelations()
           //printf("****** adding %s to scope %s in iteration %d\n",cd->name().data(),d->name().data(),iteration);
           d->addInnerCompound(cd);
           cd->setOuterScope(d);
-          cd->visited=TRUE;
+          cd->setVisited(TRUE);
           done=FALSE;
         }
         //else
@@ -1438,7 +1438,7 @@ static void resolveClassNestingRelations()
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (!cd->visited)
+    if (!cd->isVisited())
     {
       QCString name = stripAnonymousNamespaceScope(cd->name());
       //printf("processing unresolved=%s, iteration=%d\n",cd->name().data(),iteration);
@@ -1468,14 +1468,14 @@ void distributeClassGroupRelations()
   //printf("** distributeClassGroupRelations()\n");
 
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+  for (cli.toFirst();cli.current();++cli) cli.current()->setVisited(FALSE);
 
   ClassDef *cd;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     //printf("Checking %s\n",cd->name().data());
     // distribute the group to nested classes as well
-    if (!cd->visited && cd->partOfGroups()!=0 && cd->getClassSDict())
+    if (!cd->isVisited() && cd->partOfGroups()!=0 && cd->getClassSDict())
     {
       //printf("  Candidate for merging\n");
       ClassSDict::Iterator ncli(*cd->getClassSDict());
@@ -1491,7 +1491,7 @@ void distributeClassGroupRelations()
           gd->addClass(ncd);
         }
       }
-      cd->visited=TRUE; // only visit every class once
+      cd->setVisited(TRUE); // only visit every class once
     }
   }
 }
@@ -1503,7 +1503,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
   QCString fullName = removeAnonymousScopes(templ->name());
   if (fullName.right(2)=="::") fullName=fullName.left(fullName.length()-2);
   fullName+="."+fieldName;
-  ClassDef *cd = new ClassDef(templ->getDefFileName(),
+  ClassDef *cd = createClassDef(templ->getDefFileName(),
                               templ->getDefLine(),
                               templ->getDefColumn(),
                               fullName,
@@ -1548,7 +1548,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
     for (li.toFirst();(md=li.current());++li)
     {
       //printf("    Member %s type=%s\n",md->name().data(),md->typeString());
-      MemberDef *imd = new MemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
+      MemberDef *imd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
                                      md->typeString(),md->name(),md->argsString(),md->excpString(),
                                      md->protection(),md->virtualness(),md->isStatic(),Member,
                                      md->memberType(),
@@ -1741,7 +1741,7 @@ static void buildNamespaceList(Entry *root)
           tagFileName = tagInfo->fileName;
         }
         //printf("++ new namespace %s lang=%s tagName=%s\n",fullName.data(),langToString(root->lang).data(),tagName.data());
-        NamespaceDef *nd=new NamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
+        NamespaceDef *nd=createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
                              root->startColumn,fullName,tagName,tagFileName,
                              root->type,root->spec&Entry::Published);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
@@ -1879,7 +1879,7 @@ static void findUsingDirectives(Entry *root)
           Definition *s = pnd->getOuterScope();
           if (s && s->definitionType()==Definition::TypeNamespace)
           {
-            pnd = (NamespaceDef*)s;
+            pnd = dynamic_cast<NamespaceDef*>(s);
           }
           else
           {
@@ -1913,7 +1913,7 @@ static void findUsingDirectives(Entry *root)
       else // unknown namespace, but add it anyway.
       {
         //printf("++ new unknown namespace %s lang=%s\n",name.data(),langToString(root->lang).data());
-        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,root->startColumn,name);
+        NamespaceDef *nd=createNamespaceDef(root->fileName,root->startLine,root->startColumn,name);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -2026,7 +2026,7 @@ static void findUsingDeclarations(Entry *root)
       {
         Debug::print(Debug::Classes,0,"  New using class `%s' (sec=0x%08x)! #tArgLists=%d\n",
              qPrint(name),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
-        usingCd = new ClassDef(
+        usingCd = createClassDef(
                      "<using>",1,1,
                      name,
                      ClassDef::Class);
@@ -2107,7 +2107,7 @@ static void findUsingDeclImports(Entry *root)
                     }
                     ArgumentList *templAl = md->templateArguments();
                     ArgumentList *al = md->templateArguments();
-                    newMd = new MemberDef(
+                    newMd = createMemberDef(
                       fileName,root->startLine,root->startColumn,
                       md->typeString(),memName,md->argsString(),
                       md->excpString(),root->protection,root->virt,
@@ -2169,7 +2169,7 @@ static void findIncludedUsingDirectives()
     FileDef *fd;
     for (;(fd=fni.current());++fni)
     {
-      fd->visited=FALSE;
+      fd->setVisited(FALSE);
     }
   }
   // then recursively add using directives found in #include files
@@ -2180,7 +2180,7 @@ static void findIncludedUsingDirectives()
     FileDef *fd;
     for (fni.toFirst();(fd=fni.current());++fni)
     {
-      if (!fd->visited)
+      if (!fd->isVisited())
       {
         //printf("----- adding using directives for file %s\n",fd->name().data());
         fd->addIncludedUsingDirectives();
@@ -2299,7 +2299,7 @@ static MemberDef *addVariableToClass(
   }
 
   // new member variable, typedef or enum value
-  MemberDef *md=new MemberDef(
+  MemberDef *md=createMemberDef(
       fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
       prot,Normal,root->stat,related,
@@ -2556,7 +2556,7 @@ static MemberDef *addVariableToFile(
   Debug::print(Debug::Variables,0,
     "    new variable, nd=%s tagInfo=%p!\n",nd?qPrint(nd->name()):"<global>",root->tagInfo);
   // new global variable, enum value or typedef
-  MemberDef *md=new MemberDef(
+  MemberDef *md=createMemberDef(
       fileName,root->startLine,root->startColumn,
       root->type,name,root->args,0,
       root->protection, Normal,root->stat,Member,
@@ -3117,7 +3117,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   {
     fileName = root->tagInfo->tagName;
   }
-  MemberDef *const md = new MemberDef(
+  MemberDef *const md = createMemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
       "", "", root->protection, root->virt, root->stat, Member,
       type, 0, root->argList, root->metaData);
@@ -3295,7 +3295,7 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
   //   );
 
   // adding class member
-  MemberDef *md=new MemberDef(
+  MemberDef *md=createMemberDef(
       fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
       root->protection,root->virt,
@@ -3695,7 +3695,7 @@ static void buildFunctionList(Entry *root)
           // new global function
           ArgumentList *tArgList = root->tArgLists ? root->tArgLists->getLast() : 0;
           QCString name=removeRedundantWhiteSpace(rname);
-          md=new MemberDef(
+          md=createMemberDef(
               root->fileName,root->startLine,root->startColumn,
               root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,Member,
@@ -4201,7 +4201,7 @@ static void findUsedClassesForClass(Entry *root,
                            QDict<int> *templateNames=0
                            )
 {
-  masterCd->visited=TRUE;
+  masterCd->setVisited(TRUE);
   ArgumentList *formalArgs = masterCd->templateArguments();
   if (masterCd->memberNameInfoSDict())
   {
@@ -4286,7 +4286,7 @@ static void findUsedClassesForClass(Entry *root,
                   ClassDef *usedCd = Doxygen::hiddenClasses->find(usedName);
                   if (usedCd==0)
                   {
-                    usedCd = new ClassDef(
+                    usedCd = createClassDef(
                         masterCd->getDefFileName(),masterCd->getDefLine(),
                         masterCd->getDefColumn(),
                         usedName,
@@ -4335,7 +4335,7 @@ static void findUsedClassesForClass(Entry *root,
                 type+=md->argsString();
               }
               Debug::print(Debug::Classes,0,"  New undocumented used class `%s'\n", qPrint(type));
-              usedCd = new ClassDef(
+              usedCd = createClassDef(
                   masterCd->getDefFileName(),masterCd->getDefLine(),
                   masterCd->getDefColumn(),
                   type,ClassDef::Class);
@@ -4373,7 +4373,7 @@ static void findBaseClassesForClass(
     )
 {
   //if (masterCd->visited) return;
-  masterCd->visited=TRUE;
+  masterCd->setVisited(TRUE);
   // The base class could ofcouse also be a non-nested class
   ArgumentList *formalArgs = masterCd->templateArguments();
   QListIterator<BaseInfo> bii(*root->extends);
@@ -4845,7 +4845,7 @@ static bool findClassRelation(
             baseClass=Doxygen::hiddenClasses->find(baseClassName);
             if (baseClass==0)
             {
-              baseClass=new ClassDef(root->fileName,root->startLine,root->startColumn,
+              baseClass=createClassDef(root->fileName,root->startLine,root->startColumn,
                                  baseClassName,
                                  ClassDef::Class);
               Doxygen::hiddenClasses->append(baseClassName,baseClass);
@@ -4860,7 +4860,7 @@ static bool findClassRelation(
             //    baseClassName.data(),baseClass,biName.data(),templSpec.data());
             if (baseClass==0)
             {
-              baseClass=new ClassDef(root->fileName,root->startLine,root->startColumn,
+              baseClass=createClassDef(root->fileName,root->startLine,root->startColumn,
                   baseClassName,
                   ClassDef::Class);
               Doxygen::classSDict->append(baseClassName,baseClass);
@@ -4995,7 +4995,7 @@ static QCString extractClassName(Entry *root)
 static void findInheritedTemplateInstances()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+  for (cli.toFirst();cli.current();++cli) cli.current()->setVisited(FALSE);
   QDictIterator<Entry> edi(g_classEntries);
   Entry *root;
   for (;(root=edi.current());++edi)
@@ -5014,7 +5014,7 @@ static void findInheritedTemplateInstances()
 static void findUsedTemplateInstances()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+  for (cli.toFirst();cli.current();++cli) cli.current()->setVisited(FALSE);
   QDictIterator<Entry> edi(g_classEntries);
   Entry *root;
   for (;(root=edi.current());++edi)
@@ -5033,7 +5033,7 @@ static void findUsedTemplateInstances()
 static void computeClassRelations()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+  for (cli.toFirst();cli.current();++cli) cli.current()->setVisited(FALSE);
   QDictIterator<Entry> edi(g_classEntries);
   Entry *root;
   for (;(root=edi.current());++edi)
@@ -5179,28 +5179,6 @@ static void computeMemberReferences()
 
 static void addListReferences()
 {
-  MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
-  MemberName *mn=0;
-  for (mnli.toFirst();(mn=mnli.current());++mnli)
-  {
-    MemberNameIterator mni(*mn);
-    MemberDef *md=0;
-    for (mni.toFirst();(md=mni.current());++mni)
-    {
-      md->visited=FALSE;
-    }
-  }
-  MemberNameSDict::Iterator fmnli(*Doxygen::functionNameSDict);
-  for (fmnli.toFirst();(mn=fmnli.current());++fmnli)
-  {
-    MemberNameIterator mni(*mn);
-    MemberDef *md=0;
-    for (mni.toFirst();(md=mni.current());++mni)
-    {
-      md->visited=FALSE;
-    }
-  }
-
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
@@ -5614,7 +5592,7 @@ static bool scopeIsTemplate(Definition *d)
   bool result=FALSE;
   if (d && d->definitionType()==Definition::TypeClass)
   {
-    result = ((ClassDef*)d)->templateArguments() || scopeIsTemplate(d->getOuterScope());
+    result = (dynamic_cast<ClassDef*>(d))->templateArguments() || scopeIsTemplate(d->getOuterScope());
   }
   return result;
 }
@@ -6410,7 +6388,7 @@ static void findMember(Entry *root,
           MemberType mtype=MemberType_Function;
           ArgumentList *tArgList = new ArgumentList;
           //  getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
-          md=new MemberDef(
+          md=createMemberDef(
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               declMd ? declMd->protection() : root->protection,
@@ -6480,7 +6458,7 @@ static void findMember(Entry *root,
           ArgumentList *tArgList =
             getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
           //printf("new related member %s args=`%s'\n",md->name().data(),funcArgs.data());
-          MemberDef *md=new MemberDef(
+          MemberDef *md=createMemberDef(
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,Related,
@@ -6616,7 +6594,7 @@ static void findMember(Entry *root,
           // this accurately reflects the template arguments of
           // the related function, which don't have to do with
           // those of the related class.
-          MemberDef *md=new MemberDef(
+          MemberDef *md=createMemberDef(
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
@@ -6760,7 +6738,7 @@ localObjCMethod:
         Debug::print(Debug::FindMembers,0,"4. Local objective C method %s\n"
               "  scopeName=%s className=%s\n",qPrint(root->name),qPrint(scopeName),qPrint(className));
         //printf("Local objective C method `%s' of class `%s' found\n",root->name.data(),cd->name().data());
-        MemberDef *md=new MemberDef(
+        MemberDef *md=createMemberDef(
             root->fileName,root->startLine,root->startColumn,
             funcType,funcName,funcArgs,exceptions,
             root->protection,root->virt,root->stat,Member,
@@ -7083,7 +7061,7 @@ static void findEnums(Entry *root)
     if (!name.isEmpty())
     {
       // new enum type
-      md = new MemberDef(
+      md = createMemberDef(
           root->fileName,root->startLine,root->startColumn,
           0,name,0,0,
           root->protection,Normal,FALSE,
@@ -7303,7 +7281,7 @@ static void addEnumValuesToEnums(Entry *root)
                   {
                     fileName = e->tagInfo->tagName;
                   }
-                  MemberDef *fmd=new MemberDef(
+                  MemberDef *fmd=createMemberDef(
                       fileName,e->startLine,e->startColumn,
                       e->type,e->name,e->args,0,
                       e->protection, Normal,e->stat,Member,
@@ -8165,7 +8143,7 @@ static void combineUsingRelations()
     FileDef *fd;
     for (fni.toFirst();(fd=fni.current());++fni)
     {
-      fd->visited=FALSE;
+      fd->setVisited(FALSE);
     }
   }
   for (fnli.toFirst();(fn=fnli.current());++fnli)
@@ -8183,7 +8161,7 @@ static void combineUsingRelations()
   NamespaceDef *nd;
   for (nli.toFirst() ; (nd=nli.current()) ; ++nli )
   {
-    nd->visited=FALSE;
+    nd->setVisited(FALSE);
   }
   for (nli.toFirst() ; (nd=nli.current()) ; ++nli )
   {
@@ -8425,7 +8403,7 @@ static void findDefineDocumentation(Entry *root)
 
     if (root->tagInfo && !root->name.isEmpty()) // define read from a tag file
     {
-      MemberDef *md=new MemberDef(root->tagInfo->tagName,1,1,
+      MemberDef *md=createMemberDef(root->tagInfo->tagName,1,1,
                     "#define",root->name,root->args,0,
                     Public,Normal,FALSE,Member,MemberType_Define,0,0,"");
       md->setTagInfo(root->tagInfo);
@@ -8653,7 +8631,7 @@ static void findMainPage(Entry *root)
       QCString title=root->args.stripWhiteSpace();
       //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
       QCString indexName="index";
-      Doxygen::mainPage = new PageDef(root->docFile,root->docLine,
+      Doxygen::mainPage = createPageDef(root->docFile,root->docLine,
                               indexName, root->brief+root->doc+root->inbodyDocs,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -8810,7 +8788,7 @@ static void resolveUserReferences()
         GroupDef *gd=0;
         if (si->definition->definitionType()==Definition::TypeMember)
         {
-          gd = ((MemberDef *)si->definition)->getGroupDef();
+          gd = (dynamic_cast<MemberDef *>(si->definition))->getGroupDef();
         }
 
         if (gd)
@@ -8869,7 +8847,7 @@ static void buildExampleList(Entry *root)
     }
     else
     {
-      PageDef *pd=new PageDef(root->fileName,root->startLine,
+      PageDef *pd=createPageDef(root->fileName,root->startLine,
           root->name,root->brief+root->doc+root->inbodyDocs,root->args);
       pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       pd->setFileName(convertNameToFile(pd->name()+"-example",FALSE,TRUE));
@@ -9577,7 +9555,7 @@ int readDir(QFileInfo *fi,
           //printf("New file %s\n",name.data());
           if (fnDict)
           {
-            FileDef  *fd=new FileDef(cfi->dirPath().utf8()+"/",name);
+            FileDef  *fd=createFileDef(cfi->dirPath().utf8()+"/",name);
             FileName *fn=0;
             if (!name.isEmpty() && (fn=(*fnDict)[name]))
             {
@@ -9676,7 +9654,7 @@ int readFileOrDirectory(const char *s,
             //printf("New file %s\n",name.data());
             if (fnDict)
             {
-              FileDef  *fd=new FileDef(dirPath+"/",name);
+              FileDef  *fd=createFileDef(dirPath+"/",name);
               FileName *fn=0;
               if (!name.isEmpty() && (fn=(*fnDict)[name]))
               {
@@ -9879,7 +9857,7 @@ static void dumpSymbol(FTextStream &t,Definition *d)
   QCString anchor;
   if (d->definitionType()==Definition::TypeMember)
   {
-    MemberDef *md = (MemberDef *)d;
+    MemberDef *md = dynamic_cast<MemberDef *>(d);
     anchor=":"+md->anchor();
   }
   QCString scope;
@@ -10544,7 +10522,7 @@ void checkConfiguration()
 /** adjust globals that depend on configuration settings. */
 void adjustConfiguration()
 {
-  Doxygen::globalScope = new NamespaceDef("<globalScope>",1,1,"<globalScope>");
+  Doxygen::globalScope = createNamespaceDef("<globalScope>",1,1,"<globalScope>");
   Doxygen::inputNameDict = new FileNameDict(10007);
   Doxygen::includeNameDict = new FileNameDict(10007);
   Doxygen::exampleNameDict = new FileNameDict(1009);

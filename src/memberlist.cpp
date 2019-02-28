@@ -767,7 +767,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
   ClassDef *cd = 0;
   if (container && container->definitionType()==Definition::TypeClass)
   {
-    cd = (ClassDef*)container;
+    cd = dynamic_cast<ClassDef*>(container);
   }
   ol.startMemberDocSimple(cd && cd->isJavaEnum());
   MemberListIterator mli(*this);

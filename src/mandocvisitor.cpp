@@ -254,20 +254,21 @@ void ManDocVisitor::visit(DocInclude *inc)
          m_t << ".PP" << endl;
          m_t << ".nf" << endl;
          QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
                                            inc->isExample(),
                                            inc->exampleFile(),
-                                           &fd,   // fileDef,
+                                           fd,   // fileDef,
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
                                            0,     // memberDef
                                            TRUE
 					   );
+         delete fd;
          if (!m_firstCol) m_t << endl;
          m_t << ".fi" << endl;
          m_t << ".PP" << endl;
@@ -335,7 +336,7 @@ void ManDocVisitor::visit(DocInclude *inc)
          m_t << ".PP" << endl;
          m_t << ".nf" << endl;
          QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,
                                            inc->context(),
@@ -343,13 +344,14 @@ void ManDocVisitor::visit(DocInclude *inc)
                                            langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), 
-                                           &fd,
+                                           fd,
                                            lineBlock(inc->text(),inc->blockId()),
                                            -1,    // endLine
                                            FALSE, // inlineFragment
                                            0,     // memberDef
                                            TRUE   // show line number
                                           );
+         delete fd;
          if (!m_firstCol) m_t << endl;
          m_t << ".fi" << endl;
          m_t << ".PP" << endl;

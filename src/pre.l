@@ -1402,7 +1402,7 @@ void addDefine()
   //printf("addDefine %s %s\n",g_defName.data(),g_defArgsStr.data());
   //ArgumentList *al = new ArgumentList;
   //stringToArgumentList(g_defArgsStr,al);
-  MemberDef *md=new MemberDef(
+  MemberDef *md=createMemberDef(
       g_yyFileName,g_yyLineNr-g_yyMLines,g_yyColNr,
       "#define",g_defName,g_defArgsStr,0,
       Public,Normal,FALSE,Member,MemberType_Define,0,0,"");

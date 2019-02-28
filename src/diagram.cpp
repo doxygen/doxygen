@@ -1020,7 +1020,7 @@ void clearVisitFlags()
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    cd->visited=FALSE;
+    cd->setVisited(FALSE);
   }
 }
 
