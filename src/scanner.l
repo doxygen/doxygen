@@ -6987,6 +6987,7 @@ static void handleParametersCommentBlocks(ArgumentList *al)
     //printf("    Param %s docs=%s\n",a->name.data(),a->docs.data());
     if (!a->docs.isEmpty())
     {
+      if  (!a->name && a->type == "...") a->name= "...";
       int position=0;
       bool needsEntry;
 

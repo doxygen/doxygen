@@ -308,7 +308,7 @@
 \newenvironment{DoxyParagraph}[1]{%
   \begin{list}{}{%
     \settowidth{\labelwidth}{40pt}%
-    \setlength{\leftmargin}{\labelwidth}%
+    \setlength{\leftmargin}{\labelwidth+\labelsep}%
     \setlength{\parsep}{0pt}%
     \setlength{\itemsep}{-4pt}%
     \renewcommand{\makelabel}{\entrylabel}%
@@ -544,6 +544,15 @@
 
 % Version of hypertarget with correct landing location
 \newcommand{\Hypertarget}[1]{\Hy@raisedlink{\hypertarget{#1}{}}}
+
+% possibility to have sections etc. be within the margins
+\makeatletter
+\newcommand{\doxysection}[1]{\@ifstar{\begingroup\sloppy\raggedright\section*{#1}\endgroup}{\begingroup\sloppy\raggedright\section{#1}\endgroup}}
+\newcommand{\doxysubsection}[1]{\@ifstar{\begingroup\sloppy\raggedright\subsection*{#1}\endgroup}{\begingroup\sloppy\raggedright\subsection{#1}\endgroup}}
+\newcommand{\doxysubsubsection}[1]{\@ifstar{\begingroup\sloppy\raggedright\subsubsection*{#1}\endgroup}{\begingroup\sloppy\raggedright\subsubsection{#1}\endgroup}}
+\newcommand{\doxyparagraph}[1]{@ifstar{\begingroup\sloppy\raggedright\paragraph*{#1}\endgroup}{\begingroup\sloppy\raggedright\paragraph{#1}\endgroup}}
+\newcommand{\doxysubparagraph}[1]{@ifstar{\begingroup\sloppy\raggedright\subparagraph*{#1}\endgroup}{\begingroup\sloppy\raggedright\subparagraph{#1}\endgroup}}
+\makeatother
 
 % Define caption that is also suitable in a table
 \makeatletter
