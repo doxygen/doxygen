@@ -211,6 +211,34 @@ static bool isInvisibleNode(DocNode *node)
       ;
 }
 
+static void mergeHtmlAttributes(const HtmlAttribList &attribs, HtmlAttribList *mergeInto)
+{
+  HtmlAttribListIterator li(attribs);
+  HtmlAttrib *att;
+  for (li.toFirst();(att=li.current());++li)
+  {
+    HtmlAttribListIterator ml(*mergeInto);
+    HtmlAttrib *opt;
+    bool found = false;
+    for (ml.toFirst();(opt=ml.current());++ml)
+    {
+      if (opt->name == att -> name)
+      {
+        found = true;
+        break;
+      }
+    }
+    if (found)
+    {
+       opt->value = opt->value + " " + att->value;
+    }
+    else
+    {
+      mergeInto->append(att);
+    }
+  }
+}
+
 static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAltValue = 0)
 {
   QCString result;
@@ -1651,8 +1679,18 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       sizeAttribs+=" height=\""+img->height()+"\"";
     }
     // 16 cases: url.isEmpty() | typeSVG | inlineImage | img->hasCaption()
+
+    HtmlAttribList extraAttribs;
+    if (typeSVG)
+    {
+      HtmlAttrib opt;
+      opt.name  = "style";
+      opt.value = "pointer-events: none;";
+      extraAttribs.append(&opt);
+    }
     QCString alt;
-    QCString attrs = htmlAttribsToString(img->attribs(),&alt);
+    mergeHtmlAttributes(img->attribs(),&extraAttribs);
+    QCString attrs = htmlAttribsToString(extraAttribs,&alt);
     QCString src;
     if (url.isEmpty())
     {
@@ -1664,7 +1702,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     if (typeSVG)
     {
-      m_t << "<object type=\"image/svg+xml\" style=\"pointer-events: none;\" data=\"" << src
+      m_t << "<object type=\"image/svg+xml\" data=\"" << src
         << "\"" << sizeAttribs << attrs;
       if (inlineImage)
       {
