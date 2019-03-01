@@ -1701,13 +1701,13 @@ QCString DefinitionImpl::pathFragment() const
   if (isLinkable())
   {
     if (!result.isEmpty()) result+="/";
-    if (definitionType()==Definition::TypeGroup && ((const GroupDef*)this)->groupTitle())
+    if (definitionType()==Definition::TypeGroup && (dynamic_cast <const GroupDef*>(this))->groupTitle())
     {
-      result+=((const GroupDef*)this)->groupTitle();
+      result+=(dynamic_cast <const GroupDef*>(this))->groupTitle();
     }
-    else if (definitionType()==Definition::TypePage && ((const PageDef*)this)->hasTitle())
+    else if (definitionType()==Definition::TypePage && (dynamic_cast <const PageDef*>(this))->hasTitle())
     {
-      result+=((const PageDef*)this)->title();
+      result+=(dynamic_cast <const PageDef*>(this))->title();
     }
     else
     {
@@ -2031,7 +2031,7 @@ QCString DefinitionImpl::briefDescriptionAsTooltip() const
       static bool reentering=FALSE; 
       if (!reentering)
       {
-        MemberDef *md = definitionType()==TypeMember ? (MemberDef*)this : 0;
+        const MemberDef *md = definitionType()==TypeMember ? dynamic_cast<const MemberDef*>(this) : 0;
         const Definition *scope = definitionType()==TypeMember ? getOuterScope() : this;
         reentering=TRUE; // prevent requests for tooltips while parsing a tooltip
         m_impl->brief->tooltip = parseCommentAsText(
