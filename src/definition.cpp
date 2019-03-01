@@ -1279,7 +1279,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName)
       pIntf->resetCodeParserState();
       //printf("Read:\n`%s'\n\n",codeFragment.data());
       MemberDef *thisMd = 0;
-      if (definitionType()==TypeMember) thisMd = (MemberDef *)this;
+      if (definitionType()==TypeMember) thisMd = dynamic_cast <MemberDef*>(this);
 
       ol.startCodeFragment();
       pIntf->parseCode(ol,               // codeOutIntf
