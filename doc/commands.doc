@@ -229,7 +229,8 @@ documentation:
 The following subsections provide a list of all commands that are recognized by
 doxygen. Unrecognized commands are treated as normal text.
 
-
+<br>
+<hr>
 \htmlonly</p><center><p>\endhtmlonly
 <h2>
 \htmlonly --- \endhtmlonly
@@ -237,6 +238,8 @@ Structural indicators
 \htmlonly --- \endhtmlonly
 </h2>
 \htmlonly</p></center><p>\endhtmlonly
+<hr>
+<br>
 
 \section cmdaddtogroup \\addtogroup <name> [(title)]
   \addindex \\addtogroup
@@ -488,7 +491,7 @@ Structural indicators
   in the project.
   The \ref cfg_strip_from_path "STRIP_FROM_PATH" option determines what is
   stripped from the full path before it appears in the output.
-
+<br>
 <hr>
 \section cmdenum \\enum <name>
 
@@ -561,7 +564,7 @@ Structural indicators
   \ref cmdinternal "\\internal" command. The text between \ref cmdinternal "\\internal" and
   \c \\endinternal will only be visible
   if \ref cfg_internal_docs "INTERNAL_DOCS" is set to \c YES.
-
+<br>
 <hr>
 \section cmdextends \\extends <name>
 
@@ -691,7 +694,7 @@ Structural indicators
 
   To disable the include information altogether set
   \ref cfg_show_include_files "SHOW_INCLUDE_FILES" to \c NO.
-
+<br>
 <hr>
 \section cmdhideinitializer \\hideinitializer
 
@@ -712,7 +715,7 @@ Structural indicators
 
   Indicates that a comment block contains documentation for a
   IDL exception with name \<name\>.
-
+<br>
 <hr>
 \section cmdimplements \\implements <name>
 
@@ -848,14 +851,14 @@ Structural indicators
   members of the group.
 
   See section \ref memgroup for an example.
-
+<br>
 <hr>
 \section cmdnamespace \\namespace <name>
 
   \addindex \\namespace
   Indicates that a comment block contains documentation for a
   namespace with name \<name\>.
-
+<br>
 <hr>
 \section cmdnosubgrouping \\nosubgrouping
 
@@ -910,7 +913,7 @@ Structural indicators
   \addindex \\package
   Indicates that a comment block contains documentation for a
   Java package with name \<name\>.
-
+<br>
 <hr>
 \section cmdpage \\page <name> (title)
 
@@ -1069,7 +1072,7 @@ Structural indicators
   This command is intended for use only when
   the language does not support the concept of pure virtual methods natively
   (e.g. C, PHP 4).
-
+<br>
 <hr>
 \section cmdrelates \\relates <name>
 
@@ -1097,7 +1100,7 @@ Structural indicators
 
   \addindex \\related
   Equivalent to \ref cmdrelates "\\relates"
-
+<br>
 <hr>
 \section cmdrelatesalso \\relatesalso <name>
 
@@ -1108,13 +1111,13 @@ Structural indicators
   location. This command is useful for documenting
   non-friend functions that are nevertheless strongly coupled to a certain
   class. It only works for functions.
-
+<br>
 <hr>
 \section cmdrelatedalso \\relatedalso <name>
 
   \addindex \\relatedalso
   Equivalent to \ref cmdrelatesalso "\\relatesalso"
-
+<br>
 <hr>
 \section cmdshowinitializer \\showinitializer
 
@@ -1139,7 +1142,7 @@ Structural indicators
 
   This command is intended for use only when
   the language does not support the concept of static methods natively (e.g. C).
-
+<br>
 <hr>
 \section cmdstruct \\struct <name> [<header-file>] [<header-name>]
 
@@ -1209,6 +1212,7 @@ Description
 
   \sa page \ref grouping "Grouping" and section \ref cmdaddtogroup "\\addtogroup".
 
+<br>
 <hr>
 
 \htmlonly</p><center><p>\endhtmlonly
@@ -1218,8 +1222,8 @@ Section indicators
 \htmlonly --- \endhtmlonly
 </h2>
 \htmlonly</p></center><p>\endhtmlonly
-
 <hr>
+<br>
 \section cmdattention \\attention { attention text }
 
   \addindex \\attention
@@ -1230,7 +1234,7 @@ Section indicators
   Multiple adjacent \c \\attention commands will be joined into a single paragraph.
   The \c \\attention command ends when a blank line or some other
   sectioning command is encountered.
-
+<br>
 <hr>
 \section cmdauthor \\author { list of authors }
 
@@ -1260,7 +1264,7 @@ Section indicators
 
   \addindex \\authors
   Equivalent to \ref cmdauthor "\\author".
-
+<br>
 <hr>
 \section cmdbrief \\brief { brief description }
 
@@ -1276,7 +1280,7 @@ Section indicators
   \ref cmdauthor "\\author" for an example.
 
   Synonymous to \ref cmdshort "\\short".
-
+<br>
 <hr>
 \section cmdbug \\bug { bug description }
 
@@ -1291,7 +1295,7 @@ Section indicators
   several bugs. The \c \\bug command ends when a blank line or some other
   sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
-
+<br>
 <hr>
 \section cmdcond \\cond [(section-label)]
 
@@ -1373,7 +1377,7 @@ contains \c TEST, or \c DEV
   This paragraph will be indented.
   The text of the paragraph has no special internal structure.
   See section \ref cmdauthor "\\author" for an example.
-
+<br>
 <hr>
 \section cmddate \\date { date description }
 
@@ -1388,7 +1392,7 @@ contains \c TEST, or \c DEV
   several dates. The \c \\date command ends when a blank line or some other
   sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
-
+<br>
 <hr>
 \section cmddeprecated \\deprecated { description }
 
@@ -1396,7 +1400,7 @@ contains \c TEST, or \c DEV
   Starts a paragraph indicating that this documentation block belongs to
   a deprecated entity. Can be used to describe alternatives,
   expected life span, etc.
-
+<br>
 <hr>
 \section cmddetails \\details { detailed description }
 
@@ -1404,7 +1408,7 @@ contains \c TEST, or \c DEV
   Just like \ref cmdbrief "\\brief" starts a brief description, \c \\details
   starts the detailed description. You can also start a new paragraph (blank line)
   then the \c \\details command is not needed.
-
+<br>
 <hr>
 \section cmdelse \\else
 
@@ -1467,7 +1471,7 @@ contains \c TEST, or \c DEV
   The \c \\exception description ends when a blank line or some other
   sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
-
+<br>
 <hr>
 \section cmdif \\if (section-label)
 
@@ -1563,7 +1567,7 @@ ALIASES  = "english=\if english" \
   Alternatively, one \c \\invariant command may mention
   several invariants. The \c \\invariant command ends when a blank line or some other
   sectioning command is encountered.
-
+<br>
 <hr>
 \section cmdnote \\note { text }
 
@@ -1577,7 +1581,7 @@ ALIASES  = "english=\if english" \
   several notes. The \c \\note command ends when a blank line or some other
   sectioning command is encountered. See section \ref cmdpar "\\par"
   for an example.
-
+<br>
 <hr>
 \section cmdpar \\par [(paragraph title)] { paragraph }
 
@@ -1660,7 +1664,7 @@ void setPosition(double x,double y,double z,double t)
 \verbatim
 @param  datatype1|datatype2 $paramname description
 \endverbatim
-
+<br>
 <hr>
 \section cmdparblock \\parblock
   \addindex \\parblock
@@ -1684,12 +1688,12 @@ void setPosition(double x,double y,double z,double t)
 \endverbatim
   Note that the \c \\parblock command may also appear directly after
   \ref cmdparam "\\param"'s first argument.
-
+<br>
 <hr>
 \section cmdendparblock \\endparblock
   \addindex \\endparblock
   This ends a block of paragraphs started with \ref cmdparblock "\\parblock".
-
+<br>
 <hr>
 \section cmdtparam \\tparam <template-parameter-name> { description }
 
@@ -1699,7 +1703,7 @@ void setPosition(double x,double y,double z,double t)
   template parameter.
 
   Otherwise similar to \ref cmdparam "\\param".
-
+<br>
 <hr>
 \section cmdpost \\post { description of the postcondition }
 
@@ -1713,7 +1717,7 @@ void setPosition(double x,double y,double z,double t)
   Alternatively, one \c \\post command may mention
   several postconditions. The \c \\post command ends when a blank line or some other
   sectioning command is encountered.
-
+<br>
 <hr>
 \section cmdpre \\pre { description of the precondition }
 
@@ -1727,7 +1731,7 @@ void setPosition(double x,double y,double z,double t)
   Alternatively, one \c \\pre command may mention
   several preconditions. The \c \\pre command ends when a blank line or some other
   sectioning command is encountered.
-
+<br>
 <hr>
 \section cmdremark \\remark { remark text }
 
@@ -1741,19 +1745,19 @@ void setPosition(double x,double y,double z,double t)
   Alternatively, one \c \\remark command may mention
   several remarks. The \c \\remark command ends when a blank line or some other
   sectioning command is encountered.
-
+<br>
 <hr>
 \section cmdremarks \\remarks { remark text }
 
   \addindex \\remarks
   Equivalent to \ref cmdremark "\\remark".
-
+<br>
 <hr>
 \section cmdresult \\result { description of the result value }
 
   \addindex \\result
   Equivalent to \ref cmdreturn "\\return".
-
+<br>
 <hr>
 \section cmdreturn \\return { description of the return value }
 
@@ -1765,13 +1769,13 @@ void setPosition(double x,double y,double z,double t)
   The \c \\return description ends when a blank line or some other
   sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
-
+<br>
 <hr>
 \section cmdreturns \\returns { description of the return value }
 
   \addindex \\returns
   Equivalent to \ref cmdreturn "\\return".
-
+<br>
 <hr>
 \section cmdretval \\retval <return value> { description }
 
@@ -1785,7 +1789,7 @@ void setPosition(double x,double y,double z,double t)
   Each return value description will start on a new line.
   The \c \\retval description ends when a blank line or some other
   sectioning command is encountered.
-
+<br>
 <hr>
 \section cmdsa \\sa { references }
 
@@ -1808,13 +1812,13 @@ void setPosition(double x,double y,double z,double t)
 
   \addindex \\see
   Equivalent to \ref cmdsa "\\sa". Introduced for compatibility with Javadoc.
-
+<br>
 <hr>
 \section cmdshort \\short { short description }
 
   \addindex \\short
   Equivalent to \ref cmdbrief "\\brief".
-
+<br>
 <hr>
 \section cmdsince \\since { text }
 
@@ -1824,7 +1828,7 @@ void setPosition(double x,double y,double z,double t)
   special internal structure. All visual enhancement commands may be
   used inside the paragraph. The \c \\since description ends when a blank
   line or some other sectioning command is encountered.
-
+<br>
 <hr>
 \section cmdtest \\test { paragraph describing a test case }
 
@@ -1834,7 +1838,7 @@ void setPosition(double x,double y,double z,double t)
   The two instances of the description will be cross-referenced.
   Each test case in the test list will be preceded by a header that
   indicates the origin of the test case.
-
+<br>
 <hr>
 \section cmdthrow \\throw <exception-object> { exception description }
 
@@ -1851,7 +1855,7 @@ void setPosition(double x,double y,double z,double t)
 
   \addindex \\throws
   Equivalent to \ref cmdthrow "\\throw".
-
+<br>
 <hr>
 \section cmdtodo \\todo { paragraph describing what is to be done }
 
@@ -1861,7 +1865,7 @@ void setPosition(double x,double y,double z,double t)
   The two instances of the description will be cross-referenced.
   Each item in the TODO list will be preceded by a header that
   indicates the origin of the item.
-
+<br>
 <hr>
 \section cmdversion \\version { version number }
 
@@ -1877,7 +1881,7 @@ void setPosition(double x,double y,double z,double t)
   The \\version command ends when a blank line or some other
   sectioning command is encountered. 
   See section \ref cmdauthor "\\author" for an example.
-
+<br>
 <hr>
 \section cmdwarning \\warning { warning message }
 
@@ -1892,7 +1896,7 @@ void setPosition(double x,double y,double z,double t)
   several warnings. The \c \\warning command ends when a blank line or some other
   sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
-
+<br>
 <hr>
 \section cmdxrefitem \\xrefitem <key> "(heading)" "(list title)" { text }
 
@@ -1945,7 +1949,7 @@ void setPosition(double x,double y,double z,double t)
 \endverbatim
  with \c \\error defined as
  \verbatim ALIASES += "error=\xrefitem my_errors \"\" \"\"" \endverbatim
-
+<br>
 <hr>
 
 \htmlonly</p><center><p>\endhtmlonly
@@ -1957,11 +1961,12 @@ Commands to create links
 \htmlonly</p></center><p>\endhtmlonly
 
 <hr>
+<br>
 \section cmdaddindex \\addindex (text)
 
   \addindex \\addindex
   This command adds (text) to the \LaTeX , DocBook and RTF index.
-
+<br>
 <hr>
 \section cmdanchor \\anchor <word>
 
@@ -1982,7 +1987,7 @@ Commands to create links
   configured with \ref cfg_latex_bib_style "LATEX_BIB_STYLE". For other
   output formats a fixed representation is used. Note that using this
   command requires the \c bibtex tool to be present in the search path.
-
+<br>
 <hr>
 \section cmdendlink \\endlink
 
@@ -2032,18 +2037,18 @@ Commands to create links
   and ends with \ref cmdendsecreflist "\\endsecreflist".
   An example of such a list can be seen 
   \ref showsecreflist "at the top of the page".
-
+<br>
 <hr>
 \section cmdsecreflist \\secreflist
   \addindex \\secreflist
   Starts an index list of item, created with \ref cmdrefitem "\\refitem" 
   that each link to a named section.
-
+<br>
 <hr>
 \section cmdendsecreflist \\endsecreflist
   \addindex \\endsecreflist
   End an index list started with \ref cmdsecreflist "\\secreflist".
-
+<br>
 <hr>
 \section cmdsubpage \\subpage <name> ["(text)"]
 
@@ -2095,7 +2100,7 @@ This page is for advanced users.
 Make sure you have first read \ref intro "the introduction".
 */
 \endverbatim
-
+<br>
 <hr>
 \section cmdtableofcontents \\tableofcontents['{'[option[:level]][,option[:level]]*'}']
 
@@ -2175,6 +2180,7 @@ Make sure you have first read \ref intro "the introduction".
            related page documentation block and
            \e not in other documentation blocks!
 
+<br>
 <hr>
 
 \htmlonly</p><center><p>\endhtmlonly
@@ -2186,6 +2192,7 @@ Commands for displaying examples
 \htmlonly</p></center><p>\endhtmlonly
 
 <hr>
+<br>
 \section cmddontinclude \\dontinclude <file-name>
 
   \addindex \\dontinclude
@@ -2308,7 +2315,7 @@ Commands for displaying examples
   be found).
 
   See section \ref cmddontinclude "\\dontinclude" for an example.
-
+<br>
 <hr>
 \section cmdskip \\skip ( pattern )
 
@@ -2323,7 +2330,7 @@ Commands for displaying examples
   pattern (or to the end of the example if the pattern could not be found).
 
   See section \ref cmddontinclude "\\dontinclude" for an example.
-
+<br>
 <hr>
 \section cmdskipline \\skipline ( pattern )
 
@@ -2346,7 +2353,7 @@ Commands for displaying examples
 \line pattern\endverbatim
 
   See section \ref cmddontinclude "\\dontinclude" for an example.
-
+<br>
 <hr>
 \section cmdsnippet \\snippet[{lineno|doc}] <file-name> ( block_id )
 
@@ -2404,7 +2411,7 @@ Commands for displaying examples
 
  see section \ref cmddontinclude "\\dontinclude" for an alternative way
  to include fragments of a source file that does not require markers.
-
+<br>
 <hr>
 \section cmdsnippetlineno \\snippetlineno <file-name> ( block_id )
 
@@ -2438,7 +2445,7 @@ Commands for displaying examples
   line (or to the end of the example if the pattern could not be found).
 
   See section \ref cmddontinclude "\\dontinclude" for an example.
-
+<br>
 <hr>
 \section cmdverbinclude \\verbinclude <file-name>
 
@@ -2450,7 +2457,7 @@ Commands for displaying examples
 
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
-
+<br>
 <hr>
 \section cmdhtmlinclude \\htmlinclude ["[block]"] <file-name>
 
@@ -2471,8 +2478,8 @@ Commands for displaying examples
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
   \sa section \ref cmdhtmlonly "\\htmlonly". 
-<hr>
 
+<hr>
 \section cmdlatexinclude \\latexinclude <file-name>
 
   \addindex \\latexinclude
@@ -2484,6 +2491,7 @@ Commands for displaying examples
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
+<br>
 <hr>
 
 \htmlonly</p><center><p>\endhtmlonly
@@ -2493,7 +2501,8 @@ Commands for visual enhancements
 \htmlonly --- \endhtmlonly
 </h2>
 \htmlonly</p></center><p>\endhtmlonly
-
+<hr>
+<br>
 \section cmda \\a <word>
 
   \addindex \\a
@@ -2510,7 +2519,7 @@ Commands for visual enhancements
 
   Equivalent to \ref cmde "\\e" and \ref cmdem "\\em".
   To emphasize multiple words use \<em\>multiple words\</em\>.
-
+<br>
 <hr>
 \section cmdarg \\arg { item-description }
 
@@ -2542,8 +2551,7 @@ Commands for visual enhancements
   For nested lists, HTML commands should be used.
 
   Equivalent to \ref cmdli "\\li"
-
-
+<br>
 <hr>
 \section cmdb \\b <word>
 
@@ -2551,7 +2559,7 @@ Commands for visual enhancements
   Displays the argument \<word\> using a bold font.
   Equivalent to \<b\>word\</b\>.
   To put multiple words in bold use \<b\>multiple words\</b\>.
-
+<br>
 <hr>
 \section cmdc \\c <word>
 
@@ -2570,7 +2578,7 @@ Commands for visual enhancements
 
   Equivalent to \ref cmdp "\\p"
   To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
-
+<br>
 <hr>
 \section cmdcode \\code [ '{'<word>'}']
 
@@ -2664,21 +2672,21 @@ Commands for visual enhancements
   See \ref cmdcopybrief "\\copybrief" and
   \ref cmdcopydetails "\\copydetails" for copying only the brief or
   detailed part of the comment block.
-
+<br>
 <hr>
 \section cmdcopybrief \\copybrief <link-object>
 
   \addindex \\copybrief
 Works in a similar way as \ref cmdcopydoc "\\copydoc" but will
 only copy the brief description, not the detailed documentation.
-
+<br>
 <hr>
 \section cmdcopydetails \\copydetails <link-object>
 
   \addindex \\copydetails
 Works in a similar way as \ref cmdcopydoc "\\copydoc" but will
 only copy the detailed documentation, not the brief description.
-
+<br>
 <hr>
 \section cmddocbookonly \\docbookonly
 
@@ -2738,7 +2746,7 @@ class C {};
  *  (in the HTML output).
  */
 \endcode
-
+<br>
 <hr>
 \section cmdemoji \\emoji "name"
 
@@ -2754,7 +2762,7 @@ text with in between colons, i.e. `\emoji unsupported` will produce
 `:unsupported:` in the output. Doxygen will also give a warning message.
 
 See also the \ref emojisup "emoji support page" for details.
-
+<br>
 <hr>
 \section cmdmsc \\msc ["caption"] [<sizeindication>=<size>]
 
@@ -2879,7 +2887,7 @@ class Receiver
     void Command(int commandId);
 };
 \endcode
-
+<br>
 <hr>
 \section cmddotfile \\dotfile <file> ["caption"] [<sizeindication>=<size>]
 
@@ -2956,7 +2964,7 @@ class Receiver
   For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
-
+<br>
 <hr>
 \section cmde \\e <word>
 
@@ -2974,7 +2982,7 @@ class Receiver
 
   Equivalent to \ref cmda "\\a" and \ref cmdem "\\em".
   To emphasize multiple words use \<em\>multiple words\</em\>.
-
+<br>
 <hr>
 \section cmdem \\em <word>
 
@@ -2992,7 +3000,7 @@ class Receiver
 
   Equivalent to \ref cmda "\\a" and \ref cmde "\\e".
   To emphasize multiple words use \<em\>multiple words\</em\>.
-
+<br>
 <hr>
 \section cmdendcode \\endcode
 
@@ -3013,19 +3021,19 @@ class Receiver
 
   \addindex \\enddot
   Ends a block that was started with \ref cmddot "\\dot".
-
+<br>
 <hr>
 \section cmdendmsc \\endmsc
 
   \addindex \\endmsc
   Ends a block that was started with \ref cmdmsc "\\msc".
-
+<br>
 <hr>
 \section cmdenduml \\enduml
 
   \addindex \\enduml
   Ends a block that was started with \ref cmdstartuml "\\startuml".
-
+<br>
 <hr>
 \section cmdendhtmlonly \\endhtmlonly
 
@@ -3284,14 +3292,14 @@ class Receiver
   For nested lists, HTML commands should be used.
 
   Equivalent to \ref cmdarg "\\arg"
-
+<br>
 <hr>
 \section cmdn \\n
 
   \addindex \\n
   Forces a new line. Equivalent to \<br\> and inspired by
   the \c printf function.
-
+<br>
 <hr>
 \section cmdp \\p <word>
 
@@ -3309,7 +3317,7 @@ class Receiver
 
   Equivalent to \ref cmdc "\\c"
   To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
-
+<br>
 <hr>
 \section cmdrtfonly \\rtfonly
 
@@ -3370,7 +3378,7 @@ class Receiver
   This command writes a backslash character (\c \\) to the
   output. The backslash has to be escaped in some
   cases because doxygen uses it to detect commands.
-
+<br>
 <hr>
 \section cmdat \\\@
 
@@ -3378,7 +3386,7 @@ class Receiver
   This command writes an at-sign (\c \@) to the output.
   The at-sign has to be escaped in some cases
   because doxygen uses it to detect Javadoc commands.
-
+<br>
 <hr>
 \section cmdtilde \\~[LanguageId]
   \addindex \\~
@@ -3395,14 +3403,14 @@ class Receiver
  */
 \endverbatim
 
-
+<br>
 <hr>
 \section cmdamp \\\&
 
   \addindex \\\&
   This command writes the \c \& character to the output.
   This character has to be escaped because it has a special meaning in HTML.
-
+<br>
 <hr>
 \section cmddollar \\\$
 
@@ -3410,7 +3418,7 @@ class Receiver
   This command writes the \c \$ character to the output.
   This character has to be escaped in some cases, because it is used to expand
   environment variables.
-
+<br>
 <hr>
 \section cmdhash \\\#
 
@@ -3418,21 +3426,21 @@ class Receiver
   This command writes the \c \# character to the output. This
   character has to be escaped in some cases, because it is used to refer
   to documented entities.
-
+<br>
 <hr>
 \section cmdlt \\\<
 
   \addindex \\\<
   This command writes the \c \< character to the output.
   This character has to be escaped because it has a special meaning in HTML.
-
+<br>
 <hr>
 \section cmdgt \\\>
 
   \addindex \\\>
   This command writes the \c \> character to the output. This
   character has to be escaped because it has a special meaning in HTML.
-
+<br>
 <hr>
 \section cmdperc \\\%
 
@@ -3440,7 +3448,7 @@ class Receiver
   This command writes the \c \% character to the output. This
   character has to be escaped in some cases, because it is used to
   prevent auto-linking to a word that is also a documented class or struct.
-
+<br>
 <hr>
 \section cmdquot \\"
 
@@ -3448,7 +3456,7 @@ class Receiver
   This command writes the \c \" character to the output. This
   character has to be escaped in some cases, because it is used in pairs
   to indicate an unformatted text fragment.
-
+<br>
 <hr>
 \section cmdchardot \\.
 
@@ -3457,7 +3465,7 @@ class Receiver
   prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" is enabled
   or to prevent starting a numbered list when the dot follows a number at
   the start of a line.
-
+<br>
 <hr>
 \section cmdeq \\=
 
@@ -3465,7 +3473,7 @@ class Receiver
   This command writes an equal sign (`=`) to the output. This
   character sequence has to be escaped in some cases, because it is used
   in Markdown header processing.
-
+<br>
 <hr>
 \section cmddcolon \\::
 
@@ -3473,7 +3481,7 @@ class Receiver
   This command writes a double colon (\c \::) to the output. This
   character sequence has to be escaped in some cases, because it is used
   to reference to documented entities.
-
+<br>
 <hr>
 \section cmdpipe \\|
 
@@ -3481,14 +3489,14 @@ class Receiver
   This command writes a pipe symbol (\|) to the output. This
   character has to be escaped in some cases, because it is used
   for Markdown tables.
-
+<br>
 <hr>
 \section cmdndash \\--
 
   \addindex \\\--
   This command writes two dashes (\--) to the output. This allows
   writing two consecutive dashes to the output instead of one n-dash character (--).
-
+<br>
 <hr>
 \section cmdmdash \\---
 
@@ -3496,6 +3504,7 @@ class Receiver
   This command writes three dashes (\---) to the output. This allows
   writing three consecutive dashes to the output instead of one m-dash character (---).
 
+<br>
 <hr>
 \htmlonly</p><center><p>\endhtmlonly
 <h2>
@@ -3504,6 +3513,8 @@ Commands included for Qt compatibility
 \htmlonly --- \endhtmlonly
 </h2>
 \htmlonly</p></center><p>\endhtmlonly
+<hr>
+<br>
 
 The following commands are supported to remain compatible to the Qt class
 browser generator. Do \e not use these commands in your own documentation.
