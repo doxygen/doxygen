@@ -2186,7 +2186,7 @@ Commands for displaying examples
 \htmlonly</p></center><p>\endhtmlonly
 
 <hr>
-\section cmddontinclude \\dontinclude <file-name>
+\section cmddontinclude \\dontinclude[{lineno}] <file-name>
 
   \addindex \\dontinclude
   This command can be used to parse a source file without actually
@@ -2196,6 +2196,8 @@ Commands for displaying examples
   Source files or directories can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH"
   tag of doxygen's configuration file.
+
+  You can add option `{lineno}` to enable line numbers for the included code if desired.
 
   The class and member declarations and definitions inside the code fragment
   are 'remembered' during the parsing of the comment block that contained

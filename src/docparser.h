@@ -563,7 +563,8 @@ class DocInclude : public DocNode
 {
   public:
   enum Type { Include, DontInclude, VerbInclude, HtmlInclude, LatexInclude,
-	      IncWithLines, Snippet , IncludeDoc, SnippetDoc, SnipWithLines};
+	      IncWithLines, Snippet , IncludeDoc, SnippetDoc, SnipWithLines,
+	      DontIncWithLines};
     DocInclude(DocNode *parent,const QCString &file,
                const QCString context, Type t,
                bool isExample,const QCString exampleFile,
@@ -612,6 +613,8 @@ class DocIncOperator : public DocNode
       m_isExample(isExample), m_exampleFile(exampleFile) { m_parent = parent; }
     Kind kind() const           { return Kind_IncOperator; }
     Type type() const           { return m_type; }
+    int line() const             { return m_line; }
+    bool lineno() const          { return m_lineno; }
     QCString text() const        { return m_text; }
     QCString pattern() const     { return m_pattern; }
     QCString context() const     { return m_context; }
@@ -627,6 +630,8 @@ class DocIncOperator : public DocNode
 
   private:
     Type     m_type;
+    int      m_line;
+    bool     m_lineno;
     QCString  m_text;
     QCString  m_pattern;
     QCString  m_context;
