@@ -2050,25 +2050,9 @@ void DocIncOperator::parse()
 {
   if (g_includeFileName.isEmpty())
   {
-    QCString cmd;
-    switch(type())
-    {
-      case Line:
-        cmd = "\\line";
-        break;
-      case SkipLine:
-        cmd = "\\skipLine";
-        break;
-      case Skip:
-        cmd = "\\skip";
-        break;
-      case Until:
-        cmd = "\\until";
-        break;
-    }
     warn_doc_error(g_fileName,doctokenizerYYlineno,
-                   "No previous '\\include' or \\dontinclude' command for '%s' present",
-                   cmd.data());
+                   "No previous '\\include' or \\dontinclude' command for '\\%s' present",
+                   typeAsString());
   }
 
   m_includeFileName = g_includeFileName;

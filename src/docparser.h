@@ -607,11 +607,22 @@ class DocIncOperator : public DocNode
     enum Type { Line, SkipLine, Skip, Until };
     DocIncOperator(DocNode *parent,Type t,const QCString &pat,
                    const QCString &context,bool isExample,const QCString &exampleFile) : 
-      m_type(t), m_pattern(pat), m_context(context), 
+      m_type(t), m_pattern(pat), m_context(context),
       m_isFirst(FALSE), m_isLast(FALSE),
       m_isExample(isExample), m_exampleFile(exampleFile) { m_parent = parent; }
     Kind kind() const           { return Kind_IncOperator; }
     Type type() const           { return m_type; }
+    const char *typeAsString() const
+    {
+      switch(m_type)
+      {
+        case Line:     return "line";
+        case SkipLine: return "skipline";
+        case Skip:     return "skip";
+        case Until:    return "until";
+      }
+      return "";
+    }
     QCString text() const        { return m_text; }
     QCString pattern() const     { return m_pattern; }
     QCString context() const     { return m_context; }
