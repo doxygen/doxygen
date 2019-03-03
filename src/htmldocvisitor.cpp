@@ -2377,16 +2377,14 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
     DocPara *para = (DocPara*)n->parent();
     int nodeIndex = para->children().findRef(n);
     nodeIndex--;
-    if (nodeIndex<0) return; // first node
+    if (nodeIndex<0) return; // first node in paragraph
     while (nodeIndex>=0 && isInvisibleNode(para->children().at(nodeIndex)))
     {
         nodeIndex--;
     }
-    if (nodeIndex>=0)
-    {
-      DocNode *n = para->children().at(nodeIndex);
-      if (mustBeOutsideParagraph(n)) return;
-    }
+    if (nodeIndex<0) return; // first visible node in paragraph
+    DocNode *n = para->children().at(nodeIndex);
+    if (mustBeOutsideParagraph(n)) return; // previous node already outside paragraph context
     nodeIndex--;
     bool styleOutsideParagraph=insideStyleChangeThatIsOutsideParagraph(para,nodeIndex);
     bool isFirst;
