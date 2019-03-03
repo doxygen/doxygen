@@ -2048,6 +2048,13 @@ void DocInclude::parse()
 
 void DocIncOperator::parse()
 {
+  if (g_includeFileName.isEmpty())
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,
+                   "No previous '\\include' or \\dontinclude' command for '\\%s' present",
+                   typeAsString());
+  }
+
   m_includeFileName = g_includeFileName;
   const char *p = g_includeFileText;
   uint l = g_includeFileLength;
