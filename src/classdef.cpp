@@ -49,12 +49,6 @@
 
 //-----------------------------------------------------------------------------
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
-// To disable 'inherits via dominance' warnings.
-// See also https://stackoverflow.com/a/14487243/784672
-#pragma warning( disable: 4250 )
-#endif
-
 
 /** Implementation of the ClassDef interface */
 class ClassDefImpl : public DefinitionImpl, public ClassDef
