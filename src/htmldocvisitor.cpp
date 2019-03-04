@@ -1873,8 +1873,8 @@ void HtmlDocVisitor::visitPre(DocSecRefList *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<div class=\"multicol\">" << endl;
-  m_t << "<ul>" << endl;
+  m_t << "<div>" << endl;
+  m_t << "<ul class=\"multicol\">" << endl;
 }
 
 void HtmlDocVisitor::visitPost(DocSecRefList *s) 
