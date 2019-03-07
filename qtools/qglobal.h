@@ -357,7 +357,9 @@ typedef const char     *pcchar;
 typedef __int64            int64;
 typedef unsigned __int64   uint64;
 #else
+#if !defined(_OS_AIX_) || !defined(_H_INTTYPES)
 typedef long long          int64;
+#endif
 typedef unsigned long long uint64;
 #endif
 
