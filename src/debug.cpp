@@ -49,6 +49,7 @@ static LabelMap s_labels[] =
   { "filteroutput", Debug::FilterOutput },
   { "lex",          Debug::Lex },
   { "plantuml",     Debug::Plantuml },
+  { "fortranfixed2free", Debug::FortranFixed2Free },
   { 0,             (Debug::DebugMask)0  }
 };
 

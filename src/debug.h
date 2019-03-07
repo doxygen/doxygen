@@ -38,7 +38,8 @@ class Debug
                      Markdown     = 0x00000800,
                      FilterOutput = 0x00001000,
                      Lex          = 0x00002000,
-                     Plantuml     = 0x00004000
+                     Plantuml     = 0x00004000,
+                     FortranFixed2Free = 0x00008000
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
     static int  setFlag(const char *label);
