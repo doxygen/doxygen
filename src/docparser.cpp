@@ -112,6 +112,8 @@ static QCString               g_includeFileName;
 static QCString               g_includeFileText;
 static uint                   g_includeFileOffset;
 static uint                   g_includeFileLength;
+static uint                   g_includeFileLine;
+static bool                   g_includeFileShowLineNo;
 
 
 /** Parser's context to store all global variables. 
@@ -143,6 +145,8 @@ struct DocParserContext
   QCString  includeFileText;
   uint     includeFileOffset;
   uint     includeFileLength;
+  uint     includeFileLine;
+  bool     includeFileLineNo;
 
   TokenInfo *token;
 };
@@ -190,6 +194,8 @@ static void docParserPushContext(bool saveParamInfo=TRUE)
   ctx->includeFileText    = g_includeFileText;
   ctx->includeFileOffset  = g_includeFileOffset;
   ctx->includeFileLength  = g_includeFileLength;
+  ctx->includeFileLine    = g_includeFileLine;
+  ctx->includeFileLineNo  = g_includeFileShowLineNo;
   
   ctx->token              = g_token;
   g_token = new TokenInfo;
@@ -228,6 +234,8 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
   g_includeFileText     = ctx->includeFileText;
   g_includeFileOffset   = ctx->includeFileOffset;
   g_includeFileLength   = ctx->includeFileLength;
+  g_includeFileLine     = ctx->includeFileLine;
+  g_includeFileShowLineNo   = ctx->includeFileLineNo;
 
   delete g_token;
   g_token               = ctx->token;
@@ -2004,6 +2012,8 @@ void DocInclude::parse()
   DBG(("DocInclude::parse(file=%s,text=%s)\n",qPrint(m_file),qPrint(m_text)));
   switch(m_type)
   {
+    case DontIncWithLines:
+      // fall through
     case IncWithLines:
       // fall through
     case Include:
@@ -2014,6 +2024,8 @@ void DocInclude::parse()
       g_includeFileText   = m_text;
       g_includeFileOffset = 0;
       g_includeFileLength = m_text.length();
+      g_includeFileLine   = 0;
+      g_includeFileShowLineNo = (m_type == DontIncWithLines || m_type == IncWithLines);
       //printf("g_includeFile=<<%s>>\n",g_includeFileText.data());
       break;
     case VerbInclude: 
@@ -2059,6 +2071,7 @@ void DocIncOperator::parse()
   const char *p = g_includeFileText;
   uint l = g_includeFileLength;
   uint o = g_includeFileOffset;
+  uint il = g_includeFileLine;
   DBG(("DocIncOperator::parse() text=%s off=%d len=%d\n",qPrint(p),o,l));
   uint so = o,bo;
   bool nonEmpty = FALSE;
@@ -2070,6 +2083,7 @@ void DocIncOperator::parse()
         char c = p[o];
         if (c=='\n') 
         {
+          g_includeFileLine++;
           if (nonEmpty) break; // we have a pattern to match
           so=o+1; // no pattern, skip empty line
         }
@@ -2081,10 +2095,12 @@ void DocIncOperator::parse()
       }
       if (g_includeFileText.mid(so,o-so).find(m_pattern)!=-1)
       {
+        m_line  = il;
         m_text = g_includeFileText.mid(so,o-so);
         DBG(("DocIncOperator::parse() Line: %s\n",qPrint(m_text)));
       }
       g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
+      m_showLineNo = g_includeFileShowLineNo;
       break;
     case SkipLine:
       while (o<l)
@@ -2095,6 +2111,7 @@ void DocIncOperator::parse()
           char c = p[o];
           if (c=='\n')
           {
+            g_includeFileLine++;
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
@@ -2106,6 +2123,7 @@ void DocIncOperator::parse()
         }
         if (g_includeFileText.mid(so,o-so).find(m_pattern)!=-1)
         {
+          m_line  = il;
           m_text = g_includeFileText.mid(so,o-so);
           DBG(("DocIncOperator::parse() SkipLine: %s\n",qPrint(m_text)));
           break;
@@ -2113,6 +2131,7 @@ void DocIncOperator::parse()
         o++; // skip new line
       }
       g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
+      m_showLineNo = g_includeFileShowLineNo;
       break;
     case Skip:
       while (o<l)
@@ -2123,6 +2142,7 @@ void DocIncOperator::parse()
           char c = p[o];
           if (c=='\n')
           {
+            g_includeFileLine++;
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
@@ -2139,6 +2159,7 @@ void DocIncOperator::parse()
         o++; // skip new line
       }
       g_includeFileOffset = so; // set pointer to start of new line
+      m_showLineNo = g_includeFileShowLineNo;
       break;
     case Until:
       bo=o;
@@ -2150,6 +2171,7 @@ void DocIncOperator::parse()
           char c = p[o];
           if (c=='\n')
           {
+            g_includeFileLine++;
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
@@ -2161,6 +2183,7 @@ void DocIncOperator::parse()
         }
         if (g_includeFileText.mid(so,o-so).find(m_pattern)!=-1)
         {
+          m_line  = il;
           m_text = g_includeFileText.mid(bo,o-bo);
           DBG(("DocIncOperator::parse() Until: %s\n",qPrint(m_text)));
           break;
@@ -2168,6 +2191,7 @@ void DocIncOperator::parse()
         o++; // skip new line
       }
       g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
+      m_showLineNo = g_includeFileShowLineNo;
       break;
   }
 }
@@ -5275,6 +5299,10 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     else if (t==DocInclude::Snippet && optList.contains("lineno"))
     {
       t = DocInclude::SnipWithLines;
+    }
+    else if (t==DocInclude::DontInclude && optList.contains("lineno"))
+    {
+      t = DocInclude::DontIncWithLines;
     }
     else if (t==DocInclude::Include && optList.contains("doc"))
     {

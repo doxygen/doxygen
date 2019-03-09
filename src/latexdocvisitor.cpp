@@ -494,9 +494,9 @@ void LatexDocVisitor::visit(DocInclude *inc)
       LatexCodeGenerator::setDoxyCodeOpen(FALSE);
       m_t << "\\end{DoxyCodeInclude}\n";
       break;
-    case DocInclude::DontInclude: 
-      break;
-    case DocInclude::HtmlInclude: 
+    case DocInclude::DontInclude:
+    case DocInclude::DontIncWithLines:
+    case DocInclude::HtmlInclude:
       break;
     case DocInclude::LatexInclude:
       m_t << inc->text();
@@ -572,9 +572,24 @@ void LatexDocVisitor::visit(DocIncOperator *op)
     popEnabled();
     if (!m_hide) 
     {
+      FileDef *fd;
+      if (!op->includeFileName().isEmpty())
+      {
+        QFileInfo cfi( op->includeFileName() );
+        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+      }
+
       Doxygen::parserManager->getParser(m_langExt)
                             ->parseCode(m_ci,op->context(),op->text(),langExt,
-                                        op->isExample(),op->exampleFile());
+                                        op->isExample(),op->exampleFile(),
+                                        fd,     // fileDef
+                                        op->line(),    // startLine
+                                        -1,    // endLine
+                                        FALSE, // inline fragment
+                                        0,     // memberDef
+                                        op->showLineNo()  // show line numbers
+                                       );
+      if (fd) delete fd;
     }
     pushEnabled();
     m_hide=TRUE;
