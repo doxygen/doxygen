@@ -670,7 +670,9 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          forceStartParagraph(inc);
       }
       break;
-    case DocInclude::DontInclude: 
+    case DocInclude::DontInclude:
+    case DocInclude::LatexInclude:
+    case DocInclude::DontIncWithLines:
       break;
     case DocInclude::HtmlInclude:
       {
@@ -678,8 +680,6 @@ void HtmlDocVisitor::visit(DocInclude *inc)
         m_t << inc->text();
         if (inc->isBlock()) forceStartParagraph(inc);
       }
-      break;
-    case DocInclude::LatexInclude:
       break;
     case DocInclude::VerbInclude: 
       forceEndParagraph(inc);
@@ -762,6 +762,12 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
     popEnabled();
     if (!m_hide) 
     {
+      FileDef *fd;
+      if (!op->includeFileName().isEmpty())
+      {
+        QFileInfo cfi( op->includeFileName() );
+        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+      }
       Doxygen::parserManager->getParser(m_langExt)
                             ->parseCode(
                                 m_ci,
@@ -770,14 +776,15 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
                                 langExt,
                                 op->isExample(),
                                 op->exampleFile(),
-                                0,     // fileDef
-                                -1,    // startLine
+                                fd,     // fileDef
+                                op->line(),    // startLine
                                 -1,    // endLine
                                 FALSE, // inline fragment
                                 0,     // memberDef
-                                TRUE,  // show line numbers
+                                op->showLineNo(),  // show line numbers
                                 m_ctx  // search context
                                );
+      if (fd) delete fd;
     }
     pushEnabled();
     m_hide=TRUE;
