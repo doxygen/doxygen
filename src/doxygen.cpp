@@ -8705,7 +8705,14 @@ static void computePageRelations(Entry *root)
       for (bii.toFirst();(bi=bii.current());++bii)
       {
         PageDef *subPd = Doxygen::pageSDict->find(bi->name);
-        if (subPd)
+        if (pd==subPd)
+        {
+         err("page defined at line %d of file %s with label %s is a direct "
+             "subpage of itself! Please remove this cyclic dependency.\n",
+              pd->docLine(),pd->docFile().data(),pd->name().data());
+          exit(1);
+        }
+        else if (subPd)
         {
           pd->addInnerCompound(subPd);
           //printf("*** Added subpage relation: %s->%s\n",
