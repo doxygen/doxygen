@@ -66,6 +66,7 @@
 #include "fortrancode.h"
 #include "pre.h"
 #include "arguments.h"
+#include "debug.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -2640,6 +2641,8 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
       //printf("Input fixed form string:\n%s\n", fileBuf);
       //printf("===========================\n");
       inputString = prepassFixedForm(fileBuf, NULL);
+      Debug::print(Debug::FortranFixed2Free,0,"======== Fixed to Free format  =========\n---- Input fixed form string ------- \n%s\n", fileBuf);
+      Debug::print(Debug::FortranFixed2Free,0,"---- Resulting free form string ------- \n%s\n", inputString);
       //printf("Resulting free form string:\n%s\n", inputString);
       //printf("===========================\n");
 
