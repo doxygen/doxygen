@@ -1707,7 +1707,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   // improve the performance of this function
   static char *growBuf = 0;
   static int growBufLen = 0;
-  if (s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
+  if ((int)s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
   {
     growBufLen = s.length()*3;
     growBuf = (char *)realloc(growBuf,growBufLen+1); // add 1 for 0-terminator

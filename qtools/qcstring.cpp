@@ -343,7 +343,7 @@ QCString QCString::simplifyWhiteSpace() const
   if ( to > first && *(to-1) == 0x20 )
     to--;
   *to = '\0';
-  result.resize( (int)((long)to - (long)result.data()) + 1 );
+  result.resize( (int)(to - result.data()) + 1 );
   return result;
 }
 
@@ -571,7 +571,7 @@ int qstricmp( const char *str1, const char *str2 )
     int res;
     uchar c;
     if ( !s1 || !s2 )
-	return s1 == s2 ? 0 : (int)((long)s2 - (long)s1);
+	return s1 == s2 ? 0 : (int)(s2 - s1);
     for ( ; !(res = (c=tolower(*s1)) - tolower(*s2)); s1++, s2++ )
 	if ( !c )				// strings are equal
 	    break;
@@ -585,7 +585,7 @@ int qstrnicmp( const char *str1, const char *str2, uint len )
     int res;
     uchar c;
     if ( !s1 || !s2 )
-	return (int)((long)s2 - (long)s1);
+	return (int)(s2 - s1);
     for ( ; len--; s1++, s2++ ) {
 	if ( (res = (c=tolower(*s1)) - tolower(*s2)) )
 	    return res;

@@ -153,7 +153,7 @@ void DocbookCodeGenerator::writeCodeLink(const char *ref,const char *file,
 {
   Docbook_DB(("(writeCodeLink)\n"));
   writeDocbookLink(m_t,ref,file,anchor,name,tooltip);
-  m_col+=strlen(name);
+  m_col+=(int)strlen(name);
 }
 void DocbookCodeGenerator::writeCodeLinkLine(const char *ref,const char *file,
     const char *anchor,const char *name,
@@ -164,7 +164,7 @@ void DocbookCodeGenerator::writeCodeLinkLine(const char *ref,const char *file,
   m_t << "_1l";
   writeDocbookString(m_t,name);
   m_t << "\"/>";
-  m_col+=strlen(name);
+  m_col+=(int)strlen(name);
 }
 void DocbookCodeGenerator::writeTooltip(const char *, const DocLinkInfo &, const char *,
                   const char *, const SourceLinkInfo &, const SourceLinkInfo &
