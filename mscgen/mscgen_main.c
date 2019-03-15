@@ -1715,7 +1715,7 @@ int mscgen_main(const int argc, const char *argv[])
     }
 
     /* Parse input, either from a file, or stdin */
-    if(gInputFilePresent && !strcmp(gInputFile, "-") == 0)
+    if(gInputFilePresent && (strcmp(gInputFile, "-") != 0))
     {
         FILE *in = fopen(gInputFile, "r");
 
