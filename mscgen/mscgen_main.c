@@ -1605,7 +1605,7 @@ int mscgen_main(const int argc, const char *argv[])
     /* Check that the output filename was specified */
     if(!gOutputFilePresent)
     {
-        if(!gInputFilePresent || strcmp(gInputFile, "-") == 0)
+        if(!gInputFilePresent || (strcmp(gInputFile, "-") == 0))
         {
             fprintf(stderr, "-o <filename> must be specified on the command line if -i is not used or input is from stdin\n");
             Usage();
@@ -1613,7 +1613,7 @@ int mscgen_main(const int argc, const char *argv[])
         }
 
         gOutputFilePresent = TRUE;
-        snprintf(gOutputFile, sizeof(gOutputFile), "%s", gInputFile);
+        strncpy(gOutputFile, gInputFile, sizeof(gOutputFile) - 1);
         trimExtension(gOutputFile);
         strncat(gOutputFile, ".", sizeof(gOutputFile) - (strlen(gOutputFile) + 1));
         strncat(gOutputFile, gOutType, sizeof(gOutputFile) - (strlen(gOutputFile) + 1));
@@ -1628,14 +1628,18 @@ int mscgen_main(const int argc, const char *argv[])
         if(!envFont)
         {
             /* Pick a default font */
-            snprintf(gOutputFont, bufLen, "helvetica");
+            strcpy(gOutputFont, "helvetica");
         }
-        else if(snprintf(gOutputFont, bufLen, "%s", envFont) >= bufLen)
+        else if(strlen(envFont) >= bufLen)
         {
             fprintf(stderr, "MSCGEN_FONT font name too long (must be < %d characters)\n",
                     bufLen);
             return EXIT_FAILURE;
         }
+        else 
+        {
+          strcpy(gOutputFont, envFont);
+	}
     }
 #else
     if(gOutputFontPresent)

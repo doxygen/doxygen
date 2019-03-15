@@ -4,7 +4,6 @@
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #define M_PI   3.14159265358979323846264338327950288
 #define strcasecmp _stricmp
-#define snprintf _snprintf
 #define strdup _strdup
 #define fileno _fileno
 #define YY_NO_UNISTD_H 1
