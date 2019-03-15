@@ -90,6 +90,10 @@ static bool convertMapFile(FTextStream &t,const char *mapName,const QCString rel
   return TRUE;
 }
 
+extern "C" {
+int mscgen_main(const int argc, const char *argv[]);
+}
+
 void writeMscGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,MscOutputFormat format)
 {
@@ -104,31 +108,48 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
   QCString mscExe = Config_getString(MSCGEN_PATH)+"mscgen"+portable_commandExtension();
   QCString mscArgs;
+  const char *mscArgsArray[7];
   QCString imgName = outFile;
+  mscArgsArray[0] = (const char *)"mscgen_doxygen";
+  mscArgsArray[1] = (const char *)"-T";
   switch (format)
   {
     case MSC_BITMAP:
       mscArgs+="-T png";
+      mscArgsArray[2] = (const char *)"png";
       imgName+=".png";
       break;
     case MSC_EPS:
       mscArgs+="-T eps";
+      mscArgsArray[2] = (const char *)"eps";
       imgName+=".eps";
       break;
     case MSC_SVG:
       mscArgs+="-T svg";
+      mscArgsArray[2] = (const char *)"svg";
       imgName+=".svg";
       break;
     default:
       goto error; // I am not very fond of goto statements, but when in Rome...
   }
+  mscArgsArray[3] = (const char *)"-i";
+  mscArgsArray[4] = (const char *)inFile;
   mscArgs+=" -i \"";
   mscArgs+=inFile;
  
+  mscArgsArray[5] = (const char *)"-o";
+  mscArgsArray[6] = (const char *)imgName.data();
   mscArgs+="\" -o \"";
   mscArgs+=imgName+"\"";
   int exitCode;
 //  printf("*** running: %s %s outDir:%s %s\n",mscExe.data(),mscArgs.data(),outDir,outFile);
+
+  if (format == MSC_SVG)
+  {
+    mscgen_main(7,mscArgsArray);
+  }
+  else
+  {
   portable_sysTimerStart();
   if ((exitCode=portable_system(mscExe,mscArgs,FALSE))!=0)
   {
@@ -136,6 +157,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
     goto error;
   }
   portable_sysTimerStop();
+  }
   if ( (format==MSC_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine);
@@ -156,7 +178,8 @@ error:
 }
 
 QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
-                                const QCString& relPath,const QCString& context)
+                                const QCString& relPath,const QCString& context,
+	                        MscOutputFormat format)
 {
   QCString outFile = inFile + ".map";
 
@@ -168,7 +191,22 @@ QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
 
+  if (format == MSC_SVG)
+  {
+    const char *mscArgsArray[7];
+    mscArgsArray[0] = (const char *)"mscgen_doxygen";
+    mscArgsArray[1] = (const char *)"-T";
+    mscArgsArray[2] = (const char *)"svgismap";
+    mscArgsArray[3] = (const char *)"-i";
+    mscArgsArray[4] = (const char *)inFile.data();
+    mscArgsArray[5] = (const char *)"-o";
+    mscArgsArray[6] = (const char *)outFile.data();
+    mscgen_main(7,mscArgsArray);
+  }
+  else
+  {
   QCString mscExe = Config_getString(MSCGEN_PATH)+"mscgen"+portable_commandExtension();
+
   QCString mscArgs = "-T ismap -i \"";
   mscArgs+=inFile;
   mscArgs+="\" -o \"";
@@ -183,6 +221,7 @@ QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
     return "";
   }
   portable_sysTimerStop();
+  }
   
   QGString result;
   FTextStream tmpout(&result);
@@ -217,7 +256,7 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
     default:
       t << "unknown";
   }
-  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context);
+  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format);
   if (!imap.isEmpty())
   {
     t << "\" alt=\""

@@ -143,6 +143,7 @@ endif()
 
 
 add_subdirectory(libmd5)
+add_subdirectory(mscgen)
 add_subdirectory(qtools)
 add_subdirectory(vhdlparser)
 add_subdirectory(src)

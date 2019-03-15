@@ -27,7 +27,8 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,MscOutputFormat format);
 
 QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
-                                const QCString& relPath,const QCString& context);
+                                const QCString& relPath,const QCString& context,
+	                        MscOutputFormat format);
 
 void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
                               const QCString &outDir, const QCString &relPath,
