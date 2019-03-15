@@ -24,9 +24,7 @@
  * Include Files
  ***************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "mscgen_config.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -39,12 +37,12 @@
 #include <errno.h>
 #include <ctype.h>
 #include <assert.h>
-#include "cmdparse.h"
-#include "lexer.h"
-#include "usage.h"
-#include "adraw.h"
-#include "safe.h"
-#include "msc.h"
+#include "mscgen_cmdparse.h"
+#include "mscgen_lexer.h"
+#include "mscgen_usage.h"
+#include "mscgen_adraw.h"
+#include "mscgen_safe.h"
+#include "mscgen_msc.h"
 
 /***************************************************************************
  * Macro definitions
@@ -172,7 +170,8 @@ static CmdSwitch gClSwitches[] =
 };
 
 
-static GlobalOptions gOpts =
+static GlobalOptions gOpts;
+static GlobalOptions initOpts =
 {
     600,    /* idealCanvasWidth */
 
@@ -211,11 +210,11 @@ static char *deleteTmpFilename = NULL;
  * This function is registered with atexit() to delete a possible temporary
  * file used when generating image map files.
  */
-static void deleteTmp()
+static void deleteTmp(void)
 {
     if(deleteTmpFilename)
     {
-        unlink(deleteTmpFilename);
+        remove(deleteTmpFilename);
     }
 }
 
@@ -1422,8 +1421,8 @@ static void arcLine(Msc               m,
             hasArrows = FALSE;
 
             /* Get co-ordinates of the arc end-point */
-            ADrawComputeArcPoint(sx, y - 1, gOpts.entitySpacing - 8,
-                                 gOpts.loopArcHeight, 180 - 45,
+            ADrawComputeArcPoint((float)sx, (float)(y - 1), (float)(gOpts.entitySpacing - 8),
+                                 (float)gOpts.loopArcHeight, (float)(180 - 45),
                                  &px, &py);
 
             /* Draw a cross */
@@ -1486,8 +1485,8 @@ static void arcLine(Msc               m,
             hasArrows = FALSE;
 
             /* Get co-ordinates of the arc end-point */
-            ADrawComputeArcPoint(sx, y - 1, gOpts.entitySpacing - 8,
-                                 gOpts.loopArcHeight, 45,
+            ADrawComputeArcPoint((float)sx, (float)(y - 1), (float)(gOpts.entitySpacing - 8),
+                                 (float)gOpts.loopArcHeight, (float)45,
                                  &px, &py);
 
             /* Draw a cross */
@@ -1560,7 +1559,7 @@ Boolean checkMsc(Msc m)
 }
 
 
-int main(const int argc, const char *argv[])
+int mscgen_main(const int argc, const char *argv[])
 {
     FILE            *ismap = NULL;
     ADrawOutputType  outType;
@@ -1571,6 +1570,16 @@ int main(const int argc, const char *argv[])
     RowInfo         *rowInfo;
     Boolean          addLines;
     float            f;
+
+    /* reinit static variables, "reentry" */
+    gInputFilePresent = FALSE;
+    gOutputFilePresent = FALSE;
+    gOutTypePresent = FALSE;
+    gDumpLicencePresent = FALSE;
+    gPrintParsePresent = FALSE;
+    gOutputFontPresent = FALSE;
+    gOpts = initOpts;
+    deleteTmpFilename = NULL;
 
     /* Parse the command line options */
     if(!CmdParse(gClSwitches, sizeof(gClSwitches) / sizeof(CmdSwitch), argc - 1, &argv[1], "-i"))
@@ -1636,15 +1645,9 @@ int main(const int argc, const char *argv[])
     }
 #endif
 
-#ifdef __WIN32__
+#if defined(_WIN32) && !defined(__CYGWIN__)
     /* On Windows, create a temporary file */
-    deleteTmpFilename = tempnam(NULL, "mscgen");
-    if(!deleteTmpFilename)
-    {
-        perror("tempnam() failed");
-        return EXIT_FAILURE;
-    }
-
+    deleteTmpFilename = "doxygen_msc.tmp";
     /* Schedule the temp file to be deleted */
     atexit(deleteTmp);
 #endif
@@ -1665,17 +1668,23 @@ int main(const int argc, const char *argv[])
         outType  = ADRAW_FMT_SVG;
         outImage = gOutputFile;
     }
-    else if(strcmp(gOutType, "ismap") == 0)
+    else if((strcmp(gOutType, "ismap") == 0) ||
+            (strcmp(gOutType, "svgismap") == 0))
     {
-#ifdef __WIN32__
+        if(strcmp(gOutType, "svgismap") == 0)
+        {
+            outType  = ADRAW_FMT_SVG;
+        }
+        else
+        {
+            outType  = ADRAW_FMT_PNG;
+        }
+#if defined(_WIN32) && !defined(__CYGWIN__)
         /* Use the temp file */
-        outType  = ADRAW_FMT_PNG;
         outImage = deleteTmpFilename;
 #else
         static char tmpTemplate[] = "/tmp/mscgenXXXXXX";
         int h;
-
-        outType  = ADRAW_FMT_PNG;
         outImage = tmpTemplate;
 
         /* Create temporary file */
@@ -1741,7 +1750,8 @@ int main(const int argc, const char *argv[])
 #endif
 
     /* Check if an ismap file should also be generated */
-    if(strcmp(gOutType, "ismap") == 0)
+    if((strcmp(gOutType, "ismap") == 0) ||
+       (strcmp(gOutType, "svgismap") == 0))
     {
         ismap = fopen(gOutputFile, "w");
         if(!ismap)
@@ -1752,7 +1762,7 @@ int main(const int argc, const char *argv[])
     }
 
     /* Open the drawing context with dummy dimensions */
-#ifdef __WIN32__
+#if defined(_WIN32) && !defined(__CYGWIN__)
     if(!ADrawOpen(10, 10, deleteTmpFilename, gOutputFont, outType, &drw))
 #else
     if(!ADrawOpen(10, 10, "/dev/null", gOutputFont, outType, &drw))
@@ -1765,11 +1775,11 @@ int main(const int argc, const char *argv[])
     /* Now compute ideal canvas size, which may use text metrics */
     if(MscGetOptAsFloat(m, MSC_OPT_WIDTH, &f))
     {
-        gOpts.idealCanvasWidth = f;
+        gOpts.idealCanvasWidth = (unsigned int)f;
     }
     else if(MscGetOptAsFloat(m, MSC_OPT_HSCALE, &f))
     {
-        gOpts.idealCanvasWidth *= f;
+        gOpts.idealCanvasWidth *= (unsigned int)f;
     }
 
     /* Set the arc gradient if needed */

@@ -20,17 +20,15 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  **************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "mscgen_config.h"
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "adraw_int.h"
-#include "utf8.h"
-#include "safe.h"
+#include "mscgen_adraw_int.h"
+#include "mscgen_utf8.h"
+#include "mscgen_safe.h"
 
 /***************************************************************************
  * Manifest Constants
@@ -176,9 +174,9 @@ static void setColour(struct ADrawTag *ctx,
     float r, g, b;
 
     /* Extract RGB values */
-    r = (col & 0xff0000) >> 16;
-    g = (col & 0x00ff00) >>  8;
-    b = (col & 0x0000ff) >>  0;
+    r = (float)((col & 0xff0000) >> 16);
+    g = (float)((col & 0x00ff00) >>  8);
+    b = (float)((col & 0x0000ff) >>  0);
 
     /* Normalise */
     r /= 255.0f;
@@ -227,7 +225,7 @@ void PsLine(struct ADrawTag *ctx,
 {
     fprintf(getPsFile(ctx),
             "newpath %d %d moveto %d %d lineto stroke\n",
-            x1, -y1, x2, -y2);
+            x1, 0-y1, x2, 0-y2);
 
 }
 
@@ -258,10 +256,10 @@ void PsFilledRectangle(struct ADrawTag *ctx,
             "%d %d lineto "
             "closepath "
             "fill\n",
-            x1, -y1,
-            x2, -y1,
-            x2, -y2,
-            x1, -y2);
+            x1, 0-y1,
+            x2, 0-y1,
+            x2, 0-y2,
+            x1, 0-y2);
 }
 
 
@@ -287,13 +285,13 @@ void PsTextR(struct ADrawTag *ctx,
                             "0 %d rlineto "       /* To top right */
                             "neg 0 rlineto "      /* Back to bottom left */
                             "closepath fill\n",   /* Done */
-                            x, -y - getSpace(ctx, PsHelvetica.descender),
+                            x, 0-y - getSpace(ctx, PsHelvetica.descender),
                             getSpace(ctx, PsHelvetica.ascender));
 
     /* Restore pen and show the string */
     setColour(ctx, context->penColour);
     fprintf(getPsFile(ctx), "%d %d moveto show\n",
-                             x, -y - getSpace(ctx, PsHelvetica.descender));
+                             x, 0-y - getSpace(ctx, PsHelvetica.descender));
 }
 
 
@@ -306,13 +304,13 @@ void PsTextL(struct ADrawTag *ctx,
 
     /* Draw the background box */
     setColour(ctx, context->penBgColour);
-    PsFilledRectangle(ctx, x, -y, x + 10, -y + 10);
+    PsFilledRectangle(ctx, x, 0-y, x + 10, 0-y + 10);
     setColour(ctx, context->penColour);
 
     fprintf(getPsFile(ctx),
             "%d %d moveto "
             "(",
-            x, -y - getSpace(ctx, PsHelvetica.descender));
+            x, 0-y - getSpace(ctx, PsHelvetica.descender));
     writeEscaped(ctx, string);
     fprintf(getPsFile(ctx),
             ") dup stringwidth "
@@ -347,13 +345,13 @@ void PsTextC(struct ADrawTag *ctx,
                             "0 %d rlineto "            /* To top right */
                             "neg 0 rlineto "           /* Back to bottom left */
                             "closepath fill\n",        /* Done */
-                            x, -y,
+                            x, 0-y,
                             getSpace(ctx, PsHelvetica.ascender));
 
     /* Restore pen and show the string */
     setColour(ctx, context->penColour);
     fprintf(getPsFile(ctx), "%d %d moveto dup stringwidth pop 2 div neg 0 rmoveto show\n",
-                             x, -y - getSpace(ctx, PsHelvetica.descender));
+                             x, 0-y - getSpace(ctx, PsHelvetica.descender));
 }
 
 
@@ -372,9 +370,9 @@ void PsFilledTriangle(struct ADrawTag *ctx,
             "%d %d lineto "
             "closepath "
             "fill\n",
-            x1, -y1,
-            x2, -y2,
-            x3, -y3);
+            x1, 0-y1,
+            x2, 0-y2,
+            x3, 0-y3);
 }
 
 
@@ -388,7 +386,7 @@ void PsFilledCircle(struct ADrawTag *ctx,
             "%d %d %d 0 360 arc "
             "closepath "
             "fill\n",
-            x, -y, r);
+            x, 0-y, r);
 }
 
 
@@ -404,7 +402,7 @@ void PsArc(struct ADrawTag *ctx,
             "newpath "
             "%d %d %d %d %d %d ellipse "
             "stroke\n",
-            cx, -cy, w, h, s, e);
+            cx, 0-cy, w, h, s, e);
 }
 
 

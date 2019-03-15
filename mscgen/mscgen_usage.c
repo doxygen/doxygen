@@ -24,11 +24,9 @@
  * Include Files
  ***************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "mscgen_config.h"
 #include <stdio.h>
-#include "usage.h"
+#include "mscgen_usage.h"
 
 /***************************************************************************
  * Types
@@ -59,7 +57,7 @@ void Usage(void)
 "              command line.\n"
 " -o <file>   Write output to the named file.  This option must be specified if \n"
 "              input is taken from stdin, otherwise the output filename\n"
-"              defaults to <infile>.<type>.  This may also be specified as '\-'\n"
+"              defaults to <infile>.<type>.  This may also be specified as '-'\n"
 "              to write output directly to stdout.\n"
 #ifdef USE_FREETYPE
 " -F <font>   Use specified font for PNG output.  This must be a font specifier\n"

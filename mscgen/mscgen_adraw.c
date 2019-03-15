@@ -24,14 +24,12 @@
  * Include Files
  ***************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "mscgen_config.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include "adraw_int.h"
+#include "mscgen_adraw_int.h"
 
 /***************************************************************************
  * Functions
@@ -133,10 +131,10 @@ ADrawColour ADrawGetColour(const char *colour)
 void ADrawComputeArcPoint(float cx, float cy, float w, float h, float degrees,
                           unsigned int *x, unsigned int *y)
 {
-    float rad = (degrees * M_PI) / 180.0f;
+    float rad = (float)((degrees * M_PI) / 180.0f);
 
-    *x = round(cx + ((w / 2.0f) * cos(rad)));
-    *y = round(cy + ((h / 2.0f) * sin(rad)));
+    *x = (unsigned int)round(cx + ((w / 2.0f) * cos(rad)));
+    *y = (unsigned int)round(cy + ((h / 2.0f) * sin(rad)));
 }
 
 /* END OF FILE */

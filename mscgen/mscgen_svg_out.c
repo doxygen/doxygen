@@ -20,18 +20,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  **************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "mscgen_config.h"
 #include <math.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "adraw_int.h"
-#include "safe.h"
-#include "utf8.h"
+#include "mscgen_adraw_int.h"
+#include "mscgen_safe.h"
+#include "mscgen_utf8.h"
 
 /***************************************************************************
  * Local types
@@ -158,11 +156,11 @@ static void arcPoint(float         cx,
                      unsigned int *x,
                      unsigned int *y)
 {
-    float rad = (a * M_PI) / 180.0f;
+    float rad = (float)((a * M_PI) / 180.0f);
 
     /* Compute point, noting this is for SVG co-ordinate system */
-    *x = round(cx + ((w / 2.0f) * cos(rad)));
-    *y = round(cy + ((h / 2.0f) * sin(rad)));
+    *x = (unsigned int)round(cx + ((w / 2.0f) * cos(rad)));
+    *y = (unsigned int)round(cy + ((h / 2.0f) * sin(rad)));
 }
 
 
@@ -409,8 +407,8 @@ void SvgArc(struct ADrawTag *ctx,
     unsigned int sx, sy, ex, ey;
 
     /* Get start and end x,y */
-    arcPoint(cx, cy, w, h, s, &sx, &sy);
-    arcPoint(cx, cy, w, h, e, &ex, &ey);
+    arcPoint((float)cx, (float)cy, (float)w, (float)h, (float)s, &sx, &sy);
+    arcPoint((float)cx, (float)cy, (float)w, (float)h, (float)e, &ex, &ey);
 
     fprintf(getSvgFile(ctx),
             "<path d=\"M %u %u A%u,%u 0 0,1 %u,%u\" stroke=\"%s\" fill=\"none\"/>",
@@ -429,8 +427,9 @@ void SvgDottedArc(struct ADrawTag *ctx,
     unsigned int sx, sy, ex, ey;
 
     /* Get start and end x,y */
-    arcPoint(cx, cy, w, h, s, &sx, &sy);
-    arcPoint(cx, cy, w, h, e, &ex, &ey);
+    arcPoint((float)cx, (float)cy, (float)w, (float)h, (float)s, &sx, &sy);
+    arcPoint((float)cx, (float)cy, (float)w, (float)h, (float)e, &ex, &ey);
+
 
     fprintf(getSvgFile(ctx),
             "<path d=\"M %u %u A%u,%u 0 0,1 %u,%u\" stroke=\"%s\" fill=\"none\" stroke-dasharray=\"2,2\"/>",

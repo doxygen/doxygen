@@ -20,14 +20,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  ***************************************************************************/
 
-#ifndef LEXER_H
-#define LEXER_H
+#ifndef MSCGEN_LEXER_H
+#define MSCGEN_LEXER_H
 
 /*****************************************************************************
  * Header Files
  *****************************************************************************/
 
-#include "bool.h"
+#include "mscgen_bool.h"
 
 /*****************************************************************************
  * Preprocessor Macros & Constants
@@ -45,12 +45,18 @@
  * Global Function Declarations
  *****************************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+Boolean        lex_getutf8(void);
+#ifdef __cplusplus
+}
+#endif
 
 unsigned long  lex_getlinenum(void);
 char          *lex_getline(void);
-Boolean        lex_getutf8(void);
 void           lex_destroy(void);
 
-#endif /* LEXER_H */
+#endif /* MSCGEN_LEXER_H */
 
 /* END OF FILE */

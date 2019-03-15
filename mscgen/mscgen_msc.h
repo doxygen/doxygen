@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  ***************************************************************************/
 
-#ifndef MSC_H
-#define MSC_H
+#ifndef MSCGEN_MSC_H
+#define MSCGEN_MSC_H
 
-#include "bool.h"
+#include "mscgen_bool.h"
 
 /***************************************************************************
  * Types
@@ -116,6 +116,9 @@ typedef struct MscAttribTag     *MscAttrib;
  * \retval Msc  The message sequence chart, which may equal \a NULL is a
  *               parse error occurred.
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 Msc           MscParse(FILE *in);
 
 MscEntity     MscAllocEntity(char *entityName);
@@ -287,7 +290,10 @@ const char   *MscGetCurrentArcAttrib(Msc m, MscAttribType a);
 unsigned int  MscGetCurrentArcInputLine(Msc m);
 
 /** @} */
+#ifdef __cplusplus
+}
+#endif
 
-#endif /* MSC_H */
+#endif /* MSCGEN_MSC_H */
 
 /* END OF FILE */

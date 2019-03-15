@@ -99,9 +99,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lexer.h"
-#include "safe.h"
-#include "msc.h"
+#include "mscgen_lexer.h"
+#include "mscgen_safe.h"
+#include "mscgen_msc.h"
 
 /* Lexer prototypes to prevent compiler warnings */
 int yylex(void);
@@ -178,7 +178,7 @@ void yyerror(const char *str)
     fprintf(stderr, "Error detected at line %lu: ", lex_getlinenum());
 
     /* Search for TOK */
-    s = strstr(str, "TOK_");
+    s = (char *)strstr(str, "TOK_");
     while(s != NULL)
     {
         int found = 0;
@@ -214,7 +214,7 @@ void yyerror(const char *str)
             str++;
         }
 
-        s = strstr(str, "TOK_");
+        s = (char *)strstr(str, "TOK_");
     }
 
     fprintf(stderr, "%s.\n", str);
@@ -251,7 +251,7 @@ int yywrap()
 char *removeEscapes(char *in)
 {
     const uint16_t l = strlen(in);
-    char          *r = malloc_s(l + 1);
+    char          *r = (char *)malloc_s(l + 1);
     uint16_t       t, u;
 
     for(t = u = 0; t < l; t++)

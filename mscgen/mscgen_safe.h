@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  **************************************************************************/
 
-#ifndef SAFE_H
-#define SAFE_H
+#ifndef MSCGEN_SAFE_H
+#define MSCGEN_SAFE_H
 
 /*****************************************************************************
  * Header Files
@@ -43,12 +43,17 @@
  * Global Function Declarations
  *****************************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 void *realloc_s(void *ptr, size_t size);
 void *malloc_s(size_t size);
 void *zalloc_s(size_t size);
 char *strdup_s(const char *s);
-const char *getenv_s(const char *name);
+const char *mscgen_getenv_s(const char *name);
+#ifdef __cplusplus
+}
+#endif
 
-/*#pragma GCC poison malloc strdup calloc*/
 
-#endif /* SAFE_H */
+#endif /* MSCGEN_SAFE_H */

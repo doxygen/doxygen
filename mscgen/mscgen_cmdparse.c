@@ -26,8 +26,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "cmdparse.h"
-#include "bool.h"
+#include "mscgen_cmdparse.h"
+#include "mscgen_bool.h"
 
 /***************************************************************************
  * Local Functions

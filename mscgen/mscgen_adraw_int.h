@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  **************************************************************************/
 
-#ifndef ADRAW_INT_H
-#define ADRAW_INT_H
+#ifndef MSCGEN_ADRAW_INT_H
+#define MSCGEN_ADRAW_INT_H
 
-#include "adraw.h"
+#include "mscgen_adraw.h"
 
 /***************************************************************************
  * Preprocessor Macros
@@ -60,6 +60,6 @@ Boolean SvgInit(unsigned int     w,
                 const char      *file,
                 struct ADrawTag *outContext);
 
-#endif /* ADRAW_INT_H */
+#endif /* MSCGEN_ADRAW_INT_H */
 
 /* END OF FILE */

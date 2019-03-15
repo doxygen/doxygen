@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  **************************************************************************/
 
-#ifndef ADRAW_H
-#define ADRAW_H
+#ifndef MSCGEN_ADRAW_H
+#define MSCGEN_ADRAW_H
 
-#include "bool.h"
+#include "mscgen_bool.h"
 
 /***************************************************************************
  * Types
@@ -295,6 +295,6 @@ void ADrawComputeArcPoint(float cx,
                           unsigned int *x,
                           unsigned int *y);
 
-#endif /* ADRAW_H */
+#endif /* MSCGEN_ADRAW_H */
 
 /* END OF FILE */

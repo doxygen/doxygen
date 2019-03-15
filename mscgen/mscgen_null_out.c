@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "adraw_int.h"
+#include "mscgen_adraw_int.h"
 
 /***************************************************************************
  * API Functions

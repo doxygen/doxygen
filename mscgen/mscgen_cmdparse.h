@@ -20,14 +20,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  **************************************************************************/
 
-#ifndef CMDPARSE_HEADER
-#define CMDPARSE_HEADER
+#ifndef MSCGEN_CMDPARSE_HEADER
+#define MSCGEN_CMDPARSE_HEADER
 
 /***************************************************************************
  * Include Files
  **************************************************************************/
 
-#include "bool.h"
+#include "mscgen_bool.h"
 
 /***************************************************************************
  * Type Definitions

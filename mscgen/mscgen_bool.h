@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  ***************************************************************************/
 
-#ifndef BOOL_H
-#define BOOL_H
+#ifndef MSCGEN_BOOL_H
+#define MSCGEN_BOOL_H
 
 typedef enum
 {
@@ -31,6 +31,6 @@ typedef enum
 Boolean;
 
 
-#endif /* BOOL_H */
+#endif /* MSCGEN_BOOL_H */
 
 /* END OF FILE */

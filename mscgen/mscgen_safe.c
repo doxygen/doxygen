@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "mscgen_config.h"
+#include "mscgen_safe.h"
 
 /*****************************************************************************
  * Preprocessor Macros & Constants
@@ -100,7 +102,7 @@ char *strdup_s(const char *s)
     return r;
 }
 
-const char *getenv_s(const char *name)
+const char *mscgen_getenv_s(const char *name)
 {
     char *r = getenv(name);
 

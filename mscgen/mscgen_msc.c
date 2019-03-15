@@ -25,8 +25,9 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include "safe.h"
-#include "msc.h"
+#include "mscgen_config.h"
+#include "mscgen_safe.h"
+#include "mscgen_msc.h"
 
 /***************************************************************************
  * Structures

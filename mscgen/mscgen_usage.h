@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  **************************************************************************/
 
-#ifndef USAGE_H
-#define USAGE_H
+#ifndef MSCGEN_USAGE_H
+#define MSCGEN_USAGE_H
 
 /*****************************************************************************
  * Header Files
@@ -46,4 +46,4 @@
 void Usage(void);
 void Licence(void);
 
-#endif /* USAGE_H */
+#endif /* MSCGEN_USAGE_H */

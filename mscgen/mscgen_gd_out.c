@@ -20,9 +20,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  **************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "mscgen_config.h"
 #ifndef REMOVE_PNG_OUTPUT
 #include <stdio.h>
 #include <errno.h>
@@ -37,8 +35,8 @@
 #include "gdfontt.h"  /* Tiny font */
 #include "gdfonts.h"  /* Small font */
 #endif
-#include "adraw_int.h"
-#include "safe.h"
+#include "mscgen_adraw_int.h"
+#include "mscgen_safe.h"
 
 /***************************************************************************
  * Manifest Constants
@@ -204,7 +202,7 @@ unsigned int gdoTextWidth(struct ADrawTag *ctx,
                         (char *)string);
     if(r)
     {
-        fprintf(stderr, "Error: gdoTextWidth: %s (GDFONTPATH=%s)\n", r, getenv_s("GDFONTPATH"));
+        fprintf(stderr, "Error: gdoTextWidth: %s (GDFONTPATH=%s)\n", r, mscgen_getenv_s("GDFONTPATH"));
         exit(EXIT_FAILURE);
     }
 
@@ -236,7 +234,7 @@ int gdoTextHeight(struct ADrawTag *ctx)
                         "gHELLOWt");
     if(r)
     {
-        fprintf(stderr, "Error: gdoTextHeight: %s (GDFONTPATH=%s)\n", r, getenv_s("GDFONTPATH"));
+        fprintf(stderr, "Error: gdoTextHeight: %s (GDFONTPATH=%s)\n", r, mscgen_getenv_s("GDFONTPATH"));
         exit(EXIT_FAILURE);
     }
 
@@ -320,7 +318,7 @@ void gdoTextR(struct ADrawTag *ctx,
 
         if(r)
         {
-            fprintf(stderr, "Error: gdoTextR: %s (GDFONTPATH=%s)\n", r, getenv_s("GDFONTPATH"));
+            fprintf(stderr, "Error: gdoTextR: %s (GDFONTPATH=%s)\n", r, mscgen_getenv_s("GDFONTPATH"));
             exit(EXIT_FAILURE);
         }
 #else

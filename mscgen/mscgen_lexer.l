@@ -27,12 +27,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "msc.h"
-#include "bool.h"
-#include "safe.h"
-#include "lexer.h"
-#include "language.h"  /* Token definitions from Yacc/Bison */
-
+#include "mscgen_config.h"
+#include "mscgen_msc.h"
+#include "mscgen_bool.h"
+#include "mscgen_safe.h"
+#include "mscgen_lexer.h"
+#include "mscgen_language.h"  /* Token definitions from Yacc/Bison */
 /* Counter for error reporting */
 static unsigned long  lex_linenum = 1;
 static char          *lex_line = NULL;
@@ -45,7 +45,9 @@ static char *trimQstring(char *s);
 %}
 
 /* Not used, so prevent compiler warning */
+%option never-interactive
 %option noinput
+%option noyywrap
 
 %x IN_COMMENT BODY
 %%
