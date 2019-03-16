@@ -1180,6 +1180,20 @@ QCString removeIdsAndMarkers(const char *s)
 	p++;
         inNum=TRUE;	
       }
+      else if (c=='\'') // quoted character
+      {
+        result+=c;
+        p++;
+        char pc=c;
+        while ((c=*p) && (c!='\'' || pc=='\\'))
+        {
+          result+=c;
+          pc=c;
+          p++;
+        }
+        result+=c;
+        p++;
+      }
       else if (c=='d' && !inNum) // identifier starting with a `d'
       {
 	if (qstrncmp(p,"defined ",8)==0 || qstrncmp(p,"defined(",8)==0) 
@@ -2185,6 +2199,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
     					  BEGIN(DefinedExpr1);
     					}
 <Guard>{ID}				{ g_guardExpr+=yytext; }
+<Guard>"@"                              { g_guardExpr+="@@"; }
 <Guard>.				{ g_guardExpr+=*yytext; }
 <Guard>\n				{
   					  unput(*yytext);
