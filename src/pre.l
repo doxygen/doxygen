@@ -1178,15 +1178,21 @@ QCString removeIdsAndMarkers(const char *s)
     {
       if (c=='@') // replace @@ with @ and remove @E
       {
-	if (*(p+1)=='@')
-	{
-	  result+=c; 
-	}
-	else if (*(p+1)=='E')
-	{
-	  // skip
-	}
-	p+=2;
+        if (*(p+1)=='@')
+        {
+          result+=c;
+          p+=2;
+        }
+        else if (*(p+1)=='E')
+        {
+          // skip
+          p+=2;
+        }
+        else
+        {
+          result+=c;
+          p++;
+        }
       }
       else if (isdigit(c)) // number
       {
