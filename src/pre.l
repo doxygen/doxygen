@@ -882,6 +882,21 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	  arg+=c;
 	}
       }	    
+      else if (c=='/') // possible start of a comment
+      {
+        char prevChar = '\0';
+        arg+=c;
+        if ((cc=getCurrentChar(expr,rest,j)) == '*') // we have a comment
+        {
+          while ((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
+          {
+            c=(char)cc;
+            arg+=c;
+            if (c == '/' && prevChar == '*') break; // we have an end of comment
+            prevChar = c;
+          }
+        }
+      }
       else // append other characters
       {
 	arg+=c;
@@ -1110,7 +1125,6 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 
 	if (replaced) // expand the macro and rescan the expression
 	{
-	    
 	  //printf("replacing `%s'->`%s'\n",expr.mid(p,len).data(),expMacro.data());
 	  QCString resultExpr=expMacro;
 	  QCString restExpr=expr.right(expr.length()-len-p);

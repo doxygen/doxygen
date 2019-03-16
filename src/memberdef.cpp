@@ -5572,9 +5572,9 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       mdec->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
 
       mdef->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
-      mdef->enableCallerGraph(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
+      mdef->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
       mdec->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
-      mdec->enableCallerGraph(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
+      mdec->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
     }
   }
 }
