@@ -829,10 +829,19 @@ void replaceComment(int offset);
 				     g_inRoseComment=FALSE;
 				     BEGIN(Scan); 
                                    }
-<ReadLine>[^\\@\n]*/\n		   {
-  				     copyToOutput(yytext,(int)yyleng);
-                                     BEGIN(g_readLineCtx);
-  				   }
+<ReadLine>"*/"                     {
+				     copyToOutput("*&zwj;/",7);
+				   }
+<ReadLine>"*"                      {
+				     copyToOutput(yytext,(int)yyleng);
+				   }
+<ReadLine>[^\\@\n\*]*              {
+				     copyToOutput(yytext,(int)yyleng);
+				   }
+<ReadLine>[^\\@\n\*]*/\n           {
+				     copyToOutput(yytext,(int)yyleng);
+				     BEGIN(g_readLineCtx);
+				   }
 <CComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yytext,(int)yyleng);
   				   }
