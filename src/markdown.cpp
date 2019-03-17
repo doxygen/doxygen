@@ -524,7 +524,7 @@ static int processQuoted(GrowBuf &out,const char *data,int,int size)
 /** Process a HTML tag. Note that <pre>..</pre> are treated specially, in
  *  the sense that all code inside is written unprocessed
  */
-static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
+static int processHtmlTagWrite(GrowBuf &out,const char *data,int offset,int size,bool doWrite)
 {
   if (offset>0 && data[-1]=='\\') return 0; // escaped <
 
@@ -547,7 +547,7 @@ static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
             tolower(data[i+2])=='p' && tolower(data[i+3])=='r' &&
             tolower(data[i+4])=='e' && tolower(data[i+5])=='>')
         { // found </pre> tag, copy from start to end of tag
-          out.addStr(data,i+6);
+          if (doWrite) out.addStr(data,i+6);
           //printf("found <pre>..</pre> [%d..%d]\n",0,i+6);
           return i+6;
         }
@@ -570,13 +570,13 @@ static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
       if (data[i]=='/' && i<size-1 && data[i+1]=='>') // <bla/>
       {
         //printf("Found htmlTag={%s}\n",QCString(data).left(i+2).data());
-        out.addStr(data,i+2);
+        if (doWrite) out.addStr(data,i+2);
         return i+2;
       }
       else if (data[i]=='>') // <bla>
       {
         //printf("Found htmlTag={%s}\n",QCString(data).left(i+1).data());
-        out.addStr(data,i+1);
+        if (doWrite) out.addStr(data,i+1);
         return i+1;
       }
       else if (data[i]==' ') // <bla attr=...
@@ -596,7 +596,7 @@ static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
           else if (!insideAttr && data[i]=='>') // found end of tag
           {
             //printf("Found htmlTag={%s}\n",QCString(data).left(i+1).data());
-            out.addStr(data,i+1);
+            if (doWrite) out.addStr(data,i+1);
             return i+1;
           }
           i++;
@@ -606,6 +606,10 @@ static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
   }
   //printf("Not a valid html tag\n");
   return 0;
+}
+static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
+{
+  return processHtmlTagWrite(out,data,offset,size,true);
 }
 
 static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
@@ -2093,17 +2097,9 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
           {
             if (qstrncmp(&data[end+1],endBlockName,l)==0)
             {
-              if (pi!=-1) // output previous line if available
-              {
-                //printf("feol out={%s}\n",QCString(data+pi).left(i-pi).data());
-                out.addStr(data+pi,i-pi);
-              }
               // found end marker, skip over this block
               //printf("feol.block out={%s}\n",QCString(data+i).left(end+l+1-i).data());
-              out.addStr(data+i,end+l+1-i);
-              pi=-1;
-              i=end+l+1; // continue after block
-              end=i+1;
+              end = end + l + 2;
               break;
             }
           }
@@ -2117,16 +2113,8 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
       if (tolower(data[end])=='p' && tolower(data[end+1])=='r' &&
           tolower(data[end+2])=='e' && data[end+3]=='>') // <pre> tag
       {
-        if (pi!=-1) // output previous line if available
-        {
-          out.addStr(data+pi,i-pi);
-        }
-        // output part until <pre>
-        out.addStr(data+i,end-1-i); 
-        // output part until </pre>
-        i = end-1 + processHtmlTag(out,data+end-1,end-1,size-end+1);
-        pi=-1;
-        end = i+1;
+        // skip part until including </pre>
+        end  = end + processHtmlTagWrite(out,data+end-1,end-1,size-end+1,false) + 2;
         break;
       }
       else
