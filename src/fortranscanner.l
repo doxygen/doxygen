@@ -523,16 +523,16 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <InterfaceBody>.                        {}
 
  /*-- Contains handling --*/
-<Start>^{BS}{CONTAINS}/({BS}|\n|!)      {
+<Start>^{BS}{CONTAINS}/({BS}|\n|!|;)      {
                                           if(YY_START == Start)
                                           {
                                             addModule(NULL); 
                                             yy_push_state(ModuleBodyContains); //anon program
                                           }                                            
                                         }
-<ModuleBody>^{BS}{CONTAINS}/({BS}|\n|!)   { BEGIN(ModuleBodyContains); }
-<SubprogBody>^{BS}{CONTAINS}/({BS}|\n|!)  { BEGIN(SubprogBodyContains); }
-<TypedefBody>^{BS}{CONTAINS}/({BS}|\n|!)  { BEGIN(TypedefBodyContains); }
+<ModuleBody>^{BS}{CONTAINS}/({BS}|\n|!|;)   { BEGIN(ModuleBodyContains); }
+<SubprogBody>^{BS}{CONTAINS}/({BS}|\n|!|;)  { BEGIN(SubprogBodyContains); }
+<TypedefBody>^{BS}{CONTAINS}/({BS}|\n|!|;)  { BEGIN(TypedefBodyContains); }
 
  /*------ module handling ------------------------------------------------------------*/ 
 <Start>block{BS}data{BS}{ID_}        {  //
@@ -548,13 +548,13 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 					      yy_push_state(Program);
                                             defaultProtection = Public;
                                        }
-<BlockData>^{BS}"end"({BS}(block{BS}data)({BS_}{ID})?)?{BS}/(\n|!) { // end block data
+<BlockData>^{BS}"end"({BS}(block{BS}data)({BS_}{ID})?)?{BS}/(\n|!|;) { // end block data
 					    //if (!endScope(current_root))
 					    //  yyterminate();
                                             defaultProtection = Public;
 					    yy_pop_state();
                                        }
-<Start,ModuleBody,ModuleBodyContains>^{BS}"end"({BS}(module|program)({BS_}{ID})?)?{BS}/(\n|!) { // end module	
+<Start,ModuleBody,ModuleBodyContains>"end"({BS}(module|program)({BS_}{ID})?)?{BS}/(\n|!|;) { // end module
 					    resolveModuleProcedures(moduleProcedures, current_root);
 					    if (!endScope(current_root))
 					      yyterminate();
@@ -691,7 +691,7 @@ private                                 {
 
 
 <TypedefBody,TypedefBodyContains>{
-^{BS}"end"{BS}"type"({BS_}{ID})?{BS}/(\n|!) { /* end type definition */
+^{BS}"end"{BS}"type"({BS_}{ID})?{BS}/(\n|!|;) { /* end type definition */
                                           last_entry->parent()->endBodyLine = yyLineNr;
                                           if (!endScope(current_root))
                                             yyterminate();
@@ -702,7 +702,7 @@ private                                 {
 
  /*------- module/global/typedef variable ---------------------------------------------------*/
 
-<SubprogBody,SubprogBodyContains>^{BS}[0-9]*{BS}"end"({BS}{SUBPROG}({BS_}{ID})?)?{BS}/(\n|!) {  
+<SubprogBody,SubprogBodyContains>^{BS}[0-9]*{BS}"end"({BS}{SUBPROG}({BS_}{ID})?)?{BS}/(\n|!|;) {
                                            //
                                            // ABSTRACT and specific interfaces are stored
                                            // in a scope of their own, even if multiple
@@ -1514,6 +1514,7 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
   int column=0;
   int prevLineLength=0;
   int prevLineAmpOrExclIndex=-1;
+  int skipped = 0;
   char prevQuote = '\0';
   char thisQuote = '\0';
   bool emptyLabel=TRUE;
@@ -1522,18 +1523,41 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
   bool inDouble=FALSE;
   bool inBackslash=FALSE;
   bool fullCommentLine=TRUE;
+  bool artificialComment=FALSE;
+  bool spaces=TRUE;
   int newContentsSize = strlen(contents)+3; // \000, \n (when necessary) and one spare character (to avoid reallocation)
   char* newContents = (char*)malloc(newContentsSize);
   int curLine = 1;
 
-  for(int i=0, j=0;;i++,j++) {
+  int j = -1;
+  for(int i=0;;i++) {
+    column++;
+    char c = contents[i];
+    if (artificialComment && c != '\n')
+    {
+      if (c == '!' && spaces)
+      {
+        newContents[j++] = c;
+        artificialComment = FALSE;
+        spaces = FALSE;
+        skipped = 0;
+        continue;
+      }
+      else if (c == ' ' || c == '\t') continue;
+      else
+      {
+        spaces = FALSE;
+        skipped++;
+        continue;
+      }
+    }
+
+    j++;
     if(j>=newContentsSize-3) { // check for spare characters, which may be eventually used below (by & and '! ')
       newContents = (char*)realloc(newContents, newContentsSize+1000);
       newContentsSize = newContentsSize+1000;
     }
 
-    column++;
-    char c = contents[i];
     switch(c) {
       case '\n':
         if (!fullCommentLine)
@@ -1541,6 +1565,11 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
           prevLineLength=column;
           prevLineAmpOrExclIndex=getAmpOrExclAtTheEnd(&contents[i-prevLineLength+1], prevLineLength,prevQuote);
           if (prevLineAmpOrExclIndex == -1) prevLineAmpOrExclIndex = column - 1;
+          if (skipped)
+          {
+            prevLineAmpOrExclIndex = -1;
+            skipped = 0;
+          }
         }
         else
         {
@@ -1551,6 +1580,8 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
             hasContLine[curLine - 1] = 1;
           }
         }
+        artificialComment=FALSE;
+        spaces=TRUE;
         fullCommentLine=TRUE;
         column=0;
 	emptyLabel=TRUE;
@@ -1655,7 +1686,8 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
               j++;
             } else { // add & just before end of previous line comment
               /* first line is not a continuation line in code, just in snippets etc. */
-              if (curLine != 1) insertCharacter(newContents, j+1, (j+1)-6-prevLineLength+prevLineAmpOrExclIndex, '&');
+              if (curLine != 1) insertCharacter(newContents, j+1, (j+1)-6-prevLineLength+prevLineAmpOrExclIndex+skipped, '&');
+              skipped = 0;
               j++;
             }
             if (hasContLine) hasContLine[curLine - 1] = 1;
@@ -1665,13 +1697,20 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
           prevLineLength=0;
 	} else if ((column > fixedCommentAfter) && !commented) {
           // first non commented non blank character after position fixedCommentAfter
-          if (c != '!') {
-            // I'm not a possible start of doxygen comment
-	    newContents[j++]='!';
-	    newContents[j++]=' '; // so that '<' and '>' as first character are not converted to doxygen comment
+          if (c == '&') {
+	    newContents[j]=' ';
           }
-	  newContents[j]=c;
-          commented = TRUE;
+          else if (c != '!') {
+            // I'm not a possible start of doxygen comment
+	    newContents[j]=' ';
+            artificialComment = TRUE;
+            spaces=TRUE;
+            skipped = 0;
+          }
+          else {
+	    newContents[j]=c;
+            commented = TRUE;
+          }
 	} else {
           if (!commented) fullCommentLine=FALSE;
 	  newContents[j]=c;
