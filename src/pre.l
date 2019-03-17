@@ -1161,6 +1161,44 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
   }
 }
 
+/*! @brief Process string or character literal.
+ *
+ * \a inputStr should point to the start of a string or character literal.
+ * the routine will return a pointer to just after the end of the literal
+ * the character making up the literal will be added to \a result.
+ */
+const char *processUntilMatchingTerminator(const char *inputStr,QCString &result)
+{
+  if (inputStr==0) return inputStr;
+  char term = *inputStr; // capture start character of the literal
+  if (term==0 || (term!='\'' && term!='"')) return inputStr; // not a valid literal
+  char c=term;
+  // output start character
+  result+=c;
+  inputStr++;
+  while ((c=*inputStr)) // while inside the literal
+  {
+    if (c==term) // found end marker of the literal
+    {
+      // output end character and stop
+      result+=c;
+      inputStr++;
+      break;
+    }
+    else if (c=='\\') // escaped character, process next character
+                      // as well without checking for end marker.
+    {
+      result+=c;
+      inputStr++;
+      c=*inputStr;
+      if (c==0) break; // unexpected end of string after escape character
+    }
+    result+=c;
+    inputStr++;
+  }
+  return inputStr;
+}
+
 /*! replaces all occurrences of @@@@ in \a s by @@
  *  and removes all occurrences of @@E.
  *  All identifiers found are replaced by 0L
@@ -1196,17 +1234,7 @@ QCString removeIdsAndMarkers(const char *s)
       }
       else if (c=='\'') // quoted character
       {
-        result+=c;
-        p++;
-        char pc=c;
-        while ((c=*p) && (c!='\'' || pc=='\\'))
-        {
-          result+=c;
-          pc=c;
-          p++;
-        }
-        result+=c;
-        p++;
+        p = processUntilMatchingTerminator(p,result);
       }
       else if (c=='d' && !inNum) // identifier starting with a `d'
       {
@@ -1334,30 +1362,8 @@ QCString removeMarkers(const char *s)
 	  }
 	  break;
 	case '"': // skip string literals
-	  {
-	    result+=c;
-	    char pc=c;
-	    c=*++p;
-	    while (*p && (c!='"' || pc=='\\')) // no end quote
-	    {
-	      result+=c;
-	      c=*++p;
-	    }
-	    if (*p) result+=c,p++; 
-	  }
-	  break;
 	case '\'': // skip char literals
-	  {
-	    result+=c;
-	    char pc=c;
-	    c=*++p;
-	    while (*p && (c!='\'' || pc=='\\')) // no end quote
-	    {
-	      result+=c;
-	      c=*++p;
-	    }
-	    if (*p) result+=c,p++; 
-	  }
+          p = processUntilMatchingTerminator(p,result);
 	  break;
 	default:
 	  {
