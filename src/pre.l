@@ -1171,7 +1171,7 @@ const char *processUntilMatchingTerminator(const char *inputStr,QCString &result
 {
   if (inputStr==0) return inputStr;
   char term = *inputStr; // capture start character of the literal
-  if (term==0 || (term!='\'' && term!='"')) return inputStr; // not a valid literal
+  if (term!='\'' && term!='"') return inputStr; // not a valid literal
   char c=term;
   // output start character
   result+=c;
