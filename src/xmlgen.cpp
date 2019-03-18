@@ -1050,7 +1050,8 @@ static void generateXMLSection(Definition *d,FTextStream &ti,FTextStream &t,
   int count=0;
   for (mli.toFirst();(md=mli.current());++mli)
   {
-    if (memberVisible(d,md))
+    if (memberVisible(d,md) && (md->memberType()!=MemberType_EnumValue) &&
+        !md->isHidden())
     {
       count++;
     }
