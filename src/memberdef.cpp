@@ -284,9 +284,13 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setFromAnonymousScope(bool b);
     virtual void setFromAnonymousMember(MemberDef *m);
     virtual void enableCallGraph(bool e);
+    virtual void enableCallGraph(bool e, bool e2);
     virtual void enableCallerGraph(bool e);
+    virtual void enableCallerGraph(bool e, bool e2);
     virtual void enableReferencedByRelation(bool e);
+    virtual void enableReferencedByRelation(bool e, bool e2);
     virtual void enableReferencesRelation(bool e);
+    virtual void enableReferencesRelation(bool e, bool e2);
     virtual void setTemplateMaster(MemberDef *mt);
     virtual void addListReference(Definition *d);
     virtual void setDocsForDefinition(bool b);
@@ -4346,9 +4350,37 @@ void MemberDefImpl::enableCallGraph(bool e)
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
+void MemberDefImpl::enableCallGraph(bool e, bool e2)
+{
+  static bool callGraph = Config_getBool(CALL_GRAPH);
+  if (e != e2)
+  {
+    m_impl->hasCallGraph= !callGraph;
+  }
+  else
+  {
+    m_impl->hasCallGraph=e;
+  }
+  if (m_impl->hasCallGraph) Doxygen::parseSourcesNeeded = TRUE;
+}
+
 void MemberDefImpl::enableCallerGraph(bool e)
 {
   m_impl->hasCallerGraph=e;
+  if (m_impl->hasCallerGraph) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+void MemberDefImpl::enableCallerGraph(bool e, bool e2)
+{
+  static bool callerGraph = Config_getBool(CALLER_GRAPH);
+  if (e != e2)
+  {
+    m_impl->hasCallerGraph= !callerGraph;
+  }
+  else
+  {
+    m_impl->hasCallerGraph=e;
+  }
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
@@ -4358,9 +4390,37 @@ void MemberDefImpl::enableReferencedByRelation(bool e)
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
+void MemberDefImpl::enableReferencedByRelation(bool e, bool e2)
+{
+  static bool refByRel = Config_getBool(REFERENCED_BY_RELATION);
+  if (e != e2)
+  {
+    m_impl->hasReferencedByRelation= !refByRel;
+  }
+  else
+  {
+    m_impl->hasReferencedByRelation=e;
+  }
+  if (m_impl->hasReferencedByRelation) Doxygen::parseSourcesNeeded = TRUE;
+}
+
 void MemberDefImpl::enableReferencesRelation(bool e)
 {
   m_impl->hasReferencesRelation=e;
+  if (m_impl->hasReferencesRelation) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+void MemberDefImpl::enableReferencesRelation(bool e, bool e2)
+{
+  static bool refsRel = Config_getBool(REFERENCES_RELATION);
+  if (e != e2)
+  {
+    m_impl->hasReferencesRelation= !refsRel;
+  }
+  else
+  {
+    m_impl->hasReferencesRelation=e;
+  }
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
