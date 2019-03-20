@@ -360,8 +360,8 @@ static void writeTemplateArgumentList(ArgumentList *al,
       }
       if (!a->name.isEmpty())
       {
-        t << indentStr <<  "    <declname>" << a->name << "</declname>" << endl;
-        t << indentStr <<  "    <defname>" << a->name << "</defname>" << endl;
+        t << indentStr <<  "    <declname>" << convertToXML(a->name) << "</declname>" << endl;
+        t << indentStr <<  "    <defname>" << convertToXML(a->name) << "</defname>" << endl;
       }
       if (!a->defval.isEmpty())
       {
