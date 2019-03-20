@@ -91,7 +91,7 @@ class Tester:
 			if 'config' in self.config:
 				for option in self.config['config']:
 					print(option, file=f)
-			if (self.args.xml):
+			if (self.args.xml or self.args.xmlxsd):
 				print('GENERATE_XML=YES', file=f)
 				print('XML_OUTPUT=%s/out' % self.test_out, file=f)
 			else:
@@ -182,11 +182,13 @@ class Tester:
 		failed_latex=False
 		failed_docbook=False
 		failed_rtf=False
+		failed_xmlxsd=False
 		msg = ()
 		# look for files to check against the reference
-		if self.args.xml:
-			failed_xml=True
-			if 'check' in self.config:
+		if self.args.xml or self.args.xmlxsd:
+			failed_xml=False
+			if 'check' in self.config and self.args.xml:
+				failed_xml=True
 				for check in self.config['check']:
 					check_file='%s/out/%s' % (self.test_out,check)
 					# check if the file we need to check is actually generated
@@ -215,9 +217,62 @@ class Tester:
 					if failed_xml:
 						msg+= (xml_msg,)
 						break
-				if not failed_xml and not self.args.keep:
-					xml_output='%s/out' % self.test_out
-					shutil.rmtree(xml_output,ignore_errors=True)
+			failed_xmlxsd=False
+			if self.args.xmlxsd:
+				xmlxsd_output='%s/out' % self.test_out
+				if (sys.platform == 'win32'):
+					redirx=' 2> %s/temp >nul:'%xmlxsd_output
+				else:
+					redirx='2>%s/temp >/dev/null'%xmlxsd_output
+				#
+				index_xml = []
+				index_xml.append(glob.glob('%s/index.xml' % (xmlxsd_output)))
+				index_xml.append(glob.glob('%s/*/*/index.xml' % (xmlxsd_output)))
+				index_xml = ' '.join(list(itertools.chain.from_iterable(index_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+				index_xsd = []
+				index_xsd.append(glob.glob('%s/index.xsd' % (xmlxsd_output)))
+				index_xsd.append(glob.glob('%s/*/*/index.xsd' % (xmlxsd_output)))
+				index_xsd = ' '.join(list(itertools.chain.from_iterable(index_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+				exe_string = '%s --noout --schema %s %s %s' % (self.args.xmllint,index_xsd,index_xml,redirx)
+				exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
+
+				xmllint_out = os.popen(exe_string).read()
+				if xmllint_out:
+					xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
+				else:
+					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,index_xsd,index_xml),)
+					failed_xmlxsd=True
+				if xmllint_out:
+					msg += (xmllint_out,)
+					failed_xmlxsd=True
+				#
+				compound_xml = []
+				compound_xml.append(glob.glob('%s/*.xml' % (xmlxsd_output)))
+				compound_xml.append(glob.glob('%s/*/*/*.xml' % (xmlxsd_output)))
+				compound_xml = ' '.join(list(itertools.chain.from_iterable(compound_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+				compound_xml = re.sub(r' [^ ]*/index.xml','',compound_xml)
+				compound_xml = re.sub(r'[^ ]*/index.xml ','',compound_xml)
+
+				compound_xsd = []
+				compound_xsd.append(glob.glob('%s/compound.xsd' % (xmlxsd_output)))
+				compound_xsd.append(glob.glob('%s/*/*/compound.xsd' % (xmlxsd_output)))
+				compound_xsd = ' '.join(list(itertools.chain.from_iterable(compound_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+				exe_string = '%s --noout --schema %s %s %s' % (self.args.xmllint,compound_xsd,compound_xml,redirx)
+				exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
+
+				xmllint_out = os.popen(exe_string).read()
+				if xmllint_out:
+					xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
+				else:
+					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,compound_xsd,compound_xml),)
+					failed_xmlxsd=True
+				if xmllint_out:
+					msg += (xmllint_out,)
+					failed_xmlxsd=True
+
+			if not failed_xml and not failed_xmlxsd and not self.args.keep:
+				xml_output='%s/out' % self.test_out
+				shutil.rmtree(xml_output,ignore_errors=True)
 
 		if (self.args.rtf):
 			# no tests defined yet
@@ -282,7 +337,7 @@ class Tester:
 			elif not self.args.keep:
 				shutil.rmtree(latex_output,ignore_errors=True)
 
-		if failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf:
+		if failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
 			testmgr.ok(False,self.test_name,msg)
 			return
 
@@ -374,6 +429,8 @@ def main():
 		'create docbook output and check with xmllint',action="store_true")
 	parser.add_argument('--xhtml',help=
 		'create xhtml output and check with xmllint',action="store_true")
+	parser.add_argument('--xmlxsd',help=
+		'create xml output and check with xmllint against xsd',action="store_true")
 	parser.add_argument('--pdf',help='create LaTeX output and create pdf from it',
 		action="store_true")
 	parser.add_argument('--subdirs',help='use the configuration parameter CREATE_SUBDIRS=YES',
@@ -387,7 +444,7 @@ def main():
 	args = parser.parse_args(test_flags + sys.argv[1:])
 
 	# sanity check
-	if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.docbook and (not args.rtf)):
+	if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
 		args.xml=True
 	if (not args.updateref is None) and (args.ids is None) and (args.all is None):
 		parser.error('--updateref requires either --id or --all')
