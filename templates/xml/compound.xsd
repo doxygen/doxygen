@@ -64,6 +64,14 @@
     <xsd:attribute name="ambiguityscope" type="xsd:string" />
   </xsd:complexType>
 
+  <xsd:complexType name="docHtmlOnlyType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="block" type="xsd:string" />
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
   <xsd:complexType name="compoundRefType">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
@@ -164,7 +172,11 @@
     <xsd:attribute name="initonly" type="DoxBool" use="optional"/>
     <!-- C++/CLI and C# property -->
     <xsd:attribute name="settable" type="DoxBool" use="optional"/>
+    <xsd:attribute name="privatesettable" type="DoxBool" use="optional"/>
+    <xsd:attribute name="protectedsettable" type="DoxBool" use="optional"/>
     <xsd:attribute name="gettable" type="DoxBool" use="optional"/>
+    <xsd:attribute name="privategettable" type="DoxBool" use="optional"/>
+    <xsd:attribute name="protectedgettable" type="DoxBool" use="optional"/>
     <!-- C++/CLI function -->
     <xsd:attribute name="final" type="DoxBool" use="optional"/>
     <xsd:attribute name="sealed" type="DoxBool" use="optional"/>
@@ -196,8 +208,8 @@
     <xsd:sequence>
       <xsd:element name="title" type="xsd:string" minOccurs="0"/>	    
       <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="internal" type="docInternalType" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:element name="sect1" type="docSect1Type" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="internal" type="docInternalType" minOccurs="0" />
     </xsd:sequence>
   </xsd:complexType>
 
@@ -314,39 +326,47 @@
 
   <xsd:complexType name="docSect1Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="xsd:string" />	    
-      <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="sect2" type="docSect2Type" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="internal" type="docInternalS1Type" minOccurs="0" />
+      <xsd:element name="title" type="xsd:string" minOccurs="0" />
+      <xsd:choice maxOccurs="unbounded">
+        <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="internal" type="docInternalS1Type" minOccurs="0"  maxOccurs="unbounded" />
+        <xsd:element name="sect2" type="docSect2Type" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:choice>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:string" />
   </xsd:complexType>
 
   <xsd:complexType name="docSect2Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="xsd:string" />	    
-      <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="sect3" type="docSect3Type" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="internal" type="docInternalS2Type" minOccurs="0" />
+      <xsd:element name="title" type="xsd:string" />
+      <xsd:choice maxOccurs="unbounded">
+        <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="sect3" type="docSect3Type" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="internal" type="docInternalS2Type" minOccurs="0" />
+      </xsd:choice>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:string" />
   </xsd:complexType>
 
   <xsd:complexType name="docSect3Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="xsd:string" />	    
-      <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="sect4" type="docSect4Type" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="internal" type="docInternalS3Type" minOccurs="0" />
+      <xsd:element name="title" type="xsd:string" />
+      <xsd:choice maxOccurs="unbounded">
+        <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="sect4" type="docSect4Type" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="internal" type="docInternalS3Type" minOccurs="0" />
+      </xsd:choice>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:string" />
   </xsd:complexType>
 
   <xsd:complexType name="docSect4Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="xsd:string" />	    
-      <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="internal" type="docInternalS4Type" minOccurs="0" />
+      <xsd:element name="title" type="xsd:string" />
+      <xsd:choice maxOccurs="unbounded">
+        <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="internal" type="docInternalS4Type" minOccurs="0" />
+      </xsd:choice>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:string" />
   </xsd:complexType>
@@ -397,18 +417,20 @@
       <xsd:element name="superscript" type="docMarkupType" />
       <xsd:element name="center" type="docMarkupType" />
       <xsd:element name="small" type="docMarkupType" />
-      <xsd:element name="htmlonly" type="xsd:string" />
+      <xsd:element name="htmlonly" type="docHtmlOnlyType" />
       <xsd:element name="manonly" type="xsd:string" />
       <xsd:element name="xmlonly" type="xsd:string" />
       <xsd:element name="rtfonly" type="xsd:string" />
       <xsd:element name="latexonly" type="xsd:string" />
       <xsd:element name="image" type="docImageType" />
       <xsd:element name="dot" type="xsd:string" />
+      <xsd:element name="msc" type="xsd:string" />
       <xsd:element name="plantuml" type="xsd:string" />
       <xsd:element name="anchor" type="docAnchorType" />
       <xsd:element name="formula" type="docFormulaType" />
       <xsd:element name="ref" type="docRefTextType" />
       <xsd:element name="emoji" type="docEmojiType" />
+      <xsd:element name="linebreak" type="docEmptyType" />
       <!-- Automatically insert here the HTML entities -->
     </xsd:choice>
   </xsd:group>
@@ -525,8 +547,8 @@
 
   <xsd:complexType name="docTableType">
     <xsd:sequence>
+      <xsd:element name="caption" type="docCaptionType" minOccurs="0" maxOccurs="1" />
       <xsd:element name="row" type="docRowType" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="caption" type="docCaptionType" minOccurs="0" />
     </xsd:sequence>
     <xsd:attribute name="rows" type="xsd:integer" />
     <xsd:attribute name="cols" type="xsd:integer" />
@@ -835,6 +857,10 @@
       <xsd:enumeration value="keywordflow" />
       <xsd:enumeration value="stringliteral" />
       <xsd:enumeration value="charliteral" />
+      <xsd:enumeration value="vhdlkeyword" />
+      <xsd:enumeration value="vhdllogic" />
+      <xsd:enumeration value="vhdlchar" />
+      <xsd:enumeration value="vhdldigit" />
     </xsd:restriction>
   </xsd:simpleType>
 
@@ -870,6 +896,7 @@
     <xsd:restriction base="xsd:string">
       <xsd:enumeration value="html" />
       <xsd:enumeration value="latex" />
+      <xsd:enumeration value="docbook" />
       <xsd:enumeration value="rtf" />
     </xsd:restriction>
   </xsd:simpleType>
