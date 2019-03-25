@@ -3650,10 +3650,10 @@ static void buildFunctionList(Entry *root)
 
                 md->addSectionsToDefinition(root->anchors);
 
-                md->enableCallGraph(md->hasCallGraph() || root->callGraph);
-                md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
-                md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
-                md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
+                md->enableCallGraph(md->hasCallGraph(), root->callGraph);
+                md->enableCallerGraph(md->hasCallerGraph(), root->callerGraph);
+                md->enableReferencedByRelation(md->hasReferencedByRelation(), root->referencedByRelation);
+                md->enableReferencesRelation(md->hasReferencesRelation(), root->referencesRelation);
 
                 // merge ingroup specifiers
                 if (md->getGroupDef()==0 && root->groups->getFirst()!=0)
@@ -5277,10 +5277,10 @@ static void addMemberDocs(Entry *root,
   // strip extern specifier
   fDecl.stripPrefix("extern ");
   md->setDefinition(fDecl);
-  md->enableCallGraph(root->callGraph);
-  md->enableCallerGraph(root->callerGraph);
-  md->enableReferencedByRelation(root->referencedByRelation);
-  md->enableReferencesRelation(root->referencesRelation);
+  md->enableCallGraph(md->hasCallGraph(),root->callGraph);
+  md->enableCallerGraph(md->hasCallerGraph(),root->callerGraph);
+  md->enableReferencedByRelation(md->hasReferencedByRelation(), root->referencedByRelation);
+  md->enableReferencesRelation(md->hasReferencesRelation(),root->referencesRelation);
   ClassDef     *cd=md->getClassDef();
   NamespaceDef *nd=md->getNamespaceDef();
   QCString fullName;
@@ -5371,10 +5371,10 @@ static void addMemberDocs(Entry *root,
     md->setRefItems(root->sli);
   }
 
-  md->enableCallGraph(md->hasCallGraph() || root->callGraph);
-  md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
-  md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
-  md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
+  md->enableCallGraph(md->hasCallGraph(), root->callGraph);
+  md->enableCallerGraph(md->hasCallerGraph(), root->callerGraph);
+  md->enableReferencedByRelation(md->hasReferencedByRelation(), root->referencedByRelation);
+  md->enableReferencesRelation(md->hasReferencesRelation(), root->referencesRelation);
 
   md->mergeMemberSpecifiers(root->spec);
   md->addSectionsToDefinition(root->anchors);

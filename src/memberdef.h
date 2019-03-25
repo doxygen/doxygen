@@ -340,10 +340,14 @@ class MemberDef : virtual public Definition
     virtual void setFromAnonymousMember(MemberDef *m) = 0;
 
     virtual void enableCallGraph(bool e) = 0;
+    virtual void enableCallGraph(bool e, bool e2) = 0;
     virtual void enableCallerGraph(bool e) = 0;
+    virtual void enableCallerGraph(bool e, bool e2) = 0;
 
     virtual void enableReferencedByRelation(bool e) = 0;
+    virtual void enableReferencedByRelation(bool e, bool e2) = 0;
     virtual void enableReferencesRelation(bool e) = 0;
+    virtual void enableReferencesRelation(bool e, bool e2) = 0;
 
     virtual void setTemplateMaster(MemberDef *mt) = 0;
     virtual void addListReference(Definition *d) = 0;
