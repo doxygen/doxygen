@@ -547,13 +547,22 @@
 
 % possibility to have sections etc. be within the margins
 \makeatletter
-\newcommand{\doxysection}[1]{\@ifstar{\begingroup\sloppy\raggedright\section*{#1}\endgroup}{\begingroup\sloppy\raggedright\section{#1}\endgroup}}
-\newcommand{\doxysubsection}[1]{\@ifstar{\begingroup\sloppy\raggedright\subsection*{#1}\endgroup}{\begingroup\sloppy\raggedright\subsection{#1}\endgroup}}
-\newcommand{\doxysubsubsection}[1]{\@ifstar{\begingroup\sloppy\raggedright\subsubsection*{#1}\endgroup}{\begingroup\sloppy\raggedright\subsubsection{#1}\endgroup}}
-\newcommand{\doxyparagraph}[1]{@ifstar{\begingroup\sloppy\raggedright\paragraph*{#1}\endgroup}{\begingroup\sloppy\raggedright\paragraph{#1}\endgroup}}
-\newcommand{\doxysubparagraph}[1]{@ifstar{\begingroup\sloppy\raggedright\subparagraph*{#1}\endgroup}{\begingroup\sloppy\raggedright\subparagraph{#1}\endgroup}}
+\newcommand{\doxysection}{\@ifstar{\doxysection@star}{\doxysection@nostar}}
+\newcommand{\doxysection@star}[1]{\begingroup\sloppy\raggedright\section*{#1}\endgroup}
+\newcommand{\doxysection@nostar}[1]{\begingroup\sloppy\raggedright\section{#1}\endgroup}
+\newcommand{\doxysubsection}{\@ifstar{\doxysubsection@star}{\doxysubsection@nostar}}
+\newcommand{\doxysubsection@star}[1]{\begingroup\sloppy\raggedright\subsection*{#1}\endgroup}
+\newcommand{\doxysubsection@nostar}[1]{\begingroup\sloppy\raggedright\subsection{#1}\endgroup}
+\newcommand{\doxysubsubsection}{\@ifstar{\doxysubsubsection@star}{\doxysubsubsection@nostar}}
+\newcommand{\doxysubsubsection@star}[1]{\begingroup\sloppy\raggedright\subsubsection*{#1}\endgroup}
+\newcommand{\doxysubsubsection@nostar}[1]{\begingroup\sloppy\raggedright\subsubsection{#1}\endgroup}
+\newcommand{\doxyparagraph}{\@ifstar{\doxyparagraph@star}{\doxyparagraph@nostar}}
+\newcommand{\doxyparagraph@star}[1]{\begingroup\sloppy\raggedright\paragraph*{#1}\endgroup}
+\newcommand{\doxyparagraph@nostar}[1]{\begingroup\sloppy\raggedright\paragraph{#1}\endgroup}
+\newcommand{\doxysubparagraph}{\@ifstar{\doxysubparagraph@star}{\doxysubparagraph@nostar}}
+\newcommand{\doxysubparagraph@star}[1]{\begingroup\sloppy\raggedright\subparagraph*{#1}\endgroup}
+\newcommand{\doxysubparagraph@nostar}[1]{\begingroup\sloppy\raggedright\subparagraph{#1}\endgroup}
 \makeatother
-
 % Define caption that is also suitable in a table
 \makeatletter
 \def\doxyfigcaption{%
