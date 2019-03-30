@@ -150,7 +150,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
                         Examples 
                       };
 
-    virtual bool parseText(const QCString &s)  { return s.isEmpty(); }
+    virtual void parseText(const QCString &s) {}
     
     /*! Start of a bullet list: e.g. \c \<ul\> in html. startItemListItem() is
      *  Used for the bullet items.

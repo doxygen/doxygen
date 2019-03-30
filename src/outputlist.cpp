@@ -128,14 +128,14 @@ void OutputList::popGeneratorState()
   }
 }
 
-bool OutputList::generateDoc(const char *fileName,int startLine,
+void OutputList::generateDoc(const char *fileName,int startLine,
                   Definition *ctx,MemberDef * md,
                   const QCString &docStr,bool indexWords,
                   bool isExample,const char *exampleName,
                   bool singleLine,bool linkFromIndex)
 {
   int count=0;
-  if (docStr.isEmpty()) return TRUE;
+  if (docStr.isEmpty()) return;
 
   QListIterator<OutputGenerator> it(m_outputs);
   OutputGenerator *og;
@@ -152,15 +152,8 @@ bool OutputList::generateDoc(const char *fileName,int startLine,
   root = validatingParseDoc(fileName,startLine,
                             ctx,md,docStr,indexWords,isExample,exampleName,
                             singleLine,linkFromIndex);
-  if (count==0) return TRUE; // no output formats enabled.
-
-  writeDoc(root,ctx,md);
-
-  bool isEmpty = root->isEmpty();
-
+  if (count>0) writeDoc(root,ctx,md);
   delete root;
-
-  return isEmpty;
 }
 
 void OutputList::writeDoc(DocRoot *root,Definition *ctx,MemberDef *md)
@@ -176,7 +169,7 @@ void OutputList::writeDoc(DocRoot *root,Definition *ctx,MemberDef *md)
   VhdlDocGen::setFlowMember(0);
 }
 
-bool OutputList::parseText(const QCString &textStr)
+void OutputList::parseText(const QCString &textStr)
 {
   int count=0;
   QListIterator<OutputGenerator> it(m_outputs);
@@ -192,18 +185,15 @@ bool OutputList::parseText(const QCString &textStr)
   // - no formats there should be warnings as well
   DocText *root = validatingParseText(textStr);
 
-  if (count==0) return TRUE; // no output formats enabled.
-
-  for (it.toFirst();(og=it.current());++it)
+  if (count>0)
   {
-    if (og->isEnabled()) og->writeDoc(root,0,0);
+    for (it.toFirst();(og=it.current());++it)
+    {
+      if (og->isEnabled()) og->writeDoc(root,0,0);
+    }
   }
 
-  bool isEmpty = root->isEmpty();
-
   delete root;
-
-  return isEmpty;
 }
 
 
