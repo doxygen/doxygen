@@ -143,12 +143,16 @@ bool OutputList::generateDoc(const char *fileName,int startLine,
   {
     if (og->isEnabled()) count++;
   }
-  if (count==0) return TRUE; // no output formats enabled.
 
+  // we want to validate irrespective of the number of output formats
+  // specified as:
+  // - when only XML format there should be warnings as well (XML has its own write routines)
+  // - no formats there should be warnings as well
   DocRoot *root=0;
   root = validatingParseDoc(fileName,startLine,
                             ctx,md,docStr,indexWords,isExample,exampleName,
                             singleLine,linkFromIndex);
+  if (count==0) return TRUE; // no output formats enabled.
 
   writeDoc(root,ctx,md);
 
@@ -181,9 +185,14 @@ bool OutputList::parseText(const QCString &textStr)
   {
     if (og->isEnabled()) count++;
   }
-  if (count==0) return TRUE; // no output formats enabled.
 
+  // we want to validate irrespective of the number of output formats
+  // specified as:
+  // - when only XML format there should be warnings as well (XML has its own write routines)
+  // - no formats there should be warnings as well
   DocText *root = validatingParseText(textStr);
+
+  if (count==0) return TRUE; // no output formats enabled.
 
   for (it.toFirst();(og=it.current());++it)
   {
