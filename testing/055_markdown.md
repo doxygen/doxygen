@@ -2,6 +2,7 @@
 // objective: test markdown parsing
 // check: md_055_markdown.xml
 -->
+@page md_055_markdown 055_markdown
 
 # Foo
 
