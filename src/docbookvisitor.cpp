@@ -263,7 +263,9 @@ DB_VIS_C
     case DocStyleChange::Small: /* XSLT Stylesheets can be used */ break;
                                                                    /* HTML only */
     case DocStyleChange::Strike:  break;
+    case DocStyleChange::Del:        break;
     case DocStyleChange::Underline:  break;
+    case DocStyleChange::Ins:        break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
   }

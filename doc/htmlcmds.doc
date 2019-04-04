@@ -45,6 +45,8 @@ of a HTML tag are passed on to the HTML output only
                        \ref cmdendcode "\\endcode".
 <li><tt>\<DD\></tt>    Starts an item description.
 <li><tt>\</DD\></tt>   Ends an item description.
+<li><tt>\<DEL\></tt>   Starts a section of deleted text, typically shown strike through text.
+<li><tt>\</DEL\></tt>  Ends a section of deleted text.
 <li><tt>\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
 <li><tt>\</DFN\></tt>  Ends a <tt>\<DFN\></tt> section.
 <li><tt>\<DIV></tt>    Starts a section with a specific style (HTML only)
@@ -71,6 +73,8 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\<I\></tt>     Starts a piece of text displayed in an italic font.
 <li><tt>\</I\></tt>    Ends a <tt>\<I\></tt> section.
 <li><tt>\<IMG SRC="..." ...\></tt>   This command is written with its attributes to the HTML output only. The SRC attribute is mandatory.
+<li><tt>\<INS\></tt>   Starts a section of inserted text, typically shown as underlined text.
+<li><tt>\</INS\></tt>  Ends a section of inserted text.
 <li><tt>\<LI\></tt>    Starts a new list item.
 <li><tt>\</LI\></tt>   Ends a list item.
 <li><tt>\<OL\></tt>    Starts a numbered item list.

@@ -190,8 +190,14 @@ void XmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Strike:
       if (s->enable()) m_t << "<strike>";      else m_t << "</strike>";
       break;
+    case DocStyleChange::Del:
+      if (s->enable()) m_t << "<del>";      else m_t << "</del>";
+      break;
     case DocStyleChange::Underline:
       if (s->enable()) m_t << "<underline>";      else m_t << "</underline>";
+      break;
+    case DocStyleChange::Ins:
+      if (s->enable()) m_t << "<ins>";      else m_t << "</ins>";
       break;
     case DocStyleChange::Italic:
       if (s->enable()) m_t << "<emphasis>";     else m_t << "</emphasis>";

@@ -236,9 +236,11 @@ void RTFDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "{\\b ";      else m_t << "} ";
       break;
     case DocStyleChange::Strike:
+    case DocStyleChange::Del:
       if (s->enable()) m_t << "{\\strike ";      else m_t << "} ";
       break;
     case DocStyleChange::Underline:
+    case DocStyleChange::Ins:
       if (s->enable()) m_t << "{\\ul ";      else m_t << "} ";
       break;
     case DocStyleChange::Italic:

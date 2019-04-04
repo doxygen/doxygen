@@ -197,6 +197,8 @@ CommandMap htmlTagMap[] =
   { "blockquote", HTML_BLOCKQUOTE },
   { "strike",     HTML_STRIKE },
   { "u",          HTML_UNDERLINE },
+  { "ins",        HTML_INS },
+  { "del",        HTML_DEL },
 
   { "c",            XML_C },
   // { "code",       XML_CODE },  <= ambiguous <code> is also a HTML tag

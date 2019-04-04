@@ -1095,7 +1095,9 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Div:          return "div";
     case DocStyleChange::Span:         return "span";
     case DocStyleChange::Strike:       return "strike";
+    case DocStyleChange::Del:          return "del";
     case DocStyleChange::Underline:    return "u";
+    case DocStyleChange::Ins:          return "ins";
   }
   return "<invalid>";
 }
@@ -1625,6 +1627,16 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Strike,tokenName);
             }
             break;
+          case HTML_DEL:
+            if (!g_token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Del,&g_token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Del,tokenName);
+            }
+            break;
           case HTML_UNDERLINE:
             if (!g_token->endTag)
             {
@@ -1633,6 +1645,16 @@ reparsetoken:
             else
             {
               handleStyleLeave(parent,children,DocStyleChange::Underline,tokenName);
+            }
+            break;
+          case HTML_INS:
+            if (!g_token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Ins,&g_token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Ins,tokenName);
             }
             break;
           case HTML_CODE:
@@ -6041,8 +6063,14 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case HTML_STRIKE:
       handleStyleEnter(this,m_children,DocStyleChange::Strike,&g_token->attribs);
       break;
+    case HTML_DEL:
+      handleStyleEnter(this,m_children,DocStyleChange::Del,&g_token->attribs);
+      break;
     case HTML_UNDERLINE:
       handleStyleEnter(this,m_children,DocStyleChange::Underline,&g_token->attribs);
+      break;
+    case HTML_INS:
+      handleStyleEnter(this,m_children,DocStyleChange::Ins,&g_token->attribs);
       break;
     case HTML_CODE:
       if (/*getLanguageFromFileName(g_fileName)==SrcLangExt_CSharp ||*/ g_xmlComment) 
@@ -6456,8 +6484,14 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     case HTML_STRIKE:
       handleStyleLeave(this,m_children,DocStyleChange::Strike,"strike");
       break;
+    case HTML_DEL:
+      handleStyleLeave(this,m_children,DocStyleChange::Del,"del");
+      break;
     case HTML_UNDERLINE:
       handleStyleLeave(this,m_children,DocStyleChange::Underline,"u");
+      break;
+    case HTML_INS:
+      handleStyleLeave(this,m_children,DocStyleChange::Ins,"ins");
       break;
     case HTML_CODE:
       handleStyleLeave(this,m_children,DocStyleChange::Code,"code");

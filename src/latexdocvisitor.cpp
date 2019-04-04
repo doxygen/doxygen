@@ -292,9 +292,11 @@ void LatexDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "{\\bfseries{";      else m_t << "}}";
       break;
     case DocStyleChange::Strike:
+    case DocStyleChange::Del:
       if (s->enable()) m_t << "\\sout{";     else m_t << "}";
       break;
     case DocStyleChange::Underline:
+    case DocStyleChange::Ins:
       if (s->enable()) m_t << "\\uline{";     else m_t << "}";
       break;
     case DocStyleChange::Italic:
