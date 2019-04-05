@@ -453,6 +453,8 @@ bool copyFile(const QCString &src,const QCString &dest);
 QCString extractBlock(const QCString text,const QCString marker);
 int lineBlock(const QCString text,const QCString marker);
 
+bool isURL(const QCString &url);
+
 QCString correctURL(const QCString &url,const QCString &relPath);
 
 QCString processMarkup(const QCString &s);
