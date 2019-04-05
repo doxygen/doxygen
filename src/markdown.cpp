@@ -915,8 +915,6 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   {
     SrcLangExt lang = getLanguageFromFileName(link);
     int lp=-1;
-    printf("==> %d #%s#\n",isURL(link),link.data());
-    printf("==> %d \n", ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || (lang==SrcLangExt_Markdown && !isURL(link))) );
     if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || (lang==SrcLangExt_Markdown && !isURL(link))) 
         // assume doxygen symbol link
     {
