@@ -19,5 +19,7 @@
 #define VERSION_H
 
 extern char versionString[];
+extern char gitVersionString[];
 
+void correctGitVersion(void);
 #endif

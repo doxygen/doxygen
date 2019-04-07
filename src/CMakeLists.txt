@@ -1,5 +1,7 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
+include(${CMAKE_SOURCE_DIR}/cmake/git_watcher.cmake)
+
 include_directories(
     ${CMAKE_SOURCE_DIR}/qtools
     ${CMAKE_SOURCE_DIR}/libmd5
@@ -31,8 +33,10 @@ set_source_files_properties(${GENERATED_SRC}/settings.h PROPERTIES GENERATED 1)
 
 
 # generate version.cpp
-file(GENERATE OUTPUT ${GENERATED_SRC}/version.cpp
-    CONTENT "char versionString[]=\"${VERSION}\";"
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/version.py ${VERSION} > ${GENERATED_SRC}/version.cpp
+    DEPENDS ${CMAKE_SOURCE_DIR}/VERSION ${CMAKE_SOURCE_DIR}/src/version.py
+    OUTPUT ${GENERATED_SRC}/version.cpp
 )
 set_source_files_properties(${GENERATED_SRC}/version.cpp PROPERTIES GENERATED 1)
 
@@ -137,6 +141,7 @@ add_library(_doxygen STATIC
     ${GENERATED_SRC}/settings.h
     ${GENERATED_SRC}/layout_default.xml.h
     ${GENERATED_SRC}/version.cpp
+    ${POST_CONFIGURE_GIT_VERSION_FILE}
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/resources.cpp
@@ -240,6 +245,7 @@ add_library(_doxygen STATIC
     docbookvisitor.cpp
     docbookgen.cpp
 )
+add_dependencies( _doxygen check_git_repository )
 
 add_executable(doxygen main.cpp)
 

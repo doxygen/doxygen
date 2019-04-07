@@ -1,0 +1,14 @@
+#include <string.h>
+
+char gitVersionString[]="@GIT_HEAD_SHA1@";
+
+/* - On some systems git is not installed or
+ *   installed on a place whete FindGit.cmake cannot find it
+ * - No git information is present (no .git directory)
+ * in those cases clear the gitVersionString (would have string GIT-NOTFOUND).
+ */
+void correctGitVersion(void)
+{
+  if (!strcmp(gitVersionString, "GIT-NOTFOUND")) gitVersionString[0] = '\0';
+}
+

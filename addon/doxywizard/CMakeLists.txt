@@ -57,8 +57,10 @@ CONTENT "#ifndef SETTINGS_H
 set_source_files_properties(${GENERATED_SRC_WIZARD}/settings.h PROPERTIES GENERATED 1)
 
 # generate version.cpp
-file(GENERATE OUTPUT ${GENERATED_SRC_WIZARD}/version.cpp
-    CONTENT "char versionString[]=\"${VERSION}\";"
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/version.py ${VERSION} > ${GENERATED_SRC_WIZARD}/version.cpp
+    DEPENDS ${CMAKE_SOURCE_DIR}/VERSION ${CMAKE_SOURCE_DIR}/src/version.py
+    OUTPUT ${GENERATED_SRC_WIZARD}/version.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/version.cpp PROPERTIES GENERATED 1)
 

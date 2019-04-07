@@ -964,7 +964,12 @@ void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
 
 void ConfigImpl::compareDoxyfile(FTextStream &t)
 {
-  t << "# Difference with default Doxyfile " << versionString << endl;
+  t << "# Difference with default Doxyfile " << versionString;
+  if (strlen(gitVersionString))
+  {
+    t << " (" << gitVersionString << ")";
+  }
+  t << endl;
   QListIterator<ConfigOption> it = iterator();
   ConfigOption *option;
   for (;(option=it.current());++it)

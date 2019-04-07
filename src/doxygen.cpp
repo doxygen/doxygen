@@ -9927,7 +9927,14 @@ static void devUsage()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2015\n\n",versionString);
+  if (strlen(gitVersionString))
+  {
+    msg("Doxygen version %s (%s)\nCopyright Dimitri van Heesch 1997-2015\n\n",versionString,gitVersionString);
+  }
+  else
+  {
+    msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2015\n\n",versionString);
+  }
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -9981,6 +9988,8 @@ void initDoxygen()
   setlocale(LC_ALL,"");
   setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   setlocale(LC_NUMERIC,"C");
+
+  correctGitVersion();
 
   portable_correct_path();
 
@@ -10387,7 +10396,14 @@ void readConfiguration(int argc, char **argv)
         g_dumpSymbolMap = TRUE;
         break;
       case 'v':
-        msg("%s\n",versionString);
+        if (strlen(gitVersionString))
+        {
+          msg("%s (%s)\n",versionString,gitVersionString);
+        }
+        else
+        {
+          msg("%s\n",versionString);
+        }
         cleanUpDoxygen();
         exit(0);
         break;
@@ -10399,7 +10415,14 @@ void readConfiguration(int argc, char **argv)
         }
         else if (qstrcmp(&argv[optind][2],"version")==0)
         {
-          msg("%s\n",versionString);
+          if (strlen(gitVersionString))
+          {
+            msg("%s (%s)\n",versionString,gitVersionString);
+          }
+          else
+          {
+            msg("%s\n",versionString);
+          }
           cleanUpDoxygen();
           exit(0);
         }
