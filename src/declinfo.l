@@ -57,48 +57,14 @@ static bool         funcTempListFound;
 static QCString      exceptionString;
 static bool          insideObjC;
 
-static void addType()
-{
-  //printf("addType() type=`%s' scope=`%s' name=`%s'\n",
-  //       type.data(),scope.data(),name.data());
-  if (name.isEmpty() && scope.isEmpty()) return;
-  if (!type.isEmpty()) type+=" ";
-  if (!scope.isEmpty()) type+=scope+"::";
-  type+=name;
-  scope.resize(0);
-  name.resize(0);
-}
-  
-static void addTypeName()
-{
-  //printf("addTypeName() type=`%s' scope=`%s' name=`%s'\n",
-  //       type.data(),scope.data(),name.data());
-  if (name.isEmpty() || 
-      name.at(name.length()-1)==':')  // end of Objective-C keyword => append to name not type
-  {
-    return;
-  }
-  if (!type.isEmpty()) type+=' ';
-  type+=name;
-  name.resize(0);
-}
-  
+static void addType();
+static void addTypeName();
+static int yyread(char *buf,int max_size);
+
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
-
-static int yyread(char *buf,int max_size)
-{
-    int c=0;
-    while( c < max_size && inputString[inputPosition] )
-    {
-	*buf = inputString[inputPosition++] ;
-	c++; buf++;
-    }
-    return c;
-}
-
 %}
 
 B       [ \t]
@@ -224,6 +190,43 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <*>\n
 
 %%
+
+static void addType()
+{
+  //printf("addType() type=`%s' scope=`%s' name=`%s'\n",
+  //       type.data(),scope.data(),name.data());
+  if (name.isEmpty() && scope.isEmpty()) return;
+  if (!type.isEmpty()) type+=" ";
+  if (!scope.isEmpty()) type+=scope+"::";
+  type+=name;
+  scope.resize(0);
+  name.resize(0);
+}
+
+static void addTypeName()
+{
+  //printf("addTypeName() type=`%s' scope=`%s' name=`%s'\n",
+  //       type.data(),scope.data(),name.data());
+  if (name.isEmpty() || 
+      name.at(name.length()-1)==':')  // end of Objective-C keyword => append to name not type
+  {
+    return;
+  }
+  if (!type.isEmpty()) type+=' ';
+  type+=name;
+  name.resize(0);
+}
+
+static int yyread(char *buf,int max_size)
+{
+    int c=0;
+    while( c < max_size && inputString[inputPosition] )
+    {
+	*buf = inputString[inputPosition++] ;
+	c++; buf++;
+    }
+    return c;
+}
 
 /*@ ----------------------------------------------------------------------------
  */
