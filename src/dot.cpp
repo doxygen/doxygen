@@ -322,6 +322,11 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
       }
       else
       {
+        int marker = link.find('$');
+        if (marker == 0 ) // we have just $url, e.g. include graphs
+        {
+          link = link.mid(1);
+        }
         result = href+"=\"" + link + "\"";
       }
     }
