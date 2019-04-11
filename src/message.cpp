@@ -154,7 +154,8 @@ static void format_warn(const char *file,int line,const char *text)
   {
     msgText += " (warning treated as error, aborting now)";
   }
-  msgText += '\n';
+  // only add '\n' when last character is not a '\n'
+  if (msgText[msgText.length() - 1] != '\n') msgText += '\n';
 
   // print resulting message
   fwrite(msgText.data(),1,msgText.length(),warnFile);
