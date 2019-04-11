@@ -16,6 +16,8 @@
  */
 %option never-interactive
 %option prefix="declinfoYY"
+%option nounput
+%option noyywrap
 
 %{
 
@@ -33,6 +35,7 @@
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
+#define YY_NEVER_INTERACTIVE 1
   
 /* -----------------------------------------------------------------
  *
@@ -80,8 +83,6 @@ static void addTypeName()
   name.resize(0);
 }
   
-#define YY_NEVER_INTERACTIVE 1
-  
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
@@ -102,9 +103,6 @@ static int yyread(char *buf,int max_size)
 
 B       [ \t]
 ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
-
-%option nounput
-%option noyywrap
 
 %x      Start
 %x	Template
