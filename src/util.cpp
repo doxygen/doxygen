@@ -4615,7 +4615,8 @@ bool resolveRef(/* in */  const char *scName,
   QCString fullName = substitute(tsName,"#","::");
   if (fullName.find("anonymous_namespace{")==-1)
   {
-    fullName = removeRedundantWhiteSpace(substitute(fullName,".","::",3));
+    fullName = removeRedundantWhiteSpace(fullName);
+    if (fullName != ".") fullName = substitute(fullName,".","::",3);
   }
   else
   {

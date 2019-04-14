@@ -3593,7 +3593,10 @@ static void buildFunctionList(Entry *root)
               GroupDef *gd=0;
               if (root->groups->getFirst()!=0)
               {
-                gd = Doxygen::groupSDict->find(root->groups->getFirst()->groupname.data());
+                if (!root->groups->getFirst()->groupname.isEmpty())
+                {
+                  gd = Doxygen::groupSDict->find(root->groups->getFirst()->groupname.data());
+                }
               }
               //printf("match!\n");
               //printf("mnd=%p rnd=%p nsName=%s rnsName=%s\n",mnd,rnd,nsName.data(),rnsName.data());

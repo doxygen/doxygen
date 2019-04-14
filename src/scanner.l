@@ -613,6 +613,7 @@ PRE       [pP][rR][eE]
 CODE      [cC][oO][dD][eE]
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
+PHPUSEKW  ("public"|"private"|"protected")
 IDLATTR   ("["[^\]]*"]"){BN}*
 TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
@@ -865,12 +866,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <FindMembersPHP>.                       { // Non-PHP code text, ignore
 				        }
-<FindMembers>"?>"|"</script>"           { // PHP code end
-					  if (insidePHP)
-					    BEGIN( FindMembersPHP );
-					  else
-					    REJECT;
-                                        }
 <FindMembers>{PHPKW}			{ if (insidePHP)
 					    BEGIN( NextSemi );
 					  else
@@ -1146,7 +1141,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <ObjCReturnType>")"			{
   					  BEGIN( ObjCMethod );
   					}
-<ObjCParams>({ID})?":"			{ // Keyword of parameter
+<ObjCParams>({ID}{BN}*)?":"			{ // Keyword of parameter
 					  QCString keyw = yytext;
 					  keyw=keyw.left(keyw.length()-1); // strip :
 					  if (keyw.isEmpty())
@@ -2006,6 +2001,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <PHPUseAs>{BN}+"as"{BN}+		{
   					  lineCount();
   					}
+<PHPUseAs>{PHPUSEKW}{BN}+               {}
 <PHPUseAs>{ID}				{
   					  //printf("PHP: adding use as relation: %s->%s\n",yytext,aliasName.data());
                                           Doxygen::namespaceAliasDict.insert(yytext,
@@ -3114,6 +3110,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  current->initializer+=*yytext; 
 					}
 
+<*>"?>"|"</script>"                     { // PHP code end
+					  if (insidePHP)
+					    BEGIN( FindMembersPHP );
+					  else
+					    REJECT;
+                                        }
   /* generic quoted string copy rules */
 <CopyString,CopyPHPString>\\.		{
   					  *pCopyQuotedString+=yytext;

@@ -2274,20 +2274,21 @@ D
 }
 
 //! Handle \c namespace statements.
-static void tcl_command_NAMESPACE()
+static int tcl_command_NAMESPACE()
 {
 D
   QCString myNs, myName, myStr;
   //Entry *myEntryNs=NULL;
   tcl_scan *myScan = tcl.scan.at(0);
 
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(4)),myNs,myName);
+  if (!myName.length()) return(0); // not a namespace
   tcl_codify_cmd("keyword",0);
   tcl_codify_cmd(NULL,1);
   tcl_codify_cmd("keyword",2);
   tcl_codify_cmd(NULL,3);
   tcl_codify_cmd(NULL,4);
   tcl_codify_cmd(NULL,5);
-  tcl_name(myScan->ns,(*tcl.list_commandwords.at(4)),myNs,myName);
   if (myNs.length())
   {
     myName = myNs+"::"+myName;
@@ -2310,6 +2311,7 @@ D
     tcl.word_is=' ';
   }
   myScan = tcl_scan_start(tcl.word_is,myStr, myName, NULL, NULL);
+  return(1);
 }
 
 //! Handle \c itcl::class statements.
@@ -2636,11 +2638,13 @@ tcl_inf("->\n");
     if ((*tcl.list_commandwords.at(2))=="eval")
     {
       if (tcl.list_commandwords.count() < 7) {myLine=__LINE__;goto command_warn;}
-      tcl_command_NAMESPACE();
+      if (tcl_command_NAMESPACE()) goto command_end;
+    }
+    else
+    {
+      tcl_command_OTHER();
       goto command_end;
     }
-    tcl_command_OTHER();
-    goto command_end;
   }
   if (myStr=="itcl::class")
   {
