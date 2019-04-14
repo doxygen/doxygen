@@ -186,7 +186,7 @@ class Entry
     enum GroupDocType
     {
       GROUPDOC_NORMAL,        //!< defgroup
-      GROUPDOC_ADD,           //!< addgroup
+      GROUPDOC_ADD,           //!< addtogroup
       GROUPDOC_WEAK           //!< weakgroup
     };                        //!< kind of group
 
@@ -301,7 +301,7 @@ class Entry
       switch( groupDocType )
       {
         case GROUPDOC_NORMAL: return "\\defgroup";
-        case GROUPDOC_ADD: return "\\addgroup";
+        case GROUPDOC_ADD: return "\\addtogroup";
         case GROUPDOC_WEAK: return "\\weakgroup";
         default: return "unknown group command";
       }
