@@ -15,6 +15,10 @@
 
 %option never-interactive
 %option prefix="sqlcodeYY"
+%option noyywrap
+%option nounput
+%option reentrant
+%option extra-type="struct sqlcodeYY_state *"
 
 %{
 
@@ -36,193 +40,40 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-static CodeOutputInterface * g_code;
-static QCString      g_curClassName;
-static QCString      g_parmType;
-static QCString      g_parmName;
-static const char *  g_inputString;     //!< the code fragment as text
-static int           g_inputPosition;   //!< read offset during parsing 
-static int           g_inputLines;      //!< number of line in the code fragment
-static int           g_yyLineNr;        //!< current line number
-static bool          g_needsTermination;
-static const Definition   *g_searchCtx;
-
-static bool          g_exampleBlock;
-static QCString      g_exampleName;
-static QCString      g_exampleFile;
-
-static QCString      g_type;
-static QCString      g_name;
-static QCString      g_args;
-static QCString      g_classScope;
-   
-static QCString      g_CurrScope;
-   
-static FileDef *     g_sourceFileDef;
-static Definition *  g_currentDefinition;
-static MemberDef *   g_currentMemberDef;
-static bool          g_includeCodeFragment;
-static const char *  g_currentFontClass;
-
-static void codify(const char* text) 
-{ 
-  g_code->codify(text);
-}
-
-static void setCurrentDoc(const QCString &anchor)
+struct sqlcodeYY_state
 {
-  if (Doxygen::searchIndex)
-  {
-    if (g_searchCtx)
-    {
-      Doxygen::searchIndex->setCurrentDoc(g_searchCtx,g_searchCtx->anchor(),FALSE);
-    }
-    else
-    {
-      Doxygen::searchIndex->setCurrentDoc(g_sourceFileDef,anchor,TRUE);
-    }
-  }
-}
+     CodeOutputInterface * code;
+     const char   *inputString;     //!< the code fragment as text
+     int           inputPosition;   //!< read offset during parsing
+     int           inputLines;      //!< number of line in the code fragment
+     int           yyLineNr;        //!< current line number
+     bool          needsTermination;
+     const Definition   *searchCtx;
 
-/*! start a new line of code, inserting a line number if g_sourceFileDef
- * is TRUE. If a definition starts at the current line, then the line
- * number is linked to the documentation of that definition.
- */
-static void startCodeLine()
-{
-  if (g_sourceFileDef)
-  {   
-    Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
-    
-    if (!g_includeCodeFragment && d && d->isLinkableInProject())
-    {
-      g_currentDefinition = d;
-      g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
-      g_classScope = d->name().copy();
-      QCString lineAnchor;
-      lineAnchor.sprintf("l%05d",g_yyLineNr);
-      if (g_currentMemberDef)
-      {
-        g_code->writeLineNumber(g_currentMemberDef->getReference(),
-                            g_currentMemberDef->getOutputFileBase(),
-                            g_currentMemberDef->anchor(),g_yyLineNr);
-        setCurrentDoc(lineAnchor);
-      }
-      else
-      {
-        g_code->writeLineNumber(d->getReference(),
-                            d->getOutputFileBase(),
-                            0,g_yyLineNr);
-        setCurrentDoc(lineAnchor);
-      }
-    }
-    else
-    {
-      g_code->writeLineNumber(0,0,0,g_yyLineNr);
-    }
-  }
-  
-  g_code->startCodeLine(g_sourceFileDef);
-  
-  if (g_currentFontClass)
-  {
-    g_code->startFontClass(g_currentFontClass);
-  }
-}
+     bool          exampleBlock;
+     QCString      exampleName;
+     QCString      classScope;
 
-static void endFontClass()
-{
-  if (g_currentFontClass)
-  {
-    g_code->endFontClass();
-    g_currentFontClass=0;
-  }
-}
+     FileDef      *sourceFileDef;
+     Definition   *currentDefinition;
+     MemberDef    *currentMemberDef;
+     bool          includeCodeFragment;
+     const char   *currentFontClass;
+};
 
-static void endCodeLine()
-{
-  endFontClass();
-  g_code->endCodeLine();
-}
-
-static void nextCodeLine()
-{
-  const char *fc = g_currentFontClass;
-  endCodeLine();
-  if (g_yyLineNr<g_inputLines) 
-  {
-    g_currentFontClass = fc;
-    startCodeLine();
-  }
-}
-
-static void codifyLines(char *text)
-{
-  char *p=text,*sp=p;
-  char c;
-  bool done=FALSE;
-  
-  while (!done)
-  {
-    sp=p;
-    
-    while ((c=*p++) && c!='\n') { }
-    
-    if (c=='\n')
-    {
-      g_yyLineNr++;
-      *(p-1)='\0';
-      g_code->codify(sp);
-      nextCodeLine();
-    }
-    else
-    {
-      g_code->codify(sp);
-      done=TRUE;
-    }
-  }
-}
-
-static void startFontClass(const char *s)
-{
-  endFontClass();
-  g_code->startFontClass(s);
-  g_currentFontClass=s;
-}
-
-/*! counts the number of lines in the input */
-static int countLines()
-{
-  const char *p=g_inputString;
-  char c;
-  int count=1;
-  while ((c=*p)) 
-  { 
-    p++ ; 
-    if (c=='\n') count++;  
-  }
-  if (p>g_inputString && *(p-1)!='\n') 
-  { // last line does not end with a \n, so we add an extra
-    // line and explicitly terminate the line after parsing.
-    count++, 
-    g_needsTermination=TRUE; 
-  } 
-  return count;
-}
+static void codify(const char* text);
+static void setCurrentDoc(const QCString &anchor,yyscan_t yyscanner);
+static void startCodeLine(yyscan_t yyscanner);
+static void endFontClass(yyscan_t yyscanner);
+static void endCodeLine(yyscan_t yyscanner);
+static void nextCodeLine(yyscan_t yyscanner);
+static void codifyLines(char *text,yyscan_t yyscanner);
+static void startFontClass(const char *s,yyscan_t yyscanner);
+static int countLines(yyscan_t yyscanner);
+static int yyread(char *buf,int max_size,yyscan_t yyscanner);
 
 #undef YY_INPUT
-#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
-
-static int yyread(char *buf,int max_size)
-{
-  int c=0;
-  while( c < max_size && g_inputString[g_inputPosition] )
-  {
-    *buf = g_inputString[g_inputPosition++] ;
-    c++; buf++;
-  }
-  return c;
-}
+#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
 
 %}
 
@@ -260,83 +111,254 @@ variable        @{idchar}+
 simplecomment   --.*
 commentopen     "/\*"
 commentclose    "\*/"
- 
-%option noyywrap
-%option nounput
 
 %x COMMENT
 
 %%
 
 {literals}          {
-                        startFontClass("stringliteral");
-                        codifyLines(yytext);
-                        endFontClass();
+                        startFontClass("stringliteral",yyscanner);
+                        codifyLines(yytext,yyscanner);
+                        endFontClass(yyscanner);
                     }
                 
 
 {keyword}           {
-                        startFontClass("keyword");
-                        codifyLines(yytext);
-                        endFontClass();
+                        startFontClass("keyword",yyscanner);
+                        codifyLines(yytext,yyscanner);
+                        endFontClass(yyscanner);
                     }
 
 {flowkeyword}       {
-                        startFontClass("keywordflow");
-                        codifyLines(yytext);
-                        endFontClass();
+                        startFontClass("keywordflow",yyscanner);
+                        codifyLines(yytext,yyscanner);
+                        endFontClass(yyscanner);
                     }
 
 {typekeyword}       {
-                        startFontClass("keywordtype");
-                        codifyLines(yytext);
-                        endFontClass();
+                        startFontClass("keywordtype",yyscanner);
+                        codifyLines(yytext,yyscanner);
+                        endFontClass(yyscanner);
                     }
 
 {variable}          {
-                        startFontClass("preprocessor");
-                        codifyLines(yytext);
-                        endFontClass();
+                        startFontClass("preprocessor",yyscanner);
+                        codifyLines(yytext,yyscanner);
+                        endFontClass(yyscanner);
                     }
 
 {simplecomment}     {
-                        startFontClass("comment");
-                        codifyLines(yytext);
-                        endFontClass();
+                        startFontClass("comment",yyscanner);
+                        codifyLines(yytext,yyscanner);
+                        endFontClass(yyscanner);
                     }
 
 {commentopen}       {
-                        startFontClass("comment");
-                        codifyLines(yytext);
+                        startFontClass("comment",yyscanner);
+                        codifyLines(yytext,yyscanner);
                         BEGIN(COMMENT);
                     }
 
 <COMMENT>.          {
-                        codifyLines(yytext);
+                        codifyLines(yytext,yyscanner);
+ 
                     }
 <COMMENT>{nl}       {
-                        codifyLines(yytext);
+                        codifyLines(yytext,yyscanner);
                     }
 
 <COMMENT>{commentclose} {
-                        codifyLines(yytext);
-                        endFontClass();
+                        codifyLines(yytext,yyscanner);
+                        endFontClass(yyscanner);
                         BEGIN(INITIAL);
                     }
                     
 {idchar}            {
-                        codifyLines(yytext);
+                        codifyLines(yytext,yyscanner);
                     }
 
 {nl}                {
-                        codifyLines(yytext);
+                        codifyLines(yytext,yyscanner);
                     }
 
 .                   {
-                        codifyLines(yytext);
+                        codifyLines(yytext,yyscanner);
                     }
 
 %%
+
+
+static void codify(const char* text, yyscan_t yyscanner)
+{ 
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->code->codify(text);
+}
+
+static void setCurrentDoc(const QCString &anchor, yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (Doxygen::searchIndex)
+  {
+    if (yyextra->searchCtx)
+    {
+      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),FALSE);
+    }
+    else
+    {
+      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,TRUE);
+    }
+  }
+}
+
+/*! start a new line of code, inserting a line number if yyextra->sourceFileDef
+ * is TRUE. If a definition starts at the current line, then the line
+ * number is linked to the documentation of that definition.
+ */
+static void startCodeLine(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->sourceFileDef)
+  {   
+    Definition *d   = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
+    
+    if (!yyextra->includeCodeFragment && d && d->isLinkableInProject())
+    {
+      yyextra->currentDefinition = d;
+      yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
+      yyextra->classScope = d->name().copy();
+      QCString lineAnchor;
+      lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
+      if (yyextra->currentMemberDef)
+      {
+        yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
+                            yyextra->currentMemberDef->getOutputFileBase(),
+                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr);
+        setCurrentDoc(lineAnchor,yyscanner);
+      }
+      else
+      {
+        yyextra->code->writeLineNumber(d->getReference(),
+                            d->getOutputFileBase(),
+                            0,yyextra->yyLineNr);
+        setCurrentDoc(lineAnchor,yyscanner);
+      }
+    }
+    else
+    {
+      yyextra->code->writeLineNumber(0,0,0,yyextra->yyLineNr);
+    }
+  }
+  
+  yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  
+  if (yyextra->currentFontClass)
+  {
+    yyextra->code->startFontClass(yyextra->currentFontClass);
+  }
+}
+
+static void endFontClass(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->currentFontClass)
+  {
+    yyextra->code->endFontClass();
+    yyextra->currentFontClass=0;
+  }
+}
+
+static void endCodeLine(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  endFontClass(yyscanner);
+  yyextra->code->endCodeLine();
+}
+
+static void nextCodeLine(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  const char *fc = yyextra->currentFontClass;
+  endCodeLine(yyscanner);
+  if (yyextra->yyLineNr<yyextra->inputLines) 
+  {
+    yyextra->currentFontClass = fc;
+    startCodeLine(yyscanner);
+  }
+}
+
+static void codifyLines(char *text,yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  char *p=text,*sp=p;
+  char c;
+  bool done=FALSE;
+  
+  while (!done)
+  {
+    sp=p;
+    
+    while ((c=*p++) && c!='\n') { }
+    
+    if (c=='\n')
+    {
+      yyextra->yyLineNr++;
+      *(p-1)='\0';
+      yyextra->code->codify(sp);
+      nextCodeLine(yyscanner);
+    }
+    else
+    {
+      yyextra->code->codify(sp);
+      done=TRUE;
+    }
+  }
+}
+
+static void startFontClass(const char *s,yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  endFontClass(yyscanner);
+  yyextra->code->startFontClass(s);
+  yyextra->currentFontClass=s;
+}
+
+/*! counts the number of lines in the input */
+static int countLines(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  const char *p=yyextra->inputString;
+  char c;
+  int count=1;
+  while ((c=*p)) 
+  { 
+    p++ ; 
+    if (c=='\n') count++;  
+  }
+  if (p>yyextra->inputString && *(p-1)!='\n') 
+  { // last line does not end with a \n, so we add an extra
+    // line and explicitly terminate the line after parsing.
+    count++, 
+    yyextra->needsTermination=TRUE; 
+  } 
+  return count;
+}
+
+static int yyread(char *buf,int max_size,yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  int c=0;
+  while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
+  {
+    *buf = yyextra->inputString[yyextra->inputPosition++] ;
+    c++; buf++;
+  }
+  return c;
+}
+
+
+// public interface -----------------------------------------------------------
+static yyscan_t yyscanner;
+static struct sqlcodeYY_state sqlcode_extra;
 
 void parseSqlCode(
     CodeOutputInterface &od,
@@ -353,60 +375,62 @@ void parseSqlCode(
     bool /*collectXRefs*/
     ) 
 {  
+  sqlcodeYYlex_init_extra(&sqlcode_extra, &yyscanner);
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (s.isEmpty()) return;
   
-  g_code = &od;
-  g_inputString   = s;
-  g_inputPosition = 0;
-  g_currentFontClass = 0;
-  g_needsTermination = FALSE;
-  g_searchCtx=searchCtx;
+  yyextra->code = &od;
+  yyextra->inputString   = s;
+  yyextra->inputPosition = 0;
+  yyextra->currentFontClass = 0;
+  yyextra->needsTermination = FALSE;
+  yyextra->searchCtx=searchCtx;
   
   if (startLine!=-1)
-    g_yyLineNr    = startLine;
+    yyextra->yyLineNr    = startLine;
   else
-    g_yyLineNr    = 1;
+    yyextra->yyLineNr    = 1;
   
   if (endLine!=-1)
-    g_inputLines  = endLine+1;
+    yyextra->inputLines  = endLine+1;
   else
-    g_inputLines  = g_yyLineNr + countLines() - 1;
+    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
   
-  g_exampleBlock  = exBlock; 
-  g_exampleName   = exName;
-  g_sourceFileDef = fd;
+  yyextra->exampleBlock  = exBlock; 
+  yyextra->exampleName   = exName;
+  yyextra->sourceFileDef = fd;
 
   bool cleanupSourceDef = FALSE;
   
   if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
-    g_sourceFileDef = createFileDef("",(exName?exName:"generated"));
+    yyextra->sourceFileDef = createFileDef("",(exName?exName:"generated"));
     cleanupSourceDef = TRUE;
   }
   
-  if (g_sourceFileDef) 
+  if (yyextra->sourceFileDef) 
   {
-    setCurrentDoc("l00001");
+    setCurrentDoc("l00001",yyscanner);
   }
 
-  g_includeCodeFragment = inlineFragment;
+  yyextra->includeCodeFragment = inlineFragment;
   // Starts line 1 on the output  
-  startCodeLine();
+  startCodeLine(yyscanner);
 
-  sqlcodeYYrestart( sqlcodeYYin );
+  sqlcodeYYrestart( yyin,yyscanner );
 
-  sqlcodeYYlex();
+  sqlcodeYYlex(yyscanner);
 
-  if (g_needsTermination)
+  if (yyextra->needsTermination)
   {
-    endCodeLine();
+    endCodeLine(yyscanner);
   }
   if (cleanupSourceDef)
   {
     // delete the temporary file definition used for this example
-    delete g_sourceFileDef;
-    g_sourceFileDef=0;
+    delete yyextra->sourceFileDef;
+    yyextra->sourceFileDef=0;
   }
   
   return;
@@ -414,8 +438,9 @@ void parseSqlCode(
 
 void resetSqlCodeParserState() 
 {
-  g_currentDefinition = 0;
-  g_currentMemberDef = 0;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->currentDefinition = 0;
+  yyextra->currentMemberDef = 0;
 }
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
