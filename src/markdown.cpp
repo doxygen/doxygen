@@ -2172,7 +2172,15 @@ static QCString processQuotations(const QCString &s,int refIndent)
     {
       if (isFencedCodeBlock(data+pi,size-pi,refIndent,lang,blockStart,blockEnd,blockOffset))
       {
-        writeFencedCodeBlock(out,data+pi,lang,blockStart,blockEnd);
+        if ( lang == "plantuml" )
+        {
+          int cmdStart = pi+blockStart+1;
+          processSpecialCommand(out, data+cmdStart, cmdStart, size-cmdStart );
+        }
+        else
+        {
+          writeFencedCodeBlock(out,data+pi,lang,blockStart,blockEnd);
+        }
         i=pi+blockOffset;
         pi=-1;
         end=i+1;
