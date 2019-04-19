@@ -211,7 +211,7 @@ static void handleHtmlTag()
   {
     char c=tagText.at(i);
     // skip spaces
-    while (i<(int)yyleng && isspace(c)) { c=tagText.at(++i); }
+    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
     // check for end of the tag
     if (c == '>') break;
     // Check for XML style "empty" tag.
@@ -222,17 +222,17 @@ static void handleHtmlTag()
     }
     startName=i;
     // search for end of name
-    while (i<(int)yyleng && !isspace(c) && c!='=') { c=tagText.at(++i); }
+    while (i<(int)yyleng && !isspace((uchar)c) && c!='=') { c=tagText.at(++i); }
     endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower(); 
     // skip spaces
-    while (i<(int)yyleng && isspace(c)) { c=tagText.at(++i); } 
+    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); } 
     if (tagText.at(i)=='=') // option has value
     {
       c=tagText.at(++i);
       // skip spaces
-      while (i<(int)yyleng && isspace(c)) { c=tagText.at(++i); } 
+      while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); } 
       if (tagText.at(i)=='\'') // option '...'
       {
         c=tagText.at(++i);
@@ -256,7 +256,7 @@ static void handleHtmlTag()
       {
 	startAttrib=i;
 	// search for separator or end symbol
-        while (i<(int)yyleng && !isspace(c) && c!='>') { c=tagText.at(++i); } 
+        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); } 
 	endAttrib=i;
 	if (i<(int)yyleng) c=tagText.at(++i);
       }
