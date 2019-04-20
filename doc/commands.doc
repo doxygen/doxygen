@@ -31,7 +31,7 @@ Each argument has a certain range:
 <li>If {curly} braces are used the argument extends until the next paragraph.
     Paragraphs are delimited by a blank line or by a section indicator. Note that 
     {curly} braces are also used for command options, here the braces are mandatory
-    and  just 'normal' characters. The strating curly brace has to directly follow
+    and  just 'normal' characters. The starting curly brace has to directly follow
     the command, so without whitspace.
 </ul>
 If in addition to the above argument specifiers [square] brackets are used the argument
