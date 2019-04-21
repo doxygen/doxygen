@@ -1994,7 +1994,7 @@ void HtmlGenerator::endParamList()
   t << "</dl>";
 }
 
-void HtmlGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
+void HtmlGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
 {
   HtmlDocVisitor *visitor = new HtmlDocVisitor(t,m_codeGen,ctx);
   n->accept(visitor);
@@ -2819,7 +2819,7 @@ void HtmlGenerator::endMemberDeclaration(const char *anchor,const char *inheritI
   t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
 }
 
-void HtmlGenerator::setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile)
+void HtmlGenerator::setCurrentDoc(const Definition *context,const char *anchor,bool isSourceFile)
 {
   if (Doxygen::searchIndex)
   {

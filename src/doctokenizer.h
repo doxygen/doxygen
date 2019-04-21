@@ -71,9 +71,7 @@ enum Tokens
 /** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo
 {
-  // unknown token
-  char unknownChar;
-  
+  TokenInfo() : isEnumList(FALSE), indent(0), id(-1), endTag(FALSE), emptyTag(FALSE), paramDir(Unspecified) {}
   // command token
   QCString name;
 

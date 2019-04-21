@@ -49,7 +49,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
     void writeCodeAnchor(const char *);
     void writeLineNumber(const char *extRef,const char *compId,
         const char *anchorId,int l);
-    void setCurrentDoc(Definition *,const char *,bool);
+    void setCurrentDoc(const Definition *,const char *,bool);
     void addWord(const char *,bool);
     void finish();
     void startCodeFragment();
@@ -137,7 +137,7 @@ class DocbookGenerator : public OutputGenerator
     { m_codeGen.writeCodeAnchor(anchor); }
     // ---------------------------
 
-    void writeDoc(DocNode *,Definition *ctx,MemberDef *md);
+    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md);
 
     ///////////////////////////////////////////////////////////////
     // structural output interface
@@ -339,7 +339,7 @@ class DocbookGenerator : public OutputGenerator
     void writeLabel(const char *,bool);
     void endLabels();
 
-    void setCurrentDoc(Definition *,const char *,bool) {DB_GEN_EMPTY}
+    void setCurrentDoc(const Definition *,const char *,bool) {DB_GEN_EMPTY}
     void addWord(const char *,bool) {DB_GEN_EMPTY}
 
 private:

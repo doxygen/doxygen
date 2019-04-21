@@ -45,9 +45,9 @@ class DocSets  : public IndexIntf
                          const char *anchor,
                          bool separateIndex,
                          bool addToNavIndex,
-                         Definition *def
+                         const Definition *def
                         );
-    void addIndexItem(Definition *context,MemberDef *md,
+    void addIndexItem(const Definition *context,const MemberDef *md,
                       const char *sectionAnchor,const char *title);
     void addIndexFile(const char *name);
     void addImageFile(const char *) {}

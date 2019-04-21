@@ -49,7 +49,7 @@ static int           g_inputPosition;   //!< read offset during parsing
 static int           g_inputLines;      //!< number of line in the code fragment
 static int           g_yyLineNr;        //!< current line number
 static bool          g_needsTermination;
-static Definition   *g_searchCtx;
+static const Definition   *g_searchCtx;
 
 static bool          g_exampleBlock;
 static QCString      g_exampleName;
@@ -332,8 +332,8 @@ void parseXmlCode(
     int startLine,
     int endLine,
     bool inlineFragment,
-    MemberDef *,
-    bool,Definition *searchCtx,
+    const MemberDef *,
+    bool,const Definition *searchCtx,
     bool /*collectXRefs*/
     ) 
 {  

@@ -129,7 +129,7 @@ static bool          g_lexInit = FALSE;
 static QStack<int>   g_classScopeLengthStack;
 
 static int           g_prefixed_with_this_keyword = FALSE;
-static Definition   *g_searchCtx;
+static const Definition *g_searchCtx;
 static bool          g_collectXRefs;
 
 // context for an Objective-C method call
@@ -341,7 +341,7 @@ class CallContext
       Ctx() : name(g_name), type(g_type), d(0) {}
       QCString name;
       QCString type;
-      Definition *d;
+      const Definition *d;
     };
 
     CallContext() 
@@ -350,7 +350,7 @@ class CallContext
       m_defList.setAutoDelete(TRUE);
     }
     virtual ~CallContext() {}
-    void setScope(Definition *d)
+    void setScope(const Definition *d)
     {
       Ctx *ctx = m_defList.getLast();
       if (ctx)
@@ -388,7 +388,7 @@ class CallContext
       m_defList.clear();
       m_defList.append(new Ctx);
     }
-    Definition *getScope() const
+    const Definition *getScope() const
     {
       Ctx *ctx = m_defList.getLast();
       if (ctx) return ctx->d; else return 0;
@@ -606,7 +606,7 @@ static void codifyLines(const char *text)
  * split into multiple links with the same destination, one for each line.
  */
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
-                                   Definition *d,
+                                   const Definition *d,
                                    const char *text)
 {
   static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
@@ -674,7 +674,7 @@ static void addUsingDirective(const char *name)
   }
 }
 
-static void setParameterList(MemberDef *md)
+static void setParameterList(const MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
   ArgumentList *al = md->argumentList();
@@ -747,7 +747,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
     }
     else // check namespace as well
     {
-      NamespaceDef *mnd = getResolvedNamespace(scope);
+      const NamespaceDef *mnd = getResolvedNamespace(scope);
       if (mnd && !locName.isEmpty())
       {
 	MemberDef *md=mnd->getMemberByName(locName);
@@ -838,10 +838,10 @@ static MemberDef *setCallContextForVar(const QCString &name)
 
 static void updateCallContextForSmartPointer()
 {
-  Definition *d = g_theCallContext.getScope();
+  const Definition *d = g_theCallContext.getScope();
   //printf("updateCallContextForSmartPointer() cd=%s\n",cd ? d->name().data() : "<none>");
   MemberDef *md;
-  if (d && d->definitionType()==Definition::TypeClass && (md=(dynamic_cast<ClassDef*>(d))->isSmartPointer()))
+  if (d && d->definitionType()==Definition::TypeClass && (md=(dynamic_cast<const ClassDef*>(d))->isSmartPointer()))
   {
     ClassDef *ncd = stripClassName(md->typeString(),md->getOuterScope());
     if (ncd)
@@ -860,11 +860,11 @@ static bool getLinkInScope(const QCString &c,  // scope
 			   bool varOnly=FALSE
 			  )
 {
-  MemberDef    *md;
-  ClassDef     *cd;
-  FileDef      *fd;
-  NamespaceDef *nd;
-  GroupDef     *gd;
+  MemberDef    *md = 0;
+  const ClassDef     *cd = 0;
+  const FileDef      *fd = 0;
+  const NamespaceDef *nd = 0;
+  const GroupDef     *gd = 0;
   DBG_CTX((stderr,"getLinkInScope: trying `%s'::`%s' varOnly=%d\n",c.data(),m.data(),varOnly));
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef,FALSE,g_forceTagReference) && 
       (!varOnly || md->isVariable()))
@@ -885,9 +885,9 @@ static bool getLinkInScope(const QCString &c,  // scope
         }
       }
 
-      Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-        md->getFileDef() : md->getOuterScope();
-      if (md->getGroupDef()) d = md->getGroupDef();
+      const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+                            md->resolveAlias()->getFileDef() : md->getOuterScope();
+      if (md->resolveAlias()->getGroupDef()) d = md->resolveAlias()->getGroupDef();
       if (d && d->isLinkable())
       {
         g_theCallContext.setScope(stripClassName(md->typeString(),md->getOuterScope()));
@@ -983,7 +983,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
 	cd=getResolvedClass(d,g_sourceFileDef,bareName,&md); // try unspecialized version
       }
     }
-    NamespaceDef *nd = getResolvedNamespace(className);
+    const NamespaceDef *nd = getResolvedNamespace(className);
     if (nd && nd->isLinkableInProject())
     {
       g_theCallContext.setScope(nd);
@@ -1044,7 +1044,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     g_theCallContext.setScope(cd);
     if (md)
     {
-      Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+      const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
                       md->getFileDef() : md->getOuterScope();
       if (md->getGroupDef()) d = md->getGroupDef();
       if (d && d->isLinkable() && md->isLinkable() && 
@@ -1143,7 +1143,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
   DBG_CTX((stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass));
   g_theCallContext.setScope(typeClass);
 
-  Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
+  const Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
                    xmd->getFileDef() : xmd->getOuterScope();
   if (xmd->getGroupDef()) xd = xmd->getGroupDef();
   if (xd && xd->isLinkable())
@@ -1172,11 +1172,11 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
   return FALSE;
 }
 
-static bool generateClassMemberLink(CodeOutputInterface &ol,Definition *def,const char *memName)
+static bool generateClassMemberLink(CodeOutputInterface &ol,const Definition *def,const char *memName)
 {
   if (def && def->definitionType()==Definition::TypeClass)
   {
-    ClassDef *cd = dynamic_cast<ClassDef*>(def);
+    const ClassDef *cd = dynamic_cast<const ClassDef*>(def);
     MemberDef *xmd = cd->getMemberByName(memName);
     //printf("generateClassMemberLink(class=%s,member=%s)=%p\n",def->name().data(),memName,xmd);
     if (xmd)
@@ -1197,7 +1197,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,Definition *def,cons
   }
   else if (def && def->definitionType()==Definition::TypeNamespace)
   {
-    NamespaceDef *nd = dynamic_cast<NamespaceDef*>(def);
+    const NamespaceDef *nd = dynamic_cast<const NamespaceDef*>(def);
     //printf("Looking for %s inside namespace %s\n",memName,nd->name().data());
     Definition *innerDef = nd->findInnerCompound(memName);
     if (innerDef)
@@ -1335,7 +1335,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
   DBG_CTX((stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data()));
   int len=2;
   int i=locFunc.findRev("::");
-  if (g_currentMemberDef && g_currentMemberDef->getClassDef() &&
+  if (g_currentMemberDef && g_currentMemberDef->resolveAlias()->getClassDef() &&
       funcName==g_currentMemberDef->localName() && 
       g_currentMemberDef->getDefLine()==g_yyLineNr &&
       generateClassMemberLink(ol,g_currentMemberDef,funcName)
@@ -3719,7 +3719,7 @@ void resetCCodeParserState()
 void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s, 
                 SrcLangExt lang,bool exBlock, const char *exName,FileDef *fd,
 		int startLine,int endLine,bool inlineFragment,
-		MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx,
+		const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
                 bool collectXRefs)
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p className=%s searchCtx=%s\n",

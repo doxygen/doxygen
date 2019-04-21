@@ -1506,7 +1506,7 @@ static void deleteNodes(DotNode *node,SDict<DotNode> *skipNodes=0)
 }
 
 DotNode::DotNode(int n,const char *lab,const char *tip, const char *url,
-                 bool isRoot,ClassDef *cd)
+                 bool isRoot,const ClassDef *cd)
   : m_subgraphId(-1)
   , m_number(n)
   , m_label(lab)
@@ -1706,7 +1706,7 @@ static QCString escapeTooltip(const QCString &tooltip)
 }
 
 static void writeBoxMemberList(FTextStream &t,
-            char prot,MemberList *ml,ClassDef *scope,
+            char prot,MemberList *ml,const ClassDef *scope,
             bool isStatic=FALSE,const QDict<void> *skipNames=0)
 {
   (void)isStatic;
@@ -2468,7 +2468,7 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
   out << "</table>" << endl;
 }
 
-void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
+void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,bool hideSuper)
 {
   //printf("addHierarchy `%s' baseClasses=%d\n",cd->name().data(),cd->baseClasses()->count());
   if (cd->subClasses())
@@ -2542,7 +2542,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
   //printf("end addHierarchy\n");
 }
 
-void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
+void DotGfxHierarchyTable::addClassList(const ClassSDict *cl)
 {
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   ClassSDict::Iterator cli(*cl);
@@ -2669,7 +2669,7 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
 
 //--------------------------------------------------------------------
 
-void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
+void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
     const char *label,const char *usedName,const char *templSpec,bool base,int distance)
 {
   if (Config_getBool(HIDE_UNDOC_CLASSES) && !cd->isLinkable()) return;
@@ -2883,7 +2883,7 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
                                       // left to right order.
 }
 
-void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
+void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance)
 {
   static bool templateRelations = Config_getBool(TEMPLATE_RELATIONS);
   //printf("DocClassGraph::buildGraph(%s,distance=%d,base=%d)\n",
@@ -2986,11 +2986,11 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
   {
     if (base) // template relations for base classes
     {
-      ClassDef *templMaster=cd->templateMaster();
+      const ClassDef *templMaster=cd->templateMaster();
       if (templMaster)
       {
         QDictIterator<ClassDef> cli(*templMaster->getTemplateInstances());
-        ClassDef *templInstance;
+        const ClassDef *templInstance;
         for (;(templInstance=cli.current());++cli)
         {
           if (templInstance==cd)
@@ -3003,11 +3003,11 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
     }
     else // template relations for super classes
     {
-      QDict<ClassDef> *templInstances = cd->getTemplateInstances();
+      const QDict<ClassDef> *templInstances = cd->getTemplateInstances();
       if (templInstances)
       {
         QDictIterator<ClassDef> cli(*templInstances);
-        ClassDef *templInstance;
+        const ClassDef *templInstance;
         for (;(templInstance=cli.current());++cli)
         {
           addClass(templInstance,n,EdgeInfo::Orange,cli.currentKey(),0,
@@ -3025,7 +3025,7 @@ void DotClassGraph::resetNumbering()
   m_curNodeNumber = 0;
 }
 
-DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t)
+DotClassGraph::DotClassGraph(const ClassDef *cd,DotNode::GraphType t)
 {
   //printf("--------------- DotClassGraph::DotClassGraph `%s'\n",cd->displayName().data());
   m_graphType = t;
@@ -3383,7 +3383,7 @@ void DotClassGraph::writeDEF(FTextStream &t)
 
 //--------------------------------------------------------------------
 
-void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
+void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
 {
   QList<IncludeInfo> *includeFiles = 
      m_inverse ? fd->includedByFileList() : fd->includeFileList();
@@ -3393,7 +3393,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
     IncludeInfo *ii;
     for (;(ii=ili.current());++ili)
     {
-      FileDef *bfd = ii->fileDef;
+      const FileDef *bfd = ii->fileDef;
       QCString in  = ii->includeName;
       //printf(">>>> in=`%s' bfd=%p\n",ii->includeName.data(),bfd);
       bool doc=TRUE,src=FALSE;
@@ -3503,7 +3503,7 @@ void DotInclDepGraph::resetNumbering()
   m_curNodeNumber = 0;
 }
 
-DotInclDepGraph::DotInclDepGraph(FileDef *fd,bool inverse)
+DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
 {
   m_inverse = inverse;
   ASSERT(fd!=0);
@@ -3712,7 +3712,7 @@ void DotInclDepGraph::writeDocbook(FTextStream &t)
 
 //-------------------------------------------------------------
 
-void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
+void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
 {
   MemberSDict *refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   if (refs)
@@ -3821,7 +3821,7 @@ void DotCallGraph::resetNumbering()
   m_curNodeNumber = 0;
 }
 
-DotCallGraph::DotCallGraph(MemberDef *md,bool inverse)
+DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
 {
   m_inverse = inverse;
   m_diskName = md->getOutputFileBase()+"_"+md->anchor();
@@ -4012,9 +4012,9 @@ bool DotCallGraph::isTooBig() const
 }
 
 //-------------------------------------------------------------
-static void writeDotDirDepGraph(FTextStream &t,DirDef *dd,bool linkRelations);
+static void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations);
 
-DotDirDeps::DotDirDeps(DirDef *dir) : m_dir(dir)
+DotDirDeps::DotDirDeps(const DirDef *dir) : m_dir(dir)
 {
 }
 
@@ -4361,7 +4361,7 @@ void DotGroupCollaboration::resetNumbering()
   m_curNodeNumber = 0;
 }
 
-DotGroupCollaboration::DotGroupCollaboration(GroupDef* gd)
+DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 {
     QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
     m_usedNodes = new QDict<DotNode>(1009);
@@ -4381,18 +4381,18 @@ DotGroupCollaboration::~DotGroupCollaboration()
   delete m_usedNodes;
 }
 
-void DotGroupCollaboration::buildGraph(GroupDef* gd)
+void DotGroupCollaboration::buildGraph(const GroupDef* gd)
 {
   QCString tmp_url;
   //===========================
   // hierarchy.
 
   // Write parents
-  GroupList *groups = gd->partOfGroups();
+  const GroupList *groups = gd->partOfGroups();
   if ( groups )
   {
     GroupListIterator gli(*groups);
-    GroupDef *d;
+    const GroupDef *d;
     for (gli.toFirst();(d=gli.current());++gli)
     {
       DotNode* nnode = m_usedNodes->find(d->name());
@@ -4413,7 +4413,7 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd)
   if ( gd->getSubGroups() && gd->getSubGroups()->count() )
   {
     QListIterator<GroupDef> defli(*gd->getSubGroups());
-    GroupDef *def;
+    const GroupDef *def;
     for (;(def=defli.current());++defli)
     {
       DotNode* nnode = m_usedNodes->find(def->name());
@@ -4468,7 +4468,7 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd)
   if ( gd->getFiles() && gd->getFiles()->count() )
   {
     QListIterator<FileDef> defli(*gd->getFiles());
-    FileDef *def;
+    const FileDef *def;
     for (;(def=defli.current());++defli)
     {
       tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
@@ -4492,7 +4492,7 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd)
   if ( gd->getDirs() && gd->getDirs()->count() )
   {
     QListIterator<DirDef> defli(*gd->getDirs());
-    DirDef *def;
+    const DirDef *def;
     for (;(def=defli.current());++defli)
     {
       tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
@@ -4546,7 +4546,7 @@ DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge(
 }
 
 void DotGroupCollaboration::addCollaborationMember( 
-    Definition* def, QCString& url, EdgeType eType )
+    const Definition* def, QCString& url, EdgeType eType )
 {
   // Create group nodes
   if ( !def->partOfGroups() )
@@ -4821,7 +4821,7 @@ void DotGroupCollaboration::writeGraphHeader(FTextStream &t,
   t << "  rankdir=LR;\n";
 }
 
-void writeDotDirDepGraph(FTextStream &t,DirDef *dd,bool linkRelations)
+void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
 {
     t << "digraph \"" << dd->displayName() << "\" {\n";
     if (Config_getBool(DOT_TRANSPARENT))
@@ -4855,7 +4855,7 @@ void writeDotDirDepGraph(FTextStream &t,DirDef *dd,bool linkRelations)
 
       // add nodes for sub directories
       QListIterator<DirDef> sdi(dd->subDirs());
-      DirDef *sdir;
+      const DirDef *sdir;
       for (sdi.toFirst();(sdir=sdi.current());++sdi)
       {
         t << "    " << sdir->getOutputFileBase() << " [shape=box label=\"" 
@@ -4896,7 +4896,7 @@ void writeDotDirDepGraph(FTextStream &t,DirDef *dd,bool linkRelations)
       // for each used dir (=directly used or a parent of a directly used dir)
     {
       const DirDef *usedDir=udir->dir();
-      DirDef *dir=dd;
+      const DirDef *dir=dd;
       while (dir)
       {
         //printf("*** check relation %s->%s same_parent=%d !%s->isParentOf(%s)=%d\n",
@@ -4930,7 +4930,7 @@ void writeDotDirDepGraph(FTextStream &t,DirDef *dd,bool linkRelations)
     }
 
     // add relations between all selected directories
-    DirDef *dir;
+    const DirDef *dir;
     QDictIterator<DirDef> di(dirsInGraph);
     for (di.toFirst();(dir=di.current());++di) // foreach dir in the graph
     {

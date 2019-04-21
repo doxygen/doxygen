@@ -42,7 +42,7 @@ class DiagramItemList;
 class DiagramItem 
 {
   public:
-    DiagramItem(DiagramItem *p,int number,ClassDef *cd,
+    DiagramItem(DiagramItem *p,int number,const ClassDef *cd,
                 Protection prot,Specifier virt,const char *ts);
    ~DiagramItem();
     QCString label() const;
@@ -60,7 +60,7 @@ class DiagramItem
     Specifier virtualness() const { return virt; }
     void putInList() { inList=TRUE; }
     bool isInList() const { return inList; } 
-    ClassDef *getClassDef() const { return classDef; }
+    const ClassDef *getClassDef() const { return classDef; }
   private:
     DiagramItemList *children;
     DiagramItem *parent;
@@ -70,7 +70,7 @@ class DiagramItem
     Specifier virt;
     QCString templSpec;
     bool inList;
-    ClassDef *classDef;
+    const ClassDef *classDef;
 };
 
 /** Class representing a list of DiagramItem object. */
@@ -91,7 +91,7 @@ class DiagramRow : public QList<DiagramItem>
       level=l;
       setAutoDelete(TRUE); 
     }
-    void insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
+    void insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases,
                      Protection prot,Specifier virt,const char *ts);
     uint number() { return level; }
   private:
@@ -111,7 +111,7 @@ class DiagramRowIterator : public QListIterator<DiagramRow>
 class TreeDiagram : public QList<DiagramRow>
 {
   public:
-    TreeDiagram(ClassDef *root,bool doBases);
+    TreeDiagram(const ClassDef *root,bool doBases);
    ~TreeDiagram();
     void computeLayout();
     uint computeRows();
@@ -252,7 +252,7 @@ static void writeVectorBox(FTextStream &t,DiagramItem *di,
   if (di->virtualness()==Virtual) t << "solid\n";
 }
 
-static void writeMapArea(FTextStream &t,ClassDef *cd,QCString relPath,
+static void writeMapArea(FTextStream &t,const ClassDef *cd,QCString relPath,
                          int x,int y,int w,int h)
 {
   if (cd->isLinkable())
@@ -283,7 +283,7 @@ static void writeMapArea(FTextStream &t,ClassDef *cd,QCString relPath,
 }
 //-----------------------------------------------------------------------------
 
-DiagramItem::DiagramItem(DiagramItem *p,int number,ClassDef *cd,
+DiagramItem::DiagramItem(DiagramItem *p,int number,const ClassDef *cd,
                          Protection pr,Specifier vi,const char *ts) 
 { 
   parent=p; 
@@ -354,7 +354,7 @@ void DiagramItem::addChild(DiagramItem *di)
   children->append(di);
 }
 
-void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
+void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases,
                              Protection prot,Specifier virt,const char *ts)
 {
   //if (cd->visited) return; // the visit check does not work in case of
@@ -406,7 +406,7 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
   }
 }
 
-TreeDiagram::TreeDiagram(ClassDef *root,bool doBases)
+TreeDiagram::TreeDiagram(const ClassDef *root,bool doBases)
 {
   setAutoDelete(TRUE); 
   DiagramRow *row=new DiagramRow(this,0);
@@ -1024,7 +1024,7 @@ void clearVisitFlags()
   }
 }
 
-ClassDiagram::ClassDiagram(ClassDef *root)
+ClassDiagram::ClassDiagram(const ClassDef *root)
 {
   clearVisitFlags();
   base  = new TreeDiagram(root,TRUE);

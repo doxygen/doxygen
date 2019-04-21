@@ -40,7 +40,7 @@ MemberGroup::MemberGroup()
 {
 }
 
-MemberGroup::MemberGroup(Definition *parent,
+MemberGroup::MemberGroup(const Definition *parent,
       int id,const char *hdr,const char *d,const char *docFile,int docLine)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
@@ -51,7 +51,6 @@ MemberGroup::MemberGroup(Definition *parent,
   grpId           = id;
   grpHeader       = hdr;
   doc             = d;
-  scope           = 0;
   inSameSection   = TRUE;
   inDeclSection   = 0;
   m_numDecMembers = -1;
@@ -86,14 +85,14 @@ void MemberGroup::insertMember(MemberDef *md)
   }
   else if (inDeclSection==0)
   {
-    inDeclSection = md->getSectionList(m_parent);
+    inDeclSection = const_cast<MemberList*>(md->getSectionList(m_parent));
     //printf("inDeclSection=%p type=%d\n",inDeclSection,inDeclSection->listType());
   }
   memberList->append(md);
 
   // copy the group of the first member in the memberGroup
   GroupDef *gd;
-  if (firstMd && (gd=firstMd->getGroupDef()))
+  if (firstMd && (gd=const_cast<GroupDef*>(firstMd->getGroupDef())))
   {
     md->setGroupDef(gd, firstMd->getGroupPri(), 
                     firstMd->getGroupFileName(), firstMd->getGroupStartLine(), 
@@ -109,8 +108,8 @@ void MemberGroup::setAnchors()
 }
 
 void MemberGroup::writeDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool showInline)
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               bool showInline) const
 {
   //printf("MemberGroup::writeDeclarations() %s\n",grpHeader.data());
   QCString ldoc = doc;
@@ -119,29 +118,34 @@ void MemberGroup::writeDeclarations(OutputList &ol,
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               ClassDef *inheritedFrom,const char *inheritId
-              )
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *inheritedFrom,const char *inheritId
+              ) const
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
   memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
 }
 
 void MemberGroup::writeDocumentation(OutputList &ol,const char *scopeName,
-               Definition *container,bool showEnumValues,bool showInline)
+               const Definition *container,bool showEnumValues,bool showInline) const
 {
   memberList->writeDocumentation(ol,scopeName,container,0,showEnumValues,showInline);
 }
 
 void MemberGroup::writeDocumentationPage(OutputList &ol,const char *scopeName,
-               Definition *container)
+               const Definition *container) const
 {
   memberList->writeDocumentationPage(ol,scopeName,container);
 }
 
-void MemberGroup::addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
+void MemberGroup::setAnonymousEnumType()
+{
+  memberList->setAnonymousEnumType();
+}
+
+void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,
-               ClassDef *inheritedFrom,const QCString &inheritId)
+               const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("** addGroupedInheritedMembers()\n");
   MemberListIterator li(*memberList);
@@ -149,7 +153,7 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
   for (li.toFirst();(md=li.current());++li)
   {
     //printf("matching %d == %d\n",lt,md->getSectionList(m_parent)->listType());
-    MemberList *ml = md->getSectionList(m_parent);
+    const MemberList *ml = md->getSectionList(m_parent);
     if (ml && lt==ml->listType())
     {
       MemberList ml(lt);
@@ -168,7 +172,7 @@ int MemberGroup::countGroupedInheritedMembers(MemberListType lt)
   for (li.toFirst();(md=li.current());++li)
   {
     //printf("matching %d == %d\n",lt,md->getSectionList(m_parent)->listType());
-    MemberList *ml = md->getSectionList(m_parent);
+    const MemberList *ml = md->getSectionList(m_parent);
     if (ml && lt==ml->listType())
     {
       count++;
@@ -185,33 +189,24 @@ void MemberGroup::addToDeclarationSection()
 {
   if (inDeclSection)
   {
-    //printf("Adding group %p to list %p (type=%d)\n",this,
-    //                              inDeclSection,inDeclSection->listType());
+    //printf("Adding group %p to list %p (type=%d) memberList=%p\n",this,
+    //                             inDeclSection,inDeclSection->listType(),memberList);
     inDeclSection->addMemberGroup(this);
   }
 }
 
-int MemberGroup::countDecMembers(GroupDef *gd)
+void MemberGroup::countDecMembers()
 {
-  if (m_numDecMembers==-1) /* number of member not cached */
-  {
-    memberList->countDecMembers(gd);
-    m_numDecMembers = memberList->numDecMembers();
-  }
-  return m_numDecMembers;
+  memberList->countDecMembers();
 }
 
-int MemberGroup::countDocMembers()
+void MemberGroup::countDocMembers()
 {
-  if (m_numDocMembers==-1)
-  {
-    memberList->countDocMembers();
-    m_numDocMembers = memberList->numDocMembers();
-  }
-  return m_numDocMembers;
+  memberList->countDocMembers();
 }
 
-int MemberGroup::countInheritableMembers(ClassDef *inheritedFrom) const
+
+int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
 {
   return memberList->countInheritableMembers(inheritedFrom);
 }
@@ -255,6 +250,7 @@ void MemberGroup::distributeMemberGroupDocumentation()
   }
 }
 
+#if 0
 int MemberGroup::varCount() const
 {
   return memberList->varCount();
@@ -304,21 +300,33 @@ int MemberGroup::friendCount() const
 { 
   return memberList->friendCount(); 
 }
+#endif
 
-int MemberGroup::numDecMembers() const  
-{ 
-  return memberList->numDecMembers(); 
+int MemberGroup::numDecMembers() const
+{
+  return memberList->numDecMembers();
 }
 
-int MemberGroup::numDocMembers() const  
-{ 
-  return memberList->numDocMembers(); 
+int MemberGroup::numDecEnumValues() const
+{
+  return memberList->numDecEnumValues();
+}
+
+int MemberGroup::numDocMembers() const
+{
+  return memberList->numDocMembers();
+}
+
+int MemberGroup::numDocEnumValues() const
+{
+  return memberList->numDocEnumValues();
 }
 
 void MemberGroup::setInGroup(bool b)
 {
   memberList->setInGroup(b);
 }
+
 
 QCString MemberGroup::anchor() const
 {

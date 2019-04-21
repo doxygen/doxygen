@@ -39,7 +39,7 @@ class XMLCodeGenerator : public CodeOutputInterface
     void writeCodeAnchor(const char *);
     void writeLineNumber(const char *extRef,const char *compId,
                          const char *anchorId,int l);
-    void setCurrentDoc(Definition *,const char *,bool){}
+    void setCurrentDoc(const Definition *,const char *,bool){}
     void addWord(const char *,bool){}
 
     void finish();

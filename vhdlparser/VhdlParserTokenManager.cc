@@ -3036,7 +3036,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
             }
          } while(i != startsAt);
       }
-      else if (curChar < 128)
+      else if ((int)curChar < 128)
       {
          unsigned long long l = 1ULL << (curChar & 077);
          (void)l;

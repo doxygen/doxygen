@@ -87,7 +87,7 @@ static const char *sectionLevelToName[] =
 //---------------------------------------------------------------------------
 
 // Parser state: global variables during a call to validatingParseDoc
-static Definition *           g_scope;
+static const Definition *     g_scope;
 static QCString               g_context;
 static bool                   g_inSeeBlock;
 static bool                   g_xmlComment;
@@ -102,7 +102,7 @@ static QCString               g_relPath;
 static bool                   g_hasParamCommand;
 static bool                   g_hasReturnCommand;
 static QDict<void>            g_paramsFound;
-static MemberDef *            g_memberDef;
+static const MemberDef *      g_memberDef;
 static bool                   g_isExample;
 static QCString               g_exampleName;
 static SectionDict *          g_sectionDict;
@@ -120,7 +120,7 @@ static bool                   g_includeFileShowLineNo;
  */
 struct DocParserContext
 {
-  Definition *scope;
+  const Definition *scope;
   QCString context;
   bool inSeeBlock;
   bool xmlComment;
@@ -135,7 +135,7 @@ struct DocParserContext
 
   bool         hasParamCommand;
   bool         hasReturnCommand;
-  MemberDef *  memberDef;
+  const MemberDef *  memberDef;
   QDict<void>  paramsFound;
   bool         isExample;
   QCString     exampleName;
@@ -558,106 +558,6 @@ static void checkUnOrMultipleDocumentedParams()
   }
 }
 
-/*! Check if a member has documentation for its parameter and or return
- *  type, if applicable. If found this will be stored in the member, this
- *  is needed as a member can have brief and detailed documentation, while
- *  only one of these needs to document the parameters.
- */
-static void detectNoDocumentedParams()
-{
-  if (g_memberDef && Config_getBool(WARN_NO_PARAMDOC))
-  {
-    ArgumentList *al     = g_memberDef->argumentList();
-    ArgumentList *declAl = g_memberDef->declArgumentList();
-    QCString returnType   = g_memberDef->typeString();
-    bool isPython = g_memberDef->getLanguage()==SrcLangExt_Python;
-
-    if (!g_memberDef->hasDocumentedParams() &&
-        g_hasParamCommand)
-    {
-      //printf("%s->setHasDocumentedParams(TRUE);\n",g_memberDef->name().data());
-      g_memberDef->setHasDocumentedParams(TRUE);
-    }
-    else if (!g_memberDef->hasDocumentedParams())
-    {
-      bool allDoc=TRUE; // no parameter => all parameters are documented
-      if ( // member has parameters
-             al!=0 &&       // but the member has a parameter list
-             al->count()>0  // with at least one parameter (that is not void)
-         )
-      {
-        ArgumentListIterator ali(*al);
-        Argument *a;
-
-        // see if all parameters have documentation
-        for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
-        {
-          if (!a->name.isEmpty() && a->type!="void" &&
-              !(isPython && (a->name=="self" || a->name=="cls"))
-             )
-          {
-            allDoc = !a->docs.isEmpty();
-          }
-          //printf("a->type=%s a->name=%s doc=%s\n",
-          //        a->type.data(),a->name.data(),a->docs.data());
-        }
-        if (!allDoc && declAl!=0) // try declaration arguments as well
-        {
-          allDoc=TRUE;
-          ArgumentListIterator ali(*declAl);
-          Argument *a;
-          for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
-          {
-            if (!a->name.isEmpty() && a->type!="void" &&
-                !(isPython && (a->name=="self" || a->name=="cls"))
-               )
-            {
-              allDoc = !a->docs.isEmpty();
-            }
-            //printf("a->name=%s doc=%s\n",a->name.data(),a->docs.data());
-          }
-        }
-      }
-      if (allDoc) 
-      {
-        //printf("%s->setHasDocumentedParams(TRUE);\n",g_memberDef->name().data());
-        g_memberDef->setHasDocumentedParams(TRUE);
-      }
-    }
-    //printf("Member %s hasDocumentedReturnType()=%d hasReturnCommand=%d\n",
-    //    g_memberDef->name().data(),g_memberDef->hasDocumentedReturnType(),g_hasReturnCommand);
-    if (!g_memberDef->hasDocumentedReturnType() && // docs not yet found
-        g_hasReturnCommand)
-    {
-      g_memberDef->setHasDocumentedReturnType(TRUE);
-    }
-    else if ( // see if return type is documented in a function w/o return type
-        g_hasReturnCommand &&
-        (//returnType.isEmpty()              || // empty return type
-         returnType.find("void")!=-1       || // void return type
-         returnType.find("subroutine")!=-1 || // fortran subroutine
-         g_memberDef->isConstructor()      || // a constructor
-         g_memberDef->isDestructor()          // or destructor
-        )
-       )
-    {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"documented empty return type of  %s",g_memberDef->qualifiedName().data());
-    }
-    else if ( // see if return needs to documented 
-        g_memberDef->hasDocumentedReturnType() ||
-        //returnType.isEmpty()         || // empty return type
-        returnType.find("void")!=-1  || // void return type
-        returnType.find("subroutine")!=-1 || // fortran subroutine
-        g_memberDef->isConstructor() || // a constructor
-        g_memberDef->isDestructor()     // or destructor
-       )
-    {
-      g_memberDef->setHasDocumentedReturnType(TRUE);
-    }
-  }
-}
-
-
 //---------------------------------------------------------------------------
 
 /*! Strips known html and tex extensions from \a text. */
@@ -755,7 +655,7 @@ static bool insideTable(DocNode *n)
 static bool findDocsForMemberOrCompound(const char *commandName,
                                  QCString *pDoc,
                                  QCString *pBrief,
-                                 Definition **pDef)
+                                 const Definition **pDef)
 {
   //printf("findDocsForMemberOrCompound(%s)\n",commandName);
   *pDoc="";
@@ -790,11 +690,11 @@ static bool findDocsForMemberOrCompound(const char *commandName,
 
   // try if the link is to a member
   MemberDef    *md=0;
-  ClassDef     *cd=0;
-  FileDef      *fd=0;
-  NamespaceDef *nd=0;
-  GroupDef     *gd=0;
-  PageDef      *pd=0;
+  const ClassDef     *cd=0;
+  const FileDef      *fd=0;
+  const NamespaceDef *nd=0;
+  const GroupDef     *gd=0;
+  const PageDef      *pd=0;
   bool found = getDefs(
       g_context.find('.')==-1?g_context.data():"", // `find('.') is a hack to detect files
       name,
@@ -1125,8 +1025,8 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
 
   // ------- try to turn the word 'name' into a link
 
-  Definition *compound=0;
-  MemberDef  *member=0;
+  const Definition *compound=0;
+  const MemberDef  *member=0;
   int len = g_token->name.length();
   ClassDef *cd=0;
   bool ambig;
@@ -1165,7 +1065,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
       }
       else if (compound->definitionType()==Definition::TypeGroup)
       {
-        name=(dynamic_cast<GroupDef*>(compound))->groupTitle();
+        name=(dynamic_cast<const GroupDef*>(compound))->groupTitle();
       }
       children.append(new 
           DocLinkedWord(parent,name,
@@ -1177,7 +1077,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
                      );
     }
     else if (compound->definitionType()==Definition::TypeFile &&
-             (dynamic_cast<FileDef*>(compound))->generateSourceFile()
+             (dynamic_cast<const FileDef*>(compound))->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
       children.append(new 
@@ -2201,7 +2101,7 @@ void DocIncOperator::parse()
 void DocCopy::parse(QList<DocNode> &children)
 {
   QCString doc,brief;
-  Definition *def;
+  const Definition *def = 0;
   if (findDocsForMemberOrCompound(m_link,&doc,&brief,&def))
   {
     if (g_copyStack.findRef(def)==-1) // definition not parsed earlier
@@ -2547,7 +2447,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
    m_refType(Unknown), m_isSubPage(FALSE)
 {
   m_parent = parent; 
-  Definition  *compound = 0;
+  const Definition  *compound = 0;
   QCString     anchor;
   //printf("DocRef::DocRef(target=%s,context=%s)\n",target.data(),context.data());
   ASSERT(!target.isEmpty());
@@ -2600,16 +2500,16 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
     {
       if (anchor.isEmpty() &&                                  /* compound link */
           compound->definitionType()==Definition::TypeGroup && /* is group */
-          (dynamic_cast<GroupDef *>(compound))->groupTitle()                 /* with title */
+          (dynamic_cast<const GroupDef *>(compound))->groupTitle()                 /* with title */
          )
       {
-        m_text=(dynamic_cast<GroupDef *>(compound))->groupTitle(); // use group's title as link
+        m_text=(dynamic_cast<const GroupDef *>(compound))->groupTitle(); // use group's title as link
       }
       else if (compound->definitionType()==Definition::TypeMember &&
-          (dynamic_cast<MemberDef*>(compound))->isObjCMethod())
+          (dynamic_cast<const MemberDef*>(compound))->isObjCMethod())
       {
         // Objective C Method
-        MemberDef *member = dynamic_cast<MemberDef*>(compound);
+        const MemberDef *member = dynamic_cast<const MemberDef*>(compound);
         bool localLink = g_memberDef ? member->getClassDef()==g_memberDef->getClassDef() : FALSE;
         m_text = member->objCMethodName(localLink,g_inSeeBlock);
       }
@@ -2621,7 +2521,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
       return;
     }
     else if (compound && compound->definitionType()==Definition::TypeFile &&
-             (dynamic_cast<FileDef*>(compound))->generateSourceFile()
+             (dynamic_cast<const FileDef*>(compound))->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
       m_file = compound->getSourceFileBase();
@@ -2743,7 +2643,7 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
 DocLink::DocLink(DocNode *parent,const QCString &target) 
 {
   m_parent = parent;
-  Definition *compound = 0;
+  const Definition *compound = 0;
   QCString anchor;
   m_refText = target;
   m_relPath = g_relPath;
@@ -2761,7 +2661,7 @@ DocLink::DocLink(DocNode *parent,const QCString &target)
       m_ref  = compound->getReference();
     }
     else if (compound && compound->definitionType()==Definition::TypeFile &&
-             (dynamic_cast<FileDef*>(compound))->generateSourceFile()
+             (dynamic_cast<const FileDef*>(compound))->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
       m_file = compound->getSourceFileBase();
@@ -5464,7 +5364,7 @@ void DocPara::handleInheritDoc()
     MemberDef *reMd = g_memberDef->reimplements();
     if (reMd) // member from which was inherited.
     {
-      MemberDef *thisMd = g_memberDef;
+      const MemberDef *thisMd = g_memberDef;
       //printf("{InheritDocs:%s=>%s}\n",g_memberDef->qualifiedName().data(),reMd->qualifiedName().data());
       docParserPushContext();
       g_scope=reMd->getOuterScope();
@@ -7366,7 +7266,7 @@ static QCString processCopyDoc(const char *data,uint &len)
         while (j<len && (data[j]==' ' || data[j]=='\t')) j++;
         // extract the argument
         QCString id = extractCopyDocId(data,j,len);
-        Definition *def;
+        const Definition *def = 0;
         QCString doc,brief;
         //printf("resolving docs='%s'\n",id.data());
         if (findDocsForMemberOrCompound(id,&doc,&brief,&def))
@@ -7555,7 +7455,7 @@ QCString getJsDirEmbedingChar(QString::Direction textDir)
 //---------------------------------------------------------------------------
 
 DocRoot *validatingParseDoc(const char *fileName,int startLine,
-                            Definition *ctx,MemberDef *md,
+                            const Definition *ctx,const MemberDef *md,
                             const char *input,bool indexWords,
                             bool isExample, const char *exampleName,
                             bool singleLine, bool linkFromIndex)
@@ -7581,12 +7481,12 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   }
   else if (ctx && ctx->definitionType()==Definition::TypePage)
   {
-    Definition *scope = (dynamic_cast<PageDef*>(ctx))->getPageScope();
+    const Definition *scope = (dynamic_cast<const PageDef*>(ctx))->getPageScope();
     if (scope && scope!=Doxygen::globalScope) g_context = scope->name();
   }
   else if (ctx && ctx->definitionType()==Definition::TypeGroup)
   {
-    Definition *scope = (dynamic_cast<GroupDef*>(ctx))->getGroupScope();
+    const Definition *scope = (dynamic_cast<const GroupDef*>(ctx))->getGroupScope();
     if (scope && scope!=Doxygen::globalScope) g_context = scope->name();
   }
   else
@@ -7740,7 +7640,7 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   }
 
   checkUnOrMultipleDocumentedParams();
-  detectNoDocumentedParams();
+  if (g_memberDef) g_memberDef->detectUndocumentedParams(g_hasParamCommand,g_hasReturnCommand);
 
   // TODO: These should be called at the end of the program.
   //doctokenizerYYcleanup();

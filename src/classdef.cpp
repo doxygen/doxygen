@@ -61,6 +61,7 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     /** Destroys a compound definition. */
    ~ClassDefImpl();
 
+    virtual ClassDef *resolveAlias() { return this; }
     virtual DefType definitionType() const { return TypeClass; }
     virtual QCString getOutputFileBase() const;
     virtual QCString getInstanceOutputFileBase() const; 
@@ -92,7 +93,7 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual bool isSubClass(ClassDef *bcd,int level=0) const;
     virtual bool isAccessibleMember(const MemberDef *md) const;
     virtual QDict<ClassDef> *getTemplateInstances() const;
-    virtual ClassDef *templateMaster() const;
+    virtual const ClassDef *templateMaster() const;
     virtual bool isTemplate() const;
     virtual IncludeInfo *includeInfo() const;
     virtual UsesClassDict *usedImplementationClasses() const;
@@ -120,7 +121,7 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual const QList<MemberList> &getMemberLists() const;
     virtual MemberGroupSDict *getMemberGroupSDict() const;
     virtual QDict<int> *getTemplateBaseClassNames() const;
-    virtual ClassDef *getVariableInstance(const char *templSpec);
+    virtual ClassDef *getVariableInstance(const char *templSpec) const;
     virtual bool isUsedOnly() const;
     virtual QCString anchor() const;
     virtual bool isEmbeddedInOuterScope() const;
@@ -141,6 +142,10 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual QCString getMemberListFileName() const;
     virtual bool subGrouping() const;
     virtual bool isSliceLocal() const;
+    virtual bool hasNonReferenceSuperClass() const;
+    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
+                                const QCString &templSpec,bool &freshInstance) const;
+
     virtual void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0);
     virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force); 
@@ -153,9 +158,7 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual void setSubGrouping(bool enabled);
     virtual void setProtection(Protection p);
     virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
-    virtual void addInnerCompound(Definition *d);
-    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
-                                const QCString &templSpec,bool &freshInstance);
+    virtual void addInnerCompound(const Definition *d);
     virtual void addUsedClass(ClassDef *cd,const char *accessName,Protection prot);
     virtual void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot);
     virtual void setIsStatic(bool b);
@@ -164,9 +167,9 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual void setClassSpecifier(uint64 spec);
     virtual void setTemplateArguments(ArgumentList *al);
     virtual void setTemplateBaseClassNames(QDict<int> *templateNames);
-    virtual void setTemplateMaster(ClassDef *tm);
+    virtual void setTemplateMaster(const ClassDef *tm);
     virtual void setTypeConstraints(ArgumentList *al);
-    virtual void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
+    virtual void addMembersToTemplateInstance(const ClassDef *cd,const char *templSpec);
     virtual void makeTemplateArgument(bool b=TRUE);
     virtual void setCategoryOf(ClassDef *cd);
     virtual void setUsedOnly(bool b);
@@ -182,75 +185,79 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual void mergeMembers();
     virtual void sortMemberLists();
     virtual void distributeMemberGroupDocumentation();
-    virtual void writeDocumentation(OutputList &ol);
-    virtual void writeDocumentationForInnerClasses(OutputList &ol);
-    virtual void writeMemberPages(OutputList &ol);
-    virtual void writeMemberList(OutputList &ol);
-    virtual void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
-                          ClassDef *inheritedFrom,const char *inheritId);
-    virtual void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
-    virtual void writeSummaryLinks(OutputList &ol);
+    virtual void writeDocumentation(OutputList &ol) const;
+    virtual void writeDocumentationForInnerClasses(OutputList &ol) const;
+    virtual void writeMemberPages(OutputList &ol) const;
+    virtual void writeMemberList(OutputList &ol) const;
+    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+                          const ClassDef *inheritedFrom,const char *inheritId) const;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const;
+    virtual void writeSummaryLinks(OutputList &ol) const;
     virtual void reclassifyMember(MemberDef *md,MemberType t);
-    virtual void writeInlineDocumentation(OutputList &ol);
+    virtual void writeInlineDocumentation(OutputList &ol) const;
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
-                              const char *header,bool localNames);
+                              const char *header,bool localNames) const;
     virtual void removeMemberFromLists(MemberDef *md);
+    virtual void setAnonymousEnumType();
+    virtual void countMembers();
+
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
-                              ClassDef *inheritedFrom,const QCString &inheritId);
-    virtual int countMembersIncludingGrouped(MemberListType lt,ClassDef *inheritedFrom,bool additional);
-    virtual int countInheritanceNodes();
+                              const ClassDef *inheritedFrom,const QCString &inheritId) const;
     virtual void writeTagFile(FTextStream &);
 
-    virtual void setVisited(bool visited) { m_visited = visited; }
+    virtual void setVisited(bool visited) const { m_visited = visited; }
     virtual bool isVisited() const { return m_visited; }
-    virtual bool hasNonReferenceSuperClass() const;
-    virtual int countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses);
+    virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const;
+    virtual int countInheritanceNodes() const;
+    virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
+                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const;
     virtual void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
-                 const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,
+                 const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,
-                 QPtrDict<void> *visitedClasses=0);
+                 QPtrDict<void> *visitedClasses=0) const;
 
   private:
-    bool m_visited;
+    mutable bool m_visited;
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
-    void showUsedFiles(OutputList &ol);
+    void showUsedFiles(OutputList &ol) const;
 
-    void writeDocumentationContents(OutputList &ol,const QCString &pageTitle);
+    void writeDocumentationContents(OutputList &ol,const QCString &pageTitle) const;
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
     void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);
     MemberList *createMemberList(MemberListType lt);
-    void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,int lt2,const QCString &title,ClassDef *inheritedFrom,bool invert,bool showAlways,QPtrDict<void> *visitedClasses);
-    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline=FALSE);
-    void writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt);
-    void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,ClassDef *inheritedFrom,const char *inheritId);
-    void writeBriefDescription(OutputList &ol,bool exampleFlag);
+    void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,int lt2,const QCString &title,
+                                          const ClassDef *inheritedFrom,bool invert,
+                                          bool showAlways,QPtrDict<void> *visitedClasses) const;
+    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline=FALSE) const;
+    void writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt) const;
+    void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,const ClassDef *inheritedFrom,const char *inheritId) const;
+    void writeBriefDescription(OutputList &ol,bool exampleFlag) const;
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
-                                  const QCString &title,const QCString &anchor=QCString());
-    void writeIncludeFiles(OutputList &ol);
-    void writeIncludeFilesForSlice(OutputList &ol);
+                                  const QCString &title,const QCString &anchor=QCString()) const;
+    void writeIncludeFiles(OutputList &ol) const;
+    void writeIncludeFilesForSlice(OutputList &ol) const;
     //void writeAllMembersLink(OutputList &ol);
-    void writeInheritanceGraph(OutputList &ol);
-    void writeCollaborationGraph(OutputList &ol);
-    void writeMemberGroups(OutputList &ol,bool showInline=FALSE);
-    void writeNestedClasses(OutputList &ol,const QCString &title);
-    void writeInlineClasses(OutputList &ol);
-    void startMemberDeclarations(OutputList &ol);
-    void endMemberDeclarations(OutputList &ol);
-    void startMemberDocumentation(OutputList &ol);
-    void endMemberDocumentation(OutputList &ol);
-    void writeAuthorSection(OutputList &ol);
-    void writeMoreLink(OutputList &ol,const QCString &anchor);
-    void writeDetailedDocumentationBody(OutputList &ol);
+    void writeInheritanceGraph(OutputList &ol) const;
+    void writeCollaborationGraph(OutputList &ol) const;
+    void writeMemberGroups(OutputList &ol,bool showInline=FALSE) const;
+    void writeNestedClasses(OutputList &ol,const QCString &title) const;
+    void writeInlineClasses(OutputList &ol) const;
+    void startMemberDeclarations(OutputList &ol) const;
+    void endMemberDeclarations(OutputList &ol) const;
+    void startMemberDocumentation(OutputList &ol) const;
+    void endMemberDocumentation(OutputList &ol) const;
+    void writeAuthorSection(OutputList &ol) const;
+    void writeMoreLink(OutputList &ol,const QCString &anchor) const;
+    void writeDetailedDocumentationBody(OutputList &ol) const;
 
-    int countAdditionalInheritedMembers();
-    void writeAdditionalInheritedMembers(OutputList &ol);
-    void addClassAttributes(OutputList &ol);
+    int countAdditionalInheritedMembers() const;
+    void writeAdditionalInheritedMembers(OutputList &ol) const;
+    void addClassAttributes(OutputList &ol) const;
     int countInheritedDecMembers(MemberListType lt,
-                                 ClassDef *inheritedFrom,bool invert,bool showAlways,
-                                 QPtrDict<void> *visitedClasses);
+                                 const ClassDef *inheritedFrom,bool invert,bool showAlways,
+                                 QPtrDict<void> *visitedClasses) const;
     void getTitleForMemberListType(MemberListType type,
-               QCString &title,QCString &subtitle);
+               QCString &title,QCString &subtitle) const;
     QCString includeStatement() const;
     void addTypeConstraint(const QCString &typeConstraint,const QCString &type);
 
@@ -267,6 +274,265 @@ ClassDef *createClassDef(
 {
   return new ClassDefImpl(fileName,startLine,startColumn,name,ct,ref,fName,isSymbol,isJavaEnum);
 }
+//-----------------------------------------------------------------------------
+
+class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
+{
+  public:
+    ClassDefAliasImpl(const Definition *newScope,const ClassDef *cd) : DefinitionAliasImpl(newScope,cd) {}
+    virtual ~ClassDefAliasImpl() {}
+    virtual DefType definitionType() const { return TypeClass; }
+
+    const ClassDef *getCdAlias() const { return dynamic_cast<const ClassDef*>(getAlias()); }
+    virtual ClassDef *resolveAlias() { return const_cast<ClassDef*>(getCdAlias()); }
+
+    virtual QCString getOutputFileBase() const
+    { return getCdAlias()->getOutputFileBase(); }
+    virtual QCString getInstanceOutputFileBase() const
+    { return getCdAlias()->getInstanceOutputFileBase(); }
+    virtual QCString getSourceFileBase() const
+    { return getCdAlias()->getSourceFileBase(); }
+    virtual QCString getReference() const
+    { return getCdAlias()->getReference(); }
+    virtual bool isReference() const
+    { return getCdAlias()->isReference(); }
+    virtual bool isLocal() const
+    { return getCdAlias()->isLocal(); }
+    virtual ClassSDict *getClassSDict() const
+    { return getCdAlias()->getClassSDict(); }
+    virtual bool hasDocumentation() const
+    { return getCdAlias()->hasDocumentation(); }
+    virtual bool hasDetailedDescription() const
+    { return getCdAlias()->hasDetailedDescription(); }
+    virtual QCString collaborationGraphFileName() const
+    { return getCdAlias()->collaborationGraphFileName(); }
+    virtual QCString inheritanceGraphFileName() const
+    { return getCdAlias()->inheritanceGraphFileName(); }
+    virtual QCString displayName(bool includeScope=TRUE) const
+    { return getCdAlias()->displayName(includeScope); }
+    virtual CompoundType compoundType() const
+    { return getCdAlias()->compoundType(); }
+    virtual QCString compoundTypeString() const
+    { return getCdAlias()->compoundTypeString(); }
+    virtual BaseClassList *baseClasses() const
+    { return getCdAlias()->baseClasses(); }
+    virtual BaseClassList *subClasses() const
+    { return getCdAlias()->subClasses(); }
+    virtual MemberNameInfoSDict *memberNameInfoSDict() const
+    { return getCdAlias()->memberNameInfoSDict(); }
+    virtual Protection protection() const
+    { return getCdAlias()->protection(); }
+    virtual bool isLinkableInProject() const
+    { return getCdAlias()->isLinkableInProject(); }
+    virtual bool isLinkable() const
+    { return getCdAlias()->isLinkable(); }
+    virtual bool isVisibleInHierarchy() const
+    { return getCdAlias()->isVisibleInHierarchy(); }
+    virtual bool visibleInParentsDeclList() const
+    { return getCdAlias()->visibleInParentsDeclList(); }
+    virtual ArgumentList *templateArguments() const
+    { return getCdAlias()->templateArguments(); }
+    virtual NamespaceDef *getNamespaceDef() const
+    { return getCdAlias()->getNamespaceDef(); }
+    virtual FileDef      *getFileDef() const
+    { return getCdAlias()->getFileDef(); }
+    virtual MemberDef    *getMemberByName(const QCString &s) const
+    { return getCdAlias()->getMemberByName(s); }
+    virtual bool isBaseClass(const ClassDef *bcd,bool followInstances,int level=0) const
+    { return getCdAlias()->isBaseClass(bcd,followInstances,level); }
+    virtual bool isSubClass(ClassDef *bcd,int level=0) const
+    { return getCdAlias()->isSubClass(bcd,level); }
+    virtual bool isAccessibleMember(const MemberDef *md) const
+    { return getCdAlias()->isAccessibleMember(md); }
+    virtual QDict<ClassDef> *getTemplateInstances() const
+    { return getCdAlias()->getTemplateInstances(); }
+    virtual const ClassDef *templateMaster() const
+    { return getCdAlias()->templateMaster(); }
+    virtual bool isTemplate() const
+    { return getCdAlias()->isTemplate(); }
+    virtual IncludeInfo *includeInfo() const
+    { return getCdAlias()->includeInfo(); }
+    virtual UsesClassDict *usedImplementationClasses() const
+    { return getCdAlias()->usedImplementationClasses(); }
+    virtual UsesClassDict *usedByImplementationClasses() const
+    { return getCdAlias()->usedByImplementationClasses(); }
+    virtual UsesClassDict *usedInterfaceClasses() const
+    { return getCdAlias()->usedInterfaceClasses(); }
+    virtual ConstraintClassDict *templateTypeConstraints() const
+    { return getCdAlias()->templateTypeConstraints(); }
+    virtual bool isTemplateArgument() const
+    { return getCdAlias()->isTemplateArgument(); }
+    virtual Definition *findInnerCompound(const char *name) const
+    { return getCdAlias()->findInnerCompound(name); }
+    virtual void getTemplateParameterLists(QList<ArgumentList> &lists) const
+    { return getCdAlias()->getTemplateParameterLists(lists); }
+    virtual QCString qualifiedNameWithTemplateParameters(
+        QList<ArgumentList> *actualParams=0,int *actualParamIndex=0) const
+    { return getCdAlias()->qualifiedNameWithTemplateParameters(actualParams,actualParamIndex); }
+    virtual bool isAbstract() const
+    { return getCdAlias()->isAbstract(); }
+    virtual bool isObjectiveC() const
+    { return getCdAlias()->isObjectiveC(); }
+    virtual bool isFortran() const
+    { return getCdAlias()->isFortran(); }
+    virtual bool isCSharp() const
+    { return getCdAlias()->isCSharp(); }
+    virtual bool isFinal() const
+    { return getCdAlias()->isFinal(); }
+    virtual bool isSealed() const
+    { return getCdAlias()->isSealed(); }
+    virtual bool isPublished() const
+    { return getCdAlias()->isPublished(); }
+    virtual bool isExtension() const
+    { return getCdAlias()->isExtension(); }
+    virtual bool isForwardDeclared() const
+    { return getCdAlias()->isForwardDeclared(); }
+    virtual bool isInterface() const
+    { return getCdAlias()->isInterface(); }
+    virtual ClassDef *categoryOf() const
+    { return getCdAlias()->categoryOf(); }
+    virtual QCString className() const
+    { return getCdAlias()->className(); }
+    virtual MemberList *getMemberList(MemberListType lt) const
+    { return getCdAlias()->getMemberList(lt); }
+    virtual const QList<MemberList> &getMemberLists() const
+    { return getCdAlias()->getMemberLists(); }
+    virtual MemberGroupSDict *getMemberGroupSDict() const
+    { return getCdAlias()->getMemberGroupSDict(); }
+    virtual QDict<int> *getTemplateBaseClassNames() const
+    { return getCdAlias()->getTemplateBaseClassNames(); }
+    virtual ClassDef *getVariableInstance(const char *templSpec) const
+    { return getCdAlias()->getVariableInstance(templSpec); }
+    virtual bool isUsedOnly() const
+    { return getCdAlias()->isUsedOnly(); }
+    virtual QCString anchor() const
+    { return getCdAlias()->anchor(); }
+    virtual bool isEmbeddedInOuterScope() const
+    { return getCdAlias()->isEmbeddedInOuterScope(); }
+    virtual bool isSimple() const
+    { return getCdAlias()->isSimple(); }
+    virtual const ClassList *taggedInnerClasses() const
+    { return getCdAlias()->taggedInnerClasses(); }
+    virtual ClassDef *tagLessReference() const
+    { return getCdAlias()->tagLessReference(); }
+    virtual MemberDef *isSmartPointer() const
+    { return getCdAlias()->isSmartPointer(); }
+    virtual bool isJavaEnum() const
+    { return getCdAlias()->isJavaEnum(); }
+    virtual bool isGeneric() const
+    { return getCdAlias()->isGeneric(); }
+    virtual bool isAnonymous() const
+    { return getCdAlias()->isAnonymous(); }
+    virtual const ClassSDict *innerClasses() const
+    { return getCdAlias()->innerClasses(); }
+    virtual QCString title() const
+    { return getCdAlias()->title(); }
+    virtual QCString generatedFromFiles() const
+    { return getCdAlias()->generatedFromFiles(); }
+    virtual const FileList &usedFiles() const
+    { return getCdAlias()->usedFiles(); }
+    virtual const ArgumentList *typeConstraints() const
+    { return getCdAlias()->typeConstraints(); }
+    virtual const ExampleSDict *exampleList() const
+    { return getCdAlias()->exampleList(); }
+    virtual bool hasExamples() const
+    { return getCdAlias()->hasExamples(); }
+    virtual QCString getMemberListFileName() const
+    { return getCdAlias()->getMemberListFileName(); }
+    virtual bool subGrouping() const
+    { return getCdAlias()->subGrouping(); }
+    virtual bool isSliceLocal() const
+    { return getCdAlias()->isSliceLocal(); }
+    virtual bool hasNonReferenceSuperClass() const
+    { return getCdAlias()->hasNonReferenceSuperClass(); }
+    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
+                                const QCString &templSpec,bool &freshInstance) const
+    { return getCdAlias()->insertTemplateInstance(fileName,startLine,startColumn,templSpec,freshInstance); }
+
+    virtual void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0) { }
+    virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0) { }
+    virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force) {}
+    virtual void insertMember(MemberDef *) {}
+    virtual void insertUsedFile(FileDef *) {}
+    virtual bool addExample(const char *anchor,const char *name, const char *file) { return FALSE; }
+    virtual void mergeCategory(ClassDef *category) {}
+    virtual void setNamespace(NamespaceDef *nd) {}
+    virtual void setFileDef(FileDef *fd) {}
+    virtual void setSubGrouping(bool enabled) {}
+    virtual void setProtection(Protection p) {}
+    virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) {}
+    virtual void addInnerCompound(const Definition *d) {}
+    virtual void addUsedClass(ClassDef *cd,const char *accessName,Protection prot) {}
+    virtual void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot) {}
+    virtual void setIsStatic(bool b) {}
+    virtual void setCompoundType(CompoundType t) {}
+    virtual void setClassName(const char *name) {}
+    virtual void setClassSpecifier(uint64 spec) {}
+    virtual void setTemplateArguments(ArgumentList *al) {}
+    virtual void setTemplateBaseClassNames(QDict<int> *templateNames) {}
+    virtual void setTemplateMaster(const ClassDef *tm) {}
+    virtual void setTypeConstraints(ArgumentList *al) {}
+    virtual void addMembersToTemplateInstance(const ClassDef *cd,const char *templSpec) {}
+    virtual void makeTemplateArgument(bool b=TRUE) {}
+    virtual void setCategoryOf(ClassDef *cd) {}
+    virtual void setUsedOnly(bool b) {}
+    virtual void addTaggedInnerClass(ClassDef *cd) {}
+    virtual void setTagLessReference(ClassDef *cd) {}
+    virtual void setName(const char *name) {}
+    virtual void setMetaData(const char *md) {}
+    virtual void findSectionsInDocumentation() {}
+    virtual void addMembersToMemberGroup() {}
+    virtual void addListReferences() {}
+    virtual void addTypeConstraints() {}
+    virtual void computeAnchors() {}
+    virtual void mergeMembers() {}
+    virtual void sortMemberLists() {}
+    virtual void distributeMemberGroupDocumentation() {}
+    virtual void writeDocumentation(OutputList &ol) const {}
+    virtual void writeDocumentationForInnerClasses(OutputList &ol) const {}
+    virtual void writeMemberPages(OutputList &ol) const {}
+    virtual void writeMemberList(OutputList &ol) const {}
+    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+                          const ClassDef *inheritedFrom,const char *inheritId) const {}
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const {}
+    virtual void writeSummaryLinks(OutputList &ol) const {}
+    virtual void reclassifyMember(MemberDef *md,MemberType t) {}
+    virtual void writeInlineDocumentation(OutputList &ol) const {}
+    virtual void writeDeclarationLink(OutputList &ol,bool &found,
+                              const char *header,bool localNames) const
+    { getCdAlias()->writeDeclarationLink(ol,found,header,localNames); }
+    virtual void removeMemberFromLists(MemberDef *md) {}
+    virtual void setAnonymousEnumType() {}
+    virtual void countMembers() {}
+    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
+                              const ClassDef *inheritedFrom,const QCString &inheritId) const {}
+    virtual void writeTagFile(FTextStream &) {}
+
+    virtual void setVisited(bool visited) const { m_visited = visited; }
+    virtual bool isVisited() const { return m_visited; }
+    virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const
+    { return getCdAlias()->countMembersIncludingGrouped(lt,inheritedFrom,additional); }
+    virtual int countInheritanceNodes() const
+    { return getCdAlias()->countInheritanceNodes(); }
+    virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
+                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const
+    { return countMemberDeclarations(lt,inheritedFrom,lt2,invert,showAlways,visitedClasses); }
+    virtual void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
+                 const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
+                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,
+                 QPtrDict<void> *visitedClasses=0) const {}
+
+  private:
+    mutable bool m_visited;
+};
+
+
+ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd)
+{
+  return new ClassDefAliasImpl(newScope,cd);
+}
+
+//-----------------------------------------------------------------------------
 
 /** Private data associated with a ClassDef object. */
 class ClassDefImpl::IMPL
@@ -353,18 +619,18 @@ class ClassDefImpl::IMPL
     /*! Template instances that exists of this class, the key in the
      *  dictionary is the template argument list.
      */
-    QDict<ClassDef> *templateInstances;
+    mutable QDict<ClassDef> *templateInstances;
 
     /*! Template instances that exists of this class, as defined by variables.
      *  We do NOT want to document these individually. The key in the
      *  dictionary is the template argument list.
      */
-    QDict<ClassDef> *variableInstances;
+    mutable QDict<ClassDef> *variableInstances;
 
     QDict<int> *templBaseClassNames;
 
     /*! The class this class is an instance of. */
-    ClassDef *templateMaster;
+    const ClassDef *templateMaster;
 
     /*! local class name which could be a typedef'ed alias name. */
     QCString className;
@@ -1107,7 +1373,7 @@ void ClassDefImpl::setIncludeFile(FileDef *fd,
 //  return 0;
 //}
 
-static void searchTemplateSpecs(/*in*/  Definition *d,
+static void searchTemplateSpecs(/*in*/  const Definition *d,
                                 /*out*/ QList<ArgumentList> &result,
                                 /*out*/ QCString &name,
                                 /*in*/  SrcLangExt lang)
@@ -1118,7 +1384,7 @@ static void searchTemplateSpecs(/*in*/  Definition *d,
     {
       searchTemplateSpecs(d->getOuterScope(),result,name,lang);
     }
-    ClassDef *cd=dynamic_cast<ClassDef *>(d);
+    const ClassDef *cd=dynamic_cast<const ClassDef *>(d);
     if (!name.isEmpty()) name+="::";
     QCString clName = d->localName();
     if (/*clName.right(2)=="-g" ||*/ clName.right(2)=="-p")
@@ -1142,7 +1408,7 @@ static void searchTemplateSpecs(/*in*/  Definition *d,
   }
 }
 
-static void writeTemplateSpec(OutputList &ol,Definition *d,
+static void writeTemplateSpec(OutputList &ol,const Definition *d,
             const QCString &type,SrcLangExt lang)
 {
   QList<ArgumentList> specs;
@@ -1184,7 +1450,7 @@ static void writeTemplateSpec(OutputList &ol,Definition *d,
   }
 }
 
-void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag)
+void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag) const
 {
   if (hasBriefDescription())
   {
@@ -1211,7 +1477,7 @@ void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag)
   ol.writeSynopsis();
 }
 
-void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol)
+void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
 {
   static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
 
@@ -1270,7 +1536,7 @@ bool ClassDefImpl::hasDetailedDescription() const
 
 // write the detailed description for this class
 void ClassDefImpl::writeDetailedDescription(OutputList &ol, const QCString &/*pageType*/, bool exampleFlag,
-                                        const QCString &title,const QCString &anchor)
+                                        const QCString &title,const QCString &anchor) const
 {
   if (hasDetailedDescription() || exampleFlag)
   {
@@ -1336,7 +1602,7 @@ QCString ClassDefImpl::generatedFromFiles() const
   return result;
 }
 
-void ClassDefImpl::showUsedFiles(OutputList &ol)
+void ClassDefImpl::showUsedFiles(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
@@ -1416,7 +1682,7 @@ void ClassDefImpl::showUsedFiles(OutputList &ol)
   ol.popGeneratorState();
 }
 
-int ClassDefImpl::countInheritanceNodes()
+int ClassDefImpl::countInheritanceNodes() const
 {
   int count=0;
   BaseClassDef *ibcd;
@@ -1441,7 +1707,7 @@ int ClassDefImpl::countInheritanceNodes()
   return count;
 }
 
-void ClassDefImpl::writeInheritanceGraph(OutputList &ol)
+void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 {
   // count direct inheritance relations
   const int count=countInheritanceNodes();
@@ -1566,7 +1832,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol)
   }
 }
 
-void ClassDefImpl::writeCollaborationGraph(OutputList &ol)
+void ClassDefImpl::writeCollaborationGraph(OutputList &ol) const
 {
   if (Config_getBool(HAVE_DOT) /*&& Config_getBool(COLLABORATION_GRAPH)*/)
   {
@@ -1601,7 +1867,7 @@ QCString ClassDefImpl::includeStatement() const
   }
 }
 
-void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol)
+void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
 {
   if (m_impl->incInfo)
   {
@@ -1755,7 +2021,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol)
   ol.endParagraph();
 }
 
-void ClassDefImpl::writeIncludeFiles(OutputList &ol)
+void ClassDefImpl::writeIncludeFiles(OutputList &ol) const
 {
   if (m_impl->incInfo /*&& Config_getBool(SHOW_INCLUDE_FILES)*/)
   {
@@ -1822,7 +2088,7 @@ void ClassDefImpl::writeAllMembersLink(OutputList &ol)
 }
 #endif
 
-void ClassDefImpl::writeMemberGroups(OutputList &ol,bool showInline)
+void ClassDefImpl::writeMemberGroups(OutputList &ol,bool showInline) const
 {
   // write user defined member groups
   if (m_impl->memberGroupSDict)
@@ -1845,7 +2111,7 @@ void ClassDefImpl::writeMemberGroups(OutputList &ol,bool showInline)
   }
 }
 
-void ClassDefImpl::writeNestedClasses(OutputList &ol,const QCString &title)
+void ClassDefImpl::writeNestedClasses(OutputList &ol,const QCString &title) const
 {
   // nested classes
   if (m_impl->innerClasses)
@@ -1854,7 +2120,7 @@ void ClassDefImpl::writeNestedClasses(OutputList &ol,const QCString &title)
   }
 }
 
-void ClassDefImpl::writeInlineClasses(OutputList &ol)
+void ClassDefImpl::writeInlineClasses(OutputList &ol) const
 {
   if (m_impl->innerClasses)
   {
@@ -1862,7 +2128,7 @@ void ClassDefImpl::writeInlineClasses(OutputList &ol)
   }
 }
 
-void ClassDefImpl::startMemberDocumentation(OutputList &ol)
+void ClassDefImpl::startMemberDocumentation(OutputList &ol) const
 {
   //printf("%s: ClassDefImpl::startMemberDocumentation()\n",name().data());
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
@@ -1872,7 +2138,7 @@ void ClassDefImpl::startMemberDocumentation(OutputList &ol)
   }
 }
 
-void ClassDefImpl::endMemberDocumentation(OutputList &ol)
+void ClassDefImpl::endMemberDocumentation(OutputList &ol) const
 {
   //printf("%s: ClassDefImpl::endMemberDocumentation()\n",name().data());
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
@@ -1882,13 +2148,13 @@ void ClassDefImpl::endMemberDocumentation(OutputList &ol)
   }
 }
 
-void ClassDefImpl::startMemberDeclarations(OutputList &ol)
+void ClassDefImpl::startMemberDeclarations(OutputList &ol) const
 {
   //printf("%s: ClassDefImpl::startMemberDeclarations()\n",name().data());
   ol.startMemberSections();
 }
 
-void ClassDefImpl::endMemberDeclarations(OutputList &ol)
+void ClassDefImpl::endMemberDeclarations(OutputList &ol) const
 {
   //printf("%s: ClassDefImpl::endMemberDeclarations()\n",name().data());
   static bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
@@ -1902,7 +2168,7 @@ void ClassDefImpl::endMemberDeclarations(OutputList &ol)
   ol.endMemberSections();
 }
 
-void ClassDefImpl::writeAuthorSection(OutputList &ol)
+void ClassDefImpl::writeAuthorSection(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Man);
@@ -1915,7 +2181,7 @@ void ClassDefImpl::writeAuthorSection(OutputList &ol)
 }
 
 
-void ClassDefImpl::writeSummaryLinks(OutputList &ol)
+void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -2093,7 +2359,7 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
 }
 
 /** Write class documentation inside another container (i.e. a group) */
-void ClassDefImpl::writeInlineDocumentation(OutputList &ol)
+void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 {
   bool isSimple = m_impl->isSimple;
 
@@ -2210,7 +2476,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void ClassDefImpl::writeMoreLink(OutputList &ol,const QCString &anchor)
+void ClassDefImpl::writeMoreLink(OutputList &ol,const QCString &anchor) const
 {
   // TODO: clean up this mess by moving it to
   // the output generators...
@@ -2266,7 +2532,7 @@ bool ClassDefImpl::visibleInParentsDeclList() const
          );
 }
 
-void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const char *header,bool localNames)
+void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const char *header,bool localNames) const
 {
   //static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   //static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
@@ -2375,7 +2641,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const char *h
   }
 }
 
-void ClassDefImpl::addClassAttributes(OutputList &ol)
+void ClassDefImpl::addClassAttributes(OutputList &ol) const
 {
   QStrList sl;
   if (isFinal())    sl.append("final");
@@ -2400,7 +2666,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*pageTitle*/)
+void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*pageTitle*/) const
 {
   ol.startContents();
 
@@ -2585,7 +2851,7 @@ QCString ClassDefImpl::title() const
 }
 
 // write all documentation for this class
-void ClassDefImpl::writeDocumentation(OutputList &ol)
+void ClassDefImpl::writeDocumentation(OutputList &ol) const
 {
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   //static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
@@ -2643,7 +2909,7 @@ void ClassDefImpl::writeDocumentation(OutputList &ol)
   }
 }
 
-void ClassDefImpl::writeMemberPages(OutputList &ol)
+void ClassDefImpl::writeMemberPages(OutputList &ol) const
 {
   ///////////////////////////////////////////////////////////////////////////
   //// Member definitions on separate pages
@@ -2656,8 +2922,7 @@ void ClassDefImpl::writeMemberPages(OutputList &ol)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    ml->countDocMembers();
-    if (ml->numDocMembers()>0 && (ml->listType()&MemberListType_detailedLists))
+    if (ml->numDocMembers()>ml->numDocEnumValues() && (ml->listType()&MemberListType_detailedLists))
     {
       ml->writeDocumentationPage(ol,displayName(),this);
     }
@@ -2666,7 +2931,7 @@ void ClassDefImpl::writeMemberPages(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void ClassDefImpl::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
+void ClassDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const
 {
   static bool createSubDirs=Config_getBool(CREATE_SUBDIRS);
 
@@ -2716,7 +2981,7 @@ void ClassDefImpl::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) co
 
 
 
-void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol)
+void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol) const
 {
   // write inner classes after the parent, so the tag files contain
   // the definition in proper order!
@@ -2741,7 +3006,7 @@ void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol)
 }
 
 // write the list of all (inherited) members for this class
-void ClassDefImpl::writeMemberList(OutputList &ol)
+void ClassDefImpl::writeMemberList(OutputList &ol) const
 {
   static bool cOpt    = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
   //static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
@@ -2811,7 +3076,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol)
     for (;(mi=it.current());++it)
     {
       MemberDef *md=mi->memberDef;
-      ClassDef  *cd=md->getClassDef();
+      const ClassDef  *cd=md->getClassDef();
       Protection prot = mi->prot;
       Specifier virt=md->virtualness();
 
@@ -3024,7 +3289,6 @@ void ClassDefImpl::writeMemberList(OutputList &ol)
   ol.popGeneratorState();
 }
 
-
 // add a reference to an example
 bool ClassDefImpl::addExample(const char *anchor,const char *nameStr,
     const char *file)
@@ -3183,8 +3447,8 @@ bool ClassDefImpl::hasNonReferenceSuperClass() const
 /*! called from MemberDef::writeDeclaration() to (recursively) write the
  *  definition of an anonymous struct, union or class.
  */
-void ClassDefImpl::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
-    ClassDef *inheritedFrom,const char *inheritId)
+void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+    const ClassDef *inheritedFrom,const char *inheritId) const
 {
   //printf("ClassName=`%s' inGroup=%d\n",name().data(),inGroup);
 
@@ -3319,7 +3583,7 @@ bool ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances,int lev
     BaseClassListIterator bcli(*baseClasses());
     for ( ; bcli.current() && !found ; ++bcli)
     {
-      ClassDef *ccd=bcli.current()->classDef;
+      const ClassDef *ccd=bcli.current()->classDef;
       if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
       //printf("isBaseClass() baseclass %s\n",ccd->name().data());
       if (ccd==bcd)
@@ -3422,13 +3686,13 @@ void ClassDefImpl::mergeMembers()
               bool hidden=FALSE;
               MemberNameInfoIterator dstMnii(*dstMni);
               MemberInfo *dstMi;
-              ClassDef *srcCd = srcMd->getClassDef();
+              const ClassDef *srcCd = srcMd->getClassDef();
               for ( ; (dstMi=dstMnii.current()) && !found; ++dstMnii )
               {
                 MemberDef *dstMd = dstMi->memberDef;
                 if (srcMd!=dstMd) // different members
                 {
-                  ClassDef *dstCd = dstMd->getClassDef();
+                  const ClassDef *dstCd = dstMd->getClassDef();
                   //printf("  Is %s a base class of %s?\n",srcCd->name().data(),dstCd->name().data());
                   if (srcCd==dstCd || dstCd->isBaseClass(srcCd,TRUE))
                     // member is in the same or a base class
@@ -4135,7 +4399,7 @@ void ClassDefImpl::setGroupDefForAllMembers(GroupDef *gd,Grouping::GroupPri_t pr
   }
 }
 
-void ClassDefImpl::addInnerCompound(Definition *d)
+void ClassDefImpl::addInnerCompound(const Definition *d)
 {
   //printf("**** %s::addInnerCompound(%s)\n",name().data(),d->name().data());
   if (d->definitionType()==Definition::TypeClass) // only classes can be
@@ -4145,7 +4409,7 @@ void ClassDefImpl::addInnerCompound(Definition *d)
     {
       m_impl->innerClasses = new ClassSDict(17);
     }
-    m_impl->innerClasses->inSort(d->localName(),dynamic_cast<ClassDef *>(d));
+    m_impl->innerClasses->inSort(d->localName(),dynamic_cast<const ClassDef *>(d));
   }
 }
 
@@ -4201,7 +4465,7 @@ Definition *ClassDefImpl::findInnerCompound(const char *name) const
 //}
 
 ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
-    int startLine, int startColumn, const QCString &templSpec,bool &freshInstance)
+    int startLine, int startColumn, const QCString &templSpec,bool &freshInstance) const
 {
   freshInstance = FALSE;
   if (m_impl->templateInstances==0)
@@ -4224,7 +4488,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
   return templateClass;
 }
 
-ClassDef *ClassDefImpl::getVariableInstance(const char *templSpec)
+ClassDef *ClassDefImpl::getVariableInstance(const char *templSpec) const
 {
   if (m_impl->variableInstances==0)
   {
@@ -4269,7 +4533,7 @@ QDict<int> *ClassDefImpl::getTemplateBaseClassNames() const
   return m_impl->templBaseClassNames;
 }
 
-void ClassDefImpl::addMembersToTemplateInstance(ClassDef *cd,const char *templSpec)
+void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const char *templSpec)
 {
   //printf("%s::addMembersToTemplateInstance(%s,%s)\n",name().data(),cd->name().data(),templSpec);
   if (cd->memberNameInfoSDict()==0) return;
@@ -4480,7 +4744,7 @@ MemberDef *ClassDefImpl::getMemberByName(const QCString &name) const
       MemberInfo *mi;
       for (mnii.toFirst();(mi=mnii.current());++mnii)
       {
-        ClassDef *mcd=mi->memberDef->getClassDef();
+        const ClassDef *mcd=mi->memberDef->getClassDef();
         int m=minClassDistance(this,mcd);
         //printf("found member in %s linkable=%d m=%d\n",
         //    mcd->name().data(),mcd->isLinkable(),m);
@@ -4559,8 +4823,8 @@ void ClassDefImpl::sortMemberLists()
   }
 }
 
-int ClassDefImpl::countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
-                                      int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses)
+int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
+                                      int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const
 {
   //printf("%s: countMemberDeclarations for %d and %d\n",name().data(),lt,lt2);
   int count=0;
@@ -4570,13 +4834,11 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,ClassDef *inheritedF
   {
     if (ml)
     {
-      ml->countDecMembers();
       count+=ml->numDecMembers();
       //printf("-> ml=%d\n",ml->numDecMembers());
     }
     if (ml2)
     {
-      ml2->countDecMembers();
       count+=ml2->numDecMembers();
       //printf("-> ml2=%d\n",ml2->numDecMembers());
     }
@@ -4601,10 +4863,61 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,ClassDef *inheritedF
   return count;
 }
 
+void ClassDefImpl::setAnonymousEnumType()
+{
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
+  LayoutDocEntry *lde;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    if (lde->kind()==LayoutDocEntry::MemberDecl)
+    {
+      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      MemberList * ml = getMemberList(lmd->type);
+      if (ml)
+      {
+        ml->setAnonymousEnumType();
+      }
+    }
+    else if (lde->kind()==LayoutDocEntry::MemberGroups)
+    {
+      if (m_impl->memberGroupSDict)
+      {
+        MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
+        MemberGroup *mg;
+        for (;(mg=mgli.current());++mgli)
+        {
+          mg->setAnonymousEnumType();
+        }
+      }
+    }
+  }
+}
+
+void ClassDefImpl::countMembers()
+{
+  QListIterator<MemberList> mli(m_impl->memberLists);
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    ml->countDecMembers();
+    ml->countDocMembers();
+  }
+  if (m_impl->memberGroupSDict)
+  {
+    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->countDecMembers();
+      mg->countDocMembers();
+    }
+  }
+}
 
 int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
-                                       ClassDef *inheritedFrom,bool invert,bool showAlways,
-                                       QPtrDict<void> *visitedClasses)
+                                       const ClassDef *inheritedFrom,bool invert,bool showAlways,
+                                       QPtrDict<void> *visitedClasses) const
 {
   int inhCount = 0;
   int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE);
@@ -4642,7 +4955,7 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
 }
 
 void ClassDefImpl::getTitleForMemberListType(MemberListType type,
-               QCString &title,QCString &subtitle)
+               QCString &title,QCString &subtitle) const
 {
   SrcLangExt lang = getLanguage();
   QListIterator<LayoutDocEntry> eli(
@@ -4665,7 +4978,7 @@ void ClassDefImpl::getTitleForMemberListType(MemberListType type,
   subtitle="";
 }
 
-int ClassDefImpl::countAdditionalInheritedMembers()
+int ClassDefImpl::countAdditionalInheritedMembers() const
 {
   int totalCount=0;
   QListIterator<LayoutDocEntry> eli(
@@ -4691,7 +5004,7 @@ int ClassDefImpl::countAdditionalInheritedMembers()
   return totalCount;
 }
 
-void ClassDefImpl::writeAdditionalInheritedMembers(OutputList &ol)
+void ClassDefImpl::writeAdditionalInheritedMembers(OutputList &ol) const
 {
   //printf("**** writeAdditionalInheritedMembers()\n");
   QListIterator<LayoutDocEntry> eli(
@@ -4712,7 +5025,7 @@ void ClassDefImpl::writeAdditionalInheritedMembers(OutputList &ol)
 }
 
 int ClassDefImpl::countMembersIncludingGrouped(MemberListType lt,
-              ClassDef *inheritedFrom,bool additional)
+              const ClassDef *inheritedFrom,bool additional) const
 {
   int count=0;
   MemberList *ml = getMemberList(lt);
@@ -4740,10 +5053,11 @@ int ClassDefImpl::countMembersIncludingGrouped(MemberListType lt,
   return count;
 }
 
+
 void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,
                MemberListType lt,int lt2,const QCString &title,
-               ClassDef *inheritedFrom,bool invert,bool showAlways,
-               QPtrDict<void> *visitedClasses)
+               const ClassDef *inheritedFrom,bool invert,bool showAlways,
+               QPtrDict<void> *visitedClasses) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -4790,15 +5104,15 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,
 }
 
 void ClassDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
-               const char *subTitle,bool showInline,ClassDef *inheritedFrom,int lt2,
-               bool invert,bool showAlways,QPtrDict<void> *visitedClasses)
+               const char *subTitle,bool showInline,const ClassDef *inheritedFrom,int lt2,
+               bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const
 {
   //printf("%s: ClassDefImpl::writeMemberDeclarations lt=%d lt2=%d\n",name().data(),lt,lt2);
   MemberList * ml = getMemberList(lt);
   MemberList * ml2 = getMemberList((MemberListType)lt2);
   if (getLanguage()==SrcLangExt_VHDL) // use specific declarations function
   { 
-    static ClassDef *cdef;
+    static const ClassDef *cdef;
     if (cdef!=this)
     { // only one inline link
       VhdlDocGen::writeInlineClassLink(this,ol);
@@ -4838,7 +5152,7 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,cons
 }
 
 void ClassDefImpl::addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
-                        ClassDef *inheritedFrom,const QCString &inheritId)
+                        const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("** %s::addGroupedInheritedMembers(%p) inheritId=%s\n",name().data(),m_impl->memberGroupSDict,inheritId.data());
   if (m_impl->memberGroupSDict)
@@ -4855,14 +5169,14 @@ void ClassDefImpl::addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
   }
 }
 
-void ClassDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline)
+void ClassDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline) const
 {
   //printf("%s: ClassDefImpl::writeMemberDocumentation()\n",name().data());
   MemberList * ml = getMemberList(lt);
   if (ml) ml->writeDocumentation(ol,displayName(),this,title,FALSE,showInline);
 }
 
-void ClassDefImpl::writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt)
+void ClassDefImpl::writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt) const
 {
   //printf("%s: ClassDefImpl::writeSimpleMemberDocumentation()\n",name().data());
   MemberList * ml = getMemberList(lt);
@@ -4871,7 +5185,7 @@ void ClassDefImpl::writeSimpleMemberDocumentation(OutputList &ol,MemberListType 
 
 void ClassDefImpl::writePlainMemberDeclaration(OutputList &ol,
          MemberListType lt,bool inGroup,
-         ClassDef *inheritedFrom,const char *inheritId)
+         const ClassDef *inheritedFrom,const char *inheritId) const
 {
   //printf("%s: ClassDefImpl::writePlainMemberDeclaration()\n",name().data());
   MemberList * ml = getMemberList(lt);
@@ -4937,7 +5251,7 @@ QDict<ClassDef> *ClassDefImpl::getTemplateInstances() const
   return m_impl->templateInstances;
 }
 
-ClassDef *ClassDefImpl::templateMaster() const
+const ClassDef *ClassDefImpl::templateMaster() const
 {
   return m_impl->templateMaster;
 }
@@ -5067,7 +5381,7 @@ void ClassDefImpl::setCompoundType(CompoundType t)
   m_impl->compType = t;
 }
 
-void ClassDefImpl::setTemplateMaster(ClassDef *tm)
+void ClassDefImpl::setTemplateMaster(const ClassDef *tm)
 {
   m_impl->templateMaster=tm;
 }

@@ -146,7 +146,7 @@ static void endIndexHierarchy(OutputList &ol,int level)
 class MemberIndexList : public QList<MemberDef>
 {
   public:
-    typedef MemberDef ElementType;
+    typedef const MemberDef ElementType;
     MemberIndexList(uint letter) : QList<MemberDef>(), m_letter(letter) {}
     ~MemberIndexList() {}
     int compareValues(const MemberDef *md1, const MemberDef *md2) const
@@ -252,7 +252,7 @@ QCString fixSpaces(const QCString &s)
   return substitute(s," ","&#160;");
 }
 
-void startTitle(OutputList &ol,const char *fileName,Definition *def)
+void startTitle(OutputList &ol,const char *fileName,const Definition *def)
 {
   ol.startHeaderSection();
   if (def) def->writeSummaryLinks(ol);
@@ -309,7 +309,7 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
   TooltipManager::instance()->clearTooltips(); // Only clear after the last is written
 }
 
-void endFileWithNavPath(Definition *d,OutputList &ol)
+void endFileWithNavPath(const Definition *d,OutputList &ol)
 {
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString navPath;
@@ -365,7 +365,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
           MemberDef *md;
           for (mi.toFirst();(md=mi.current());++mi)
           {
-            MemberList *enumList = md->enumFieldList();
+            const MemberList *enumList = md->enumFieldList();
             bool isDir = enumList!=0 && md->isEnumerate();
             bool isAnonymous = md->name().find('@')!=-1;
             static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
@@ -1649,14 +1649,14 @@ void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool globalO
   }
 }
 
-static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
+static void writeNamespaceTree(const NamespaceSDict *nsDict,FTVHelp *ftv,
                                bool rootOnly,bool showClasses,bool addToIndex,ClassDef::CompoundType ct)
 {
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   if (nsDict)
   {
     NamespaceSDict::Iterator nli(*nsDict);
-    NamespaceDef *nd;
+    const NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
       if (nd->localName().find('@')==-1 &&
@@ -1985,7 +1985,7 @@ static QCString letterToLabel(uint startLetter)
 class PrefixIgnoreClassList : public ClassList
 {
   public:
-    typedef ClassDef ElementType;
+    typedef const ClassDef ElementType;
     PrefixIgnoreClassList(uint letter) : m_letter(letter) {}
     uint letter() const { return m_letter; }
   private:
@@ -2071,7 +2071,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
 
   // first count the number of headers
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
+  const ClassDef *cd;
   uint startLetter=0;
   int headerItems=0;
   for (;(cd=cli.current());++cli)
@@ -2748,7 +2748,7 @@ static void writeAnnotatedExceptionIndex(OutputList &ol)
 static void writeClassLinkForMember(OutputList &ol,MemberDef *md,const char *separator,
                              QCString &prevClassName)
 {
-  ClassDef *cd=md->getClassDef();
+  const ClassDef *cd=md->getClassDef();
   if ( cd && prevClassName!=cd->displayName())
   {
     ol.docify(separator);
@@ -2762,7 +2762,7 @@ static void writeClassLinkForMember(OutputList &ol,MemberDef *md,const char *sep
 static void writeFileLinkForMember(OutputList &ol,MemberDef *md,const char *separator,
                              QCString &prevFileName)
 {
-  FileDef *fd=md->getFileDef();
+  const FileDef *fd=md->getFileDef();
   if (fd && prevFileName!=fd->name())
   {
     ol.docify(separator);
@@ -2776,7 +2776,7 @@ static void writeFileLinkForMember(OutputList &ol,MemberDef *md,const char *sepa
 static void writeNamespaceLinkForMember(OutputList &ol,MemberDef *md,const char *separator,
                              QCString &prevNamespaceName)
 {
-  NamespaceDef *nd=md->getNamespaceDef();
+  const NamespaceDef *nd=md->getNamespaceDef();
   if (nd && prevNamespaceName!=nd->displayName())
   {
     ol.docify(separator);
@@ -2898,9 +2898,7 @@ void initClassMemberIndices()
 void addClassMemberNameToIndex(MemberDef *md)
 {
   static bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
-  ClassDef *cd=0;
-
-
+  const ClassDef *cd=0;
 
   if (md->isLinkableInProject() &&
       (cd=md->getClassDef())    &&
@@ -2982,7 +2980,7 @@ void initNamespaceMemberIndices()
 
 void addNamespaceMemberNameToIndex(MemberDef *md)
 {
-  NamespaceDef *nd=md->getNamespaceDef();
+  const NamespaceDef *nd=md->getNamespaceDef();
   if (nd && nd->isLinkableInProject() && md->isLinkableInProject())
   {
     QCString n = md->name();
@@ -3049,7 +3047,7 @@ void initFileMemberIndices()
 
 void addFileMemberNameToIndex(MemberDef *md)
 {
-  FileDef *fd=md->getFileDef();
+  const FileDef *fd=md->getFileDef();
   if (fd && fd->isLinkableInProject() && md->isLinkableInProject())
   {
     QCString n = md->name();
@@ -4052,7 +4050,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           MemberDef *md;
           for (mi.toFirst();(md=mi.current());++mi)
           {
-            MemberList *enumList = md->enumFieldList();
+            const MemberList *enumList = md->enumFieldList();
             bool isDir = enumList!=0 && md->isEnumerate();
             if (md->isVisible() && md->name().find('@')==-1)
             {

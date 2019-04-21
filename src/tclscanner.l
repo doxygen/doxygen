@@ -456,7 +456,7 @@ static struct
   QAsciiDict<Entry> fn; // all read function entries
   QList<Entry> entry; // list of all created entries, will be deleted after codifying
   Protection protection; // current protections state
-  MemberDef *memberdef; // contain current MemberDef when codifying
+  const MemberDef *memberdef; // contain current MemberDef when codifying
   bool collectXRefs;
 } tcl;
 
@@ -1722,7 +1722,7 @@ static void tcl_codify_link(QCString name)
     if (tcl.memberdef)
     {
         myDef->addSourceReferencedBy(tcl.memberdef);
-        tcl.memberdef->addSourceReferences(myDef);
+        //tcl.memberdef->addSourceReferences(myDef);
     } else {
       Entry* callerEntry;
       unsigned int i;
@@ -2975,9 +2975,9 @@ void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    int startLine,
                    int endLine,
                    bool inlineFragment,
-                   MemberDef *memberDef,
+                   const MemberDef *memberDef,
                    bool showLineNumbers,
-                   Definition *searchCtx,
+                   const Definition *searchCtx,
                    bool collectXRefs
                   )
 {

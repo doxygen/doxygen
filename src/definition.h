@@ -105,6 +105,8 @@ class Definition : public DefinitionIntf
     //-----------------------------------------------------------------------------------
     // ----  getters -----
     //-----------------------------------------------------------------------------------
+    /*! Returns TRUE if this is an alias of another definition */
+    virtual bool isAlias() const = 0;
 
     /*! Returns the name of the definition */
     virtual QCString name() const = 0;
@@ -272,7 +274,10 @@ class Definition : public DefinitionIntf
     virtual QCString id() const = 0;
 
     /** returns the section dictionary, only of importance for pagedef */
-    virtual SectionDict * getSectionDict(void) = 0;
+    virtual SectionDict * getSectionDict() const = 0;
+
+    virtual QCString navigationPathAsString() const = 0;
+    virtual QCString pathFragment() const = 0;
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -304,54 +309,57 @@ class Definition : public DefinitionIntf
     /*! Sets the tag file id via which this definition was imported. */
     virtual void setReference(const char *r) = 0;
 
-    /*! Add the list of anchors that mark the sections that are found in the 
-     * documentation.
-     */
-    virtual void addSectionsToDefinition(QList<SectionInfo> *anchorList) = 0;
-
     // source references
     virtual void setBodySegment(int bls,int ble) = 0;
     virtual void setBodyDef(FileDef *fd) = 0;
-    virtual void addSourceReferencedBy(MemberDef *d) = 0;
-    virtual void addSourceReferences(MemberDef *d) = 0;
 
     virtual void setRefItems(const QList<ListItemInfo> *sli) = 0;
-    virtual void mergeRefItems(Definition *d) = 0;
-    virtual void addInnerCompound(Definition *d) = 0;
     virtual void setOuterScope(Definition *d) = 0;
 
     virtual void setHidden(bool b) = 0;
 
     virtual void setArtificial(bool b) = 0;
     virtual void setLanguage(SrcLangExt lang) = 0;
+    virtual void setLocalName(const QCString name) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual void writeSourceDef(OutputList &ol,const char *scopeName) = 0;
-    virtual void writeInlineCode(OutputList &ol,const char *scopeName) = 0;
-    virtual void writeSourceRefs(OutputList &ol,const char *scopeName) = 0;
-    virtual void writeSourceReffedBy(OutputList &ol,const char *scopeName) = 0;
     virtual void makePartOfGroup(GroupDef *gd) = 0;
-    virtual void writeNavigationPath(OutputList &ol) const = 0;
-    virtual QCString navigationPathAsString() const = 0;
-    virtual void writeQuickMemberLinks(OutputList &,MemberDef *) const = 0;
-    virtual void writeSummaryLinks(OutputList &) = 0;
-    virtual QCString pathFragment() const = 0;
 
-    /*! Writes the documentation anchors of the definition to 
-     *  the Doxygen::tagFile stream.
+    /*! Add the list of anchors that mark the sections that are found in the 
+     * documentation.
      */
-    virtual void writeDocAnchorsToTagFile(FTextStream &) = 0;
-    virtual void setLocalName(const QCString name) = 0;
-
+    virtual void addSectionsToDefinition(QList<SectionInfo> *anchorList) = 0;
+    virtual void addSourceReferencedBy(const MemberDef *d) = 0;
+    virtual void addSourceReferences(const MemberDef *d) = 0;
+    virtual void mergeRefItems(Definition *d) = 0;
+    virtual void addInnerCompound(const Definition *d) = 0;
     virtual void addSectionsToIndex() = 0;
-    virtual void writeToc(OutputList &ol, const LocalToc &lt) = 0;
 
-    virtual void setCookie(Cookie *cookie) = 0;
+    //-----------------------------------------------------------------------------------
+    // --- writing output ----
+    //-----------------------------------------------------------------------------------
+    virtual void writeSourceDef(OutputList &ol,const char *scopeName) const = 0;
+    virtual void writeInlineCode(OutputList &ol,const char *scopeName) const = 0;
+    virtual void writeSourceRefs(OutputList &ol,const char *scopeName) const = 0;
+    virtual void writeSourceReffedBy(OutputList &ol,const char *scopeName) const = 0;
+    virtual void writeNavigationPath(OutputList &ol) const = 0;
+    virtual void writeQuickMemberLinks(OutputList &,const MemberDef *) const = 0;
+    virtual void writeSummaryLinks(OutputList &) const = 0;
+    virtual void writeDocAnchorsToTagFile(FTextStream &) const = 0;
+    virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- cookie storage ----
+    //-----------------------------------------------------------------------------------
+    virtual void setCookie(Cookie *cookie) const = 0;
     virtual Cookie *cookie() const = 0;
 
+    //-----------------------------------------------------------------------------------
+    // --- symbol name ----
+    //-----------------------------------------------------------------------------------
     virtual void _setSymbolName(const QCString &name) = 0;
     virtual QCString _symbolName() const = 0;
 };

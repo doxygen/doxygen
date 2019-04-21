@@ -92,7 +92,7 @@ bool ClassSDict::declVisible(const ClassDef::CompoundType *filter) const
 }
 
 void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
-                                  const char *header,bool localNames)
+                                  const char *header,bool localNames) const
 {
   static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   if (count()>0)
@@ -109,6 +109,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
           (filter==0 || *filter==cd->compoundType())
          )
       {
+        //printf("writeDeclarationLink()\n");
         cd->writeDeclarationLink(ol,found,header,localNames);
       }
     }
@@ -116,7 +117,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
   }
 }
 
-void ClassSDict::writeDocumentation(OutputList &ol,Definition * container)
+void ClassSDict::writeDocumentation(OutputList &ol,const Definition * container) const
 {
   static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
 
@@ -139,6 +140,7 @@ void ClassSDict::writeDocumentation(OutputList &ol,Definition * container)
       if (cd->name().find('@')==-1 &&
           cd->isLinkableInProject() &&
           cd->isEmbeddedInOuterScope() &&
+          !cd->isAlias() &&
           (container==0 || cd->partOfGroups()==0) // if container==0 -> show as part of the group docs, otherwise only show if not part of a group
          )
       {

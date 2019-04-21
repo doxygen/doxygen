@@ -52,7 +52,7 @@ class HtmlCodeGenerator : public CodeOutputInterface
     void startFontClass(const char *s);
     void endFontClass();
     void writeCodeAnchor(const char *anchor);
-    void setCurrentDoc(Definition *,const char *,bool) {}
+    void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
 
   private:
@@ -119,9 +119,9 @@ class HtmlGenerator : public OutputGenerator
     { m_codeGen.writeCodeAnchor(anchor); }
     // ---------------------------
 
-    void setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile);
+    void setCurrentDoc(const Definition *context,const char *anchor,bool isSourceFile);
     void addWord(const char *word,bool hiPriority);
-    void writeDoc(DocNode *,Definition *,MemberDef *);
+    void writeDoc(DocNode *,const Definition *,const MemberDef *);
 
     void startFile(const char *name,const char *manName,const char *title);
     void writeFooter(const char *navPath);

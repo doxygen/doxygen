@@ -338,8 +338,8 @@ void XMLCodeGenerator::finish()
 
 static void writeTemplateArgumentList(ArgumentList *al,
                                       FTextStream &t,
-                                      Definition *scope,
-                                      FileDef *fileScope,
+                                      const Definition *scope,
+                                      const FileDef *fileScope,
                                       int indent)
 {
   QCString indentStr;
@@ -381,7 +381,7 @@ static void writeTemplateArgumentList(ArgumentList *al,
   }
 }
 
-static void writeMemberTemplateLists(MemberDef *md,FTextStream &t)
+static void writeMemberTemplateLists(const MemberDef *md,FTextStream &t)
 {
   ArgumentList *templMd = md->templateArguments();
   if (templMd) // function template prefix
@@ -390,7 +390,7 @@ static void writeMemberTemplateLists(MemberDef *md,FTextStream &t)
   }
 }
 
-static void writeTemplateList(ClassDef *cd,FTextStream &t)
+static void writeTemplateList(const ClassDef *cd,FTextStream &t)
 {
   writeTemplateArgumentList(cd->templateArguments(),t,cd,0,4);
 }
@@ -398,8 +398,8 @@ static void writeTemplateList(ClassDef *cd,FTextStream &t)
 static void writeXMLDocBlock(FTextStream &t,
                       const QCString &fileName,
                       int lineNr,
-                      Definition *scope,
-                      MemberDef * md,
+                      const Definition *scope,
+                      const MemberDef * md,
                       const QCString &text)
 {
   QCString stext = text.stripWhiteSpace();
@@ -442,7 +442,7 @@ void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
   delete xmlGen;
 }
 
-static void writeMemberReference(FTextStream &t,Definition *def,MemberDef *rmd,const char *tagName)
+static void writeMemberReference(FTextStream &t,const Definition *def,const MemberDef *rmd,const char *tagName)
 {
   QCString scope = rmd->getScopeString();
   QCString name = rmd->name();
@@ -478,7 +478,7 @@ static void stripQualifiers(QCString &typeStr)
   }
 }
 
-static QCString classOutputFileBase(ClassDef *cd)
+static QCString classOutputFileBase(const ClassDef *cd)
 {
   //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (inlineGroupedClasses && cd->partOfGroups()!=0) 
@@ -487,7 +487,7 @@ static QCString classOutputFileBase(ClassDef *cd)
   //  return cd->getOutputFileBase();
 }
 
-static QCString memberOutputFileBase(MemberDef *md)
+static QCString memberOutputFileBase(const MemberDef *md)
 {
   //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (inlineGroupedClasses && md->getClassDef() && md->getClassDef()->partOfGroups()!=0) 
@@ -498,7 +498,7 @@ static QCString memberOutputFileBase(MemberDef *md)
 }
 
 
-static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,Definition *def)
+static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream &t,const Definition *def)
 {
 
   // + declaration/definition arg lists
@@ -817,7 +817,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     t << "        <bitfield>" << convertToXML(bitfield) << "</bitfield>" << endl;
   }
   
-  MemberDef *rmd = md->reimplements();
+  const MemberDef *rmd = md->reimplements();
   if (rmd)
   {
     t << "        <reimplements refid=\"" 
@@ -932,11 +932,11 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    MemberList *enumFields = md->enumFieldList();
+    const MemberList *enumFields = md->enumFieldList();
     if (enumFields)
     {
       MemberListIterator emli(*enumFields);
-      MemberDef *emd;
+      const MemberDef *emd;
       for (emli.toFirst();(emd=emli.current());++emli)
       {
         ti << "    <member refid=\"" << memberOutputFileBase(md)
@@ -1011,7 +1011,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   if (mdict)
   {
     MemberSDict::Iterator mdi(*mdict);
-    MemberDef *rmd;
+    const MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
       writeMemberReference(t,def,rmd,"references");
@@ -1021,7 +1021,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   if (mdict)
   {
     MemberSDict::Iterator mdi(*mdict);
-    MemberDef *rmd;
+    const MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
       writeMemberReference(t,def,rmd,"referencedby");
@@ -1033,20 +1033,20 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
 
 // namespace members are also inserted in the file scope, but
 // to prevent this duplication in the XML output, we optionally filter those here.
-static bool memberVisible(Definition *d,MemberDef *md)
+static bool memberVisible(const Definition *d,const MemberDef *md)
 {
     return Config_getBool(XML_NS_MEMB_FILE_SCOPE) ||
            d->definitionType()!=Definition::TypeFile ||
            md->getNamespaceDef()==0;
 }
 
-static void generateXMLSection(Definition *d,FTextStream &ti,FTextStream &t,
+static void generateXMLSection(const Definition *d,FTextStream &ti,FTextStream &t,
                       MemberList *ml,const char *kind,const char *header=0,
                       const char *documentation=0)
 {
   if (ml==0) return;
   MemberListIterator mli(*ml);
-  MemberDef *md;
+  const MemberDef *md;
   int count=0;
   for (mli.toFirst();(md=mli.current());++mli)
   {
@@ -1079,7 +1079,7 @@ static void generateXMLSection(Definition *d,FTextStream &ti,FTextStream &t,
   t << "      </sectiondef>" << endl;
 }
 
-static void writeListOfAllMembers(ClassDef *cd,FTextStream &t)
+static void writeListOfAllMembers(const ClassDef *cd,FTextStream &t)
 {
   t << "    <listofallmembers>" << endl;
   if (cd->memberNameInfoSDict())
@@ -1092,7 +1092,7 @@ static void writeListOfAllMembers(ClassDef *cd,FTextStream &t)
       MemberInfo *mi;
       for (mii.toFirst();(mi=mii.current());++mii)
       {
-        MemberDef *md=mi->memberDef;
+        const MemberDef *md=mi->memberDef;
         if (md->name().at(0)!='@') // skip anonymous members
         {
           Protection prot = mi->prot;
@@ -1132,7 +1132,7 @@ static void writeInnerClasses(const ClassSDict *cl,FTextStream &t)
   if (cl)
   {
     ClassSDict::Iterator cli(*cl);
-    ClassDef *cd;
+    const ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
       if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
@@ -1157,7 +1157,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
   if (nl)
   {
     NamespaceSDict::Iterator nli(*nl);
-    NamespaceDef *nd;
+    const NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
       if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
@@ -1206,7 +1206,7 @@ static void writeInnerGroups(const GroupList *gl,FTextStream &t)
   if (gl)
   {
     GroupListIterator gli(*gl);
-    GroupDef *sgd;
+    const GroupDef *sgd;
     for (gli.toFirst();(sgd=gli.current());++gli)
     {
       t << "    <innergroup refid=\"" << sgd->getOutputFileBase()
@@ -1230,7 +1230,7 @@ static void writeInnerDirs(const DirList *dl,FTextStream &t)
   }
 }
   
-static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
+static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
 {
   // + brief description
   // + detailed description
@@ -1443,7 +1443,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
   ti << "  </compound>" << endl;
 }
 
-static void generateXMLForNamespace(NamespaceDef *nd,FTextStream &ti)
+static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
 {
   // + contained class definitions
   // + contained namespace definitions
@@ -1659,7 +1659,7 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
   ti << "  </compound>" << endl;
 }
 
-static void generateXMLForGroup(GroupDef *gd,FTextStream &ti)
+static void generateXMLForGroup(const GroupDef *gd,FTextStream &ti)
 {
   // + members
   // + member groups
@@ -1983,7 +1983,7 @@ void generateXML()
 
   {
     ClassSDict::Iterator cli(*Doxygen::classSDict);
-    ClassDef *cd;
+    const ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
       generateXMLForClass(cd,t);
@@ -1999,7 +1999,7 @@ void generateXML()
   //  }
   //}
   NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
+  const NamespaceDef *nd;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
     msg("Generating XML output for namespace %s\n",nd->name().data());
@@ -2018,7 +2018,7 @@ void generateXML()
     }
   }
   GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
+  const GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
     msg("Generating XML output for group %s\n",gd->name().data());

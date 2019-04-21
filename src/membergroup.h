@@ -41,7 +41,7 @@ class MemberGroup
 {
   public:
     MemberGroup();
-    MemberGroup(Definition *parent,int id,const char *header,
+    MemberGroup(const Definition *parent,int id,const char *header,
                 const char *docs,const char *docFile,int docLine);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
@@ -49,28 +49,30 @@ class MemberGroup
     void insertMember(MemberDef *md);
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               ClassDef *inheritedFrom,const char *inheritId);
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *inheritedFrom,const char *inheritId) const;
     void writeDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool showInline=FALSE);
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               bool showInline=FALSE) const;
     void writeDocumentation(OutputList &ol,const char *scopeName,
-               Definition *container,bool showEnumValues,bool showInline);
+               const Definition *container,bool showEnumValues,bool showInline) const;
     void writeDocumentationPage(OutputList &ol,const char *scopeName,
-               Definition *container);
+               const Definition *container) const;
     void writeTagFile(FTextStream &);
-    void addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
+    void addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,
-               ClassDef *inheritedFrom,const QCString &inheritId);
+               const ClassDef *inheritedFrom,const QCString &inheritId) const;
+    void setAnonymousEnumType();
 
     const QCString &documentation() const { return doc; }
     bool allMembersInSameSection() const { return inSameSection; }
     void addToDeclarationSection();
-    int countDecMembers(GroupDef *gd=0);
-    int countDocMembers();
+    void countDecMembers();
+    void countDocMembers();
     int countGroupedInheritedMembers(MemberListType lt);
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();
+    /*
     int varCount() const;
     int funcCount() const;
     int enumCount() const;
@@ -81,14 +83,18 @@ class MemberGroup
     int protoCount() const;
     int defineCount() const;
     int friendCount() const;
+    */
     int numDecMembers() const;
+    int numDecEnumValues() const;
     int numDocMembers() const;
-    int countInheritableMembers(ClassDef *inheritedFrom) const;
+    int numDocEnumValues() const;
+
+    int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void setInGroup(bool b);
     void addListReferences(Definition *d);
     void setRefItems(const QList<ListItemInfo> *sli);
     MemberList *members() const { return memberList; }
-    Definition *parent() const { return m_parent; }
+    const Definition *parent() const { return m_parent; }
     QCString anchor() const;
 
     QCString docFile() const { return m_docFile; }
@@ -100,12 +106,11 @@ class MemberGroup
     int grpId;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file
-    Definition *scope;
     QCString doc;
     bool inSameSection;
     int  m_numDecMembers;
     int  m_numDocMembers;
-    Definition *m_parent;
+    const Definition *m_parent;
     QCString m_docFile;
     int m_docLine;
     QList<ListItemInfo> *m_xrefListItems;

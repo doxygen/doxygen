@@ -75,10 +75,10 @@ class OutputList : public OutputDocInterface
     //////////////////////////////////////////////////
 
     bool generateDoc(const char *fileName,int startLine,
-                     Definition *ctx,MemberDef *md,const QCString &docStr,
+                     const Definition *ctx,const MemberDef *md,const QCString &docStr,
                      bool indexWords,bool isExample,const char *exampleName=0,
                      bool singleLine=FALSE,bool linkFromIndex=FALSE);
-    void writeDoc(DocRoot *root,Definition *ctx,MemberDef *md);
+    void writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md);
     bool parseText(const QCString &textStr);
     
 
@@ -487,7 +487,7 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endFontClass); }
     void writeCodeAnchor(const char *name)
     { forall(&OutputGenerator::writeCodeAnchor,name); }
-    void setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile)
+    void setCurrentDoc(const Definition *context,const char *anchor,bool isSourceFile)
     { forall(&OutputGenerator::setCurrentDoc,context,anchor,isSourceFile); }
     void addWord(const char *word,bool hiPriority)
     { forall(&OutputGenerator::addWord,word,hiPriority); }
@@ -548,7 +548,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO3(uchar,uchar,uchar);
     FORALLPROTO3(const char *,const char *,const char *);
     FORALLPROTO3(const ClassDiagram &,const char *,const char *);
-    FORALLPROTO3(Definition*,const char *,bool);
+    FORALLPROTO3(const Definition*,const char *,bool);
     FORALLPROTO4(SectionTypes,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,bool);

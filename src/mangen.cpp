@@ -706,7 +706,7 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
+void ManGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
 {
   ManDocVisitor *visitor = new ManDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""));
   n->accept(visitor);

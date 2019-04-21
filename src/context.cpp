@@ -1254,7 +1254,7 @@ TemplateVariant TranslateContext::get(const char *n) const
   return p->get(n);
 }
 
-static TemplateVariant parseDoc(Definition *def,const QCString &file,int line,
+static TemplateVariant parseDoc(const Definition *def,const QCString &file,int line,
                                 const QCString &relPath,const QCString &docStr,bool isBrief)
 {
   TemplateVariant result;
@@ -1324,7 +1324,7 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
   return TemplateVariant(s.data(),TRUE);
 }
 
-static TemplateVariant parseCode(FileDef *fd,const QCString &relPath)
+static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
 {
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   ParserInterface *pIntf = Doxygen::parserManager->getParser(fd->getDefFileExtension());
@@ -1341,7 +1341,7 @@ static TemplateVariant parseCode(FileDef *fd,const QCString &relPath)
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
               0,                  // exampleName
-              fd,                 // fileDef
+              const_cast<FileDef*>(fd),  // fileDef, TODO: should be const
               -1,                 // startLine
               -1,                 // endLine
               FALSE,              // inlineFragment
@@ -1360,7 +1360,7 @@ static TemplateVariant parseCode(FileDef *fd,const QCString &relPath)
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
               0,                  // exampleName
-              fd,                 // fileDef
+              const_cast<FileDef*>(fd),  // fileDef, TODO: should be const
               -1,                 // startLine
               -1,                 // endLine
               FALSE,              // inlineFragment
@@ -1387,7 +1387,7 @@ template<typename T>
 class DefinitionContext
 {
   public:
-    DefinitionContext(Definition *d) : m_def(d)
+    DefinitionContext(const Definition *d) : m_def(d)
     {
       assert(d!=0);
     }
@@ -1574,9 +1574,9 @@ class DefinitionContext
         return FALSE;
       }
     }
-    void fillPath(Definition *def,TemplateList *list) const
+    void fillPath(const Definition *def,TemplateList *list) const
     {
-      Definition *outerScope = def->getOuterScope();
+      const Definition *outerScope = def->getOuterScope();
       Definition::DefType type = def->definitionType();
       if (outerScope && outerScope!=Doxygen::globalScope)
       {
@@ -1618,7 +1618,7 @@ class DefinitionContext
   protected:
     struct Cachable : public Definition::Cookie
     {
-      Cachable(Definition *def) : detailsOutputFormat(ContextOutputFormat_Unspecified),
+      Cachable(const Definition *def) : detailsOutputFormat(ContextOutputFormat_Unspecified),
                                   briefOutputFormat(ContextOutputFormat_Unspecified),
                                   inbodyDocsOutputFormat(ContextOutputFormat_Unspecified)
       {
@@ -1675,7 +1675,7 @@ class DefinitionContext
       assert(c!=0);
       return *c;
     }
-    Definition      *m_def;
+    const Definition      *m_def;
 };
 //%% }
 
@@ -1810,7 +1810,7 @@ TemplateListIntf::ConstIterator *IncludeInfoListContext::createIterator() const
 class ClassContext::Private : public DefinitionContext<ClassContext::Private>
 {
   public:
-    Private(ClassDef *cd) : DefinitionContext<ClassContext::Private>(cd),
+    Private(const ClassDef *cd) : DefinitionContext<ClassContext::Private>(cd),
        m_classDef(cd)
     {
       static bool init=FALSE;
@@ -2322,7 +2322,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         if (m_classDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_classDef->getClassSDict());
-          ClassDef *cd;
+          const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
             if (cd->visibleInParentsDeclList())
@@ -2344,7 +2344,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         if (m_classDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_classDef->getClassSDict());
-          ClassDef *cd;
+          const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
             if (cd->name().find('@')==-1 &&
@@ -2365,16 +2365,16 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     {
       return m_classDef->compoundTypeString();
     }
-    void addTemplateDecls(Definition *d,TemplateList *tl) const
+    void addTemplateDecls(const Definition *d,TemplateList *tl) const
     {
       if (d->definitionType()==Definition::TypeClass)
       {
-        Definition *parent = d->getOuterScope();
+        const Definition *parent = d->getOuterScope();
         if (parent)
         {
           addTemplateDecls(parent,tl);
         }
-        ClassDef *cd=dynamic_cast<ClassDef *>(d);
+        const ClassDef *cd=dynamic_cast<const ClassDef *>(d);
         if (cd->templateArguments())
         {
           ArgumentListContext *al = ArgumentListContext::alloc(cd->templateArguments(),cd,relPathAsString());
@@ -2438,7 +2438,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       }
       return cache.examples.get();
     }
-    void addMembers(ClassDef *cd,MemberListType lt) const
+    void addMembers(const ClassDef *cd,MemberListType lt) const
     {
       MemberList *ml = cd->getMemberList(lt);
       if (ml)
@@ -2595,10 +2595,10 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
 
   private:
-    ClassDef *m_classDef;
+    const ClassDef *m_classDef;
     struct Cachable : public DefinitionContext<ClassContext::Private>::Cachable
     {
-      Cachable(ClassDef *cd) : DefinitionContext<ClassContext::Private>::Cachable(cd),
+      Cachable(const ClassDef *cd) : DefinitionContext<ClassContext::Private>::Cachable(cd),
                                inheritanceNodes(-1) { }
       SharedPtr<IncludeInfoContext>     includeInfo;
       SharedPtr<InheritanceListContext> inheritsList;
@@ -2672,7 +2672,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
 
 PropertyMapper<ClassContext::Private> ClassContext::Private::s_inst;
 
-ClassContext::ClassContext(ClassDef *cd) : RefCountedContext("ClassContext")
+ClassContext::ClassContext(const ClassDef *cd) : RefCountedContext("ClassContext")
 {
   //printf("ClassContext::ClassContext(%s)\n",cd?cd->name().data():"<none>");
   p = new Private(cd);
@@ -2695,7 +2695,7 @@ TemplateVariant ClassContext::get(const char *n) const
 class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Private>
 {
   public:
-    Private(NamespaceDef *nd) : DefinitionContext<NamespaceContext::Private>(nd),
+    Private(const NamespaceDef *nd) : DefinitionContext<NamespaceContext::Private>(nd),
                                 m_namespaceDef(nd)
     {
       static bool init=FALSE;
@@ -2764,7 +2764,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
         if (m_namespaceDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_namespaceDef->getClassSDict());
-          ClassDef *cd;
+          const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
             if (sliceOpt && (cd->compoundType()==ClassDef::Struct    ||
@@ -2792,7 +2792,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
         if (m_namespaceDef->getNamespaceSDict())
         {
           NamespaceSDict::Iterator sdi(*m_namespaceDef->getNamespaceSDict());
-          NamespaceDef *nd;
+          const NamespaceDef *nd;
           for (sdi.toFirst();(nd=sdi.current());++sdi)
           {
             if (nd->isLinkable() && !nd->isConstantGroup())
@@ -2814,7 +2814,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
         if (m_namespaceDef->getNamespaceSDict())
         {
           NamespaceSDict::Iterator sdi(*m_namespaceDef->getNamespaceSDict());
-          NamespaceDef *nd;
+          const NamespaceDef *nd;
           for (sdi.toFirst();(nd=sdi.current());++sdi)
           {
             if (nd->isLinkable() && nd->isConstantGroup())
@@ -2932,7 +2932,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
         if (m_namespaceDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_namespaceDef->getClassSDict());
-          ClassDef *cd;
+          const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
             if (cd->name().find('@')==-1 &&
@@ -2949,10 +2949,10 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       return cache.inlineClasses.get();
     }
   private:
-    NamespaceDef *m_namespaceDef;
+    const NamespaceDef *m_namespaceDef;
     struct Cachable : public DefinitionContext<NamespaceContext::Private>::Cachable
     {
-      Cachable(NamespaceDef *nd) : DefinitionContext<NamespaceContext::Private>::Cachable(nd) {}
+      Cachable(const NamespaceDef *nd) : DefinitionContext<NamespaceContext::Private>::Cachable(nd) {}
       SharedPtr<TemplateList>               classes;
       SharedPtr<TemplateList>               interfaces;
       SharedPtr<TemplateList>               namespaces;
@@ -2984,7 +2984,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
 
 PropertyMapper<NamespaceContext::Private> NamespaceContext::Private::s_inst;
 
-NamespaceContext::NamespaceContext(NamespaceDef *nd) : RefCountedContext("NamespaceContext")
+NamespaceContext::NamespaceContext(const NamespaceDef *nd) : RefCountedContext("NamespaceContext")
 {
   p = new Private(nd);
 }
@@ -3006,7 +3006,7 @@ TemplateVariant NamespaceContext::get(const char *n) const
 class FileContext::Private : public DefinitionContext<FileContext::Private>
 {
   public:
-    Private(FileDef *fd) : DefinitionContext<FileContext::Private>(fd) , m_fileDef(fd)
+    Private(const FileDef *fd) : DefinitionContext<FileContext::Private>(fd) , m_fileDef(fd)
     {
       if (fd==0) abort();
       static bool init=FALSE;
@@ -3229,7 +3229,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
         if (m_fileDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_fileDef->getClassSDict());
-          ClassDef *cd;
+          const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
             if (cd->visibleInParentsDeclList())
@@ -3251,7 +3251,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
         if (m_fileDef->getNamespaceSDict())
         {
           NamespaceSDict::Iterator sdi(*m_fileDef->getNamespaceSDict());
-          NamespaceDef *nd;
+          const NamespaceDef *nd;
           for (sdi.toFirst();(nd=sdi.current());++sdi)
           {
             if (nd->isLinkable() && !nd->isConstantGroup())
@@ -3396,7 +3396,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
         if (m_fileDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_fileDef->getClassSDict());
-          ClassDef *cd;
+          const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
             if (cd->name().find('@')==-1 &&
@@ -3418,10 +3418,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     }
 
   private:
-    FileDef *m_fileDef;
+    const FileDef *m_fileDef;
     struct Cachable : public DefinitionContext<FileContext::Private>::Cachable
     {
-      Cachable(FileDef *fd) : DefinitionContext<FileContext::Private>::Cachable(fd) {}
+      Cachable(const FileDef *fd) : DefinitionContext<FileContext::Private>::Cachable(fd) {}
       SharedPtr<IncludeInfoListContext>     includeInfoList;
       ScopedPtr<DotInclDepGraph>            includeGraph;
       ScopedPtr<DotInclDepGraph>            includedByGraph;
@@ -3458,7 +3458,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
 
 PropertyMapper<FileContext::Private> FileContext::Private::s_inst;
 
-FileContext::FileContext(FileDef *fd) : RefCountedContext("FileContext")
+FileContext::FileContext(const FileDef *fd) : RefCountedContext("FileContext")
 {
   p = new Private(fd);
 }
@@ -3480,7 +3480,7 @@ TemplateVariant FileContext::get(const char *n) const
 class DirContext::Private : public DefinitionContext<DirContext::Private>
 {
   public:
-    Private(DirDef *dd) : DefinitionContext<DirContext::Private>(dd) , m_dirDef(dd)
+    Private(const DirDef *dd) : DefinitionContext<DirContext::Private>(dd) , m_dirDef(dd)
     {
       static bool init=FALSE;
       if (!init)
@@ -3529,7 +3529,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
         cache.dirs.reset(TemplateList::alloc());
         const DirList &subDirs = m_dirDef->subDirs();
         QListIterator<DirDef> it(subDirs);
-        DirDef *dd;
+        const DirDef *dd;
         for (it.toFirst();(dd=it.current());++it)
         {
           DirContext *dc = new DirContext(dd);
@@ -3548,7 +3548,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
         if (files)
         {
           QListIterator<FileDef> it(*files);
-          FileDef *fd;
+          const FileDef *fd;
           for (it.toFirst();(fd=it.current());++it)
           {
             FileContext *fc = FileContext::alloc(fd);
@@ -3637,10 +3637,10 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     }
 
   private:
-    DirDef *m_dirDef;
+    const DirDef *m_dirDef;
     struct Cachable : public DefinitionContext<DirContext::Private>::Cachable
     {
-      Cachable(DirDef *dd) : DefinitionContext<DirContext::Private>::Cachable(dd) {}
+      Cachable(const DirDef *dd) : DefinitionContext<DirContext::Private>::Cachable(dd) {}
       SharedPtr<TemplateList>  dirs;
       SharedPtr<TemplateList>  files;
       ScopedPtr<DotDirDeps>    dirDepsGraph;
@@ -3657,7 +3657,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
 
 PropertyMapper<DirContext::Private> DirContext::Private::s_inst;
 
-DirContext::DirContext(DirDef *fd) : RefCountedContext("DirContext")
+DirContext::DirContext(const DirDef *fd) : RefCountedContext("DirContext")
 {
   p = new Private(fd);
 }
@@ -3679,7 +3679,7 @@ TemplateVariant DirContext::get(const char *n) const
 class PageContext::Private : public DefinitionContext<PageContext::Private>
 {
   public:
-    Private(PageDef *pd,bool isMainPage,bool isExample)
+    Private(const PageDef *pd,bool isMainPage,bool isExample)
       : DefinitionContext<PageContext::Private>(pd) , m_pageDef(pd), m_isMainPage(isMainPage),
         m_isExample(isExample)
     {
@@ -3768,10 +3768,10 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
       }
     }
   private:
-    PageDef *m_pageDef;
+    const PageDef *m_pageDef;
     struct Cachable : public DefinitionContext<PageContext::Private>::Cachable
     {
-      Cachable(PageDef *pd) : DefinitionContext<PageContext::Private>::Cachable(pd),
+      Cachable(const PageDef *pd) : DefinitionContext<PageContext::Private>::Cachable(pd),
                               exampleOutputFormat(ContextOutputFormat_Unspecified) { }
       ScopedPtr<TemplateVariant> example;
       ContextOutputFormat        exampleOutputFormat;
@@ -3790,7 +3790,7 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
 
 PropertyMapper<PageContext::Private> PageContext::Private::s_inst;
 
-PageContext::PageContext(PageDef *pd,bool isMainPage,bool isExample) : RefCountedContext("PageContext")
+PageContext::PageContext(const PageDef *pd,bool isMainPage,bool isExample) : RefCountedContext("PageContext")
 {
   p = new Private(pd,isMainPage,isExample);
 }
@@ -3949,7 +3949,7 @@ class TextGeneratorFactory
     virtual ~TextGeneratorFactory() {}
 };
 
-TemplateVariant createLinkedText(Definition *def,const QCString &relPath,const QCString &text)
+TemplateVariant createLinkedText(const Definition *def,const QCString &relPath,const QCString &text)
 {
   QGString s;
   FTextStream ts(&s);
@@ -4023,7 +4023,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         s_inst.addProperty("isSealed",            &Private::isSealed);
         s_inst.addProperty("isImplementation",    &Private::isImplementation);
         s_inst.addProperty("isExternal",          &Private::isExternal);
-        s_inst.addProperty("isAlias",             &Private::isAlias);
+        s_inst.addProperty("isTypeAlias",         &Private::isTypeAlias);
         s_inst.addProperty("isDefault",           &Private::isDefault);
         s_inst.addProperty("isDelete",            &Private::isDelete);
         s_inst.addProperty("isNoExcept",          &Private::isNoExcept);
@@ -4334,9 +4334,9 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       return m_memberDef->isExternal();
     }
-    TemplateVariant isAlias() const
+    TemplateVariant isTypeAlias() const
     {
-      return m_memberDef->isAlias();
+      return m_memberDef->isTypeAlias();
     }
     TemplateVariant isDefault() const
     {
@@ -4452,7 +4452,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.anonymousType)
       {
-        ClassDef *cd = m_memberDef->getClassDefOfAnonymousType();
+        const ClassDef *cd = m_memberDef->getClassDefOfAnonymousType();
         if (cd)
         {
           cache.anonymousType.reset(ClassContext::alloc(cd));
@@ -4508,7 +4508,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.enumValues)
       {
-        MemberList *ml = m_memberDef->enumFieldList();
+        const MemberList *ml = m_memberDef->enumFieldList();
         if (ml)
         {
           cache.enumValues.reset(MemberListContext::alloc(ml));
@@ -4538,7 +4538,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant templateAlias() const
     {
-      if (m_memberDef->isAlias())
+      if (m_memberDef->isTypeAlias())
       {
         return createLinkedText(m_memberDef,relPathAsString(),
                                 QCString(" = ")+m_memberDef->typeString());
@@ -4703,7 +4703,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     void addTemplateDecls(TemplateList *tl) const
     {
-      ClassDef *cd=m_memberDef->getClassDef();
+      const ClassDef *cd=m_memberDef->getClassDef();
       if (m_memberDef->definitionTemplateParameterLists())
       {
         QListIterator<ArgumentList> ali(*m_memberDef->definitionTemplateParameterLists());
@@ -4813,7 +4813,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         cache.implements.reset(TemplateList::alloc());
         if (md)
         {
-          ClassDef *cd = md->getClassDef();
+          const ClassDef *cd = md->getClassDef();
           if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
           {
             MemberContext *mc = MemberContext::alloc(md);
@@ -4832,7 +4832,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         cache.reimplements.reset(TemplateList::alloc());
         if (md)
         {
-          ClassDef *cd = md->getClassDef();
+          const ClassDef *cd = md->getClassDef();
           if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
           {
             MemberContext *mc = MemberContext::alloc(md);
@@ -4855,7 +4855,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
           MemberDef *md=0;
           for (mli.toFirst();(md=mli.current());++mli)
           {
-            ClassDef *cd = md->getClassDef();
+            const ClassDef *cd = md->getClassDef();
             if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
             {
               MemberContext *mc = new MemberContext(md);
@@ -4879,7 +4879,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
           MemberDef *md=0;
           for (mli.toFirst();(md=mli.current());++mli)
           {
-            ClassDef *cd = md->getClassDef();
+            const ClassDef *cd = md->getClassDef();
             if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
             {
               MemberContext *mc = new MemberContext(md);
@@ -4976,7 +4976,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (!cache.sourceCodeParsed)
       {
         QCString codeFragment;
-        FileDef *fd   = m_memberDef->getBodyDef();
+        const FileDef *fd   = m_memberDef->getBodyDef();
         int startLine = m_memberDef->getStartBodyLine();
         int endLine   = m_memberDef->getEndBodyLine();
         if (fd && readCodeFragment(fd->absFilePath(),
@@ -5271,7 +5271,7 @@ TemplateVariant MemberContext::get(const char *n) const
 class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
 {
   public:
-    Private(GroupDef *gd) : DefinitionContext<ModuleContext::Private>(gd) , m_groupDef(gd)
+    Private(const GroupDef *gd) : DefinitionContext<ModuleContext::Private>(gd) , m_groupDef(gd)
     {
       static bool init=FALSE;
       if (!init)
@@ -5416,7 +5416,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         if (m_groupDef->getSubGroups())
         {
           GroupListIterator gli(*m_groupDef->getSubGroups());
-          GroupDef *gd;
+          const GroupDef *gd;
           for (gli.toFirst();(gd=gli.current());++gli)
           {
             if (gd->isVisible())
@@ -5438,7 +5438,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         if (m_groupDef->getExamples())
         {
           PageSDict::Iterator eli(*m_groupDef->getExamples());
-          PageDef *ex;
+          const PageDef *ex;
           for (eli.toFirst();(ex=eli.current());++eli)
           {
             exampleList->append(PageContext::alloc(ex,FALSE,TRUE));
@@ -5457,7 +5457,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         if (m_groupDef->getExamples())
         {
           PageSDict::Iterator eli(*m_groupDef->getPages());
-          PageDef *ex;
+          const PageDef *ex;
           for (eli.toFirst();(ex=eli.current());++eli)
           {
             pageList->append(PageContext::alloc(ex,FALSE,TRUE));
@@ -5476,7 +5476,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         if (m_groupDef->getDirs())
         {
           QListIterator<DirDef> it(*m_groupDef->getDirs());
-          DirDef *dd;
+          const DirDef *dd;
           for (it.toFirst();(dd=it.current());++it)
           {
             dirList->append(DirContext::alloc(dd));
@@ -5495,7 +5495,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         if (m_groupDef->getFiles())
         {
           QListIterator<FileDef> it(*m_groupDef->getFiles());
-          FileDef *fd;
+          const FileDef *fd;
           for (it.toFirst();(fd=it.current());++it)
           {
             fileList->append(FileContext::alloc(fd));
@@ -5514,7 +5514,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         if (m_groupDef->getClasses())
         {
           ClassSDict::Iterator sdi(*m_groupDef->getClasses());
-          ClassDef *cd;
+          const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
             if (cd->visibleInParentsDeclList())
@@ -5536,7 +5536,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         if (m_groupDef->getNamespaces())
         {
           NamespaceSDict::Iterator sdi(*m_groupDef->getNamespaces());
-          NamespaceDef *nd;
+          const NamespaceDef *nd;
           for (sdi.toFirst();(nd=sdi.current());++sdi)
           {
             if (nd->isLinkable() && !nd->isConstantGroup())
@@ -5730,7 +5730,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         if (m_groupDef->getClasses())
         {
           ClassSDict::Iterator sdi(*m_groupDef->getClasses());
-          ClassDef *cd;
+          const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
             if (cd->name().find('@')==-1 &&
@@ -5751,10 +5751,10 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       return "module"; //theTranslator->trGroup(FALSE,TRUE);
     }
   private:
-    GroupDef *m_groupDef;
+    const GroupDef *m_groupDef;
     struct Cachable : public DefinitionContext<ModuleContext::Private>::Cachable
     {
-      Cachable(GroupDef *gd) : DefinitionContext<ModuleContext::Private>::Cachable(gd) {}
+      Cachable(const GroupDef *gd) : DefinitionContext<ModuleContext::Private>::Cachable(gd) {}
       SharedPtr<TemplateList>               modules;
       SharedPtr<TemplateList>               dirs;
       SharedPtr<TemplateList>               files;
@@ -5805,7 +5805,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
 
 PropertyMapper<ModuleContext::Private> ModuleContext::Private::s_inst;
 
-ModuleContext::ModuleContext(GroupDef *gd) : RefCountedContext("ModuleContext")
+ModuleContext::ModuleContext(const GroupDef *gd) : RefCountedContext("ModuleContext")
 {
   p = new Private(gd);
 }
@@ -5829,7 +5829,7 @@ class ClassListContext::Private : public GenericNodeListContext
     void addClasses(const ClassSDict &classSDict)
     {
       ClassSDict::Iterator cli(classSDict);
-      ClassDef *cd;
+      const ClassDef *cd;
       for (cli.toFirst() ; (cd=cli.current()) ; ++cli )
       {
         if (cd->getLanguage()==SrcLangExt_VHDL &&
@@ -5908,7 +5908,7 @@ class ClassIndexContext::Private
         if (Doxygen::classSDict)
         {
           ClassSDict::Iterator cli(*Doxygen::classSDict);
-          ClassDef *cd;
+          const ClassDef *cd;
           for (cli.toFirst() ; (cd=cli.current()) ; ++cli )
           {
             if (cd->getLanguage()==SrcLangExt_VHDL &&
@@ -6216,7 +6216,7 @@ class NestingNodeContext::Private
 {
   public:
     Private(const NestingNodeContext *parent,const NestingNodeContext *thisNode,
-        Definition *d,int index,int level,bool addCls,bool inherit, bool hideSuper)
+        const Definition *d,int index,int level,bool addCls,bool inherit, bool hideSuper)
       : m_parent(parent), m_def(d), m_level(level), m_index(index)
     {
       m_children.reset(NestingContext::alloc(thisNode,level+1));
@@ -6278,7 +6278,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.classContext && m_def->definitionType()==Definition::TypeClass)
       {
-        m_cache.classContext.reset(ClassContext::alloc(dynamic_cast<ClassDef*>(m_def)));
+        m_cache.classContext.reset(ClassContext::alloc(dynamic_cast<const ClassDef*>(m_def)));
       }
       if (m_cache.classContext)
       {
@@ -6293,7 +6293,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.namespaceContext && m_def->definitionType()==Definition::TypeNamespace)
       {
-        m_cache.namespaceContext.reset(NamespaceContext::alloc(dynamic_cast<NamespaceDef*>(m_def)));
+        m_cache.namespaceContext.reset(NamespaceContext::alloc(dynamic_cast<const NamespaceDef*>(m_def)));
       }
       if (m_cache.namespaceContext)
       {
@@ -6308,7 +6308,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.dirContext && m_def->definitionType()==Definition::TypeDir)
       {
-        m_cache.dirContext.reset(DirContext::alloc(dynamic_cast<DirDef*>(m_def)));
+        m_cache.dirContext.reset(DirContext::alloc(dynamic_cast<const DirDef*>(m_def)));
       }
       if (m_cache.dirContext)
       {
@@ -6323,7 +6323,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.fileContext && m_def->definitionType()==Definition::TypeFile)
       {
-        m_cache.fileContext.reset(FileContext::alloc(dynamic_cast<FileDef*>(m_def)));
+        m_cache.fileContext.reset(FileContext::alloc(dynamic_cast<const FileDef*>(m_def)));
       }
       if (m_cache.fileContext)
       {
@@ -6338,7 +6338,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.pageContext && m_def->definitionType()==Definition::TypePage)
       {
-        m_cache.pageContext.reset(PageContext::alloc(dynamic_cast<PageDef*>(m_def),FALSE,FALSE));
+        m_cache.pageContext.reset(PageContext::alloc(dynamic_cast<const PageDef*>(m_def),FALSE,FALSE));
       }
       if (m_cache.pageContext)
       {
@@ -6353,7 +6353,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.moduleContext && m_def->definitionType()==Definition::TypeGroup)
       {
-        m_cache.moduleContext.reset(ModuleContext::alloc(dynamic_cast<GroupDef*>(m_def)));
+        m_cache.moduleContext.reset(ModuleContext::alloc(dynamic_cast<const GroupDef*>(m_def)));
       }
       if (m_cache.moduleContext)
       {
@@ -6425,7 +6425,7 @@ class NestingNodeContext::Private
 
     void addClasses(bool inherit, bool hideSuper)
     {
-      ClassDef *cd = dynamic_cast<ClassDef*>(m_def);
+      const ClassDef *cd = dynamic_cast<const ClassDef*>(m_def);
       if (cd && inherit)
       {
         bool hasChildren = !cd->isVisited() && !hideSuper && classHasVisibleChildren(cd);
@@ -6453,7 +6453,7 @@ class NestingNodeContext::Private
     }
     void addNamespaces(bool addClasses)
     {
-      NamespaceDef *nd = dynamic_cast<NamespaceDef*>(m_def);
+      const NamespaceDef *nd = dynamic_cast<const NamespaceDef*>(m_def);
       if (nd && nd->getNamespaceSDict())
       {
         m_children->addNamespaces(*nd->getNamespaceSDict(),FALSE,addClasses);
@@ -6465,7 +6465,7 @@ class NestingNodeContext::Private
     }
     void addDirFiles()
     {
-      DirDef *dd = dynamic_cast<DirDef*>(m_def);
+      const DirDef *dd = dynamic_cast<const DirDef*>(m_def);
       if (dd)
       {
         m_children->addDirs(dd->subDirs());
@@ -6477,7 +6477,7 @@ class NestingNodeContext::Private
     }
     void addPages()
     {
-      PageDef *pd = dynamic_cast<PageDef*>(m_def);
+      const PageDef *pd = dynamic_cast<const PageDef*>(m_def);
       if (pd && pd->getSubPages())
       {
         m_children->addPages(*pd->getSubPages(),FALSE);
@@ -6485,7 +6485,7 @@ class NestingNodeContext::Private
     }
     void addModules()
     {
-      GroupDef *gd = dynamic_cast<GroupDef*>(m_def);
+      const GroupDef *gd = dynamic_cast<const GroupDef*>(m_def);
       if (gd && gd->getSubGroups())
       {
         m_children->addModules(*gd->getSubGroups());
@@ -6493,7 +6493,7 @@ class NestingNodeContext::Private
     }
   private:
     const NestingNodeContext *m_parent;
-    Definition *m_def;
+    const Definition *m_def;
     SharedPtr<NestingContext> m_children;
     int m_level;
     int m_index;
@@ -6515,7 +6515,7 @@ class NestingNodeContext::Private
 PropertyMapper<NestingNodeContext::Private> NestingNodeContext::Private::s_inst;
 
 NestingNodeContext::NestingNodeContext(const NestingNodeContext *parent,
-                                       Definition *d,int index,int level,bool addClass,bool inherit,bool hideSuper)
+                                       const Definition *d,int index,int level,bool addClass,bool inherit,bool hideSuper)
    : RefCountedContext("NestingNodeContext")
 {
   p = new Private(parent,this,d,index,level,addClass,inherit,hideSuper);
@@ -6548,7 +6548,7 @@ class NestingContext::Private : public GenericNodeListContext
     void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses)
     {
       NamespaceSDict::Iterator nli(nsDict);
-      NamespaceDef *nd;
+      const NamespaceDef *nd;
       for (nli.toFirst();(nd=nli.current());++nli)
       {
         if (nd->localName().find('@')==-1 &&
@@ -6568,7 +6568,7 @@ class NestingContext::Private : public GenericNodeListContext
     void addClasses(const ClassSDict &clDict,bool rootOnly)
     {
       ClassSDict::Iterator cli(clDict);
-      ClassDef *cd;
+      const ClassDef *cd;
       for (;(cd=cli.current());++cli)
       {
         if (cd->getLanguage()==SrcLangExt_VHDL)
@@ -6597,7 +6597,7 @@ class NestingContext::Private : public GenericNodeListContext
     void addDirs(const DirSDict &dirDict)
     {
       SDict<DirDef>::Iterator dli(dirDict);
-      DirDef *dd;
+      const DirDef *dd;
       for (dli.toFirst();(dd=dli.current());++dli)
       {
         if (dd->getOuterScope()==Doxygen::globalScope)
@@ -6610,7 +6610,7 @@ class NestingContext::Private : public GenericNodeListContext
     void addDirs(const DirList &dirList)
     {
       QListIterator<DirDef> li(dirList);
-      DirDef *dd;
+      const DirDef *dd;
       for (li.toFirst();(dd=li.current());++li)
       {
         append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE));
@@ -6624,7 +6624,7 @@ class NestingContext::Private : public GenericNodeListContext
       for (fnli.toFirst();(fn=fnli.current());++fnli)
       {
         FileNameIterator fni(*fn);
-        FileDef *fd;
+        const FileDef *fd;
         for (;(fd=fni.current());++fni)
         {
           if (fd->getDirDef()==0) // top level file
@@ -6638,7 +6638,7 @@ class NestingContext::Private : public GenericNodeListContext
     void addFiles(const FileList &fList)
     {
       QListIterator<FileDef> li(fList);
-      FileDef *fd;
+      const FileDef *fd;
       for (li.toFirst();(fd=li.current());++li)
       {
         append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE));
@@ -6648,7 +6648,7 @@ class NestingContext::Private : public GenericNodeListContext
     void addPages(const PageSDict &pages,bool rootOnly)
     {
       SDict<PageDef>::Iterator pli(pages);
-      PageDef *pd;
+      const PageDef *pd;
       for (pli.toFirst();(pd=pli.current());++pli)
       {
         if (!rootOnly ||
@@ -6663,7 +6663,7 @@ class NestingContext::Private : public GenericNodeListContext
     void addModules(const GroupSDict &groups)
     {
       GroupSDict::Iterator gli(groups);
-      GroupDef *gd;
+      const GroupDef *gd;
       for (gli.toFirst();(gd=gli.current());++gli)
       {
         static bool externalGroups = Config_getBool(EXTERNAL_GROUPS);
@@ -6679,7 +6679,7 @@ class NestingContext::Private : public GenericNodeListContext
     void addModules(const GroupList &list)
     {
       GroupListIterator gli(list);
-      GroupDef *gd;
+      const GroupDef *gd;
       for (gli.toFirst();(gd=gli.current());++gli)
       {
         if (gd->isVisible())
@@ -6696,7 +6696,7 @@ class NestingContext::Private : public GenericNodeListContext
       BaseClassDef *bcd;
       for (bcli.toFirst() ; (bcd=bcli.current()) ; ++bcli)
       {
-        ClassDef *cd=bcd->classDef;
+        const ClassDef *cd=bcd->classDef;
         if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
         {
           continue;
@@ -6723,7 +6723,7 @@ class NestingContext::Private : public GenericNodeListContext
     void addClassHierarchy(const ClassSDict &classSDict,bool)
     {
       ClassSDict::Iterator cli(classSDict);
-      ClassDef *cd;
+      const ClassDef *cd;
       for (cli.toFirst();(cd=cli.current());++cli)
       {
         bool b;
@@ -6973,7 +6973,7 @@ class NamespaceListContext::Private : public GenericNodeListContext
     void addNamespaces(const NamespaceSDict &nsDict)
     {
       NamespaceSDict::Iterator nli(nsDict);
-      NamespaceDef *nd;
+      const NamespaceDef *nd;
       for (nli.toFirst();(nd=nli.current());++nli)
       {
         if (nd->isLinkableInProject())
@@ -7148,7 +7148,7 @@ class FileListContext::Private : public GenericNodeListContext
       for (fnli.toFirst();(fn=fnli.current());++fnli)
       {
         FileNameIterator fni(*fn);
-        FileDef *fd;
+        const FileDef *fd;
         for (fni.toFirst();(fd=fni.current());++fni)
         {
           bool doc = fd->isLinkableInProject();
@@ -7198,7 +7198,7 @@ class DirListContext::Private : public GenericNodeListContext
   public:
     Private()
     {
-      DirDef *dir;
+      const DirDef *dir;
       DirSDict::Iterator sdi(*Doxygen::directories);
       for (sdi.toFirst();(dir=sdi.current());++sdi)
       {
@@ -7240,19 +7240,19 @@ TemplateListIntf::ConstIterator *DirListContext::createIterator() const
 class UsedFilesContext::Private : public GenericNodeListContext
 {
   public:
-    void addFile(FileDef *fd)
+    void addFile(const FileDef *fd)
     {
       append(FileContext::alloc(fd));
     }
 };
 
-UsedFilesContext::UsedFilesContext(ClassDef *cd) : RefCountedContext("UsedFilesContext")
+UsedFilesContext::UsedFilesContext(const ClassDef *cd) : RefCountedContext("UsedFilesContext")
 {
   p = new Private;
   if (cd)
   {
     QListIterator<FileDef> li(cd->usedFiles());
-    FileDef *fd;
+    const FileDef *fd;
     for (li.toFirst();(fd=li.current());++li)
     {
       p->addFile(fd);
@@ -7281,7 +7281,7 @@ TemplateListIntf::ConstIterator *UsedFilesContext::createIterator() const
   return p->createIterator();
 }
 
-void UsedFilesContext::addFile(FileDef *fd)
+void UsedFilesContext::addFile(const FileDef *fd)
 {
   p->addFile(fd);
 }
@@ -7518,7 +7518,7 @@ class PageListContext::Private : public GenericNodeListContext
     void addPages(const PageSDict &pages)
     {
       PageSDict::Iterator pdi(pages);
-      PageDef *pd=0;
+      const PageDef *pd=0;
       for (pdi.toFirst();(pd=pdi.current());++pdi)
       {
         if (!pd->getGroupDef() && !pd->isReference())
@@ -7567,7 +7567,7 @@ class ExampleListContext::Private : public GenericNodeListContext
       if (Doxygen::exampleSDict)
       {
         PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-        PageDef *pd=0;
+        const PageDef *pd=0;
         for (pdi.toFirst();(pd=pdi.current());++pdi)
         {
           if (!pd->getGroupDef() && !pd->isReference())
@@ -7614,7 +7614,7 @@ class ModuleListContext::Private : public GenericNodeListContext
     void addModules()
     {
       GroupSDict::Iterator gli(*Doxygen::groupSDict);
-      GroupDef *gd;
+      const GroupDef *gd;
       for (gli.toFirst();(gd=gli.current());++gli)
       {
         if (!gd->isReference())
@@ -7769,7 +7769,7 @@ TemplateVariant ModuleTreeContext::get(const char *name) const
 class NavPathElemContext::Private
 {
   public:
-    Private(Definition *def) : m_def(def)
+    Private(const Definition *def) : m_def(def)
     {
       static bool init=FALSE;
       if (!init)
@@ -7834,14 +7834,14 @@ class NavPathElemContext::Private
       return m_def->externalReference(relPathAsString());
     }
   private:
-    Definition *m_def;
+    const Definition *m_def;
     static PropertyMapper<NavPathElemContext::Private> s_inst;
 };
 //%% }
 
 PropertyMapper<NavPathElemContext::Private> NavPathElemContext::Private::s_inst;
 
-NavPathElemContext::NavPathElemContext(Definition *def) : RefCountedContext("NavPathElemContext")
+NavPathElemContext::NavPathElemContext(const Definition *def) : RefCountedContext("NavPathElemContext")
 {
   p = new Private(def);
 }
@@ -8014,7 +8014,7 @@ class GlobalsIndexContext::Private
           MemberNameIterator mni(*mn);
           for (mni.toFirst();(md=mni.current());++mni)
           {
-            FileDef *fd=md->getFileDef();
+            const FileDef *fd=md->getFileDef();
             if (fd && fd->isLinkableInProject() &&
                 !md->name().isEmpty() && !md->getNamespaceDef() && md->isLinkableInProject())
             {
@@ -8171,7 +8171,7 @@ class ClassMembersIndexContext::Private
           MemberNameIterator mni(*mn);
           for (mni.toFirst();(md=mni.current());++mni)
           {
-            ClassDef *cd = md->getClassDef();
+            const ClassDef *cd = md->getClassDef();
             if (cd && cd->isLinkableInProject() && cd->templateMaster()==0 &&
                 md->isLinkableInProject() && !md->name().isEmpty())
             {
@@ -8330,7 +8330,7 @@ class NamespaceMembersIndexContext::Private
           MemberNameIterator mni(*mn);
           for (mni.toFirst();(md=mni.current());++mni)
           {
-            NamespaceDef *nd=md->getNamespaceDef();
+            const NamespaceDef *nd=md->getNamespaceDef();
             if (nd && nd->isLinkableInProject() &&
                 !md->name().isEmpty() && md->isLinkableInProject())
             {
@@ -8508,7 +8508,7 @@ TemplateVariant InheritanceGraphContext::get(const char *name) const
 class InheritanceNodeContext::Private
 {
   public:
-    Private(ClassDef *cd,const QCString &name) : m_classDef(cd), m_name(name)
+    Private(const ClassDef *cd,const QCString &name) : m_classDef(cd), m_name(name)
     {
       static bool init=FALSE;
       if (!init)
@@ -8535,7 +8535,7 @@ class InheritanceNodeContext::Private
       return m_name;
     }
   private:
-    ClassDef *m_classDef;
+    const ClassDef *m_classDef;
     mutable SharedPtr<ClassContext> m_classContext;
     QCString m_name;
     static PropertyMapper<InheritanceNodeContext::Private> s_inst;
@@ -8544,7 +8544,7 @@ class InheritanceNodeContext::Private
 
 PropertyMapper<InheritanceNodeContext::Private> InheritanceNodeContext::Private::s_inst;
 
-InheritanceNodeContext::InheritanceNodeContext(ClassDef *cd,const QCString &name) : RefCountedContext("InheritanceNodeContext")
+InheritanceNodeContext::InheritanceNodeContext(const ClassDef *cd,const QCString &name) : RefCountedContext("InheritanceNodeContext")
 {
   p = new Private(cd,name);
 }
@@ -8565,7 +8565,7 @@ TemplateVariant InheritanceNodeContext::get(const char *name) const
 class InheritanceListContext::Private : public GenericNodeListContext
 {
   public:
-    void addClass(ClassDef *cd,const QCString &name)
+    void addClass(const ClassDef *cd,const QCString &name)
     {
       append(InheritanceNodeContext::alloc(cd,name));
     }
@@ -8580,7 +8580,7 @@ InheritanceListContext::InheritanceListContext(const BaseClassList *list, bool b
     BaseClassDef *bcd;
     for (li.toFirst();(bcd=li.current());++li)
     {
-      ClassDef *cd=bcd->classDef;
+      const ClassDef *cd=bcd->classDef;
       QCString name;
       if (baseClasses)
       {
@@ -8806,7 +8806,7 @@ class AllMembersListContext::Private : public GenericNodeListContext
           for (mnii2.toFirst();(mi=mnii2.current());++mnii2)
           {
             MemberDef *md=mi->memberDef;
-            ClassDef  *cd=md->getClassDef();
+            const ClassDef  *cd=md->getClassDef();
             if (cd && !md->name().isEmpty() && md->name()[0]!='@')
             {
               if ((cd->isLinkable() && md->isLinkable()) ||
@@ -8862,7 +8862,7 @@ TemplateListIntf::ConstIterator *AllMembersListContext::createIterator() const
 class MemberGroupInfoContext::Private
 {
   public:
-    Private(Definition *def,const QCString &relPath,const MemberGroup *mg) :
+    Private(const Definition *def,const QCString &relPath,const MemberGroup *mg) :
       m_def(def),
       m_relPath(relPath),
       m_memberGroup(mg)
@@ -8936,7 +8936,7 @@ class MemberGroupInfoContext::Private
       return FALSE;
     }
   private:
-    Definition *m_def;
+    const Definition *m_def;
     QCString m_relPath;
     const MemberGroup *m_memberGroup;
     struct Cachable
@@ -8952,7 +8952,7 @@ class MemberGroupInfoContext::Private
 
 PropertyMapper<MemberGroupInfoContext::Private> MemberGroupInfoContext::Private::s_inst;
 
-MemberGroupInfoContext::MemberGroupInfoContext(Definition *def,
+MemberGroupInfoContext::MemberGroupInfoContext(const Definition *def,
        const QCString &relPath,const MemberGroup *mg) : RefCountedContext("MemberGroupInfoContext")
 {
   p = new Private(def,relPath,mg);
@@ -8974,7 +8974,7 @@ TemplateVariant MemberGroupInfoContext::get(const char *name) const
 class MemberGroupListContext::Private : public GenericNodeListContext
 {
   public:
-    void addMemberGroup(Definition *def,const QCString &relPath,const MemberGroup *mg)
+    void addMemberGroup(const Definition *def,const QCString &relPath,const MemberGroup *mg)
     {
       append(MemberGroupInfoContext::alloc(def,relPath,mg));
     }
@@ -8985,7 +8985,7 @@ MemberGroupListContext::MemberGroupListContext() : RefCountedContext("MemberGrou
   p = new Private;
 }
 
-MemberGroupListContext::MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupList *list) : RefCountedContext("MemberGroupListContext")
+MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList *list) : RefCountedContext("MemberGroupListContext")
 {
   p = new Private;
   if (list)
@@ -8999,7 +8999,7 @@ MemberGroupListContext::MemberGroupListContext(Definition *def,const QCString &r
   }
 }
 
-MemberGroupListContext::MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping) : RefCountedContext("MemberGroupListContext")
+MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping) : RefCountedContext("MemberGroupListContext")
 {
   p = new Private;
   if (dict)
@@ -9045,7 +9045,7 @@ TemplateListIntf::ConstIterator *MemberGroupListContext::createIterator() const
 class MemberListInfoContext::Private
 {
   public:
-    Private(Definition *def,const QCString &relPath,const MemberList *ml,const QCString &title,const QCString &subtitle) :
+    Private(const Definition *def,const QCString &relPath,const MemberList *ml,const QCString &title,const QCString &subtitle) :
       m_def(def),
       m_memberList(ml),
       m_relPath(relPath),
@@ -9102,7 +9102,7 @@ class MemberListInfoContext::Private
           m_def->definitionType()==Definition::TypeClass)
       {
         InheritedMemberInfoListContext *ctx = InheritedMemberInfoListContext::alloc();
-        ctx->addMemberList(dynamic_cast<ClassDef*>(m_def),m_memberList->listType(),m_title,FALSE);
+        ctx->addMemberList(dynamic_cast<const ClassDef*>(m_def),m_memberList->listType(),m_title,FALSE);
         m_cache.inherited.reset(ctx);
       }
       if (m_cache.inherited)
@@ -9115,7 +9115,7 @@ class MemberListInfoContext::Private
       }
     }
   private:
-    Definition *m_def;
+    const Definition *m_def;
     const MemberList *m_memberList;
     QCString m_relPath;
     QCString m_title;
@@ -9134,7 +9134,7 @@ class MemberListInfoContext::Private
 PropertyMapper<MemberListInfoContext::Private> MemberListInfoContext::Private::s_inst;
 
 MemberListInfoContext::MemberListInfoContext(
-           Definition *def,const QCString &relPath,const MemberList *ml,
+           const Definition *def,const QCString &relPath,const MemberList *ml,
            const QCString &title,const QCString &subtitle) : RefCountedContext("MemberListInfoContext")
 {
   p = new Private(def,relPath,ml,title,subtitle);
@@ -9157,7 +9157,7 @@ TemplateVariant MemberListInfoContext::get(const char *name) const
 class InheritedMemberInfoContext::Private
 {
   public:
-    Private(ClassDef *cd,MemberList *ml,const QCString &title)
+    Private(const ClassDef *cd,MemberList *ml,const QCString &title)
       : m_class(cd), m_memberList(ml), m_title(title)
     {
       static bool init=FALSE;
@@ -9216,7 +9216,7 @@ class InheritedMemberInfoContext::Private
     }
 
   private:
-    ClassDef *  m_class;
+    const ClassDef *  m_class;
     MemberList *m_memberList;
     QCString    m_title;
     mutable SharedPtr<ClassContext> m_classCtx;
@@ -9228,7 +9228,7 @@ class InheritedMemberInfoContext::Private
 
 PropertyMapper<InheritedMemberInfoContext::Private> InheritedMemberInfoContext::Private::s_inst;
 
-InheritedMemberInfoContext::InheritedMemberInfoContext(ClassDef *cd,MemberList *ml,
+InheritedMemberInfoContext::InheritedMemberInfoContext(const ClassDef *cd,MemberList *ml,
                                                        const QCString &title) : RefCountedContext("InheritedMemberInfoContext")
 {
   p = new Private(cd,ml,title);
@@ -9250,7 +9250,7 @@ TemplateVariant InheritedMemberInfoContext::get(const char *name) const
 class InheritedMemberInfoListContext::Private : public GenericNodeListContext
 {
   public:
-    void addMemberList(ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
+    void addMemberList(const ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
     {
       if (ml)
       {
@@ -9265,7 +9265,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
         }
       }
     }
-    void addMemberListIncludingGrouped(ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
+    void addMemberListIncludingGrouped(const ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
     {
       if (ml)
       {
@@ -9281,8 +9281,8 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
         }
       }
     }
-    void addMemberGroupsOfClass(ClassDef *inheritedFrom,
-                                ClassDef *cd,MemberListType lt,MemberList *combinedList)
+    void addMemberGroupsOfClass(const ClassDef *inheritedFrom,
+                                const ClassDef *cd,MemberListType lt,MemberList *combinedList)
     {
       if (cd->getMemberGroupSDict())
       {
@@ -9307,7 +9307,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
         }
       }
     }
-    void addInheritedMembers(ClassDef *inheritedFrom,ClassDef *cd,MemberListType lt,
+    void addInheritedMembers(const ClassDef *inheritedFrom,const ClassDef *cd,MemberListType lt,
                              MemberListType lt1,int lt2,const QCString &title,bool additionalList)
     {
       int count = cd->countMembersIncludingGrouped(lt1,inheritedFrom,additionalList);
@@ -9324,7 +9324,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
         append(InheritedMemberInfoContext::alloc(cd,combinedList,title));
       }
     }
-    void findInheritedMembers(ClassDef *inheritedFrom,ClassDef *cd,MemberListType lt,
+    void findInheritedMembers(const ClassDef *inheritedFrom,const ClassDef *cd,MemberListType lt,
                               int lt2, const QCString &title,bool additionalList,
                               QPtrDict<void> *visitedClasses)
     {
@@ -9366,7 +9366,7 @@ InheritedMemberInfoListContext::InheritedMemberInfoListContext() : RefCountedCon
 }
 
 void InheritedMemberInfoListContext::addMemberList(
-    ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList)
+    const ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList)
 {
   QPtrDict<void> visited(17);
   bool memberInSection = cd->countMembersIncludingGrouped(lt,cd,FALSE)>0;
@@ -9407,7 +9407,7 @@ TemplateListIntf::ConstIterator *InheritedMemberInfoListContext::createIterator(
 class ArgumentContext::Private
 {
   public:
-    Private(const Argument *arg,Definition *def,const QCString &relPath) :
+    Private(const Argument *arg,const Definition *def,const QCString &relPath) :
       m_argument(arg), m_def(def), m_relPath(relPath)
     {
       static bool init=FALSE;
@@ -9477,7 +9477,7 @@ class ArgumentContext::Private
     }
   private:
     const Argument *m_argument;
-    Definition *m_def;
+    const Definition *m_def;
     QCString m_relPath;
     struct Cachable
     {
@@ -9490,7 +9490,7 @@ class ArgumentContext::Private
 
 PropertyMapper<ArgumentContext::Private> ArgumentContext::Private::s_inst;
 
-ArgumentContext::ArgumentContext(const Argument *al,Definition *def,const QCString &relPath) : RefCountedContext("ArgumentContext")
+ArgumentContext::ArgumentContext(const Argument *al,const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentContext")
 {
   p = new Private(al,def,relPath);
 }
@@ -9511,7 +9511,7 @@ TemplateVariant ArgumentContext::get(const char *name) const
 class ArgumentListContext::Private : public GenericNodeListContext
 {
   public:
-    void addArgument(const Argument *arg,Definition *def,const QCString &relPath)
+    void addArgument(const Argument *arg,const Definition *def,const QCString &relPath)
     {
       append(ArgumentContext::alloc(arg,def,relPath));
     }
@@ -9523,7 +9523,7 @@ ArgumentListContext::ArgumentListContext() : RefCountedContext("ArgumentListCont
 }
 
 ArgumentListContext::ArgumentListContext(const ArgumentList *list,
-                        Definition *def,const QCString &relPath) : RefCountedContext("ArgumentListContext")
+                        const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentListContext")
 {
   p = new Private;
   if (list)
@@ -9645,7 +9645,7 @@ class SymbolContext::Private
       {
         if (md)
         {
-          FileDef *fd = md->getBodyDef();
+          const FileDef *fd = md->getBodyDef();
           if (fd==0) fd = md->getFileDef();
           if (fd)
           {
@@ -9713,8 +9713,8 @@ class SymbolListContext::Private : public GenericNodeListContext
     Private(const SearchDefinitionList *sdl)
     {
       QListIterator<Definition> li(*sdl);
-      Definition *def;
-      Definition *prev = 0;
+      const Definition *def;
+      const Definition *prev = 0;
       for (li.toFirst();(def=li.current());)
       {
         ++li;
@@ -10364,13 +10364,13 @@ void generateOutputViaTemplate()
 
       // clear all cached data in Definition objects.
       QDictIterator<DefinitionIntf> di(*Doxygen::symbolMap);
-      DefinitionIntf *intf;
+      const DefinitionIntf *intf;
       for (;(intf=di.current());++di)
       {
         if (intf->definitionType()==DefinitionIntf::TypeSymbolList) // list of symbols
         {
-          DefinitionListIterator dli(*(DefinitionList*)intf);
-          Definition *d;
+          DefinitionListIterator dli(*dynamic_cast<const DefinitionList*>(intf));
+          const Definition *d;
           // for each symbol
           for (dli.toFirst();(d=dli.current());++dli)
           {
@@ -10379,7 +10379,7 @@ void generateOutputViaTemplate()
         }
         else // single symbol
         {
-          Definition *d = (Definition *)intf;
+          const Definition *d = dynamic_cast<const Definition *>(intf);
           d->setCookie(0);
         }
       }

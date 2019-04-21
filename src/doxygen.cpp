@@ -1209,7 +1209,6 @@ ClassDef::CompoundType convertToCompoundType(int section,uint64 specifier)
 
 static void addClassToContext(Entry *root)
 {
-  //printf("Loading entry for rootNav=%p name=%s\n",rootNav,rootNav->name().data());
   FileDef *fd = root->fileDef();
 
   QCString scName;
@@ -1423,6 +1422,31 @@ static void resolveClassNestingRelations()
           //printf("****** adding %s to scope %s in iteration %d\n",cd->name().data(),d->name().data(),iteration);
           d->addInnerCompound(cd);
           cd->setOuterScope(d);
+
+          // for inline namespace add an alias of the class to the outer scope
+          while (d->definitionType()==DefinitionIntf::TypeNamespace)
+          {
+            NamespaceDef *nd = dynamic_cast<NamespaceDef*>(d);
+            //printf("d->isInline()=%d\n",nd->isInline());
+            if (nd->isInline())
+            {
+              d = d->getOuterScope();
+              if (d)
+              {
+                ClassDef *aliasCd = createClassDefAlias(d,cd);
+                d->addInnerCompound(aliasCd);
+                QCString aliasFullName = d->qualifiedName()+"::"+aliasCd->localName();
+                Doxygen::classSDict->append(aliasFullName,aliasCd);
+                printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
+                aliasCd->setVisited(TRUE);
+              }
+            }
+            else
+            {
+              break;
+            }
+          }
+
           cd->setVisited(TRUE);
           done=FALSE;
         }
@@ -1752,6 +1776,7 @@ static void buildNamespaceList(Entry *root)
         nd->setLanguage(root->lang);
         nd->setId(root->id);
         nd->setMetaData(root->metaData);
+        nd->setInline((root->spec&Entry::Inline)!=0);
 
         //printf("Adding namespace to group\n");
         addNamespaceToGroups(root,nd);
@@ -1786,6 +1811,25 @@ static void buildNamespaceList(Entry *root)
         {
           d->addInnerCompound(nd);
           nd->setOuterScope(d);
+          // in case of d is an inline namespace, alias insert nd in the part scope of d.
+          while (d->definitionType()==DefinitionIntf::TypeNamespace)
+          {
+            NamespaceDef *pnd = dynamic_cast<NamespaceDef*>(d);
+            if (pnd->isInline())
+            {
+              d = d->getOuterScope();
+              if (d)
+              {
+                NamespaceDef *aliasNd = createNamespaceDefAlias(d,nd);
+                //printf("adding %s to %s\n",qPrint(aliasNd->name()),qPrint(d->name()));
+                d->addInnerCompound(aliasNd);
+              }
+            }
+            else
+            {
+              break;
+            }
+          }
         }
       }
     }
@@ -1795,15 +1839,15 @@ static void buildNamespaceList(Entry *root)
 
 //----------------------------------------------------------------------
 
-static NamespaceDef *findUsedNamespace(NamespaceSDict *unl,
+static const NamespaceDef *findUsedNamespace(const NamespaceSDict *unl,
                               const QCString &name)
 {
-  NamespaceDef *usingNd =0;
+  const NamespaceDef *usingNd =0;
   if (unl)
   {
     //printf("Found namespace dict %d\n",unl->count());
     NamespaceSDict::Iterator unli(*unl);
-    NamespaceDef *und;
+    const NamespaceDef *und;
     for (unli.toFirst();(und=unli.current());++unli)
     {
       QCString uScope=und->name()+"::";
@@ -1827,7 +1871,7 @@ static void findUsingDirectives(Entry *root)
     }
     if (!name.isEmpty())
     {
-      NamespaceDef *usingNd = 0;
+      const NamespaceDef *usingNd = 0;
       NamespaceDef *nd = 0;
       FileDef      *fd = root->fileDef();
       QCString nsName;
@@ -1869,17 +1913,17 @@ static void findUsingDirectives(Entry *root)
       if (usingNd==0 && nd) // not found, try used namespaces in this scope
                             // or in one of the parent namespace scopes
       {
-        NamespaceDef *pnd = nd;
+        const NamespaceDef *pnd = nd;
         while (pnd && usingNd==0)
         {
           // also try with one of the used namespaces found earlier
           usingNd = findUsedNamespace(pnd->getUsedNamespaces(),name);
 
           // goto the parent
-          Definition *s = pnd->getOuterScope();
+          const Definition *s = pnd->getOuterScope();
           if (s && s->definitionType()==Definition::TypeNamespace)
           {
-            pnd = dynamic_cast<NamespaceDef*>(s);
+            pnd = dynamic_cast<const NamespaceDef*>(s);
           }
           else
           {
@@ -1923,6 +1967,7 @@ static void findUsingDirectives(Entry *root)
         nd->setLanguage(root->lang);
         nd->setId(root->id);
         nd->setMetaData(root->metaData);
+        nd->setInline((root->spec&Entry::Inline)!=0);
 
         QListIterator<Grouping> gli(*root->groups);
         Grouping *g;
@@ -3541,7 +3586,7 @@ static void buildFunctionList(Entry *root)
           MemberNameIterator mni(*mn);
           for (mni.toFirst();(!found && (md=mni.current()));++mni)
           {
-            NamespaceDef *mnd = md->getNamespaceDef();
+            const NamespaceDef *mnd = md->getNamespaceDef();
             NamespaceDef *rnd = 0;
             //printf("root namespace=%s\n",rootNav->parent()->name().data());
             QCString fullScope = scope;
@@ -3553,7 +3598,7 @@ static void buildFunctionList(Entry *root)
             }
             //printf("fullScope=%s\n",fullScope.data());
             rnd = getResolvedNamespace(fullScope);
-            FileDef *mfd = md->getFileDef();
+            const FileDef *mfd = md->getFileDef();
             QCString nsName,rnsName;
             if (mnd)  nsName = mnd->name().copy();
             if (rnd) rnsName = rnd->name().copy();
@@ -5183,7 +5228,10 @@ static void addListReferences()
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    cd->addListReferences();
+    if (!cd->isAlias())
+    {
+      cd->addListReferences();
+    }
   }
 
   FileNameListIterator fnli(*Doxygen::inputNameList);
@@ -5202,7 +5250,10 @@ static void addListReferences()
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
-    nd->addListReferences();
+    if (!nd->isAlias())
+    {
+      nd->addListReferences();
+    }
   }
 
   GroupSDict::Iterator gli(*Doxygen::groupSDict);
@@ -5281,8 +5332,8 @@ static void addMemberDocs(Entry *root,
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
-  ClassDef     *cd=md->getClassDef();
-  NamespaceDef *nd=md->getNamespaceDef();
+  ClassDef *cd=md->getClassDef();
+  const NamespaceDef *nd=md->getNamespaceDef();
   QCString fullName;
   if (cd)
     fullName = cd->name();
@@ -5448,12 +5499,20 @@ static bool findGlobalMember(Entry *root,
     bool found=FALSE;
     for (mni.toFirst();(md=mni.current()) && !found;++mni)
     {
-      NamespaceDef *nd=md->getNamespaceDef();
+      const NamespaceDef *nd=0;
+      if (md->isAlias() && md->getOuterScope() &&
+          md->getOuterScope()->definitionType()==Definition::TypeNamespace)
+      {
+        nd = dynamic_cast<const NamespaceDef *>(md->getOuterScope());
+      }
+      else
+      {
+        nd = md->getNamespaceDef();
+      }
+      //const Definition *scope=md->getOuterScope();
+      //md = md->resolveAlias();
 
-      //printf("Namespace namespaceName=%s nd=%s\n",
-      //    namespaceName.data(),nd ? nd->name().data() : "<none>");
-
-      FileDef *fd=root->fileDef();
+      const FileDef *fd=root->fileDef();
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
       NamespaceSDict *nl = fd ? fd->getUsedNamespaces() : 0;
       //SDict<Definition> *cl = fd ? fd->getUsedClasses()    : 0;
@@ -5478,7 +5537,7 @@ static bool findGlobalMember(Entry *root,
         bool matching=
           (mdAl==0 && root->argList->count()==0) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
-          matchArguments2(md->getOuterScope(),md->getFileDef(),mdAl,
+          matchArguments2(md->getOuterScope(),const_cast<const MemberDef *>(md)->getFileDef(),mdAl,
                           rnd ? rnd : Doxygen::globalScope,fd,root->argList,
                           FALSE);
 
@@ -5528,7 +5587,7 @@ static bool findGlobalMember(Entry *root,
         if (matching) // add docs to the member
         {
           Debug::print(Debug::FindMembers,0,"5. Match found\n");
-          addMemberDocs(root,md,decl,root->argList,FALSE);
+          addMemberDocs(root,md->resolveAlias(),decl,root->argList,FALSE);
           found=TRUE;
         }
       }
@@ -5587,12 +5646,12 @@ static bool isSpecialization(
     return FALSE;
 }
 
-static bool scopeIsTemplate(Definition *d)
+static bool scopeIsTemplate(const Definition *d)
 {
   bool result=FALSE;
   if (d && d->definitionType()==Definition::TypeClass)
   {
-    result = (dynamic_cast<ClassDef*>(d))->templateArguments() || scopeIsTemplate(d->getOuterScope());
+    result = (dynamic_cast<const ClassDef*>(d))->templateArguments() || scopeIsTemplate(d->getOuterScope());
   }
   return result;
 }
@@ -6089,7 +6148,7 @@ static void findMember(Entry *root,
             //printf("scopeName %s->%s\n",scopeName.data(),
             //       stripTemplateSpecifiersFromScope(scopeName,FALSE).data());
 
-            ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
+            const ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
             if (tcd==0 && cd && stripAnonymousNamespaceScope(cd->name())==scopeName)
             {
               // don't be fooled by anonymous scopes
@@ -6251,7 +6310,7 @@ static void findMember(Entry *root,
           if (count==0 && !(isFriend && funcType=="class"))
           {
             int candidates=0;
-            ClassDef *ecd = 0, *ucd = 0;
+            const ClassDef *ecd = 0, *ucd = 0;
             MemberDef *emd = 0, *umd = 0;
             if (mn->count()>0)
             {
@@ -6337,7 +6396,7 @@ static void findMember(Entry *root,
               warnMsg+="Possible candidates:\n";
               for (mni.toFirst();(md=mni.current());++mni)
               {
-                ClassDef *cd=md->getClassDef();
+                const ClassDef *cd=md->getClassDef();
                 if (cd!=0 && rightScopeMatch(cd->name(),className))
                 {
                   ArgumentList *templAl = md->templateArguments();
@@ -6443,7 +6502,7 @@ static void findMember(Entry *root,
         bool unique=TRUE;
         for (;(md=mni.current());++mni)
         {
-          ClassDef *cd=md->getClassDef();
+          const ClassDef *cd=md->getClassDef();
           if (className!=cd->name()) unique=FALSE;
         }
         if (unique)
@@ -7335,7 +7394,7 @@ static void addEnumValuesToEnums(Entry *root)
                       //    fmd->name().data(),fmd->getOuterScope()->name().data());
                       if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
                       {
-                        NamespaceDef *fnd=fmd->getNamespaceDef();
+                        const NamespaceDef *fnd=fmd->getNamespaceDef();
                         if (fnd==nd) // enum value is inside a namespace
                         {
                           md->insertEnumField(fmd);
@@ -7344,7 +7403,7 @@ static void addEnumValuesToEnums(Entry *root)
                       }
                       else if (isGlobal)
                       {
-                        FileDef *ffd=fmd->getFileDef();
+                        const FileDef *ffd=fmd->getFileDef();
                         if (ffd==fd) // enum value has file scope
                         {
                           md->insertEnumField(fmd);
@@ -7363,7 +7422,7 @@ static void addEnumValuesToEnums(Entry *root)
                       }
                       else
                       {
-                        ClassDef *fcd=fmd->getClassDef();
+                        const ClassDef *fcd=fmd->getClassDef();
                         if (fcd==cd) // enum value is inside a class
                         {
                           //printf("Inserting enum field %s in enum scope %s\n",
@@ -7437,7 +7496,7 @@ static void findEnumDocumentation(Entry *root)
           MemberDef *md;
           for (mni.toFirst();(md=mni.current()) && !found;++mni)
           {
-            ClassDef *cd=md->getClassDef();
+            const ClassDef *cd=md->getClassDef();
             if (cd && cd->name()==className && md->isEnumerate())
             {
               // documentation outside a compound overrides the documentation inside it
@@ -7471,7 +7530,7 @@ static void findEnumDocumentation(Entry *root)
               md->addSectionsToDefinition(root->anchors);
               md->setRefItems(root->sli);
 
-              GroupDef *gd=md->getGroupDef();
+              const GroupDef *gd=md->getGroupDef();
               if (gd==0 &&root->groups->getFirst()!=0) // member not grouped but out-of-line documentation is
               {
                 addMemberToGroups(root,md);
@@ -7505,7 +7564,7 @@ static void findEnumDocumentation(Entry *root)
               md->addSectionsToDefinition(root->anchors);
               md->setMemberGroupId(root->mGrpId);
 
-              GroupDef *gd=md->getGroupDef();
+              const GroupDef *gd=md->getGroupDef();
               if (gd==0 && root->groups->getFirst()!=0) // member not grouped but out-of-line documentation is
               {
                 addMemberToGroups(root,md);
@@ -7544,7 +7603,7 @@ static void findDEV(const MemberNameSDict &mnsd)
     {
       if (md->isEnumerate()) // member is an enum
       {
-        MemberList *fmdl = md->enumFieldList();
+        const MemberList *fmdl = md->enumFieldList();
         int documentedEnumValues=0;
         if (fmdl) // enum has values
         {
@@ -7597,17 +7656,52 @@ static void addMembersToIndex()
     // for each member definition
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      if (md->getNamespaceDef())
+      if (!md->isAlias())
       {
-        addNamespaceMemberNameToIndex(md);
-      }
-      else
-      {
-        addFileMemberNameToIndex(md);
+        if (md->getNamespaceDef())
+        {
+          addNamespaceMemberNameToIndex(md);
+        }
+        else
+        {
+          addFileMemberNameToIndex(md);
+        }
       }
     }
   }
 }
+
+//----------------------------------------------------------------------
+
+static void vhdlCorrectMemberProperties()
+{
+  MemberName *mn;
+  MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
+  // for each member name
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
+  {
+    MemberDef *md;
+    MemberNameIterator mni(*mn);
+    // for each member definition
+    for (mni.toFirst();(md=mni.current());++mni)
+    {
+      VhdlDocGen::correctMemberProperties(md);
+    }
+  }
+  MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
+  // for each member name
+  for (fnli.toFirst();(mn=fnli.current());++fnli)
+  {
+    MemberDef *md;
+    MemberNameIterator mni(*mn);
+    // for each member definition
+    for (mni.toFirst();(md=mni.current());++mni)
+    {
+      VhdlDocGen::correctMemberProperties(md);
+    }
+  }
+}
+
 
 //----------------------------------------------------------------------
 // computes the relation between all members. For each member `m'
@@ -7628,10 +7722,10 @@ static void computeMemberRelations()
     {
       for ( bmdi.toFirst() ; (bmd=bmdi.current()); ++bmdi ) // for each other member with the same name
       {
-        ClassDef *mcd  = md->getClassDef();
+        const ClassDef *mcd  = md->getClassDef();
         if (mcd && mcd->baseClasses())
         {
-          ClassDef *bmcd = bmd->getClassDef();
+          const ClassDef *bmcd = bmd->getClassDef();
           //printf("Check relation between `%s'::`%s' (%p) and `%s'::`%s' (%p)\n",
           //      mcd->name().data(),md->name().data(),md,
           //       bmcd->name().data(),bmd->name().data(),bmd
@@ -8055,6 +8149,85 @@ static void sortMemberLists()
 }
 
 //----------------------------------------------------------------------------
+
+static void setAnonymousEnumType()
+{
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
+  ClassDef *cd=0;
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    cd->setAnonymousEnumType();
+  }
+
+#if 0
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
+  NamespaceDef *nd=0;
+  for (nli.toFirst();(nd=nli.current());++nli)
+  {
+    nd->setAnonymousEnumType();
+  }
+
+  FileNameListIterator fnli(*Doxygen::inputNameList);
+  FileName *fn;
+  for (;(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (;(fd=fni.current());++fni)
+    {
+      fd->setAnonymousEnumType();
+    }
+  }
+
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
+  GroupDef *gd;
+  for (gli.toFirst();(gd=gli.current());++gli)
+  {
+    gd->setAnonymousEnumType();
+  }
+#endif
+}
+
+//----------------------------------------------------------------------------
+
+static void countMembers()
+{
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
+  ClassDef *cd=0;
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    cd->countMembers();
+  }
+
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
+  NamespaceDef *nd=0;
+  for (nli.toFirst();(nd=nli.current());++nli)
+  {
+    nd->countMembers();
+  }
+
+  FileNameListIterator fnli(*Doxygen::inputNameList);
+  FileName *fn;
+  for (;(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (;(fd=fni.current());++fni)
+    {
+      fd->countMembers();
+    }
+  }
+
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
+  GroupDef *gd;
+  for (gli.toFirst();(gd=gli.current());++gli)
+  {
+    gd->countMembers();
+  }
+}
+
+
+//----------------------------------------------------------------------------
 // generate the documentation of all classes
 
 static void generateClassList(ClassSDict &classSDict)
@@ -8469,7 +8642,7 @@ static void findDefineDocumentation(Entry *root)
         {
           if (md->memberType()==MemberType_Define)
           {
-            FileDef *fd=md->getFileDef();
+            const FileDef *fd=md->getFileDef();
             if (fd && fd->absFilePath()==root->fileName)
               // doc and define in the same file assume they belong together.
             {
@@ -8792,7 +8965,7 @@ static void resolveUserReferences()
       {
         // TODO: there should be one function in Definition that returns
         // the file to link to, so we can avoid the following tests.
-        GroupDef *gd=0;
+        const GroupDef *gd=0;
         if (si->definition->definitionType()==Definition::TypeMember)
         {
           gd = (dynamic_cast<MemberDef *>(si->definition))->getGroupDef();
@@ -11177,9 +11350,6 @@ void parseInput()
   buildClassList(root);
   g_s.end();
 
-  g_s.begin("Associating documentation with classes...\n");
-  buildClassDocList(root);
-
   // build list of using declarations here (global list)
   buildListOfUsingDecls(root);
   g_s.end();
@@ -11196,6 +11366,9 @@ void parseInput()
   Doxygen::lookupCache->clear();
   // we don't need the list of using declaration anymore
   g_usingDeclarations.clear();
+
+  g_s.begin("Associating documentation with classes...\n");
+  buildClassDocList(root);
 
   g_s.begin("Building example list...\n");
   buildExampleList(root);
@@ -11386,6 +11559,10 @@ void parseInput()
   sortMemberLists();
   g_s.end();
 
+  g_s.begin("Setting anonymous enum type...\n");
+  setAnonymousEnumType();
+  g_s.end();
+
   if (Config_getBool(DIRECTORY_GRAPH))
   {
     g_s.begin("Computing dependencies between directories...\n");
@@ -11398,6 +11575,10 @@ void parseInput()
 
   g_s.begin("Generating citations page...\n");
   Doxygen::citeDict->generatePage();
+  g_s.end();
+
+  g_s.begin("Counting members...\n");
+  countMembers();
   g_s.end();
 
   g_s.begin("Counting data structures...\n");
@@ -11423,6 +11604,11 @@ void parseInput()
   g_s.begin("Adding members to index pages...\n");
   addMembersToIndex();
   g_s.end();
+
+  g_s.begin("Correcting members for VHDL...\n");
+  vhdlCorrectMemberProperties();
+  g_s.end();
+
 }
 
 void generateOutput()

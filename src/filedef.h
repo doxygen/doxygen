@@ -135,14 +135,18 @@ class FileDef : virtual public Definition
 
     virtual bool subGrouping() const = 0;
 
+    virtual void countMembers() = 0;
+    virtual int numDocMembers() const = 0;
+    virtual int numDecMembers() const = 0;
+
     //---------------------------------
 
     virtual void addSourceRef(int line,Definition *d,MemberDef *md) = 0;
 
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol) = 0;
-    virtual void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const = 0;
-    virtual void writeSummaryLinks(OutputList &ol) = 0;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
+    virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeTagFile(FTextStream &t) = 0;
 
     virtual void startParsing() = 0;
@@ -159,7 +163,7 @@ class FileDef : virtual public Definition
     virtual void setPackageDef(PackageDef *pd) = 0;
     virtual void setDirDef(DirDef *dd) = 0;
 
-    virtual void addUsingDirective(NamespaceDef *nd) = 0;
+    virtual void addUsingDirective(const NamespaceDef *nd) = 0;
     virtual void addUsingDeclaration(Definition *def) = 0;
     virtual void combineUsingRelations() = 0;
 

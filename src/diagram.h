@@ -29,7 +29,7 @@ class FTextStream;
 class ClassDiagram
 {
   public:
-    ClassDiagram(ClassDef *root);
+    ClassDiagram(const ClassDef *root);
    ~ClassDiagram();
     void writeFigure(FTextStream &t,const char *path,
                      const char *file) const;

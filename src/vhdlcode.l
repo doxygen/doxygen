@@ -86,7 +86,7 @@ static int           g_inputPosition;   //!< read offset during parsing
 static int           g_inputLines;      //!< number of line in the code fragment
 static int           g_yyLineNr;        //!< current line number
 static bool          g_needsTermination;
-static Definition   *g_searchCtx;
+static const Definition   *g_searchCtx;
 
 static bool          g_exampleBlock;
 static QCString      g_exampleName;
@@ -430,7 +430,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   }
 }
 
-static void setParameterList(MemberDef *md)
+static void setParameterList(const MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
   ArgumentList *al = md->argumentList();
@@ -1543,7 +1543,7 @@ void resetVhdlCodeParserState()
 void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString &s, 
                   bool exBlock, const char *exName,FileDef *fd,
                   int startLine,int endLine,bool inlineFragment,
-                  MemberDef *memberDef,bool,Definition *searchCtx,
+                  const MemberDef *memberDef,bool,const Definition *searchCtx,
                   bool /* collectXRefs */)
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
@@ -1551,7 +1551,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
   if (memberDef)
   {
-    ClassDef *dd=memberDef->getClassDef();
+    const ClassDef *dd=memberDef->getClassDef();
     if (dd) g_CurrClass=dd->name();
   }
   resetVhdlCodeParserState();

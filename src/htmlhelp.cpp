@@ -632,7 +632,7 @@ void HtmlHelp::addContentsItem(bool isDir,
                                const char *anchor,
                                bool /* separateIndex */,
                                bool /* addToNavIndex */,
-                               Definition * /* def */)
+                               const Definition * /* def */)
 {
   // If we're using a binary toc then folders cannot have links. 
   // Tried this and I didn't see any problems, when not using
@@ -677,7 +677,7 @@ void HtmlHelp::addContentsItem(bool isDir,
 }
 
 
-void HtmlHelp::addIndexItem(Definition *context,MemberDef *md,
+void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
                             const char *sectionAnchor,const char *word)
 {
   if (md)

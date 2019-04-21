@@ -90,11 +90,14 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     virtual bool hasDetailedDescription() const;
     virtual QCString fileVersion() const;
     virtual bool subGrouping() const { return m_subGrouping; }
+    virtual void countMembers();
+    virtual int numDocMembers() const;
+    virtual int numDecMembers() const;
     virtual void addSourceRef(int line,Definition *d,MemberDef *md);
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeMemberPages(OutputList &ol);
-    virtual void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
-    virtual void writeSummaryLinks(OutputList &ol);
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
+    virtual void writeSummaryLinks(OutputList &ol) const;
     virtual void writeTagFile(FTextStream &t);
     virtual void startParsing();
     virtual void writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu);
@@ -107,7 +110,7 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     virtual void computeAnchors();
     virtual void setPackageDef(PackageDef *pd) { m_package=pd; }
     virtual void setDirDef(DirDef *dd) { m_dir=dd; }
-    virtual void addUsingDirective(NamespaceDef *nd);
+    virtual void addUsingDirective(const NamespaceDef *nd);
     virtual void addUsingDeclaration(Definition *def);
     virtual void combineUsingRelations();
     virtual bool generateSourceFile() const;
@@ -203,7 +206,7 @@ class DevNullCodeDocInterface : public CodeOutputInterface
     virtual void endFontClass() {}
     virtual void writeCodeAnchor(const char *) {}
     virtual void linkableSymbol(int, const char *,Definition *,Definition *) {}
-    virtual void setCurrentDoc(Definition *,const char *,bool) {}
+    virtual void setCurrentDoc(const Definition *,const char *,bool) {}
     virtual void addWord(const char *,bool) {}
 };
 
@@ -801,7 +804,7 @@ void FileDefImpl::writeAuthorSection(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void FileDefImpl::writeSummaryLinks(OutputList &ol)
+void FileDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1103,7 +1106,7 @@ void FileDefImpl::writeMemberPages(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void FileDefImpl::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
+void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const
 {
   static bool createSubDirs=Config_getBool(CREATE_SUBDIRS);
 
@@ -1503,7 +1506,7 @@ MemberDef *FileDefImpl::getSourceMember(int lineNr) const
 }
 
 
-void FileDefImpl::addUsingDirective(NamespaceDef *nd)
+void FileDefImpl::addUsingDirective(const NamespaceDef *nd)
 {
   if (m_usingDirList==0)
   {
@@ -2208,5 +2211,38 @@ QCString FileDefImpl::includeDependencyGraphFileName() const
 QCString FileDefImpl::includedByDependencyGraphFileName() const
 {
   return m_inclByDepFileName;
+}
+
+void FileDefImpl::countMembers()
+{
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    ml->countDecMembers();
+    ml->countDocMembers();
+  }
+  if (m_memberGroupSDict)
+  {
+    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->countDecMembers();
+      mg->countDocMembers();
+    }
+  }
+}
+
+int FileDefImpl::numDocMembers() const
+{
+  MemberList *ml = getMemberList(MemberListType_allMembersList);
+  return ml ? ml->numDocMembers() : 0;
+}
+
+int FileDefImpl::numDecMembers() const
+{
+  MemberList *ml = getMemberList(MemberListType_allMembersList);
+  return ml ? ml->numDecMembers() : 0;
 }
 
