@@ -228,8 +228,20 @@ void err(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
+  const int bufSize = 40960;
+  char text[bufSize];
+  // we use -2 so we have place for \n and \0
+  vsnprintf(text, bufSize-2, fmt, args);
+  text[bufSize-2]='\0';
   va_end(args);
+  int l = strlen(text);
+  if (text[l-1] != '\n')
+  {
+    text[l]='\n'; // over the \0
+    text[l+1]='\0'; // new \0
+    l++;
+  }
+  fwrite(text,1,l,warnFile);
 }
 
 extern void err_full(const char *file,int line,const char *fmt, ...)
