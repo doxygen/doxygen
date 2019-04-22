@@ -19,7 +19,11 @@
  */
 
 #include <stdlib.h>
-#include <unistd.h>
+#if !defined(_WIN32) || defined(__CYGWIN__)
+  #include <unistd.h>
+#else
+  #include <windows.h>
+#endif
 #include "doxygen.h"
 #include "outputgen.h"
 #include "parserintf.h"
@@ -35,6 +39,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <map>
+#include <qdir.h>
 
 class Doxyparse : public CodeOutputInterface
 {
@@ -58,7 +63,7 @@ class Doxyparse : public CodeOutputInterface
                               const char *,const char *,const SourceLinkInfo &,
                               const SourceLinkInfo &) {}
     void startCodeLine(bool) {}
-    void setCurrentDoc(Definition *,const char *,bool) {}
+    void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
@@ -159,9 +164,6 @@ static void printReferenceTo(std::string type, std::string signature, std::strin
   printf("                type: %s\n", type.c_str());
   printf("                defined_in: %s\n", defined_in.c_str());
 }
-static void printNumberOfConditionalPaths(MemberDef* md) {
-  printf("          conditional_paths: %d\n", md->numberOfFlowKeyWords());
-}
 
 static int isPartOfCStruct(MemberDef * md) {
   return is_c_code && md->getClassDef() != NULL;
@@ -242,7 +244,6 @@ void functionInformation(MemberDef* md) {
   printNumberOfLines(size);
   ArgumentList *argList = md->argumentList();
   printNumberOfArguments(argList->count());
-  printNumberOfConditionalPaths(md);
   MemberSDict *defDict = md->getReferencesMembers();
   if (defDict) {
     MemberSDict::Iterator msdi(*defDict);
@@ -258,7 +259,7 @@ void functionInformation(MemberDef* md) {
 
 static void lookupSymbol(Definition *d) {
   if (d->definitionType() == Definition::TypeMember) {
-    MemberDef *md = (MemberDef *)d;
+    MemberDef *md = dynamic_cast<MemberDef*>(d);
     std::string type = md->memberTypeName().data();
     std::string signature = functionSignature(md);
     printDefinition(type, signature, md->getDefLine());
@@ -388,7 +389,12 @@ int main(int argc,char **argv) {
 
   // we need a place to put intermediate files
   std::ostringstream tmpdir;
-  tmpdir << "/tmp/doxyparse-" << getpid();
+#if !defined(_WIN32) || defined(__CYGWIN__)
+  unsigned int pid = (uint)getpid();
+#else
+  unsigned int pid = (uint)GetCurrentProcessId();
+#endif
+  tmpdir << "/tmp/doxyparse-" << pid;
   Config_getString(OUTPUT_DIRECTORY)= tmpdir.str().c_str();
   // enable HTML (fake) output to omit warning about missing output format
   Config_getBool(GENERATE_HTML)=TRUE;
@@ -449,11 +455,14 @@ int main(int argc,char **argv) {
     }
   }
 
+  QDir thisDir;
   // remove temporary files
-  if (!Doxygen::objDBFileName.isEmpty()) unlink(Doxygen::objDBFileName);
-  if (!Doxygen::entryDBFileName.isEmpty()) unlink(Doxygen::entryDBFileName);
+  if (!Doxygen::objDBFileName.isEmpty())    thisDir.remove(Doxygen::objDBFileName);
+  if (!Doxygen::entryDBFileName.isEmpty())  thisDir.remove(Doxygen::entryDBFileName);
+  if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName);
+
   // clean up after us
-  rmdir(Config_getString(OUTPUT_DIRECTORY));
+  thisDir.rmdir(Config_getString(OUTPUT_DIRECTORY));
 
   listSymbols();
 
