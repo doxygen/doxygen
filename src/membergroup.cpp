@@ -158,6 +158,7 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
     {
       MemberList ml(lt);
       ml.append(md);
+      ml.countDecMembers();
       ml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
     }
   }

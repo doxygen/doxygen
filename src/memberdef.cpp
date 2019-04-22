@@ -734,13 +734,13 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
 
     // non-const getters should not be called
     virtual ClassDef *getClassDef()
-    { err("non-const getClassDef() called on aliased member. Please report as a bug."); return 0; }
+    { err("non-const getClassDef() called on aliased member. Please report as a bug.\n"); return 0; }
     virtual FileDef *getFileDef()
-    { err("non-const getFileDef() called on aliased member. Please report as a bug."); return 0; }
+    { err("non-const getFileDef() called on aliased member. Please report as a bug.\n"); return 0; }
     virtual NamespaceDef* getNamespaceDef()
-    { err("non-const getNamespaceDef() called on aliased member. Please report as a bug."); return 0; }
+    { err("non-const getNamespaceDef() called on aliased member. Please report as a bug.\n"); return 0; }
     virtual GroupDef *getGroupDef()
-    { err("non-const getGroupDef() called on aliased member. Please report as a bug."); return 0; }
+    { err("non-const getGroupDef() called on aliased member. Please report as a bug.\n"); return 0; }
 
     virtual void setEnumBaseType(const QCString &type) {}
     virtual void setMemberType(MemberType t) {}

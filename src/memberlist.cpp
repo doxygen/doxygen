@@ -415,7 +415,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
   if (numDecMembers()==-1)
   {
-    err("MemberList::numDecMembers()==-1, so the members of this list have not been counted. Please report as a bug.");
+    err("MemberList::numDecMembers()==-1, so the members of this list have not been counted. Please report as a bug.\n");
+    abort();
   }
   if (numDecMembers()<=numDecEnumValues())
   {
@@ -737,7 +738,8 @@ void MemberList::writeDocumentation(OutputList &ol,
 {
   if (numDocMembers()==-1)
   {
-    err("MemberList::numDocMembers()==-1, so the members of this list have not been counted. Please report as a bug.");
+    err("MemberList::numDocMembers()==-1, so the members of this list have not been counted. Please report as a bug.\n");
+    abort();
   }
 
   if (numDocMembers()==0) return;
