@@ -852,18 +852,21 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
         //printf("] found it\n");
         return TRUE; 
       }
-      QCString key=und->name();
-      if (und->getUsedNamespaces() && visitedDict.find(key)==0)
+      if (item->getLanguage()==SrcLangExt_Cpp)
       {
-        visitedDict.insert(key,(void *)0x08);
-
-        if (accessibleViaUsingNamespace(und->getUsedNamespaces(),fileScope,item,explicitScopePart))
+        QCString key=und->name();
+        if (und->getUsedNamespaces() && visitedDict.find(key)==0)
         {
-          //printf("] found it via recursion\n");
-          return TRUE;
-        }
+          visitedDict.insert(key,(void *)0x08);
 
-        visitedDict.remove(key);
+          if (accessibleViaUsingNamespace(und->getUsedNamespaces(),fileScope,item,explicitScopePart))
+          {
+            //printf("] found it via recursion\n");
+            return TRUE;
+          }
+
+          visitedDict.remove(key);
+        }
       }
       //printf("] Try via used namespace done\n");
     }
