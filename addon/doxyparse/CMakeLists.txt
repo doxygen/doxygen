@@ -19,6 +19,11 @@ include_directories(
 add_executable(doxyparse
 doxyparse.cpp
 )
+
+if (use_libclang)
+    set(CLANG_LIBS libclang clangTooling ${llvm_libs})
+endif()
+
 target_link_libraries(doxyparse
 _doxygen
 qtools
