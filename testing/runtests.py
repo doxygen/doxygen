@@ -116,6 +116,8 @@ class Tester:
 				print('LATEX_OUTPUT=%s/latex' % self.test_out, file=f)
 			if self.args.subdirs:
 				print('CREATE_SUBDIRS=YES', file=f)
+			if (self.args.clang):
+				print('CLANG_ASSISTED_PARSING=YES', file=f)
 			if (self.args.cfgs):
 				for cfg in list(itertools.chain.from_iterable(self.args.cfgs)):
 					if cfg.find('=') == -1:
@@ -434,6 +436,9 @@ def main():
 	parser.add_argument('--pdf',help='create LaTeX output and create pdf from it',
 		action="store_true")
 	parser.add_argument('--subdirs',help='use the configuration parameter CREATE_SUBDIRS=YES',
+		action="store_true")
+	parser.add_argument('--clang',help='use CLANG_ASSISTED_PARSING, works only when '
+                'doxygen has been compiled with "use_libclang"',
 		action="store_true")
 	parser.add_argument('--keep',help='keep result directories',
 		action="store_true")
