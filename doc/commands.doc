@@ -29,9 +29,14 @@ Each argument has a certain range:
 <li>If (round) braces are used the argument extends until the end of the line
     on which the command was found.
 <li>If {curly} braces are used the argument extends until the next paragraph.
-    Paragraphs are delimited by a blank line or by a section indicator.
+    Paragraphs are delimited by a blank line or by a section indicator. Note that 
+    {curly} braces are also used for command options, here the braces are mandatory
+    and  just 'normal' characters. The starting curly brace has to directly follow
+    the command, so without whitspace.
 </ul>
-If in addition to the above argument specifiers [square] brackets are used the argument is optional.
+If in addition to the above argument specifiers [square] brackets are used the argument
+is optional, unless they are placed between quotes in that case they are a mandatory
+part of the command argument.
 
 Here is an alphabetically sorted list of all commands with references to their
 documentation:
@@ -516,7 +521,7 @@ Structural indicators
   \endlatexonly
 
 <hr>
-\section cmdexample \\example[{lineno}] <file-name>
+\section cmdexample \\example['{lineno}'] <file-name>
 
   \addindex \\example
   Indicates that a comment block contains documentation for a source code
@@ -1607,7 +1612,7 @@ ALIASES  = "english=\if english" \
   \endlatexonly
 
 <hr>
-\section cmdparam \\param [(dir)] <parameter-name> { parameter description }
+\section cmdparam \\param '['dir']' <parameter-name> { parameter description }
 
   \addindex \\param
   Starts a parameter description for a function parameter with name
@@ -1616,7 +1621,7 @@ ALIASES  = "english=\if english" \
   the documentation of this (or any other) parameter is missing or not
   present in the function declaration or definition.
 
-  The \c \\param command has an optional attribute, (dir), specifying the direction
+  The \c \\param command has an optional attribute, `dir`, specifying the direction
   of the parameter. Possible values are "[in]", "[in,out]", and "[out]",
   note the [square] brackets in this description.
   When a parameter is both input and output, [in,out] is used as attribute.
@@ -2186,7 +2191,7 @@ Commands for displaying examples
 \htmlonly</p></center><p>\endhtmlonly
 
 <hr>
-\section cmddontinclude \\dontinclude[{lineno}] <file-name>
+\section cmddontinclude \\dontinclude['{lineno}'] <file-name>
 
   \addindex \\dontinclude
   This command can be used to parse a source file without actually
@@ -2227,7 +2232,7 @@ Commands for displaying examples
                \ref cmdinclude "\\include".
 
 <hr>
-\section cmdinclude \\include[{lineno|doc}] <file-name>
+\section cmdinclude \\include['{'option'}'] <file-name>
 
   \addindex \\include
   This command can be used to include a source file as a block of code.
@@ -2261,9 +2266,9 @@ Commands for displaying examples
   \note Doxygen's special commands do not work inside blocks of code.
   It is allowed to nest C-style comments inside a code block though.
 
-  You can add option `{lineno}` to enable line numbers for the included code if desired.
-
-  You can add option `{doc}` to treat the file as documentation rather than code.
+  The `option` can either be `lineno` or `doc`.
+  The `option` `lineno` can be used to enable line numbers for the included code if desired.
+  The `option` `doc` can be used to treat the file as documentation rather than code.
 
   \note Some that when using the `{doc}` option,
        commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
@@ -2350,7 +2355,7 @@ Commands for displaying examples
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\section cmdsnippet \\snippet[{lineno|doc}] <file-name> ( block_id )
+\section cmdsnippet \\snippet['{'option'}'] <file-name> ( block_id )
 
  \addindex \\snippet
  Where the \ref cmdinclude "\\include" command can be used to include
@@ -2393,9 +2398,9 @@ Commands for displaying examples
  Note also that the [block_id] markers should appear exactly twice in the
  source file.
 
- You can add option `{lineno}` to enable line numbers for the snippet if desired.
-
- You can add option `{doc}` to treat the file as documentation rather than code.
+ The `option` can either be `lineno` or `doc`.
+ The `option` `lineno` can be used to enable line numbers for the included code if desired.
+ The `option` `doc` can be used to treat the file as documentation rather than code.
 
  \note Some that when using the `{doc}` option,
        commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
@@ -2574,7 +2579,7 @@ Commands for visual enhancements
   To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
 
 <hr>
-\section cmdcode \\code [ '{'<word>'}']
+\section cmdcode \\code['{'<word>'}']
 
   \addindex \\code
   Starts a block of code. A code block is treated differently
@@ -3152,7 +3157,7 @@ class Receiver
               \ref cmdhtmlinclude "\\htmlinclude".
 
 <hr>
-\section cmdimage \\image['{'[option]'}'] <format> <file> ["caption"] [<sizeindication>=<size>]
+\section cmdimage \\image['{'option'}'] <format> <file> ["caption"] [<sizeindication>=<size>]
 
   \addindex \\image
   Inserts an image into the documentation. This command is format
