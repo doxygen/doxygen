@@ -46,6 +46,8 @@ jobs:
               homebrew:
                   packages:
                       - ghostscript
+                      - bison
+                      - flex
                   casks:
                       - mactex-no-gui
 
@@ -79,7 +81,9 @@ before_script:
         mv epstopdf/epstopdf.pl /Users/travis/Library/TeX/texbin/epstopdf;
         chmod a+x /Users/travis/Library/TeX/texbin/epstopdf;
         rm -rf epstopdf*;
-        export PATH=/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH;
+        export CMAKE_INCLUDE_PATH="/usr/local/opt/flex/include;$CMAKE_INCLUDE_PATH";
+        export CMAKE_LIBRARY_PATH="/usr/local/opt/flex/lib;/usr/local/opt/bison/lib;$CMAKE_LIBRARY_PATH";
+        export PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH";
       fi;
     - if [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
