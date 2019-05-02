@@ -109,6 +109,14 @@ Some people like to make their comment blocks more visible in the
 documentation. For this purpose you can use the following:
 
 \verbatim
+/************************************************
+ *  ... text
+ ***********************************************/
+\endverbatim
+
+or
+
+\verbatim
 /********************************************//**
  *  ... text
  ***********************************************/

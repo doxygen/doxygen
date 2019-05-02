@@ -6252,7 +6252,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
 					}
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/**"/[^/*] {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/*"[\*]+/[^/] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;
 
