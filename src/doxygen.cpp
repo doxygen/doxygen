@@ -766,6 +766,16 @@ static void buildFileList(Entry *root)
   {
     bool ambig;
     FileDef *fd=findFileDef(Doxygen::inputNameDict,root->name,ambig);
+    if (!fd || ambig)
+    {
+      int save_ambig = ambig;
+      // use the directory of the file to see if the described file is in the same
+      // directory as the describing file.
+      QCString fn = root->fileName;
+      int newIndex=fn.findRev('/');
+      fd=findFileDef(Doxygen::inputNameDict,fn.left(newIndex) + "/" + root->name,ambig);
+      if (!fd) ambig = save_ambig;
+    }
     //printf("**************** root->name=%s fd=%p\n",root->name.data(),fd);
     if (fd && !ambig)
     {
