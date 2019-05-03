@@ -805,7 +805,7 @@ static void buildFileList(Entry *root)
       const char *fn = root->fileName.data();
       QCString text(4096);
       text.sprintf("the name `%s' supplied as "
-          "the second argument in the \\file statement ",
+          "the argument in the \\file statement ",
           qPrint(root->name));
       if (ambig) // name is ambiguous
       {
