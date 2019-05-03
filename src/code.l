@@ -3553,7 +3553,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    BEGIN(SkipComment);
   					  }
 					}
-<*>^{B}*"/*"[!*]/[^/*]			{ // special C comment block at a new line
+<*>^{B}*"/*"[!*][*]*/[^/]		{ // special C comment block at a new line
 					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    g_lastSpecialCContext = YY_START;
