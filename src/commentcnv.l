@@ -399,6 +399,10 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,(int)yyleng);
                                    }
 <Scan>"/*"[*!]?			   { /* start of a C comment */
+                                     if ((g_lang==SrcLangExt_Python) || (g_lang==SrcLangExt_Tcl))
+				     {
+				       REJECT;
+                                     }
   			             g_specialComment=(int)yyleng==3;
                                      g_nestingCount=0;
                                      g_commentStack.clear(); /*  to be on the save side */
@@ -660,12 +664,16 @@ void replaceComment(int offset);
 				     }
                                    }
 <CComment>"/"+"*"                  { /* nested C comment */
+                                     if ((g_lang==SrcLangExt_Python) || (g_lang==SrcLangExt_Tcl))
+				     {
+				       REJECT;
+                                     }
                                      g_nestingCount++;
                                      g_commentStack.push(new CommentCtx(g_lineNr));
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 <CComment>"*"+"/"                  { /* end of C comment */
-                                     if (g_lang==SrcLangExt_Python)
+                                     if ((g_lang==SrcLangExt_Python) || (g_lang==SrcLangExt_Tcl))
 				     {
 				       REJECT;
 				     }
