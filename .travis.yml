@@ -98,4 +98,6 @@ script:
     - cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
     - make
     - make tests
-    - make docs
+    - if [ ! "${TRAVIS_OS_NAME}" == "osx" ]; then
+        make docs;
+      fi;
