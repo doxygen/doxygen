@@ -142,7 +142,7 @@ QCString dateToString(bool);
 bool getDefs(const QCString &scopeName,
                     const QCString &memberName,
                     const char *,
-                    MemberDef *&md,
+                    const MemberDef *&md,
                     const ClassDef *&cd,
                     const FileDef *&fd,
                     const NamespaceDef *&nd,

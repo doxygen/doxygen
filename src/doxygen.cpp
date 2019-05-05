@@ -3586,146 +3586,149 @@ static void buildFunctionList(Entry *root)
           MemberNameIterator mni(*mn);
           for (mni.toFirst();(!found && (md=mni.current()));++mni)
           {
-            const NamespaceDef *mnd = md->getNamespaceDef();
-            NamespaceDef *rnd = 0;
-            //printf("root namespace=%s\n",rootNav->parent()->name().data());
-            QCString fullScope = scope;
-            QCString parentScope = root->parent()->name;
-            if (!parentScope.isEmpty() && !leftScopeMatch(parentScope,scope))
+            if (!md->isAlias())
             {
-              if (!scope.isEmpty()) fullScope.prepend("::");
-              fullScope.prepend(parentScope);
-            }
-            //printf("fullScope=%s\n",fullScope.data());
-            rnd = getResolvedNamespace(fullScope);
-            const FileDef *mfd = md->getFileDef();
-            QCString nsName,rnsName;
-            if (mnd)  nsName = mnd->name().copy();
-            if (rnd) rnsName = rnd->name().copy();
-            //printf("matching arguments for %s%s %s%s\n",
-            //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
-            ArgumentList *mdAl = md->argumentList();
-            ArgumentList *mdTempl = md->templateArguments();
-
-            // in case of template functions, we need to check if the
-            // functions have the same number of template parameters
-            bool sameNumTemplateArgs = TRUE;
-            bool matchingReturnTypes = TRUE;
-            if (mdTempl!=0 && root->tArgLists)
-            {
-              if (mdTempl->count()!=root->tArgLists->getLast()->count())
+              const NamespaceDef *mnd = md->getNamespaceDef();
+              NamespaceDef *rnd = 0;
+              //printf("root namespace=%s\n",rootNav->parent()->name().data());
+              QCString fullScope = scope;
+              QCString parentScope = root->parent()->name;
+              if (!parentScope.isEmpty() && !leftScopeMatch(parentScope,scope))
               {
-                sameNumTemplateArgs = FALSE;
+                if (!scope.isEmpty()) fullScope.prepend("::");
+                fullScope.prepend(parentScope);
               }
-              if (md->typeString()!=removeRedundantWhiteSpace(root->type))
-              {
-                matchingReturnTypes = FALSE;
-              }
-            }
+              //printf("fullScope=%s\n",fullScope.data());
+              rnd = getResolvedNamespace(fullScope);
+              const FileDef *mfd = md->getFileDef();
+              QCString nsName,rnsName;
+              if (mnd)  nsName = mnd->name().copy();
+              if (rnd) rnsName = rnd->name().copy();
+              //printf("matching arguments for %s%s %s%s\n",
+              //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
+              ArgumentList *mdAl = md->argumentList();
+              ArgumentList *mdTempl = md->templateArguments();
 
-            bool staticsInDifferentFiles =
-                    root->stat && md->isStatic() && root->fileName!=md->getDefFileName();
-
-            if (
-                matchArguments2(md->getOuterScope(),mfd,mdAl,
-                                rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
-                                FALSE) &&
-                sameNumTemplateArgs &&
-                matchingReturnTypes &&
-                !staticsInDifferentFiles
-               )
-            {
-              GroupDef *gd=0;
-              if (root->groups->getFirst()!=0)
+              // in case of template functions, we need to check if the
+              // functions have the same number of template parameters
+              bool sameNumTemplateArgs = TRUE;
+              bool matchingReturnTypes = TRUE;
+              if (mdTempl!=0 && root->tArgLists)
               {
-                gd = Doxygen::groupSDict->find(root->groups->getFirst()->groupname.data());
-              }
-              //printf("match!\n");
-              //printf("mnd=%p rnd=%p nsName=%s rnsName=%s\n",mnd,rnd,nsName.data(),rnsName.data());
-              // see if we need to create a new member
-              found=(mnd && rnd && nsName==rnsName) ||   // members are in the same namespace
-                    ((mnd==0 && rnd==0 && mfd!=0 &&       // no external reference and
-                      mfd->absFilePath()==root->fileName // prototype in the same file
-                     )
-                    );
-              // otherwise, allow a duplicate global member with the same argument list
-              if (!found && gd && gd==md->getGroupDef() && nsName==rnsName)
-              {
-                // member is already in the group, so we don't want to add it again.
-                found=TRUE;
-              }
-
-              //printf("combining function with prototype found=%d in namespace %s\n",
-              //    found,nsName.data());
-
-              if (found)
-              {
-                // merge argument lists
-                mergeArguments(mdAl,root->argList,!root->doc.isEmpty());
-                // merge documentation
-                if (md->documentation().isEmpty() && !root->doc.isEmpty())
+                if (mdTempl->count()!=root->tArgLists->getLast()->count())
                 {
-                  ArgumentList *argList = new ArgumentList;
-                  stringToArgumentList(root->args,argList);
-                  if (root->proto)
+                  sameNumTemplateArgs = FALSE;
+                }
+                if (md->typeString()!=removeRedundantWhiteSpace(root->type))
+                {
+                  matchingReturnTypes = FALSE;
+                }
+              }
+
+              bool staticsInDifferentFiles =
+                root->stat && md->isStatic() && root->fileName!=md->getDefFileName();
+
+              if (
+                  matchArguments2(md->getOuterScope(),mfd,mdAl,
+                    rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
+                    FALSE) &&
+                  sameNumTemplateArgs &&
+                  matchingReturnTypes &&
+                  !staticsInDifferentFiles
+                 )
+              {
+                GroupDef *gd=0;
+                if (root->groups->getFirst()!=0)
+                {
+                  gd = Doxygen::groupSDict->find(root->groups->getFirst()->groupname.data());
+                }
+                //printf("match!\n");
+                //printf("mnd=%p rnd=%p nsName=%s rnsName=%s\n",mnd,rnd,nsName.data(),rnsName.data());
+                // see if we need to create a new member
+                found=(mnd && rnd && nsName==rnsName) ||   // members are in the same namespace
+                  ((mnd==0 && rnd==0 && mfd!=0 &&       // no external reference and
+                    mfd->absFilePath()==root->fileName // prototype in the same file
+                   )
+                  );
+                // otherwise, allow a duplicate global member with the same argument list
+                if (!found && gd && gd==md->getGroupDef() && nsName==rnsName)
+                {
+                  // member is already in the group, so we don't want to add it again.
+                  found=TRUE;
+                }
+
+                //printf("combining function with prototype found=%d in namespace %s\n",
+                //    found,nsName.data());
+
+                if (found)
+                {
+                  // merge argument lists
+                  mergeArguments(mdAl,root->argList,!root->doc.isEmpty());
+                  // merge documentation
+                  if (md->documentation().isEmpty() && !root->doc.isEmpty())
                   {
-                    //printf("setDeclArgumentList to %p\n",argList);
-                    md->setDeclArgumentList(argList);
+                    ArgumentList *argList = new ArgumentList;
+                    stringToArgumentList(root->args,argList);
+                    if (root->proto)
+                    {
+                      //printf("setDeclArgumentList to %p\n",argList);
+                      md->setDeclArgumentList(argList);
+                    }
+                    else
+                    {
+                      md->setArgumentList(argList);
+                    }
                   }
-                  else
+
+                  md->setDocumentation(root->doc,root->docFile,root->docLine);
+                  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+                  md->setDocsForDefinition(!root->proto);
+                  if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
                   {
-                    md->setArgumentList(argList);
+                    md->setBodySegment(root->bodyLine,root->endBodyLine);
+                    md->setBodyDef(rfd);
                   }
-                }
 
-                md->setDocumentation(root->doc,root->docFile,root->docLine);
-                md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-                md->setDocsForDefinition(!root->proto);
-                if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
-                {
-                  md->setBodySegment(root->bodyLine,root->endBodyLine);
-                  md->setBodyDef(rfd);
-                }
+                  if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
+                  {
+                    md->setArgsString(root->args);
+                  }
+                  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
 
-                if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
-                {
-                  md->setArgsString(root->args);
-                }
-                md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                  md->addSectionsToDefinition(root->anchors);
 
-                md->addSectionsToDefinition(root->anchors);
+                  md->enableCallGraph(md->hasCallGraph() || root->callGraph);
+                  md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
+                  md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
+                  md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
 
-                md->enableCallGraph(md->hasCallGraph() || root->callGraph);
-                md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
-                md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
-                md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
+                  // merge ingroup specifiers
+                  if (md->getGroupDef()==0 && root->groups->getFirst()!=0)
+                  {
+                    addMemberToGroups(root,md);
+                  }
+                  else if (md->getGroupDef()!=0 && root->groups->count()==0)
+                  {
+                    //printf("existing member is grouped, new member not\n");
+                    root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
+                  }
+                  else if (md->getGroupDef()!=0 && root->groups->getFirst()!=0)
+                  {
+                    //printf("both members are grouped\n");
+                  }
 
-                // merge ingroup specifiers
-                if (md->getGroupDef()==0 && root->groups->getFirst()!=0)
-                {
-                  addMemberToGroups(root,md);
-                }
-                else if (md->getGroupDef()!=0 && root->groups->count()==0)
-                {
-                  //printf("existing member is grouped, new member not\n");
-                  root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
-                }
-                else if (md->getGroupDef()!=0 && root->groups->getFirst()!=0)
-                {
-                  //printf("both members are grouped\n");
-                }
-
-                // if md is a declaration and root is the corresponding
-                // definition, then turn md into a definition.
-                if (md->isPrototype() && !root->proto)
-                {
-                  md->setDeclFile(md->getDefFileName(),md->getDefLine(),md->getDefColumn());
-                  md->setPrototype(FALSE,root->fileName,root->startLine,root->startColumn);
-                }
-                // if md is already the definition, then add the declaration info
-                else if (!md->isPrototype() && root->proto)
-                {
-                  md->setDeclFile(root->fileName,root->startLine,root->startColumn);
+                  // if md is a declaration and root is the corresponding
+                  // definition, then turn md into a definition.
+                  if (md->isPrototype() && !root->proto)
+                  {
+                    md->setDeclFile(md->getDefFileName(),md->getDefLine(),md->getDefColumn());
+                    md->setPrototype(FALSE,root->fileName,root->startLine,root->startColumn);
+                  }
+                  // if md is already the definition, then add the declaration info
+                  else if (!md->isPrototype() && root->proto)
+                  {
+                    md->setDeclFile(root->fileName,root->startLine,root->startColumn);
+                  }
                 }
               }
             }
@@ -3915,18 +3918,20 @@ static void findFriends()
       MemberDef *fmd;
       for (;(fmd=fni.current());++fni) // for each function with that name
       {
+        const MemberDef *cfmd = const_cast<const MemberDef*>(fmd);
         MemberNameIterator mni(*mn);
         MemberDef *mmd;
         for (;(mmd=mni.current());++mni) // for each member with that name
         {
+          const MemberDef *cmmd = const_cast<const MemberDef*>(mmd);
           //printf("Checking for matching arguments
           //        mmd->isRelated()=%d mmd->isFriend()=%d mmd->isFunction()=%d\n",
           //    mmd->isRelated(),mmd->isFriend(),mmd->isFunction());
-          ArgumentList *mmdAl = mmd->argumentList();
-          ArgumentList *fmdAl = fmd->argumentList();
-          if ((mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
-              matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), mmdAl,
-                              fmd->getOuterScope(), fmd->getFileDef(), fmdAl,
+          ArgumentList *mmdAl = cmmd->argumentList();
+          ArgumentList *fmdAl = cfmd->argumentList();
+          if ((cmmd->isFriend() || (cmmd->isRelated() && cmmd->isFunction())) &&
+              matchArguments2(cmmd->getOuterScope(), cmmd->getFileDef(), mmdAl,
+                              cfmd->getOuterScope(), cfmd->getFileDef(), fmdAl,
                               TRUE
                              )
 

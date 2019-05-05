@@ -860,7 +860,7 @@ static bool getLinkInScope(const QCString &c,  // scope
 			   bool varOnly=FALSE
 			  )
 {
-  MemberDef    *md = 0;
+  const MemberDef    *md = 0;
   const ClassDef     *cd = 0;
   const FileDef      *fd = 0;
   const NamespaceDef *nd = 0;
@@ -878,7 +878,7 @@ static bool getLinkInScope(const QCString &c,  // scope
         anchor.sprintf("a%d",g_anchorCount);
         //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
         //                                  g_exampleFile.data());
-        if (md->addExample(anchor,g_exampleName,g_exampleFile))
+        if (const_cast<MemberDef*>(md)->addExample(anchor,g_exampleName,g_exampleFile))
         {
           ol.writeCodeAnchor(anchor);
           g_anchorCount++;
@@ -897,7 +897,7 @@ static bool getLinkInScope(const QCString &c,  // scope
         if (g_currentDefinition && g_currentMemberDef &&
             md!=g_currentMemberDef && g_insideBody && g_collectXRefs)
         {
-          addDocCrossReference(g_currentMemberDef,md);
+          addDocCrossReference(g_currentMemberDef,const_cast<MemberDef*>(md));
         }
         //printf("d->getReference()=`%s' d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
 

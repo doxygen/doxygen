@@ -6030,12 +6030,14 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
     //    mdef, mdef ? mdef->name().data() : "",
     //    mdec, mdec ? mdec->name().data() : "");
 
-    ArgumentList *mdefAl = mdef->argumentList();
-    ArgumentList *mdecAl = mdec->argumentList();
-    if (matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdefAl,
-          mdec->getOuterScope(),mdec->getFileDef(),mdecAl,
-          TRUE
-          )
+    const MemberDef *cmdec = const_cast<const MemberDef*>(mdec);
+    const MemberDef *cmdef = const_cast<const MemberDef*>(mdef);
+    ArgumentList *mdefAl = cmdef->argumentList();
+    ArgumentList *mdecAl = cmdec->argumentList();
+    if (matchArguments2(cmdef->getOuterScope(),cmdef->getFileDef(),mdefAl,
+                        cmdec->getOuterScope(),cmdec->getFileDef(),mdecAl,
+                        TRUE
+                       )
        ) /* match found */
     {
       //printf("Found member %s: definition in %s (doc=`%s') and declaration in %s (doc=`%s')\n",

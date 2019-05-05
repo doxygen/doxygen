@@ -689,7 +689,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   QCString args=cmdArg.right(l-funcStart);
 
   // try if the link is to a member
-  MemberDef    *md=0;
+  const MemberDef    *md=0;
   const ClassDef     *cd=0;
   const FileDef      *fd=0;
   const NamespaceDef *nd=0;

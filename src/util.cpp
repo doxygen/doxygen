@@ -2080,7 +2080,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     bool found=FALSE;
     if (!insideString)
     {
-      MemberDef    *md=0;
+      const MemberDef    *md=0;
       const ClassDef     *cd=0;
       const FileDef      *fd=0;
       const NamespaceDef *nd=0;
@@ -4058,7 +4058,7 @@ static void findMembersWithSpecificName(MemberName *mn,
 bool getDefs(const QCString &scName,
              const QCString &mbName, 
              const char *args,
-             MemberDef *&md, 
+             const MemberDef *&md, 
              const ClassDef *&cd, 
              const FileDef *&fd, 
              const NamespaceDef *&nd, 
@@ -4336,7 +4336,7 @@ bool getDefs(const QCString &scName,
         //    namespaceName.data(),mn->count());
         bool found=FALSE;
         MemberNameIterator mmli(*mn);
-        MemberDef *mmd;
+        const MemberDef *mmd;
         for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
         {
           //printf("mmd->getNamespaceDef()=%p fnd=%p\n",
@@ -4400,7 +4400,7 @@ bool getDefs(const QCString &scName,
             }
           }
         }
-        if (found) 
+        if (found)
         {
           if (!md->isLinkable()) 
           {
@@ -4706,7 +4706,7 @@ bool resolveRef(/* in */  const char *scName,
 
   QCString scopeStr=scName;
 
-  MemberDef    *md = 0;
+  const MemberDef    *md = 0;
   const ClassDef     *cd = 0;
   const FileDef      *fd = 0;
   const NamespaceDef *nd = 0;
