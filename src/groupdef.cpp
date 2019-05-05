@@ -384,10 +384,10 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
   if ((mni=(*allMemberNameInfoSDict)[md->name()]))
   { // member with this name already found
     MemberNameInfoIterator srcMnii(*mni); 
-    MemberInfo *srcMi;
+    const MemberInfo *srcMi;
     for ( ; (srcMi=srcMnii.current()) ; ++srcMnii )
     {
-      MemberDef *srcMd = srcMi->memberDef;
+      const MemberDef *srcMd = srcMi->memberDef;
       if (srcMd==md) return FALSE; // already added before!
 
       bool sameScope = srcMd->getOuterScope()==md->getOuterScope() || // same class or namespace
@@ -395,10 +395,10 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
            (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
                md->getOuterScope()->definitionType()==Definition::TypeFile); 
 
-      ArgumentList *srcMdAl  = srcMd->argumentList();
-      ArgumentList *mdAl     = md->argumentList();
-      ArgumentList *tSrcMdAl = srcMd->templateArguments();
-      ArgumentList *tMdAl    = md->templateArguments();
+      const ArgumentList *srcMdAl  = srcMd->argumentList();
+      const ArgumentList *mdAl     = md->argumentList();
+      const ArgumentList *tSrcMdAl = srcMd->templateArguments();
+      const ArgumentList *tMdAl    = md->templateArguments();
       
       if (srcMd->isFunction() && md->isFunction() && // both are a function
           ((tSrcMdAl==0 && tMdAl==0) || 

@@ -185,8 +185,8 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
 
 QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
 
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,ArgumentList *srcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,ArgumentList *dstAl,
+bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
+                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
                      bool checkCV
                     );
 
@@ -416,7 +416,7 @@ int countAliasArguments(const QCString argList);
 QCString resolveAliasCmd(const QCString aliasCmd);
 QCString expandAlias(const QCString &aliasName,const QCString &aliasValue);
 
-void writeTypeConstraints(OutputList &ol,const Definition *d,ArgumentList *al);
+void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList *al);
 
 QCString convertCharEntitiesToUTF8(const QCString &s);
 

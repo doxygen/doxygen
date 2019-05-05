@@ -406,9 +406,9 @@ static void checkArgumentName(const QCString &name,bool isParam)
 {                
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0) return; // not a member
-  ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
-		   g_memberDef->argumentList() :
-                   g_memberDef->declArgumentList();
+  const ArgumentList *al=g_memberDef->isDocsForDefinition() ?
+	                 g_memberDef->argumentList() :
+                         g_memberDef->declArgumentList();
   SrcLangExt lang = g_memberDef->getLanguage();
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al==0) return; // no argument list
@@ -421,7 +421,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
     if (lang==SrcLangExt_Fortran) aName=aName.lower();
     //printf("aName=`%s'\n",aName.data());
     ArgumentListIterator ali(*al);
-    Argument *a;
+    const Argument *a;
     bool found=FALSE;
     for (ali.toFirst();(a=ali.current());++ali)
     {
@@ -476,14 +476,14 @@ static void checkUnOrMultipleDocumentedParams()
 {
   if (g_memberDef && g_hasParamCommand && Config_getBool(WARN_IF_DOC_ERROR))
   {
-    ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
+    const ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
       g_memberDef->argumentList() :
       g_memberDef->declArgumentList();
     SrcLangExt lang = g_memberDef->getLanguage();
     if (al!=0)
     {
       ArgumentListIterator ali(*al);
-      Argument *a;
+      const Argument *a;
       bool found=FALSE;
       for (ali.toFirst();(a=ali.current());++ali)
       {

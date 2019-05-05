@@ -677,10 +677,10 @@ static void addUsingDirective(const char *name)
 static void setParameterList(const MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
-  ArgumentList *al = md->argumentList();
+  const ArgumentList *al = md->argumentList();
   if (al==0) return;
   ArgumentListIterator it(*al);
-  Argument *a;
+  const Argument *a;
   for (;(a=it.current());++it)
   {
     g_parmName = a->name.copy();

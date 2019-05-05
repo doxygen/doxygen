@@ -3765,8 +3765,8 @@ static bool matchArgument2(
 
 
 // new algorithm for argument matching
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,ArgumentList *srcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,ArgumentList *dstAl,
+bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
+                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
                      bool checkCV)
 {
   //printf("*** matchArguments2\n");
@@ -3793,7 +3793,7 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,Argu
   { // special case for finding match between func() and func(void)
     Argument *a=new Argument;
     a->type = "void";
-    srcAl->append(a);
+    const_cast<ArgumentList*>(srcAl)->append(a);
     MATCH
     return TRUE;
   }
@@ -3802,7 +3802,7 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,Argu
   { // special case for finding match between func(void) and func()
     Argument *a=new Argument;
     a->type = "void";
-    dstAl->append(a);
+    const_cast<ArgumentList*>(dstAl)->append(a);
     MATCH
     return TRUE;
   }
@@ -4016,7 +4016,7 @@ static void findMembersWithSpecificName(MemberName *mn,
       if (args && !md->isDefine() && qstrcmp(args,"()")!=0)
       {
         argList=new ArgumentList;
-        ArgumentList *mdAl = md->argumentList();
+        const ArgumentList *mdAl = md->argumentList();
         stringToArgumentList(args,argList);
         match=matchArguments2(
             md->getOuterScope(),fd,mdAl,
@@ -4367,7 +4367,7 @@ bool getDefs(const QCString &scName,
             if (args && qstrcmp(args,"()")!=0)
             {
               argList=new ArgumentList;
-              ArgumentList *mmdAl = mmd->argumentList();
+              const ArgumentList *mmdAl = mmd->argumentList();
               stringToArgumentList(args,argList);
               match=matchArguments2(
                   mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
@@ -6346,7 +6346,7 @@ QCString normalizeNonTemplateArgumentsInString(
     if (formalArgs) // check that n is not a formal template argument
     {
       ArgumentListIterator formAli(*formalArgs);
-      Argument *formArg;
+      const Argument *formArg;
       for (formAli.toFirst();
           (formArg=formAli.current()) && !found;
           ++formAli
@@ -7933,12 +7933,12 @@ QCString expandAlias(const QCString &aliasName,const QCString &aliasValue)
   return result;
 }
 
-void writeTypeConstraints(OutputList &ol,const Definition *d,ArgumentList *al)
+void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList *al)
 {
   if (al==0) return;
   ol.startConstraintList(theTranslator->trTypeConstraints()); 
   ArgumentListIterator ali(*al);
-  Argument *a;
+  const Argument *a;
   for (;(a=ali.current());++ali)
   {
     ol.startConstraintParam();

@@ -1015,16 +1015,16 @@ static void insertMemberReference(const MemberDef *src, const MemberDef *dst, co
 
 static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, const Definition *def)
 {
-  ArgumentList *declAl = md->declArgumentList();
-  ArgumentList *defAl = md->argumentList();
+  const ArgumentList *declAl = md->declArgumentList();
+  const ArgumentList *defAl = md->argumentList();
   if (declAl!=0 && defAl!=0 && declAl->count()>0)
   {
     ArgumentListIterator declAli(*declAl);
     ArgumentListIterator defAli(*defAl);
-    Argument *a;
+    const Argument *a;
     for (declAli.toFirst();(a=declAli.current());++declAli)
     {
-      Argument *defArg = defAli.current();
+      const Argument *defArg = defAli.current();
 
       if (!a->attrib.isEmpty())
       {
@@ -1410,7 +1410,7 @@ static void writeTemplateArgumentList(const ArgumentList * al,
 
 static void writeMemberTemplateLists(const MemberDef *md)
 {
-  ArgumentList *templMd = md->templateArguments();
+  const ArgumentList *templMd = md->templateArguments();
   if (templMd) // function template prefix
   {
     writeTemplateArgumentList(templMd,md->getClassDef(),md->getFileDef());
@@ -1434,7 +1434,7 @@ QCString getSQLDocBlock(const Definition *scope,
     fileName,
     lineNr,
     const_cast<Definition*>(scope),
-    const_cast<MemberDef*>(reinterpret_cast<const MemberDef*>(def)),
+    dynamic_cast<const MemberDef*>(def),
     doc,
     FALSE,
     FALSE
@@ -1675,7 +1675,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
 
   if (isFunc)
   {
-    ArgumentList *al = md->argumentList();
+    const ArgumentList *al = md->argumentList();
     if (al!=0)
     {
       bindIntParameter(memberdef_insert,":const",al->constSpecifier);

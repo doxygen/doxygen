@@ -220,10 +220,11 @@ class MemberDef : virtual public Definition
     virtual bool isPrototype() const = 0;
 
     // argument related members
-    virtual ArgumentList *argumentList() const = 0;
-    virtual ArgumentList *declArgumentList() const = 0;
-    virtual ArgumentList *templateArguments() const = 0;
-    virtual QList<ArgumentList> *definitionTemplateParameterLists() const = 0;
+    virtual const ArgumentList *argumentList() const = 0;
+    virtual ArgumentList *argumentList() = 0;
+    virtual const ArgumentList *declArgumentList() const = 0;
+    virtual const ArgumentList *templateArguments() const = 0;
+    virtual const QList<ArgumentList> *definitionTemplateParameterLists() const = 0;
 
     // member group related members
     virtual int getMemberGroupId() const = 0;
@@ -254,7 +255,7 @@ class MemberDef : virtual public Definition
     virtual MemberDef *memberDefinition() const = 0;
     virtual MemberDef *memberDeclaration() const = 0;
     virtual MemberDef *inheritsDocsFrom() const = 0;
-    virtual MemberDef *getGroupAlias() const = 0;
+    virtual const MemberDef *getGroupAlias() const = 0;
 
     virtual ClassDef *category() const = 0;
     virtual MemberDef *categoryRelation() const = 0;
@@ -354,7 +355,7 @@ class MemberDef : virtual public Definition
     virtual void setTemplateMaster(MemberDef *mt) = 0;
     virtual void addListReference(Definition *d) = 0;
     virtual void setDocsForDefinition(bool b) = 0;
-    virtual void setGroupAlias(MemberDef *md) = 0;
+    virtual void setGroupAlias(const MemberDef *md) = 0;
 
     virtual void cacheTypedefVal(ClassDef *val,const QCString &templSpec,const QCString &resolvedType) = 0;
     virtual void invalidateTypedefValCache() = 0;

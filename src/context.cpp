@@ -4638,7 +4638,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       return createLinkedText(m_memberDef,relPathAsString(),
                               m_memberDef->displayDefinition());
     }
-    ArgumentList *getDefArgList() const
+    const ArgumentList *getDefArgList() const
     {
       return (m_memberDef->isDocsForDefinition()) ?
               m_memberDef->argumentList() : m_memberDef->declArgumentList();
@@ -4648,7 +4648,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.arguments)
       {
-        ArgumentList *defArgList = getDefArgList();
+        const ArgumentList *defArgList = getDefArgList();
         if (defArgList && !m_memberDef->isProperty())
         {
           cache.arguments.reset(ArgumentListContext::alloc(defArgList,m_memberDef,relPathAsString()));
@@ -4666,27 +4666,27 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasConstQualifier() const
     {
-      ArgumentList *al = getDefArgList();
+      const ArgumentList *al = getDefArgList();
       return al ? al->constSpecifier : FALSE;
     }
     TemplateVariant hasVolatileQualifier() const
     {
-      ArgumentList *al = getDefArgList();
+      const ArgumentList *al = getDefArgList();
       return al ? al->volatileSpecifier : FALSE;
     }
     TemplateVariant hasRefQualifierLValue() const
     {
-      ArgumentList *al = getDefArgList();
+      const ArgumentList *al = getDefArgList();
       return al ? al->refQualifier==RefQualifierLValue : FALSE;
     }
     TemplateVariant hasRefQualifierRValue() const
     {
-      ArgumentList *al = getDefArgList();
+      const ArgumentList *al = getDefArgList();
       return al ? al->refQualifier==RefQualifierRValue : FALSE;
     }
     TemplateVariant trailingReturnType() const
     {
-      ArgumentList *al = getDefArgList();
+      const ArgumentList *al = getDefArgList();
       if (al && !al->trailingReturnType.isEmpty())
       {
         return createLinkedText(m_memberDef,relPathAsString(),

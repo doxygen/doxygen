@@ -336,7 +336,7 @@ void XMLCodeGenerator::finish()
   if (m_insideCodeLine) endCodeLine();
 }
 
-static void writeTemplateArgumentList(ArgumentList *al,
+static void writeTemplateArgumentList(const ArgumentList *al,
                                       FTextStream &t,
                                       const Definition *scope,
                                       const FileDef *fileScope,
@@ -348,7 +348,7 @@ static void writeTemplateArgumentList(ArgumentList *al,
   {
     t << indentStr << "<templateparamlist>" << endl;
     ArgumentListIterator ali(*al);
-    Argument *a;
+    const Argument *a;
     for (ali.toFirst();(a=ali.current());++ali)
     {
       t << indentStr << "  <param>" << endl;
@@ -383,7 +383,7 @@ static void writeTemplateArgumentList(ArgumentList *al,
 
 static void writeMemberTemplateLists(const MemberDef *md,FTextStream &t)
 {
-  ArgumentList *templMd = md->templateArguments();
+  const ArgumentList *templMd = md->templateArguments();
   if (templMd) // function template prefix
   {
     writeTemplateArgumentList(templMd,t,md->getClassDef(),md->getFileDef(),8);
@@ -589,7 +589,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
 
   if (isFunc)
   {
-    ArgumentList *al = md->argumentList();
+    const ArgumentList *al = md->argumentList();
     t << " const=\"";
     if (al!=0 && al->constSpecifier)    t << "yes"; else t << "no"; 
     t << "\"";
@@ -838,13 +838,13 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
 
   if (isFunc) //function
   {
-    ArgumentList *declAl = md->declArgumentList();
-    ArgumentList *defAl = md->argumentList();
+    const ArgumentList *declAl = md->declArgumentList();
+    const ArgumentList *defAl = md->argumentList();
     if (declAl && defAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
-      Argument *a;
+      const Argument *a;
       for (declAli.toFirst();(a=declAli.current());++declAli)
       {
         Argument *defArg = defAli.current();
@@ -908,7 +908,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
     else
     {
       ArgumentListIterator ali(*md->argumentList());
-      Argument *a;
+      const Argument *a;
       for (ali.toFirst();(a=ali.current());++ali)
       {
         t << "        <param><defname>" << a->type << "</defname></param>" << endl;

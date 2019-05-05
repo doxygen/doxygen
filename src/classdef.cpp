@@ -3697,8 +3697,8 @@ void ClassDefImpl::mergeMembers()
                   if (srcCd==dstCd || dstCd->isBaseClass(srcCd,TRUE))
                     // member is in the same or a base class
                   {
-                    ArgumentList *srcAl = srcMd->argumentList();
-                    ArgumentList *dstAl = dstMd->argumentList();
+                    const ArgumentList *srcAl = srcMd->argumentList();
+                    const ArgumentList *dstAl = dstMd->argumentList();
                     found=matchArguments2(
                         srcMd->getOuterScope(),srcMd->getFileDef(),srcAl,
                         dstMd->getOuterScope(),dstMd->getFileDef(),dstAl,

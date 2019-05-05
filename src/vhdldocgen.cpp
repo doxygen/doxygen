@@ -2002,7 +2002,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
   QCString ltype(mdef->typeString());
   QCString largs(mdef->argsString());
   ClassDef *kl=0;
-  ArgumentList *alp = mdef->argumentList();
+  const ArgumentList *alp = mdef->argumentList();
   QCString nn;
   //VhdlDocGen::adjustRecordMember(mdef);
   if (gd) gd=0;

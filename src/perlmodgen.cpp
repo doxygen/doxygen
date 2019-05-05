@@ -1617,23 +1617,23 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
       md->memberType()!=MemberType_Enumeration)
     m_output.addFieldQuotedString("type", md->typeString());
   
-  ArgumentList *al = md->argumentList();
+  const ArgumentList *al = md->argumentList();
   if (isFunc) //function
   {
     m_output.addFieldBoolean("const", al!=0 && al->constSpecifier)
       .addFieldBoolean("volatile", al!=0 && al->volatileSpecifier);
 
     m_output.openList("parameters");
-    ArgumentList *declAl = md->declArgumentList();
-    ArgumentList *defAl  = md->argumentList();
+    const ArgumentList *declAl = md->declArgumentList();
+    const ArgumentList *defAl  = md->argumentList();
     if (declAl && defAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
-      Argument *a;
+      const Argument *a;
       for (declAli.toFirst();(a=declAli.current());++declAli)
       {
-	Argument *defArg = defAli.current();
+	const Argument *defArg = defAli.current();
 	m_output.openHash();
 
 	if (!a->name.isEmpty())
@@ -1665,7 +1665,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   {
     m_output.openList("parameters");
     ArgumentListIterator ali(*al);
-    Argument *a;
+    const Argument *a;
     for (ali.toFirst();(a=ali.current());++ali)
     {
       m_output.openHash()

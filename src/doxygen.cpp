@@ -2150,8 +2150,8 @@ static void findUsingDeclImports(Entry *root)
                     {
                       fileName = root->tagInfo->tagName;
                     }
-                    ArgumentList *templAl = md->templateArguments();
-                    ArgumentList *al = md->templateArguments();
+                    const ArgumentList *templAl = md->templateArguments();
+                    const ArgumentList *al = md->templateArguments();
                     newMd = createMemberDef(
                       fileName,root->startLine,root->startColumn,
                       md->typeString(),memName,md->argsString(),
@@ -3607,7 +3607,7 @@ static void buildFunctionList(Entry *root)
               //printf("matching arguments for %s%s %s%s\n",
               //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
               ArgumentList *mdAl = md->argumentList();
-              ArgumentList *mdTempl = md->templateArguments();
+              const ArgumentList *mdTempl = md->templateArguments();
 
               // in case of template functions, we need to check if the
               // functions have the same number of template parameters
@@ -3927,17 +3927,18 @@ static void findFriends()
           //printf("Checking for matching arguments
           //        mmd->isRelated()=%d mmd->isFriend()=%d mmd->isFunction()=%d\n",
           //    mmd->isRelated(),mmd->isFriend(),mmd->isFunction());
-          ArgumentList *mmdAl = cmmd->argumentList();
-          ArgumentList *fmdAl = cfmd->argumentList();
           if ((cmmd->isFriend() || (cmmd->isRelated() && cmmd->isFunction())) &&
-              matchArguments2(cmmd->getOuterScope(), cmmd->getFileDef(), mmdAl,
-                              cfmd->getOuterScope(), cfmd->getFileDef(), fmdAl,
+              !fmd->isAlias() && !mmd->isAlias() &&
+              matchArguments2(cmmd->getOuterScope(), cmmd->getFileDef(), cmmd->argumentList(),
+                              cfmd->getOuterScope(), cfmd->getFileDef(), cfmd->argumentList(),
                               TRUE
                              )
 
              ) // if the member is related and the arguments match then the
                // function is actually a friend.
           {
+            ArgumentList *mmdAl = mmd->argumentList();
+            ArgumentList *fmdAl = fmd->argumentList();
             mergeArguments(mmdAl,fmdAl);
             if (!fmd->documentation().isEmpty())
             {
@@ -4018,7 +4019,10 @@ static void transferFunctionDocumentation()
         MemberNameIterator mni2(*mn);
         for (;(mdef=mni2.current());++mni2)
         {
-          combineDeclarationAndDefinition(mdec,mdef);
+          if (!mdec->isAlias() && !mdef->isAlias())
+          {
+            combineDeclarationAndDefinition(mdec,mdef);
+          }
         }
       }
     }
@@ -4141,12 +4145,11 @@ static void transferRelatedFunctionDocumentation()
         MemberNameIterator rmni(*rmn);
         for (rmni.toFirst();(rmd=rmni.current());++rmni) // for each member with the same name
         {
-          ArgumentList *mdAl = md->argumentList();
-          ArgumentList *rmdAl = rmd->argumentList();
           //printf("  Member found: related=`%d'\n",rmd->isRelated());
           if ((rmd->isRelated() || rmd->isForeign()) && // related function
-              matchArguments2( md->getOuterScope(), md->getFileDef(), mdAl,
-                              rmd->getOuterScope(),rmd->getFileDef(),rmdAl,
+              !md->isAlias() && !rmd->isAlias() &&
+              matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
+                              rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
                               TRUE
                              )
              )
@@ -5551,7 +5554,7 @@ static bool findGlobalMember(Entry *root,
         // different functions.
         if (matching && root->tArgLists)
         {
-          ArgumentList *mdTempl = md->templateArguments();
+          const ArgumentList *mdTempl = md->templateArguments();
           if (mdTempl)
           {
             if (root->tArgLists->getLast()->count()!=mdTempl->count())
@@ -6170,7 +6173,7 @@ static void findMember(Entry *root,
               // get the template parameter lists found at the member declaration
               QList<ArgumentList> declTemplArgs;
               cd->getTemplateParameterLists(declTemplArgs);
-              ArgumentList *templAl = md->templateArguments();
+              const ArgumentList *templAl = md->templateArguments();
               if (templAl)
               {
                 declTemplArgs.append(templAl);
@@ -6327,7 +6330,7 @@ static void findMember(Entry *root,
                 //printf("ccd->name()==%s className=%s\n",ccd->name().data(),className.data());
                 if (ccd!=0 && rightScopeMatch(ccd->name(),className))
                 {
-                  ArgumentList *templAl = md->templateArguments();
+                  const ArgumentList *templAl = md->templateArguments();
                   if (root->tArgLists && templAl!=0 &&
                       root->tArgLists->getLast()->count()<=templAl->count())
                   {
@@ -6404,7 +6407,7 @@ static void findMember(Entry *root,
                 const ClassDef *cd=md->getClassDef();
                 if (cd!=0 && rightScopeMatch(cd->name(),className))
                 {
-                  ArgumentList *templAl = md->templateArguments();
+                  const ArgumentList *templAl = md->templateArguments();
                   if (templAl!=0)
                   {
                     warnMsg+="  'template ";

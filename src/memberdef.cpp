@@ -200,10 +200,11 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual bool hasExamples() const;
     virtual ExampleSDict *getExamples() const;
     virtual bool isPrototype() const;
-    virtual ArgumentList *argumentList() const;
-    virtual ArgumentList *declArgumentList() const;
-    virtual ArgumentList *templateArguments() const;
-    virtual QList<ArgumentList> *definitionTemplateParameterLists() const;
+    virtual const ArgumentList *argumentList() const;
+    virtual ArgumentList *argumentList();
+    virtual const ArgumentList *declArgumentList() const;
+    virtual const ArgumentList *templateArguments() const;
+    virtual const QList<ArgumentList> *definitionTemplateParameterLists() const;
     virtual int getMemberGroupId() const;
     virtual MemberGroup *getMemberGroup() const;
     virtual bool fromAnonymousScope() const;
@@ -224,7 +225,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual MemberDef *memberDefinition() const;
     virtual MemberDef *memberDeclaration() const;
     virtual MemberDef *inheritsDocsFrom() const;
-    virtual MemberDef *getGroupAlias() const;
+    virtual const MemberDef *getGroupAlias() const;
     virtual ClassDef *category() const;
     virtual MemberDef *categoryRelation() const;
     virtual QCString displayName(bool=TRUE) const;
@@ -292,7 +293,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setTemplateMaster(MemberDef *mt);
     virtual void addListReference(Definition *d);
     virtual void setDocsForDefinition(bool b);
-    virtual void setGroupAlias(MemberDef *md);
+    virtual void setGroupAlias(const MemberDef *md);
     virtual void cacheTypedefVal(ClassDef *val,const QCString &templSpec,const QCString &resolvedType);
     virtual void invalidateTypedefValCache();
     virtual void invalidateCachedArgumentTypes();
@@ -655,13 +656,13 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { return getMdAlias()->getExamples(); }
     virtual bool isPrototype() const
     { return getMdAlias()->isPrototype(); }
-    virtual ArgumentList *argumentList() const
+    virtual const ArgumentList *argumentList() const
     { return getMdAlias()->argumentList(); }
-    virtual ArgumentList *declArgumentList() const
+    virtual const ArgumentList *declArgumentList() const
     { return getMdAlias()->declArgumentList(); }
-    virtual ArgumentList *templateArguments() const
+    virtual const ArgumentList *templateArguments() const
     { return getMdAlias()->templateArguments(); }
-    virtual QList<ArgumentList> *definitionTemplateParameterLists() const
+    virtual const QList<ArgumentList> *definitionTemplateParameterLists() const
     { return getMdAlias()->definitionTemplateParameterLists(); }
     virtual int getMemberGroupId() const
     { return getMdAlias()->getMemberGroupId(); }
@@ -703,7 +704,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { return getMdAlias()->memberDeclaration(); }
     virtual MemberDef *inheritsDocsFrom() const
     { return getMdAlias()->inheritsDocsFrom(); }
-    virtual MemberDef *getGroupAlias() const
+    virtual const MemberDef *getGroupAlias() const
     { return getMdAlias()->getGroupAlias(); }
     virtual ClassDef *category() const
     { return getMdAlias()->category(); }
@@ -741,6 +742,8 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { err("non-const getNamespaceDef() called on aliased member. Please report as a bug.\n"); return 0; }
     virtual GroupDef *getGroupDef()
     { err("non-const getGroupDef() called on aliased member. Please report as a bug.\n"); return 0; }
+    virtual ArgumentList *argumentList()
+    { err("non-const argumentList() called on aliased member. Please report as bug.\n"); return 0; }
 
     virtual void setEnumBaseType(const QCString &type) {}
     virtual void setMemberType(MemberType t) {}
@@ -797,7 +800,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void setTemplateMaster(MemberDef *mt) {}
     virtual void addListReference(Definition *d) {}
     virtual void setDocsForDefinition(bool b) {}
-    virtual void setGroupAlias(MemberDef *md) {}
+    virtual void setGroupAlias(const MemberDef *md) {}
     virtual void cacheTypedefVal(ClassDef *val,const QCString &templSpec,const QCString &resolvedType) {}
     virtual void invalidateTypedefValCache() {}
     virtual void invalidateCachedArgumentTypes() {}
@@ -923,7 +926,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 
 static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const MemberDef *md)
 {
-  ArgumentList *defArgList=(md->isDocsForDefinition()) ?
+  const ArgumentList *defArgList=(md->isDocsForDefinition()) ?
                              md->argumentList() : md->declArgumentList();
   //printf("writeDefArgumentList `%s' isDocsForDefinition()=%d\n",md->name().data(),md->isDocsForDefinition());
   if (defArgList==0 || md->isProperty())
@@ -1350,7 +1353,7 @@ class MemberDefImpl::IMPL
                                    // cached here.
     SDict<MemberList> *classSectionSDict; // not accessible
 
-    MemberDef *groupAlias;    // Member containing the definition
+    const MemberDef *groupAlias;    // Member containing the definition
     int grpId;                // group id
     MemberGroup *memberGroup; // group's member definition
     GroupDef *group;          // group in which this member is in
@@ -4133,8 +4136,8 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
   }
   else if (!m_impl->hasDocumentedParams)
   {
-    ArgumentList *al     = argumentList();
-    ArgumentList *declAl = declArgumentList();
+    const ArgumentList *al     = argumentList();
+    const ArgumentList *declAl = declArgumentList();
     bool allDoc=TRUE; // no parameter => all parameters are documented
     if ( // member has parameters
         al!=0 &&       // but the member has a parameter list
@@ -5542,22 +5545,27 @@ bool MemberDefImpl::isPrototype() const
   return m_impl->proto;
 }
 
-ArgumentList *MemberDefImpl::argumentList() const
+const ArgumentList *MemberDefImpl::argumentList() const
 {
   return m_impl->defArgList;
 }
 
-ArgumentList *MemberDefImpl::declArgumentList() const
+ArgumentList *MemberDefImpl::argumentList()
+{
+  return m_impl->defArgList;
+}
+
+const ArgumentList *MemberDefImpl::declArgumentList() const
 {
   return m_impl->declArgList;
 }
 
-ArgumentList *MemberDefImpl::templateArguments() const
+const ArgumentList *MemberDefImpl::templateArguments() const
 {
   return m_impl->tArgList;
 }
 
-QList<ArgumentList> *MemberDefImpl::definitionTemplateParameterLists() const
+const QList<ArgumentList> *MemberDefImpl::definitionTemplateParameterLists() const
 {
   return m_impl->defTmpArgLists;
 }
@@ -5648,7 +5656,7 @@ MemberDef *MemberDefImpl::inheritsDocsFrom() const
   return m_impl->docProvider;
 }
 
-MemberDef *MemberDefImpl::getGroupAlias() const
+const MemberDef *MemberDefImpl::getGroupAlias() const
 {
   return m_impl->groupAlias;
 }
@@ -5848,7 +5856,7 @@ void MemberDefImpl::setDocsForDefinition(bool b)
   m_impl->docsForDefinition = b;
 }
 
-void MemberDefImpl::setGroupAlias(MemberDef *md)
+void MemberDefImpl::setGroupAlias(const MemberDef *md)
 {
   m_impl->groupAlias = md;
 }
@@ -5911,12 +5919,13 @@ void MemberDefImpl::cacheTypedefVal(ClassDef*val, const QCString & templSpec, co
 void MemberDefImpl::copyArgumentNames(MemberDef *bmd)
 {
   {
-    ArgumentList *arguments = bmd->argumentList();
+    const ArgumentList *arguments = bmd->argumentList();
     if (m_impl->defArgList && arguments)
     {
       ArgumentListIterator aliDst(*m_impl->defArgList);
       ArgumentListIterator aliSrc(*arguments);
-      Argument *argDst, *argSrc;
+      Argument *argDst;
+      const Argument *argSrc;
       for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
       {
         argDst->name = argSrc->name;
@@ -5924,12 +5933,13 @@ void MemberDefImpl::copyArgumentNames(MemberDef *bmd)
     }
   }
   {
-    ArgumentList *arguments = bmd->declArgumentList();
+    const ArgumentList *arguments = bmd->declArgumentList();
     if (m_impl->declArgList && arguments)
     {
       ArgumentListIterator aliDst(*m_impl->declArgList);
       ArgumentListIterator aliSrc(*arguments);
-      Argument *argDst, *argSrc;
+      Argument *argDst;
+      const Argument *argSrc;
       for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
       {
         argDst->name = argSrc->name;
@@ -6032,8 +6042,8 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
 
     const MemberDef *cmdec = const_cast<const MemberDef*>(mdec);
     const MemberDef *cmdef = const_cast<const MemberDef*>(mdef);
-    ArgumentList *mdefAl = cmdef->argumentList();
-    ArgumentList *mdecAl = cmdec->argumentList();
+    ArgumentList *mdefAl = mdef->argumentList();
+    ArgumentList *mdecAl = mdec->argumentList();
     if (matchArguments2(cmdef->getOuterScope(),cmdef->getFileDef(),mdefAl,
                         cmdec->getOuterScope(),cmdec->getFileDef(),mdecAl,
                         TRUE

@@ -433,10 +433,10 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
 static void setParameterList(const MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
-  ArgumentList *al = md->argumentList();
+  const ArgumentList *al = md->argumentList();
   if (al==0) return;
   ArgumentListIterator ali(*al);
-  Argument *a;
+  const Argument *a;
   for (ali.toFirst();(a=ali.current());++ali)
   {
     g_parmName = a->name.copy();
