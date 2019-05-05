@@ -720,7 +720,7 @@ static bool insertMapFile(FTextStream &out,const QCString &mapFile,
   {
     QGString tmpstr;
     FTextStream tmpout(&tmpstr);
-    convertMapFile(tmpout,mapFile,relPath,TRUE);
+    convertMapFile(tmpout,mapFile,relPath,FALSE);
     if (!tmpstr.isEmpty())
     {
       out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">" << endl;
