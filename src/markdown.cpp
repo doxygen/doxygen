@@ -2355,18 +2355,157 @@ static QCString processBlocks(const QCString &s,int indent)
   return out.get();
 }
 
-/** returns TRUE if input string docs starts with \@page or \@mainpage command */
-static bool isExplicitPage(const QCString &docs)
+static int calculateComment(const QCString &docs)
 {
   int i=0;
   const char *data = docs.data();
+  int size=docs.size();
   if (data)
   {
     int size=docs.size();
-    while (i<size && (data[i]==' ' || data[i]=='\n'))
+    while (i<size)
     {
-      i++;
+      if (data[i] == ' ' || data[i] == '\n')
+      {
+        i++;
+      }
+      else if (data[i] == '<')
+      {
+        // potential HTML <!-- ... --> comment
+        if (qstrncmp(data+i,"<!--",4)==0)
+        {
+          bool htmlComment = FALSE;
+          int save_i = i;
+          i = i + 4;
+          while (i<size)
+          {
+            if ((data[i] == '-') && (qstrncmp(data+i,"-->",3)==0))
+            {
+              i += 3;
+              htmlComment = TRUE;
+	      break;
+	    }
+	    else
+            {
+              i++;
+	    }
+	  }
+	  if (!htmlComment) return save_i; // was not a HTML comment.
+        }
+        else
+        {
+          return i; // was not a HTML comment.
+        }
+      }
+      else if (data[i] == '[')
+      {
+        // potential markdown comment
+        //   [comment]: <> (This is a comment, it will not be included)
+        //   [comment]: # (This is a comment, it will not be included)
+        //   [//]: <> (This is a comment, it will not be included)
+        //   [//]: # (This is a comment, it will not be included)
+        // see: https://stackoverflow.com/questions/4823468/comments-in-markdown/20885980#20885980
+        bool slashComment = qstrncmp(data+i,"[//]:",5)==0;
+        if (slashComment || (qstrncmp(data+i,"[comment]:",10)==0))
+        {
+          int save_i = i;
+          bool mdComment = FALSE;
+	  if (slashComment)
+          {
+            i = i + 5;
+          }
+	  else
+          {
+            i = i + 10;
+	  }
+          // skip space
+          while (i<size)
+          {
+            if (data[i] == ' ' || data[i] == '\n')
+            {
+              i++;
+            }
+	    else
+            {
+              mdComment = TRUE;
+	      break;
+	    }
+	  }
+	  if (!mdComment) return save_i; // was not a correct markdown comment.
+          // next is # or <>, we know at least 1 character is present followed by at least \0
+          mdComment = FALSE;
+	  if (data[i] == '#')
+	  {
+	    i++;
+	  }
+	  else if ((data[i] == '<') && (data[i+1] == '>'))
+	  {
+	    i += 2;
+	  }
+	  else
+          {
+             return save_i; // was not a correct markdown comment
+	  }
+          // skip space
+          mdComment = FALSE;
+          while (i<size)
+          {
+            if (data[i] == ' ' || data[i] == '\n')
+            {
+              i++;
+            }
+	    else
+            {
+              mdComment = TRUE;
+	      break;
+	    }
+	  }
+	  if (!mdComment) return save_i; // was not a correct markdown comment.
+          mdComment = FALSE;
+          if (data[i] == '(')
+          {
+	    i++;
+            while (i<size)
+            {
+              if (data[i] == ')')
+              {
+                i++;
+                mdComment = TRUE;
+	        break;
+	      }
+	      else
+              {
+                i++;
+	      }
+	    }
+	    if (!mdComment) return save_i; // was not a correct markdown comment.
+	  }
+	  else
+          {
+             return save_i; // was not a correct markdown comment
+	  }
+        }
+        else
+        {
+          return i;
+        }
+      }
+      else
+      {
+        return i;
+      }
     }
+  }
+  return i;
+}
+
+/** returns TRUE if input string docs starts with \@page or \@mainpage command */
+static bool isExplicitPage(const QCString &docs, const int i)
+{
+  const char *data = docs.data();
+  int size=docs.size();
+  if (data)
+  {
     if (i<size+1 &&
         (data[i]=='\\' || data[i]=='@') &&
         (qstrncmp(&data[i+1],"page ",5)==0 || qstrncmp(&data[i+1],"mainpage",8)==0)
@@ -2378,19 +2517,13 @@ static bool isExplicitPage(const QCString &docs)
   return FALSE;
 }
 
-static QCString extractPageTitle(QCString &docs,QCString &id)
+static QCString extractPageTitle(QCString &docs, const int i, QCString &id)
 {
   int ln=0;
   // first first non-empty line
   QCString title;
   const char *data = docs.data();
-  int i=0;
   int size=docs.size();
-  while (i<size && (data[i]==' ' || data[i]=='\n')) 
-  {
-    if (data[i]=='\n') ln++;
-    i++;
-  }
   if (i>=size) return "";
   int end1=i+1;
   while (end1<size && data[end1-1]!='\n') end1++;
@@ -2549,12 +2682,13 @@ void MarkdownFileParser::parseInput(const char *fileName,
   current->docLine  = 1;
   QCString docs = fileBuf;
   QCString id;
-  QCString title=extractPageTitle(docs,id).stripWhiteSpace();
+  int i = calculateComment(docs);
+  QCString title=extractPageTitle(docs,i,id).stripWhiteSpace();
   QCString titleFn = QFileInfo(fileName).baseName().utf8();
   QCString fn      = QFileInfo(fileName).fileName().utf8();
   static QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   if (id.isEmpty()) id = markdownFileNameToId(fileName);
-  if (!isExplicitPage(docs))
+  if (!isExplicitPage(docs,i))
   {
     if (!mdfileAsMainPage.isEmpty() &&
         (fn==mdfileAsMainPage || // name reference
