@@ -167,17 +167,25 @@ static void format_warn(const char *file,int line,const char *text)
 static void do_warn(bool enabled, const char *file, int line, const char *prefix, const char *fmt, va_list args)
 {
   if (!enabled) return; // warning type disabled
-  const int bufSize = 40960;
-  char text[bufSize];
   int l=0;
   if (prefix)
   {
-    qstrncpy(text,prefix,bufSize);
     l=strlen(prefix);
+  }
+  // determine needed buffersize based on:
+  // format + arguments
+  // prefix
+  // 1 position for `\0`
+  int bufSize = vsnprintf(NULL, 0, fmt, args) + l + 1;
+  char *text = (char *)malloc(sizeof(char) * bufSize);
+  if (prefix)
+  {
+    qstrncpy(text,prefix,bufSize);
   }
   vsnprintf(text+l, bufSize-l, fmt, args);
   text[bufSize-1]='\0';
   format_warn(file,line,text);
+  free(text);
 }
 
 void warn(const char *file,int line,const char *fmt, ...)
