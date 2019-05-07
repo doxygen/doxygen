@@ -5611,7 +5611,7 @@ static bool findGlobalMember(Entry *root,
           warnMsg+=" '";
           warnMsg+=substitute(md->declaration(),"%","%%");
           warnMsg+="' at line "+QCString().setNum(md->getDefLine())+
-                   " of file"+md->getDefFileName()+"\n";
+                   " of file "+md->getDefFileName()+"\n";
         }
       }
       warn(root->fileName,root->startLine,warnMsg);
