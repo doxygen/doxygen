@@ -56,9 +56,7 @@ before_script:
       if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
         printf "[requires]
         libxml2/2.9.8@bincrafters/stable
-        libiconv/1.15@bincrafters/stable
-        [build_requires]
-        cmake_installer/3.10.0@conan/stable" >> conanfile.txt;
+        libiconv/1.15@bincrafters/stable >> conanfile.txt;
       fi;
       if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
         printf "[requires]
