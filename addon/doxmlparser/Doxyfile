@@ -146,7 +146,6 @@ SKIP_FUNCTION_MACROS   = YES
 TAGFILES               = ../../qtools_docs/qtools.tag=../../../../qtools_docs/html
 GENERATE_TAGFILE       = 
 ALLEXTERNALS           = NO
-PERL_PATH              = 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool   
 #---------------------------------------------------------------------------

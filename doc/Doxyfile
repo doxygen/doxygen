@@ -45,7 +45,6 @@ EXAMPLE_PATH      = ../examples
 RECURSIVE         = NO
 TAGFILES          =
 ALLEXTERNALS      = NO
-PERL_PATH         = /usr/bin/perl
 SEARCHENGINE      = NO
 PDF_HYPERLINKS    = YES
 USE_PDFLATEX      = YES

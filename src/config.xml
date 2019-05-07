@@ -105,7 +105,6 @@ PROJECT_NAME     = Example
 INPUT            = example.cc example.h
 WARNINGS         = YES
 TAGFILES         = qt.tag
-PERL_PATH        = /usr/local/bin/perl
 SEARCHENGINE     = NO
 \endverbatim
 
@@ -120,7 +119,6 @@ INPUT            = examples/examples.doc src
 FILE_PATTERNS    = *.cc *.h
 INCLUDE_PATH     = examples
 TAGFILES         = qt.tag
-PERL_PATH        = /usr/bin/perl
 SEARCHENGINE     = YES
 \endverbatim
 
@@ -3229,14 +3227,6 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
-    <option type='string' id='PERL_PATH' format='file' defval='/usr/bin/perl' abspath='1'>
-      <docs>
-<![CDATA[
- The \c PERL_PATH should be the absolute path and name of the perl script
- interpreter (i.e. the result of `'which perl'`).
-]]>
-      </docs>
-    </option>
   </group>
   <group name='Dot' docs='Configuration options related to the dot tool'>
     <option type='bool' id='CLASS_DIAGRAMS' defval='1'>
@@ -3639,5 +3629,6 @@ remove the intermediate dot files that are used to generate the various graphs.
     <option type='obsolete' id='SYMBOL_CACHE_SIZE'/>
     <option type='obsolete' id='XML_SCHEMA'/>
     <option type='obsolete' id='XML_DTD'/>
+    <option type='obsolete' id='PERL_PATH'/>
   </group>
 </doxygenconfig>
