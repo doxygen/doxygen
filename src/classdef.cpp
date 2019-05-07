@@ -3646,7 +3646,8 @@ void ClassDefImpl::mergeMembers()
 
   m_impl->membersMerged=TRUE;
   //printf("  mergeMembers for %s\n",name().data());
-  bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
+  static bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
+  static bool extractPrivate         = Config_getBool(EXTRACT_PRIVATE);
   if (baseClasses())
   {
     //printf("  => has base classes!\n");
@@ -3842,7 +3843,7 @@ void ClassDefImpl::mergeMembers()
                 //    name().data(),mi->memberDef->name().data(),mi->prot,
                 //    bcd->prot,prot);
 
-                if (mi->prot!=Private)
+                if (prot!=Private || extractPrivate)
                 {
                   Specifier virt=mi->virt;
                   if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
