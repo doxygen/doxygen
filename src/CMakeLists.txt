@@ -43,6 +43,10 @@ add_custom_command(
     OUTPUT ${GENERATED_SRC}/configvalues.h
 )
 set_source_files_properties(${GENERATED_SRC}/configvalues.h PROPERTIES GENERATED 1)
+add_custom_target(
+    generate_configvalues_header
+    DEPENDS ${GENERATED_SRC}/configvalues.h
+)
 
 # configvalues.cpp
 add_custom_command(
