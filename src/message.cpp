@@ -167,6 +167,10 @@ static void format_warn(const char *file,int line,const char *text)
 static void do_warn(bool enabled, const char *file, int line, const char *prefix, const char *fmt, va_list args)
 {
   if (!enabled) return; // warning type disabled
+
+  va_list argsCopy;
+  va_copy(argsCopy, args);
+
   int l=0;
   if (prefix)
   {
@@ -182,7 +186,7 @@ static void do_warn(bool enabled, const char *file, int line, const char *prefix
   {
     qstrncpy(text,prefix,bufSize);
   }
-  vsnprintf(text+l, bufSize-l, fmt, args);
+  vsnprintf(text+l, bufSize-l, fmt, argsCopy);
   text[bufSize-1]='\0';
   format_warn(file,line,text);
   free(text);
