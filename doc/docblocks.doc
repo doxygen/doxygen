@@ -123,6 +123,16 @@ or
 /////////////////////////////////////////////////
 \endverbatim
 
+or
+
+\verbatim
+/************************************************
+ *  ... text
+ ***********************************************/
+\endverbatim
+
+as long as JAVADOC_BANNER = YES is used.
+
 </ol>
 
 For the brief description there are also several possibilities:
