@@ -409,6 +409,9 @@ class DotRunner
     bool run();
     const CleanupItem &cleanup() const { return m_cleanupItem; }
 
+    DotConstString const& getFile() const { return m_file; }
+    DotConstString const& getPath() const { return m_path; }
+
   private:
     DotConstString m_dotExe;
     bool m_multiTargets;
@@ -486,6 +489,7 @@ class DotManager
   public:
     static DotManager *instance();
     void addRun(DotRunner *run);
+    bool containsRun(const QCString& file, const QCString& path);
     int  addMap(const QCString &file,const QCString &mapFile,
                 const QCString &relPath,bool urlOnly,
                 const QCString &context,const QCString &label);
