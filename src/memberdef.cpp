@@ -5929,6 +5929,7 @@ void MemberDefImpl::copyArgumentNames(MemberDef *bmd)
       for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
       {
         argDst->name = argSrc->name;
+        argDst->docs = argSrc->docs;
       }
     }
   }
@@ -5943,6 +5944,7 @@ void MemberDefImpl::copyArgumentNames(MemberDef *bmd)
       for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
       {
         argDst->name = argSrc->name;
+        argDst->docs = argSrc->docs;
       }
     }
   }
