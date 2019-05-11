@@ -2453,18 +2453,31 @@ static QCString detab(const QCString &s,int &refIndent)
         col++;
         break;
       default: // non-whitespace => update minIndent
-        out.addChar(c);
         if (c<0 && i<size) // multibyte sequence
         {
-          out.addChar(data[i++]); // >= 2 bytes
-          if (((uchar)c&0xE0)==0xE0 && i<size)
+          // special handling of the UTF-8 nbsp character 0xc2 0xa0
+          if (c == '\xc2' && data[i] == '\xa0')
           {
-            out.addChar(data[i++]); // 3 bytes
+            out.addStr("&nbsp;");
+            i++;
           }
-          if (((uchar)c&0xF0)==0xF0 && i<size)
+          else
           {
-            out.addChar(data[i++]); // 4 byres
+            out.addChar(c);
+            out.addChar(data[i++]); // >= 2 bytes
+            if (((uchar)c&0xE0)==0xE0 && i<size)
+            {
+              out.addChar(data[i++]); // 3 bytes
+            }
+              if (((uchar)c&0xF0)==0xF0 && i<size)
+            {
+              out.addChar(data[i++]); // 4 byres
+            }
           }
+        }
+        else
+        {
+          out.addChar(c);
         }
         if (col<minIndent) minIndent=col;
         col++;
