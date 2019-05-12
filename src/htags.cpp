@@ -128,7 +128,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
       int len;
       while ((len=f.readLine(line.rawData(),maxlen))>0)
       {
-        line.resize(len+1);
+        line.at(len)='\0';
         //printf("Read line: %s",line.data());
         int sep = line.find('\t');
         if (sep!=-1)
