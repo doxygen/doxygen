@@ -243,13 +243,16 @@ static struct declinfoYY_state g_declinfo_extra;
 void parseFuncDecl(const QCString &decl,bool objC,QCString &cl,QCString &t,
                    QCString &n,QCString &a,QCString &ftl,QCString &exc)
 {
+  if (decl.isEmpty())
+  {
+    return;
+  }
   declinfoYYlex_init_extra(&g_declinfo_extra, &g_yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)g_yyscanner;
 
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);
   yyextra->inputString   = decl;
   //printf("Input=`%s'\n",yyextra->inputString);
-  if (yyextra->inputString==0) return;
   yyextra->inputPosition      = 0;
   yyextra->classTempListFound = FALSE;
   yyextra->funcTempListFound  = FALSE;
@@ -324,9 +327,8 @@ void parseFuncDecl(const QCString &decl,bool objC,QCString &cl,QCString &t,
   //        t.data(),cl.data(),n.data(),a.data());
 
   printlex(yy_flex_debug, FALSE, __FILE__, NULL);
+  declinfoYYlex_destroy(g_yyscanner);
   return;
-  
-  
 }
 
 //extern "C" { // some bogus code to keep the compiler happy

@@ -126,7 +126,10 @@ bool parseconstexp(const char *fileName,int lineNr,const QCString &s)
 
   //printf("Result: %ld\n",(long)g_resultValue);
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
-  return (long)yyextra->g_resultValue!=0;
+  bool result = (long)yyextra->g_resultValue!=0;
+
+  constexpYYlex_destroy(yyscanner);
+  return result;
 }
 
 extern "C" {

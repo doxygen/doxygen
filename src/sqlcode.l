@@ -375,9 +375,10 @@ void parseSqlCode(
     bool /*collectXRefs*/
     ) 
 {  
+  if (s.isEmpty()) return;
+
   sqlcodeYYlex_init_extra(&sqlcode_extra, &yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (s.isEmpty()) return;
   
   yyextra->code = &od;
   yyextra->inputString   = s;
@@ -432,6 +433,8 @@ void parseSqlCode(
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
+
+  sqlcodeYYlex_destroy(yyscanner);
   
   return;
 }
