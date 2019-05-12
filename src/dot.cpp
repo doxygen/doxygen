@@ -4331,7 +4331,7 @@ void writeDotImageMapFromFile(FTextStream &t,
     QCString svgName=outDir+"/"+baseName+".svg";
     writeSVGFigureLink(t,relPath,baseName,svgName);
     DotFilePatcher patcher(svgName);
-    patcher.addSVGConversion(relPath,TRUE,context,TRUE,graphId);
+    patcher.addSVGConversion("",TRUE,context,TRUE,graphId);
     patcher.run();
   }
   else // bitmap graphics
