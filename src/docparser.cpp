@@ -2919,7 +2919,21 @@ DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString 
 
 bool DocImage::isSVG() const
 {
-  return m_url.isEmpty() ? m_name.right(4)==".svg" : m_url.right(4)==".svg";
+  QCString  loc_name;
+  if (m_url.isEmpty())
+  {
+    loc_name =  m_name;
+  }
+  else
+  {
+    loc_name =  m_url;
+  }
+  int fnd = loc_name.find('?');
+  if (fnd != -1)
+  {
+    loc_name = loc_name.left(fnd);
+  }
+  return loc_name.right(4)==".svg";
 }
 
 void DocImage::parse()
