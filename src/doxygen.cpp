@@ -7958,7 +7958,7 @@ static void generateFileSources()
           {
             QStrList filesInSameTu;
             fd->startParsing();
-            if (fd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
+            if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
             {
               msg("Generating code for file %s...\n",fd->docName().data());
               fd->writeSource(*g_outputList,FALSE,filesInSameTu);
@@ -7988,7 +7988,7 @@ static void generateFileSources()
         {
           QStrList filesInSameTu;
           fd->startParsing();
-          if (fd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
+          if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
           {
             msg("Generating code for file %s...\n",fd->docName().data());
             fd->writeSource(*g_outputList,FALSE,filesInSameTu);
@@ -11737,12 +11737,9 @@ void generateOutput()
   generateExampleDocs();
   g_s.end();
 
-  if (!Htags::useHtags)
-  {
-    g_s.begin("Generating file sources...\n");
-    generateFileSources();
-    g_s.end();
-  }
+  g_s.begin("Generating file sources...\n");
+  generateFileSources();
+  g_s.end();
 
   g_s.begin("Generating file documentation...\n");
   generateFileDocs();
