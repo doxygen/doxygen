@@ -400,8 +400,8 @@ class DotRunner
     };
 
     /** Creates a runner for a dot \a file. */
-    DotRunner(const QCString &file,const QCString &fontPath,bool checkResult,
-        const QCString &imageName = QCString());
+    DotRunner(const QCString& file, const QCString& path, const QCString& md5Hash,
+        bool checkResult, const QCString &imageName = QCString());
 
     /** Adds an additional job to the run.
      *  Performing multiple jobs one file can be faster.
@@ -429,6 +429,7 @@ class DotRunner
     DotConstString m_imgExt;
     bool m_cleanUp;
     CleanupItem m_cleanupItem;
+    DotConstString m_md5Hash;
 };
 
 /** Helper class to insert a set of map file into an output file */
