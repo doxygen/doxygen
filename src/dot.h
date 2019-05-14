@@ -409,6 +409,10 @@ class DotRunner
     bool run();
     const CleanupItem &cleanup() const { return m_cleanupItem; }
 
+    DotConstString const& getBaseName() { return m_baseName; }
+    DotConstString const& getPath() { return m_path; }
+    DotConstString const& getMd5Hash() { return m_md5Hash; }
+
   private:
     DotConstString m_dotExe;
     bool m_multiTargets;
@@ -497,6 +501,8 @@ class DotManager
     int addSVGObject(const QCString &file,const QCString &baseName,
                      const QCString &figureNAme,const QCString &relPath);
     bool run();
+
+    bool containsRun(const QCString& baseName, const QCString& path, const QCString& md5Hash);
 
   private:
     DotManager();
