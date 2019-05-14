@@ -11690,7 +11690,7 @@ void generateOutput()
     QCString htmldir = Config_getString(HTML_OUTPUT);
     if (!Htags::execute(htmldir))
        err("USE_HTAGS is YES but htags(1) failed. \n");
-    if (!Htags::loadFilemap(htmldir))
+    else if (!Htags::loadFilemap(htmldir))
        err("htags(1) ended normally but failed to load the filemap. \n");
   }
 
