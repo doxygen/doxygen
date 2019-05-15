@@ -6291,6 +6291,8 @@ static void findMember(Entry *root,
 
                     // TODO: copy other aspects?
                     root->protection=md->protection(); // copy protection level
+                    root->stat=md->isStatic();
+                    root->virt=md->virtualness();
                     addMethodToClass(root,cd,md->name(),isFriend);
                     return;
                   }
@@ -6334,6 +6336,10 @@ static void findMember(Entry *root,
                   if (root->tArgLists && templAl!=0 &&
                       root->tArgLists->getLast()->count()<=templAl->count())
                   {
+                    Debug::print(Debug::FindMembers,0,"7. add template specialization\n");
+                    root->protection=md->protection();
+                    root->stat=md->isStatic();
+                    root->virt=md->virtualness();
                     addMethodToClass(root,ccd,md->name(),isFriend);
                     return;
                   }
