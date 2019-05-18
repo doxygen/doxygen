@@ -3941,6 +3941,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else
 					  {
 					    current->endBodyLine = yyLineNr;
+                        Entry * original_root = current_root; // save root this namespace is in
                                             if (current->section == Entry::NAMESPACE_SEC && current->type == "namespace")
                                             {
                                               int split_point;
@@ -4005,6 +4006,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 						   )
 						{ // namespaces and interfaces and java classes ends with a closing bracket without semicolon
 						  current->reset();
+                          current_root = original_root; // restore scope from before namespace descent
 						  initEntry();
 						  memspecEntry = 0;
 						  BEGIN( FindMembers ) ;
