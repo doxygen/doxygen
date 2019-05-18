@@ -1738,6 +1738,7 @@ static QCString escapeTooltip(const QCString &tooltip)
     switch(c)
     {
       case '"': result+="\\\""; break;
+      case '\\': result+="\\\\"; break;
       default: result+=c; break;
     }
   }
