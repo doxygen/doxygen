@@ -537,6 +537,8 @@ STARTDOCSYMS      "##"
 %x SingleQuoteString
 %x DoubleQuoteString
 %x TripleString
+%x SingleQuoteStringIgnore
+%x DoubleQuoteStringIgnore
 
   /* import */
 %x FromMod
@@ -1282,8 +1284,28 @@ STARTDOCSYMS      "##"
 					    );
                          //Has base class-do stuff
                        }
+    "'"	               { // start of a single quoted string
+       			 g_stringContext=YY_START;
+                         BEGIN( SingleQuoteStringIgnore );
+                       }
+    "\""               { // start of a double quoted string
+       			 g_stringContext=YY_START;
+                         BEGIN( DoubleQuoteStringIgnore );
+                       }
 }
 
+<SingleQuoteStringIgnore>{
+    "'"	               { // end of a single quoted string
+			 BEGIN(g_stringContext);
+                       }
+    .	               { }
+}
+<DoubleQuoteStringIgnore>{
+    "\""	       { // end of a double quoted string
+			 BEGIN(g_stringContext);
+                       }
+    .	               { }
+}
 
 <ClassCaptureIndent>{
     "\n"|({BB}"\n")            {
@@ -1700,6 +1722,10 @@ STARTDOCSYMS      "##"
 				 //       YY_START, yyLineNr);
 
                                  lineCount();
+                               }
+
+<*>"'"                         {
+       fprintf(stderr,"Quote: %d\n",YY_START);
                                }
 
 <*>.                           {
