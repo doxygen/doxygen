@@ -63,7 +63,7 @@ class DirDef : virtual public Definition
     virtual DirDef *parent() const = 0;
     virtual int dirCount() const = 0;
     virtual const QDict<UsedDir> *usedDirs() const = 0;
-    virtual bool isParentOf(DirDef *dir) const = 0;
+    virtual bool isParentOf(const DirDef *dir) const = 0;
     virtual bool depGraphIsTrivial() const = 0;
     virtual QCString shortTitle() const = 0;
     virtual bool hasDetailedDescription() const = 0;
@@ -125,16 +125,16 @@ class UsedDir
 class DirRelation
 {
   public:
-    DirRelation(const QCString &name,DirDef *src,UsedDir *dst) 
+    DirRelation(const QCString &name,const DirDef *src,UsedDir *dst) 
       : m_name(name), m_src(src), m_dst(dst) {}
-    DirDef  *source() const      { return m_src; }
+    const DirDef  *source() const      { return m_src; }
     UsedDir *destination() const { return m_dst; }
     void writeDocumentation(OutputList &ol);
     QCString getOutputFileBase() const { return m_name; }
 
   private:
     QCString m_name;
-    DirDef  *m_src;
+    const DirDef  *m_src;
     UsedDir *m_dst;
 };
 

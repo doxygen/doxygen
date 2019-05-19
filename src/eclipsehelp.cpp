@@ -174,7 +174,7 @@ void EclipseHelp::addContentsItem(
     const char *anchor,
     bool /* separateIndex */,
     bool /* addToNavIndex */,
-    Definition * /*def*/) 
+    const Definition * /*def*/) 
 {
   // -- write the topic tag 
   closedTag();
@@ -216,8 +216,8 @@ void EclipseHelp::addContentsItem(
 }
 
 void EclipseHelp::addIndexItem(
-    Definition * /* context */,
-    MemberDef * /* md */,
+    const Definition * /* context */,
+    const MemberDef * /* md */,
     const char * /* sectionAnchor */,
     const char * /* title */)
 {

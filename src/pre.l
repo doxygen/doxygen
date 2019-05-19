@@ -1255,6 +1255,7 @@ QCString removeIdsAndMarkers(const char *s)
 	result+="0L";
 	p++;
 	while ((c=*p) && isId(c)) p++;
+	while ((c=*p) && isspace((uchar)c)) p++;
 	if (*p=='(') // undefined function macro
 	{
 	  p++;

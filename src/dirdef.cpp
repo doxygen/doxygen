@@ -38,7 +38,7 @@ class DirDefImpl : public DefinitionImpl, public DirDef
     virtual DirDef *parent() const { return m_parent; }
     virtual int dirCount() const { return m_dirCount; }
     virtual const QDict<UsedDir> *usedDirs() const { return m_usedDirs; }
-    virtual bool isParentOf(DirDef *dir) const;
+    virtual bool isParentOf(const DirDef *dir) const;
     virtual bool depGraphIsTrivial() const;
     virtual QCString shortTitle() const;
     virtual bool hasDetailedDescription() const;
@@ -726,7 +726,7 @@ void DirDefImpl::computeDependencies()
   }
 }
 
-bool DirDefImpl::isParentOf(DirDef *dir) const
+bool DirDefImpl::isParentOf(const DirDef *dir) const
 {
   if (dir->parent()==this) // this is a parent of dir 
     return TRUE;

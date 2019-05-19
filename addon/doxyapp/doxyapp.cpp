@@ -60,7 +60,7 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     void startFontClass(const char *) {}
     void endFontClass() {}
     void writeCodeAnchor(const char *) {}
-    void setCurrentDoc(Definition *,const char *,bool) {}
+    void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
 
     // here we are presented with the symbols found by the code parser

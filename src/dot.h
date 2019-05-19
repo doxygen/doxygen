@@ -69,7 +69,7 @@ class DotNode
     enum GraphType { Dependency, Inheritance, Collaboration, Hierarchy, CallGraph };
     enum TruncState { Unknown, Truncated, Untruncated };
     DotNode(int n,const char *lab,const char *tip,const char *url,
-            bool rootNode=FALSE,ClassDef *cd=0);
+            bool rootNode=FALSE,const ClassDef *cd=0);
    ~DotNode();
     void addChild(DotNode *n,
                   int edgeColor=EdgeInfo::Purple,
@@ -118,7 +118,7 @@ class DotNode
     bool             m_written;   //!< used to mark a node as written
     bool             m_hasDoc;    //!< used to mark a node as documented
     bool             m_isRoot;    //!< indicates if this is a root node
-    ClassDef *       m_classDef;  //!< class representing this node (can be 0)
+    const ClassDef * m_classDef;  //!< class representing this node (can be 0)
     bool             m_visible;   //!< is the node visible in the output
     TruncState       m_truncated; //!< does the node have non-visible children/parents
     int              m_distance;  //!< shortest path to the root node
@@ -164,8 +164,8 @@ class DotGfxHierarchyTable
     const DotNodeList *subGraphs() const { return m_rootSubgraphs; }
   
   private:
-    void addHierarchy(DotNode *n,ClassDef *cd,bool hide);
-    void addClassList(ClassSDict *cl);
+    void addHierarchy(DotNode *n,const ClassDef *cd,bool hide);
+    void addClassList(const ClassSDict *cl);
 
     QCString               m_prefix;
     ClassDef::CompoundType m_classType;
@@ -179,7 +179,7 @@ class DotGfxHierarchyTable
 class DotClassGraph
 {
   public:
-    DotClassGraph(ClassDef *cd,DotNode::GraphType t);
+    DotClassGraph(const ClassDef *cd,DotNode::GraphType t);
    ~DotClassGraph();
     bool isTrivial() const;
     bool isTooBig() const;
@@ -193,10 +193,10 @@ class DotClassGraph
     static void resetNumbering();
 
   private:
-    void buildGraph(ClassDef *cd,DotNode *n,bool base,int distance);
+    void buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance);
     bool determineVisibleNodes(DotNode *rootNode,int maxNodes,bool includeParents);
     void determineTruncatedNodes(QList<DotNode> &queue,bool includeParents);
-    void addClass(ClassDef *cd,DotNode *n,int prot,const char *label,
+    void addClass(const ClassDef *cd,DotNode *n,int prot,const char *label,
                   const char *usedName,const char *templSpec,
                   bool base,int distance);
 
@@ -213,7 +213,7 @@ class DotClassGraph
 class DotInclDepGraph
 {
   public:
-    DotInclDepGraph(FileDef *fd,bool inverse);
+    DotInclDepGraph(const FileDef *fd,bool inverse);
    ~DotInclDepGraph();
     QCString writeGraph(FTextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                     const char *path,const char *fileName,const char *relPath,
@@ -226,7 +226,7 @@ class DotInclDepGraph
     static void resetNumbering();
 
   private:
-    void buildGraph(DotNode *n,FileDef *fd,int distance);
+    void buildGraph(DotNode *n,const FileDef *fd,int distance);
     void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes);
     void determineTruncatedNodes(QList<DotNode> &queue);
 
@@ -242,13 +242,13 @@ class DotInclDepGraph
 class DotCallGraph
 {
   public:
-    DotCallGraph(MemberDef *md,bool inverse);
+    DotCallGraph(const MemberDef *md,bool inverse);
    ~DotCallGraph();
     QCString writeGraph(FTextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                         const char *path,const char *fileName,
                         const char *relPath,bool writeImageMap=TRUE,
                         int graphId=-1) const;
-    void buildGraph(DotNode *n,MemberDef *md,int distance);
+    void buildGraph(DotNode *n,const MemberDef *md,int distance);
     bool isTrivial() const;
     bool isTooBig() const;
     void determineVisibleNodes(QList<DotNode> &queue, int &maxNodes);
@@ -257,18 +257,18 @@ class DotCallGraph
 
   private:
     DotNode        *m_startNode;
-    static int             m_curNodeNumber;
+    static int      m_curNodeNumber;
     QDict<DotNode> *m_usedNodes;
     bool            m_inverse;
     QCString        m_diskName;
-    Definition *    m_scope;
+    const Definition * m_scope;
 };
 
 /** Representation of an directory dependency graph */
 class DotDirDeps
 {
   public:
-    DotDirDeps(DirDef *dir);
+    DotDirDeps(const DirDef *dir);
    ~DotDirDeps();
     bool isTrivial() const;
     QCString writeGraph(FTextStream &out,
@@ -281,7 +281,7 @@ class DotDirDeps
                         int graphId=-1,
                         bool linkRelations=TRUE) const;
   private:
-    DirDef *m_dir;
+    const DirDef *m_dir;
 };
 
 /** Representation of a group collaboration graph */
@@ -321,17 +321,17 @@ class DotGroupCollaboration
         void write( FTextStream &t ) const;
     };
 
-    DotGroupCollaboration(GroupDef* gd);
+    DotGroupCollaboration(const GroupDef* gd);
     ~DotGroupCollaboration();
     QCString writeGraph(FTextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
                     const char *path,const char *fileName,const char *relPath,
                     bool writeImageMap=TRUE,int graphId=-1) const;
-    void buildGraph(GroupDef* gd);
+    void buildGraph(const GroupDef* gd);
     bool isTrivial() const;
     static void resetNumbering();
 
   private :
-    void addCollaborationMember( Definition* def, QCString& url, EdgeType eType );
+    void addCollaborationMember(const Definition* def, QCString& url, EdgeType eType );
     void addMemberList( class MemberList* ml );
     void writeGraphHeader(FTextStream &t,const QCString &title) const;
     Edge* addEdge( DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,

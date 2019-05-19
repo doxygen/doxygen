@@ -140,7 +140,7 @@ static int	     g_yyLineNr;        //!< current line number
 static int	     g_contLineNr;      //!< current, local, line number for continuation determination
 static int	    *g_hasContLine = NULL;     //!< signals whether or not a line has a continuation line (fixed source form)
 static bool          g_needsTermination;
-static Definition   *g_searchCtx;
+static const Definition *g_searchCtx;
 static bool          g_collectXRefs;
 static bool          g_isFixedForm;
 
@@ -452,16 +452,16 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
       MemberNameIterator mli(*mn);
       for (mli.toFirst();(md=mli.current());++mli) // all found functions with given name
       {
-        FileDef  *fd=md->getFileDef();
-        GroupDef *gd=md->getGroupDef();
-        ClassDef *cd=md->getClassDef();
+        const FileDef  *fd=md->getFileDef();
+        const GroupDef *gd=md->getGroupDef();
+        const ClassDef *cd=md->getClassDef();
 
  //cout << "found link with same name: " << fd->fileName() << "  " <<  memberName;
  //if (md->getNamespaceDef() != 0) cout << " in namespace " << md->getNamespaceDef()->name();cout << endl;
 
         if ((gd && gd->isLinkable()) || (fd && fd->isLinkable()))
         {
-           NamespaceDef *nspace= md->getNamespaceDef();
+           const NamespaceDef *nspace= md->getNamespaceDef();
 
            if (nspace == 0) 
 	   { // found function in global scope
@@ -532,8 +532,8 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
     if (md->isVariable() && (md->getLanguage()!=SrcLangExt_Fortran)) return FALSE; // Non Fortran variables aren't handled yet,
                                                                                    // see also linkifyText in util.cpp
 
-    Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-	            md->getBodyDef() : md->getOuterScope();
+    const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+	                  md->getBodyDef() : md->getOuterScope();
     if (md->getGroupDef()) d = md->getGroupDef();
     if (d && d->isLinkable())
     {
@@ -1313,17 +1313,13 @@ static void checkContLines(const char *s)
   g_hasContLine[0] = 0;
 }
 
-void parseFortranCode(CodeOutputInterface &od,const char *className,const QCString &s, 
+void parseFortranCode(CodeOutputInterface &od,const char *,const QCString &s, 
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment,
-		  MemberDef *memberDef,bool,Definition *searchCtx,
+		  const MemberDef *,bool,const Definition *searchCtx,
                   bool collectXRefs, FortranFormat format)
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
-
-  // used parameters
-  (void)memberDef;
-  (void)className;
 
   if (s.isEmpty()) return;
   printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);

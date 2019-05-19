@@ -124,7 +124,7 @@ class CodeOutputInterface
      */
     virtual void writeCodeAnchor(const char *name) = 0;
 
-    virtual void setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile) = 0;
+    virtual void setCurrentDoc(const Definition *context,const char *anchor,bool isSourceFile) = 0;
     virtual void addWord(const char *word,bool hiPriority) = 0;
 };
 
@@ -346,7 +346,7 @@ class OutputGenerator : public BaseOutputDocInterface
     //void setEncoding(const QCString &enc) { encoding = enc; }
     //virtual void postProcess(QByteArray &) { }
 
-    virtual void writeDoc(DocNode *,Definition *ctx,MemberDef *md) = 0;
+    virtual void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

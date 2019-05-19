@@ -69,13 +69,14 @@ class GroupDefImpl : public DefinitionImpl, public GroupDef
     virtual bool findGroup(const GroupDef *def) const; // true if def is a subgroup of this group
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeMemberPages(OutputList &ol);
-    virtual void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeTagFile(FTextStream &);
-    virtual int  countMembers() const;
+    virtual int  numDocMembers() const;
     virtual bool isLinkableInProject() const;
     virtual bool isLinkable() const;
     virtual bool isASubGroup() const;
     virtual void computeAnchors();
+    virtual void countMembers();
 
     virtual void addMembersToMemberGroup();
     virtual void distributeMemberGroupDocumentation();
@@ -127,7 +128,7 @@ class GroupDefImpl : public DefinitionImpl, public GroupDef
     void startMemberDocumentation(OutputList &ol);
     void endMemberDocumentation(OutputList &ol);
     void writeAuthorSection(OutputList &ol);
-    void writeSummaryLinks(OutputList &ol);
+    void writeSummaryLinks(OutputList &ol) const;
     void updateLanguage(const Definition *);
 
     QCString title;                      // title of the group
@@ -383,10 +384,10 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
   if ((mni=(*allMemberNameInfoSDict)[md->name()]))
   { // member with this name already found
     MemberNameInfoIterator srcMnii(*mni); 
-    MemberInfo *srcMi;
+    const MemberInfo *srcMi;
     for ( ; (srcMi=srcMnii.current()) ; ++srcMnii )
     {
-      MemberDef *srcMd = srcMi->memberDef;
+      const MemberDef *srcMd = srcMi->memberDef;
       if (srcMd==md) return FALSE; // already added before!
 
       bool sameScope = srcMd->getOuterScope()==md->getOuterScope() || // same class or namespace
@@ -394,10 +395,10 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
            (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
                md->getOuterScope()->definitionType()==Definition::TypeFile); 
 
-      ArgumentList *srcMdAl  = srcMd->argumentList();
-      ArgumentList *mdAl     = md->argumentList();
-      ArgumentList *tSrcMdAl = srcMd->templateArguments();
-      ArgumentList *tMdAl    = md->templateArguments();
+      const ArgumentList *srcMdAl  = srcMd->argumentList();
+      const ArgumentList *mdAl     = md->argumentList();
+      const ArgumentList *tSrcMdAl = srcMd->templateArguments();
+      const ArgumentList *tMdAl    = md->templateArguments();
       
       if (srcMd->isFunction() && md->isFunction() && // both are a function
           ((tSrcMdAl==0 && tMdAl==0) || 
@@ -662,7 +663,28 @@ bool GroupDefImpl::isASubGroup() const
   return groups!=0 && groups->count()!=0;
 }
 
-int GroupDefImpl::countMembers() const
+void GroupDefImpl::countMembers()
+{
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (;(ml=mli.current());++mli)
+  {
+    ml->countDecMembers();
+    ml->countDocMembers();
+  }
+  if (memberGroupSDict)
+  {
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->countDecMembers();
+      mg->countDocMembers();
+    }
+  }
+}
+
+int GroupDefImpl::numDocMembers() const
 {
   return fileList->count()+
          classSDict->count()+
@@ -830,7 +852,7 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
      )
   {
     ol.pushGeneratorState();
-    if (pageDict->count()!=countMembers()) // not only pages -> classical layout
+    if (pageDict->count()!=numDocMembers()) // not only pages -> classical layout
     {
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Html);
@@ -1154,7 +1176,7 @@ void GroupDefImpl::writeAuthorSection(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void GroupDefImpl::writeSummaryLinks(OutputList &ol)
+void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1394,7 +1416,7 @@ void GroupDefImpl::writeMemberPages(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
+void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const
 {
   static bool createSubDirs=Config_getBool(CREATE_SUBDIRS);
 
@@ -1557,7 +1579,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
   // put member into group defined by this entry?
   if (fgd)
   {
-    GroupDef *mgd = md->getGroupDef();
+    GroupDef *mgd = const_cast<GroupDef*>(md->getGroupDef());
     //printf("mgd=%p\n",mgd);
     bool insertit = FALSE;
     if (mgd==0)

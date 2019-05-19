@@ -148,7 +148,6 @@ TAGFILES               = ../../qtools_docs/qtools.tag=../../../../qtools_docs/ht
 GENERATE_TAGFILE       = 
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
-PERL_PATH              = 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool   
 #---------------------------------------------------------------------------

@@ -144,7 +144,7 @@ void generateDEFForMember(MemberDef *md,
   if (isFunc) //function
   {
     ArgumentList *declAl = new ArgumentList;
-    ArgumentList *defAl = md->argumentList();
+    const ArgumentList *defAl = md->argumentList();
     stringToArgumentList(md->argsString(),declAl);
     QCString fcnPrefix = "  " + memPrefix + "param-";
 
@@ -220,7 +220,7 @@ void generateDEFForMember(MemberDef *md,
   // TODO: exceptions, const volatile
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    MemberList *enumList = md->enumFieldList();
+    const MemberList *enumList = md->enumFieldList();
     if (enumList!=0)
     {
       MemberListIterator emli(*enumList);

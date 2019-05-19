@@ -915,7 +915,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   {
     SrcLangExt lang = getLanguageFromFileName(link);
     int lp=-1;
-    if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || lang==SrcLangExt_Markdown) 
+    if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || (lang==SrcLangExt_Markdown && !isURL(link))) 
         // assume doxygen symbol link
     {
       if (lp==-1) // link to markdown page
@@ -2453,18 +2453,31 @@ static QCString detab(const QCString &s,int &refIndent)
         col++;
         break;
       default: // non-whitespace => update minIndent
-        out.addChar(c);
         if (c<0 && i<size) // multibyte sequence
         {
-          out.addChar(data[i++]); // >= 2 bytes
-          if (((uchar)c&0xE0)==0xE0 && i<size)
+          // special handling of the UTF-8 nbsp character 0xc2 0xa0
+          if (c == '\xc2' && data[i] == '\xa0')
           {
-            out.addChar(data[i++]); // 3 bytes
+            out.addStr("&nbsp;");
+            i++;
           }
-          if (((uchar)c&0xF0)==0xF0 && i<size)
+          else
           {
-            out.addChar(data[i++]); // 4 byres
+            out.addChar(c);
+            out.addChar(data[i++]); // >= 2 bytes
+            if (((uchar)c&0xE0)==0xE0 && i<size)
+            {
+              out.addChar(data[i++]); // 3 bytes
+            }
+              if (((uchar)c&0xF0)==0xF0 && i<size)
+            {
+              out.addChar(data[i++]); // 4 byres
+            }
           }
+        }
+        else
+        {
+          out.addChar(c);
         }
         if (col<minIndent) minIndent=col;
         col++;
@@ -2629,9 +2642,9 @@ void MarkdownFileParser::parseCode(CodeOutputInterface &codeOutIntf,
                int startLine,
                int endLine,
                bool inlineFragment,
-               MemberDef *memberDef,
+               const MemberDef *memberDef,
                bool showLineNumbers,
-               Definition *searchCtx,
+               const Definition *searchCtx,
                bool collectXRefs
               )
 {

@@ -46,7 +46,7 @@ static int folderId=1;
 struct FTVNode
 {
   FTVNode(bool dir,const char *r,const char *f,const char *a,
-          const char *n,bool sepIndex,bool navIndex,Definition *df)
+          const char *n,bool sepIndex,bool navIndex,const Definition *df)
     : isLast(TRUE), isDir(dir),ref(r),file(f),anchor(a),name(n), index(0),
       parent(0), separateIndex(sepIndex), addToNavIndex(navIndex),
       def(df) { children.setAutoDelete(TRUE); }
@@ -63,7 +63,7 @@ struct FTVNode
   FTVNode *parent;
   bool separateIndex;
   bool addToNavIndex;
-  Definition *def;
+  const Definition *def;
 };
 
 int FTVNode::computeTreeDepth(int level) const
@@ -187,7 +187,7 @@ void FTVHelp::addContentsItem(bool isDir,
                               const char *anchor,
                               bool separateIndex,
                               bool addToNavIndex,
-                              Definition *def
+                              const Definition *def
                               )
 {
   //printf("%p: m_indent=%d addContentsItem(%s,%s,%s,%s)\n",this,m_indent,name,ref,file,anchor);
@@ -207,7 +207,7 @@ void FTVHelp::addContentsItem(bool isDir,
 
 }
 
-static QCString node2URL(FTVNode *n,bool overruleFile=FALSE,bool srcLink=FALSE)
+static QCString node2URL(const FTVNode *n,bool overruleFile=FALSE,bool srcLink=FALSE)
 {
   QCString url = n->file;
   if (!url.isEmpty() && url.at(0)=='!')  // relative URL
@@ -223,7 +223,7 @@ static QCString node2URL(FTVNode *n,bool overruleFile=FALSE,bool srcLink=FALSE)
   {
     if (overruleFile && n->def && n->def->definitionType()==Definition::TypeFile)
     {
-      FileDef *fd = dynamic_cast<FileDef*>(n->def);
+      const FileDef *fd = dynamic_cast<const FileDef*>(n->def);
       if (srcLink)
       {
         url = fd->getSourceFileBase();
@@ -315,7 +315,7 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
   }
 }
 
-static void generateBriefDoc(FTextStream &t,Definition *def)
+static void generateBriefDoc(FTextStream &t,const Definition *def)
 {
   QCString brief = def->briefDescription(TRUE);
   //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,def->name().data(),brief.data());
@@ -332,7 +332,7 @@ static void generateBriefDoc(FTextStream &t,Definition *def)
   }
 }
 
-static char compoundIcon(ClassDef *cd)
+static char compoundIcon(const ClassDef *cd)
 {
   char icon='C';
   if (cd->getLanguage() == SrcLangExt_Slice)
@@ -392,7 +392,7 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        char icon=compoundIcon(dynamic_cast<ClassDef*>(n->def));
+        char icon=compoundIcon(dynamic_cast<const ClassDef*>(n->def));
         t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
       else
@@ -415,11 +415,11 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
     }
     else // leaf node
     {
-      FileDef *srcRef=0;
+      const FileDef *srcRef=0;
       if (n->def && n->def->definitionType()==Definition::TypeFile &&
-          (dynamic_cast<FileDef*>(n->def))->generateSourceFile())
+          (dynamic_cast<const FileDef*>(n->def))->generateSourceFile())
       {
-        srcRef = dynamic_cast<FileDef*>(n->def);
+        srcRef = dynamic_cast<const FileDef*>(n->def);
       }
       if (srcRef)
       {
@@ -448,7 +448,7 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        char icon=compoundIcon(dynamic_cast<ClassDef*>(n->def));
+        char icon=compoundIcon(dynamic_cast<const ClassDef*>(n->def));
         t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
       else
@@ -492,7 +492,7 @@ class NavIndexEntryList : public QList<NavIndexEntry>
     }
 };
 
-static QCString pathToNode(FTVNode *leaf,FTVNode *n)
+static QCString pathToNode(const FTVNode *leaf,const FTVNode *n)
 {
   QCString result;
   if (n->parent)
@@ -511,7 +511,7 @@ static bool dupOfParent(const FTVNode *n)
   return FALSE;
 }
 
-static void generateJSLink(FTextStream &t,FTVNode *n)
+static void generateJSLink(FTextStream &t,const FTVNode *n)
 {
   if (n->file.isEmpty()) // no link
   {
@@ -542,7 +542,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
   indentStr.fill(' ',level*2);
   bool found=FALSE;
   QListIterator<FTVNode> nli(nl);
-  FTVNode *n;
+  const FTVNode *n;
   for (nli.toFirst();(n=nli.current());++nli)
   {
     // terminate previous entry
@@ -560,7 +560,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
     {
       if (n->def && n->def->definitionType()==Definition::TypeFile)
       {
-        FileDef *fd = dynamic_cast<FileDef*>(n->def);
+        const FileDef *fd = dynamic_cast<const FileDef*>(n->def);
         bool doc,src;
         doc = fileVisibleInIndex(fd,src);
         if (doc)

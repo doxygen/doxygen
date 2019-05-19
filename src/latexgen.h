@@ -49,7 +49,7 @@ class LatexCodeGenerator : public CodeOutputInterface
     void startFontClass(const char *);
     void endFontClass();
     void writeCodeAnchor(const char *) {}
-    void setCurrentDoc(Definition *,const char *,bool) {}
+    void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
     static void setDoxyCodeOpen(bool val);
 
@@ -116,7 +116,7 @@ class LatexGenerator : public OutputGenerator
     // ---------------------------
 
 
-    void writeDoc(DocNode *,Definition *ctx,MemberDef *);
+    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *);
 
     void startFile(const char *name,const char *manName,const char *title);
     void writeSearchInfo() {}
@@ -321,7 +321,7 @@ class LatexGenerator : public OutputGenerator
     void writeLabel(const char *l,bool isLast);
     void endLabels();
 
-    void setCurrentDoc(Definition *,const char *,bool) {}
+    void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
 
 

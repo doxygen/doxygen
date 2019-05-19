@@ -236,7 +236,7 @@ void DocSets::addContentsItem(bool isDir,
                               const char *anchor,
                               bool /* separateIndex */,
                               bool /* addToNavIndex */,
-                              Definition * /*def*/)
+                              const Definition * /*def*/)
 {
   (void)isDir;
   //printf("DocSets::addContentsItem(%s) m_dc=%d\n",name,m_dc);
@@ -274,14 +274,14 @@ void DocSets::addContentsItem(bool isDir,
   }
 }
 
-void DocSets::addIndexItem(Definition *context,MemberDef *md,
+void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
                            const char *,const char *)
 {
   if (md==0 && context==0) return;
 
-  FileDef *fd      = 0;
-  ClassDef *cd     = 0;
-  NamespaceDef *nd = 0;
+  const FileDef *fd      = 0;
+  const ClassDef *cd     = 0;
+  const NamespaceDef *nd = 0;
 
   if (md)
   {
@@ -417,7 +417,7 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
     {
       scope = nd->name();
     }
-    MemberDef *declMd = md->memberDeclaration();
+    const MemberDef *declMd = md->memberDeclaration();
     if (declMd==0) declMd = md;
     {
       fd = md->getFileDef();
@@ -432,15 +432,15 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
   {
     if (fd==0 && context->definitionType()==Definition::TypeFile)
     {
-      fd = dynamic_cast<FileDef*>(context);
+      fd = dynamic_cast<const FileDef*>(context);
     }
     if (cd==0 && context->definitionType()==Definition::TypeClass)
     {
-      cd = dynamic_cast<ClassDef*>(context);
+      cd = dynamic_cast<const ClassDef*>(context);
     }
     if (nd==0 && context->definitionType()==Definition::TypeNamespace)
     {
-      nd = dynamic_cast<NamespaceDef*>(context);
+      nd = dynamic_cast<const NamespaceDef*>(context);
     }
     if (fd)
     {

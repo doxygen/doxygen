@@ -106,7 +106,7 @@ QCString LayoutNavEntry::url() const
   }
   else if (url.left(5)=="@ref " || url.left(5)=="\\ref ")
   {
-    Definition *d;
+    const Definition *d = 0;
     QCString anchor;
     bool found=FALSE;
     if (resolveLink(0,url.mid(5).stripWhiteSpace(),TRUE,&d,anchor))

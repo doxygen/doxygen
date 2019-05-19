@@ -186,7 +186,7 @@ class TranslateContext : public RefCountedContext, public TemplateStructIntf
 class UsedFilesContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static UsedFilesContext *alloc(ClassDef *cd) { return new UsedFilesContext(cd); }
+    static UsedFilesContext *alloc(const ClassDef *cd) { return new UsedFilesContext(cd); }
 
     // TemplateListIntf
     virtual int count() const;
@@ -195,10 +195,10 @@ class UsedFilesContext : public RefCountedContext, public TemplateListIntf
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
-    void addFile(FileDef *fd);
+    void addFile(const FileDef *fd);
 
   private:
-    UsedFilesContext(ClassDef *cd);
+    UsedFilesContext(const ClassDef *cd);
    ~UsedFilesContext();
 
     class Private;
@@ -253,7 +253,7 @@ class IncludeInfoListContext : public RefCountedContext, public TemplateListIntf
 class ClassContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static ClassContext *alloc(ClassDef *cd) { return new ClassContext(cd); }
+    static ClassContext *alloc(const ClassDef *cd) { return new ClassContext(cd); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -261,7 +261,7 @@ class ClassContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    ClassContext(ClassDef *);
+    ClassContext(const ClassDef *);
    ~ClassContext();
     class Private;
     Private *p;
@@ -272,7 +272,7 @@ class ClassContext : public RefCountedContext, public TemplateStructIntf
 class NamespaceContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static NamespaceContext *alloc(NamespaceDef *nd) { return new NamespaceContext(nd); }
+    static NamespaceContext *alloc(const NamespaceDef *nd) { return new NamespaceContext(nd); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -280,7 +280,7 @@ class NamespaceContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    NamespaceContext(NamespaceDef *);
+    NamespaceContext(const NamespaceDef *);
    ~NamespaceContext();
     class Private;
     Private *p;
@@ -291,7 +291,7 @@ class NamespaceContext : public RefCountedContext, public TemplateStructIntf
 class FileContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static FileContext *alloc(FileDef *fd) { return new FileContext(fd); }
+    static FileContext *alloc(const FileDef *fd) { return new FileContext(fd); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -299,7 +299,7 @@ class FileContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    FileContext(FileDef *);
+    FileContext(const FileDef *);
    ~FileContext();
     class Private;
     Private *p;
@@ -309,7 +309,7 @@ class FileContext : public RefCountedContext, public TemplateStructIntf
 class DirContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static DirContext *alloc(DirDef *dd) { return new DirContext(dd); }
+    static DirContext *alloc(const DirDef *dd) { return new DirContext(dd); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -317,7 +317,7 @@ class DirContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    DirContext(DirDef *);
+    DirContext(const DirDef *);
    ~DirContext();
     class Private;
     Private *p;
@@ -329,7 +329,7 @@ class DirContext : public RefCountedContext, public TemplateStructIntf
 class PageContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static PageContext *alloc(PageDef *pd,bool isMainPage,bool isExample) { return new PageContext(pd,isMainPage,isExample); }
+    static PageContext *alloc(const PageDef *pd,bool isMainPage,bool isExample) { return new PageContext(pd,isMainPage,isExample); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -337,7 +337,7 @@ class PageContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    PageContext(PageDef *,bool isMainPage,bool isExample);
+    PageContext(const PageDef *,bool isMainPage,bool isExample);
    ~PageContext();
     class Private;
     Private *p;
@@ -368,7 +368,7 @@ class MemberContext : public RefCountedContext, public TemplateStructIntf
 class ModuleContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static ModuleContext *alloc(GroupDef *gd) { return new ModuleContext(gd); }
+    static ModuleContext *alloc(const GroupDef *gd) { return new ModuleContext(gd); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -376,7 +376,7 @@ class ModuleContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    ModuleContext(GroupDef *);
+    ModuleContext(const GroupDef *);
    ~ModuleContext();
     class Private;
     Private *p;
@@ -447,7 +447,7 @@ class InheritanceGraphContext : public RefCountedContext, public TemplateStructI
 class ClassInheritanceNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static ClassInheritanceNodeContext *alloc(ClassDef *cd)
+    static ClassInheritanceNodeContext *alloc(const ClassDef *cd)
     { return new ClassInheritanceNodeContext(cd); }
 
     // TemplateStructIntf methods
@@ -458,7 +458,7 @@ class ClassInheritanceNodeContext : public RefCountedContext, public TemplateStr
     void addChildren(const BaseClassList *bcl,bool hideSuper);
 
   private:
-    ClassInheritanceNodeContext(ClassDef *);
+    ClassInheritanceNodeContext(const ClassDef *);
    ~ClassInheritanceNodeContext();
     class Private;
     Private *p;
@@ -509,7 +509,7 @@ class ClassHierarchyContext : public RefCountedContext, public TemplateStructInt
 class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static NestingNodeContext *alloc(const NestingNodeContext *parent,Definition *def,
+    static NestingNodeContext *alloc(const NestingNodeContext *parent,const Definition *def,
                                      int index,int level,bool addClasses,bool inherit,bool hideSuper)
     { return new NestingNodeContext(parent,def,index,level,addClasses,inherit,hideSuper); }
 
@@ -522,7 +522,7 @@ class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 
   private:
     NestingNodeContext(const NestingNodeContext *parent,
-                       Definition *,int index,int level,bool addClasses,bool inherit,bool hideSuper);
+                       const Definition *,int index,int level,bool addClasses,bool inherit,bool hideSuper);
    ~NestingNodeContext();
     class Private;
     Private *p;
@@ -729,7 +729,7 @@ class PageTreeContext : public RefCountedContext, public TemplateStructIntf
 class ModuleNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static ModuleNodeContext *alloc(GroupDef *gd) { return new ModuleNodeContext(gd); }
+    static ModuleNodeContext *alloc(const GroupDef *gd) { return new ModuleNodeContext(gd); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -737,7 +737,7 @@ class ModuleNodeContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    ModuleNodeContext(GroupDef *);
+    ModuleNodeContext(const GroupDef *);
    ~ModuleNodeContext();
     class Private;
     Private *p;
@@ -889,7 +889,7 @@ class NamespaceMembersIndexContext : public RefCountedContext, public TemplateSt
 class NavPathElemContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static NavPathElemContext *alloc(Definition *def) { return new NavPathElemContext(def); }
+    static NavPathElemContext *alloc(const Definition *def) { return new NavPathElemContext(def); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -897,7 +897,7 @@ class NavPathElemContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    NavPathElemContext(Definition *def);
+    NavPathElemContext(const Definition *def);
    ~NavPathElemContext();
     class Private;
     Private *p;
@@ -909,7 +909,7 @@ class NavPathElemContext : public RefCountedContext, public TemplateStructIntf
 class InheritanceNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static InheritanceNodeContext *alloc(ClassDef *cd,const QCString &name)
+    static InheritanceNodeContext *alloc(const ClassDef *cd,const QCString &name)
     { return new InheritanceNodeContext(cd,name); }
 
     // TemplateStructIntf methods
@@ -918,7 +918,7 @@ class InheritanceNodeContext : public RefCountedContext, public TemplateStructIn
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    InheritanceNodeContext(ClassDef *cd,const QCString &name);
+    InheritanceNodeContext(const ClassDef *cd,const QCString &name);
    ~InheritanceNodeContext();
     class Private;
     Private *p;
@@ -979,7 +979,7 @@ class MemberListContext : public RefCountedContext, public TemplateListIntf
 class MemberGroupInfoContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static MemberGroupInfoContext *alloc(Definition *def,const QCString &relPath,const MemberGroup *mg)
+    static MemberGroupInfoContext *alloc(const Definition *def,const QCString &relPath,const MemberGroup *mg)
     { return new MemberGroupInfoContext(def,relPath,mg); }
 
     // TemplateStructIntf methods
@@ -988,7 +988,7 @@ class MemberGroupInfoContext : public RefCountedContext, public TemplateStructIn
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    MemberGroupInfoContext(Definition *def,const QCString &relPath,const MemberGroup *mg);
+    MemberGroupInfoContext(const Definition *def,const QCString &relPath,const MemberGroup *mg);
    ~MemberGroupInfoContext();
     class Private;
     Private *p;
@@ -1001,9 +1001,9 @@ class MemberGroupListContext : public RefCountedContext, public TemplateListIntf
   public:
     static MemberGroupListContext *alloc()
     { return new MemberGroupListContext; }
-    static MemberGroupListContext *alloc(Definition *def,const QCString &relPath,const MemberGroupList *list)
+    static MemberGroupListContext *alloc(const Definition *def,const QCString &relPath,const MemberGroupList *list)
     { return new MemberGroupListContext(def,relPath,list); }
-    static MemberGroupListContext *alloc(Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping)
+    static MemberGroupListContext *alloc(const Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping)
     { return new MemberGroupListContext(def,relPath,dict,subGrouping); }
 
     // TemplateListIntf
@@ -1015,8 +1015,8 @@ class MemberGroupListContext : public RefCountedContext, public TemplateListIntf
 
   private:
     MemberGroupListContext();
-    MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupList *list);
-    MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupSDict *mgDict,bool subGrouping);
+    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList *list);
+    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupSDict *mgDict,bool subGrouping);
    ~MemberGroupListContext();
     class Private;
     Private *p;
@@ -1028,7 +1028,7 @@ class MemberGroupListContext : public RefCountedContext, public TemplateListIntf
 class MemberListInfoContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static MemberListInfoContext *alloc(Definition *def,const QCString &relPath,
+    static MemberListInfoContext *alloc(const Definition *def,const QCString &relPath,
                           const MemberList *ml,const QCString &title,
                           const QCString &subtitle=QCString())
     { return new MemberListInfoContext(def,relPath,ml,title,subtitle); }
@@ -1039,7 +1039,7 @@ class MemberListInfoContext : public RefCountedContext, public TemplateStructInt
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    MemberListInfoContext(Definition *def,const QCString &relPath,
+    MemberListInfoContext(const Definition *def,const QCString &relPath,
                           const MemberList *ml,const QCString &title,
                           const QCString &subtitle=QCString());
    ~MemberListInfoContext();
@@ -1071,7 +1071,7 @@ class MemberInfoContext : public RefCountedContext, public TemplateStructIntf
 class InheritedMemberInfoContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static InheritedMemberInfoContext *alloc(ClassDef *cd,MemberList *ml,const QCString &title)
+    static InheritedMemberInfoContext *alloc(const ClassDef *cd,MemberList *ml,const QCString &title)
     { return new InheritedMemberInfoContext(cd,ml,title); }
 
     // TemplateStructIntf methods
@@ -1080,7 +1080,7 @@ class InheritedMemberInfoContext : public RefCountedContext, public TemplateStru
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    InheritedMemberInfoContext(ClassDef *cd,MemberList *ml,const QCString &title);
+    InheritedMemberInfoContext(const ClassDef *cd,MemberList *ml,const QCString &title);
    ~InheritedMemberInfoContext();
     class Private;
     Private *p;
@@ -1092,7 +1092,7 @@ class InheritedMemberInfoListContext : public RefCountedContext, public Template
 {
   public:
     static InheritedMemberInfoListContext *alloc() { return new InheritedMemberInfoListContext; }
-    void addMemberList(ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList=TRUE);
+    void addMemberList(const ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList=TRUE);
 
     // TemplateListIntf
     virtual int  count() const;
@@ -1138,7 +1138,7 @@ class AllMembersListContext : public RefCountedContext, public TemplateListIntf
 class ArgumentContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static ArgumentContext *alloc(const Argument *arg,Definition *def,const QCString &relPath)
+    static ArgumentContext *alloc(const Argument *arg,const Definition *def,const QCString &relPath)
     { return new ArgumentContext(arg,def,relPath); }
 
     // TemplateStructIntf methods
@@ -1147,7 +1147,7 @@ class ArgumentContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    ArgumentContext(const Argument *arg,Definition *def,const QCString &relPath);
+    ArgumentContext(const Argument *arg,const Definition *def,const QCString &relPath);
    ~ArgumentContext();
     class Private;
     Private *p;
@@ -1159,7 +1159,7 @@ class ArgumentListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
     static ArgumentListContext *alloc() { return new ArgumentListContext; }
-    static ArgumentListContext *alloc(const ArgumentList *al,Definition *def,const QCString &relPath)
+    static ArgumentListContext *alloc(const ArgumentList *al,const Definition *def,const QCString &relPath)
     { return new ArgumentListContext(al,def,relPath); }
 
     // TemplateListIntf
@@ -1171,7 +1171,7 @@ class ArgumentListContext : public RefCountedContext, public TemplateListIntf
 
   private:
     ArgumentListContext();
-    ArgumentListContext(const ArgumentList *al,Definition *def,const QCString &relPath);
+    ArgumentListContext(const ArgumentList *al,const Definition *def,const QCString &relPath);
    ~ArgumentListContext();
     class Private;
     Private *p;

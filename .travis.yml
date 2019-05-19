@@ -46,6 +46,8 @@ jobs:
               homebrew:
                   packages:
                       - ghostscript
+                      - bison
+                      - flex
                   casks:
                       - mactex-no-gui
 
@@ -54,9 +56,7 @@ before_script:
       if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
         printf "[requires]
         libxml2/2.9.8@bincrafters/stable
-        libiconv/1.15@bincrafters/stable
-        [build_requires]
-        cmake_installer/3.10.0@conan/stable" >> conanfile.txt;
+        libiconv/1.15@bincrafters/stable" >> conanfile.txt;
       fi;
       if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
         printf "[requires]
@@ -79,7 +79,9 @@ before_script:
         mv epstopdf/epstopdf.pl /Users/travis/Library/TeX/texbin/epstopdf;
         chmod a+x /Users/travis/Library/TeX/texbin/epstopdf;
         rm -rf epstopdf*;
-        export PATH=/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH;
+        export CMAKE_INCLUDE_PATH="/usr/local/opt/flex/include;$CMAKE_INCLUDE_PATH";
+        export CMAKE_LIBRARY_PATH="/usr/local/opt/flex/lib;/usr/local/opt/bison/lib;$CMAKE_LIBRARY_PATH";
+        export PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH";
       fi;
     - if [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
@@ -93,5 +95,7 @@ script:
     - cmake --version;
     - cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
     - make
-    - make tests
-    - make docs
+    - if [ ! "${TRAVIS_OS_NAME}" == "osx" ]; then
+        make tests;
+        make docs;
+      fi;

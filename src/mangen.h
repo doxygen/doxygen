@@ -41,7 +41,7 @@ class ManGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==Man && active); } 
     OutputGenerator *get(OutputType o) { return (o==Man) ? this : 0; }
 
-    void writeDoc(DocNode *,Definition *,MemberDef *);
+    void writeDoc(DocNode *,const Definition *,const MemberDef *);
 
     static void init();
     void startFile(const char *name,const char *manName,const char *title);
@@ -260,7 +260,7 @@ class ManGenerator : public OutputGenerator
     void endLabels();
 
     void writeCodeAnchor(const char *) {}
-    void setCurrentDoc(Definition *,const char *,bool) {}
+    void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
 
   private:

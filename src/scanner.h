@@ -48,9 +48,9 @@ class CLanguageScanner : public ParserInterface
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,
-                   MemberDef *memberDef=0,
+                   const MemberDef *memberDef=0,
                    bool showLineNumbers=TRUE,
-                   Definition *searchCtx=0,
+                   const Definition *searchCtx=0,
                    bool collectXRefs=TRUE
                   );
     void resetCodeParserState();

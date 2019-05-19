@@ -268,16 +268,16 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   }
 
   writePageDocumentation(ol);
+  ol.endContents();
   ol.endPageDoc();
 
   if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
   {
-    ol.endContents();
     endFileWithNavPath(getOuterScope(),ol);
   }
   else
   {
-    endFile(ol);
+    endFile(ol,FALSE,TRUE);
   }
 
   ol.popGeneratorState();

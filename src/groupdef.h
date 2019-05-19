@@ -66,13 +66,14 @@ class GroupDef : virtual public Definition
     virtual bool findGroup(const GroupDef *def) const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol) = 0;
-    virtual void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const = 0;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeTagFile(FTextStream &) = 0;
-    virtual int  countMembers() const = 0;
+    virtual int  numDocMembers() const = 0;
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
     virtual bool isASubGroup() const = 0;
     virtual void computeAnchors() = 0;
+    virtual void countMembers() = 0;
 
     virtual void addMembersToMemberGroup() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;

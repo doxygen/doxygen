@@ -47,6 +47,9 @@ class MemberDef : virtual public Definition
     // move this member into a different scope
     virtual MemberDef *deepCopy() const =0;
     virtual void moveTo(Definition *) = 0;
+
+    virtual MemberDef *resolveAlias() = 0;
+    virtual const MemberDef *resolveAlias() const = 0;
     
     //-----------------------------------------------------------------------------------
     // ----  getters -----
@@ -67,13 +70,22 @@ class MemberDef : virtual public Definition
     virtual const QCString &initializer() const = 0;
     virtual int initializerLines() const = 0;
     virtual uint64 getMemberSpecifiers() const = 0;
-    virtual MemberList *getSectionList(Definition *d) const = 0;
+    virtual const MemberList *getSectionList(const Definition *d) const = 0;
     virtual QCString    displayDefinition() const = 0;
 
     // scope query members
-    virtual ClassDef *getClassDef() const = 0;
-    virtual FileDef  *getFileDef() const = 0;
-    virtual NamespaceDef* getNamespaceDef() const = 0;
+    virtual const ClassDef *getClassDef() const = 0;
+    virtual ClassDef *getClassDef() = 0;
+
+    virtual const FileDef *getFileDef() const = 0;
+    virtual FileDef *getFileDef() = 0;
+
+    virtual const NamespaceDef* getNamespaceDef() const = 0;
+    virtual NamespaceDef* getNamespaceDef() = 0;
+
+    virtual const GroupDef *getGroupDef() const = 0;
+    virtual GroupDef *getGroupDef() = 0;
+
     virtual ClassDef *accessorClass() const = 0;
 
     // grabbing the property read/write accessor names
@@ -81,7 +93,6 @@ class MemberDef : virtual public Definition
     virtual const char *getWriteAccessor() const = 0;
     
     // querying the grouping definition
-    virtual GroupDef *getGroupDef() const = 0;
     virtual Grouping::GroupPri_t getGroupPri() const = 0;
     virtual const char *getGroupFileName() const = 0;
     virtual int getGroupStartLine() const = 0;
@@ -145,7 +156,7 @@ class MemberDef : virtual public Definition
     virtual bool isSealed() const = 0;
     virtual bool isImplementation() const = 0;
     virtual bool isExternal() const = 0;
-    virtual bool isAlias() const = 0;
+    virtual bool isTypeAlias() const = 0;
     virtual bool isDefault() const = 0;
     virtual bool isDelete() const = 0;
     virtual bool isNoExcept() const = 0;
@@ -160,8 +171,6 @@ class MemberDef : virtual public Definition
     virtual bool isMaybeAmbiguous() const = 0;
     virtual bool isPublished() const = 0; // UNO IDL published
     virtual bool isTemplateSpecialization() const = 0;
-    virtual bool hasDocumentedParams() const = 0;
-    virtual bool hasDocumentedReturnType() const = 0;
     virtual bool isObjCMethod() const = 0;
     virtual bool isObjCProperty() const = 0;
     virtual bool isConstructor() const = 0;
@@ -194,27 +203,28 @@ class MemberDef : virtual public Definition
 
     virtual MemberDef *reimplements() const = 0;
     virtual MemberList *reimplementedBy() const = 0;
-    virtual bool isReimplementedBy(ClassDef *cd) const = 0;
+    virtual bool isReimplementedBy(const ClassDef *cd) const = 0;
 
     virtual ClassDef *relatedAlso() const = 0;
 
     virtual bool hasDocumentedEnumValues() const = 0;
-    virtual MemberDef *getAnonymousEnumType() const = 0;
+    virtual const MemberDef *getAnonymousEnumType() const = 0;
     virtual bool isDocsForDefinition() const = 0;
-    virtual MemberDef *getEnumScope() const = 0;
-    virtual MemberList *enumFieldList() const = 0;
+    virtual const MemberDef *getEnumScope() const = 0;
+    virtual const MemberList *enumFieldList() const = 0;
     virtual void setEnumBaseType(const QCString &type) = 0;
     virtual QCString enumBaseType() const = 0;
 
-    virtual bool hasExamples() = 0;
+    virtual bool hasExamples() const = 0;
     virtual ExampleSDict *getExamples() const = 0;
     virtual bool isPrototype() const = 0;
 
     // argument related members
-    virtual ArgumentList *argumentList() const = 0;
-    virtual ArgumentList *declArgumentList() const = 0;
-    virtual ArgumentList *templateArguments() const = 0;
-    virtual QList<ArgumentList> *definitionTemplateParameterLists() const = 0;
+    virtual const ArgumentList *argumentList() const = 0;
+    virtual ArgumentList *argumentList() = 0;
+    virtual const ArgumentList *declArgumentList() const = 0;
+    virtual const ArgumentList *templateArguments() const = 0;
+    virtual const QList<ArgumentList> *definitionTemplateParameterLists() const = 0;
 
     // member group related members
     virtual int getMemberGroupId() const = 0;
@@ -227,14 +237,14 @@ class MemberDef : virtual public Definition
     // callgraph related members
     virtual bool hasCallGraph() const = 0;
     virtual bool hasCallerGraph() const = 0;
-    virtual bool visibleMemberGroup(bool hideNoHeader) = 0;
+    virtual bool visibleMemberGroup(bool hideNoHeader) const = 0;
     // refrenced related members
     virtual bool hasReferencesRelation() const = 0;
     virtual bool hasReferencedByRelation() const = 0;
 
     virtual MemberDef *templateMaster() const = 0;
     virtual QCString getScopeString() const = 0;
-    virtual ClassDef *getClassDefOfAnonymousType() = 0;
+    virtual ClassDef *getClassDefOfAnonymousType() const = 0;
 
     // cached typedef functions
     virtual bool isTypedefValCached() const = 0;
@@ -245,14 +255,14 @@ class MemberDef : virtual public Definition
     virtual MemberDef *memberDefinition() const = 0;
     virtual MemberDef *memberDeclaration() const = 0;
     virtual MemberDef *inheritsDocsFrom() const = 0;
-    virtual MemberDef *getGroupAlias() const = 0;
+    virtual const MemberDef *getGroupAlias() const = 0;
 
     virtual ClassDef *category() const = 0;
     virtual MemberDef *categoryRelation() const = 0;
 
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString getDeclType() const = 0;
-    virtual void getLabels(QStrList &sl,Definition *container) const = 0;
+    virtual void getLabels(QStrList &sl,const Definition *container) const = 0;
 
     virtual const ArgumentList *typeConstraints() const = 0;
 
@@ -292,8 +302,6 @@ class MemberDef : virtual public Definition
     
     virtual void makeRelated() = 0;
     virtual void makeForeign() = 0;
-    virtual void setHasDocumentedParams(bool b) = 0;
-    virtual void setHasDocumentedReturnType(bool b) = 0;
     virtual void setInheritsDocsFrom(MemberDef *md) = 0;
     virtual void setTagInfo(TagInfo *i) = 0;
     virtual void setArgsString(const char *as) = 0;
@@ -309,7 +317,7 @@ class MemberDef : virtual public Definition
     virtual void setEnumScope(MemberDef *md,bool livesInsideEnum=FALSE) = 0;
     virtual void setEnumClassScope(ClassDef *cd) = 0;
     virtual void setDocumentedEnumValues(bool value) = 0;
-    virtual void setAnonymousEnumType(MemberDef *md) = 0;
+    virtual void setAnonymousEnumType(const MemberDef *md) = 0;
 
     // example related members
     virtual bool addExample(const char *anchor,const char *name,const char *file) = 0;
@@ -336,7 +344,6 @@ class MemberDef : virtual public Definition
     virtual void makeImplementationDetail() = 0;
 
     // anonymous scope members
-    virtual void setFromAnonymousScope(bool b) = 0;
     virtual void setFromAnonymousMember(MemberDef *m) = 0;
 
     virtual void enableCallGraph(bool e) = 0;
@@ -348,18 +355,17 @@ class MemberDef : virtual public Definition
     virtual void setTemplateMaster(MemberDef *mt) = 0;
     virtual void addListReference(Definition *d) = 0;
     virtual void setDocsForDefinition(bool b) = 0;
-    virtual void setGroupAlias(MemberDef *md) = 0;
+    virtual void setGroupAlias(const MemberDef *md) = 0;
 
     virtual void cacheTypedefVal(ClassDef *val,const QCString &templSpec,const QCString &resolvedType) = 0;
     virtual void invalidateTypedefValCache() = 0;
 
     virtual void invalidateCachedArgumentTypes() = 0;
-    
+
     // declaration <-> definition relation
     virtual void setMemberDefinition(MemberDef *md) = 0;
     virtual void setMemberDeclaration(MemberDef *md) = 0;
-        
-    virtual void setAnonymousUsed() = 0;
+
     virtual void copyArgumentNames(MemberDef *bmd) = 0;
 
     virtual void setCategory(ClassDef *) = 0;
@@ -375,29 +381,36 @@ class MemberDef : virtual public Definition
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    // output generation
-    virtual void writeDeclaration(OutputList &ol,
-                   ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                   bool inGroup, ClassDef *inheritFrom=0,const char *inheritId=0) = 0; 
-    virtual void writeDocumentation(MemberList *ml,int memCount,int memTotal,OutputList &ol,
-                            const char *scopeName,Definition *container,
-                            bool inGroup,bool showEnumValues=FALSE,bool
-                            showInline=FALSE) = 0;
-    virtual void writeMemberDocSimple(OutputList &ol,Definition *container) = 0;
-    virtual void writeEnumDeclaration(OutputList &typeDecl,
-            ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd) = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
-    virtual void warnIfUndocumented() = 0;
-    virtual void warnIfUndocumentedParams() = 0;
-
     virtual MemberDef *createTemplateInstanceMember(ArgumentList *formalArgs,
-               ArgumentList *actualArgs) = 0;
-
+               ArgumentList *actualArgs) const = 0;
     virtual void findSectionsInDocumentation() = 0;
+    virtual void addToSearchIndex() const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- write output ----
+    //-----------------------------------------------------------------------------------
+
+    virtual void writeDeclaration(OutputList &ol,
+                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                 bool inGroup, const ClassDef *inheritFrom=0,const char *inheritId=0) const = 0;
+    virtual void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
+                 const char *scopeName,const Definition *container,
+                 bool inGroup,bool showEnumValues=FALSE,bool
+                 showInline=FALSE) const = 0;
+    virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const = 0;
+    virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
+                const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const = 0;
+    virtual void writeTagFile(FTextStream &) const = 0;
     virtual void writeLink(OutputList &ol,
-                   ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                   bool onlyText=FALSE) = 0;
-    virtual void addToSearchIndex() = 0;
+                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                 bool onlyText=FALSE) const = 0;
+
+    // write helpers
+    virtual void warnIfUndocumented() const = 0;
+    virtual void warnIfUndocumentedParams() const = 0;
+    virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
+    virtual void setAnonymousUsed() const = 0;
+    virtual void setFromAnonymousScope(bool b) const = 0;
 
 };
 
@@ -407,6 +420,8 @@ MemberDef *createMemberDef(const char *defFileName,int defLine,int defColumn,
               const char *excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList *tal,
               const ArgumentList *al,const char *metaData);
+
+MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd);
 
 void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef);
 

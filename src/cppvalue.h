@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <qglobal.h> 
+#include <qcstring.h>
 
 /** A class representing a C-preprocessor value. */
 class CPPValue
@@ -52,10 +53,10 @@ class CPPValue
     } v;
 };
 
-extern CPPValue parseOctal();
-extern CPPValue parseDecimal();
-extern CPPValue parseHexadecimal();
-extern CPPValue parseCharacter();
-extern CPPValue parseFloat();
+extern CPPValue parseOctal(const QCString& token);
+extern CPPValue parseDecimal(const QCString& token);
+extern CPPValue parseHexadecimal(const QCString& token);
+extern CPPValue parseCharacter(const QCString& token);
+extern CPPValue parseFloat(const QCString& token);
 
 #endif

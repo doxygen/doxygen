@@ -72,6 +72,8 @@ class ClassDef : virtual public Definition
 
     virtual ~ClassDef() {}
 
+    virtual ClassDef *resolveAlias() = 0;
+
     //-----------------------------------------------------------------------------------
     // --- getters 
     //-----------------------------------------------------------------------------------
@@ -197,7 +199,7 @@ class ClassDef : virtual public Definition
     /** Returns the template master of which this class is an instance.
      *  Returns 0 if not applicable.
      */
-    virtual ClassDef *templateMaster() const = 0;
+    virtual const ClassDef *templateMaster() const = 0;
 
     /** Returns TRUE if this class is a template */
     virtual bool isTemplate() const = 0;
@@ -283,7 +285,7 @@ class ClassDef : virtual public Definition
 
     virtual QDict<int> *getTemplateBaseClassNames() const = 0;
 
-    virtual ClassDef *getVariableInstance(const char *templSpec) = 0;
+    virtual ClassDef *getVariableInstance(const char *templSpec) const = 0;
 
     virtual bool isUsedOnly() const = 0;
 
@@ -314,52 +316,50 @@ class ClassDef : virtual public Definition
     virtual bool subGrouping() const = 0;
 
     virtual bool isSliceLocal() const = 0;
+    virtual bool hasNonReferenceSuperClass() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------
 
-    virtual void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0) = 0;
-    virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0) = 0;
     virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force) = 0;
-    virtual void insertMember(MemberDef *) = 0;
-    virtual void insertUsedFile(FileDef *) = 0;
-    virtual bool addExample(const char *anchor,const char *name, const char *file) = 0;
-    virtual void mergeCategory(ClassDef *category) = 0;
     virtual void setNamespace(NamespaceDef *nd) = 0;
     virtual void setFileDef(FileDef *fd) = 0;
     virtual void setSubGrouping(bool enabled) = 0;
     virtual void setProtection(Protection p) = 0;
     virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) = 0;
-    virtual void addInnerCompound(Definition *d) = 0;
-    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
-                                const QCString &templSpec,bool &freshInstance) = 0;
-    virtual void addUsedClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
-    virtual void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
     virtual void setIsStatic(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const char *name) = 0;
     virtual void setClassSpecifier(uint64 spec) = 0;
-
     virtual void setTemplateArguments(ArgumentList *al) = 0;
     virtual void setTemplateBaseClassNames(QDict<int> *templateNames) = 0;
-    virtual void setTemplateMaster(ClassDef *tm) = 0;
+    virtual void setTemplateMaster(const ClassDef *tm) = 0;
     virtual void setTypeConstraints(ArgumentList *al) = 0;
-    virtual void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec) = 0;
-    virtual void makeTemplateArgument(bool b=TRUE) = 0;
     virtual void setCategoryOf(ClassDef *cd) = 0;
     virtual void setUsedOnly(bool b) = 0;
-
-    virtual void addTaggedInnerClass(ClassDef *cd) = 0;
     virtual void setTagLessReference(ClassDef *cd) = 0;
     virtual void setName(const char *name) = 0;
-
     virtual void setMetaData(const char *md) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
+    virtual void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0) = 0;
+    virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0) = 0;
+    virtual void insertMember(MemberDef *) = 0;
+    virtual void insertUsedFile(FileDef *) = 0;
+    virtual void addMembersToTemplateInstance(const ClassDef *cd,const char *templSpec) = 0;
+    virtual void addTaggedInnerClass(ClassDef *cd) = 0;
+    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual bool addExample(const char *anchor,const char *name, const char *file) = 0;
+    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
+                                const QCString &templSpec,bool &freshInstance) const = 0;
+    virtual void addUsedClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
+    virtual void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
+    virtual void makeTemplateArgument(bool b=TRUE) = 0;
+    virtual void mergeCategory(ClassDef *category) = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual void addMembersToMemberGroup() = 0;
     virtual void addListReferences() = 0;
@@ -368,34 +368,51 @@ class ClassDef : virtual public Definition
     virtual void mergeMembers() = 0;
     virtual void sortMemberLists() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
-    virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeDocumentationForInnerClasses(OutputList &ol) = 0;
-    virtual void writeMemberPages(OutputList &ol) = 0;
-    virtual void writeMemberList(OutputList &ol) = 0;
-    virtual void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
-                          ClassDef *inheritedFrom,const char *inheritId) = 0;
-    virtual void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const = 0;
-    virtual void writeSummaryLinks(OutputList &ol) = 0;
     virtual void reclassifyMember(MemberDef *md,MemberType t) = 0;
-    virtual void writeInlineDocumentation(OutputList &ol) = 0;
-    virtual void writeDeclarationLink(OutputList &ol,bool &found,
-                              const char *header,bool localNames) = 0;
     virtual void removeMemberFromLists(MemberDef *md) = 0;
-    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
-                              ClassDef *inheritedFrom,const QCString &inheritId) = 0;
-    virtual int countMembersIncludingGrouped(MemberListType lt,ClassDef *inheritedFrom,bool additional) = 0;
-    virtual int countInheritanceNodes() = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
+    virtual void setAnonymousEnumType() = 0;
+    virtual void countMembers() = 0;
 
-    virtual void setVisited(bool visited) = 0;
-    virtual bool isVisited() const = 0;
-    virtual bool hasNonReferenceSuperClass() const = 0;
-    virtual int countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) = 0;
+    //-----------------------------------------------------------------------------------
+    // --- write output ----
+    //-----------------------------------------------------------------------------------
+
+    virtual void writeDocumentation(OutputList &ol) const = 0;
+    virtual void writeDocumentationForInnerClasses(OutputList &ol) const = 0;
+    virtual void writeMemberPages(OutputList &ol) const = 0;
+    virtual void writeMemberList(OutputList &ol) const = 0;
+    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+                 const ClassDef *inheritedFrom,const char *inheritId) const = 0;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
+    virtual void writeSummaryLinks(OutputList &ol) const = 0;
+    virtual void writeInlineDocumentation(OutputList &ol) const = 0;
+    virtual void writeDeclarationLink(OutputList &ol,bool &found,
+                 const char *header,bool localNames) const = 0;
+    virtual void writeTagFile(FTextStream &) = 0;
     virtual void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
-                 const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,
+                 const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,
-                 QPtrDict<void> *visitedClasses=0) = 0;
+                 QPtrDict<void> *visitedClasses=0) const = 0;
+    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
+                 const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- count members ----
+    //-----------------------------------------------------------------------------------
+
+    virtual int countMembersIncludingGrouped(MemberListType lt,
+                const ClassDef *inheritedFrom,bool additional) const = 0;
+    virtual int countInheritanceNodes() const = 0;
+    virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
+                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const = 0;
+
+
+    //-----------------------------------------------------------------------------------
+    // --- visiting administration ----
+    //-----------------------------------------------------------------------------------
+
+    virtual void setVisited(bool visited) const = 0;
+    virtual bool isVisited() const = 0;
 };
 
 /** Factory method to create a new ClassDef object */
@@ -404,6 +421,9 @@ ClassDef *createClassDef(
              const char *name,ClassDef::CompoundType ct,
              const char *ref=0,const char *fName=0,
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
+
+ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd);
+
 
 //------------------------------------------------------------------------
 

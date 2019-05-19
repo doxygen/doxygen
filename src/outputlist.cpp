@@ -129,7 +129,7 @@ void OutputList::popGeneratorState()
 }
 
 bool OutputList::generateDoc(const char *fileName,int startLine,
-                  Definition *ctx,MemberDef * md,
+                  const Definition *ctx,const MemberDef * md,
                   const QCString &docStr,bool indexWords,
                   bool isExample,const char *exampleName,
                   bool singleLine,bool linkFromIndex)
@@ -159,7 +159,7 @@ bool OutputList::generateDoc(const char *fileName,int startLine,
   return isEmpty;
 }
 
-void OutputList::writeDoc(DocRoot *root,Definition *ctx,MemberDef *md)
+void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md)
 {
   QListIterator<OutputGenerator> it(m_outputs);
   OutputGenerator *og;
@@ -345,7 +345,7 @@ FORALL3(const char *a1,const char *a2,bool a3,a1,a2,a3)
 FORALL3(const char *a1,int a2,const char *a3,a1,a2,a3)
 FORALL3(const char *a1,const char *a2,SectionInfo::SectionType a3,a1,a2,a3)
 FORALL3(uchar a1,uchar a2,uchar a3,a1,a2,a3)
-FORALL3(Definition *a1,const char *a2,bool a3,a1,a2,a3)
+FORALL3(const Definition *a1,const char *a2,bool a3,a1,a2,a3)
 FORALL4(SectionTypes a1,const char *a2,const char *a3,const char *a4,a1,a2,a3,a4)
 FORALL4(const char *a1,const char *a2,const char *a3,const char *a4,a1,a2,a3,a4)
 FORALL4(const char *a1,const char *a2,const char *a3,int a4,a1,a2,a3,a4)

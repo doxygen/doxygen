@@ -50,8 +50,8 @@ class FTVHelp : public IndexIntf
                          const char *anchor,
                          bool separateIndex,
                          bool addToNavIndex,
-                         Definition *def);
-    void addIndexItem(Definition *,MemberDef *,const char *,const char *) {}
+                         const Definition *def);
+    void addIndexItem(const Definition *,const MemberDef *,const char *,const char *) {}
     void addIndexFile(const char *) {}
     void addImageFile(const char *) {}
     void addStyleSheetFile(const char *) {}

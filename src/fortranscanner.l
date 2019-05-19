@@ -698,6 +698,14 @@ private                                 {
                                           typeMode = false;
                                           yy_pop_state();
                                         }
+^{BS}"end"{BS}/(\n|!|;) { /* incorrect end type definition */
+                                          warn(yyFileName,yyLineNr, "Found 'END' instead of 'END TYPE'");
+                                          last_entry->parent()->endBodyLine = yyLineNr;
+                                          if (!endScope(current_root))
+                                            yyterminate();
+                                          typeMode = false;
+                                          yy_pop_state();
+                                        }
 }
 
  /*------- module/global/typedef variable ---------------------------------------------------*/
@@ -2770,9 +2778,9 @@ void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    int startLine,
                    int endLine,
                    bool inlineFragment,
-		   MemberDef *memberDef,
+		   const MemberDef *memberDef,
                    bool showLineNumbers,
-                   Definition *searchCtx,
+                   const Definition *searchCtx,
                    bool collectXRefs
                   )
 {
@@ -2819,7 +2827,7 @@ static void scanner_abort()
 
   // dummy call to avoid compiler warning
   (void)yy_top_state();
-  
+
   return;
   //exit(-1);
 }

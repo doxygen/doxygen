@@ -72,7 +72,7 @@ class SearchIndexIntf
     enum Kind { Internal, External };
     SearchIndexIntf(Kind k) : m_kind(k) {}
     virtual ~SearchIndexIntf() {}
-    virtual void setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile) = 0;
+    virtual void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile) = 0;
     virtual void addWord(const char *word,bool hiPriority) = 0;
     virtual void write(const char *file) = 0;
     Kind kind() const { return m_kind; }
@@ -84,7 +84,7 @@ class SearchIndex : public SearchIndexIntf
 {
   public:
     SearchIndex();
-    void setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile);
+    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile);
     void addWord(const char *word,bool hiPriority);
     void write(const char *file);
   private:
@@ -103,7 +103,7 @@ class SearchIndexExternal : public SearchIndexIntf
   public:
     SearchIndexExternal();
    ~SearchIndexExternal();
-    void setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile);
+    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile);
     void addWord(const char *word,bool hiPriority);
     void write(const char *file);
   private:
@@ -148,10 +148,10 @@ class SearchDefinitionList : public QList<Definition>
 class SearchIndexList : public SDict< SearchDefinitionList >
 {
   public:
-    typedef Definition ElementType;
+    typedef const Definition ElementType;
     SearchIndexList(uint letter);
    ~SearchIndexList();
-    void append(Definition *d);
+    void append(const Definition *d);
     uint letter() const;
   private:
     int compareValues(const SearchDefinitionList *md1, const SearchDefinitionList *md2) const;

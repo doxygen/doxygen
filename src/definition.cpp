@@ -223,7 +223,7 @@ static bool matchExcludedSymbols(const char *name)
   return FALSE;
 }
 
-void DefinitionImpl::addToMap(const char *name,Definition *d)
+static void addToMap(const char *name,Definition *d)
 {
   bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   QCString symbolName = name;
@@ -270,7 +270,7 @@ void DefinitionImpl::addToMap(const char *name,Definition *d)
   }
 }
 
-void DefinitionImpl::removeFromMap(Definition *d)
+static void removeFromMap(Definition *d)
 {
   QCString symbolName = d->_symbolName();
   if (!symbolName.isEmpty()) 
@@ -532,7 +532,7 @@ void DefinitionImpl::addSectionsToIndex()
   }
 }
 
-void DefinitionImpl::writeDocAnchorsToTagFile(FTextStream &tagFile)
+void DefinitionImpl::writeDocAnchorsToTagFile(FTextStream &tagFile) const
 {
   if (m_impl->sectionDict)
   {
@@ -1047,7 +1047,7 @@ QCString DefinitionImpl::getSourceAnchor() const
 }
 
 /*! Write a reference to the source code defining this definition */
-void DefinitionImpl::writeSourceDef(OutputList &ol,const char *)
+void DefinitionImpl::writeSourceDef(OutputList &ol,const char *) const
 {
   static bool latexSourceCode = Config_getBool(LATEX_SOURCE_CODE);
   static bool rtfSourceCode = Config_getBool(RTF_SOURCE_CODE);
@@ -1259,7 +1259,7 @@ bool DefinitionImpl::hasSources() const
 }
 
 /*! Write code of this definition into the documentation */
-void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName)
+void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName) const
 {
   static bool inlineSources = Config_getBool(INLINE_SOURCES);
   ol.pushGeneratorState();
@@ -1278,8 +1278,8 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName)
       ParserInterface *pIntf = Doxygen::parserManager->getParser(m_impl->defFileExt);
       pIntf->resetCodeParserState();
       //printf("Read:\n`%s'\n\n",codeFragment.data());
-      MemberDef *thisMd = 0;
-      if (definitionType()==TypeMember) thisMd = dynamic_cast <MemberDef*>(this);
+      const MemberDef *thisMd = 0;
+      if (definitionType()==TypeMember) thisMd = dynamic_cast <const MemberDef*>(this);
 
       ol.startCodeFragment();
       pIntf->parseCode(ol,               // codeOutIntf
@@ -1305,7 +1305,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName)
  *  definition is used.
  */
 void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
-    const QCString &text,MemberSDict *members,bool /*funcOnly*/)
+    const QCString &text,MemberSDict *members,bool /*funcOnly*/) const
 {
   static bool latexSourceCode = Config_getBool(LATEX_SOURCE_CODE); 
   static bool docbookSourceCode   = Config_getBool(DOCBOOK_PROGRAMLISTING);
@@ -1456,12 +1456,12 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
   ol.popGeneratorState();
 }
 
-void DefinitionImpl::writeSourceReffedBy(OutputList &ol,const char *scopeName)
+void DefinitionImpl::writeSourceReffedBy(OutputList &ol,const char *scopeName) const
 {
   _writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_impl->sourceRefByDict,FALSE);
 }
 
-void DefinitionImpl::writeSourceRefs(OutputList &ol,const char *scopeName)
+void DefinitionImpl::writeSourceRefs(OutputList &ol,const char *scopeName) const
 {
   _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_impl->sourceRefsDict,TRUE);
 }
@@ -1491,7 +1491,7 @@ bool DefinitionImpl::hasUserDocumentation() const
 }
 
 
-void DefinitionImpl::addSourceReferencedBy(MemberDef *md)
+void DefinitionImpl::addSourceReferencedBy(const MemberDef *md)
 {
   if (md)
   {
@@ -1514,7 +1514,7 @@ void DefinitionImpl::addSourceReferencedBy(MemberDef *md)
   }
 }
 
-void DefinitionImpl::addSourceReferences(MemberDef *md)
+void DefinitionImpl::addSourceReferences(const MemberDef *md)
 {
   if (md)
   {
@@ -1542,7 +1542,7 @@ Definition *DefinitionImpl::findInnerCompound(const char *) const
   return 0;
 }
 
-void DefinitionImpl::addInnerCompound(Definition *)
+void DefinitionImpl::addInnerCompound(const Definition *)
 {
   err("DefinitionImpl::addInnerCompound() called\n");
 }
@@ -1796,7 +1796,7 @@ void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 }
 
 // TODO: move to htmlgen
-void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc)
+void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
 {
   SectionDict *sectionDict = m_impl->sectionDict;
   if (sectionDict==0) return;
@@ -1936,7 +1936,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc)
 
 //----------------------------------------------------------------------------------------
 
-SectionDict * DefinitionImpl::getSectionDict(void)
+SectionDict * DefinitionImpl::getSectionDict() const
 {
   return m_impl->sectionDict;
 }
@@ -2251,7 +2251,7 @@ int DefinitionImpl::getDefColumn() const
   return m_impl->defColumn;
 }
 
-void DefinitionImpl::setCookie(Cookie *cookie)
+void DefinitionImpl::setCookie(Cookie *cookie) const
 {
   delete m_impl->cookie;
   m_impl->cookie = cookie;
@@ -2262,11 +2262,26 @@ Definition::Cookie *DefinitionImpl::cookie() const
   return m_impl->cookie;
 }
 
-void DefinitionImpl::writeQuickMemberLinks(OutputList &,MemberDef *) const
+void DefinitionImpl::writeQuickMemberLinks(OutputList &,const MemberDef *) const
 {
 }
 
-void DefinitionImpl::writeSummaryLinks(OutputList &)
+void DefinitionImpl::writeSummaryLinks(OutputList &) const
 {
+}
+
+//---------------------------------------------------------------------------------
+
+DefinitionAliasImpl::DefinitionAliasImpl(const Definition *scope,const Definition *alias)
+      : m_scope(scope), m_def(alias), m_cookie(0) 
+{
+  //printf("%s::addToMap(%s)\n",qPrint(name()),qPrint(alias->name()));
+  addToMap(alias->name(),this);
+}
+
+DefinitionAliasImpl::~DefinitionAliasImpl() 
+{
+  //printf("~DefinitionAliasImpl()\n");
+  removeFromMap(this);
 }
 

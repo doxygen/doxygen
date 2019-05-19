@@ -270,7 +270,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
 //-------------------------------------------------------------------------
 
 HtmlDocVisitor::HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,
-                               Definition *ctx) 
+                               const Definition *ctx) 
   : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE), 
                                  m_hide(FALSE), m_ctx(ctx)
 {
@@ -790,7 +790,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
     popEnabled();
     if (!m_hide) 
     {
-      FileDef *fd;
+      FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
         QFileInfo cfi( op->includeFileName() );

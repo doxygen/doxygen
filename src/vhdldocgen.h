@@ -163,20 +163,21 @@ class VhdlDocGen
 
     static bool writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
 
-    static void writeVhdlDeclarations(MemberList*,OutputList&,GroupDef*,ClassDef*,FileDef*,NamespaceDef*);
+    static void writeVhdlDeclarations(const MemberList*,OutputList&,const GroupDef*,const ClassDef*,const FileDef*,const NamespaceDef*);
 
-    static void writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
-        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+    static void writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
         bool inGroup);
 
-    static void writePlainVHDLDeclarations(MemberList* ml,OutputList &ol,
-        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,int specifier);
+    static void writePlainVHDLDeclarations(const MemberList* ml,OutputList &ol,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+        int specifier);
 
-    static void writeVHDLDeclarations(MemberList* ml,OutputList &ol,
-        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+    static void writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
         const char *title,const char *subtitle,bool showEnumValues,int type);
 
-    static bool writeClassType(ClassDef *&,OutputList &ol ,QCString & cname);
+    static bool writeClassType(const ClassDef *,OutputList &ol ,QCString & cname);
 
     static QCString convertArgumentListToString(const ArgumentList* al,bool f);
     static QCString getProcessNumber();
@@ -192,8 +193,9 @@ class VhdlDocGen
     static ClassDef*  findArchitecture(const ClassDef *cd);
     static ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
 
+    static void correctMemberProperties(MemberDef *md);
     
-    static void writeSource(MemberDef *mdef,OutputList& ol,QCString & cname);
+    static void writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname);
     static void writeAlphbeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
 
     static QCString  parseForConfig(QCString & entity,QCString & arch);

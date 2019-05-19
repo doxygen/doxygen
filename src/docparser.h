@@ -65,7 +65,7 @@ QCString getJsDirEmbedingChar(QString::Direction textDir);
  *                   pointer is handed over to the caller.
  */
 DocRoot *validatingParseDoc(const char *fileName,int startLine,
-                            Definition *context, MemberDef *md,
+                            const Definition *context, const MemberDef *md,
                             const char *input,bool indexWords,
                             bool isExample,const char *exampleName=0,
                             bool singleLine=FALSE,bool linkFromIndex=FALSE);
@@ -677,19 +677,19 @@ class DocFormula : public DocNode
 class DocIndexEntry : public DocNode
 {
   public:
-    DocIndexEntry(DocNode *parent,Definition *scope,MemberDef *md) 
+    DocIndexEntry(DocNode *parent,const Definition *scope,const MemberDef *md) 
       : m_scope(scope), m_member(md){ m_parent = parent; }
     Kind kind() const { return Kind_IndexEntry; }
     int parse();
-    Definition *scope() const    { return m_scope;  }
-    MemberDef *member() const    { return m_member; }
+    const Definition *scope() const    { return m_scope;  }
+    const MemberDef *member() const    { return m_member; }
     QCString entry() const        { return m_entry;  }
     void accept(DocVisitor *v)   { v->visit(this);  }
 
   private:
     QCString     m_entry;
-    Definition *m_scope;
-    MemberDef  *m_member;
+    const Definition *m_scope;
+    const MemberDef  *m_member;
 };
 
 //-----------------------------------------------------------------------
