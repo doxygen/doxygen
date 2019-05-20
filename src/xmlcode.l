@@ -35,6 +35,7 @@
 #include "config.h"
 #include "filedef.h"
 #include "tooltip.h"
+#include "message.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -338,6 +339,7 @@ void parseXmlCode(
     ) 
 {  
   if (s.isEmpty()) return;
+  printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
   
   g_code = &od;
   g_inputString   = s;
@@ -393,6 +395,7 @@ void parseXmlCode(
     g_sourceFileDef=0;
   }
   
+  printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
   return;
 }
 

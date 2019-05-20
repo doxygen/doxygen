@@ -35,6 +35,7 @@
 #include "config.h"
 #include "filedef.h"
 #include "tooltip.h"
+#include "message.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -379,6 +380,7 @@ void parseSqlCode(
 
   sqlcodeYYlex_init_extra(&sqlcode_extra, &yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
   
   yyextra->code = &od;
   yyextra->inputString   = s;
@@ -436,6 +438,7 @@ void parseSqlCode(
 
   sqlcodeYYlex_destroy(yyscanner);
   
+  printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
   return;
 }
 
