@@ -400,7 +400,7 @@ class DotRunner
     };
 
     /** Creates a runner for a dot \a file. */
-    DotRunner(const QCString& file, const QCString& path, const QCString& md5Hash,
+    DotRunner(const QCString& absDotName, const QCString& path, const QCString& md5Hash,
         bool checkResult, const QCString &imageName = QCString());
 
     /** Adds an additional job to the run.
@@ -415,6 +415,10 @@ class DotRunner
     /** Runs dot for all jobs added. */
     bool run();
     const CleanupItem &cleanup() const { return m_cleanupItem; }
+
+    DotConstString const& getFileName() { return m_file; }
+    DotConstString const& getPath() { return m_path; }
+    DotConstString const& getMd5Hash() { return m_md5Hash; }
 
   private:
     DotConstString m_dotExe;
@@ -504,6 +508,8 @@ class DotManager
     int addSVGObject(const QCString &file,const QCString &baseName,
                      const QCString &figureNAme,const QCString &relPath);
     bool run();
+
+    bool containsRun(const QCString& absDotName, const QCString& md5Hash);
 
   private:
     DotManager();
