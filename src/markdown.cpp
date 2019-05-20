@@ -107,13 +107,7 @@ static action_t       g_actions[256];
 static Entry         *g_current;
 static QCString       g_fileName;
 static int            g_lineNr;
-
-// In case a markdown page starts with a level1 header, that header is used
-// as a title of the page, in effect making it a level0 header, so the
-// level of all other sections needs to be corrected as well.
-// This flag is TRUE if corrections are needed.
-//static bool           g_correctSectionLevel;
-
+static int            g_indentLevel=0;  // 0 is outside markdown, -1=page level
 
 //----------
 
@@ -1113,14 +1107,14 @@ static int isHeaderline(const char *data, int size)
   {
     while (i<size && data[i]=='=') i++,c++;
     while (i<size && data[i]==' ') i++;
-    return (c>1 && (i>=size || data[i]=='\n')) ? 1 : 0;
+    return (c>1 && (i>=size || data[i]=='\n')) ? g_indentLevel+1 : 0;
   }
   // test of level 2 header
   if (data[i]=='-')
   {
     while (i<size && data[i]=='-') i++,c++;
     while (i<size && data[i]==' ') i++;
-    return (c>1 && (i>=size || data[i]=='\n')) ? 2 : 0;
+    return (c>1 && (i>=size || data[i]=='\n')) ? g_indentLevel+2 : 0;
   }
   return 0;
 }
@@ -1328,7 +1322,7 @@ static int isAtxHeader(const char *data,int size,
     header=header.left(i+1);
   }
 
-  return level;
+  return level+g_indentLevel;
 }
 
 static int isEmptyLine(const char *data,int size)
@@ -1915,8 +1909,6 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
   }
   else if ((level=isAtxHeader(data,size,header,id)))
   {
-    //if (level==1) g_correctSectionLevel=FALSE;
-    //if (g_correctSectionLevel) level--;
     QCString hTag;
     if (level<5 && !id.isEmpty())
     {
@@ -2260,8 +2252,6 @@ static QCString processBlocks(const QCString &s,int indent)
       //printf("isHeaderLine(%s)=%d\n",QCString(data+i).left(size-i).data(),level);
       if ((level=isHeaderline(data+i,size-i))>0)
       {
-        //if (level==1) g_correctSectionLevel=FALSE;
-        //if (g_correctSectionLevel) level--;
         //printf("Found header at %d-%d\n",i,end);
         while (pi<size && data[pi]==' ') pi++;
         QCString header,id;
@@ -2417,6 +2407,7 @@ static QCString extractPageTitle(QCString &docs,QCString &id)
   {
     docs=docs.mid(end1);
   }
+  id = extractTitleId(title, 0);
   //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
   return title;
 }
@@ -2549,6 +2540,7 @@ QCString markdownFileNameToId(const QCString &fileName)
   return "md_"+baseName;
 }
 
+
 void MarkdownFileParser::parseInput(const char *fileName, 
                 const char *fileBuf, 
                 Entry *root,
@@ -2563,6 +2555,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString docs = fileBuf;
   QCString id;
   QCString title=extractPageTitle(docs,id).stripWhiteSpace();
+  g_indentLevel=title.isEmpty() ? 0 : -1;
   QCString titleFn = QFileInfo(fileName).baseName().utf8();
   QCString fn      = QFileInfo(fileName).fileName().utf8();
   static QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
@@ -2629,7 +2622,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
 
   // restore setting
   Doxygen::markdownSupport = markdownEnabled;
-  //g_correctSectionLevel = FALSE;
+  g_indentLevel=0;
 }
 
 void MarkdownFileParser::parseCode(CodeOutputInterface &codeOutIntf,
