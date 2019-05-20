@@ -1807,6 +1807,37 @@ static QCString stripProtectionPrefix(const QCString &s)
   }
 }
 
+
+static QArray<int> dotRenumberList(16);
+static int dotRenumberListLength;
+
+static void clearDotRenumberList()
+{
+  for (int i = 0; i < dotRenumberList.size(); ++i)
+  {
+    dotRenumberList.data()[i] = -1;
+  }
+  dotRenumberListLength = 0;
+}
+
+static int renumber(int number) 
+{
+  int index = dotRenumberList.find(number);
+  if (index == -1) {
+    if (dotRenumberListLength >= dotRenumberList.size()) 
+    {
+      dotRenumberList.resize(dotRenumberList.size() * 2);
+      for (int i = dotRenumberListLength; i < dotRenumberList.size(); ++i)
+      {
+        dotRenumberList.data()[i] = -1;
+      }
+    }
+    index = dotRenumberListLength++;
+    dotRenumberList.data()[index] = number;
+  }
+  return index;
+}
+
 void DotNode::writeBox(FTextStream &t,
                        GraphType gt,
                        GraphOutputFormat /*format*/,
@@ -1818,7 +1849,7 @@ void DotNode::writeBox(FTextStream &t,
            (
             (hasNonReachableChildren) ? "red" : "black"
            );
-  t << "  Node" << m_number << " [label=\"";
+  t << "  Node" << renumber(m_number) << " [label=\"";
   static bool umlLook = Config_getBool(UML_LOOK);
 
   if (m_classDef && umlLook && (gt==Inheritance || gt==Collaboration))
@@ -1954,14 +1985,14 @@ void DotNode::writeArrow(FTextStream &t,
 {
   t << "  Node";
   if (topDown)
-    t << cn->number();
+    t << renumber(cn->number());
   else
-    t << m_number;
+    t << renumber(m_number);
   t << " -> Node";
   if (topDown)
-    t << m_number;
+    t << renumber(m_number);
   else
-    t << cn->number();
+    t << renumber(cn->number());
   t << " [";
 
   static bool umlLook = Config_getBool(UML_LOOK);
@@ -1994,13 +2025,25 @@ void DotNode::writeArrow(FTextStream &t,
   t << "];" << endl; 
 }
 
-void DotNode::write(FTextStream &t,
-                    GraphType gt,
-                    GraphOutputFormat format,
-                    bool topDown,
-                    bool toChildren,
-                    bool backArrows
-                   )
+void DotNode::write(FTextStream& t,
+  GraphType gt,
+  GraphOutputFormat format,
+  bool topDown,
+  bool toChildren,
+  bool backArrows
+)
+{
+  clearDotRenumberList();
+  write_internal(t, gt, format, topDown, toChildren, backArrows);
+}
+
+void DotNode::write_internal(FTextStream &t,
+  GraphType gt,
+  GraphOutputFormat format,
+  bool topDown,
+  bool toChildren,
+  bool backArrows
+)
 {
   //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,m_label.data(),this,m_written,m_visible);
   if (m_written) return; // node already written to the output
@@ -2022,7 +2065,7 @@ void DotNode::write(FTextStream &t,
           //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",cn->label().data());
           writeArrow(t,gt,format,cn,dnli2.current(),topDown,backArrows);
         }
-        cn->write(t,gt,format,topDown,toChildren,backArrows);
+        cn->write_internal(t,gt,format,topDown,toChildren,backArrows);
       }
     }
     else // render parents
@@ -2043,7 +2086,7 @@ void DotNode::write(FTextStream &t,
               backArrows
               );
         }
-        pn->write(t,gt,format,TRUE,FALSE,backArrows);
+        pn->write_internal(t,gt,format,TRUE,FALSE,backArrows);
       }
     }
   }
@@ -4817,9 +4860,9 @@ void DotGroupCollaboration::Edge::write( FTextStream &t ) const
       ,"midnightblue"
   };
   QCString arrowStyle = "dir=\"none\", style=\"dashed\"";
-  t << "  Node" << pNStart->number();
+  t << "  Node" << renumber(pNStart->number());
   t << "->";
-  t << "Node" << pNEnd->number();
+  t << "Node" << renumber(pNEnd->number());
 
   t << " [shape=plaintext";
   if (links.count()>0) // there are links

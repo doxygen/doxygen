@@ -107,6 +107,8 @@ class DotNode
     const DotNode   *findDocNode() const; // only works for acyclic graphs!
     void markAsVisible(bool b=TRUE) { m_visible=b; }
     void markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; }
+    void write_internal(FTextStream &t,GraphType gt,GraphOutputFormat f,
+               bool topDown,bool toChildren,bool backArrows);
     int              m_number;
     QCString         m_label;     //!< label text
     QCString         m_tooltip;   //!< node's tooltip
