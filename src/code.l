@@ -3553,6 +3553,24 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    BEGIN(SkipComment);
   					  }
 					}
+<*>^{B}*"/**"[*]+/[^/]			{ // special C "banner" comment block at a new line
+					  if (Config_getBool(JAVADOC_BANNER) && Config_getBool(STRIP_CODE_COMMENTS))
+					  {
+					    g_lastSpecialCContext = YY_START;
+					    BEGIN(RemoveSpecialCComment);
+					  }
+					  else
+					  {
+					    // check is to prevent getting stuck in skipping C++ comments
+					    if (YY_START != SkipCxxComment)
+					    {
+  					      g_lastCContext = YY_START ;
+					    }
+					    startFontClass("comment");
+					    g_code->codify(yytext);
+					    BEGIN(SkipComment);
+ 					  }
+					}
 <*>^{B}*"/*"[!*]/[^/*]			{ // special C comment block at a new line
 					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {

@@ -23,6 +23,7 @@ add_custom_target(examples
                 ${PROJECT_BINARY_DIR}/html/examples/enum/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/file/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/func/html/index.html
+                ${PROJECT_BINARY_DIR}/html/examples/javadoc-banner/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/page/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/relates/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/author/html/index.html
@@ -82,6 +83,13 @@ add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE}  ${TOP}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/html/examples/func/latex/refman.tex > ${PROJECT_BINARY_DIR}/html/examples/func/latex/refman_doc.tex
 	DEPENDS doxygen func.h func.cfg ${TOP}/examples/strip_example.py
 	OUTPUT ${PROJECT_BINARY_DIR}/html/examples/func/html/index.html ${PROJECT_BINARY_DIR}/html/examples/func/latex/refman_doc.tex
+)
+
+add_custom_command(
+	COMMAND ${EXECUTABLE_OUTPUT_PATH}/doxygen javadoc-banner.cfg
+        COMMAND ${PYTHON_EXECUTABLE}  ${TOP}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/html/examples/javadoc-banner/latex/refman.tex > ${PROJECT_BINARY_DIR}/html/examples/javadoc-banner/latex/refman_doc.tex
+	DEPENDS doxygen javadoc-banner.h javadoc-banner.cfg ${TOP}/examples/strip_example.py
+	OUTPUT ${PROJECT_BINARY_DIR}/html/examples/javadoc-banner/html/index.html ${PROJECT_BINARY_DIR}/html/examples/javadoc-banner/latex/refman_doc.tex
 )
 
 add_custom_command(
