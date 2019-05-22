@@ -113,6 +113,10 @@ bool parseconstexp(const char *fileName,int lineNr,const QCString &s)
   constexpYYlex_init_extra(&constexpYY_extra, &yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
+#ifdef FLEX_DEBUG
+  yyset_debug(1,yyscanner);
+#endif
+
   yyextra->g_constExpFileName = fileName;
   yyextra->g_constExpLineNr = lineNr;
   yyextra->g_inputString = s;
