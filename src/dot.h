@@ -27,6 +27,8 @@
 #include <qthread.h>
 #include "sortdict.h"
 #include "classdef.h"
+#include "qgstring.h"
+#include "qdir.h"
 
 class FileDef;
 class FTextStream;
@@ -139,7 +141,7 @@ class DotNode
                       bool renderParents,
                       bool backArrows,
                       const QCString &title,
-                      QCString &graphStr
+                      QGString &graphStr
                      );
 };
 
@@ -173,7 +175,7 @@ protected:
     const char *relPath,
     bool writeImageMap=TRUE,
     int graphId=-1
-  ) const;
+  );
 
   bool prepareDotFile
   (
@@ -185,26 +187,27 @@ protected:
   ) const;
 
   virtual QCString getBaseName() const = 0;
+  virtual void computeTheGraph() = 0;
 
   static bool usePDFLatex;
   static QCString imgFmt;
 
   // the following variables are used while writing the graph to a .dot file
-  mutable FTextStream *          m_out;
-  mutable GraphOutputFormat      m_graphFormat;
-  mutable EmbeddedOutputFormat   m_textFormat;
-  mutable QCString               m_path;
-  mutable QCString               m_fileName;
-  mutable QCString               m_relPath;
-  mutable bool                   m_generateImageMap;
-  mutable int                    m_graphId;
+  FTextStream *          m_out;
+  GraphOutputFormat      m_graphFormat;
+  EmbeddedOutputFormat   m_textFormat;
+  QDir                   m_path;
+  QCString               m_fileName;
+  QCString               m_relPath;
+  bool                   m_generateImageMap;
+  int                    m_graphId;
 
-  mutable QCString               m_baseName;
+  QCString               m_baseName;
+  QGString               m_theGraph;
+
 
 private:
   int                    m_curNodeNumber;
-
-  friend void generateGraphLegend(const char* path);
 };
 
 /** Represents a graphical class hierarchy */
@@ -213,24 +216,27 @@ class DotGfxHierarchyTable : public DotGraph
   public:
     DotGfxHierarchyTable(const char *prefix="",ClassDef::CompoundType ct=ClassDef::Class);
    ~DotGfxHierarchyTable();
-    void writeGraph(FTextStream &t,const char *path, const char *fileName) const;
-    void createGraph(DotNode *rootNode,FTextStream &t,const char *path,const char *fileName,int id) const;
+    void writeGraph(FTextStream &t,const char *path, const char *fileName);
+    void createGraph(DotNode *rootNode,FTextStream &t,const char *path,const char *fileName,int id);
     const DotNodeList *subGraphs() const { return m_rootSubgraphs; }
 
   protected:
     virtual QCString getBaseName() const;
+    virtual void computeTheGraph();
 
   private:
     void addHierarchy(DotNode *n,const ClassDef *cd,bool hide);
     void addClassList(const ClassSDict *cl);
 
-    mutable int            m_graphId;
+    int                    m_graphId;
 
     QCString               m_prefix;
     ClassDef::CompoundType m_classType;
     QList<DotNode>        *m_rootNodes; 
     QDict<DotNode>        *m_usedNodes; 
     DotNodeList           *m_rootSubgraphs;
+    DotNode *              m_rootSubgraphNode;
+
 };
 
 /** Representation of a class inheritance or dependency graph */
@@ -243,7 +249,7 @@ class DotClassGraph : public DotGraph
     bool isTooBig() const;
     QCString writeGraph(FTextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
                     const char *path, const char *fileName, const char *relPath,
-                    bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1) const;
+                    bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1);
 
     void writeXML(FTextStream &t);
     void writeDocbook(FTextStream &t);
@@ -251,6 +257,7 @@ class DotClassGraph : public DotGraph
 
   protected:
     virtual QCString getBaseName() const;
+    virtual void computeTheGraph();
 
   private:
     void buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance);
@@ -276,7 +283,7 @@ class DotInclDepGraph : public DotGraph
    ~DotInclDepGraph();
     QCString writeGraph(FTextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                     const char *path,const char *fileName,const char *relPath,
-                    bool writeImageMap=TRUE,int graphId=-1) const;
+                    bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
     bool isTooBig() const;
     QCString diskName() const;
@@ -285,7 +292,8 @@ class DotInclDepGraph : public DotGraph
 
   protected:
     virtual QCString getBaseName() const;
-    
+    virtual void computeTheGraph();
+
   private:
     void buildGraph(DotNode *n,const FileDef *fd,int distance);
     void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes);
@@ -307,7 +315,7 @@ class DotCallGraph : public DotGraph
     QCString writeGraph(FTextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                         const char *path,const char *fileName,
                         const char *relPath,bool writeImageMap=TRUE,
-                        int graphId=-1) const;
+                        int graphId=-1);
     void buildGraph(DotNode *n,const MemberDef *md,int distance);
     bool isTrivial() const;
     bool isTooBig() const;
@@ -316,7 +324,8 @@ class DotCallGraph : public DotGraph
 
   protected:
     virtual QCString getBaseName() const;
-    
+    virtual void computeTheGraph();
+
   private:
     DotNode        *m_startNode;
     QDict<DotNode> *m_usedNodes;
@@ -340,13 +349,16 @@ class DotDirDeps : public DotGraph
                         const char *relPath,
                         bool writeImageMap=TRUE,
                         int graphId=-1,
-                        bool linkRelations=TRUE) const;
+                        bool linkRelations=TRUE);
 
   protected:
     virtual QCString getBaseName() const;
-  
+    virtual void computeTheGraph();
+
   private:
     const DirDef *m_dir;
+
+    bool m_linkRelations;
 };
 
 /** Representation of a group collaboration graph */
@@ -390,12 +402,13 @@ class DotGroupCollaboration : public DotGraph
     ~DotGroupCollaboration();
     QCString writeGraph(FTextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
                     const char *path,const char *fileName,const char *relPath,
-                    bool writeImageMap=TRUE,int graphId=-1) const;
+                    bool writeImageMap=TRUE,int graphId=-1);
     void buildGraph(const GroupDef* gd);
     bool isTrivial() const;
 
   protected:
     virtual QCString getBaseName() const;
+    virtual void computeTheGraph();
 
   private :
     void addCollaborationMember(const Definition* def, QCString& url, EdgeType eType );

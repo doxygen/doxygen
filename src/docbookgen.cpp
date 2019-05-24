@@ -1095,7 +1095,7 @@ void DocbookGenerator::startGroupCollaboration()
 {
 DB_GEN_C
 }
-void DocbookGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
+void DocbookGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
 DB_GEN_C
   g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
@@ -1104,7 +1104,7 @@ void DocbookGenerator::startDotGraph()
 {
 DB_GEN_C
 }
-void DocbookGenerator::endDotGraph(const DotClassGraph &g)
+void DocbookGenerator::endDotGraph(DotClassGraph &g)
 {
 DB_GEN_C
   g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,TRUE,FALSE);
@@ -1113,7 +1113,7 @@ void DocbookGenerator::startInclDepGraph()
 {
 DB_GEN_C
 }
-void DocbookGenerator::endInclDepGraph(const DotInclDepGraph &g)
+void DocbookGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
 DB_GEN_C
   QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT), fileName,relPath,FALSE);
@@ -1122,7 +1122,7 @@ void DocbookGenerator::startCallGraph()
 {
 DB_GEN_C
 }
-void DocbookGenerator::endCallGraph(const DotCallGraph &g)
+void DocbookGenerator::endCallGraph(DotCallGraph &g)
 {
 DB_GEN_C
   QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT), fileName,relPath,FALSE);
@@ -1131,7 +1131,7 @@ void DocbookGenerator::startDirDepGraph()
 {
 DB_GEN_C
 }
-void DocbookGenerator::endDirDepGraph(const DotDirDeps &g)
+void DocbookGenerator::endDirDepGraph(DotDirDeps &g)
 {
 DB_GEN_C
   QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT), fileName,relPath,FALSE);

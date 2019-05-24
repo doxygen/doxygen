@@ -2497,7 +2497,7 @@ void RTFGenerator::startDotGraph()
   DBG_RTF(t << "{\\comment (startDotGraph)}"    << endl)
 }
 
-void RTFGenerator::endDotGraph(const DotClassGraph &g)
+void RTFGenerator::endDotGraph(DotClassGraph &g)
 {
   newParagraph();
 
@@ -2521,7 +2521,7 @@ void RTFGenerator::startInclDepGraph()
   DBG_RTF(t << "{\\comment (startInclDepGraph)}"    << endl)
 }
 
-void RTFGenerator::endInclDepGraph(const DotInclDepGraph &g)
+void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   newParagraph();
 
@@ -2543,7 +2543,7 @@ void RTFGenerator::startGroupCollaboration()
 {
 }
 
-void RTFGenerator::endGroupCollaboration(const DotGroupCollaboration &)
+void RTFGenerator::endGroupCollaboration(DotGroupCollaboration &)
 {
 }
 
@@ -2552,7 +2552,7 @@ void RTFGenerator::startCallGraph()
   DBG_RTF(t << "{\\comment (startCallGraph)}"    << endl)
 }
 
-void RTFGenerator::endCallGraph(const DotCallGraph &g)
+void RTFGenerator::endCallGraph(DotCallGraph &g)
 {
   newParagraph();
 
@@ -2575,7 +2575,7 @@ void RTFGenerator::startDirDepGraph()
   DBG_RTF(t << "{\\comment (startDirDepGraph)}"    << endl)
 }
 
-void RTFGenerator::endDirDepGraph(const DotDirDeps &g)
+void RTFGenerator::endDirDepGraph(DotDirDeps &g)
 {
   newParagraph();
 

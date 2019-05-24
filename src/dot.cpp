@@ -2396,12 +2396,12 @@ QCString DotGraph::writeGraph(
   const char* fileName,
   const char* relPath,
   bool generateImageMap,
-  int graphId) const
+  int graphId)
 {
   m_out = &t;
   m_graphFormat = gf;
   m_textFormat = ef;
-  m_path = path;
+  m_path = QDir(path);
   m_fileName = fileName;
   m_relPath = relPath;
   m_generateImageMap = generateImageMap;
@@ -2409,6 +2409,7 @@ QCString DotGraph::writeGraph(
 
   m_baseName = getBaseName();
 
+  computeTheGraph();
 
   //todo
 
@@ -2510,46 +2511,51 @@ QCString DotGfxHierarchyTable::getBaseName() const
   return baseName;
 }
 
-void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
-       const char *path,const char *fileName,int id) const
+void DotGfxHierarchyTable::computeTheGraph()
 {
-  m_graphId = id;
-  DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
-
-  QDir d(path);
-  QCString imgExt = getDotImageExtension();
-  QCString imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
-  QCString imgName = m_baseName+"."+ imgExt;
-  QCString mapName = m_baseName+".map";
-  QCString absImgName = QCString(d.absPath().data())+"/"+imgName;
-  QCString absMapName = QCString(d.absPath().data())+"/"+mapName;
-  QCString absBaseName = QCString(d.absPath().data())+"/"+m_baseName;
-  QCString absDotName  = absBaseName+".dot";
   QListIterator<DotNode> dnli2(*m_rootNodes);
   DotNode *node;
 
-  // compute md5 checksum of the graph were are about to generate
-  QGString theGraph;
-  FTextStream md5stream(&theGraph);
+  FTextStream md5stream(&m_theGraph);
   writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy());
   md5stream << "  rankdir=\"LR\";" << endl;
   for (dnli2.toFirst();(node=dnli2.current());++dnli2)
   {
-    if (node->m_subgraphId==n->m_subgraphId) 
+    if (node->m_subgraphId==m_rootSubgraphNode->m_subgraphId) 
     {
       node->clearWriteFlag();
     }
   }
   for (dnli2.toFirst();(node=dnli2.current());++dnli2)
   {
-    if (node->m_subgraphId==n->m_subgraphId) 
+    if (node->m_subgraphId==m_rootSubgraphNode->m_subgraphId) 
     {
       node->write(md5stream,DotNode::Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE);
     }
   }
   writeGraphFooter(md5stream);
 
-  bool regenerate = prepareDotFile(theGraph, GOF_BITMAP, TRUE, d, absBaseName);
+}
+
+void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
+       const char *path,const char *fileName,int id)
+{
+  m_rootSubgraphNode = n;
+  m_graphId = id;
+  DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
+
+  QCString imgExt = getDotImageExtension();
+  QCString imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
+  QCString imgName = m_baseName+"."+ imgExt;
+  QCString mapName = m_baseName+".map";
+  QCString absImgName = QCString(m_path.absPath().data())+"/"+imgName;
+  QCString absMapName = QCString(m_path.absPath().data())+"/"+mapName;
+  QCString absBaseName = QCString(m_path.absPath().data())+"/"+m_baseName;
+  QCString absDotName  = absBaseName+".dot";
+
+  // compute md5 checksum of the graph were are about to generate
+
+  bool regenerate = prepareDotFile(m_theGraph, GOF_BITMAP, TRUE, m_path, absBaseName);
 
   Doxygen::indexList->addImageFile(imgName);
   // write image and map in a table row
@@ -2583,7 +2589,7 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
 }
 
 void DotGfxHierarchyTable::writeGraph(FTextStream &out,
-                      const char *path,const char *fileName) const
+                      const char *path,const char *fileName)
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
   //printf("m_rootNodes=%p count=%d\n",m_rootNodes,m_rootNodes->count());
@@ -3245,7 +3251,7 @@ void computeGraph(DotNode *root,
                    bool renderParents,
                    bool backArrows,
                    const QCString &title,
-                   QCString &graphStr
+                   QGString &graphStr
                   )
 {
   //printf("computeMd5Signature\n");
@@ -3310,6 +3316,20 @@ QCString DotClassGraph::getBaseName() const
   }
 }
 
+void DotClassGraph::computeTheGraph()
+{
+  computeGraph(
+    m_startNode,
+    m_graphType,
+    m_graphFormat,
+    m_lrRank ? "LR" : "",
+    m_graphType == DotNode::Inheritance,
+    TRUE,
+    m_startNode->label(),
+    m_theGraph
+  );
+}
+
 QCString DotClassGraph::writeGraph(FTextStream &out,
                                GraphOutputFormat graphFormat,
                                EmbeddedOutputFormat textFormat,
@@ -3318,11 +3338,10 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
                                const char *relPath,
                                bool /*isTBRank*/,
                                bool generateImageMap,
-                               int graphId) const
+                               int graphId)
 {
   DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 
-  QDir d(path);
   QCString mapName;
   switch (m_graphType)
   {
@@ -3337,21 +3356,10 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
       break;
   }
 
-  QCString theGraph;
-  computeGraph(
-      m_startNode,
-      m_graphType,
-      graphFormat,
-      m_lrRank ? "LR" : "",
-      m_graphType == DotNode::Inheritance,
-      TRUE,
-      m_startNode->label(),
-      theGraph
-  );
 
-  QCString absBaseName = d.absPath().utf8()+"/"+m_baseName;
+  QCString absBaseName = m_path.absPath().utf8()+"/"+m_baseName;
 
-  bool regenerate = prepareDotFile(QGString(theGraph.data()), graphFormat, generateImageMap, d, absBaseName);
+  bool regenerate = prepareDotFile(m_theGraph, graphFormat, generateImageMap, m_path, absBaseName);
 
   QCString imgExt = getDotImageExtension();
   QCString absImgName  = absBaseName+"."+imgExt;
@@ -3629,6 +3637,20 @@ QCString DotInclDepGraph::getBaseName() const
   }
 }
 
+void DotInclDepGraph::computeTheGraph()
+{
+  computeGraph(
+    m_startNode,
+    DotNode::Dependency,
+    m_graphFormat,
+    "",
+    FALSE,
+    m_inverse,
+    m_startNode->label(),
+    m_theGraph
+  );
+}
+
 QCString DotInclDepGraph::writeGraph(FTextStream &out,
                                  GraphOutputFormat graphFormat,
                                  EmbeddedOutputFormat textFormat,
@@ -3637,26 +3659,13 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
                                  const char *relPath,
                                  bool generateImageMap,
                                  int graphId
-                                ) const
+                                )
 {
   DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 
-  QDir d(path);
-  QCString theGraph;
-  QCString absBaseName = d.absPath().utf8()+"/"+m_baseName;
+  QCString absBaseName = m_path.absPath().utf8()+"/"+m_baseName;
 
-  computeGraph(
-      m_startNode,
-      DotNode::Dependency,
-      graphFormat,
-      "",
-      FALSE,
-      m_inverse,
-      m_startNode->label(),
-      theGraph
-  );
-
-  bool regenerate = prepareDotFile(QGString(theGraph.data()), graphFormat, generateImageMap, d, absBaseName);
+  bool regenerate = prepareDotFile(m_theGraph, graphFormat, generateImageMap, m_path, absBaseName);
 
   QCString imgExt = getDotImageExtension();
   QCString absImgName  = absBaseName+"."+imgExt;
@@ -3913,34 +3922,34 @@ QCString DotCallGraph::getBaseName() const
   return m_diskName + (m_inverse ? "_icgraph" : "_cgraph");
 }
 
+void DotCallGraph::computeTheGraph()
+{
+  computeGraph(
+    m_startNode,
+    DotNode::CallGraph,
+    m_graphFormat,
+    m_inverse ? "RL" : "LR",
+    FALSE,
+    m_inverse,
+    m_startNode->label(),
+    m_theGraph);
+}
+
 QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphFormat,
                         EmbeddedOutputFormat textFormat,
                         const char *path,const char *fileName,
                         const char *relPath,bool generateImageMap,int
-                        graphId) const
+                        graphId)
 {
   DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 
-  QDir d(path);
-  QCString theGraph;
-
-  computeGraph(
-      m_startNode,
-      DotNode::CallGraph,
-      graphFormat,
-      m_inverse ? "RL" : "LR",
-      FALSE,
-      m_inverse,
-      m_startNode->label(),
-      theGraph);
-
   QCString mapName  = m_baseName;
   QCString imgExt = getDotImageExtension();
-  QCString absBaseName = d.absPath().utf8()+"/"+m_baseName;
+  QCString absBaseName = m_path.absPath().utf8()+"/"+m_baseName;
   QCString absImgName  = absBaseName+"."+imgExt;
   QCString absMapName  = absBaseName+".map";
 
-  bool regenerate = prepareDotFile(QGString(theGraph.data()), graphFormat, generateImageMap, d, absBaseName);
+  bool regenerate = prepareDotFile(m_theGraph, graphFormat, generateImageMap, m_path, absBaseName);
 
   Doxygen::indexList->addImageFile(m_baseName+"."+imgExt);
 
@@ -4031,6 +4040,14 @@ QCString DotDirDeps::getBaseName() const
 
 }
 
+void DotDirDeps::computeTheGraph()
+{
+  // compute md5 checksum of the graph were are about to generate
+  FTextStream md5stream(&m_theGraph);
+  //m_dir->writeDepGraph(md5stream);
+  writeDotDirDepGraph(md5stream,m_dir,m_linkRelations);
+}
+
 QCString DotDirDeps::writeGraph(FTextStream &out,
                             GraphOutputFormat graphFormat,
                             EmbeddedOutputFormat textFormat,
@@ -4039,36 +4056,25 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
                             const char *relPath,
                             bool generateImageMap,
                             int graphId,
-                            bool linkRelations) const
+                            bool linkRelations)
 {
+  m_linkRelations = linkRelations;
   DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 
-  QDir d(path);
-  // store the original directory
-  if (!d.exists())
-  {
-    err("Output dir %s does not exist!\n",path); exit(1);
-  }
   static bool usePDFLatex = Config_getBool(USE_PDFLATEX);
 
   QCString mapName=escapeCharsInString(m_baseName,FALSE);
 
   QCString imgExt = getDotImageExtension();
   QCString imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
-  QCString absBaseName = d.absPath().utf8()+"/"+m_baseName;
+  QCString absBaseName = m_path.absPath().utf8()+"/"+m_baseName;
   QCString absDotName  = absBaseName+".dot";
   QCString absMapName  = absBaseName+".map";
   QCString absPdfName  = absBaseName+".pdf";
   QCString absEpsName  = absBaseName+".eps";
   QCString absImgName  = absBaseName+"."+imgExt;
 
-  // compute md5 checksum of the graph were are about to generate
-  QGString theGraph;
-  FTextStream md5stream(&theGraph);
-  //m_dir->writeDepGraph(md5stream);
-  writeDotDirDepGraph(md5stream,m_dir,linkRelations);
-
-  bool regenerate = prepareDotFile(theGraph, graphFormat, generateImageMap, d, absBaseName);
+  bool regenerate = prepareDotFile(m_theGraph, graphFormat, generateImageMap, m_path, absBaseName);
 
   Doxygen::indexList->addImageFile(m_baseName+"."+imgExt);
 
@@ -4144,44 +4150,44 @@ class GraphLegendDotGraph : public DotGraph {
   {
     return "graph_legend";
   } 
+
+  virtual void computeTheGraph()
+  {
+    FTextStream md5stream(&m_theGraph);
+    writeGraphHeader(md5stream,theTranslator->trLegendTitle());
+    md5stream << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
+    md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+    md5stream << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
+    md5stream << "  Node11 -> Node10 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+    md5stream << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
+    md5stream << "  Node13 -> Node9 [dir=\"back\",color=\"darkgreen\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+    md5stream << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
+    md5stream << "  Node14 -> Node9 [dir=\"back\",color=\"firebrick4\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+    md5stream << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
+    md5stream << "  Node15 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+    md5stream << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"grey75\"];\n";
+    md5stream << "  Node16 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+    md5stream << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
+    md5stream << "  Node17 -> Node16 [dir=\"back\",color=\"orange\",fontsize=\"" << FONTSIZE << "\",style=\"dashed\",label=\"< int >\",fontname=\"" << FONTNAME << "\"];\n";
+    md5stream << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
+    md5stream << "  Node18 -> Node9 [dir=\"back\",color=\"darkorchid3\",fontsize=\"" << FONTSIZE << "\",style=\"dashed\",label=\"m_usedClass\",fontname=\"" << FONTNAME << "\"];\n";
+    md5stream << "  Node18 [shape=\"box\",label=\"Used\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
+    writeGraphFooter(md5stream);
+  }
+
+  friend void generateGraphLegend(const char* path);
 };
 
 void generateGraphLegend(const char *path)
 {
   QDir d(path);
-  // store the original directory
-  if (!d.exists())
-  {
-    err("Output dir %s does not exist!\n",path); exit(1);
-  }
-
-  QGString theGraph;
-  FTextStream md5stream(&theGraph);
-  writeGraphHeader(md5stream,theTranslator->trLegendTitle());
-  md5stream << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
-  md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  md5stream << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
-  md5stream << "  Node11 -> Node10 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  md5stream << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
-  md5stream << "  Node13 -> Node9 [dir=\"back\",color=\"darkgreen\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  md5stream << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
-  md5stream << "  Node14 -> Node9 [dir=\"back\",color=\"firebrick4\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  md5stream << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
-  md5stream << "  Node15 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  md5stream << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"grey75\"];\n";
-  md5stream << "  Node16 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  md5stream << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-  md5stream << "  Node17 -> Node16 [dir=\"back\",color=\"orange\",fontsize=\"" << FONTSIZE << "\",style=\"dashed\",label=\"< int >\",fontname=\"" << FONTNAME << "\"];\n";
-  md5stream << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-  md5stream << "  Node18 -> Node9 [dir=\"back\",color=\"darkorchid3\",fontsize=\"" << FONTSIZE << "\",style=\"dashed\",label=\"m_usedClass\",fontname=\"" << FONTNAME << "\"];\n";
-  md5stream << "  Node18 [shape=\"box\",label=\"Used\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
-  writeGraphFooter(md5stream);
-
-  QCString absBaseName = (QCString)path+"/graph_legend";
-
   GraphLegendDotGraph dg;
 
-  bool regenerate = dg.prepareDotFile(theGraph, GOF_BITMAP, TRUE, d, absBaseName);
+  QCString absBaseName = (QCString)path + "/" + dg.getBaseName();
+
+  dg.computeTheGraph();
+
+  bool regenerate = dg.prepareDotFile(dg.m_theGraph, GOF_BITMAP, TRUE, d, absBaseName);
 
   QCString imgExt = getDotImageExtension();
   QCString absImgName  = absBaseName+"."+imgExt;
@@ -4524,17 +4530,9 @@ QCString DotGroupCollaboration::getBaseName() const
   return m_diskName;
 }
 
-QCString DotGroupCollaboration::writeGraph( FTextStream &t,
-    GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
-    const char *path, const char *fileName, const char *relPath,
-    bool generateImageMap,int graphId) const
+void DotGroupCollaboration::computeTheGraph()
 {
-  DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
-
-  QDir d(path);
-
-  QGString theGraph;
-  FTextStream md5stream(&theGraph);
+  FTextStream md5stream(&m_theGraph);
   writeGraphHeader(md5stream,m_rootNode->label());
 
   // clean write flags
@@ -4548,7 +4546,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
   // write other nodes.
   for (dni.toFirst();(pn=dni.current());++dni)
   {
-    pn->write(md5stream,DotNode::Inheritance,graphFormat,TRUE,FALSE,FALSE);
+    pn->write(md5stream,DotNode::Inheritance,m_graphFormat,TRUE,FALSE,FALSE);
   }
 
   // write edges
@@ -4561,10 +4559,19 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
 
   writeGraphFooter(md5stream);
 
-  QCString absPath     = d.absPath().data();
+}
+
+QCString DotGroupCollaboration::writeGraph( FTextStream &t,
+    GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
+    const char *path, const char *fileName, const char *relPath,
+    bool generateImageMap,int graphId)
+{
+  DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
+
+  QCString absPath     = m_path.absPath().data();
   QCString absBaseName = absPath+"/"+m_baseName;
 
-  bool regenerate = prepareDotFile(theGraph, graphFormat, generateImageMap, d, absBaseName);
+  bool regenerate = prepareDotFile(m_theGraph, graphFormat, generateImageMap, m_path, absBaseName);
 
   QCString imgExt = getDotImageExtension();
   QCString imgName     = m_baseName+"."+imgExt;
