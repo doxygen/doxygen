@@ -132,7 +132,7 @@ class DotNode
     friend class DotGroupCollaboration;
     friend class DotInheritanceGraph;
 
-    friend QCString computeMd5Signature(
+    friend void computeGraph(
                       DotNode *root, GraphType gt,
                       GraphOutputFormat f,
                       const QCString &rank,
@@ -156,17 +156,27 @@ class DotNodeList : public QList<DotNode>
 /** A dot graph */
 class DotGraph
 {
-  public:
-    DotGraph() : m_curNodeNumber(0) {}
-    virtual ~DotGraph() {}
+public:
+  DotGraph();
 
-  protected:
-    int getNextNodeNumber() { return ++m_curNodeNumber; }
+protected:
+  int getNextNodeNumber() { return ++m_curNodeNumber; }
 
-  private:
-    DotGraph(const DotGraph &);
-    DotGraph &operator=(const DotGraph &);
-    int m_curNodeNumber;
+  bool prepareDotFile
+  (
+    QGString const& theGraph,
+    GraphOutputFormat const graphFormat,
+    bool generateImageMap,
+    QDir const& dir,
+    QCString const& absBaseName
+  ) const;
+
+  static bool usePDFLatex;
+  static QCString imgFmt;
+
+private:
+  int                    m_curNodeNumber;
+
 };
 
 /** Represents a graphical class hierarchy */

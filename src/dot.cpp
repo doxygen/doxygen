@@ -2374,6 +2374,109 @@ const DotNode *DotNode::findDocNode() const
 
 //--------------------------------------------------------------------
 
+static void prepareGraph(
+    bool & regenerate,
+    QGString const & theGraph,
+    GraphOutputFormat const graphFormat,
+    bool generateImageMap,
+    QDir const & dir,
+    QCString const & absBaseName)
+{
+  static bool initDone = FALSE;
+  if (!initDone)
+  {
+    initDone = TRUE;
+    usePDFLatex = Config_getBool(USE_PDFLATEX);
+    imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
+
+  }
+}
+
+bool DotGraph::prepareDotFile
+(
+  QGString const & theGraph,
+  GraphOutputFormat const graphFormat,
+  bool generateImageMap,
+  QDir const & dir,
+  QCString const & absBaseName
+) const
+{
+  QCString imgExt = graphFormat == GOF_BITMAP ? getDotImageExtension() :
+    usePDFLatex ? ".pdf" : ".eps";
+
+  QCString absDotName  = absBaseName+".dot";
+  QCString absMapName  = absBaseName+".map";
+  QCString absImgName  = absBaseName+"."+imgExt;
+
+  if (!dir.exists())
+  {
+    err("Output dir %s does not exist!\n",dir.path()); exit(1);
+  }
+
+  QCString sigStr(33);
+  uchar md5_sig[16];
+  // calculate md5
+  MD5Buffer((const unsigned char*)theGraph.data(), theGraph.length(), md5_sig);
+  // convert result to a string
+  MD5SigToString(md5_sig, sigStr.rawData(), 33);
+
+  if (DotManager::instance()->containsRun(absDotName, sigStr))
+  {
+    // file is already queued
+    return TRUE;
+  }
+
+  if (!checkMd5Signature(absBaseName, sigStr) &&
+      checkDeliverables(absImgName,
+                        graphFormat == GOF_BITMAP && generateImageMap ? absMapName : QCString()
+                       )
+     )
+  {
+    // all needed files are there
+    removeDotGraph(absDotName);
+    return FALSE;
+  }
+
+  // need to rebuild the image
+
+  // write .dot file because image was new or has changed
+  QFile f(absDotName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Could not open file %s for writing\n",f.name().data());
+    return TRUE;
+  }
+  FTextStream t(&f);
+  t << theGraph;
+  f.close();
+
+  if (graphFormat == GOF_BITMAP)
+  {
+    // run dot to create a bitmap image
+    DotRunner * dotRun = new DotRunner(absDotName, dir.absPath().data(), sigStr, TRUE, absImgName);
+    dotRun->addJob(imgFmt, absImgName);
+    if (generateImageMap) dotRun->addJob(MAP_CMD, absMapName);
+    DotManager::instance()->addRun(dotRun);
+  }
+  else if (graphFormat == GOF_EPS)
+  {
+    // run dot to create a .eps image
+    DotRunner *dotRun = new DotRunner(absDotName, dir.absPath().data(), sigStr, FALSE);
+    if (usePDFLatex)
+    {
+      dotRun->addJob("pdf",absImgName,absBaseName);
+    }
+    else
+    {
+      dotRun->addJob("ps",absImgName);
+    }
+    DotManager::instance()->addRun(dotRun);
+  }
+  return TRUE;
+}
+
+//--------------------------------------------------------------------
+
 void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
        const char *path,const char *fileName,int id) const
 {
@@ -2414,36 +2517,15 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
     }
   }
   writeGraphFooter(md5stream);
-  uchar md5_sig[16];
-  QCString sigStr(33);
-  MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
-  bool regenerate=FALSE;
-  if (DotManager::instance()->containsRun(absDotName, d.absPath().data(), sigStr))
-  {
-    // file is already queued
-    regenerate=TRUE;
-  }
-  else if (checkMd5Signature(absBaseName,sigStr) || 
-      !checkDeliverables(absImgName,absMapName))
-  {
-    regenerate=TRUE;
-    // image was new or has changed
-    QFile f(absDotName);
-    if (!f.open(IO_WriteOnly)) return;
-    FTextStream t(&f);
-    t << theGraph;
-    f.close();
 
-    DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),sigStr,TRUE,absImgName);
-    dotRun->addJob(imgFmt,absImgName);
-    dotRun->addJob(MAP_CMD,absMapName);
-    DotManager::instance()->addRun(dotRun);
-  }
-  else
-  {
-    removeDotGraph(absBaseName+".dot");
-  }
+  bool regenerate = prepareDotFile(
+    theGraph,
+    GOF_BITMAP,
+    TRUE,
+    d,
+    absBaseName
+  );
+
   Doxygen::indexList->addImageFile(imgName);
   // write image and map in a table row
   QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
@@ -3131,10 +3213,7 @@ DotClassGraph::~DotClassGraph()
   delete m_usedNodes;
 }
 
-/*! Computes a 16 byte md5 checksum for a given dot graph.
- *  The md5 checksum is returned as a 32 character ASCII string.
- */
-QCString computeMd5Signature(DotNode *root,
+void computeGraph(DotNode *root,
                    DotNode::GraphType gt,
                    GraphOutputFormat format,
                    const QCString &rank, // either "LR", "RL", or ""
@@ -3186,37 +3265,8 @@ QCString computeMd5Signature(DotNode *root,
     }
   }
   writeGraphFooter(md5stream);
-  uchar md5_sig[16];
-  QCString sigStr(33);
-  MD5Buffer((const unsigned char *)buf.data(),buf.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
-  graphStr=buf.data();
-  //printf("md5: %s | file: %s\n",sigStr,baseName.data());
-  return sigStr;
-}
 
-static void updateDotGraph(DotNode *root,
-                           DotNode::GraphType gt,
-                           const QCString &baseName,
-                           GraphOutputFormat format,
-                           const QCString &rank,
-                           bool renderParents,
-                           bool backArrows,
-                           QCString & sigStr,
-                           const QCString &title=QCString()
-                          )
-{
-  QCString theGraph;
-  // TODO: write graph to theGraph, then compute md5 checksum
-  sigStr = computeMd5Signature(
-                   root,gt,format,rank,renderParents,
-                   backArrows,title,theGraph);
-  QFile f(baseName+".dot");
-  if (f.open(IO_WriteOnly))
-  {
-    FTextStream t(&f);
-    t << theGraph;
-  }
+  graphStr=buf.data();
 }
 
 QCString DotClassGraph::writeGraph(FTextStream &out,
@@ -3230,13 +3280,6 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
                                int graphId) const
 {
   QDir d(path);
-  // store the original directory
-  if (!d.exists())
-  {
-    err("Output dir %s does not exist!\n",path); exit(1);
-  }
-  static bool usePDFLatex = Config_getBool(USE_PDFLATEX);
-
   QCString baseName;
   QCString mapName;
   switch (m_graphType)
@@ -3254,64 +3297,27 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
       break;
   }
 
-  // derive target file names from baseName
-  QCString imgExt = getDotImageExtension();
-  QCString imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
-  QCString absBaseName = d.absPath().utf8()+"/"+baseName;
-  QCString absDotName  = absBaseName+".dot";
-  QCString absMapName  = absBaseName+".map";
-  QCString absPdfName  = absBaseName+".pdf";
-  QCString absEpsName  = absBaseName+".eps";
-  QCString absImgName  = absBaseName+"."+imgExt;
-
-  bool regenerate = FALSE;
-  QCString sigStr;
-  updateDotGraph(m_startNode,
-                 m_graphType,
-                 absBaseName,
-                 graphFormat,
-                 m_lrRank ? "LR" : "",
-                 m_graphType == DotNode::Inheritance,
-                 TRUE,
-                 sigStr,
-                 m_startNode->label()
+  QCString theGraph;
+  computeGraph(
+      m_startNode,
+      m_graphType,
+      graphFormat,
+      m_lrRank ? "LR" : "",
+      m_graphType == DotNode::Inheritance,
+      TRUE,
+      m_startNode->label(),
+      theGraph
   );
 
-  if (DotManager::instance()->containsRun(absDotName, d.absPath().data(), sigStr))
-  {
-    // file is already queued
-    regenerate=TRUE;
-  }
-  else if (checkMd5Signature(absBaseName,sigStr) ||
-      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName : 
-                         usePDFLatex    ? absPdfName : absEpsName,
-                         graphFormat==GOF_BITMAP && generateImageMap ? absMapName : QCString())
-     )
-  {
-    regenerate=TRUE;
-    if (graphFormat==GOF_BITMAP) // run dot to create a bitmap image
-    {
-      DotRunner *dotRun = new DotRunner(absDotName,
-                              d.absPath().data(), sigStr, TRUE,absImgName);
-      dotRun->addJob(imgFmt,absImgName);
-      if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
-      DotManager::instance()->addRun(dotRun);
+  QCString absBaseName = d.absPath().utf8()+"/"+baseName;
 
-    }
-    else if (graphFormat==GOF_EPS) // run dot to create a .eps image
-    {
-      DotRunner *dotRun = new DotRunner(absDotName, d.absPath().data(), sigStr, FALSE);
-      if (usePDFLatex)
-      {
-        dotRun->addJob("pdf",absPdfName,absBaseName);
-      }
-      else
-      {
-        dotRun->addJob("ps",absEpsName);
-      }
-      DotManager::instance()->addRun(dotRun);
-    }
-  }
+  bool regenerate;
+  prepareGraph(regenerate,  QGString(theGraph.data()), graphFormat, generateImageMap, d, absBaseName);
+
+  QCString imgExt = getDotImageExtension();
+  QCString absImgName  = absBaseName+"."+imgExt;
+  QCString absMapName  = absBaseName+".map";
+
   Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
@@ -3382,7 +3388,6 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
       out << endl << "% FIG " << figId << endl;
     }
   }
-  if (!regenerate) removeDotGraph(absDotName);
 
   return baseName;
 }
@@ -3584,13 +3589,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
                                 ) const
 {
   QDir d(path);
-  // store the original directory
-  if (!d.exists())
-  {
-    err("Output dir %s does not exist!\n",path); exit(1);
-  }
-  static bool usePDFLatex = Config_getBool(USE_PDFLATEX);
-
+  QCString theGraph;
   QCString baseName;
   if (m_inverse)
   {
@@ -3600,65 +3599,28 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   {
     baseName=m_inclDepFileName;
   }
+  QCString absBaseName = d.absPath().utf8()+"/"+baseName;
+
+  computeGraph(
+      m_startNode,
+      DotNode::Dependency,
+      graphFormat,
+      "",
+      FALSE,
+      m_inverse,
+      m_startNode->label(),
+      theGraph
+  );
+
+  bool regenerate;
+  prepareGraph(regenerate,  QGString(theGraph.data()), graphFormat, generateImageMap, d, absBaseName);
+
+  QCString imgExt = getDotImageExtension();
+  QCString absImgName  = absBaseName+"."+imgExt;
+
   QCString mapName=escapeCharsInString(m_startNode->m_label,FALSE);
   if (m_inverse) mapName+="dep";
 
-  QCString imgExt = getDotImageExtension();
-  QCString imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
-  QCString absBaseName = d.absPath().utf8()+"/"+baseName;
-  QCString absDotName  = absBaseName+".dot";
-  QCString absMapName  = absBaseName+".map";
-  QCString absPdfName  = absBaseName+".pdf";
-  QCString absEpsName  = absBaseName+".eps";
-  QCString absImgName  = absBaseName+"."+imgExt;
-
-  bool regenerate = FALSE;
-  QCString sigStr;
-  updateDotGraph(m_startNode,
-                 DotNode::Dependency,
-                 absBaseName,
-                 graphFormat,
-                 "",           // lrRank
-                 FALSE,        // renderParents
-                 m_inverse,    // backArrows
-                 sigStr,
-                 m_startNode->label()
-  );
-
-  if (DotManager::instance()->containsRun(absDotName, d.absPath().data(), sigStr))
-  {
-    // file is already queued
-    regenerate=TRUE;
-  }
-  else if (checkMd5Signature(absBaseName,sigStr) ||
-      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
-                         usePDFLatex ? absPdfName : absEpsName,
-                         graphFormat==GOF_BITMAP && generateImageMap ? absMapName : QCString())
-     )
-  {
-    regenerate=TRUE;
-    if (graphFormat==GOF_BITMAP)
-    {
-      // run dot to create a bitmap image
-      DotRunner *dotRun = new DotRunner(absDotName, d.absPath().data(), sigStr, TRUE, absImgName);
-      dotRun->addJob(imgFmt,absImgName);
-      if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
-      DotManager::instance()->addRun(dotRun);
-    }
-    else if (graphFormat==GOF_EPS)
-    {
-      DotRunner *dotRun = new DotRunner(absDotName, d.absPath().data(), sigStr, FALSE);
-      if (usePDFLatex)
-      {
-        dotRun->addJob("pdf",absPdfName,absBaseName);
-      }
-      else
-      {
-        dotRun->addJob("ps",absEpsName);
-      }
-      DotManager::instance()->addRun(dotRun);
-    }
-  }
   Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
@@ -3713,7 +3675,6 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       out << endl << "% FIG " << figId << endl;
     }
   }
-  if (!regenerate) removeDotGraph(absDotName);
 
   return baseName;
 }
@@ -3911,75 +3872,28 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
                         graphId) const
 {
   QDir d(path);
-  // store the original directory
-  if (!d.exists())
-  {
-    err("Output dir %s does not exist!\n",path); exit(1);
-  }
-  static bool usePDFLatex = Config_getBool(USE_PDFLATEX);
+  QCString theGraph;
+
+  computeGraph(
+      m_startNode,
+      DotNode::CallGraph,
+      graphFormat,
+      m_inverse ? "RL" : "LR",
+      FALSE,
+      m_inverse,
+      m_startNode->label(),
+      theGraph);
 
   QCString baseName = m_diskName + (m_inverse ? "_icgraph" : "_cgraph");
   QCString mapName  = baseName;
-
   QCString imgExt = getDotImageExtension();
-  QCString imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
   QCString absBaseName = d.absPath().utf8()+"/"+baseName;
-  QCString absDotName  = absBaseName+".dot";
-  QCString absMapName  = absBaseName+".map";
-  QCString absPdfName  = absBaseName+".pdf";
-  QCString absEpsName  = absBaseName+".eps";
   QCString absImgName  = absBaseName+"."+imgExt;
+  QCString absMapName  = absBaseName+".map";
 
-  bool regenerate = FALSE;
-  QCString sigStr;
-  updateDotGraph(m_startNode,
-                 DotNode::CallGraph,
-                 absBaseName,
-                 graphFormat,
-                 m_inverse ? "RL" : "LR",   // lrRank
-                 FALSE,        // renderParents
-                 m_inverse,    // backArrows
-                 sigStr,
-                 m_startNode->label()
-  );
-  
-  if (DotManager::instance()->containsRun(absDotName, d.absPath().data(), sigStr))
-  {
-    // file is already queued
-    regenerate=TRUE;
-  }
-  else if (checkMd5Signature(absBaseName,sigStr) ||
-      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
-                         usePDFLatex ? absPdfName : absEpsName,
-                         graphFormat==GOF_BITMAP && generateImageMap ? absMapName : QCString())
-     )
-  {
-    regenerate=TRUE;
-    if (graphFormat==GOF_BITMAP)
-    {
-      // run dot to create a bitmap image
-      DotRunner *dotRun = new DotRunner(absDotName, d.absPath().data(), sigStr, TRUE, absImgName);
-      dotRun->addJob(imgFmt,absImgName);
-      if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
-      DotManager::instance()->addRun(dotRun);
+  bool regenerate;
+  prepareGraph(regenerate,  QGString(theGraph.data()), graphFormat, generateImageMap, d, absBaseName);
 
-    }
-    else if (graphFormat==GOF_EPS)
-    {
-      // run dot to create a .eps image
-      DotRunner *dotRun = new DotRunner(absDotName, d.absPath().data(), sigStr, FALSE);
-      if (usePDFLatex)
-      {
-        dotRun->addJob("pdf",absPdfName,absBaseName);
-      }
-      else
-      {
-        dotRun->addJob("ps",absEpsName);
-      }
-      DotManager::instance()->addRun(dotRun);
-
-    }
-  }
   Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
@@ -4036,7 +3950,6 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
       out << endl << "% FIG " << figId << endl;
     }
   }
-  if (!regenerate) removeDotGraph(absDotName);
 
   return baseName;
 }
@@ -4099,55 +4012,10 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   FTextStream md5stream(&theGraph);
   //m_dir->writeDepGraph(md5stream);
   writeDotDirDepGraph(md5stream,m_dir,linkRelations);
-  uchar md5_sig[16];
-  QCString sigStr(33);
-  MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
-  bool regenerate=FALSE;
-  if (DotManager::instance()->containsRun(absDotName, d.absPath().data(), sigStr))
-  {
-    // file is already queued
-    regenerate=TRUE;
-  }
-  else if (checkMd5Signature(absBaseName,sigStr) ||
-      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
-                         usePDFLatex ? absPdfName : absEpsName,
-                         graphFormat==GOF_BITMAP && generateImageMap ? absMapName : QCString())
-     )
-  {
-    regenerate=TRUE;
 
-    QFile f(absDotName);
-    if (!f.open(IO_WriteOnly))
-    {
-      err("Cannot create file %s.dot for writing!\n",baseName.data());
-    }
-    FTextStream t(&f);
-    t << theGraph.data();
-    f.close();
+  bool regenerate;
+  prepareGraph(regenerate, theGraph, graphFormat, generateImageMap, d, absBaseName);
 
-    if (graphFormat==GOF_BITMAP)
-    {
-      // run dot to create a bitmap image
-      DotRunner *dotRun = new DotRunner(absDotName, d.absPath().data(), sigStr, TRUE, absImgName);
-      dotRun->addJob(imgFmt,absImgName);
-      if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
-      DotManager::instance()->addRun(dotRun);
-    }
-    else if (graphFormat==GOF_EPS)
-    {
-      DotRunner *dotRun = new DotRunner(absDotName, d.absPath().data(), sigStr, FALSE);
-      if (usePDFLatex)
-      {
-        dotRun->addJob("pdf",absPdfName,absBaseName);
-      }
-      else
-      {
-        dotRun->addJob("ps",absEpsName);
-      }
-      DotManager::instance()->addRun(dotRun);
-    }
-  }
   Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
@@ -4205,7 +4073,6 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
       out << endl << "% FIG " << figId << endl;
     }
   }
-  if (!regenerate) removeDotGraph(absDotName);
 
   return baseName;
 }
@@ -4247,44 +4114,16 @@ void generateGraphLegend(const char *path)
   md5stream << "  Node18 -> Node9 [dir=\"back\",color=\"darkorchid3\",fontsize=\"" << FONTSIZE << "\",style=\"dashed\",label=\"m_usedClass\",fontname=\"" << FONTNAME << "\"];\n";
   md5stream << "  Node18 [shape=\"box\",label=\"Used\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
   writeGraphFooter(md5stream);
-  uchar md5_sig[16];
-  QCString sigStr(33);
-  MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
+
   QCString absBaseName = (QCString)path+"/graph_legend";
-  QCString absDotName  = absBaseName+".dot";
+
+  bool regenerate;
+  prepareGraph(regenerate, theGraph, GOF_BITMAP, TRUE, d, absBaseName);
+
   QCString imgExt = getDotImageExtension();
-  QCString imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
-  QCString imgName     = "graph_legend."+imgExt;
   QCString absImgName  = absBaseName+"."+imgExt;
-  if (DotManager::instance()->containsRun(absDotName, d.absPath().data(), sigStr))
-  {
-    // file is already queued
-  }
-  else if (checkMd5Signature(absBaseName,sigStr) ||
-      !checkDeliverables(absImgName))
-  {
-    QFile dotFile(absDotName);
-    if (!dotFile.open(IO_WriteOnly))
-    {
-      err("Could not open file %s for writing\n",dotFile.name().data());
-      return;
-    }
+  QCString imgName     = "graph_legend."+imgExt;
 
-    FTextStream dotText(&dotFile); 
-    dotText << theGraph;
-    dotFile.close();
-
-    // run dot to generate the a bitmap image from the graph
-
-    DotRunner *dotRun = new DotRunner(absDotName, d.absPath().data(),sigStr,TRUE,absImgName);
-    dotRun->addJob(imgFmt,absImgName);
-    DotManager::instance()->addRun(dotRun);
-  }
-  else
-  {
-    removeDotGraph(absDotName);
-  }
   Doxygen::indexList->addImageFile(imgName);
 
   if (imgExt=="svg")
@@ -4624,12 +4463,6 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
     bool writeImageMap,int graphId) const
 {
   QDir d(path);
-  // store the original directory
-  if (!d.exists())
-  {
-    err("Output dir %s does not exist!\n",path); exit(1);
-  }
-  static bool usePDFLatex = Config_getBool(USE_PDFLATEX);
 
   QGString theGraph;
   FTextStream md5stream(&theGraph);
@@ -4658,66 +4491,19 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
   }
 
   writeGraphFooter(md5stream);
-  uchar md5_sig[16];
-  QCString sigStr(33);
-  MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
-  QCString imgExt = getDotImageExtension();
-  QCString imgFmt = Config_getEnum(DOT_IMAGE_FORMAT);
+
   QCString baseName    = m_diskName;
-  QCString imgName     = baseName+"."+imgExt;
   QCString absPath     = d.absPath().data();
   QCString absBaseName = absPath+"/"+baseName;
-  QCString absDotName  = absBaseName+".dot";
+
+  bool regenerate;
+  prepareGraph(regenerate,  theGraph, graphFormat, generateImageMap, d, absBaseName);
+
+  QCString imgExt = getDotImageExtension();
+  QCString imgName     = baseName+"."+imgExt;
   QCString absImgName  = absBaseName+"."+imgExt;
   QCString absMapName  = absBaseName+".map";
-  QCString absPdfName  = absBaseName+".pdf";
-  QCString absEpsName  = absBaseName+".eps";
-  bool regenerate=FALSE;
-  if (DotManager::instance()->containsRun(absDotName, d.absPath().data(), sigStr))
-  {
-    // file is already queued
-    regenerate=TRUE;
-  }
-  else if (checkMd5Signature(absBaseName,sigStr) ||
-      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
-                         usePDFLatex ? absPdfName : absEpsName,
-                         graphFormat==GOF_BITMAP /*&& generateImageMap*/ ? absMapName : QCString())
-     )
-  {
-    regenerate=TRUE;
 
-    QFile dotfile(absDotName);
-    if (dotfile.open(IO_WriteOnly))
-    {
-      FTextStream tdot(&dotfile);
-      tdot << theGraph;
-      dotfile.close();
-    }
-
-    if (graphFormat==GOF_BITMAP) // run dot to create a bitmap image
-    {
-      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),sigStr,FALSE);
-      dotRun->addJob(imgFmt,absImgName);
-      if (writeImageMap) dotRun->addJob(MAP_CMD,absMapName);
-      DotManager::instance()->addRun(dotRun);
-
-    }
-    else if (graphFormat==GOF_EPS)
-    {
-      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),sigStr,FALSE);
-      if (usePDFLatex)
-      {
-        dotRun->addJob("pdf",absPdfName,absBaseName);
-      }
-      else
-      {
-        dotRun->addJob("ps",absEpsName);
-      }
-      DotManager::instance()->addRun(dotRun);
-    }
-
-  }
   if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
   {
     t << "<para>" << endl;
@@ -4773,7 +4559,6 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
       t << endl << "% FIG " << figId << endl;
     }
   }
-  if (!regenerate) removeDotGraph(absDotName);
 
   return baseName;
 }
