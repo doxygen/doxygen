@@ -28,6 +28,12 @@
 #include "diagram.h"
 #include "version.h"
 #include "dot.h"
+#include "dotcallgraph.h"
+#include "dotclassgraph.h"
+#include "dotdirdeps.h"
+#include "dotgfxhierarchytable.h"
+#include "dotgroupcollaboration.h"
+#include "dotincldepgraph.h"
 #include "language.h"
 #include "htmlhelp.h"
 #include "docparser.h"
@@ -1775,7 +1781,7 @@ void HtmlGenerator::startDotGraph()
   startSectionHeader(t,relPath,m_sectionCount);
 }
 
-void HtmlGenerator::endDotGraph(const DotClassGraph &g)
+void HtmlGenerator::endDotGraph(DotClassGraph &g)
 {
   bool generateLegend = Config_getBool(GENERATE_LEGEND);
   bool umlLook = Config_getBool(UML_LOOK);
@@ -1803,7 +1809,7 @@ void HtmlGenerator::startInclDepGraph()
   startSectionHeader(t,relPath,m_sectionCount);
 }
 
-void HtmlGenerator::endInclDepGraph(const DotInclDepGraph &g)
+void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   endSectionHeader(t);
   startSectionSummary(t,m_sectionCount);
@@ -1821,7 +1827,7 @@ void HtmlGenerator::startGroupCollaboration()
   startSectionHeader(t,relPath,m_sectionCount);
 }
 
-void HtmlGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
+void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
   endSectionHeader(t);
   startSectionSummary(t,m_sectionCount);
@@ -1839,7 +1845,7 @@ void HtmlGenerator::startCallGraph()
   startSectionHeader(t,relPath,m_sectionCount);
 }
 
-void HtmlGenerator::endCallGraph(const DotCallGraph &g)
+void HtmlGenerator::endCallGraph(DotCallGraph &g)
 {
   endSectionHeader(t);
   startSectionSummary(t,m_sectionCount);
@@ -1857,7 +1863,7 @@ void HtmlGenerator::startDirDepGraph()
   startSectionHeader(t,relPath,m_sectionCount);
 }
 
-void HtmlGenerator::endDirDepGraph(const DotDirDeps &g)
+void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
 {
   endSectionHeader(t);
   startSectionSummary(t,m_sectionCount);
@@ -1870,7 +1876,7 @@ void HtmlGenerator::endDirDepGraph(const DotDirDeps &g)
   m_sectionCount++;
 }
 
-void HtmlGenerator::writeGraphicalHierarchy(const DotGfxHierarchyTable &g)
+void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
 {
   g.writeGraph(t,dir,fileName);
 }

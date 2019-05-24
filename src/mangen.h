@@ -207,16 +207,16 @@ class ManGenerator : public OutputGenerator
     void endDescTableData() {}
 
     void startDotGraph() {}
-    void endDotGraph(const DotClassGraph &) {}
+    void endDotGraph(DotClassGraph &) {}
     void startInclDepGraph() {}
-    void endInclDepGraph(const DotInclDepGraph &) {}
+    void endInclDepGraph(DotInclDepGraph &) {}
     void startGroupCollaboration() {}
-    void endGroupCollaboration(const DotGroupCollaboration &) {}
+    void endGroupCollaboration(DotGroupCollaboration &) {}
     void startCallGraph() {}
-    void endCallGraph(const DotCallGraph &) {}
+    void endCallGraph(DotCallGraph &) {}
     void startDirDepGraph() {} 
-    void endDirDepGraph(const DotDirDeps &) {}
-    void writeGraphicalHierarchy(const DotGfxHierarchyTable &) {}
+    void endDirDepGraph(DotDirDeps &) {}
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
     void startTextBlock(bool) {}
     void endTextBlock(bool) {}

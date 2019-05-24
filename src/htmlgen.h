@@ -283,16 +283,16 @@ class HtmlGenerator : public OutputGenerator
     void endDescTableData();
 
     void startDotGraph();
-    void endDotGraph(const DotClassGraph &g);
+    void endDotGraph(DotClassGraph &g);
     void startInclDepGraph();
-    void endInclDepGraph(const DotInclDepGraph &g);
+    void endInclDepGraph(DotInclDepGraph &g);
     void startGroupCollaboration();
-    void endGroupCollaboration(const DotGroupCollaboration &g);
+    void endGroupCollaboration(DotGroupCollaboration &g);
     void startCallGraph();
-    void endCallGraph(const DotCallGraph &g);
+    void endCallGraph(DotCallGraph &g);
     void startDirDepGraph();
-    void endDirDepGraph(const DotDirDeps &g);
-    void writeGraphicalHierarchy(const DotGfxHierarchyTable &g);
+    void endDirDepGraph(DotDirDeps &g);
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &g);
 
     void startTextBlock(bool) 
     { t << "<div class=\"textblock\">"; }

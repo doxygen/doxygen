@@ -11652,6 +11652,7 @@ void generateOutput()
   }
 
   initSearchIndexer();
+  initDot();
 
   bool generateHtml  = Config_getBool(GENERATE_HTML);
   bool generateLatex = Config_getBool(GENERATE_LATEX);

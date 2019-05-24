@@ -391,25 +391,25 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endDescTableData); }
     void startDotGraph()
     { forall(&OutputGenerator::startDotGraph); }
-    void endDotGraph(const DotClassGraph &g)
+    void endDotGraph(DotClassGraph &g)
     { forall(&OutputGenerator::endDotGraph,g); }
     void startInclDepGraph()
     { forall(&OutputGenerator::startInclDepGraph); }
-    void endInclDepGraph(const DotInclDepGraph &g)
+    void endInclDepGraph(DotInclDepGraph &g)
     { forall(&OutputGenerator::endInclDepGraph,g); }
     void startCallGraph()
     { forall(&OutputGenerator::startCallGraph); }
-    void endCallGraph(const DotCallGraph &g)
+    void endCallGraph(DotCallGraph &g)
     { forall(&OutputGenerator::endCallGraph,g); }
     void startDirDepGraph()
     { forall(&OutputGenerator::startDirDepGraph); }
-    void endDirDepGraph(const DotDirDeps &g)
+    void endDirDepGraph(DotDirDeps &g)
     { forall(&OutputGenerator::endDirDepGraph,g); }
     void startGroupCollaboration()
     { forall(&OutputGenerator::startGroupCollaboration); }
-    void endGroupCollaboration(const DotGroupCollaboration &g)
+    void endGroupCollaboration(DotGroupCollaboration &g)
     { forall(&OutputGenerator::endGroupCollaboration,g); }
-    void writeGraphicalHierarchy(const DotGfxHierarchyTable &g)
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &g)
     { forall(&OutputGenerator::writeGraphicalHierarchy,g); }
     void startTextBlock(bool dense=FALSE)
     { forall(&OutputGenerator::startTextBlock,dense); }
@@ -520,12 +520,12 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(char);
     FORALLPROTO1(IndexSections);
     FORALLPROTO1(int);
-    FORALLPROTO1(const DotClassGraph &);
-    FORALLPROTO1(const DotInclDepGraph &);
-    FORALLPROTO1(const DotCallGraph &);
-    FORALLPROTO1(const DotGroupCollaboration &);
-    FORALLPROTO1(const DotDirDeps &);
-    FORALLPROTO1(const DotGfxHierarchyTable &);
+    FORALLPROTO1(DotClassGraph &);
+    FORALLPROTO1(DotInclDepGraph &);
+    FORALLPROTO1(DotCallGraph &);
+    FORALLPROTO1(DotGroupCollaboration &);
+    FORALLPROTO1(DotDirDeps &);
+    FORALLPROTO1(DotGfxHierarchyTable &);
     FORALLPROTO1(SectionTypes);
 #if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)
     FORALLPROTO1(bool);

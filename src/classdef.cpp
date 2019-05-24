@@ -33,6 +33,8 @@
 #include "example.h"
 #include "outputlist.h"
 #include "dot.h"
+#include "dotclassgraph.h"
+#include "dotrunner.h"
 #include "defargs.h"
 #include "debug.h"
 #include "docparser.h"
@@ -1717,7 +1719,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
       (Config_getBool(CLASS_DIAGRAMS) || Config_getBool(CLASS_GRAPH)))
     // write class diagram using dot
   {
-    DotClassGraph inheritanceGraph(this,DotNode::Inheritance);
+    DotClassGraph inheritanceGraph(this,Inheritance);
     if (!inheritanceGraph.isTrivial() && !inheritanceGraph.isTooBig())
     {
       ol.pushGeneratorState();
@@ -1836,7 +1838,7 @@ void ClassDefImpl::writeCollaborationGraph(OutputList &ol) const
 {
   if (Config_getBool(HAVE_DOT) /*&& Config_getBool(COLLABORATION_GRAPH)*/)
   {
-    DotClassGraph usageImplGraph(this,DotNode::Collaboration);
+    DotClassGraph usageImplGraph(this,Collaboration);
     if (!usageImplGraph.isTrivial())
     {
       ol.pushGeneratorState();

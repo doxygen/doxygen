@@ -27,6 +27,11 @@
 #include "language.h"
 #include "version.h"
 #include "dot.h"
+#include "dotcallgraph.h"
+#include "dotclassgraph.h"
+#include "dotdirdeps.h"
+#include "dotgroupcollaboration.h"
+#include "dotincldepgraph.h"
 #include "pagedef.h"
 #include "docparser.h"
 #include "latexdocvisitor.h"
@@ -2034,7 +2039,7 @@ void LatexGenerator::startDotGraph()
   newParagraph();
 }
 
-void LatexGenerator::endDotGraph(const DotClassGraph &g) 
+void LatexGenerator::endDotGraph(DotClassGraph &g) 
 {
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
@@ -2043,7 +2048,7 @@ void LatexGenerator::startInclDepGraph()
 {
 }
 
-void LatexGenerator::endInclDepGraph(const DotInclDepGraph &g) 
+void LatexGenerator::endInclDepGraph(DotInclDepGraph &g) 
 {
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
@@ -2052,7 +2057,7 @@ void LatexGenerator::startGroupCollaboration()
 {
 }
 
-void LatexGenerator::endGroupCollaboration(const DotGroupCollaboration &g) 
+void LatexGenerator::endGroupCollaboration(DotGroupCollaboration &g) 
 {
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
@@ -2061,7 +2066,7 @@ void LatexGenerator::startCallGraph()
 {
 }
 
-void LatexGenerator::endCallGraph(const DotCallGraph &g) 
+void LatexGenerator::endCallGraph(DotCallGraph &g) 
 {
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
@@ -2070,7 +2075,7 @@ void LatexGenerator::startDirDepGraph()
 {
 }
 
-void LatexGenerator::endDirDepGraph(const DotDirDeps &g) 
+void LatexGenerator::endDirDepGraph(DotDirDeps &g) 
 {
   g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
 }
