@@ -88,6 +88,7 @@ static bool             docBlockInBody;
 static bool             docBlockJavaStyle;
 static bool             docBrief;
 static bool             docBlockSpecial;
+static bool             importBracket;
 
 static bool             g_doubleQuote;
 static bool             g_specialBlock;
@@ -684,16 +685,20 @@ STARTDOCSYMS      "##"
                       }
   {IDENTIFIER}({B}"."{B}{IDENTIFIER})* { // from package import 
                         g_packageName=yytext;
-		      }
-  "import"{B}	      {
-    			BEGIN(FromModItem);
-    		      }
-  \n		      {
+                      }
+  "import"{B}         {
+                        BEGIN(FromModItem);
+                      }
+  "import"{B}"("{B}   {
+                        importBracket = TRUE;
+                        BEGIN(FromModItem);
+                      }
+  \n                  {
                         incLineNr();
                         BEGIN(Search);
                       }
-  {B}		      {
-		      }
+  {B}                 {
+                      }
   .                   {
                         unput(*yytext);
                         BEGIN(Search);
@@ -710,7 +715,7 @@ STARTDOCSYMS      "##"
 		  current_root->addSubEntry(current);
 		  current = new Entry ;
 		  initEntry();
-                  BEGIN(Search);
+                  if (!importBracket) BEGIN(Search);
     		}
   {IDENTIFIER}/{B}","{B} {
                   QCString item=g_packageName+"."+yytext;
@@ -722,8 +727,15 @@ STARTDOCSYMS      "##"
 		  current = new Entry ;
 		  initEntry();
 		}
+  {IDENTIFIER}{B}")" |
   {IDENTIFIER}  {
                   QCString item=g_packageName+"."+yytext;
+                  if (importBracket && item.at(item.length()-1) == ')')
+                  {
+                    item.at(item.length()-1) = '\0';
+                    importBracket = FALSE;
+                    item = item.stripWhiteSpace();
+                  }
 		  current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
 		  current->fileName = yyFileName; 
 		  //printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
@@ -731,19 +743,23 @@ STARTDOCSYMS      "##"
 		  current_root->addSubEntry(current);
 		  current = new Entry ;
 		  initEntry();
-                  BEGIN(Search);
+                    if (!importBracket) BEGIN(Search);
 		}
-  \n		{
+  {B},{B}\n     |
+  {B}\n{B},     { // handling line continuation
                   incLineNr();
-                  BEGIN(Search);
                 }
-  {B}		{
-		}
-  ","		{ 
-  		}
+  \n            {
+                  incLineNr();
+                  if (!importBracket) BEGIN(Search);
+                }
+  {B}           {
+                }
+  ","           {
+                }
   .             {
                   unput(*yytext);
-                  BEGIN(Search);
+                  if (!importBracket) BEGIN(Search);
                 }
 }
 
