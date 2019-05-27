@@ -1289,7 +1289,7 @@ static QCString extractTitleId(QCString &title, int level)
 
 
 static int isAtxHeader(const char *data,int size,
-                       QCString &header,QCString &id)
+                       QCString &header,QCString &id,bool allowAdjustLevel)
 {
   int i = 0, end;
   int level = 0, blanks=0;
@@ -1322,6 +1322,28 @@ static int isAtxHeader(const char *data,int size,
     header=header.left(i+1);
   }
 
+  if (allowAdjustLevel && level==1 && g_indentLevel==-1)
+  {
+    // in case we find a `# Section` on a markdown page that started with the same level
+    // header, we no longer need to artificially decrease the paragraph level.
+    // So both
+    // -------------------
+    // # heading 1    <-- here we set g_indentLevel to -1
+    // # heading 2    <-- here we set g_indentLevel back to 0 such that this will be a @section
+    // -------------------
+    // and
+    // -------------------
+    // # heading 1    <-- here we set  g_indentLevel to -1
+    // ## heading 2   <-- here we keep g_indentLevel at -1 such that @subsection will be @section
+    // -------------------
+    // will convert to
+    // -------------------
+    // @page md_page Heading 1
+    // @section autotoc_md1 Heading 2
+    // -------------------
+
+    g_indentLevel=0;
+  }
   return level+g_indentLevel;
 }
 
@@ -1907,7 +1929,7 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
   {
     out.addStr("\n<hr>\n");
   }
-  else if ((level=isAtxHeader(data,size,header,id)))
+  else if ((level=isAtxHeader(data,size,header,id,TRUE)))
   {
     QCString hTag;
     if (level<5 && !id.isEmpty())
@@ -2403,7 +2425,7 @@ static QCString extractPageTitle(QCString &docs,QCString &id)
       return title;
     }
   }
-  if (i<end1 && isAtxHeader(data+i,end1-i,title,id)>0)
+  if (i<end1 && isAtxHeader(data+i,end1-i,title,id,FALSE)>0)
   {
     docs=docs.mid(end1);
   }
