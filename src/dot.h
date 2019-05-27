@@ -159,7 +159,7 @@ class DotNodeList : public QList<DotNode>
 class DotGraph
 {
 public:
-  DotGraph();
+  DotGraph() : m_curNodeNumber(0) {}
 
 protected:
   /** returns node numbers. The Counter is reset by the constructor */
@@ -177,36 +177,31 @@ protected:
     int graphId=-1
   );
 
-  bool prepareDotFile
-  (
-    QGString const& theGraph,
-    GraphOutputFormat const graphFormat,
-    bool generateImageMap,
-    QDir const& dir,
-    QCString const& absBaseName
-  ) const;
-
   virtual QCString getBaseName() const = 0;
   virtual void computeTheGraph() = 0;
 
-  static bool usePDFLatex;
   static QCString imgFmt;
+
+  QCString absBaseName() const { return m_absPath + m_baseName; }
 
   // the following variables are used while writing the graph to a .dot file
   FTextStream *          m_out;
   GraphOutputFormat      m_graphFormat;
   EmbeddedOutputFormat   m_textFormat;
-  QDir                   m_path;
+  QDir                   m_dir;
   QCString               m_fileName;
   QCString               m_relPath;
   bool                   m_generateImageMap;
   int                    m_graphId;
 
+  QCString               m_absPath;
   QCString               m_baseName;
   QGString               m_theGraph;
-
+  bool                   m_regenerate;
 
 private:
+  bool prepareDotFile () const;
+
   int                    m_curNodeNumber;
 };
 
@@ -493,8 +488,6 @@ class DotRunner
     DotConstString const& getMd5Hash() { return m_md5Hash; }
 
   private:
-    DotConstString m_dotExe;
-    bool m_multiTargets;
     QList<DotConstString> m_jobs;
     DotConstString m_postArgs;
     DotConstString m_postCmd;
@@ -592,6 +585,8 @@ class DotManager
     DotRunnerQueue        *m_queue;
     QList<DotWorkerThread> m_workers;
 };
+
+void initDot();
 
 
 /** Generated a graphs legend page */
