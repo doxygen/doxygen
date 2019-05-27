@@ -159,7 +159,7 @@ class DotNodeList : public QList<DotNode>
 class DotGraph
 {
 public:
-  DotGraph() : m_curNodeNumber(0) {}
+  DotGraph() : m_curNodeNumber(0), m_doNotAddImageToIndex(FALSE) {}
 
 protected:
   /** returns node numbers. The Counter is reset by the constructor */
@@ -180,9 +180,12 @@ protected:
   virtual QCString getBaseName() const = 0;
   virtual void computeTheGraph() = 0;
 
-  static QCString imgFmt;
+  static QCString IMG_EXT;
+  friend void initDot();
 
   QCString absBaseName() const { return m_absPath + m_baseName; }
+
+  QCString imgName() const { return m_baseName + "." + IMG_EXT; }
 
   // the following variables are used while writing the graph to a .dot file
   FTextStream *          m_out;
@@ -198,9 +201,11 @@ protected:
   QCString               m_baseName;
   QGString               m_theGraph;
   bool                   m_regenerate;
+  bool                   m_doNotAddImageToIndex;
 
 private:
-  bool prepareDotFile () const;
+  bool prepareDotFile();
+  void generateCode();
 
   int                    m_curNodeNumber;
 };

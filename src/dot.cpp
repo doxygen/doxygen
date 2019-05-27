@@ -267,6 +267,8 @@ void initDot()
   DOT_CLEANUP = Config_getBool(DOT_CLEANUP);
   DOT_MULTI_TARGETS = Config_getBool(DOT_MULTI_TARGETS);
   DOT_EXE.set(DOT_PATH + "dot");
+
+  DotGraph::IMG_EXT = getDotImageExtension();
 }
 
 static void writeGraphHeader(FTextStream &t,const QCString &title=QCString())
@@ -2378,6 +2380,7 @@ const DotNode *DotNode::findDocNode() const
 
 //--------------------------------------------------------------------
 
+<<<<<<< HEAD
 QCString DotGraph::writeGraph(
   FTextStream& t,           // output stream for the code file (html, ...)
   GraphOutputFormat gf,     // bitmap(png/svg) or ps(eps/pdf)
@@ -2409,8 +2412,46 @@ QCString DotGraph::writeGraph(
 
   return m_baseName;
 }
+=======
+QCString DotGraph::IMG_EXT;
 
-bool DotGraph::prepareDotFile() const
+QCString DotGraph::writeGraph(
+  FTextStream& t,           // output stream for the code file (html, ...)
+  GraphOutputFormat gf,     // bitmap(png/svg) or ps(eps/pdf)
+  EmbeddedOutputFormat ef,  // html, latex, ...
+  const char* path,         // output folder
+  const char* fileName,     // name of the code file (for code patcher)
+  const char* relPath,      // output folder relativ to code file
+  bool generateImageMap,    // in case of bitmap, shall there be code generated?
+  int graphId               // number of this graph in the current code, used in svg code
+)
+{
+  m_out = &t;
+  m_graphFormat = gf;
+  m_textFormat = ef;
+  m_dir = QDir(path);
+  m_fileName = fileName;
+  m_relPath = relPath;
+  m_generateImageMap = generateImageMap;
+  m_graphId = graphId;
+
+  m_absPath  = QCString(m_dir.absPath().data()) + "/";
+  m_baseName = getBaseName();
+
+  computeTheGraph();
+
+  m_regenerate = prepareDotFile();
+
+  if (!m_doNotAddImageToIndex) Doxygen::indexList->addImageFile(imgName());
+
+  generateCode();
+  //todo
+
+  return m_baseName;
+}
+>>>>>>> 5dab56a7... separated code generation in dot.cpp
+
+bool DotGraph::prepareDotFile()
 {
   QCString imgExt = m_graphFormat == GOF_BITMAP ? getDotImageExtension() :
     USE_PDFLATEX ? ".pdf" : ".eps";
@@ -2486,6 +2527,25 @@ bool DotGraph::prepareDotFile() const
   return TRUE;
 }
 
+void DotGraph::generateCode()
+{
+  if (m_graphFormat==GOF_BITMAP && m_textFormat==EOF_DocBook)
+  {
+    *m_out << "<para>" << endl;
+    *m_out << "    <informalfigure>" << endl;
+    *m_out << "        <mediaobject>" << endl;
+    *m_out << "            <imageobject>" << endl;
+    *m_out << "                <imagedata";
+    *m_out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << m_relPath << m_baseName << "." << IMG_EXT << "\">";
+    *m_out << "</imagedata>" << endl;
+    *m_out << "            </imageobject>" << endl;
+    *m_out << "        </mediaobject>" << endl;
+    *m_out << "    </informalfigure>" << endl;
+    *m_out << "</para>" << endl;
+  }
+
+}
+
 //--------------------------------------------------------------------
 
 QCString DotGfxHierarchyTable::getBaseName() const
@@ -2539,7 +2599,6 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
   QCString absBaseName = QCString(m_dir.absPath().data())+"/"+m_baseName;
   QCString absDotName  = absBaseName+".dot";
 
-  Doxygen::indexList->addImageFile(imgName);
   // write image and map in a table row
   QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
   if (imgExt=="svg") // vector graphics
@@ -3340,23 +3399,8 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
   QCString absImgName  = absBaseName+"."+imgExt;
   QCString absMapName  = absBaseName+".map";
 
-  Doxygen::indexList->addImageFile(m_baseName+"."+imgExt);
 
-  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
-  {
-    out << "<para>" << endl;
-    out << "    <informalfigure>" << endl;
-    out << "        <mediaobject>" << endl;
-    out << "            <imageobject>" << endl;
-    out << "                <imagedata";
-    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << m_baseName << "." << imgExt << "\">";
-    out << "</imagedata>" << endl;
-    out << "            </imageobject>" << endl;
-    out << "        </mediaobject>" << endl;
-    out << "    </informalfigure>" << endl;
-    out << "</para>" << endl;
-  }
-  else if (graphFormat==GOF_BITMAP && generateImageMap) // produce HTML to include the image
+  if (graphFormat==GOF_BITMAP && generateImageMap) // produce HTML to include the image
   {
     QCString mapLabel = escapeCharsInString(m_startNode->m_label,FALSE)+"_"+
                         escapeCharsInString(mapName,FALSE);
@@ -3644,23 +3688,8 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   QCString mapName=escapeCharsInString(m_startNode->m_label,FALSE);
   if (m_inverse) mapName+="dep";
 
-  Doxygen::indexList->addImageFile(m_baseName+"."+imgExt);
 
-  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
-  {
-    out << "<para>" << endl;
-    out << "    <informalfigure>" << endl;
-    out << "        <mediaobject>" << endl;
-    out << "            <imageobject>" << endl;
-    out << "                <imagedata";
-    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << m_baseName << "." << imgExt << "\">";
-    out << "</imagedata>" << endl;
-    out << "            </imageobject>" << endl;
-    out << "        </mediaobject>" << endl;
-    out << "    </informalfigure>" << endl;
-    out << "</para>" << endl;
-  }
-  else if (graphFormat==GOF_BITMAP && generateImageMap)
+  if (graphFormat==GOF_BITMAP && generateImageMap)
   {
     if (imgExt=="svg") // Scalable vector graphics
     {
@@ -3917,23 +3946,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
   QCString absImgName  = absBaseName+"."+imgExt;
   QCString absMapName  = absBaseName+".map";
 
-  Doxygen::indexList->addImageFile(m_baseName+"."+imgExt);
-
-  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
-  {
-    out << "<para>" << endl;
-    out << "    <informalfigure>" << endl;
-    out << "        <mediaobject>" << endl;
-    out << "            <imageobject>" << endl;
-    out << "                <imagedata";
-    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << m_baseName << "." << imgExt << "\">";
-    out << "</imagedata>" << endl;
-    out << "            </imageobject>" << endl;
-    out << "        </mediaobject>" << endl;
-    out << "    </informalfigure>" << endl;
-    out << "</para>" << endl;
-  }
-  else if (graphFormat==GOF_BITMAP && generateImageMap)
+  if (graphFormat==GOF_BITMAP && generateImageMap)
   {
     if (imgExt=="svg") // Scalable vector graphics
     {
@@ -4036,23 +4049,8 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   QCString absEpsName  = absBaseName+".eps";
   QCString absImgName  = absBaseName+"."+imgExt;
 
-  Doxygen::indexList->addImageFile(m_baseName+"."+imgExt);
 
-  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
-  {
-    out << "<para>" << endl;
-    out << "    <informalfigure>" << endl;
-    out << "        <mediaobject>" << endl;
-    out << "            <imageobject>" << endl;
-    out << "                <imagedata";
-    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << m_baseName << "." << imgExt << "\">";
-    out << "</imagedata>" << endl;
-    out << "            </imageobject>" << endl;
-    out << "        </mediaobject>" << endl;
-    out << "    </informalfigure>" << endl;
-    out << "</para>" << endl;
-  }
-  else if (graphFormat==GOF_BITMAP && generateImageMap)
+  if (graphFormat==GOF_BITMAP && generateImageMap)
   {
     if (imgExt=="svg") // Scalable vector graphics
     {
@@ -4522,7 +4520,13 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
     const char *path, const char *fileName, const char *relPath,
     bool generateImageMap,int graphId)
 {
+<<<<<<< HEAD
   DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
+=======
+  m_doNotAddImageToIndex = TRUE;
+
+  DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
+>>>>>>> 5dab56a7... separated code generation in dot.cpp
 
   QCString absPath     = m_dir.absPath().data();
   QCString absBaseName = absPath+"/"+m_baseName;
@@ -4531,21 +4535,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
   QCString absImgName  = absBaseName+"."+imgExt;
   QCString absMapName  = absBaseName+".map";
 
-  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
-  {
-    t << "<para>" << endl;
-    t << "    <informalfigure>" << endl;
-    t << "        <mediaobject>" << endl;
-    t << "            <imageobject>" << endl;
-    t << "                <imagedata";
-    t << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << relPath << m_baseName << "." << imgExt << "\">";
-    t << "</imagedata>" << endl;
-    t << "            </imageobject>" << endl;
-    t << "        </mediaobject>" << endl;
-    t << "    </informalfigure>" << endl;
-    t << "</para>" << endl;
-  }
-  else if (graphFormat==GOF_BITMAP && generateImageMap)
+  if (graphFormat==GOF_BITMAP && generateImageMap)
   {
     QCString mapLabel = escapeCharsInString(m_baseName,FALSE);
     t << "<center><table><tr><td>";
