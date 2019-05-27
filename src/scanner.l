@@ -6254,6 +6254,43 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
 					}
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>"/**"[*]+{BL} {
+
+					  static bool javadocBanner = Config_getBool(JAVADOC_BANNER);
+
+					  if( javadocBanner ) {
+						  lastDocContext = YY_START;
+
+						  //printf("Found comment banner at %s:%d\n",yyFileName,yyLineNr);
+						  if (current_root->section & Entry::SCOPE_MASK)
+	                                          {
+						    current->inside = current_root->name+"::";
+	                                          }
+						  current->docLine = yyLineNr;
+						  current->docFile = yyFileName;
+						  docBlockContext = YY_START;
+						  docBlockInBody  = YY_START==SkipCurly;
+	                                          static bool javadocAutoBrief = Config_getBool(JAVADOC_AUTOBRIEF);
+						  docBlockAutoBrief = javadocAutoBrief;
+
+	                                          QCString indent;
+	                                          indent.fill(' ',computeIndent(yytext,g_column));
+	                                          docBlock=indent;
+
+						  if (docBlockAutoBrief)
+						  {
+						    current->briefLine = yyLineNr;
+						    current->briefFile = yyFileName;
+						  }
+						  startCommentBlock(FALSE);
+						  BEGIN( DocBlock );
+					  } else {
+						  current->program += yytext ;
+						  lastContext = YY_START ;
+						  BEGIN( Comment ) ;
+					  }
+
+					}
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;

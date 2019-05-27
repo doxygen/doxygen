@@ -57,6 +57,16 @@
 \usepackage{amssymb}
 \usepackage{doxygen}
 \usepackage{manual}
+%%
+\makeatletter
+\newenvironment{DoxygenSubAppendix}{%
+    \renewcommand{\doxysection}{\@ifstar{\doxysubsection@star}{\doxysubsection@nostar}}%
+    \renewcommand{\doxysubsection}{\@ifstar{\doxysubsubsection@star}{\doxysubsubsection@nostar}}
+    \renewcommand{\doxysubsubsection}{\@ifstar{\doxyparagraph@star}{\doxyparagraph@nostar}}
+    \renewcommand{\doxyparagraph}{\@ifstar{\doxysubparagraph@star}{\doxysubparagraph@nostar}}
+}{}
+\makeatother
+%%
 \newcommand{\+}{\discretionary{\mbox{\scriptsize$\hookleftarrow$}}{}{}}
 \lstset{language=C++,inputencoding=utf8,basicstyle=\footnotesize,breaklines=true,breakatwhitespace=true,tabsize=8,numbers=left }
 \makeindex
@@ -147,22 +157,42 @@ Written by Dimitri van Heesch\\[2ex]
 \subinputfrom{../html/examples/group/latex/}{refman_doc}
 \chapter{Member Groups Example}\label{memgrp_example}\hypertarget{memgrp_example}{}
 \subinputfrom{../html/examples/memgrp/latex/}{refman_doc}
-\chapter{After Block Example}\label{afterdoc_example}\hypertarget{afterdoc_example}{}
-\subinputfrom{../html/examples/afterdoc/latex/}{refman_doc}
-\chapter{QT Style Example}\label{qtstyle_example}\hypertarget{qtstyle_example}{}
-\subinputfrom{../html/examples/qtstyle/latex/}{refman_doc}
-\chapter{Javadoc Style Example}\label{jdstyle_example}\hypertarget{jdstyle_example}{}
-\subinputfrom{../html/examples/jdstyle/latex/}{refman_doc}
+\chapter{Style Examples}
+  \doxysection{After Block Example}\label{afterdoc_example}\hypertarget{afterdoc_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{../html/examples/afterdoc/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{QT Style Example}\label{qtstyle_example}\hypertarget{qtstyle_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{../html/examples/qtstyle/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{Javadoc Style Example}\label{jdstyle_example}\hypertarget{jdstyle_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{../html/examples/jdstyle/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{Javadoc Banner Example}\label{javadoc_banner_example}\hypertarget{javadoc_banner_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{../html/examples/javadoc-banner/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
 \chapter{Structural Commands Example}\label{structcmd_example}\hypertarget{structcmd_example}{}
 \subinputfrom{../html/examples/structcmd/latex/}{refman_doc}
-\chapter{Python Docstring Example}\label{python_example}\hypertarget{python_example}{}
-\subinputfrom{../html/examples/docstring/latex/}{refman_doc}
-\chapter{Python Example}\label{py_example}\hypertarget{py_example}{}
-\subinputfrom{../html/examples/pyexample/latex/}{refman_doc}
-\chapter{VHDL Example}\label{vhdl_example}\hypertarget{vhdl_example}{}
-\subinputfrom{../html/examples/mux/latex/}{refman_doc}
-\chapter{Tcl Example}\label{tcl_example}\hypertarget{tcl_example}{}
-\subinputfrom{../html/examples/tclexample/latex/}{refman_doc}
+\chapter{Language Examples}
+  \doxysection{Python Docstring Example}\label{python_example}\hypertarget{python_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{../html/examples/docstring/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{Python Example}\label{py_example}\hypertarget{py_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{../html/examples/pyexample/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{VHDL Example}\label{vhdl_example}\hypertarget{vhdl_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{../html/examples/mux/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{Tcl Example}\label{tcl_example}\hypertarget{tcl_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{../html/examples/tclexample/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
 
 \chapter{Class Example}\label{class_example}\hypertarget{class_example}{}
 \subinputfrom{../html/examples/class/latex/}{refman_doc}
