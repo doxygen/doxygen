@@ -20,8 +20,11 @@ init:
   - msbuild /version
 
 install:
-  - ps: Invoke-WebRequest http://doxygen.nl/testing/miktex.zip -OutFile miktex.zip
-  - 7z x miktex.zip -oC:\deps\miktex
+  - appveyor DownloadFile  https://miktex.org/download/win/basic-miktex-x32.exe
+  - basic-miktex-x32.exe --unattended --shared
+# Disabled this due to too slow download
+#  - ps: Invoke-WebRequest http://doxygen.nl/testing/miktex.zip -OutFile miktex.zip
+#  - 7z x miktex.zip -oC:\deps\miktex
 # Disabled MikTeX installed due to unreliable download
 #  - ps: Invoke-WebRequest https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs924/gs924w32.exe -OutFile gswin32c.exe
 #  - gswin32c /S /D=C:\deps\ghostscript
