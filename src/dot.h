@@ -156,15 +156,17 @@ class DotNodeList : public QList<DotNode>
 /** A dot graph */
 class DotGraph
 {
-public:
-  DotGraph() : m_curNodeNumber(0) {}
+  public:
+    DotGraph() : m_curNodeNumber(0) {}
+    virtual ~DotGraph() {}
 
-protected:
-  int getNextNodeNumber() { return ++m_curNodeNumber; }
+  protected:
+    int getNextNodeNumber() { return ++m_curNodeNumber; }
 
-private:
-  int                    m_curNodeNumber;
-
+  private:
+    DotGraph(const DotGraph &);
+    DotGraph &operator=(const DotGraph &);
+    int m_curNodeNumber;
 };
 
 /** Represents a graphical class hierarchy */
