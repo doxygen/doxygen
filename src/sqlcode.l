@@ -440,10 +440,9 @@ void parseSqlCode(
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
-
-  sqlcodeYYlex_destroy(yyscanner);
   
   printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
+  sqlcodeYYlex_destroy(yyscanner);
   return;
 }
 
