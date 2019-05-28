@@ -159,7 +159,7 @@ class DotNodeList : public QList<DotNode>
 class DotGraph
 {
 public:
-  DotGraph() : m_curNodeNumber(0), m_doNotAddImageToIndex(FALSE) {}
+  DotGraph() : m_curNodeNumber(0), m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE), m_zoomable(TRUE), m_urlOnly(FALSE) {}
 
 protected:
   /** returns node numbers. The Counter is reset by the constructor */
@@ -178,14 +178,21 @@ protected:
   );
 
   virtual QCString getBaseName() const = 0;
+  virtual QCString absMapName()  const { return m_absPath + m_baseName + ".map"; }
+  virtual QCString getMapLabel() const = 0;
   virtual void computeTheGraph() = 0;
+  virtual QCString getImgAltText() const { return ""; }
 
   static QCString IMG_EXT;
   friend void initDot();
 
   QCString absBaseName() const { return m_absPath + m_baseName; }
 
-  QCString imgName() const { return m_baseName + "." + IMG_EXT; }
+  QCString absDotName()  const { return m_absPath + m_baseName + ".dot"; }
+
+  QCString imgName()     const;
+  QCString absImgName()  const { return m_absPath + m_baseName + "." + IMG_EXT; }
+  QCString relImgName()  const { return m_relPath + m_baseName + "." + IMG_EXT; }
 
   // the following variables are used while writing the graph to a .dot file
   FTextStream *          m_out;
@@ -202,6 +209,9 @@ protected:
   QGString               m_theGraph;
   bool                   m_regenerate;
   bool                   m_doNotAddImageToIndex;
+  bool                   m_noDivTag;
+  bool                   m_zoomable;
+  bool                   m_urlOnly;
 
 private:
   bool prepareDotFile();
@@ -222,6 +232,7 @@ class DotGfxHierarchyTable : public DotGraph
 
   protected:
     virtual QCString getBaseName() const;
+    virtual QCString getMapLabel() const;
     virtual void computeTheGraph();
 
   private:
@@ -257,7 +268,9 @@ class DotClassGraph : public DotGraph
 
   protected:
     virtual QCString getBaseName() const;
+    virtual QCString getMapLabel() const;
     virtual void computeTheGraph();
+    virtual QCString getImgAltText() const;
 
   private:
     void buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance);
@@ -292,6 +305,7 @@ class DotInclDepGraph : public DotGraph
 
   protected:
     virtual QCString getBaseName() const;
+    virtual QCString getMapLabel() const;
     virtual void computeTheGraph();
 
   private:
@@ -324,6 +338,7 @@ class DotCallGraph : public DotGraph
 
   protected:
     virtual QCString getBaseName() const;
+    virtual QCString getMapLabel() const;
     virtual void computeTheGraph();
 
   private:
@@ -353,7 +368,9 @@ class DotDirDeps : public DotGraph
 
   protected:
     virtual QCString getBaseName() const;
+    virtual QCString getMapLabel() const;
     virtual void computeTheGraph();
+    virtual QCString getImgAltText() const;
 
   private:
     const DirDef *m_dir;
@@ -408,6 +425,7 @@ class DotGroupCollaboration : public DotGraph
 
   protected:
     virtual QCString getBaseName() const;
+    virtual QCString getMapLabel() const;
     virtual void computeTheGraph();
 
   private :

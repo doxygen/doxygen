@@ -2380,40 +2380,12 @@ const DotNode *DotNode::findDocNode() const
 
 //--------------------------------------------------------------------
 
-<<<<<<< HEAD
-QCString DotGraph::writeGraph(
-  FTextStream& t,           // output stream for the code file (html, ...)
-  GraphOutputFormat gf,     // bitmap(png/svg) or ps(eps/pdf)
-  EmbeddedOutputFormat ef,  // html, latex, ...
-  const char* path,         // output folder
-  const char* fileName,     // name of the code file (for code patcher)
-  const char* relPath,      // output folder relativ to code file
-  bool generateImageMap,    // in case of bitmap, shall there be code generated?
-  int graphId               // number of this graph in the current code, used in svg code
-)
-{
-  m_out = &t;
-  m_graphFormat = gf;
-  m_textFormat = ef;
-  m_dir = QDir(path);
-  m_fileName = fileName;
-  m_relPath = relPath;
-  m_generateImageMap = generateImageMap;
-  m_graphId = graphId;
-
-  m_absPath  = QCString(m_dir.absPath().data()) + "/";
-  m_baseName = getBaseName();
-
-  computeTheGraph();
-
-  m_regenerate = prepareDotFile();
-
-  //todo
-
-  return m_baseName;
-}
-=======
 QCString DotGraph::IMG_EXT;
+
+QCString DotGraph::imgName() const 
+{
+  return m_baseName + ((m_graphFormat == GOF_BITMAP) ? ("." + IMG_EXT) : (USE_PDFLATEX ? ".pdf" : ".eps"));
+}
 
 QCString DotGraph::writeGraph(
   FTextStream& t,           // output stream for the code file (html, ...)
@@ -2449,17 +2421,9 @@ QCString DotGraph::writeGraph(
 
   return m_baseName;
 }
->>>>>>> 5dab56a7... separated code generation in dot.cpp
 
 bool DotGraph::prepareDotFile()
 {
-  QCString imgExt = m_graphFormat == GOF_BITMAP ? getDotImageExtension() :
-    USE_PDFLATEX ? ".pdf" : ".eps";
-
-  QCString absDotName  = absBaseName()+".dot";
-  QCString absMapName  = absBaseName()+".map";
-  QCString absImgName  = absBaseName()+"."+imgExt;
-
   if (!m_dir.exists())
   {
     err("Output dir %s does not exist!\n",m_dir.path()); exit(1);
@@ -2472,27 +2436,27 @@ bool DotGraph::prepareDotFile()
   // convert result to a string
   MD5SigToString(md5_sig, sigStr.rawData(), 33);
 
-  if (DotManager::instance()->containsRun(absDotName, sigStr))
+  if (DotManager::instance()->containsRun(absDotName(), sigStr))
   {
     // file is already queued
     return TRUE;
   }
 
   if (!checkMd5Signature(absBaseName(), sigStr) &&
-      checkDeliverables(absImgName,
-                        m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName : QCString()
+      checkDeliverables(absImgName(),
+                        m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
                        )
      )
   {
     // all needed files are there
-    removeDotGraph(absDotName);
+    removeDotGraph(absDotName());
     return FALSE;
   }
 
   // need to rebuild the image
 
   // write .dot file because image was new or has changed
-  QFile f(absDotName);
+  QFile f(absDotName());
   if (!f.open(IO_WriteOnly))
   {
     err("Could not open file %s for writing\n",f.name().data());
@@ -2505,22 +2469,22 @@ bool DotGraph::prepareDotFile()
   if (m_graphFormat == GOF_BITMAP)
   {
     // run dot to create a bitmap image
-    DotRunner * dotRun = new DotRunner(absDotName, m_dir.absPath().data(), sigStr, TRUE, absImgName);
-    dotRun->addJob(DOT_IMAGE_FORMAT, absImgName);
-    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName);
+    DotRunner * dotRun = new DotRunner(absDotName(), m_dir.absPath().data(), sigStr, TRUE, absImgName());
+    dotRun->addJob(DOT_IMAGE_FORMAT, absImgName());
+    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName());
     DotManager::instance()->addRun(dotRun);
   }
   else if (m_graphFormat == GOF_EPS)
   {
     // run dot to create a .eps image
-    DotRunner *dotRun = new DotRunner(absDotName, m_dir.absPath().data(), sigStr, FALSE);
+    DotRunner *dotRun = new DotRunner(absDotName(), m_dir.absPath().data(), sigStr, FALSE);
     if (USE_PDFLATEX)
     {
-      dotRun->addJob("pdf",absImgName,absBaseName());
+      dotRun->addJob("pdf",absImgName(),absBaseName());
     }
     else
     {
-      dotRun->addJob("ps",absImgName);
+      dotRun->addJob("ps",absImgName());
     }
     DotManager::instance()->addRun(dotRun);
   }
@@ -2542,6 +2506,43 @@ void DotGraph::generateCode()
     *m_out << "        </mediaobject>" << endl;
     *m_out << "    </informalfigure>" << endl;
     *m_out << "</para>" << endl;
+  }
+  else if (m_graphFormat==GOF_BITMAP && m_generateImageMap) // produce HTML to include the image
+  {
+    if (IMG_EXT=="svg") // add link to SVG file without map file
+    {
+      if (!m_noDivTag) *m_out << "<div class=\"center\">";
+      if (m_regenerate || !writeSVGFigureLink(*m_out,m_relPath,m_baseName,absImgName())) // need to patch the links in the generated SVG file
+      {
+        if (m_regenerate)
+        {
+          DotManager::instance()->addSVGConversion(absImgName(),m_relPath,FALSE,QCString(),m_zoomable,m_graphId);
+        }
+        int mapId = DotManager::instance()->addSVGObject(m_fileName,m_baseName,absImgName(),m_relPath);
+        *m_out << "<!-- SVG " << mapId << " -->" << endl;
+      }
+      if (!m_noDivTag) *m_out << "</div>" << endl;
+    }
+    else // add link to bitmap file with image map
+    {
+      if (!m_noDivTag) *m_out << "<div class=\"center\">";
+      *m_out << "<img src=\"" << relImgName() << "\" border=\"0\" usemap=\"#" << getMapLabel() << "\" alt=\"" << getImgAltText() << "\"/>";
+      if (!m_noDivTag) *m_out << "</div>";
+      *m_out << endl;
+      if (m_regenerate || !insertMapFile(*m_out, absMapName(), m_relPath, getMapLabel()))
+      {
+        int mapId = DotManager::instance()->addMap(m_fileName, absMapName(), m_relPath, m_urlOnly, QCString(), getMapLabel());
+        *m_out << "<!-- MAP " << mapId << " -->" << endl;
+      }
+    }
+  }
+  else if (m_graphFormat==GOF_EPS) // produce tex to include the .eps image
+  {
+    if (m_regenerate || !writeVecGfxFigure(*m_out,m_baseName,absBaseName()))
+    {
+      int figId = DotManager::instance()->addFigure(m_fileName,m_baseName,absBaseName(),FALSE /*TRUE*/);
+      *m_out << endl << "% FIG " << figId << endl;
+    }
   }
 
 }
@@ -2584,49 +2585,19 @@ void DotGfxHierarchyTable::computeTheGraph()
 
 }
 
+QCString DotGfxHierarchyTable::getMapLabel() const
+{
+  return escapeCharsInString(m_rootSubgraphNode->m_label,FALSE);
+}
+
 void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
        const char *path,const char *fileName,int id)
 {
   m_rootSubgraphNode = n;
   m_graphId = id;
+  m_noDivTag = TRUE;
+  m_zoomable = FALSE;
   DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
-
-  QCString imgExt = getDotImageExtension();
-  QCString imgName = m_baseName+"."+ imgExt;
-  QCString mapName = m_baseName+".map";
-  QCString absImgName = QCString(m_dir.absPath().data())+"/"+imgName;
-  QCString absMapName = QCString(m_dir.absPath().data())+"/"+mapName;
-  QCString absBaseName = QCString(m_dir.absPath().data())+"/"+m_baseName;
-  QCString absDotName  = absBaseName+".dot";
-
-  // write image and map in a table row
-  QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
-  if (imgExt=="svg") // vector graphics
-  {
-    if (m_regenerate || !writeSVGFigureLink(out,QCString(),m_baseName,absImgName))
-    {
-      if (m_regenerate)
-      {
-        DotManager::instance()->addSVGConversion(absImgName,QCString(),
-            FALSE,QCString(),FALSE,0);
-      }
-      int mapId = DotManager::instance()->addSVGObject(fileName,m_baseName,
-          absImgName,QCString());
-      out << "<!-- SVG " << mapId << " -->" << endl;
-    }
-  }
-  else // normal bitmap
-  {
-    out << "<img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#"
-      << mapLabel << "\"/>" << endl;
-
-    if (m_regenerate || !insertMapFile(out,absMapName,QCString(),mapLabel))
-    {
-      int mapId = DotManager::instance()->addMap(fileName,absMapName,QCString(),
-          FALSE,QCString(),mapLabel);
-      out << "<!-- MAP " << mapId << " -->" << endl;
-    }
-  }
 }
 
 void DotGfxHierarchyTable::writeGraph(FTextStream &out,
@@ -3366,6 +3337,42 @@ void DotClassGraph::computeTheGraph()
   );
 }
 
+QCString DotClassGraph::getMapLabel() const
+{
+  QCString mapName;
+  switch (m_graphType)
+  {
+  case DotNode::Collaboration:
+    mapName="coll_map";
+    break;
+  case DotNode::Inheritance:
+    mapName="inherit_map";
+    break;
+  default:
+    ASSERT(0);
+    break;
+  }
+
+  return escapeCharsInString(m_startNode->m_label,FALSE)+"_"+escapeCharsInString(mapName,FALSE);
+}
+
+QCString DotClassGraph::getImgAltText() const 
+{
+  switch (m_graphType)
+  {
+  case DotNode::Collaboration:
+    return "Collaboration graph";
+    break;
+  case DotNode::Inheritance:
+    return "Inheritance graph";
+    break;
+  default:
+    ASSERT(0);
+    break;
+  }
+  return ""; 
+}
+
 QCString DotClassGraph::writeGraph(FTextStream &out,
                                GraphOutputFormat graphFormat,
                                EmbeddedOutputFormat textFormat,
@@ -3376,86 +3383,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
                                bool generateImageMap,
                                int graphId)
 {
-  DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
-
-  QCString mapName;
-  switch (m_graphType)
-  {
-    case DotNode::Collaboration:
-      mapName="coll_map";
-      break;
-    case DotNode::Inheritance:
-      mapName="inherit_map";
-      break;
-    default:
-      ASSERT(0);
-      break;
-  }
-
-
-  QCString absBaseName = m_dir.absPath().utf8()+"/"+m_baseName;
-
-  QCString imgExt = getDotImageExtension();
-  QCString absImgName  = absBaseName+"."+imgExt;
-  QCString absMapName  = absBaseName+".map";
-
-
-  if (graphFormat==GOF_BITMAP && generateImageMap) // produce HTML to include the image
-  {
-    QCString mapLabel = escapeCharsInString(m_startNode->m_label,FALSE)+"_"+
-                        escapeCharsInString(mapName,FALSE);
-    if (imgExt=="svg") // add link to SVG file without map file
-    {
-      out << "<div class=\"center\">";
-      if (m_regenerate || !writeSVGFigureLink(out,relPath,m_baseName,absImgName)) // need to patch the links in the generated SVG file
-      {
-        if (m_regenerate)
-        {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
-        }
-        int mapId = DotManager::instance()->addSVGObject(fileName,m_baseName,absImgName,relPath);
-        out << "<!-- SVG " << mapId << " -->" << endl;
-      }
-      out << "</div>" << endl;
-    }
-    else // add link to bitmap file with image map
-    {
-      out << "<div class=\"center\">";
-      out << "<img src=\"" << relPath << m_baseName << "." 
-        << imgExt << "\" border=\"0\" usemap=\"#" 
-        << mapLabel << "\" alt=\"";
-      switch (m_graphType)
-      {
-        case DotNode::Collaboration:
-          out << "Collaboration graph";
-          break;
-        case DotNode::Inheritance:
-          out << "Inheritance graph";
-          break;
-        default:
-          ASSERT(0);
-          break;
-      }
-      out << "\"/>";
-      out << "</div>" << endl;
-      if (m_regenerate || !insertMapFile(out,absMapName,relPath,mapLabel))
-      {
-        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-            FALSE,QCString(),mapLabel);
-        out << "<!-- MAP " << mapId << " -->" << endl;
-      }
-    }
-  }
-  else if (graphFormat==GOF_EPS) // produce tex to include the .eps image
-  {
-    if (m_regenerate || !writeVecGfxFigure(out,m_baseName,absBaseName))
-    {
-      int figId = DotManager::instance()->addFigure(fileName,m_baseName,absBaseName,FALSE /*TRUE*/);
-      out << endl << "% FIG " << figId << endl;
-    }
-  }
-
-  return m_baseName;
+  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
 //--------------------------------------------------------------------
@@ -3668,6 +3596,18 @@ void DotInclDepGraph::computeTheGraph()
   );
 }
 
+QCString DotInclDepGraph::getMapLabel() const
+{
+  if (m_inverse)
+  {
+    return escapeCharsInString(m_startNode->m_label,FALSE) + "dep";
+  }
+  else
+  {
+    return escapeCharsInString(m_startNode->m_label,FALSE);
+  }
+}
+
 QCString DotInclDepGraph::writeGraph(FTextStream &out,
                                  GraphOutputFormat graphFormat,
                                  EmbeddedOutputFormat textFormat,
@@ -3678,57 +3618,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
                                  int graphId
                                 )
 {
-  DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
-
-  QCString absBaseName = m_dir.absPath().utf8()+"/"+m_baseName;
-
-  QCString imgExt = getDotImageExtension();
-  QCString absImgName  = absBaseName+"."+imgExt;
-
-  QCString mapName=escapeCharsInString(m_startNode->m_label,FALSE);
-  if (m_inverse) mapName+="dep";
-
-
-  if (graphFormat==GOF_BITMAP && generateImageMap)
-  {
-    if (imgExt=="svg") // Scalable vector graphics
-    {
-      out << "<div class=\"center\">";
-      if (m_regenerate || !writeSVGFigureLink(out,relPath,m_baseName,absImgName)) // need to patch the links in the generated SVG file
-      {
-        if (m_regenerate)
-        {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
-        }
-        int mapId = DotManager::instance()->addSVGObject(fileName,m_baseName,absImgName,relPath);
-        out << "<!-- SVG " << mapId << " -->" << endl;
-      }
-      out << "</div>" << endl;
-    }
-    else // bitmap graphics
-    {
-      out << "<div class=\"center\"><img src=\"" << relPath << m_baseName << "." << imgExt << "\" border=\"0\" usemap=\"#" << mapName << "\" alt=\"\"/>";
-      out << "</div>" << endl;
-
-      QCString absMapName = absBaseName+".map";
-      if (m_regenerate || !insertMapFile(out,absMapName,relPath,mapName))
-      {
-        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-                                                 FALSE,QCString(),mapName);
-        out << "<!-- MAP " << mapId << " -->" << endl;
-      }
-    }
-  }
-  else if (graphFormat==GOF_EPS) // encapsulated postscript
-  {
-    if (m_regenerate || !writeVecGfxFigure(out,m_baseName,absBaseName))
-    {
-      int figId = DotManager::instance()->addFigure(fileName,m_baseName,absBaseName,FALSE);
-      out << endl << "% FIG " << figId << endl;
-    }
-  }
-
-  return m_baseName;
+  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
 bool DotInclDepGraph::isTrivial() const
@@ -3932,62 +3822,18 @@ void DotCallGraph::computeTheGraph()
     m_theGraph);
 }
 
+QCString DotCallGraph::getMapLabel() const
+{
+  return m_baseName;
+}
+
 QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphFormat,
                         EmbeddedOutputFormat textFormat,
                         const char *path,const char *fileName,
                         const char *relPath,bool generateImageMap,int
                         graphId)
 {
-  DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
-
-  QCString mapName  = m_baseName;
-  QCString imgExt = getDotImageExtension();
-  QCString absBaseName = m_dir.absPath().utf8()+"/"+m_baseName;
-  QCString absImgName  = absBaseName+"."+imgExt;
-  QCString absMapName  = absBaseName+".map";
-
-  if (graphFormat==GOF_BITMAP && generateImageMap)
-  {
-    if (imgExt=="svg") // Scalable vector graphics
-    {
-      out << "<div class=\"center\">";
-      if (m_regenerate || !writeSVGFigureLink(out,relPath,m_baseName,absImgName)) // need to patch the links in the generated SVG file
-      {
-        if (m_regenerate)
-        {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
-        }
-        int mapId = DotManager::instance()->addSVGObject(fileName,m_baseName,absImgName,relPath);
-        out << "<!-- SVG " << mapId << " -->" << endl;
-      }
-      out << "</div>" << endl;
-    }
-    else // bitmap graphics
-    {
-      out << "<div class=\"center\"><img src=\"" << relPath << m_baseName << "."
-          << imgExt << "\" border=\"0\" usemap=\"#"
-          << mapName << "\" alt=\"";
-      out << "\"/>";
-      out << "</div>" << endl;
-
-      if (m_regenerate || !insertMapFile(out,absMapName,relPath,mapName))
-      {
-        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-                                                   FALSE,QCString(),mapName);
-        out << "<!-- MAP " << mapId << " -->" << endl;
-      }
-    }
-  }
-  else if (graphFormat==GOF_EPS) // encapsulated postscript
-  {
-    if (m_regenerate || !writeVecGfxFigure(out,m_baseName,absBaseName))
-    {
-      int figId = DotManager::instance()->addFigure(fileName,m_baseName,absBaseName,FALSE);
-      out << endl << "% FIG " << figId << endl;
-    }
-  }
-
-  return m_baseName;
+  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
 bool DotCallGraph::isTrivial() const
@@ -4026,6 +3872,16 @@ void DotDirDeps::computeTheGraph()
   writeDotDirDepGraph(md5stream,m_dir,m_linkRelations);
 }
 
+QCString DotDirDeps::getMapLabel() const
+{
+  return escapeCharsInString(m_baseName,FALSE);
+}
+
+QCString DotDirDeps::getImgAltText() const
+{
+  return convertToXML(m_dir->displayName());
+}
+
 QCString DotDirDeps::writeGraph(FTextStream &out,
                             GraphOutputFormat graphFormat,
                             EmbeddedOutputFormat textFormat,
@@ -4037,62 +3893,8 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
                             bool linkRelations)
 {
   m_linkRelations = linkRelations;
-  DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
-
-  QCString mapName=escapeCharsInString(m_baseName,FALSE);
-
-  QCString imgExt = getDotImageExtension();
-  QCString absBaseName = m_absPath+m_baseName;
-  QCString absDotName  = absBaseName+".dot";
-  QCString absMapName  = absBaseName+".map";
-  QCString absPdfName  = absBaseName+".pdf";
-  QCString absEpsName  = absBaseName+".eps";
-  QCString absImgName  = absBaseName+"."+imgExt;
-
-
-  if (graphFormat==GOF_BITMAP && generateImageMap)
-  {
-    if (imgExt=="svg") // Scalable vector graphics
-    {
-      out << "<div class=\"center\">";
-      if (m_regenerate || !writeSVGFigureLink(out,relPath,m_baseName,absImgName)) // need to patch the links in the generated SVG file
-      {
-        if (m_regenerate)
-        {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
-        }
-        int mapId = DotManager::instance()->addSVGObject(fileName,m_baseName,absImgName,relPath);
-        out << "<!-- SVG " << mapId << " -->" << endl;
-      }
-      out << "</div>" << endl;
-    }
-    else // bitmap graphics
-    {
-      out << "<div class=\"center\"><img src=\"" << relPath << m_baseName << "."
-          << imgExt << "\" border=\"0\" usemap=\"#"
-          << mapName << "\" alt=\"";
-      out << convertToXML(m_dir->displayName());
-      out << "\"/>";
-      out << "</div>" << endl;
-
-      if (m_regenerate || !insertMapFile(out,absMapName,relPath,mapName))
-      {
-        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-                                                   TRUE,QCString(),mapName);
-        out << "<!-- MAP " << mapId << " -->" << endl;
-      }
-    }
-  }
-  else if (graphFormat==GOF_EPS)
-  {
-    if (m_regenerate || !writeVecGfxFigure(out,m_baseName,absBaseName))
-    {
-      int figId = DotManager::instance()->addFigure(fileName,m_baseName,absBaseName,FALSE);
-      out << endl << "% FIG " << figId << endl;
-    }
-  }
-
-  return m_baseName;
+  m_urlOnly = TRUE;
+  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
 bool DotDirDeps::isTrivial() const
@@ -4133,6 +3935,11 @@ class GraphLegendDotGraph : public DotGraph {
     writeGraphFooter(md5stream);
   }
 
+  QCString getMapLabel() const
+  {
+    return "";
+  }
+
   friend void generateGraphLegend(const char* path);
 };
 
@@ -4143,20 +3950,12 @@ void generateGraphLegend(const char *path)
 
   dg.writeGraph(FTextStream(), GOF_BITMAP, EOF_Html, path, "", "", FALSE, 0);
 
-
-  QCString absBaseName = (QCString)path + "/" + dg.getBaseName();
-  QCString imgExt = getDotImageExtension();
-  QCString absImgName  = absBaseName+"."+imgExt;
-  QCString imgName     = "graph_legend."+imgExt;
-
-  Doxygen::indexList->addImageFile(imgName);
-
-  if (imgExt=="svg")
+  if (DotGraph::IMG_EXT=="svg")
   {
     DotManager::instance()->addSVGObject(
-        absBaseName+Config_getString(HTML_FILE_EXTENSION),
+        dg.absBaseName()+Config_getString(HTML_FILE_EXTENSION),
         "graph_legend",
-        absImgName,QCString());
+        dg.absImgName(),QCString());
   }
 
 }
@@ -4515,69 +4314,19 @@ void DotGroupCollaboration::computeTheGraph()
 
 }
 
+QCString DotGroupCollaboration::getMapLabel() const
+{
+  return escapeCharsInString(m_baseName, FALSE);
+}
+
 QCString DotGroupCollaboration::writeGraph( FTextStream &t,
     GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
     const char *path, const char *fileName, const char *relPath,
     bool generateImageMap,int graphId)
 {
-<<<<<<< HEAD
-  DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
-=======
   m_doNotAddImageToIndex = TRUE;
 
-  DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
->>>>>>> 5dab56a7... separated code generation in dot.cpp
-
-  QCString absPath     = m_dir.absPath().data();
-  QCString absBaseName = absPath+"/"+m_baseName;
-  QCString imgExt = getDotImageExtension();
-  QCString imgName     = m_baseName+"."+imgExt;
-  QCString absImgName  = absBaseName+"."+imgExt;
-  QCString absMapName  = absBaseName+".map";
-
-  if (graphFormat==GOF_BITMAP && generateImageMap)
-  {
-    QCString mapLabel = escapeCharsInString(m_baseName,FALSE);
-    t << "<center><table><tr><td>";
-
-    if (imgExt=="svg")
-    {
-      t << "<div class=\"center\">";
-      if (m_regenerate || !writeSVGFigureLink(t,relPath,m_baseName,absImgName)) // need to patch the links in the generated SVG file
-      {
-        if (m_regenerate)
-        {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
-        }
-        int mapId = DotManager::instance()->addSVGObject(fileName,m_baseName,absImgName,relPath);
-        t << "<!-- SVG " << mapId << " -->" << endl;
-      }
-      t << "</div>" << endl;
-    }
-    else
-    {
-      t << "<img src=\"" << relPath << imgName
-        << "\" border=\"0\" alt=\"\" usemap=\"#"
-        << mapLabel << "\"/>" << endl;
-      if (m_regenerate || !insertMapFile(t,absMapName,relPath,mapLabel))
-      {
-        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-                                                   FALSE,QCString(),mapLabel);
-        t << "<!-- MAP " << mapId << " -->" << endl;
-      }
-    }
-    t << "</td></tr></table></center>" << endl;
-  }
-  else if (graphFormat==GOF_EPS)
-  {
-    if (m_regenerate || !writeVecGfxFigure(t,m_baseName,absBaseName))
-    {
-      int figId = DotManager::instance()->addFigure(fileName,m_baseName,absBaseName,FALSE);
-      t << endl << "% FIG " << figId << endl;
-    }
-  }
-
-  return m_baseName;
+  return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
 void DotGroupCollaboration::Edge::write( FTextStream &t ) const
