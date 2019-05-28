@@ -2515,7 +2515,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,bool hideS
             }
           }
           QCString tooltip = bClass->briefDescriptionAsTooltip();
-          bn = new DotNode(m_curNodeNumber++,
+          bn = new DotNode(getNextNodeNumber(),
               bClass->displayName(),
               tooltip,
               tmp_url.data()
@@ -2576,7 +2576,7 @@ void DotGfxHierarchyTable::addClassList(const ClassSDict *cl)
       }
       //printf("Inserting root class %s\n",cd->name().data());
       QCString tooltip = cd->briefDescriptionAsTooltip();
-      DotNode *n = new DotNode(m_curNodeNumber++,
+      DotNode *n = new DotNode(getNextNodeNumber(),
           cd->displayName(),
           tooltip,
           tmp_url.data());
@@ -2596,7 +2596,6 @@ void DotGfxHierarchyTable::addClassList(const ClassSDict *cl)
 DotGfxHierarchyTable::DotGfxHierarchyTable(const char *prefix,ClassDef::CompoundType ct)
   : m_prefix(prefix)
   , m_classType(ct)
-  , m_curNodeNumber(1)
 {
   m_rootNodes = new QList<DotNode>;
   m_usedNodes = new QDict<DotNode>(1009); 
@@ -2726,7 +2725,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
       }
     }
     QCString tooltip = cd->briefDescriptionAsTooltip();
-    bn = new DotNode(m_curNodeNumber++,
+    bn = new DotNode(getNextNodeNumber(),
         displayName,
         tooltip,
         tmp_url.data(),
@@ -3019,13 +3018,6 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
   }
 }
 
-int DotClassGraph::m_curNodeNumber = 0;
-
-void DotClassGraph::resetNumbering()
-{
-  m_curNodeNumber = 0;
-}
-
 DotClassGraph::DotClassGraph(const ClassDef *cd,DotNode::GraphType t)
 {
   //printf("--------------- DotClassGraph::DotClassGraph `%s'\n",cd->displayName().data());
@@ -3041,7 +3033,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,DotNode::GraphType t)
   }
   QCString className = cd->displayName();
   QCString tooltip = cd->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(m_curNodeNumber++,
+  m_startNode = new DotNode(getNextNodeNumber(),
                             className,
                             tooltip,
                             tmp_url.data(),
@@ -3429,7 +3421,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
             tooltip = bfd->briefDescriptionAsTooltip();
           }
           bn = new DotNode(
-              m_curNodeNumber++, // n
+              getNextNodeNumber(),// n
               ii->includeName,   // label
               tooltip,           // tip
               tmp_url,           // url
@@ -3497,13 +3489,6 @@ void DotInclDepGraph::determineTruncatedNodes(QList<DotNode> &queue)
   }
 }
 
-int DotInclDepGraph::m_curNodeNumber = 0;
-
-void DotInclDepGraph::resetNumbering()
-{
-  m_curNodeNumber = 0;
-}
-
 DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
 {
   m_inverse = inverse;
@@ -3512,7 +3497,7 @@ DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
   m_inclByDepFileName = fd->includedByDependencyGraphFileName();
   QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
   QCString tooltip = fd->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(m_curNodeNumber++,
+  m_startNode = new DotNode(getNextNodeNumber(),
                             fd->docName(),
                             tooltip,
                             tmp_url.data(),
@@ -3718,6 +3703,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
   MemberSDict *refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   if (refs)
   {
+    refs->sort();
     MemberSDict::Iterator mri(*refs);
     MemberDef *rmd;
     for (;(rmd=mri.current());++mri)
@@ -3748,7 +3734,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
           }
           QCString tooltip = rmd->briefDescriptionAsTooltip();
           bn = new DotNode(
-              m_curNodeNumber++,
+              getNextNodeNumber(),
               linkToText(rmd->getLanguage(),name,FALSE),
               tooltip,
               uniqueId,
@@ -3815,13 +3801,6 @@ void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
   }
 }
 
-int DotCallGraph::m_curNodeNumber = 0;
-
-void DotCallGraph::resetNumbering()
-{
-  m_curNodeNumber = 0;
-}
-
 DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
 {
   m_inverse = inverse;
@@ -3840,7 +3819,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
     name = md->qualifiedName();
   }
   QCString tooltip = md->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(m_curNodeNumber++,
+  m_startNode = new DotNode(getNextNodeNumber(),
                             linkToText(md->getLanguage(),name,FALSE),
                             tooltip,
                             uniqueId.data(),
@@ -4355,19 +4334,12 @@ void writeDotImageMapFromFile(FTextStream &t,
 
 //-------------------------------------------------------------
 
-int DotGroupCollaboration::m_curNodeNumber = 0;
-
-void DotGroupCollaboration::resetNumbering()
-{
-  m_curNodeNumber = 0;
-}
-
 DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 {
     QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
     m_usedNodes = new QDict<DotNode>(1009);
     QCString tooltip = gd->briefDescriptionAsTooltip();
-    m_rootNode = new DotNode(m_curNodeNumber++, gd->groupTitle(), tooltip, tmp_url, TRUE );
+    m_rootNode = new DotNode(getNextNodeNumber(), gd->groupTitle(), tooltip, tmp_url, TRUE );
     m_rootNode->markAsVisible();
     m_usedNodes->insert(gd->name(), m_rootNode );
     m_edges.setAutoDelete(TRUE);
@@ -4401,7 +4373,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
       { // add node
         tmp_url = d->getReference()+"$"+d->getOutputFileBase();
         QCString tooltip = d->briefDescriptionAsTooltip();
-        nnode = new DotNode(m_curNodeNumber++, d->groupTitle(), tooltip, tmp_url );
+        nnode = new DotNode(getNextNodeNumber(), d->groupTitle(), tooltip, tmp_url );
         nnode->markAsVisible();
         m_usedNodes->insert(d->name(), nnode );
       }
@@ -4422,7 +4394,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
       { // add node
         tmp_url = def->getReference()+"$"+def->getOutputFileBase();
         QCString tooltip = def->briefDescriptionAsTooltip();
-        nnode = new DotNode(m_curNodeNumber++, def->groupTitle(), tooltip, tmp_url );
+        nnode = new DotNode(getNextNodeNumber(), def->groupTitle(), tooltip, tmp_url );
         nnode->markAsVisible();
         m_usedNodes->insert(def->name(), nnode );
       }
@@ -4564,7 +4536,7 @@ void DotGroupCollaboration::addCollaborationMember(
       { // add node
         tmp_str = d->getReference()+"$"+d->getOutputFileBase();
         QCString tooltip = d->briefDescriptionAsTooltip();
-        nnode = new DotNode(m_curNodeNumber++, d->groupTitle(), tooltip, tmp_str );
+        nnode = new DotNode(getNextNodeNumber(), d->groupTitle(), tooltip, tmp_str );
         nnode->markAsVisible();
         m_usedNodes->insert(d->name(), nnode );
       }
@@ -4968,12 +4940,3 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
 
     t << "}\n";
 }
-
-void resetDotNodeNumbering()
-{
-  DotClassGraph::resetNumbering();
-  DotInclDepGraph::resetNumbering();
-  DotCallGraph::resetNumbering();
-  DotGroupCollaboration::resetNumbering();
-}
-
