@@ -153,8 +153,24 @@ class DotNodeList : public QList<DotNode>
     int compareValues(const DotNode *n1,const DotNode *n2) const;
 };
 
+/** A dot graph */
+class DotGraph
+{
+  public:
+    DotGraph() : m_curNodeNumber(0) {}
+    virtual ~DotGraph() {}
+
+  protected:
+    int getNextNodeNumber() { return ++m_curNodeNumber; }
+
+  private:
+    DotGraph(const DotGraph &);
+    DotGraph &operator=(const DotGraph &);
+    int m_curNodeNumber;
+};
+
 /** Represents a graphical class hierarchy */
-class DotGfxHierarchyTable
+class DotGfxHierarchyTable : public DotGraph
 {
   public:
     DotGfxHierarchyTable(const char *prefix="",ClassDef::CompoundType ct=ClassDef::Class);
@@ -171,12 +187,11 @@ class DotGfxHierarchyTable
     ClassDef::CompoundType m_classType;
     QList<DotNode>        *m_rootNodes; 
     QDict<DotNode>        *m_usedNodes; 
-    int                    m_curNodeNumber;
     DotNodeList           *m_rootSubgraphs;
 };
 
 /** Representation of a class inheritance or dependency graph */
-class DotClassGraph
+class DotClassGraph : public DotGraph
 {
   public:
     DotClassGraph(const ClassDef *cd,DotNode::GraphType t);
@@ -190,7 +205,6 @@ class DotClassGraph
     void writeXML(FTextStream &t);
     void writeDocbook(FTextStream &t);
     void writeDEF(FTextStream &t);
-    static void resetNumbering();
 
   private:
     void buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance);
@@ -202,7 +216,6 @@ class DotClassGraph
 
     DotNode        *   m_startNode;
     QDict<DotNode> *   m_usedNodes;
-    static int         m_curNodeNumber;
     DotNode::GraphType m_graphType;
     QCString           m_collabFileName;
     QCString           m_inheritFileName;
@@ -210,7 +223,7 @@ class DotClassGraph
 };
 
 /** Representation of an include dependency graph */
-class DotInclDepGraph
+class DotInclDepGraph : public DotGraph
 {
   public:
     DotInclDepGraph(const FileDef *fd,bool inverse);
@@ -223,7 +236,6 @@ class DotInclDepGraph
     QCString diskName() const;
     void writeXML(FTextStream &t);
     void writeDocbook(FTextStream &t);
-    static void resetNumbering();
 
   private:
     void buildGraph(DotNode *n,const FileDef *fd,int distance);
@@ -232,14 +244,13 @@ class DotInclDepGraph
 
     DotNode        *m_startNode;
     QDict<DotNode> *m_usedNodes;
-    static int      m_curNodeNumber;
     QCString        m_inclDepFileName;
     QCString        m_inclByDepFileName;
     bool            m_inverse;
 };
 
 /** Representation of an call graph */
-class DotCallGraph
+class DotCallGraph : public DotGraph
 {
   public:
     DotCallGraph(const MemberDef *md,bool inverse);
@@ -253,11 +264,9 @@ class DotCallGraph
     bool isTooBig() const;
     void determineVisibleNodes(QList<DotNode> &queue, int &maxNodes);
     void determineTruncatedNodes(QList<DotNode> &queue);
-    static void resetNumbering();
 
   private:
     DotNode        *m_startNode;
-    static int      m_curNodeNumber;
     QDict<DotNode> *m_usedNodes;
     bool            m_inverse;
     QCString        m_diskName;
@@ -265,7 +274,7 @@ class DotCallGraph
 };
 
 /** Representation of an directory dependency graph */
-class DotDirDeps
+class DotDirDeps : public DotGraph
 {
   public:
     DotDirDeps(const DirDef *dir);
@@ -285,7 +294,7 @@ class DotDirDeps
 };
 
 /** Representation of a group collaboration graph */
-class DotGroupCollaboration
+class DotGroupCollaboration : public DotGraph
 {
   public :
     enum EdgeType 
@@ -328,7 +337,6 @@ class DotGroupCollaboration
                     bool writeImageMap=TRUE,int graphId=-1) const;
     void buildGraph(const GroupDef* gd);
     bool isTrivial() const;
-    static void resetNumbering();
 
   private :
     void addCollaborationMember(const Definition* def, QCString& url, EdgeType eType );
@@ -338,7 +346,6 @@ class DotGroupCollaboration
                    const QCString& _label, const QCString& _url );
 
     DotNode        *m_rootNode;
-    static int      m_curNodeNumber;
     QDict<DotNode> *m_usedNodes;
     QCString        m_diskName;
     QList<Edge>     m_edges;
@@ -517,7 +524,5 @@ void writeDotImageMapFromFile(FTextStream &t,
                               const QCString& inFile, const QCString& outDir,
                               const QCString& relPath,const QCString& baseName,
                               const QCString& context,int graphId=-1);
-
-void resetDotNodeNumbering();
 
 #endif

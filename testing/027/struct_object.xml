@@ -63,26 +63,26 @@
       <para>Base object class. </para>
     </detaileddescription>
     <inheritancegraph>
-      <node id="9">
+      <node id="4">
         <label>Truck</label>
         <link refid="struct_truck"/>
-        <childnode refid="7" relation="public-inheritance">
+        <childnode refid="2" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="7">
+      <node id="2">
         <label>Vehicle</label>
         <link refid="struct_vehicle"/>
-        <childnode refid="6" relation="public-inheritance">
+        <childnode refid="1" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="6">
+      <node id="1">
         <label>Object</label>
         <link refid="struct_object"/>
       </node>
-      <node id="8">
+      <node id="3">
         <label>Car</label>
         <link refid="struct_car"/>
-        <childnode refid="7" relation="public-inheritance">
+        <childnode refid="2" relation="public-inheritance">
         </childnode>
       </node>
     </inheritancegraph>

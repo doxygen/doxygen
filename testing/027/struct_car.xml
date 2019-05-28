@@ -27,43 +27,43 @@
       <para><ref refid="struct_car" kindref="compound">Car</ref> class. </para>
     </detaileddescription>
     <inheritancegraph>
-      <node id="1">
+      <node id="2">
         <label>Vehicle</label>
         <link refid="struct_vehicle"/>
-        <childnode refid="2" relation="public-inheritance">
+        <childnode refid="3" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="2">
+      <node id="3">
         <label>Object</label>
         <link refid="struct_object"/>
       </node>
-      <node id="0">
+      <node id="1">
         <label>Car</label>
         <link refid="struct_car"/>
-        <childnode refid="1" relation="public-inheritance">
+        <childnode refid="2" relation="public-inheritance">
         </childnode>
       </node>
     </inheritancegraph>
     <collaborationgraph>
-      <node id="4">
+      <node id="2">
         <label>Vehicle</label>
         <link refid="struct_vehicle"/>
-        <childnode refid="5" relation="public-inheritance">
+        <childnode refid="3" relation="public-inheritance">
         </childnode>
-        <childnode refid="5" relation="usage">
+        <childnode refid="3" relation="usage">
           <edgelabel>base</edgelabel>
         </childnode>
       </node>
-      <node id="5">
+      <node id="3">
         <label>Object</label>
         <link refid="struct_object"/>
       </node>
-      <node id="3">
+      <node id="1">
         <label>Car</label>
         <link refid="struct_car"/>
-        <childnode refid="4" relation="public-inheritance">
+        <childnode refid="2" relation="public-inheritance">
         </childnode>
-        <childnode refid="4" relation="usage">
+        <childnode refid="2" relation="usage">
           <edgelabel>base</edgelabel>
         </childnode>
       </node>
