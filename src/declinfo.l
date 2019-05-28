@@ -250,6 +250,10 @@ void parseFuncDecl(const QCString &decl,bool objC,QCString &cl,QCString &t,
   declinfoYYlex_init_extra(&g_declinfo_extra, &g_yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)g_yyscanner;
 
+#ifdef FLEX_DEBUG
+  yyset_debug(1,g_yyscanner);
+#endif
+
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);
   yyextra->inputString   = decl;
   //printf("Input=`%s'\n",yyextra->inputString);

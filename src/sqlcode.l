@@ -380,6 +380,11 @@ void parseSqlCode(
 
   sqlcodeYYlex_init_extra(&sqlcode_extra, &yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+
+#ifdef FLEX_DEBUG
+  yyset_debug(1,yyscanner);
+#endif
+
   printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
   
   yyextra->code = &od;
