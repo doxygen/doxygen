@@ -745,6 +745,9 @@ STARTDOCSYMS      "##"
 		  initEntry();
                     if (!importBracket) BEGIN(Search);
 		}
+  \\\n          |
+  {B},{B}\\\n   |
+  {B}\\\n{B},   |
   {B},{B}\n     |
   {B}\n{B},     { // handling line continuation
                   incLineNr();
@@ -756,6 +759,10 @@ STARTDOCSYMS      "##"
   {B}           {
                 }
   ","           {
+                }
+  "("           {
+                  if (importBracket) REJECT;
+                  importBracket = TRUE;
                 }
   .             {
                   unput(*yytext);
