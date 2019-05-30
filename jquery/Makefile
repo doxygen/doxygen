@@ -1,4 +1,4 @@
-JQUERY_VERSION = 3.3.1
+JQUERY_VERSION = 3.4.1
 JQUERY_UI_VERSION = 1.12.1
 SCROLL_VERSION = 2.1.2
 POWERTIP_VERSION = 1.3.1
@@ -9,7 +9,7 @@ MINIFIER ?= /usr/local/bin/yuicompressor-2.4.7
 SCRIPTS = jquery-$(JQUERY_VERSION).min.js \
           jquery.ui-$(JQUERY_UI_VERSION).min.js \
           jquery.scrollTo-$(SCROLL_VERSION).min.js \
-	  jquery.powertip-$(POWERTIP_VERSION).min.js \
+	  jquery.powertip-$(POWERTIP_VERSION).mod.min.js \
 	  jquery.ui.touch-punch-$(TOUCHPUNCH_VERSION).min.js \
 	  jquery.smartmenus-$(SMARTMENUS_VERSION).min.js
 RESULTS = jquery.js doxmenu-min.css

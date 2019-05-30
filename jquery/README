@@ -12,3 +12,9 @@ packages:
 - jquery.smartmenus: 1.1.0: https://www.smartmenus.org/
 
 The Makefile will built the jquery.js files used by doxygen.
+
+Note that there is a performance issue in the default powertip version.
+See https://github.com/stevenbenner/jquery-powertip/issues/178
+Until that is fixed a modified version is shipped with doxygen. This version
+removes the "destroy" functionality which was not used by doxygen anyway.
+
