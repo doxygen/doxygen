@@ -14,25 +14,25 @@ environment:
     - VSVERSION: "15 2017"
     - VSVERSION: "14 2015"
 
+cache:
+  - C:\Users\Appveyor\.conan -> appveyor.yml
+  - c:\.conan -> appveyor.yml
+  - '%LOCALAPPDATA%\pip\Cache -> appveyor.yml'
+  - C:\miktex-repository -> appveyor.yml
+
+
 init:
   - cmake --version
   - perl --version
   - msbuild /version
 
 install:
-  - appveyor DownloadFile  https://miktex.org/download/win/basic-miktex-x32.exe
-  - basic-miktex-x32.exe --unattended --shared
-# Disabled this due to too slow download
-#  - ps: Invoke-WebRequest http://doxygen.nl/testing/miktex.zip -OutFile miktex.zip
-#  - 7z x miktex.zip -oC:\deps\miktex
-# Disabled MikTeX installed due to unreliable download
-#  - ps: Invoke-WebRequest https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs924/gs924w32.exe -OutFile gswin32c.exe
-#  - gswin32c /S /D=C:\deps\ghostscript
-#  - ps: if($env:platform -eq "x64") { Invoke-WebRequest https://miktex.org/download/win/miktexsetup-x64.zip -OutFile miktexsetup.zip }
-#  - ps: if($env:platform -eq "Win32") { Invoke-WebRequest https://miktex.org/download/win/miktexsetup-x86.zip -OutFile miktexsetup.zip }
-#  - 7z x miktexsetup.zip -oC:\tmpmiktex
-#  - C:\tmpmiktex\miktexsetup --local-package-repository=C:\temp\miktex --package-set=basic download
-#  - C:\tmpmiktex\miktexsetup --verbose --local-package-repository=C:\temp\miktex --package-set=basic install
+  # Static url: https://github.com/MiKTeX/miktex/issues/321#issuecomment-496286866
+  # The setup is small enough, and does not need to be cached
+  - appveyor DownloadFile  https://miktex.org/download/win/miktexsetup-x64.zip
+  - 7z e miktexsetup-x64.zip
+  - miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
+  - miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
   - refreshenv
   - pip install conan
   - ps: |
@@ -41,7 +41,6 @@ install:
       winflexbison/2.5.16@bincrafters/stable" | Out-File -Encoding ASCII -FilePath conanfile.txt
   - conan install . -g virtualrunenv --build missing
   - activate_run.bat
-  - set "PATH=%PATH%;C:\deps\ghostscript\bin;C:\deps\miktex\miktex\bin"
 
 before_build:
   - if "%platform%"=="Win32" ( set "CMAKE_GENERATOR_NAME=Visual Studio %VSVERSION%" )
