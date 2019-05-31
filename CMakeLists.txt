@@ -110,10 +110,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXECUTABLE_OUTPUT_PATH})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${EXECUTABLE_OUTPUT_PATH})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${EXECUTABLE_OUTPUT_PATH})
 
-# setup information for git version handling
-set(PRE_CONFIGURE_GIT_VERSION_FILE "${CMAKE_SOURCE_DIR}/src/gitversion.cpp.in")
-set(POST_CONFIGURE_GIT_VERSION_FILE "${GENERATED_SRC}/gitversion.cpp")
-
 # gather lang codes for translation
 file(GLOB lang_files RELATIVE "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/src/translator_??.h")
 if (english_only) # user only wants English
@@ -147,6 +143,7 @@ endif()
 
 
 add_subdirectory(libmd5)
+add_subdirectory(libversion)
 add_subdirectory(qtools)
 add_subdirectory(vhdlparser)
 add_subdirectory(src)

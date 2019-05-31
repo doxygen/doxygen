@@ -17,7 +17,6 @@
 
 #ifndef VERSION_H
 #define VERSION_H
-
-extern char versionString[];
-
+char *getVersion(void);
+char *getGitVersion(void);
 #endif

@@ -30,6 +30,7 @@ endif()
 
 include_directories(
 	.
+        ${CMAKE_SOURCE_DIR}/libversion
 	${CMAKE_SOURCE_DIR}/src
 	${CMAKE_SOURCE_DIR}/qtools
 	${GENERATED_SRC}
@@ -95,7 +96,6 @@ inputstring.cpp
 inputint.cpp
 inputstrlist.cpp
 ${GENERATED_SRC_WIZARD}/settings.h
-${GENERATED_SRC_WIZARD}/version.cpp
 ${GENERATED_SRC_WIZARD}/config_doxyw.cpp
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
@@ -104,9 +104,9 @@ doxywizard.rc
 )
 
 if(Qt5Core_FOUND)
-  target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml)
+  target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml version)
 else()
-  target_link_libraries(doxywizard ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY})
+  target_link_libraries(doxywizard ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} version)
 endif()
 
 install(TARGETS doxywizard DESTINATION bin)

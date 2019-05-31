@@ -5327,7 +5327,7 @@ QCString substituteKeywords(const QCString &s,const char *title,
   result = substitute(result,"$datetime",dateToString(TRUE));
   result = substitute(result,"$date",dateToString(FALSE));
   result = substitute(result,"$year",yearToString());
-  result = substitute(result,"$doxygenversion",versionString);
+  result = substitute(result,"$doxygenversion",getVersion());
   result = substitute(result,"$projectname",projName);
   result = substitute(result,"$projectnumber",projNum);
   result = substitute(result,"$projectbrief",projBrief);

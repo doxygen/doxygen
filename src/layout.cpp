@@ -1560,7 +1560,7 @@ void writeDefaultLayoutFile(const char *fileName)
     return;
   }
   QTextStream t(&f);
-  t << substitute(layout_default,"$doxygenversion",versionString);
+  t << substitute(layout_default,"$doxygenversion",getVersion());
 }
 
 //----------------------------------------------------------------------------------

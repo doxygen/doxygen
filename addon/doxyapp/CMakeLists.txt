@@ -10,6 +10,7 @@ find_package(Iconv)
 
 include_directories(
 	${CMAKE_SOURCE_DIR}/src
+	${CMAKE_SOURCE_DIR}/libversion
 	${GENERATED_SRC}
 	${CMAKE_SOURCE_DIR}/qtools
 	${ICONV_INCLUDE_DIR}
@@ -23,6 +24,7 @@ target_link_libraries(doxyapp
 _doxygen
 qtools
 md5
+version
 doxycfg
 vhdlparser
 ${ICONV_LIBRARIES}

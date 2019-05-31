@@ -152,7 +152,7 @@ static void writeXMLHeader(FTextStream &t)
   t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
   t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"compound.xsd\" ";
-  t << "version=\"" << versionString << "\">" << endl;
+  t << "version=\"" << getVersion() << "\">" << endl;
 }
 
 static void writeCombineScript()
@@ -1979,7 +1979,7 @@ void generateXML()
   t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
   t << "<doxygenindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
-  t << "version=\"" << versionString << "\">" << endl;
+  t << "version=\"" << getVersion() << "\">" << endl;
 
   {
     ClassSDict::Iterator cli(*Doxygen::classSDict);
