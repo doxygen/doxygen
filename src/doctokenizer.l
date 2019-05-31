@@ -658,7 +658,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
                        }
-<St_Para>"$"{ID}":"[^\n$]+"$" { /* RCS tag */
+<St_Para>"$"{ID}":"[^:\n$][^\n$]*"$" { /* RCS tag */
                          QCString tagName(yytext+1);
 			 int index=tagName.find(':');
   			 g_token->name = tagName.left(index);
