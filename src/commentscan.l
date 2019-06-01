@@ -2972,7 +2972,7 @@ static bool handleToc(const QCString &, const QCStringList &optList)
       {
         if (sscanf(opt.right(opt.length() - i - 1).data(),"%d%c",&level,&dum) != 1)
         {
-          warn(yyFileName,yyLineNr,"Unknown option:level specified with \\tableofcontents: `%s'", (*it).stripWhiteSpace().data());
+          warn(yyFileName,yyLineNr,"Unknown option:level specified with \\tableofcontents: '%s'", (*it).stripWhiteSpace().data());
           opt = "";
         }
         else
@@ -3002,7 +3002,7 @@ static bool handleToc(const QCString &, const QCStringList &optList)
         }
         else
         {
-          warn(yyFileName,yyLineNr,"Unknown option specified with \\tableofcontents: `%s'", (*it).stripWhiteSpace().data());
+          warn(yyFileName,yyLineNr,"Unknown option specified with \\tableofcontents: '%s'", (*it).stripWhiteSpace().data());
         }
       }
     }

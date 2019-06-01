@@ -174,7 +174,7 @@ void ConfigInt::convertStrToVal()
     int val = m_valueString.toInt(&ok);
     if (!ok || val<m_minVal || val>m_maxVal)
     {
-      config_warn("argument `%s' for option %s is not a valid number in the range [%d..%d]!\n"
+      config_warn("argument '%s' for option %s is not a valid number in the range [%d..%d]!\n"
                 "Using the default: %d!\n",m_valueString.data(),m_name.data(),m_minVal,m_maxVal,m_value);
     }
     else
@@ -199,7 +199,7 @@ void ConfigBool::convertStrToVal()
     }
     else
     {
-      config_warn("argument `%s' for option %s is not a valid boolean value\n"
+      config_warn("argument '%s' for option %s is not a valid boolean value\n"
                 "Using the default: %s!\n",m_valueString.data(),m_name.data(),m_value?"YES":"NO");
     }
   }
@@ -711,7 +711,7 @@ static void readIncludeFile(const char *incName)
 					   ConfigOption *option = config->get(cmd);
 					   if (option==0) // oops not known
 					   {
-					     config_warn("ignoring unsupported tag `%s' at line %d, file %s\n",
+					     config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
 						 cmd.data(),yyLineNr,yyFileName.data()); 
 					     BEGIN(SkipInvalid);
 					   }
@@ -754,12 +754,12 @@ static void readIncludeFile(const char *incName)
 					       case ConfigOption::O_Obsolete:
                                                  if (config_upd)
                                                  {
-					           config_warn("Tag `%s' at line %d of file `%s' has become obsolete.\n"
+					           config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
 						              "         This tag has been removed.\n", cmd.data(),yyLineNr,yyFileName.data());
                                                  }
                                                  else
                                                  {
-					           config_warn("Tag `%s' at line %d of file `%s' has become obsolete.\n"
+					           config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
 						              "         To avoid this warning please remove this line from your configuration "
 							      "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
                                                  }
@@ -768,12 +768,12 @@ static void readIncludeFile(const char *incName)
 					       case ConfigOption::O_Disabled:
                                                  if (config_upd)
                                                  {
-					           config_warn("Tag `%s' at line %d of file `%s' belongs to an option that was not enabled at compile time.\n"
+					           config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
 						              "         This tag has been removed.\n", cmd.data(),yyLineNr,yyFileName.data());
                                                  }
                                                  else
                                                  {
-					           config_warn("Tag `%s' at line %d of file `%s' belongs to an option that was not enabled at compile time.\n"
+					           config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
 						              "         To avoid this warning please remove this line from your configuration "
 							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
                                                  }
@@ -787,7 +787,7 @@ static void readIncludeFile(const char *incName)
 					  ConfigOption *option = config->get(cmd);
 					  if (option==0) // oops not known
 					  {
-					    config_warn("ignoring unsupported tag `%s' at line %d, file %s\n",
+					    config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
 						cmd.data(),yyLineNr,yyFileName.data()); 
 					    BEGIN(SkipInvalid);
 					  }
@@ -809,18 +809,18 @@ static void readIncludeFile(const char *incName)
 					      case ConfigOption::O_String:
 					      case ConfigOption::O_Int:
 					      case ConfigOption::O_Bool:
-					        config_warn("operator += not supported for `%s'. Ignoring line at line %d, file %s\n",
+					        config_warn("operator += not supported for '%s'. Ignoring line at line %d, file %s\n",
 						    yytext,yyLineNr,yyFileName.data()); 
 					        BEGIN(SkipInvalid);
 						break;
 					       case ConfigOption::O_Obsolete:
-					         config_warn("Tag `%s' at line %d of file %s has become obsolete.\n"
+					         config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please update your configuration "
 							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
 					         BEGIN(SkipInvalid);
 						 break;
 					       case ConfigOption::O_Disabled:
-					         config_warn("Tag `%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
+					         config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
 						            "To avoid this warning please remove this line from your configuration "
 							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
 					         BEGIN(SkipInvalid);
@@ -857,13 +857,13 @@ static void readIncludeFile(const char *incName)
 					  }
   					}
 
-<Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag `%s' at line %d, file %s\n",yytext,yyLineNr,yyFileName.data()); }
+<Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,yyLineNr,yyFileName.data()); }
 <GetString,GetBool,SkipInvalid>\n	{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
   					  yyLineNr++; 
 					  if (!elemStr.isEmpty())
 					  {
-					    //printf("elemStr1=`%s'\n",elemStr.data());
+					    //printf("elemStr1='%s'\n",elemStr.data());
 					    l->append(elemStr);
 					  }
 					  BEGIN(Start); 
@@ -871,7 +871,7 @@ static void readIncludeFile(const char *incName)
 <GetStrList>[ \t,]+			{
   				          if (!elemStr.isEmpty())
 					  {
-					    //printf("elemStr2=`%s'\n",elemStr.data());
+					    //printf("elemStr2='%s'\n",elemStr.data());
   					    l->append(elemStr);
 					  }
 					  elemStr.resize(0);
@@ -886,7 +886,7 @@ static void readIncludeFile(const char *incName)
 <GetQuotedString>"\""|"\n" 		{ 
                                           // we add a bogus space to signal that the string was quoted. This space will be stripped later on.
                                           tmpString+=" ";
-  					  //printf("Quoted String = `%s'\n",tmpString.data());
+  					  //printf("Quoted String = '%s'\n",tmpString.data());
   					  if (lastState==GetString)
 					  {
 					    (*s)+=configStringRecode(tmpString,encoding,"UTF-8");
@@ -917,7 +917,7 @@ static void readIncludeFile(const char *incName)
 					  else 
 					  {
 					    *b=FALSE; 
-					    config_warn("Invalid value `%s' for "
+					    config_warn("Invalid value '%s' for "
 						 "boolean tag in line %d, file %s; use YES or NO\n",
 						 bs.data(),yyLineNr,yyFileName.data());
 					  }
@@ -1003,7 +1003,7 @@ static void substEnvVarsInString(QCString &s)
   //printf("substEnvVarInString(%s) start\n",s.data());
   while ((i=re.match(s,p,&l))!=-1 || (i=re2.match(s,p,&l))!=-1)
   {
-    //printf("Found environment var s.mid(%d,%d)=`%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
+    //printf("Found environment var s.mid(%d,%d)='%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
     QCString env=portable_getenv(s.mid(i+2,l-3));
     substEnvVarsInString(env); // recursively expand variables if needed.
     s = s.left(i)+env+s.right(s.length()-i-l);
@@ -1200,7 +1200,7 @@ static QCString configFileToString(const char *name)
     QFileInfo fi(name);
     if (!fi.exists() || !fi.isFile())
     {
-      config_err("file `%s' not found\n",name);
+      config_err("file '%s' not found\n",name);
       return "";
     }
     f.setName(name);
@@ -1221,7 +1221,7 @@ static QCString configFileToString(const char *name)
   }
   if (!fileOpened)  
   {
-    config_err("cannot open file `%s' for reading\n",name);
+    config_err("cannot open file '%s' for reading\n",name);
     exit(1);
   }
   return "";
@@ -1399,7 +1399,7 @@ void Config::checkAndCorrect()
     QFileInfo fi(headerFile);
     if (!fi.exists())
     {
-      err("tag HTML_HEADER: header file `%s' "
+      err("tag HTML_HEADER: header file '%s' "
 	  "does not exist\n",headerFile.data());
       exit(1);
     }
@@ -1411,7 +1411,7 @@ void Config::checkAndCorrect()
     QFileInfo fi(footerFile);
     if (!fi.exists())
     {
-      err("tag HTML_FOOTER: footer file `%s' "
+      err("tag HTML_FOOTER: footer file '%s' "
 	  "does not exist\n",footerFile.data());
       exit(1);
     }
@@ -1426,7 +1426,7 @@ void Config::checkAndCorrect()
       QFileInfo fi(MathJaxCodefile);
       if (!fi.exists())
       {
-        err("tag MATHJAX_CODEFILE file `%s' "
+        err("tag MATHJAX_CODEFILE file '%s' "
 	    "does not exist\n",MathJaxCodefile.data());
         exit(1);
       }
@@ -1446,7 +1446,7 @@ void Config::checkAndCorrect()
     QFileInfo fi(latexHeaderFile);
     if (!fi.exists())
     {
-      err("tag LATEX_HEADER: header file `%s' "
+      err("tag LATEX_HEADER: header file '%s' "
 	  "does not exist\n",latexHeaderFile.data());
       exit(1);
     }
@@ -1458,7 +1458,7 @@ void Config::checkAndCorrect()
     QFileInfo fi(latexFooterFile);
     if (!fi.exists())
     {
-      err("tag LATEX_FOOTER: footer file `%s' "
+      err("tag LATEX_FOOTER: footer file '%s' "
 	  "does not exist\n",latexFooterFile.data());
       exit(1);
     }
@@ -1470,7 +1470,7 @@ void Config::checkAndCorrect()
   while (s)
   {
     QFileInfo fi(s);
-    if (!fi.exists()) warn_uncond("tag INCLUDE_PATH: include path `%s' "
+    if (!fi.exists()) warn_uncond("tag INCLUDE_PATH: include path '%s' "
 	                  "does not exist\n",s);
     s=includePath.next();
   }
@@ -1486,7 +1486,7 @@ void Config::checkAndCorrect()
     alias=alias.stripWhiteSpace();
     if (alias.find(re1)!=0 && alias.find(re2)!=0)
     {
-      err("Illegal alias format `%s'. Use \"name=value\" or \"name(n)=value\", where n is the number of arguments\n",
+      err("Illegal alias format '%s'. Use \"name=value\" or \"name(n)=value\", where n is the number of arguments\n",
 	  alias.data());
     }
     s=aliasList.next();
@@ -1520,7 +1520,7 @@ void Config::checkAndCorrect()
   }
   //else if (dotImageFormat!="gif" && dotImageFormat!="png" && dotImageFormat!="jpg")
   //{
-  //  err("Invalid value for DOT_IMAGE_FORMAT: `%s'. Using the default.\n",dotImageFormat.data());
+  //  err("Invalid value for DOT_IMAGE_FORMAT: '%s'. Using the default.\n",dotImageFormat.data());
   //  dotImageFormat = "png";
   //}
 
@@ -1659,7 +1659,7 @@ void Config::checkAndCorrect()
       QFileInfo fi(s);
       if (!fi.exists())
       {
-	warn_uncond("tag INPUT: input source `%s' does not exist\n",s);
+	warn_uncond("tag INPUT: input source '%s' does not exist\n",s);
       }
       s=inputSources.next();
     }

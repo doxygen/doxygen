@@ -518,7 +518,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
       break;
     default:
       err("NamespaceDefImpl::insertMembers(): "
-           "member `%s' with class scope `%s' inserted in namespace scope `%s'!\n",
+           "member '%s' with class scope '%s' inserted in namespace scope '%s'!\n",
            md->name().data(),
            md->getClassDef() ? md->getClassDef()->name().data() : "",
            name().data());

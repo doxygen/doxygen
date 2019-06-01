@@ -368,7 +368,7 @@ void ManDocVisitor::visit(DocInclude *inc)
 void ManDocVisitor::visit(DocIncOperator *op)
 {
   SrcLangExt langExt = getLanguageFromFileName(m_langExt);
-  //printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
+  //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {

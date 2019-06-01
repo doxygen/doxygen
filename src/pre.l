@@ -693,7 +693,7 @@ static QCString stringize(const QCString &s)
       }
     }
   }
-  //printf("stringize `%s'->`%s'\n",s.data(),result.data());
+  //printf("stringize '%s'->'%s'\n",s.data(),result.data());
   return result;
 }
 
@@ -704,19 +704,19 @@ static QCString stringize(const QCString &s)
  */
 static void processConcatOperators(QCString &expr)
 {
-  //printf("processConcatOperators: in=`%s'\n",expr.data());
+  //printf("processConcatOperators: in='%s'\n",expr.data());
   QRegExp r("[ \\t\\n]*##[ \\t\\n]*"); 
   int l,n,i=0;
   if (expr.isEmpty()) return;
   while ((n=r.match(expr,i,&l))!=-1)
   {
-    //printf("Match: `%s'\n",expr.data()+i);
+    //printf("Match: '%s'\n",expr.data()+i);
     if (n+l+1<(int)expr.length() && expr.at(n+l)=='@' && expr.at(n+l+1)=='-')
     {
       // remove no-rescan marker after ID
       l+=2;
     }
-    //printf("found `%s'\n",expr.mid(n,l).data());
+    //printf("found '%s'\n",expr.mid(n,l).data());
     // remove the ## operator and the surrounding whitespace
     expr=expr.left(n)+expr.right(expr.length()-n-l);
     int k=n-1;
@@ -729,7 +729,7 @@ static void processConcatOperators(QCString &expr)
     }
     i=n;
   }
-  //printf("processConcatOperators: out=`%s'\n",expr.data());
+  //printf("processConcatOperators: out='%s'\n",expr.data());
 }
 
 static void yyunput (int c,char *buf_ptr  );
@@ -774,7 +774,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
     unputChar(expr,rest,j,' '); 
     return FALSE; 
   }
-  getNextChar(expr,rest,j); // eat the `(' character
+  getNextChar(expr,rest,j); // eat the '(' character
 
   QDict<QCString> argTable;  // list of arguments
   argTable.setAutoDelete(TRUE);
@@ -954,13 +954,13 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	  if (key.length()>1 && (subst=argTable[key])) 
 	  {
 	    QCString substArg=*subst;
-	    //printf("substArg=`%s'\n",substArg.data());
+	    //printf("substArg='%s'\n",substArg.data());
 	    // only if no ## operator is before or after the argument
 	    // marker we do macro expansion.
 	    if (!hash) expandExpression(substArg,0,0);
 	    if (inString)
 	    {
-	      //printf("`%s'=stringize(`%s')\n",stringize(*subst).data(),subst->data());
+	      //printf("'%s'=stringize('%s')\n",stringize(*subst).data(),subst->data());
 
 	      // if the marker is inside a string (because a # was put 
 	      // before the macro name) we must escape " and \ characters
@@ -999,7 +999,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
     }
     len=j-pos;
     result=resExpr;
-    //printf("result after substitution `%s' expr=`%s'\n",
+    //printf("result after substitution '%s' expr='%s'\n",
     //       result.data(),expr.mid(pos,len).data());
     return TRUE;
   }
@@ -1098,7 +1098,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	else if (def && def->nargs==-1) // simple macro
 	{
 	  // substitute the definition of the macro
-	  //printf("macro `%s'->`%s'\n",macroName.data(),def->definition.data());
+	  //printf("macro '%s'->'%s'\n",macroName.data(),def->definition.data());
 	  if (g_nospaces)
 	  {
 	    expMacro=def->definition.stripWhiteSpace();
@@ -1110,7 +1110,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	  //expMacro=def->definition.stripWhiteSpace();
 	  replaced=TRUE;
 	  len=l;
-	  //printf("simple macro expansion=`%s'->`%s'\n",macroName.data(),expMacro.data());
+	  //printf("simple macro expansion='%s'->'%s'\n",macroName.data(),expMacro.data());
 	}
 	else if (def && def->nargs>=0) // function macro
 	{
@@ -1125,7 +1125,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 
 	if (replaced) // expand the macro and rescan the expression
 	{
-	  //printf("replacing `%s'->`%s'\n",expr.mid(p,len).data(),expMacro.data());
+	  //printf("replacing '%s'->'%s'\n",expr.mid(p,len).data(),expMacro.data());
 	  QCString resultExpr=expMacro;
 	  QCString restExpr=expr.right(expr.length()-len-p);
 	  processConcatOperators(resultExpr);
@@ -1236,7 +1236,7 @@ QCString removeIdsAndMarkers(const char *s)
       {
         p = processUntilMatchingTerminator(p,result);
       }
-      else if (c=='d' && !inNum) // identifier starting with a `d'
+      else if (c=='d' && !inNum) // identifier starting with a 'd'
       {
 	if (qstrncmp(p,"defined ",8)==0 || qstrncmp(p,"defined(",8)==0) 
 	           // defined keyword
@@ -1387,10 +1387,10 @@ bool computeExpression(const QCString &expr)
 {
   QCString e=expr;
   expandExpression(e,0,0);
-  //printf("after expansion `%s'\n",e.data());
+  //printf("after expansion '%s'\n",e.data());
   e = removeIdsAndMarkers(e);
   if (e.isEmpty()) return FALSE;
-  //printf("parsing `%s'\n",e.data());
+  //printf("parsing '%s'\n",e.data());
   return parseconstexp(g_yyFileName,g_yyLineNr,e);
 }
 
@@ -1403,7 +1403,7 @@ QCString expandMacro(const QCString &name)
   QCString n=name;
   expandExpression(n,0,0);
   n=removeMarkers(n);
-  //printf("expandMacro `%s'->`%s'\n",name.data(),n.data());
+  //printf("expandMacro '%s'->'%s'\n",name.data(),n.data());
   return n;
 }
 
@@ -1420,7 +1420,7 @@ Define *newDefine()
   def->varArgs    = g_defVarArgs;
   //printf("newDefine: %s %s file: %s\n",def->name.data(),def->definition.data(),
   //    def->fileDef ? def->fileDef->name().data() : def->fileName.data());
-  //printf("newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
+  //printf("newDefine: '%s'->'%s'\n",def->name.data(),def->definition.data());
   if (!def->name.isEmpty() && Doxygen::expandAsDefinedDict[def->name])
   {
     def->isPredefined=TRUE;
@@ -1444,11 +1444,11 @@ void addDefine()
   if (!g_defArgsStr.isEmpty())
   {
     ArgumentList *argList = new ArgumentList;
-    //printf("addDefine() g_defName=`%s' g_defArgsStr=`%s'\n",g_defName.data(),g_defArgsStr.data());
+    //printf("addDefine() g_defName='%s' g_defArgsStr='%s'\n",g_defName.data(),g_defArgsStr.data());
     stringToArgumentList(g_defArgsStr,argList);
     md->setArgumentList(argList);
   }
-  //printf("Setting initializer for `%s' to `%s'\n",g_defName.data(),g_defText.data());
+  //printf("Setting initializer for '%s' to '%s'\n",g_defName.data(),g_defText.data());
   int l=g_defLitText.find('\n');
   if (l>0 && g_defLitText.left(l).stripWhiteSpace()=="\\")
   {
@@ -1528,7 +1528,7 @@ static void readIncludeFile(const QCString &inc)
     QCString oldFileName = g_yyFileName;
     FileDef *oldFileDef  = g_yyFileDef;
     int oldLineNr        = g_yyLineNr;
-    //printf("Searching for `%s'\n",incFileName.data());
+    //printf("Searching for '%s'\n",incFileName.data());
 
     // absIncFileName avoids difficulties for incFileName starting with "../" (bug 641336)
     QCString absIncFileName = incFileName;
@@ -2017,7 +2017,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (g_roundCount==0)
 					  {
 					    QCString result=expandMacro(g_defArgsStr);
-					    //printf("g_defArgsStr=`%s'->`%s'\n",g_defArgsStr.data(),result.data());
+					    //printf("g_defArgsStr='%s'->'%s'\n",g_defArgsStr.data(),result.data());
 					    if (g_findDefArgContext==CopyLine)
 					    {
 					      outputArray(result,result.length());
@@ -2224,7 +2224,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Guard>.				{ g_guardExpr+=*yytext; }
 <Guard>\n				{
   					  unput(*yytext);
-  					  //printf("Guard: `%s'\n",
+  					  //printf("Guard: '%s'\n",
 					  //    g_guardExpr.data());
 					  bool guard=computeExpression(g_guardExpr);
 					  setCaseDone(guard);
@@ -2378,7 +2378,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <EndImport>.				{
   					}
 <DefName>{ID}/("\\\n")*"("		{ // define with argument
-  					  //printf("Define() `%s'\n",yytext);
+  					  //printf("Define() '%s'\n",yytext);
 					  delete g_argDict;
 					  g_argDict = new QDict<int>(31);
 					  g_argDict->setAutoDelete(TRUE);
@@ -2392,7 +2392,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN(DefineArg);
   					}
 <DefName>{ID}{B}+"1"/[ \r\t\n]		{ // special case: define with 1 -> can be "guard"
-  					  //printf("Define `%s'\n",yytext);
+  					  //printf("Define '%s'\n",yytext);
 					  delete g_argDict; g_argDict=0;
 					  g_defArgs = -1;
                                           g_defArgsStr.resize(0);
@@ -2450,7 +2450,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_expectGuard=FALSE;
   					}
 <DefName>{ID}/{B}*			{ // define with content
-  					  //printf("Define `%s'\n",yytext);
+  					  //printf("Define '%s'\n",yytext);
 					  delete g_argDict; g_argDict=0;
 					  g_defArgs = -1;
                                           g_defArgsStr.resize(0);
@@ -2852,7 +2852,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
   					  outputChar('\n');
   					  Define *def=0;
-					  //printf("Define name=`%s' text=`%s' litTexti=`%s'\n",g_defName.data(),g_defText.data(),g_defLitText.data());
+					  //printf("Define name='%s' text='%s' litTexti='%s'\n",g_defName.data(),g_defText.data(),g_defLitText.data());
 					  if (g_includeStack.isEmpty() || g_curlyCount>0) 
 					  {
 					    addDefine();
@@ -3198,7 +3198,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 	  DefineManager::instance().addDefine(g_yyFileName,def);
 	}
 
-	//printf("#define `%s' `%s' #nargs=%d\n",
+	//printf("#define '%s' '%s' #nargs=%d\n",
 	//  def->name.data(),def->definition.data(),def->nargs);
       }
       else if ((i_obrace==-1 || i_obrace>i_equals) &&
@@ -3233,7 +3233,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 	  delete def;
 	}
 
-	//printf("#define `%s' `%s' #nargs=%d\n",
+	//printf("#define '%s' '%s' #nargs=%d\n",
 	//  def->name.data(),def->definition.data(),def->nargs);
       }
     }

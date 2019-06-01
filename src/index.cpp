@@ -619,7 +619,7 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
                (tocExpand &&              // or toc expand and
                 dd->getFiles() && dd->getFiles()->count()>0 // there are files
                );
-  //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
+  //printf("gd='%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
   if (addToIndex)
   {
     Doxygen::indexList->addContentsItem(isDir,dd->shortName(),dd->getReference(),dd->getOutputFileBase(),0,TRUE,TRUE);
@@ -4005,7 +4005,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
     }
 
     bool isDir = hasSubGroups || hasSubPages || numSubItems>0;
-    //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
+    //printf("gd='%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
     if (addToIndex)
     {
       Doxygen::indexList->addContentsItem(isDir,gd->groupTitle(),gd->getReference(),gd->getOutputFileBase(),0,isDir,TRUE);

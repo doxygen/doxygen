@@ -157,7 +157,7 @@ static int computeIndent(const char *str,int length)
 
 static void processSection()
 {
-  //printf("%s: found section/anchor with name `%s'\n",g_fileName.data(),g_secLabel.data());
+  //printf("%s: found section/anchor with name '%s'\n",g_fileName.data(),g_secLabel.data());
   QCString file;
   if (g_memberGroup)
   {
@@ -1343,7 +1343,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          BEGIN(St_Sections);
 		       }
 <St_SecTitle,St_SecLabel1,St_SecLabel2>. {
-                         warn(g_fileName,yylineno,"Unexpected character `%s' while looking for section label or title",yytext); 
+                         warn(g_fileName,yylineno,"Unexpected character '%s' while looking for section label or title",yytext); 
                        }
 
 <St_Snippet>[^\n]+     |
@@ -1358,12 +1358,12 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          warn(g_fileName,yylineno,"Unexpected new line character"); 
 		       }
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
-                         //warn(g_fileName,yylineno,"Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
+                         //warn(g_fileName,yylineno,"Unexpected character '%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
 			 return TK_COMMAND_SEL();
                        }
 <*>.                   { 
-                         warn(g_fileName,yylineno,"Unexpected character `%s'",yytext);
+                         warn(g_fileName,yylineno,"Unexpected character '%s'",yytext);
 		       }
 %%
 
@@ -1375,7 +1375,7 @@ void doctokenizerYYFindSections(const char *input,Definition *d,
   if (input==0) return;
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
   g_inputString = input;
-  //printf("parsing --->`%s'<---\n",input);
+  //printf("parsing --->'%s'<---\n",input);
   g_inputPos    = 0;
   g_definition  = d;
   g_memberGroup = mg;

@@ -419,7 +419,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
   {
     QCString aName=name.mid(i,l);
     if (lang==SrcLangExt_Fortran) aName=aName.lower();
-    //printf("aName=`%s'\n",aName.data());
+    //printf("aName='%s'\n",aName.data());
     ArgumentListIterator ali(*al);
     const Argument *a;
     bool found=FALSE;
@@ -428,7 +428,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
       QCString argName = g_memberDef->isDefine() ? a->type : a->name;
       if (lang==SrcLangExt_Fortran) argName=argName.lower();
       argName=argName.stripWhiteSpace();
-      //printf("argName=`%s' aName=%s\n",argName.data(),aName.data());
+      //printf("argName='%s' aName=%s\n",argName.data(),aName.data());
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
       if (aName==argName && isParam)
       {
@@ -696,7 +696,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   const GroupDef     *gd=0;
   const PageDef      *pd=0;
   bool found = getDefs(
-      g_context.find('.')==-1?g_context.data():"", // `find('.') is a hack to detect files
+      g_context.find('.')==-1?g_context.data():"", // find('.') is a hack to detect files
       name,
       args.isEmpty()?0:args.data(),
       md,cd,fd,nd,gd,FALSE,0,TRUE);
@@ -718,7 +718,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     {
       fullName.prepend(g_context.left(scopeOffset)+"::");
     }
-    //printf("Trying fullName=`%s'\n",fullName.data());
+    //printf("Trying fullName='%s'\n",fullName.data());
 
     // try class, namespace, group, page, file reference
     cd = Doxygen::classSDict->find(fullName);
@@ -1860,7 +1860,7 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
     }
     else 
     {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid cite anchor id `%s'",qPrint(id));
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid cite anchor id '%s'",qPrint(id));
       m_anchor = "invalid";
       m_file = "invalid";
     }
@@ -1885,7 +1885,7 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
     }
     else
     {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid anchor id `%s'",qPrint(id));
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid anchor id '%s'",qPrint(id));
       m_anchor = "invalid";
       m_file = "invalid";
     }
@@ -2530,7 +2530,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
     }
   }
   m_text = target;
-  warn_doc_error(g_fileName,doctokenizerYYlineno,"unable to resolve reference to `%s' for \\ref command",
+  warn_doc_error(g_fileName,doctokenizerYYlineno,"unable to resolve reference to '%s' for \\ref command",
            qPrint(target)); 
 }
 
@@ -2628,7 +2628,7 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
   }
   else if (cite==0)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"unable to resolve reference to `%s' for \\cite command",
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"unable to resolve reference to '%s' for \\cite command",
              qPrint(target));
   }
   else
@@ -2671,7 +2671,7 @@ DocLink::DocLink(DocNode *parent,const QCString &target)
   }
 
   // bogus link target
-  warn_doc_error(g_fileName,doctokenizerYYlineno,"unable to resolve link to `%s' for \\link command",
+  warn_doc_error(g_fileName,doctokenizerYYlineno,"unable to resolve link to '%s' for \\link command",
          qPrint(target)); 
 }
 
@@ -3274,7 +3274,7 @@ DocHtmlCaption::DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs)
       }
       else
       {
-        warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid caption id `%s'",qPrint(opt->value));
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid caption id '%s'",qPrint(opt->value));
       }
     }
     else // copy attribute
@@ -5399,7 +5399,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
   {
     case CMD_UNKNOWN:
       m_children.append(new DocWord(this,TK_COMMAND_CHAR(tok) + cmdName));
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Found unknown command `\\%s'",qPrint(cmdName));
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Found unknown command '\\%s'",qPrint(cmdName));
       break;
     case CMD_EMPHASIS:
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
@@ -7040,7 +7040,7 @@ void DocText::parse()
             m_children.append(new DocSymbol(this,DocSymbol::Sym_Equal));
             break;
           default:
-            warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command `%s' found",
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command '%s' found",
                       qPrint(g_token->name));
             break;
         }
@@ -7125,7 +7125,7 @@ void DocRoot::parse()
     }
     else
     {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid section id `%s'; ignoring section",qPrint(g_token->sectionId));
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid section id '%s'; ignoring section",qPrint(g_token->sectionId));
       retval = 0;
     }
   }

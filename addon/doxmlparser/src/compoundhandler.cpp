@@ -152,7 +152,7 @@ class CompoundTypeMap
       int *val = m_map.find(s.utf8());
       if (val==0) 
       {
-        debug(1,"Warning: `%s' is an invalid compound type\n",s.data());
+        debug(1,"Warning: '%s' is an invalid compound type\n",s.data());
         return ICompound::Invalid;
       }
       else return (ICompound::CompoundKind)*val;
@@ -325,7 +325,7 @@ void CompoundHandler::startCompound(const QXmlAttributes& attrib)
   m_kindString = attrib.value("kind");
   m_kind       = s_typeMap->map(m_kindString);
   m_protection = attrib.value("prot");
-  debug(2,"startCompound(id=`%s' type=`%s')\n",m_id.data(),m_kindString.data());
+  debug(2,"startCompound(id='%s' type='%s')\n",m_id.data(),m_kindString.data());
 }
 
 void CompoundHandler::endCompound()
@@ -345,7 +345,7 @@ void CompoundHandler::startLocation(const QXmlAttributes& attrib)
 void CompoundHandler::endCompoundName()
 {
   m_name = m_curString.stripWhiteSpace();
-  debug(2,"Compound name `%s'\n",m_name.data());
+  debug(2,"Compound name '%s'\n",m_name.data());
 }
 
 void CompoundHandler::startInnerClass(const QXmlAttributes& attrib)
@@ -412,7 +412,7 @@ void CompoundHandler::startSuperClass(const QXmlAttributes& attrib)
           prot,
           kind
          );
-  debug(2,"super class id=`%s' prot=`%s' virt=`%s'\n",
+  debug(2,"super class id='%s' prot='%s' virt='%s'\n",
       attrib.value("refid").data(),
       protString.data(),
       kindString.data());
@@ -442,7 +442,7 @@ void CompoundHandler::startSubClass(const QXmlAttributes& attrib)
           prot,
           kind
          );
-  debug(2,"sub class id=`%s' prot=`%s' virt=`%s'\n",
+  debug(2,"sub class id='%s' prot='%s' virt='%s'\n",
       attrib.value("refid").data(),
       protString.data(),
       kindString.data());

@@ -269,7 +269,7 @@ static void endCodeLine()
   g_code->endCodeLine();
 }
 
-/*! write a code fragment `text' that may span multiple lines, inserting
+/*! write a code fragment 'text' that may span multiple lines, inserting
  * line numbers for each line.
  */
 static void codifyLines(char *text)

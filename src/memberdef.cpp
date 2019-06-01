@@ -928,7 +928,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
 {
   const ArgumentList *defArgList=(md->isDocsForDefinition()) ?
                              md->argumentList() : md->declArgumentList();
-  //printf("writeDefArgumentList `%s' isDocsForDefinition()=%d\n",md->name().data(),md->isDocsForDefinition());
+  //printf("writeDefArgumentList '%s' isDocsForDefinition()=%d\n",md->name().data(),md->isDocsForDefinition());
   if (defArgList==0 || md->isProperty())
   {
     return FALSE; // member has no function like argument list
@@ -1042,7 +1042,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     }
     if (hasFuncPtrType) // argument type is a function pointer
     {
-      //printf("a->type=`%s' a->name=`%s'\n",a->type.data(),a->name.data());
+      //printf("a->type='%s' a->name='%s'\n",a->type.data(),a->name.data());
       QCString n=a->type.left(vp);
       if (hasFuncPtrType) n=a->type.left(wp);
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
@@ -1559,7 +1559,7 @@ void MemberDefImpl::IMPL::init(Definition *def,
  * \param e  A string representing the throw clause of the members.
  * \param p  The protection context of the member, possible values are:
  *           \c Public, \c Protected, \c Private.
- * \param v  The degree of `virtualness' of the member, possible values are:
+ * \param v  The degree of 'virtualness' of the member, possible values are:
  *           \c Normal, \c Virtual, \c Pure.
  * \param s  A boolean that is true iff the member is static.
  * \param r  The relationship between the class and the member.
@@ -2102,13 +2102,13 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
     cname=getNamespaceDef()->name();
   }
   QCString ltype(m_impl->type);
-  // strip `static' keyword from ltype
+  // strip 'static' keyword from ltype
   //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
-  // strip `friend' keyword from ltype
+  // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
   static QRegExp r("@[0-9]+");
   int l,i=r.match(ltype,0,&l);
-  //printf("ltype=`%s' i=%d\n",ltype.data(),i);
+  //printf("ltype='%s' i=%d\n",ltype.data(),i);
   // search for the last anonymous scope in the member type
   ClassDef *annoClassDef=0;
   if (i!=-1) // found anonymous scope in type
@@ -2250,7 +2250,7 @@ QCString MemberDefImpl::getDeclType() const
   {
     ltype="using";
   }
-  // strip `friend' keyword from ltype
+  // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
   if (ltype=="@") // rename type from enum values
   {
@@ -2359,7 +2359,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   {
     ltype="using";
   }
-  // strip `friend' keyword from ltype
+  // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
   static QRegExp r("@[0-9]+");
 
@@ -2367,7 +2367,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   int l,i=r.match(ltype,0,&l);
   if (i!=-1) // member has an anonymous type
   {
-    //printf("annoClassDef=%p annMemb=%p scopeName=`%s' anonymous=`%s'\n",
+    //printf("annoClassDef=%p annMemb=%p scopeName='%s' anonymous='%s'\n",
     //    annoClassDef,annMemb,cname.data(),ltype.mid(i,l).data());
 
     if (annoClassDef) // type is an anonymous compound
@@ -2384,7 +2384,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         ol.writeNonBreakableSpace(3);
       }
       QCString varName=ltype.right(ltype.length()-ir).stripWhiteSpace();
-      //printf(">>>>>> ltype=`%s' varName=`%s'\n",ltype.data(),varName.data());
+      //printf(">>>>>> ltype='%s' varName='%s'\n",ltype.data(),varName.data());
       ol.docify("}");
       if (varName.isEmpty() && (name().isEmpty() || name().at(0)=='@'))
       {
@@ -3381,7 +3381,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   bool inFile = container->definitionType()==Definition::TypeFile;
   bool hasDocs = isDetailedSectionVisible(inGroup,inFile);
 
-  //printf("MemberDefImpl::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d sectionLinkable=%d\n",
+  //printf("MemberDefImpl::writeDocumentation(): name='%s' hasDocs='%d' containerType=%d inGroup=%d sectionLinkable=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup,isDetailedSectionLinkable());
 
   //if ( !hasDocs ) return;
@@ -3423,7 +3423,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   QCString ldef = definition();
   QCString title = name();
-  //printf("member `%s' def=`%s'\n",name().data(),ldef.data());
+  //printf("member '%s' def='%s'\n",name().data(),ldef.data());
   if (isEnumerate())
   {
     if (title.at(0)=='@')
@@ -3497,7 +3497,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     if (!found) // anonymous compound
     {
-      //printf("Anonymous compound `%s'\n",cname.data());
+      //printf("Anonymous compound '%s'\n",cname.data());
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
       ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
       // search for the last anonymous compound name in the definition
@@ -3748,7 +3748,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       //               )
      )
   {
-    //printf("md=%s initLines=%d init=`%s'\n",name().data(),initLines,init.data());
+    //printf("md=%s initLines=%d init='%s'\n",name().data(),initLines,init.data());
     ol.startBold();
     if (m_impl->mtype==MemberType_Define)
       ol.parseText(theTranslator->trDefineValue());
@@ -6052,7 +6052,7 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
                        )
        ) /* match found */
     {
-      //printf("Found member %s: definition in %s (doc=`%s') and declaration in %s (doc=`%s')\n",
+      //printf("Found member %s: definition in %s (doc='%s') and declaration in %s (doc='%s')\n",
       //    mn->memberName(),
       //    mdef->getFileDef()->name().data(),mdef->documentation().data(),
       //    mdec->getFileDef()->name().data(),mdec->documentation().data()

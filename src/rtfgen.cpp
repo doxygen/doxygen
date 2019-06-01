@@ -1532,7 +1532,7 @@ void RTFGenerator::startMemberDoc(const char *clname,
   t << rtf_Style_Reset << rtf_Style[showInline ? "Heading5" : "Heading4"]->reference;
   //styleStack.push(rtf_Style_Heading4);
   t << "{" << endl;
-  //printf("RTFGenerator::startMemberDoc() `%s'\n",rtf_Style["Heading4"]->reference);
+  //printf("RTFGenerator::startMemberDoc() '%s'\n",rtf_Style["Heading4"]->reference);
   startBold();
   t << endl;
 }
@@ -1541,7 +1541,7 @@ void RTFGenerator::endMemberDoc(bool)
 {
   DBG_RTF(t << "{\\comment endMemberDoc}" << endl)
   //const char *style = styleStack.pop();
-  //printf("RTFGenerator::endMemberDoc() `%s'\n",style);
+  //printf("RTFGenerator::endMemberDoc() '%s'\n",style);
   //ASSERT(style==rtf_Style["Heading4"]->reference);
   endBold();
   t << "}" << endl;

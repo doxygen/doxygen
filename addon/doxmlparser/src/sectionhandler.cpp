@@ -68,7 +68,7 @@ class SectionTypeMap
       int *val = m_map.find(s.utf8());
       if (val==0) 
       {
-        debug(1,"Warning: `%s' is an invalid section type\n",s.data());
+        debug(1,"Warning: '%s' is an invalid section type\n",s.data());
         return ISection::Invalid;
       }
       else return (ISection::SectionKind)*val;
@@ -110,7 +110,7 @@ void SectionHandler::startSection(const QXmlAttributes& attrib)
   m_parent->setDelegate(this);
   m_kindString = attrib.value("kind");
   m_kind = s_typeMap->map(m_kindString);
-  debug(2,"section kind=`%s'\n",m_kindString.data());
+  debug(2,"section kind='%s'\n",m_kindString.data());
 }
 
 void SectionHandler::startDescription(const QXmlAttributes& attrib)
@@ -141,7 +141,7 @@ void SectionHandler::startHeader(const QXmlAttributes&)
 void SectionHandler::endHeader()
 {
   m_header = m_curString.stripWhiteSpace();
-  debug(2,"member header=`%s'\n",m_header.data());
+  debug(2,"member header='%s'\n",m_header.data());
 }
 
 void SectionHandler::initialize(CompoundHandler *ch)

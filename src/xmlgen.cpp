@@ -566,7 +566,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   {
     t << memberOutputFileBase(md);
   }
-  t << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
+  t << "_1"      // encoded ':' character (see util.cpp:convertNameToFile)
     << md->anchor();
   t << "\" prot=\"";
   switch(md->protection())

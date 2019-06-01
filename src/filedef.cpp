@@ -1394,7 +1394,7 @@ void FileDefImpl::insertMember(MemberDef *md)
       break;
     default:
        err("FileDefImpl::insertMembers(): "
-           "member `%s' with class scope `%s' inserted in file scope `%s'!\n",
+           "member '%s' with class scope '%s' inserted in file scope '%s'!\n",
            md->name().data(),
            md->getClassDef() ? md->getClassDef()->name().data() : "<global>",
            name().data());

@@ -262,7 +262,7 @@ void generateDEFForMember(MemberDef *md,
         t << memPrefix << "referenceto = {" << endl;
         t << refPrefix << "id = '"
           << rmd->getBodyDef()->getOutputFileBase()
-          << "_1"   // encoded `:' character (see util.cpp:convertNameToFile)
+          << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
           << rmd->anchor() << "';" << endl;
 
         t << refPrefix << "line = '"
@@ -295,7 +295,7 @@ void generateDEFForMember(MemberDef *md,
         t << memPrefix << "referenceby = {" << endl;
         t << refPrefix << "id = '"
           << rmd->getBodyDef()->getOutputFileBase()
-          << "_1"   // encoded `:' character (see util.cpp:convertNameToFile)
+          << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
           << rmd->anchor() << "';" << endl;
 
         t << refPrefix << "line = '"
@@ -576,13 +576,13 @@ void generateDEF()
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-        err("tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+        err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
             "exist and cannot be created\n",outputDirectory.data());
         exit(1);
       }
       else
       {
-        msg("Notice: Output directory `%s' does not exist. "
+        msg("Notice: Output directory '%s' does not exist. "
             "I have created it for you.\n", outputDirectory.data());
       }
       dir.cd(outputDirectory);

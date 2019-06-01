@@ -532,7 +532,7 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
       break;
     default:
       err("GroupDefImpl::insertMembers(): "
-           "member `%s' (typeid=%d) with scope `%s' inserted in group scope `%s'!\n",
+           "member '%s' (typeid=%d) with scope '%s' inserted in group scope '%s'!\n",
            md->name().data(),md->memberType(),
            md->getClassDef() ? md->getClassDef()->name().data() : "",
            name().data());
@@ -650,7 +650,7 @@ bool GroupDefImpl::findGroup(const GroupDef *def) const
 
 void GroupDefImpl::addGroup(const GroupDef *def)
 {
-  //printf("adding group `%s' to group `%s'\n",def->name().data(),name().data());
+  //printf("adding group '%s' to group '%s'\n",def->name().data(),name().data());
   //if (Config_getBool(SORT_MEMBER_DOCS))
   //  groupList->inSort(def);
   //else
@@ -1485,7 +1485,7 @@ void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    //printf("group `%s'\n",s->data());
+    //printf("group '%s'\n",s->data());
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
       if (gd->addNamespace(nd)) nd->makePartOfGroup(gd);
@@ -1502,7 +1502,7 @@ void addDirToGroups(Entry *root,DirDef *dd)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    //printf("group `%s'\n",g->groupname.data());
+    //printf("group '%s'\n",g->groupname.data());
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
       gd->addDir(dd);
