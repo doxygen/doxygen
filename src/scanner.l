@@ -6771,7 +6771,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <DocCopyBlock><<EOF>>			{
   					  warn(yyFileName,yyLineNr,
-					      "reached end of file while inside a `%s' block!\n"
+					      "reached end of file while inside a '%s' block!\n"
 					      "The command that should end the block seems to be missing!\n",
 					      docBlockName.data());
   					  yyterminate();
