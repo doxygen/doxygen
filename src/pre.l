@@ -73,9 +73,10 @@ struct CondCtx
 
 struct FileState
 {
-  FileState(int size) : lineNr(1), fileBuf(size),
+  FileState(int size) : lineNr(1), curlyCount(0),fileBuf(size),
                         oldFileBuf(0), oldFileBufPos(0), bufState(0) {}
   int lineNr;
+  int curlyCount;
   BufStr fileBuf;
   BufStr *oldFileBuf;
   int oldFileBufPos;
@@ -1606,6 +1607,8 @@ static void readIncludeFile(const QCString &inc)
       fs->bufState = YY_CURRENT_BUFFER;
       fs->lineNr   = oldLineNr;
       fs->fileName = oldFileName;
+      fs->curlyCount = g_curlyCount;
+      g_curlyCount = 0;
       // push the state on the stack
       g_includeStack.push(fs);
       // set the scanner to the include file
@@ -2949,6 +2952,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             //preYYin = fs->oldYYin;
                                             g_inputBuf    = fs->oldFileBuf;
 					    g_inputBufPos = fs->oldFileBufPos;
+                                            g_curlyCount = fs->curlyCount;
 					    setFileName(fs->fileName);
 					    DBG_CTX((stderr,"######## FileName %s\n",g_yyFileName.data()));
 					    
