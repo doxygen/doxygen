@@ -1097,7 +1097,7 @@ static void processInline(GrowBuf &out,const char *data,int size)
 }
 
 /** returns whether the line is a setext-style hdr underline */
-static int isHeaderline(const char *data, int size)
+static int isHeaderline(const char *data, int size, bool allowAdjustLevel)
 {
   int i=0, c=0;
   while (i<size && data[i]==' ') i++;
@@ -1107,7 +1107,17 @@ static int isHeaderline(const char *data, int size)
   {
     while (i<size && data[i]=='=') i++,c++;
     while (i<size && data[i]==' ') i++;
-    return (c>1 && (i>=size || data[i]=='\n')) ? g_indentLevel+1 : 0;
+    int level = (c>1 && (i>=size || data[i]=='\n')) ? 1 : 0;
+    if (allowAdjustLevel && level==1 && g_indentLevel==-1)
+    {
+      // In case a page starts with a header line we use it as title, promoting it to @page.
+      // We set g_indentLevel to -1 to promoting the other sections if they have a deeper 
+      // nesting level than the page header, i.e. @section..@subsection becomes @page..@section.
+      // In case a section at the same level is found (@section..@section) however we need 
+      // to undo this (and the result will be @page..@section).
+      g_indentLevel=0;
+    }
+    return g_indentLevel+level;
   }
   // test of level 2 header
   if (data[i]=='-')
@@ -2272,7 +2282,7 @@ static QCString processBlocks(const QCString &s,int indent)
       QCString lang;
       blockIndent = indent;
       //printf("isHeaderLine(%s)=%d\n",QCString(data+i).left(size-i).data(),level);
-      if ((level=isHeaderline(data+i,size-i))>0)
+      if ((level=isHeaderline(data+i,size-i,TRUE))>0)
       {
         //printf("Found header at %d-%d\n",i,end);
         while (pi<size && data[pi]==' ') pi++;
@@ -2414,7 +2424,7 @@ static QCString extractPageTitle(QCString &docs,QCString &id)
     // second line form end1..end2
     int end2=end1+1;
     while (end2<size && data[end2-1]!='\n') end2++;
-    if (isHeaderline(data+end1,size-end1))
+    if (isHeaderline(data+end1,size-end1,FALSE))
     {
       convertStringFragment(title,data+i,end1-i-1);
       QCString lns;
