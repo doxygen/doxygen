@@ -231,6 +231,8 @@ static EdgeProperties umlEdgeProps =
 };
 
 
+static QCString convertLabel(const QCString &l);
+
 static QCString getDotFontName()
 {
   static QCString dotFontName = Config_getString(DOT_FONTNAME);
@@ -259,7 +261,7 @@ static void writeGraphHeader(FTextStream &t,const QCString &title=QCString())
   }
   else
   {
-    t << "\"" << convertToXML(title) << "\"";
+    t << "\"" << convertLabel(title) << "\"";
   }
   t << endl << "{" << endl;
   if (interactiveSVG) // insert a comment to force regeneration when this
@@ -4780,7 +4782,7 @@ void DotGroupCollaboration::writeGraphHeader(FTextStream &t,
   }
   else
   {
-    t << "\"" << convertToXML(title) << "\"";
+    t << "\"" << convertLabel(title) << "\"";
   }
   t << endl;
   t << "{" << endl;
