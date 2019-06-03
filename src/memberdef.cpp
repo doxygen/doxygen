@@ -33,6 +33,7 @@
 #include "defargs.h"
 #include "docparser.h"
 #include "dot.h"
+#include "dotcallgraph.h"
 #include "searchindex.h"
 #include "parserintf.h"
 #include "objcache.h"

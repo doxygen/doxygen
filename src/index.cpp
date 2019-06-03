@@ -40,6 +40,7 @@
 #include "htmlhelp.h"
 #include "ftvhelp.h"
 #include "dot.h"
+#include "dotgfxhierarchytable.h"
 #include "pagedef.h"
 #include "dirdef.h"
 #include "vhdldocgen.h"

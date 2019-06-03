@@ -33,6 +33,7 @@
 #include "docparser.h"
 #include "searchindex.h"
 #include "dot.h"
+#include "dotgroupcollaboration.h"
 #include "vhdldocgen.h"
 #include "layout.h"
 #include "arguments.h"

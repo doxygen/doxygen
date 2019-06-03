@@ -26,6 +26,7 @@
 #include "language.h"
 #include "outputlist.h"
 #include "dot.h"
+#include "dotincldepgraph.h"
 #include "message.h"
 #include "docparser.h"
 #include "searchindex.h"

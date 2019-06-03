@@ -29,6 +29,8 @@
 #include "defargs.h"
 #include "outputgen.h"
 #include "dot.h"
+#include "dotclassgraph.h"
+#include "dotincldepgraph.h"
 #include "pagedef.h"
 #include "filename.h"
 #include "version.h"
@@ -1407,14 +1409,14 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd,0,cd->documentation());
   t << "    </detaileddescription>" << endl;
-  DotClassGraph inheritanceGraph(cd,DotNode::Inheritance);
+  DotClassGraph inheritanceGraph(cd,Inheritance);
   if (!inheritanceGraph.isTrivial())
   {
     t << "    <inheritancegraph>" << endl;
     inheritanceGraph.writeXML(t);
     t << "    </inheritancegraph>" << endl;
   }
-  DotClassGraph collaborationGraph(cd,DotNode::Collaboration);
+  DotClassGraph collaborationGraph(cd,Collaboration);
   if (!collaborationGraph.isTrivial())
   {
     t << "    <collaborationgraph>" << endl;

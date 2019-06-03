@@ -39,6 +39,12 @@
 #include "latexgen.h"
 #include "latexdocvisitor.h"
 #include "dot.h"
+#include "dotcallgraph.h"
+#include "dotclassgraph.h"
+#include "dotdirdeps.h"
+#include "dotgfxhierarchytable.h"
+#include "dotgroupcollaboration.h"
+#include "dotincldepgraph.h"
 #include "diagram.h"
 #include "example.h"
 #include "membername.h"
@@ -1926,7 +1932,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.classGraph)
       {
-        cache.classGraph.reset(new DotClassGraph(m_classDef,DotNode::Inheritance));
+        cache.classGraph.reset(new DotClassGraph(m_classDef,Inheritance));
       }
       return cache.classGraph.get();
     }
@@ -2048,7 +2054,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.collaborationGraph)
       {
-        cache.collaborationGraph.reset(new DotClassGraph(m_classDef,DotNode::Collaboration));
+        cache.collaborationGraph.reset(new DotClassGraph(m_classDef,Collaboration));
       }
       return cache.collaborationGraph.get();
     }

@@ -8,6 +8,7 @@
 #include "language.h"
 #include "message.h"
 #include "dot.h"
+#include "dotdirdeps.h"
 #include "layout.h"
 #include "ftextstream.h"
 #include "config.h"
