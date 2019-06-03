@@ -816,8 +816,8 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-	qPrint(cmdName));
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
+	qPrint(saveCmdName));
     return tok;
   }
   while ((tok=doctokenizerYYlex()) && 
@@ -852,7 +852,7 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
       break;
     }
   }
-  DBG(("handleStyleArgument(%s) end tok=%x\n",qPrint(cmdName),tok));
+  DBG(("handleStyleArgument(%s) end tok=%x\n",qPrint(saveCmdName),tok));
   return (tok==TK_NEWPARA || tok==TK_LISTITEM || tok==TK_ENDLIST
          ) ? tok : RetVal_OK; 
 }
@@ -1162,7 +1162,7 @@ static DocInternalRef *handleInternalRef(DocNode *parent)
   QCString tokenName = g_token->name;
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
         qPrint(tokenName));
     return 0;
   }
@@ -1182,7 +1182,7 @@ static DocAnchor *handleAnchor(DocNode *parent)
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
         qPrint(g_token->name));
     return 0;
   }
@@ -4643,8 +4643,8 @@ int DocParamList::parse(const QCString &cmdName)
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
+        qPrint(saveCmdName));
     retval=0;
     goto endparamlist;
   }
@@ -4682,7 +4682,7 @@ int DocParamList::parse(const QCString &cmdName)
   if (tok==0) /* premature end of comment block */
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected end of comment block while parsing the "
-        "argument of command %s",qPrint(cmdName));
+        "argument of command %s",qPrint(saveCmdName));
     retval=0;
     goto endparamlist;
   }
@@ -4880,7 +4880,7 @@ void DocPara::handleCite()
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
         qPrint("cite"));
     return;
   }
@@ -4912,7 +4912,7 @@ void DocPara::handleEmoji()
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
         qPrint("emoji"));
     return;
   }
@@ -4959,12 +4959,13 @@ int DocPara::handleXRefItem()
 
 void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t)
 {
-  DBG(("handleIncludeOperator(%s)\n",qPrint(cmdName)));
+  QCString saveCmdName = cmdName;
+  DBG(("handleIncludeOperator(%s)\n",qPrint(saveCmdName)));
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
+        qPrint(saveCmdName));
     return;
   }
   doctokenizerYYsetStatePattern();
@@ -4973,13 +4974,13 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
   if (tok==0)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected end of comment block while parsing the "
-        "argument of command %s", qPrint(cmdName));
+        "argument of command %s", qPrint(saveCmdName));
     return;
   }
   else if (tok!=TK_WORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
+        tokToString(tok),qPrint(saveCmdName));
     return;
   }
   DocIncOperator *op = new DocIncOperator(this,t,g_token->name,g_context,g_isExample,g_exampleName);
@@ -5045,7 +5046,7 @@ void DocPara::handleImage(const QCString &cmdName)
         tok=doctokenizerYYlex();
         if (tok!=TK_WHITESPACE)
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command with option",
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command with option",
             qPrint(saveCmdName));
           return;
         }
@@ -5053,7 +5054,7 @@ void DocPara::handleImage(const QCString &cmdName)
     }
     else
     {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
         qPrint(saveCmdName));
       return;
     }
@@ -5068,7 +5069,7 @@ void DocPara::handleImage(const QCString &cmdName)
   tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
         qPrint(saveCmdName));
     return;
   }
@@ -5103,11 +5104,12 @@ void DocPara::handleImage(const QCString &cmdName)
 template<class T>
 void DocPara::handleFile(const QCString &cmdName)
 {
+  QCString saveCmdName = cmdName;
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
+        qPrint(saveCmdName));
     return;
   }
   doctokenizerYYsetStateFile();
@@ -5116,7 +5118,7 @@ void DocPara::handleFile(const QCString &cmdName)
   if (tok!=TK_WORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
+        tokToString(tok),qPrint(saveCmdName));
     return;
   }
   QCString name = g_token->name;
@@ -5134,11 +5136,12 @@ void DocPara::handleVhdlFlow()
 
 void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
 {
+  QCString saveCmdName = cmdName;
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
+        qPrint(saveCmdName));
     return;
   }
   doctokenizerYYsetStateLink();
@@ -5146,7 +5149,7 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
   if (tok!=TK_WORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"%s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
+        tokToString(tok),qPrint(saveCmdName));
     return;
   }
   doctokenizerYYsetStatePara();
@@ -5161,12 +5164,13 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
 
 void DocPara::handleRef(const QCString &cmdName)
 {
-  DBG(("handleRef(%s)\n",qPrint(cmdName)));
+  QCString saveCmdName = cmdName;
+  DBG(("handleRef(%s)\n",qPrint(saveCmdName)));
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
+        qPrint(saveCmdName));
     return;
   }
   doctokenizerYYsetStateRef();
@@ -5175,7 +5179,7 @@ void DocPara::handleRef(const QCString &cmdName)
   if (tok!=TK_WORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
+        tokToString(tok),qPrint(saveCmdName));
     goto endref;
   }
   ref = new DocRef(this,g_token->name,g_context);
@@ -5188,6 +5192,7 @@ endref:
 void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 {
   DBG(("handleInclude(%s)\n",qPrint(cmdName)));
+  QCString saveCmdName = cmdName;
   int tok=doctokenizerYYlex();
   bool isBlock = false;
   if (tok==TK_WORD && g_token->name=="{")
@@ -5228,8 +5233,8 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   }
   else if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
+        qPrint(saveCmdName));
     return;
   }
   doctokenizerYYsetStateFile();
@@ -5238,13 +5243,13 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   if (tok==0)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected end of comment block while parsing the "
-        "argument of command %s",qPrint(cmdName));
+        "argument of command %s",qPrint(saveCmdName));
     return;
   }
   else if (tok!=TK_WORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
+        tokToString(tok),qPrint(saveCmdName));
     return;
   }
   QCString fileName = g_token->name;
@@ -5258,7 +5263,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     if (tok!=TK_WORD)
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"expected block identifier, but found token %s instead while parsing the %s command",
-          tokToString(tok),qPrint(cmdName));
+          tokToString(tok),qPrint(saveCmdName));
       return;
     }
     blockId = "["+g_token->name+"]";
@@ -5292,25 +5297,26 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 
 void DocPara::handleSection(const QCString &cmdName)
 {
+  QCString saveCmdName = cmdName;
   // get the argument of the section command.
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
+        qPrint(saveCmdName));
     return;
   }
   tok=doctokenizerYYlex();
   if (tok==0)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected end of comment block while parsing the "
-        "argument of command %s\n", qPrint(cmdName));
+        "argument of command %s\n", qPrint(saveCmdName));
     return;
   }
   else if (tok!=TK_WORD && tok!=TK_LNKWORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
+        tokToString(tok),qPrint(saveCmdName));
     return;
   }
   g_token->sectionId = g_token->name;
