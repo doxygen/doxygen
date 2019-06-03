@@ -265,14 +265,21 @@ DotManager::~DotManager()
   delete m_queue;
 }
 
-DotRunner* DotManager::createRunner(const QCString& absDotName, const QCString& path, const QCString& md5Hash, 
-                                    bool checkResult, const QCString& imageName)
+DotRunner* DotManager::createRunner(const QCString& absDotName, const QCString& md5Hash)
 {
   DotRunner * run = m_runners.find(absDotName);
   if (run == 0)
   {
-    run = new DotRunner(absDotName, path, md5Hash, checkResult, imageName);
+    run = new DotRunner(absDotName, md5Hash);
     m_runners.insert(absDotName, run);
+  }
+  else
+  {
+    // we have a match
+    if (md5Hash != QCString(run->getMd5Hash().data()))
+    {
+      err("md5 hash does not match for two different runs of %s !\n", absDotName.data());
+    }
   }
   return run;
 }
@@ -412,11 +419,6 @@ bool DotManager::run()
     {
       m_workers.at(i)->wait();
     }
-    // clean up dot files from main thread
-    for (i=0;i<(int)m_workers.count();i++)
-    {
-      m_workers.at(i)->cleanup();
-    }
   }
   portable_sysTimerStop();
   if (setPath)
@@ -449,19 +451,6 @@ bool DotManager::run()
       if (!map->run()) return FALSE;
       i++;
     }
-  }
-  return TRUE;
-}
-
-bool DotManager::containsRun(const QCString& absDotName, const QCString& md5Hash)
-{
-  DotRunner * run = m_runners.find(absDotName);
-  if (run == 0) return FALSE;
-
-  // we have a match
-  if (md5Hash != QCString(run->getMd5Hash().data()))
-  {
-    err("md5 hash does not match for two different runs of %s !\n", absDotName.data());
   }
   return TRUE;
 }
@@ -538,14 +527,14 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   QCString absImgName = d.absPath().utf8()+"/"+imgName;
   QCString absOutFile = d.absPath().utf8()+"/"+outFile;
 
-  DotRunner dotRun(inFile,d.absPath().data(),QCString(),FALSE,absImgName);
+  DotRunner dotRun(inFile, QCString());
   if (format==GOF_BITMAP)
     dotRun.addJob(DOT_IMAGE_FORMAT,absImgName);
   else // format==GOF_EPS
   {
     if (USE_PDFLATEX)
     {
-      dotRun.addJob("pdf",absOutFile+".pdf",absOutFile);
+      dotRun.addJob("pdf",absOutFile+".pdf");
     }
     else
     {
@@ -558,8 +547,6 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   {
      return;
   }
-
-  if (format==GOF_BITMAP) checkDotResult(getDotImageExtension(),absImgName);
 
   Doxygen::indexList->addImageFile(imgName);
 
@@ -592,7 +579,7 @@ void writeDotImageMapFromFile(FTextStream &t,
   QCString imgName = baseName+"."+imgExt;
   QCString absOutFile = d.absPath().utf8()+"/"+mapName;
 
-  DotRunner dotRun(inFile,d.absPath().data(),QCString(),FALSE);
+  DotRunner dotRun(inFile, QCString());
   dotRun.addJob(MAP_CMD,absOutFile);
   dotRun.preventCleanUp();
   if (!dotRun.run())

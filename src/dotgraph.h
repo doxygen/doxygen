@@ -40,6 +40,8 @@ public:
   static QCString DOT_FONTNAME; // will be initialized in initDot
   static int DOT_FONTSIZE;      // will be initialized in initDot
 
+  static bool writeVecGfxFigure(FTextStream& out, const QCString& baseName, const QCString& figureName);
+
 protected:
   /** returns node numbers. The Counter is reset by the constructor */
   int getNextNodeNumber() { return ++m_curNodeNumber; }

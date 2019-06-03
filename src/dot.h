@@ -62,8 +62,7 @@ class DotManager
 {
   public:
     static DotManager *instance();
-    DotRunner* createRunner(const QCString& absDotName, const QCString& path, const QCString& md5Hash, 
-                            bool checkResult, const QCString& imageName = QCString());
+    DotRunner* createRunner(const QCString& absDotName, const QCString& md5Hash);
     int  addMap(const QCString &file,const QCString &mapFile,
                 const QCString &relPath,bool urlOnly,
                 const QCString &context,const QCString &label);
@@ -74,8 +73,6 @@ class DotManager
     int addSVGObject(const QCString &file,const QCString &baseName,
                      const QCString &figureNAme,const QCString &relPath);
     bool run();
-
-    bool containsRun(const QCString& absDotName, const QCString& md5Hash);
 
   private:
     DotManager();
@@ -105,7 +102,5 @@ bool writeSVGFigureLink(FTextStream &out,const QCString &relPath,
 bool convertMapFile(FTextStream &t,const char *mapName,
                     const QCString relPath, bool urlOnly=FALSE,
                     const QCString &context=QCString());
-bool writeVecGfxFigure(FTextStream &out,const QCString &baseName,
-                       const QCString &figureName);
 
 #endif

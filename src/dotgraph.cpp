@@ -152,11 +152,7 @@ bool DotGraph::prepareDotFile()
   // convert result to a string
   MD5SigToString(md5_sig, sigStr.rawData(), 33);
 
-  if (DotManager::instance()->containsRun(absDotName(), sigStr))
-  {
-    // file is already queued
-    return TRUE;
-  }
+  // already queued files are processed again in case the output format has changed
 
   if (!checkMd5Signature(absBaseName(), sigStr) &&
       checkDeliverables(absImgName(),
@@ -185,17 +181,17 @@ bool DotGraph::prepareDotFile()
   if (m_graphFormat == GOF_BITMAP)
   {
     // run dot to create a bitmap image
-    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), m_dir.absPath().data(), sigStr, TRUE, absImgName());
+    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     dotRun->addJob(DOT_IMAGE_FORMAT, absImgName());
     if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName());
   }
   else if (m_graphFormat == GOF_EPS)
   {
     // run dot to create a .eps image
-    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), m_dir.absPath().data(), sigStr, FALSE);
+    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     if (USE_PDFLATEX)
     {
-      dotRun->addJob("pdf",absImgName(),absBaseName());
+      dotRun->addJob("pdf",absImgName());
     }
     else
     {
@@ -349,4 +345,56 @@ void DotGraph::computeGraph(DotNode *root,
   writeGraphFooter(md5stream);
 
   graphStr=buf.data();
+}
+
+bool DotGraph::writeVecGfxFigure(FTextStream &out,const QCString &baseName,
+  const QCString &figureName)
+{
+  int width=400,height=550;
+  if (USE_PDFLATEX)
+  {
+    if (!DotRunner::readBoundingBox(figureName+".pdf",&width,&height,FALSE))
+    {
+      //printf("writeVecGfxFigure()=0\n");
+      return FALSE;
+    }
+  }
+  else
+  {
+    if (!DotRunner::readBoundingBox(figureName+".eps",&width,&height,TRUE))
+    {
+      //printf("writeVecGfxFigure()=0\n");
+      return FALSE;
+    }
+  }
+  //printf("Got PDF/EPS size %d,%d\n",width,height);
+  int maxWidth  = 350;  /* approx. page width in points, excl. margins */
+  int maxHeight = 550;  /* approx. page height in points, excl. margins */ 
+  out << "\\nopagebreak\n"
+    "\\begin{figure}[H]\n"
+    "\\begin{center}\n"
+    "\\leavevmode\n";
+  if (width>maxWidth || height>maxHeight) // figure too big for page
+  {
+    // c*width/maxWidth > c*height/maxHeight, where c=maxWidth*maxHeight>0
+    if (width*maxHeight>height*maxWidth)
+    {
+      out << "\\includegraphics[width=" << maxWidth << "pt]";
+    }
+    else
+    {
+      out << "\\includegraphics[height=" << maxHeight << "pt]";
+    }
+  }
+  else
+  {
+    out << "\\includegraphics[width=" << width << "pt]";
+  }
+
+  out << "{" << baseName << "}\n"
+    "\\end{center}\n"
+    "\\end{figure}\n";
+
+  //printf("writeVecGfxFigure()=1\n");
+  return TRUE;
 }

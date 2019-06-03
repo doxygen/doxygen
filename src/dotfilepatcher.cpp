@@ -467,7 +467,7 @@ bool DotFilePatcher::run()
         Map *map = m_maps.at(mapId);
         //printf("patching FIG %d in file %s with contents of %s\n",
         //   mapId,m_patchFile.data(),map->mapFile.data());
-        if (!writeVecGfxFigure(t,map->label,map->mapFile))
+        if (!DotGraph::writeVecGfxFigure(t,map->label,map->mapFile))
         {
           err("problem writing FIG %d figure!\n",mapId);
           return FALSE;
