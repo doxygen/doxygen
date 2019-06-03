@@ -516,7 +516,7 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
     { return getCdAlias()->countInheritanceNodes(); }
     virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
                 int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const
-    { return countMemberDeclarations(lt,inheritedFrom,lt2,invert,showAlways,visitedClasses); }
+    { return getCdAlias()->countMemberDeclarations(lt,inheritedFrom,lt2,invert,showAlways,visitedClasses); }
     virtual void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
                  const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,
