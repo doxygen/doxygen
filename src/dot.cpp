@@ -237,7 +237,7 @@ DotManager *DotManager::instance()
 
 DotManager::DotManager() : m_dotMaps(1009)
 {
-  m_dotRuns.setAutoDelete(TRUE);
+  m_runners.setAutoDelete(TRUE);
   m_dotMaps.setAutoDelete(TRUE);
   m_queue = new DotRunnerQueue;
   int i;
@@ -265,10 +265,18 @@ DotManager::~DotManager()
   delete m_queue;
 }
 
-void DotManager::addRun(DotRunner *run)
+DotRunner* DotManager::createRunner(const QCString& absDotName, const QCString& path, const QCString& md5Hash, 
+                                    bool checkResult, const QCString& imageName)
 {
-  m_dotRuns.append(run);
+  DotRunner * run = m_runners.find(absDotName);
+  if (run == 0)
+  {
+    run = new DotRunner(absDotName, path, md5Hash, checkResult, imageName);
+    m_runners.insert(absDotName, run);
+  }
+  return run;
 }
+
 
 int DotManager::addMap(const QCString &file,const QCString &mapFile,
                 const QCString &relPath,bool urlOnly,const QCString &context,
@@ -322,7 +330,7 @@ int DotManager::addSVGObject(const QCString &file,const QCString &baseName,
 
 bool DotManager::run()
 {
-  uint numDotRuns = m_dotRuns.count();
+  uint numDotRuns = m_runners.count();
   uint numDotMaps = m_dotMaps.count();
   if (numDotRuns+numDotMaps>1)
   {
@@ -336,7 +344,7 @@ bool DotManager::run()
     }
   }
   int i=1;
-  QListIterator<DotRunner> li(m_dotRuns);
+  QDictIterator<DotRunner> li(m_runners);
 
   bool setPath=FALSE;
   if (Config_getBool(GENERATE_HTML))
@@ -447,19 +455,15 @@ bool DotManager::run()
 
 bool DotManager::containsRun(const QCString& absDotName, const QCString& md5Hash)
 {
-  QListIterator<DotRunner> li(m_dotRuns);
-  DotRunner *dr;
-  for (li.toFirst();(dr=li.current());++li)
+  DotRunner * run = m_runners.find(absDotName);
+  if (run == 0) return FALSE;
+
+  // we have a match
+  if (md5Hash != QCString(run->getMd5Hash().data()))
   {
-    if (absDotName != QCString(dr->getFileName().data())) continue;
-    // we have a match
-    if (md5Hash != QCString(dr->getMd5Hash().data()))
-    {
-      err("md5 hash does not match for two different runs of %s !\n", absDotName.data());
-    }
-    return TRUE;
+    err("md5 hash does not match for two different runs of %s !\n", absDotName.data());
   }
-  return FALSE;
+  return TRUE;
 }
 
 //--------------------------------------------------------------------

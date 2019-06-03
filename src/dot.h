@@ -62,7 +62,8 @@ class DotManager
 {
   public:
     static DotManager *instance();
-    void addRun(DotRunner *run);
+    DotRunner* createRunner(const QCString& absDotName, const QCString& path, const QCString& md5Hash, 
+                            bool checkResult, const QCString& imageName = QCString());
     int  addMap(const QCString &file,const QCString &mapFile,
                 const QCString &relPath,bool urlOnly,
                 const QCString &context,const QCString &label);
@@ -79,7 +80,8 @@ class DotManager
   private:
     DotManager();
     virtual ~DotManager();
-    QList<DotRunner>       m_dotRuns;
+
+    QDict<DotRunner>       m_runners;
     SDict<DotFilePatcher> m_dotMaps;
     static DotManager     *m_theInstance;
     DotRunnerQueue        *m_queue;

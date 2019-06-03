@@ -35,6 +35,7 @@ class DotGraph
 {
 public:
   DotGraph() : m_curNodeNumber(0), m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE), m_zoomable(TRUE), m_urlOnly(FALSE) {}
+  virtual ~DotGraph() {}
 
   static QCString DOT_FONTNAME; // will be initialized in initDot
   static int DOT_FONTSIZE;      // will be initialized in initDot
@@ -81,8 +82,8 @@ protected:
   QCString absDotName()  const { return m_absPath + m_baseName + ".dot"; }
 
   QCString imgName()     const;
-  QCString absImgName()  const { return m_absPath + m_baseName + "." + IMG_EXT; }
-  QCString relImgName()  const { return m_relPath + m_baseName + "." + IMG_EXT; }
+  QCString absImgName()  const { return m_absPath + imgName(); }
+  QCString relImgName()  const { return m_relPath + imgName(); }
 
   // the following variables are used while writing the graph to a .dot file
   FTextStream *          m_out;
@@ -104,6 +105,9 @@ protected:
   bool                   m_urlOnly;
 
 private:
+  DotGraph(const DotGraph &);
+  DotGraph &operator=(const DotGraph &);
+
   bool prepareDotFile();
   void generateCode();
 
