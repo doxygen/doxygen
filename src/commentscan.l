@@ -1895,17 +1895,20 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  addOutput('\n');
   					}
 <FormatBlock>"/*"			{ // start of a C-comment
-  					  g_commentCount++;
+					  if (!(blockName=="code" || blockName=="verbatim")) g_commentCount++;
   					  addOutput(yytext);
   					}
 <FormatBlock>"*/"			{ // end of a C-comment
   					  addOutput(yytext);
-  					  g_commentCount--;
-					  if (g_commentCount<0 && blockName!="verbatim")
-					  {
-					    warn(yyFileName,yyLineNr,
+					  if (!(blockName=="code" || blockName=="verbatim"))
+                                          {
+                                            g_commentCount--;
+					    if (g_commentCount<0)
+					    {
+					      warn(yyFileName,yyLineNr,
 					         "found */ without matching /* while inside a \\%s block! Perhaps a missing \\end%s?\n",blockName.data(),blockName.data());
-					  }
+					    }
+  					  }
   					}
 <FormatBlock>.				{
   					  addOutput(*yytext);
