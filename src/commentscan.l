@@ -1184,13 +1184,24 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>{B}*({CMD}{CMD})"f"[$\[{]	{ // escaped formula command
   					  addOutput(yytext);
   					}
-<Comment>{B}*{CMD}"~"[a-z_A-Z-]*		{ // language switch command
+<Comment>{B}*{CMD}"~"[0-9]+             { /* the ~ is escaped followed by a number, so no language */
+				          addOutput(yytext + 1);
+                                        }
+<Comment>{B}*{CMD}"~"[a-z_A-Z-]*	{ // language switch command
                                           QCString langId = QString(yytext).stripWhiteSpace().data()+2;
-			       	          if (!langId.isEmpty() &&
-					      qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)!=0)
-				          { // enable language specific section
-				            BEGIN(SkipLang);
-				          }
+                                          if (langId.isEmpty())
+                                          { /* just ignore \~ */ }
+                                          else if (possibleLanguage(langId.data()))
+                                          {
+				            if (qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)!=0)
+				            { // enable language specific section
+				              BEGIN(SkipLang);
+				            }
+                                          }
+                                          else
+                                          {
+				            addOutput(yytext + 1);
+                                          }
   					}
 <Comment>{B}*{CMD}"f{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
 					  setOutput(OutputDoc);
@@ -2253,13 +2264,24 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle language specific sections ------- */
 
+<SkipLang>[\\@]"~"[0-9]+            { /* the ~ is escaped followed by a number, so no end of language section */
+                                    }
 <SkipLang>[\\@]"~"[a-zA-Z-]*        { /* language switch */
                                      QCString langId = &yytext[2];
-				     if (langId.isEmpty() ||
-					 qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)==0)
-				     { // enable language specific section
+                                     if (langId.isEmpty())
+                                     {
 				       BEGIN(Comment);
-				     }
+                                     }
+                                     else if (possibleLanguage(&yytext[2]))
+                                     {
+				       if (qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)==0)
+				       { // enable language specific section
+				         BEGIN(Comment);
+				       }
+                                     }
+                                     else
+                                     { /* the ~ is escaped followed by non language id, so no end of language */
+                                     }
                                    }
 <SkipLang>[^*@\\\n]*		   { /* any character not a *, @, backslash or new line */
                                    }

@@ -22,5 +22,6 @@
 
 extern Translator *theTranslator;
 extern bool setTranslator(const char *languageName);
+extern bool possibleLanguage(const char *langName);
 
 #endif

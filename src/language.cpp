@@ -420,3 +420,64 @@ bool setTranslator(const char *langName)
   if (!msg.isEmpty()) warn_uncond(msg);
   return TRUE;
 }
+
+/**
+ * List of all languages that are in principle available in doxygen
+ * the languages are not necessarily enabled.
+ */
+static const char *possibleLanguagesList[] =
+{
+  "english",
+  "dutch",
+  "armenian",
+  "swedish",
+  "czech",
+  "french",
+  "indonesian",
+  "italian",
+  "german",
+  "japanese",
+  "japanese-en",
+  "spanish",
+  "finnish",
+  "russian",
+  "croatian",
+  "polish",
+  "portuguese",
+  "hungarian",
+  "korean",
+  "korean-en",
+  "romanian",
+  "slovene",
+  "chinese",
+  "chinese-traditional",
+  "norwegian",
+  "brazilian",
+  "danish",
+  "slovak",
+  "ukrainian",
+  "greek",
+  "serbian",
+  "serbian-cyrillic",
+  "serbiancyr",
+  "catalan",
+  "lithuanian",
+  "latvian",
+  "afrikaans",
+  "arabic",
+  "persian",
+  "farsi",
+  "macedonian",
+  "vietnamese",
+  "turkish",
+  "esperanto"
+};
+
+bool possibleLanguage(const char *langName)
+{
+  for (int i = 0; i < sizeof(possibleLanguagesList) / sizeof(*possibleLanguagesList); i++)
+  {
+    if (L_EQUAL(possibleLanguagesList[i])) return TRUE;
+  }
+  return FALSE;
+}
