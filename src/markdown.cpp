@@ -51,6 +51,7 @@
 #include "config.h"
 #include "section.h"
 #include "message.h"
+#include "portable.h"
 
 //-----------
 
@@ -915,6 +916,20 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       if (lp==-1) // link to markdown page
       {
         out.addStr("@ref ");
+        if (!(portable_isAbsolutePath(link) || isURL(link)))
+        {
+          QFileInfo forg(link);
+          if (!(forg.exists() && forg.isReadable()))
+          {
+            QFileInfo fi(g_fileName);
+            QCString mdFile = g_fileName.left(g_fileName.length()-fi.fileName().length()) + link;
+            QFileInfo fmd(mdFile);
+            if (fmd.exists() && fmd.isReadable())
+            {
+              link = fmd.absFilePath().data();
+            }
+          }
+        }
       }
       out.addStr(link);
       out.addStr(" \"");
