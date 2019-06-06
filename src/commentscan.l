@@ -2320,6 +2320,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 static bool handleBrief(const QCString &, const QCStringList &)
 {
   //printf("handleBrief\n");
+  if (inContext!=OutputBrief)
+  {
+    addOutput("\n\n");
+  }
   setOutput(OutputBrief);
   return FALSE;
 }
