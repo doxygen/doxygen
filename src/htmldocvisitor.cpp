@@ -784,7 +784,9 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
     pushEnabled();
     m_hide=TRUE;
   }
-  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
+  QCString locLangExt = getFileNameExtension(op->includeFileName());
+  if (locLangExt.isEmpty()) locLangExt = m_langExt;
+  SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
@@ -796,7 +798,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
         QFileInfo cfi( op->includeFileName() );
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
-      Doxygen::parserManager->getParser(m_langExt)
+      Doxygen::parserManager->getParser(locLangExt)
                             ->parseCode(
                                 m_ci,
                                 op->context(),

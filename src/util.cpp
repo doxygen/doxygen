@@ -7432,6 +7432,14 @@ SrcLangExt getLanguageFromFileName(const QCString& fileName)
   return SrcLangExt_Cpp; // not listed => assume C-ish language.
 }
 
+QCString getFileNameExtension(QCString fn)
+{
+  if (fn.isEmpty()) return "";
+  int lastDot = fn.findRev('.');
+  if (lastDot!=-1) return fn.mid(lastDot);
+  return "";
+}
+
 //--------------------------------------------------------------------------
 
 MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope, 
