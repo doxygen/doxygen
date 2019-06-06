@@ -866,7 +866,8 @@ static bool getLinkInScope(const QCString &c,  // scope
   const NamespaceDef *nd = 0;
   const GroupDef     *gd = 0;
   DBG_CTX((stderr,"getLinkInScope: trying `%s'::`%s' varOnly=%d\n",c.data(),m.data(),varOnly));
-  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef,FALSE,g_forceTagReference) && 
+  if ((getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef,FALSE,g_forceTagReference) ||
+      getDefs(m,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef,FALSE,g_forceTagReference)) && // check for class constructor
       (!varOnly || md->isVariable()))
   {
     if (md->isLinkable())
