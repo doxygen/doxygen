@@ -119,6 +119,7 @@ class LetterToIndexMap : public SIntDict<T>
 
 QCString langToString(SrcLangExt lang);
 QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=FALSE);
+QCString replaceScopeSeparator(QCString str);
 
 //--------------------------------------------------------------------
 

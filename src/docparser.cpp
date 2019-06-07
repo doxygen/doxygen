@@ -662,6 +662,8 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   *pBrief="";
   *pDef=0;
   QCString cmdArg=substitute(commandName,"#","::");
+  cmdArg = replaceScopeSeparator(cmdArg);
+
   int l=cmdArg.length();
   if (l==0) return FALSE;
 
@@ -687,7 +689,6 @@ static bool findDocsForMemberOrCompound(const char *commandName,
 
   QCString name=removeRedundantWhiteSpace(cmdArg.left(funcStart));
   QCString args=cmdArg.right(l-funcStart);
-
   // try if the link is to a member
   const MemberDef    *md=0;
   const ClassDef     *cd=0;
