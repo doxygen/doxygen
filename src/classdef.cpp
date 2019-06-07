@@ -1718,7 +1718,11 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     // write class diagram using dot
   {
     DotClassGraph inheritanceGraph(this,DotNode::Inheritance);
-    if (!inheritanceGraph.isTrivial() && !inheritanceGraph.isTooBig())
+    if (inheritanceGraph.isTooBig())
+    {
+       warn_uncond("Inheritance graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+    }
+    else if (!inheritanceGraph.isTrivial())
     {
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
