@@ -2298,7 +2298,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  if (*yytext=='\n') yyLineNr++;
 					  addOutput('\n');
 					  setOutput(OutputDoc);
-                                          addOutput("\\copydetails ");
+                                          addOutput(" \\copydetails ");
 					  addOutput(g_copyDocArg);
 					  addOutput("\n");
 					  BEGIN(Comment);
