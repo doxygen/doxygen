@@ -2945,7 +2945,7 @@ void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
     {
        warn_uncond("Caller graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",qPrint(qualifiedName()));
     }
-    else if (!callerGraph.isTrivial() && !callerGraph.isTooBig())
+    else if (!callerGraph.isTrivial())
     {
       msg("Generating caller graph for function %s\n",qPrint(qualifiedName()));
       ol.disable(OutputGenerator::Man);
