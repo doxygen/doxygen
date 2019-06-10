@@ -4730,7 +4730,7 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/theTranslator->trExceptionIndex());
       ol.endIndexSection(isCompoundIndex);
     }
-    if (documentedFiles>0)
+    if (Config_getBool(SHOW_FILES) && (documentedFiles>0))
     {
       ol.startIndexSection(isFileIndex);
       ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
