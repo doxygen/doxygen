@@ -1847,6 +1847,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
           *dst++=' '; // add extra space after
         }
         break;
+      case '[':
       case '*':
         if (i>0 && pc!=' ' && pc!='\t' && pc!=':' &&
                    pc!='*' && pc!='&'  && pc!='(' && pc!='/' &&
