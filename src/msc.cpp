@@ -181,7 +181,7 @@ QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
   if ((exitCode=portable_system(mscExe,mscArgs,FALSE))!=0)
   {
     err("Problems running %s (mapping phase). Check your installation or look typos in you msc file %s\n",
-        mscExe.data(),inFile);
+        mscExe.data(),inFile.data());
     portable_sysTimerStop();
     QDir::setCurrent(oldDir);
     return "";
