@@ -2359,6 +2359,7 @@ static bool handleDefGroup(const QCString &, const QCStringList &)
 {
   bool stop=makeStructuralIndicator(Entry::GROUPDOC_SEC);
   current->groupDocType = Entry::GROUPDOC_NORMAL;
+  setOutput(OutputBrief);
   BEGIN( GroupDocArg1 );
   return stop;
 }
