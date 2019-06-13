@@ -91,6 +91,10 @@ bool Htags::execute(const QCString &htmldir)
   //printf("CommandLine=[%s]\n",commandLine.data());
   portable_sysTimerStart();
   bool result=portable_system("htags",commandLine,FALSE)==0;
+  if (!result)
+  {
+    err("Problems running %s. Check your installation\n", "htags");
+  }
   portable_sysTimerStop();
   QDir::setCurrent(oldDir);
   return result;

@@ -65,6 +65,8 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
   portable_sysTimerStart();
   if ((exitCode=portable_system(diaExe,diaArgs,FALSE))!=0)
   {
+    err("Problems running %s. Check your installation or look typos in you dia file %s\n",
+        diaExe.data(),inFile);
     portable_sysTimerStop();
     goto error;
   }

@@ -132,6 +132,8 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   portable_sysTimerStart();
   if ((exitCode=portable_system(mscExe,mscArgs,FALSE))!=0)
   {
+    err("Problems running %s. Check your installation or look typos in you msc file %s\n",
+        mscExe.data(),inFile);
     portable_sysTimerStop();
     goto error;
   }
@@ -178,6 +180,8 @@ QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
   portable_sysTimerStart();
   if ((exitCode=portable_system(mscExe,mscArgs,FALSE))!=0)
   {
+    err("Problems running %s (mapping phase). Check your installation or look typos in you msc file %s\n",
+        mscExe.data(),inFile);
     portable_sysTimerStop();
     QDir::setCurrent(oldDir);
     return "";
