@@ -518,7 +518,7 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
     { return getCdAlias()->countInheritanceNodes(); }
     virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
                 int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const
-    { return countMemberDeclarations(lt,inheritedFrom,lt2,invert,showAlways,visitedClasses); }
+    { return getCdAlias()->countMemberDeclarations(lt,inheritedFrom,lt2,invert,showAlways,visitedClasses); }
     virtual void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
                  const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,
@@ -1720,7 +1720,11 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     // write class diagram using dot
   {
     DotClassGraph inheritanceGraph(this,Inheritance);
-    if (!inheritanceGraph.isTrivial() && !inheritanceGraph.isTooBig())
+    if (inheritanceGraph.isTooBig())
+    {
+       warn_uncond("Inheritance graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+    }
+    else if (!inheritanceGraph.isTrivial())
     {
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
