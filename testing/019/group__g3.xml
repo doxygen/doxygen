@@ -34,9 +34,9 @@
       </memberdef>
     </sectiondef>
     <briefdescription>
+      <para>Text for third group. </para>
     </briefdescription>
     <detaileddescription>
-      <para>Text for third group. </para>
     </detaileddescription>
   </compounddef>
 </doxygen>
