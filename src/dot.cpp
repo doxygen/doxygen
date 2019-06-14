@@ -62,6 +62,16 @@ void initDot()
   DotRunner::DOT_EXE.init(Config_getString(DOT_PATH) + "dot");
 
   DotGraph::IMG_EXT = getDotImageExtension();
+
+  QCString cacheDir = QCString(portable_getenv("DOTCACHEDIR"));
+  if (cacheDir.isEmpty())
+  {
+    DotGraph::CACHE_DIR.resize(0);
+  }
+  else
+  {
+    DotGraph::CACHE_DIR = cacheDir + '/';
+  }
 }
 
 
