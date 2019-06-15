@@ -27,12 +27,12 @@
 #include "qdir.h"
 #include "qcstring.h"
 #include "dotgraph.h"
+#include "dotfilepatcher.h"
 
 class FTextStream;
 class DotRunner;
 class DotRunnerQueue;
 class DotWorkerThread;
-class DotFilePatcher;
 
 /** Singleton that manages dot relation actions */
 class DotManager
