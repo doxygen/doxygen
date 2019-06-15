@@ -28,6 +28,7 @@
 #include "qcstring.h"
 #include "dotgraph.h"
 #include "dotfilepatcher.h"
+#include "dotrunner.h"
 
 class FTextStream;
 class DotRunner;
