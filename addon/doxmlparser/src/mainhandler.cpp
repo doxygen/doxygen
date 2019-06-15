@@ -20,6 +20,8 @@
 #include "graphhandler.h"
 #include "dochandler.h"
 #include "memberhandler.h"
+#include "linkedtexthandler.h"
+#include "paramhandler.h"
 #include "debug.h"
 
 
