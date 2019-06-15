@@ -22,6 +22,7 @@
 #include "paramhandler.h"
 #include "loamhandler.h"
 #include "memberhandler.h"
+#include "linkedtexthandler.h"
 
 //----------------------------------------------------------------------------
 

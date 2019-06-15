@@ -17,6 +17,8 @@
 #include "compoundhandler.h"
 #include "sectionhandler.h"
 #include "memberhandler.h"
+#include "linkedtexthandler.h"
+#include "paramhandler.h"
 #include "dochandler.h"
 #include "debug.h"
 
