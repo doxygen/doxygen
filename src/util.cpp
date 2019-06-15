@@ -5129,7 +5129,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
     if (fn->count()==1)
     {
       FileDef *fd = fn->getFirst();
-#if defined(_WIN32) || defined(__MACOSX__) // Windows or MacOSX
+#if defined(_WIN32) || defined(__MACOSX__) || defined(__CYGWIN__) // Windows or MacOSX
       bool isSamePath = fd->getPath().right(path.length()).lower()==path.lower();
 #else // Unix
       bool isSamePath = fd->getPath().right(path.length())==path;
@@ -8138,7 +8138,7 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
   bool found = FALSE;
 
   // For Windows/Mac, always do the case insensitive match
-#if defined(_WIN32) || defined(__MACOSX__)
+#if defined(_WIN32) || defined(__MACOSX__) || defined(__CYGWIN__)
   caseSenseNames = FALSE;
 #endif
 
