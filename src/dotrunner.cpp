@@ -112,38 +112,29 @@ static bool resetPDFSize(const int width,const int height, const char *base)
 
 bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool isEps)
 {
-  QCString bb = isEps ? QCString("%%PageBoundingBox:") : QCString("/MediaBox [");
-  QFile f(fileName);
-  if (!f.open(IO_ReadOnly|IO_Raw)) 
+  const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
+  int bblen = strlen(bb);
+  FILE *f = portable_fopen(fileName,"rb");
+  if (!f) 
   {
     //printf("readBoundingBox: could not open %s\n",fileName);
     return FALSE;
   }
   const int maxLineLen=1024;
   char buf[maxLineLen];
-  while (!f.atEnd())
+  while (fgets(buf,maxLineLen,f)!=NULL)
   {
-    int numBytes = f.readLine(buf,maxLineLen-1); // read line
-    if (numBytes>0)
-    {
-      buf[numBytes]='\0';
-      const char *p = strstr(buf,bb);
-      if (p) // found PageBoundingBox or /MediaBox string
-      {
-        int x,y;
-        if (sscanf(p+bb.length(),"%d %d %d %d",&x,&y,width,height)!=4)
-        {
-          //printf("readBoundingBox sscanf fail\n");
-          return FALSE;
-        }
-        return TRUE;
-      }
-    }
-    else // read error!
-    {
-      //printf("Read error %d!\n",numBytes);
-      return FALSE;
-    }
+     const char *p = strstr(buf,bb);
+     if (p) // found PageBoundingBox or /MediaBox string
+     {
+       int x,y;
+       if (sscanf(p+bblen,"%d %d %d %d",&x,&y,width,height)!=4)
+       {
+         //printf("readBoundingBox sscanf fail\n");
+         return FALSE;
+       }
+       return TRUE;
+     }
   }
   err("Failed to extract bounding box from generated diagram file %s\n",fileName);
   return FALSE;
@@ -235,17 +226,18 @@ bool DotRunner::run()
   if (m_cleanUp) 
   {
     //printf("removing dot file %s\n",m_file.data());
-    QFile::remove(m_file.data());
+    portable_unlink(m_file.data());
   }
 
   // create checksum file
-  if (!m_md5Hash.isEmpty()) {
+  if (!m_md5Hash.isEmpty()) 
+  {
     QCString md5Name = getBaseNameOfOutput(m_file.data()) + ".md5";
-    QFile f(md5Name);
-    if (f.open(IO_WriteOnly))
+    FILE *f = portable_fopen(md5Name,"w");
+    if (f)
     {
-      f.writeBlock(m_md5Hash.data(),32); 
-      f.close();
+      fwrite(m_md5Hash.data(),1,32,f); 
+      fclose(f);
     }
   }
   return TRUE;

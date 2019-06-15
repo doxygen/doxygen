@@ -467,3 +467,13 @@ void portable_correct_path(void)
   if (result!=p) portable_setenv("PATH",result.data());
 #endif
 }
+
+void portable_unlink(const char *fileName)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  _unlink(fileName);
+#else
+  unlink(fileName);
+#endif
+}
+

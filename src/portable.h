@@ -23,6 +23,7 @@ void           portable_unsetenv(const char *variable);
 portable_off_t portable_fseek(FILE *f,portable_off_t offset, int whence);
 portable_off_t portable_ftell(FILE *f);
 FILE *         portable_fopen(const char *fileName,const char *mode);
+void           portable_unlink(const char *fileName);
 char           portable_pathSeparator();
 char           portable_pathListSeparator();
 const char *   portable_ghostScriptCommand();
