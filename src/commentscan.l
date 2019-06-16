@@ -1576,7 +1576,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  yyLineNr++; 
 					  addOutput('\n');
                                         }
-<GroupDocArg2>[^\n\*]+			{ // title (stored in type)
+<GroupDocArg2>[^\n\\]+			{ // title (stored in type)
 					  current->type += yytext;
 					  current->type = current->type.stripWhiteSpace();
                                         }
@@ -1594,11 +1594,16 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  addOutput('\n');
 					  BEGIN( Comment );
   					}
+<GroupDocArg2>.                         { // title (stored in type)
+					  current->type += yytext;
+					  current->type = current->type.stripWhiteSpace();
+                                        }
 
   /* --------- handle arguments of page/mainpage command ------------------- */
 
 <PageDocArg1>{FILE}			{ // first argument; page name
 					  current->name = stripQuotes(yytext);
+					  current->args = "";
 					  BEGIN( PageDocArg2 ); 
 					}
 <PageDocArg1>{LC}			{ yyLineNr++; 
@@ -1615,17 +1620,21 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					}
 <PageDocArg1>.				{ // ignore other stuff
   					}
-<PageDocArg2>.*"\n"			{ // second argument; page title
-					  yyLineNr++;
+<PageDocArg2>{DOCNL}			{ // second argument; page title
+					  if (*yytext=='\n') yyLineNr++;
+					  addOutput('\n');
+					  BEGIN( Comment );
+					}
+<PageDocArg2>{CMD}[<>]       		{ 
 					  // bug 748927
 					  QCString tmp = yytext;
 					  tmp = substitute(substitute(tmp,"@<","&lt;"),"@>","&gt;");
 					  tmp = substitute(substitute(tmp,"\\<","&lt;"),"\\>","&gt;");
-					  current->args = tmp;
-					  addOutput('\n');
-					  BEGIN( Comment );
+					  current->args += tmp;
 					}
-
+<PageDocArg2>.				{ 
+					  current->args += yytext;
+                                        }
   /* --------- handle arguments of the param command ------------ */
 <ParamArg1>{ID}/{B}*","                 {
                                           addOutput(yytext);
@@ -1965,6 +1974,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  addOutput(*yytext);
   					}
 <GuardParamEnd>{B}*{DOCNL}		{
+  					  lineCount();
   					  g_spaceBeforeIf.resize(0);
   					  BEGIN(Comment);
   					}
@@ -2462,6 +2472,7 @@ static bool handleMainpage(const QCString &, const QCStringList &)
   {
     current->name = "mainpage";
   }
+  current->name = "";
   BEGIN( PageDocArg2 );
   return stop;
 }
