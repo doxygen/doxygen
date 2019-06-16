@@ -78,6 +78,7 @@ static int              lastHereDocContext;
 static int              lastDefineContext;
 static int              lastAlignAsContext;
 static int              lastC11AttributeContext;
+static int              lastModifierContext;
 static Protection	protection;
 static Protection	baseProt;
 static int		sharpCount   = 0 ;
@@ -766,6 +767,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
  /** Slice states */
 
+%x      SliceOptional
 %x      SliceMetadata
 %x      SliceSequence
 %x      SliceSequenceName
@@ -2439,6 +2441,19 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    current->type+=yytext;
                                             BEGIN(DeclType);
                                           }
+                                          else if (insideSlice && qstrcmp(yytext,"optional")==0)
+                                          {
+                                            if (current->type.isEmpty())
+                                            {
+                                              current->type = "optional";
+                                            }
+                                            else
+                                            {
+                                              current->type += " optional";
+                                            }
+                                            lastModifierContext = YY_START;
+                                            BEGIN(SliceOptional);
+                                          }
 					  else
 					  {
 					    if (YY_START==FindMembers)
@@ -3591,6 +3606,20 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           if (--squareCount<=0)
                                           {
                                             BEGIN (lastSquareContext);
+                                          }
+                                        }
+<SliceOptional>"("                      {
+                                          current->type += "(";
+                                          roundCount++;
+                                        }
+<SliceOptional>[0-9]+                   {
+                                          current->type += yytext;
+                                        }
+<SliceOptional>")"                      {
+                                          current->type += ")";
+                                          if(--roundCount<=0)
+                                          {
+                                            BEGIN (lastModifierContext);
                                           }
                                         }
 <IDLAttribute>"]"			{

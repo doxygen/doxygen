@@ -1,5 +1,7 @@
 #include "loamhandler.h"
 #include "memberhandler.h"
+#include "linkedtexthandler.h"
+#include "paramhandler.h"
 
 
 ListOfAllMembersHandler::ListOfAllMembersHandler(IBaseHandler *parent) : m_parent(parent)
