@@ -20,9 +20,9 @@
       </memberdef>
     </sectiondef>
     <briefdescription>
+      <para>Text for first group. </para>
     </briefdescription>
     <detaileddescription>
-      <para>Text for first group. </para>
     </detaileddescription>
   </compounddef>
 </doxygen>
