@@ -396,7 +396,7 @@ const char *portable_commandExtension()
 
 bool portable_fileSystemIsCaseSensitive()
 {
-#if defined(_WIN32) || defined(macintosh) || defined(__MACOSX__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(macintosh) || defined(__MACOSX__) || defined(__APPLE__) || defined(__CYGWIN__)
   return FALSE;
 #else
   return TRUE;
