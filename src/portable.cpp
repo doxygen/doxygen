@@ -463,6 +463,7 @@ void portable_correct_path(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   const char *p = portable_getenv("PATH");
+  if (!p) return; // no path nothing to correct
   QCString result = substitute(p,'/','\\');
   if (result!=p) portable_setenv("PATH",result.data());
 #endif
