@@ -57,6 +57,7 @@ static QCString g_header;
 static QCString g_footer;
 static QCString g_mathjax_code;
 
+static bool DoxyCodeLineOpen = FALSE;
 
 // note: this is only active if DISABLE_INDEX=YES, if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
@@ -530,7 +531,12 @@ void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
   qsnprintf(lineNumber,maxLineNrStr,"%5d",l);
   qsnprintf(lineAnchor,maxLineNrStr,"l%05d",l);
 
-  m_t << "<div class=\"line\">";
+  if (!DoxyCodeLineOpen)
+  {
+    m_t << "<div class=\"line\">";
+    DoxyCodeLineOpen = TRUE;
+  }
+
   m_t << "<a name=\"" << lineAnchor << "\"></a><span class=\"lineno\">";
   if (filename)
   {
@@ -661,12 +667,16 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
 }
 
 
-void HtmlCodeGenerator::startCodeLine(bool hasLineNumbers)
+void HtmlCodeGenerator::startCodeLine(bool)
 {
   if (m_streamSet)
   {
-    if (!hasLineNumbers) m_t << "<div class=\"line\">";
     m_col=0;
+    if (!DoxyCodeLineOpen)
+    {
+      m_t << "<div class=\"line\">";
+      DoxyCodeLineOpen = TRUE;
+    }
   }
 }
 
@@ -679,7 +689,11 @@ void HtmlCodeGenerator::endCodeLine()
       m_t << " ";
       m_col++;
     }
-    m_t << "</div>";
+    if (DoxyCodeLineOpen)
+    {
+      m_t << "</div>\n";
+      DoxyCodeLineOpen = FALSE;
+    }
   }
 }
 
@@ -2638,6 +2652,19 @@ void HtmlGenerator::endConstraintList()
   t << "</dd>" << endl;
   t << "</dl>" << endl;
   t << "</div>" << endl;
+}
+
+void HtmlGenerator::startCodeFragment()
+{
+  t << PREFRAG_START;
+}
+
+void HtmlGenerator::endCodeFragment()
+{
+  //endCodeLine checks is there is still an open code line, if so closes it.
+  endCodeLine();
+
+  t << PREFRAG_END;
 }
 
 void HtmlGenerator::lineBreak(const char *style)

@@ -185,7 +185,7 @@ void DocbookCodeGenerator::startCodeLine(bool)
 }
 void DocbookCodeGenerator::endCodeLine()
 {
-  m_t << endl;
+  if (m_insideCodeLine) m_t << endl;
   Docbook_DB(("(endCodeLine)\n"));
   m_lineNumber = -1;
   m_refId.resize(0);
@@ -243,7 +243,7 @@ void DocbookCodeGenerator::addWord(const char *,bool)
 }
 void DocbookCodeGenerator::finish()
 {
-  if (m_insideCodeLine) endCodeLine();
+  endCodeLine();
 }
 void DocbookCodeGenerator::startCodeFragment()
 {
@@ -251,6 +251,9 @@ void DocbookCodeGenerator::startCodeFragment()
 }
 void DocbookCodeGenerator::endCodeFragment()
 {
+  //endCodeLine checks is there is still an open code line, if so closes it.
+  endCodeLine();
+
   m_t << "</computeroutput></literallayout>" << endl;
 }
 
@@ -1007,6 +1010,9 @@ DB_GEN_C
 void DocbookGenerator::endCodeFragment()
 {
 DB_GEN_C
+  //endCodeLine checks is there is still an open code line, if so closes it.
+  endCodeLine();
+
     t << "</programlisting>";
 }
 void DocbookGenerator::startMemberTemplateParams()
