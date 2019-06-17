@@ -2009,7 +2009,11 @@ static void generateSqlite3ForClass(const ClassDef *cd)
     if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
     if (!nm.isEmpty())
     {
-      int header_id=insertPath(ii->fileDef->absFilePath(),!ii->fileDef->isReference());
+      int header_id=-1;
+      if (ii->fileDef)
+      {
+        insertPath(ii->fileDef->absFilePath(),!ii->fileDef->isReference());
+      }
       DBG_CTX(("-----> ClassDef includeInfo for %s\n", nm.data()));
       DBG_CTX(("       local    : %d\n", ii->local));
       DBG_CTX(("       imported : %d\n", ii->imported));

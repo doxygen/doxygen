@@ -5551,7 +5551,7 @@ static bool findGlobalMember(Entry *root,
         NamespaceDef *rnd = 0;
         if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict->find(namespaceName);
 
-        ArgumentList *mdAl = md->argumentList();
+        const ArgumentList *mdAl = const_cast<const MemberDef *>(md)->argumentList();
         bool matching=
           (mdAl==0 && root->argList->count()==0) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
@@ -6721,10 +6721,10 @@ static void findMember(Entry *root,
             if (rmn)
             {
               MemberNameIterator rmni(*rmn);
-              MemberDef *rmd;
+              const MemberDef *rmd;
               while ((rmd=rmni.current()) && !found) // see if we got another member with matching arguments
               {
-                ArgumentList *rmdAl = rmd->argumentList();
+                const ArgumentList *rmdAl = rmd->argumentList();
                 // check for matching argument lists
                 if (
                     matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl,
