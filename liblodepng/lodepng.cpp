@@ -2434,12 +2434,7 @@ void LodePNG_Encoder_copy(LodePNG_Encoder* dest, const LodePNG_Encoder* source)
 /*write given buffer to the file, overwriting the file, it doesn't append to it.*/
 unsigned LodePNG_saveFile(const unsigned char* buffer, size_t buffersize, const char* filename)
 {
-  FILE* file;
-#if defined(_WIN32) && !defined(__CYGWIN__)
-  file = _fopen(filename,"wb");
-#else
-  file = fopen(filename,"wb");
-#endif
+  FILE* file = fopen(filename,"wb");
   if(!file) return 79;
   fwrite((char*)buffer , 1 , buffersize, file);
   fclose(file);
