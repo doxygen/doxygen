@@ -1675,6 +1675,7 @@ struct CharAroundSpace
 
     charMap['='].after=FALSE;
     charMap[' '].after=FALSE;
+    charMap['['].after=FALSE;
     charMap[']'].after=FALSE;
     charMap['\t'].after=FALSE;
     charMap['\n'].after=FALSE;
