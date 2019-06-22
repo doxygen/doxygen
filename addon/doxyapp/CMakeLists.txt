@@ -20,6 +20,7 @@ target_link_libraries(doxyapp
 _doxygen
 qtools
 md5
+lodepng
 doxycfg
 vhdlparser
 ${ICONV_LIBRARIES}

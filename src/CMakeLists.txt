@@ -3,6 +3,7 @@
 include_directories(
     ${CMAKE_SOURCE_DIR}/qtools
     ${CMAKE_SOURCE_DIR}/libmd5
+    ${CMAKE_SOURCE_DIR}/liblodepng
     ${CMAKE_SOURCE_DIR}/vhdlparser/
     ${CMAKE_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
@@ -217,7 +218,6 @@ add_library(_doxygen STATIC
     latexdocvisitor.cpp
     latexgen.cpp
     layout.cpp
-    lodepng.cpp
     mandocvisitor.cpp
     mangen.cpp
     sqlite3gen.cpp
@@ -282,6 +282,7 @@ target_link_libraries(doxygen
     doxycfg
     qtools
     md5
+    lodepng
     vhdlparser
     ${SQLITE3_LIBRARIES}
     ${ICONV_LIBRARIES}

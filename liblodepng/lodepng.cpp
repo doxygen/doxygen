@@ -29,7 +29,6 @@ You are free to name this file lodepng.cpp or lodepng.c depending on your usage.
 */
 
 #include "lodepng.h"
-#include "portable.h"
 
 #define USE_BRUTE_FORCE_ENCODING 1
 
@@ -2436,7 +2435,11 @@ void LodePNG_Encoder_copy(LodePNG_Encoder* dest, const LodePNG_Encoder* source)
 unsigned LodePNG_saveFile(const unsigned char* buffer, size_t buffersize, const char* filename)
 {
   FILE* file;
-  file = portable_fopen(filename, "wb" );
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  file = _fopen(filename,"wb");
+#else
+  file = fopen(filename,"wb");
+#endif
   if(!file) return 79;
   fwrite((char*)buffer , 1 , buffersize, file);
   fclose(file);

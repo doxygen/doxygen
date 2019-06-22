@@ -32,6 +32,10 @@ freely, subject to the following restrictions:
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ////////////////////////////////////////////////////////////////////////// */
 /* LodeFlate & LodeZlib Setting structs                                       */
 /* ////////////////////////////////////////////////////////////////////////// */
@@ -114,6 +118,10 @@ void LodePNG_encode(LodePNG_Encoder* encoder, unsigned char** out, size_t* outsi
 /*This function allocates the out buffer and stores the size in *outsize.*/
 //unsigned LodePNG_loadFile(unsigned char** out, size_t* outsize, const char* filename);
 unsigned LodePNG_saveFile(const unsigned char* buffer, size_t buffersize, const char* filename);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
