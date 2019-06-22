@@ -5475,12 +5475,12 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
       case '(': growBuf.addStr("_07"); break;
       case ')': growBuf.addStr("_08"); break;
       case '+': growBuf.addStr("_09"); break;
-      case '=': growBuf.addStr("_0A"); break;
-      case '$': growBuf.addStr("_0B"); break;
-      case '\\': growBuf.addStr("_0C"); break;
-      case '@': growBuf.addStr("_0D"); break;
-      case ']': growBuf.addStr("_0E"); break;
-      case '[': growBuf.addStr("_0F"); break;
+      case '=': growBuf.addStr("_0a"); break;
+      case '$': growBuf.addStr("_0b"); break;
+      case '\\': growBuf.addStr("_0c"); break;
+      case '@': growBuf.addStr("_0d"); break;
+      case ']': growBuf.addStr("_0e"); break;
+      case '[': growBuf.addStr("_0f"); break;
       default: 
                 if (c<0)
                 {
