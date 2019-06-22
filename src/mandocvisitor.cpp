@@ -367,7 +367,9 @@ void ManDocVisitor::visit(DocInclude *inc)
 
 void ManDocVisitor::visit(DocIncOperator *op)
 {
-  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
+  QCString locLangExt = getFileNameExtension(op->includeFileName());
+  if (locLangExt.isEmpty()) locLangExt = m_langExt;
+  SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   //printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
@@ -393,7 +395,7 @@ void ManDocVisitor::visit(DocIncOperator *op)
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
 
-      Doxygen::parserManager->getParser(m_langExt)
+      Doxygen::parserManager->getParser(locLangExt)
                             ->parseCode(m_ci,op->context(),op->text(),langExt,
                                         op->isExample(),op->exampleFile(),
                                         fd,     // fileDef

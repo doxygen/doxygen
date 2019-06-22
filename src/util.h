@@ -389,6 +389,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine);
 
 bool updateLanguageMapping(const QCString &extension,const QCString &parser);
 SrcLangExt getLanguageFromFileName(const QCString& fileName);
+QCString getFileNameExtension(QCString fn);
 void initDefaultExtensionMapping();
 void addCodeOnlyMappings();
 
