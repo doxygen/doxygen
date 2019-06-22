@@ -127,9 +127,9 @@ class RTFGenerator : public OutputGenerator
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment();
     void endCodeFragment();
-    void writeLineNumber(const char *,const char *,const char *,int l) { t << QString("%1").arg(l,5) << " "; }
-    void startCodeLine(bool) { col=0; }
-    void endCodeLine() { lineBreak(); }
+    void writeLineNumber(const char *,const char *,const char *,int l);
+    void startCodeLine(bool);
+    void endCodeLine();
     void startEmphasis() { t << "{\\i ";  }
     void endEmphasis()   { t << "}"; }
     void startBold()     { t << "{\\b "; }

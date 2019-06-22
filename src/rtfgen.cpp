@@ -48,6 +48,8 @@
 #include "filename.h"
 #include "namespacedef.h"
 
+static bool DoxyCodeLineOpen = FALSE;
+
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
 
@@ -1952,6 +1954,9 @@ void RTFGenerator::endCodeFragment()
   //styleStack.pop();
   //printf("RTFGenerator::endCodeFrament() top=%s\n",styleStack.top());
   //t << rtf_Style_Reset << styleStack.top() << endl;
+  //endCodeLine checks is there is still an open code line, if so closes it.
+  endCodeLine();
+
   DBG_RTF(t << "{\\comment (endCodeFragment) }"    << endl)
   t << "}" << endl;
   m_omitParagraph = TRUE;
@@ -3039,6 +3044,22 @@ void RTFGenerator::endInlineMemberDoc()
 {
   DBG_RTF(t << "{\\comment (endInlineMemberDoc)}" << endl)
   t << "\\cell }{\\row }" << endl;
+}
+
+void RTFGenerator::writeLineNumber(const char *,const char *,const char *,int l)
+{
+  DoxyCodeLineOpen = TRUE;
+  t << QString("%1").arg(l,5) << " ";
+}
+void RTFGenerator::startCodeLine(bool)
+{
+  DoxyCodeLineOpen = TRUE;
+  col=0;
+}
+void RTFGenerator::endCodeLine()
+{
+  if (DoxyCodeLineOpen) lineBreak();
+  DoxyCodeLineOpen = FALSE;
 }
 
 void RTFGenerator::startLabels()
