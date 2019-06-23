@@ -45,38 +45,9 @@ extern "C" {
    the gd sources in a project. */
 
 /* http://gcc.gnu.org/wiki/Visibility */
-#if defined(_WIN32) || defined(CYGWIN) || defined(_WIN32_WCE)
-# ifdef BGDWIN32
-#  ifdef NONDLL
-#   define BGD_EXPORT_DATA_PROT
-#  else
-#   ifdef __GNUC__
-#    define BGD_EXPORT_DATA_PROT __attribute__ ((dllexport))
-#   else
-#    define BGD_EXPORT_DATA_PROT __declspec(dllexport)
-#   endif
-#  endif
-# else
-#  ifdef __GNUC__
-#   define BGD_EXPORT_DATA_PROT __attribute__ ((dllimport))
-#  else
-#   define BGD_EXPORT_DATA_PROT __declspec(dllimport)
-#  endif
-# endif
-# define BGD_STDCALL __stdcall
-# define BGD_EXPORT_DATA_IMPL
-#else
-# if defined(__GNUC__) || defined(__clang__)
-#  define BGD_EXPORT_DATA_PROT __attribute__ ((visibility ("default")))
-#  define BGD_EXPORT_DATA_IMPL __attribute__ ((visibility ("hidden")))
-# else
-#  define BGD_EXPORT_DATA_PROT
-#  define BGD_EXPORT_DATA_IMPL
-# endif
-# define BGD_STDCALL
-#endif
 
-#define BGD_DECLARE(rt) BGD_EXPORT_DATA_PROT rt BGD_STDCALL
+#define BGD_EXPORT_DATA_PROT
+#define BGD_DECLARE(rt) rt
 
 /* VS2012+ disable keyword macroizing unless _ALLOW_KEYWORD_MACROS is set
    We define inline, snprintf, and strcasecmp if they're missing 
