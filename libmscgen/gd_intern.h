@@ -1,10 +1,8 @@
 #ifndef GD_INTERN_H
 #define GD_INTERN_H
 
-#ifdef HAVE_LIMITS_H
 #include <limits.h>
-#endif
-
+#include <stdint.h>
 
 #ifndef MAXPATHLEN
 # ifdef PATH_MAX
@@ -17,16 +15,6 @@
 #  else
 #   define MAXPATHLEN 256    /* Should be safe for any weird systems that do not define it */
 #  endif
-# endif
-#endif
-
-#ifdef HAVE_STDINT_H
-# include <stdint.h>
-#else
-# if defined(HAVE_INTTYPES_H)
-#  include <inttypes.h>
-# else
-#  include "msinttypes/inttypes.h"
 # endif
 #endif
 

@@ -1,5 +1,3 @@
-set(CMAKE_C_FLAGS "-DHAVE_STDINT_H -DHAVE_LIMITS_H ${CMAKE_C_FLAGS}")
-
 include_directories(
     ${CMAKE_SOURCE_DIR}/liblodepng
     ${CMAKE_SOURCE_DIR}/libmscgen
