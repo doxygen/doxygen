@@ -21,6 +21,7 @@ _doxygen
 qtools
 md5
 lodepng
+mscgen
 doxycfg
 vhdlparser
 ${ICONV_LIBRARIES}

@@ -4,7 +4,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/qtools
     ${CMAKE_SOURCE_DIR}/libmd5
     ${CMAKE_SOURCE_DIR}/liblodepng
-    ${CMAKE_SOURCE_DIR}/vhdlparser/
+    ${CMAKE_SOURCE_DIR}/libmscgen
+    ${CMAKE_SOURCE_DIR}/vhdlparser
     ${CMAKE_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
@@ -283,6 +284,7 @@ target_link_libraries(doxygen
     qtools
     md5
     lodepng
+    mscgen
     vhdlparser
     ${SQLITE3_LIBRARIES}
     ${ICONV_LIBRARIES}
