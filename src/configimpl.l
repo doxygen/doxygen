@@ -1565,30 +1565,6 @@ void Config::checkAndCorrect()
     dotPath="";
   }
 
-  // check mscgen path
-  QCString &mscgenPath = ConfigImpl_getString("MSCGEN_PATH");
-  if (!mscgenPath.isEmpty())
-  {
-    QFileInfo dp(mscgenPath+"/mscgen"+portable_commandExtension());
-    if (!dp.exists() || !dp.isFile())
-    {
-      warn_uncond("the mscgen tool could not be found at %s\n",mscgenPath.data());
-      mscgenPath="";
-    }
-    else
-    {
-      mscgenPath=dp.dirPath(TRUE).utf8()+"/";
-#if defined(_WIN32) // convert slashes
-      uint i=0,l=mscgenPath.length();
-      for (i=0;i<l;i++) if (mscgenPath.at(i)=='/') mscgenPath.at(i)='\\';
-#endif
-    }
-  }
-  else // make sure the string is empty but not null!
-  {
-    mscgenPath="";
-  }
-
   // check plantuml path
   QCString &plantumlJarPath = ConfigImpl_getString("PLANTUML_JAR_PATH");
   if (!plantumlJarPath.isEmpty())
