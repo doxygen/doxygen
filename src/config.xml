@@ -3251,17 +3251,6 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
-    <option type='string' id='MSCGEN_PATH' format='dir' defval=''>
-      <docs>
-<![CDATA[
- You can define message sequence charts within doxygen comments using the \ref cmdmsc "\\msc"
- command. Doxygen will then run the <a href="http://www.mcternan.me.uk/mscgen/">mscgen tool</a>) to
- produce the chart and insert it in the documentation. The <code>MSCGEN_PATH</code> tag allows you to
- specify the directory where the \c mscgen tool resides. If left empty the tool is assumed to
- be found in the default search path.
-]]>
-      </docs>
-    </option>
     <option type='string' id='DIA_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
@@ -3641,5 +3630,6 @@ remove the intermediate dot files that are used to generate the various graphs.
     <option type='obsolete' id='XML_SCHEMA'/>
     <option type='obsolete' id='XML_DTD'/>
     <option type='obsolete' id='PERL_PATH'/>
+    <option type='obsolete' id='MSCGEN_PATH'/>
   </group>
 </doxygenconfig>
