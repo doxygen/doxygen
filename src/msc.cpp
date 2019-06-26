@@ -99,7 +99,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   absOutFile+=outFile;
 
   mscgen_format_t msc_format;
-  QCString imgName = outFile;
+  QCString imgName = absOutFile;
   switch (format)
   {
     case MSC_BITMAP:
@@ -129,7 +129,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-                         outFile,outFile);
+                         absOutFile.data(),absOutFile.data());
     portable_sysTimerStart();
     if (portable_system("epstopdf",epstopdfArgs)!=0)
     {
