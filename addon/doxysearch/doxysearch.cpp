@@ -367,12 +367,20 @@ int main(int argc,char **argv)
     // create query
     Xapian::Database db(indexDir);
     Xapian::Enquire enquire(db);
-    Xapian::Query query;
+
     std::vector<std::string> words = split(searchFor,' ');
-    for (std::vector<std::string>::const_iterator it=words.begin();it!=words.end();++it)
-    {
-      query = Xapian::Query(Xapian::Query::OP_OR,query,Xapian::Query(*it));
-    }
+    Xapian::QueryParser parser;
+    parser.set_database(db);
+    parser.set_default_op(Xapian::Query::OP_AND);
+    parser.set_stemming_strategy(Xapian::QueryParser::STEM_ALL);
+    Xapian::termcount max_expansion=100;
+    parser.set_max_expansion(max_expansion,Xapian::Query::WILDCARD_LIMIT_MOST_FREQUENT);
+    Xapian::Query query=parser.parse_query(searchFor,
+                                           Xapian::QueryParser::FLAG_DEFAULT  |
+                                           Xapian::QueryParser::FLAG_WILDCARD |
+                                           Xapian::QueryParser::FLAG_PHRASE   |
+                                           Xapian::QueryParser::FLAG_PARTIAL
+                                          );
     enquire.set_query(query);
 
     // get results
