@@ -283,7 +283,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
   bool ambig;
   FileDef *fd;
   //printf("Search for %s\n",fileName);
-  if ((fd=findFileDef(Doxygen::imageNameDict,fileName,ambig)))
+  if ((fd=findFileDef(Doxygen::imageNameDict,fileName,ambig)) && !ambig)
   {
     QCString inputFile = fd->absFilePath();
     QFile inImage(inputFile);
@@ -374,13 +374,16 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       return baseName;
     }
   }
-  else if (ambig && dowarn)
+  else if (ambig)
   {
-    QCString text;
-    text.sprintf("image file name %s is ambiguous.\n",qPrint(fileName));
-    text+="Possible candidates:\n";
-    text+=showFileDefMatches(Doxygen::imageNameDict,fileName);
-    warn_doc_error(g_fileName,doctokenizerYYlineno,text);
+    if (dowarn)
+    {
+      QCString text;
+      text.sprintf("image file name %s is ambiguous.\n",qPrint(fileName));
+      text+="Possible candidates:\n";
+      text+=showFileDefMatches(Doxygen::imageNameDict,fileName);
+      warn_doc_error(g_fileName,doctokenizerYYlineno,text);
+    }
   }
   else
   {
@@ -1791,7 +1794,7 @@ static void readTextFileByName(const QCString &file,QCString &text)
   // as a fallback we also look in the exampleNameDict
   bool ambig;
   FileDef *fd;
-  if ((fd=findFileDef(Doxygen::exampleNameDict,file,ambig)))
+  if ((fd=findFileDef(Doxygen::exampleNameDict,file,ambig)) && !ambig)
   {
     text = fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
   }
@@ -2785,7 +2788,7 @@ void DocDotFile::parse()
   {
     fd = findFileDef(Doxygen::dotFileNameDict,m_name+".dot",ambig);
   }
-  if (fd)
+  if (fd && !ambig)
   {
     m_file = fd->absFilePath();
   }
@@ -2793,7 +2796,7 @@ void DocDotFile::parse()
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"included dot file name %s is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(m_name),
-           qPrint(showFileDefMatches(Doxygen::exampleNameDict,m_name))
+           qPrint(showFileDefMatches(Doxygen::dotFileNameDict,m_name))
           );
   }
   else
@@ -2819,7 +2822,7 @@ void DocMscFile::parse()
   {
     fd = findFileDef(Doxygen::mscFileNameDict,m_name+".msc",ambig);
   }
-  if (fd)
+  if (fd && !ambig)
   {
     m_file = fd->absFilePath();
   }
@@ -2827,7 +2830,7 @@ void DocMscFile::parse()
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"included msc file name %s is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(m_name),
-           qPrint(showFileDefMatches(Doxygen::exampleNameDict,m_name))
+           qPrint(showFileDefMatches(Doxygen::mscFileNameDict,m_name))
           );
   }
   else
@@ -2855,7 +2858,7 @@ void DocDiaFile::parse()
   {
     fd = findFileDef(Doxygen::diaFileNameDict,m_name+".dia",ambig);
   }
-  if (fd)
+  if (fd && !ambig)
   {
     m_file = fd->absFilePath();
   }
@@ -2863,7 +2866,7 @@ void DocDiaFile::parse()
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"included dia file name %s is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(m_name),
-           qPrint(showFileDefMatches(Doxygen::exampleNameDict,m_name))
+           qPrint(showFileDefMatches(Doxygen::diaFileNameDict,m_name))
           );
   }
   else
