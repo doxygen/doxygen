@@ -1377,36 +1377,36 @@ void LatexDocVisitor::visitPost(DocImage *img)
 void LatexDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  startDotFile(df->file(),df->width(),df->height(),df->hasCaption());
+  if (!df->file().isEmpty()) startDotFile(df->file(),df->width(),df->height(),df->hasCaption());
 }
 
 void LatexDocVisitor::visitPost(DocDotFile *df) 
 {
   if (m_hide) return;
-  endDotFile(df->hasCaption());
+  if (!df->file().isEmpty()) endDotFile(df->hasCaption());
 }
 void LatexDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
-  startMscFile(df->file(),df->width(),df->height(),df->hasCaption());
+  if (!df->file().isEmpty()) startMscFile(df->file(),df->width(),df->height(),df->hasCaption());
 }
 
 void LatexDocVisitor::visitPost(DocMscFile *df) 
 {
   if (m_hide) return;
-  endMscFile(df->hasCaption());
+  if (!df->file().isEmpty()) endMscFile(df->hasCaption());
 }
 
 void LatexDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
-  startDiaFile(df->file(),df->width(),df->height(),df->hasCaption());
+  if (!df->file().isEmpty()) startDiaFile(df->file(),df->width(),df->height(),df->hasCaption());
 }
 
 void LatexDocVisitor::visitPost(DocDiaFile *df)
 {
   if (m_hide) return;
-  endDiaFile(df->hasCaption());
+  if (!df->file().isEmpty()) endDiaFile(df->hasCaption());
 }
 void LatexDocVisitor::visitPre(DocLink *lnk)
 {

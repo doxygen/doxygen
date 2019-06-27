@@ -1809,7 +1809,7 @@ void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"dotgraph\">" << endl;
-  writeDotFile(df->file(),df->relPath(),df->context());
+  if (!df->file().isEmpty()) writeDotFile(df->file(),df->relPath(),df->context());
   if (df->hasCaption())
   { 
     m_t << "<div class=\"caption\">" << endl;
@@ -1830,7 +1830,7 @@ void HtmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"mscgraph\">" << endl;
-  writeMscFile(df->file(),df->relPath(),df->context());
+  if (!df->file().isEmpty()) writeMscFile(df->file(),df->relPath(),df->context());
   if (df->hasCaption())
   { 
     m_t << "<div class=\"caption\">" << endl;
@@ -1850,7 +1850,7 @@ void HtmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"diagraph\">" << endl;
-  writeDiaFile(df->file(),df->relPath(),df->context());
+  if (!df->file().isEmpty()) writeDiaFile(df->file(),df->relPath(),df->context());
   if (df->hasCaption())
   {
     m_t << "<div class=\"caption\">" << endl;

@@ -853,37 +853,37 @@ void XmlDocVisitor::visitPost(DocImage *)
 void XmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  if (!df->file().isEmpty()) visitPreStart(m_t, "dotfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
 }
 
-void XmlDocVisitor::visitPost(DocDotFile *) 
+void XmlDocVisitor::visitPost(DocDotFile *df) 
 {
   if (m_hide) return;
-  visitPostEnd(m_t, "dotfile");
+  if (!df->file().isEmpty()) visitPostEnd(m_t, "dotfile");
 }
 
 void XmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  if (!df->file().isEmpty()) visitPreStart(m_t, "mscfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
 }
 
-void XmlDocVisitor::visitPost(DocMscFile *) 
+void XmlDocVisitor::visitPost(DocMscFile *df) 
 {
   if (m_hide) return;
-  visitPostEnd(m_t, "mscfile");
+  if (!df->file().isEmpty()) visitPostEnd(m_t, "mscfile");
 }
 
 void XmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  if (!df->file().isEmpty()) visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
 }
 
-void XmlDocVisitor::visitPost(DocDiaFile *)
+void XmlDocVisitor::visitPost(DocDiaFile *df)
 {
   if (m_hide) return;
-  visitPostEnd(m_t, "diafile");
+  if (!df->file().isEmpty()) visitPostEnd(m_t, "diafile");
 }
 
 void XmlDocVisitor::visitPre(DocLink *lnk)

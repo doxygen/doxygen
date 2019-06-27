@@ -1234,36 +1234,36 @@ void RTFDocVisitor::includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool 
 void RTFDocVisitor::visitPre(DocDotFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocDotFile)}\n");
-  writeDotFile(df);
+  if (!df->file().isEmpty()) writeDotFile(df);
 }
 
 void RTFDocVisitor::visitPost(DocDotFile *df) 
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocDotFile)}\n");
-  includePicturePostRTF(true, df->hasCaption());
+  if (!df->file().isEmpty()) includePicturePostRTF(true, df->hasCaption());
 }
 void RTFDocVisitor::visitPre(DocMscFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocMscFile)}\n");
-  writeMscFile(df);
+  if (!df->file().isEmpty()) writeMscFile(df);
 }
 
 void RTFDocVisitor::visitPost(DocMscFile *df) 
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocMscFile)}\n");
-  includePicturePostRTF(true, df->hasCaption());
+  if (!df->file().isEmpty()) includePicturePostRTF(true, df->hasCaption());
 }
 
 void RTFDocVisitor::visitPre(DocDiaFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocDiaFile)}\n");
-  writeDiaFile(df);
+  if (!df->file().isEmpty()) writeDiaFile(df);
 }
 
 void RTFDocVisitor::visitPost(DocDiaFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocDiaFile)}\n");
-  includePicturePostRTF(true, df->hasCaption());
+  if (!df->file().isEmpty()) includePicturePostRTF(true, df->hasCaption());
 }
 
 void RTFDocVisitor::visitPre(DocLink *lnk)

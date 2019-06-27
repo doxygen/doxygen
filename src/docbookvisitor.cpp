@@ -1241,41 +1241,41 @@ void DocbookDocVisitor::visitPre(DocDotFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
-  startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children());
+  if (!df->file().isEmpty()) startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children());
 }
 
 void DocbookDocVisitor::visitPost(DocDotFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
-  endDotFile(df->hasCaption());
+  if (!df->file().isEmpty()) endDotFile(df->hasCaption());
 }
 
 void DocbookDocVisitor::visitPre(DocMscFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
-  startMscFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children());
+  if (!df->file().isEmpty()) startMscFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children());
 }
 
 void DocbookDocVisitor::visitPost(DocMscFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
-  endMscFile(df->hasCaption());
+  if (!df->file().isEmpty()) endMscFile(df->hasCaption());
 }
 void DocbookDocVisitor::visitPre(DocDiaFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
-  startDiaFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children());
+  if (!df->file().isEmpty()) startDiaFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children());
 }
 
 void DocbookDocVisitor::visitPost(DocDiaFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
-  endDiaFile(df->hasCaption());
+  if (!df->file().isEmpty()) endDiaFile(df->hasCaption());
 }
 
 void DocbookDocVisitor::visitPre(DocLink *lnk)
