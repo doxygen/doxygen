@@ -262,7 +262,7 @@ Boolean       MscNextArc(struct MscTag *m);
 
 
 /** Get the name of the entity from which the current arc originates.
- * \retvat The label for the entity from which the current arc starts.
+ * \retval The label for the entity from which the current arc starts.
  *          The returned string must not be modified.
  */
 const char   *MscGetCurrentArcSource(Msc m);

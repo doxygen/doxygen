@@ -23,7 +23,7 @@ typedef enum
 /** generate an image file for a given .msc file.
  *  @param inputFile the name of the MSC file to process.
  *  @param outputFile the name of the image file to generate.
- *  @param fomat the format of the image file to generate.
+ *  @param format the format of the image file to generate.
  *  @return 0 on success, a non zero error code on failure.
  */
 int mscgen_generate(const char *inputFile,
