@@ -1316,7 +1316,9 @@ void Config::init()
 
 void Config::checkAndCorrect()
 {
-  QCString &warnFormat = ConfigImpl_getString("WARN_FORMAT");
+  ConfigValues::instance().init();
+
+  QCString &warnFormat = Config_getString(WARN_FORMAT);
   if (warnFormat.stripWhiteSpace().isEmpty())
   {
     warnFormat="$file:$line $text";
@@ -1338,7 +1340,7 @@ void Config::checkAndCorrect()
     }
   }
 
-  QCString &manExtension = ConfigImpl_getString("MAN_EXTENSION");
+  QCString &manExtension = Config_getString(MAN_EXTENSION);
 
   // set default man page extension if non is given by the user
   if (manExtension.isEmpty())
@@ -1346,7 +1348,7 @@ void Config::checkAndCorrect()
     manExtension=".3";
   }
 
-  QCString &paperType = ConfigImpl_getEnum("PAPER_TYPE");
+  QCString &paperType = Config_getEnum(PAPER_TYPE);
   paperType=paperType.lower().stripWhiteSpace();
   if (paperType.isEmpty() || paperType=="a4wide")
   {
@@ -1359,14 +1361,14 @@ void Config::checkAndCorrect()
     paperType="a4";
   }
 
-  QCString &outputLanguage=ConfigImpl_getEnum("OUTPUT_LANGUAGE");
+  QCString &outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
   outputLanguage=outputLanguage.stripWhiteSpace();
   if (outputLanguage.isEmpty())
   {
     outputLanguage = "English";
   }
 
-  QCString &htmlFileExtension=ConfigImpl_getString("HTML_FILE_EXTENSION");
+  QCString &htmlFileExtension=Config_getString(HTML_FILE_EXTENSION);
   htmlFileExtension=htmlFileExtension.stripWhiteSpace();
   if (htmlFileExtension.isEmpty())
   {
@@ -1374,7 +1376,7 @@ void Config::checkAndCorrect()
   }
 
   // expand the relative stripFromPath values
-  QStrList &stripFromPath = ConfigImpl_getList("STRIP_FROM_PATH");
+  QStrList &stripFromPath = Config_getList(STRIP_FROM_PATH);
   char *sfp = stripFromPath.first();
   if (sfp==0) // by default use the current path
   {
@@ -1389,11 +1391,11 @@ void Config::checkAndCorrect()
   }
 
   // expand the relative stripFromPath values
-  QStrList &stripFromIncPath = ConfigImpl_getList("STRIP_FROM_INC_PATH");
+  QStrList &stripFromIncPath = Config_getList(STRIP_FROM_INC_PATH);
   cleanUpPaths(stripFromIncPath);
 
   // Test to see if HTML header is valid
-  QCString &headerFile = ConfigImpl_getString("HTML_HEADER");
+  QCString &headerFile = Config_getString(HTML_HEADER);
   if (!headerFile.isEmpty())
   {
     QFileInfo fi(headerFile);
@@ -1405,7 +1407,7 @@ void Config::checkAndCorrect()
     }
   }
   // Test to see if HTML footer is valid
-  QCString &footerFile = ConfigImpl_getString("HTML_FOOTER");
+  QCString &footerFile = Config_getString(HTML_FOOTER);
   if (!footerFile.isEmpty())
   {
     QFileInfo fi(footerFile);
@@ -1418,9 +1420,9 @@ void Config::checkAndCorrect()
   }
 
   // Test to see if MathJax code file is valid
-  if (ConfigImpl_getBool("USE_MATHJAX"))
+  if (Config_getBool(USE_MATHJAX))
   {
-    QCString &MathJaxCodefile = ConfigImpl_getString("MATHJAX_CODEFILE");
+    QCString &MathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
     if (!MathJaxCodefile.isEmpty())
     {
       QFileInfo fi(MathJaxCodefile);
@@ -1431,7 +1433,7 @@ void Config::checkAndCorrect()
         exit(1);
       }
     }
-    QCString &path = ConfigImpl_getString("MATHJAX_RELPATH");
+    QCString &path = Config_getString(MATHJAX_RELPATH);
     if (!path.isEmpty() && path.at(path.length()-1)!='/')
     {
       path+="/";
@@ -1440,7 +1442,7 @@ void Config::checkAndCorrect()
   }
 
   // Test to see if LaTeX header is valid
-  QCString &latexHeaderFile = ConfigImpl_getString("LATEX_HEADER");
+  QCString &latexHeaderFile = Config_getString(LATEX_HEADER);
   if (!latexHeaderFile.isEmpty())
   {
     QFileInfo fi(latexHeaderFile);
@@ -1452,7 +1454,7 @@ void Config::checkAndCorrect()
     }
   }
   // Test to see if LaTeX footer is valid
-  QCString &latexFooterFile = ConfigImpl_getString("LATEX_FOOTER");
+  QCString &latexFooterFile = Config_getString(LATEX_FOOTER);
   if (!latexFooterFile.isEmpty())
   {
     QFileInfo fi(latexFooterFile);
@@ -1465,7 +1467,7 @@ void Config::checkAndCorrect()
   }
 
   // check include path
-  QStrList &includePath = ConfigImpl_getList("INCLUDE_PATH");
+  QStrList &includePath = Config_getList(INCLUDE_PATH);
   char *s=includePath.first();
   while (s)
   {
@@ -1476,7 +1478,7 @@ void Config::checkAndCorrect()
   }
 
   // check aliases
-  QStrList &aliasList = ConfigImpl_getList("ALIASES");
+  QStrList &aliasList = Config_getList(ALIASES);
   s=aliasList.first();
   while (s)
   {
@@ -1493,26 +1495,26 @@ void Config::checkAndCorrect()
   }
 
   // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
-  if (ConfigImpl_getBool("GENERATE_TREEVIEW") && ConfigImpl_getBool("GENERATE_HTMLHELP"))
+  if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(GENERATE_HTMLHELP))
   {
     err("When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
-    ConfigImpl_getBool("GENERATE_TREEVIEW")=FALSE;
+    Config_getBool(GENERATE_TREEVIEW)=FALSE;
   }
-  if (ConfigImpl_getBool("SEARCHENGINE") && ConfigImpl_getBool("GENERATE_HTMLHELP"))
+  if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTMLHELP))
   {
     err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
-    ConfigImpl_getBool("SEARCHENGINE")=FALSE;
+    Config_getBool(SEARCHENGINE)=FALSE;
   }
 
   // check if SEPARATE_MEMBER_PAGES and INLINE_GROUPED_CLASSES are both enabled
-  if (ConfigImpl_getBool("SEPARATE_MEMBER_PAGES") && ConfigImpl_getBool("INLINE_GROUPED_CLASSES"))
+  if (Config_getBool(SEPARATE_MEMBER_PAGES) && Config_getBool(INLINE_GROUPED_CLASSES))
   {
     err("When enabling INLINE_GROUPED_CLASSES the SEPARATE_MEMBER_PAGES option should be disabled. I'll do it for you.\n");
-    ConfigImpl_getBool("SEPARATE_MEMBER_PAGES")=FALSE;
+    Config_getBool(SEPARATE_MEMBER_PAGES)=FALSE;
   }
 
   // check dot image format
-  QCString &dotImageFormat=ConfigImpl_getEnum("DOT_IMAGE_FORMAT");
+  QCString &dotImageFormat=Config_getEnum(DOT_IMAGE_FORMAT);
   dotImageFormat=dotImageFormat.stripWhiteSpace();
   if (dotImageFormat.isEmpty())
   {
@@ -1524,7 +1526,7 @@ void Config::checkAndCorrect()
   //  dotImageFormat = "png";
   //}
 
-  QCString &dotFontName=ConfigImpl_getString("DOT_FONTNAME");
+  QCString &dotFontName=Config_getString(DOT_FONTNAME);
   if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
   {
     warn_uncond("doxygen no longer ships with the FreeSans font.\n"
@@ -1534,7 +1536,7 @@ void Config::checkAndCorrect()
 
 
   // check dot path
-  QCString &dotPath = ConfigImpl_getString("DOT_PATH");
+  QCString &dotPath = Config_getString(DOT_PATH);
   if (!dotPath.isEmpty())
   {
     QFileInfo fi(dotPath);
@@ -1566,7 +1568,7 @@ void Config::checkAndCorrect()
   }
 
   // check plantuml path
-  QCString &plantumlJarPath = ConfigImpl_getString("PLANTUML_JAR_PATH");
+  QCString &plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   if (!plantumlJarPath.isEmpty())
   {
     QFileInfo pu(plantumlJarPath);
@@ -1597,7 +1599,7 @@ void Config::checkAndCorrect()
   }
 
   // check dia path
-  QCString &diaPath = ConfigImpl_getString("DIA_PATH");
+  QCString &diaPath = Config_getString(DIA_PATH);
   if (!diaPath.isEmpty())
   {
     QFileInfo dp(diaPath+"/dia"+portable_commandExtension());
@@ -1621,7 +1623,7 @@ void Config::checkAndCorrect()
   }
 
   // check input
-  QStrList &inputSources=ConfigImpl_getList("INPUT");
+  QStrList &inputSources=Config_getList(INPUT);
   if (inputSources.count()==0)
   {
     // use current dir as the default
@@ -1642,7 +1644,7 @@ void Config::checkAndCorrect()
   }
 
   // add default file patterns if needed
-  QStrList &filePatternList = ConfigImpl_getList("FILE_PATTERNS");
+  QStrList &filePatternList = Config_getList(FILE_PATTERNS);
   if (filePatternList.isEmpty())
   {
       ConfigOption * opt = ConfigImpl::instance()->get("FILE_PATTERNS");
@@ -1653,65 +1655,65 @@ void Config::checkAndCorrect()
   }
 
   // add default pattern if needed
-  QStrList &examplePatternList = ConfigImpl_getList("EXAMPLE_PATTERNS");
+  QStrList &examplePatternList = Config_getList(EXAMPLE_PATTERNS);
   if (examplePatternList.isEmpty())
   {
     examplePatternList.append("*");
   }
 
   // if no output format is enabled, warn the user
-  if (!ConfigImpl_getBool("GENERATE_HTML")    &&
-      !ConfigImpl_getBool("GENERATE_LATEX")   &&
-      !ConfigImpl_getBool("GENERATE_MAN")     &&
-      !ConfigImpl_getBool("GENERATE_RTF")     &&
-      !ConfigImpl_getBool("GENERATE_XML")     &&
-      !ConfigImpl_getBool("GENERATE_PERLMOD") &&
-      !ConfigImpl_getBool("GENERATE_RTF")     &&
-      !ConfigImpl_getBool("GENERATE_DOCBOOK") &&
-      !ConfigImpl_getBool("GENERATE_AUTOGEN_DEF") &&
-      ConfigImpl_getString("GENERATE_TAGFILE").isEmpty()
+  if (!Config_getBool(GENERATE_HTML)    &&
+      !Config_getBool(GENERATE_LATEX)   &&
+      !Config_getBool(GENERATE_MAN)     &&
+      !Config_getBool(GENERATE_RTF)     &&
+      !Config_getBool(GENERATE_XML)     &&
+      !Config_getBool(GENERATE_PERLMOD) &&
+      !Config_getBool(GENERATE_RTF)     &&
+      !Config_getBool(GENERATE_DOCBOOK) &&
+      !Config_getBool(GENERATE_AUTOGEN_DEF) &&
+      Config_getString(GENERATE_TAGFILE).isEmpty()
      )
   {
     warn_uncond("No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
   }
 
   // check HTMLHELP creation requirements
-  if (!ConfigImpl_getBool("GENERATE_HTML") &&
-      ConfigImpl_getBool("GENERATE_HTMLHELP"))
+  if (!Config_getBool(GENERATE_HTML) &&
+      Config_getBool(GENERATE_HTMLHELP))
   {
     warn_uncond("GENERATE_HTMLHELP=YES requires GENERATE_HTML=YES.\n");
   }
 
   // check QHP creation requirements
-  if (ConfigImpl_getBool("GENERATE_QHP"))
+  if (Config_getBool(GENERATE_QHP))
   {
-    if (ConfigImpl_getString("QHP_NAMESPACE").isEmpty())
+    if (Config_getString(QHP_NAMESPACE).isEmpty())
     {
       err("GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
-      ConfigImpl_getString("QHP_NAMESPACE")="org.doxygen.doc";
+      Config_getString(QHP_NAMESPACE)="org.doxygen.doc";
     }
 
-    if (ConfigImpl_getString("QHP_VIRTUAL_FOLDER").isEmpty())
+    if (Config_getString(QHP_VIRTUAL_FOLDER).isEmpty())
     {
       err("GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
-      ConfigImpl_getString("QHP_VIRTUAL_FOLDER")="doc";
+      Config_getString(QHP_VIRTUAL_FOLDER)="doc";
     }
   }
 
-  if (ConfigImpl_getBool("OPTIMIZE_OUTPUT_JAVA") && ConfigImpl_getBool("INLINE_INFO"))
+  if (Config_getBool(OPTIMIZE_OUTPUT_JAVA) && Config_getBool(INLINE_INFO))
   {
     // don't show inline info for Java output, since Java has no inline
     // concept.
-    ConfigImpl_getBool("INLINE_INFO")=FALSE;
+    Config_getBool(INLINE_INFO)=FALSE;
   }
 
-  int &depth = ConfigImpl_getInt("MAX_DOT_GRAPH_DEPTH");
+  int &depth = Config_getInt(MAX_DOT_GRAPH_DEPTH);
   if (depth==0)
   {
     depth=1000;
   }
 
-  int &hue = ConfigImpl_getInt("HTML_COLORSTYLE_HUE");
+  int &hue = Config_getInt(HTML_COLORSTYLE_HUE);
   if (hue<0)
   {
     hue=0;
@@ -1721,7 +1723,7 @@ void Config::checkAndCorrect()
     hue=hue%360;
   }
 
-  int &sat = ConfigImpl_getInt("HTML_COLORSTYLE_SAT");
+  int &sat = Config_getInt(HTML_COLORSTYLE_SAT);
   if (sat<0)
   {
     sat=0;
@@ -1730,7 +1732,7 @@ void Config::checkAndCorrect()
   {
     sat=255;
   }
-  int &gamma = ConfigImpl_getInt("HTML_COLORSTYLE_GAMMA");
+  int &gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
   if (gamma<40)
   {
     gamma=40;
@@ -1740,16 +1742,16 @@ void Config::checkAndCorrect()
     gamma=240;
   }
 
-  QCString mathJaxFormat = ConfigImpl_getEnum("MATHJAX_FORMAT");
+  QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
   if (!mathJaxFormat.isEmpty() && mathJaxFormat!="HTML-CSS" &&
        mathJaxFormat!="NativeMML" && mathJaxFormat!="SVG")
   {
     err("Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
-    ConfigImpl_getEnum("MATHJAX_FORMAT")="HTML-CSS";
+    Config_getEnum(MATHJAX_FORMAT)="HTML-CSS";
   }
 
   // add default words if needed
-  QStrList &annotationFromBrief = ConfigImpl_getList("ABBREVIATE_BRIEF");
+  QStrList &annotationFromBrief = Config_getList(ABBREVIATE_BRIEF);
   if (annotationFromBrief.isEmpty())
   {
     annotationFromBrief.append("The $name class");
@@ -1766,21 +1768,21 @@ void Config::checkAndCorrect()
   }
 
   // some default settings for vhdl
-  if (ConfigImpl_getBool("OPTIMIZE_OUTPUT_VHDL") &&
-      (ConfigImpl_getBool("INLINE_INHERITED_MEMB") ||
-       ConfigImpl_getBool("INHERIT_DOCS") ||
-       !ConfigImpl_getBool("HIDE_SCOPE_NAMES") ||
-       !ConfigImpl_getBool("EXTRACT_PRIVATE") ||
-       !ConfigImpl_getBool("EXTRACT_PACKAGE")
+  if (Config_getBool(OPTIMIZE_OUTPUT_VHDL) &&
+      (Config_getBool(INLINE_INHERITED_MEMB) ||
+       Config_getBool(INHERIT_DOCS) ||
+       !Config_getBool(HIDE_SCOPE_NAMES) ||
+       !Config_getBool(EXTRACT_PRIVATE) ||
+       !Config_getBool(EXTRACT_PACKAGE)
       )
      )
   {
-    bool b1 = ConfigImpl_getBool("INLINE_INHERITED_MEMB");
-    bool b2 = ConfigImpl_getBool("INHERIT_DOCS");
-    bool b3 = ConfigImpl_getBool("HIDE_SCOPE_NAMES");
-    bool b4 = ConfigImpl_getBool("EXTRACT_PRIVATE");
-    bool b5 = ConfigImpl_getBool("SKIP_FUNCTION_MACROS");
-    bool b6 = ConfigImpl_getBool("EXTRACT_PACKAGE");
+    bool b1 = Config_getBool(INLINE_INHERITED_MEMB);
+    bool b2 = Config_getBool(INHERIT_DOCS);
+    bool b3 = Config_getBool(HIDE_SCOPE_NAMES);
+    bool b4 = Config_getBool(EXTRACT_PRIVATE);
+    bool b5 = Config_getBool(SKIP_FUNCTION_MACROS);
+    bool b6 = Config_getBool(EXTRACT_PACKAGE);
     const char *s1,*s2,*s3,*s4,*s5,*s6;
     if (b1)  s1="  INLINE_INHERITED_MEMB  = NO (was YES)\n"; else s1="";
     if (b2)  s2="  INHERIT_DOCS           = NO (was YES)\n"; else s2="";
@@ -1794,15 +1796,15 @@ void Config::checkAndCorrect()
 	       "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
 	      );
 
-    ConfigImpl_getBool("INLINE_INHERITED_MEMB") = FALSE;
-    ConfigImpl_getBool("INHERIT_DOCS")          = FALSE;
-    ConfigImpl_getBool("HIDE_SCOPE_NAMES")      = TRUE;
-    ConfigImpl_getBool("EXTRACT_PRIVATE")       = TRUE;
-    ConfigImpl_getBool("ENABLE_PREPROCESSING")  = FALSE;
-    ConfigImpl_getBool("EXTRACT_PACKAGE")       = TRUE;
+    Config_getBool(INLINE_INHERITED_MEMB) = FALSE;
+    Config_getBool(INHERIT_DOCS)          = FALSE;
+    Config_getBool(HIDE_SCOPE_NAMES)      = TRUE;
+    Config_getBool(EXTRACT_PRIVATE)       = TRUE;
+    Config_getBool(ENABLE_PREPROCESSING)  = FALSE;
+    Config_getBool(EXTRACT_PACKAGE)       = TRUE;
   }
 
-  checkFileName(ConfigImpl_getString("GENERATE_TAGFILE"),"GENERATE_TAGFILE");
+  checkFileName(Config_getString(GENERATE_TAGFILE),"GENERATE_TAGFILE");
 
 #if 0 // TODO: this breaks test 25; SOURCEBROWSER = NO and SOURCE_TOOLTIPS = YES.
       // So this and other regressions should be analysed and fixed before this can be enabled
@@ -1828,7 +1830,6 @@ void Config::checkAndCorrect()
   }
 #endif
 
-  ConfigValues::instance().init();
 
 }
 
@@ -1858,10 +1859,10 @@ void Config::postProcess(bool clearHeaderAndFooter, bool compare)
   // refers to the files that we are supposed to parse.
   if (clearHeaderAndFooter)
   {
-    ConfigImpl_getString("HTML_HEADER")="";
-    ConfigImpl_getString("HTML_FOOTER")="";
-    ConfigImpl_getString("LATEX_HEADER")="";
-    ConfigImpl_getString("LATEX_FOOTER")="";
+    Config_getString(HTML_HEADER)="";
+    Config_getString(HTML_FOOTER)="";
+    Config_getString(LATEX_HEADER)="";
+    Config_getString(LATEX_FOOTER)="";
   }
 }
 
