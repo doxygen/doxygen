@@ -551,7 +551,7 @@ void RTFDocVisitor::visit(DocIncOperator *op)
     popEnabled();
     if (!m_hide) 
     {
-      FileDef *fd;
+      FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
         QFileInfo cfi( op->includeFileName() );
