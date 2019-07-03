@@ -73,7 +73,7 @@ class FTVHelp : public IndexIntf
 };
 
 #define JAVASCRIPT_LICENSE_TEXT                                                                 \
-	"/*\n@ @licstart  The following is the entire license notice for the\n"                 \
+	"/*\n@licstart  The following is the entire license notice for the\n"                   \
 	"JavaScript code in this file.\n\nCopyright (C) 1997-2019 by Dimitri van Heesch\n\n"    \
 	"This program is free software; you can redistribute it and/or modify\n"                \
 	"it under the terms of version 2 of the GNU General Public License as published by\n"   \
