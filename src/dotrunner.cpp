@@ -128,6 +128,7 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
      if (p) // found PageBoundingBox or /MediaBox string
      {
        int x,y;
+       fclose(f);
        if (sscanf(p+bblen,"%d %d %d %d",&x,&y,width,height)!=4)
        {
          //printf("readBoundingBox sscanf fail\n");
@@ -137,6 +138,7 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
      }
   }
   err("Failed to extract bounding box from generated diagram file %s\n",fileName);
+  fclose(f);
   return FALSE;
 }
 
