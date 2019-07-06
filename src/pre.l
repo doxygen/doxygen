@@ -1089,7 +1089,12 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
       if (g_expandedDict->find(macroName)==0) // expand macro
       {
 	Define *def=DefineManager::instance().isDefined(macroName);
-	if (definedTest) // macro name was found after defined 
+        if (macroName=="defined")
+        {
+  	  //printf("found defined inside macro definition '%s'\n",expr.right(expr.length()-p).data());
+	  definedTest=TRUE;
+        }
+	else if (definedTest) // macro name was found after defined 
 	{
 	  if (def) expMacro = " 1 "; else expMacro = " 0 ";
 	  replaced=TRUE;
@@ -1118,11 +1123,6 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	  replaced=replaceFunctionMacro(expr,rest,p+l,len,def,expMacro);
 	  len+=l;
 	}
-        else if (macroName=="defined")
-        {
-  	  //printf("found defined inside macro definition '%s'\n",expr.right(expr.length()-p).data());
-	  definedTest=TRUE;
-        }
 
 	if (replaced) // expand the macro and rescan the expression
 	{
