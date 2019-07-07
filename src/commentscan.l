@@ -458,6 +458,7 @@ static QCString         g_memberGroupDocs;
 static QCString         g_memberGroupRelates;
 static QCString         g_compoundName;
 
+static int g_openCount = 0;
 //-----------------------------------------------------------------------------
 
 static void initParser()
@@ -3243,6 +3244,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 
 void groupEnterFile(const char *fileName,int)
 {
+  g_openCount = 0;
   g_autoGroupStack.setAutoDelete(TRUE);
   g_autoGroupStack.clear();
   g_memberGroupId = DOX_NOGROUP;
@@ -3262,7 +3264,11 @@ void groupLeaveFile(const char *fileName,int line)
   g_memberGroupDocs.resize(0);
   if (!g_autoGroupStack.isEmpty())
   {
-    warn(fileName,line,"end of file while inside a group\n");
+    warn(fileName,line,"end of file while inside a group");
+  }
+  else if (g_openCount > 0) // < 0 is already handled on close call
+  {
+    warn(fileName,line,"end of file with unbalanced grouping commands");
   }
 }
 
@@ -3323,6 +3329,7 @@ static int findExistingGroup(int &groupId,const MemberGroupInfo *info)
 
 void openGroup(Entry *e,const char *,int)
 {
+  g_openCount++;
   //printf("==> openGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
   //  	e->name.data(),e->section,g_autoGroupStack.count());
   if (e->section==Entry::GROUPDOC_SEC) // auto group
@@ -3351,6 +3358,11 @@ void openGroup(Entry *e,const char *,int)
 
 void closeGroup(Entry *e,const char *fileName,int line,bool foundInline)
 {
+  g_openCount--;
+  if (g_openCount < 0)
+  {
+    warn(fileName,line,"unbalanced grouping commands");
+  }
   //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) g_autoGroupStack=%d\n",
   //    e->name.data(),e->section,fileName,line,g_autoGroupStack.count());
   if (g_memberGroupId!=DOX_NOGROUP) // end of member group
