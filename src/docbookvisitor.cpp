@@ -1523,22 +1523,6 @@ DB_VIS_C
   m_t << " ";
 }
 
-void DocbookDocVisitor::visitPre(DocCopy *)
-{
-DB_VIS_C
-  if (m_hide) return;
-  // TODO: to be implemented
-}
-
-
-void DocbookDocVisitor::visitPost(DocCopy *)
-{
-DB_VIS_C
-  if (m_hide) return;
-  // TODO: to be implemented
-}
-
-
 void DocbookDocVisitor::visitPre(DocText *)
 {
 DB_VIS_C

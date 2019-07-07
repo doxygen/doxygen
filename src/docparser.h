@@ -694,24 +694,6 @@ class DocIndexEntry : public DocNode
 
 //-----------------------------------------------------------------------
 
-/** Node representing a copy of documentation block. */
-class DocCopy : public DocNode
-{
-  public:
-    DocCopy(DocNode *parent,const QCString &link,bool copyBrief,bool copyDetails) 
-      : m_link(link), 
-        m_copyBrief(copyBrief), m_copyDetails(copyDetails) { m_parent = parent; }
-    Kind kind() const          { return Kind_Copy; }
-    QCString link() const       { return m_link; }
-    void accept(DocVisitor * /*v*/) { /*CompAccept<DocCopy>::accept(this,v);*/ }
-    void parse(QList<DocNode> &children);
-
-  private:
-    QCString  m_link;
-    bool     m_copyBrief;
-    bool     m_copyDetails;
-};
-
 /** Node representing an auto List */
 class DocAutoList : public CompAccept<DocAutoList>
 {

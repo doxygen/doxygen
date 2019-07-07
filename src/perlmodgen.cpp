@@ -388,8 +388,6 @@ public:
   void visitPost(DocXRefItem *);
   void visitPre(DocInternalRef *);
   void visitPost(DocInternalRef *);
-  void visitPre(DocCopy *);
-  void visitPost(DocCopy *);
   void visitPre(DocText *);
   void visitPost(DocText *);
   void visitPre(DocHtmlBlockQuote *);
@@ -1383,14 +1381,6 @@ void PerlModDocVisitor::visitPost(DocInternalRef *)
 {
   closeSubBlock();
   closeItem();
-}
-
-void PerlModDocVisitor::visitPre(DocCopy *)
-{
-}
-
-void PerlModDocVisitor::visitPost(DocCopy *)
-{
 }
 
 void PerlModDocVisitor::visitPre(DocText *)
