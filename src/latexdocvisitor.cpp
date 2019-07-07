@@ -1698,14 +1698,6 @@ void LatexDocVisitor::visitPost(DocInternalRef *ref)
   endLink(0,ref->file(),ref->anchor());
 }
 
-void LatexDocVisitor::visitPre(DocCopy *)
-{
-}
-
-void LatexDocVisitor::visitPost(DocCopy *)
-{
-}
-
 void LatexDocVisitor::visitPre(DocText *)
 {
 }

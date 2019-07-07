@@ -1657,18 +1657,6 @@ void RTFDocVisitor::visitPost(DocInternalRef *)
   m_t << " ";
 }
 
-void RTFDocVisitor::visitPre(DocCopy *)
-{
-  if (m_hide) return;
-  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocCopy)}\n");
-}
-
-void RTFDocVisitor::visitPost(DocCopy *)
-{
-  if (m_hide) return;
-  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocCopy)}\n");
-}
-
 void RTFDocVisitor::visitPre(DocText *)
 {
   if (m_hide) return;

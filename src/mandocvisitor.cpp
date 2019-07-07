@@ -1028,14 +1028,6 @@ void ManDocVisitor::visitPost(DocInternalRef *)
   m_t << "\\fP";
 }
 
-void ManDocVisitor::visitPre(DocCopy *)
-{
-}
-
-void ManDocVisitor::visitPost(DocCopy *)
-{
-}
-
 void ManDocVisitor::visitPre(DocText *)
 {
 }

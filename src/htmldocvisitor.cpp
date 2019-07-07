@@ -2118,14 +2118,6 @@ void HtmlDocVisitor::visitPost(DocInternalRef *)
   m_t << " ";
 }
 
-void HtmlDocVisitor::visitPre(DocCopy *)
-{
-}
-
-void HtmlDocVisitor::visitPost(DocCopy *)
-{
-}
-
 void HtmlDocVisitor::visitPre(DocText *)
 {
 }

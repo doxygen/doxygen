@@ -676,16 +676,6 @@ class PrintDocVisitor : public DocVisitor
       indent_post();
       printf("</internalref>\n");
     }
-    void visitPre(DocCopy *c)
-    {
-      indent_pre();
-      printf("<copy link=\"%s\">\n",c->link().data());
-    }
-    void visitPost(DocCopy *)
-    {
-      indent_post();
-      printf("</copy>\n");
-    }
     void visitPre(DocText *)
     {
       indent_pre();
