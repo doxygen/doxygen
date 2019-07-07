@@ -2783,7 +2783,8 @@ See also the \ref emojisup "emoji support page" for details.
 
   \note The text fragment should only include the part of the message
   sequence chart that is
-  within the <code>msc {...}</code> block.
+  within the <code>msc {...}</code> block (this is different from 
+  \ref cmdmscfile "\\mscfile").
   \note mscgen is now built in into doxygen
 
 Here is an example of the use of the \c \\msc command.
@@ -2936,6 +2937,10 @@ class Receiver
   For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
+
+  \note The text fragment should include the part message of the
+  sequence chart as well as the starting `msc {` and ending `}`
+  (this is different from \ref cmdmsc "\\msc").
 
   \sa section \ref cmdmsc "\\msc".
 
