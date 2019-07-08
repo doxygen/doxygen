@@ -1381,7 +1381,7 @@ void LatexGenerator::startHtmlLink(const char *url)
   if (Config_getBool(PDF_HYPERLINKS))
   {
     t << "\\href{";
-    t << url;
+    t << latexFilterURL(url);
     t << "}";
   }
   t << "{\\texttt{ ";
