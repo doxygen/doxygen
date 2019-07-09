@@ -201,7 +201,7 @@ tar zxvf doxygen-x.y.z.src.tar.gz
 \endverbatim
 to unpack the sources (you can obtain \c tar from e.g. http://gnuwin32.sourceforge.net/packages.html).
 Alternatively you can use an unpack program, like 7-Zip (see https://www.7-zip.org/)
-or use the build in unpack feature of modern Windows systems).
+or use the built-in unpack feature of modern Windows systems).
 
 Now your environment is setup to generate the required project files for \c doxygen.
 
