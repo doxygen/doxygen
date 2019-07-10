@@ -3361,6 +3361,7 @@ void closeGroup(Entry *e,const char *fileName,int line,bool foundInline)
   g_openCount--;
   if (g_openCount < 0)
   {
+    g_openCount++; // undo an extra non existing specified level
     warn(fileName,line,"unbalanced grouping commands");
   }
   //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) g_autoGroupStack=%d\n",
