@@ -1900,7 +1900,7 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
       }
       // need at least one space on either side of the cell text in
       // order for doxygen to do other formatting
-      out.addStr("> " + cellText + " </" + cellTag + ">\n");
+      out.addStr("> " + cellText + "\n</" + cellTag + ">\n");
     }
     cellTag = "td";
     cellClass = "class=\"markdownTableBody";
