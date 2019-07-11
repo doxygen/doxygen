@@ -261,6 +261,8 @@ int main(int argc,char **argv)
 
   // setup the non-default configuration options
 
+  Config::postProcess(FALSE);
+  ConfigValues::instance().init();
   // we need a place to put intermediate files
   Config_getString(OUTPUT_DIRECTORY)="/tmp/doxygen"; 
   // disable html output
@@ -283,6 +285,7 @@ int main(int argc,char **argv)
   Config_getBool(SOURCE_BROWSER)=TRUE;
 
   // set the input
+  Config_getList(INPUT).clear();
   Config_getList(INPUT).append(argv[1]);
 
   // check and finialize the configuration
