@@ -3208,6 +3208,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
       g_memberGroupId==DOX_NOGROUP) // @name section but no group started yet
   {
     openGroup(current,yyFileName,yyLineNr);
+    g_openCount--;
   }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\noutput=[\n"
