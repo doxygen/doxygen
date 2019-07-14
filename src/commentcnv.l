@@ -266,7 +266,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        g_pythonDocString = TRUE;
-                                       g_nestingCount=0;
+                                       g_nestingCount=1;
                                        g_commentStack.clear(); /*  to be on the save side */
                                        copyToOutput(yytext,(int)yyleng);
 				       BEGIN(CComment);
@@ -281,7 +281,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
-                                       g_nestingCount=0;
+                                       g_nestingCount=0; // Fortran doesn't have an end comment
                                        g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
                                        g_commentStack.push(new CommentCtx(g_lineNr));
@@ -298,7 +298,7 @@ void replaceComment(int offset);
                                        if (isFixedForm && (g_col == 0))
                                        {
                                          copyToOutput(yytext,(int)yyleng); 
-                                         g_nestingCount=0;
+                                         g_nestingCount=0; // Fortran doesn't have an end comment
                                          g_commentStack.clear(); /* to be on the safe side */
 				         BEGIN(CComment);
                                          g_commentStack.push(new CommentCtx(g_lineNr));
@@ -404,7 +404,7 @@ void replaceComment(int offset);
 				       REJECT;
                                      }
   			             g_specialComment=(int)yyleng==3;
-                                     g_nestingCount=0;
+                                     g_nestingCount=1;
                                      g_commentStack.clear(); /*  to be on the save side */
                                      copyToOutput(yytext,(int)yyleng); 
 				     BEGIN(CComment); 
@@ -418,7 +418,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
-                                       g_nestingCount=0;
+                                       g_nestingCount=0; // Python doesn't have an end comment for #
                                        g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
                                        g_commentStack.push(new CommentCtx(g_lineNr));
@@ -433,7 +433,7 @@ void replaceComment(int offset);
 				     {
                                        g_vhdl = TRUE;
                                        copyToOutput(yytext,(int)yyleng); 
-                                       g_nestingCount=0;
+                                       g_nestingCount=0;  // VHDL doesn't have an end comment
                                        g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
                                        g_commentStack.push(new CommentCtx(g_lineNr));
@@ -447,7 +447,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
-                                       g_nestingCount=0;
+                                       g_nestingCount=0;  // Fortran doesn't have an end comment
                                        g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
                                        g_commentStack.push(new CommentCtx(g_lineNr));
@@ -680,13 +680,14 @@ void replaceComment(int offset);
 				     else
 				     {
 				       copyToOutput(yytext,(int)yyleng);
+                                       g_nestingCount--;
                                        if (g_nestingCount<=0)
                                        {
 				         BEGIN(Scan);
                                        }
                                        else
                                        {
-                                         g_nestingCount--;
+                                         //g_nestingCount--;
                                          delete g_commentStack.pop();
                                        }
 				     }
@@ -1119,7 +1120,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
     }
     tmp += ")";
     warn(g_fileName,g_lineNr,"Reached end of file while still inside a (nested) comment. "
-        "Nesting level %d %s",g_nestingCount+1,tmp.data()); // add one for "normal" expected end of comment
+        "Nesting level %d %s",g_nestingCount,tmp.data());
   }
   g_commentStack.clear();
   g_nestingCount = 0;
