@@ -797,7 +797,7 @@ void LatexDocVisitor::visitPre(DocSimpleSect *s)
   // special case 1: user defined title
   if (s->type()!=DocSimpleSect::User && s->type()!=DocSimpleSect::Rcs)
   {
-    m_t << "}\n";
+    m_t << ":}\n";
   }
   else
   {
@@ -1517,7 +1517,7 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
     default:
       ASSERT(0);
   }
-  m_t << "}\n";
+  m_t << ":}\n";
 }
 
 void LatexDocVisitor::visitPost(DocParamSect *s)
