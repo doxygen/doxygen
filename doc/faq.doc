@@ -235,6 +235,13 @@ should send me a code fragment that triggers the message. To work around
 the problem, put some line-breaks into your file, split it up into smaller 
 parts, or exclude it from the input using EXCLUDE.
 
+Another way to work around this problem is to use the cmake command with the option:
+```
+-Denlarge_lex_buffers=<size>
+```
+where `<size>` is the new size of the input (`YY_BUF_SIZE`) and read (`YY_READ_BUF_SIZE`) buffer.
+In case this option is not given the default value of 262144 (i.e. 256K) will be used.
+
 \section faq_latex When running make in the latex directory I get "TeX capacity exceeded". Now what?
 
 You can edit the texmf.cfg file to increase the default values of the 

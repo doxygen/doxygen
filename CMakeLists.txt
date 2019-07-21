@@ -26,6 +26,8 @@ option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(english_only    "Only compile in support for the English language" OFF)
 option(force_qt4       "Forces doxywizard to build using Qt4 even if Qt5 is installed" OFF)
 
+SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffere to the specified size")
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(TOP "${CMAKE_SOURCE_DIR}")
 include(version)

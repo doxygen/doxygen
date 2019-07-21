@@ -16,7 +16,7 @@ file(MAKE_DIRECTORY ${GENERATED_SRC})
 file(GLOB LANGUAGE_FILES "${CMAKE_SOURCE_DIR}/src/translator_??.h")
 
 # instead of increasebuffer.py
-add_definitions(-DYY_BUF_SIZE=262144 -DYY_READ_BUF_SIZE=262144)
+add_definitions(-DYY_BUF_SIZE=${enlarge_lex_buffers} -DYY_READ_BUF_SIZE=${enlarge_lex_buffers})
 
 # generate settings.h
 file(GENERATE OUTPUT ${GENERATED_SRC}/settings.h
