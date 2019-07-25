@@ -956,6 +956,7 @@ void createJavascriptSearchIndex()
 void writeJavascriptSearchIndex()
 {
   int i;
+  int cnt = 0;
   // write index files
   QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
 
@@ -1043,7 +1044,7 @@ void writeJavascriptSearchIndex()
           }
           firstEntry=FALSE;
 
-          ti << "  ['" << dl->id() << "',['" << convertToXML(dl->name()) << "',[";
+          ti << "  ['" << dl->id() << "_" << cnt++ << "',['" << convertToXML(dl->name()) << "',[";
 
           if (dl->count()==1) // item with a unique name
           {
