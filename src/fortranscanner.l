@@ -2304,7 +2304,7 @@ static void initEntry()
   current->virt       = virt;
   current->stat       = gstat;
   current->lang       = SrcLangExt_Fortran; 
-  initGroupInfo(current);
+  Doxygen::docGroup.initGroupInfo(current);
 }
 
 /**
@@ -2712,7 +2712,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
     global_scope = rt;
     startScope(rt); // implies current_root = rt
     initParser();
-    groupEnterFile(yyFileName,yyLineNr);
+    Doxygen::docGroup.enterFile(yyFileName,yyLineNr);
 
     current          = new Entry;
     current->lang    = SrcLangExt_Fortran; 
@@ -2729,7 +2729,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
     }
 
     fortranscannerYYlex();
-    groupLeaveFile(yyFileName,yyLineNr);
+    Doxygen::docGroup.leaveFile(yyFileName,yyLineNr);
 
     if (global_scope && global_scope != (Entry *) -1) endScope(current_root, TRUE); // TRUE - global root
 

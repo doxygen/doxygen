@@ -143,7 +143,7 @@ static void initEntry()
   current->stat       = gstat;
   current->lang       = SrcLangExt_Python; 
   current->setParent(current_root);
-  initGroupInfo(current);
+  Doxygen::docGroup.initGroupInfo(current);
   gstat = FALSE;
 }
 
@@ -1772,14 +1772,14 @@ static void parseCompounds(Entry *rt)
       current = new Entry;
       initEntry();
 
-      groupEnterCompound(yyFileName,yyLineNr,ce->name);
+      Doxygen::docGroup.enterCompound(yyFileName,yyLineNr,ce->name);
       
       pyscannerYYlex() ;
       g_lexInit=TRUE;
       delete current; current=0;
       ce->program.resize(0);
 
-      groupLeaveCompound(yyFileName,yyLineNr,ce->name);
+      Doxygen::docGroup.leaveCompound(yyFileName,yyLineNr,ce->name);
 
     }
     parseCompounds(ce);
@@ -1839,7 +1839,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     initParser();
     current       = new Entry;
 
-    groupEnterFile(yyFileName,yyLineNr);
+    Doxygen::docGroup.enterFile(yyFileName,yyLineNr);
     
     current->reset();
     initEntry();
@@ -1848,7 +1848,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     pyscannerYYlex();
     g_lexInit=TRUE;
 
-    groupLeaveFile(yyFileName,yyLineNr);
+    Doxygen::docGroup.leaveFile(yyFileName,yyLineNr);
 
     current_root->program.resize(0);
     delete current; current=0;

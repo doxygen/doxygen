@@ -174,6 +174,7 @@ QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
 bool             Doxygen::markdownSupport = TRUE;
 GenericsSDict   *Doxygen::genericsDict;
+DocGroup         Doxygen::docGroup;
 
 // locally accessible globals
 static QDict<Entry>     g_classEntries(1009);
