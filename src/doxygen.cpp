@@ -11270,9 +11270,7 @@ void parseInput()
   if (layoutFile.open(IO_ReadOnly))
   {
     msg("Parsing layout file %s...\n",layoutFileName.data());
-    QTextStream t(&layoutFile);
-    t.setEncoding(QTextStream::Latin1);
-    LayoutDocManager::instance().parse(t,layoutFileName);
+    LayoutDocManager::instance().parse(layoutFileName);
   }
   else if (!defaultLayoutUsed)
   {
