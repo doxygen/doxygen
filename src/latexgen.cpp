@@ -497,7 +497,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
     documentClass = "book";
   t << "\\documentclass[twoside]{" << documentClass << "}\n"
        "\n";
-  t << "%% moved from doxygen.sty due to workaround for LatEx 2019 version and unmaintained tabu package\n"
+  t << "%% moved from doxygen.sty due to workaround for LaTex 2019 version and unmaintained tabu package\n"
        "\\usepackage{ifthen}\n"
        "\\ifx\\requestedLaTeXdate\\undefined\n"
        "\\usepackage{array}\n"
@@ -510,10 +510,6 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   t << "% Packages required by doxygen\n"
        "\\usepackage{fixltx2e}\n" // for \textsubscript
        "\\usepackage{calc}\n"
-       "%% moved from doxygen.sty due to workaround for LatEx 2019 version and unmaintained tabu package\n"
-       "\\usepackage{longtable_doxygen}\n"
-       "\\usepackage{tabu_doxygen}\n"
-       "%%\n"
        "\\usepackage{doxygen}\n";
   QStrList extraLatexStyle = Config_getList(LATEX_EXTRA_STYLESHEET);
   for (uint i=0; i<extraLatexStyle.count(); ++i)
