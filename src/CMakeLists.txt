@@ -254,6 +254,7 @@ add_library(_doxygen STATIC
     xmlgen.cpp
     docbookvisitor.cpp
     docbookgen.cpp
+    docgroup.cpp
 )
 
 add_executable(doxygen main.cpp)

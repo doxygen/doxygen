@@ -146,7 +146,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   oldEntry = 0;
   VhdlParser::current=new Entry();
   VhdlParser::initEntry(VhdlParser::current);
-  groupEnterFile(fileName,yyLineNr);
+  Doxygen::docGroup.enterFile(fileName,yyLineNr);
   vhdlFileName = fileName;
   lineParse=new int[200]; // Dimitri: dangerous constant: should be bigger than largest token id in VhdlParserConstants.h
   VhdlParserIF::parseVhdlfile(fileBuf,inLine);
@@ -193,7 +193,7 @@ void VhdlParser::initEntry(Entry *e)
   e->fileName = yyFileName;
   e->lang     = SrcLangExt_VHDL;
   isVhdlDocPending();
-  initGroupInfo(e);
+  Doxygen::docGroup.initGroupInfo(e);
 }
 
 void VhdlParser::newEntry()
