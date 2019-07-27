@@ -247,7 +247,7 @@ static void initEntry()
   //  //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
   //  current->groups->append(new Grouping(*autoGroupStack.top()));
   //}
-  initGroupInfo(current);
+  Doxygen::docGroup.initGroupInfo(current);
   isTypedef=FALSE;
 }
 
@@ -2854,12 +2854,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           if (previous && previous->section==Entry::GROUPDOC_SEC)
 					  {
 					    // link open command to the group defined in the previous entry
-					    openGroup(previous,yyFileName,yyLineNr);
+					    Doxygen::docGroup.open(previous,yyFileName,yyLineNr);
 					  }
 					  else
 					  {
 					    // link open command to the current entry
-					    openGroup(current,yyFileName,yyLineNr);
+					    Doxygen::docGroup.open(current,yyFileName,yyLineNr);
 					  }
 					  //current = tmp;
 					  initEntry();
@@ -2903,7 +2903,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}"[^*]*"*/"	{
                                           bool insideEnum = YY_START==FindFields || (YY_START==ReadInitializer && lastInitializerContext==FindFields); // see bug746226
-  					  closeGroup(current,yyFileName,yyLineNr,insideEnum);
+  					  Doxygen::docGroup.close(current,yyFileName,yyLineNr,insideEnum);
   					}
 <FindMembers>"="			{ // in PHP code this could also be due to "<?="
   					  current->bodyLine = yyLineNr;
@@ -7207,13 +7207,13 @@ static void parseCompounds(Entry *rt)
       //memberGroupId = DOX_NOGROUP;
       //memberGroupRelates.resize(0);
       //memberGroupInside.resize(0);
-      groupEnterCompound(yyFileName,yyLineNr,ce->name);
+      Doxygen::docGroup.enterCompound(yyFileName,yyLineNr,ce->name);
       
       scannerYYlex() ;
       g_lexInit=TRUE;
       //forceEndGroup();
 
-      groupLeaveCompound(yyFileName,yyLineNr,ce->name);
+      Doxygen::docGroup.leaveCompound(yyFileName,yyLineNr,ce->name);
       
       delete current; current=0;
       ce->program.resize(0);
@@ -7273,7 +7273,7 @@ static void parseMain(const char *fileName,
 
     current_root  = rt ;
     initParser();
-    groupEnterFile(yyFileName,yyLineNr);
+    Doxygen::docGroup.enterFile(yyFileName,yyLineNr);
     current       = new Entry;
     //printf("current=%p current_root=%p\n",current,current_root);
     int sec=guessSection(yyFileName);
@@ -7305,7 +7305,7 @@ static void parseMain(const char *fileName,
     }
 
     //forceEndGroup();
-    groupLeaveFile(yyFileName,yyLineNr);
+    Doxygen::docGroup.leaveFile(yyFileName,yyLineNr);
 
     //if (depthIf>0)
     //{

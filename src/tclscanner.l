@@ -486,7 +486,7 @@ Entry* tcl_entry_new()
 //  myEntry->stat       = FALSE;
   myEntry->fileName   = tcl.file_name;
   myEntry->lang       = SrcLangExt_Tcl;
-  initGroupInfo(myEntry);
+  Doxygen::docGroup.initGroupInfo(myEntry);
   // collect entries
   if (!tcl.code)
   {
@@ -2950,7 +2950,7 @@ tcl_inf("%s\n",fileName);
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
 
   msg("Parsing %s...\n",fileName);
-  groupEnterFile(fileName,yylineno);
+  Doxygen::docGroup.enterFile(fileName,yylineno);
 
   tcl_init();
   tcl.code = NULL;
@@ -2958,7 +2958,7 @@ tcl_inf("%s\n",fileName);
   tcl.this_parser = this;
   tcl.entry_main          = root; /* toplevel entry */
   tcl_parse("","");
-  groupLeaveFile(tcl.file_name,yylineno);
+  Doxygen::docGroup.leaveFile(tcl.file_name,yylineno);
   root->program.resize(0);
   myFile.close();
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);

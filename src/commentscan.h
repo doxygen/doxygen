@@ -85,13 +85,5 @@ bool parseCommentBlock(ParserInterface *parser,
                        bool &newEntryNeeded
 		     );
 
-void groupEnterFile(const char *file,int line);
-void groupLeaveFile(const char *file,int line);
-void groupLeaveCompound(const char *file,int line,const char *name);
-void groupEnterCompound(const char *file,int line,const char *name);
-void openGroup(Entry *e,const char *file,int line);
-void closeGroup(Entry *,const char *file,int line,bool foundInline=FALSE);
-void initGroupInfo(Entry *e);
-
 
 #endif
