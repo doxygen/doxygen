@@ -14,6 +14,14 @@
 
 \batchmode
 \documentclass{book}
+%% moved from doxygen.sty due to workaround for LaTex 2019 version and unmaintained tabu package
+\usepackage{ifthen}
+\ifx\requestedLaTeXdate\undefined
+\usepackage{array}
+\else
+\usepackage{array}[=2016-10-06]
+\fi
+%%
 \usepackage[a4paper,left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{makeidx}
 \usepackage{natbib}
@@ -23,7 +31,7 @@
 \usepackage{geometry}
 \usepackage{listings}
 \usepackage{color}
-\usepackage{ifthen}
+%%\usepackage{ifthen} %% moved to top due to workaround for LaTex 2019 version and unmaintained tabu package
 \usepackage[table]{xcolor}
 \PassOptionsToPackage{warn}{textcomp}
 \usepackage{textcomp}
