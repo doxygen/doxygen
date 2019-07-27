@@ -485,7 +485,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   if (Config_getBool(LATEX_BATCHMODE))
     t << "\\batchmode\n";
 
-  // to overcome  problems wit too many open files
+  // to overcome problems with too many open files
   t << "\\let\\mypdfximage\\pdfximage"
        "\\def\\pdfximage{\\immediate\\mypdfximage}";
 
@@ -497,6 +497,14 @@ static void writeDefaultHeaderPart1(FTextStream &t)
     documentClass = "book";
   t << "\\documentclass[twoside]{" << documentClass << "}\n"
        "\n";
+  t << "%% moved from doxygen.sty due to workaround for LaTex 2019 version and unmaintained tabu package\n"
+       "\\usepackage{ifthen}\n"
+       "\\ifx\\requestedLaTeXdate\\undefined\n"
+       "\\usepackage{array}\n"
+       "\\else\n"
+       "\\usepackage{array}[=2016-10-06]\n"
+       "\\fi\n"
+       "%%\n";
 
   // Load required packages
   t << "% Packages required by doxygen\n"
@@ -1328,6 +1336,15 @@ void LatexGenerator::writeStyleInfo(int part)
 
   startPlainFile("doxygen.sty");
   writeDefaultStyleSheet(t);
+  endPlainFile();
+
+  // workaround for the problem caused by change in LaTeX in version 2019
+  // in the unmaintained tabu package
+  startPlainFile("tabu_doxygen.sty");
+  t << ResourceMgr::instance().getAsString("tabu_doxygen.sty");
+  endPlainFile();
+  startPlainFile("longtable_doxygen.sty");
+  t << ResourceMgr::instance().getAsString("longtable_doxygen.sty");
   endPlainFile();
 }
 
