@@ -7,29 +7,29 @@
 
 void DocGroup::enterFile(const char *fileName,int)
 {
-  g_openCount = 0;
-  g_autoGroupStack.setAutoDelete(TRUE);
-  g_autoGroupStack.clear();
-  g_memberGroupId = DOX_NOGROUP;
-  g_memberGroupDocs.resize(0);
-  g_memberGroupRelates.resize(0);
-  g_compoundName=fileName;
+  m_openCount = 0;
+  m_autoGroupStack.setAutoDelete(TRUE);
+  m_autoGroupStack.clear();
+  m_memberGroupId = DOX_NOGROUP;
+  m_memberGroupDocs.resize(0);
+  m_memberGroupRelates.resize(0);
+  m_compoundName=fileName;
 }
 
 void DocGroup::leaveFile(const char *fileName,int line)
 {
-  //if (g_memberGroupId!=DOX_NOGROUP)
+  //if (m_memberGroupId!=DOX_NOGROUP)
   //{
   //  warn(fileName,line,"end of file while inside a member group\n");
   //}
-  g_memberGroupId=DOX_NOGROUP;
-  g_memberGroupRelates.resize(0);
-  g_memberGroupDocs.resize(0);
-  if (!g_autoGroupStack.isEmpty())
+  m_memberGroupId=DOX_NOGROUP;
+  m_memberGroupRelates.resize(0);
+  m_memberGroupDocs.resize(0);
+  if (!m_autoGroupStack.isEmpty())
   {
     warn(fileName,line,"end of file while inside a group");
   }
-  else if (g_openCount > 0) // < 0 is already handled on close call
+  else if (m_openCount > 0) // < 0 is already handled on close call
   {
     warn(fileName,line,"end of file with unbalanced grouping commands");
   }
@@ -37,22 +37,22 @@ void DocGroup::leaveFile(const char *fileName,int line)
 
 void DocGroup::enterCompound(const char *fileName,int line,const char *name)
 {
-  if (g_memberGroupId!=DOX_NOGROUP)
+  if (m_memberGroupId!=DOX_NOGROUP)
   {
     warn(fileName,line,"try to put compound %s inside a member group\n",name);
   }
-  g_memberGroupId=DOX_NOGROUP;
-  g_memberGroupRelates.resize(0);
-  g_memberGroupDocs.resize(0);
-  g_compoundName = name;
-  int i = g_compoundName.find('(');
+  m_memberGroupId=DOX_NOGROUP;
+  m_memberGroupRelates.resize(0);
+  m_memberGroupDocs.resize(0);
+  m_compoundName = name;
+  int i = m_compoundName.find('(');
   if (i!=-1) 
   {
-    g_compoundName=g_compoundName.left(i); // strip category (Obj-C)
+    m_compoundName=m_compoundName.left(i); // strip category (Obj-C)
   }
-  if (g_compoundName.isEmpty())
+  if (m_compoundName.isEmpty())
   {
-    g_compoundName=fileName;
+    m_compoundName=fileName;
   }
   //printf("groupEnterCompound(%s)\n",name);
 }
@@ -60,14 +60,14 @@ void DocGroup::enterCompound(const char *fileName,int line,const char *name)
 void DocGroup::leaveCompound(const char *,int,const char * /*name*/)
 {
   //printf("groupLeaveCompound(%s)\n",name);
-  //if (g_memberGroupId!=DOX_NOGROUP)
+  //if (m_memberGroupId!=DOX_NOGROUP)
   //{
   //  warn(fileName,line,"end of compound %s while inside a member group\n",name);
   //}
-  g_memberGroupId=DOX_NOGROUP;
-  g_memberGroupRelates.resize(0);
-  g_memberGroupDocs.resize(0);
-  g_compoundName.resize(0);
+  m_memberGroupId=DOX_NOGROUP;
+  m_memberGroupRelates.resize(0);
+  m_memberGroupDocs.resize(0);
+  m_compoundName.resize(0);
 }
 
 int DocGroup::findExistingGroup(int &groupId,const MemberGroupInfo *info)
@@ -77,7 +77,7 @@ int DocGroup::findExistingGroup(int &groupId,const MemberGroupInfo *info)
   MemberGroupInfo *mi;
   for (di.toFirst();(mi=di.current());++di)
   {
-    if (g_compoundName==mi->compoundName &&  // same file or scope
+    if (m_compoundName==mi->compoundName &&  // same file or scope
 	!mi->header.isEmpty() &&             // not a nameless group
 	qstricmp(mi->header,info->header)==0  // same header name
        )
@@ -92,60 +92,60 @@ int DocGroup::findExistingGroup(int &groupId,const MemberGroupInfo *info)
 
 void DocGroup::open(Entry *e,const char *,int)
 {
-  g_openCount++;
-  //printf("==> openGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
-  //  	e->name.data(),e->section,g_autoGroupStack.count());
+  m_openCount++;
+  //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%d\n",
+  //  	e->name.data(),e->section,m_autoGroupStack.count());
   if (e->section==Entry::GROUPDOC_SEC) // auto group
   {
-    g_autoGroupStack.push(new Grouping(e->name,e->groupingPri()));
+    m_autoGroupStack.push(new Grouping(e->name,e->groupingPri()));
   }
   else // start of a member group
   {
-    //printf("    membergroup id=%d %s\n",g_memberGroupId,g_memberGroupHeader.data());
-    if (g_memberGroupId==DOX_NOGROUP) // no group started yet
+    //printf("    membergroup id=%d %s\n",m_memberGroupId,m_memberGroupHeader.data());
+    if (m_memberGroupId==DOX_NOGROUP) // no group started yet
     {
       static int curGroupId=0;
 
       MemberGroupInfo *info = new MemberGroupInfo;
-      info->header = g_memberGroupHeader.stripWhiteSpace();
-      info->compoundName = g_compoundName;
-      g_memberGroupId = findExistingGroup(curGroupId,info);
-      //printf("    use membergroup %d\n",g_memberGroupId);
-      Doxygen::memGrpInfoDict.insert(g_memberGroupId,info);
+      info->header = m_memberGroupHeader.stripWhiteSpace();
+      info->compoundName = m_compoundName;
+      m_memberGroupId = findExistingGroup(curGroupId,info);
+      //printf("    use membergroup %d\n",m_memberGroupId);
+      Doxygen::memGrpInfoDict.insert(m_memberGroupId,info);
 
-      g_memberGroupRelates = e->relates;
-      e->mGrpId = g_memberGroupId;
+      m_memberGroupRelates = e->relates;
+      e->mGrpId = m_memberGroupId;
     }
   }
 }
 
 void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline)
 {
-  g_openCount--;
-  if (g_openCount < 0)
+  m_openCount--;
+  if (m_openCount < 0)
   {
     warn(fileName,line,"unbalanced grouping commands");
   }
-  //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) g_autoGroupStack=%d\n",
-  //    e->name.data(),e->section,fileName,line,g_autoGroupStack.count());
-  if (g_memberGroupId!=DOX_NOGROUP) // end of member group
+  //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) m_autoGroupStack=%d\n",
+  //    e->name.data(),e->section,fileName,line,m_autoGroupStack.count());
+  if (m_memberGroupId!=DOX_NOGROUP) // end of member group
   {
-    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
+    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(m_memberGroupId);
     if (info) // known group
     {
-      info->doc = g_memberGroupDocs;
+      info->doc = m_memberGroupDocs;
       info->docFile = fileName;
       info->docLine = line;
     }
-    g_memberGroupId=DOX_NOGROUP;
-    g_memberGroupRelates.resize(0);
-    g_memberGroupDocs.resize(0);
+    m_memberGroupId=DOX_NOGROUP;
+    m_memberGroupRelates.resize(0);
+    m_memberGroupDocs.resize(0);
     if (!foundInline) e->mGrpId=DOX_NOGROUP;
-    //printf("new group id=%d\n",g_memberGroupId);
+    //printf("new group id=%d\n",m_memberGroupId);
   }
-  else if (!g_autoGroupStack.isEmpty()) // end of auto group
+  else if (!m_autoGroupStack.isEmpty()) // end of auto group
   {
-    Grouping *grp = g_autoGroupStack.pop();
+    Grouping *grp = m_autoGroupStack.pop();
     // see bug577005: we should not remove the last group for e
     if (!foundInline) e->groups->removeLast();
     //printf("Removing %s e=%p\n",grp->groupname.data(),e);
@@ -156,16 +156,16 @@ void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline)
 
 void DocGroup::initGroupInfo(Entry *e)
 {
-  //printf("==> initGroup(id=%d,related=%s,e=%p)\n",g_memberGroupId,
-  //       g_memberGroupRelates.data(),e);
-  e->mGrpId     = g_memberGroupId;
-  e->relates    = g_memberGroupRelates;
-  if (!g_autoGroupStack.isEmpty())
+  //printf("==> initGroup(id=%d,related=%s,e=%p)\n",m_memberGroupId,
+  //       m_memberGroupRelates.data(),e);
+  e->mGrpId     = m_memberGroupId;
+  e->relates    = m_memberGroupRelates;
+  if (!m_autoGroupStack.isEmpty())
   {
     //printf("Appending group %s to %s: count=%d entry=%p\n",
-    //	g_autoGroupStack.top()->groupname.data(),
+    //	m_autoGroupStack.top()->groupname.data(),
     //	e->name.data(),e->groups->count(),e);
-    e->groups->append(new Grouping(*g_autoGroupStack.top()));
+    e->groups->append(new Grouping(*m_autoGroupStack.top()));
   }
 }
 
@@ -173,17 +173,17 @@ void DocGroup::addDocs(Entry *e)
 {
   if (e->section==Entry::MEMBERGRP_SEC)
   {
-    g_memberGroupDocs=e->brief.stripWhiteSpace();
+    m_memberGroupDocs=e->brief.stripWhiteSpace();
     e->doc = stripLeadingAndTrailingEmptyLines(e->doc,e->docLine);
-    if (!g_memberGroupDocs.isEmpty() && !e->doc.isEmpty())
+    if (!m_memberGroupDocs.isEmpty() && !e->doc.isEmpty())
     {
-      g_memberGroupDocs+="\n\n";
+      m_memberGroupDocs+="\n\n";
     }
-    g_memberGroupDocs+=e->doc;
-    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
+    m_memberGroupDocs+=e->doc;
+    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(m_memberGroupId);
     if (info) 
     {
-      info->doc = g_memberGroupDocs;
+      info->doc = m_memberGroupDocs;
       info->docFile = e->docFile;
       info->docLine = e->docLine;
       info->setRefItems(e->sli);
@@ -195,15 +195,15 @@ void DocGroup::addDocs(Entry *e)
 
 bool DocGroup::isEmpty() const
 {
-  return (g_memberGroupId==DOX_NOGROUP);
+  return (m_memberGroupId==DOX_NOGROUP);
 }
 
 void DocGroup::clearHeader()
 {
-  g_memberGroupHeader.resize(0);
+  m_memberGroupHeader.resize(0);
 }
 
 void DocGroup::appendHeader(const char text)
 {
-  g_memberGroupHeader += text;
+  m_memberGroupHeader += text;
 }

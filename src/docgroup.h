@@ -24,31 +24,31 @@ class Entry;
 
 class DocGroup
 {
-public:
-  DocGroup() {};
+  public:
+    DocGroup() {};
 
-public:
-  void enterFile(const char *fileName,int);
-  void leaveFile(const char *fileName,int line);
-  void enterCompound(const char *fileName,int line,const char *name);
-  void leaveCompound(const char *,int,const char * /*name*/);
-  void open(Entry *e,const char *,int);
-  void close(Entry *e,const char *fileName,int line,bool foundInline);
-  void initGroupInfo(Entry *e);
-  bool isEmpty() const;
-  void clearHeader();
-  void appendHeader(const char);
-  void addDocs(Entry *e);
+  public:
+    void enterFile(const char *fileName,int);
+    void leaveFile(const char *fileName,int line);
+    void enterCompound(const char *fileName,int line,const char *name);
+    void leaveCompound(const char *,int,const char * /*name*/);
+    void open(Entry *e,const char *,int);
+    void close(Entry *e,const char *fileName,int line,bool foundInline);
+    void initGroupInfo(Entry *e);
+    bool isEmpty() const;
+    void clearHeader();
+    void appendHeader(const char);
+    void addDocs(Entry *e);
 
-private:
-  int g_openCount = 0;
-  QCString         g_memberGroupHeader;
-  int              g_memberGroupId = DOX_NOGROUP;
-  int findExistingGroup(int &groupId,const MemberGroupInfo *info);
-  QCString         g_memberGroupRelates;
-  QCString         g_memberGroupDocs;
-  QStack<Grouping> g_autoGroupStack;
-  QCString         g_compoundName;
+  private:
+    int findExistingGroup(int &groupId,const MemberGroupInfo *info);
+    int              m_openCount;
+    QCString         m_memberGroupHeader;
+    int              m_memberGroupId;
+    QCString         m_memberGroupRelates;
+    QCString         m_memberGroupDocs;
+    QStack<Grouping> m_autoGroupStack;
+    QCString         m_compoundName;
 };
 
 #endif
