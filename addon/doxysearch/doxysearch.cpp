@@ -374,7 +374,11 @@ int main(int argc,char **argv)
     parser.set_default_op(Xapian::Query::OP_AND);
     parser.set_stemming_strategy(Xapian::QueryParser::STEM_ALL);
     Xapian::termcount max_expansion=100;
+#if (XAPIAN_MAJOR_VERSION==1) && (XAPIAN_MINOR_VERSION==2)
+    parser.set_max_wildcard_expansion(max_expansion);
+#else
     parser.set_max_expansion(max_expansion,Xapian::Query::WILDCARD_LIMIT_MOST_FREQUENT);
+#endif
     Xapian::Query query=parser.parse_query(searchFor,
                                            Xapian::QueryParser::FLAG_DEFAULT  |
                                            Xapian::QueryParser::FLAG_WILDCARD |
