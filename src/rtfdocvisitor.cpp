@@ -784,7 +784,6 @@ void RTFDocVisitor::visitPre(DocSimpleSect *s)
   // special case 1: user defined title
   if (s->type()!=DocSimpleSect::User && s->type()!=DocSimpleSect::Rcs)
   {
-    m_t << ":";
     m_t << "\\par";
     m_t << "}"; // end bold
     incIndentLevel();
@@ -1379,7 +1378,6 @@ void RTFDocVisitor::visitPre(DocParamSect *s)
     default:
       ASSERT(0);
   }
-  m_t << ":";
   m_t << "\\par";
   m_t << "}" << endl;
   bool useTable = s->type()==DocParamSect::Param ||
