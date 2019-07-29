@@ -518,10 +518,10 @@ static QDict<MemberDef> g_resolvedTypedefs;
 static QDict<Definition> g_visitedNamespaces;
 
 // forward declaration
-static ClassDef *getResolvedClassRec(const Definition *scope,
+static const ClassDef *getResolvedClassRec(const Definition *scope,
                               const FileDef *fileScope,
                               const char *n,
-                              MemberDef **pTypeDef,
+                              const MemberDef **pTypeDef,
                               QCString *pTemplSpec,
                               QCString *pResolvedType
                              );
@@ -535,10 +535,12 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
  * 
  *  Example: typedef int T; will return 0, since "int" is not a class.
  */
-ClassDef *newResolveTypedef(const FileDef *fileScope,MemberDef *md,
-                            MemberDef **pMemType,QCString *pTemplSpec,
-                            QCString *pResolvedType,
-                            ArgumentList *actTemplParams)
+const ClassDef *newResolveTypedef(const FileDef *fileScope,
+                                  const MemberDef *md,
+                                  const MemberDef **pMemType,
+                                  QCString *pTemplSpec,
+                                  QCString *pResolvedType,
+                                  ArgumentList *actTemplParams)
 {
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
@@ -581,8 +583,8 @@ ClassDef *newResolveTypedef(const FileDef *fileScope,MemberDef *md,
   int sp=0;
   tl=type.length(); // length may have been changed
   while (sp<tl && type.at(sp)==' ') sp++;
-  MemberDef *memTypeDef = 0;
-  ClassDef  *result = getResolvedClassRec(md->getOuterScope(),
+  const MemberDef *memTypeDef = 0;
+  const ClassDef  *result = getResolvedClassRec(md->getOuterScope(),
                                   fileScope,type,&memTypeDef,0,pResolvedType);
   // if type is a typedef then return what it resolves to.
   if (memTypeDef && memTypeDef->isTypedef()) 
@@ -652,7 +654,7 @@ done:
     //printf("setting cached typedef %p in result %p\n",md,result);
     //printf("==> %s (%s,%d)\n",result->name().data(),result->getDefFileName().data(),result->getDefLine());
     //printf("*pResolvedType=%s\n",pResolvedType?pResolvedType->data():"<none>");
-    md->cacheTypedefVal(result,
+    const_cast<MemberDef*>(md)->cacheTypedefVal(result,
         pTemplSpec ? *pTemplSpec : QCString(),
         pResolvedType ? *pResolvedType : QCString()
        );
@@ -667,7 +669,7 @@ done:
  *  value of the typedef or \a name if no typedef was found.
  */
 static QCString substTypedef(const Definition *scope,const FileDef *fileScope,const QCString &name,
-            MemberDef **pTypeDef=0)
+            const MemberDef **pTypeDef=0)
 {
   QCString result=name;
   if (name.isEmpty()) return result;
@@ -763,12 +765,12 @@ static const Definition *followPath(const Definition *start,const FileDef *fileS
   while ((is=getScopeFragment(path,ps,&l))!=-1)
   {
     // try to resolve the part if it is a typedef
-    MemberDef *typeDef=0;
+    const MemberDef *typeDef=0;
     QCString qualScopePart = substTypedef(current,fileScope,path.mid(is,l),&typeDef);
     //printf("      qualScopePart=%s\n",qualScopePart.data());
     if (typeDef)
     {
-      ClassDef *type = newResolveTypedef(fileScope,typeDef);
+      const ClassDef *type = newResolveTypedef(fileScope,typeDef);
       if (type)
       {
         //printf("Found type %s\n",type->name().data());
@@ -1218,8 +1220,8 @@ static void getResolvedSymbol(const Definition *scope,
                        const QCString &explicitScopePart,
                        ArgumentList *actTemplParams,
                        int &minDistance,
-                       ClassDef *&bestMatch,
-                       MemberDef *&bestTypedef,
+                       const ClassDef *&bestMatch,
+                       const MemberDef *&bestTypedef,
                        QCString &bestTemplSpec,
                        QCString &bestResolvedType
                       )
@@ -1306,8 +1308,8 @@ static void getResolvedSymbol(const Definition *scope,
               QCString spec;
               QCString type;
               minDistance=distance;
-              MemberDef *enumType = 0;
-              ClassDef *cd = newResolveTypedef(fileScope,md,&enumType,&spec,&type,actTemplParams);
+              const MemberDef *enumType = 0;
+              const ClassDef *cd = newResolveTypedef(fileScope,md,&enumType,&spec,&type,actTemplParams);
               if (cd)  // type resolves to a class
               {
                 //printf("      bestTypeDef=%p spec=%s type=%s\n",md,spec.data(),type.data());
@@ -1377,10 +1379,10 @@ static void getResolvedSymbol(const Definition *scope,
  * match against the input name. Can recursively call itself when 
  * resolving typedefs.
  */
-static ClassDef *getResolvedClassRec(const Definition *scope,
+static const ClassDef *getResolvedClassRec(const Definition *scope,
     const FileDef *fileScope,
     const char *n,
-    MemberDef **pTypeDef,
+    const MemberDef **pTypeDef,
     QCString *pTemplSpec,
     QCString *pResolvedType
     )
@@ -1499,8 +1501,8 @@ static ClassDef *getResolvedClassRec(const Definition *scope,
     Doxygen::lookupCache->insert(key,new LookupInfo);
   }
 
-  ClassDef *bestMatch=0;
-  MemberDef *bestTypedef=0;
+  const ClassDef *bestMatch=0;
+  const MemberDef *bestTypedef=0;
   QCString bestTemplSpec;
   QCString bestResolvedType;
   int minDistance=10000; // init at "infinite"
@@ -1566,10 +1568,10 @@ static ClassDef *getResolvedClassRec(const Definition *scope,
  * Loops through scope and each of its parent scopes looking for a
  * match against the input name. 
  */
-ClassDef *getResolvedClass(const Definition *scope,
+const ClassDef *getResolvedClass(const Definition *scope,
     const FileDef *fileScope,
     const char *n,
-    MemberDef **pTypeDef,
+    const MemberDef **pTypeDef,
     QCString *pTemplSpec,
     bool mayBeUnlinkable,
     bool mayBeHidden,
@@ -1593,7 +1595,7 @@ ClassDef *getResolvedClass(const Definition *scope,
   //    n,
   //    mayBeUnlinkable
   //   );
-  ClassDef *result;
+  const ClassDef *result;
   if (optimizeOutputVhdl)
   {
     result = getClass(n);
@@ -2093,7 +2095,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       const GroupDef     *gd=0;
       //printf("** Match word '%s'\n",matchWord.data());
 
-      MemberDef *typeDef=0;
+      const MemberDef *typeDef=0;
       cd=getResolvedClass(scope,fileScope,matchWord,&typeDef);
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
@@ -3501,8 +3503,8 @@ static QCString getCanonicalTypeForIdentifier(
   //printf("getCanonicalTypeForIdentifier(%s,[%s->%s]) start\n",
   //    word.data(),tSpec?tSpec->data():"<none>",templSpec.data());
 
-  ClassDef *cd = 0;
-  MemberDef *mType = 0;
+  const ClassDef *cd = 0;
+  const MemberDef *mType = 0;
   QCString ts;
   QCString resolvedType;
 
@@ -4135,8 +4137,8 @@ bool getDefs(const QCString &scName,
         className=mScope;
       }
 
-      MemberDef *tmd=0;
-      ClassDef *fcd=getResolvedClass(Doxygen::globalScope,0,className,&tmd);
+      const MemberDef *tmd=0;
+      const ClassDef *fcd=getResolvedClass(Doxygen::globalScope,0,className,&tmd);
       if (fcd==0 && className.find('<')!=-1) // try without template specifiers as well
       {
          QCString nameWithoutTemplates = stripTemplateSpecifiersFromScope(className,FALSE);
@@ -6366,7 +6368,7 @@ QCString normalizeNonTemplateArgumentsInString(
     if (!found)
     {
       // try to resolve the type
-      ClassDef *cd = getResolvedClass(context,0,n);
+      const ClassDef *cd = getResolvedClass(context,0,n);
       if (cd)
       {
         result+=cd->name();

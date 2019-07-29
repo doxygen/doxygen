@@ -220,7 +220,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual QCString getScopeString() const;
     virtual ClassDef *getClassDefOfAnonymousType() const;
     virtual bool isTypedefValCached() const;
-    virtual ClassDef *getCachedTypedefVal() const;
+    virtual const ClassDef *getCachedTypedefVal() const;
     virtual QCString getCachedTypedefTemplSpec() const;
     virtual QCString getCachedResolvedTypedef() const;
     virtual MemberDef *memberDefinition() const;
@@ -295,7 +295,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void addListReference(Definition *d);
     virtual void setDocsForDefinition(bool b);
     virtual void setGroupAlias(const MemberDef *md);
-    virtual void cacheTypedefVal(ClassDef *val,const QCString &templSpec,const QCString &resolvedType);
+    virtual void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType);
     virtual void invalidateTypedefValCache();
     virtual void invalidateCachedArgumentTypes();
     virtual void setMemberDefinition(MemberDef *md);
@@ -693,7 +693,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { return getMdAlias()->getClassDefOfAnonymousType(); }
     virtual bool isTypedefValCached() const
     { return getMdAlias()->isTypedefValCached(); }
-    virtual ClassDef *getCachedTypedefVal() const
+    virtual const ClassDef *getCachedTypedefVal() const
     { return getMdAlias()->getCachedTypedefVal(); }
     virtual QCString getCachedTypedefTemplSpec() const
     { return getMdAlias()->getCachedTypedefTemplSpec(); }
@@ -802,7 +802,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void addListReference(Definition *d) {}
     virtual void setDocsForDefinition(bool b) {}
     virtual void setGroupAlias(const MemberDef *md) {}
-    virtual void cacheTypedefVal(ClassDef *val,const QCString &templSpec,const QCString &resolvedType) {}
+    virtual void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType) {}
     virtual void invalidateTypedefValCache() {}
     virtual void invalidateCachedArgumentTypes() {}
     virtual void setMemberDefinition(MemberDef *md) {}
@@ -1364,7 +1364,7 @@ class MemberDefImpl::IMPL
     MemberDef *groupMember;
 
     bool isTypedefValCached;
-    ClassDef *cachedTypedefValue;
+    const ClassDef *cachedTypedefValue;
     QCString cachedTypedefTemplSpec;
     QCString cachedResolvedType;
 
@@ -5626,7 +5626,7 @@ bool MemberDefImpl::isTypedefValCached() const
   return m_impl->isTypedefValCached;
 }
 
-ClassDef *MemberDefImpl::getCachedTypedefVal() const
+const ClassDef *MemberDefImpl::getCachedTypedefVal() const
 {
   return m_impl->cachedTypedefValue;
 }
@@ -5908,7 +5908,7 @@ QCString MemberDefImpl::enumBaseType() const
 }
 
 
-void MemberDefImpl::cacheTypedefVal(ClassDef*val, const QCString & templSpec, const QCString &resolvedType)
+void MemberDefImpl::cacheTypedefVal(const ClassDef*val, const QCString & templSpec, const QCString &resolvedType)
 {
   m_impl->isTypedefValCached=TRUE;
   m_impl->cachedTypedefValue=val;

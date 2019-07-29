@@ -248,7 +248,7 @@ class MemberDef : virtual public Definition
 
     // cached typedef functions
     virtual bool isTypedefValCached() const = 0;
-    virtual ClassDef *getCachedTypedefVal() const = 0;
+    virtual const ClassDef *getCachedTypedefVal() const = 0;
     virtual QCString getCachedTypedefTemplSpec() const = 0;
     virtual QCString getCachedResolvedTypedef() const = 0;
 
@@ -357,7 +357,7 @@ class MemberDef : virtual public Definition
     virtual void setDocsForDefinition(bool b) = 0;
     virtual void setGroupAlias(const MemberDef *md) = 0;
 
-    virtual void cacheTypedefVal(ClassDef *val,const QCString &templSpec,const QCString &resolvedType) = 0;
+    virtual void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType) = 0;
     virtual void invalidateTypedefValCache() = 0;
 
     virtual void invalidateCachedArgumentTypes() = 0;

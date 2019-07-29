@@ -2070,7 +2070,7 @@ static void findUsingDeclarations(Entry *root)
                                 // vector -> std::vector
       if (usingCd==0)
       {
-        usingCd = getResolvedClass(nd,fd,name); // try via resolving (see also bug757509)
+        usingCd = const_cast<ClassDef*>(getResolvedClass(nd,fd,name)); // try via resolving (see also bug757509)
       }
       if (usingCd==0)
       {
@@ -2136,7 +2136,7 @@ static void findUsingDeclImports(Entry *root)
       {
         QCString scope=root->name.left(i);
         QCString memName=root->name.right(root->name.length()-i-2);
-        ClassDef *bcd = getResolvedClass(cd,0,scope); // todo: file in fileScope parameter
+        const ClassDef *bcd = getResolvedClass(cd,0,scope); // todo: file in fileScope parameter
         if (bcd)
         {
           //printf("found class %s memName=%s\n",bcd->name().data(),memName.data());
@@ -2328,7 +2328,8 @@ static MemberDef *addVariableToClass(
     {
       //printf("md->getClassDef()=%p cd=%p type=[%s] md->typeString()=[%s]\n",
       //    md->getClassDef(),cd,root->type.data(),md->typeString());
-      if (md->getClassDef()==cd &&
+      if (!md->isAlias() &&
+          md->getClassDef()==cd &&
           removeRedundantWhiteSpace(root->type)==md->typeString())
         // member already in the scope
       {
@@ -2556,7 +2557,7 @@ static MemberDef *addVariableToFile(
     MemberDef *md;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      if (
+      if (!md->isAlias() &&
           ((nd==0 && md->getNamespaceDef()==0 && md->getFileDef() &&
             root->fileName==md->getFileDef()->absFilePath()
            ) // both variable names in the same file
@@ -4229,11 +4230,11 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   FileDef *fd=cd->getFileDef();
   if (context && cd!=context)
   {
-    result = getResolvedClass(context,0,name,0,0,TRUE,TRUE);
+    result = const_cast<ClassDef*>(getResolvedClass(context,0,name,0,0,TRUE,TRUE));
   }
   if (result==0)
   {
-    result = getResolvedClass(cd,fd,name,0,0,TRUE,TRUE);
+    result = const_cast<ClassDef*>(getResolvedClass(cd,fd,name,0,0,TRUE,TRUE));
   }
   if (result==0) // try direct class, needed for namespaced classes imported via tag files (see bug624095)
   {
@@ -4301,7 +4302,7 @@ static void findUsedClassesForClass(Entry *root,
           while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec,root->lang)!=-1)
           {
             // find the type (if any) that matches usedClassName
-            ClassDef *typeCd = getResolvedClass(masterCd,
+            const ClassDef *typeCd = getResolvedClass(masterCd,
                 masterCd->getFileDef(),
                 usedClassName,
                 0,0,
@@ -4702,16 +4703,17 @@ static bool findClassRelation(
       //baseClassName=stripTemplateSpecifiersFromScope
       //                    (removeRedundantWhiteSpace(baseClassName),TRUE,
       //                    &stripped);
-      MemberDef *baseClassTypeDef=0;
+      const MemberDef *baseClassTypeDef=0;
       QCString templSpec;
-      ClassDef *baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
+      ClassDef *baseClass=const_cast<ClassDef*>(
+                                           getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
                                            cd->getFileDef(),
                                            baseClassName,
                                            &baseClassTypeDef,
                                            &templSpec,
                                            mode==Undocumented,
                                            TRUE
-                                          );
+                                          ));
       //printf("baseClassName=%s baseClass=%p cd=%p explicitGlobalScope=%d\n",
       //    baseClassName.data(),baseClass,cd,explicitGlobalScope);
       //printf("    scope=`%s' baseClassName=`%s' baseClass=%s templSpec=%s\n",
@@ -4762,14 +4764,15 @@ static bool findClassRelation(
           {
             templSpec=removeRedundantWhiteSpace(baseClassName.mid(i,e-i));
             baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
-            baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
-                cd->getFileDef(),
-                baseClassName,
-                &baseClassTypeDef,
-                0, //&templSpec,
-                mode==Undocumented,
-                TRUE
-                );
+            baseClass=const_cast<ClassDef*>(
+                getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
+                   cd->getFileDef(),
+                  baseClassName,
+                  &baseClassTypeDef,
+                  0, //&templSpec,
+                  mode==Undocumented,
+                  TRUE
+                  ));
             //printf("baseClass=%p -> baseClass=%s templSpec=%s\n",
             //      baseClass,baseClassName.data(),templSpec.data());
           }
@@ -4798,14 +4801,15 @@ static bool findClassRelation(
           QCString tmpTemplSpec;
           // replace any namespace aliases
           replaceNamespaceAliases(baseClassName,si);
-          baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
+          baseClass=const_cast<ClassDef*>(
+                                     getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
                                      cd->getFileDef(),
                                      baseClassName,
                                      &baseClassTypeDef,
                                      &tmpTemplSpec,
                                      mode==Undocumented,
                                      TRUE
-                                    );
+                                    ));
           found=baseClass!=0 && baseClass!=cd;
           if (found) templSpec = tmpTemplSpec;
         }
@@ -5477,10 +5481,10 @@ static void addMemberDocs(Entry *root,
 // find a class definition given the scope name and (optionally) a
 // template list specifier
 
-static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
+static const ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
                          const char *scopeName)
 {
-  ClassDef *tcd = getResolvedClass(nd,fd,scopeName,0,0,TRUE,TRUE);
+  const ClassDef *tcd = getResolvedClass(nd,fd,scopeName,0,0,TRUE,TRUE);
   return tcd;
 }
 
@@ -7331,7 +7335,7 @@ static void addEnumValuesToEnums(Entry *root)
         MemberDef *md;
         for (mni.toFirst(); (md=mni.current()) ; ++mni)  // for each enum in this list
         {
-          if (md->isEnumerate() && root->children())
+          if (!md->isAlias() && md->isEnumerate() && root->children())
           {
             //printf("   enum with %d children\n",root->children()->count());
             EntryListIterator eli(*root->children()); // for each enum value
@@ -8519,7 +8523,7 @@ static void flushCachedTemplateRelations()
     {
       if (fmd->isTypedefValCached())
       {
-        ClassDef *cd = fmd->getCachedTypedefVal();
+        const ClassDef *cd = fmd->getCachedTypedefVal();
         if (cd->isTemplate()) fmd->invalidateTypedefValCache();
       }
     }
@@ -8533,7 +8537,7 @@ static void flushCachedTemplateRelations()
     {
       if (fmd->isTypedefValCached())
       {
-        ClassDef *cd = fmd->getCachedTypedefVal();
+        const ClassDef *cd = fmd->getCachedTypedefVal();
         if (cd->isTemplate()) fmd->invalidateTypedefValCache();
       }
     }

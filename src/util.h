@@ -206,10 +206,10 @@ QCString resolveDefines(const char *n);
 
 ClassDef *getClass(const char *key);
 
-ClassDef *getResolvedClass(const Definition *scope,
+const ClassDef *getResolvedClass(const Definition *scope,
                            const FileDef *fileScope,
                            const char *key,
-                           MemberDef **pTypeDef=0,
+                           const MemberDef **pTypeDef=0,
                            QCString *pTemplSpec=0,
                            bool mayBeUnlinkable=FALSE,
                            bool mayBeHidden=FALSE,
@@ -397,10 +397,12 @@ MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope,
                                 const char *n);
 bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const char *n);
 
-ClassDef *newResolveTypedef(const FileDef *fileScope,MemberDef *md,
-                            MemberDef **pMemType=0,QCString *pTemplSpec=0,
-                            QCString *pResolvedType=0,
-                            ArgumentList *actTemplParams=0);
+const ClassDef *newResolveTypedef(const FileDef *fileScope,
+                                  const MemberDef *md,
+                                  const MemberDef **pMemType=0,
+                                  QCString *pTemplSpec=0,
+                                  QCString *pResolvedType=0,
+                                  ArgumentList *actTemplParams=0);
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 

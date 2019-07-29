@@ -77,10 +77,10 @@ class StringDict : public QDict<QCString>
 struct LookupInfo
 {
   LookupInfo() : classDef(0), typeDef(0) {}
-  LookupInfo(ClassDef *cd,MemberDef *td,QCString ts,QCString rt)
+  LookupInfo(const ClassDef *cd,const MemberDef *td,QCString ts,QCString rt)
     : classDef(cd), typeDef(td), templSpec(ts),resolvedType(rt) {}
-  ClassDef  *classDef;
-  MemberDef *typeDef;
+  const ClassDef  *classDef;
+  const MemberDef *typeDef;
   QCString   templSpec;
   QCString   resolvedType;
 };
