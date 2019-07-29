@@ -2032,12 +2032,17 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   int floatingIndex=0;
   if (strLen==0) return;
   // read a word from the text string
-  while ((newIndex=regExp.match(txtStr,index,&matchLen))!=-1 && 
-      (newIndex==0 || !(txtStr.at(newIndex-1)>='0' && txtStr.at(newIndex-1)<='9')) // avoid matching part of hex numbers
-      )
+  while ((newIndex=regExp.match(txtStr,index,&matchLen))!=-1)
   {
-    // add non-word part to the result
     floatingIndex+=newIndex-skipIndex+matchLen;
+    if (newIndex>0 && txtStr.at(newIndex-1)=='0') // ignore hex numbers (match x00 in 0x00)
+    {
+      out.writeString(txtStr.mid(skipIndex,newIndex+matchLen-skipIndex),keepSpaces);
+      skipIndex=index=newIndex+matchLen;
+      continue;
+    }
+
+    // add non-word part to the result
     bool insideString=FALSE; 
     int i;
     for (i=index;i<newIndex;i++) 
