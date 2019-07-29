@@ -798,7 +798,7 @@ class DocDotFile : public CompAccept<DocDotFile>
 {
   public:
     DocDotFile(DocNode *parent,const QCString &name,const QCString &context);
-    void parse();
+    bool parse();
     Kind kind() const          { return Kind_DotFile; }
     QCString name() const       { return m_name; }
     QCString file() const       { return m_file; }
@@ -821,7 +821,7 @@ class DocMscFile : public CompAccept<DocMscFile>
 {
   public:
     DocMscFile(DocNode *parent,const QCString &name,const QCString &context);
-    void parse();
+    bool parse();
     Kind kind() const          { return Kind_MscFile; }
     QCString name() const      { return m_name; }
     QCString file() const      { return m_file; }
@@ -844,7 +844,7 @@ class DocDiaFile : public CompAccept<DocDiaFile>
 {
   public:
     DocDiaFile(DocNode *parent,const QCString &name,const QCString &context);
-    void parse();
+    bool parse();
     Kind kind() const          { return Kind_DiaFile; }
     QCString name() const      { return m_name; }
     QCString file() const      { return m_file; }

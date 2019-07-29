@@ -2681,8 +2681,9 @@ DocDotFile::DocDotFile(DocNode *parent,const QCString &name,const QCString &cont
   m_parent = parent; 
 }
 
-void DocDotFile::parse()
+bool DocDotFile::parse()
 {
+  bool ok = false;
   defaultHandleTitleAndSize(CMD_DOTFILE,this,m_children,m_width,m_height);
 
   bool ambig;
@@ -2694,6 +2695,7 @@ void DocDotFile::parse()
   if (fd)
   {
     m_file = fd->absFilePath();
+    ok = true;
   }
   else if (ambig)
   {
@@ -2707,6 +2709,7 @@ void DocDotFile::parse()
     warn_doc_error(g_fileName,doctokenizerYYlineno,"included dot file %s is not found "
            "in any of the paths specified via DOTFILE_DIRS!",qPrint(m_name));
   }
+  return ok;
 }
 
 DocMscFile::DocMscFile(DocNode *parent,const QCString &name,const QCString &context) : 
@@ -2715,8 +2718,9 @@ DocMscFile::DocMscFile(DocNode *parent,const QCString &name,const QCString &cont
   m_parent = parent; 
 }
 
-void DocMscFile::parse()
+bool DocMscFile::parse()
 {
+  bool ok = false;
   defaultHandleTitleAndSize(CMD_MSCFILE,this,m_children,m_width,m_height);
 
   bool ambig;
@@ -2728,6 +2732,7 @@ void DocMscFile::parse()
   if (fd)
   {
     m_file = fd->absFilePath();
+    ok = true;
   }
   else if (ambig)
   {
@@ -2741,6 +2746,7 @@ void DocMscFile::parse()
     warn_doc_error(g_fileName,doctokenizerYYlineno,"included msc file %s is not found "
            "in any of the paths specified via MSCFILE_DIRS!",qPrint(m_name));
   }
+  return ok;
 }
 
 //---------------------------------------------------------------------------
@@ -2751,8 +2757,9 @@ DocDiaFile::DocDiaFile(DocNode *parent,const QCString &name,const QCString &cont
   m_parent = parent;
 }
 
-void DocDiaFile::parse()
+bool DocDiaFile::parse()
 {
+  bool ok = false;
   defaultHandleTitleAndSize(CMD_DIAFILE,this,m_children,m_width,m_height);
 
   bool ambig;
@@ -2764,6 +2771,7 @@ void DocDiaFile::parse()
   if (fd)
   {
     m_file = fd->absFilePath();
+    ok = true;
   }
   else if (ambig)
   {
@@ -2777,6 +2785,7 @@ void DocDiaFile::parse()
     warn_doc_error(g_fileName,doctokenizerYYlineno,"included dia file %s is not found "
            "in any of the paths specified via DIAFILE_DIRS!",qPrint(m_name));
   }
+  return ok;
 }
 
 //---------------------------------------------------------------------------
@@ -5029,8 +5038,14 @@ void DocPara::handleFile(const QCString &cmdName)
   }
   QCString name = g_token->name;
   T *df = new T(this,name,g_context);
-  m_children.append(df);
-  df->parse();
+  if (df->parse())
+  {
+    m_children.append(df);
+  }
+  else
+  {
+    delete df;
+  }
 }
 
 void DocPara::handleVhdlFlow()
