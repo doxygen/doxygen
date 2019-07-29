@@ -6797,54 +6797,55 @@ int DocSection::parse()
 
   //printf("m_level=%d <-> %d\n",m_level,Doxygen::subpageNestingLevel);
 
-  if (retval==RetVal_Subsection && m_level==Doxygen::subpageNestingLevel+1)
+  while (true)
   {
-    // then parse any number of nested sections
-    while (retval==RetVal_Subsection) // more sections follow
+    if (retval==RetVal_Subsection && m_level<=Doxygen::subpageNestingLevel+1)
     {
-      //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
-      DocSection *s=new DocSection(this,
-          QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-      m_children.append(s);
-      retval = s->parse();
+      // then parse any number of nested sections
+      while (retval==RetVal_Subsection) // more sections follow
+      {
+        //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
+        DocSection *s=new DocSection(this,
+            QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+        m_children.append(s);
+        retval = s->parse();
+      }
+      break;
     }
-  }
-  else if (retval==RetVal_Subsubsection && m_level==Doxygen::subpageNestingLevel+2)
-  {
-    // then parse any number of nested sections
-    while (retval==RetVal_Subsubsection) // more sections follow
+    else if (retval==RetVal_Subsubsection && m_level<=Doxygen::subpageNestingLevel+2)
     {
-      //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
-      DocSection *s=new DocSection(this,
-          QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-      m_children.append(s);
-      retval = s->parse();
+      if ((m_level<=1+Doxygen::subpageNestingLevel) && !QString(g_token->sectionId).startsWith("autotoc_md"))
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected subsubsection command found inside %s!",sectionLevelToName[m_level]);
+      // then parse any number of nested sections
+      while (retval==RetVal_Subsubsection) // more sections follow
+      {
+        //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
+        DocSection *s=new DocSection(this,
+            QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+        m_children.append(s);
+        retval = s->parse();
+      }
+      if (!(m_level<Doxygen::subpageNestingLevel+2 && retval == RetVal_Subsection)) break;
     }
-  }
-  else if (retval==RetVal_Paragraph && m_level==QMIN(5,Doxygen::subpageNestingLevel+3))
-  {
-    // then parse any number of nested sections
-    while (retval==RetVal_Paragraph) // more sections follow
+    else if (retval==RetVal_Paragraph && m_level<=QMIN(5,Doxygen::subpageNestingLevel+3))
     {
-      //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
-      DocSection *s=new DocSection(this,
-          QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-      m_children.append(s);
-      retval = s->parse();
+      if ((m_level<=2+Doxygen::subpageNestingLevel) && !QString(g_token->sectionId).startsWith("autotoc_md"))
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected paragraph command found inside %s!",sectionLevelToName[m_level]);
+      // then parse any number of nested sections
+      while (retval==RetVal_Paragraph) // more sections follow
+      {
+        //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
+        DocSection *s=new DocSection(this,
+            QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+        m_children.append(s);
+        retval = s->parse();
+      }
+      if (!(m_level<Doxygen::subpageNestingLevel+3 && (retval == RetVal_Subsection || retval == RetVal_Subsubsection))) break; 
     }
-  }
-  else if ((m_level<=1+Doxygen::subpageNestingLevel && retval==RetVal_Subsubsection) ||
-           (m_level<=2+Doxygen::subpageNestingLevel && retval==RetVal_Paragraph)
-          )
-  {
-    int level = (retval==RetVal_Subsubsection) ? 3 : 4;
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected %s "
-            "command found inside %s!",
-            sectionLevelToName[level],sectionLevelToName[m_level]);
-    retval=0; // stop parsing
-  }
-  else
-  {
+    else
+    {
+      break;
+    }
   }
 
   INTERNAL_ASSERT(retval==0 || 
@@ -6998,21 +6999,72 @@ void DocRoot::parse()
     {
       delete par;
     }
+    if (retval==RetVal_Paragraph)
+    {
+      if (!QString(g_token->sectionId).startsWith("autotoc_md"))
+         warn_doc_error(g_fileName,doctokenizerYYlineno,"found paragraph command outside of subsubsection context!");
+      while (retval==RetVal_Paragraph)
+      {
+        SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+        if (sec)
+        {
+          DocSection *s=new DocSection(this,
+              QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+          m_children.append(s);
+          retval = s->parse();
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid paragraph id `%s'; ignoring paragraph",qPrint(g_token->sectionId));
+          retval = 0;
+        }
+      }
+    }
+    if (retval==RetVal_Subsubsection)
+    {
+      if (!(QString(g_token->sectionId).startsWith("autotoc_md")))
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsubsection command outside of subsection context!");
+      while (retval==RetVal_Subsubsection)
+      {
+        SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+        if (sec)
+        {
+          DocSection *s=new DocSection(this,
+              QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+          m_children.append(s);
+          retval = s->parse();
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid subsubsection id `%s'; ignoring subsubsection",qPrint(g_token->sectionId));
+          retval = 0;
+        }
+      }
+    }
+    if (retval==RetVal_Subsection)
+    {
+      if (!(QString(g_token->sectionId).startsWith("autotoc_md")))
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsection command outside of section context!");
+      while (retval==RetVal_Subsection)
+      {
+        SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+        if (sec)
+        {
+          DocSection *s=new DocSection(this,
+              QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+          m_children.append(s);
+          retval = s->parse();
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid subsection id `%s'; ignoring subsection",qPrint(g_token->sectionId));
+          retval = 0;
+        }
+      }
+    }
     if (retval==TK_LISTITEM)
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid list item found");
-    }
-    else if (retval==RetVal_Subsection)
-    {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsection command outside of section context!");
-    }
-    else if (retval==RetVal_Subsubsection)
-    {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsubsection command outside of subsection context!");
-    }
-    else if (retval==RetVal_Paragraph)
-    {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"found paragraph command outside of subsubsection context!");
     }
     if (retval==RetVal_Internal)
     {
