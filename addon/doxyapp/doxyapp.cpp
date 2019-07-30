@@ -261,6 +261,8 @@ int main(int argc,char **argv)
 
   // setup the non-default configuration options
 
+  checkConfiguration();
+  adjustConfiguration();
   // we need a place to put intermediate files
   Config_getString(OUTPUT_DIRECTORY)="/tmp/doxygen"; 
   // disable html output
@@ -281,13 +283,12 @@ int main(int argc,char **argv)
   // Extract source browse information, needed 
   // to make doxygen gather the cross reference info
   Config_getBool(SOURCE_BROWSER)=TRUE;
+  // In case of a directory take all files on directory and its subdirectories
+  Config_getBool(RECURSIVE)=TRUE;
 
   // set the input
+  Config_getList(INPUT).clear();
   Config_getList(INPUT).append(argv[1]);
-
-  // check and finialize the configuration
-  checkConfiguration();
-  adjustConfiguration();
 
   // parse the files
   parseInput();

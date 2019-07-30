@@ -717,6 +717,10 @@ def main():
 		print("")
 		print("void ConfigValues::init()")
 		print("{")
+		print("  static bool first = TRUE;")
+		print("  if (!first) return;")
+		print("  first = FALSE;")
+		print("")
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
 				if (n.nodeName == "group"):
