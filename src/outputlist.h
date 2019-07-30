@@ -74,13 +74,12 @@ class OutputList : public OutputDocInterface
     // OutputDocInterface implementation
     //////////////////////////////////////////////////
 
-    bool generateDoc(const char *fileName,int startLine,
+    void generateDoc(const char *fileName,int startLine,
                      const Definition *ctx,const MemberDef *md,const QCString &docStr,
                      bool indexWords,bool isExample,const char *exampleName=0,
                      bool singleLine=FALSE,bool linkFromIndex=FALSE);
     void writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md);
-    bool parseText(const QCString &textStr);
-    
+    void parseText(const QCString &textStr);
 
     void startIndexSection(IndexSections is)
     { forall(&OutputGenerator::startIndexSection,is); }
