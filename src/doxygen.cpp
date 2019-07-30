@@ -10129,7 +10129,14 @@ static void devUsage()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2015\n\n",versionString);
+  if (strlen(getGitVersion()))
+  {
+    msg("Doxygen version %s (%s)\nCopyright Dimitri van Heesch 1997-2015\n\n",getVersion(),getGitVersion());
+  }
+  else
+  {
+    msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2015\n\n",getVersion());
+  }
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -10589,7 +10596,14 @@ void readConfiguration(int argc, char **argv)
         g_dumpSymbolMap = TRUE;
         break;
       case 'v':
-        msg("%s\n",versionString);
+        if (strlen(getGitVersion()))
+        {
+          msg("%s (%s)\n",getVersion(),getGitVersion());
+        }
+        else
+        {
+          msg("%s\n",getVersion());
+        }
         cleanUpDoxygen();
         exit(0);
         break;
@@ -10601,7 +10615,14 @@ void readConfiguration(int argc, char **argv)
         }
         else if (qstrcmp(&argv[optind][2],"version")==0)
         {
-          msg("%s\n",versionString);
+          if (strlen(getGitVersion()))
+          {
+            msg("%s (%s)\n",getVersion(),getGitVersion());
+          }
+          else
+          {
+            msg("%s\n",getVersion());
+          }
           cleanUpDoxygen();
           exit(0);
         }

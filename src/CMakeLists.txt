@@ -5,6 +5,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/libmd5
     ${CMAKE_SOURCE_DIR}/liblodepng
     ${CMAKE_SOURCE_DIR}/libmscgen
+    ${CMAKE_SOURCE_DIR}/libversion
     ${CMAKE_SOURCE_DIR}/vhdlparser
     ${CMAKE_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
@@ -31,12 +32,6 @@ CONTENT "#ifndef SETTINGS_H
 #endif" )
 set_source_files_properties(${GENERATED_SRC}/settings.h PROPERTIES GENERATED 1)
 
-
-# generate version.cpp
-file(GENERATE OUTPUT ${GENERATED_SRC}/version.cpp
-    CONTENT "char versionString[]=\"${VERSION}\";"
-)
-set_source_files_properties(${GENERATED_SRC}/version.cpp PROPERTIES GENERATED 1)
 
 # configvalues.h
 add_custom_command(
@@ -142,7 +137,6 @@ add_library(_doxygen STATIC
     ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/settings.h
     ${GENERATED_SRC}/layout_default.xml.h
-    ${GENERATED_SRC}/version.cpp
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/resources.cpp
@@ -286,6 +280,7 @@ target_link_libraries(doxygen
     md5
     lodepng
     mscgen
+    version
     vhdlparser
     ${SQLITE3_LIBRARIES}
     ${ICONV_LIBRARIES}

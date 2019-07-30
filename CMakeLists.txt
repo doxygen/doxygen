@@ -11,7 +11,7 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.2)
 project(doxygen)
 
 option(build_wizard    "Build the GUI frontend for doxygen." OFF)
@@ -155,6 +155,7 @@ endif()
 add_subdirectory(libmd5)
 add_subdirectory(liblodepng)
 add_subdirectory(libmscgen)
+add_subdirectory(libversion)
 add_subdirectory(qtools)
 add_subdirectory(vhdlparser)
 add_subdirectory(src)

@@ -30,6 +30,7 @@ endif()
 
 include_directories(
 	.
+        ${CMAKE_SOURCE_DIR}/libversion
 	${CMAKE_SOURCE_DIR}/src
 	${CMAKE_SOURCE_DIR}/qtools
 	${GENERATED_SRC}
@@ -57,8 +58,10 @@ CONTENT "#ifndef SETTINGS_H
 set_source_files_properties(${GENERATED_SRC_WIZARD}/settings.h PROPERTIES GENERATED 1)
 
 # generate version.cpp
-file(GENERATE OUTPUT ${GENERATED_SRC_WIZARD}/version.cpp
-    CONTENT "char versionString[]=\"${VERSION}\";"
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/version.py ${VERSION} > ${GENERATED_SRC_WIZARD}/version.cpp
+    DEPENDS ${CMAKE_SOURCE_DIR}/VERSION ${CMAKE_SOURCE_DIR}/src/version.py
+    OUTPUT ${GENERATED_SRC_WIZARD}/version.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/version.cpp PROPERTIES GENERATED 1)
 
@@ -93,7 +96,6 @@ inputstring.cpp
 inputint.cpp
 inputstrlist.cpp
 ${GENERATED_SRC_WIZARD}/settings.h
-${GENERATED_SRC_WIZARD}/version.cpp
 ${GENERATED_SRC_WIZARD}/config_doxyw.cpp
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
@@ -102,9 +104,9 @@ doxywizard.rc
 )
 
 if(Qt5Core_FOUND)
-  target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml)
+  target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml version)
 else()
-  target_link_libraries(doxywizard ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY})
+  target_link_libraries(doxywizard ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} version)
 endif()
 
 install(TARGETS doxywizard DESTINATION bin)
