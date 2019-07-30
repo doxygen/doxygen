@@ -2014,9 +2014,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <PHPUseAs>{ID}				{
   					  //printf("PHP: adding use as relation: %s->%s\n",yytext,aliasName.data());
-                                          Doxygen::namespaceAliasDict.insert(yytext,
-					       new QCString(removeRedundantWhiteSpace(
-						   substitute(aliasName,"\\","::"))));
+                                          if (!aliasName.isEmpty())
+                                          {
+                                            Doxygen::namespaceAliasDict.insert(yytext,
+					         new QCString(removeRedundantWhiteSpace(
+					  	   substitute(aliasName,"\\","::"))));
+                                          }
 					  aliasName.resize(0);
   					}
 <PHPUse,PHPUseAs>[,;]			{
