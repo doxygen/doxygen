@@ -3228,7 +3228,6 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   return parseMore;
 }
 
-
 static void handleGuard(const QCString &expr)
 {
   CondParser prs;
