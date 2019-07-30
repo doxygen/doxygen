@@ -423,9 +423,9 @@
       <xsd:element name="rtfonly" type="xsd:string" />
       <xsd:element name="latexonly" type="xsd:string" />
       <xsd:element name="image" type="docImageType" />
-      <xsd:element name="dot" type="docImgFileType" />
-      <xsd:element name="msc" type="docImgFileType" />
-      <xsd:element name="plantuml" type="xsd:string" />
+      <xsd:element name="dot" type="docImageType" />
+      <xsd:element name="msc" type="docImageType" />
+      <xsd:element name="plantuml" type="docImageType" />
       <xsd:element name="anchor" type="docAnchorType" />
       <xsd:element name="formula" type="docFormulaType" />
       <xsd:element name="ref" type="docRefTextType" />
@@ -456,9 +456,9 @@
       <xsd:element name="table" type="docTableType" />
       <xsd:element name="heading" type="docHeadingType" />
       <xsd:element name="image" type="docImageType" />
-      <xsd:element name="dotfile" type="docFileType" />
-      <xsd:element name="mscfile" type="docFileType" />
-      <xsd:element name="diafile" type="docFileType" />
+      <xsd:element name="dotfile" type="docImageType" />
+      <xsd:element name="mscfile" type="docImageType" />
+      <xsd:element name="diafile" type="docImageType" />
       <xsd:element name="toclist" type="docTocListType" />
       <xsd:element name="language" type="docLanguageType" />
       <xsd:element name="parameterlist" type="docParamListType" />
@@ -578,25 +578,12 @@
 
   <xsd:complexType name="docImageType" mixed="true">
     <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
-    <xsd:attribute name="type" type="DoxImageKind" /> 
-    <xsd:attribute name="name" type="xsd:string" /> 
-    <xsd:attribute name="width" type="xsd:string" /> 
-    <xsd:attribute name="height" type="xsd:string" /> 
-    <xsd:attribute name="inline" type="DoxBool" /> 
-  </xsd:complexType>
-
-  <xsd:complexType name="docFileType" mixed="true">
-    <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
-    <xsd:attribute name="name" type="xsd:string" /> 
-    <xsd:attribute name="width" type="xsd:string" /> 
-    <xsd:attribute name="height" type="xsd:string" /> 
-  </xsd:complexType>
-
-  <xsd:complexType name="docImgFileType" mixed="true">
-    <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
-    <xsd:attribute name="caption" type="xsd:string" /> 
-    <xsd:attribute name="width" type="xsd:string" /> 
-    <xsd:attribute name="height" type="xsd:string" /> 
+    <xsd:attribute name="type" type="DoxImageKind" use="optional"/>
+    <xsd:attribute name="name" type="xsd:string" use="optional"/>
+    <xsd:attribute name="width" type="xsd:string" use="optional"/>
+    <xsd:attribute name="height" type="xsd:string" use="optional"/>
+    <xsd:attribute name="inline" type="DoxBool" use="optional"/>
+    <xsd:attribute name="caption" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="docTocItemType" mixed="true">
