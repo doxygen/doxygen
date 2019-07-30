@@ -2849,7 +2849,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
    
-<FindMembers,FindFields>("//"([!/]?){B}*{CMD}"{")|("/*"([!*]?){B}*{CMD}"{")	{
+<FindMembers,FindFields>("//"([!/]){B}*{CMD}"{")|("/*"([!*]){B}*{CMD}"{")	{
   					  //handleGroupStartCommand(current->name);
                                           if (previous && previous->section==Entry::GROUPDOC_SEC)
 					  {
@@ -2901,7 +2901,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    }
 					  }
   					}
-<FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}"[^*]*"*/"	{
+<FindMembers,FindFields,ReadInitializer>"//"([!/]){B}*{CMD}"}".*|"/*"([!*]){B}*{CMD}"}"[^*]*"*/"	{
                                           bool insideEnum = YY_START==FindFields || (YY_START==ReadInitializer && lastInitializerContext==FindFields); // see bug746226
   					  Doxygen::docGroup.close(current,yyFileName,yyLineNr,insideEnum);
   					}
