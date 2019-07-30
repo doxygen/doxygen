@@ -10127,9 +10127,9 @@ static void devUsage()
 //----------------------------------------------------------------------------
 // print the usage of doxygen
 
-static void usage(const char *name)
+static void usage(const char *name,const char *versionString)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2015\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2019\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -10346,6 +10346,16 @@ static int computeIdealCacheParam(uint v)
 
 void readConfiguration(int argc, char **argv)
 {
+  QCString versionString;
+  if (strlen(getGitVersion())>0)
+  {
+    versionString = QCString(getVersion())+" ("+getGitVersion()+")";
+  }
+  else
+  {
+    versionString = getVersion();
+  }
+
   /**************************************************************************
    *             Handle arguments                                           *
    **************************************************************************/
@@ -10589,26 +10599,26 @@ void readConfiguration(int argc, char **argv)
         g_dumpSymbolMap = TRUE;
         break;
       case 'v':
-        msg("%s\n",versionString);
+        msg("%s\n",versionString.data());
         cleanUpDoxygen();
         exit(0);
         break;
       case '-':
         if (qstrcmp(&argv[optind][2],"help")==0)
         {
-          usage(argv[0]);
+          usage(argv[0],versionString);
           exit(0);
         }
         else if (qstrcmp(&argv[optind][2],"version")==0)
         {
-          msg("%s\n",versionString);
+          msg("%s\n",versionString.data());
           cleanUpDoxygen();
           exit(0);
         }
         else
         {
           err("Unknown option \"-%s\"\n",&argv[optind][1]);
-          usage(argv[0]);
+          usage(argv[0],versionString);
           exit(1);
         }
         break;
@@ -10624,12 +10634,12 @@ void readConfiguration(int argc, char **argv)
         break;
       case 'h':
       case '?':
-        usage(argv[0]);
+        usage(argv[0],versionString);
         exit(0);
         break;
       default:
         err("Unknown option \"-%c\"\n",argv[optind][1]);
-        usage(argv[0]);
+        usage(argv[0],versionString);
         exit(1);
     }
     optind++;
@@ -10659,7 +10669,7 @@ void readConfiguration(int argc, char **argv)
     else
     {
       err("Doxyfile not found and no input file specified!\n");
-      usage(argv[0]);
+      usage(argv[0],versionString);
       exit(1);
     }
   }
@@ -10673,7 +10683,7 @@ void readConfiguration(int argc, char **argv)
     else
     {
       err("configuration file %s not found!\n",argv[optind]);
-      usage(argv[0]);
+      usage(argv[0],versionString);
       exit(1);
     }
   }

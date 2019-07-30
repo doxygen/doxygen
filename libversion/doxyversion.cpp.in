@@ -1,0 +1,7 @@
+#include "version.h"
+
+char *getVersion(void)
+{
+  static char versionString[] = "@DOXYGEN_VERSION@";
+  return versionString;
+}
