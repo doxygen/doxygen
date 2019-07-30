@@ -32,7 +32,7 @@ class DocGroup
     void leaveFile(const char *fileName,int line);
     void enterCompound(const char *fileName,int line,const char *name);
     void leaveCompound(const char *,int,const char * /*name*/);
-    void open(Entry *e,const char *,int);
+    void open(Entry *e,const char *,int,bool implicit=false);
     void close(Entry *e,const char *fileName,int line,bool foundInline);
     void initGroupInfo(Entry *e);
     bool isEmpty() const;

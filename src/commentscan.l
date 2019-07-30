@@ -3195,7 +3195,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   if (current->section==Entry::MEMBERGRP_SEC &&
       Doxygen::docGroup.isEmpty()) // @name section but no group started yet
   {
-    Doxygen::docGroup.open(current,yyFileName,yyLineNr);
+    Doxygen::docGroup.open(current,yyFileName,yyLineNr,true);
   }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\noutput=[\n"

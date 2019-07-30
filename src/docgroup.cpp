@@ -90,9 +90,9 @@ int DocGroup::findExistingGroup(int &groupId,const MemberGroupInfo *info)
   return groupId;
 }
 
-void DocGroup::open(Entry *e,const char *,int)
+void DocGroup::open(Entry *e,const char *,int, bool implicit)
 {
-  m_openCount++;
+  if (!implicit) m_openCount++;
   //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%d\n",
   //  	e->name.data(),e->section,m_autoGroupStack.count());
   if (e->section==Entry::GROUPDOC_SEC) // auto group
