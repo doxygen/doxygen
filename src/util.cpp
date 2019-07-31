@@ -4564,6 +4564,10 @@ static bool getScopeDefs(const char *docScope,const char *scope,
     scopeName=scopeName.right(scopeName.length()-2);  
     explicitGlobalScope=TRUE;
   }
+  if (scopeName.isEmpty())
+  {
+    return FALSE;
+  }
 
   QCString docScopeName=docScope;
   int scopeOffset=explicitGlobalScope ? 0 : docScopeName.length();

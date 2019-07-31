@@ -614,6 +614,7 @@ PRE       [pP][rR][eE]
 CODE      [cC][oO][dD][eE]
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
+PHPUSEKW  ("public"|"private"|"protected")
 IDLATTR   ("["[^\]]*"]"){BN}*
 TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
@@ -867,12 +868,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <FindMembersPHP>.                       { // Non-PHP code text, ignore
 				        }
-<FindMembers>"?>"|"</script>"           { // PHP code end
-					  if (insidePHP)
-					    BEGIN( FindMembersPHP );
-					  else
-					    REJECT;
-                                        }
 <FindMembers>{PHPKW}			{ if (insidePHP)
 					    BEGIN( NextSemi );
 					  else
@@ -2012,6 +2007,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <PHPUseAs>{BN}+"as"{BN}+		{
   					  lineCount();
   					}
+<PHPUseAs>{PHPUSEKW}                    {
+                                        }
 <PHPUseAs>{ID}				{
   					  //printf("PHP: adding use as relation: %s->%s\n",yytext,aliasName.data());
                                           if (!aliasName.isEmpty())
@@ -2317,6 +2314,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <CopyHereDocEnd>\n			{ 
+                                          *pCopyHereDocGString += yytext;
+                                        }
+<CopyHereDocEnd>{ID}			{ 
                                           *pCopyHereDocGString += yytext;
                                         }
 <CopyHereDocEnd>.			{ 
@@ -5380,7 +5380,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           lineCount();
   				          //addToBody(yytext);
   					}
-<SkipCurly,SkipCurlyCpp>"<<<"	        {
+<SkipCurly,SkipCurlyCpp,ReadInitializer>"<<<"	        {
   					  if (!insidePHP) 
 					  {
 					    REJECT;
@@ -6885,7 +6885,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 
 
-  /* ------------ Generic rules -------------- */
 
 
 <SkipCxxComment>.*"\\\n"		{  // line continuation
@@ -6902,6 +6901,15 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  BEGIN( lastCContext ) ;
 					}
 <SkipComment>[^\*\n]+
+
+  /* ------------ Generic rules -------------- */
+
+<*>"?>"|"</script>"                     { // PHP code end
+					  if (insidePHP)
+					    BEGIN( FindMembersPHP );
+					  else
+					    REJECT;
+                                        }
 
 <*>"[["                                 { // C++11 attribute
                                           if (!insideCpp) REJECT;
