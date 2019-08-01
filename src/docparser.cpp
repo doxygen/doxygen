@@ -1869,6 +1869,7 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
   if (id.isEmpty())
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Empty anchor label");
+    return;
   }
 
   if (id.left(CiteConsts::anchorPrefix.length()) == CiteConsts::anchorPrefix) 
@@ -3193,7 +3194,7 @@ DocHtmlCaption::DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs)
   HtmlAttrib *opt;
   for (li.toFirst();(opt=li.current());++li)
   {
-    if (opt->name=="id") // interpret id attribute as an anchor
+    if (opt->name=="id" && !opt->value.isEmpty()) // interpret id attribute as an anchor
     {
       SectionInfo *sec = Doxygen::sectionDict->find(opt->value);
       if (sec)
@@ -7041,17 +7042,25 @@ void DocRoot::parse()
          warn_doc_error(g_fileName,doctokenizerYYlineno,"found paragraph command outside of subsubsection context!");
       while (retval==RetVal_Paragraph)
       {
-        SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
-        if (sec)
+        if (!g_token->sectionId.isEmpty())
         {
-          DocSection *s=new DocSection(this,
-              QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-          m_children.append(s);
-          retval = s->parse();
+          SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+          if (sec)
+          {
+            DocSection *s=new DocSection(this,
+                QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            m_children.append(s);
+            retval = s->parse();
+          }
+          else
+          {
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid paragraph id `%s'; ignoring paragraph",qPrint(g_token->sectionId));
+            retval = 0;
+          }
         }
         else
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid paragraph id `%s'; ignoring paragraph",qPrint(g_token->sectionId));
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing id for paragraph; ignoring paragraph");
           retval = 0;
         }
       }
@@ -7062,17 +7071,25 @@ void DocRoot::parse()
         warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsubsection command outside of subsection context!");
       while (retval==RetVal_Subsubsection)
       {
-        SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
-        if (sec)
+        if (!g_token->sectionId.isEmpty())
         {
-          DocSection *s=new DocSection(this,
-              QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-          m_children.append(s);
-          retval = s->parse();
+          SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+          if (sec)
+          {
+            DocSection *s=new DocSection(this,
+                QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            m_children.append(s);
+            retval = s->parse();
+          }
+          else
+          {
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid subsubsection id `%s'; ignoring subsubsection",qPrint(g_token->sectionId));
+            retval = 0;
+          }
         }
         else
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid subsubsection id `%s'; ignoring subsubsection",qPrint(g_token->sectionId));
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing id for subsubsection; ignoring subsubsection");
           retval = 0;
         }
       }
@@ -7083,17 +7100,25 @@ void DocRoot::parse()
         warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsection command outside of section context!");
       while (retval==RetVal_Subsection)
       {
-        SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
-        if (sec)
+        if (!g_token->sectionId.isEmpty())
         {
-          DocSection *s=new DocSection(this,
-              QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-          m_children.append(s);
-          retval = s->parse();
+          SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+          if (sec)
+          {
+            DocSection *s=new DocSection(this,
+                QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            m_children.append(s);
+            retval = s->parse();
+          }
+          else
+          {
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid subsection id `%s'; ignoring subsection",qPrint(g_token->sectionId));
+            retval = 0;
+          }
         }
         else
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid subsection id `%s'; ignoring subsection",qPrint(g_token->sectionId));
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing id for subsection; ignoring subsection");
           retval = 0;
         }
       }
@@ -7115,17 +7140,25 @@ void DocRoot::parse()
   // then parse any number of level1 sections
   while (retval==RetVal_Section)
   {
-    SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
-    if (sec)
+    if (!g_token->sectionId.isEmpty())
     {
-      DocSection *s=new DocSection(this,
-          QMIN(1+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-      m_children.append(s);
-      retval = s->parse();
+      SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+      if (sec)
+      {
+        DocSection *s=new DocSection(this,
+            QMIN(1+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+        m_children.append(s);
+        retval = s->parse();
+      }
+      else
+      {
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid section id `%s'; ignoring section",qPrint(g_token->sectionId));
+        retval = 0;
+      }
     }
     else
     {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid section id `%s'; ignoring section",qPrint(g_token->sectionId));
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing id for section; ignoring section");
       retval = 0;
     }
   }

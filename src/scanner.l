@@ -1143,9 +1143,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <ObjCReturnType>")"			{
   					  BEGIN( ObjCMethod );
   					}
-<ObjCParams>({ID})?":"			{ // Keyword of parameter
+<ObjCParams>({ID})?{BN}*":"		{ // Keyword of parameter
 					  QCString keyw = yytext;
-					  keyw=keyw.left(keyw.length()-1); // strip :
+					  keyw=keyw.left(keyw.length()-1).stripWhiteSpace(); // strip :
 					  if (keyw.isEmpty())
 					  {
 					    current->name += " :";

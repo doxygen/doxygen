@@ -1513,7 +1513,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	    {
 	      ctx->objectType = stripClassName(ctx->objectVar->typeString());
 	      //printf("        ctx->objectType=%p\n",ctx->objectType);
-	      if (ctx->objectType)
+	      if (ctx->objectType && !ctx->methodName.isEmpty())
 	      {
 		ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
 		//printf("          ctx->method=%p\n",ctx->method);
@@ -1525,7 +1525,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
       else // local variable
       {
 	//printf("  object is local variable\n");
-	if (cd!=VariableContext::dummyContext)
+	if (cd!=VariableContext::dummyContext && !ctx->methodName.isEmpty())
 	{
 	  ctx->method = cd->getMemberByName(ctx->methodName);
 	  //printf("   class=%p method=%p\n",cd,ctx->method);
@@ -1594,7 +1594,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	        {
 	          ctx->objectType = ctx->objectType->categoryOf();
 	        }
-	        if (ctx->objectType)
+	        if (ctx->objectType && !ctx->methodName.isEmpty())
 	        {
 	          ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
 	        }
@@ -1623,7 +1623,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 		    if (bclass->classDef->compoundType()!=ClassDef::Protocol)
 		    {
 		      ctx->objectType = bclass->classDef;
-		      if (ctx->objectType)
+		      if (ctx->objectType && !ctx->methodName.isEmpty())
 		      {
 			ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
 		      }
@@ -1701,7 +1701,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	      else
 	      {
 		ctx->objectType = stripClassName(ictx->method->typeString());
-		if (ctx->objectType)
+		if (ctx->objectType && !ctx->methodName.isEmpty())
 		{
 		  ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
 		}
