@@ -2,11 +2,11 @@
 class Memgrp_Test
 {
   public:
-    //@{
+    ///@{
     /** Same documentation for both members. Details */
     void func1InGroup1();
     void func2InGroup1();
-    //@}
+    ///@}
 
     /** Function without group. Details. */
     void ungroupedFunction();
