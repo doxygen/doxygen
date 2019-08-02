@@ -2545,7 +2545,7 @@ static bool handleName(const QCString &, const QCStringList &)
     BEGIN( NameParam );
     if (!Doxygen::docGroup.isEmpty()) // end of previous member group
     {
-      Doxygen::docGroup.close(current,yyFileName,yyLineNr,TRUE);
+      Doxygen::docGroup.close(current,yyFileName,yyLineNr,TRUE,true);
     }
   }
   return stop;

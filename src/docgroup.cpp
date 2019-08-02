@@ -119,15 +119,18 @@ void DocGroup::open(Entry *e,const char *,int, bool implicit)
   }
 }
 
-void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline)
+void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline,bool implicit)
 {
-  if (m_openCount < 1)
+  if (!implicit)
   {
-    warn(fileName,line,"unbalanced grouping commands");
-  }
-  else
-  {
-    m_openCount--;
+    if (m_openCount < 1)
+    {
+      warn(fileName,line,"unbalanced grouping commands");
+    }
+    else
+    {
+      m_openCount--;
+    }
   }
   //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) m_autoGroupStack=%d\n",
   //    e->name.data(),e->section,fileName,line,m_autoGroupStack.count());
