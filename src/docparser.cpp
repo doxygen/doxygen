@@ -475,7 +475,7 @@ static void checkArgumentName(const QCString &name)
 static void checkRetvalName(const QCString &name)
 {
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
-  if (g_memberDef==0) return; // not a member
+  if (g_memberDef==0 || name.isEmpty()) return; // not a member or no valid name
   if (g_retvalsFound.find(name))
   {
      warn_doc_error(g_memberDef->getDefFileName(),
