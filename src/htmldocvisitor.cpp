@@ -403,8 +403,14 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Strike:
       if (s->enable()) m_t << "<strike" << htmlAttribsToString(s->attribs()) << ">";      else m_t << "</strike>";
       break;
+    case DocStyleChange::Del:
+      if (s->enable()) m_t << "<del" << htmlAttribsToString(s->attribs()) << ">";      else m_t << "</del>";
+      break;
     case DocStyleChange::Underline:
       if (s->enable()) m_t << "<u" << htmlAttribsToString(s->attribs()) << ">";      else m_t << "</u>";
+      break;
+    case DocStyleChange::Ins:
+      if (s->enable()) m_t << "<ins" << htmlAttribsToString(s->attribs()) << ">";      else m_t << "</ins>";
       break;
     case DocStyleChange::Italic:
       if (s->enable()) m_t << "<em" << htmlAttribsToString(s->attribs()) << ">";     else m_t << "</em>";

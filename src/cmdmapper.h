@@ -179,6 +179,8 @@ enum HtmlTagType
   HTML_BLOCKQUOTE= 33,
   HTML_STRIKE    = 34,
   HTML_UNDERLINE = 35,
+  HTML_INS       = 36,
+  HTML_DEL       = 37,
 
   XML_CmdMask    = 0x100,
 

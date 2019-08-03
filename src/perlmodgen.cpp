@@ -640,7 +640,9 @@ void PerlModDocVisitor::visit(DocStyleChange *s)
   {
     case DocStyleChange::Bold:          style = "bold"; break;
     case DocStyleChange::Strike:        style = "strike"; break;
+    case DocStyleChange::Del:           style = "del"; break;
     case DocStyleChange::Underline:     style = "underline"; break;
+    case DocStyleChange::Ins:           style = "ins"; break;
     case DocStyleChange::Italic:        style = "italic"; break;
     case DocStyleChange::Code:          style = "code"; break;
     case DocStyleChange::Subscript:     style = "subscript"; break;

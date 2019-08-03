@@ -137,9 +137,11 @@ void ManDocVisitor::visit(DocStyleChange *s)
       m_firstCol=FALSE;
       break;
     case DocStyleChange::Strike:
+    case DocStyleChange::Del:
       /* not supported */
       break;
     case DocStyleChange::Underline: //underline is shown as emphasis
+    case DocStyleChange::Ins:
       if (s->enable()) m_t << "\\fI";     else m_t << "\\fP";
       m_firstCol=FALSE;
       break;
