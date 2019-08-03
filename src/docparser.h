@@ -382,7 +382,9 @@ class DocStyleChange : public DocNode
                  Span          = (1<<8),
                  Div           = (1<<9),
                  Strike        = (1<<10),
-                 Underline     = (1<<11)
+                 Underline     = (1<<11),
+                 Del           = (1<<12),
+                 Ins           = (1<<13)
                };
 
     DocStyleChange(DocNode *parent,uint position,Style s,bool enable,
