@@ -482,7 +482,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
   If the \c JAVADOC_BANNER tag is set to \c YES then doxygen
-  will interpret a line such as "/***************" as being the
+  will interpret a line such as \verbatim /***************\endverbatim as being the
   beginning of a Javadoc-style comment "banner". If set to \c NO, the
   Javadoc-style will behave just like regular comments and it will
   not be interpreted by doxygen.
