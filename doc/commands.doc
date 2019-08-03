@@ -849,7 +849,7 @@ Structural indicators
   This command turns a comment block into a header
   definition of a member group. The
   comment block should be followed by a
-  <code>//\@{ ... //\@}</code> block containing the
+  <code>///\@{ ... ///\@}</code> block containing the
   members of the group.
 
   See section \ref memgroup for an example.
