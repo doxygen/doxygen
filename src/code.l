@@ -268,7 +268,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
     QCString typeName(ltype.left(i));
     ClassDef* newDef = 0;
     QCString templateArgs(ltype.right(ltype.length() - i));
-    if (  
+    if ( !typeName.isEmpty() &&
          ( // look for class definitions inside the code block
 	   (varType=g_codeClassSDict->find(typeName)) ||
            // otherwise look for global class definitions
