@@ -1165,17 +1165,25 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
 
 static void handleParameterType(DocNode *parent,QList<DocNode> &children,const QCString &paramTypes)
 {
-  QCString name = g_token->name;
-  int p=0,i;
+  QCString name = g_token->name; // save token name
+  QCString name1;
+  int p=0,i,l,ii;
   while ((i=paramTypes.find('|',p))!=-1)
   {
-    g_token->name = paramTypes.mid(p,i-p);
+    name1 = paramTypes.mid(p,i-p);
+    ii=name1.find('[');
+    g_token->name=ii!=-1 ? name1.mid(0,ii) : name1; // take part without []
     handleLinkedWord(parent,children);
+    if (ii!=-1) children.append(new DocWord(parent,name1.mid(ii))); // add [] part
     p=i+1;
+    children.append(new DocSeparator(parent,"|"));
   }
-  g_token->name = paramTypes.mid(p);
+  name1 = paramTypes.mid(p);
+  ii=name1.find('[');
+  g_token->name=ii!=-1 ? name1.mid(0,ii) : name1;
   handleLinkedWord(parent,children);
-  g_token->name = name;
+  if (ii!=-1) children.append(new DocWord(parent,name1.mid(ii)));
+  g_token->name = name; // restore original token name
 }
 
 static DocInternalRef *handleInternalRef(DocNode *parent)

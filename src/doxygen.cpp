@@ -5911,7 +5911,7 @@ static void findMember(Entry *root,
   else
   {
     // extract information from the declarations
-    parseFuncDecl(funcDecl,root->lang==SrcLangExt_ObjC,scopeName,funcType,funcName,
+    parseFuncDecl(funcDecl,root->lang,scopeName,funcType,funcName,
                 funcArgs,funcTempList,exceptions
                );
   }

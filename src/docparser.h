@@ -141,7 +141,8 @@ class DocNode
                 Kind_VhdlFlow       = 50,
                 Kind_ParBlock       = 51,
                 Kind_DiaFile        = 52,
-                Kind_Emoji          = 53
+                Kind_Emoji          = 53,
+                Kind_Sep            = 54
               };
     /*! Creates a new node */
     DocNode() : m_parent(0), m_insidePre(FALSE) {}
@@ -514,6 +515,19 @@ class DocWhiteSpace : public DocNode
     Kind kind() const          { return Kind_WhiteSpace; }
     QCString chars() const     { return m_chars; }
     void accept(DocVisitor *v) { v->visit(this); }
+  private:
+    QCString  m_chars;
+};
+
+/** Node representing a separator */
+class DocSeparator : public DocNode
+{
+  public:
+    DocSeparator(DocNode *parent,const QCString &chars) :
+      m_chars(chars) { m_parent = parent; }
+    Kind kind() const          { return Kind_Sep; }
+    QCString chars() const     { return m_chars; }
+    void accept(DocVisitor *v) { }
   private:
     QCString  m_chars;
 };

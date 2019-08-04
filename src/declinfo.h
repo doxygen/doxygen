@@ -20,9 +20,10 @@
 
 #include <stdio.h>
 #include <qcstring.h>
+#include "types.h"
 
 extern void parseFuncDecl(const QCString &decl,
-                          bool objC,
+                          const SrcLangExt lang,
                           QCString &clName,
                           QCString &type,
                           QCString &name,

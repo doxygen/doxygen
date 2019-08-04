@@ -622,16 +622,24 @@ class PrintDocVisitor : public DocVisitor
       //const char *s;
       DocNode *param;
       printf("<parameters>");
-      for (sli.toFirst();(param=sli.current());++sli)
+      if (sli.count() > 0)
       {
         printf("<param>");
-        if (param->kind()==DocNode::Kind_Word)
+        for (sli.toFirst();(param=sli.current());++sli)
         {
-          visit((DocWord*)param); 
-        }
-        else if (param->kind()==DocNode::Kind_LinkedWord)
-        {
-          visit((DocLinkedWord*)param); 
+          if (param->kind()==DocNode::Kind_Word)
+          {
+            visit((DocWord*)param);
+          }
+          else if (param->kind()==DocNode::Kind_LinkedWord)
+          {
+            visit((DocLinkedWord*)param);
+          }
+          else if (param->kind()==DocNode::Kind_Sep)
+          {
+            printf("</param>");
+            printf("<param>");
+          }
         }
         printf("</param>");
       }

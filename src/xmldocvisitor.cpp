@@ -998,9 +998,9 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
     {
       QListIterator<DocNode> li(pl->paramTypes());
       DocNode *type;
+      m_t << "<parametertype>";
       for (li.toFirst();(type=li.current());++li)
       {
-        m_t << "<parametertype>";
         if (type->kind()==DocNode::Kind_Word)
         {
           visit((DocWord*)type); 
@@ -1009,8 +1009,13 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
         {
           visit((DocLinkedWord*)type); 
         }
-        m_t << "</parametertype>" << endl;
+        else if (type->kind()==DocNode::Kind_Sep)
+        {
+          m_t << "</parametertype>" << endl;
+          m_t << "<parametertype>";
+        }
       }
+      m_t << "</parametertype>" << endl;
     }
     m_t << "<parametername";
     if (pl->direction()!=DocParamSect::Unspecified)
