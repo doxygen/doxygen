@@ -539,22 +539,28 @@
 \newcommand{\Hypertarget}[1]{\Hy@raisedlink{\hypertarget{#1}{}}}
 
 % possibility to have sections etc. be within the margins
+% unfortunately had to copy part of book.cls and add \raggedright
 \makeatletter
-\newcommand{\doxysection}{\@ifstar{\doxysection@star}{\doxysection@nostar}}
-\newcommand{\doxysection@star}[1]{\begingroup\sloppy\raggedright\section*{#1}\endgroup}
-\newcommand{\doxysection@nostar}[1]{\begingroup\sloppy\raggedright\section{#1}\endgroup}
-\newcommand{\doxysubsection}{\@ifstar{\doxysubsection@star}{\doxysubsection@nostar}}
-\newcommand{\doxysubsection@star}[1]{\begingroup\sloppy\raggedright\subsection*{#1}\endgroup}
-\newcommand{\doxysubsection@nostar}[1]{\begingroup\sloppy\raggedright\subsection{#1}\endgroup}
-\newcommand{\doxysubsubsection}{\@ifstar{\doxysubsubsection@star}{\doxysubsubsection@nostar}}
-\newcommand{\doxysubsubsection@star}[1]{\begingroup\sloppy\raggedright\subsubsection*{#1}\endgroup}
-\newcommand{\doxysubsubsection@nostar}[1]{\begingroup\sloppy\raggedright\subsubsection{#1}\endgroup}
-\newcommand{\doxyparagraph}{\@ifstar{\doxyparagraph@star}{\doxyparagraph@nostar}}
-\newcommand{\doxyparagraph@star}[1]{\begingroup\sloppy\raggedright\paragraph*{#1}\endgroup}
-\newcommand{\doxyparagraph@nostar}[1]{\begingroup\sloppy\raggedright\paragraph{#1}\endgroup}
-\newcommand{\doxysubparagraph}{\@ifstar{\doxysubparagraph@star}{\doxysubparagraph@nostar}}
-\newcommand{\doxysubparagraph@star}[1]{\begingroup\sloppy\raggedright\subparagraph*{#1}\endgroup}
-\newcommand{\doxysubparagraph@nostar}[1]{\begingroup\sloppy\raggedright\subparagraph{#1}\endgroup}
+\newcommand\doxysection{\@startsection {section}{1}{\z@}%
+                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
+                                   {2.3ex \@plus.2ex}%
+                                   {\raggedright\normalfont\Large\bfseries}}
+\newcommand\doxysubsection{\@startsection{subsection}{2}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\large\bfseries}}
+\newcommand\doxysubsubsection{\@startsection{subsubsection}{3}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxyparagraph{\@startsection{paragraph}{4}{\z@}%
+                                    {3.25ex \@plus1ex \@minus.2ex}%
+                                    {-1em}%
+                                    {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubparagraph{\@startsection{subparagraph}{5}{\parindent}%
+                                       {3.25ex \@plus1ex \@minus .2ex}%
+                                       {-1em}%
+                                      {\raggedright\normalfont\normalsize\bfseries}}
 \makeatother
 % Define caption that is also suitable in a table
 \makeatletter
