@@ -812,6 +812,7 @@ static inline void setOutput(OutputContext ctx)
       }
       else
       {
+        if (!current->doc.isEmpty()) current->doc += "\n";
         pOutputString = &current->doc;
 	inContext = OutputDoc; // need to switch to detailed docs, see bug 631380
       }
@@ -3146,6 +3147,8 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   parseMore      = FALSE;
   inBody         = isInbody;
   outputXRef.resize(0);
+  if (!(isBrief || isAutoBriefOn))
+    if (!current->doc.isEmpty()) current->doc += "\n";
   setOutput( isBrief || isAutoBriefOn ? OutputBrief : OutputDoc );
   briefEndsAtDot = isAutoBriefOn;
   g_condCount    = 0;
