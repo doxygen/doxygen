@@ -7468,7 +7468,7 @@ bool CLanguageScanner::needsPreprocessing(const QCString &extension)
   SrcLangExt lang = getLanguageFromFileName(extension);
   return (SrcLangExt_Cpp == lang) ||
    !( fe==".java" || fe==".as"  || fe==".d"    || fe==".php" || 
-      fe==".php4" || fe==".inc" || fe==".phtml" 
+      fe==".php4" || fe==".inc" || fe==".phtml"|| fe==".php5"
     );
 }
 

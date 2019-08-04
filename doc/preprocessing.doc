@@ -264,6 +264,10 @@ preprocessing has been done (Hint: set <code>QUIET = YES</code> and
 <code>WARNINGS = NO</code> in the configuration file to disable any other 
 output).
 
+Note preprocessing is not done for all languages. Preprocesing is enabled for files
+that use the "C" scanner (with the exception of 'java', 'd' and 'php'), Fortran files
+(only in case the extension contains at least one upper case character) and vhdl files.
+
 \htmlonly
 Go to the <a href="autolink.html">next</a> section or return to the
  <a href="index.html">index</a>.
