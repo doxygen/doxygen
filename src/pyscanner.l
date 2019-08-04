@@ -95,12 +95,14 @@ static int              g_stringContext;
 static QGString *       g_copyString;
 static int              g_indent = 0;
 static int              g_curIndent = 0;
+static bool             g_importTuple;
 
 static QDict<QCString>  g_packageNameCache(257);
 
 static char             g_atomStart;
 static char             g_atomEnd;
 static int              g_atomCount;
+
 
 //static bool             g_insideConstructor;
 
@@ -230,6 +232,17 @@ static QCString findPackageScope(const char *fileName)
   return findPackageScopeFromPath(fi.dirPath(TRUE).data());
 }
 
+static void addFrom(bool all)
+{
+  QCString item=all ? g_packageName : g_packageName+"."+yytext;
+  current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
+  current->fileName = yyFileName; 
+  //printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
+  current->section=all ? Entry::USINGDIR_SEC : Entry::USINGDECL_SEC;
+  current_root->addSubEntry(current);
+  current = new Entry ;
+  initEntry();
+}
 //-----------------------------------------------------------------------------
 
 static void lineCount()
@@ -702,45 +715,45 @@ STARTDOCSYMS      "##"
 
 <FromModItem>{
   "*"		{ // import all
-                  QCString item=g_packageName;
-		  current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
-		  current->fileName = yyFileName; 
-		  //printf("Adding using directive: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
-		  current->section=Entry::USINGDIR_SEC;
-		  current_root->addSubEntry(current);
-		  current = new Entry ;
-		  initEntry();
+                  addFrom(TRUE);
                   BEGIN(Search);
     		}
   {IDENTIFIER}/{B}","{B} {
-                  QCString item=g_packageName+"."+yytext;
-		  current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
-		  current->fileName = yyFileName; 
-		  //printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
-		  current->section=Entry::USINGDECL_SEC;
-		  current_root->addSubEntry(current);
-		  current = new Entry ;
-		  initEntry();
+                  addFrom(FALSE);
 		}
+  {IDENTIFIER}/{B}")"
+                {
+                  g_importTuple=FALSE;
+                  addFrom(FALSE);
+                }
   {IDENTIFIER}  {
-                  QCString item=g_packageName+"."+yytext;
-		  current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
-		  current->fileName = yyFileName; 
-		  //printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
-		  current->section=Entry::USINGDECL_SEC;
-		  current_root->addSubEntry(current);
-		  current = new Entry ;
-		  initEntry();
-                  BEGIN(Search);
+                  addFrom(FALSE);
+                  if (!g_importTuple)
+                  {
+                    BEGIN(Search);
+                  }
 		}
   \n		{
                   incLineNr();
-                  BEGIN(Search);
+                  if (!g_importTuple)
+                  {
+                    BEGIN(Search);
+                  }
                 }
   {B}		{
 		}
-  ","		{ 
+  "("           {
+                  g_importTuple=TRUE;
+                }
+  ")"           {
+                  g_importTuple=FALSE;
+                  BEGIN(Search);
+                }
+  ","		{
   		}
+  "\\"{B}\n     { // line continuation
+                  incLineNr();
+                }
   .             {
                   unput(*yytext);
                   BEGIN(Search);
