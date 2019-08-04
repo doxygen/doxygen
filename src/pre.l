@@ -2094,7 +2094,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <ReadString>"//"|"/*"			{
   					  g_defArgsStr+=yytext;
   					}
-<ReadString>\\/\n			{ // line continuation
+<ReadString>\\/\r?\n			{ // line continuation
 					}
 <ReadString>\\.				{
   					  g_defArgsStr+=yytext;
