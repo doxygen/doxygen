@@ -1049,7 +1049,7 @@ D
   tcl.string_commentcodify = "";
   tcl.string_commentline = "";
   tcl.line_body1=yylineno;
-  tcl_command(-1,"");
+  tcl_command(-1,yytext);
 }
 <COMMAND>{ws}*; {
 D
