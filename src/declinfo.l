@@ -34,6 +34,7 @@
 #include "declinfo.h"
 #include "util.h"
 #include "message.h"
+#include "types.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -59,6 +60,7 @@ struct declinfoYY_state
      bool         funcTempListFound;
      QCString     exceptionString;
      bool         insideObjC;
+     bool         insidePHP;
 };
 
 static void addType(yyscan_t yyscanner);
@@ -100,13 +102,21 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				    yyextra->name += yytext;
 				  }
   				}
+<Start>([~!]{B}*)?{ID}{B}*"["{B}*"]" { // PHP
+  				  if (!yyextra->insidePHP)
+				  {
+				    REJECT;
+				  }
+  				  addTypeName(yyscanner);
+				  yyextra->name += removeRedundantWhiteSpace(yytext);
+  				}
 <Start>([~!]{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
                                         // the / was add to deal with multi-
                                         // dimensional C++ arrays like A[][15]
                                         // the leading ~ is for a destructor
                                         // the leading ! is for a C++/CLI finalizer (see bug 456475 and 635198)
   				  addTypeName(yyscanner);
-				  yyextra->name += yytext;
+				  yyextra->name += removeRedundantWhiteSpace(yytext);
   				}
 <Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
  				  if (!yyextra->scope.isEmpty())
@@ -240,7 +250,7 @@ static int yyread(char *buf,int max_size, yyscan_t yyscanner)
 static yyscan_t g_yyscanner;
 static struct declinfoYY_state g_declinfo_extra;
 
-void parseFuncDecl(const QCString &decl,bool objC,QCString &cl,QCString &t,
+void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCString &t,
                    QCString &n,QCString &a,QCString &ftl,QCString &exc)
 {
   if (decl.isEmpty())
@@ -260,7 +270,8 @@ void parseFuncDecl(const QCString &decl,bool objC,QCString &cl,QCString &t,
   yyextra->inputPosition      = 0;
   yyextra->classTempListFound = FALSE;
   yyextra->funcTempListFound  = FALSE;
-  yyextra->insideObjC = objC;
+  yyextra->insideObjC = lang==SrcLangExt_ObjC;
+  yyextra->insidePHP  = lang==SrcLangExt_PHP;
   yyextra->scope.resize(0);
   yyextra->className.resize(0);
   yyextra->classTempList.resize(0);

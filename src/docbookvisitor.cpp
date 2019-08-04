@@ -1433,11 +1433,9 @@ DB_VIS_C
   {
     QListIterator<DocNode> li(pl->paramTypes());
     DocNode *type;
-    bool first=TRUE;
     m_t << "                                <entry>";
     for (li.toFirst();(type=li.current());++li)
     {
-      if (!first) m_t << " | "; else first=FALSE;
       if (type->kind()==DocNode::Kind_Word)
       {
         visit((DocWord*)type);
@@ -1446,6 +1444,11 @@ DB_VIS_C
       {
         visit((DocLinkedWord*)type);
       }
+      else if (type->kind()==DocNode::Kind_Sep)
+      {
+        m_t << " " << ((DocSeparator *)type)->chars() << " ";
+      }
+
     }
     m_t << "                                </entry>";
   }
