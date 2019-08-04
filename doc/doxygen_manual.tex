@@ -66,12 +66,31 @@
 \usepackage{doxygen}
 \usepackage{manual}
 %%
+% unfortunately constructs like: 
+%   \renewcommand{\doxysection}[1]{\doxysubsection{##1}}
+% using values from book.cls (see also doxygen.sty) and redefining sections to correct level.
 \makeatletter
 \newenvironment{DoxygenSubAppendix}{%
-    \renewcommand{\doxysection}{\@ifstar{\doxysubsection@star}{\doxysubsection@nostar}}%
-    \renewcommand{\doxysubsection}{\@ifstar{\doxysubsubsection@star}{\doxysubsubsection@nostar}}
-    \renewcommand{\doxysubsubsection}{\@ifstar{\doxyparagraph@star}{\doxyparagraph@nostar}}
-    \renewcommand{\doxyparagraph}{\@ifstar{\doxysubparagraph@star}{\doxysubparagraph@nostar}}
+\renewcommand\doxysection{\@startsection{subsection}{2}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\large\bfseries}}
+\renewcommand\doxysubsection{\@startsection{subsubsection}{3}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\renewcommand\doxysubsubsection{\@startsection{paragraph}{4}{\z@}%
+                                    {3.25ex \@plus1ex \@minus.2ex}%
+                                    {-1em}%
+                                    {\raggedright\normalfont\normalsize\bfseries}}
+\renewcommand\doxyparagraph{\@startsection{subparagraph}{5}{\parindent}%
+                                       {3.25ex \@plus1ex \@minus .2ex}%
+                                       {-1em}%
+                                      {\raggedright\normalfont\normalsize\bfseries}}
+%%\renewcommand{\doxysection}[1]{\doxysubsection{##1}}
+%%\renewcommand{\doxysubsection}[1]{\doxysubsubsection{##1}}
+%%\renewcommand{\doxysubsubsection}[1]{\doxyparagraph{##1}}
+%%\renewcommand{\doxyparagraph}[1]{\doxysubparagraph{##1}}
 }{}
 \makeatother
 %%
