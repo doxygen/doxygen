@@ -48,7 +48,7 @@ class MemberTypeMap
       int *val = m_map.find(s.utf8());
       if (val==0) 
       {
-        debug(1,"Warning: `%s' is an invalid member type\n",s.data());
+        debug(1,"Warning: '%s' is an invalid member type\n",s.data());
         return IMember::Invalid;
       }
       else return (IMember::MemberKind)*val;
@@ -240,7 +240,7 @@ void MemberHandler::startMember(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
   m_kindString = attrib.value("kind");
-  //printf("startMember kindString=`%s'\n",m_kindString.data());
+  //printf("startMember kindString='%s'\n",m_kindString.data());
   m_kind = s_typeMap->map(m_kindString);
   m_id = attrib.value("id");
   m_protection = attrib.value("prot");
@@ -254,7 +254,7 @@ void MemberHandler::startMember(const QXmlAttributes& attrib)
   m_isReadable = attrib.value("readable")=="yes";
   m_isWritable = attrib.value("writable")=="yes";
 
-  debug(2,"member kind=`%s' id=`%s' prot=`%s' virt=`%s'\n",
+  debug(2,"member kind='%s' id='%s' prot='%s' virt='%s'\n",
       m_kindString.data(),m_id.data(),m_protection.data(),m_virtualness.data());
 }
 
@@ -262,7 +262,7 @@ void MemberHandler::startEnumValue(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
   m_kindString = "enumvalue";
-  //printf("startEnumValue kindString=`%s'\n",m_kindString.data());
+  //printf("startEnumValue kindString='%s'\n",m_kindString.data());
   m_kind = s_typeMap->map(m_kindString);
   m_id = attrib.value("id");
   m_protection = attrib.value("prot");
@@ -275,7 +275,7 @@ void MemberHandler::startEnumValue(const QXmlAttributes& attrib)
   m_isMutable = FALSE;
   m_isReadable = FALSE;
   m_isWritable = FALSE;
-  debug(2,"member kind=`%s' id=`%s' prot=`%s' virt=`%s'\n",
+  debug(2,"member kind='%s' id='%s' prot='%s' virt='%s'\n",
       m_kindString.data(),m_id.data(),m_protection.data(),m_virtualness.data());
 }
 
@@ -409,7 +409,7 @@ void MemberHandler::startName(const QXmlAttributes &)
 void MemberHandler::endName()
 {
   m_name = m_curString.stripWhiteSpace();
-  debug(2,"member name=`%s'\n",m_name.data());
+  debug(2,"member name='%s'\n",m_name.data());
 }
 
 void MemberHandler::startRead(const QXmlAttributes &)
@@ -420,7 +420,7 @@ void MemberHandler::startRead(const QXmlAttributes &)
 void MemberHandler::endRead()
 {
   m_read = m_curString.stripWhiteSpace();
-  debug(2,"member read=`%s'\n",m_read.data());
+  debug(2,"member read='%s'\n",m_read.data());
 }
 
 void MemberHandler::startWrite(const QXmlAttributes &)
@@ -431,7 +431,7 @@ void MemberHandler::startWrite(const QXmlAttributes &)
 void MemberHandler::endWrite()
 {
   m_write = m_curString.stripWhiteSpace();
-  debug(2,"member write=`%s'\n",m_write.data());
+  debug(2,"member write='%s'\n",m_write.data());
 }
 
 void MemberHandler::startDefinition(const QXmlAttributes&)

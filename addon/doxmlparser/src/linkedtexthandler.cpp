@@ -81,7 +81,7 @@ void LinkedTextHandler::end()
   if (!m_curString.isEmpty())
   {
     m_children.append(new LT_Text(m_curString));
-    debug(2,"LinkedTextHandler: add text `%s'\n",m_curString.data());
+    debug(2,"LinkedTextHandler: add text '%s'\n",m_curString.data());
     m_curString="";
   }
   m_parent->setDelegate(0);
@@ -92,7 +92,7 @@ void LinkedTextHandler::startRef(const QXmlAttributes& attrib)
   if (!m_curString.isEmpty())
   {
     m_children.append(new LT_Text(m_curString));
-    debug(2,"LinkedTextHandler: add text `%s'\n",m_curString.data());
+    debug(2,"LinkedTextHandler: add text '%s'\n",m_curString.data());
     m_curString="";
   }
   ASSERT(m_ref==0);
@@ -107,7 +107,7 @@ void LinkedTextHandler::endRef()
 {
   m_ref->setText(m_curString);
   m_children.append(m_ref);
-  debug(2,"LinkedTextHandler: add ref `%s'\n",m_ref->text()->latin1());
+  debug(2,"LinkedTextHandler: add ref '%s'\n",m_ref->text()->latin1());
   m_ref=0;
 }
 

@@ -106,7 +106,7 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
 
 void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,bool hideSuper)
 {
-  //printf("addHierarchy `%s' baseClasses=%d\n",cd->name().data(),cd->baseClasses()->count());
+  //printf("addHierarchy '%s' baseClasses=%d\n",cd->name().data(),cd->baseClasses()->count());
   if (cd->subClasses())
   {
     BaseClassListIterator bcli(*cd->subClasses());
@@ -114,11 +114,11 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,bool hideS
     for ( ; (bcd=bcli.current()) ; ++bcli )
     {
       ClassDef *bClass=bcd->classDef; 
-      //printf("  Trying sub class=`%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
+      //printf("  Trying sub class='%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
       if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
       {
         DotNode *bn;
-        //printf("  Node `%s' Found visible class=`%s'\n",n->label().data(),
+        //printf("  Node '%s' Found visible class='%s'\n",n->label().data(),
         //                                              bClass->name().data());
         if ((bn=m_usedNodes->find(bClass->name()))) // node already present 
         {

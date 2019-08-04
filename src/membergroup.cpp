@@ -59,7 +59,7 @@ MemberGroup::MemberGroup(const Definition *parent,
   m_docFile       = docFile;
   m_docLine       = docLine;
   m_xrefListItems = 0;
-  //printf("Member group docs=`%s'\n",doc.data());
+  //printf("Member group docs='%s'\n",doc.data());
 }
 
 MemberGroup::~MemberGroup()

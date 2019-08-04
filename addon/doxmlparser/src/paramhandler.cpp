@@ -103,25 +103,25 @@ void ParamHandler::startType(const QXmlAttributes& /*attrib*/)
 void ParamHandler::endDeclName()
 {
   m_declName = m_curString.stripWhiteSpace();
-  debug(2,"member declName=`%s'\n",m_declName.data());
+  debug(2,"member declName='%s'\n",m_declName.data());
 }
 
 void ParamHandler::endDefName()
 {
   m_defName = m_curString.stripWhiteSpace();
-  debug(2,"member defName=`%s'\n",m_defName.data());
+  debug(2,"member defName='%s'\n",m_defName.data());
 }
 
 void ParamHandler::endAttrib()
 {
   m_attrib = m_curString.stripWhiteSpace();
-  debug(2,"member attrib=`%s'\n",m_attrib.data());
+  debug(2,"member attrib='%s'\n",m_attrib.data());
 }
 
 void ParamHandler::endArray()
 {
   m_array = m_curString.stripWhiteSpace();
-  debug(2,"member array=`%s'\n",m_array.data());
+  debug(2,"member array='%s'\n",m_array.data());
 }
 
 void ParamHandler::startDefVal(const QXmlAttributes& /*attrib*/)

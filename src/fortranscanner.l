@@ -32,7 +32,7 @@
  *
  * - Do not like constructs like aa{BS} or {BS}bb. Should try to handle blank space
  * with separate rule?: It seems it is often necessary, because we may parse something like 
- * "functionA" or "MyInterface". So constructs like `(^|[ \t])interface({BS_}{ID})?/[ \t\n]'
+ * "functionA" or "MyInterface". So constructs like '(^|[ \t])interface({BS_}{ID})?/[ \t\n]'
  * are desired.
  *
  * - Must track yyLineNr when using REJECT, unput() or similar commands.

@@ -29,7 +29,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
     {
       const FileDef *bfd = ii->fileDef;
       QCString in = ii->includeName;
-      //printf(">>>> in=`%s' bfd=%p\n",ii->includeName.data(),bfd);
+      //printf(">>>> in='%s' bfd=%p\n",ii->includeName.data(),bfd);
       bool doc=TRUE,src=FALSE;
       if (bfd)
       {

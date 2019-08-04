@@ -1395,7 +1395,7 @@ class LayoutParser : public QXmlDefaultHandler
       }
       else
       {
-        err("Unexpected start tag `%s' found in scope='%s'!\n",
+        err("Unexpected start tag '%s' found in scope='%s'!\n",
             name.data(),m_scope.data());
       }
       return TRUE;

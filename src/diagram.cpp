@@ -1165,7 +1165,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
   t << "  /boxwidth boxwidth str stringwidth pop max def\n";
   t << "} def\n";
   t << "\n";
-  t << "/box % draws a box with text `arg1' at grid pos (arg2,arg3)\n";
+  t << "/box % draws a box with text 'arg1' at grid pos (arg2,arg3)\n";
   t << "{ gsave\n";
   t << "  2 setlinewidth\n";
   t << "  newpath\n";
@@ -1267,7 +1267,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
   t << "  stroke\n";
   t << "} def\n";
   t << "\n";
-  t << "/conn % connections the blocks from col `arg1' to `arg2' of row `arg3'\n";
+  t << "/conn % connections the blocks from col 'arg1' to 'arg2' of row 'arg3'\n";
   t << "{\n";
   t << "  /ys exch def\n";
   t << "  /xe exch def\n";
@@ -1337,7 +1337,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     QCString epstopdfArgs(4096);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    epsBaseName.data(),epsBaseName.data());
-    //printf("Converting eps using `%s'\n",epstopdfArgs.data());
+    //printf("Converting eps using '%s'\n",epstopdfArgs.data());
     portable_sysTimerStart();
     if (portable_system("epstopdf",epstopdfArgs)!=0)
     {

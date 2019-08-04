@@ -2832,7 +2832,7 @@ template<class T> class TemplateNodeCreator : public TemplateNode
         rootDir.setPath(QDir::currentDirPath());
         if (!rootDir.mkdir(outputDir))
         {
-          err("tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+          err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
 	      "exist and cannot be created\n",outputDir.data());
           return;
         }

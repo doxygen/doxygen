@@ -2677,7 +2677,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
   */
 <Define>{ID}				{
-  					  //printf("Define `%s' without args\n",yytext);
+  					  //printf("Define '%s' without args\n",yytext);
                                           if (insideCpp || insideObjC) 
                                           {
                                             current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
@@ -2948,7 +2948,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  BEGIN(GCopyCurly);
   					}
 <ReadInitializer>[;,]			{
-  					  //printf(">> initializer `%s' <<\n",current->initializer.data());
+  					  //printf(">> initializer '%s' <<\n",current->initializer.data());
                                           if (*yytext==';' && (current_root->spec&Entry::Enum))
 					  {
 					    current->fileName   = yyFileName;
@@ -3856,7 +3856,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
 <SkipRemainder>[^\n]*
 <FindFields>","				{
-					  //printf("adding `%s' `%s' `%s' to enum `%s' (mGrpId=%d)\n",
+					  //printf("adding '%s' '%s' '%s' to enum '%s' (mGrpId=%d)\n",
 					  //     current->type.data(), current->name.data(),
 					  //     current->args.data(), current_root->name.data(),current->mGrpId);
   					  if (!current->name.isEmpty())
@@ -4002,7 +4002,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             }
 					    QCString &cn = current->name;
 					    QCString rn = current_root->name.copy();
-					    //printf("cn=`%s' rn=`%s' isTypedef=%d\n",cn.data(),rn.data(),isTypedef);
+					    //printf("cn='%s' rn='%s' isTypedef=%d\n",cn.data(),rn.data(),isTypedef);
 					    if (!cn.isEmpty() && !rn.isEmpty())
 					    {
 					      prependScope();
@@ -4023,7 +4023,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					                // was: current->args.simplifyWhiteSpace();
   					      current->type = current->type.simplifyWhiteSpace();
   					      current->name = current->name.stripWhiteSpace();
-					      //printf("adding `%s' `%s' `%s' brief=%s insideObjC=%d %x\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data(),insideObjC,current->section);
+					      //printf("adding '%s' '%s' '%s' brief=%s insideObjC=%d %x\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data(),insideObjC,current->section);
 					      if (insideObjC && 
 						  ((current->spec&Entry::Interface) || (current->spec==Entry::Category))
 						 ) // method definition follows
@@ -4169,7 +4169,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  { 
 					    // see if the compound does not have a name or is inside another
 					    // anonymous compound. If so we insert a 
-					    // special `anonymous' variable.
+					    // special 'anonymous' variable.
 					    //Entry *p=current_root;
 					    Entry *p=current;
 					    while (p)
@@ -4177,7 +4177,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      // only look for class scopes, not namespace scopes
 					      if ((p->section & Entry::COMPOUND_MASK) && !p->name.isEmpty())
 					      {
-						//printf("Trying scope `%s'\n",p->name.data());
+						//printf("Trying scope '%s'\n",p->name.data());
 						int i=p->name.findRev("::");
 						int pi = (i==-1) ? 0 : i+2;
 						if (p->name.at(pi)=='@')
@@ -4262,7 +4262,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 						}
 					      }
 
-					      //printf("Add: type=`%s',name=`%s',args=`%s' brief=%s doc=%s\n",
+					      //printf("Add: type='%s',name='%s',args='%s' brief=%s doc=%s\n",
 					      //      varEntry->type.data(),varEntry->name.data(),
 					      //      varEntry->args.data(),varEntry->brief.data(),varEntry->doc.data());
 					      current_root->addSubEntry(varEntry);
@@ -4364,7 +4364,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <FuncPtr>.				{
-  					  //printf("error: FuncPtr `%c' unexpected at line %d of %s\n",*yytext,yyLineNr,yyFileName);
+  					  //printf("error: FuncPtr '%c' unexpected at line %d of %s\n",*yytext,yyLineNr,yyFileName);
   					}
 <FuncPtrOperator>"("{BN}*")"{BN}*/"("	{
   					  current->name += yytext;
@@ -4618,7 +4618,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  BEGIN( SkipCxxComment );
   					}
   */
-	/* `)' followed by a special comment */
+	/* ')' followed by a special comment */
 <ReadFuncArgType>")"{BN}*("/*"[*!]|"//"[/!])"<"	{
   					  lineCount();
                                           if (currentArgumentContext==DefineEnd)
@@ -5149,7 +5149,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    if (!current->type.isEmpty() &&
 						(!isFunction || current->type.left(8)=="typedef "))
 					    {
-					      //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
+					      //printf("Scanner.l: found in class variable: '%s' '%s' '%s'\n", current->type.data(),current->name.data(),current->args.data());
 					      if (isTypedef && current->type.left(8)!="typedef ")
 					      {
 						current->type.prepend("typedef ");
@@ -5158,14 +5158,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    }
 					    else	      
 					    {
-					      //printf("Scanner.l: found in class function: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
+					      //printf("Scanner.l: found in class function: '%s' '%s' '%s'\n", current->type.data(),current->name.data(),current->args.data());
 					      current->section = Entry::FUNCTION_SEC ;
 			                      current->proto = *yytext==';';
 					    }
 					  }
 					  else // a global function prototype or function variable
 					  {
-					    //printf("Scanner.l: prototype? type=`%s' name=`%s' args=`%s'\n",current->type.data(),current->name.data(),current->args.data());
+					    //printf("Scanner.l: prototype? type='%s' name='%s' args='%s'\n",current->type.data(),current->name.data(),current->args.data());
 					    if (!current->type.isEmpty() && 
 						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
 					    {
@@ -5183,7 +5183,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      current->proto = TRUE;
 					    }
 					  }
-					  //printf("Adding entry `%s'\n",current->name.data());
+					  //printf("Adding entry '%s'\n",current->name.data());
 					  if ( insidePHP)
 					  {
 					    if (findAndRemoveWord(current->type,"final"))
@@ -5591,7 +5591,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             current->name=current->name.left(current->name.length()-1).stripWhiteSpace();
                                             //printf("template class declaration for %s!\n",current->name.data());
 					    QCString rn = current_root->name.copy();
-					    //printf("cn=`%s' rn=`%s' isTypedef=%d\n",cn.data(),rn.data(),isTypedef);
+					    //printf("cn='%s' rn='%s' isTypedef=%d\n",cn.data(),rn.data(),isTypedef);
 					    if (!current->name.isEmpty() && !rn.isEmpty())
 					    {
 					      prependScope();
@@ -6807,7 +6807,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <DocCopyBlock><<EOF>>			{
   					  warn(yyFileName,yyLineNr,
-					      "reached end of file while inside a `%s' block!\n"
+					      "reached end of file while inside a '%s' block!\n"
 					      "The command that should end the block seems to be missing!\n",
 					      docBlockName.data());
   					  yyterminate();

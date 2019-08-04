@@ -183,7 +183,7 @@ void MemberList::countDecMembers()
                                      m_numDecMembers++;
                                      break;
         default:
-          err("Unknown member type found for member `%s'\n!",md->name().data());
+          err("Unknown member type found for member '%s'\n!",md->name().data());
       }
     }
   }
@@ -433,7 +433,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   MemberListIterator mli(*this);
   for ( ; (md=mli.current()); ++mli )
   {
-    //printf(">>> Member `%s' type=%d visible=%d\n",
+    //printf(">>> Member '%s' type=%d visible=%d\n",
     //    md->name().data(),md->memberType(),md->isBriefSectionVisible());
     if ((inheritedFrom==0 || !md->isReimplementedBy(inheritedFrom)) &&
         md->isBriefSectionVisible())
@@ -612,7 +612,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   if (ctx==0 && gd) ctx = gd;
   if (ctx==0 && fd) ctx = fd;
 
-  //printf("%p: MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d inheritedFrom=%p\n",
+  //printf("%p: MemberList::writeDeclaration(title='%s',subtitle='%s')=%d inheritedFrom=%p\n",
   //       this,title,subtitle,numDecMembers(),inheritedFrom);
 
   int num = numDecMembers();

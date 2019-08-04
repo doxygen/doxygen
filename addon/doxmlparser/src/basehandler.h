@@ -175,7 +175,7 @@ template<class T> class BaseHandler : public QXmlDefaultHandler,
                !m_fallBackHandler->handleStartElement(name,attrib)
               )
       {
-        debug(1,"line %d, col %d: found unexpected tag `%s', skipping until matching end tag\n",
+        debug(1,"line %d, col %d: found unexpected tag '%s', skipping until matching end tag\n",
             s_theLocator->lineNumber(),s_theLocator->columnNumber(),
             name.data());
         m_skipUntil = name;

@@ -51,7 +51,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,const QCString rel
     bool isRef = FALSE;
     int numBytes = f.readLine(buf,maxLineLen);
     buf[numBytes-1]='\0';
-    //printf("ReadLine `%s'\n",buf);
+    //printf("ReadLine '%s'\n",buf);
     if (qstrncmp(buf,"rect",4)==0)
     {
       // obtain the url and the coordinates in the order used by graphviz-1.5
