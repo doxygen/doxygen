@@ -812,6 +812,10 @@ static inline void setOutput(OutputContext ctx)
       }
       else
       {
+        if (!current->doc.isEmpty()) // when appending parts add a new line
+        {
+          current->doc += "\n";
+        }
         pOutputString = &current->doc;
 	inContext = OutputDoc; // need to switch to detailed docs, see bug 631380
       }
@@ -3146,6 +3150,10 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   parseMore      = FALSE;
   inBody         = isInbody;
   outputXRef.resize(0);
+  if (!isBrief && !isAutoBriefOn && !current->doc.isEmpty())
+  { // add newline separator between detailed comment blocks
+    current->doc += '\n';
+  }
   setOutput( isBrief || isAutoBriefOn ? OutputBrief : OutputDoc );
   briefEndsAtDot = isAutoBriefOn;
   g_condCount    = 0;
