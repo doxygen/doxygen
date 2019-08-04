@@ -51,7 +51,7 @@ void DumpDoc(IDoc *doc,int level)
   if (doc==0) return;
   QString indent;
   indent.fill(' ',level);
-  //printf("      doc node kind=`%d'\n",doc->kind());
+  //printf("      doc node kind='%d'\n",doc->kind());
   switch (doc->kind())
   {
     case IDoc::Para: 
@@ -73,7 +73,7 @@ void DumpDoc(IDoc *doc,int level)
       {
         IDocText *txt = dynamic_cast<IDocText*>(doc);
         ASSERT(txt!=0);
-        InPrint(("<text value=`%s' markup=%d headingLevel=%d/>\n",
+        InPrint(("<text value='%s' markup=%d headingLevel=%d/>\n",
               txt->text()->latin1(),txt->markup(),txt->headingLevel()));
       }
       break;
@@ -244,21 +244,21 @@ void DumpDoc(IDoc *doc,int level)
       {
         IDocULink *ul = dynamic_cast<IDocULink*>(doc);
         ASSERT(ul!=0);
-        InPrint(("<ulink url=`%s' text=`%s'/>\n",ul->url()->latin1(),ul->text()->latin1()));
+        InPrint(("<ulink url='%s' text='%s'/>\n",ul->url()->latin1(),ul->text()->latin1()));
       }
       break;
     case IDoc::EMail:
       {
         IDocEMail *em = dynamic_cast<IDocEMail*>(doc);
         ASSERT(em!=0);
-        InPrint(("<email address=`%s'/>\n",em->address()->latin1()));
+        InPrint(("<email address='%s'/>\n",em->address()->latin1()));
       }
       break;
     case IDoc::Link:
       {
         IDocLink *lk = dynamic_cast<IDocLink*>(doc);
         ASSERT(lk!=0);
-        InPrint(("<link refid=`%s' text=`%s'/>\n",lk->refId()->latin1(),lk->text()->latin1()));
+        InPrint(("<link refid='%s' text='%s'/>\n",lk->refId()->latin1(),lk->text()->latin1()));
       }
       break;
     case IDoc::ProgramListing:
@@ -280,7 +280,7 @@ void DumpDoc(IDoc *doc,int level)
       {
         IDocCodeLine *cl = dynamic_cast<IDocCodeLine*>(doc);
         ASSERT(cl!=0);
-        InPrint(("<codeline lineNumber=%d refId=`%s'>\n",cl->lineNumber(),cl->refId()->latin1()));
+        InPrint(("<codeline lineNumber=%d refId='%s'>\n",cl->lineNumber(),cl->refId()->latin1()));
         IDocIterator *cei = cl->codeElements();
         IDoc *ce;
         for (cei->toFirst();(ce=cei->current());cei->toNext())
@@ -310,35 +310,35 @@ void DumpDoc(IDoc *doc,int level)
       {
         IDocFormula *fm = dynamic_cast<IDocFormula*>(doc);
         ASSERT(fm!=0);
-        InPrint(("<formula id=`%s' text=`%s'/>\n",fm->id()->latin1(),fm->text()->latin1()));
+        InPrint(("<formula id='%s' text='%s'/>\n",fm->id()->latin1(),fm->text()->latin1()));
       }
       break;
     case IDoc::Image:
       {
         IDocImage *img = dynamic_cast<IDocImage*>(doc);
         ASSERT(img!=0);
-        InPrint(("<image name=`%s' caption=`%s'/>\n",img->name()->latin1(),img->caption()->latin1()));
+        InPrint(("<image name='%s' caption='%s'/>\n",img->name()->latin1(),img->caption()->latin1()));
       }
       break;
     case IDoc::DotFile:
       {
         IDocDotFile *df = dynamic_cast<IDocDotFile*>(doc);
         ASSERT(df!=0);
-        InPrint(("<dotfile name=`%s' caption=`%s'/>\n",df->name()->latin1(),df->caption()->latin1()));
+        InPrint(("<dotfile name='%s' caption='%s'/>\n",df->name()->latin1(),df->caption()->latin1()));
       }
       break;
     case IDoc::IndexEntry:
       {
         IDocIndexEntry *ie = dynamic_cast<IDocIndexEntry*>(doc);
         ASSERT(ie!=0);
-        InPrint(("<indexentry primary=`%s' secondary=`%s'/>\n",ie->primary()->latin1(),ie->secondary()->latin1()));
+        InPrint(("<indexentry primary='%s' secondary='%s'/>\n",ie->primary()->latin1(),ie->secondary()->latin1()));
       }
       break;
     case IDoc::Table:
       {
         IDocTable *tbl = dynamic_cast<IDocTable*>(doc);
         ASSERT(tbl!=0);
-        InPrint(("<table numcols=%d caption=`%s'>\n",tbl->numColumns(),tbl->caption()->latin1()));
+        InPrint(("<table numcols=%d caption='%s'>\n",tbl->numColumns(),tbl->caption()->latin1()));
         IDocIterator *ri = tbl->rows();
         IDoc *row;
         for (ri->toFirst();(row=ri->current());ri->toNext())
@@ -383,7 +383,7 @@ void DumpDoc(IDoc *doc,int level)
       {
         IDocSection *sec = dynamic_cast<IDocSection*>(doc);
         ASSERT(sec!=0);
-        InPrint(("<section id=`%s' level=%d>\n",
+        InPrint(("<section id='%s' level=%d>\n",
             sec->id()->latin1(),sec->level()));
         DumpDoc(sec->title(),level+1);
         IDocIterator *di = sec->paragraphs();
@@ -653,7 +653,7 @@ int main(int argc,char **argv)
             ILinkedTextIterator *lti = ev->initializer();
             QString init = linkedTextToString(lti);
             lti->release();
-            printf("      Enum value `%s' init=`%s'\n",
+            printf("      Enum value '%s' init='%s'\n",
                 ev->name()->latin1(),init.latin1());
           }
           evi->release();

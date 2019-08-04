@@ -384,7 +384,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unknown compound attribute `%s' found!",kind.data());
+        warn("Unknown compound attribute '%s' found!",kind.data());
         m_state = Invalid;
       }
       if (isObjC=="yes" && m_curClass)
@@ -412,7 +412,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InPackage:   m_tagFilePackages.append(m_curPackage); 
                           m_curPackage=0; break; 
         default:
-                          warn("tag `compound' was not expected!");
+                          warn("tag 'compound' was not expected!");
       }
     }
 
@@ -458,7 +458,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InNamespace: m_curNamespace->members.append(m_curMember); break;
         case InGroup:     m_curGroup->members.append(m_curMember); break;
         case InPackage:   m_curPackage->members.append(m_curMember); break;
-        default:   warn("Unexpected tag `member' found"); break; 
+        default:   warn("Unexpected tag 'member' found"); break; 
       }
     }
 
@@ -476,7 +476,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Found `enumvalue' tag outside of member tag");
+        warn("Found 'enumvalue' tag outside of member tag");
       }
     }
 
@@ -504,7 +504,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InMember:    m_curMember->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InPackage:   m_curPackage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InDir:       m_curDir->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
-        default:   warn("Unexpected tag `docanchor' found"); break; 
+        default:   warn("Unexpected tag 'docanchor' found"); break; 
       }
     }
 
@@ -517,7 +517,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InNamespace: m_curNamespace->classList.append(m_curString); break;
         case InGroup:     m_curGroup->classList.append(m_curString); break;
         case InPackage:   m_curPackage->classList.append(m_curString); break;
-        default:   warn("Unexpected tag `class' found"); break; 
+        default:   warn("Unexpected tag 'class' found"); break; 
       }
     }
 
@@ -528,7 +528,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InNamespace: m_curNamespace->classList.append(m_curString); break;
         case InFile:      m_curFile->namespaceList.append(m_curString); break;
         case InGroup:     m_curGroup->namespaceList.append(m_curString); break;
-        default:   warn("Unexpected tag `namespace' found"); break; 
+        default:   warn("Unexpected tag 'namespace' found"); break; 
       }
     }
 
@@ -538,7 +538,7 @@ class TagFileParser : public QXmlDefaultHandler
       {
         case InGroup:      m_curGroup->fileList.append(m_curString); break;
         case InDir:        m_curDir->fileList.append(m_curString); break;
-        default:   warn("Unexpected tag `file' found"); break; 
+        default:   warn("Unexpected tag 'file' found"); break; 
       }
     }
 
@@ -547,7 +547,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InGroup:      m_curGroup->fileList.append(m_curString); break;
-        default:   warn("Unexpected tag `page' found"); break; 
+        default:   warn("Unexpected tag 'page' found"); break; 
       }
     }
 
@@ -556,7 +556,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InDir:      m_curDir->subdirList.append(m_curString); break;
-        default:   warn("Unexpected tag `dir' found"); break; 
+        default:   warn("Unexpected tag 'dir' found"); break; 
       }
     }
 
@@ -580,7 +580,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `type' found");
+        warn("Unexpected tag 'type' found");
       }
     }
 
@@ -596,7 +596,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InDir:       m_curDir->name       = m_curString; break;
         case InMember:    m_curMember->name    = m_curString; break;
         case InPackage:   m_curPackage->name   = m_curString; break;
-        default: warn("Unexpected tag `name' found"); break; 
+        default: warn("Unexpected tag 'name' found"); break; 
       }
     }
 
@@ -630,7 +630,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `base' found");
+        warn("Unexpected tag 'base' found");
       }
     }
 
@@ -642,7 +642,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `base' found");
+        warn("Unexpected tag 'base' found");
       }
     }
 
@@ -659,7 +659,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `includes' found");
+        warn("Unexpected tag 'includes' found");
       }
       m_curString="";
     }
@@ -682,7 +682,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `templarg' found");
+        warn("Unexpected tag 'templarg' found");
       }
     }
 
@@ -697,7 +697,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InPage:      m_curPage->filename      = m_curString;    break;
         case InPackage:   m_curPackage->filename   = m_curString;    break;
         case InDir:       m_curDir->filename       = m_curString;    break;
-        default: warn("Unexpected tag `filename' found"); break; 
+        default: warn("Unexpected tag 'filename' found"); break; 
       }
     }
 
@@ -707,7 +707,7 @@ class TagFileParser : public QXmlDefaultHandler
       {
         case InFile:      m_curFile->path          = m_curString;    break;
         case InDir:       m_curDir->path           = m_curString;    break;
-        default: warn("Unexpected tag `path' found");     break; 
+        default: warn("Unexpected tag 'path' found");     break; 
       }
     }
     
@@ -723,7 +723,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `anchor' found");
+        warn("Unexpected tag 'anchor' found");
       }
     }
 
@@ -743,7 +743,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `clangid' found");
+        warn("Unexpected tag 'clangid' found");
       }
     }
 
@@ -757,7 +757,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `anchorfile' found");
+        warn("Unexpected tag 'anchorfile' found");
       }
     }
     
@@ -769,7 +769,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `arglist' found");
+        warn("Unexpected tag 'arglist' found");
       }
     }
     void endTitle()
@@ -778,7 +778,7 @@ class TagFileParser : public QXmlDefaultHandler
       {
         case InGroup:     m_curGroup->title     = m_curString;    break;
         case InPage:      m_curPage->title      = m_curString;    break;
-        default: warn("Unexpected tag `title' found"); break; 
+        default: warn("Unexpected tag 'title' found"); break; 
       }
     }
 
@@ -790,7 +790,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else
       {
-        warn("Unexpected tag `subgroup' found");
+        warn("Unexpected tag 'subgroup' found");
       }
     }
 
@@ -877,7 +877,7 @@ class TagFileParser : public QXmlDefaultHandler
     bool startElement( const QString&, const QString&, 
                        const QString&name, const QXmlAttributes& attrib )
     {
-      //printf("startElement `%s'\n",name.data());
+      //printf("startElement '%s'\n",name.data());
       StartElementHandler *handler = m_startElementHandlers[name.utf8()];
       if (handler)
       {
@@ -885,14 +885,14 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else 
       {
-        warn("Unknown tag `%s' found!",name.data());
+        warn("Unknown tag '%s' found!",name.data());
       }
       return TRUE;
     }
 
     bool endElement( const QString&, const QString&, const QString& name )
     {
-      //printf("endElement `%s'\n",name.data());
+      //printf("endElement '%s'\n",name.data());
       EndElementHandler *handler = m_endElementHandlers[name.utf8()];
       if (handler)
       {
@@ -900,7 +900,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
       else 
       {
-        warn("Unknown tag `%s' found!",name.data());
+        warn("Unknown tag '%s' found!",name.data());
       }
       return TRUE;
     }
@@ -986,8 +986,8 @@ void TagFileParser::dump()
   TagClassInfo *cd;
   for (;(cd=lci.current());++lci)
   {
-    msg("class `%s'\n",cd->name.data());
-    msg("  filename `%s'\n",cd->filename.data());
+    msg("class '%s'\n",cd->name.data());
+    msg("  filename '%s'\n",cd->filename.data());
     if (cd->bases)
     {
       QListIterator<BaseInfo> bii(*cd->bases);
@@ -1003,10 +1003,10 @@ void TagFileParser::dump()
     for (;(md=mci.current());++mci)
     {
       msg("  member:\n");
-      msg("    kind: `%s'\n",md->kind.data());
-      msg("    name: `%s'\n",md->name.data());
-      msg("    anchor: `%s'\n",md->anchor.data());
-      msg("    arglist: `%s'\n",md->arglist.data());
+      msg("    kind: '%s'\n",md->kind.data());
+      msg("    name: '%s'\n",md->name.data());
+      msg("    anchor: '%s'\n",md->anchor.data());
+      msg("    arglist: '%s'\n",md->arglist.data());
     }
   }
   //============== NAMESPACES
@@ -1014,8 +1014,8 @@ void TagFileParser::dump()
   TagNamespaceInfo *nd;
   for (;(nd=lni.current());++lni)
   {
-    msg("namespace `%s'\n",nd->name.data());
-    msg("  filename `%s'\n",nd->filename.data());
+    msg("namespace '%s'\n",nd->name.data());
+    msg("  filename '%s'\n",nd->filename.data());
     QCStringList::Iterator it;
     for ( it = nd->classList.begin(); 
         it != nd->classList.end(); ++it ) 
@@ -1028,10 +1028,10 @@ void TagFileParser::dump()
     for (;(md=mci.current());++mci)
     {
       msg("  member:\n");
-      msg("    kind: `%s'\n",md->kind.data());
-      msg("    name: `%s'\n",md->name.data());
-      msg("    anchor: `%s'\n",md->anchor.data());
-      msg("    arglist: `%s'\n",md->arglist.data());
+      msg("    kind: '%s'\n",md->kind.data());
+      msg("    name: '%s'\n",md->name.data());
+      msg("    anchor: '%s'\n",md->anchor.data());
+      msg("    arglist: '%s'\n",md->arglist.data());
     }
   }
   //============== FILES
@@ -1039,8 +1039,8 @@ void TagFileParser::dump()
   TagFileInfo *fd;
   for (;(fd=lfi.current());++lfi)
   {
-    msg("file `%s'\n",fd->name.data());
-    msg("  filename `%s'\n",fd->filename.data());
+    msg("file '%s'\n",fd->name.data());
+    msg("  filename '%s'\n",fd->filename.data());
     QCStringList::Iterator it;
     for ( it = fd->namespaceList.begin(); 
         it != fd->namespaceList.end(); ++it ) 
@@ -1058,10 +1058,10 @@ void TagFileParser::dump()
     for (;(md=mci.current());++mci)
     {
       msg("  member:\n");
-      msg("    kind: `%s'\n",md->kind.data());
-      msg("    name: `%s'\n",md->name.data());
-      msg("    anchor: `%s'\n",md->anchor.data());
-      msg("    arglist: `%s'\n",md->arglist.data());
+      msg("    kind: '%s'\n",md->kind.data());
+      msg("    name: '%s'\n",md->name.data());
+      msg("    anchor: '%s'\n",md->anchor.data());
+      msg("    arglist: '%s'\n",md->arglist.data());
     }
 
     QListIterator<TagIncludeInfo> mii(fd->includes);
@@ -1077,8 +1077,8 @@ void TagFileParser::dump()
   TagGroupInfo *gd;
   for (;(gd=lgi.current());++lgi)
   {
-    msg("group `%s'\n",gd->name.data());
-    msg("  filename `%s'\n",gd->filename.data());
+    msg("group '%s'\n",gd->name.data());
+    msg("  filename '%s'\n",gd->filename.data());
     QCStringList::Iterator it;
     for ( it = gd->namespaceList.begin(); 
         it != gd->namespaceList.end(); ++it ) 
@@ -1111,10 +1111,10 @@ void TagFileParser::dump()
     for (;(md=mci.current());++mci)
     {
       msg("  member:\n");
-      msg("    kind: `%s'\n",md->kind.data());
-      msg("    name: `%s'\n",md->name.data());
-      msg("    anchor: `%s'\n",md->anchor.data());
-      msg("    arglist: `%s'\n",md->arglist.data());
+      msg("    kind: '%s'\n",md->kind.data());
+      msg("    name: '%s'\n",md->name.data());
+      msg("    anchor: '%s'\n",md->anchor.data());
+      msg("    arglist: '%s'\n",md->arglist.data());
     }
   }
   //============== PAGES
@@ -1122,17 +1122,17 @@ void TagFileParser::dump()
   TagPageInfo *pd;
   for (;(pd=lpi.current());++lpi)
   {
-    msg("page `%s'\n",pd->name.data());
-    msg("  title `%s'\n",pd->title.data());
-    msg("  filename `%s'\n",pd->filename.data());
+    msg("page '%s'\n",pd->name.data());
+    msg("  title '%s'\n",pd->title.data());
+    msg("  filename '%s'\n",pd->filename.data());
   }
   //============== DIRS
   QListIterator<TagDirInfo> ldi(m_tagFileDirs);
   TagDirInfo *dd;
   for (;(dd=ldi.current());++ldi)
   {
-    msg("dir `%s'\n",dd->name.data());
-    msg("  path `%s'\n",dd->path.data());
+    msg("dir '%s'\n",dd->name.data());
+    msg("  path '%s'\n",dd->path.data());
     QCStringList::Iterator it;
     for ( it = dd->fileList.begin(); 
         it != dd->fileList.end(); ++it ) 
@@ -1527,7 +1527,7 @@ void TagFileParser::addIncludes()
           TagIncludeInfo *ii;
           for (;(ii=mii.current());++mii)
           {
-            //printf("ii->name=`%s'\n",ii->name.data());
+            //printf("ii->name='%s'\n",ii->name.data());
             FileName *ifn = Doxygen::inputNameDict->find(ii->name);
             ASSERT(ifn!=0);
             if (ifn)

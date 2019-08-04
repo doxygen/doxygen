@@ -124,7 +124,7 @@ bool parseconstexp(const char *fileName,int lineNr,const QCString &s)
   constexpYYrestart( yyin, yyscanner );
 
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
-  //printf("Expression: `%s'\n",s.data());
+  //printf("Expression: '%s'\n",s.data());
 
   constexpYYparse(yyscanner);
 

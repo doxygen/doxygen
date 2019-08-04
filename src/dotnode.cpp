@@ -907,7 +907,7 @@ void DotNode::renumberNodes(int &number)
 const DotNode *DotNode::findDocNode() const
 {
   if (!m_url.isEmpty()) return this;
-  //printf("findDocNode(): `%s'\n",m_label.data());
+  //printf("findDocNode(): '%s'\n",m_label.data());
   if (m_parents)
   {
     QListIterator<DotNode> dnli(*m_parents);

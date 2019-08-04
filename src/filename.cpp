@@ -70,7 +70,7 @@ void FileName::generateDiskNames()
           QCString path = fd->getPath();
           if (!fd->isReference())
           {
-            //printf("i=%d j=%d fd->path=`%s' fd->name=`%s'\n",i,j,fd->path.left(i).data(),fd->name().data());
+            //printf("i=%d j=%d fd->path='%s' fd->name='%s'\n",i,j,fd->path.left(i).data(),fd->name().data());
             if (i==(int)path.length())
             {
               //warning("Input file %s found multiple times!\n"

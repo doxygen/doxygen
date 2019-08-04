@@ -231,7 +231,7 @@ static void addToMap(const char *name,Definition *d)
   if (!vhdlOpt && index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty()) 
   {
-    //printf("******* adding symbol `%s' (%p)\n",symbolName.data(),d);
+    //printf("******* adding symbol '%s' (%p)\n",symbolName.data(),d);
     DefinitionIntf *di=Doxygen::symbolMap->find(symbolName);
     //printf("  addToMap(%p): looking for symbol %s: %p\n",d,symbolName.data(),di);
     if (di==0) // new Symbol
@@ -275,7 +275,7 @@ static void removeFromMap(Definition *d)
   QCString symbolName = d->_symbolName();
   if (!symbolName.isEmpty()) 
   {
-    //printf("******* removing symbol `%s' (%p)\n",symbolName.data(),d);
+    //printf("******* removing symbol '%s' (%p)\n",symbolName.data(),d);
     DefinitionIntf *di=Doxygen::symbolMap->find(symbolName);
     if (di)
     {
@@ -438,7 +438,7 @@ void DefinitionImpl::addSectionsToDefinition(QList<SectionInfo> *anchorList)
   SectionInfo *si;
   for (;(si=it.current());++it)
   {
-    //printf("Add section `%s' to definition `%s'\n",
+    //printf("Add section '%s' to definition '%s'\n",
     //    si->label.data(),name().data());
     SectionInfo *gsi=Doxygen::sectionDict->find(si->label);
     //printf("===== label=%s gsi=%p\n",si->label.data(),gsi);
@@ -594,7 +594,7 @@ void DefinitionImpl::_setDocumentation(const char *d,const char *docFile,int doc
   }
   if (!_docsAlreadyAdded(doc,m_impl->docSignatures))
   {
-    //printf("setting docs for %s: `%s'\n",name().data(),m_doc.data());
+    //printf("setting docs for %s: '%s'\n",name().data(),m_doc.data());
     if (m_impl->details==0)
     {
       m_impl->details = new DocInfo;
@@ -913,7 +913,7 @@ bool readCodeFragment(const char *fileName,
         int pc=0;
         while ((c=*p++)!='{' && c!=':' && c!=0)
         {
-          //printf("parsing char `%c'\n",c);
+          //printf("parsing char '%c'\n",c);
           if (c=='\n')
           {
             lineNr++,col=0;
@@ -1277,7 +1277,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName) const
       //    codeFragment.data(),m_impl->defFileExt.data());
       ParserInterface *pIntf = Doxygen::parserManager->getParser(m_impl->defFileExt);
       pIntf->resetCodeParserState();
-      //printf("Read:\n`%s'\n\n",codeFragment.data());
+      //printf("Read:\n'%s'\n\n",codeFragment.data());
       const MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = dynamic_cast <const MemberDef*>(this);
 

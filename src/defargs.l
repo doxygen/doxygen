@@ -367,7 +367,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    g_curArgTypeName=removeRedundantWhiteSpace(g_curArgTypeName);
 					    g_curArgDefValue=g_curArgDefValue.stripWhiteSpace();
-					    //printf("curArgType=`%s' curArgDefVal=`%s'\n",g_curArgTypeName.data(),g_curArgDefValue.data());
+					    //printf("curArgType='%s' curArgDefVal='%s'\n",g_curArgTypeName.data(),g_curArgDefValue.data());
 					    int l=g_curArgTypeName.length();
 					    if (l>0)
 					    {
@@ -447,7 +447,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      a->defval = g_curArgDefValue.copy();
 					      //printf("a->type=%s a->name=%s a->defval=\"%s\"\n",a->type.data(),a->name.data(),a->defval.data());
 					      a->docs   = g_curArgDocs.stripWhiteSpace();
-					      //printf("Argument `%s' `%s' adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());
+					      //printf("Argument '%s' '%s' adding docs='%s'\n",a->type.data(),a->name.data(),a->docs.data());
 					      g_argList->append(a);
 					    }
 					    g_curArgAttrib.resize(0);
@@ -479,7 +479,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    g_curArgTypeName+=" []";
 					    g_curArgArray.resize(0);
 					  }
-					  //printf("resolveName `%s'->`%s'\n",yytext,name.data());
+					  //printf("resolveName '%s'->'%s'\n",yytext,name.data());
   					  g_curArgTypeName+=name;
 					}
 <ReadFuncArgType,ReadFuncArgPtr>.	{ 

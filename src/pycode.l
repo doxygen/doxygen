@@ -376,7 +376,7 @@ static void startCodeLine()
       g_searchingForBody = TRUE;
       g_realScope = d->name().copy();
       g_classScope = d->name().copy();
-      //printf("Real scope: `%s'\n",g_realScope.data());
+      //printf("Real scope: '%s'\n",g_realScope.data());
       g_bodyCurlyCount = 0;
       QCString lineAnchor;
       lineAnchor.sprintf("l%05d",g_yyLineNr);
@@ -549,7 +549,7 @@ static bool getLinkInScope(const QCString &c,  // scope
   const FileDef      *fd = 0;
   const NamespaceDef *nd = 0;
   const GroupDef     *gd = 0;
-  //printf("Trying `%s'::`%s'\n",c.data(),m.data());
+  //printf("Trying '%s'::'%s'\n",c.data(),m.data());
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef) && 
       md->isLinkable())
   {
@@ -571,7 +571,7 @@ static bool getLinkInScope(const QCString &c,  // scope
       {
 	addDocCrossReference(g_currentMemberDef,const_cast<MemberDef*>(md));
       }
-      //printf("d->getReference()=`%s' d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
+      //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
      
       writeMultiLineCodeLink(ol,md, text ? text : memberText);
       addToSearchIndex(text ? text : memberText);
@@ -753,7 +753,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
     locScope=locFunc.left(i);
     locFunc=locFunc.right(locFunc.length()-i-2).stripWhiteSpace();
   }
-  //printf("generateFunctionLink(%s) classScope=`%s'\n",locFunc.data(),locScope.data());
+  //printf("generateFunctionLink(%s) classScope='%s'\n",locFunc.data(),locScope.data());
   if (!locScope.isEmpty() && (ccd=g_codeClassSDict[locScope]))
   {
     //printf("using classScope %s\n",g_classScope.data());

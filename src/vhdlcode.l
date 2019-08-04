@@ -347,7 +347,7 @@ static void writeWord(const char *word,const char* curr_class=0,bool classLink=F
 }// writeWord
 
 
-/*! write a code fragment `text' that may span multiple lines, inserting
+/*! write a code fragment 'text' that may span multiple lines, inserting
  * line numbers for each line.
  */
 static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE,bool comment=FALSE)

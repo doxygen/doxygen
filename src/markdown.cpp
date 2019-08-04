@@ -979,7 +979,7 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
       nl++;
     }
     else if (data[end]=='\'' && nb==1 && (end==size-1 || (end<size-1 && !isIdChar(end+1))))
-    { // look for quoted strings like `some word', but skip strings like `it's cool`
+    { // look for quoted strings like 'some word', but skip strings like `it's cool`
       QCString textFragment;
       convertStringFragment(textFragment,data+nb,end-nb);
       out.addStr("&lsquo;");
