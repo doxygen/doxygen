@@ -1581,6 +1581,7 @@ MemberDefImpl::MemberDefImpl(const char *df,int dl,int dc,
   //printf("MemberDefImpl::MemberDef(%s)\n",na);
   m_impl = new MemberDefImpl::IMPL;
   m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al,meta);
+  number_of_flowkw = 1;
   m_isLinkableCached    = 0;
   m_isConstructorCached = 0;
   m_isDestructorCached  = 0;
@@ -5968,6 +5969,16 @@ void MemberDefImpl::invalidateCachedArgumentTypes()
 {
   invalidateCachedTypesInArgumentList(m_impl->defArgList);
   invalidateCachedTypesInArgumentList(m_impl->declArgList);
+}
+
+void MemberDef::addFlowKeyWord()
+{
+  number_of_flowkw++;
+}
+
+int MemberDef::numberOfFlowKeyWords()
+{
+  return number_of_flowkw;
 }
 
 //----------------

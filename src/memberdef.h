@@ -183,6 +183,7 @@ class MemberDef : virtual public Definition
     virtual bool isSliceLocal() const = 0;
     virtual bool isConstExpr() const = 0;
 
+    int numberOfFlowKeyWords();
     // derived getters
     virtual bool isFriendToHide() const = 0;
     virtual bool isNotFriend() const = 0;
@@ -279,6 +280,8 @@ class MemberDef : virtual public Definition
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
+
+    void addFlowKeyWord();
 
     // set functions
     virtual void setMemberType(MemberType t) = 0;
@@ -404,6 +407,8 @@ class MemberDef : virtual public Definition
     virtual void writeLink(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                  bool onlyText=FALSE) const = 0;
+
+    int number_of_flowkw;
 
     // write helpers
     virtual void warnIfUndocumented() const = 0;
