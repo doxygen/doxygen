@@ -721,9 +721,7 @@ STARTDOCSYMS      "##"
   {IDENTIFIER}/{B}","{B} {
                   addFrom(FALSE);
 		}
-  {IDENTIFIER}/{B}")"
-                {
-                  g_importTuple=FALSE;
+  {IDENTIFIER}/{B}")" {
                   addFrom(FALSE);
                 }
   {IDENTIFIER}  {
