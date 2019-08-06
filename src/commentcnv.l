@@ -650,6 +650,7 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
+                                       g_nestingCount--;
                                        g_pythonDocString = FALSE;
 				       copyToOutput(yytext,(int)yyleng);
 				       BEGIN(Scan);
