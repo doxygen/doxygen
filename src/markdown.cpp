@@ -1982,7 +1982,7 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
     out.addStr(data,size);
     if (hasLineBreak(data,size))
     {
-      out.addStr("<br>");
+      out.addStr("<br>\n");
     }
   }
 }
