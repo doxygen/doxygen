@@ -340,6 +340,7 @@ PageDef *addRelatedPage(const char *name,
                        );
 
 QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore=FALSE);
+QCString unescapeCharsInString(const char *s);
 
 void addGroupListToTitle(OutputList &ol,const Definition *d);
 

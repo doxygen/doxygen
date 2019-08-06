@@ -1173,6 +1173,10 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                }
 
     {FLOWKW}                   {
+                                 if (g_currentMemberDef && g_currentMemberDef->isFunction())
+                                 {
+                                   g_currentMemberDef->incrementFlowKeyWordCount();
+                                 }
   		                 startFontClass("keywordflow");
   		                 codify(yytext);
 		                 endFontClass();
@@ -1210,6 +1214,10 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                        }
 
     {FLOWKW}                           {
+                                          if (g_currentMemberDef && g_currentMemberDef->isFunction())
+                                          {
+                                            g_currentMemberDef->incrementFlowKeyWordCount();
+                                          }
                                           startFontClass("keywordflow");
 					  codifyLines(yytext);
 		                          endFontClass();

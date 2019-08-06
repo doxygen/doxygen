@@ -182,6 +182,7 @@ class MemberDef : virtual public Definition
     virtual bool livesInsideEnum() const = 0;
     virtual bool isSliceLocal() const = 0;
     virtual bool isConstExpr() const = 0;
+    virtual int  numberOfFlowKeyWords() const = 0;
 
     // derived getters
     virtual bool isFriendToHide() const = 0;
@@ -280,6 +281,7 @@ class MemberDef : virtual public Definition
     // ----  setters -----
     //-----------------------------------------------------------------------------------
 
+
     // set functions
     virtual void setMemberType(MemberType t) = 0;
     virtual void setDefinition(const char *d) = 0;
@@ -299,12 +301,13 @@ class MemberDef : virtual public Definition
     virtual void setReadAccessor(const char *r) = 0;
     virtual void setWriteAccessor(const char *w) = 0;
     virtual void setTemplateSpecialization(bool b) = 0;
-    
+
     virtual void makeRelated() = 0;
     virtual void makeForeign() = 0;
     virtual void setInheritsDocsFrom(MemberDef *md) = 0;
     virtual void setTagInfo(TagInfo *i) = 0;
     virtual void setArgsString(const char *as) = 0;
+    virtual void incrementFlowKeyWordCount() = 0;
 
     // relation to other members
     virtual void setReimplements(MemberDef *md) = 0;
