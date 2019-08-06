@@ -5564,6 +5564,76 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
   return growBuf.get();
 }
 
+QCString unescapeCharsInString(const char *s)
+{
+  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  QCString result;
+  const char *p = s;
+  if (p)
+  {
+    char c;
+    while ((c=*p++))
+    {
+      if (c=='_') // 2 or 3 character escape
+      {
+        switch (*p)
+        {
+          case '_': result+=c;   p++; break; // __ -> '_'
+          case '1': result+=':'; p++; break; // _1 -> ':'
+          case '2': result+='/'; p++; break; // _2 -> '/'
+          case '3': result+='<'; p++; break; // _3 -> '<'
+          case '4': result+='>'; p++; break; // _4 -> '>'
+          case '5': result+='*'; p++; break; // _5 -> '*'
+          case '6': result+='&'; p++; break; // _6 -> '&'
+          case '7': result+='|'; p++; break; // _7 -> '|'
+          case '8': result+='.'; p++; break; // _8 -> '.'
+          case '9': result+='!'; p++; break; // _9 -> '!'
+          case '0': // 3 character escape
+             switch (*(p+1))
+             {
+               case '0': result+=','; p+=2; break; // _00 -> ','
+               case '1': result+=' '; p+=2; break; // _01 -> ' '
+               case '2': result+='{'; p+=2; break; // _02 -> '{'
+               case '3': result+='}'; p+=2; break; // _03 -> '}'
+               case '4': result+='?'; p+=2; break; // _04 -> '?'
+               case '5': result+='^'; p+=2; break; // _05 -> '^'
+               case '6': result+='%'; p+=2; break; // _06 -> '%'
+               case '7': result+='('; p+=2; break; // _07 -> '('
+               case '8': result+=')'; p+=2; break; // _08 -> ')'
+               case '9': result+='+'; p+=2; break; // _09 -> '+'
+               case 'a': result+='='; p+=2; break; // _0a -> '='
+               case 'b': result+='$'; p+=2; break; // _0b -> '$'
+               case 'c': result+='\\'; p+=2; break;// _0c -> '\'
+               case 'd': result+='@'; p+=2; break; // _0d -> '@'
+               case 'e': result+=']'; p+=2; break; // _0e -> ']'
+               case 'f': result+='['; p+=2; break; // _0f -> '['
+               default: // unknown escape, just pass underscore character as-is
+                 result+=c;
+                 break;
+             }
+             break;
+          default:
+            if (!caseSenseNames && c>='a' && c<='z') // lower to upper case escape, _a -> 'A'
+            {
+              result+=toupper(*p);
+              p++;
+            }
+            else // unknown escape, pass underscore character as-is
+            {
+              result+=c;
+            }
+            break;
+        }
+      }
+      else // normal character; pass as is
+      {
+        result+=c;
+      }
+    }
+  }
+  return result;
+}
+
 /*! This function determines the file name on disk of an item
  *  given its name, which could be a class name with template 
  *  arguments, so special characters need to be escaped.

@@ -750,6 +750,10 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           {
                                             if ((yy_my_start == 1) && ((yytext[0] == 'c') || (yytext[0] == 'C'))) YY_FTN_REJECT;
                                           }
+                                          if (g_currentMemberDef && g_currentMemberDef->isFunction())
+                                          {
+                                            g_currentMemberDef->incrementFlowKeyWordCount();
+                                          }
    					  /* font class is defined e.g. in doxygen.css */
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);

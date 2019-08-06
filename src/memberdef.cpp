@@ -174,6 +174,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual bool livesInsideEnum() const;
     virtual bool isSliceLocal() const;
     virtual bool isConstExpr() const;
+    virtual int  numberOfFlowKeyWords() const;
     virtual bool isFriendToHide() const;
     virtual bool isNotFriend() const;
     virtual bool isFunctionOrSignalSlot() const;
@@ -308,6 +309,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine);
     virtual void setInbodyDocumentation(const char *d,const char *inbodyFile,int inbodyLine);
     virtual void setHidden(bool b);
+    virtual void incrementFlowKeyWordCount();
     virtual void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                    bool inGroup, const ClassDef *inheritFrom=0,const char *inheritId=0) const;
@@ -605,6 +607,8 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { return getMdAlias()->isSliceLocal(); }
     virtual bool isConstExpr() const
     { return getMdAlias()->isConstExpr(); }
+    virtual int  numberOfFlowKeyWords() const
+    { return getMdAlias()->numberOfFlowKeyWords(); }
     virtual bool isFriendToHide() const
     { return getMdAlias()->isFriendToHide(); }
     virtual bool isNotFriend() const
@@ -820,6 +824,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual MemberDef *createTemplateInstanceMember(ArgumentList *formalArgs,
                ArgumentList *actualArgs) const
     { return getMdAlias()->createTemplateInstanceMember(formalArgs,actualArgs); }
+    virtual void incrementFlowKeyWordCount() {}
 
     virtual void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
@@ -1408,6 +1413,7 @@ class MemberDefImpl::IMPL
     QCString declFileName;
     int declLine;
     int declColumn;
+    int numberOfFlowKW;
 };
 
 MemberDefImpl::IMPL::IMPL() :
@@ -1423,7 +1429,8 @@ MemberDefImpl::IMPL::IMPL() :
     category(0),
     categoryRelation(0),
     declLine(-1),
-    declColumn(-1)
+    declColumn(-1),
+    numberOfFlowKW(0)
 {
 }
 
@@ -1581,7 +1588,6 @@ MemberDefImpl::MemberDefImpl(const char *df,int dl,int dc,
   //printf("MemberDefImpl::MemberDef(%s)\n",na);
   m_impl = new MemberDefImpl::IMPL;
   m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al,meta);
-  number_of_flowkw = 1;
   m_isLinkableCached    = 0;
   m_isConstructorCached = 0;
   m_isDestructorCached  = 0;
@@ -5971,14 +5977,14 @@ void MemberDefImpl::invalidateCachedArgumentTypes()
   invalidateCachedTypesInArgumentList(m_impl->declArgList);
 }
 
-void MemberDef::addFlowKeyWord()
+void MemberDefImpl::incrementFlowKeyWordCount()
 {
-  number_of_flowkw++;
+  m_impl->numberOfFlowKW++;
 }
 
-int MemberDef::numberOfFlowKeyWords()
+int MemberDefImpl::numberOfFlowKeyWords() const
 {
-  return number_of_flowkw;
+  return m_impl->numberOfFlowKW;
 }
 
 //----------------
