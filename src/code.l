@@ -3469,14 +3469,14 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <*>\n{B}*"/*@"[{}]			{ // remove one-line group marker
 					  if (Config_getBool(STRIP_CODE_COMMENTS))
   					  {
-					    g_lastSpecialCContext = YY_START;
+					    if (YY_START != RemoveSpecialCComment) g_lastSpecialCContext = YY_START;
 					    g_yyLineNr++;
 					    BEGIN(RemoveSpecialCComment);
 					  }
 					  else
 					  {
 					    // check is to prevent getting stuck in skipping C++ comments
-					    if (YY_START != SkipCxxComment)
+					    if (YY_START != SkipComment && YY_START != SkipCxxComment)
 					    {
   					      g_lastCContext = YY_START ;
 					    }
@@ -3501,13 +3501,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <*>^{B}*"/*@"[{}]			{ // remove multi-line group marker
 					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
-					    g_lastSpecialCContext = YY_START;
+					    if (YY_START != RemoveSpecialCComment) g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
 					  }
 					  else
 					  {
 					    // check is to prevent getting stuck in skipping C++ comments
-					    if (YY_START != SkipCxxComment)
+					    if (YY_START != SkipComment && YY_START != SkipCxxComment)
 					    {
   					      g_lastCContext = YY_START ;
 					    }
@@ -3552,14 +3552,14 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <*>\n{B}*"/*"[!*]/[^/*] 		{
 					  if (Config_getBool(STRIP_CODE_COMMENTS))
   					  {
-					    g_lastSpecialCContext = YY_START;
+					    if (YY_START != RemoveSpecialCComment) g_lastSpecialCContext = YY_START;
 					    g_yyLineNr++;
 					    BEGIN(RemoveSpecialCComment);
 					  }
 					  else
 					  {
 					    // check is to prevent getting stuck in skipping C++ comments
-					    if (YY_START != SkipCxxComment)
+					    if (YY_START != SkipComment && YY_START != SkipCxxComment)
 					    {
   					      g_lastCContext = YY_START ;
 					    }
@@ -3571,13 +3571,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <*>^{B}*"/**"[*]+/[^/]			{ // special C "banner" comment block at a new line
 					  if (Config_getBool(JAVADOC_BANNER) && Config_getBool(STRIP_CODE_COMMENTS))
 					  {
-					    g_lastSpecialCContext = YY_START;
+					    if (YY_START != RemoveSpecialCComment) g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
 					  }
 					  else
 					  {
 					    // check is to prevent getting stuck in skipping C++ comments
-					    if (YY_START != SkipCxxComment)
+					    if (YY_START != SkipComment && YY_START != SkipCxxComment)
 					    {
   					      g_lastCContext = YY_START ;
 					    }
@@ -3589,13 +3589,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <*>^{B}*"/*"[!*]/[^/*]			{ // special C comment block at a new line
 					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
-					    g_lastSpecialCContext = YY_START;
+					    if (YY_START != RemoveSpecialCComment) g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
 					  }
 					  else
 					  {
 					    // check is to prevent getting stuck in skipping C++ comments
-					    if (YY_START != SkipCxxComment)
+					    if (YY_START != SkipComment && YY_START != SkipCxxComment)
 					    {
   					      g_lastCContext = YY_START ;
 					    }
@@ -3608,13 +3608,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           if (YY_START==SkipString) REJECT;
 					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
-					    g_lastSpecialCContext = YY_START;
+					    if (YY_START != RemoveSpecialCComment) g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
 					  }
 					  else
 					  {
 					    // check is to prevent getting stuck in skipping C++ comments
-					    if (YY_START != SkipCxxComment)
+					    if (YY_START != SkipComment && YY_START != SkipCxxComment)
 					    {
   					      g_lastCContext = YY_START ;
 					    }
@@ -3639,7 +3639,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  startFontClass("comment");
   					  g_code->codify(yytext);
 					  // check is to prevent getting stuck in skipping C++ comments
-					  if (YY_START != SkipCxxComment)
+					  if (YY_START != SkipComment && YY_START != SkipCxxComment)
 					  {
   					    g_lastCContext = YY_START ;
 					  }
