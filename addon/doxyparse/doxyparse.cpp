@@ -477,6 +477,18 @@ int main(int argc,char **argv) {
   Config_getBool(CALL_GRAPH)=TRUE;
   // loop recursive over input files
   Config_getBool(RECURSIVE)=TRUE;
+  // add file extensions
+  Config_getList(FILE_PATTERNS).append("*.cc");
+  Config_getList(FILE_PATTERNS).append("*.cxx");
+  Config_getList(FILE_PATTERNS).append("*.cpp");
+  Config_getList(FILE_PATTERNS).append("*.java");
+  Config_getList(FILE_PATTERNS).append("*.py");
+  Config_getList(FILE_PATTERNS).append("*.pyw");
+  Config_getList(FILE_PATTERNS).append("*.cs");
+  Config_getList(FILE_PATTERNS).append("*.c");
+  Config_getList(FILE_PATTERNS).append("*.h");
+  Config_getList(FILE_PATTERNS).append("*.hh");
+  Config_getList(FILE_PATTERNS).append("*.hpp");
   // set the input
   Config_getList(INPUT).clear();
   for (int i = 1; i < argc; i++) {
