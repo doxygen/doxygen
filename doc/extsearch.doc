@@ -187,7 +187,7 @@ The next subsections describe these interfaces in more detail.
 \subsection extsearch_api_index Indexer input format
 
 The search data produced by doxygen follows the 
-<a href="https://wiki.apache.org/solr/UpdateXmlMessages">Solr XML index message</a>
+<a href="https://cwiki.apache.org/confluence/display/solr/UpdateXmlMessages">Solr XML index message</a>
 format.
 
 The input for the indexer is an XML file, which consists of one `<add>` tag containing 
