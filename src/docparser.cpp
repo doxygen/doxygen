@@ -4999,7 +4999,7 @@ void DocPara::handleImage(const QCString &cmdName)
 	{
           if (g_token->name.lower() != "inline")
           {
-            warn_doc_error(g_fileName,doctokenizerYYlineno,"currently only 'inline' suported as option of %s command",
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"currently only 'inline' supported as option of %s command",
               qPrint(saveCmdName));
           }
           else
