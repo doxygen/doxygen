@@ -139,7 +139,7 @@ has its own advantages and disadvantages:
 <h2>6. Qt Compressed Help</h2> 
    If you develop for or want to install the Qt application framework,
    you will get an application 
-   called <a href="http://doc.qt.io/archives/qt-4.8/assistant-manual.html">Qt assistant</a>. 
+   called <a href="https://doc.qt.io/archives/qt-4.8/assistant-manual.html">Qt assistant</a>. 
    This is a help viewer for Qt Compressed Help files (<code>.qch</code>).
 
    To enable this feature set \ref cfg_generate_qhp "GENERATE_QHP" to \c YES.
@@ -147,7 +147,7 @@ has its own advantages and disadvantages:
    \ref cfg_qhp_namespace "QHP_NAMESPACE", 
    \ref cfg_qhg_location "QHG_LOCATION", 
    \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER".
-   See <a href="http://doc.qt.io/archives/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
+   See <a href="https://doc.qt.io/archives/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
    for more info.
 
    Feature wise the Qt compressed help feature is comparable with the CHM 
