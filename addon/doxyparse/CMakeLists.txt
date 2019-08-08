@@ -23,7 +23,7 @@ qtools
 md5
 lodepng
 mscgen
-version
+doxygen_version
 doxycfg
 vhdlparser
 ${ICONV_LIBRARIES}

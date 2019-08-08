@@ -280,7 +280,7 @@ target_link_libraries(doxygen
     md5
     lodepng
     mscgen
-    version
+    doxygen_version
     vhdlparser
     ${SQLITE3_LIBRARIES}
     ${ICONV_LIBRARIES}

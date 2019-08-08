@@ -15,13 +15,13 @@ include_directories(
     .
 )
 
-add_library(version STATIC
+add_library(doxygen_version STATIC
     ${POST_CONFIGURE_DOXYGEN_VERSION_FILE}
     ${POST_CONFIGURE_GIT_VERSION_FILE}
 )
 
-add_dependencies( version check_git_repository )
-add_dependencies( version check_doxygen_version )
+add_dependencies( doxygen_version check_git_repository )
+add_dependencies( doxygen_version check_doxygen_version )
 
 set_source_files_properties(${POST_CONFIGURE_GIT_VERSION_FILE} PROPERTIES GENERATED 1)
 set_source_files_properties(${POST_CONFIGURE_DOXYGEN_VERSION_FILE} PROPERTIES GENERATED 1)
