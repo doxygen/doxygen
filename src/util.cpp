@@ -6754,6 +6754,8 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
   //printf("addRelatedPage(name=%s gd=%p)\n",name,gd);
   if ((pd=Doxygen::pageSDict->find(name)) && !tagInfo)
   {
+    warn(fileName,startLine,"multiple use of page label '%s', (other occurrence: %s, line: %d)",
+         name,pd->docFile().data(),pd->docLine());
     // append documentation block to the page.
     pd->setDocumentation(doc,fileName,startLine);
     //printf("Adding page docs '%s' pi=%p name=%s\n",doc.data(),pd,name);
