@@ -231,8 +231,11 @@
 <li>Properly handle empty TOC in XML output. [<a href="https://github.com/doxygen/doxygen/commit/cfe381e3ee55b8291faeea55fe3b67bb9e545d60">view</a>]</li>
 <li>Reduce code duplication when printing version string [<a href="https://github.com/doxygen/doxygen/commit/40f507bedff94e269f9c32c941f65ed82fc25a67">view</a>]</li>
 <li>Refactored Definition and derived classes such that they are abstract interfaces [<a href="https://github.com/doxygen/doxygen/commit/960bae7191faf07f142b1ae5b0038905d33e2b1f">view</a>]</li>
-<li>Regression #6836 URL contains $ sign on second run in map of images [<a href="https://github.com/doxygen/doxygen/commit/c637dede9ec30c2e35f19636edc0b3fd424b45e5">view</a>],
-<li>Regression on Definition and derived classes that are abstract interfaces [<a href="https://github.com/doxygen/doxygen/commit/9d83d43f0d8b7058e2f89371a6ab276c06ddaa47">view</a>]</li>
+<li>Regression #6836 URL contains $ sign on second run in map of images [<a
+href="https://github.com/doxygen/doxygen/commit/c637dede9ec30c2e35f19636edc0b3fd424b45e5">view</a>]</li>
+<li>Regression on Definition and derived classes that are abstract interfaces
+[<a
+href="https://github.com/doxygen/doxygen/commit/9d83d43f0d8b7058e2f89371a6ab276c06ddaa47">view</a>],
 [<a href="https://github.com/doxygen/doxygen/commit/3523e1f6fdf68ea51ac2f0faf18dd93a100e32f2">view</a>],
 [<a href="http://github.com/doxygen/doxygen/commit/ab76916ebd1c0edd7973976a14b173412e305808">view</a>]</li>
 <li>Regression: python file with comment caused &quot;Reached end of file while still inside a comment&quot; warning. [<a href="https://github.com/doxygen/doxygen/commit/f96507054f1af54bee57734ec3d9a25b821feb27">view</a>]</li>
@@ -334,7 +337,9 @@
 <li>updated test case to reflect new node numbering [<a href="https://github.com/doxygen/doxygen/commit/0e013c9df38e69e13547a2329398ee9e0b32af5b">view</a>]</li>
 <li>warning: Member func2InGroup1() (function) of class Memgrp_Test is not documented. [<a href="https://github.com/doxygen/doxygen/commit/b0a9f75cc1894e8261ec2e95fa171a5534a65328">view</a>]</li>
 <li>warning: More #endif&#39;s than #if&#39;s found. [<a href="https://github.com/doxygen/doxygen/commit/b840290ec8d4204cc00e7a3d45f4ccf6a654c8db">view</a>]</li>
-<li>warning: Reached end of file while still inside a (nested) comment. [<a href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887523c2e30">view</a>]</ul>
+<li>warning: Reached end of file while still inside a (nested) comment. [<a
+href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887523c2e30">view</a>]</li>
+</ul>
 <p>
 \endhtmlonly
 
