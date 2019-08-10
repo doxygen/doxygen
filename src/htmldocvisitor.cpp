@@ -263,6 +263,12 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
         result+="=\""+convertToXML(att->value)+"\"";
       }
     }
+    else if (att->name=="nowrap") // In XHTML, attribute minimization is forbidden, and the nowrap attribute must be defined as <td nowrap="nowrap">.
+    {
+        result+=" ";
+        result+=att->name;
+        result+="=\"nowrap\"";
+    }
   }
   return result;
 }
