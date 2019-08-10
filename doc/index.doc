@@ -71,6 +71,7 @@ The first part forms a user manual:
 <li>Section \ref markdown show the Markdown formatting supported by doxygen.
 <li>Section \ref lists shows how to create lists.
 <li>Section \ref grouping shows how to group things together. 
+<li>Section \ref tables shows how to insert tables in the documentation.
 <li>Section \ref formulas shows how to insert formulas in the documentation.
 <li>Section \ref diagrams describes the diagrams and graphs that doxygen can generate.
 <li>Section \ref preprocessing explains how doxygen deals with macro definitions.
