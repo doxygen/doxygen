@@ -27,17 +27,6 @@ else()
     # doxygen project variables are unknown so look for doxygen in PATH
     find_package(Doxygen)
 endif()
-#
-# set output directory for some extra HTML files
-#
-file(STRINGS Doxyfile DOXY_HTML_OUTPUT REGEX "HTML_OUTPUT.*")
-string(LENGTH "${DOXY_HTML_OUTPUT}" DOXY_HTML_OUTPUT_LEN)
-if (${DOXY_HTML_OUTPUT_LEN})
-  string(REGEX REPLACE ".*HTML_OUTPUT *= *\([^ ]*\)" "\\1" DOXY_HTML_OUTPUT ${DOXY_HTML_OUTPUT})
-else()
-  set(DOXY_HTML_OUTPUT "html")
-endif()
-set(PROJECT_BINARY_HTML_DIR ${PROJECT_BINARY_DIR}/${DOXY_HTML_OUTPUT}/)
 
 set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path where to install the documentation")
 set(DOC_FILES
@@ -96,7 +85,15 @@ set(DOC_FILES
         maintainers.txt
         translator.py
         smile.png
+        doxygen_logo.gif
+        doxygen_logo_low.gif
 )
+
+if (build_doc_chm)
+    set(DOC_FILES_CHM
+        Doxyfile_chm
+)
+endif ()
 file(GLOB LANG_FILES "${TOP}/src/translator_??.h")
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man
@@ -115,6 +112,15 @@ add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
     )
 set_source_files_properties(${PROJECT_BINARY_DIR}/doc/${f} PROPERTIES GENERATED 1)
 list(APPEND OUT_DOC_FILES "${PROJECT_BINARY_DIR}/doc/${f}")
+endforeach()
+
+foreach (f  ${DOC_FILES_CHM})
+add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc/
+    DEPENDS ${CMAKE_SOURCE_DIR}/doc/${f}
+    )
+set_source_files_properties(${PROJECT_BINARY_DIR}/doc/${f} PROPERTIES GENERATED 1)
+list(APPEND OUT_DOC_CHM_FILES "${PROJECT_BINARY_DIR}/doc/${f}")
 endforeach()
 
 configure_file(${CMAKE_SOURCE_DIR}/doc/manual.sty         ${PROJECT_BINARY_DIR}/doc/manual.sty)
@@ -165,8 +171,6 @@ add_custom_target(doxygen_pdf
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
 )
 add_custom_target(docs
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/doxygen_logo.gif      ${PROJECT_BINARY_HTML_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/doxygen_logo_low.gif  ${PROJECT_BINARY_HTML_DIR}
         DEPENDS ${PROJECT_BINARY_DIR}/man/doxygen.1
                 ${PROJECT_BINARY_DIR}/man/doxywizard.1
                 ${PROJECT_BINARY_DIR}/man/doxysearch.1
@@ -175,6 +179,29 @@ add_custom_target(docs
         VERBATIM
         )
 
+# return status of ${HTML_HELP_COMPILER} is not correct, so we have to do a trick with an "or" statement
+# output is redirected to "nul" as we are on windows no problem
+if (build_doc_chm)
+add_custom_target(docs_chm
+    COMMENT "Generating CHM documentation."
+    COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} HTML_HELP_COMPILER=${HTML_HELP_COMPILER} ${DOXYGEN_EXECUTABLE} Doxyfile_chm
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/html/examples ${PROJECT_BINARY_DIR}/chm/examples
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/chm/index.hhp ${PROJECT_BINARY_DIR}/chm/doxygen_manual.hhp
+    COMMAND ${CMAKE_COMMAND} -E echo "import os" > ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
+    COMMAND ${CMAKE_COMMAND} -E echo "for root, dirs, files in os.walk('examples'):" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
+    COMMAND ${CMAKE_COMMAND} -E echo "    for file in files:" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
+    COMMAND ${CMAKE_COMMAND} -E echo "        if file.endswith('.html') or file.endswith('.png') or file.endswith('.css') or file.endswith('.gif'):" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
+    COMMAND ${CMAKE_COMMAND} -E echo "            print(os.path.join(root, file))" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
+    COMMAND ${CMAKE_COMMAND} -E chdir  ${PROJECT_BINARY_DIR}/chm ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual.hhp
+    COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/chm "${HTML_HELP_COMPILER}" doxygen_manual.hhp || echo > nul
+        DEPENDS ${PROJECT_BINARY_DIR}/doc/language.doc ${PROJECT_BINARY_DIR}/doc/config.doc
+        DEPENDS ${OUT_DOC_FILES}
+        DEPENDS ${OUT_DOC_CHM_FILES}
+        DEPENDS examples
+        DEPENDS doxygen
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc/
+)
+endif ()
 ################################################################################
 install(FILES
         "${PROJECT_BINARY_DIR}/man/doxygen.1"
@@ -188,6 +215,13 @@ install(FILES
         "${PROJECT_BINARY_DIR}/latex/doxygen_manual.pdf"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"
 )
+
+if (build_doc_chm)
+install(FILES
+        "${PROJECT_BINARY_DIR}/chm/doxygen_manual.chm"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"
+)
+endif ()
 
 install(DIRECTORY
         "${PROJECT_BINARY_DIR}/html"
