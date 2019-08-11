@@ -222,7 +222,7 @@ static void handleHtmlTag()
     }
     startName=i;
     // search for end of name
-    while (i<(int)yyleng && !isspace((uchar)c) && c!='=') { c=tagText.at(++i); }
+    while (i<(int)yyleng && !isspace((uchar)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
     endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower(); 

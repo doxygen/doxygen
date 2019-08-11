@@ -1105,6 +1105,10 @@ DB_VIS_C
     {
       // just skip it
     }
+    else if (opt->name=="nowrap" && opt->value.isEmpty())
+    {
+      m_t << " " << opt->name << "='nowrap'";
+    }
     else
     {
       m_t << " " << opt->name << "='" << opt->value << "'";
