@@ -18,6 +18,7 @@
 #ifndef INDEX_H
 #define INDEX_H
 
+#include <utility>
 #include <qlist.h>
 #include <qcstring.h>
 
@@ -55,61 +56,17 @@ class IndexList : public IndexIntf
   private:
     QList<IndexIntf> m_intfs;
 
-    // --- foreach implementations for various number of arguments
-
-    void foreach(void (IndexIntf::*methodPtr)())
+    // For each index format we forward the method call.
+    // We use C++11 variadic templates and perfect forwarding to implement foreach() generically,
+    // and split the types of the methods from the arguments passed to allow implicit conversions.
+    template<class... Ts,class... As>
+    void foreach(void (IndexIntf::*methodPtr)(Ts...),As&&... args)
     {
       QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)();
-    }
-
-    template<typename A1>
-    void foreach(void (IndexIntf::*methodPtr)(A1),A1 a1)
-    {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1);
-    }
-
-    template<typename A1,typename A2,typename A3>
-    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3),A1 a1,A2 a2,A3 a3)
-    {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3);
-    }
-
-    template<typename A1,typename A2,typename A3,typename A4>
-    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4),A1 a1,A2 a2,A3 a3,A4 a4)
-    {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4);
-    }
-
-    template<typename A1,typename A2,typename A3,typename A4,typename A5>
-    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5)
-    {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5);
-    }
-
-    template<typename A1,typename A2,typename A3,typename A4,typename A5,typename A6>
-    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5,A6),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5,A6 a6)
-    {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6);
-    }
-
-    template<typename A1,typename A2,typename A3,typename A4,typename A5,typename A6,typename A7,typename A8>
-    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5,A6,A7,A8),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5,A6 a6,A7 a7,A8 a8)
-    {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6,a7,a8);
-    }
-
-    template<typename A1,typename A2,typename A3,typename A4,typename A5,typename A6,typename A7,typename A8,typename A9>
-    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5,A6,A7,A8,A9),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5,A6 a6,A7 a7,A8 a8,A9 a9)
-    {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6,a7,a8,a9);
+      for (li.toFirst();li.current();++li)
+      {
+        (li.current()->*methodPtr)(std::forward<As>(args)...);
+      }
     }
 
   public:
@@ -137,17 +94,15 @@ class IndexList : public IndexIntf
     void addContentsItem(bool isDir, const char *name, const char *ref, 
                          const char *file, const char *anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
                          const Definition *def=0)
-    { if (m_enabled) foreach<bool,const char *,const char *,const char *,const char*,bool,bool,const Definition *>
-             (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
+    { if (m_enabled) foreach(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
     void addIndexItem(const Definition *context,const MemberDef *md,const char *sectionAnchor=0,const char *title=0)
-    { if (m_enabled) foreach<const Definition *,const MemberDef *,const char *,const char *>
-             (&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
+    { if (m_enabled) foreach(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
     void addIndexFile(const char *name) 
-    { if (m_enabled) foreach<const char *>(&IndexIntf::addIndexFile,name); }
+    { if (m_enabled) foreach(&IndexIntf::addIndexFile,name); }
     void addImageFile(const char *name) 
-    { if (m_enabled) foreach<const char *>(&IndexIntf::addImageFile,name); }
+    { if (m_enabled) foreach(&IndexIntf::addImageFile,name); }
     void addStyleSheetFile(const char *name) 
-    { if (m_enabled) foreach<const char *>(&IndexIntf::addStyleSheetFile,name); }
+    { if (m_enabled) foreach(&IndexIntf::addStyleSheetFile,name); }
 
   private:
     bool m_enabled;

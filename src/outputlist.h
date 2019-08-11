@@ -18,6 +18,7 @@
 #ifndef OUTPUTLIST_H
 #define OUTPUTLIST_H
 
+#include <utility>
 #include <qlist.h>
 #include "index.h" // for IndexSections
 #include "outputgen.h"
@@ -109,8 +110,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startTitle); }
     void endTitle() 
     { forall(&OutputGenerator::endTitle); }
-    //void newParagraph() 
-    //{ forall(&OutputGenerator::newParagraph); }
     void startParagraph(const char *classDef=0)
     { forall(&OutputGenerator::startParagraph,classDef); }
     void endParagraph() 
@@ -176,8 +175,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startGroupHeader,extraLevels); }
     void endGroupHeader(int extraLevels=0)
     { forall(&OutputGenerator::endGroupHeader,extraLevels); }
-    //void writeListItem() 
-    //{ forall(&OutputGenerator::writeListItem); }
     void startItemListItem() 
     { forall(&OutputGenerator::startItemListItem); }
     void endItemListItem() 
@@ -492,70 +489,28 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::addWord,word,hiPriority); }
 
     void startPlainFile(const char *name)
-    {
-      QListIterator<OutputGenerator> it(m_outputs);
-      OutputGenerator *og;
-      for (;(og=it.current());++it)
-      {
-        if (og->isEnabled()) (og->startPlainFile)(name);
-      }
-    }
+    { forall(&OutputGenerator::startPlainFile,name); }
     void endPlainFile()
-    {
-      QListIterator<OutputGenerator> it(m_outputs);
-      OutputGenerator *og;
-      for (;(og=it.current());++it)
-      {
-        if (og->isEnabled()) (og->endPlainFile)();
-      }
-    }
+    { forall(&OutputGenerator::endPlainFile); }
 
   private:
     void debug();
     void clear();
 
-    void forall(void (OutputGenerator::*func)());
-    FORALLPROTO1(const char *);
-    FORALLPROTO1(char);
-    FORALLPROTO1(IndexSections);
-    FORALLPROTO1(int);
-    FORALLPROTO1(DotClassGraph &);
-    FORALLPROTO1(DotInclDepGraph &);
-    FORALLPROTO1(DotCallGraph &);
-    FORALLPROTO1(DotGroupCollaboration &);
-    FORALLPROTO1(DotDirDeps &);
-    FORALLPROTO1(DotGfxHierarchyTable &);
-    FORALLPROTO1(SectionTypes);
-#if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)
-    FORALLPROTO1(bool);
-    FORALLPROTO2(bool,int);
-    FORALLPROTO2(bool,bool);
-    FORALLPROTO2(const char *,bool);
-    FORALLPROTO4(const char *,const char *,const char *,int);
-#endif
-    FORALLPROTO2(int,bool);
-    FORALLPROTO2(bool,const char *);
-    FORALLPROTO2(ParamListTypes,const char *);
-    FORALLPROTO2(const char *,const char *);
-    FORALLPROTO2(const char *,int);
-    FORALLPROTO2(const char *,SectionInfo::SectionType);
-    FORALLPROTO3(bool,HighlightedItem,const char *);
-    FORALLPROTO3(bool,bool,bool);
-    FORALLPROTO3(const char *,const char *,bool);
-    FORALLPROTO3(const char *,int,const char *);
-    FORALLPROTO3(const char *,const char *,SectionInfo::SectionType);
-    FORALLPROTO3(uchar,uchar,uchar);
-    FORALLPROTO3(const char *,const char *,const char *);
-    FORALLPROTO3(const ClassDiagram &,const char *,const char *);
-    FORALLPROTO3(const Definition*,const char *,bool);
-    FORALLPROTO4(SectionTypes,const char *,const char *,const char *);
-    FORALLPROTO4(const char *,const char *,const char *,const char *);
-    FORALLPROTO4(const char *,const char *,const char *,bool);
-    FORALLPROTO5(const char *,const char *,const char *,const char *,const char *);
-    FORALLPROTO5(const char *,const char *,const char *,const char *,bool);
-    FORALLPROTO6(const char *,const char *,const char *,const char *,const char *,const char *);
-    FORALLPROTO6(const char *,const DocLinkInfo &,const char *,const char *,const SourceLinkInfo &,const SourceLinkInfo &);
-    FORALLPROTO7(const char *,const char *,const char *,const char *,int,int,bool);
+    // For each output format that is enabled (OutputGenerator::isEnabled()) we forward
+    // the method call.
+    // We use C++11 variadic templates and perfect forwarding to implement forall() generically,
+    // and split the types of the methods from the arguments passed to allow implicit conversions.
+    template<typename T,class... Ts,class... As>
+    void forall(void (T::*methodPtr)(Ts...),As&&... args)
+    {
+      QListIterator<OutputGenerator> li(m_outputs);
+      OutputGenerator *og;
+      for (li.toFirst();(og=li.current());++li)
+      {
+        if (og->isEnabled()) (og->*methodPtr)(std::forward<As>(args)...);
+      }
+    }
 
     OutputList(const OutputList &ol);
     QList<OutputGenerator> m_outputs;
