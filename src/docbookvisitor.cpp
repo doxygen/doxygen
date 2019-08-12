@@ -36,6 +36,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "growbuf.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
@@ -48,6 +49,25 @@
 #define DB_VIS_C2(y)
 #define DB_VIS_C2a(x,y)
 #endif
+
+static QCString filterId(const char *s)
+{
+  static GrowBuf growBuf;
+  growBuf.clear();
+  if (s==0) return "";
+  const unsigned char *p=(const unsigned char *)s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case ':':  growBuf.addStr("_1");   break;
+      default:   growBuf.addChar(c);       break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
 
 void DocbookDocVisitor::visitCaption(const QList<DocNode> &children)
 {
@@ -374,7 +394,7 @@ void DocbookDocVisitor::visit(DocAnchor *anc)
 {
 DB_VIS_C
   if (m_hide) return;
-  m_t << "<anchor xml:id=\"_" <<  stripPath(anc->file()) << "_1" << anc->anchor() << "\"/>";
+  m_t << "<anchor xml:id=\"_" <<  stripPath(anc->file()) << "_1" << filterId(anc->anchor()) << "\"/>";
 }
 
 void DocbookDocVisitor::visit(DocInclude *inc)
@@ -550,7 +570,7 @@ void DocbookDocVisitor::visit(DocCite *cite)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (!cite->file().isEmpty()) startLink(cite->file(),cite->anchor());
+  if (!cite->file().isEmpty()) startLink(cite->file(),filterId(cite->anchor()));
   filter(cite->text());
   if (!cite->file().isEmpty()) endLink();
 }
