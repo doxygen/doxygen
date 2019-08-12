@@ -1,3 +1,15 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ */
+
 #include "doxywizard.h"
 #include "version.h"
 #include "expert.h"
@@ -218,7 +230,7 @@ void MainWindow::about()
   t << QString::fromLatin1("<qt><center>A tool to configure and run doxygen version ")+
        QString::fromLatin1(getVersion())+
        QString::fromLatin1(" on your source files.</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2015</center><p>"
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2019</center><p>"
        "</qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }
