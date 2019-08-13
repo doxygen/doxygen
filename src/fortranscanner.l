@@ -334,7 +334,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
  /*-----------------------------------------------------------------------------------*/
 
-<Prepass>^{BS}[&]*{BS}!.*\n             { /* skip lines with just comment. Note code was in free format or has been converted to it */
+<Prepass>^{BS}[&].*{BS}!.*\n             { /* skip lines with just comment. Note code was in free format or has been converted to it */
                                           lineCountPrepass ++;
                                         }
 <Prepass>^{BS}\n                        { /* skip empty lines */
