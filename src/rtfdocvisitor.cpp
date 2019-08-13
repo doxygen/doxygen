@@ -1006,7 +1006,7 @@ void RTFDocVisitor::visitPre(DocHtmlCaption *)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlCaption)}\n");
   m_t << "\\pard \\qc \\b";
-  m_t << "{Table \\field\\flddirty{\\*\\fldinst { SEQ Image \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+  m_t << "{Table \\field\\flddirty{\\*\\fldinst { SEQ Table \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
 }
 
 void RTFDocVisitor::visitPost(DocHtmlCaption *) 
