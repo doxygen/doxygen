@@ -1652,11 +1652,17 @@ void Config::checkAndCorrect()
   QStrList &filePatternList = Config_getList(FILE_PATTERNS);
   if (filePatternList.isEmpty())
   {
-      ConfigOption * opt = ConfigImpl::instance()->get("FILE_PATTERNS");
-      if (opt->kind()==ConfigOption::O_List)
+    ConfigOption * opt = ConfigImpl::instance()->get("FILE_PATTERNS");
+    if (opt->kind()==ConfigOption::O_List)
+    {
+      QStrList l = ((ConfigList*)opt)->getDefault();
+      const char *p = l.first();
+      while (p)
       {
-        ((ConfigList*)opt)->init();
+        filePatternList.append(p);
+        p = l.next();
       }
+    }
   }
 
   // add default pattern if needed
