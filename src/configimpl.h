@@ -126,6 +126,7 @@ class ConfigList : public ConfigOption
     void setWidgetType(WidgetType w) { m_widgetType = w; }
     WidgetType widgetType() const { return m_widgetType; }
     QStrList *valueRef() { return &m_value; }
+    QStrList getDefault() { return m_defaultValue; }
     void writeTemplate(FTextStream &t,bool sl,bool);
     void compareDoxyfile(FTextStream &t);
     void substEnvVars();
