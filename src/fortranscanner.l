@@ -2245,12 +2245,25 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
     Entry *ce;
     for (;(ce=eli.current());++eli) 
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC &&
+          ce->section != Entry::CLASS_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
       if (mdfsMap.contains(ce->name.lower()))
+      {
         applyModifiers(ce, mdfsMap[ce->name.lower()]);
+      }
+      else
+      {
+        QString nm = ce->name.lower();
+        if (nm.startsWith(scope->name.lower() + "::"))
+        {
+          nm = nm.mid(scope->name.length()+2);
+          if (mdfsMap.contains(nm.data()))
+            applyModifiers(ce, mdfsMap[nm.data()]);
+        }
+      }
     }
   }
 
