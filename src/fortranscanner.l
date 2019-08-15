@@ -106,12 +106,14 @@ struct SymbolModifiers {
   bool volat; /* volatile is a reserved name */
   bool value; /* volatile is a reserved name */
   QCString passVar;
+  QCString bindVar;
 
   SymbolModifiers() : type(), returnName(), protection(NONE_P), direction(NONE_D),
     optional(FALSE), protect(FALSE), dimension(), allocatable(FALSE),
     external(FALSE), intrinsic(FALSE), parameter(FALSE),
     pointer(FALSE), target(FALSE), save(FALSE), deferred(FALSE), nonoverridable(FALSE),
-    nopass(FALSE), pass(FALSE), contiguous(FALSE), volat(FALSE), value(FALSE), passVar() {}
+    nopass(FALSE), pass(FALSE), contiguous(FALSE), volat(FALSE), value(FALSE), passVar(),
+    bindVar() {}
 
   SymbolModifiers& operator|=(const SymbolModifiers &mdfs);
   SymbolModifiers& operator|=(QCString mdfrString);
@@ -227,6 +229,7 @@ static void pushBuffer(QCString &buffer);
 static void popBuffer();
 //static void extractPrefix(QCString& text);
 static QCString extractFromParens(const QCString name);
+static QCString extractBind(const QCString name);
 static CommentInPrepass* locatePrepassComment(int from, int to);
 static void updateVariablePrepassComment(int from, int to);
 static void newLine();
@@ -273,7 +276,7 @@ TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE|CONTIGUOUS|VOLATILE|VALUE)
 ACCESS_SPEC (PRIVATE|PUBLIC)
-LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
+LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}((,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})|(,{BS}NAME{BS}"="{BS}"'"(.*)"'"{BS}))?")"
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 EXTERNAL_STMT (EXTERNAL)
@@ -810,6 +813,9 @@ private                                 {
 <AttributeList>{
 {COMMA}					{}
 {BS}					{}
+{LANGUAGE_BIND_SPEC}                    {
+                                          currentModifiers |= yytext;
+                                        }
 {ATTR_SPEC}.				{ /* update current modifiers when it is an ATTR_SPEC and not a variable name */
             				  /* bug_625519 */
                                           QChar chr = yytext[(int)yyleng-1];
@@ -1833,6 +1839,29 @@ static QCString extractFromParens(const QCString name)
   return extracted;
 }
 
+/*! remove non usefull spaces from bind statement */
+static QCString extractBind(const QCString name)
+{
+  QCString parensPart = extractFromParens(name);
+  if (parensPart.length() == 1)
+  {
+    return "bind(C)";
+  }
+  else
+  {
+    //strip 'c'
+    parensPart = parensPart.mid(1).stripWhiteSpace();
+    // strip ','
+    parensPart = parensPart.mid(1).stripWhiteSpace();
+    // name part
+    parensPart = parensPart.mid(4).stripWhiteSpace();
+    // = part
+    parensPart = parensPart.mid(1).stripWhiteSpace();
+
+    return "bind(C, name=" + parensPart + ")";
+  }
+}
+
 /*! Adds passed modifiers to these modifiers.*/
 SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
 {
@@ -1853,6 +1882,7 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
   nopass |= mdfs.nopass;
   pass |= mdfs.pass;
   passVar = mdfs.passVar;
+  bindVar = mdfs.bindVar;
   contiguous |= mdfs.contiguous;
   volat |= mdfs.volat;
   value |= mdfs.value;
@@ -1860,9 +1890,9 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
 }
 
 /*! Extracts and adds passed modifier to these modifiers.*/
-SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
+SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
 {
-  mdfString = mdfString.lower();
+  QCString mdfString = mdfStringArg.lower();
   SymbolModifiers newMdf;
 
   if (mdfString.find("dimension")==0) 
@@ -1953,6 +1983,11 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
       newMdf.passVar = extractFromParens(mdfString);
     else
       newMdf.passVar = "";
+  }
+  else if (QString(mdfString.data()).startsWith("bind"))
+  {
+    // we need here the original string as we want to don't want to have the lowercase name between the quotes of the name= part
+    newMdf.bindVar = extractBind(mdfStringArg);
   }
 
   (*this) |= newMdf;
@@ -2084,6 +2119,11 @@ static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs)
     typeName += "pass";
     if (!mdfs.passVar.isEmpty())
       typeName += "(" + mdfs.passVar + ")";
+  }
+  if (!mdfs.bindVar.isEmpty())
+  {
+    if (!typeName.isEmpty()) typeName += ", ";
+    typeName += mdfs.bindVar;
   }
   if (mdfs.protection == SymbolModifiers::PUBLIC)
   {
