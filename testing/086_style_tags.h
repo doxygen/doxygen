@@ -9,8 +9,9 @@ In the following the word tag has the style as indicated before it.
 - This is an italic <i>tag</i>.
 - This is an `em` italic <em>tag</em>.
 - This is a strike through <strike>tag</strike>.
+- This is a `s` strike through <s>tag</s>.
 - This is an underline <u>tag</u>.
-- This is an insterted <ins>tag</ins>.
+- This is an `ins` inserted <ins>tag</ins>.
 - This is a deleted <del>tag</del>.
 - This is a typewriter <tt>tag</tt>.
 */

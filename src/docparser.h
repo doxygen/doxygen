@@ -385,7 +385,8 @@ class DocStyleChange : public DocNode
                  Strike        = (1<<10),
                  Underline     = (1<<11),
                  Del           = (1<<12),
-                 Ins           = (1<<13)
+                 Ins           = (1<<13),
+                 S             = (1<<14)
                };
 
     DocStyleChange(DocNode *parent,uint position,Style s,bool enable,

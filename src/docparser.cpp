@@ -1020,6 +1020,7 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Div:          return "div";
     case DocStyleChange::Span:         return "span";
     case DocStyleChange::Strike:       return "strike";
+    case DocStyleChange::S:            return "s";
     case DocStyleChange::Del:          return "del";
     case DocStyleChange::Underline:    return "u";
     case DocStyleChange::Ins:          return "ins";
@@ -1171,7 +1172,7 @@ static void handleParameterType(DocNode *parent,QList<DocNode> &children,const Q
 {
   QCString name = g_token->name; // save token name
   QCString name1;
-  int p=0,i,l,ii;
+  int p=0,i,ii;
   while ((i=paramTypes.find('|',p))!=-1)
   {
     name1 = paramTypes.mid(p,i-p);
@@ -1550,6 +1551,15 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Bold,tokenName);
             }
             break;
+          case HTML_S:
+            if (!g_token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::S,&g_token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::S,tokenName);
+            }
           case HTML_STRIKE:
             if (!g_token->endTag)
             {
@@ -5925,6 +5935,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case HTML_BOLD:
       handleStyleEnter(this,m_children,DocStyleChange::Bold,&g_token->attribs);
       break;
+    case HTML_S:
+      handleStyleEnter(this,m_children,DocStyleChange::S,&g_token->attribs);
+      break;
     case HTML_STRIKE:
       handleStyleEnter(this,m_children,DocStyleChange::Strike,&g_token->attribs);
       break;
@@ -6345,6 +6358,9 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     //  break;
     case HTML_BOLD:
       handleStyleLeave(this,m_children,DocStyleChange::Bold,"b");
+      break;
+    case HTML_S:
+      handleStyleLeave(this,m_children,DocStyleChange::S,"s");
       break;
     case HTML_STRIKE:
       handleStyleLeave(this,m_children,DocStyleChange::Strike,"strike");

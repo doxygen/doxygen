@@ -235,6 +235,7 @@ void RTFDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Bold:
       if (s->enable()) m_t << "{\\b ";      else m_t << "} ";
       break;
+    case DocStyleChange::S:
     case DocStyleChange::Strike:
     case DocStyleChange::Del:
       if (s->enable()) m_t << "{\\strike ";      else m_t << "} ";
