@@ -2177,6 +2177,7 @@ static void writeFencedCodeBlock(GrowBuf &out,const char *data,const char *lng,
   out.addStr(data+blockStart,blockEnd-blockStart);
   out.addStr("\n");
   out.addStr("@endcode");
+  out.addStr("\n");
 }
 
 static QCString processQuotations(const QCString &s,int refIndent)
