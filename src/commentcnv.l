@@ -152,23 +152,28 @@ static inline int computeIndent(const char *s)
 
 static inline void copyToOutput(const char *s,int len)
 {
+  static int tabSize=Config_getInt(TAB_SIZE);
   int i;
   if (g_skip) // only add newlines.
   {
     for (i=0;i<len;i++) 
     {
-      if (s[i]=='\n') 
+      switch (s[i])
       {
-	ADDCHAR('\n');
-	//fprintf(stderr,"---> skip %d\n",g_lineNr);
-	g_lineNr++;
+        case '\n':
+	  ADDCHAR('\n');
+	  //fprintf(stderr,"---> skip %d\n",g_lineNr);
+	  g_lineNr++;
+          g_col=0;
+          break;
+	case '\t': g_col+=tabSize-(g_col%tabSize); break;
+	default:   g_col++; break;
       }
     }
   }
   else if (len>0)
   {
     ADDARRAY(s,len);
-    static int tabSize=Config_getInt(TAB_SIZE);
     for (i=0;i<len;i++) 
     {
       switch (s[i])
@@ -903,7 +908,7 @@ void replaceComment(int offset);
   				       BEGIN(g_condCtx);
                                      }
   				   }
-<CondLine>[ \t]*
+<CondLine>[ \t]*/\n |
 <CComment,ReadLine>[\\@]"cond"[ \t\r]*/\n |
 <CondLine>.			   { // forgot section id?
   				     if (YY_START!=CondLine) g_condCtx=YY_START;
