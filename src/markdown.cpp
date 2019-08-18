@@ -1020,6 +1020,7 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
   {
     QCString codeFragment;
     convertStringFragment(codeFragment,data+f_begin,f_end-f_begin);
+    codeFragment = substitute(codeFragment,'\n',' ');
     out.addStr("<tt>");
     //out.addStr(convertToHtml(codeFragment,TRUE));
     out.addStr(escapeSpecialChars(codeFragment));
