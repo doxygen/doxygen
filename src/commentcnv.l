@@ -914,7 +914,9 @@ void replaceComment(int offset);
     			             {
 				       //printf("** Adding terminator for comment!\n");
 				       if (g_lang!=SrcLangExt_Python &&
-					   g_lang!=SrcLangExt_VHDL)
+					   g_lang!=SrcLangExt_VHDL &&
+					   g_lang!=SrcLangExt_Markdown &&
+					   g_lang!=SrcLangExt_Fortran)
 				       {
  				         ADDCHAR('*');
      				         ADDCHAR('/');
