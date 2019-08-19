@@ -193,9 +193,11 @@ code spans appear inline in a paragraph. An example:
 
     Use the `printf()` function.
 
-To show a literal backtick inside a code span use double backticks, i.e.
+To show a literal backtick or single quote inside a code span use double backticks, i.e.
 
     To assign the output of command `ls` to `var` use ``var=`ls```.
+
+    To assign the text 'text' to `var` use ``var='text'``.
 
 See section \ref mddox_code_spans for more info how doxygen handles
 code spans slightly different than standard Markdown.
@@ -605,6 +607,9 @@ Note that unlike standard Markdown, doxygen leaves the following untouched.
 In other words; a single quote cancels the special treatment of a code span
 wrapped in a pair of backtick characters. This extra restriction was
 added for backward compatibility reasons.
+
+In case you want to have single quotes inside a code span, don't use 
+one backtick but two backticks around the code span.
 
 \subsection mddox_lists Lists Extensions
 
