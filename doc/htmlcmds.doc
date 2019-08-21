@@ -97,10 +97,16 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\</SUP\></tt>  Ends a <tt>\<SUP\></tt> section.
 <li><tt>\<TABLE\></tt> starts a table.
 <li><tt>\</TABLE\></tt> ends a table.
+<li><tt>\<TBODY\></tt>  Starts a new table body, currently ignored by doxygen.
+<li><tt>\</TBODY\></tt> Ends a new table body, currently ignored by doxygen.
 <li><tt>\<TD\></tt>    Starts a new table data element.
 <li><tt>\</TD\></tt>   Ends a table data element.
 <li><tt>\<TH\></tt>    Starts a new table header.
 <li><tt>\</TH\></tt>   Ends a table header.
+<li><tt>\<THEAD\></tt>  Starts a new table header, currently ignored by doxygen.
+<li><tt>\</THEAD\></tt> Ends a new table header, currently ignored by doxygen.
+<li><tt>\<TFOOT\></tt>  Starts a new table footer, currently ignored by doxygen.
+<li><tt>\</TFOOT\></tt> Ends a new table footer, currently ignored by doxygen.
 <li><tt>\<TR\></tt>    Starts a new table row.
 <li><tt>\</TR\></tt>   Ends a table row.
 <li><tt>\<TT\></tt>    Starts a piece of text displayed in a typewriter font.
