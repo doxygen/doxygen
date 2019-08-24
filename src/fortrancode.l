@@ -381,7 +381,7 @@ static bool getFortranNamespaceDefs(const QCString &mname,
   @param tname the name of the type
   @param moduleName name of enclosing module or null, if global entry
   @param cd the entry, if found or null
-  @param useDict dictionary of data of USE-statement
+  @param usedict dictionary of data of USE-statement
   @returns true, if type is found 
 */
 static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName, 
