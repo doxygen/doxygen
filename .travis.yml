@@ -55,15 +55,15 @@ before_script:
     - |
       if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
         printf "[requires]
-        libxml2/2.9.8@bincrafters/stable
+        libxml2/2.9.9@bincrafters/stable
         libiconv/1.15@bincrafters/stable" >> conanfile.txt;
       fi;
       if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
         printf "[requires]
-        libxml2/2.9.8@bincrafters/stable
+        libxml2/2.9.9@bincrafters/stable
         libiconv/1.15@bincrafters/stable
-        qt/5.12.0@bincrafters/stable
-        bison/3.0.5@bincrafters/stable 
+        qt/5.13.0@bincrafters/stable
+        bison/3.3.2@bincrafters/stable 
         [options]
         qt:shared=True" >> conanfile.txt;
       fi;
