@@ -60,6 +60,7 @@ before_script:
       fi;
       if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
         printf "[requires]
+        bzip2/1.0.8@bincrafters/stable
         libxml2/2.9.9@bincrafters/stable
         libiconv/1.15@bincrafters/stable
         qt/5.12.0@bincrafters/stable
