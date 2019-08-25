@@ -41,7 +41,7 @@ class MemberGroup
 {
   public:
     MemberGroup();
-    MemberGroup(const Definition *parent,int id,const char *header,
+    MemberGroup(int id,const char *header,
                 const char *docs,const char *docFile,int docLine);
    ~MemberGroup();
     QCString header() const { return grpHeader; }

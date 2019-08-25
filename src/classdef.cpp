@@ -4813,7 +4813,7 @@ void ClassDefImpl::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
   ml->append(md);
 
   // for members in the declaration lists we set the section, needed for member grouping
-  if ((ml->listType()&MemberListType_detailedLists)==0) md->setSectionList(this,ml);
+  if ((ml->listType()&MemberListType_detailedLists)==0) md->setSectionList(ml);
 }
 
 void ClassDefImpl::sortMemberLists()

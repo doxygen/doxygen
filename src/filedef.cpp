@@ -2098,7 +2098,7 @@ void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   {
     ml->setInFile(TRUE);
   }
-  if (ml->listType()&MemberListType_declarationLists) md->setSectionList(this,ml);
+  if (ml->listType()&MemberListType_declarationLists) md->setSectionList(ml);
 }
 
 void FileDefImpl::sortMemberLists()

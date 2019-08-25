@@ -72,7 +72,6 @@ class ClassDef : virtual public Definition
 
     virtual ~ClassDef() {}
 
-    virtual ClassDef *resolveAlias() = 0;
 
     //-----------------------------------------------------------------------------------
     // --- getters 
