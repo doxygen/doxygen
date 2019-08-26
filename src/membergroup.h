@@ -71,19 +71,7 @@ class MemberGroup
     void countDocMembers();
     int countGroupedInheritedMembers(MemberListType lt);
     void distributeMemberGroupDocumentation();
-    void findSectionsInDocumentation();
-    /*
-    int varCount() const;
-    int funcCount() const;
-    int enumCount() const;
-    int enumValueCount() const;
-    int typedefCount() const;
-    int sequenceCount() const;
-    int dictionaryCount() const;
-    int protoCount() const;
-    int defineCount() const;
-    int friendCount() const;
-    */
+    void findSectionsInDocumentation(const Definition *d);
     int numDecMembers() const;
     int numDecEnumValues() const;
     int numDocMembers() const;
@@ -94,7 +82,6 @@ class MemberGroup
     void addListReferences(Definition *d);
     void setRefItems(const QList<ListItemInfo> *sli);
     MemberList *members() const { return memberList; }
-    const Definition *parent() const { return m_parent; }
     QCString anchor() const;
 
     QCString docFile() const { return m_docFile; }

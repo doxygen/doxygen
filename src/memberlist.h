@@ -89,7 +89,7 @@ class MemberList : private QList<MemberDef>
     void setInGroup(bool inGroup) { m_inGroup=inGroup; }
     void setInFile(bool inFile) { m_inFile=inFile; }
     void addListReferences(Definition *def);
-    void findSectionsInDocumentation();
+    void findSectionsInDocumentation(const Definition *d);
     void setNeedsSorting(bool b);
     MemberGroupList *getMemberGroupList() const { return memberGroupList; }
     void setAnonymousEnumType();

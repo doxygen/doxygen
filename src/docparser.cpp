@@ -7797,10 +7797,9 @@ DocText *validatingParseText(const char *input)
 }
 
 void docFindSections(const char *input,
-                     Definition *d,
-                     MemberGroup *mg,
+                     const Definition *d,
                      const char *fileName)
 {
-  doctokenizerYYFindSections(input,d,mg,fileName);
+  doctokenizerYYFindSections(input,d,fileName);
 }
 

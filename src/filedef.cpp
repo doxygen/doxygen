@@ -312,14 +312,14 @@ void FileDefImpl::distributeMemberGroupDocumentation()
 
 void FileDefImpl::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),this,0,docFile());
+  docFindSections(documentation(),this,docFile());
   if (m_memberGroupSDict)
   {
     MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      mg->findSectionsInDocumentation();
+      mg->findSectionsInDocumentation(this);
     }
   }
 
@@ -329,7 +329,7 @@ void FileDefImpl::findSectionsInDocumentation()
   {
     if (ml->listType()&MemberListType_declarationLists)
     {
-      ml->findSectionsInDocumentation();
+      ml->findSectionsInDocumentation(this);
     }
   }
 }

@@ -349,12 +349,12 @@ void NamespaceDefImpl::distributeMemberGroupDocumentation()
 
 void NamespaceDefImpl::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),this,0,docFile());
+  docFindSections(documentation(),this,docFile());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    mg->findSectionsInDocumentation();
+    mg->findSectionsInDocumentation(this);
   }
   QListIterator<MemberList> mli(m_memberLists);
   MemberList *ml;
@@ -362,7 +362,7 @@ void NamespaceDefImpl::findSectionsInDocumentation()
   {
     if (ml->listType()&MemberListType_declarationLists)
     {
-      ml->findSectionsInDocumentation();
+      ml->findSectionsInDocumentation(this);
     }
   }
 }

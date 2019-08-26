@@ -351,10 +351,10 @@ void MemberGroup::addListReferences(Definition *def)
   }
 }
 
-void MemberGroup::findSectionsInDocumentation()
+void MemberGroup::findSectionsInDocumentation(const Definition *d)
 {
-  docFindSections(doc,0,this,m_docFile);
-  memberList->findSectionsInDocumentation();
+  docFindSections(doc,d,m_docFile);
+  memberList->findSectionsInDocumentation(d);
 }
 
 void MemberGroup::setRefItems(const QList<ListItemInfo> *sli)

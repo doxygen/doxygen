@@ -961,7 +961,7 @@ void MemberList::addListReferences(Definition *def)
   }
 }
 
-void MemberList::findSectionsInDocumentation()
+void MemberList::findSectionsInDocumentation(const Definition *d)
 {
   MemberListIterator mli(*this);
   MemberDef *md;
@@ -975,7 +975,7 @@ void MemberList::findSectionsInDocumentation()
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      mg->findSectionsInDocumentation();
+      mg->findSectionsInDocumentation(d);
     }
   }
 }

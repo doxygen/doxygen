@@ -236,12 +236,12 @@ void GroupDefImpl::distributeMemberGroupDocumentation()
 
 void GroupDefImpl::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),this,0,docFile());
+  docFindSections(documentation(),this,docFile());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    mg->findSectionsInDocumentation();
+    mg->findSectionsInDocumentation(this);
   }
 
   QListIterator<MemberList> mli(m_memberLists);
@@ -250,7 +250,7 @@ void GroupDefImpl::findSectionsInDocumentation()
   {
     if (ml->listType()&MemberListType_declarationLists)
     {
-      ml->findSectionsInDocumentation();
+      ml->findSectionsInDocumentation(this);
     }
   }
 }

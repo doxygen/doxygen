@@ -4923,7 +4923,7 @@ ClassDef *MemberDefImpl::accessorClass() const
 
 void MemberDefImpl::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),this,0,docFile());
+  docFindSections(documentation(),this,docFile());
 }
 
 void MemberDefImpl::enableCallGraph(bool e)
