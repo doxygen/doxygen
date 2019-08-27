@@ -1162,7 +1162,19 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           else
                                           {
                                             g_insideBody=TRUE;
-                                            generateLink(*g_code, yytext);
+                                            // extract function name and process it
+                                            char *tmp= (char *) malloc(strlen(yytext)+1);
+                                            strcpy(tmp,yytext);
+                                            strtok(tmp," \t");
+                                            //printf("===> line number %d function call |%s|\n",g_yyLineNr,yytext);
+                                            generateLink(*g_code, tmp);
+                                            if ( strlen(tmp) != strlen(yytext) ) {
+                                              // everything else is thrown back into input stream
+                                              // to prevent {BS} from being gobbled
+                                              //printf("     reprocess |%s|\n",yytext+strlen(tmp));
+                                              yyless(strlen(tmp));
+                                            }
+                                            free(tmp);
                                             g_insideBody=FALSE;
                                           }
                                         }
