@@ -688,6 +688,16 @@ static void writeDefaultHeaderPart1(FTextStream &t)
 
   writeExtraLatexPackages(t);
   writeLatexSpecialFormulaChars(t);
+  QCString macroFile = Config_getString(FORMULA_MACROFILE);
+  if (!macroFile.isEmpty())
+  {
+    QCString dir=Config_getString(LATEX_OUTPUT);
+    QFileInfo fi(macroFile);
+    macroFile=fi.absFilePath().utf8();
+    QCString stripMacroFile = fi.fileName().data();
+    copyFile(macroFile,dir + "/" + stripMacroFile);
+    t << "\\input{" << stripMacroFile << "}" << endl;
+  }
 
   // Hyperlinks
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);

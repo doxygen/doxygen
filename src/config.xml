@@ -2377,6 +2377,16 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
+    <option type='string' id='FORMULA_MACROFILE' format='file' defval=''>
+      <docs>
+<![CDATA[
+ The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and 
+ `\renewcommand` commands to create new \f$\mbox{\LaTeX}\f$ commands to be used
+ in formulas as building blocks.
+ See the section \ref formulas for details.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='USE_MATHJAX' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
