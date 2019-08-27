@@ -733,6 +733,54 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 %%
  /*==================================================================*/
 
+ /*------ left-hand-side variable references/assignment  ------------*/
+ /*       catch these early so they don't get flagged as keywords.   */
+
+<Start>{ID}{BS}/[=%]                    {   // scalar assignment or type structure
+                                            //printf("===> line number %d lhs-variable |%s|\n",g_yyLineNr,yytext);
+  					    g_insideBody=TRUE;
+                                            // extract variable name and process it
+                                            char *tmp= (char *) malloc(strlen(yytext)+1);
+                                            strcpy(tmp,yytext);
+                                            strtok(tmp," \t(");
+                                            //printf("     generateLink |%s|\n",tmp);
+                                            generateLink(*g_code, tmp);
+                                            if ( strlen(tmp) != strlen(yytext) ) {
+                                              // everything else is thrown back into input stream
+                                              // to prevent {BS} from being gobbled
+                                              //printf("     reprocess |%s|\n",yytext+strlen(tmp));
+                                              yyless(strlen(tmp));
+                                            }
+                                            free(tmp);
+					    g_insideBody=FALSE;
+                                        }
+
+ /* array(.)= assignment is hard to catch.                                      */
+ /* (.) could contain other variables, structures, function calls, etc.         */
+ /* <Start>{ID}{BS}/"("                                                         */
+ /*   Too Simple. Catches both "variable(.)=" and "keyword(.)" [ie, "case(1)"]. */
+ /* <Start>{ID}{BS}/"("[a-z_A-Z0-9 \t,:\-+/*%()]+")"{BS}"="                     */
+ /*   Error:  Dangerous trailing context (due to varying length?):              */
+ /* Method below best fix so far, but might not be perfect.                     */
+ /*   Keeps most assignments from being detected as keywords.                   */
+ /*   What is missed, gets processed later as a keyword or variable reference.  */
+
+<Start>{ID}{BS}"("[a-z_A-Z0-9 \t\.,:+*\-/%()]+")"{BS}"="{BS}/[^=] { // array(.) assignment
+                                            // yytext matches "array(.)="
+                                            //printf("===> line number %d array assignment |%s|\n",g_yyLineNr,yytext);
+  					    g_insideBody=TRUE;
+                                            // extract array name and process it
+                                            char *tmp= (char *) malloc(strlen(yytext)+1);
+                                            strcpy(tmp,yytext);
+                                            strtok(tmp," \t(");
+                                            //printf("     generateLink |%s|\n",tmp);
+                                            generateLink(*g_code, tmp);
+                                            // everything else is thrown back into input stream
+                                            //printf("     reprocess |%s|\n",yytext+strlen(tmp));
+                                            yyless(strlen(tmp));
+                                            free(tmp);
+					    g_insideBody=FALSE;
+                                        }
  /*-------- ignore ------------------------------------------------------------*/
 
 <Start>{IGNORE}/{BS}"("                 { // do not search keywords, intrinsics... TODO: complete list
@@ -1219,6 +1267,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 					  g_code->codify(yytext);
 					}
 <Start>{ID}                             {   
+                                            //printf("===> line number %d variable |%s|\n",g_yyLineNr,yytext);
   					    g_insideBody=TRUE;
                                             generateLink(*g_code, yytext);
 					    g_insideBody=FALSE;
