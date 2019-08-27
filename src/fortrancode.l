@@ -676,7 +676,7 @@ static int yyread(char *buf,int max_size)
 %}
 
 IDSYM	  [a-z_A-Z0-9]
-ID        [a-z_A-Z]+{IDSYM}*
+ID        [a-z_A-Z]{IDSYM}*
 SUBPROG   (subroutine|function)
 B         [ \t]
 BS        [ \t]*
