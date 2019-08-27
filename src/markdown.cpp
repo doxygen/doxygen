@@ -1828,7 +1828,7 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
   }
 
 
-  out.addStr("<table class=\"markdownTable\">\n");
+  out.addStr("<table class=\"markdownTable\">");
   QCString cellTag("th"), cellClass("class=\"markdownTableHead");
   for (unsigned row = 0; row < tableContents.size(); row++)
   {
@@ -1836,16 +1836,16 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
     {
       if (row % 2)
       {
-        out.addStr("<tr class=\"markdownTableRowOdd\">\n");
+        out.addStr("<tr class=\"markdownTableRowOdd\">");
       }
       else
       {
-        out.addStr("<tr class=\"markdownTableRowEven\">\n");
+        out.addStr("<tr class=\"markdownTableRowEven\">");
       }
     }
     else
     {
-      out.addStr("  <tr class=\"markdownTableHead\">\n");
+      out.addStr("  <tr class=\"markdownTableHead\">");
     }
     for (int c = 0; c < columns; c++)
     {
@@ -1900,7 +1900,7 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
       }
       // need at least one space on either side of the cell text in
       // order for doxygen to do other formatting
-      out.addStr("> " + cellText + "\n</" + cellTag + ">\n");
+      out.addStr("> " + cellText + "</" + cellTag + ">");
     }
     cellTag = "td";
     cellClass = "class=\"markdownTableBody";
