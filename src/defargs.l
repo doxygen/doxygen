@@ -87,6 +87,8 @@ static int              g_lastDocChar;
 static int              g_lastExtendsContext;
 static QCString         g_delimiter;
 
+static const char *stateToString(int state);
+
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
@@ -625,3 +627,30 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(Start)
+    scanStateToString(CopyArgString)
+    scanStateToString(CopyRawString)
+    scanStateToString(CopyArgRound)
+    scanStateToString(CopyArgRound2)
+    scanStateToString(CopyArgSharp)
+    scanStateToString(CopyArgCurly)
+    scanStateToString(ReadFuncArgType)
+    scanStateToString(ReadFuncArgDef)
+    scanStateToString(ReadFuncArgPtr)
+    scanStateToString(FuncQual)
+    scanStateToString(ReadDocBlock)
+    scanStateToString(ReadDocLine)
+    scanStateToString(ReadTypeConstraint)
+    scanStateToString(TrailingReturn)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

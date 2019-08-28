@@ -66,6 +66,7 @@ struct declinfoYY_state
 static void addType(yyscan_t yyscanner);
 static void addTypeName(yyscan_t yyscanner);
 static int yyread(char *buf,int max_size, yyscan_t yyscanner);
+static const char *stateToString(int state);
 
 /* -----------------------------------------------------------------
  */
@@ -391,3 +392,24 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(Start)
+    scanStateToString(Template)
+    scanStateToString(ReadArgs)
+    scanStateToString(Operator)
+    scanStateToString(FuncPtr)
+    scanStateToString(EndTemplate)
+    scanStateToString(StripTempArgs)
+    scanStateToString(SkipSharp)
+    scanStateToString(ReadExceptions)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

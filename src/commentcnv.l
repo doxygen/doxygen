@@ -94,6 +94,8 @@ static bool     g_vhdl; // for VHDL old style --! comment
 static SrcLangExt g_lang;
 static bool       isFixedForm; // For Fortran
 
+static const char *stateToString(int state);
+
 static void replaceCommentMarker(const char *s,int len)
 {
   const char *p=s;
@@ -1145,3 +1147,25 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(Scan)
+    scanStateToString(SkipString)
+    scanStateToString(SkipChar)
+    scanStateToString(SComment)
+    scanStateToString(CComment)
+    scanStateToString(Verbatim)
+    scanStateToString(VerbatimCode)
+    scanStateToString(ReadLine)
+    scanStateToString(CondLine)
+    scanStateToString(ReadAliasArgs)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

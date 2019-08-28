@@ -384,6 +384,7 @@ static bool               g_lexInit = FALSE;
 static int                g_fenceSize = 0;
 static bool               g_ccomment;
 
+static const char *stateToString(int state);
 //DefineDict* getGlobalDefineDict() 
 //{
 //  return g_globalDefineDict;
@@ -3337,3 +3338,53 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(Start)
+    scanStateToString(Command)
+    scanStateToString(SkipCommand)
+    scanStateToString(SkipLine)
+    scanStateToString(SkipString)
+    scanStateToString(CopyLine)
+    scanStateToString(CopyString)
+    scanStateToString(CopyStringCs)
+    scanStateToString(CopyStringFtn)
+    scanStateToString(CopyStringFtnDouble)
+    scanStateToString(Include)
+    scanStateToString(IncludeID)
+    scanStateToString(EndImport)
+    scanStateToString(DefName)
+    scanStateToString(DefineArg)
+    scanStateToString(DefineText)
+    scanStateToString(SkipCPPBlock)
+    scanStateToString(Ifdef)
+    scanStateToString(Ifndef)
+    scanStateToString(SkipCComment)
+    scanStateToString(ArgCopyCComment)
+    scanStateToString(CopyCComment)
+    scanStateToString(SkipVerbatim)
+    scanStateToString(SkipCPPComment)
+    scanStateToString(RemoveCComment)
+    scanStateToString(RemoveCPPComment)
+    scanStateToString(Guard)
+    scanStateToString(DefinedExpr1)
+    scanStateToString(DefinedExpr2)
+    scanStateToString(SkipDoubleQuote)
+    scanStateToString(SkipSingleQuote)
+    scanStateToString(UndefName)
+    scanStateToString(IgnoreLine)
+    scanStateToString(FindDefineArgs)
+    scanStateToString(ReadString)
+    scanStateToString(CondLineC)
+    scanStateToString(CondLineCpp)
+    scanStateToString(SkipCond)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

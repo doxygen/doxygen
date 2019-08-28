@@ -164,6 +164,7 @@ static int g_braceCount=0;
   
 static void saveObjCContext();
 static void restoreObjCContext();
+static const char *stateToString(int state);
 
 static QCString g_forceTagReference;
 
@@ -3875,3 +3876,51 @@ extern "C" { // some bogus code to keep the compiler happy
 #error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(SkipString)
+    scanStateToString(SkipStringS)
+    scanStateToString(SkipVerbString)
+    scanStateToString(SkipCPP)
+    scanStateToString(SkipComment)
+    scanStateToString(SkipCxxComment)
+    scanStateToString(RemoveSpecialCComment)
+    scanStateToString(StripSpecialCComment)
+    scanStateToString(Body)
+    scanStateToString(FuncCall)
+    scanStateToString(MemberCall)
+    scanStateToString(MemberCall2)
+    scanStateToString(SkipInits)
+    scanStateToString(ClassName)
+    scanStateToString(AlignAs)
+    scanStateToString(AlignAsEnd)
+    scanStateToString(PackageName)
+    scanStateToString(ClassVar)
+    scanStateToString(CppCliTypeModifierFollowup)
+    scanStateToString(Bases)
+    scanStateToString(SkipSharp)
+    scanStateToString(ReadInclude)
+    scanStateToString(TemplDecl)
+    scanStateToString(TemplCast)
+    scanStateToString(CallEnd)
+    scanStateToString(ObjCMethod)
+    scanStateToString(ObjCParams)
+    scanStateToString(ObjCParamType)
+    scanStateToString(ObjCCall)
+    scanStateToString(ObjCMName)
+    scanStateToString(ObjCSkipStr)
+    scanStateToString(ObjCCallComment)
+    scanStateToString(OldStyleArgs)
+    scanStateToString(UsingName)
+    scanStateToString(RawString)
+    scanStateToString(InlineInit)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

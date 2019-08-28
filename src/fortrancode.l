@@ -166,6 +166,7 @@ static int           inTypeDecl = 0;
 
 static bool      g_endComment;
 
+static const char *stateToString(int state);
 static void endFontClass()
 {
   if (g_currentFontClass)
@@ -1405,3 +1406,31 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(Start)
+    scanStateToString(SubCall)
+    scanStateToString(FuncDef)
+    scanStateToString(ClassName)
+    scanStateToString(ClassVar)
+    scanStateToString(Subprog)
+    scanStateToString(DocBlock)
+    scanStateToString(Use)
+    scanStateToString(UseOnly)
+    scanStateToString(Import)
+    scanStateToString(Declaration)
+    scanStateToString(DeclarationBinding)
+    scanStateToString(DeclContLine)
+    scanStateToString(Parameterlist)
+    scanStateToString(String)
+    scanStateToString(Subprogend)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

@@ -131,6 +131,7 @@ static bool handleParBlock(const QCString &, const QCStringList &);
 static bool handleEndParBlock(const QCString &, const QCStringList &);
 static bool handleParam(const QCString &, const QCStringList &);
 static bool handleRetval(const QCString &, const QCStringList &);
+static const char *stateToString(int state);
 
 typedef bool (*DocCmdFunc)(const QCString &name, const QCStringList &optList);
 
@@ -3278,3 +3279,58 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(Comment)
+    scanStateToString(PageDocArg1)
+    scanStateToString(PageDocArg2)
+    scanStateToString(RelatesParam1)
+    scanStateToString(ClassDocArg1)
+    scanStateToString(ClassDocArg2)
+    scanStateToString(ClassDocArg3)
+    scanStateToString(CategoryDocArg1)
+    scanStateToString(XRefItemParam1)
+    scanStateToString(XRefItemParam2)
+    scanStateToString(XRefItemParam3)
+    scanStateToString(FileDocArg1)
+    scanStateToString(ParamArg1)
+    scanStateToString(EnumDocArg1)
+    scanStateToString(NameSpaceDocArg1)
+    scanStateToString(PackageDocArg1)
+    scanStateToString(GroupDocArg1)
+    scanStateToString(GroupDocArg2)
+    scanStateToString(SectionLabel)
+    scanStateToString(SectionTitle)
+    scanStateToString(SubpageLabel)
+    scanStateToString(SubpageTitle)
+    scanStateToString(FormatBlock)
+    scanStateToString(LineParam)
+    scanStateToString(GuardParam)
+    scanStateToString(GuardParamEnd)
+    scanStateToString(SkipGuardedSection)
+    scanStateToString(SkipInternal)
+    scanStateToString(NameParam)
+    scanStateToString(InGroupParam)
+    scanStateToString(FnParam)
+    scanStateToString(OverloadParam)
+    scanStateToString(InheritParam)
+    scanStateToString(ExtendsParam)
+    scanStateToString(ReadFormulaShort)
+    scanStateToString(ReadFormulaLong)
+    scanStateToString(AnchorLabel)
+    scanStateToString(HtmlComment)
+    scanStateToString(SkipLang)
+    scanStateToString(CiteLabel)
+    scanStateToString(CopyDoc)
+    scanStateToString(GuardExpr)
+    scanStateToString(CdataSection)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

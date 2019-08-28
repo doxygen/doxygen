@@ -124,6 +124,7 @@ static QCString         g_argType = "";
 static bool             g_funcParamsEnd;
 //-----------------------------------------------------------------------------
 
+static const char *stateToString(int state);
 
 static void initParser()
 {
@@ -1736,7 +1737,7 @@ STARTDOCSYMS      "##"
                                }
 
 <*>"'"                         {
-       fprintf(stderr,"Quote: %d\n",YY_START);
+       fprintf(stderr,"Quote: %s\n",stateToString(YY_START));
                                }
 
 <*>.                           {
@@ -1994,3 +1995,41 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(Search)
+    scanStateToString(SearchMemVars)
+    scanStateToString(TryClassDocString)
+    scanStateToString(TripleComment)
+    scanStateToString(SpecialComment)
+    scanStateToString(FunctionDec)
+    scanStateToString(FunctionParams)
+    scanStateToString(FunctionBody)
+    scanStateToString(FunctionAnnotation)
+    scanStateToString(FunctionTypeAnnotation)
+    scanStateToString(FunctionParamDefVal)
+    scanStateToString(ClassDec)
+    scanStateToString(ClassInheritance)
+    scanStateToString(ClassCaptureIndent)
+    scanStateToString(ClassBody)
+    scanStateToString(VariableDec)
+    scanStateToString(VariableEnd)
+    scanStateToString(VariableAtom)
+    scanStateToString(SingleQuoteString)
+    scanStateToString(DoubleQuoteString)
+    scanStateToString(TripleString)
+    scanStateToString(SingleQuoteStringIgnore)
+    scanStateToString(DoubleQuoteStringIgnore)
+    scanStateToString(FromMod)
+    scanStateToString(FromModItem)
+    scanStateToString(Import)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

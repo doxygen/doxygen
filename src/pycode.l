@@ -97,6 +97,7 @@ static bool          g_endComment;
 
 static void endFontClass();
 static void adjustScopesAndSuites(unsigned indentLength);
+static const char *stateToString(int state);
 
 
 /*! Represents a stack of variable to class mappings as found in the
@@ -1646,3 +1647,30 @@ extern "C" { // some bogus code to keep the compiler happy
 #error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(Body)
+    scanStateToString(FunctionDec)
+    scanStateToString(FunctionParams)
+    scanStateToString(ClassDec)
+    scanStateToString(ClassInheritance)
+    scanStateToString(Suite)
+    scanStateToString(SuiteCaptureIndent)
+    scanStateToString(SuiteStart)
+    scanStateToString(SuiteMaintain)
+    scanStateToString(SuiteContinuing)
+    scanStateToString(LongString)
+    scanStateToString(SingleQuoteString)
+    scanStateToString(DoubleQuoteString)
+    scanStateToString(TripleString)
+    scanStateToString(DocBlock)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

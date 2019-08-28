@@ -66,6 +66,8 @@ static QCString configStringRecode(
     const char *fromEncoding,
     const char *toEncoding);
 
+static const char *stateToString(int state);
+
 #define MAX_INCLUDE_DEPTH 10
 #define YY_NEVER_INTERACTIVE 1
 
@@ -1882,3 +1884,25 @@ void Config::deinit()
   ConfigImpl::instance()->deleteInstance();
 }
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(PreStart)
+    scanStateToString(Start)
+    scanStateToString(SkipComment)
+    scanStateToString(SkipInvalid)
+    scanStateToString(GetString)
+    scanStateToString(GetBool)
+    scanStateToString(GetStrList)
+    scanStateToString(GetQuotedString)
+    scanStateToString(GetEnvVar)
+    scanStateToString(Include)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

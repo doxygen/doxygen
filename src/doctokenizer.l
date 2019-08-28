@@ -76,6 +76,7 @@ struct DocLexerContext
 
 static QStack<DocLexerContext> g_lexerStack;
 
+static const char *stateToString(int state);
 //--------------------------------------------------------------------------
 
 void doctokenizerYYpushContext()
@@ -1615,3 +1616,61 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(St_Para)
+    scanStateToString(St_Comment)
+    scanStateToString(St_Title)
+    scanStateToString(St_TitleN)
+    scanStateToString(St_TitleQ)
+    scanStateToString(St_TitleA)
+    scanStateToString(St_TitleV)
+    scanStateToString(St_Code)
+    scanStateToString(St_CodeOpt)
+    scanStateToString(St_XmlCode)
+    scanStateToString(St_HtmlOnly)
+    scanStateToString(St_HtmlOnlyOption)
+    scanStateToString(St_ManOnly)
+    scanStateToString(St_LatexOnly)
+    scanStateToString(St_RtfOnly)
+    scanStateToString(St_XmlOnly)
+    scanStateToString(St_DbOnly)
+    scanStateToString(St_Verbatim)
+    scanStateToString(St_Dot)
+    scanStateToString(St_Msc)
+    scanStateToString(St_PlantUMLOpt)
+    scanStateToString(St_PlantUML)
+    scanStateToString(St_Param)
+    scanStateToString(St_XRefItem)
+    scanStateToString(St_XRefItem2)
+    scanStateToString(St_File)
+    scanStateToString(St_Pattern)
+    scanStateToString(St_Link)
+    scanStateToString(St_Cite)
+    scanStateToString(St_Ref)
+    scanStateToString(St_Ref2)
+    scanStateToString(St_IntRef)
+    scanStateToString(St_Text)
+    scanStateToString(St_SkipTitle)
+    scanStateToString(St_Anchor)
+    scanStateToString(St_Snippet)
+    scanStateToString(St_SetScope)
+    scanStateToString(St_SetScopeEnd)
+    scanStateToString(St_Options)
+    scanStateToString(St_Block)
+    scanStateToString(St_Emoji)
+    scanStateToString(St_Sections)
+    scanStateToString(St_SecLabel1)
+    scanStateToString(St_SecLabel2)
+    scanStateToString(St_SecTitle)
+    scanStateToString(St_SecSkip)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}

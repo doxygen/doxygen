@@ -90,6 +90,9 @@
 #define ckalloc         malloc
 #define ckfree          free
 #define TclCopyAndCollapse(size,src,dest) memcpy(dest,src,size); *(dest+size)=0
+
+static const char *stateToString(int state);
+
 int TclFindElement(
       CONST char *list,         /* Points to the first byte of a string
                                  * containing a Tcl list with zero or more
@@ -3121,3 +3124,25 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+/// Utility function to convert the state number of the lexer into a more readable string
+#define scanStateToString(x) case x: resultString = #x; break;
+static const char *stateToString(int state)
+{
+  const char *resultString;
+  switch(state)
+  {
+    scanStateToString(INITIAL)
+    scanStateToString(ERROR)
+    scanStateToString(TOP)
+    scanStateToString(COMMAND)
+    scanStateToString(WORD)
+    scanStateToString(COMMENT)
+    scanStateToString(COMMENT_NL)
+    scanStateToString(COMMENT_CODE)
+    scanStateToString(COMMENT_VERB)
+    scanStateToString(COMMENTLINE)
+    scanStateToString(COMMENTLINE_NL)
+    default: resultString = "Unknown"; break;
+  }
+  return resultString;
+}
