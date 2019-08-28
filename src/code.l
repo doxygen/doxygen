@@ -2061,7 +2061,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  endFontClass();
 					  BEGIN( Body );
   					}
-<*>^[ \t]*"#"			{ 
+<Body,Bases,FuncCall>^[ \t]*"#"			{ 
   					  startFontClass("preprocessor");
 					  g_lastSkipCppContext = YY_START;
   					  g_code->codify(yytext);
