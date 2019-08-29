@@ -623,6 +623,11 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "}\n"
        "\\makeatother\n"
        "\n";
+  // 
+  t << "\\makeatletter\n"
+       "\\newcommand\\hrulefilll{\\leavevmode\\leaders\\hrule\\hskip 0pt plus 1filll\\kern\\z@}\n"
+       "\\makeatother\n"
+       "\n";
 
   // Headers & footers
   QGString genString;
