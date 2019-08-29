@@ -59,7 +59,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual ~MemberDefImpl();
 
     virtual DefType definitionType() const        { return TypeMember; }
-    virtual MemberDef *resolveAlias() { return this; }
+    virtual       MemberDef *resolveAlias()       { return this; }
     virtual const MemberDef *resolveAlias() const { return this; }
     virtual MemberDef *deepCopy() const;
     virtual void moveTo(Definition *);
@@ -76,7 +76,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual const QCString &initializer() const;
     virtual int initializerLines() const;
     virtual uint64 getMemberSpecifiers() const;
-    virtual const MemberList *getSectionList(const Definition *d) const;
+    virtual const MemberList *getSectionList() const;
     virtual QCString    displayDefinition() const;
     virtual const ClassDef *getClassDef() const;
     virtual ClassDef *getClassDef();
@@ -252,7 +252,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setBitfields(const char *s);
     virtual void setMaxInitLines(int lines);
     virtual void setMemberClass(ClassDef *cd);
-    virtual void setSectionList(Definition *d,MemberList *sl);
+    virtual void setSectionList(MemberList *sl);
     virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0);
@@ -380,12 +380,12 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
 {
   public:
     MemberDefAliasImpl(const Definition *newScope,const MemberDef *md) 
-    : DefinitionAliasImpl(newScope,md) {}
+    : DefinitionAliasImpl(newScope,md), m_memberGroup(0) {}
     virtual ~MemberDefAliasImpl() {}
     virtual DefType definitionType() const { return TypeMember; }
 
-    const MemberDef *getMdAlias() const { return dynamic_cast<const MemberDef*>(getAlias()); }
-    virtual MemberDef *resolveAlias() { return const_cast<MemberDef*>(getMdAlias()); }
+    const MemberDef *getMdAlias() const           { return dynamic_cast<const MemberDef*>(getAlias()); }
+    virtual       MemberDef *resolveAlias()       { return const_cast<MemberDef*>(getMdAlias()); }
     virtual const MemberDef *resolveAlias() const { return getMdAlias(); }
 
     virtual MemberDef *deepCopy() const  {
@@ -419,8 +419,8 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { return getMdAlias()->initializerLines(); }
     virtual uint64 getMemberSpecifiers() const
     { return getMdAlias()->getMemberSpecifiers(); }
-    virtual const MemberList *getSectionList(const Definition *d) const
-    { return getMdAlias()->getSectionList(d); }
+    virtual const MemberList *getSectionList() const
+    { return getMdAlias()->getSectionList(); }
     virtual QCString displayDefinition() const
     { return getMdAlias()->displayDefinition(); }
     virtual const ClassDef *getClassDef() const
@@ -672,7 +672,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual int getMemberGroupId() const
     { return getMdAlias()->getMemberGroupId(); }
     virtual MemberGroup *getMemberGroup() const
-    { return getMdAlias()->getMemberGroup(); }
+    { return m_memberGroup; }
     virtual bool fromAnonymousScope() const
     { return getMdAlias()->fromAnonymousScope(); }
     virtual bool anonymousDeclShown() const
@@ -762,7 +762,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void setBitfields(const char *s) {}
     virtual void setMaxInitLines(int lines) {}
     virtual void setMemberClass(ClassDef *cd) {}
-    virtual void setSectionList(Definition *d,MemberList *sl) {}
+    virtual void setSectionList(MemberList *sl) {}
     virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0) {}
@@ -793,7 +793,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void setType(const char *t) {}
     virtual void setAccessorType(ClassDef *cd,const char *t) {}
     virtual void setNamespace(NamespaceDef *nd) {}
-    virtual void setMemberGroup(MemberGroup *grp) {}
+    virtual void setMemberGroup(MemberGroup *grp) { m_memberGroup = grp; }
     virtual void setMemberGroupId(int id) {}
     virtual void makeImplementationDetail() {}
     virtual void setFromAnonymousScope(bool b) const {}
@@ -849,6 +849,8 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void warnIfUndocumented() const {}
     virtual void warnIfUndocumentedParams() const {}
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const {}
+  private:
+    MemberGroup *m_memberGroup; // group's member definition
 };
 
 
@@ -4536,16 +4538,18 @@ void MemberDefImpl::addListReference(Definition *)
   }
 }
 
-const MemberList *MemberDefImpl::getSectionList(const Definition *d) const
+const MemberList *MemberDefImpl::getSectionList() const
 {
+  const Definition *d= resolveAlias()->getOuterScope();
   char key[20];
   sprintf(key,"%p",d);
   return (d!=0 && m_impl->classSectionSDict) ? m_impl->classSectionSDict->find(key) : 0;
 }
 
-void MemberDefImpl::setSectionList(Definition *d, MemberList *sl)
+void MemberDefImpl::setSectionList(MemberList *sl)
 {
   //printf("MemberDefImpl::setSectionList(%p,%p) name=%s\n",d,sl,name().data());
+  const Definition *d= resolveAlias()->getOuterScope();
   char key[20];
   sprintf(key,"%p",d);
   if (m_impl->classSectionSDict==0)
@@ -4919,7 +4923,7 @@ ClassDef *MemberDefImpl::accessorClass() const
 
 void MemberDefImpl::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),this,0,docFile());
+  docFindSections(documentation(),this,docFile());
 }
 
 void MemberDefImpl::enableCallGraph(bool e)

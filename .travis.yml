@@ -40,30 +40,31 @@ jobs:
           compiler: gcc
         - <<: *linux-ppc64le
           compiler: clang
-        - os: osx
-          compiler: clang
-          addons:
-              homebrew:
-                  packages:
-                      - ghostscript
-                      - bison
-                      - flex
-                  casks:
-                      - mactex-no-gui
+#        - os: osx
+#          compiler: clang
+#          addons:
+#              homebrew:
+#                  packages:
+#                      - ghostscript
+#                      - bison
+#                      - flex
+#                  casks:
+#                      - mactex-no-gui
 
 before_script:
     - |
       if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
         printf "[requires]
-        libxml2/2.9.8@bincrafters/stable
+        libxml2/2.9.9@bincrafters/stable
         libiconv/1.15@bincrafters/stable" >> conanfile.txt;
       fi;
       if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
         printf "[requires]
-        libxml2/2.9.8@bincrafters/stable
+        bzip2/1.0.8@bincrafters/stable
+        libxml2/2.9.9@bincrafters/stable
         libiconv/1.15@bincrafters/stable
         qt/5.12.0@bincrafters/stable
-        bison/3.0.5@bincrafters/stable 
+        bison/3.3.2@bincrafters/stable 
         [options]
         qt:shared=True" >> conanfile.txt;
       fi;

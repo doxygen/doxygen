@@ -50,7 +50,7 @@ class MemberDef : virtual public Definition
 
     virtual MemberDef *resolveAlias() = 0;
     virtual const MemberDef *resolveAlias() const = 0;
-    
+
     //-----------------------------------------------------------------------------------
     // ----  getters -----
     //-----------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ class MemberDef : virtual public Definition
     virtual const QCString &initializer() const = 0;
     virtual int initializerLines() const = 0;
     virtual uint64 getMemberSpecifiers() const = 0;
-    virtual const MemberList *getSectionList(const Definition *d) const = 0;
+    virtual const MemberList *getSectionList() const = 0;
     virtual QCString    displayDefinition() const = 0;
 
     // scope query members
@@ -294,7 +294,7 @@ class MemberDef : virtual public Definition
     virtual void setBitfields(const char *s) = 0;
     virtual void setMaxInitLines(int lines) = 0;
     virtual void setMemberClass(ClassDef *cd) = 0;
-    virtual void setSectionList(Definition *d,MemberList *sl) = 0;
+    virtual void setSectionList(MemberList *sl) = 0;
     virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0) = 0;

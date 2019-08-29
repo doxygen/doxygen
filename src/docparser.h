@@ -77,8 +77,7 @@ DocText *validatingParseText(const char *input);
 
 /*! Searches for section and anchor commands in the input */
 void docFindSections(const char *input,
-                     Definition *d,
-                     MemberGroup *m,
+                     const Definition *d,
                      const char *fileName);
 
 //---------------------------------------------------------------------------

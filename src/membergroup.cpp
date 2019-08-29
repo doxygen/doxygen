@@ -40,8 +40,7 @@ MemberGroup::MemberGroup()
 {
 }
 
-MemberGroup::MemberGroup(const Definition *parent,
-      int id,const char *hdr,const char *d,const char *docFile,int docLine)
+MemberGroup::MemberGroup(int id,const char *hdr,const char *d,const char *docFile,int docLine)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
 
@@ -55,7 +54,6 @@ MemberGroup::MemberGroup(const Definition *parent,
   inDeclSection   = 0;
   m_numDecMembers = -1;
   m_numDocMembers = -1;
-  m_parent        = parent;
   m_docFile       = docFile;
   m_docLine       = docLine;
   m_xrefListItems = 0;
@@ -69,33 +67,32 @@ MemberGroup::~MemberGroup()
 
 void MemberGroup::insertMember(MemberDef *md)
 {
-  //printf("MemberGroup::insertMember m_parent=%s memberList=%p count=%d"
+  //printf("MemberGroup::insertMember memberList=%p count=%d"
   //       " member section list: %p: md=%p:%s\n",
-  //       m_parent ? m_parent->name().data() : "<null>",
-  //       memberList->first() ? memberList->first()->getSectionList(m_parent) : 0,
+  //       memberList->first() ? memberList->first()->getSectionList() : 0,
   //       memberList->count(),
-  //       md->getSectionList(m_parent),
+  //       md->getSectionList(),
   //       md,md->name().data());
 
   MemberDef *firstMd = memberList->getFirst();
-  if (inSameSection && firstMd &&
-      firstMd->getSectionList(m_parent)!=md->getSectionList(m_parent))
+  if (inSameSection && firstMd && firstMd->getSectionList()!=md->getSectionList())
   {
     inSameSection=FALSE;
   }
   else if (inDeclSection==0)
   {
-    inDeclSection = const_cast<MemberList*>(md->getSectionList(m_parent));
+    inDeclSection = const_cast<MemberList*>(md->getSectionList());
     //printf("inDeclSection=%p type=%d\n",inDeclSection,inDeclSection->listType());
   }
   memberList->append(md);
 
   // copy the group of the first member in the memberGroup
   GroupDef *gd;
-  if (firstMd && (gd=const_cast<GroupDef*>(firstMd->getGroupDef())))
+  if (firstMd && !firstMd->isAlias() && (gd=const_cast<GroupDef*>(firstMd->getGroupDef())))
   {
-    md->setGroupDef(gd, firstMd->getGroupPri(), 
-                    firstMd->getGroupFileName(), firstMd->getGroupStartLine(), 
+    md->setGroupDef(gd, firstMd->getGroupPri(),
+                    firstMd->getGroupFileName(),
+                    firstMd->getGroupStartLine(),
                     firstMd->getGroupHasDocs());
     gd->insertMember(md);
   }
@@ -152,8 +149,8 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
   MemberDef *md;
   for (li.toFirst();(md=li.current());++li)
   {
-    //printf("matching %d == %d\n",lt,md->getSectionList(m_parent)->listType());
-    const MemberList *ml = md->getSectionList(m_parent);
+    //printf("matching %d == %d\n",lt,md->getSectionList()->listType());
+    const MemberList *ml = md->getSectionList();
     if (ml && lt==ml->listType())
     {
       MemberList ml(lt);
@@ -172,8 +169,8 @@ int MemberGroup::countGroupedInheritedMembers(MemberListType lt)
   MemberDef *md;
   for (li.toFirst();(md=li.current());++li)
   {
-    //printf("matching %d == %d\n",lt,md->getSectionList(m_parent)->listType());
-    const MemberList *ml = md->getSectionList(m_parent);
+    //printf("matching %d == %d\n",lt,md->getSectionList()->listType());
+    const MemberList *ml = md->getSectionList();
     if (ml && lt==ml->listType())
     {
       count++;
@@ -354,10 +351,10 @@ void MemberGroup::addListReferences(Definition *def)
   }
 }
 
-void MemberGroup::findSectionsInDocumentation()
+void MemberGroup::findSectionsInDocumentation(const Definition *d)
 {
-  docFindSections(doc,0,this,m_docFile);
-  memberList->findSectionsInDocumentation();
+  docFindSections(doc,d,m_docFile);
+  memberList->findSectionsInDocumentation(d);
 }
 
 void MemberGroup::setRefItems(const QList<ListItemInfo> *sli)

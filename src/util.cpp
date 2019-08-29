@@ -6276,7 +6276,6 @@ void addMembersToMemberGroup(MemberList *ml,
               if (mg==0)
               {
                 mg = new MemberGroup(
-                    context,
                     groupId,
                     info->header,
                     info->doc,
@@ -6309,7 +6308,6 @@ void addMembersToMemberGroup(MemberList *ml,
         if (mg==0)
         {
           mg = new MemberGroup(
-              context,
               groupId,
               info->header,
               info->doc,

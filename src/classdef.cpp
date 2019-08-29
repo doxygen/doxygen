@@ -1276,14 +1276,14 @@ void ClassDefImpl::distributeMemberGroupDocumentation()
 
 void ClassDefImpl::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),this,0,docFile());
+  docFindSections(documentation(),this,docFile());
   if (m_impl->memberGroupSDict)
   {
     MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      mg->findSectionsInDocumentation();
+      mg->findSectionsInDocumentation(this);
     }
   }
   QListIterator<MemberList> mli(m_impl->memberLists);
@@ -1292,7 +1292,7 @@ void ClassDefImpl::findSectionsInDocumentation()
   {
     if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      ml->findSectionsInDocumentation();
+      ml->findSectionsInDocumentation(this);
     }
   }
 }
@@ -4813,7 +4813,7 @@ void ClassDefImpl::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
   ml->append(md);
 
   // for members in the declaration lists we set the section, needed for member grouping
-  if ((ml->listType()&MemberListType_detailedLists)==0) md->setSectionList(this,ml);
+  if ((ml->listType()&MemberListType_detailedLists)==0) md->setSectionList(ml);
 }
 
 void ClassDefImpl::sortMemberLists()

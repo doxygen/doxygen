@@ -57,8 +57,7 @@ static bool g_insidePre;
 static int g_sharpCount=0;
 
 // context for section finding phase
-static Definition  *g_definition;
-static MemberGroup *g_memberGroup;
+static const Definition  *g_definition;
 static QCString     g_secLabel;
 static QCString     g_secTitle;
 static SectionInfo::SectionType g_secType;
@@ -159,11 +158,7 @@ static void processSection()
 {
   //printf("%s: found section/anchor with name '%s'\n",g_fileName.data(),g_secLabel.data());
   QCString file;
-  if (g_memberGroup)
-  {
-    file = g_memberGroup->parent()->getOutputFileBase();
-  }
-  else if (g_definition)
+  if (g_definition)
   {
     file = g_definition->getOutputFileBase();
   }
@@ -1369,8 +1364,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 
 //--------------------------------------------------------------------------
 
-void doctokenizerYYFindSections(const char *input,Definition *d,
-                                MemberGroup *mg,const char *fileName)
+void doctokenizerYYFindSections(const char *input,const Definition *d,
+                                const char *fileName)
 {
   if (input==0) return;
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
@@ -1378,7 +1373,6 @@ void doctokenizerYYFindSections(const char *input,Definition *d,
   //printf("parsing --->'%s'<---\n",input);
   g_inputPos    = 0;
   g_definition  = d;
-  g_memberGroup = mg;
   g_fileName    = fileName;
   BEGIN(St_Sections);
   doctokenizerYYlineno = 1;
