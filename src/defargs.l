@@ -308,9 +308,21 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <CopyArgSharp>">"			{
 					  *g_copyArgValue += *yytext;
-                                          // don't count > inside )
-					  if (g_argSharpCount>0 && g_argRoundCount==0) g_argSharpCount--;
-					  else BEGIN( g_readArgContext );
+                                          if (g_argRoundCount>0 && g_argSharpCount==0)
+                                          {
+                                            // don't count > inside )
+                                          }
+                                          else
+                                          {
+                                            if (g_argSharpCount>0)
+                                            {
+                                              g_argSharpCount--;
+                                            }
+                                            else
+                                            {
+                                              BEGIN( g_readArgContext );
+                                            }
+                                          }
   					}
 <CopyArgSharp>"("                       {
                                           g_argRoundCount++;
