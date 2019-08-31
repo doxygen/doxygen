@@ -1404,7 +1404,9 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <value name='*.markdown'/>
       <value name='*.md'/>
       <value name='*.mm'/>
-      <value name='*.dox'/>
+      <value name='*.dox' desc='(to be provided as doxygen C comment)'/>
+      <value name='*.doc' desc='(to be provided as doxygen C comment)'/>
+      <value name='*.txt' desc='(to be provided as doxygen C comment)'/>
       <value name='*.py'/>
       <value name='*.pyw'/>
       <value name='*.f90'/>
