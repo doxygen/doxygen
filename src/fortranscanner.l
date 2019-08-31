@@ -1654,6 +1654,7 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
         }
         inBackslash = FALSE;
         // fallthrough
+      case '#':
       case 'C':
       case 'c':
       case '*':
