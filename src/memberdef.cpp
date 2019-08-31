@@ -4203,19 +4203,19 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
   else if ( // see if return type is documented in a function w/o return type
       hasReturnCommand &&
       (
-       returnType.find("void")!=-1       || // void return type
+       (returnType.find("void")!=-1 && returnType.find('*')==-1)      || // void return type
        returnType.find("subroutine")!=-1 || // fortran subroutine
        isConstructor()      || // a constructor
        isDestructor()          // or destructor
       )
       )
   {
-    warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of  %s",
+    warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of %s",
                           qualifiedName().data());
   }
   else if ( // see if return needs to documented 
       m_impl->hasDocumentedReturnType ||
-      returnType.find("void")!=-1  || // void return type
+      (returnType.find("void")!=-1 && returnType.find('*')==-1)      || // void return type
       returnType.find("subroutine")!=-1 || // fortran subroutine
       isConstructor() || // a constructor
       isDestructor()     // or destructor
