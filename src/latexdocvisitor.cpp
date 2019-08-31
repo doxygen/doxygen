@@ -51,6 +51,7 @@ static const char *getSectionName(int level)
 
 static void visitPreStart(FTextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
 {
+    bool isSvg = name.right(4)==".svg";
     if (inlineImage)
     {
       t << "\n\\begin{DoxyInlineImage}\n";
@@ -68,7 +69,11 @@ static void visitPreStart(FTextStream &t, bool hasCaption, QCString name,  QCStr
       }
     }
 
-    t << "\\includegraphics";
+    if (isSvg)
+      t << "\\includesvg";
+    else 
+      t << "\\includegraphics";
+
     if (!width.isEmpty() || !height.isEmpty())
     {
       t << "[";
@@ -88,13 +93,27 @@ static void visitPreStart(FTextStream &t, bool hasCaption, QCString name,  QCStr
     if (width.isEmpty() && height.isEmpty())
     {
       /* default setting */
-      if (inlineImage)
+      if (isSvg)
       {
-        t << "[height=\\baselineskip,keepaspectratio=true]";
+        if (inlineImage)
+        {
+          t << "[height=\\baselineskip]";
+        }
+        else
+        {
+          t << "[width=\\textwidth,height=0.5\\textheight]";
+        }
       }
       else
       {
-        t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+        if (inlineImage)
+        {
+          t << "[height=\\baselineskip,keepaspectratio=true]";
+        }
+        else
+        {
+          t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+        }
       }
     }
     else

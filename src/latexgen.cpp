@@ -533,6 +533,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
     }
   }
   t << "\\usepackage{graphicx}\n"
+       "\\usepackage{svg}\n"
        "\\usepackage[utf8]{inputenc}\n"
        "\\usepackage{makeidx}\n"
        "\\usepackage{multicol}\n"
