@@ -3191,7 +3191,7 @@ class Receiver
   \anchor image_sizeindicator \par Size indication
   The \c sizeindication can specify the width or height to be used (or a combination).
   The size specifier in \LaTeX (for example `10cm` or
-  `4in` or a symbolic width like `\\textwidth`).
+  `4in` or a symbolic width like `\textwidth`).
 
   Currently only the option `inline` is supported. In case the option `inline` is
   specified the image is placed "in the line", when a caption s present it is shown 
@@ -3214,8 +3214,10 @@ class Receiver
 \endverbatim
 
   \warning The image format for HTML is limited to what your
-           browser supports. For \LaTeX, the image format
-           must be Encapsulated PostScript (eps).
+           browser supports.<br>For \LaTeX, the image format
+           must be supported by the \LaTeX `\includegraphics` command i.e.
+           Encapsulated PostScript (eps), Portable network graphics (png),
+           Joint photographic experts group (jpg / jpeg).
            <br><br>
            Doxygen does not check if the image is in the correct format.
            So \e you have to make sure this is the case!
