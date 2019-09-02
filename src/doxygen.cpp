@@ -11001,6 +11001,8 @@ static QCString getQchFileName()
 
 void searchInputFiles()
 {
+  QDict<void> *killDict = new QDict<void>(10007);
+
   QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
   bool alwaysRecursive = Config_getBool(RECURSIVE);
   StringDict excludeNameDict(1009);
@@ -11008,6 +11010,7 @@ void searchInputFiles()
 
   // gather names of all files in the include path
   g_s.begin("Searching for include files...\n");
+  killDict->clear();
   QStrList &includePathList = Config_getList(INCLUDE_PATH);
   char *s=includePathList.first();
   while (s)
@@ -11019,12 +11022,14 @@ void searchInputFiles()
     }
     readFileOrDirectory(s,0,Doxygen::includeNameDict,0,&pl,
                         &exclPatterns,0,0,
-                        alwaysRecursive);
+                        alwaysRecursive,
+                        TRUE,killDict);
     s=includePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for example files...\n");
+  killDict->clear();
   QStrList &examplePathList = Config_getList(EXAMPLE_PATH);
   s=examplePathList.first();
   while (s)
@@ -11032,55 +11037,64 @@ void searchInputFiles()
     readFileOrDirectory(s,0,Doxygen::exampleNameDict,0,
                         &Config_getList(EXAMPLE_PATTERNS),
                         0,0,0,
-                        (alwaysRecursive || Config_getBool(EXAMPLE_RECURSIVE)));
+                        (alwaysRecursive || Config_getBool(EXAMPLE_RECURSIVE)),
+                        TRUE,killDict);
     s=examplePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for images...\n");
+  killDict->clear();
   QStrList &imagePathList=Config_getList(IMAGE_PATH);
   s=imagePathList.first();
   while (s)
   {
     readFileOrDirectory(s,0,Doxygen::imageNameDict,0,0,
                         0,0,0,
-                        alwaysRecursive);
+                        alwaysRecursive,
+                        TRUE,killDict);
     s=imagePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for dot files...\n");
+  killDict->clear();
   QStrList &dotFileList=Config_getList(DOTFILE_DIRS);
   s=dotFileList.first();
   while (s)
   {
     readFileOrDirectory(s,0,Doxygen::dotFileNameDict,0,0,
                         0,0,0,
-                        alwaysRecursive);
+                        alwaysRecursive,
+                        TRUE,killDict);
     s=dotFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for msc files...\n");
+  killDict->clear();
   QStrList &mscFileList=Config_getList(MSCFILE_DIRS);
   s=mscFileList.first();
   while (s)
   {
     readFileOrDirectory(s,0,Doxygen::mscFileNameDict,0,0,
                         0,0,0,
-                        alwaysRecursive);
+                        alwaysRecursive,
+                        TRUE,killDict);
     s=mscFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for dia files...\n");
+  killDict->clear();
   QStrList &diaFileList=Config_getList(DIAFILE_DIRS);
   s=diaFileList.first();
   while (s)
   {
     readFileOrDirectory(s,0,Doxygen::diaFileNameDict,0,0,
                         0,0,0,
-                        alwaysRecursive);
+                        alwaysRecursive,
+                        TRUE,killDict);
     s=diaFileList.next();
   }
   g_s.end();
@@ -11103,7 +11117,7 @@ void searchInputFiles()
    **************************************************************************/
 
   g_s.begin("Searching INPUT for files to process...\n");
-  QDict<void> *killDict = new QDict<void>(10007);
+  killDict->clear();
   QStrList &inputList=Config_getList(INPUT);
   g_inputFiles.setAutoDelete(TRUE);
   s=inputList.first();
@@ -11132,8 +11146,9 @@ void searchInputFiles()
     s=inputList.next();
   }
   Doxygen::inputNameList->sort();
-  delete killDict;
   g_s.end();
+
+  delete killDict;
 }
 
 
