@@ -861,6 +861,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  lineCount() ;
                                           BEGIN( FindMembers );
 					}
+<FindMembers>"?>"|"</script>"           { // PHP code end
+					  if (insidePHP)
+					    BEGIN( FindMembersPHP );
+					  else
+					    REJECT;
+                                        }
 <FindMembersPHP>[^\n<]+                 { // Non-PHP code text, ignore
   					}
 <FindMembersPHP>\n                      { // Non-PHP code text, ignore
@@ -6903,13 +6909,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <SkipComment>[^\*\n]+
 
   /* ------------ Generic rules -------------- */
-
-<*>"?>"|"</script>"                     { // PHP code end
-					  if (insidePHP)
-					    BEGIN( FindMembersPHP );
-					  else
-					    REJECT;
-                                        }
 
 <*>"[["                                 { // C++11 attribute
                                           if (!insideCpp) REJECT;
