@@ -7164,6 +7164,7 @@ QCString latexFilterURL(const char *s)
     {
       case '#':  t << "\\#"; break;
       case '%':  t << "\\%"; break;
+      case '\\':  t << "\\\\"; break;
       default:
         t << c;
         break;
