@@ -87,6 +87,7 @@ static int              g_lastDocChar;
 static int              g_lastExtendsContext;
 static QCString         g_delimiter;
 
+static const char *stateToString(int state);
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
@@ -637,3 +638,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "defargs.l.h"

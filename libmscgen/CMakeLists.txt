@@ -4,6 +4,18 @@ include_directories(
     ${GENERATED_SRC}
 )
 
+set(LEX_FILES mscgen_lexer) 
+foreach(lex_file ${LEX_FILES})
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/scan_states.py ${CMAKE_SOURCE_DIR}/libmscgen/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/scan_states.py ${CMAKE_SOURCE_DIR}/libmscgen/${lex_file}.l
+        OUTPUT  ${GENERATED_SRC}/${lex_file}.l.h
+    )
+    set_source_files_properties(${GENERATED_SRC}/${lex_file}.l.h PROPERTIES GENERATED 1)
+
+    FLEX_TARGET(${lex_file}        ${lex_file}.l        ${GENERATED_SRC}/${lex_file}.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
+endforeach()
+
 add_library(mscgen
 gd.c
 gd_security.c
@@ -19,6 +31,7 @@ mscgen_ps_out.c
 mscgen_null_out.c
 ${GENERATED_SRC}/mscgen_language.cpp
 ${GENERATED_SRC}/mscgen_lexer.cpp
+${GENERATED_SRC}/mscgen_lexer.l.h
 mscgen_api.c
 mscgen_msc.c
 mscgen_safe.c
@@ -28,10 +41,6 @@ mscgen_utf8.c
 )
 
 
-FLEX_TARGET(mscgen_lexer
-            mscgen_lexer.l
-            ${GENERATED_SRC}/mscgen_lexer.cpp
-            COMPILE_FLAGS "${LEX_FLAGS}")
 BISON_TARGET(mscgen_language
              mscgen_language.y
              ${GENERATED_SRC}/mscgen_language.cpp

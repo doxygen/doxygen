@@ -94,6 +94,8 @@ static bool     g_vhdl; // for VHDL old style --! comment
 static SrcLangExt g_lang;
 static bool       isFixedForm; // For Fortran
 
+static const char *stateToString(int state);
+
 static void replaceCommentMarker(const char *s,int len)
 {
   const char *p=s;
@@ -1145,3 +1147,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "commentcnv.l.h"

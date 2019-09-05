@@ -63,6 +63,7 @@ struct declinfoYY_state
      bool         insidePHP;
 };
 
+static const char *stateToString(int state);
 static void addType(yyscan_t yyscanner);
 static void addTypeName(yyscan_t yyscanner);
 static int yyread(char *buf,int max_size, yyscan_t yyscanner);
@@ -391,3 +392,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "declinfo.l.h"

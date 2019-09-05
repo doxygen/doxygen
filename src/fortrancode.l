@@ -166,6 +166,8 @@ static int           inTypeDecl = 0;
 
 static bool      g_endComment;
 
+static const char *stateToString(int state);
+
 static void endFontClass()
 {
   if (g_currentFontClass)
@@ -1405,3 +1407,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "fortrancode.l.h"
