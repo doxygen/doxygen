@@ -2720,11 +2720,6 @@ static bool handleCite(const QCString &s, const QCStringList &)
 
 static bool handleFormatBlock(const QCString &s, const QCStringList &optList)
 {
-  if (!g_spaceBeforeCmd.isEmpty())
-  {
-    addOutput(g_spaceBeforeCmd);
-    g_spaceBeforeCmd.resize(0);
-  }
   if (optList.isEmpty())
   {
     addOutput("@"+s+" ");
