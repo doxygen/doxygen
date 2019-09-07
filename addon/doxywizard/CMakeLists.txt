@@ -31,7 +31,6 @@ endif()
 include_directories(
 	.
         ${CMAKE_SOURCE_DIR}/libversion
-	${CMAKE_SOURCE_DIR}/src
 	${CMAKE_SOURCE_DIR}/qtools
 	${GENERATED_SRC}
 )
