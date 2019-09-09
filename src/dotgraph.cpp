@@ -29,6 +29,35 @@
 
 QCString DotGraph::DOT_FONTNAME; // will be initialized in initDot
 int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot
+QCString DotGraph::IMG_EXT;      // will be initialized in initDot
+QCString DotGraph::CACHE_DIR;    // will be initialized in initDot
+
+
+static bool checkCache(QCString const & cacheName)
+{
+  if (DotGraph::CACHE_DIR.isEmpty())
+    return FALSE;
+
+  QFileInfo fi(DotGraph::CACHE_DIR + cacheName);
+  return fi.exists() && fi.size()>0;
+}
+
+static void copyFromCache(QCString const& cacheName, QCString const& absFileName)
+{
+  QFile f(absFileName);
+  if (f.exists()) f.remove();
+  copyFile(DotGraph::CACHE_DIR + cacheName, absFileName);
+}
+
+void copyToCache(QCString const& absFileName, QCString const& cacheName)
+{
+  if (DotGraph::CACHE_DIR.isEmpty())
+    return;
+
+  QFile f(cacheName);
+  if (f.exists()) f.remove();
+  copyFile(absFileName, DotGraph::CACHE_DIR + cacheName);
+}
 
 /*! Checks if a file "baseName".md5 exists. If so the contents
 *  are compared with \a md5. If equal FALSE is returned.
@@ -104,7 +133,10 @@ static bool insertMapFile(FTextStream &out,const QCString &mapFile,
 
 //--------------------------------------------------------------------
 
-QCString DotGraph::IMG_EXT;
+QCString DotGraph::imgExt() const 
+{
+  return (m_graphFormat == GOF_BITMAP) ? IMG_EXT : (Config_getBool(USE_PDFLATEX) ? "pdf" : "eps");
+}
 
 QCString DotGraph::imgName() const
 {
@@ -160,6 +192,7 @@ bool DotGraph::prepareDotFile()
 
   // already queued files are processed again in case the output format has changed
 
+  // check if the needed file already exist
   if (!checkMd5Signature(absBaseName(), sigStr) &&
       checkDeliverables(absImgName(),
                         m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
@@ -168,6 +201,17 @@ bool DotGraph::prepareDotFile()
   {
     // all needed files are there
     removeDotGraph(absDotName());
+    return FALSE;
+  }
+
+  // check if we have them in cache
+  if (
+    checkCache(sigStr + '.' + imgExt()) && 
+    (m_graphFormat == GOF_BITMAP && m_generateImageMap ? checkCache(sigStr + ".map") : TRUE))
+  {
+    // the needed files are in the cache
+    copyFromCache(sigStr + '.' + imgExt(), absImgName());
+    if (m_graphFormat == GOF_BITMAP && m_generateImageMap) copyFromCache(sigStr + ".map", absMapName());
     return FALSE;
   }
 

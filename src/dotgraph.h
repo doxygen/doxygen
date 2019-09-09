@@ -36,6 +36,7 @@ class DotGraph
 
     static QCString DOT_FONTNAME; // will be initialized in initDot
     static int DOT_FONTSIZE;      // will be initialized in initDot
+    static QCString CACHE_DIR;
 
     static bool writeVecGfxFigure(FTextStream& out, const QCString& baseName, const QCString& figureName);
 
@@ -78,6 +79,7 @@ class DotGraph
 
     QCString absBaseName() const { return m_absPath + m_baseName; }
     QCString absDotName()  const { return m_absPath + m_baseName + ".dot"; }
+    QCString imgExt()      const;
     QCString imgName()     const;
     QCString absImgName()  const { return m_absPath + imgName(); }
     QCString relImgName()  const { return m_relPath + imgName(); }
@@ -109,5 +111,7 @@ class DotGraph
 
     int m_curNodeNumber;
 };
+
+void copyToCache(QCString const& absFileName, QCString const& cacheName);
 
 #endif
