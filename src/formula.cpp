@@ -118,16 +118,29 @@ void FormulaList::generateBitmaps(const char *path)
       int pageNum=*pagePtr;
       msg("Generating image form_%d.png for formula\n",pageNum);
       char dviArgs[4096];
+      char psArgs[4096];
       QCString formBase;
       formBase.sprintf("_form%d",pageNum);
       // run dvips to convert the page with number pageIndex to an
-      // encapsulated postscript.
-      sprintf(dviArgs,"-q -D 600 -E -n 1 -p %d -o %s.eps _formulas.dvi",
+      // postscript file.
+      sprintf(dviArgs,"-q -D 600 -n 1 -p %d -o %s_tmp.ps _formulas.dvi",
           pageIndex,formBase.data());
       portable_sysTimerStart();
       if (portable_system("dvips",dviArgs)!=0)
       {
         err("Problems running dvips. Check your installation!\n");
+        portable_sysTimerStop();
+        QDir::setCurrent(oldDir);
+        return;
+      }
+      portable_sysTimerStop();
+      // run ps2epsi to convert to an encapsulated postscript file with
+      // boundingbox (dvips with -E has some problems here).
+      sprintf(psArgs,"%s_tmp.ps %s.eps",formBase.data(),formBase.data()); 
+      portable_sysTimerStart();
+      if (portable_system("ps2epsi",psArgs)!=0)
+      {
+        err("Problems running ps2epsi. Check your installation!\n");
         portable_sysTimerStop();
         QDir::setCurrent(oldDir);
         return;
@@ -282,6 +295,7 @@ void FormulaList::generateBitmaps(const char *path)
         f.close();
       } 
       // remove intermediate image files
+      thisDir.remove(formBase+"_tmp.ps");
       thisDir.remove(formBase+".eps");
       thisDir.remove(formBase+".pnm");
       thisDir.remove(formBase+".ps");
