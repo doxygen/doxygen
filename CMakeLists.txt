@@ -49,8 +49,8 @@ if (use_libclang)
     endif()
 endif()
 
-# use C++11 standard for compiling (libclang option requires it)
-set(CMAKE_CXX_STANDARD 11)
+# use C++14 standard for compiling (libclang option requires it)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
