@@ -30,6 +30,7 @@
 #include <qregexp.h>
 #include <qstack.h>
 #include <qglobal.h>
+#include <qthread.h>
   
 #include "configimpl.h"
 #include "version.h"
@@ -1531,6 +1532,7 @@ void Config::checkAndCorrect()
   //  dotImageFormat = "png";
   //}
 
+  // correct DOT_FONTNAME if needed
   QCString &dotFontName=Config_getString(DOT_FONTNAME);
   if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
   {
@@ -1538,7 +1540,32 @@ void Config::checkAndCorrect()
                "You may want to clear or change DOT_FONTNAME.\n"
                "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
   }
+  else if (dotFontName.isEmpty())
+  {
+    dotFontName = "Helvetica";
+  }
 
+  // clip dotFontSize against the maximum bounds
+  int &dotFontSize = Config_getInt(DOT_FONTSIZE);
+  if (dotFontSize<4)
+  {
+    dotFontSize=4;
+  }
+  else if (dotFontSize>24)
+  {
+    dotFontSize=24;
+  }
+
+  // clip number of threads
+  int &dotNumThreads = Config_getInt(DOT_NUM_THREADS);
+  if (dotNumThreads>32)
+  {
+    dotNumThreads=32;
+  }
+  else if (dotNumThreads<=0)
+  {
+    dotNumThreads=QMAX(2,QThread::idealThreadCount()+1);
+  }
 
   // check dot path
   QCString &dotPath = Config_getString(DOT_PATH);

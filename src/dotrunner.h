@@ -34,7 +34,6 @@ class DotConstString
     DotConstString(const DotConstString &s) : m_str(0) { set(s.data()); }
     const char *data() const                           { return m_str; }
     bool isEmpty() const                               { return m_str==0 || m_str[0]=='\0'; }
-    void init(const char *s)                           { set(s); }
 
   private:
     void set(char const* s)
@@ -101,14 +100,9 @@ class DotRunner
   private:
     DotConstString m_file;
     DotConstString m_md5Hash;
+    DotConstString m_dotExe;
     bool           m_cleanUp;
     QList<DotJob>  m_jobs;
-
-    static bool DOT_CLEANUP;
-    static bool DOT_MULTI_TARGETS;
-    static DotConstString DOT_EXE;
-    friend void initDot();
-
 };
 
 /** Queue of dot jobs to run. */

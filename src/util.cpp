@@ -9051,9 +9051,9 @@ bool mainPageHasTitle()
 
 QCString getDotImageExtension(void)
 {
-  QCString imgExt      = Config_getEnum(DOT_IMAGE_FORMAT);
-  imgExt = imgExt.replace( QRegExp(":.*"), "" );
-  return imgExt;
+  QCString imgExt = Config_getEnum(DOT_IMAGE_FORMAT);
+  int i= imgExt.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
+  return i==-1 ? imgExt : imgExt.left(i);
 }
 
 bool openOutputFile(const char *outFile,QFile &f)

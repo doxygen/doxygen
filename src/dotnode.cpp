@@ -540,7 +540,7 @@ void DotNode::writeArrow(FTextStream &t,
 
   if (pointBack && !umlUseArrow) t << "dir=\"back\",";
   t << "color=\"" << eProps->edgeColorMap[ei->color()]
-    << "\",fontsize=\"" << DotGraph::DOT_FONTSIZE << "\",";
+    << "\",fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\",";
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
   if (!ei->label().isEmpty())
   {
@@ -559,7 +559,7 @@ void DotNode::writeArrow(FTextStream &t,
       t << ",arrowhead=\"" << eProps->arrowStyleMap[ei->color()] << "\"";
   }
 
-  if (format==GOF_BITMAP) t << ",fontname=\"" << DotGraph::DOT_FONTNAME << "\"";
+  if (format==GOF_BITMAP) t << ",fontname=\"" << Config_getString(DOT_FONTNAME) << "\"";
   t << "];" << endl; 
 }
 

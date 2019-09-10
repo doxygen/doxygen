@@ -24,11 +24,12 @@
 #include "dotrunner.h"
 #include "dotgraph.h"
 #include "dotnode.h"
+#include "dotfilepatcher.h"
 
 #define MAP_CMD "cmapx"
 
-QCString DotGraph::DOT_FONTNAME; // will be initialized in initDot
-int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot
+//QCString DotGraph::DOT_FONTNAME; // will be initialized in initDot
+//int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot
 
 /*! Checks if a file "baseName".md5 exists. If so the contents
 *  are compared with \a md5. If equal FALSE is returned.
@@ -90,7 +91,7 @@ static bool insertMapFile(FTextStream &out,const QCString &mapFile,
   {
     QGString tmpstr;
     FTextStream tmpout(&tmpstr);
-    convertMapFile(tmpout,mapFile,relPath,FALSE);
+    DotFilePatcher::convertMapFile(tmpout,mapFile,relPath,FALSE);
     if (!tmpstr.isEmpty())
     {
       out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">" << endl;
@@ -104,12 +105,10 @@ static bool insertMapFile(FTextStream &out,const QCString &mapFile,
 
 //--------------------------------------------------------------------
 
-QCString DotGraph::IMG_EXT;
-
 QCString DotGraph::imgName() const
 {
   return m_baseName + ((m_graphFormat == GOF_BITMAP) ?
-                      ("." + IMG_EXT) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps")); 
+                      ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps")); 
 }
 
 QCString DotGraph::writeGraph(
@@ -209,6 +208,7 @@ bool DotGraph::prepareDotFile()
 
 void DotGraph::generateCode(FTextStream &t)
 {
+  QCString imgExt = getDotImageExtension();
   if (m_graphFormat==GOF_BITMAP && m_textFormat==EOF_DocBook)
   {
     t << "<para>" << endl;
@@ -216,7 +216,7 @@ void DotGraph::generateCode(FTextStream &t)
     t << "        <mediaobject>" << endl;
     t << "            <imageobject>" << endl;
     t << "                <imagedata";
-    t << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << m_relPath << m_baseName << "." << IMG_EXT << "\">";
+    t << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << m_relPath << m_baseName << "." << imgExt << "\">";
     t << "</imagedata>" << endl;
     t << "            </imageobject>" << endl;
     t << "        </mediaobject>" << endl;
@@ -225,16 +225,20 @@ void DotGraph::generateCode(FTextStream &t)
   }
   else if (m_graphFormat==GOF_BITMAP && m_generateImageMap) // produce HTML to include the image
   {
-    if (IMG_EXT=="svg") // add link to SVG file without map file
+    if (imgExt=="svg") // add link to SVG file without map file
     {
       if (!m_noDivTag) t << "<div class=\"center\">";
-      if (m_regenerate || !writeSVGFigureLink(t,m_relPath,m_baseName,absImgName())) // need to patch the links in the generated SVG file
+      if (m_regenerate || !DotFilePatcher::writeSVGFigureLink(t,m_relPath,m_baseName,absImgName())) // need to patch the links in the generated SVG file
       {
         if (m_regenerate)
         {
-          DotManager::instance()->addSVGConversion(absImgName(),m_relPath,FALSE,QCString(),m_zoomable,m_graphId);
+          DotManager::instance()->
+               createFilePatcher(absImgName())->
+               addSVGConversion(m_relPath,FALSE,QCString(),m_zoomable,m_graphId);
         }
-        int mapId = DotManager::instance()->addSVGObject(m_fileName,m_baseName,absImgName(),m_relPath);
+        int mapId = DotManager::instance()->
+               createFilePatcher(m_fileName)->
+               addSVGObject(m_baseName,absImgName(),m_relPath);
         t << "<!-- SVG " << mapId << " -->" << endl;
       }
       if (!m_noDivTag) t << "</div>" << endl;
@@ -247,16 +251,20 @@ void DotGraph::generateCode(FTextStream &t)
       t << endl;
       if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, getMapLabel()))
       {
-        int mapId = DotManager::instance()->addMap(m_fileName, absMapName(), m_relPath, m_urlOnly, QCString(), getMapLabel());
+        int mapId = DotManager::instance()->
+          createFilePatcher(m_fileName)->
+          addMap(absMapName(), m_relPath, m_urlOnly, QCString(), getMapLabel());
         t << "<!-- MAP " << mapId << " -->" << endl;
       }
     }
   }
   else if (m_graphFormat==GOF_EPS) // produce tex to include the .eps image
   {
-    if (m_regenerate || !writeVecGfxFigure(t,m_baseName,absBaseName()))
+    if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absBaseName()))
     {
-      int figId = DotManager::instance()->addFigure(m_fileName,m_baseName,absBaseName(),FALSE /*TRUE*/);
+      int figId = DotManager::instance()->
+                  createFilePatcher(m_fileName)->
+                  addFigure(m_baseName,absBaseName(),FALSE /*TRUE*/);
       t << endl << "% FIG " << figId << endl;
     }
   }
@@ -264,6 +272,8 @@ void DotGraph::generateCode(FTextStream &t)
 
 void DotGraph::writeGraphHeader(FTextStream &t,const QCString &title)
 {
+  int fontSize      = Config_getInt(DOT_FONTSIZE);
+  QCString fontName = Config_getString(DOT_FONTNAME);
   t << "digraph ";
   if (title.isEmpty())
   {
@@ -284,12 +294,12 @@ void DotGraph::writeGraphHeader(FTextStream &t,const QCString &title)
   {
     t << "  bgcolor=\"transparent\";" << endl;
   }
-  t << "  edge [fontname=\"" << DOT_FONTNAME << "\","
-         "fontsize=\"" << DOT_FONTSIZE << "\","
-         "labelfontname=\"" << DOT_FONTNAME << "\","
-         "labelfontsize=\"" << DOT_FONTSIZE << "\"];\n";
-  t << "  node [fontname=\"" << DOT_FONTNAME << "\","
-         "fontsize=\"" << DOT_FONTSIZE << "\",shape=record];\n";
+  t << "  edge [fontname=\"" << fontName << "\","
+         "fontsize=\"" << fontSize << "\","
+         "labelfontname=\"" << fontName << "\","
+         "labelfontsize=\"" << fontSize << "\"];\n";
+  t << "  node [fontname=\"" << fontName << "\","
+         "fontsize=\"" << fontSize << "\",shape=record];\n";
 }
 
 void DotGraph::writeGraphFooter(FTextStream &t)
@@ -347,54 +357,3 @@ void DotGraph::computeGraph(DotNode *root,
   graphStr=buf.data();
 }
 
-bool DotGraph::writeVecGfxFigure(FTextStream &out,const QCString &baseName,
-                                 const QCString &figureName)
-{
-  int width=400,height=550;
-  if (Config_getBool(USE_PDFLATEX))
-  {
-    if (!DotRunner::readBoundingBox(figureName+".pdf",&width,&height,FALSE))
-    {
-      //printf("writeVecGfxFigure()=0\n");
-      return FALSE;
-    }
-  }
-  else
-  {
-    if (!DotRunner::readBoundingBox(figureName+".eps",&width,&height,TRUE))
-    {
-      //printf("writeVecGfxFigure()=0\n");
-      return FALSE;
-    }
-  }
-  //printf("Got PDF/EPS size %d,%d\n",width,height);
-  int maxWidth  = 350;  /* approx. page width in points, excl. margins */
-  int maxHeight = 550;  /* approx. page height in points, excl. margins */ 
-  out << "\\nopagebreak\n"
-         "\\begin{figure}[H]\n"
-         "\\begin{center}\n"
-         "\\leavevmode\n";
-  if (width>maxWidth || height>maxHeight) // figure too big for page
-  {
-    // c*width/maxWidth > c*height/maxHeight, where c=maxWidth*maxHeight>0
-    if (width*maxHeight>height*maxWidth)
-    {
-      out << "\\includegraphics[width=" << maxWidth << "pt]";
-    }
-    else
-    {
-      out << "\\includegraphics[height=" << maxHeight << "pt]";
-    }
-  }
-  else
-  {
-    out << "\\includegraphics[width=" << width << "pt]";
-  }
-
-  out << "{" << baseName << "}\n"
-         "\\end{center}\n"
-         "\\end{figure}\n";
-
-  //printf("writeVecGfxFigure()=1\n");
-  return TRUE;
-}

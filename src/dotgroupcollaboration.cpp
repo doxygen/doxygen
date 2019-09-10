@@ -356,9 +356,10 @@ bool DotGroupCollaboration::isTrivial() const
   return m_usedNodes->count() <= 1;
 }
 
-void DotGroupCollaboration::writeGraphHeader(FTextStream &t,
-  const QCString &title) const
+void DotGroupCollaboration::writeGraphHeader(FTextStream &t,const QCString &title) const
 {
+  int fontSize      = Config_getInt(DOT_FONTSIZE);
+  QCString fontName = Config_getString(DOT_FONTNAME);
   t << "digraph ";
   if (title.isEmpty())
   {
@@ -374,8 +375,8 @@ void DotGroupCollaboration::writeGraphHeader(FTextStream &t,
   {
     t << "  bgcolor=\"transparent\";" << endl;
   }
-  t << "  edge [fontname=\"" << DOT_FONTNAME << "\",fontsize=\"" << DOT_FONTSIZE << "\","
-    "labelfontname=\"" << DOT_FONTNAME << "\",labelfontsize=\"" << DOT_FONTSIZE << "\"];\n";
-  t << "  node [fontname=\"" << DOT_FONTNAME << "\",fontsize=\"" << DOT_FONTSIZE << "\",shape=box];\n";
+  t << "  edge [fontname=\"" << fontName << "\",fontsize=\"" << fontSize << "\","
+    "labelfontname=\"" << fontName << "\",labelfontsize=\"" << fontSize << "\"];\n";
+  t << "  node [fontname=\"" << fontName << "\",fontsize=\"" << fontSize << "\",shape=box];\n";
   t << "  rankdir=LR;\n";
 }

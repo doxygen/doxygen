@@ -28,6 +28,7 @@
 #define MAX_LATEX_GRAPH_INCH  150
 #define MAX_LATEX_GRAPH_SIZE  (MAX_LATEX_GRAPH_INCH * 72)
 
+//-----------------------------------------------------------------------------------------
 
 // since dot silently reproduces the input file when it does not
 // support the PNG format, we need to check the result.
@@ -142,12 +143,11 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
   return FALSE;
 }
 
-bool DotRunner::DOT_CLEANUP;
-bool DotRunner::DOT_MULTI_TARGETS;
-DotConstString DotRunner::DOT_EXE;
+//---------------------------------------------------------------------------------
 
 DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
-  : m_file(absDotName), m_md5Hash(md5Hash), m_cleanUp(DOT_CLEANUP)
+  : m_file(absDotName), m_md5Hash(md5Hash), m_cleanUp(Config_getBool(DOT_CLEANUP)),
+    m_dotExe(Config_getString(DOT_PATH)+"dot")
 {
   m_jobs.setAutoDelete(TRUE);
 }
@@ -183,7 +183,7 @@ bool DotRunner::run()
   DotJob *s;
 
   // create output
-  if (DOT_MULTI_TARGETS)
+  if (Config_getBool(DOT_MULTI_TARGETS))
   {
     dotArgs=QCString("\"")+m_file.data()+"\"";
     for (li.toFirst();(s=li.current());++li)
@@ -191,14 +191,14 @@ bool DotRunner::run()
       dotArgs+=' ';
       dotArgs+=s->args.data();
     }
-    if ((exitCode=portable_system(DOT_EXE.data(),dotArgs,FALSE))!=0) goto error;
+    if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
   }
   else
   {
     for (li.toFirst();(s=li.current());++li)
     {
       dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
-      if ((exitCode=portable_system(DOT_EXE.data(),dotArgs,FALSE))!=0) goto error;
+      if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
     }
   }
 
@@ -214,7 +214,7 @@ bool DotRunner::run()
       {
         if (!resetPDFSize(width,height,getBaseNameOfOutput(s->output.data()))) goto error;
         dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
-        if ((exitCode=portable_system(DOT_EXE.data(),dotArgs,FALSE))!=0) goto error;
+        if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
       }
     }
 
@@ -245,7 +245,7 @@ bool DotRunner::run()
   return TRUE;
 error:
   err("Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
-    exitCode,DOT_EXE.data(),dotArgs.data());
+    exitCode,m_dotExe.data(),dotArgs.data());
   return FALSE;
 }
 

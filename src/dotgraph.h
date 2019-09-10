@@ -34,11 +34,6 @@ class DotGraph
     DotGraph() : m_curNodeNumber(0), m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE), m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() {}
 
-    static QCString DOT_FONTNAME; // will be initialized in initDot
-    static int DOT_FONTSIZE;      // will be initialized in initDot
-
-    static bool writeVecGfxFigure(FTextStream& out, const QCString& baseName, const QCString& figureName);
-
   protected:
     /** returns node numbers. The Counter is reset by the constructor */
     int getNextNodeNumber() { return ++m_curNodeNumber; }
@@ -71,10 +66,6 @@ class DotGraph
     virtual QCString getImgAltText() const { return ""; }
 
     virtual void computeTheGraph() = 0;
-
-    static QCString IMG_EXT;
-
-    friend void initDot();
 
     QCString absBaseName() const { return m_absPath + m_baseName; }
     QCString absDotName()  const { return m_absPath + m_baseName + ".dot"; }

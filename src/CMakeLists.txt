@@ -181,16 +181,17 @@ add_library(_doxygen STATIC
     docparser.cpp
     docsets.cpp
     dot.cpp
-	dotcallgraph.cpp
-	dotclassgraph.cpp
-	dotdirdeps.cpp
-	dotfilepatcher.cpp
+    dotcallgraph.cpp
+    dotlegendgraph.cpp
+    dotclassgraph.cpp
+    dotdirdeps.cpp
+    dotfilepatcher.cpp
     dotgfxhierarchytable.cpp
     dotgraph.cpp
-	dotgroupcollaboration.cpp
-	dotincldepgraph.cpp
+    dotgroupcollaboration.cpp
+    dotincldepgraph.cpp
     dotnode.cpp
-	dotrunner.cpp
+    dotrunner.cpp
     doxygen.cpp
     eclipsehelp.cpp
     emoji.cpp

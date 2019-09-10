@@ -14,6 +14,7 @@
 */
 
 #include "dotfilepatcher.h"
+#include "dotrunner.h"
 
 #include "qstring.h"
 #include "config.h"
@@ -209,7 +210,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
 *                 map file was found
 *  \returns TRUE if successful.
 */
-bool convertMapFile(FTextStream &t,const char *mapName,
+bool DotFilePatcher::convertMapFile(FTextStream &t,const char *mapName,
                     const QCString relPath, bool urlOnly,
                     const QCString &context)
 {
@@ -255,9 +256,9 @@ DotFilePatcher::DotFilePatcher(const char *patchFile)
   m_maps.setAutoDelete(TRUE);
 }
 
-QCString DotFilePatcher::file() const
+bool DotFilePatcher::isSVGFile() const
 {
-  return m_patchFile;
+  return m_patchFile.right(4)==".svg";
 }
 
 int DotFilePatcher::addMap(const QCString &mapFile,const QCString &relPath,
@@ -320,7 +321,7 @@ int DotFilePatcher::addSVGObject(const QCString &baseName,
   return id;
 }
 
-bool DotFilePatcher::run()
+bool DotFilePatcher::run() const
 {
   //printf("DotFilePatcher::run(): %s\n",m_patchFile.data());
   bool interactiveSVG_local = Config_getBool(INTERACTIVE_SVG);
@@ -479,7 +480,7 @@ bool DotFilePatcher::run()
         Map *map = m_maps.at(mapId);
         //printf("patching FIG %d in file %s with contents of %s\n",
         //   mapId,m_patchFile.data(),map->mapFile.data());
-        if (!DotGraph::writeVecGfxFigure(t,map->label,map->mapFile))
+        if (!writeVecGfxFigure(t,map->label,map->mapFile))
         {
           err("problem writing FIG %d figure!\n",mapId);
           return FALSE;
@@ -535,5 +536,146 @@ bool DotFilePatcher::run()
   }
   // remove temporary file
   QDir::current().remove(tmpName);
+  return TRUE;
+}
+
+//---------------------------------------------------------------------------------------------
+
+
+// extract size from a dot generated SVG file
+static bool readSVGSize(const QCString &fileName,int *width,int *height)
+{
+  bool found=FALSE;
+  QFile f(fileName);
+  if (!f.open(IO_ReadOnly))
+  {
+    return FALSE;
+  }
+  const int maxLineLen=4096;
+  char buf[maxLineLen];
+  while (!f.atEnd() && !found)
+  {
+    int numBytes = f.readLine(buf,maxLineLen-1); // read line
+    if (numBytes>0)
+    {
+      buf[numBytes]='\0';
+      if (qstrncmp(buf,"<!--zoomable ",13)==0)
+      {
+        *width=-1;
+        *height=-1;
+        sscanf(buf,"<!--zoomable %d",height);
+        //printf("Found zoomable for %s!\n",fileName.data());
+        found=TRUE;
+      }
+      else if (sscanf(buf,"<svg width=\"%dpt\" height=\"%dpt\"",width,height)==2)
+      {
+        //printf("Found fixed size %dx%d for %s!\n",*width,*height,fileName.data());
+        found=TRUE;
+      }
+    }
+    else // read error!
+    {
+      //printf("Read error %d!\n",numBytes);
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+static void writeSVGNotSupported(FTextStream &out)
+{
+  out << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
+}
+
+/// Check if a reference to a SVG figure can be written and do so if possible.
+/// Returns FALSE if not possible (for instance because the SVG file is not yet generated).
+bool DotFilePatcher::writeSVGFigureLink(FTextStream &out,const QCString &relPath,
+                        const QCString &baseName,const QCString &absImgName)
+{
+  int width=600,height=600;
+  if (!readSVGSize(absImgName,&width,&height))
+  {
+    return FALSE;
+  }
+  if (width==-1)
+  {
+    if (height<=60) height=300; else height+=300; // add some extra space for zooming
+    if (height>600) height=600; // clip to maximum height of 600 pixels
+    out << "<div class=\"zoom\">";
+    //out << "<object type=\"image/svg+xml\" data=\"" 
+    //out << "<embed type=\"image/svg+xml\" src=\"" 
+    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" 
+        << relPath << baseName << ".svg\" width=\"100%\" height=\"" << height << "\">";
+  }
+  else
+  {
+    //out << "<object type=\"image/svg+xml\" data=\"" 
+    //out << "<embed type=\"image/svg+xml\" src=\"" 
+    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" 
+        << relPath << baseName << ".svg\" width=\"" 
+        << ((width*96+48)/72) << "\" height=\"" 
+        << ((height*96+48)/72) << "\">";
+  }
+  writeSVGNotSupported(out);
+  //out << "</object>";
+  //out << "</embed>";
+  out << "</iframe>";
+  if (width==-1)
+  {
+    out << "</div>";
+  }
+
+  return TRUE;
+}
+
+bool DotFilePatcher::writeVecGfxFigure(FTextStream &out,const QCString &baseName,
+                                 const QCString &figureName)
+{
+  int width=400,height=550;
+  if (Config_getBool(USE_PDFLATEX))
+  {
+    if (!DotRunner::readBoundingBox(figureName+".pdf",&width,&height,FALSE))
+    {
+      //printf("writeVecGfxFigure()=0\n");
+      return FALSE;
+    }
+  }
+  else
+  {
+    if (!DotRunner::readBoundingBox(figureName+".eps",&width,&height,TRUE))
+    {
+      //printf("writeVecGfxFigure()=0\n");
+      return FALSE;
+    }
+  }
+  //printf("Got PDF/EPS size %d,%d\n",width,height);
+  int maxWidth  = 350;  /* approx. page width in points, excl. margins */
+  int maxHeight = 550;  /* approx. page height in points, excl. margins */ 
+  out << "\\nopagebreak\n"
+         "\\begin{figure}[H]\n"
+         "\\begin{center}\n"
+         "\\leavevmode\n";
+  if (width>maxWidth || height>maxHeight) // figure too big for page
+  {
+    // c*width/maxWidth > c*height/maxHeight, where c=maxWidth*maxHeight>0
+    if (width*maxHeight>height*maxWidth)
+    {
+      out << "\\includegraphics[width=" << maxWidth << "pt]";
+    }
+    else
+    {
+      out << "\\includegraphics[height=" << maxHeight << "pt]";
+    }
+  }
+  else
+  {
+    out << "\\includegraphics[width=" << width << "pt]";
+  }
+
+  out << "{" << baseName << "}\n"
+         "\\end{center}\n"
+         "\\end{figure}\n";
+
+  //printf("writeVecGfxFigure()=1\n");
   return TRUE;
 }

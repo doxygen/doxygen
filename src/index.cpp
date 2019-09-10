@@ -41,6 +41,7 @@
 #include "ftvhelp.h"
 #include "dot.h"
 #include "dotgfxhierarchytable.h"
+#include "dotlegendgraph.h"
 #include "pagedef.h"
 #include "dirdef.h"
 #include "vhdldocgen.h"
@@ -3919,7 +3920,9 @@ void writeGraphInfo(OutputList &ol)
   if (!Config_getBool(HAVE_DOT) || !Config_getBool(GENERATE_HTML)) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  generateGraphLegend(Config_getString(HTML_OUTPUT));
+
+  DotLegendGraph gd;
+  gd.writeGraph(Config_getString(HTML_OUTPUT));
 
   bool &stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
   bool oldStripCommentsState = stripCommentsStateRef;
@@ -3944,7 +3947,7 @@ void writeGraphInfo(OutputList &ol)
     legendDocs = legendDocs.left(s+8) + "[!-- SVG 0 --]\n" + legendDocs.mid(e);
     //printf("legendDocs=%s\n",legendDocs.data());
   }
-  FileDef *fd = createFileDef("","graph_legend");
+  FileDef *fd = createFileDef("","graph_legend.dox");
   ol.generateDoc("graph_legend",1,fd,0,legendDocs,FALSE,FALSE);
   delete fd;
 
