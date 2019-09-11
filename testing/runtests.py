@@ -86,6 +86,7 @@ class Tester:
 		shutil.copy(self.args.inputdir+'/Doxyfile',self.test_out)
 		with open(self.test_out+'/Doxyfile','a') as f:
 			print('INPUT=%s/%s' % (self.args.inputdir,self.test), file=f)
+			print('OUTPUT_DIRECTORY=%s' % self.test_out, file=f)
 			print('STRIP_FROM_PATH=%s' % self.args.inputdir, file=f)
 			print('EXAMPLE_PATH=%s' % self.args.inputdir, file=f)
 			if 'config' in self.config:
@@ -93,27 +94,27 @@ class Tester:
 					print(option, file=f)
 			if (self.args.xml or self.args.xmlxsd):
 				print('GENERATE_XML=YES', file=f)
-				print('XML_OUTPUT=%s/out' % self.test_out, file=f)
+				print('XML_OUTPUT=out' , file=f)
 			else:
 				print('GENERATE_XML=NO', file=f)
 			if (self.args.rtf):
 				print('GENERATE_RTF=YES', file=f)
-				print('RTF_OUTPUT=%s/rtf' % self.test_out, file=f)
+				print('RTF_OUTPUT=rtf', file=f)
 			else:
 				print('GENERATE_RTF=NO', file=f)
 			if (self.args.docbook):
 				print('GENERATE_DOCBOOK=YES', file=f)
-				print('DOCBOOK_OUTPUT=%s/docbook' % self.test_out, file=f)
+				print('DOCBOOK_OUTPUT=docbook', file=f)
 			else:
 				print('GENERATE_DOCBOOK=NO', file=f)
 			if (self.args.xhtml):
 				print('GENERATE_HTML=YES', file=f)
 			# HTML_OUTPUT can also be set locally
-			print('HTML_OUTPUT=%s/html' % self.test_out, file=f)
+			print('HTML_OUTPUT=html', file=f)
 			print('HTML_FILE_EXTENSION=.xhtml', file=f)
 			if (self.args.pdf):
 				print('GENERATE_LATEX=YES', file=f)
-				print('LATEX_OUTPUT=%s/latex' % self.test_out, file=f)
+				print('LATEX_OUTPUT=latex', file=f)
 			if self.args.subdirs:
 				print('CREATE_SUBDIRS=YES', file=f)
 			if (self.args.clang):
