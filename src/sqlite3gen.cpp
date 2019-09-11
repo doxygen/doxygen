@@ -2476,7 +2476,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
 
   bindIntParameter(compounddef_insert,":rowid",refid.rowid);
   // + name
-  bindTextParameter(compounddef_insert,":name",pd->name());
+  bindTextParameter(compounddef_insert,":name",pd->name(),FALSE);
 
   QCString title;
   if (pd==Doxygen::mainPage) // main page is special
