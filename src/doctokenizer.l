@@ -353,6 +353,7 @@ ATTRNAME  [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
+URLPROTOCOL ("http:"|"https:"|"ftp:"|"file:"|"news:"|"irc")
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+&#]
 FILEECHAR [a-z_A-Z0-9\-\+&#]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)+
@@ -624,17 +625,17 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 }
 			 return TK_COMMAND_SEL();
   		       }
-<St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK}/\. { // URL.
+<St_Para>{URLPROTOCOL}{URLMASK}/\. { // URL.
                          g_token->name=yytext;
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK} { // URL
+<St_Para>{URLPROTOCOL}{URLMASK} { // URL
                          g_token->name=yytext;
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>"<"("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK}">" { // URL
+<St_Para>"<"{URLPROTOCOL}{URLMASK}">" { // URL
                          g_token->name=yytext;
                          g_token->name = g_token->name.mid(1,g_token->name.length()-2);
 			 g_token->isEMailAddr=FALSE;
