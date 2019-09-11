@@ -50,12 +50,11 @@
 #include <string.h>
 #include <sqlite3.h>
 
-// enable to show general debug messages
+// print the DBG_CTX messages
 // #define SQLITE3_DEBUG
 
-// enable to print all executed SQL statements.
-// I recommend using the smallest possible input list.
-// #define SQLITE3_DEBUG_SQL
+// print the SQL commands trace
+// #define SQLITE3_ENABLE_SQL_TRACE
 
 # ifdef SQLITE3_DEBUG
 #  define DBG_CTX(x) printf x
@@ -63,7 +62,7 @@
 #  define DBG_CTX(x) do { } while(0)
 # endif
 
-# ifdef SQLITE3_DEBUG_SQL
+# ifdef SQLITE3_ENABLE_SQL_TRACE
 // used by sqlite3_trace in generateSqlite3()
 static void sqlLog(void *dbName, const char *sql){
   msg("SQL: '%s'\n", sql);
@@ -2581,8 +2580,7 @@ void generateSqlite3()
     return;
   }
 
-# ifdef SQLITE3_DEBUG
-  // debug: show all executed statements
+# ifdef SQLITE3_ENABLE_SQL_TRACE
   sqlite3_trace(db, &sqlLog, NULL);
 # endif
 
