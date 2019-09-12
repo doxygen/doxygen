@@ -86,11 +86,15 @@ const char * table_schema[][2] = {
       "\tschema_version     TEXT NOT NULL, -- Schema-specific semver\n"
       "\t-- run info\n"
       "\tgenerated_at       TEXT NOT NULL,\n"
-      "\tgenerated_on       TEXT NOT NULL,\n"
+      "\tgenerated_on       TEXT NOT NULL\n"
+    ");"
+  },
+  { "project",
+    "CREATE TABLE IF NOT EXISTS project (\n"
       "\t-- project info\n"
-      "\tproject_name       TEXT NOT NULL,\n"
-      "\tproject_number     TEXT,\n"
-      "\tproject_brief      TEXT\n"
+      "\tname       TEXT NOT NULL,\n"
+      "\tnumber     TEXT,\n"
+      "\tbrief      TEXT\n"
     ");"
   },
   { "includes",
@@ -511,9 +515,17 @@ struct SqlStmt {
    be the cause. */
 SqlStmt meta_insert = {
   "INSERT INTO meta "
-    "( doxygen_version, schema_version, generated_at, generated_on, project_name, project_number, project_brief )"
+    "( doxygen_version, schema_version, generated_at, generated_on )"
   "VALUES "
-    "(:doxygen_version,:schema_version,:generated_at,:generated_on,:project_name,:project_number,:project_brief )"
+    "(:doxygen_version,:schema_version,:generated_at,:generated_on )"
+  ,NULL
+};
+//////////////////////////////////////////////////////
+SqlStmt project_insert = {
+  "INSERT INTO project "
+    "( name, number, brief )"
+  "VALUES "
+    "(:name,:number,:brief )"
   ,NULL
 };
 //////////////////////////////////////////////////////
@@ -932,9 +944,6 @@ static void insertMeta()
   bindTextParameter(meta_insert,":schema_version","0.2.0"); //TODO: this should be a constant somewhere; not sure where
   bindTextParameter(meta_insert,":generated_at",dateToString(TRUE), FALSE);
   bindTextParameter(meta_insert,":generated_on",dateToString(FALSE), FALSE);
-  bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME));
-  bindTextParameter(meta_insert,":project_number",Config_getString(PROJECT_NUMBER));
-  bindTextParameter(meta_insert,":project_brief",Config_getString(PROJECT_BRIEF));
   step(meta_insert);
 }
 
@@ -1142,6 +1151,14 @@ static void stripQualifiers(QCString &typeStr)
   }
 }
 
+static void insertProject()
+{
+  bindTextParameter(project_insert,":name",Config_getString(PROJECT_NAME));
+  bindTextParameter(project_insert,":number",Config_getString(PROJECT_NUMBER));
+  bindTextParameter(project_insert,":brief",Config_getString(PROJECT_BRIEF));
+  step(project_insert);
+}
+
 static int prepareStatement(sqlite3 *db, SqlStmt &s)
 {
   int rc;
@@ -1160,6 +1177,7 @@ static int prepareStatements(sqlite3 *db)
 {
   if (
   -1==prepareStatement(db, meta_insert) ||
+  -1==prepareStatement(db, project_insert) ||
   -1==prepareStatement(db, memberdef_exists) ||
   -1==prepareStatement(db, memberdef_incomplete) ||
   -1==prepareStatement(db, memberdef_insert) ||
@@ -2596,6 +2614,8 @@ void generateSqlite3()
   }
 
   insertMeta();
+
+  insertProject();
 
   // + classes
   ClassSDict::Iterator cli(*Doxygen::classSDict);
