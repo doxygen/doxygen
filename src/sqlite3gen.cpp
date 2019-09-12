@@ -821,7 +821,12 @@ SqlStmt memberdef_param_insert={
     "(:memberdef_id,:param_id)"
   ,NULL
 };
-
+//////////////////////////////////////////////////////
+struct Refid {
+  int rowid;
+  const char *refid;
+  bool created;
+};
 
 class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 {
@@ -932,12 +937,6 @@ static void insertMeta()
   bindTextParameter(meta_insert,":project_brief",Config_getString(PROJECT_BRIEF));
   step(meta_insert);
 }
-
-struct Refid {
-  int rowid;
-  const char *refid;
-  bool created;
-};
 
 struct Refid insertRefid(const char *refid)
 {
