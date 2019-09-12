@@ -1803,7 +1803,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     }
   }
 
-  bindTextParameter(memberdef_insert,":name",md->name());
+  bindTextParameter(memberdef_insert,":name",md->name(),FALSE);
 
   // Extract references from initializer
   if (md->hasMultiLineInitializer() || md->hasOneLineInitializer())
