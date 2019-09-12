@@ -1,0 +1,132 @@
+{
+    "member": [
+        {
+            "virt": 0, 
+            "memberdef_rowid": 2, 
+            "prot": 0, 
+            "scope_rowid": 1, 
+            "rowid": 1
+        }
+    ], 
+    "sqlite_sequence": [
+        {
+            "name": "refid", 
+            "seq": 2
+        }, 
+        {
+            "name": "path", 
+            "seq": 1
+        }, 
+        {
+            "name": "member", 
+            "seq": 1
+        }
+    ], 
+    "compounddef": [
+        {
+            "briefdescription": null, 
+            "kind": "file", 
+            "name": "015_cond.c", 
+            "title": "015_cond.c File Reference", 
+            "column": 1, 
+            "prot": null, 
+            "file_id": 1, 
+            "rowid": 1, 
+            "header_id": null, 
+            "line": 1, 
+            "detaileddescription": "<para>Text <emphasis>argument</emphasis> more text. </para>\n"
+        }
+    ], 
+    "memberdef": [
+        {
+            "settable": null, 
+            "maybevoid": null, 
+            "virt": 0, 
+            "protectedgettable": null, 
+            "bound": null, 
+            "initializer": null, 
+            "writable": null, 
+            "static": 0, 
+            "rowid": 2, 
+            "constrained": null, 
+            "bodyfile_id": 1, 
+            "const": 0, 
+            "bodyend": 23, 
+            "privategettable": null, 
+            "prot": 0, 
+            "readable": null, 
+            "privatesettable": null, 
+            "maybedefault": null, 
+            "write": null, 
+            "readonly": null, 
+            "volatile": 0, 
+            "sealed": 0, 
+            "attribute": null, 
+            "new": 0, 
+            "type": "void", 
+            "final": 0, 
+            "protectedsettable": null, 
+            "mutable": null, 
+            "removable": null, 
+            "read": null, 
+            "raisable": null, 
+            "transient": null, 
+            "initonly": null, 
+            "file_id": 1, 
+            "scope": null, 
+            "line": 21, 
+            "bitfield": null, 
+            "optional": 0, 
+            "accessor": null, 
+            "definition": "void cond_enabled", 
+            "kind": "function", 
+            "name": "cond_enabled", 
+            "column": 6, 
+            "bodystart": 21, 
+            "argsstring": "()", 
+            "required": 0, 
+            "explicit": 0, 
+            "inbodydescription": null, 
+            "addable": null, 
+            "briefdescription": null, 
+            "gettable": null, 
+            "inline": 0, 
+            "maybeambiguous": null, 
+            "property": null, 
+            "detaileddescription": "<para>Function to be shown. </para>\n"
+        }
+    ], 
+    "contains": [], 
+    "param": [], 
+    "includes": [], 
+    "project": [
+        {
+            "brief": null, 
+            "name": "My Project", 
+            "number": null
+        }
+    ], 
+    "reimplements": [], 
+    "xrefs": [], 
+    "path": [
+        {
+            "local": 1, 
+            "type": 1, 
+            "name": "015_cond.c", 
+            "rowid": 1, 
+            "found": 1
+        }
+    ], 
+    "memberdef_param": [], 
+    "refid": [
+        {
+            "refid": "015__cond_8c", 
+            "rowid": 1
+        }, 
+        {
+            "refid": "015__cond_8c_1a2521dcda743ec66ad8e030113d6e0c63", 
+            "rowid": 2
+        }
+    ], 
+    "compoundref": []
+}
