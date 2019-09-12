@@ -123,6 +123,7 @@ static int              g_search_count = 0;
 static QCString         g_argType = "";
 static bool             g_funcParamsEnd;
 //-----------------------------------------------------------------------------
+static const char *stateToString(int state);
 
 
 static void initParser()
@@ -1994,3 +1995,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "pyscanner.l.h"

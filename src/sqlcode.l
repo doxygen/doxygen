@@ -63,6 +63,7 @@ struct sqlcodeYY_state
 };
 
 static void codify(const char* text);
+static const char *stateToString(int state);
 static void setCurrentDoc(const QCString &anchor,yyscan_t yyscanner);
 static void startCodeLine(yyscan_t yyscanner);
 static void endFontClass(yyscan_t yyscanner);
@@ -461,3 +462,4 @@ extern "C" { // some bogus code to keep the compiler happy
 #error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
 #endif
 
+#include "sqlcode.l.h"

@@ -59,6 +59,8 @@
 
 #define MAX_INCLUDE_DEPTH 10
 
+static const char *stateToString(int state);
+
 //! Application error.
 #define tcl_err \
   printf("Error %d %s() at line %d! ",__LINE__,tcl.file_name.data(),yylineno); \
@@ -3121,3 +3123,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "tclscanner.l.h"

@@ -69,6 +69,8 @@ static MemberDef *   g_currentMemberDef;
 static bool          g_includeCodeFragment;
 static const char *  g_currentFontClass;
 
+static const char *stateToString(int state);
+
 static void codify(const char* text) 
 { 
   g_code->codify(text);
@@ -413,3 +415,4 @@ extern "C" { // some bogus code to keep the compiler happy
 #error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
 #endif
 
+#include "xmlcode.l.h"

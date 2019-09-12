@@ -64,6 +64,8 @@ static QString                        g_codecName = QString::fromLatin1("UTF-8")
 static int                            g_lastState;
 static QByteArray                     g_tmpString;
 
+static const char *stateToString(int state);
+
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
@@ -585,4 +587,4 @@ void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
     }
   }
 }
-
+#include "config_doxyw.l.h"

@@ -62,6 +62,8 @@
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
 
+static const char *stateToString(int state);
+
 struct CondCtx
 {
   CondCtx(int line,QCString id,bool b) 
@@ -3337,3 +3339,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "pre.l.h"

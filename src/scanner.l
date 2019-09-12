@@ -193,6 +193,7 @@ static int              g_column;
 static int              g_fencedSize=0;
 static bool             g_nestedComment=0;
 
+static const char *stateToString(int state);
 //-----------------------------------------------------------------------------
 
 // forward declarations
@@ -7490,3 +7491,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "scanner.l.h"
