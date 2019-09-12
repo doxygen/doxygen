@@ -921,7 +921,7 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
   return rowid;
 }
 
-static void recordMetadata()
+static void insertMeta()
 {
   bindTextParameter(meta_insert,":doxygen_version",getVersion());
   bindTextParameter(meta_insert,":schema_version","0.2.0"); //TODO: this should be a constant somewhere; not sure where
@@ -1370,7 +1370,6 @@ static void writeInnerNamespaces(const NamespaceSDict *nl, struct Refid outer_re
     }
   }
 }
-
 
 static void writeTemplateArgumentList(const ArgumentList * al,
                                       const Definition * scope,
@@ -2596,7 +2595,7 @@ void generateSqlite3()
     return;
   }
 
-  recordMetadata();
+  insertMeta();
 
   // + classes
   ClassSDict::Iterator cli(*Doxygen::classSDict);
