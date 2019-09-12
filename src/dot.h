@@ -23,12 +23,12 @@
 #include "sortdict.h"
 
 #include "dotgraph.h" // only for GraphOutputFormat
+#include "dotfilepatcher.h"
+#include "dotrunner.h"
 
 class FTextStream;
 class DotRunner;
 class DotRunnerQueue;
-class DotWorkerThread;
-class DotFilePatcher;
 
 /** Singleton that manages parallel dot invocations and patching files for embedding image maps */
 class DotManager

@@ -1329,7 +1329,7 @@ static void arcLine(Context          *ctx,
 
             /* Get co-ordinates of the arc end-point */
             ADrawComputeArcPoint(sx, y - 1, ctx->opts.entitySpacing - 8,
-                                 ctx->opts.loopArcHeight, 180 - 45,
+                                 ctx->opts.loopArcHeight, 180.0f - 45.0f,
                                  &px, &py);
 
             /* Draw a cross */
@@ -1393,7 +1393,7 @@ static void arcLine(Context          *ctx,
 
             /* Get co-ordinates of the arc end-point */
             ADrawComputeArcPoint(sx, y - 1, ctx->opts.entitySpacing - 8,
-                                 ctx->opts.loopArcHeight, 45,
+                                 ctx->opts.loopArcHeight, 45.0f,
                                  &px, &py);
 
             /* Draw a cross */

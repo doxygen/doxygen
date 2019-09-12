@@ -501,7 +501,7 @@ BGD_DECLARE(int) gdImageColorClosestAlpha (gdImagePtr im, int r, int g, int b, i
 #define RETURN_HWB(h, w, b) {HWB->H = h; HWB->W = w; HWB->B = b; return HWB;}
 #define RETURN_RGB(r, g, b) {RGB->R = r; RGB->G = g; RGB->B = b; return RGB;}
 #define HWB_UNDEFINED -1
-#define SETUP_RGB(s, r, g, b) {s.R = r/255.0; s.G = g/255.0; s.B = b/255.0;}
+#define SETUP_RGB(s, r, g, b) {s.R = r/255.0f; s.G = g/255.0f; s.B = b/255.0f;}
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MIN3(a,b,c) ((a)<(b)?(MIN(a,c)):(MIN(b,c)))
@@ -567,7 +567,7 @@ HWB_Diff (int r1, int g1, int b1, int r2, int g2, int b2)
 	if ((HWB1.H == HWB_UNDEFINED) || (HWB2.H == HWB_UNDEFINED)) {
 		diff = 0;			/* Undefined hues always match... */
 	} else {
-		diff = fabs (HWB1.H - HWB2.H);
+		diff = fabsf(HWB1.H - HWB2.H);
 		if (diff > 3) {
 			diff = 6 - diff;	/* Remember, it's a colour circle */
 		}
@@ -1191,7 +1191,7 @@ clip_1d (int *x0, int *y0, int *x1, int *y1, int mindim, int maxdim)
 		*x0 = mindim;
 		/* now, perhaps, adjust the far end of the line as well */
 		if (*x1 > maxdim) {
-			*y1 += m * (maxdim - *x1);
+			*y1 += (int)(m * (maxdim - *x1));
 			*x1 = maxdim;
 		}
 		return 1;
@@ -1594,7 +1594,7 @@ BGD_DECLARE(void) gdImageLine (gdImagePtr im, int x1, int y1, int x2, int y2, in
 			  TBB: but watch out for /0! */
 		double ac = cos (atan2 (dy, dx));
 		if (ac != 0) {
-			wid = thick / ac;
+			wid = (int)(thick / ac);
 		} else {
 			wid = 1;
 		}
@@ -1654,7 +1654,7 @@ BGD_DECLARE(void) gdImageLine (gdImagePtr im, int x1, int y1, int x2, int y2, in
 		   TBB: but watch out for /0! */
 		double as = sin (atan2 (dy, dx));
 		if (as != 0) {
-			wid = thick / as;
+			wid = (int)(thick / as);
 		} else {
 			wid = 1;
 		}
@@ -1734,7 +1734,7 @@ BGD_DECLARE(void) gdImageDashedLine (gdImagePtr im, int x1, int y1, int x2, int 
 		   TBB: but watch out for /0! */
 		double as = sin (atan2 (dy, dx));
 		if (as != 0) {
-			wid = thick / as;
+			wid = (int)(thick / as);
 		} else {
 			wid = 1;
 		}
@@ -1783,7 +1783,7 @@ BGD_DECLARE(void) gdImageDashedLine (gdImagePtr im, int x1, int y1, int x2, int 
 		   TBB: but watch out for /0! */
 		double as = sin (atan2 (dy, dx));
 		if (as != 0) {
-			wid = thick / as;
+			wid = (int)(thick / as);
 		} else {
 			wid = 1;
 		}
@@ -3071,12 +3071,12 @@ BGD_DECLARE(void) gdImageCopyMerge (gdImagePtr dst, gdImagePtr src, int dstX, in
 			} else {
 				dc = gdImageGetPixel (dst, tox, toy);
 
-				ncR = gdImageRed (src, c) * (pct / 100.0)
-				      + gdImageRed (dst, dc) * ((100 - pct) / 100.0);
-				ncG = gdImageGreen (src, c) * (pct / 100.0)
-				      + gdImageGreen (dst, dc) * ((100 - pct) / 100.0);
-				ncB = gdImageBlue (src, c) * (pct / 100.0)
-				      + gdImageBlue (dst, dc) * ((100 - pct) / 100.0);
+				ncR = (int)(gdImageRed (src, c) * (pct / 100.0)
+				      + gdImageRed (dst, dc) * ((100 - pct) / 100.0));
+				ncG = (int)(gdImageGreen (src, c) * (pct / 100.0)
+				      + gdImageGreen (dst, dc) * ((100 - pct) / 100.0));
+				ncB = (int)(gdImageBlue (src, c) * (pct / 100.0)
+				      + gdImageBlue (dst, dc) * ((100 - pct) / 100.0));
 
 				/* Find a reasonable color */
 				nc = gdImageColorResolve (dst, ncR, ncG, ncB);
@@ -3144,15 +3144,15 @@ BGD_DECLARE(void) gdImageCopyMergeGray (gdImagePtr dst, gdImagePtr src, int dstX
 				nc = c;
 			} else {
 				dc = gdImageGetPixel (dst, tox, toy);
-				g = 0.29900 * gdImageRed(dst, dc)
-				    + 0.58700 * gdImageGreen(dst, dc) + 0.11400 * gdImageBlue(dst, dc);
+				g = 0.29900f * gdImageRed(dst, dc)
+				    + 0.58700f * gdImageGreen(dst, dc) + 0.11400f * gdImageBlue(dst, dc);
 
-				ncR = gdImageRed (src, c) * (pct / 100.0)
-				      + g * ((100 - pct) / 100.0);
-				ncG = gdImageGreen (src, c) * (pct / 100.0)
-				      + g * ((100 - pct) / 100.0);
-				ncB = gdImageBlue (src, c) * (pct / 100.0)
-				      + g * ((100 - pct) / 100.0);
+				ncR = (int)(gdImageRed (src, c) * (pct / 100.0)
+				      + g * ((100 - pct) / 100.0));
+				ncG = (int)(gdImageGreen (src, c) * (pct / 100.0)
+				      + g * ((100 - pct) / 100.0));
+				ncB = (int)(gdImageBlue (src, c) * (pct / 100.0)
+				      + g * ((100 - pct) / 100.0));
 
 				/* First look for an exact match */
 				nc = gdImageColorExact (dst, ncR, ncG, ncB);
@@ -3378,14 +3378,14 @@ BGD_DECLARE(void) gdImageCopyRotated (gdImagePtr dst,
 		for (dx = dstX - radius; (dx <= dstX + radius); dx++) {
 			double sxd = (dx - dstX) * aCos - (dy - dstY) * aSin;
 			double syd = (dy - dstY) * aCos + (dx - dstX) * aSin;
-			int sx = sxd + scX;
-			int sy = syd + scY;
+			int sx = (int)(sxd + scX);
+			int sy = (int)(syd + scY);
 			if ((sx >= srcX) && (sx < srcX + srcWidth) &&
 			        (sy >= srcY) && (sy < srcY + srcHeight)) {
 				int c = gdImageGetPixel (src, sx, sy);
 				/* 2.0.34: transparency wins */
 				if (c == src->transparent) {
-					gdImageSetPixel (dst, dx, dy, dst->transparent);
+					gdImageSetPixel (dst, (int)dx, (int)dy, dst->transparent);
 				} else if (!src->trueColor) {
 					/* Use a table to avoid an expensive
 					   lookup on every single pixel */
@@ -3399,10 +3399,10 @@ BGD_DECLARE(void) gdImageCopyRotated (gdImagePtr dst,
 						                                    gdImageAlpha (src,
 						                                            c));
 					}
-					gdImageSetPixel (dst, dx, dy, cmap[c]);
+					gdImageSetPixel (dst, (int)dx, (int)dy, cmap[c]);
 				} else {
 					gdImageSetPixel (dst,
-					                 dx, dy,
+					                 (int)dx, (int)dy,
 					                 gdImageColorResolveAlpha (dst,
 					                         gdImageRed (src,
 					                                     c),
@@ -3469,16 +3469,16 @@ BGD_DECLARE(void) gdImageCopyResampled (gdImagePtr dst,
 		for (x = dstX; (x < dstX + dstW); x++) {
 			float sy1, sy2, sx1, sx2;
 			float sx, sy;
-			float spixels = 0.0;
-			float red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
-			float alpha_factor, alpha_sum = 0.0, contrib_sum = 0.0;
+			float spixels = 0.0f;
+			float red = 0.0f, green = 0.0f, blue = 0.0f, alpha = 0.0f;
+			float alpha_factor, alpha_sum = 0.0f, contrib_sum = 0.0f;
 			sy1 = ((float)(y - dstY)) * (float)srcH / (float)dstH;
 			sy2 = ((float)(y + 1 - dstY)) * (float) srcH / (float) dstH;
 			sy = sy1;
 			do {
 				float yportion;
 				if (floorf(sy) == floorf(sy1)) {
-					yportion = 1.0 - (sy - floorf(sy));
+					yportion = 1.0f - (sy - floorf(sy));
 					if (yportion > sy2 - sy1) {
 						yportion = sy2 - sy1;
 					}
@@ -3486,7 +3486,7 @@ BGD_DECLARE(void) gdImageCopyResampled (gdImagePtr dst,
 				} else if (sy == floorf(sy2)) {
 					yportion = sy2 - floorf(sy2);
 				} else {
-					yportion = 1.0;
+					yportion = 1.0f;
 				}
 				sx1 = ((float)(x - dstX)) * (float) srcW / dstW;
 				sx2 = ((float)(x + 1 - dstX)) * (float) srcW / dstW;
@@ -3496,7 +3496,7 @@ BGD_DECLARE(void) gdImageCopyResampled (gdImagePtr dst,
 					float pcontribution;
 					int p;
 					if (floorf(sx) == floorf(sx1)) {
-						xportion = 1.0 - (sx - floorf(sx));
+						xportion = 1.0f - (sx - floorf(sx));
 						if (xportion > sx2 - sx1) {
 							xportion = sx2 - sx1;
 						}
@@ -3504,7 +3504,7 @@ BGD_DECLARE(void) gdImageCopyResampled (gdImagePtr dst,
 					} else if (sx == floorf(sx2)) {
 						xportion = sx2 - floorf(sx2);
 					} else {
-						xportion = 1.0;
+						xportion = 1.0f;
 					}
 					pcontribution = xportion * yportion;
 					p = gdImageGetTrueColorPixel(src, (int) sx + srcX, (int) sy + srcY);
@@ -3517,14 +3517,14 @@ BGD_DECLARE(void) gdImageCopyResampled (gdImagePtr dst,
 					alpha_sum += alpha_factor;
 					contrib_sum += pcontribution;
 					spixels += xportion * yportion;
-					sx += 1.0;
+					sx += 1.0f;
 				}
 				while (sx < sx2);
 				sy += 1.0f;
 			}
 			while (sy < sy2);
 
-			if (spixels != 0.0) {
+			if (spixels != 0.0f) {
 				red /= spixels;
 				green /= spixels;
 				blue /= spixels;
@@ -3539,14 +3539,14 @@ BGD_DECLARE(void) gdImageCopyResampled (gdImagePtr dst,
 				blue /= alpha_sum;
 			}
 			/* Clamping to allow for rounding errors above */
-			if (red > 255.0) {
-				red = 255.0;
+			if (red > 255.0f) {
+				red = 255.0f;
 			}
-			if (green > 255.0) {
-				green = 255.0;
+			if (green > 255.0f) {
+				green = 255.0f;
 			}
 			if (blue > 255.0f) {
-				blue = 255.0;
+				blue = 255.0f;
 			}
 			if (alpha > gdAlphaMax) {
 				alpha = gdAlphaMax;
@@ -4373,7 +4373,7 @@ static void gdImageAALine (gdImagePtr im, int x1, int y1, int x2, int y2, int co
 		 * This isn't a problem as computed dy/dx values came from ints above. */
 		ag = fabs(abs((int)dy) < abs((int)dx) ? cos(atan2(dy, dx)) : sin(atan2(dy, dx)));
 		if (ag != 0) {
-			wid = thick / ag;
+			wid = (int)(thick / ag);
 		} else {
 			wid = 1;
 		}
