@@ -938,7 +938,7 @@ static void insertMeta()
   step(meta_insert);
 }
 
-struct Refid insertRefid(const char *refid)
+static struct Refid insertRefid(const char *refid)
 {
   struct Refid ret;
   ret.rowid=-1;
@@ -1413,12 +1413,13 @@ static void writeMemberTemplateLists(const MemberDef *md)
     writeTemplateArgumentList(templMd,md->getClassDef(),md->getFileDef());
   }
 }
+
 static void writeTemplateList(const ClassDef *cd)
 {
   writeTemplateArgumentList(cd->templateArguments(),cd,0);
 }
 
-QCString getSQLDocBlock(const Definition *scope,
+static QCString getSQLDocBlock(const Definition *scope,
   const Definition *def,
   const QCString &doc,
   const QCString &fileName,
