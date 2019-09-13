@@ -599,10 +599,12 @@ static void addRelatedPage(Entry *root)
   {
     doc=root->brief+"\n\n"+root->doc+root->inbodyDocs;
   }
+
   PageDef *pd = addRelatedPage(root->name,root->args,doc,root->anchors,
       root->docFile,root->docLine,
       root->sli,
       gd,root->tagInfo,
+      FALSE,
       root->lang
      );
   if (pd)

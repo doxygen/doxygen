@@ -337,6 +337,7 @@ PageDef *addRelatedPage(const char *name,
                         const QList<ListItemInfo> *sli,
                         GroupDef *gd=0,
                         TagInfo *tagInfo=0,
+                        bool xref=FALSE,
                         SrcLangExt lang=SrcLangExt_Unknown
                        );
 
