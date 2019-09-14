@@ -1891,6 +1891,10 @@ QCString MemberDefImpl::anchor() const
   if (m_impl->templateMaster) return m_impl->templateMaster->anchor();
   if (m_impl->enumScope && m_impl->enumScope!=this) // avoid recursion for C#'s public enum E { E, F }
   {
+    if (Config_getBool("USE_READABLE_ANCHORS"))
+    {
+      result.replace(0, 3, ":");
+    }
     result.prepend(m_impl->enumScope->anchor());
   }
   if (getGroupDef())
@@ -4357,8 +4361,30 @@ void MemberDefImpl::setAnchor()
   QCString sigStr(33);
   MD5Buffer((const unsigned char *)memAnchor.data(),memAnchor.length(),md5_sig);
   //printf("memAnchor=%s\n",memAnchor.data());
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
-  m_impl->anc = "a"+sigStr;
+
+  if (Config_getBool("USE_READABLE_ANCHORS"))
+  {
+    unsigned sigSlice = *(unsigned *)md5_sig;
+    sigStr[0] = (uchar)(sigSlice % 26 + 97);
+    sigSlice  = (sigSlice / 26) % 36;
+    sigStr[1] = (uchar)(sigSlice < 10 ? sigSlice + 48 : sigSlice + 87);
+    sigStr[2] = '-';
+    uint idx  = 3;
+    for (const char* itr = name().data(); *itr && idx < 32; ++itr)
+    {
+      if (isalnum(*itr) || *itr == '_')
+      {
+        sigStr[idx++] = *itr;
+      }
+    }
+    sigStr[idx] = '\0';
+    m_impl->anc = sigStr;
+  }
+  else
+  {
+    MD5SigToString(md5_sig,sigStr.rawData(),33);
+    m_impl->anc = "a"+sigStr;
+  }
 }
 
 void MemberDefImpl::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,

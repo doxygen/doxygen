@@ -3612,6 +3612,14 @@ remove the intermediate dot files that are used to generate the various graphs.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='USE_READABLE_ANCHORS' defval='0'>
+      <docs>
+<![CDATA[
+ If the \c USE_READABLE_ANCHORS tag is set to \c YES then anchor links (#)
+ will incorporate the method name instead of only the md5 hash.
+]]>
+      </docs>
+    </option>
     <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' id='DETAILS_AT_TOP'/>
     <option type='obsolete' id='QTHELP_FILE'/>
