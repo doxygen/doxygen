@@ -1411,6 +1411,13 @@ contains \c TEST, or \c DEV
   then the \c \\details command is not needed.
 
 <hr>
+\section cmdnoop \\noop ( text to be ignored )
+
+  \addindex \\noop
+  All the text, including the command, till the end of the line is ignored.
+  The command will most commonly be used in combination with \ref cfg_aliases "ALIASES"
+  to ignore not supported commands that are present for e.g. other processing tools.
+<hr>
 \section cmdelse \\else
 
   \addindex \\else

@@ -78,6 +78,7 @@ static bool handleFile(const QCString &, const QCStringList &);
 static bool handleDir(const QCString &, const QCStringList &);
 static bool handleExample(const QCString &, const QCStringList &);
 static bool handleDetails(const QCString &, const QCStringList &);
+static bool handleNoop(const QCString &, const QCStringList &);
 static bool handleName(const QCString &, const QCStringList &);
 static bool handleTodo(const QCString &, const QCStringList &);
 static bool handleTest(const QCString &, const QCStringList &);
@@ -279,6 +280,7 @@ static DocCmdMap docCmdMap[] =
   { "warning",         0,                       TRUE  },
   { "snippet",         0,                       TRUE  },
   { "snippetlineno",   0,                       TRUE  },
+  { "noop",            &handleNoop,             TRUE },
   { 0, 0, FALSE }
 };
 
@@ -998,6 +1000,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 %x	CopyDoc
 %x      GuardExpr
 %x      CdataSection
+%x      Noop
 
 %%
 
@@ -2129,6 +2132,14 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  current->name+=*yytext;
   					}
 
+  /* ----- handle argument of noop command ------- */
+<Noop>{DOCNL}				{ // end of argument
+					  if (*yytext=='\n') yyLineNr++;
+					  addOutput('\n');
+					  BEGIN( Comment );
+					}
+<Noop>.					{ // ignore other stuff
+					}
   /* ----- handle argument of ingroup command ------- */
 
 <InGroupParam>{LABELID}			{ // group id
@@ -2537,6 +2548,12 @@ static bool handleDetails(const QCString &, const QCStringList &)
                        // as a new paragraph
   }
   setOutput(OutputDoc);
+  return FALSE;
+}
+
+static bool handleNoop(const QCString &, const QCStringList &)
+{
+  BEGIN( Noop );
   return FALSE;
 }
 
