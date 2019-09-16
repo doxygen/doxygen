@@ -24,30 +24,26 @@ def main():
     lex_file = sys.argv[1]
     if (os.path.exists(lex_file)):
         #write preamble
-        print("#define scanStateToString(x) case x: resultString = #x; break;");
-        print("static const char *stateToString(int state)");
-        print("{");
-        print("  const char *resultString;");
-        print("  switch(state)");
-        print("  {");
-        print("    scanStateToString(INITIAL)");
+        print("static const char *stateToString(int state)")
+        print("{")
+        print("  switch(state)")
+        print("  {")
+        print("    case INITIAL: return \"INITIAL\";")
 
         with open(lex_file) as f:
             for line in f:
                 if re.search(r'^%x', line) or  re.search(r'^%s', line):
-                    print("    scanStateToString(%s)"%line.split()[1]);
+                    state = line.split()[1]
+                    print("    case %s: return \"%s\";" % (state,state))
                 elif re.search(r'^%%', line):
                     break
                 else:
                     pass
             f.close()
         #write post
-        print("    default: resultString = \"Unknown\"; break;")
         print("  }")
-        print("  return resultString;")
+        print("  return \"Unknown\";")
         print("}")
-
-
 
 if __name__ == '__main__':
 	main()
