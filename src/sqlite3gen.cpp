@@ -127,7 +127,7 @@ const char * table_schema[][2] = {
    * I rolled this back when I had trouble getting a FileDef for all types
    * (PageDef in particular).
    *
-   * Note: all colums referencing path would need an update.
+   * Note: all columns referencing path would need an update.
    */
   { "path",
     "CREATE TABLE IF NOT EXISTS path (\n"
@@ -233,7 +233,7 @@ const char * table_schema[][2] = {
   },
   { "reimplements",
     "CREATE TABLE IF NOT EXISTS reimplements (\n"
-      "\t-- Inherited member reimplmentation relations.\n"
+      "\t-- Inherited member reimplementation relations.\n"
       "\trowid                  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
       "\tmemberdef_rowid        INTEGER NOT NULL REFERENCES memberdef, -- reimplementing memberdef id.\n"
       "\treimplemented_rowid    INTEGER NOT NULL REFERENCES memberdef, -- reimplemented memberdef id.\n"

@@ -32,7 +32,7 @@ Each argument has a certain range:
     Paragraphs are delimited by a blank line or by a section indicator. Note that 
     {curly} braces are also used for command options, here the braces are mandatory
     and  just 'normal' characters. The starting curly brace has to directly follow
-    the command, so without whitspace.
+    the command, so without whitespace.
 </ul>
 If in addition to the above argument specifiers [square] brackets are used the argument
 is optional, unless they are placed between quotes in that case they are a mandatory
@@ -349,7 +349,7 @@ Structural indicators
   \addindex \\showrefby
   When this command is put in a comment block of a function, method or variable,
   then doxygen will generate an overview for that function, method, variable of
-  the, documented, funcions and methods that call / use it.
+  the, documented, functions and methods that call / use it.
   The overview will be generated regardless of the value of
   \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION".
   \note The completeness (and correctness) of the overview depends on the

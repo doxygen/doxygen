@@ -18,7 +18,7 @@
 %% 
 %%  tabu works in text and in math modes.
 %% 
-%%  X columns: automatic width ajustment + horizontal and vertical alignment
+%%  X columns: automatic width adjustment + horizontal and vertical alignment
 %%  \begin{tabu}   { X[4c] X[1c] X[-2ml]  }
 %% 
 %%  Horizontal lines and / or leaders:
@@ -2043,7 +2043,7 @@
 \newcommand*\savetabu[1]{\noalign{%
     \tabu@sanitizearg{#1}\tabu@temp
     \ifx \tabu@temp\@empty  \tabu@savewarn{}{The tabu will not be saved}\else
-        \@ifundefined{tabu@saved@\tabu@temp}{}{\tabu@savewarn{#1}{Overwritting}}%
+        \@ifundefined{tabu@saved@\tabu@temp}{}{\tabu@savewarn{#1}{Overwriting}}%
         \ifdefined\tabu@restored \expandafter\let
             \csname tabu@saved@\tabu@temp \endcsname \tabu@restored
         \else {\tabu@save}%
@@ -2523,7 +2523,7 @@
                   Package cellspace has some limitations
     \MessageBreak And redefines some macros of array.sty.
     \MessageBreak Please use \string\tabulinesep\space to control
-    \MessageBreak vertical spacing of lines inside tabu environnement}%
+    \MessageBreak vertical spacing of lines inside tabu environment}%
 }% \tabu@warn@cellspace
 %% tabu Package initialisation
 \tabuscantokensfalse
