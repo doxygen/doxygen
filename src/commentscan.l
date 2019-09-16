@@ -132,6 +132,8 @@ static bool handleEndParBlock(const QCString &, const QCStringList &);
 static bool handleParam(const QCString &, const QCStringList &);
 static bool handleRetval(const QCString &, const QCStringList &);
 
+static const char *stateToString(int state);
+
 typedef bool (*DocCmdFunc)(const QCString &name, const QCStringList &optList);
 
 struct DocCmdMap
@@ -3278,3 +3280,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "commentscan.l.h"

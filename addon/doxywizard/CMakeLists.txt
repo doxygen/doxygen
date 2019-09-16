@@ -71,7 +71,17 @@ OUTPUT ${GENERATED_SRC_WIZARD}/configdoc.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GENERATED 1)
 
-FLEX_TARGET(config_doxyw config_doxyw.l ${GENERATED_SRC_WIZARD}/config_doxyw.cpp COMPILE_FLAGS "${LEX_FLAGS}")
+set(LEX_FILES config_doxyw) 
+foreach(lex_file ${LEX_FILES})
+    add_custom_command(
+	    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/scan_states.py ${CMAKE_SOURCE_DIR}/addon/doxywizard/${lex_file}.l > ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/scan_states.py ${CMAKE_SOURCE_DIR}/addon/doxywizard/${lex_file}.l
+	OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
+    )
+    set_source_files_properties(${GENERATED_SRC_WIZARD}/${lex_file}.l.h PROPERTIES GENERATED 1)
+
+    FLEX_TARGET(${lex_file}        ${lex_file}.l        ${GENERATED_SRC_WIZARD}/${lex_file}.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
+endforeach()
 
 qt_wrap_cpp(doxywizard_MOC
 doxywizard.h
@@ -96,6 +106,7 @@ inputint.cpp
 inputstrlist.cpp
 ${GENERATED_SRC_WIZARD}/settings.h
 ${GENERATED_SRC_WIZARD}/config_doxyw.cpp
+${GENERATED_SRC_WIZARD}/config_doxyw.l.h
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}

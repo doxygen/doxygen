@@ -76,6 +76,7 @@ struct DocLexerContext
 
 static QStack<DocLexerContext> g_lexerStack;
 
+static const char *stateToString(int state);
 //--------------------------------------------------------------------------
 
 void doctokenizerYYpushContext()
@@ -1616,3 +1617,4 @@ extern "C" { // some bogus code to keep the compiler happy
 }
 #endif
 
+#include "doctokenizer.l.h"

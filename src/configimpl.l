@@ -44,6 +44,8 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+static const char *stateToString(int state);
+
 static const char *warning_str = "warning: ";
 static const char *error_str = "error: ";
 
@@ -1909,3 +1911,4 @@ void Config::deinit()
   ConfigImpl::instance()->deleteInstance();
 }
 
+#include "configimpl.l.h"

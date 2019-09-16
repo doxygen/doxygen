@@ -32,6 +32,7 @@
 #define YY_NO_UNISTD_H 1
 
 
+static const char *stateToString(int state);
 static int yyread(char *buf,int max_size,yyscan_t yyscanner);
 
 #undef  YY_INPUT
@@ -139,3 +140,4 @@ bool parseconstexp(const char *fileName,int lineNr,const QCString &s)
 extern "C" {
   int constexpYYwrap(yyscan_t yyscanner) { return 1; }
 }
+#include "constexp.l.h"
