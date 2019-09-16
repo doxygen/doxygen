@@ -2064,7 +2064,7 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
       emptyLines++;
       i=end;
     }
-    else if (indent>=refIndent+codeBlockIndent) // enough indent to contine the code block
+    else if (indent>=refIndent+codeBlockIndent) // enough indent to continue the code block
     {
       while (emptyLines>0) // write skipped empty lines
       {
