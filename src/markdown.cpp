@@ -480,7 +480,7 @@ static int processNmdash(GrowBuf &out,const char *data,int off,int size)
   {
     count++;
   }
-  if (count==2 && off>=2 && qstrncmp(data-2,"<!",2)==0) return 0; // start HTML comment
+  if (count>=2 && off>=2 && qstrncmp(data-2,"<!",2)==0) return 1-count; // start HTML comment
   if (count==2 && (data[2]=='>')) return 0; // end HTML comment
   if (count==2 && (off<8 || qstrncmp(data-8,"operator",8)!=0)) // -- => ndash
   {
@@ -1084,9 +1084,9 @@ static void processInline(GrowBuf &out,const char *data,int size)
     if (end>=size) break;
     i=end;
     end = action(out,data+i,i,size-i);
-    if (!end)
+    if (end<=0)
     {
-      end=i+1;
+      end=i+1-end;
     }
     else
     {
