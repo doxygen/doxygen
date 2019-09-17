@@ -140,6 +140,7 @@ add_library(doxycfg STATIC
     ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/configimpl.cpp
+    ${GENERATED_SRC}/configimpl.l.h
     ${GENERATED_SRC}/configoptions.cpp
     ${GENERATED_SRC}/configvalues.cpp
     portable.cpp
