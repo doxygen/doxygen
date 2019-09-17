@@ -7501,7 +7501,8 @@ void addCodeOnlyMappings()
 SrcLangExt getLanguageFromFileName(const QCString& fileName)
 {
   QFileInfo fi(fileName);
-  QCString extName = fi.extension().lower().data();
+  // we need only the part after the last ".", newer implementations of QFileInfo have 'suffix()' for this.
+  QCString extName = fi.extension(FALSE).lower().data();
   if (extName.isEmpty()) extName=".no_extension";
   if (extName.at(0)!='.') extName.prepend(".");
     int *pVal=g_extLookup.find(extName.data());
