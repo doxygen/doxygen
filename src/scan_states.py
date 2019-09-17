@@ -19,7 +19,7 @@ import re
 
 def main():
     if len(sys.argv)!=2:
-		sys.exit('Usage: %s <lex_file>' % sys.argv[0])
+        sys.exit('Usage: %s <lex_file>' % sys.argv[0])
 
     lex_file = sys.argv[1]
     if (os.path.exists(lex_file)):
@@ -46,4 +46,4 @@ def main():
         print("}")
 
 if __name__ == '__main__':
-	main()
+    main()
