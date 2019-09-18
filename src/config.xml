@@ -467,6 +467,16 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='string' id='SHORT_NAMES_PREFIX' format='string' depensd='SHORT_NAMES'>
+      <docs>
+<![CDATA[
+ If \c SHORT_NAMES_PREFIX is specified the \c SHORT_NAMES_PREFIX is preprended to the short
+ name as described with \ref cfg_short_names "SHORT_NAMES" together with an undescore. The
+ resulting filename is processed according to the normal character replacement settings of
+ doxygen for file names.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='JAVADOC_AUTOBRIEF' defval='0'>
       <docs>
 <![CDATA[

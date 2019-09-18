@@ -5642,6 +5642,7 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
 {
   if (name==0 || name[0]=='\0') return "";
   static bool shortNames = Config_getBool(SHORT_NAMES);
+  static QCString shortNamesPrefix = Config_getBool(SHORT_NAMES_PREFIX);
   static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
   QCString result;
   if (shortNames) // use short names only
@@ -5661,7 +5662,22 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
     {
       num = *value;
     }
-    result.sprintf("a%05d",num); 
+    if (shortNamesPrefix.isEmpty())
+    {
+      result.sprintf("a%05d",num); 
+    }
+    else
+    {
+      result.sprintf("%s_a%05d",shortNamesPrefix.data(),num); 
+      result=escapeCharsInString(result,allowDots,allowUnderscore);
+      int resultLen = result.length();
+      if (resultLen>=128) // prevent names that cannot be created!
+      {
+        warn_uncond("short name plus prefix (SHORT_NAMES_PREFIX) extends allowed file name length, prefix dropped!\n");
+        shortNamesPrefix="";
+        result.sprintf("a%05d",num); 
+      }
+    }
   }
   else // long names
   {
