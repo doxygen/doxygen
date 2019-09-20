@@ -4238,10 +4238,11 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   {
     result = const_cast<ClassDef*>(getResolvedClass(cd,fd,name,0,0,TRUE,TRUE));
   }
-  if (result==0) // try direct class, needed for namespaced classes imported via tag files (see bug624095)
-  {
-    result = getClass(name);
-  }
+//  if (result==0) // try direct class, needed for namespaced classes imported via tag files (see #3841)
+//  {
+//    result = getClass(name);
+//  }
+// joke. see #5993
   if (result==0 &&
       (cd->getLanguage()==SrcLangExt_CSharp || cd->getLanguage()==SrcLangExt_Java) &&
       name.find('<')!=-1)

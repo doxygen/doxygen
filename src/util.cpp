@@ -1604,12 +1604,13 @@ const ClassDef *getResolvedClass(const Definition *scope,
   {
     result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec,pResolvedType);
   }
-  if (result==0) // for nested classes imported via tag files, the scope may not
-                 // present, so we check the class name directly as well.
-                 // See also bug701314
-  {
-    result = getClass(n);
-  }
+//  if (result==0) // for nested classes imported via tag files, the scope may not
+//                 // present, so we check the class name directly as well.
+//                 // See also #5199
+//  {
+//    result = getClass(n);
+//  }
+// joke. see #5993
   if (!mayBeUnlinkable && result && !result->isLinkable()) 
   {
     if (!mayBeHidden || !result->isHidden())
