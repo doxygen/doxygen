@@ -1007,12 +1007,13 @@ void replaceComment(int offset)
   {
     //printf("replaceComment(%s)\n",yytext);
     int i=computeIndent(&yytext[offset]);
-    if (i==g_blockHeadCol)
+    if (i==g_blockHeadCol || !g_inRoseComment)
     {
       replaceCommentMarker(yytext,(int)yyleng);
     }
     else
     {
+      g_inRoseComment = FALSE;
       copyToOutput(" */",3);
       int i;for (i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
       g_inSpecialComment=FALSE;
