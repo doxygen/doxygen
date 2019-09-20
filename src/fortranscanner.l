@@ -218,6 +218,7 @@ static void addInterface(QCString name, InterfaceType type);
 static Argument *getParameter(const QCString &name);
 static void scanner_abort();
 
+static void initEntry();
 static void startScope(Entry *scope);
 static bool endScope(Entry *scope, bool isGlobalRoot=FALSE);
 //static bool isTypeName(QCString name);
@@ -252,6 +253,7 @@ NOTIDSYM  [^a-z_A-Z0-9]
 SEPARATE  [:, \t]
 ID        [a-z_A-Z%]+{IDSYM}*
 ID_       [a-z_A-Z%]*{IDSYM}*
+OPERATOR_ID (operator{BS}"("{BS}(\.[a-z_A-Z]+\.|"="|"/="|"//"|"=="|"<"|"<="|">"|">="|"+"|"*"|"**"|"/"|"-"){BS}")")
 PP_ID     {ID}
 LABELID   [a-z_A-Z]+[a-z_A-Z0-9\-]*
 SUBPROG   (subroutine|function)
@@ -278,7 +280,7 @@ ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL
 ACCESS_SPEC (PRIVATE|PUBLIC)
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}((,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})|(,{BS}NAME{BS}"="{BS}"'"(.*)"'"{BS}))?")"
 /* Assume that attribute statements are almost the same as attributes. */
-ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
+ATTR_STMT {ATTR_SPEC}|DIMENSION
 EXTERNAL_STMT (EXTERNAL)
 
 CONTAINS  CONTAINS
@@ -443,10 +445,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           DBG_CTX((stderr,"using dir %s\n",yytext));
                                           current->name=yytext;
                                           current->fileName = yyFileName; 
-  					  current->section=Entry::USINGDIR_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry;
-                                          current->lang = SrcLangExt_Fortran; 
+                                          current->section=Entry::USINGDIR_SEC;
+                                          addCurrentEntry(1);
                                           yy_pop_state();
                                         }
 <Use>{ID}/,                             { 
@@ -456,13 +456,11 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }           
 <UseOnly>{BS},{BS}                      {}
 <UseOnly>{ID}                           {
-  					  current->name= useModuleName+"::"+yytext;
+                                          current->name= useModuleName+"::"+yytext;
                                           current->fileName = yyFileName; 
-  					  current->section=Entry::USINGDECL_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry ;
-                                          current->lang = SrcLangExt_Fortran; 
-  					}
+                                          current->section=Entry::USINGDECL_SEC;
+                                          addCurrentEntry(1);
+                                        }
 <Use,UseOnly>"\n"                       {
 					  yyColNr -= 1;
                                           unput(*yytext);
@@ -485,7 +483,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 
 ^{BS}interface{BS_}{ID}{ARGS}?          { ifType = IF_GENERIC;
-				          current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
+                                          current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
                                           yy_push_state(InterfaceBody);
 
                                           // extract generic name
@@ -498,9 +496,12 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
 <InterfaceBody>^{BS}end{BS}interface({BS_}{ID})? {
                                           // end scope only if GENERIC interface
-                                          if (ifType == IF_GENERIC)last_entry->parent()->endBodyLine = yyLineNr - 1;
-                                          if (ifType == IF_GENERIC && !endScope(current_root))
-                                            yyterminate();
+                                          if (ifType == IF_GENERIC)
+                                          {
+                                            last_entry->parent()->endBodyLine = yyLineNr - 1;
+                                            if (!endScope(current_root))
+                                              yyterminate();
+                                          }
 
                                           ifType = IF_NONE;
                                           yy_pop_state();
@@ -508,14 +509,10 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <InterfaceBody>module{BS}procedure      { yy_push_state(YY_START);
                                           BEGIN(ModuleProcedure);
                                         }
-<ModuleProcedure>{ID}                   { if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
-                                          {
-                                            addInterface(yytext, ifType);
-                                            startScope(last_entry);
-                                          }
+<ModuleProcedure>{ID}                   { QCString name = QCString(yytext).lower();
 
                                           current->section = Entry::FUNCTION_SEC ;
-                                          current->name = yytext; 
+                                          current->name = name; 
                                           moduleProcedures.append(current);
                                           addCurrentEntry(1);
                                         }
@@ -587,10 +584,12 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
   /*------- access specification --------------------------------------------------------------------------*/
 
-<ModuleBody>private/{BS}(\n|"!")         { defaultProtection = Private;
+<ModuleBody,TypedefBody,TypedefBodyContains>private/{BS}(\n|"!") {
+                                           defaultProtection = Private;
                                            current->protection = defaultProtection ;
                                          }
-<ModuleBody>public/{BS}(\n|"!")          { defaultProtection = Public;
+<ModuleBody,TypedefBody,TypedefBodyContains>public/{BS}(\n|"!")  {
+                                           defaultProtection = Public;
                                            current->protection = defaultProtection ;
                                          }
 
@@ -604,8 +603,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           }
 
                                           yy_push_state(Typedef);
-                                          current->protection = defaultProtection;
-                                          typeProtection = defaultProtection;
+                                          current->protection = Package; // invalid in Fortran, replaced below
+                                          typeProtection = Public;
                                           typeMode = true;
                                         }
 <Typedef>{
@@ -622,11 +621,9 @@ extends{ARGS}                           {
                                         }
 public                                  {
                                           current->protection = Public;
-                                          typeProtection = Public;
                                         }
 private                                 {
                                           current->protection = Private;
-                                          typeProtection = Private;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -645,6 +642,20 @@ private                                 {
                                                || current_root->section == Entry::NAMESPACE_SEC))
                                           {
                                             current->name = current_root->name + "::" + current->name;
+                                          }
+
+                                          // set modifiers to allow adjusting public/private in surrounding module scope
+                                          if( current->protection == Package )
+                                          {
+                                            current->protection = defaultProtection;
+                                          }
+                                          else if( current->protection == Public )
+                                          {
+                                            modifiers[current_root][current->name.lower()] |= QCString("public");
+                                          }
+                                          else if( current->protection == Private )
+                                          {
+                                            modifiers[current_root][current->name.lower()] |= QCString("private");
                                           }
 
                                           addCurrentEntry(1);
@@ -704,9 +715,9 @@ private                                 {
 ^{BS}"end"{BS}/(\n|!|;) { /* incorrect end type definition */
                                           warn(yyFileName,yyLineNr, "Found 'END' instead of 'END TYPE'");
                                           last_entry->parent()->endBodyLine = yyLineNr;
+                                          typeMode = false;
                                           if (!endScope(current_root))
                                             yyterminate();
-                                          typeMode = false;
                                           yy_pop_state();
                                         }
 }
@@ -726,11 +737,11 @@ private                                 {
                                            }
                                            current_root->endBodyLine = yyLineNr - 1;
 
-					   if (!endScope(current_root))
-					     yyterminate();
+                                           if (!endScope(current_root))
+                                             yyterminate();
                                            subrCurrent.remove(0u);
-					   yy_pop_state() ;
-				        }
+                                           yy_pop_state() ;
+                                        }
 <BlockData>{
 {ID}                                    {
                                         }
@@ -845,13 +856,38 @@ private                                 {
 }
 
 <Variable>{BS}				{ }
+<Variable>{OPERATOR_ID} { /* parse operator access statements "public :: operator(==)" */
+                          QCString name = QCString(yytext).stripWhiteSpace().lower();
+                          /* if variable/type/etc is part of a module, mod name is necessary for output */
+                          // get surrounding state
+                          int currentState = YY_START;
+                          yy_pop_state();
+                          int outerState = YY_START;
+                          yy_push_state(currentState);
+                          if( outerState == Start || outerState == ModuleBody )
+                          {
+                            if ((current_root) && 
+                                (current_root->section == Entry::CLASS_SEC
+                                 || current_root->section == Entry::NAMESPACE_SEC))
+                            {
+                              name = current_root->name + "::" + name;
+                            }
+                          }
+                          /* remember attributes for the symbol */
+                          modifiers[current_root][name] |= currentModifiers;
+                        }
 <Variable>{ID}				{ /* parse variable declaration */
                                           //cout << "5=========> got variable: " << argType << "::" << yytext << endl;
  					  /* work around for bug in QCString.replace (QCString works) */
 					  QCString name=yytext;
-                                          name = name.lower();
+            name = name.lower();
+            /* if variable/type/etc is part of a module, mod name is necessary for output */
+            if ((current_root) && current_root->section == Entry::NAMESPACE_SEC)
+            {
+              name = current_root->name + "::" + name;
+            }
 					  /* remember attributes for the symbol */
-					  modifiers[current_root][name.lower()] |= currentModifiers;
+					  modifiers[current_root][name] |= currentModifiers;
 					  argName= name;
 
                                           v_type= V_IGNORE;
@@ -1102,8 +1138,8 @@ private                                 {
                                          result=result.stripWhiteSpace();
                                          addSubprogram(result);
                                          BEGIN(Subprog);
-				         current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
-				         current->startLine = yyLineNr;
+                                         current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
+                                         current->startLine = yyLineNr;
                                        }
 
 <Start,ModuleBody,SubprogBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains>^{BS}({PREFIX}{BS_})?{SUBPROG}{BS_} {
@@ -1125,11 +1161,19 @@ private                                 {
 <Subprog>{BS}                          {   /* ignore white space */   }
 <Subprog>{ID}                          { current->name = yytext;
                                          //cout << "1a==========> got " << current->type << " " << yytext << " " << yyLineNr << endl;
-                                         modifiers[current_root][current->name.lower()].returnName = current->name.lower();
+                                         QCString returnName = current->name.lower();
+                                         /* if type is part of a module, mod name is necessary for output */
+                                         if ((current_root) && 
+                                             (current_root->section ==  Entry::CLASS_SEC ||
+                                              current_root->section ==  Entry::NAMESPACE_SEC)) 
+                                         {
+                                           current->name= current_root->name + "::" + current->name;
+                                         }
+                                         modifiers[current_root][current->name.lower()].returnName = returnName;
 
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
-                                           current_root->name.replace(QRegExp("\\$interface\\$"), yytext);
+                                           current_root->name.replace(QRegExp("\\$interface\\$"), QCString(yytext).lower());
                                          }
 
                                          BEGIN(Parameterlist);
@@ -1143,31 +1187,31 @@ private                                 {
 					 BEGIN(SubprogBody);
 				       }
 <Parameterlist>{COMMA}|{BS}            { current->args += yytext;
-					 CommentInPrepass *c = locatePrepassComment(yyColNr-(int)yyleng, yyColNr);
-					 if (c!=NULL) {
+                                         CommentInPrepass *c = locatePrepassComment(yyColNr-(int)yyleng, yyColNr);
+                                         if (c!=NULL) {
                                            if(current->argList->count()>0) {
-					     current->argList->at(current->argList->count()-1)->docs = c->str;
-					   }
-					 }		         
-				       }
+                                             current->argList->at(current->argList->count()-1)->docs = c->str;
+                                           }
+                                         }
+                                       }
 <Parameterlist>{ID}                    {
-				           //current->type not yet available
-                                           QCString param = yytext;
-					   // std::cout << "3=========> got parameter " << param << std::endl;
-					   current->args += param;
-					   Argument *arg = new Argument;
-					   arg->name = param;
-					   arg->type = "";
-					   current->argList->append(arg);
- 				       } 
+                                         //current->type not yet available
+                                         QCString param = QCString(yytext).lower();
+                                         // std::cout << "3=========> got parameter " << param << std::endl;
+                                         current->args += param;
+                                         Argument *arg = new Argument;
+                                         arg->name = param;
+                                         arg->type = "";
+                                         current->argList->append(arg);
+                                       } 
 <Parameterlist>{NOARGS}                {   
-				           newLine();
-					   //printf("3=========> without parameterlist \n");
- 					   //current->argList = ;
-                                           addCurrentEntry(1);
-					   startScope(last_entry);
-					   BEGIN(SubprogBody);				           
-}
+				                                 newLine();
+                                         //printf("3=========> without parameterlist \n");
+                                         //current->argList = ;
+                                         addCurrentEntry(1);
+                                         startScope(last_entry);
+                                         BEGIN(SubprogBody);				           
+                                       }
 <SubprogBody>result{BS}\({BS}{ID}      {  
   					   if (functionLine)
 					   {
@@ -1794,19 +1838,38 @@ void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root
 {
   if (moduleProcedures.isEmpty()) return;
  
+  // build up map of available functions
+  QMap<QCString,Entry*> procMap;
+  {
+    EntryListIterator el(*current_root->children());
+    Entry *cf;
+    for (;(cf=el.current());++el)
+    {
+      if (cf->section != Entry::FUNCTION_SEC)
+        continue;
+
+      // remove scope from name
+      QCString name = cf->name;
+      {
+        int end = name.findRev(":");
+        if (end != -1) 
+          name.remove(0, end+1);
+      }
+
+      procMap.insert(name, cf);
+    }
+  }
+
+
   EntryListIterator eli1(moduleProcedures);
   // for all module procedures
   for (Entry *ce1; (ce1=eli1.current()); ++eli1) 
   {
-    // check all entries in this module
-    EntryListIterator eli2(*current_root->children());
-    for (Entry *ce2; (ce2=eli2.current()); ++eli2) 
+    if (procMap.contains(ce1->name))
     {
-      if (ce1->name == ce2->name) 
-      {
-        copyEntry(ce1, ce2);
-      }
-    } // for procedures in current module
+      Entry* proc = procMap[ce1->name];
+      copyEntry(ce1, proc);
+    }
   } // for all interface module procedures
   moduleProcedures.clear();
 }
@@ -2190,6 +2253,11 @@ static void startScope(Entry *scope)
 
   QMap<QCString,SymbolModifiers> mdfMap;
   modifiers.insert(scope, mdfMap);
+
+  // create new current with possibly different defaults...
+  delete current;
+  current = new Entry;
+  initEntry();
 }
 
 /*! Ends scope in fortran program: may update subprogram arguments or module variable attributes.
@@ -2218,6 +2286,11 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
     return FALSE;
   }
 
+  // create new current with possibly different defaults...
+  delete current;
+  current = new Entry;
+  initEntry();
+
   // update variables or subprogram arguments with modifiers
   QMap<QCString,SymbolModifiers>& mdfsMap = modifiers[scope];
 
@@ -2243,40 +2316,48 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
     }
 
   } 
-  if (scope->section == Entry::CLASS_SEC) 
+  if (scope->section == Entry::CLASS_SEC && scope->spec & Entry::Interface) 
   { // was INTERFACE_SEC
-    if (scope->parent()->section == Entry::FUNCTION_SEC) 
+    if (scope->parent() && scope->parent()->section == Entry::FUNCTION_SEC) 
     { // interface within function
       // iterate functions of interface and 
       // try to find types for dummy(ie. argument) procedures.
       //cout<<"Search in "<<scope->name<<endl;
       EntryListIterator eli(*scope->children());
       Entry *ce;
-      int count = 0;
-      int found = FALSE;
       for (;(ce=eli.current());++eli) 
       {
-        count++;
         if (ce->section != Entry::FUNCTION_SEC)
           continue;
 
-        Argument *arg = findArgument(scope->parent(), ce->name, TRUE);
+        // remove prefix
+        QCString name = ce->name.lower();
+        int i = name.findRev(":");
+        if (i != -1)
+          name.remove(0, i+1);
+        Argument *arg = findArgument(scope->parent(), name);
         if (arg != 0) 
-	{
+        {
           // set type of dummy procedure argument to interface
-	  arg->name = arg->type;
-          arg->type = scope->name;
+          arg->type = "external " + ce->type + "(";
+          for (unsigned int i=0; i<ce->argList->count(); i++)
+          {
+            if (i > 0)
+            {
+              arg->type = arg->type + ", ";
+            }
+            Argument *subarg = ce->argList->at(i);
+            arg->type = arg->type + subarg->type + " " + subarg->name;
+          }
+          arg->type = arg->type + ")";
+          arg->name = name;
         }
-        if (ce->name.lower() == scope->name.lower()) found = TRUE;
       }
-      if ((count == 1) && found)
-      {
-        // clear all modifiers of the scope
-        modifiers.remove(scope);
-        delete scope->parent()->removeSubEntry(scope);
-        scope = 0;
-        return TRUE;
-      }
+      // clear all modifiers of the scope
+      modifiers.remove(scope);
+      delete scope->parent()->removeSubEntry(scope);
+      scope = 0;
+      return TRUE;
     }
   } 
   if (scope->section!=Entry::FUNCTION_SEC) 
@@ -2286,12 +2367,20 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
     Entry *ce;
     for (;(ce=eli.current());++eli) 
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC && ce->section != Entry::FUNCTION_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
       if (mdfsMap.contains(ce->name.lower()))
         applyModifiers(ce, mdfsMap[ce->name.lower()]);
+
+      // remove prefix for variable names
+      if (ce->section == Entry::VARIABLE_SEC || ce->section == Entry::FUNCTION_SEC)
+      {
+        int end = ce->name.findRev(":");
+        if (end != -1) 
+          ce->name.remove(0, end+1);
+      }
     }
   }
 
@@ -2336,6 +2425,14 @@ static void initEntry()
   if (typeMode)
   {
     current->protection = typeProtection;
+  }
+  else if (current_root && current_root->section == Entry::CLASS_SEC && current_root->spec & Entry::Interface)
+  {
+    current->protection = Public;
+  }
+  else if (current_root && current_root->section == Entry::FUNCTION_SEC)
+  {
+    current->protection = Private;
   }
   else
   {
@@ -2403,6 +2500,10 @@ static void addSubprogram(const char *text)
   functionLine = (subtype.find("function") != -1);
   current->type += " " + subtype;
   current->type = current->type.stripWhiteSpace();
+  if (ifType == IF_ABSTRACT)
+  {
+    current->virt = Virtual;
+  }
   current->fileName  = yyFileName;
   current->bodyLine  = yyLineNr; // used for source reference start of body of routine
   current->startLine  = yyLineNr; // used for source reference start of definition
@@ -2759,10 +2860,8 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
     current->lang    = SrcLangExt_Fortran; 
     current->name    = yyFileName;
     current->section = Entry::SOURCE_SEC;
-    current_root->addSubEntry(current);
-    file_root        = current;
-    current          = new Entry;
-    current->lang    = SrcLangExt_Fortran; 
+    addCurrentEntry(0);
+    file_root        = last_entry;
 
     fortranscannerYYrestart( fortranscannerYYin );
     {

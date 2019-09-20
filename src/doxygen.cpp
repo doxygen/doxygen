@@ -3781,6 +3781,12 @@ static void buildFunctionList(Entry *root)
           md->addSectionsToDefinition(root->anchors);
           md->setMemberSpecifiers(root->spec);
           md->setMemberGroupId(root->mGrpId);
+          // there is no difference between declaration and definition for Fortran function arguments!
+          if (root->lang == SrcLangExt_Fortran)
+          {
+            ArgumentList *args = md->argumentList() ? md->argumentList()->deepCopy() : 0;
+            md->setDeclArgumentList(args);
+          }
 
           // see if the function is inside a namespace that was not part of
           // the name already (in that case nd should be non-zero already)
