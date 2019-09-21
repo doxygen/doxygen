@@ -23,7 +23,6 @@ class FTextStream
 
     FTextStream &operator<<( char );
     FTextStream &operator<<( const char *);
-    FTextStream &operator<<( const QString & );
     FTextStream &operator<<( const QCString & );
     FTextStream &operator<<( signed short );
     FTextStream &operator<<( unsigned short );
@@ -57,11 +56,6 @@ inline FTextStream &FTextStream::operator<<( const char* s)
   uint len = qstrlen( s );
   if (m_dev) m_dev->writeBlock( s, len );
   return *this;
-}
-
-inline FTextStream &FTextStream::operator<<( const QString & s)
-{
-  return operator<<(s.data());
 }
 
 inline FTextStream &FTextStream::operator<<( const QCString &s)

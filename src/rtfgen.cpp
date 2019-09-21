@@ -3049,7 +3049,9 @@ void RTFGenerator::endInlineMemberDoc()
 void RTFGenerator::writeLineNumber(const char *,const char *,const char *,int l)
 {
   DoxyCodeLineOpen = TRUE;
-  t << QString("%1").arg(l,5) << " ";
+  QCString lineNumber;
+  lineNumber.sprintf("%05d",l);
+  t << lineNumber << " ";
 }
 void RTFGenerator::startCodeLine(bool)
 {

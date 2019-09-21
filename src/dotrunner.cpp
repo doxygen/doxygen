@@ -63,8 +63,8 @@ static void checkPngResult(const char *imgName)
 
 static bool resetPDFSize(const int width,const int height, const char *base)
 {
-  QString tmpName = QString::fromUtf8(QCString(base)+".tmp");
-  QString patchFile = QString::fromUtf8(QCString(base)+".dot");
+  QCString tmpName = QCString(base)+".tmp";
+  QCString patchFile = QCString(base)+".dot";
   if (!QDir::current().rename(patchFile,tmpName))
   {
     err("Failed to rename file %s to %s!\n",patchFile.data(),tmpName.data());

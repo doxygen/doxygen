@@ -971,7 +971,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <Start>{TYPE_SPEC}/[,:( ]               { 
                                           QCString typ = yytext;
                                           typ = removeRedundantWhiteSpace(typ.lower());
-                                          if (QString(typ).startsWith("real")) YY_FTN_REJECT;
+                                          if (typ.startsWith("real")) YY_FTN_REJECT;
                                           if (typ == "type" || typ == "class" || typ == "procedure") inTypeDecl = 1;
                                           yy_push_state(YY_START);
 					  BEGIN(Declaration);

@@ -1327,9 +1327,8 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
   //CodeClassDef *ccd=0;
   ClassDef *ccd=0;
   QCString locScope=g_classScope;
-  QString qq=removeRedundantWhiteSpace(funcName);
-  if (g_insidePHP && qq.startsWith("self::")) qq=qq.mid(4);
-  QCString locFunc(qq.data());
+  QCString locFunc=removeRedundantWhiteSpace(funcName);
+  if (g_insidePHP && locFunc.startsWith("self::")) locFunc=locFunc.mid(4);
   QCString funcScope;
   QCString funcWithScope=locFunc;
   QCString funcWithFullScope=locFunc;

@@ -1943,6 +1943,11 @@ inline bool isId1(int c)
   return (c<127 && c>31); // printable ASCII character
 }
 
+static QCString letterToString(uint letter)
+{
+  return QString(QChar(letter)).utf8();
+}
+
 static QCString letterToLabel(uint startLetter)
 {
   char s[11]; // max 0x12345678 + '\0'
@@ -2101,7 +2106,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
     if (headerItems) alphaLinks += "&#160;|&#160;";
     headerItems++;
     QCString li = letterToLabel(*pLetter);
-    QCString ls = QString(QChar(*pLetter)).utf8();
+    QCString ls = letterToString(*pLetter);
     alphaLinks += (QCString)"<a class=\"qindex\" href=\"#letter_" +
                   li + "\">" +
                   ls + "</a>";
@@ -2244,7 +2249,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
               ol.writeString("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">"
                   "<tr>"
                   "<td><div class=\"ah\">&#160;&#160;");
-              ol.writeString(QString(QChar(cell->letter())).utf8());
+              ol.writeString(letterToString(cell->letter()));
               ol.writeString(         "&#160;&#160;</div>"
                   "</td>"
                   "</tr>"
@@ -2839,7 +2844,7 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
           if (!firstItem)    ol.endItemListItem();
           if (!firstSection) ol.endItemList();
           QCString cs = letterToLabel(ml->letter());
-          QCString cl = QString(QChar(ml->letter())).utf8();
+          QCString cl = letterToString(ml->letter());
           QCString anchor=(QCString)"index_"+convertToId(cs);
           QCString title=(QCString)"- "+cl+" -";
           ol.startSection(anchor,title,SectionInfo::Subsection);
@@ -3120,7 +3125,7 @@ static void writeQuickMemberIndex(OutputList &ol,
   {
     uint i = ml->letter();
     QCString is = letterToLabel(i);
-    QCString ci = QString(QChar(i)).utf8();
+    QCString ci = letterToString(i);
     QCString anchor;
     QCString extension=Doxygen::htmlFileExtension;
     if (!multiPage)
@@ -3210,7 +3215,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
       {
         fileName+="_"+letterToLabel(page);
       }
-      QCString cs = QString(QChar(page)).utf8();
+      QCString cs = letterToString(page);
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
@@ -3389,7 +3394,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
       {
         fileName+="_"+letterToLabel(page);
       }
-      QCString cs = QString(QChar(page)).utf8();
+      QCString cs = letterToString(page);
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
@@ -3565,7 +3570,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
       {
         fileName+="_"+letterToLabel(page);
       }
-      QCString cs = QString(QChar(page)).utf8();
+      QCString cs = letterToString(page);
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
@@ -5200,7 +5205,7 @@ void renderMemberIndicesAsJs(FTextStream &t,
           if (!firstLetter) t << "," << endl;
           uint letter = ml->letter();
           QCString is = letterToLabel(letter);
-          QCString ci = QString(QChar(letter)).utf8();
+          QCString ci = letterToString(letter);
           QCString anchor;
           QCString extension=Doxygen::htmlFileExtension;
           QCString fullName = getInfo(i)->fname;

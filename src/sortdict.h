@@ -237,10 +237,6 @@ class SDict
     {
       return m_dict->find(key);
     }
-    T *find(const QString &key)
-    {
-      return m_dict->find(key);
-    }
     int findAt(const QCString &key)
     {
       T *item = find(key);

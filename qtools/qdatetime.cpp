@@ -279,7 +279,7 @@ int QDate::daysInYear() const
   \sa toString(), dayName()
 */
 
-QString QDate::monthName( int month ) const
+QCString QDate::monthName( int month ) const
 {
 #if defined(CHECK_RANGE)
     if ( month < 1 || month > 12 ) {
@@ -287,8 +287,7 @@ QString QDate::monthName( int month ) const
 	month = 1;
     }
 #endif
-    // ### Remove the fromLatin1 during localization
-    return QString::fromLatin1(monthNames[month-1]);
+    return monthNames[month-1];
 }
 
 /*!
@@ -299,7 +298,7 @@ QString QDate::monthName( int month ) const
   \sa toString(), monthName()
 */
 
-QString QDate::dayName( int weekday ) const
+QCString QDate::dayName( int weekday ) const
 {
 #if defined(CHECK_RANGE)
     if ( weekday < 1 || weekday > 7 ) {
@@ -307,8 +306,7 @@ QString QDate::dayName( int weekday ) const
 	weekday = 1;
     }
 #endif
-    // ### Remove the fromLatin1 during localization
-    return QString::fromLatin1(weekdayNames[weekday-1]);
+    return weekdayNames[weekday-1];
 }
 
 
@@ -321,14 +319,14 @@ QString QDate::dayName( int weekday ) const
   \sa dayName(), monthName()
 */
 
-QString QDate::toString() const
+QCString QDate::toString() const
 {
     int y, m, d;
     jul2greg( jd, y, m, d );
-    QString buf = dayName(dayOfWeek());
+    QCString buf = dayName(dayOfWeek());
     buf += ' ';
     buf += monthName(m);
-    QString t;
+    QCString t;
     t.sprintf( " %d %d", d, y);
     buf += t;
     return buf;
@@ -684,9 +682,9 @@ int QTime::msec() const
   before midnight would be "23:59:59".
 */
 
-QString QTime::toString() const
+QCString QTime::toString() const
 {
-    QString buf;
+    QCString buf;
     buf.sprintf( "%.2d:%.2d:%.2d", hour(), minute(), second() );
     return buf;
 }
@@ -1190,17 +1188,17 @@ void QDateTime::setTimeUtc_t( uint secsSince1Jan1970UTC )
 
 */
 
-QString QDateTime::toString() const
+QCString QDateTime::toString() const
 {
-    QString buf = d.dayName(d.dayOfWeek());
+    QCString buf = d.dayName(d.dayOfWeek());
     buf += ' ';
     buf += d.monthName(d.month());
     buf += ' ';
-    buf += QString().setNum(d.day());
+    buf += QCString().setNum(d.day());
     buf += ' ';
     buf += t.toString();
     buf += ' ';
-    buf += QString().setNum(d.year());
+    buf += QCString().setNum(d.year());
     return buf;
 }
 

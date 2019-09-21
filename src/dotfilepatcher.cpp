@@ -337,8 +337,8 @@ bool DotFilePatcher::run() const
     //printf("DotFilePatcher::addSVGConversion: file=%s zoomable=%d\n",
     //    m_patchFile.data(),map->zoomable);
   }
-  QString tmpName = QString::fromUtf8(m_patchFile+".tmp");
-  QString patchFile = QString::fromUtf8(m_patchFile);
+  QCString tmpName = m_patchFile+".tmp";
+  QCString patchFile = m_patchFile;
   if (!QDir::current().rename(patchFile,tmpName))
   {
     err("Failed to rename file %s to %s!\n",m_patchFile.data(),tmpName.data());

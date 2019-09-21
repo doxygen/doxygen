@@ -1290,14 +1290,13 @@ static void cleanUpPaths(QStrList &str)
       if (fi.exists() && fi.isDir())
       {
         int i = str.at();
-        QString p = fi.absFilePath();
-        if (p.at(p.length()-1)!='/')
-          p.append('/');
+        QCString p = fi.absFilePath().utf8();
+        if (p[p.length()-1]!='/') p+='/';
         str.remove();
         if (str.at()==i) // did not remove last item
-          str.insert(i,p.utf8());
+          str.insert(i,p);
         else
-          str.append(p.utf8());
+          str.append(p);
       }
     }
     sfp = str.next();

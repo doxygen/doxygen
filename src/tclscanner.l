@@ -425,7 +425,7 @@ static struct
   int code_linenumbers; // if true create line numbers in code
   const char *code_font; // used font to codify
   bool config_autobrief; // value of configuration option
-  QMap<QString,QString> config_subst; // map of configuration option values
+  QMap<QCString,QCString> config_subst; // map of configuration option values
   QCString input_string; // file contents
   int input_position; // position in file
   QCString file_name; // name of used file
@@ -464,7 +464,7 @@ static struct
 
 // scanner functions
 static int yyread(char *buf,int max_size);
-static tcl_scan *tcl_scan_start(char type, QString content, QCString ns, Entry *entry_cls, Entry *entry_fn);
+static tcl_scan *tcl_scan_start(char type, QCString content, QCString ns, Entry *entry_cls, Entry *entry_fn);
 static void tcl_scan_end();
 static void tcl_comment(int what,const char *text);
 static void tcl_word(int what,const char *text);
@@ -729,7 +729,7 @@ static void tcl_codify(const char *s,const char *str)
 }
 
 //! Codify 'str' with special font class 's'.
-static void tcl_codify(const char *s,const QString &str)
+static void tcl_codify(const char *s,const QCString &str)
 {
   if (tcl.code==NULL) return;
   tcl_codify(s,str);
@@ -1135,10 +1135,10 @@ D
 
 //! Start new scan context for given 'content'.
 // @return created new scan context.
-static tcl_scan *tcl_scan_start(char type, QString content, QCString ns, Entry *entry_cl, Entry *entry_fn)
+static tcl_scan *tcl_scan_start(char type, QCString content, QCString ns, Entry *entry_cl, Entry *entry_fn)
 {
   tcl_scan *myScan=tcl.scan.at(0);
-tcl_inf("line=%d type=%d '%s'\n",tcl.line_body0,type,content.ascii());
+tcl_inf("line=%d type=%d '%s'\n",tcl.line_body0,type,content.data());
 
   myScan->line1=yylineno;
   yy_push_state(TOP);
@@ -1167,7 +1167,7 @@ tcl_inf("line=%d type=%d '%s'\n",tcl.line_body0,type,content.ascii());
   myScan->entry_cl = entry_cl;
   myScan->entry_fn = entry_fn;
   myScan->entry_scan = tcl.entry_current;
-  myScan->buffer_state=yy_scan_string(content.ascii());
+  myScan->buffer_state=yy_scan_string(content.data());
   myScan->line0=tcl.line_body0;
   myScan->line1=tcl.line_body1;
   myScan->after.clear();
@@ -2562,7 +2562,7 @@ tcl_inf("->\n");
   if (myStr.left(2)=="::") myStr = myStr.mid(2);
   if (tcl.config_subst.contains(myStr))
   {
-    myStr=tcl.config_subst[myStr].utf8();
+    myStr=tcl.config_subst[myStr];
   }
   if (myStr=="private")
   {
@@ -2598,7 +2598,7 @@ tcl_inf("->\n");
     if (myStr.left(2)=="::") myStr = myStr.mid(2);
     if (tcl.config_subst.contains(myStr))
     {
-      myStr=tcl.config_subst[myStr].utf8();
+      myStr=tcl.config_subst[myStr];
     }
   }
   if (myStr=="proc")
@@ -3018,7 +3018,7 @@ void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
     }
   }
 
-  QString myStr="Codifying..";
+  QCString myStr="Codifying..";
   if (scopeName)
   {
     myStr +=" scope=";
@@ -3041,7 +3041,7 @@ void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
     myStr+=" file=";
     myStr+=fileDef->fileName();
   }
-tcl_inf("%s (%d,%d) %d %d\n",myStr.ascii(),startLine,endLine,isExampleBlock,inlineFragment);
+tcl_inf("%s (%d,%d) %d %d\n",myStr.data(),startLine,endLine,isExampleBlock,inlineFragment);
 //tcl_inf("%s\n"input.data());
   tcl_init();
   tcl.collectXRefs = collectXRefs;

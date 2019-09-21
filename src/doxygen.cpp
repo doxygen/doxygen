@@ -9434,7 +9434,7 @@ static void copyLogo(const QCString &outputOption)
   }
 }
 
-static void copyExtraFiles(QStrList files,const QString &filesOption,const QCString &outputOption)
+static void copyExtraFiles(QStrList files,const QCString &filesOption,const QCString &outputOption)
 {
   uint i;
   for (i=0; i<files.count(); ++i)

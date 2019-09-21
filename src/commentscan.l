@@ -1180,7 +1180,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  addOutput(yytext);
   					}
 <Comment>{B}*{CMD}"~"[a-z_A-Z-]*		{ // language switch command
-                                          QCString langId = QString(yytext).stripWhiteSpace().data()+2;
+                                          QCString langId = QCString(yytext).stripWhiteSpace().data()+2;
 			       	          if (!langId.isEmpty() &&
 					      qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)!=0)
 				          { // enable language specific section
@@ -1190,7 +1190,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>{B}*{CMD}"f{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
 					  setOutput(OutputDoc);
 					  formulaText="\\begin";
-					  formulaEnv=QString(yytext).stripWhiteSpace().data()+2;
+					  formulaEnv=QCString(yytext).stripWhiteSpace().data()+2;
 					  if (formulaEnv.at(formulaEnv.length()-1)=='{')
 					  {
 					    // remove trailing open brace

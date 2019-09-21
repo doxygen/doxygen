@@ -1985,7 +1985,7 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
     else
       newMdf.passVar = "";
   }
-  else if (QString(mdfString.data()).startsWith("bind"))
+  else if (mdfString.startsWith("bind"))
   {
     // we need here the original string as we want to don't want to have the lowercase name between the quotes of the name= part
     newMdf.bindVar = extractBind(mdfStringArg);

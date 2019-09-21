@@ -1890,7 +1890,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
         QFileInfo info(s);
         if (info.exists())
         {
-          QString prefix = info.absFilePath();
+          QCString prefix = info.absFilePath().utf8();
           if (prefix.at(prefix.length() - 1) != '/')
           {
             prefix += '/';

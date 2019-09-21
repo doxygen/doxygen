@@ -2590,7 +2590,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString docs = fileBuf;
   QCString id;
   QCString title=extractPageTitle(docs,id).stripWhiteSpace();
-  if (QString(id).startsWith("autotoc_md")) id = "";
+  if (id.startsWith("autotoc_md")) id = "";
   g_indentLevel=title.isEmpty() ? 0 : -1;
   QCString titleFn = QFileInfo(fileName).baseName().utf8();
   QCString fn      = QFileInfo(fileName).fileName().utf8();

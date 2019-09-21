@@ -6897,7 +6897,7 @@ int DocSection::parse()
     }
     else if (retval==RetVal_Subsubsection && m_level<=Doxygen::subpageNestingLevel+2)
     {
-      if ((m_level<=1+Doxygen::subpageNestingLevel) && !QString(g_token->sectionId).startsWith("autotoc_md"))
+      if ((m_level<=1+Doxygen::subpageNestingLevel) && !g_token->sectionId.startsWith("autotoc_md"))
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected subsubsection command found inside %s!",sectionLevelToName[m_level]);
       // then parse any number of nested sections
       while (retval==RetVal_Subsubsection) // more sections follow
@@ -6912,7 +6912,7 @@ int DocSection::parse()
     }
     else if (retval==RetVal_Paragraph && m_level<=QMIN(5,Doxygen::subpageNestingLevel+3))
     {
-      if ((m_level<=2+Doxygen::subpageNestingLevel) && !QString(g_token->sectionId).startsWith("autotoc_md"))
+      if ((m_level<=2+Doxygen::subpageNestingLevel) && !g_token->sectionId.startsWith("autotoc_md"))
         warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected paragraph command found inside %s!",sectionLevelToName[m_level]);
       // then parse any number of nested sections
       while (retval==RetVal_Paragraph) // more sections follow
@@ -7084,8 +7084,10 @@ void DocRoot::parse()
     }
     if (retval==RetVal_Paragraph)
     {
-      if (!QString(g_token->sectionId).startsWith("autotoc_md"))
+      if (!g_token->sectionId.startsWith("autotoc_md"))
+      {
          warn_doc_error(g_fileName,doctokenizerYYlineno,"found paragraph command outside of subsubsection context!");
+      }
       while (retval==RetVal_Paragraph)
       {
         if (!g_token->sectionId.isEmpty())
@@ -7113,7 +7115,7 @@ void DocRoot::parse()
     }
     if (retval==RetVal_Subsubsection)
     {
-      if (!(QString(g_token->sectionId).startsWith("autotoc_md")))
+      if (!(g_token->sectionId.startsWith("autotoc_md")))
         warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsubsection command outside of subsection context!");
       while (retval==RetVal_Subsubsection)
       {
@@ -7142,8 +7144,10 @@ void DocRoot::parse()
     }
     if (retval==RetVal_Subsection)
     {
-      if (!(QString(g_token->sectionId).startsWith("autotoc_md")))
+      if (!g_token->sectionId.startsWith("autotoc_md"))
+      {
         warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsection command outside of section context!");
+      }
       while (retval==RetVal_Subsection)
       {
         if (!g_token->sectionId.isEmpty())

@@ -22,6 +22,7 @@
 #include <stdio.h>
 
 #include <qlist.h>
+#include <qstring.h>
 #include <qcstring.h>
 
 #include "docvisitor.h"

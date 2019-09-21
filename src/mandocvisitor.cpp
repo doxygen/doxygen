@@ -905,25 +905,6 @@ void ManDocVisitor::visitPost(DocSecRefList *)
   m_t << ".PP" << endl;
 }
 
-//void ManDocVisitor::visitPre(DocLanguage *l)
-//{
-//  QString langId = Config_getEnum(OUTPUT_LANGUAGE);
-//  if (l->id().lower()!=langId.lower())
-//  {
-//    pushEnabled();
-//    m_hide = TRUE;
-//  }
-//}
-//
-//void ManDocVisitor::visitPost(DocLanguage *l) 
-//{
-//  QString langId = Config_getEnum(OUTPUT_LANGUAGE);
-//  if (l->id().lower()!=langId.lower())
-//  {
-//    popEnabled();
-//  }
-//}
-
 void ManDocVisitor::visitPre(DocParamSect *s)
 {
   if (m_hide) return;

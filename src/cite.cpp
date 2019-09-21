@@ -79,7 +79,7 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
       {
         if (i) t << ",";
         i++;
-        t << bibTmpFile << QString().setNum(i);
+        t << bibTmpFile << QCString().setNum(i);
       }
     }
     bibdata = citeDataList.next();

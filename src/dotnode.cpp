@@ -176,12 +176,12 @@ static void writeBoxMemberList(FTextStream &t,
 
 QCString DotNode::convertLabel(const QCString &l)
 {
-  QString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
-  QString bAfter(">]),:;|");              // break after  character set
-  QString p(l);
+  QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
+  QCString bAfter(">]),:;|");              // break after  character set
+  QCString p(l);
   if (p.isEmpty()) return QCString();
-  QString result;
-  QChar c,pc=0;
+  QCString result;
+  char c,pc=0;
   uint idx = 0;
   int len=p.length();
   int charsLeft=len;
@@ -190,18 +190,18 @@ QCString DotNode::convertLabel(const QCString &l)
   while (idx < p.length())
   {
     c = p[idx++];
-    QString replacement;
+    QCString replacement;
     switch(c)
     {
-    case '\\': replacement="\\\\"; break;
-    case '\n': replacement="\\n"; break;
-    case '<':  replacement="\\<"; break;
-    case '>':  replacement="\\>"; break;
-    case '|':  replacement="\\|"; break;
-    case '{':  replacement="\\{"; break;
-    case '}':  replacement="\\}"; break;
-    case '"':  replacement="\\\""; break;
-    default:   replacement=c; break;
+      case '\\': replacement="\\\\"; break;
+      case '\n': replacement="\\n"; break;
+      case '<':  replacement="\\<"; break;
+      case '>':  replacement="\\>"; break;
+      case '|':  replacement="\\|"; break;
+      case '{':  replacement="\\{"; break;
+      case '}':  replacement="\\}"; break;
+      case '"':  replacement="\\\""; break;
+      default:   replacement+=c; break;
     }
     // Some heuristics to insert newlines to prevent too long
     // boxes and at the same time prevent ugly breaks
@@ -219,7 +219,7 @@ QCString DotNode::convertLabel(const QCString &l)
       sinceLast=1;
     }
     else if (charsLeft>1+foldLen/4 && sinceLast>foldLen+foldLen/3 && 
-      !isupper(c) && p[idx].category()==QChar::Letter_Uppercase)
+      !isupper(c) && isupper(p[idx]))
     {
       result+=replacement;
       result+="\\l";
@@ -241,7 +241,7 @@ QCString DotNode::convertLabel(const QCString &l)
     charsLeft--;
     pc=c;
   }
-  return result.utf8();
+  return result;
 }
 
 static QCString stripProtectionPrefix(const QCString &s)
