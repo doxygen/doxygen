@@ -142,6 +142,7 @@ static int              lastCopyArgStringContext;
 static int              lastCopyArgContext;
 static QCString         *copyArgString;
 static QCString         fullArgString;
+static QCString         dummyRawString;
 
 static ArgumentList     *currentArgumentList;
 static char             lastCopyArgChar;
@@ -5398,6 +5399,16 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN(HereDoc);
 					  }
   					}
+<SkipCurly,SkipCurlyCpp>{B}*{RAWBEGIN}  {
+                                          QCString raw=QCString(yytext).stripWhiteSpace();
+                                          g_delimiter = raw.data()+2;
+                                          g_delimiter=g_delimiter.left(g_delimiter.length()-1);
+                                          lastRawStringContext = YY_START;
+                                          dummyRawString.resize(0);
+                                          pCopyRawString = &dummyRawString;
+                                          *pCopyRawString+=yytext;
+                                          BEGIN(RawString);
+                                        }
 <SkipCurly,SkipCurlyCpp>[^\n#"'@\\/{}<]+ {
                                           lineCount();  // for g_column updates
   				          //addToBody(yytext);

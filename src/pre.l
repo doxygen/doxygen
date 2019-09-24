@@ -385,6 +385,7 @@ static bool               g_isSource;
 static bool               g_lexInit = FALSE;
 static int                g_fenceSize = 0;
 static bool               g_ccomment;
+static QCString           g_delimiter;
 
 //DefineDict* getGlobalDefineDict() 
 //{
@@ -1768,6 +1769,8 @@ static int yyread(char *buf,int max_size)
 ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 B       [ \t]
 BN	[ \t\r\n]
+RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
+RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
 %option noyywrap
@@ -1782,6 +1785,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	CopyStringCs
 %x	CopyStringFtn
 %x	CopyStringFtnDouble
+%x      CopyRawString
 %x      Include
 %x      IncludeID
 %x      EndImport
@@ -1868,6 +1872,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  g_yyLineNr+=text.contains('\n');
 					  outputArray(yytext,(int)yyleng);
   					}
+<CopyLine>{RAWBEGIN}                    {
+                                          g_delimiter = yytext+2;
+                                          g_delimiter=g_delimiter.left(g_delimiter.length()-1);
+					  outputArray(yytext,(int)yyleng);
+                                          BEGIN(CopyRawString);
+                                        }
 <CopyLine>"{"				{ // count brackets inside the main file
   					  if (g_includeStack.isEmpty()) 
 					  {
@@ -1945,6 +1955,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  outputChar(*yytext);
 					  BEGIN( CopyLine );
 					}
+<CopyRawString>{RAWEND}                 {
+					  outputArray(yytext,(int)yyleng);
+                                          QCString delimiter = yytext+1;
+                                          delimiter=delimiter.left(delimiter.length()-1);
+                                          if (delimiter==g_delimiter)
+                                          {
+                                            BEGIN( CopyLine );
+                                          }
+                                        }
+<CopyRawString>[^)]+                    {
+					  outputArray(yytext,(int)yyleng);
+                                        }
+<CopyRawString>.                        {
+					  outputChar(*yytext);
+                                        }
 <CopyLine>{ID}/{BN}{0,80}"("		{
   					  g_expectGuard = FALSE;
   					  Define *def=0;
