@@ -1806,6 +1806,14 @@ static bool skipLanguageSpecificKeyword(const QCString &kw)
   return g_insideCpp && (kw == "remove" || kw == "set" || kw == "get");
 }
 
+static bool isCastKeyword(const QCString &s)
+{
+  int i=s.find('<');
+  if (i==-1) return FALSE;
+  QCString kw = s.left(i).stripWhiteSpace();
+  return kw=="const_cast" || kw=="static_cast" || kw=="dynamic_cast" || kw=="reinterpret_cast";
+}
+
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
@@ -2606,7 +2614,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <TemplCast>[*^]*			{
   					  codifyLines(yytext);
 					}
-<Body,FuncCall>{CASTKW}"<"                { // static_cast<T>(
+<Body,MemberCall2,FuncCall>{CASTKW}{B}*"<"  { // static_cast<T>(
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -2619,9 +2627,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_name+=yytext+7; 
                                         }
 <Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(]*">"("::"{ID})*/{B}* { // A<T> *pt;
-					  int i=QCString(yytext).find('<');
-					  QCString kw = QCString(yytext).left(i).stripWhiteSpace();
-					  if (kw.right(5)=="_cast" && YY_START==Body)
+					  if (isCastKeyword(yytext) && YY_START==Body)
 					  {
 					    REJECT;
 					  }
@@ -2651,6 +2657,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <Body>{SCOPETNAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"/{BN}*"(" |
 <Body>{SCOPETNAME}/{BN}*"("		{ // a() or c::a() or t<A,B>::a() or A\B\foo()
+					  if (isCastKeyword(yytext))
+					  {
+					    REJECT;
+					  }
   					  addType();
 					  generateFunctionLink(*g_code,yytext);
   					  g_bracketCount=0;
@@ -3062,6 +3072,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           endFontClass();
                                         }
 <MemberCall2,FuncCall>{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
+					  if (isCastKeyword(yytext))
+					  {
+					    REJECT;
+					  }
 					  addParmType();
 					  g_parmName=yytext; 
 					  generateClassOrGlobalLink(*g_code,yytext,!g_insideBody);
