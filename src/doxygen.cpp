@@ -10387,7 +10387,7 @@ void readConfiguration(int argc, char **argv)
         layoutName=getArg(argc,argv,optind);
         if (!layoutName)
         { layoutName="DoxygenLayout.xml"; }
-        writeDefaultLayoutFile(layoutName);
+        LayoutDocManager::instance().writeDefault(layoutName);
         cleanUpDoxygen();
         exit(0);
         break;

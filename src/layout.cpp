@@ -265,9 +265,6 @@ class LayoutParser : public QXmlDefaultHandler
       m_part = -1; // invalid
       m_rootNav = 0;
 
-      //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      //bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);  
-      //bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
       bool sliceOpt    = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
       // start & end handlers
@@ -1549,9 +1546,7 @@ void LayoutDocManager::parse(const char *fileName)
   reader.parse( source );
 }
 
-//---------------------------------------------------------------------------------
-
-void writeDefaultLayoutFile(const char *fileName)
+void LayoutDocManager::writeDefault(const char *fileName) const
 {
   QFile f(fileName);
   bool ok = openOutputFile(fileName,f);
