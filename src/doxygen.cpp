@@ -2125,7 +2125,7 @@ static void findUsingDeclImports(Entry *root)
      )
   {
     //printf("Found using declaration %s inside section %x\n",
-    //    rootNav->name().data(), rootNav->parent()->section());
+    //    root->name.data(), root->parent()->section);
     QCString fullName=removeRedundantWhiteSpace(root->parent()->name);
     fullName=stripAnonymousNamespaceScope(fullName);
     fullName=stripTemplateSpecifiersFromScope(fullName);
@@ -2139,7 +2139,7 @@ static void findUsingDeclImports(Entry *root)
         QCString scope=root->name.left(i);
         QCString memName=root->name.right(root->name.length()-i-2);
         const ClassDef *bcd = getResolvedClass(cd,0,scope); // todo: file in fileScope parameter
-        if (bcd)
+        if (bcd && bcd!=cd)
         {
           //printf("found class %s memName=%s\n",bcd->name().data(),memName.data());
           MemberNameInfoSDict *mndict=bcd->memberNameInfoSDict();
