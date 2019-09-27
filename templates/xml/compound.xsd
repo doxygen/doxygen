@@ -491,6 +491,7 @@
 
   <xsd:complexType name="docFormulaType" mixed="true">
     <xsd:attribute name="id" type="xsd:string" />
+    <xsd:attribute name="fig" type="DoxBool" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="docIndexEntryType">

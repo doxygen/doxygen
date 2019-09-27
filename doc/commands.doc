@@ -107,6 +107,11 @@ documentation:
 \refitem cmdfbrclose \\f]
 \refitem cmdfcurlyopen \\f{
 \refitem cmdfcurlyclose \\f}
+\refitem cmdfigdollar \\fig\$
+\refitem cmdfigbropen \\fig[
+\refitem cmdfigbrclose \\fig]
+\refitem cmdfigcurlyopen \\fig{
+\refitem cmdfigcurlyclose \\fig}
 \refitem cmdfile \\file
 \refitem cmdfn \\fn
 \refitem cmdheaderfile \\headerfile
@@ -3098,45 +3103,90 @@ class Receiver
 
   \addindex \\f\$
 
-  Marks the start and end of an in-text formula.
-  \sa section \ref formulas "formulas" for an example.
+  Marks the start and end of an in-text (b/w) formula.
+  \sa section \ref cmdfigdollar "\\fig\$" and section \ref formulas "formulas" for an example.
 
 <hr>
 \section cmdfbropen \\f[
 
   \addindex \\f[
 
-  Marks the start of a long formula that is displayed
+  Marks the start of a (b/w) long formula that is displayed
   centered on a separate line.
-  \sa section \ref cmdfbrclose "\\f]" and section \ref formulas "formulas".
+  \sa section \ref cmdfbrclose "\\f]", section \ref cmdfigbropen "\\fig[" and section \ref formulas "formulas".
 
 <hr>
 \section cmdfbrclose \\f]
 
   \addindex \\f]
 
-  Marks the end of a long formula that is displayed
+  Marks the end of a (b/w) long formula that is displayed
   centered on a separate line.
-  \sa section \ref cmdfbropen "\\f[" and section \ref formulas "formulas".
+  \sa section \ref cmdfbropen "\\f[", section \ref cmdfigbropen "\\fig[" and section \ref formulas "formulas".
 
 <hr>
 \section cmdfcurlyopen \\f{environment}{
 
   \addindex \\f{
 
-  Marks the start of a formula that is in a specific environment.
+  Marks the start of a (b/w) formula that is in a specific environment.
   \note The second \c { is optional and is only to help editors (such as \c Vim) to
   do proper syntax highlighting by making the number of opening and closing braces
   the same.
-  \sa section \ref cmdfcurlyclose "\\f}" and section \ref formulas "formulas".
+  \sa section \ref cmdfcurlyclose "\\f}", section \ref cmdfigcurlyopen "\\fig{" and section \ref formulas "formulas".
 
 <hr>
 \section cmdfcurlyclose \\f}
 
   \addindex \\f}
 
+  Marks the end of a (b/w) formula that is in a specific environment.
+  \sa section \ref cmdfcurlyopen "\\f{", section \ref cmdfigcurlyopen "\\fig{" and section \ref formulas "formulas".
+
+<hr>
+\section cmdfigdollar \\fig$
+
+  \addindex \\fig\$
+
+  Marks the start and end of an in-text formula.
+  \sa section \ref cmdfdollar "\\f\$" and section \ref formulas "formulas" for an example.
+
+<hr>
+\section cmdfigbropen \\fig[
+
+  \addindex \\fig[
+
+  Marks the start of a long formula that is displayed
+  centered on a separate line.
+  \sa section \ref cmdfigbrclose "\\fig]", section \ref cmdfbropen "\\f[" and section \ref formulas "formulas".
+
+<hr>
+\section cmdfigbrclose \\fig]
+
+  \addindex \\fig]
+
+  Marks the end of a long formula that is displayed
+  centered on a separate line.
+  \sa section \ref cmdfigbropen "\\fig[", section \ref cmdfbropen "\\f[" and section \ref formulas "formulas".
+
+<hr>
+\section cmdfigcurlyopen \\fig{environment}{
+
+  \addindex \\fig{
+
+  Marks the start of a formula that is in a specific environment.
+  \note The second \c { is optional and is only to help editors (such as \c Vim) to
+  do proper syntax highlighting by making the number of opening and closing braces
+  the same.
+  \sa section \ref cmdfigcurlyclose "\\fig}", section \ref cmdfcurlyopen "\\f{" and section \ref formulas "formulas".
+
+<hr>
+\section cmdfigcurlyclose \\fig}
+
+  \addindex \\fig}
+
   Marks the end of a formula that is in a specific environment.
-  \sa section \ref cmdfcurlyopen "\\f{" and section \ref formulas "formulas".
+  \sa section \ref cmdfigcurlyopen "\\fig{", section \ref cmdfcurlyopen "\\f{" and section \ref formulas "formulas".
 
 <hr>
 \section cmdhtmlonly \\htmlonly ["[block]"]

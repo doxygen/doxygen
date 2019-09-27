@@ -466,7 +466,9 @@ void XmlDocVisitor::visit(DocIncOperator *op)
 void XmlDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
-  m_t << "<formula id=\"" << f->id() << "\">";
+  m_t << "<formula id=\"" << f->id();
+  if (f->isFig()) m_t << "\" fig=\"yes";
+  m_t << "\">";
   filter(f->text());
   m_t << "</formula>";
 }

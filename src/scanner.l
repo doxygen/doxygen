@@ -4689,6 +4689,20 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  fullArgString+=yytext;
   					  BEGIN(CopyArgVerbatim);
                                         }
+<CopyArgCommentLine>{CMD}("fig$"|"fig["|"fig{")                {
+                                          docBlockName=&yytext[1];
+                                          if (docBlockName.at(3)=='[')
+                                          {
+                                            docBlockName.at(3)='}';
+                                          }
+                                          if (docBlockName.at(3)=='{')
+                                          {
+                                            docBlockName.at(3)='}';
+                                          }
+                                          fullArgString+=yytext;
+                                          BEGIN(CopyArgVerbatim);
+                                        }
+
 <CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9\-] { // end of verbatim block
   					  fullArgString+=yytext;
 				          if (yytext[1]=='f') // end of formula
@@ -6649,6 +6663,18 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
                                         }
+<DocBlock>{CMD}("fig$"|"fig["|"fig{")   {
+                                           docBlock+=yytext;
+                                           docBlockName=&yytext[1];
+                                           if (docBlockName.at(3)=='{')
+                                           {
+                                             docBlockName.at(3)='}';
+                                           }
+                                           g_fencedSize=0;
+                                           g_nestedComment=FALSE;
+                                           BEGIN(DocCopyBlock);
+                                         }
+
 <DocBlock>{B}*"<"{PRE}">"		{
                                           docBlock+=yytext;
 				          docBlockName="<pre>";
@@ -6717,7 +6743,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					    BEGIN(DocBlock);
 					  }
   					}
-<DocCopyBlock>[\\@]("f$"|"f]"|"f}")     {
+<DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"fig$"|"fig]"|"fig}") {
   					  docBlock+=yytext;
 					  BEGIN(DocBlock);
   					}

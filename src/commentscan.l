@@ -643,6 +643,30 @@ static QCString addFormula()
   return formLabel;
 }
 
+static QCString addFigure()
+{
+  QCString formLabel;
+  QCString fText=formulaText.simplifyWhiteSpace();
+  Formula *f=0;
+  if ((f=Doxygen::figureDict->find(fText))==0)
+  {
+    f = new Formula(fText, TRUE);
+    Doxygen::figureList->append(f);
+    Doxygen::figureDict->insert(fText,f);
+    formLabel.sprintf("\\figform#%d",f->getId());
+    Doxygen::figureNameDict->insert(formLabel,f);
+  }
+  else
+  {
+    formLabel.sprintf("\\figform#%d",f->getId());
+  }
+  int i;
+  for (i=0;i<formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
+                                                         // keep the warnings
+                                                         // correctly aligned.
+  return formLabel;
+}
+
 //-----------------------------------------------------------------------------
 
 static void checkFormula();
@@ -1010,6 +1034,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
    *   commands (e.g. @page, or \page)
    *   escaped commands (e.g. @@page or \\page).
    *   formulas (e.g. \f$ \f[ \f{..)
+   *   figures (e.g. \fig$ \fig[ \fig{..)
    *   directories (e.g. \doxygen\src\)
    *   autolist end. (e.g. a dot on an otherwise empty line)
    *   newlines.
@@ -1200,12 +1225,25 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  formulaNewLines=0;
 					  BEGIN(ReadFormulaLong);
   					}
-<Comment>{B}*{CMD}"f$"			{ // start of a inline formula
+<Comment>{B}*{CMD}"fig{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
+                                          setOutput(OutputDoc);
+                                          formulaText="\\begin";
+                                          formulaEnv=QString(yytext).stripWhiteSpace().data()+4;
+                                          if (formulaEnv.at(formulaEnv.length()-1)=='{')
+                                          {
+                                            // remove trailing open brace
+                                            formulaEnv=formulaEnv.left(formulaEnv.length()-1);
+                                          }
+                                          formulaText+=formulaEnv;
+                                          formulaNewLines=0;
+                                          BEGIN(ReadFormulaLong);
+                                        }
+<Comment>{B}*{CMD}("f$"|"fig$")         { // start of a inline formula
 					  formulaText="$";
 					  formulaNewLines=0;
 					  BEGIN(ReadFormulaShort);
   					}
-<Comment>{B}*{CMD}"f["			{ // start of a block formula
+<Comment>{B}*{CMD}("f["|"fig[")         { // start of a block formula
 					  setOutput(OutputDoc);
 					  formulaText="\\[";
 					  formulaNewLines=0;
@@ -1395,6 +1433,23 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  addOutput(" "+addFormula());
 					  BEGIN(Comment);
   					}
+<ReadFormulaShort>{CMD}"fig$"           { // end of inline formula
+                                          formulaText+="$";
+                                          addOutput(" "+addFigure());
+                                          BEGIN(Comment);
+                                        }
+<ReadFormulaLong>{CMD}"fig]"            { // end of block formula
+                                          formulaText+="\\]";
+                                          addOutput(" "+addFigure());
+                                          BEGIN(Comment);
+                                        }
+<ReadFormulaLong>{CMD}"fig}"            { // end of custom env formula
+                                          formulaText+="\\end";
+                                          formulaText+=formulaEnv;
+                                          addOutput(" "+addFigure());
+                                          BEGIN(Comment);
+                                        }
+
 <ReadFormulaLong,ReadFormulaShort>[^\\@\n]+ { // any non-special character
                                           formulaText+=yytext; 
  					} 
