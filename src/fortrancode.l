@@ -521,7 +521,7 @@ static bool getGenericProcedureLink(const ClassDef *cd,
   return FALSE;
 }
 
-static bool getLink(UseSDict *usedict, // dictonary with used modules
+static bool getLink(UseSDict *usedict, // dictionary with used modules
                     const char *memberText,  // exact member text
 		    CodeOutputInterface &ol,
 		    const char *text)

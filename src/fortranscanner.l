@@ -1840,7 +1840,7 @@ static QCString extractFromParens(const QCString name)
   return extracted;
 }
 
-/*! remove non usefull spaces from bind statement */
+/*! remove unuseful spaces from bind statement */
 static QCString extractBind(const QCString name)
 {
   QCString parensPart = extractFromParens(name);

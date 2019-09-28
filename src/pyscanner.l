@@ -1619,7 +1619,7 @@ STARTDOCSYMS      "##"
       			  incLineNr();
 			  docBlock += yytext;
       			}
-    \\.		        { // espaced char
+    \\.		        { // escaped char
 			  docBlock += yytext;
       			}
     .			{
@@ -1654,7 +1654,7 @@ STARTDOCSYMS      "##"
       			         addToString(yytext);
       				 incLineNr();
                                }
-    \\.			       { // espaced char
+    \\.			       { // escaped char
       			         addToString(yytext);
                                }
     "\"\"\""		       { // triple double quotes
@@ -1677,7 +1677,7 @@ STARTDOCSYMS      "##"
       			         addToString(yytext);
       				 incLineNr();
                                }
-    \\.			       { // espaced char
+    \\.			       { // escaped char
       			         addToString(yytext);
                                }
     "'''"		       { // triple single quotes
