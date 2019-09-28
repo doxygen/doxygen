@@ -2475,11 +2475,11 @@ static bool handlePage(const QCString &, const QCStringList &)
 static bool handleMainpage(const QCString &, const QCStringList &)
 {
   bool stop=makeStructuralIndicator(Entry::MAINPAGEDOC_SEC);
+  current->name = "";
   if (!stop) 
   {
     current->name = "mainpage";
   }
-  current->name = "";
   BEGIN( PageDocArg2 );
   return stop;
 }
