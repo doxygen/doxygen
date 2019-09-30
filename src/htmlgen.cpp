@@ -575,7 +575,7 @@ void HtmlCodeGenerator::_writeCodeLink(const char *className,
   }
   m_t << "href=\"";
   m_t << externalRef(m_relPath,ref,TRUE);
-  if (f) m_t << f << Doxygen::htmlFileExtension;
+  if (f) m_t << f << (hasExtension(f) ? "" : Doxygen::htmlFileExtension);
   if (anchor) m_t << "#" << anchor;
   m_t << "\"";
   if (tooltip) m_t << " title=\"" << convertToHtml(tooltip) << "\"";
@@ -596,7 +596,7 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
   {
     m_t << "<a href=\"";
     m_t << externalRef(m_relPath,docInfo.ref,TRUE);
-    m_t << docInfo.url << Doxygen::htmlFileExtension;
+    m_t << docInfo.url << (hasExtension(docInfo.url) ? "" : Doxygen::htmlFileExtension);
     if (!docInfo.anchor.isEmpty())
     {
       m_t << "#" << docInfo.anchor;
@@ -628,7 +628,7 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
     {
       m_t << "<a href=\"";
       m_t << externalRef(m_relPath,defInfo.ref,TRUE);
-      m_t << defInfo.url << Doxygen::htmlFileExtension;
+      m_t << defInfo.url << (hasExtension(docInfo.url) ? "" : Doxygen::htmlFileExtension);
       if (!defInfo.anchor.isEmpty())
       {
         m_t << "#" << defInfo.anchor;
@@ -649,7 +649,7 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
     {
       m_t << "<a href=\"";
       m_t << externalRef(m_relPath,declInfo.ref,TRUE);
-      m_t << declInfo.url << Doxygen::htmlFileExtension;
+      m_t << declInfo.url << (hasExtension(docInfo.url) ? "" : Doxygen::htmlFileExtension);
       if (!declInfo.anchor.isEmpty())
       {
         m_t << "#" << declInfo.anchor;
@@ -912,10 +912,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   lastTitle=title;
   relPath = relativePathToRoot(fileName);
 
-  if (fileName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension)
-  {
-    fileName+=Doxygen::htmlFileExtension;
-  }
+  fileName+=(hasExtension(fileName) ? "" : Doxygen::htmlFileExtension);
   startPlainFile(fileName);
   m_codeGen.setTextStream(t);
   m_codeGen.setRelativePath(relPath);
@@ -1149,7 +1146,7 @@ void HtmlGenerator::startIndexItem(const char *ref,const char *f)
     }
     t << "href=\"";
     t << externalRef(relPath,ref,TRUE);
-    if (f) t << f << Doxygen::htmlFileExtension;
+    if (f) t << f << (hasExtension(f) ? "" : Doxygen::htmlFileExtension);
     t << "\">";
   }
   else
@@ -1176,7 +1173,7 @@ void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
 {
   t << "<li>";
   if (path) docify(path);
-  t << "<a class=\"el\" href=\"" << f << Doxygen::htmlFileExtension << "\">";
+  t << "<a class=\"el\" href=\"" << f << (hasExtension(f) ? "" : Doxygen::htmlFileExtension) << "\">";
   docify(name);
   t << "</a> ";
 }
@@ -1195,7 +1192,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   }
   t << "href=\"";
   t << externalRef(relPath,ref,TRUE);
-  if (f) t << f << Doxygen::htmlFileExtension;
+  if (f) t << f << (hasExtension(f) ? "" : Doxygen::htmlFileExtension);
   if (anchor) t << "#" << anchor;
   t << "\">";
   docify(name);
@@ -1205,7 +1202,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
 void HtmlGenerator::startTextLink(const char *f,const char *anchor)
 {
   t << "<a href=\"";
-  if (f)   t << relPath << f << Doxygen::htmlFileExtension;
+  if (f)   t << relPath << f << (hasExtension(f) ? "" : Doxygen::htmlFileExtension);
   if (anchor) t << "#" << anchor;
   t << "\">";
 }
@@ -2369,7 +2366,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpa
 											"<script type=\"text/javascript\">\n"
 											"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
 											"$(document).ready(function(){initNavTree('") +
-			QCString(name) + Doxygen::htmlFileExtension +
+			QCString(name) + (hasExtension(name) ? "" : Doxygen::htmlFileExtension) +
 			QCString("','") + relpath +
 			QCString("');});\n"
 							 "/* @license-end */\n"
@@ -2807,7 +2804,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
     classLink += "href=\"";
     classLink+=relPath;
   }
-  classLink+=file+Doxygen::htmlFileExtension+a;
+  classLink=classLink+file+(hasExtension(file) ? "" : Doxygen::htmlFileExtension)+a;
   classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
   t << "<tr class=\"inherit_header " << id << "\">"
     << "<td colspan=\"2\" onclick=\"javascript:toggleInherit('" << id << "')\">"
@@ -2830,7 +2827,7 @@ void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const c
   if (file)
   {
     t << relPath << file;
-    t << Doxygen::htmlFileExtension;
+    t << (hasExtension(file) ? "" : Doxygen::htmlFileExtension);
   }
   else
   {
