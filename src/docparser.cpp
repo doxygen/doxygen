@@ -508,7 +508,7 @@ static void checkUnOrMultipleDocumentedParams()
     {
       ArgumentListIterator ali(*al);
       const Argument *a;
-      bool found=FALSE;
+      int notArgCnt=0;
       for (ali.toFirst();(a=ali.current());++ali)
       {
         int count = 0;
@@ -523,7 +523,7 @@ static void checkUnOrMultipleDocumentedParams()
         }
         else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a->docs.isEmpty()) 
         {
-          found = TRUE;
+          notArgCnt++;
         }
         else
         {
@@ -544,14 +544,16 @@ static void checkUnOrMultipleDocumentedParams()
                          " has multiple @param documentation sections");
         }
       }
-      if (found)
+      if (notArgCnt>0)
       {
         bool first=TRUE;
         QCString errMsg=
-            "The following parameters of "+
+            "The following parameter";
+        errMsg+= (notArgCnt>1 ? "s" : "");
+	errMsg+=" of "+
             QCString(g_memberDef->qualifiedName()) + 
             QCString(argListToString(al)) +
-            " are not documented:\n";
+            (notArgCnt>1 ? " are" : " is") + " not documented:\n";
         for (ali.toFirst();(a=ali.current());++ali)
         {
           QCString argName = g_memberDef->isDefine() ? a->type : a->name;
