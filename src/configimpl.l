@@ -1495,7 +1495,7 @@ void Config::checkAndCorrect()
     alias=alias.stripWhiteSpace();
     if (alias.find(re1)!=0 && alias.find(re2)!=0)
     {
-      err("Illegal alias format '%s'. Use \"name=value\" or \"name(n)=value\", where n is the number of arguments\n",
+      err("Illegal alias format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
 	  alias.data());
     }
     s=aliasList.next();
