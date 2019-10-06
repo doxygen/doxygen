@@ -3989,6 +3989,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             if (current->section == Entry::NAMESPACE_SEC && current->type == "namespace")
                                             {
                                               int split_point;
+                                              Entry *first_current = current;
                                               while ((split_point = current->name.find("::")) != -1)
                                               {
                                                 Entry *new_current = new Entry(*current);
@@ -4006,6 +4007,22 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                                 current_root->addSubEntry(current);
                                                 current_root = current;
                                                 current = new_current;
+                                              }
+                                              // put documentation in the right entity
+                                              if (first_current!=current)
+                                              {
+                                                current->doc = first_current->doc;
+                                                current->docLine = first_current->docLine;
+                                                current->docFile = first_current->docFile;
+                                                current->brief = first_current->brief;
+                                                current->briefLine = first_current->briefLine;
+                                                current->briefFile = first_current->briefFile;
+                                                first_current->doc = "";
+                                                first_current->docLine = 0;
+                                                first_current->docFile = "";
+                                                first_current->brief = "";
+                                                first_current->briefLine = 0;
+                                                first_current->briefFile = "";
                                               }
                                             }
 					    QCString &cn = current->name;
