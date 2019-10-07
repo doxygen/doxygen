@@ -841,6 +841,9 @@ void replaceComment(int offset);
 				     g_inRoseComment=FALSE;
 				     BEGIN(Scan); 
                                    }
+<ReadLine>"/**"                    {
+				     copyToOutput("/&zwj;**",8);
+				   }
 <ReadLine>"*/"                     {
 				     copyToOutput("*&zwj;/",7);
 				   }
