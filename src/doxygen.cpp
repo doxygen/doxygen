@@ -33,6 +33,9 @@
 #include <qptrdict.h>
 #include <qtextstream.h>
 
+#include <unordered_map>
+#include <memory>
+
 #include "version.h"
 #include "doxygen.h"
 #include "scanner.h"
@@ -105,13 +108,6 @@
 // provided by the generated file resources.cpp
 extern void initResources();
 
-#define RECURSE_ENTRYTREE(func,var) \
-  do { if (var->children()) { \
-    EntryListIterator eli(*var->children()); \
-    for (;eli.current();++eli) func(eli.current()); \
-  } } while(0)
-
-
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <signal.h>
 #define HAS_SIGNALS
@@ -177,7 +173,7 @@ GenericsSDict   *Doxygen::genericsDict;
 DocGroup         Doxygen::docGroup;
 
 // locally accessible globals
-static QDict<Entry>     g_classEntries(1009);
+static std::unordered_map< std::string, const Entry* > g_classEntries;
 static StringList       g_inputFiles;
 static QDict<void>      g_compoundKeywordDict(7);  // keywords recognised as compounds
 static OutputList      *g_outputList = 0;          // list of output generating objects
@@ -297,9 +293,12 @@ void statistics()
 
 
 
-static void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
-                   ArgumentList *al,bool over_load,NamespaceSDict *nl=0);
-static void findMember(Entry *root,
+static void addMemberDocs(const Entry *root,MemberDef *md, const char *funcDecl,
+                   ArgumentList *al,bool over_load,uint64 spec);
+static void findMember(const Entry *root,
+                       const QCString &relates,
+                       const QCString &type,
+                       const QCString &args,
                        QCString funcDecl,
                        bool overloaded,
                        bool isFunc
@@ -313,7 +312,7 @@ enum FindBaseClassRelation_Mode
 };
 
 static bool findClassRelation(
-                           Entry *root,
+                           const Entry *root,
                            Definition *context,
                            ClassDef *cd,
                            BaseInfo *bi,
@@ -420,9 +419,9 @@ static STLInfo g_stlinfo[] =
   { 0,                      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }
 };
 
-static void addSTLMember(Entry *root,const char *type,const char *name)
+static void addSTLMember(const std::unique_ptr<Entry> &root,const char *type,const char *name)
 {
-  Entry *memEntry = new Entry;
+  std::unique_ptr<Entry> memEntry = std::make_unique<Entry>();
   memEntry->name       = name;
   memEntry->type       = type;
   memEntry->protection = Public;
@@ -430,16 +429,12 @@ static void addSTLMember(Entry *root,const char *type,const char *name)
   memEntry->brief      = "STL member";
   memEntry->hidden     = FALSE;
   memEntry->artificial = TRUE;
-  //memEntry->parent     = root;
-  root->addSubEntry(memEntry);
-  //EntryNav *memEntryNav = new EntryNav(root,memEntry);
-  //memEntryNav->setEntry(memEntry);
-  //rootNav->addChild(memEntryNav);
+  root->moveToSubEntryAndKeep(memEntry);
 }
 
-static void addSTLIterator(Entry *classEntry,const char *name)
+static void addSTLIterator(const std::unique_ptr<Entry> &classEntry,const char *name)
 {
-  Entry *iteratorClassEntry = new Entry;
+  std::unique_ptr<Entry> iteratorClassEntry = std::make_unique<Entry>();
   iteratorClassEntry->fileName  = "[STL]";
   iteratorClassEntry->startLine = 1;
   iteratorClassEntry->name      = name;
@@ -447,113 +442,106 @@ static void addSTLIterator(Entry *classEntry,const char *name)
   iteratorClassEntry->brief     = "STL iterator class";
   iteratorClassEntry->hidden    = FALSE;
   iteratorClassEntry->artificial= TRUE;
-  classEntry->addSubEntry(iteratorClassEntry);
-  //EntryNav *iteratorClassEntryNav = new EntryNav(classEntryNav,iteratorClassEntry);
-  //iteratorClassEntryNav->setEntry(iteratorClassEntry);
-  //classEntryNav->addChild(iteratorClassEntryNav);
+  classEntry->moveToSubEntryAndKeep(iteratorClassEntry);
+}
+
+static void addSTLClass(const std::unique_ptr<Entry> &root,const STLInfo *info)
+{
+  //printf("Adding STL class %s\n",info->className);
+  QCString fullName = info->className;
+  fullName.prepend("std::");
+
+  // add fake Entry for the class
+  std::unique_ptr<Entry> classEntry = std::make_unique<Entry>();
+  classEntry->fileName  = "[STL]";
+  classEntry->startLine = 1;
+  classEntry->name      = fullName;
+  classEntry->section   = Entry::CLASS_SEC;
+  classEntry->brief     = "STL class";
+  classEntry->hidden    = FALSE;
+  classEntry->artificial= TRUE;
+
+  // add template arguments to class
+  if (info->templType1)
+  {
+    ArgumentList *al = new ArgumentList;
+    Argument *a=new Argument;
+    a->type="typename";
+    a->name=info->templType1;
+    al->append(a);
+    if (info->templType2) // another template argument
+    {
+      a=new Argument;
+      a->type="typename";
+      a->name=info->templType2;
+      al->append(a);
+    }
+    classEntry->tArgLists = new QList<ArgumentList>;
+    classEntry->tArgLists->setAutoDelete(TRUE);
+    classEntry->tArgLists->append(al);
+  }
+  // add member variables
+  if (info->templName1)
+  {
+    addSTLMember(classEntry,info->templType1,info->templName1);
+  }
+  if (info->templName2)
+  {
+    addSTLMember(classEntry,info->templType2,info->templName2);
+  }
+  if (fullName=="std::auto_ptr" || fullName=="std::smart_ptr" || fullName=="std::shared_ptr" ||
+      fullName=="std::unique_ptr" || fullName=="std::weak_ptr")
+  {
+    std::unique_ptr<Entry> memEntry = std::make_unique<Entry>();
+    memEntry->name       = "operator->";
+    memEntry->args       = "()";
+    memEntry->type       = "T*";
+    memEntry->protection = Public;
+    memEntry->section    = Entry::FUNCTION_SEC;
+    memEntry->brief      = "STL member";
+    memEntry->hidden     = FALSE;
+    memEntry->artificial = FALSE;
+    classEntry->moveToSubEntryAndKeep(memEntry);
+  }
+  if (info->baseClass1)
+  {
+    classEntry->extends->append(new BaseInfo(info->baseClass1,Public,info->virtualInheritance?Virtual:Normal));
+  }
+  if (info->baseClass2)
+  {
+    classEntry->extends->append(new BaseInfo(info->baseClass2,Public,info->virtualInheritance?Virtual:Normal));
+  }
+  if (info->iterators)
+  {
+    // add iterator class
+    addSTLIterator(classEntry,fullName+"::iterator");
+    addSTLIterator(classEntry,fullName+"::const_iterator");
+    addSTLIterator(classEntry,fullName+"::reverse_iterator");
+    addSTLIterator(classEntry,fullName+"::const_reverse_iterator");
+  }
+  root->moveToSubEntryAndKeep(classEntry);
 }
 
 
-static void addSTLClasses(Entry *root)
+static void addSTLClasses(const std::unique_ptr<Entry> &root)
 {
-  Entry *namespaceEntry = new Entry;
+  std::unique_ptr<Entry> namespaceEntry = std::make_unique<Entry>();
   namespaceEntry->fileName  = "[STL]";
   namespaceEntry->startLine = 1;
-  //namespaceEntry->parent    = rootNav->entry();
   namespaceEntry->name      = "std";
   namespaceEntry->section   = Entry::NAMESPACE_SEC;
   namespaceEntry->brief     = "STL namespace";
   namespaceEntry->hidden    = FALSE;
   namespaceEntry->artificial= TRUE;
-  root->addSubEntry(namespaceEntry);
-  //EntryNav *namespaceEntryNav = new EntryNav(rootNav,namespaceEntry);
-  //namespaceEntryNav->setEntry(namespaceEntry);
-  //rootNav->addChild(namespaceEntryNav);
 
   STLInfo *info = g_stlinfo;
   while (info->className)
   {
-    //printf("Adding STL class %s\n",info->className);
-    QCString fullName = info->className;
-    fullName.prepend("std::");
-
-    // add fake Entry for the class
-    Entry *classEntry = new Entry;
-    classEntry->fileName  = "[STL]";
-    classEntry->startLine = 1;
-    classEntry->name      = fullName;
-    classEntry->section   = Entry::CLASS_SEC;
-    classEntry->brief     = "STL class";
-    classEntry->hidden    = FALSE;
-    classEntry->artificial= TRUE;
-    namespaceEntry->addSubEntry(classEntry);
-    //EntryNav *classEntryNav = new EntryNav(namespaceEntryNav,classEntry);
-    //classEntryNav->setEntry(classEntry);
-    //namespaceEntryNav->addChild(classEntryNav);
-
-    // add template arguments to class
-    if (info->templType1)
-    {
-      ArgumentList *al = new ArgumentList;
-      Argument *a=new Argument;
-      a->type="typename";
-      a->name=info->templType1;
-      al->append(a);
-      if (info->templType2) // another template argument
-      {
-        a=new Argument;
-        a->type="typename";
-        a->name=info->templType2;
-        al->append(a);
-      }
-      classEntry->tArgLists = new QList<ArgumentList>;
-      classEntry->tArgLists->setAutoDelete(TRUE);
-      classEntry->tArgLists->append(al);
-    }
-    // add member variables
-    if (info->templName1)
-    {
-      addSTLMember(classEntry,info->templType1,info->templName1);
-    }
-    if (info->templName2)
-    {
-      addSTLMember(classEntry,info->templType2,info->templName2);
-    }
-    if (fullName=="std::auto_ptr" || fullName=="std::smart_ptr" || fullName=="std::shared_ptr" ||
-        fullName=="std::unique_ptr" || fullName=="std::weak_ptr")
-    {
-      Entry *memEntry = new Entry;
-      memEntry->name       = "operator->";
-      memEntry->args       = "()";
-      memEntry->type       = "T*";
-      memEntry->protection = Public;
-      memEntry->section    = Entry::FUNCTION_SEC;
-      memEntry->brief      = "STL member";
-      memEntry->hidden     = FALSE;
-      memEntry->artificial = FALSE;
-      classEntry->addSubEntry(memEntry);
-      //EntryNav *memEntryNav = new EntryNav(classEntryNav,memEntry);
-      //memEntryNav->setEntry(memEntry);
-      //classEntryNav->addChild(memEntryNav);
-    }
-    if (info->baseClass1)
-    {
-      classEntry->extends->append(new BaseInfo(info->baseClass1,Public,info->virtualInheritance?Virtual:Normal));
-    }
-    if (info->baseClass2)
-    {
-      classEntry->extends->append(new BaseInfo(info->baseClass2,Public,info->virtualInheritance?Virtual:Normal));
-    }
-    if (info->iterators)
-    {
-      // add iterator class
-      addSTLIterator(classEntry,fullName+"::iterator");
-      addSTLIterator(classEntry,fullName+"::const_iterator");
-      addSTLIterator(classEntry,fullName+"::reverse_iterator");
-      addSTLIterator(classEntry,fullName+"::const_reverse_iterator");
-    }
+    addSTLClass(namespaceEntry,info);
     info++;
   }
+
+  root->moveToSubEntryAndKeep(namespaceEntry);
 }
 
 //----------------------------------------------------------------------------
@@ -616,7 +604,7 @@ static void addRelatedPage(Entry *root)
   }
 }
 
-static void buildGroupListFiltered(Entry *root,bool additional, bool includeExternal)
+static void buildGroupListFiltered(const Entry *root,bool additional, bool includeExternal)
 {
   if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty() &&
         ((!includeExternal && root->tagInfo==0) ||
@@ -671,18 +659,10 @@ static void buildGroupListFiltered(Entry *root,bool additional, bool includeExte
       }
     }
   }
-  if (root->children())
-  {
-    EntryListIterator eli(*root->children());
-    Entry *e;
-    for (;(e=eli.current());++eli)
-    {
-      buildGroupListFiltered(e,additional,includeExternal);
-    }
-  }
+  for (const auto &e : root->children()) buildGroupListFiltered(e.get(),additional,includeExternal);
 }
 
-static void buildGroupList(Entry *root)
+static void buildGroupList(const Entry *root)
 {
   // --- first process only local groups
   // first process the @defgroups blocks
@@ -697,7 +677,7 @@ static void buildGroupList(Entry *root)
   buildGroupListFiltered(root,TRUE,TRUE);
 }
 
-static void findGroupScope(Entry *root)
+static void findGroupScope(const Entry *root)
 {
   if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty() &&
       root->parent() && !root->parent()->name.isEmpty())
@@ -719,10 +699,10 @@ static void findGroupScope(Entry *root)
       }
     }
   }
-  RECURSE_ENTRYTREE(findGroupScope,root);
+  for (const auto &e : root->children()) findGroupScope(e.get());
 }
 
-static void organizeSubGroupsFiltered(Entry *root,bool additional)
+static void organizeSubGroupsFiltered(const Entry *root,bool additional)
 {
   if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
   {
@@ -737,18 +717,10 @@ static void organizeSubGroupsFiltered(Entry *root,bool additional)
       }
     }
   }
-  if (root->children())
-  {
-    EntryListIterator eli(*root->children());
-    Entry *e;
-    for (;(e=eli.current());++eli)
-    {
-      organizeSubGroupsFiltered(e,additional);
-    }
-  }
+  for (const auto &e : root->children()) organizeSubGroupsFiltered(e.get(),additional);
 }
 
-static void organizeSubGroups(Entry *root)
+static void organizeSubGroups(const Entry *root)
 {
   //printf("Defining groups\n");
   // first process the @defgroups blocks
@@ -760,7 +732,7 @@ static void organizeSubGroups(Entry *root)
 
 //----------------------------------------------------------------------
 
-static void buildFileList(Entry *root)
+static void buildFileList(const Entry *root)
 {
   if (((root->section==Entry::FILEDOC_SEC) ||
         ((root->section & Entry::FILE_MASK) && Config_getBool(EXTRACT_ALL))) &&
@@ -824,10 +796,10 @@ static void buildFileList(Entry *root)
       warn(fn,root->startLine,text);
     }
   }
-  RECURSE_ENTRYTREE(buildFileList,root);
+  for (const auto &e : root->children()) buildFileList(e.get());
 }
 
-static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
+static void addIncludeFile(ClassDef *cd,FileDef *ifd,const Entry *root)
 {
   if (
       (!root->doc.stripWhiteSpace().isEmpty() ||
@@ -1220,7 +1192,7 @@ ClassDef::CompoundType convertToCompoundType(int section,uint64 specifier)
 }
 
 
-static void addClassToContext(Entry *root)
+static void addClassToContext(const Entry *root)
 {
   FileDef *fd = root->fileDef();
 
@@ -1386,7 +1358,7 @@ static void addClassToContext(Entry *root)
 //----------------------------------------------------------------------
 // build a list of all classes mentioned in the documentation
 // and all classes that have a documentation block before their definition.
-static void buildClassList(Entry *root)
+static void buildClassList(const Entry *root)
 {
   if (
         ((root->section & Entry::COMPOUND_MASK) ||
@@ -1395,10 +1367,10 @@ static void buildClassList(Entry *root)
   {
     addClassToContext(root);
   }
-  RECURSE_ENTRYTREE(buildClassList,root);
+  for (const auto &e : root->children()) buildClassList(e.get());
 }
 
-static void buildClassDocList(Entry *root)
+static void buildClassDocList(const Entry *root)
 {
   if (
        (root->section & Entry::COMPOUNDDOC_MASK) && !root->name.isEmpty()
@@ -1406,7 +1378,7 @@ static void buildClassDocList(Entry *root)
   {
     addClassToContext(root);
   }
-  RECURSE_ENTRYTREE(buildClassDocList,root);
+  for (const auto &e : root->children()) buildClassDocList(e.get());
 }
 
 static void resolveClassNestingRelations()
@@ -1717,7 +1689,7 @@ static void findTagLessClasses()
 //----------------------------------------------------------------------
 // build a list of all namespaces mentioned in the documentation
 // and all namespaces that have a documentation block before their definition.
-static void buildNamespaceList(Entry *root)
+static void buildNamespaceList(const Entry *root)
 {
   if (
        (root->section==Entry::NAMESPACE_SEC ||
@@ -1847,7 +1819,7 @@ static void buildNamespaceList(Entry *root)
       }
     }
   }
-  RECURSE_ENTRYTREE(buildNamespaceList,root);
+  for (const auto &e : root->children()) buildNamespaceList(e.get());
 }
 
 //----------------------------------------------------------------------
@@ -1871,7 +1843,7 @@ static const NamespaceDef *findUsedNamespace(const NamespaceSDict *unl,
   return usingNd;
 }
 
-static void findUsingDirectives(Entry *root)
+static void findUsingDirectives(const Entry *root)
 {
   if (root->section==Entry::USINGDIR_SEC)
   {
@@ -2007,12 +1979,12 @@ static void findUsingDirectives(Entry *root)
       }
     }
   }
-  RECURSE_ENTRYTREE(findUsingDirectives,root);
+  for (const auto &e : root->children()) findUsingDirectives(e.get());
 }
 
 //----------------------------------------------------------------------
 
-static void buildListOfUsingDecls(Entry *root)
+static void buildListOfUsingDecls(const Entry *root)
 {
   if (root->section==Entry::USINGDECL_SEC &&
       !(root->parent()->section&Entry::COMPOUND_MASK) // not a class/struct member
@@ -2029,11 +2001,11 @@ static void buildListOfUsingDecls(Entry *root)
       }
     }
   }
-  RECURSE_ENTRYTREE(buildListOfUsingDecls,root);
+  for (const auto &e : root->children()) buildListOfUsingDecls(e.get());
 }
 
 
-static void findUsingDeclarations(Entry *root)
+static void findUsingDeclarations(const Entry *root)
 {
   if (root->section==Entry::USINGDECL_SEC &&
       !(root->parent()->section&Entry::COMPOUND_MASK) // not a class/struct member
@@ -2113,12 +2085,12 @@ static void findUsingDeclarations(Entry *root)
       }
     }
   }
-  RECURSE_ENTRYTREE(findUsingDeclarations,root);
+  for (const auto &e : root->children()) findUsingDeclarations(e.get());
 }
 
 //----------------------------------------------------------------------
 
-static void findUsingDeclImports(Entry *root)
+static void findUsingDeclImports(const Entry *root)
 {
   if (root->section==Entry::USINGDECL_SEC &&
       (root->parent()->section&Entry::COMPOUND_MASK) // in a class/struct member
@@ -2211,7 +2183,7 @@ static void findUsingDeclImports(Entry *root)
     }
 
   }
-  RECURSE_ENTRYTREE(findUsingDeclImports,root);
+  for (const auto &e : root->children()) findUsingDeclImports(e.get());
 }
 
 //----------------------------------------------------------------------
@@ -2250,10 +2222,12 @@ static void findIncludedUsingDirectives()
 //----------------------------------------------------------------------
 
 static MemberDef *addVariableToClass(
-    Entry *root,
+    const Entry *root,
     ClassDef *cd,
     MemberType mtype,
+    const QCString &type,
     const QCString &name,
+    const QCString &args,
     bool fromAnnScope,
     MemberDef *fromAnnMemb,
     Protection prot,
@@ -2270,38 +2244,38 @@ static MemberDef *addVariableToClass(
   Debug::print(Debug::Variables,0,
       "  class variable:\n"
       "    '%s' '%s'::'%s' '%s' prot=%d ann=%d init='%s'\n",
-      qPrint(root->type),
+      qPrint(type),
       qPrint(qualScope),
       qPrint(name),
-      qPrint(root->args),
+      qPrint(args),
       root->protection,
       fromAnnScope,
       qPrint(root->initializer)
               );
 
   QCString def;
-  if (!root->type.isEmpty())
+  if (!type.isEmpty())
   {
     if (related || mtype==MemberType_Friend || Config_getBool(HIDE_SCOPE_NAMES))
     {
       if (root->spec&Entry::Alias) // turn 'typedef B A' into 'using A = B'
       {
-        def="using "+name+" = "+root->type.mid(7);
+        def="using "+name+" = "+type.mid(7);
       }
       else
       {
-        def=root->type+" "+name+root->args;
+        def=type+" "+name+root->args;
       }
     }
     else
     {
       if (root->spec&Entry::Alias) // turn 'typedef B C::A' into 'using C::A = B'
       {
-        def="using "+qualScope+scopeSeparator+name+" = "+root->type.mid(7);
+        def="using "+qualScope+scopeSeparator+name+" = "+type.mid(7);
       }
       else
       {
-        def=root->type+" "+qualScope+scopeSeparator+name+root->args;
+        def=type+" "+qualScope+scopeSeparator+name+args;
       }
     }
   }
@@ -2309,11 +2283,11 @@ static MemberDef *addVariableToClass(
   {
     if (Config_getBool(HIDE_SCOPE_NAMES))
     {
-      def=name+root->args;
+      def=name+args;
     }
     else
     {
-      def=qualScope+scopeSeparator+name+root->args;
+      def=qualScope+scopeSeparator+name+args;
     }
   }
   def.stripPrefix("static ");
@@ -2329,10 +2303,10 @@ static MemberDef *addVariableToClass(
     for (mni.toFirst();(md=mni.current());++mni)
     {
       //printf("md->getClassDef()=%p cd=%p type=[%s] md->typeString()=[%s]\n",
-      //    md->getClassDef(),cd,root->type.data(),md->typeString());
+      //    md->getClassDef(),cd,type.data(),md->typeString());
       if (!md->isAlias() &&
           md->getClassDef()==cd &&
-          removeRedundantWhiteSpace(root->type)==md->typeString())
+          removeRedundantWhiteSpace(type)==md->typeString())
         // member already in the scope
       {
 
@@ -2344,7 +2318,7 @@ static MemberDef *addVariableToClass(
           md->setProtection(root->protection);
           cd->reclassifyMember(md,MemberType_Property);
         }
-        addMemberDocs(root,md,def,0,FALSE);
+        addMemberDocs(root,md,def,0,FALSE,root->spec);
         //printf("    Member already found!\n");
         return md;
       }
@@ -2360,7 +2334,7 @@ static MemberDef *addVariableToClass(
   // new member variable, typedef or enum value
   MemberDef *md=createMemberDef(
       fileName,root->startLine,root->startColumn,
-      root->type,name,root->args,root->exception,
+      type,name,args,root->exception,
       prot,Normal,root->stat,related,
       mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0, root->metaData);
   md->setTagInfo(root->tagInfo);
@@ -2421,17 +2395,19 @@ static MemberDef *addVariableToClass(
 
   //TODO: insert FileDef instead of filename strings.
   cd->insertUsedFile(root->fileDef());
-  root->changeSection(Entry::EMPTY_SEC);
+  root->markAsProcessed();
   return md;
 }
 
 //----------------------------------------------------------------------
 
 static MemberDef *addVariableToFile(
-    Entry *root,
+    const Entry *root,
     MemberType mtype,
     const QCString &scope,
+    const QCString &type,
     const QCString &name,
+    const QCString &args,
     bool fromAnnScope,
     /*int indentDepth,*/
     MemberDef *fromAnnMemb)
@@ -2440,10 +2416,10 @@ static MemberDef *addVariableToFile(
       "  global variable:\n"
       "    file='%s' type='%s' scope='%s' name='%s' args='%s' prot=`%d mtype=%d lang=%d\n",
       qPrint(root->fileName),
-      qPrint(root->type),
+      qPrint(type),
       qPrint(scope),
       qPrint(name),
-      qPrint(root->args),
+      qPrint(args),
       root->protection,
       mtype,
       root->lang
@@ -2454,18 +2430,18 @@ static MemberDef *addVariableToFile(
   // see if we have a typedef that should hide a struct or union
   if (mtype==MemberType_Typedef && Config_getBool(TYPEDEF_HIDES_STRUCT))
   {
-    QCString type = root->type;
-    type.stripPrefix("typedef ");
-    if (type.left(7)=="struct " || type.left(6)=="union ")
+    QCString ttype = type;
+    ttype.stripPrefix("typedef ");
+    if (ttype.left(7)=="struct " || ttype.left(6)=="union ")
     {
-      type.stripPrefix("struct ");
-      type.stripPrefix("union ");
+      ttype.stripPrefix("struct ");
+      ttype.stripPrefix("union ");
       static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
       int l,s;
-      s = re.match(type,0,&l);
+      s = re.match(ttype,0,&l);
       if (s>=0)
       {
-        QCString typeValue = type.mid(s,l);
+        QCString typeValue = ttype.mid(s,l);
         ClassDef *cd = getClass(typeValue);
         if (cd)
         {
@@ -2502,45 +2478,45 @@ static MemberDef *addVariableToFile(
     SrcLangExt lang = nd->getLanguage();
     QCString sep=getLanguageSpecificSeparator(lang);
 
-    if (!root->type.isEmpty())
+    if (!type.isEmpty())
     {
       if (root->spec&Entry::Alias) // turn 'typedef B NS::A' into 'using NS::A = B'
       {
-        def="using "+nd->name()+sep+name+" = "+root->type;
+        def="using "+nd->name()+sep+name+" = "+type;
       }
       else // normal member
       {
-        def=root->type+" "+nd->name()+sep+name+root->args;
+        def=type+" "+nd->name()+sep+name+args;
       }
     }
     else
     {
-      def=nd->name()+sep+name+root->args;
+      def=nd->name()+sep+name+args;
     }
   }
   else
   {
-    if (!root->type.isEmpty() && !root->name.isEmpty())
+    if (!type.isEmpty() && !root->name.isEmpty())
     {
       if (name.at(0)=='@') // dummy variable representing anonymous union
       {
-        def=root->type;
+        def=type;
       }
       else
       {
         if (root->spec&Entry::Alias) // turn 'typedef B A' into 'using A = B'
         {
-          def="using "+root->name+" = "+root->type.mid(7);
+          def="using "+root->name+" = "+type.mid(7);
         }
         else // normal member
         {
-          def=root->type+" "+name+root->args;
+          def=type+" "+name+args;
         }
       }
     }
     else
     {
-      def=name+root->args;
+      def=name+args;
     }
   }
   def.stripPrefix("static ");
@@ -2571,8 +2547,8 @@ static MemberDef *addVariableToFile(
         // variable already in the scope
       {
         bool isPHPArray = md->getLanguage()==SrcLangExt_PHP &&
-                          md->argsString()!=root->args &&
-                          root->args.find('[')!=-1;
+                          md->argsString()!=args &&
+                          args.find('[')!=-1;
         bool staticsInDifferentFiles =
                           root->stat && md->isStatic() &&
                           root->fileName!=md->getDefFileName();
@@ -2585,7 +2561,7 @@ static MemberDef *addVariableToFile(
         {
           Debug::print(Debug::Variables,0,
               "    variable already found: scope=%s\n",qPrint(md->getOuterScope()->name()));
-          addMemberDocs(root,md,def,0,FALSE);
+          addMemberDocs(root,md,def,0,FALSE,root->spec);
           md->setRefItems(root->sli);
           // if md is a variable forward declaration and root is the definition that
           // turn md into the defintion
@@ -2617,7 +2593,7 @@ static MemberDef *addVariableToFile(
   // new global variable, enum value or typedef
   MemberDef *md=createMemberDef(
       fileName,root->startLine,root->startColumn,
-      root->type,name,root->args,0,
+      type,name,args,0,
       root->protection, Normal,root->stat,Member,
       mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0, root->metaData);
   md->setTagInfo(root->tagInfo);
@@ -2673,7 +2649,7 @@ static MemberDef *addVariableToFile(
     mn->append(md);
     Doxygen::functionNameSDict->append(name,mn);
   }
-  root->changeSection(Entry::EMPTY_SEC);
+  root->markAsProcessed();
   return md;
 }
 
@@ -2714,7 +2690,7 @@ static int findFunctionPtr(const QCString &type,int lang, int *pLength=0)
 /*! Returns TRUE iff \a type is a class within scope \a context.
  *  Used to detect variable declarations that look like function prototypes.
  */
-static bool isVarWithConstructor(Entry *root)
+static bool isVarWithConstructor(const Entry *root)
 {
   static QRegExp initChars("[0-9\"'&*!^]+");
   static QRegExp idChars("[a-z_A-Z][a-z_A-Z0-9]*");
@@ -2833,7 +2809,7 @@ done:
   return result;
 }
 
-static void addVariable(Entry *root,int isFuncPtr=-1)
+static void addVariable(const Entry *root,int isFuncPtr=-1)
 {
     static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
@@ -2849,48 +2825,52 @@ static void addVariable(Entry *root,int isFuncPtr=-1)
                 );
     //printf("root->parent->name=%s\n",root->parent->name.data());
 
-    if (root->type.isEmpty() && root->name.find("operator")==-1 &&
-        (root->name.find('*')!=-1 || root->name.find('&')!=-1))
+    QCString type = root->type;
+    QCString name = root->name;
+    QCString args = root->args;
+    if (type.isEmpty() && name.find("operator")==-1 &&
+        (name.find('*')!=-1 || name.find('&')!=-1))
     {
       // recover from parse error caused by redundant braces
       // like in "int *(var[10]);", which is parsed as
       // type="" name="int *" args="(var[10])"
 
-      root->type=root->name;
+      type=name;
       static const QRegExp reName("[a-z_A-Z][a-z_A-Z0-9]*");
       int l=0;
-      int i=root->args.isEmpty() ? -1 : reName.match(root->args,0,&l);
+      int i=args.isEmpty() ? -1 : reName.match(args,0,&l);
       if (i!=-1)
       {
-        root->name=root->args.mid(i,l);
-        root->args=root->args.mid(i+l,root->args.find(')',i+l)-i-l);
+        name=args.mid(i,l);
+        args=args.mid(i+l,args.find(')',i+l)-i-l);
       }
       //printf("new: type='%s' name='%s' args='%s'\n",
-      //    root->type.data(),root->name.data(),root->args.data());
+      //    type.data(),name.data(),args.data());
     }
     else
     {
       int i=isFuncPtr;
-      if (i==-1 && (root->spec&Entry::Alias)==0) i=findFunctionPtr(root->type,root->lang); // for typedefs isFuncPtr is not yet set
+      if (i==-1 && (root->spec&Entry::Alias)==0) i=findFunctionPtr(type,root->lang); // for typedefs isFuncPtr is not yet set
       Debug::print(Debug::Variables,0,"  functionPtr? %s\n",i!=-1?"yes":"no");
       if (i!=-1) // function pointer
       {
-        int ai = root->type.find('[',i);
+        int ai = type.find('[',i);
         if (ai>i) // function pointer array
         {
-          root->args.prepend(root->type.right(root->type.length()-ai));
-          root->type=root->type.left(ai);
+          args.prepend(type.right(type.length()-ai));
+          type=type.left(ai);
         }
-        else if (root->type.find(')',i)!=-1) // function ptr, not variable like "int (*bla)[10]"
+        else if (type.find(')',i)!=-1) // function ptr, not variable like "int (*bla)[10]"
         {
-          root->type=root->type.left(root->type.length()-1);
-          root->args.prepend(") ");
-          //printf("root->type=%s root->args=%s\n",root->type.data(),root->args.data());
+          type=type.left(type.length()-1);
+          args.prepend(") ");
+          //printf("type=%s args=%s\n",type.data(),args.data());
         }
       }
     }
 
-    QCString scope,name=removeRedundantWhiteSpace(root->name);
+    QCString scope;
+    name=removeRedundantWhiteSpace(name);
 
     // find the scope of this variable
     Entry *p = root->parent();
@@ -2906,7 +2886,7 @@ static void addVariable(Entry *root,int isFuncPtr=-1)
     }
 
     MemberType mtype;
-    QCString type=root->type.stripWhiteSpace();
+    type=type.stripWhiteSpace();
     ClassDef *cd=0;
     bool isRelated=FALSE;
     bool isMemberOf=FALSE;
@@ -2915,10 +2895,10 @@ static void addVariable(Entry *root,int isFuncPtr=-1)
     classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
     QCString annScopePrefix=scope.left(scope.length()-classScope.length());
 
-    if (root->name.findRev("::")!=-1)
+    if (name.findRev("::")!=-1)
     {
-      if (root->type=="friend class" || root->type=="friend struct" ||
-          root->type=="friend union")
+      if (type=="friend class" || type=="friend struct" ||
+          type=="friend union")
       {
          cd=getClass(scope);
          if (cd)
@@ -2926,7 +2906,9 @@ static void addVariable(Entry *root,int isFuncPtr=-1)
            addVariableToClass(root,  // entry
                               cd,    // class to add member to
                               MemberType_Friend, // type of member
-                              name, // name of the member
+                              type,   // type value as string
+                              name,   // name of the member
+                              args,   // arguments as string
                               FALSE,  // from Anonymous scope
                               0,      // anonymous member
                               Public, // protection
@@ -3001,7 +2983,9 @@ static void addVariable(Entry *root,int isFuncPtr=-1)
             md=addVariableToClass(root,  // entry
                                   pcd,   // class to add member to
                                   mtype, // member type
+                                  type,  // type value as string
                                   name,  // member name
+                                  args,  // arguments as string
                                   TRUE,  // from anonymous scope
                                   0,     // from anonymous member
                                   root->protection,
@@ -3013,7 +2997,7 @@ static void addVariable(Entry *root,int isFuncPtr=-1)
           {
             if (mtype==MemberType_Variable)
             {
-              md=addVariableToFile(root,mtype,pScope,name,TRUE,0);
+              md=addVariableToFile(root,mtype,pScope,type,name,args,TRUE,0);
             }
             //added=TRUE;
           }
@@ -3026,7 +3010,9 @@ static void addVariable(Entry *root,int isFuncPtr=-1)
       addVariableToClass(root,   // entry
                          cd,     // class to add member to
                          mtype,  // member type
+                         type,   // type value as string
                          name,   // name of the member
+                         args,   // arguments as string
                          FALSE,  // from anonymous scope
                          md,     // from anonymous member
                          root->protection,
@@ -3035,7 +3021,7 @@ static void addVariable(Entry *root,int isFuncPtr=-1)
     else if (!name.isEmpty()) // global variable
     {
       //printf("Inserting member in global scope %s!\n",scope.data());
-      addVariableToFile(root,mtype,scope,name,FALSE,/*0,*/0);
+      addVariableToFile(root,mtype,scope,type,name,args,FALSE,/*0,*/0);
     }
 
 }
@@ -3043,7 +3029,7 @@ static void addVariable(Entry *root,int isFuncPtr=-1)
 //----------------------------------------------------------------------
 // Searches the Entry tree for typedef documentation sections.
 // If found they are stored in their class or in the global list.
-static void buildTypedefList(Entry *root)
+static void buildTypedefList(const Entry *root)
 {
   //printf("buildVarList(%s)\n",rootNav->name().data());
   if (!root->name.isEmpty() &&
@@ -3053,24 +3039,15 @@ static void buildTypedefList(Entry *root)
   {
     addVariable(root);
   }
-  if (root->children())
-  {
-    EntryListIterator eli(*root->children());
-    Entry *e;
-    for (;(e=eli.current());++eli)
-    {
-      if (e->section!=Entry::ENUM_SEC)
-      {
-        buildTypedefList(e);
-      }
-    }
-  }
+  for (const auto &e : root->children())
+    if (e->section!=Entry::ENUM_SEC)
+      buildTypedefList(e.get());
 }
 
 //----------------------------------------------------------------------
 // Searches the Entry tree for sequence documentation sections.
 // If found they are stored in the global list.
-static void buildSequenceList(Entry *root)
+static void buildSequenceList(const Entry *root)
 {
   if (!root->name.isEmpty() &&
       root->section==Entry::VARIABLE_SEC &&
@@ -3079,24 +3056,15 @@ static void buildSequenceList(Entry *root)
   {
     addVariable(root);
   }
-  if (root->children())
-  {
-    EntryListIterator eli(*root->children());
-    Entry *e;
-    for (;(e=eli.current());++eli)
-    {
-      if (e->section!=Entry::ENUM_SEC)
-      {
-        buildSequenceList(e);
-      }
-    }
-  }
+  for (const auto &e : root->children())
+    if (e->section!=Entry::ENUM_SEC)
+      buildSequenceList(e.get());
 }
 
 //----------------------------------------------------------------------
 // Searches the Entry tree for dictionary documentation sections.
 // If found they are stored in the global list.
-static void buildDictionaryList(Entry *root)
+static void buildDictionaryList(const Entry *root)
 {
   if (!root->name.isEmpty() &&
       root->section==Entry::VARIABLE_SEC &&
@@ -3105,25 +3073,16 @@ static void buildDictionaryList(Entry *root)
   {
     addVariable(root);
   }
-  if (root->children())
-  {
-    EntryListIterator eli(*root->children());
-    Entry *e;
-    for (;(e=eli.current());++eli)
-    {
-      if (e->section!=Entry::ENUM_SEC)
-      {
-        buildDictionaryList(e);
-      }
-    }
-  }
+  for (const auto &e : root->children())
+    if (e->section!=Entry::ENUM_SEC)
+      buildDictionaryList(e.get());
 }
 
 //----------------------------------------------------------------------
 // Searches the Entry tree for Variable documentation sections.
 // If found they are stored in their class or in the global list.
 
-static void buildVarList(Entry *root)
+static void buildVarList(const Entry *root)
 {
   //printf("buildVarList(%s) section=%08x\n",rootNav->name().data(),rootNav->section());
   int isFuncPtr=-1;
@@ -3143,18 +3102,9 @@ static void buildVarList(Entry *root)
   {
     addVariable(root,isFuncPtr);
   }
-  if (root->children())
-  {
-    EntryListIterator eli(*root->children());
-    Entry *e;
-    for (;(e=eli.current());++eli)
-    {
-      if (e->section!=Entry::ENUM_SEC)
-      {
-        buildVarList(e);
-      }
-    }
-  }
+  for (const auto &e : root->children())
+    if (e->section!=Entry::ENUM_SEC)
+      buildVarList(e.get());
 }
 
 //----------------------------------------------------------------------
@@ -3163,7 +3113,7 @@ static void buildVarList(Entry *root)
 //
 
 static void addInterfaceOrServiceToServiceOrSingleton(
-        Entry *const root,
+        const Entry *root,
         ClassDef *const cd,
         QCString const& rname)
 {
@@ -3235,11 +3185,11 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   cd->insertUsedFile(fd);
 
   addMemberToGroups(root,md);
-  root->changeSection(Entry::EMPTY_SEC);
+  root->markAsProcessed();
   md->setRefItems(root->sli);
 }
 
-static void buildInterfaceAndServiceList(Entry *root)
+static void buildInterfaceAndServiceList(const Entry *root)
 {
   if (root->section==Entry::EXPORTED_INTERFACE_SEC ||
       root->section==Entry::INCLUDED_SERVICE_SEC)
@@ -3292,7 +3242,7 @@ static void buildInterfaceAndServiceList(Entry *root)
   {
     case SrcLangExt_Unknown: // fall through (root node always is Unknown)
     case SrcLangExt_IDL:
-        RECURSE_ENTRYTREE(buildInterfaceAndServiceList,root);
+        for (const auto &e : root->children()) buildInterfaceAndServiceList(e.get());
         break;
     default:
         return; // nothing to do here
@@ -3304,26 +3254,32 @@ static void buildInterfaceAndServiceList(Entry *root)
 // Searches the Entry tree for Function sections.
 // If found they are stored in their class or in the global list.
 
-static void addMethodToClass(Entry *root,ClassDef *cd,
-                  const QCString &rname,bool isFriend)
+static void addMethodToClass(const Entry *root,ClassDef *cd,
+                  const QCString &rtype,const QCString &rname,const QCString &rargs,
+                  bool isFriend,
+                  Protection protection,bool stat,Specifier virt,uint64 spec,
+                  const QCString &relates
+                  )
 {
   FileDef *fd=root->fileDef();
 
   int l;
   static QRegExp re("([a-z_A-Z0-9: ]*[ &*]+[ ]*");
-  int ts=root->type.find('<');
-  int te=root->type.findRev('>');
-  int i=re.match(root->type,0,&l);
+  QCString type = rtype;
+  QCString args = rargs;
+  int ts=type.find('<');
+  int te=type.findRev('>');
+  int i=re.match(type,0,&l);
   if (i!=-1 && ts!=-1 && ts<te && ts<i && i<te) // avoid changing A<int(int*)>, see bug 677315
   {
     i=-1;
   }
 
   if (cd->getLanguage()==SrcLangExt_Cpp && // only C has pointers
-      !root->type.isEmpty() && (root->spec&Entry::Alias)==0 && i!=-1) // function variable
+      !type.isEmpty() && (root->spec&Entry::Alias)==0 && i!=-1) // function variable
   {
-    root->args+=root->type.right(root->type.length()-i-l);
-    root->type=root->type.left(i+l);
+    args+=type.right(type.length()-i-l);
+    type=type.left(i+l);
   }
 
   QCString name=removeRedundantWhiteSpace(rname);
@@ -3349,17 +3305,17 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
     fileName = root->tagInfo->tagName;
   }
 
-  //printf("root->name='%s; root->args='%s' root->argList='%s'\n",
-  //    root->name.data(),root->args.data(),argListToString(root->argList).data()
+  //printf("root->name='%s; args='%s' root->argList='%s'\n",
+  //    root->name.data(),args.data(),argListToString(root->argList).data()
   //   );
 
   // adding class member
   MemberDef *md=createMemberDef(
       fileName,root->startLine,root->startColumn,
-      root->type,name,root->args,root->exception,
-      root->protection,root->virt,
-      root->stat && root->relatesType != MemberOf,
-      root->relates.isEmpty() ? Member :
+      type,name,args,root->exception,
+      protection,virt,
+      stat && root->relatesType != MemberOf,
+      relates.isEmpty() ? Member :
           root->relatesType == MemberOf ? Foreign : Related,
       mtype,root->tArgLists ? root->tArgLists->getLast() : 0,root->argList, root->metaData);
   md->setTagInfo(root->tagInfo);
@@ -3369,7 +3325,7 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
-  md->setMemberSpecifiers(root->spec);
+  md->setMemberSpecifiers(spec);
   md->setMemberGroupId(root->mGrpId);
   md->setTypeConstraints(root->typeConstr);
   md->setLanguage(root->lang);
@@ -3391,17 +3347,17 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
     // for PHP we use Class::method and Namespace\method
     scopeSeparator="::";
   }
-  if (!root->relates.isEmpty() || isFriend || Config_getBool(HIDE_SCOPE_NAMES))
+  if (!relates.isEmpty() || isFriend || Config_getBool(HIDE_SCOPE_NAMES))
   {
-    if (!root->type.isEmpty())
+    if (!type.isEmpty())
     {
       if (root->argList)
       {
-        def=root->type+" "+name;
+        def=type+" "+name;
       }
       else
       {
-        def=root->type+" "+name+root->args;
+        def=type+" "+name+args;
       }
     }
     else
@@ -3412,21 +3368,21 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
       }
       else
       {
-        def=name+root->args;
+        def=name+args;
       }
     }
   }
   else
   {
-    if (!root->type.isEmpty())
+    if (!type.isEmpty())
     {
       if (root->argList)
       {
-        def=root->type+" "+qualScope+scopeSeparator+name;
+        def=type+" "+qualScope+scopeSeparator+name;
       }
       else
       {
-        def=root->type+" "+qualScope+scopeSeparator+name+root->args;
+        def=type+" "+qualScope+scopeSeparator+name+args;
       }
     }
     else
@@ -3437,7 +3393,7 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
       }
       else
       {
-        def=qualScope+scopeSeparator+name+root->args;
+        def=qualScope+scopeSeparator+name+args;
       }
     }
   }
@@ -3452,10 +3408,10 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
       "  Func Member:\n"
       "    '%s' '%s'::'%s' '%s' proto=%d\n"
       "    def='%s'\n",
-      qPrint(root->type),
+      qPrint(type),
       qPrint(qualScope),
       qPrint(rname),
-      qPrint(root->args),
+      qPrint(args),
       root->proto,
       qPrint(def)
               );
@@ -3480,12 +3436,12 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
   cd->insertUsedFile(fd);
 
   addMemberToGroups(root,md);
-  root->changeSection(Entry::EMPTY_SEC);
+  root->markAsProcessed();
   md->setRefItems(root->sli);
 }
 
 
-static void buildFunctionList(Entry *root)
+static void buildFunctionList(const Entry *root)
 {
   if (root->section==Entry::FUNCTION_SEC)
   {
@@ -3576,7 +3532,8 @@ static void buildFunctionList(Entry *root)
       {
         Debug::print(Debug::Functions,0,"  --> member %s of class %s!\n",
             qPrint(rname),qPrint(cd->name()));
-        addMethodToClass(root,cd,rname,isFriend);
+        addMethodToClass(root,cd,root->type,rname,root->args,isFriend,
+                         root->protection,root->stat,root->virt,root->spec,root->relates);
       }
       else if (!((root->parent()->section & Entry::COMPOUND_MASK)
                  || root->parent()->section==Entry::OBJCIMPL_SEC
@@ -3880,9 +3837,7 @@ static void buildFunctionList(Entry *root)
           if (root->relatesType == Simple) // if this is a relatesalso command,
                                            // allow find Member to pick it up
           {
-            root->changeSection(Entry::EMPTY_SEC); // Otherwise we have finished
-                                                   // with this entry.
-
+            root->markAsProcessed(); // Otherwise we have finished with this entry.
           }
         }
         else
@@ -3911,7 +3866,7 @@ static void buildFunctionList(Entry *root)
             );
     }
   }
-  RECURSE_ENTRYTREE(buildFunctionList,root);
+  for (const auto &e : root->children()) buildFunctionList(e.get());
 }
 
 //----------------------------------------------------------------------
@@ -4259,7 +4214,7 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
 }
 
 
-static void findUsedClassesForClass(Entry *root,
+static void findUsedClassesForClass(const Entry *root,
                            Definition *context,
                            ClassDef *masterCd,
                            ClassDef *instanceCd,
@@ -4429,7 +4384,7 @@ static void findUsedClassesForClass(Entry *root,
 }
 
 static void findBaseClassesForClass(
-      Entry *root,
+      const Entry *root,
       Definition *context,
       ClassDef *masterCd,
       ClassDef *instanceCd,
@@ -4491,7 +4446,7 @@ static void findBaseClassesForClass(
 
 //----------------------------------------------------------------------
 
-static bool findTemplateInstanceRelation(Entry *root,
+static bool findTemplateInstanceRelation(const Entry *root,
             Definition *context,
             ClassDef *templateClass,const QCString &templSpec,
             QDict<int> *templateNames,
@@ -4531,9 +4486,10 @@ static bool findTemplateInstanceRelation(Entry *root,
 
     // search for new template instances caused by base classes of
     // instanceClass
-    Entry *templateRoot = g_classEntries.find(templateClass->name());
-    if (templateRoot)
+    auto it = g_classEntries.find(templateClass->name().data());
+    if (it!=g_classEntries.end())
     {
+      const Entry *templateRoot = it->second;
       Debug::print(Debug::Classes,0,"        template root found %s templSpec=%s!\n",
           qPrint(templateRoot->name),qPrint(templSpec));
       ArgumentList *templArgs = new ArgumentList;
@@ -4653,7 +4609,7 @@ static int findEndOfTemplate(const QCString &s,int startPos)
 }
 
 static bool findClassRelation(
-                           Entry *root,
+                           const Entry *root,
                            Definition *context,
                            ClassDef *cd,
                            BaseInfo *bi,
@@ -5010,7 +4966,7 @@ static bool findClassRelation(
 //----------------------------------------------------------------------
 // Computes the base and super classes for each class in the tree
 
-static bool isClassSection(Entry *root)
+static bool isClassSection(const Entry *root)
 {
   if ( !root->name.isEmpty() )
   {
@@ -5032,16 +4988,16 @@ static bool isClassSection(Entry *root)
 
 /*! Builds a dictionary of all entry nodes in the tree starting with \a root
  */
-static void findClassEntries(Entry *root)
+static void findClassEntries(const Entry *root)
 {
   if (isClassSection(root))
   {
-    g_classEntries.insert(root->name,root);
+    g_classEntries.insert({root->name.data(),root});
   }
-  RECURSE_ENTRYTREE(findClassEntries,root);
+  for (const auto &e : root->children()) findClassEntries(e.get());
 }
 
-static QCString extractClassName(Entry *root)
+static QCString extractClassName(const Entry *root)
 {
   // strip any anonymous scopes first
   QCString bName=stripAnonymousNamespaceScope(root->name);
@@ -5066,10 +5022,9 @@ static void findInheritedTemplateInstances()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli) cli.current()->setVisited(FALSE);
-  QDictIterator<Entry> edi(g_classEntries);
-  Entry *root;
-  for (;(root=edi.current());++edi)
+  for (const auto &kv : g_classEntries)
   {
+    const Entry *root = kv.second;
     ClassDef *cd;
     QCString bName = extractClassName(root);
     Debug::print(Debug::Classes,0,"  Inheritance: Class %s : \n",qPrint(bName));
@@ -5085,10 +5040,9 @@ static void findUsedTemplateInstances()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli) cli.current()->setVisited(FALSE);
-  QDictIterator<Entry> edi(g_classEntries);
-  Entry *root;
-  for (;(root=edi.current());++edi)
+  for (const auto &kv : g_classEntries)
   {
+    const Entry *root = kv.second;
     ClassDef *cd;
     QCString bName = extractClassName(root);
     Debug::print(Debug::Classes,0,"  Usage: Class %s : \n",qPrint(bName));
@@ -5104,10 +5058,9 @@ static void computeClassRelations()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli) cli.current()->setVisited(FALSE);
-  QDictIterator<Entry> edi(g_classEntries);
-  Entry *root;
-  for (;(root=edi.current());++edi)
+  for (const auto &kv : g_classEntries)
   {
+    const Entry *root = kv.second;
     ClassDef *cd;
 
     QCString bName = extractClassName(root);
@@ -5137,10 +5090,9 @@ static void computeClassRelations()
 
 static void computeTemplateClassRelations()
 {
-  QDictIterator<Entry> edi(g_classEntries);
-  Entry *root;
-  for (;(root=edi.current());++edi)
+  for (const auto &kv : g_classEntries)
   {
+    const Entry *root = kv.second;
     QCString bName=stripAnonymousNamespaceScope(root->name);
     bName=stripTemplateSpecifiersFromScope(bName);
     ClassDef *cd=getClass(bName);
@@ -5340,15 +5292,15 @@ static void generateXRefPages()
 // set the function declaration of the member to 'funcDecl'. If the boolean
 // over_load is set the standard overload text is added.
 
-static void addMemberDocs(Entry *root,
+static void addMemberDocs(const Entry *root,
                    MemberDef *md, const char *funcDecl,
                    ArgumentList *al,
                    bool over_load,
-                   NamespaceSDict *
+                   uint64 spec
                   )
 {
   //printf("addMemberDocs: '%s'::'%s' '%s' funcDecl='%s' mSpec=%d\n",
-  //     root->parent->name.data(),md->name().data(),md->argsString(),funcDecl,root->spec);
+  //     root->parent->name.data(),md->name().data(),md->argsString(),funcDecl,spec);
   QCString fDecl=funcDecl;
   // strip extern specifier
   fDecl.stripPrefix("extern ");
@@ -5452,7 +5404,7 @@ static void addMemberDocs(Entry *root,
   md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
   md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
 
-  md->mergeMemberSpecifiers(root->spec);
+  md->mergeMemberSpecifiers(spec);
   md->addSectionsToDefinition(root->anchors);
   addMemberToGroups(root,md);
   if (cd) cd->insertUsedFile(rfd);
@@ -5496,13 +5448,14 @@ static const ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
 // with name 'name' and argument list 'args' (for overloading) and
 // function declaration 'decl' to the corresponding member definition.
 
-static bool findGlobalMember(Entry *root,
+static bool findGlobalMember(const Entry *root,
                            const QCString &namespaceName,
                            const char *type,
                            const char *name,
                            const char *tempArg,
                            const char *,
-                           const char *decl)
+                           const char *decl,
+                           uint64 spec)
 {
   Debug::print(Debug::FindMembers,0,
        "2. findGlobalMember(namespace=%s,type=%s,name=%s,tempArg=%s,decl=%s)\n",
@@ -5612,7 +5565,7 @@ static bool findGlobalMember(Entry *root,
         if (matching) // add docs to the member
         {
           Debug::print(Debug::FindMembers,0,"5. Match found\n");
-          addMemberDocs(root,md->resolveAlias(),decl,root->argList,FALSE);
+          addMemberDocs(root,md->resolveAlias(),decl,root->argList,FALSE,root->spec);
           found=TRUE;
         }
       }
@@ -5822,7 +5775,10 @@ static void substituteTemplatesInArgList(
  * The boolean \a isFunc is a hint that indicates that this is a function
  * instead of a variable or typedef.
  */
-static void findMember(Entry *root,
+static void findMember(const Entry *root,
+                       const QCString &relates,
+                       const QCString &type,
+                       const QCString &args,
                        QCString funcDecl,
                        bool overloaded,
                        bool isFunc
@@ -5832,7 +5788,7 @@ static void findMember(Entry *root,
                "findMember(root=%p,funcDecl='%s',related='%s',overload=%d,"
                "isFunc=%d mGrpId=%d tArgList=%p (#=%d) "
                "spec=%lld lang=%x\n",
-               root,qPrint(funcDecl),qPrint(root->relates),overloaded,isFunc,root->mGrpId,
+               root,qPrint(funcDecl),qPrint(relates),overloaded,isFunc,root->mGrpId,
                root->tArgLists,root->tArgLists ? root->tArgLists->count() : 0,
                root->spec,root->lang
               );
@@ -5850,6 +5806,7 @@ static void findMember(Entry *root,
   bool isMemberOf=FALSE;
   bool isFriend=FALSE;
   bool done;
+  uint64 spec = root->spec;
   do
   {
     done=TRUE;
@@ -5860,17 +5817,17 @@ static void findMember(Entry *root,
     }
     if (funcDecl.stripPrefix("inline "))
     {
-      root->spec|=Entry::Inline;
+      spec|=Entry::Inline;
       done=FALSE;
     }
     if (funcDecl.stripPrefix("explicit "))
     {
-      root->spec|=Entry::Explicit;
+      spec|=Entry::Explicit;
       done=FALSE;
     }
     if (funcDecl.stripPrefix("mutable "))
     {
-      root->spec|=Entry::Mutable;
+      spec|=Entry::Mutable;
       done=FALSE;
     }
     if (funcDecl.stripPrefix("virtual "))
@@ -5926,21 +5883,21 @@ static void findMember(Entry *root,
   // related field.
   //printf("scopeName='%s' className='%s' namespaceName='%s'\n",
   //    scopeName.data(),className.data(),namespaceName.data());
-  if (!root->relates.isEmpty())
+  if (!relates.isEmpty())
   {                             // related member, prefix user specified scope
     isRelated=TRUE;
     isMemberOf=(root->relatesType == MemberOf);
-    if (getClass(root->relates)==0 && !scopeName.isEmpty())
+    if (getClass(relates)==0 && !scopeName.isEmpty())
     {
-      scopeName= mergeScopes(scopeName,root->relates);
+      scopeName= mergeScopes(scopeName,relates);
     }
     else
     {
-      scopeName = root->relates;
+      scopeName = relates;
     }
   }
 
-  if (root->relates.isEmpty() && root->parent() &&
+  if (relates.isEmpty() && root->parent() &&
       ((root->parent()->section&Entry::SCOPE_MASK) ||
        (root->parent()->section==Entry::OBJCIMPL_SEC)
       ) &&
@@ -6015,7 +5972,7 @@ static void findMember(Entry *root,
     {
       scopeName=namespaceName;
     }
-    else if (!root->relates.isEmpty() || // relates command with explicit scope
+    else if (!relates.isEmpty() || // relates command with explicit scope
              !getClass(className)) // class name only exists in a namespace
     {
       scopeName=namespaceName+"::"+className;
@@ -6122,7 +6079,7 @@ static void findMember(Entry *root,
            "  isFunc=%d\n\n",
            qPrint(namespaceName),qPrint(className),
            qPrint(funcType),qPrint(funcSpec),qPrint(funcName),qPrint(funcArgs),qPrint(funcTempList),
-           qPrint(funcDecl),qPrint(root->relates),qPrint(exceptions),isRelated,isMemberOf,isFriend,
+           qPrint(funcDecl),qPrint(relates),qPrint(exceptions),isRelated,isMemberOf,isFriend,
            isFunc
           );
 
@@ -6306,11 +6263,8 @@ static void findMember(Entry *root,
                     // specialization. In this case we add it to the class
                     // even though the member arguments do not match.
 
-                    // TODO: copy other aspects?
-                    root->protection=md->protection(); // copy protection level
-                    root->stat=md->isStatic();
-                    root->virt=md->virtualness();
-                    addMethodToClass(root,cd,md->name(),isFriend);
+                    addMethodToClass(root,cd,type,md->name(),args,isFriend,
+                        md->protection(),md->isStatic(),md->virtualness(),spec,relates);
                     return;
                   }
                   delete argList;
@@ -6318,7 +6272,7 @@ static void findMember(Entry *root,
               }
               if (matching)
               {
-                addMemberDocs(root,md,funcDecl,0,overloaded,0/* TODO */);
+                addMemberDocs(root,md,funcDecl,0,overloaded,spec);
                 count++;
                 memFound=TRUE;
               }
@@ -6354,10 +6308,8 @@ static void findMember(Entry *root,
                       root->tArgLists->getLast()->count()<=templAl->count())
                   {
                     Debug::print(Debug::FindMembers,0,"7. add template specialization\n");
-                    root->protection=md->protection();
-                    root->stat=md->isStatic();
-                    root->virt=md->virtualness();
-                    addMethodToClass(root,ccd,md->name(),isFriend);
+                    addMethodToClass(root,ccd,type,md->name(),args,isFriend,
+                        root->protection,root->stat,root->virt,spec,relates);
                     return;
                   }
                   if (md->argsString()==argListToString(root->argList,TRUE,FALSE))
@@ -6387,7 +6339,7 @@ static void findMember(Entry *root,
               {
                 // we didn't find an actual match on argument lists, but there is only 1 member with this
                 // name in the same scope, so that has to be the one.
-                addMemberDocs(root,umd,funcDecl,0,overloaded,0);
+                addMemberDocs(root,umd,funcDecl,0,overloaded,spec);
                 return;
               }
               else if (candidates>1 && ecd && emd)
@@ -6395,7 +6347,7 @@ static void findMember(Entry *root,
                 // we didn't find a unique match using type resolution,
                 // but one of the matches has the exact same signature so
                 // we take that one.
-                addMemberDocs(root,emd,funcDecl,0,overloaded,0);
+                addMemberDocs(root,emd,funcDecl,0,overloaded,spec);
                 return;
               }
             }
@@ -6505,7 +6457,7 @@ static void findMember(Entry *root,
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           FileDef *fd=root->fileDef();
           md->setBodyDef(fd);
-          md->setMemberSpecifiers(root->spec);
+          md->setMemberSpecifiers(spec);
           md->setMemberGroupId(root->mGrpId);
           mn->append(md);
           cd->insertMember(md);
@@ -6575,7 +6527,7 @@ static void findMember(Entry *root,
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           FileDef *fd=root->fileDef();
           md->setBodyDef(fd);
-          md->setMemberSpecifiers(root->spec);
+          md->setMemberSpecifiers(spec);
           md->setMemberGroupId(root->mGrpId);
           mn->append(md);
           cd->insertMember(md);
@@ -6585,7 +6537,7 @@ static void findMember(Entry *root,
       }
       else // unrelated function with the same name as a member
       {
-        if (!findGlobalMember(root,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl))
+        if (!findGlobalMember(root,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl,spec))
         {
           QCString fullFuncDecl=funcDecl.copy();
           if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
@@ -6596,11 +6548,11 @@ static void findMember(Entry *root,
         }
       }
     }
-    else if (isRelated && !root->relates.isEmpty())
+    else if (isRelated && !relates.isEmpty())
     {
       Debug::print(Debug::FindMembers,0,"2. related function\n"
               "  scopeName=%s className=%s\n",qPrint(scopeName),qPrint(className));
-      if (className.isEmpty()) className=root->relates;
+      if (className.isEmpty()) className=relates;
       ClassDef *cd;
       //printf("scopeName='%s' className='%s'\n",scopeName.data(),className.data());
       if ((cd=getClass(scopeName)))
@@ -6649,7 +6601,7 @@ static void findMember(Entry *root,
           {
             //printf("addMemberDocs for related member %s\n",root->name.data());
             //rmd->setMemberDefTemplateArguments(root->mtArgList);
-            addMemberDocs(root,rmd,funcDecl,0,overloaded);
+            addMemberDocs(root,rmd,funcDecl,0,overloaded,spec);
           }
         }
 
@@ -6763,7 +6715,7 @@ static void findMember(Entry *root,
           //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
           //}
           md->setMemberClass(cd);
-          md->setMemberSpecifiers(root->spec);
+          md->setMemberSpecifiers(spec);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
@@ -6798,7 +6750,7 @@ static void findMember(Entry *root,
         }
         if (root->relatesType == Duplicate)
         {
-          if (!findGlobalMember(root,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl))
+          if (!findGlobalMember(root,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl,spec))
           {
             QCString fullFuncDecl=funcDecl.copy();
             if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
@@ -6852,7 +6804,7 @@ localObjCMethod:
         md->setBodySegment(root->bodyLine,root->endBodyLine);
         FileDef *fd=root->fileDef();
         md->setBodyDef(fd);
-        md->setMemberSpecifiers(root->spec);
+        md->setMemberSpecifiers(spec);
         md->setMemberGroupId(root->mGrpId);
         cd->insertMember(md);
         cd->insertUsedFile(fd);
@@ -6875,7 +6827,7 @@ localObjCMethod:
     }
     else // unrelated not overloaded member found
     {
-      bool globMem = findGlobalMember(root,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl);
+      bool globMem = findGlobalMember(root,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl,spec);
       if (className.isEmpty() && !globMem)
       {
         warn(root->fileName,root->startLine,
@@ -6904,7 +6856,7 @@ localObjCMethod:
 // find the members corresponding to the different documentation blocks
 // that are extracted from the sources.
 
-static void filterMemberDocumentation(Entry *root)
+static void filterMemberDocumentation(const Entry *root,const QCString relates)
 {
   int i=-1,l;
   Debug::print(Debug::FindMembers,0,
@@ -6914,26 +6866,20 @@ static void filterMemberDocumentation(Entry *root)
   //printf("root->parent()->name=%s\n",root->parent()->name.data());
   bool isFunc=TRUE;
 
-  if (root->relatesType == Duplicate && !root->relates.isEmpty())
-  {
-    QCString tmp = root->relates;
-    root->relates.resize(0);
-    filterMemberDocumentation(root);
-    root->relates = tmp;
-  }
-
+  QCString type = root->type;
+  QCString args = root->args;
   if ( // detect func variable/typedef to func ptr
-      (i=findFunctionPtr(root->type,root->lang,&l))!=-1
+      (i=findFunctionPtr(type,root->lang,&l))!=-1
      )
   {
     //printf("Fixing function pointer!\n");
     // fix type and argument
-    root->args.prepend(root->type.right(root->type.length()-i-l));
-    root->type=root->type.left(i+l);
-    //printf("Results type=%s,name=%s,args=%s\n",root->type.data(),root->name.data(),root->args.data());
+    args.prepend(type.right(type.length()-i-l));
+    type=type.left(i+l);
+    //printf("Results type=%s,name=%s,args=%s\n",type.data(),root->name.data(),args.data());
     isFunc=FALSE;
   }
-  else if ((root->type.left(8)=="typedef " && root->args.find('(')!=-1))
+  else if ((type.left(8)=="typedef " && args.find('(')!=-1))
     // detect function types marked as functions
   {
     isFunc=FALSE;
@@ -6943,80 +6889,117 @@ static void filterMemberDocumentation(Entry *root)
   if (root->section==Entry::MEMBERDOC_SEC)
   {
     //printf("Documentation for inline member '%s' found args='%s'\n",
-    //    root->name.data(),root->args.data());
-    //if (root->relates.length()) printf("  Relates %s\n",root->relates.data());
-    if (root->type.isEmpty())
+    //    root->name.data(),args.data());
+    //if (relates.length()) printf("  Relates %s\n",relates.data());
+    if (type.isEmpty())
     {
-      findMember(root,root->name+root->args+root->exception,FALSE,isFunc);
+      findMember(root,
+                 relates,
+                 type,
+                 args,
+                 root->name + args + root->exception,
+                 FALSE,
+                 isFunc);
     }
     else
     {
-      findMember(root,root->type+" "+root->name+root->args+root->exception,FALSE,isFunc);
+      findMember(root,
+                 relates,
+                 type,
+                 args,
+                 type + " " + root->name + args + root->exception,
+                 FALSE,
+                 isFunc);
     }
   }
   else if (root->section==Entry::OVERLOADDOC_SEC)
   {
     //printf("Overloaded member %s found\n",root->name.data());
-    findMember(root,root->name,TRUE,isFunc);
+    findMember(root,
+               relates,
+               type,
+               args,
+               root->name,
+               TRUE,
+               isFunc);
   }
   else if
     ((root->section==Entry::FUNCTION_SEC      // function
       ||
       (root->section==Entry::VARIABLE_SEC &&  // variable
-       !root->type.isEmpty() &&                // with a type
-       g_compoundKeywordDict.find(root->type)==0 // that is not a keyword
+       !type.isEmpty() &&                // with a type
+       g_compoundKeywordDict.find(type)==0 // that is not a keyword
        // (to skip forward declaration of class etc.)
       )
      )
     )
     {
       //printf("Documentation for member '%s' found args='%s' excp='%s'\n",
-      //    root->name.data(),root->args.data(),root->exception.data());
-      //if (root->relates.length()) printf("  Relates %s\n",root->relates.data());
-      //printf("Inside=%s\n Relates=%s\n",root->inside.data(),root->relates.data());
-      if (root->type=="friend class" || root->type=="friend struct" ||
-          root->type=="friend union")
+      //    root->name.data(),args.data(),root->exception.data());
+      //if (relates.length()) printf("  Relates %s\n",relates.data());
+      //printf("Inside=%s\n Relates=%s\n",root->inside.data(),relates.data());
+      if (type=="friend class" || type=="friend struct" ||
+          type=="friend union")
       {
         findMember(root,
-            root->type+" "+
-            root->name,
+            relates,
+            type,
+            args,
+            type+" "+root->name,
             FALSE,FALSE);
 
       }
-      else if (!root->type.isEmpty())
+      else if (!type.isEmpty())
       {
         findMember(root,
-            root->type+" "+
-            root->inside+
-            root->name+
-            root->args+
-            root->exception,
+            relates,
+            type,
+            args,
+            type+" "+ root->inside + root->name + args + root->exception,
             FALSE,isFunc);
       }
       else
       {
         findMember(root,
-            root->inside+
-            root->name+
-            root->args+
-            root->exception,
+            relates,
+            type,
+            args,
+            root->inside + root->name + args + root->exception,
             FALSE,isFunc);
       }
     }
-  else if (root->section==Entry::DEFINE_SEC && !root->relates.isEmpty())
+  else if (root->section==Entry::DEFINE_SEC && !relates.isEmpty())
   {
-    findMember(root,root->name+root->args,FALSE,!root->args.isEmpty());
+    findMember(root,
+               relates,
+               type,
+               args,
+               root->name + args,
+               FALSE,
+               !args.isEmpty());
   }
   else if (root->section==Entry::VARIABLEDOC_SEC)
   {
     //printf("Documentation for variable %s found\n",root->name.data());
-    //if (!root->relates.isEmpty()) printf("  Relates %s\n",root->relates.data());
-    findMember(root,root->name,FALSE,FALSE);
+    //if (!relates.isEmpty()) printf("  Relates %s\n",relates.data());
+    findMember(root,
+               relates,
+               type,
+               args,
+               root->name,
+               FALSE,
+               FALSE);
   }
   else if (root->section==Entry::EXPORTED_INTERFACE_SEC ||
            root->section==Entry::INCLUDED_SERVICE_SEC)
   {
-    findMember(root,root->type + " " + root->name,FALSE,FALSE);
+    findMember(root,
+               relates,
+               type,
+               args,
+               type + " " + root->name,
+               FALSE,
+               FALSE);
   }
   else
   {
@@ -7025,7 +7008,7 @@ static void filterMemberDocumentation(Entry *root)
   }
 }
 
-static void findMemberDocumentation(Entry *root)
+static void findMemberDocumentation(const Entry *root)
 {
   if (root->section==Entry::MEMBERDOC_SEC ||
       root->section==Entry::OVERLOADDOC_SEC ||
@@ -7037,42 +7020,41 @@ static void findMemberDocumentation(Entry *root)
       root->section==Entry::EXPORTED_INTERFACE_SEC
      )
   {
-    filterMemberDocumentation(root);
-  }
-  if (root->children())
-  {
-    EntryListIterator eli(*root->children());
-    Entry *e;
-    for (;(e=eli.current());++eli)
+    if (root->relatesType == Duplicate && !root->relates.isEmpty())
     {
-      if (e->section!=Entry::ENUM_SEC) findMemberDocumentation(e);
+      filterMemberDocumentation(root,"");
+    }
+    filterMemberDocumentation(root,root->relates);
+  }
+  for (const auto &e : root->children())
+  {
+    if (e->section!=Entry::ENUM_SEC)
+    {
+      findMemberDocumentation(e.get());
     }
   }
 }
 
 //----------------------------------------------------------------------
 
-static void findObjCMethodDefinitions(Entry *root)
+static void findObjCMethodDefinitions(const Entry *root)
 {
-  if (root->children())
+  for (const auto &objCImpl : root->children())
   {
-    EntryListIterator eli(*root->children());
-    Entry *objCImpl;
-    for (;(objCImpl=eli.current());++eli)
+    if (objCImpl->section==Entry::OBJCIMPL_SEC)
     {
-      if (objCImpl->section==Entry::OBJCIMPL_SEC && objCImpl->children())
+      for (const auto &objCMethod : objCImpl->children())
       {
-        EntryListIterator seli(*objCImpl->children());
-        Entry *objCMethod;
-        for (;(objCMethod=seli.current());++seli)
+        if (objCMethod->section==Entry::FUNCTION_SEC)
         {
-          if (objCMethod->section==Entry::FUNCTION_SEC)
-          {
-            //Printf("  Found ObjC method definition %s\n",objCMethod->name.data());
-            findMember(objCMethod, objCMethod->type+" "+objCImpl->name+"::"+
-                       objCMethod->name+" "+objCMethod->args, FALSE,TRUE);
-            objCMethod->section=Entry::EMPTY_SEC;
-          }
+          //Printf("  Found ObjC method definition %s\n",objCMethod->name.data());
+          findMember(objCMethod.get(),
+                     objCMethod->relates,
+                     objCMethod->type,
+                     objCMethod->args,
+                     objCMethod->type+" "+objCImpl->name+"::"+objCMethod->name+" "+objCMethod->args,
+                     FALSE,TRUE);
+          objCMethod->section=Entry::EMPTY_SEC;
         }
       }
     }
@@ -7082,7 +7064,7 @@ static void findObjCMethodDefinitions(Entry *root)
 //----------------------------------------------------------------------
 // find and add the enumeration to their classes, namespaces or files
 
-static void findEnums(Entry *root)
+static void findEnums(const Entry *root)
 {
   if (root->section==Entry::ENUM_SEC)
   {
@@ -7255,13 +7237,13 @@ static void findEnums(Entry *root)
   }
   else
   {
-    RECURSE_ENTRYTREE(findEnums,root);
+    for (const auto &e : root->children()) findEnums(e.get());
   }
 }
 
 //----------------------------------------------------------------------
 
-static void addEnumValuesToEnums(Entry *root)
+static void addEnumValuesToEnums(const Entry *root)
 {
   if (root->section==Entry::ENUM_SEC)
     // non anonymous enumeration
@@ -7337,12 +7319,10 @@ static void addEnumValuesToEnums(Entry *root)
         MemberDef *md;
         for (mni.toFirst(); (md=mni.current()) ; ++mni)  // for each enum in this list
         {
-          if (!md->isAlias() && md->isEnumerate() && root->children())
+          if (!md->isAlias() && md->isEnumerate() && !root->children().empty())
           {
             //printf("   enum with %d children\n",root->children()->count());
-            EntryListIterator eli(*root->children()); // for each enum value
-            Entry *e;
-            for (;(e=eli.current());++eli)
+            for (const auto &e : root->children())
             {
               SrcLangExt sle;
               if (
@@ -7474,7 +7454,7 @@ static void addEnumValuesToEnums(Entry *root)
   }
   else
   {
-    RECURSE_ENTRYTREE(addEnumValuesToEnums,root);
+    for (const auto &e : root->children()) addEnumValuesToEnums(e.get());
   }
 }
 
@@ -7482,7 +7462,7 @@ static void addEnumValuesToEnums(Entry *root)
 //----------------------------------------------------------------------
 // find the documentation blocks for the enumerations
 
-static void findEnumDocumentation(Entry *root)
+static void findEnumDocumentation(const Entry *root)
 {
   if (root->section==Entry::ENUMDOC_SEC
       && !root->name.isEmpty()
@@ -7615,7 +7595,7 @@ static void findEnumDocumentation(Entry *root)
       }
     }
   }
-  RECURSE_ENTRYTREE(findEnumDocumentation,root);
+  for (const auto &e : root->children()) findEnumDocumentation(e.get());
 }
 
 // search for each enum (member or function) in mnl if it has documented
@@ -8730,12 +8710,12 @@ static void findDefineDocumentation(Entry *root)
       }
     }
   }
-  RECURSE_ENTRYTREE(findDefineDocumentation,root);
+  for (const auto &e : root->children()) findDefineDocumentation(e.get());
 }
 
 //----------------------------------------------------------------------------
 
-static void findDirDocumentation(Entry *root)
+static void findDirDocumentation(const Entry *root)
 {
   if (root->section == Entry::DIRDOC_SEC)
   {
@@ -8791,7 +8771,7 @@ static void findDirDocumentation(Entry *root)
           "directory found for command \\dir %s\n",normalizedName.data());
     }
   }
-  RECURSE_ENTRYTREE(findDirDocumentation,root);
+  for (const auto &e : root->children()) findDirDocumentation(e.get());
 }
 
 
@@ -8821,7 +8801,7 @@ static void buildPageList(Entry *root)
                0,0
                );
   }
-  RECURSE_ENTRYTREE(buildPageList,root);
+  for (const auto &e : root->children()) buildPageList(e.get());
 }
 
 // search for the main page defined in this project
@@ -8875,7 +8855,7 @@ static void findMainPage(Entry *root)
            Doxygen::mainPage->docFile().data(),Doxygen::mainPage->docLine());
     }
   }
-  RECURSE_ENTRYTREE(findMainPage,root);
+  for (const auto &e : root->children()) findMainPage(e.get());
 }
 
 // search for the main page imported via tag files and add only the section labels
@@ -8888,7 +8868,7 @@ static void findMainPageTagFiles(Entry *root)
       Doxygen::mainPage->addSectionsToDefinition(root->anchors);
     }
   }
-  RECURSE_ENTRYTREE(findMainPageTagFiles,root);
+  for (const auto &e : root->children()) findMainPageTagFiles(e.get());
 }
 
 static void computePageRelations(Entry *root)
@@ -8925,7 +8905,7 @@ static void computePageRelations(Entry *root)
       }
     }
   }
-  RECURSE_ENTRYTREE(computePageRelations,root);
+  for (const auto &e : root->children()) computePageRelations(e.get());
 }
 
 static void checkPageRelations()
@@ -9071,7 +9051,7 @@ static void buildExampleList(Entry *root)
       //addExampleToGroups(root,pd);
     }
   }
-  RECURSE_ENTRYTREE(buildExampleList,root);
+  for (const auto &e : root->children()) buildExampleList(e.get());
 }
 
 //----------------------------------------------------------------------------
@@ -9085,10 +9065,9 @@ void printNavTree(Entry *root,int indent)
       indentStr.isEmpty()?"":indentStr.data(),
       root->name.isEmpty()?"<empty>":root->name.data(),
       root->section);
-  if (root->children())
+  for (const auto &e : root->children())
   {
-    EntryListIterator eli(*root->children());
-    for (;eli.current();++eli) printNavTree(eli.current(),indent+2);
+    printNavTree(e.get(),indent+2);
   }
 }
 
@@ -9310,7 +9289,7 @@ static void compareDoxyfile()
 
 //----------------------------------------------------------------------------
 
-static void readTagFile(Entry *root,const char *tl)
+static void readTagFile(const std::unique_ptr<Entry> &root,const char *tl)
 {
   QCString tagLine = tl;
   QCString fileName;
@@ -9479,7 +9458,7 @@ static ParserInterface *getParserForFile(const char *fn)
 }
 
 static void parseFile(ParserInterface *parser,
-                      Entry *root,FileDef *fd,const char *fn,
+                      const std::unique_ptr<Entry> &root,FileDef *fd,const char *fn,
                       bool sameTu,QStrList &filesInSameTu)
 {
 #if USE_LIBCLANG
@@ -9532,15 +9511,15 @@ static void parseFile(ParserInterface *parser,
     fd->getAllIncludeFilesRecursively(filesInSameTu);
   }
 
-  Entry *fileRoot = new Entry;
+  std::unique_ptr<Entry> fileRoot = std::make_unique<Entry>();
   // use language parse to parse the file
   parser->parseInput(fileName,convBuf.data(),fileRoot,sameTu,filesInSameTu);
   fileRoot->setFileDef(fd);
-  root->addSubEntry(fileRoot);
+  root->moveToSubEntryAndKeep(fileRoot);
 }
 
 //! parse the list of input files
-static void parseFiles(Entry *root)
+static void parseFiles(const std::unique_ptr<Entry> &root)
 {
 #if USE_LIBCLANG
   static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
@@ -11346,7 +11325,7 @@ void parseInput()
    *             Handle Tag Files                                           *
    **************************************************************************/
 
-  Entry *root=new Entry;
+  std::unique_ptr<Entry> root = std::make_unique<Entry>();
   msg("Reading and parsing tag files\n");
 
   QStrList &tagFileList = Config_getList(TAGFILES);
@@ -11381,31 +11360,31 @@ void parseInput()
    **************************************************************************/
 
   g_s.begin("Building group list...\n");
-  buildGroupList(root);
-  organizeSubGroups(root);
+  buildGroupList(root.get());
+  organizeSubGroups(root.get());
   g_s.end();
 
   g_s.begin("Building directory list...\n");
   buildDirectories();
-  findDirDocumentation(root);
+  findDirDocumentation(root.get());
   g_s.end();
 
   g_s.begin("Building namespace list...\n");
-  buildNamespaceList(root);
-  findUsingDirectives(root);
+  buildNamespaceList(root.get());
+  findUsingDirectives(root.get());
   g_s.end();
 
   g_s.begin("Building file list...\n");
-  buildFileList(root);
+  buildFileList(root.get());
   g_s.end();
   //generateFileTree();
 
   g_s.begin("Building class list...\n");
-  buildClassList(root);
+  buildClassList(root.get());
   g_s.end();
 
   // build list of using declarations here (global list)
-  buildListOfUsingDecls(root);
+  buildListOfUsingDecls(root.get());
   g_s.end();
 
   g_s.begin("Computing nesting relations for classes...\n");
@@ -11422,14 +11401,14 @@ void parseInput()
   g_usingDeclarations.clear();
 
   g_s.begin("Associating documentation with classes...\n");
-  buildClassDocList(root);
+  buildClassDocList(root.get());
 
   g_s.begin("Building example list...\n");
-  buildExampleList(root);
+  buildExampleList(root.get());
   g_s.end();
 
   g_s.begin("Searching for enumerations...\n");
-  findEnums(root);
+  findEnums(root.get());
   g_s.end();
 
   // Since buildVarList calls isVarWithConstructor
@@ -11437,24 +11416,24 @@ void parseInput()
   // typedefs first so the relations between classes via typedefs
   // are properly resolved. See bug 536385 for an example.
   g_s.begin("Searching for documented typedefs...\n");
-  buildTypedefList(root);
+  buildTypedefList(root.get());
   g_s.end();
 
   if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
   {
     g_s.begin("Searching for documented sequences...\n");
-    buildSequenceList(root);
+    buildSequenceList(root.get());
     g_s.end();
 
     g_s.begin("Searching for documented dictionaries...\n");
-    buildDictionaryList(root);
+    buildDictionaryList(root.get());
     g_s.end();
   }
 
   g_s.begin("Searching for members imported via using declarations...\n");
   // this should be after buildTypedefList in order to properly import
   // used typedefs
-  findUsingDeclarations(root);
+  findUsingDeclarations(root.get());
   g_s.end();
 
   g_s.begin("Searching for included using directives...\n");
@@ -11462,14 +11441,14 @@ void parseInput()
   g_s.end();
 
   g_s.begin("Searching for documented variables...\n");
-  buildVarList(root);
+  buildVarList(root.get());
   g_s.end();
 
   g_s.begin("Building interface member list...\n");
-  buildInterfaceAndServiceList(root); // UNO IDL
+  buildInterfaceAndServiceList(root.get()); // UNO IDL
 
   g_s.begin("Building member list...\n"); // using class info only !
-  buildFunctionList(root);
+  buildFunctionList(root.get());
   g_s.end();
 
   g_s.begin("Searching for friends...\n");
@@ -11477,11 +11456,11 @@ void parseInput()
   g_s.end();
 
   g_s.begin("Searching for documented defines...\n");
-  findDefineDocumentation(root);
+  findDefineDocumentation(root.get());
   g_s.end();
 
   g_s.begin("Computing class inheritance relations...\n");
-  findClassEntries(root);
+  findClassEntries(root.get());
   findInheritedTemplateInstances();
   g_s.end();
 
@@ -11512,14 +11491,14 @@ void parseInput()
   g_s.end();
 
   g_s.begin("Add enum values to enums...\n");
-  addEnumValuesToEnums(root);
-  findEnumDocumentation(root);
+  addEnumValuesToEnums(root.get());
+  findEnumDocumentation(root.get());
   g_s.end();
 
   g_s.begin("Searching for member function documentation...\n");
-  findObjCMethodDefinitions(root);
-  findMemberDocumentation(root); // may introduce new members !
-  findUsingDeclImports(root); // may introduce new members !
+  findObjCMethodDefinitions(root.get());
+  findMemberDocumentation(root.get()); // may introduce new members !
+  findUsingDeclImports(root.get()); // may introduce new members !
 
   transferRelatedFunctionDocumentation();
   transferFunctionDocumentation();
@@ -11532,21 +11511,21 @@ void parseInput()
   g_s.end();
 
   g_s.begin("Building page list...\n");
-  buildPageList(root);
+  buildPageList(root.get());
   g_s.end();
 
   g_s.begin("Search for main page...\n");
-  findMainPage(root);
-  findMainPageTagFiles(root);
+  findMainPage(root.get());
+  findMainPageTagFiles(root.get());
   g_s.end();
 
   g_s.begin("Computing page relations...\n");
-  computePageRelations(root);
+  computePageRelations(root.get());
   checkPageRelations();
   g_s.end();
 
   g_s.begin("Determining the scope of groups...\n");
-  findGroupScope(root);
+  findGroupScope(root.get());
   g_s.end();
 
   g_s.begin("Sorting lists...\n");

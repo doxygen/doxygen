@@ -22,6 +22,11 @@
 /*
  *	includes
  */
+
+#include <algorithm>
+#include <vector>
+#include <utility>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -86,11 +91,11 @@ static int		roundCount   = 0 ;
 static int		curlyCount   = 0 ;
 static int		squareCount  = 0 ;
 static int              padCount     = 0 ;
+static std::unique_ptr<Entry> current;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
-static Entry*		current      = 0 ;
 static Entry*		previous     = 0 ;
-static Entry*		tempEntry    = 0 ;
+static std::unique_ptr<Entry> tempEntry;
 static Entry*		firstTypedefEntry = 0 ;
 static Entry*		memspecEntry = 0 ;
 static int		yyLineNr     = 1 ;
@@ -194,6 +199,8 @@ static int              g_column;
 static int              g_fencedSize=0;
 static bool             g_nestedComment=0;
 
+static std::vector< std::pair<Entry*,std::unique_ptr<Entry> > > g_outerScopeEntries;
+
 static const char *stateToString(int state);
 //-----------------------------------------------------------------------------
 
@@ -205,6 +212,7 @@ static const char *stateToString(int state);
 
 static void initParser()
 {
+  g_outerScopeEntries.clear();
   sectionLabel.resize(0);
   sectionTitle.resize(0);
   baseName.resize(0);
@@ -228,7 +236,6 @@ static void initParser()
   sliceOpt=Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   previous = 0;
   firstTypedefEntry = 0;
-  tempEntry = 0;
   memspecEntry =0;
 }
 
@@ -249,7 +256,7 @@ static void initEntry()
   //  //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
   //  current->groups->append(new Grouping(*autoGroupStack.top()));
   //}
-  Doxygen::docGroup.initGroupInfo(current);
+  Doxygen::docGroup.initGroupInfo(current.get());
   isTypedef=FALSE;
 }
 
@@ -329,7 +336,7 @@ static inline int computeIndent(const char *s,int startIndent)
   return col;
 }
 
-static void addType( Entry* current )
+static void addType()
 {
     uint tl=current->type.length();
     if( tl>0 && !current->name.isEmpty() && current->type.at(tl-1)!='.') 
@@ -1027,7 +1034,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					   }
 					}
 <CliPropertyType>{ID}			{
-  					  addType( current );
+  					  addType();
   					  current->name = yytext;
   					}
 <CliPropertyType>"["		        { // C++/CLI indexed property
@@ -1049,7 +1056,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <CliPropertyType>{B}*			{
   					}
 <CliPropertyType>.			{
-  					  addType( current );
+  					  addType();
   					  current->type += yytext;
   					}
 <CliPropertyIndex>"]"			{
@@ -1371,9 +1378,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  lineCount();
   					}
 <PackageName>";"			{
-					  current_root->addSubEntry(current);
-                                          current_root = current ;
-					  current = new Entry ;
+                                          Entry *tmp = current.get();
+					  current_root->moveToSubEntryAndRefresh(current);
+                                          current_root = tmp;
 					  initEntry();
   					  BEGIN(FindMembers);
   					}
@@ -1509,7 +1516,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else
 					  {
-					    addType( current ) ;
+					    addType();
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
 					}
@@ -1528,7 +1535,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else
 					  {
-					    addType( current ) ;
+					    addType();
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
 					}
@@ -1547,7 +1554,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else
 					  {
-					    addType( current ) ;
+					    addType();
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
 					}
@@ -1560,7 +1567,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    current->spec = Entry::Service |
 					      // preserve UNO IDL [optional] or published
 					      (current->spec & (Entry::Optional|Entry::Published));
-					    addType( current ) ;
+					    addType();
 					    current->type += " service " ;
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
@@ -1569,7 +1576,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else // TODO is addType right? just copy/pasted
 					  {
-					    addType( current ) ;
+					    addType();
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
 					}
@@ -1581,7 +1588,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    current->section = Entry::CLASS_SEC;
 					    current->spec = Entry::Singleton |
 					      (current->spec & Entry::Published); // preserve
-					    addType( current ) ;
+					    addType();
 					    current->type += " singleton " ;
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
@@ -1590,7 +1597,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else // TODO is addType right? just copy/pasted
 					  {
-					    addType( current ) ;
+					    addType();
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
 					}
@@ -1603,7 +1610,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                         		    current->spec = Entry::Interface |
                                                 // preserve UNO IDL [optional], published, Slice local
                                                 (current->spec & (Entry::Optional|Entry::Published|Entry::Local));
-					    addType( current ) ;
+					    addType();
 					    current->type += " interface" ;
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
@@ -1613,7 +1620,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else
 					  {
-					    addType( current ) ;
+					    addType();
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
   					}
@@ -1624,7 +1631,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  language = current->lang = SrcLangExt_ObjC;
 					  insideObjC = TRUE;
 					  current->protection = protection = Public ;
-					  addType( current ) ;
+					  addType();
 					  current->type += " implementation" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1642,7 +1649,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    insideObjC = TRUE;
 					  }
 					  current->protection = protection = Public ;
-					  addType( current ) ;
+					  addType();
 					  current->type += " interface" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1658,7 +1665,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  language = current->lang = SrcLangExt_ObjC;
 					  insideObjC = TRUE;
 					  current->protection = protection = Public ;
-					  addType( current ) ;
+					  addType();
 					  current->type += " protocol" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1673,7 +1680,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->spec    = Entry::Exception |
 					    (current->spec & Entry::Published) |
 					    (current->spec & Entry::Local);
-					  addType( current ) ;
+					  addType();
 					  current->type += " exception" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1690,7 +1697,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           bool isConst=decl.find("const")!=-1;
                                           bool isVolatile=decl.find("volatile")!=-1;
   					  current->section = Entry::CLASS_SEC;
-					  addType( current ) ;
+					  addType();
                                           uint64 spec = current->spec;
 					  if (insidePHP && current->spec&Entry::Abstract)
 					  {
@@ -1728,7 +1735,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  isTypedef=FALSE;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec = Entry::Value;
-					  addType( current ) ;
+					  addType();
 					  current->type += " value class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1743,7 +1750,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  isTypedef=FALSE;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec = Entry::Ref;
-					  addType( current ) ;
+					  addType();
 					  current->type += " ref class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1758,7 +1765,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  isTypedef=FALSE;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec = Entry::Interface;
-					  addType( current ) ;
+					  addType();
 					  current->type += " interface class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1773,7 +1780,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    isTypedef=FALSE;
 					    current->section = Entry::CLASS_SEC;
-					    addType( current ) ;
+					    addType();
 					    current->type += " coclass" ;
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
@@ -1784,7 +1791,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else
 					  {
-  					    addType(current);
+  					    addType();
 					    current->name = yytext;
 					    current->name = current->name.stripWhiteSpace();
 					    lineCount();
@@ -1805,7 +1812,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             (current->spec & Entry::Local); 
 					  // bug 582676: can be a struct nested in an interface so keep insideObjC state
 					  //current->objc    = insideObjC = FALSE;
-					  addType( current ) ;
+					  addType();
                                           if (isConst)
                                           {
                                             current->type += " const";
@@ -1828,7 +1835,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  isTypedef=FALSE;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec    = Entry::Struct | Entry::Value;
-					  addType( current ) ;
+					  addType();
 					  current->type += " value struct" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1843,7 +1850,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  isTypedef=FALSE;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec    = Entry::Struct | Entry::Ref;
-					  addType( current ) ;
+					  addType();
 					  current->type += " ref struct" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1858,7 +1865,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  isTypedef=FALSE;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec    = Entry::Struct | Entry::Interface;
-					  addType( current ) ;
+					  addType();
 					  current->type += " interface struct";
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1878,7 +1885,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           current->spec    = Entry::Union;
 					  // bug 582676: can be a struct nested in an interface so keep insideObjC state
 					  //current->objc    = insideObjC = FALSE;
-					  addType( current ) ;
+					  addType();
                                           if (isConst)
                                           {
                                             current->type += " const";
@@ -1910,7 +1917,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
   					    current->section = Entry::ENUM_SEC ;
 					  }
-					  addType( current ) ;
+					  addType();
 					  current->type += " enum";
                                           if (isStrongEnum)
                                           {
@@ -2003,12 +2010,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           current->fileName = yyFileName; 
                                           // add a using declaraton
   					  current->section=Entry::USINGDECL_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry(*current);
+					  current_root->copyToSubEntry(current);
                                           // also add it as a using directive
 					  current->section=Entry::USINGDIR_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry ;
+					  current_root->moveToSubEntryAndRefresh(current);
 					  initEntry();
 					  aliasName.resize(0);
 					}
@@ -2043,8 +2048,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->name=removeRedundantWhiteSpace(substitute(scope.left(scope.length()-1),".","::"));
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry;
+					  current_root->moveToSubEntryAndRefresh(current);
 					  initEntry();
 					  BEGIN(Using);
   					}
@@ -2062,9 +2066,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    //printf("import name = %s -> %s\n",yytext,current->name.data());
 					    current->section=Entry::USINGDECL_SEC;
 					  }
-					  current_root->addSubEntry(current);
-                                          previous = current;
-					  current = new Entry ;
+                                          previous = current.get();
+					  current_root->moveToSubEntryAndRefresh(current);
 					  initEntry();
 					  BEGIN(Using);
   					}
@@ -2081,9 +2084,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDECL_SEC;
                                           current->startLine = yyLineNr;
-					  current_root->addSubEntry(current);
-                                          previous = current;
-					  current             = new Entry ;
+                                          previous = current.get();
+					  current_root->moveToSubEntryAndRefresh(current);
+					  initEntry();
 					  if (insideCS) /* Hack: in C# a using declaration and 
 							   directive have the same syntax, so we
 							   also add it as a using directive here
@@ -2094,10 +2097,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    current->startLine = yyLineNr;
 					    current->startColumn = yyColNr;
 					    current->section=Entry::USINGDIR_SEC;
-					    current_root->addSubEntry(current);
-					    current             = new Entry ;
+					    current_root->moveToSubEntryAndRefresh(current);
+					    initEntry();
 					  }
-					  initEntry();
 					  BEGIN(Using);
   					}
 <Using>"="                              { // C++11 style template alias?
@@ -2156,22 +2158,21 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <UsingDirective>{SCOPENAME}		{ current->name=removeRedundantWhiteSpace(yytext);
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
-					  current_root->addSubEntry(current);
-					  current             = new Entry ;
+					  current_root->moveToSubEntryAndRefresh(current);
 					  initEntry();
 					  BEGIN(Using);
   					}
 <Using>";"				{ BEGIN(FindMembers); }
 <FindMembers>{SCOPENAME}{BN}*"<>"	{ // guided template decl
 					  QCString n=yytext;
-					  addType( current );
+					  addType();
 					  current->name=n.left(n.length()-2);
 					}
 <FindMembers>{SCOPENAME}{BN}*/"<"	{ // Note: this could be a return type!
                                           roundCount=0;
   					  sharpCount=0;
 					  lineCount();
-					  addType( current );
+					  addType();
   					  current->name=yytext;
 					  current->name=current->name.stripWhiteSpace();
 					  //current->scopeSpec.resize(0);
@@ -2437,7 +2438,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else if (insideCS && qstrcmp(yytext,"this")==0)
 					  {
 					    // C# indexer
-					    addType( current ) ;
+					    addType();
 					    current->name="this";
 					    BEGIN(CSIndexer);
 					  }
@@ -2469,7 +2470,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    if (YY_START==FindMembers)
 					    {
-					      addType( current ) ;
+					      addType();
 					    }
 					    bool javaLike = insideJava || insideCS || insideD || insidePHP || insideJS;
 					    if (javaLike && qstrcmp(yytext,"public")==0)
@@ -2704,8 +2705,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  current->args       = current->args.simplifyWhiteSpace();
   					  current->name       = current->name.stripWhiteSpace();
 					  current->section    = Entry::DEFINE_SEC;
-					  current_root->addSubEntry(current);
-					  current             = new Entry ;
+					  current_root->moveToSubEntryAndRefresh(current);
 					  initEntry();
 					  BEGIN(lastDefineContext);
   					}
@@ -2722,8 +2722,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           current->initializer = init;
   					  current->name       = current->name.stripWhiteSpace();
 					  current->section    = Entry::VARIABLE_SEC; 
-					  current_root->addSubEntry(current);
-					  current             = new Entry ;
+					  current_root->moveToSubEntryAndRefresh(current);
 					  initEntry();
 					  BEGIN(FindMembers);
   					}
@@ -2758,7 +2757,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FindMembers>[\^%]			{  // ^ and % are C++/CLI extensions
   					  if (insideCli)
 					  {
-  					    addType( current );
+  					    addType();
                                             current->name = yytext ; 
 					  }
 					  else
@@ -2768,7 +2767,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <FindMembers>[*&]+			{ 
                                           current->name += yytext ;  
-  					  addType( current );
+  					  addType();
 					}
 <FindMembers,MemberSpec,Function,NextSemi,EnumBaseType,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
 					  if (current->bodyLine==-1)
@@ -2870,7 +2869,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else
 					  {
 					    // link open command to the current entry
-					    Doxygen::docGroup.open(current,yyFileName,yyLineNr);
+					    Doxygen::docGroup.open(current.get(),yyFileName,yyLineNr);
 					  }
 					  //current = tmp;
 					  initEntry();
@@ -2914,7 +2913,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]){B}*{CMD}"}".*|"/*"([!*]){B}*{CMD}"}"[^*]*"*/"	{
                                           bool insideEnum = YY_START==FindFields || (YY_START==ReadInitializer && lastInitializerContext==FindFields); // see bug746226
-  					  Doxygen::docGroup.close(current,yyFileName,yyLineNr,insideEnum);
+  					  Doxygen::docGroup.close(current.get(),yyFileName,yyLineNr,insideEnum);
   					}
 <FindMembers>"="			{ // in PHP code this could also be due to "<?="
   					  current->bodyLine = yyLineNr;
@@ -2965,8 +2964,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					    current->args       = current->args.simplifyWhiteSpace();
   					    current->name       = current->name.stripWhiteSpace();
 					    current->section    = Entry::VARIABLE_SEC;
-					    current_root->addSubEntry(current);
-					    current = new Entry;
+					    current_root->moveToSubEntryAndRefresh(current);
 					    initEntry();
 					    BEGIN(FindMembers);
 					  }
@@ -3468,7 +3466,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           {
                                             if (current->type.isEmpty()) // anonymous padding field, e.g. "int :7;"
 					    {
-					       addType(current);
+					      addType();
 					      current->name.sprintf("__pad%d__",padCount++);
 					    }
   					    BEGIN(BitFields);
@@ -3499,7 +3497,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    current->type.prepend("typedef ");
 					  }
-					  bool needNewCurrent=FALSE;
+					  bool stat = current->stat;
 					  if (!current->name.isEmpty() && current->section!=Entry::ENUM_SEC)
 					  {
 					    current->type=current->type.simplifyWhiteSpace();
@@ -3513,17 +3511,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    current->fileName = yyFileName;
 					    current->startLine = yyBegLineNr;
 					    current->startColumn = yyBegColNr;
-					    current_root->addSubEntry( current ) ;
-					    needNewCurrent=TRUE;
+					    current_root->moveToSubEntryAndRefresh( current ) ;
+                                            initEntry();
 					  }
 					  if ( *yytext == ',')
 					  {
-					    bool stat = current->stat;
-					    if (needNewCurrent)
-					    {
-					      current = new Entry(*current);
-					      initEntry();
-					    }
 					    current->stat = stat; // the static attribute holds for all variables
 					    current->name.resize(0);
 					    current->args.resize(0);
@@ -3539,11 +3531,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
                                             mtype = Method;
                                             virt = Normal;
-					    if (needNewCurrent)
-					    {
-					      current = new Entry ;
-					    }
-					    else if (current->groups)
+					    if (current->groups)
 					    {
 					      current->groups->clear();
 					    }
@@ -3764,8 +3752,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					    current->args += ")";
   					  current->name       = current->name.stripWhiteSpace();
 					  current->section    = Entry::VARIABLE_SEC;
-					  current_root->addSubEntry(current);
-					  current             = new Entry;
+					  current_root->moveToSubEntryAndRefresh(current);
 					  initEntry();
 					  BEGIN( FindMembers );
 					}
@@ -3794,7 +3781,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   				          BEGIN( SkipString ); 
 					}
 <SkipSquare>[^\n\[\]\"]+
-<FindMembers>"<"			{ addType( current ) ;
+<FindMembers>"<"			{ addType();
 					  current->type += yytext ;
 					  BEGIN( Sharp ) ;
 					}
@@ -3847,8 +3834,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      current->args       = current->args.simplifyWhiteSpace();
 					      current->name       = current->name.stripWhiteSpace();
 					      current->section    = Entry::VARIABLE_SEC;
-					      current_root->addSubEntry(current);
-					      current             = new Entry ;
+					      current_root->moveToSubEntryAndRefresh(current);
 					      initEntry();
 					    }
 
@@ -3880,17 +3866,17 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					    current->name       = current->name.stripWhiteSpace();
 					    current->section    = Entry::VARIABLE_SEC;
 					    // add to the scope of the enum
-					    current_root->addSubEntry(current);
 					    if (!insideCS && !insideJava &&
                                                 !(current_root->spec&Entry::Strong)) 
                                                 // for C# and Java 1.5+ enum values always have to be explicitly qualified,
                                                 // same for C++11 style enums (enum class Name {})
 					    {
-					      current             = new Entry(*current);
 					      // add to the scope surrounding the enum (copy!)
-					      current_root->parent()->addSubEntry(current);
+                                              // we cannot during it directly as that would invalidate the iterator in parseCompounds.
+                                              //printf("*** adding outer scope entry for %s\n",current->name.data());
+                                              g_outerScopeEntries.emplace_back(current_root->parent(), std::make_unique<Entry>(*current));
 					    }
-					    current             = new Entry ;
+					    current_root->moveToSubEntryAndRefresh(current);
 					    initEntry();
 					  }
 					  else // probably a redundant , 
@@ -3985,13 +3971,13 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else
 					  {
 					    current->endBodyLine = yyLineNr;
-                        Entry * original_root = current_root; // save root this namespace is in
+                                            Entry * original_root = current_root; // save root this namespace is in
                                             if (current->section == Entry::NAMESPACE_SEC && current->type == "namespace")
                                             {
                                               int split_point;
                                               while ((split_point = current->name.find("::")) != -1)
                                               {
-                                                Entry *new_current = new Entry(*current);
+                                                std::unique_ptr<Entry> new_current = std::make_unique<Entry>(*current);
                                                 current->program = "";
                                                 new_current->doc = "";
                                                 new_current->docLine = 0;
@@ -4003,9 +3989,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                                 current->name  = current->name.left(split_point);
                                                 if (!current_root->name.isEmpty()) current->name.prepend(current_root->name+"::");
 
-                                                current_root->addSubEntry(current);
-                                                current_root = current;
-                                                current = new_current;
+                                                Entry *tmp = current.get();
+                                                current_root->moveToSubEntryAndKeep(current);
+                                                current_root = tmp;
+                                                current.swap(new_current);
                                               }
                                             }
 					    QCString &cn = current->name;
@@ -4040,17 +4027,16 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      }
 					      else
 					      {
-					        current_root->addSubEntry( current ) ;
-					        memspecEntry = current;
-						current = new Entry(*current);
-						if (current->section==Entry::NAMESPACE_SEC || 
+					        memspecEntry = current.get();
+					        current_root->copyToSubEntry( current ) ;
+						if (current->section==Entry::NAMESPACE_SEC ||
 						    (current->spec==Entry::Interface) ||
 						    insideJava || insidePHP || insideCS || insideD || insideJS ||
                                                     insideSlice
 						   )
 						{ // namespaces and interfaces and java classes ends with a closing bracket without semicolon
-						  current->reset();
-                          current_root = original_root; // restore scope from before namespace descent
+                                                  current->reset();
+                                                  current_root = original_root; // restore scope from before namespace descent
 						  initEntry();
 						  memspecEntry = 0;
 						  BEGIN( FindMembers ) ;
@@ -4105,12 +4091,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  current->args = current->args.simplifyWhiteSpace();
   					  current->type = current->type.simplifyWhiteSpace();
 					  //printf("Adding compound %s %s %s\n",current->type.data(),current->name.data(),current->args.data());
-					  current_root->addSubEntry( current ) ;
 					  if (!firstTypedefEntry)
 					  {
-					    firstTypedefEntry = current;
+					    firstTypedefEntry = current.get();
 					  }
-					  current = new Entry;
+					  current_root->moveToSubEntryAndRefresh( current ) ;
 					  initEntry();
 					  isTypedef=TRUE; // to undo reset by initEntry()
   					  BEGIN(MemberSpecSkip); 
@@ -4124,9 +4109,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  // add compound definition to the tree
   					  current->args = current->args.simplifyWhiteSpace();
   					  current->type = current->type.simplifyWhiteSpace();
-					  current_root->addSubEntry( current ) ;
-					  memspecEntry = current;
-					  current = new Entry(*current);
+					  memspecEntry = current.get();
+					  current_root->moveToSubEntryAndRefresh( current ) ;
 					  initEntry();
 					  unput(';');
 					  BEGIN( MemberSpec ) ;
@@ -4166,7 +4150,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					}
 <MemberSpec>"("				{ // function with struct return type
-  					  addType(current);
+  					  addType();
   					  current->name = msName;
 					  current->spec = 0;
   					  unput('(');
@@ -4179,7 +4163,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    // anonymous compound. If so we insert a 
 					    // special 'anonymous' variable.
 					    //Entry *p=current_root;
-					    Entry *p=current;
+					    const Entry *p=current.get();
 					    while (p)
 					    {
 					      // only look for class scopes, not namespace scopes
@@ -4197,7 +4181,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 						}
 					      }
 					      //p=p->parent;
-					      if (p==current) p=current_root; else p=p->parent();
+					      if (p==current.get()) p=current_root; else p=p->parent();
 					    }
 					  }
 					  //printf("msName=%s current->name=%s\n",msName.data(),current->name.data());
@@ -4218,7 +4202,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    }
 					    else // case 2: create a typedef field
 					    {
-					      Entry *varEntry=new Entry;
+                                              std::unique_ptr<Entry> varEntry=std::make_unique<Entry>();
 					      varEntry->lang = language;
 					      varEntry->protection = current->protection ;
 					      varEntry->mtype = current->mtype;
@@ -4273,7 +4257,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      //printf("Add: type='%s',name='%s',args='%s' brief=%s doc=%s\n",
 					      //      varEntry->type.data(),varEntry->name.data(),
 					      //      varEntry->args.data(),varEntry->brief.data(),varEntry->doc.data());
-					      current_root->addSubEntry(varEntry);
+					      current_root->moveToSubEntryAndKeep(varEntry);
 					    }
 					  }
 					  if (*yytext==';') // end of a struct/class ...
@@ -4327,8 +4311,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  lineCount() ;
 					}
 <ReadBodyIntf>"@end"/[^a-z_A-Z0-9]	{ // end of Objective C block
-					  current_root->addSubEntry( current ) ;
-  					  current=new Entry;
+					  current_root->moveToSubEntryAndRefresh( current ) ;
 					  initEntry();
 					  language = current->lang = SrcLangExt_Cpp; // see bug746361
 					  insideObjC=FALSE;
@@ -4346,7 +4329,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    current->bodyLine = yyLineNr;
 					    lineCount();
-					    addType(current);
+					    addType();
 					    funcPtrType=yytext;
 					    roundCount=0;
 					    //current->type += yytext;
@@ -4491,7 +4474,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <GetCallType>{BN}*{ID}{BN}*"*"		{
   					  lineCount();
-  					  addType(current);
+  					  addType();
 					  funcPtrType="(";
 					  funcPtrType+=yytext;
 					  roundCount=0;
@@ -5223,9 +5206,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    {
 					      findAndRemoveWord(current->type,"function");
 					    }
-					    previous = current;
-					    current_root->addSubEntry(current);
-					    current = new Entry ;
+					    previous = current.get();
+					    current_root->moveToSubEntryAndRefresh(current);
 					    initEntry();
 					    // Objective C 2.0: Required/Optional section
 					    if (previous->spec & (Entry::Optional | Entry::Required))
@@ -5324,8 +5306,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    current->endBodyLine=yyLineNr;
 
-					    tempEntry = current; // temporarily switch to the previous entry
-					    current = previous;
+					    current.swap(tempEntry); // remember current
+					    current.reset(previous); // and temporarily switch to the previous entry
 					    previous = 0;
 
 					    docBlockContext   = SkipCurlyEndDoc;
@@ -5368,8 +5350,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   				          //addToBody("}");
                                           if (tempEntry) // we can only switch back to current if no new item was created
 					  {
-					    current = tempEntry;
-					    tempEntry = 0;
+					    tempEntry.swap(current);
+					    tempEntry.reset();
 					  }
   					  BEGIN( lastCurlyContext );
   					}
@@ -5516,8 +5498,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					        new BaseInfo(baseName,Public,Normal));
 					      baseName.resize(0);
 					    }
-					    current_root->addSubEntry( current ) ;
-					    current = new Entry;
+					    current_root->moveToSubEntryAndRefresh( current ) ;
+                                            initEntry();
 					  }
 					  else
 					  {
@@ -5615,8 +5597,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      prependScope();
 					    }
                                             current->spec|=Entry::ForwardDecl;
-                                            current_root->addSubEntry(current);
-                                            current = new Entry;
+                                            current_root->moveToSubEntryAndRefresh(current);
                                           }
 					  else if (insideIDL &&
 					           (((current_root->spec & (Entry::Interface |
@@ -5637,8 +5618,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					        : Entry::INCLUDED_SERVICE_SEC;
 //					    current->section = Entry::MEMBERDOC_SEC;
 					    current->spec &= ~(Entry::Interface|Entry::Service); // FIXME: horrible: Interface == Gettable, so need to clear it - actually we're mixing values from different enums in this case... granted only Optional and Interface are actually valid in this context but urgh...
-					    current_root->addSubEntry(current);
-					    current = new Entry;
+					    current_root->moveToSubEntryAndRefresh(current);
 					  }
 
     					  unput(';');
@@ -5722,7 +5702,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else
 					  {
-  					    addType(current);
+  					    addType();
 					    current->name = yytext;
 					    current->name = current->name.stripWhiteSpace();
 					    lineCount();
@@ -6546,8 +6526,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
 <SliceSequenceName>";"                  {
                                           current->section = Entry::VARIABLE_SEC;
-                                          current_root->addSubEntry(current);
-                                          current = new Entry;
+                                          current_root->moveToSubEntryAndRefresh(current);
                                           initEntry();
                                           BEGIN(FindMembers);
                                         }
@@ -6577,8 +6556,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
 <SliceDictionaryName>";"                {
                                           current->section = Entry::VARIABLE_SEC;
-                                          current_root->addSubEntry(current);
-                                          current = new Entry;
+                                          current_root->moveToSubEntryAndRefresh(current);
                                           initEntry();
                                           BEGIN(FindMembers);
                                         }
@@ -7009,11 +6987,15 @@ static void newEntry()
                     // already added to current_root, so we should not add it again 
                     // (see bug723314)
   {
-    current_root->addSubEntry(current);
+    previous = current.get();
+    current_root->moveToSubEntryAndRefresh(current);
   }
-  tempEntry = 0;
-  previous = current;
-  current = new Entry ;
+  else
+  {
+    previous = current.get();
+    tempEntry.swap(current);
+    tempEntry.reset();
+  }
   initEntry();
 }
 
@@ -7025,7 +7007,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int lineNr = brief ? current->briefLine : current->docLine;   // line of block start
 
   // fill in inbodyFile && inbodyLine the first time, see bug 633891
-  Entry *docEntry = docBlockInBody && previous ? previous : current;
+  Entry *docEntry = docBlockInBody && previous ? previous : current.get();
   if (docBlockInBody && docEntry && docEntry->inbodyLine==-1)
   {
     docEntry->inbodyFile = yyFileName;
@@ -7037,7 +7019,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   QCString processedDoc = preprocessCommentBlock(stripIndentation(doc),yyFileName,lineNr);
   while (parseCommentBlock(
 	g_thisParser,
-	docBlockInBody && previous ? previous : current,
+	docBlockInBody && previous ? previous : current.get(),
 	processedDoc, // text
 	yyFileName,   // file
 	lineNr,       // line of block start
@@ -7097,7 +7079,7 @@ static void handleParametersCommentBlocks(ArgumentList *al)
       //printf("handleParametersCommentBlock [%s]\n",doc.data());
       while (parseCommentBlock(
 	     g_thisParser,
-	     current,
+	     current.get(),
 	     a->docs,            // text
 	     yyFileName,         // file
 	     current->docLine,   // line of block start
@@ -7131,12 +7113,10 @@ static void handleParametersCommentBlocks(ArgumentList *al)
 
 //----------------------------------------------------------------------------
 
-static void parseCompounds(Entry *rt)
+static void parseCompounds(const std::unique_ptr<Entry> &rt)
 {
   //printf("parseCompounds(%s)\n",rt->name.data());
-  EntryListIterator eli(*rt->children());
-  Entry *ce;
-  for (;(ce=eli.current());++eli)
+  for (const auto &ce : rt->children())
   {
     if (!ce->program.isEmpty())
     {
@@ -7153,16 +7133,14 @@ static void parseCompounds(Entry *rt)
 	BEGIN( FindFields ) ;
       else
 	BEGIN( FindMembers ) ;
-      current_root = ce ;
+      current_root = ce.get() ;
       yyFileName = ce->fileName;
       //setContext();
       yyLineNr = ce->startLine ;
       yyColNr = ce->startColumn ;
       insideObjC = ce->lang==SrcLangExt_ObjC;
       //printf("---> Inner block starts at line %d objC=%d\n",yyLineNr,insideObjC);
-      //current->reset();
-      if (current) delete current;
-      current = new Entry;
+      current = std::make_unique<Entry>();
       gstat = FALSE;
       initEntry();
 
@@ -7229,15 +7207,15 @@ static void parseCompounds(Entry *rt)
       //memberGroupId = DOX_NOGROUP;
       //memberGroupRelates.resize(0);
       //memberGroupInside.resize(0);
-      Doxygen::docGroup.enterCompound(yyFileName,yyLineNr,ce->name);
+      QCString name = ce->name;
+      Doxygen::docGroup.enterCompound(yyFileName,yyLineNr,name);
       
       scannerYYlex() ;
       g_lexInit=TRUE;
       //forceEndGroup();
 
-      Doxygen::docGroup.leaveCompound(yyFileName,yyLineNr,ce->name);
+      Doxygen::docGroup.leaveCompound(yyFileName,yyLineNr,name);
       
-      delete current; current=0;
       ce->program.resize(0);
 
 
@@ -7254,7 +7232,7 @@ static void parseCompounds(Entry *rt)
 
 static void parseMain(const char *fileName,
                       const char *fileBuf,
-                      Entry *rt,
+                      const std::unique_ptr<Entry> &rt,
                       bool sameTranslationUnit,
                       QStrList & filesInSameTranslationUnit)
 {
@@ -7270,8 +7248,8 @@ static void parseMain(const char *fileName,
   mtype         = Method;
   gstat         = FALSE;
   virt          = Normal;
-  current_root  = rt;
-  global_root   = rt;
+  current_root  = rt.get();
+  global_root   = rt.get();
   inputFile.setName(fileName);
   if (inputFile.open(IO_ReadOnly))
   {
@@ -7293,18 +7271,17 @@ static void parseMain(const char *fileName,
     rt->lang = language;
     msg("Parsing file %s...\n",yyFileName.data());
 
-    current_root  = rt ;
+    current_root  = rt.get() ;
     initParser();
     Doxygen::docGroup.enterFile(yyFileName,yyLineNr);
-    current       = new Entry;
+    current = std::make_unique<Entry>();
     //printf("current=%p current_root=%p\n",current,current_root);
     int sec=guessSection(yyFileName);
     if (sec)
     {
       current->name    = yyFileName;
       current->section = sec;
-      current_root->addSubEntry(current);
-      current          = new Entry;
+      current_root->moveToSubEntryAndRefresh(current);
     }
     current->reset();
     initEntry();
@@ -7329,24 +7306,21 @@ static void parseMain(const char *fileName,
     //forceEndGroup();
     Doxygen::docGroup.leaveFile(yyFileName,yyLineNr);
 
-    //if (depthIf>0)
-    //{
-    //  warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
-    //}
-
     rt->program.resize(0);
-    if (rt->children()->contains(current)==0) 
-      // it could be that current is already added as a child to rt, so we
-      // only delete it if this is not the case. See bug 635317.
-    {
-      delete current; current=0;
-    }
 
     parseCompounds(rt);
 
     inputFile.close();
 
     anonNSCount++;
+
+    // add additional entries that were created during processing
+    for (auto &kv: g_outerScopeEntries)
+    {
+      //printf(">>> adding '%s' to scope '%s'\n",kv.second->name.data(),kv.first->name.data());
+      kv.first->moveToSubEntryAndKeep(kv.second);
+    }
+    g_outerScopeEntries.clear();
 
   }
 }
@@ -7396,6 +7370,7 @@ static void parsePrototype(const QCString &text)
   inputString = orgInputString; 
   inputPosition = orgInputPosition;
 
+
   //printf("**** parsePrototype end\n");
 }
 
@@ -7438,7 +7413,7 @@ void CLanguageScanner::finishTranslationUnit()
 
 void CLanguageScanner::parseInput(const char *fileName,
                                   const char *fileBuf,
-                                  Entry *root,
+                                  const std::unique_ptr<Entry> &root,
                                   bool sameTranslationUnit,
                                   QStrList & filesInSameTranslationUnit)
 {

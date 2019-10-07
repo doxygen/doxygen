@@ -8933,7 +8933,7 @@ static Entry* current_root;
 static Entry* tempEntry;
 static Entry*  lastEntity  ;
 static Entry*  lastCompound  ;
-static Entry*  current;
+static std::unique_ptr<Entry> current;
 static QCString compSpec;
 static QCString currName;
 static int levelCounter;

@@ -34,7 +34,7 @@ class CLanguageScanner : public ParserInterface
     void finishTranslationUnit();
     void parseInput(const char *fileName,
                     const char *fileBuf,
-                    Entry *root,
+                    const std::unique_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
     bool needsPreprocessing(const QCString &extension);

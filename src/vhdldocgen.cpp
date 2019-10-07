@@ -71,7 +71,8 @@ static QDict<QCString> g_vhdlKeyDict3(17,FALSE);
 static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCString & fileName,QCString & brief);
 static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
 static void assignBinding(VhdlConfNode* conf);
-static void addInstance(ClassDef* entity, ClassDef* arch, ClassDef *inst,Entry *cur,ClassDef* archBind=NULL);
+static void addInstance(ClassDef* entity, ClassDef* arch, ClassDef *inst,
+                        const std::unique_ptr<Entry> &cur);
 
 //---------- create svg -------------------------------------------------------------
 static void createSVG();
@@ -2577,7 +2578,7 @@ static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCStr
 
   qcs.stripPrefix("=");
 
-  Entry* current=new Entry;
+  std::unique_ptr<Entry> current = std::make_unique<Entry>();
   current->spec=VhdlDocGen::UCF_CONST;
   current->section=Entry::VARIABLE_SEC;
   current->bodyLine=line;
@@ -2604,7 +2605,7 @@ static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCStr
     brief.resize(0);
   }
 
-  root->addSubEntry(current);
+  root->moveToSubEntryAndKeep(current);
 }
 
 
@@ -2761,9 +2762,6 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
 
 void assignBinding(VhdlConfNode * conf)
 {
-  QList<Entry> instList=getVhdlInstList();
-  QListIterator<Entry> eli(instList);
-  Entry *cur=0;
   ClassDef *archClass=0,*entClass=0;
   QCString archName;
   QCString arcBind,entBind;
@@ -2826,7 +2824,7 @@ void assignBinding(VhdlConfNode * conf)
   all=allOt.lower()=="all" ;
   others= allOt.lower()=="others";
 
-  for (;(cur=eli.current());++eli)
+  for (const auto &cur : getVhdlInstList())
   {
     if (cur->exception.lower()==label || conf->isInlineConf)
     {
@@ -2909,11 +2907,7 @@ void VhdlDocGen::computeVhdlComponentRelations()
     assignBinding(conf);
   }
 
-  QList<Entry> qsl= getVhdlInstList();
-  QListIterator<Entry> eli(qsl);
-  Entry *cur;
-
-  for (eli.toFirst();(cur=eli.current());++eli)
+  for (const auto &cur : getVhdlInstList())
   {
     if (cur->stat ) //  was bind
     {
@@ -2949,7 +2943,7 @@ void VhdlDocGen::computeVhdlComponentRelations()
 }
 
 static void addInstance(ClassDef* classEntity, ClassDef* ar,
-                        ClassDef *cd , Entry *cur,ClassDef* /*archBind*/)
+                        ClassDef *cd , const std::unique_ptr<Entry> &cur)
 {
 
   QCString bName,n1;
@@ -3185,10 +3179,10 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
 
   VHDLLanguageScanner *pIntf =(VHDLLanguageScanner*) Doxygen::parserManager->getParser(".vhd");
   VhdlDocGen::setFlowMember(mdef);
-  Entry root;
+  std::unique_ptr<Entry> root = std::make_unique<Entry>();
   QStrList filesInSameTu;
   pIntf->startTranslationUnit("");
-  pIntf->parseInput("",codeFragment.data(),&root,FALSE,filesInSameTu);
+  pIntf->parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);
   pIntf->finishTranslationUnit();
 }
 
