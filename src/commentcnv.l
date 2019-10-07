@@ -850,10 +850,10 @@ void replaceComment(int offset);
 <ReadLine>"*"                      {
 				     copyToOutput(yytext,(int)yyleng);
 				   }
-<ReadLine>[^\\@\n\*]*              {
+<ReadLine>[^\\@\n\*/]*             {
 				     copyToOutput(yytext,(int)yyleng);
 				   }
-<ReadLine>[^\\@\n\*]*/\n           {
+<ReadLine>[^\\@\n\*/]*/\n          {
 				     copyToOutput(yytext,(int)yyleng);
 				     BEGIN(g_readLineCtx);
 				   }
