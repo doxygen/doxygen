@@ -25,7 +25,7 @@ class FileParser : public ParserInterface
     virtual ~FileParser() {}
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
-    void parseInput(const char *, const char *,Entry *, bool, QStrList &) {}
+    void parseInput(const char *, const char *,const std::unique_ptr<Entry> &, bool, QStrList &) {}
     bool needsPreprocessing(const QCString &) { return FALSE; }
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,

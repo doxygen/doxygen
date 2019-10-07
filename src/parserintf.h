@@ -21,6 +21,8 @@
 #include <qdict.h>
 #include <qstrlist.h>
 
+#include <memory>
+
 #include "types.h"
 
 class Entry;
@@ -67,7 +69,7 @@ class ParserInterface
      */
     virtual void parseInput(const char *fileName,
                             const char *fileBuf,
-                            Entry *root,
+                            const std::unique_ptr<Entry> &root,
                             bool sameTranslationUnit,
                             QStrList &filesInSameTranslationUnit) = 0;
 

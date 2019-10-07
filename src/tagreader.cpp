@@ -21,6 +21,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <algorithm>
+
 
 #include <qxml.h>
 #include <qstack.h>
@@ -912,12 +914,12 @@ class TagFileParser : public QXmlDefaultHandler
     }
 
     void dump();
-    void buildLists(Entry *root);
+    void buildLists(const std::unique_ptr<Entry> &root);
     void addIncludes();
     
   private:
-    void buildMemberList(Entry *ce,QList<TagMemberInfo> &members);
-    void addDocAnchors(Entry *e,const TagAnchorInfoList &l);
+    void buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMemberInfo> &members);
+    void addDocAnchors(const std::unique_ptr<Entry> &e,const TagAnchorInfoList &l);
     QList<TagClassInfo>        m_tagFileClasses;
     QList<TagFileInfo>         m_tagFileFiles;
     QList<TagNamespaceInfo>    m_tagFileNamespaces;
@@ -1147,7 +1149,7 @@ void TagFileParser::dump()
   }
 }
 
-void TagFileParser::addDocAnchors(Entry *e,const TagAnchorInfoList &l)
+void TagFileParser::addDocAnchors(const std::unique_ptr<Entry> &e,const TagAnchorInfoList &l)
 {
   QListIterator<TagAnchorInfo> tli(l);
   TagAnchorInfo *ta;
@@ -1169,13 +1171,13 @@ void TagFileParser::addDocAnchors(Entry *e,const TagAnchorInfoList &l)
   }
 }
 
-void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
+void TagFileParser::buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMemberInfo> &members)
 {
   QListIterator<TagMemberInfo> mii(members);
   TagMemberInfo *tmi;
   for (;(tmi=mii.current());++mii)
   {
-    Entry *me      = new Entry;
+    std::unique_ptr<Entry> me = std::make_unique<Entry>();
     me->type       = tmi->type;
     me->name       = tmi->name;
     me->args       = tmi->arglist;
@@ -1192,7 +1194,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
       TagEnumValueInfo *evi;
       for (evii.toFirst();(evi=evii.current());++evii)
       {
-        Entry *ev      = new Entry;
+        std::unique_ptr<Entry> ev = std::make_unique<Entry>();
         ev->type       = "@";
         ev->name       = evi->name;
         ev->id         = evi->clangid;
@@ -1202,7 +1204,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
         ti->anchor     = evi->anchor;
         ti->fileName   = evi->file;
         ev->tagInfo    = ti;
-        me->addSubEntry(ev);
+        me->moveToSubEntryAndKeep(ev);
       }
     }
     me->protection = tmi->prot;
@@ -1287,7 +1289,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
       me->section = Entry::FUNCTION_SEC;
       me->mtype = Slot;
     }
-    ce->addSubEntry(me);
+    ce->moveToSubEntryAndKeep(me);
   }
 }
 
@@ -1308,14 +1310,14 @@ static QCString stripPath(const QCString &s)
  *  This tree contains the information extracted from the input in a 
  *  "unrelated" form.
  */
-void TagFileParser::buildLists(Entry *root)
+void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
 {
   // build class list
   QListIterator<TagClassInfo> cit(m_tagFileClasses);
   TagClassInfo *tci;
   for (cit.toFirst();(tci=cit.current());++cit)
   {
-    Entry *ce = new Entry;
+    std::unique_ptr<Entry> ce = std::make_unique<Entry>();
     ce->section = Entry::CLASS_SEC;
     switch (tci->kind)
     {
@@ -1374,7 +1376,7 @@ void TagFileParser::buildLists(Entry *root)
     }
 
     buildMemberList(ce,tci->members);
-    root->addSubEntry(ce);
+    root->moveToSubEntryAndKeep(ce);
   }
 
   // build file list
@@ -1382,7 +1384,7 @@ void TagFileParser::buildLists(Entry *root)
   TagFileInfo *tfi;
   for (fit.toFirst();(tfi=fit.current());++fit)
   {
-    Entry *fe = new Entry;
+    std::unique_ptr<Entry> fe = std::make_unique<Entry>();
     fe->section = guessSection(tfi->name);
     fe->name     = tfi->name;
     addDocAnchors(fe,tfi->docAnchors);
@@ -1390,7 +1392,7 @@ void TagFileParser::buildLists(Entry *root)
     ti->tagName  = m_tagName;
     ti->fileName = tfi->filename;
     fe->tagInfo  = ti;
-    
+
     QCString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
     fe->fileName = fullName;
     //printf("createFileDef() filename=%s\n",tfi->filename.data());
@@ -1411,7 +1413,7 @@ void TagFileParser::buildLists(Entry *root)
       Doxygen::inputNameDict->insert(tfi->name,mn);
     }
     buildMemberList(fe,tfi->members);
-    root->addSubEntry(fe);
+    root->moveToSubEntryAndKeep(fe);
   }
 
   // build namespace list
@@ -1419,7 +1421,7 @@ void TagFileParser::buildLists(Entry *root)
   TagNamespaceInfo *tni;
   for (nit.toFirst();(tni=nit.current());++nit)
   {
-    Entry *ne    = new Entry;
+    std::unique_ptr<Entry> ne = std::make_unique<Entry>();
     ne->section  = Entry::NAMESPACE_SEC;
     ne->name     = tni->name;
     addDocAnchors(ne,tni->docAnchors);
@@ -1430,7 +1432,7 @@ void TagFileParser::buildLists(Entry *root)
     ne->tagInfo  = ti;
 
     buildMemberList(ne,tni->members);
-    root->addSubEntry(ne);
+    root->moveToSubEntryAndKeep(ne);
   }
 
   // build package list
@@ -1438,7 +1440,7 @@ void TagFileParser::buildLists(Entry *root)
   TagPackageInfo *tpgi;
   for (pit.toFirst();(tpgi=pit.current());++pit)
   {
-    Entry *pe    = new Entry;
+    std::unique_ptr<Entry> pe = std::make_unique<Entry>();
     pe->section  = Entry::PACKAGE_SEC;
     pe->name     = tpgi->name;
     addDocAnchors(pe,tpgi->docAnchors);
@@ -1448,7 +1450,7 @@ void TagFileParser::buildLists(Entry *root)
     pe->tagInfo  = ti;
 
     buildMemberList(pe,tpgi->members);
-    root->addSubEntry(pe);
+    root->moveToSubEntryAndKeep(pe);
   }
 
   // build group list
@@ -1456,7 +1458,7 @@ void TagFileParser::buildLists(Entry *root)
   TagGroupInfo *tgi;
   for (git.toFirst();(tgi=git.current());++git)
   {
-    Entry *ge    = new Entry;
+    std::unique_ptr<Entry> ge = std::make_unique<Entry>();
     ge->section  = Entry::GROUPDOC_SEC;
     ge->name     = tgi->name;
     ge->type     = tgi->title;
@@ -1467,7 +1469,7 @@ void TagFileParser::buildLists(Entry *root)
     ge->tagInfo  = ti;
 
     buildMemberList(ge,tgi->members);
-    root->addSubEntry(ge);
+    root->moveToSubEntryAndKeep(ge);
   }
 
   // set subgroup relations bug_774118
@@ -1476,13 +1478,16 @@ void TagFileParser::buildLists(Entry *root)
     QCStringList::Iterator it;
     for ( it = tgi->subgroupList.begin(); it != tgi->subgroupList.end(); ++it )
     {
-      QListIterator<Entry> eli(*(root->children()));
-      Entry *childNode;
-      for (eli.toFirst();(childNode=eli.current());++eli)
+      //QListIterator<Entry> eli(*(root->children()));
+      //Entry *childNode;
+      //for (eli.toFirst();(childNode=eli.current());++eli)
+      const auto &children = root->children();
+      auto i = std::find_if(children.begin(),children.end(),
+          [&](const std::unique_ptr<Entry> &e) { return e->name = *it; });
+      if (i!=children.end())
       {
-        if (childNode->name == (*it)) break;
+        (*i)->groups->append(new Grouping(tgi->name,Grouping::GROUPING_INGROUP));
       }
-      childNode->groups->append(new Grouping(tgi->name,Grouping::GROUPING_INGROUP));
     }
   }
 
@@ -1491,7 +1496,7 @@ void TagFileParser::buildLists(Entry *root)
   TagPageInfo *tpi;
   for (pgit.toFirst();(tpi=pgit.current());++pgit)
   {
-    Entry *pe    = new Entry;
+    std::unique_ptr<Entry> pe = std::make_unique<Entry>();
     pe->section  = tpi->filename=="index" ? Entry::MAINPAGEDOC_SEC : Entry::PAGEDOC_SEC;
     pe->name     = tpi->name;
     pe->args     = tpi->title;
@@ -1500,7 +1505,7 @@ void TagFileParser::buildLists(Entry *root)
     ti->tagName  = m_tagName;
     ti->fileName = tpi->filename;
     pe->tagInfo  = ti;
-    root->addSubEntry(pe);
+    root->moveToSubEntryAndKeep(pe);
   }
 }
 
@@ -1551,7 +1556,7 @@ void TagFileParser::addIncludes()
   }
 }
 
-void parseTagFile(Entry *root,const char *fullName)
+void parseTagFile(const std::unique_ptr<Entry> &root,const char *fullName)
 {
   QFileInfo fi(fullName);
   if (!fi.exists()) return;

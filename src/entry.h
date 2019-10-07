@@ -23,6 +23,9 @@
 #include <qlist.h>
 #include <qgstring.h>
 
+#include <vector>
+#include <memory>
+
 struct SectionInfo;
 class QFile;
 class FileDef;
@@ -199,32 +202,42 @@ class Entry
 
     void addSpecialListItem(const char *listName,int index);
 
-    // while parsing a file these function can be used to navigate/build the tree
-    void setParent(Entry *parent) { m_parent = parent; }
-
     /*! Returns the parent for this Entry or 0 if this entry has no parent. */
     Entry *parent() const { return m_parent; }
 
     /*! Returns the list of children for this Entry
      *  @see addSubEntry() and removeSubEntry()
      */
-    const QList<Entry> *children() const { return m_sublist; }
+    //const QList<Entry> *children() const { return m_sublist; }
+    const std::vector< std::unique_ptr<Entry> > &children() const { return m_sublist; }
 
-    /*! Adds entry \a e as a child to this entry */
-    void addSubEntry (Entry* e) ;
+    /*! @name add entry as a child and pass ownership.
+     *  @note This makes the entry passed invalid! (TODO: tclscanner.l still has use after move!)
+     *  @{
+     */
+    void moveToSubEntryAndKeep(Entry* e);
+    void moveToSubEntryAndKeep(std::unique_ptr<Entry> &e);
+    /*! @} */
+
+    /*! @name add entry as a child, pass ownership and reinitialize entry */
+    void moveToSubEntryAndRefresh(Entry* &e);
+    void moveToSubEntryAndRefresh(std::unique_ptr<Entry> &e);
+
+    /*! make a copy of \a e and add it as a child to this entry */
+    void copyToSubEntry (Entry* e);
+    void copyToSubEntry (const std::unique_ptr<Entry> &e);
 
     /*! Removes entry \a e from the list of children.
-     *  Returns a pointer to the entry or 0 if the entry was not a child.
-     *  Note the entry will not be deleted.
+     *  The entry will be deleted if found.
      */
-    Entry *removeSubEntry(Entry *e);
+    void removeSubEntry(Entry *e);
 
     /*! Restore the state of this Entry to the default value it has
      *  at construction time.
      */
     void reset();
 
-    void changeSection(int sec) { section = sec; }
+    void markAsProcessed() const { ((Entry*)(this))->section = Entry::EMPTY_SEC; }
     void setFileDef(FileDef *fd);
     FileDef *fileDef() const { return m_fileDef; }
 
@@ -323,12 +336,9 @@ class Entry
 
   private:
     Entry         *m_parent;    //!< parent node in the tree
-    QList<Entry>  *m_sublist;   //!< entries that are children of this one
+    std::vector< std::unique_ptr<Entry> > m_sublist;
     Entry &operator=(const Entry &);
     FileDef       *m_fileDef;
 };
-
-typedef QList<Entry> EntryList;
-typedef QListIterator<Entry> EntryListIterator;
 
 #endif

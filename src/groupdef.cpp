@@ -1460,7 +1460,7 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
 
 //---- helper functions ------------------------------------------------------
 
-void addClassToGroups(Entry *root,ClassDef *cd)
+void addClassToGroups(const Entry *root,ClassDef *cd)
 {
   QListIterator<Grouping> gli(*root->groups);
   Grouping *g;
@@ -1478,7 +1478,7 @@ void addClassToGroups(Entry *root,ClassDef *cd)
   }
 }
 
-void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
+void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
 {
   //printf("root->groups->count()=%d\n",root->groups->count());
   QListIterator<Grouping> gli(*root->groups);
@@ -1495,7 +1495,7 @@ void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
   }
 }
 
-void addDirToGroups(Entry *root,DirDef *dd)
+void addDirToGroups(const Entry *root,DirDef *dd)
 {
   //printf("*** root->groups->count()=%d\n",root->groups->count());
   QListIterator<Grouping> gli(*root->groups);
@@ -1513,7 +1513,7 @@ void addDirToGroups(Entry *root,DirDef *dd)
   }
 }
 
-void addGroupToGroups(Entry *root,GroupDef *subGroup)
+void addGroupToGroups(const Entry *root,GroupDef *subGroup)
 {
   //printf("addGroupToGroups for %s groups=%d\n",root->name.data(),
   //    root->groups?root->groups->count():-1);
@@ -1544,7 +1544,7 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
 }
 
 /*! Add a member to the group with the highest priority */
-void addMemberToGroups(Entry *root,MemberDef *md)
+void addMemberToGroups(const Entry *root,MemberDef *md)
 {
   //printf("addMemberToGroups:  Root %p = %s, md %p=%s groups=%d\n", 
   //    root, root->name.data(), md, md->name().data(), root->groups->count() );
@@ -1650,7 +1650,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
 }
 
 
-void addExampleToGroups(Entry *root,PageDef *eg)
+void addExampleToGroups(const Entry *root,PageDef *eg)
 {
   QListIterator<Grouping> gli(*root->groups);
   Grouping *g;

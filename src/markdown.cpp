@@ -2578,11 +2578,11 @@ QCString markdownFileNameToId(const QCString &fileName)
 
 void MarkdownFileParser::parseInput(const char *fileName, 
                 const char *fileBuf, 
-                Entry *root,
+                const std::unique_ptr<Entry> &root,
                 bool /*sameTranslationUnit*/,
                 QStrList & /*filesInSameTranslationUnit*/)
 {
-  Entry *current = new Entry;
+  std::unique_ptr<Entry> current = std::make_unique<Entry>();
   current->lang = SrcLangExt_Markdown;
   current->fileName = fileName;
   current->docFile  = fileName;
@@ -2630,7 +2630,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString processedDocs = preprocessCommentBlock(docs,fileName,lineNr);
   while (parseCommentBlock(
         this,
-        current,
+        current.get(),
         processedDocs,
         fileName,
         lineNr,
@@ -2644,8 +2644,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
     if (needsEntry)
     {
       QCString docFile = current->docFile;
-      root->addSubEntry(current);
-      current = new Entry;
+      root->moveToSubEntryAndRefresh(current);
       current->lang = SrcLangExt_Markdown;
       current->docFile = docFile;
       current->docLine = lineNr;
@@ -2653,7 +2652,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   }
   if (needsEntry)
   {
-    root->addSubEntry(current);
+    root->moveToSubEntryAndKeep(current);
   }
 
   // restore setting

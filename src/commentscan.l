@@ -415,11 +415,8 @@ static GuardType        guardType;           // kind of guard for conditional se
 static bool             enabledSectionFound;
 static QCString         functionProto;       // function prototype
 static QStack<GuardedSection> guards;        // tracks nested conditional sections (if,ifnot,..)
-static Entry*		current      = 0 ;   // working entry
-//static Entry*		current_root = 0 ;   // parent of working entry
+static Entry           *current = 0;         // working entry
 
-
-//static Entry*		previous     = 0 ;   // TODO: remove need for this
 static bool             needNewEntry;
 
 static QCString         g_sectionLabel;
@@ -533,7 +530,6 @@ static QCString stripQuotes(const char *s)
 static void addXRefItem(const char *listName,const char *itemTitle,
                         const char *listTitle,bool append)
 {
-  Entry *docEntry = current; // inBody && previous ? previous : current;
   if (listName==0) return;
   //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
 
@@ -545,9 +541,9 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     Doxygen::xrefLists->insert(listName,refList);
     //printf("new list!\n");
   }
-  if (docEntry->sli)
+  if (current->sli)
   {
-    QListIterator<ListItemInfo> slii(*docEntry->sli);
+    QListIterator<ListItemInfo> slii(*current->sli);
     for (slii.toLast();(lii=slii.current());--slii)
     {
       if (qstrcmp(lii->type,listName)==0) 
@@ -580,16 +576,16 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     ASSERT(item!=0);
     item->text = outputXRef;
     item->listAnchor = anchorLabel;
-    docEntry->addSpecialListItem(listName,itemId);
+    current->addSpecialListItem(listName,itemId);
     QCString cmdString;
     cmdString.sprintf(" \\xrefitem %s %d.",listName,itemId);
     if (inBody)
     {
-      docEntry->inbodyDocs += cmdString;
+      current->inbodyDocs += cmdString;
     }
     else
     {
-      docEntry->doc += cmdString;
+      current->doc += cmdString;
     }
     SectionInfo *si = Doxygen::sectionDict->find(anchorLabel);
     if (si)
@@ -609,7 +605,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
                          g_sectionTitle,SectionInfo::Anchor,
                          g_sectionLevel);
       Doxygen::sectionDict->append(anchorLabel,si);
-      docEntry->anchors->append(si);
+      current->anchors->append(si);
     }
   }
   outputXRef.resize(0);
