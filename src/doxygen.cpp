@@ -2784,7 +2784,8 @@ static bool isVarWithConstructor(const Entry *root)
         result=TRUE; // argument type starts with typical initializer char
         goto done;
       }
-      QCString resType=resolveTypeDef(ctx,a->type);
+      unsigned int counter = 0;
+      QCString resType=resolveTypeDef(&counter, ctx,a->type);
       if (resType.isEmpty()) resType=a->type;
       int len;
       if (idChars.match(resType,0,&len)==0) // resType starts with identifier
@@ -4224,6 +4225,13 @@ static void findUsedClassesForClass(const Entry *root,
                            )
 {
   masterCd->setVisited(TRUE);
+  unsigned int fileCounter = 0;
+  unsigned int resolvedTypes = 0;
+  const unsigned int reportingLimitDef = 5000;
+
+  if (masterCd->getFileDef())
+      printf("    : %s\n", masterCd->getFileDef()->absFilePath().data());
+
   ArgumentList *formalArgs = masterCd->templateArguments();
   if (masterCd->memberNameInfoSDict())
   {
@@ -4239,11 +4247,21 @@ static void findUsedClassesForClass(const Entry *root,
         if (md->isVariable() || md->isObjCProperty()) // for each member variable in this class
         {
           //printf("    Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
+
           QCString type = normalizeNonTemplateArgumentsInString(md->typeString(),masterCd,formalArgs);
-          QCString typedefValue = resolveTypeDef(masterCd,type);
+          unsigned int counter = 0;
+          QCString typedefValue = resolveTypeDef(&counter,masterCd,type);
+          fileCounter += counter;
+
+          if (counter > reportingLimitDef)
+          {
+            printf("     Type %s resolved as '%s' with %u calls\n", type.data(), typedefValue.data(), counter);
+          }
+
           if (!typedefValue.isEmpty())
           {
             type = typedefValue;
+            resolvedTypes++;
           }
           int pos=0;
           QCString usedClassName;
@@ -4376,6 +4394,9 @@ static void findUsedClassesForClass(const Entry *root,
         }
       }
     }
+
+    if (fileCounter > 0 && masterCd->getFileDef())
+        printf("    Resolved %u typedefs with %u calls.\n", resolvedTypes, fileCounter);
   }
   else
   {
