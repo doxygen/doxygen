@@ -753,7 +753,23 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
     isLocal=FALSE;
   }
   isGeneric = (lang==SrcLangExt_CSharp || lang==SrcLangExt_Java) && QCString(name).find('<')!=-1;
-  isAnonymous = QCString(name).find('@')!=-1;
+  
+  isAnonymous = false;
+  bool inSingle = false;
+  bool inDouble = false;
+  const char *p = name;
+  while (*p && !isAnonymous)
+  {
+    switch (*p)
+    {
+      case '\'': if (!inDouble) inSingle= !inSingle; break;
+      case '"':  if (!inSingle) inDouble= !inDouble; break;
+      case '\\': p++; break; // escaped character
+      case '@':  if (!inDouble && !inSingle) isAnonymous = true; break;
+      default: break;
+    }
+    p++;
+  }
 }
 
 ClassDefImpl::IMPL::IMPL() : vhdlSummaryTitles(17)
