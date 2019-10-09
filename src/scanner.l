@@ -751,6 +751,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %x	GCopyCurly
 %x	SkipUnionSwitch
 %x	Specialization
+%x	SpecializationSingleQuote
+%x	SpecializationDoubleQuote
 %x	FuncPtrInit
 %x	FuncFunc
 %x	FuncFuncEnd
@@ -6145,6 +6147,19 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <Specialization>"typename"{BN}+		{ lineCount(); }
 <Specialization>"("			{ *specName += *yytext; roundCount++; }
 <Specialization>")"			{ *specName += *yytext; roundCount--; }
+
+<Specialization>"\\\\"			{ *specName += *yytext;}
+<Specialization>"\\'"			{ *specName += *yytext;}
+<Specialization>"\\\""			{ *specName += *yytext;}
+<Specialization>"'"			{ *specName += *yytext;BEGIN(SpecializationSingleQuote);}
+<Specialization>"\""			{ *specName += *yytext;BEGIN(SpecializationDoubleQuote);}
+<SpecializationSingleQuote,SpecializationDoubleQuote>"\\\\"       { *specName += *yytext;}
+<SpecializationSingleQuote>"\\'"        { *specName += *yytext;}
+<SpecializationSingleQuote>"'"          { *specName += *yytext; BEGIN(Specialization);}
+<SpecializationDoubleQuote>"\\\""       { *specName += *yytext;}
+<SpecializationDoubleQuote>"\""         { *specName += *yytext; BEGIN(Specialization);}
+<SpecializationSingleQuote,SpecializationDoubleQuote>.          { *specName += *yytext;}
+
 <Specialization>.			{
   					  *specName += *yytext;
   					}
