@@ -742,7 +742,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                             // extract variable name and process it
                                             char *tmp= (char *) malloc(strlen(yytext)+1);
                                             strcpy(tmp,yytext);
-                                            strtok(tmp," \t(");
+                                            strtok(tmp," \t");
                                             //printf("     generateLink |%s|\n",tmp);
                                             generateLink(*g_code, tmp);
                                             if ( strlen(tmp) != strlen(yytext) ) {
