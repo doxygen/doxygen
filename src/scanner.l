@@ -2771,7 +2771,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           current->name += yytext ;  
   					  addType();
 					}
-<FindMembers,MemberSpec,Function,NextSemi,EnumBaseType,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<FindMembers,MemberSpec,Function,NextSemi,EnumBaseType,BitFields,ReadInitializer,OldStyleArgs,DefinePHPEnd>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
 					  if (current->bodyLine==-1)
 					  {
 					    current->bodyLine=yyLineNr;
