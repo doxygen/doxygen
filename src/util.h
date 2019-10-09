@@ -291,6 +291,8 @@ QCString convertToDocBook(const char *s);
 
 QCString convertToJSString(const char *s, bool applyTextDir = true);
 
+QCString convertToPSString(const char *s);
+
 QCString getOverloadDocs();
 
 void addMembersToMemberGroup(/* in,out */ MemberList *ml,

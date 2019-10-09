@@ -6183,6 +6183,26 @@ QCString convertToJSString(const char *s, bool applyTextDir)
   return convertCharEntitiesToUTF8(growBuf.get());
 }
 
+QCString convertToPSString(const char *s)
+{
+  static GrowBuf growBuf;
+  growBuf.clear();
+  if (s==0) return "";
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '(':  growBuf.addStr("\\("); break;
+      case ')': growBuf.addStr("\\)"); break;
+      default:   growBuf.addChar(c);   break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
+
 QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
 {
   QGString result;
