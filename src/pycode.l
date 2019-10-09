@@ -1316,7 +1316,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
     \\{B}\n                    { // line continuation
   		                 codifyLines(yytext);
                                }
-    \\.			       { // espaced char
+    \\.			       { // escaped char
   		                 codify(yytext);
                                }
     {STRINGPREFIX}?{TRIDOUBLEQUOTE} { // triple double quotes
@@ -1339,7 +1339,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
     \\{B}\n                    { // line continuation
   		                 codifyLines(yytext);
                                }
-    \\.			       { // espaced char
+    \\.			       { // escaped char
   		                 codify(yytext);
                                }
     {STRINGPREFIX}?{TRISINGLEQUOTE} { // triple single quotes

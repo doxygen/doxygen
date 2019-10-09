@@ -2564,7 +2564,7 @@ static MemberDef *addVariableToFile(
           addMemberDocs(root,md,def,0,FALSE,root->spec);
           md->setRefItems(root->sli);
           // if md is a variable forward declaration and root is the definition that
-          // turn md into the defintion
+          // turn md into the definition
           if (!root->explicitExternal && md->isExternal())
           {
             md->setDeclFile(md->getDefFileName(),md->getDefLine(),md->getDefColumn());

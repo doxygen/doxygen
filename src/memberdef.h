@@ -239,7 +239,7 @@ class MemberDef : virtual public Definition
     virtual bool hasCallGraph() const = 0;
     virtual bool hasCallerGraph() const = 0;
     virtual bool visibleMemberGroup(bool hideNoHeader) const = 0;
-    // refrenced related members
+    // referenced related members
     virtual bool hasReferencesRelation() const = 0;
     virtual bool hasReferencedByRelation() const = 0;
 

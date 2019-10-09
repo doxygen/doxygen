@@ -2008,7 +2008,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->name=removeRedundantWhiteSpace(substitute(yytext,"\\","::"));
   					  //printf("PHP: adding use relation: %s\n",current->name.data());
                                           current->fileName = yyFileName; 
-                                          // add a using declaraton
+                                          // add a using declaration
   					  current->section=Entry::USINGDECL_SEC;
 					  current_root->copyToSubEntry(current);
                                           // also add it as a using directive

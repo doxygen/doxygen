@@ -340,7 +340,7 @@ void VhdlParser::addCompInst(const char *n, const char* instName, const char* co
   {
     current->args=lastCompound->name;             // architecture name
   }
-  current->includeName=comp;                    // component/enity/configuration
+  current->includeName=comp;                    // component/entity/configuration
   int u=genLabels.find("|",1);
   if (u>0)
   {
@@ -579,7 +579,7 @@ void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
  * .....
  * library
  * package
- * enity zzz
+ * entity zzz
  * .....
  * and so on..
  */
