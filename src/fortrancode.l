@@ -987,25 +987,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yy_pop_state();
                                           YY_FTN_RESET
                                         }
-<Start>^{BS}"end"{BS}/(\n|!|;)          { // bare end keyword.
-                                          //cout << "===> bare end keyword " << yytext << endl;
-                                          //printf("===> line number %d bare end keyword |%s|\n",g_yyLineNr,yytext);
-                                          endScope();
-   					  startFontClass("keyword");
-  					  codifyLines(yytext);
-					  endFontClass();
-                                        }
-<Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface"){BS}/(\n|!|;) {
-                                          // Fortran subroutine or function ends, without name.
-                                          //cout << "===> end function w/o name " << yytext << endl;
-                                          //printf("===> line number %d end function w/o name |%s|\n",g_yyLineNr,yytext);
-                                          endScope();
-   					  startFontClass("keyword");
-  					  codifyLines(yytext);
-					  endFontClass();
-                                        }
-<Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface"){BS}/{ID}{BS}(\n|!|;) {
-                                          // Fortran subroutine or function ends, with name.
+<Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface"){BS} {
+                                          // Fortran subroutine or function ends, with optional name to follow.
+                                          // Keyword required between end and name.
                                           //cout << "===> end function w/ name " << yytext << endl;
                                           //printf("===> line number %d end function w/ name |%s|\n",g_yyLineNr,yytext);
                                           endScope();
@@ -1013,11 +997,22 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
   					  codifyLines(yytext);
 					  endFontClass();
                                           yy_push_state(YY_START);
+                                          // check for optional name
                                           BEGIN(Subprogend);
                                         }
 <Subprogend>{ID}/{BS}(\n|!|;)             {
 					  generateLink(*g_code,yytext);
                                           yy_pop_state();
+                                        }
+<Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface")?{BS}/(\n|!|;) {
+                                          // Fortran subroutine or function ends, without name.
+                                          // Keyword after end is optional.
+                                          //cout << "===> end function w/o name " << yytext << endl;
+                                          //printf("===> line number %d end function w/o name |%s|\n",g_yyLineNr,yytext);
+                                          endScope();
+   					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
                                         }
  /*-------- variable declaration ----------------------------------*/
 <Start>^{BS}"real"/[,:( ]               { // real is a bit tricky as it is a data type but also a function.
