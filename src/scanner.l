@@ -2325,6 +2325,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <CopyHereDocEnd>\n			{ 
+                                          lineCount();
                                           *pCopyHereDocGString += yytext;
                                         }
 <CopyHereDocEnd>{ID}			{ 
@@ -7268,7 +7269,9 @@ static void parseMain(const char *fileName,
   inputFile.setName(fileName);
   if (inputFile.open(IO_ReadOnly))
   {
-    yyLineNr= 1 ; 
+    yyLineNr = 1;
+    yyBegLineNr = 1;
+    yyBegColNr = 0;
     yyFileName = fileName;
     setContext();
     bool processWithClang = insideCpp || insideObjC;
