@@ -3413,7 +3413,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     else if (getFileDef())      { scopeName=getFileDef()->displayName();      scopedContainer=getFileDef(); }
     ciname = (dynamic_cast<const GroupDef *>(container))->groupTitle();
   }
-  else if (container->definitionType()==TypeFile && getNamespaceDef() && lang != SrcLangExt_Python)
+  else if (container->definitionType()==TypeFile && getNamespaceDef() && lang != SrcLangExt_Python && lang != SrcLangExt_Cpp)
   { // member is in a namespace, but is written as part of the file documentation
     // as well, so we need to make sure its label is unique.
     memAnchor.prepend("file_");
