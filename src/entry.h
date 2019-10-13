@@ -223,6 +223,9 @@ class Entry
     void moveToSubEntryAndRefresh(Entry* &e);
     void moveToSubEntryAndRefresh(std::unique_ptr<Entry> &e);
 
+    /*! take \a child of of to list of children and move it into \a moveTo */
+    void moveFromSubEntry(const Entry *child,std::unique_ptr<Entry> &moveTo);
+
     /*! make a copy of \a e and add it as a child to this entry */
     void copyToSubEntry (Entry* e);
     void copyToSubEntry (const std::unique_ptr<Entry> &e);
@@ -230,7 +233,7 @@ class Entry
     /*! Removes entry \a e from the list of children.
      *  The entry will be deleted if found.
      */
-    void removeSubEntry(Entry *e);
+    void removeSubEntry(const Entry *e);
 
     /*! Restore the state of this Entry to the default value it has
      *  at construction time.

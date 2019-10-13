@@ -5305,9 +5305,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else
 					  {
 					    current->endBodyLine=yyLineNr;
-
+                                            // take previous out of current_root and move it into current
 					    current.swap(tempEntry); // remember current
-					    current.reset(previous); // and temporarily switch to the previous entry
+                                            current_root->moveFromSubEntry(previous,current);
 					    previous = 0;
 
 					    docBlockContext   = SkipCurlyEndDoc;

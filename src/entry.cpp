@@ -240,6 +240,32 @@ void Entry::copyToSubEntry(const std::unique_ptr<Entry> &current)
   m_sublist.push_back(std::move(copy));
 }
 
+void Entry::moveFromSubEntry(const Entry *child,std::unique_ptr<Entry> &moveTo)
+{
+  auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
+      [child](const std::unique_ptr<Entry>&elem) { return elem.get()==child; });
+  if (it!=m_sublist.end())
+  {
+    moveTo = std::move(*it);
+    m_sublist.erase(it);
+  }
+  else
+  {
+    moveTo.reset();
+  }
+}
+
+void Entry::removeSubEntry(const Entry *e)
+{
+  auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
+      [e](const std::unique_ptr<Entry>&elem) { return elem.get()==e; });
+  if (it!=m_sublist.end())
+  {
+    m_sublist.erase(it);
+  }
+}
+
+
 void Entry::reset()
 {
   static bool entryCallGraph   = Config_getBool(CALL_GRAPH);
@@ -335,14 +361,5 @@ void Entry::addSpecialListItem(const char *listName,int itemId)
   sli->append(ili);
 }
 
-void Entry::removeSubEntry(Entry *e)
-{
-  auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
-      [e](const std::unique_ptr<Entry>&elem) { return elem.get()==e; });
-  if (it!=m_sublist.end())
-  {
-    m_sublist.erase(it);
-  }
-}
 
 //------------------------------------------------------------------
