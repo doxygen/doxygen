@@ -457,7 +457,7 @@ bool portable_isAbsolutePath(const char *fileName)
 /**
  * Correct a possible wrong PATH variable
  *
- * This routine was inspired by the cause for bug 766059 was that in the Windows path there were forward slahes.
+ * This routine was inspired by the cause for bug 766059 was that in the Windows path there were forward slashes.
  */
 void portable_correct_path(void)
 {

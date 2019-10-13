@@ -751,6 +751,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %x	GCopyCurly
 %x	SkipUnionSwitch
 %x	Specialization
+%x	SpecializationSingleQuote
+%x	SpecializationDoubleQuote
 %x	FuncPtrInit
 %x	FuncFunc
 %x	FuncFuncEnd
@@ -2008,7 +2010,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->name=removeRedundantWhiteSpace(substitute(yytext,"\\","::"));
   					  //printf("PHP: adding use relation: %s\n",current->name.data());
                                           current->fileName = yyFileName; 
-                                          // add a using declaraton
+                                          // add a using declaration
   					  current->section=Entry::USINGDECL_SEC;
 					  current_root->copyToSubEntry(current);
                                           // also add it as a using directive
@@ -2769,7 +2771,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           current->name += yytext ;  
   					  addType();
 					}
-<FindMembers,MemberSpec,Function,NextSemi,EnumBaseType,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<FindMembers,MemberSpec,Function,NextSemi,EnumBaseType,BitFields,ReadInitializer,OldStyleArgs,DefinePHPEnd>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
 					  if (current->bodyLine==-1)
 					  {
 					    current->bodyLine=yyLineNr;
@@ -6145,6 +6147,19 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <Specialization>"typename"{BN}+		{ lineCount(); }
 <Specialization>"("			{ *specName += *yytext; roundCount++; }
 <Specialization>")"			{ *specName += *yytext; roundCount--; }
+
+<Specialization>"\\\\"			{ *specName += *yytext;}
+<Specialization>"\\'"			{ *specName += *yytext;}
+<Specialization>"\\\""			{ *specName += *yytext;}
+<Specialization>"'"			{ *specName += *yytext;BEGIN(SpecializationSingleQuote);}
+<Specialization>"\""			{ *specName += *yytext;BEGIN(SpecializationDoubleQuote);}
+<SpecializationSingleQuote,SpecializationDoubleQuote>"\\\\"       { *specName += *yytext;}
+<SpecializationSingleQuote>"\\'"        { *specName += *yytext;}
+<SpecializationSingleQuote>"'"          { *specName += *yytext; BEGIN(Specialization);}
+<SpecializationDoubleQuote>"\\\""       { *specName += *yytext;}
+<SpecializationDoubleQuote>"\""         { *specName += *yytext; BEGIN(Specialization);}
+<SpecializationSingleQuote,SpecializationDoubleQuote>.          { *specName += *yytext;}
+
 <Specialization>.			{
   					  *specName += *yytext;
   					}
