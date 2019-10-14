@@ -6405,6 +6405,8 @@ static void findMember(const Entry *root,
                     warnMsg+="' at line "+QCString().setNum(md->getDefLine()) +
                              " of file "+md->getDefFileName();
                   }
+		  else
+                    warnMsg += "'";
 
                   warnMsg+='\n';
                 }
