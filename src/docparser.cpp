@@ -5892,9 +5892,10 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
   int retval=RetVal_OK;
   int tagId = Mappers::htmlTagMapper->map(tagName);
   if (g_token->emptyTag && !(tagId&XML_CmdMask) && 
-      tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR)
+      tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P)
   {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"HTML tags may not use the 'empty tag' XHTML syntax.");
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"HTML tag ('<%s/>') may not use the 'empty tag' XHTML syntax.",
+                     tagName.data());
   }
   switch (tagId)
   {
@@ -6439,7 +6440,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected tag </img> found");
       break;
     case HTML_HR:
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected tag </hr> found");
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal </hr> tag found\n");
       break;
     case HTML_A:
       //warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected tag </a> found");
