@@ -162,7 +162,8 @@ struct LayoutNavEntry
     QCString title() const           { return m_title; }
     QCString intro() const           { return m_intro; }
     QCString url() const;
-    bool visible() const             { return m_visible; }
+    bool visible()                   { return m_visible; }
+    void clear()                     { m_children.clear(); }
     void addChild(LayoutNavEntry *e) { m_children.append(e); }
     void prependChild(LayoutNavEntry *e) { m_children.prepend(e); }
     const QList<LayoutNavEntry> &children() const { return m_children; }
@@ -171,7 +172,6 @@ struct LayoutNavEntry
   private:
     LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(FALSE) {}
     LayoutNavEntry *m_parent;
-    void clear()                     { m_children.clear(); }
     Kind m_kind;
     bool m_visible;
     QCString m_baseFile;
@@ -179,7 +179,6 @@ struct LayoutNavEntry
     QCString m_intro;
     QList<LayoutNavEntry> m_children;
     friend class LayoutDocManager;
-    friend class LayoutParser;
 };
 
 /** @brief Singleton providing access to the (user configurable) layout of the documentation */
@@ -204,7 +203,6 @@ class LayoutDocManager
     /** Parses a user provided layout */
     void parse(const char *fileName);
     void init();
-    void writeDefault(const char *fileName) const;
   private:
     void addEntry(LayoutPart p,LayoutDocEntry*e);
     void clear(LayoutPart p);
@@ -214,6 +212,7 @@ class LayoutDocManager
     friend class LayoutParser;
 };
 
+void writeDefaultLayoutFile(const char *fileName);
 
 #endif
 
