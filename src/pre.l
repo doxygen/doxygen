@@ -1468,7 +1468,14 @@ void addDefine()
     while ((c=*p++) && (c==' ' || c=='\t')) k++;
     g_defLitText=g_defLitText.mid(l+1,k-l-1)+g_defLitText.stripWhiteSpace();
   }
-  md->setInitializer(g_defLitText.stripWhiteSpace());
+  if (g_defLitText.stripWhiteSpace().contains('\n')>=1)
+  {
+    md->setInitializer(g_defLitText);
+  }
+  else
+  {
+    md->setInitializer(g_defLitText.stripWhiteSpace());
+  }
 
   //printf("pre.l: md->setFileDef(%p)\n",g_inputFileDef);
   md->setFileDef(g_inputFileDef);
