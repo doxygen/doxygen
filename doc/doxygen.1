@@ -10,8 +10,6 @@ You can use doxygen in a number of ways:
 1) Use doxygen to generate a template configuration file:
 .IP
 doxygen [-s] \fB\-g\fR [configName]
-.IP
-If - is used for configName doxygen will write to standard output.
 .TP 
 2) Use doxygen to update an old configuration file:
 .IP
@@ -20,34 +18,44 @@ doxygen [-s] \fB\-u\fR [configName]
 3) Use doxygen to generate documentation using an existing configuration file:
 .IP
 doxygen [configName]
-.IP
-If - is used for configName doxygen will read from standard input.
 .TP
 4) Use doxygen to generate a template file controlling the layout of the generated documentation:
 .IP
-doxygen -l [layoutFileName.xml]
+doxygen -l [layoutFileName]
+.IP
+In case layoutFileName is omitted layoutFileName.xml will be used as filename.
+If - is used for layoutFileName doxygen will write to standard output.
 .TP
 5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.
-.TP
+.IP
 RTF:
 doxygen \fB\-w\fR rtf styleSheetFile
-.TP
+.IP
 HTML:
 doxygen \fB\-w\fR html headerFile footerFile styleSheetFile [configFile]
-.TP
+.IP
 LaTeX: doxygen \fB\-w\fR latex headerFile footerFile styleSheetFile [configFile]
 .TP
 6) Use doxygen to generate an rtf extensions file
-.TP
+.IP
 RTF:
 doxygen \fB\-e\fR rtf extensionsFile
+.IP
+If - is used for extensionsFile doxygen will write to standard output.
 .TP
 7) Use doxygen to compare the used configuration file with the template configuration file
-.TP
+.IP
 doxygen \fB\-x\fR [configFile]
+.TP
+8) Use doxygen to show a list of built-in emojis.
+.IP
+doxygen \fB\-f\fR emoji outputFileName
+.IP
+If - is used for outputFileName doxygen will write to standard output.
 .PP
 If \fB\-s\fR is specified the comments in the config file will be omitted.
 If configName is omitted `Doxyfile' will be used as a default.
+If - is used for configFile doxygen will write / read the configuration to /from standard output / input.
 .SH AUTHOR
 Doxygen version @VERSION@, Copyright Dimitri van Heesch 1997-2019
 .SH SEE ALSO
