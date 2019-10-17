@@ -1730,7 +1730,7 @@ void package_declaration():  {QCString s;}
  <PACKAGE_T> s=identifier() <IS_T>
                           {
                           lastCompound=current.get();
-                          std::unique_ptr<Entry> clone=std::make_unique_ptr<Entry>(*current);
+                          std::unique_ptr<Entry> clone=std::make_unique<Entry>(*current);
                           clone->section=Entry::NAMESPACE_SEC;
                           clone->spec=VhdlDocGen::PACKAGE;
                           clone->name=s;
@@ -1932,7 +1932,7 @@ void process_statement() : {QCString s,s1,s2;Token *tok=0;}
    currName=s;
 
    current->name=currName;
-   tempEntry=current;
+   tempEntry=current.get();
    current->endBodyLine=getLine();
    currP=0;
  if(tok)
