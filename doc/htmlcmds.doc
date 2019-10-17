@@ -25,6 +25,8 @@ of a HTML tag are passed on to the HTML output only
 <ul>
 <li><tt>\<A HREF="..."\></tt> Starts a hyperlink 
                        (if supported by the output format). 
+<li><tt>\<A ID="..."\></tt> Starts a named anchor 
+                       (if supported by the output format).
 <li><tt>\<A NAME="..."\></tt> Starts a named anchor 
                        (if supported by the output format).
 <li><tt>\</A\></tt>    Ends a link or anchor 

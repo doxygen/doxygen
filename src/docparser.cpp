@@ -966,7 +966,7 @@ static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttrib
   int retval = RetVal_OK;
   for (li.toFirst();(opt=li.current());++li,++index)
   {
-    if (opt->name=="name") // <a name=label> tag
+    if (opt->name=="name" || opt->name=="id") // <a name=label> or <a id=label> tag
     {
       if (!opt->value.isEmpty())
       {
