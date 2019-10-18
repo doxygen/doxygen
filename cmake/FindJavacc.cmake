@@ -1,0 +1,11 @@
+
+find_program(JAVACC_EXECUTABLE NAMES javacc javaCC Javacc JavaCC javacc.bat DOC "path to the javacc executable")
+message("The path: $ENV{PATH}\n")
+mark_as_advanced(JAVACC_EXECUTABLE)
+if(JAVACC_EXECUTABLE)
+  set(JAVACC_FOUND 1)
+  message(STATUS "The javacc executable: ${JAVACC_EXECUTABLE}")
+else()
+  set(JAVACC_FOUND 0)
+  message(STATUS "The javacc executable not found, using existing files")
+endif()
