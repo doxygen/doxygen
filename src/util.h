@@ -318,7 +318,7 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
                                           QCString *lastScopeStripped=0);
 
-QCString resolveTypeDef(const Definition *d,const QCString &name,
+QCString resolveTypeDef(unsigned int *counter,const Definition *d,const QCString &name,
                         const Definition **typedefContext=0);
 
 QCString mergeScopes(const QCString &leftScope,const QCString &rightScope);
