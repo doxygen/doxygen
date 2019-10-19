@@ -6761,7 +6761,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             REJECT;
                                           }
                                         }
-<DocCopyBlock>^{B}*"*"+/{BN}*		{ // start of a comment line with one *
+<DocCopyBlock>^{B}*"*"+/[^/] 		{ // start of a comment line with one *
   					  if (docBlockName=="code")
                                           {
                                             QCString indent;
