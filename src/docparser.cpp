@@ -829,7 +829,7 @@ inline void errorHandleDefaultToken(DocNode *parent,int tok,
 
 //---------------------------------------------------------------------------
 // forward declaration
-static bool defaultHandleToken(DocNode *parent,int tok, 
+static bool defaultHandleToken(DocNode *parent,int &tok,
                                QList<DocNode> &children,bool
                                handleWord=TRUE);
 
@@ -1319,7 +1319,7 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
  * @retval TRUE      The token was handled.
  * @retval FALSE     The token was not handled.
  */
-static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children,bool
+static bool defaultHandleToken(DocNode *parent,int &tok, QList<DocNode> &children,bool
     handleWord)
 {
   DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
