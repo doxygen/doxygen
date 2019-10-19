@@ -48,6 +48,7 @@
 #include "entry.h"
 #include "bufstr.h"
 #include "commentcnv.h"
+#include "cmdmapper.h"
 #include "config.h"
 #include "section.h"
 #include "message.h"
@@ -671,6 +672,7 @@ static void writeMarkdownImage(GrowBuf &out, const char *fmt, bool explicitTitle
 
 static int processLink(GrowBuf &out,const char *data,int,int size)
 {
+  static QRegExp user("[@#][a-z_A-Z][a-z_A-Z0-9-]*");
   QCString content;
   QCString link;
   QCString title;
@@ -941,7 +943,23 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       }
       out.addStr(">");
       content = content.simplifyWhiteSpace();
-      processInline(out,content,content.length());
+      int l=0;
+      if (!user.match(content,0,&l) && l == content.length())
+      {
+        if (content.at(0) == '#' || !(isDoxygenScanCmd(content.data()+1) || Mappers::cmdMapper->find(content.data()+1) != -1) )
+        {
+          out.addChar('@');
+          out.addStr(content);
+        }
+        else
+        {
+          processInline(out,content,content.length());
+        }
+      }
+      else
+      {
+        processInline(out,content,content.length());
+      }
       out.addStr("</a>");
     }
     else // avoid link to e.g. F[x](y)

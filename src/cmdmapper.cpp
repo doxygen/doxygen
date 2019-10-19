@@ -249,6 +249,16 @@ QCString Mapper::find(const int n)
   return QCString();
 }
 
+int Mapper::find(const QCString str)
+{
+  QDictIterator<int> mapIterator(m_map);
+  for (int *curVal = mapIterator.toFirst();(curVal = mapIterator.current());++mapIterator)
+  {
+    if (mapIterator.currentKey() == str) return(*curVal);
+  }
+  return -1;
+}
+
 Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_map(89), m_cs(caseSensitive)
 {
   m_map.setAutoDelete(TRUE);

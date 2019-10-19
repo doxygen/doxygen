@@ -86,4 +86,5 @@ bool parseCommentBlock(ParserInterface *parser,
 		     );
 
 
+bool isDoxygenScanCmd(QCString cmdName);
 #endif
