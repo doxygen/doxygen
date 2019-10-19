@@ -2590,7 +2590,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
   return "";
 }
 
-QCString dateToString(bool includeTime)
+static QDateTime getCurrentDateTime()
 {
   QDateTime current = QDateTime::currentDateTime();
   QCString sourceDateEpoch = portable_getenv("SOURCE_DATE_EPOCH");
@@ -2622,6 +2622,12 @@ QCString dateToString(bool includeTime)
       current.setTimeUtc_t((ulong)epoch); // TODO: add support for 64bit epoch value
     }
   }
+  return current;
+}
+
+QCString dateToString(bool includeTime)
+{
+  const QDateTime current = getCurrentDateTime();
   return theTranslator->trDateTime(current.date().year(),
                                    current.date().month(),
                                    current.date().day(),
@@ -2634,9 +2640,9 @@ QCString dateToString(bool includeTime)
 
 QCString yearToString()
 {
-  const QDate &d=QDate::currentDate();
+  const QDateTime current = getCurrentDateTime();
   QCString result;
-  result.sprintf("%d", d.year());
+  result.sprintf("%d", current.date().year());
   return result;
 }
 
