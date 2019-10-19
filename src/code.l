@@ -1143,7 +1143,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
 
   const ClassDef *typeClass = stripClassName(removeAnonymousScopes(xmd->typeString()),xmd->getOuterScope());
   DBG_CTX((stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass));
-  g_theCallContext.setScope(typeClass);
+  if (typeClass) g_theCallContext.setScope(typeClass);
 
   const Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
                    xmd->getFileDef() : xmd->getOuterScope();
