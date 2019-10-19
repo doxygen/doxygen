@@ -5,6 +5,42 @@ import argparse, glob, itertools, re, shutil, os, sys
 
 config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
 
+class Sqlite3Dumper:
+	def __init__(self, sqlite3, json, dbname):
+		self.dbname = dbname
+		self.sqlite3 = sqlite3
+		self.json = json
+
+	def __dict_factory(self,cursor, row):
+		d = {}
+		for idx, col in enumerate(cursor.description):
+			d[col[0]] = row[idx]
+		return d
+
+	def __open_db(self):
+		if not os.path.isfile(self.dbname):
+			raise BaseException("invalid database %s" % self.dbname )
+
+		self.conn = self.sqlite3.connect(self.dbname)
+		self.conn.execute('PRAGMA temp_store = MEMORY;')
+		self.conn.row_factory = self.__dict_factory
+		return True
+
+	def dump(self, output_file):
+		self.__open_db()
+		tables=self.conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
+		o = {}
+		for t in tables.fetchall():
+			t_name = t['name']
+			c=self.conn.execute('SELECT * FROM %s' % t_name)
+			o.update([(t_name,[])])
+			for r in c.fetchall():
+				o[t_name].append(r)
+		if 'meta' in o:
+			del o['meta']
+		with open(output_file, 'w') as outfile:
+			self.json.dump(o, outfile, indent=4)
+
 class Tester:
 	def __init__(self,args,test):
 		self.args      = args
@@ -86,6 +122,7 @@ class Tester:
 		shutil.copy(self.args.inputdir+'/Doxyfile',self.test_out)
 		with open(self.test_out+'/Doxyfile','a') as f:
 			print('INPUT=%s/%s' % (self.args.inputdir,self.test), file=f)
+			print('OUTPUT_DIRECTORY=%s' % self.test_out, file=f)
 			print('STRIP_FROM_PATH=%s' % self.args.inputdir, file=f)
 			print('EXAMPLE_PATH=%s' % self.args.inputdir, file=f)
 			if 'config' in self.config:
@@ -93,27 +130,27 @@ class Tester:
 					print(option, file=f)
 			if (self.args.xml or self.args.xmlxsd):
 				print('GENERATE_XML=YES', file=f)
-				print('XML_OUTPUT=%s/out' % self.test_out, file=f)
+				print('XML_OUTPUT=out' , file=f)
 			else:
 				print('GENERATE_XML=NO', file=f)
 			if (self.args.rtf):
 				print('GENERATE_RTF=YES', file=f)
-				print('RTF_OUTPUT=%s/rtf' % self.test_out, file=f)
+				print('RTF_OUTPUT=rtf', file=f)
 			else:
 				print('GENERATE_RTF=NO', file=f)
 			if (self.args.docbook):
 				print('GENERATE_DOCBOOK=YES', file=f)
-				print('DOCBOOK_OUTPUT=%s/docbook' % self.test_out, file=f)
+				print('DOCBOOK_OUTPUT=docbook', file=f)
 			else:
 				print('GENERATE_DOCBOOK=NO', file=f)
 			if (self.args.xhtml):
 				print('GENERATE_HTML=YES', file=f)
 			# HTML_OUTPUT can also be set locally
-			print('HTML_OUTPUT=%s/html' % self.test_out, file=f)
+			print('HTML_OUTPUT=html', file=f)
 			print('HTML_FILE_EXTENSION=.xhtml', file=f)
 			if (self.args.pdf):
 				print('GENERATE_LATEX=YES', file=f)
-				print('LATEX_OUTPUT=%s/latex' % self.test_out, file=f)
+				print('LATEX_OUTPUT=latex', file=f)
 			if self.args.subdirs:
 				print('CREATE_SUBDIRS=YES', file=f)
 			if (self.args.clang):
@@ -185,6 +222,7 @@ class Tester:
 		failed_docbook=False
 		failed_rtf=False
 		failed_xmlxsd=False
+		failed_sqlite3=False
 		msg = ()
 		# look for files to check against the reference
 		if self.args.xml or self.args.xmlxsd:
@@ -338,8 +376,21 @@ class Tester:
 				failed_html=True
 			elif not self.args.keep:
 				shutil.rmtree(latex_output,ignore_errors=True)
+		if (self.args.sqlite3):
+			import sqlite3
+			import json
+			failed_sqlite3=False
+			if 'check' in self.config:
+				for check in self.config['check']:
+					json_ref_file='%s.json' % (ref_file)
+					json_out_file='%s/%s.json' % (self.test_out,check)
+					Sqlite3Dumper(sqlite3, json, "%s/doxygen_sqlite3.db"%self.test_out).dump(json_out_file)
+					(failed_sqlite3,sqlite3_msg) = self.compare_ok(json_out_file,json_ref_file,self.test_name)
+					if failed_sqlite3:
+						msg+= (sqlite3_msg,)
+						break
 
-		if failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
+		if failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd or failed_sqlite3:
 			testmgr.ok(False,self.test_name,msg)
 			return
 
@@ -439,6 +490,8 @@ def main():
 		action="store_true")
 	parser.add_argument('--clang',help='use CLANG_ASSISTED_PARSING, works only when '
                 'doxygen has been compiled with "use_libclang"',
+		action="store_true")
+	parser.add_argument('--sqlite3',help='create sqlite3 output and check',
 		action="store_true")
 	parser.add_argument('--keep',help='keep result directories',
 		action="store_true")

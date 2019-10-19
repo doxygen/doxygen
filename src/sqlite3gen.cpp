@@ -50,12 +50,11 @@
 #include <string.h>
 #include <sqlite3.h>
 
-// enable to show general debug messages
+// print the DBG_CTX messages
 // #define SQLITE3_DEBUG
 
-// enable to print all executed SQL statements.
-// I recommend using the smallest possible input list.
-// #define SQLITE3_DEBUG_SQL
+// print the SQL commands trace
+// #define SQLITE3_ENABLE_SQL_TRACE
 
 # ifdef SQLITE3_DEBUG
 #  define DBG_CTX(x) printf x
@@ -63,7 +62,7 @@
 #  define DBG_CTX(x) do { } while(0)
 # endif
 
-# ifdef SQLITE3_DEBUG_SQL
+# ifdef SQLITE3_ENABLE_SQL_TRACE
 // used by sqlite3_trace in generateSqlite3()
 static void sqlLog(void *dbName, const char *sql){
   msg("SQL: '%s'\n", sql);
@@ -87,11 +86,15 @@ const char * table_schema[][2] = {
       "\tschema_version     TEXT NOT NULL, -- Schema-specific semver\n"
       "\t-- run info\n"
       "\tgenerated_at       TEXT NOT NULL,\n"
-      "\tgenerated_on       TEXT NOT NULL,\n"
+      "\tgenerated_on       TEXT NOT NULL\n"
+    ");"
+  },
+  { "project",
+    "CREATE TABLE IF NOT EXISTS project (\n"
       "\t-- project info\n"
-      "\tproject_name       TEXT NOT NULL,\n"
-      "\tproject_number     TEXT,\n"
-      "\tproject_brief      TEXT\n"
+      "\tname       TEXT NOT NULL,\n"
+      "\tnumber     TEXT,\n"
+      "\tbrief      TEXT\n"
     ");"
   },
   { "includes",
@@ -512,9 +515,17 @@ struct SqlStmt {
    be the cause. */
 SqlStmt meta_insert = {
   "INSERT INTO meta "
-    "( doxygen_version, schema_version, generated_at, generated_on, project_name, project_number, project_brief )"
+    "( doxygen_version, schema_version, generated_at, generated_on )"
   "VALUES "
-    "(:doxygen_version,:schema_version,:generated_at,:generated_on,:project_name,:project_number,:project_brief )"
+    "(:doxygen_version,:schema_version,:generated_at,:generated_on )"
+  ,NULL
+};
+//////////////////////////////////////////////////////
+SqlStmt project_insert = {
+  "INSERT INTO project "
+    "( name, number, brief )"
+  "VALUES "
+    "(:name,:number,:brief )"
   ,NULL
 };
 //////////////////////////////////////////////////////
@@ -822,7 +833,12 @@ SqlStmt memberdef_param_insert={
     "(:memberdef_id,:param_id)"
   ,NULL
 };
-
+//////////////////////////////////////////////////////
+struct Refid {
+  int rowid;
+  const char *refid;
+  bool created;
+};
 
 class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 {
@@ -922,25 +938,16 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
   return rowid;
 }
 
-static void recordMetadata()
+static void insertMeta()
 {
   bindTextParameter(meta_insert,":doxygen_version",getVersion());
   bindTextParameter(meta_insert,":schema_version","0.2.0"); //TODO: this should be a constant somewhere; not sure where
   bindTextParameter(meta_insert,":generated_at",dateToString(TRUE), FALSE);
   bindTextParameter(meta_insert,":generated_on",dateToString(FALSE), FALSE);
-  bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME));
-  bindTextParameter(meta_insert,":project_number",Config_getString(PROJECT_NUMBER));
-  bindTextParameter(meta_insert,":project_brief",Config_getString(PROJECT_BRIEF));
   step(meta_insert);
 }
 
-struct Refid {
-  int rowid;
-  const char *refid;
-  bool created;
-};
-
-struct Refid insertRefid(const char *refid)
+static struct Refid insertRefid(const char *refid)
 {
   struct Refid ret;
   ret.rowid=-1;
@@ -1144,6 +1151,14 @@ static void stripQualifiers(QCString &typeStr)
   }
 }
 
+static void insertProject()
+{
+  bindTextParameter(project_insert,":name",Config_getString(PROJECT_NAME));
+  bindTextParameter(project_insert,":number",Config_getString(PROJECT_NUMBER));
+  bindTextParameter(project_insert,":brief",Config_getString(PROJECT_BRIEF));
+  step(project_insert);
+}
+
 static int prepareStatement(sqlite3 *db, SqlStmt &s)
 {
   int rc;
@@ -1162,6 +1177,7 @@ static int prepareStatements(sqlite3 *db)
 {
   if (
   -1==prepareStatement(db, meta_insert) ||
+  -1==prepareStatement(db, project_insert) ||
   -1==prepareStatement(db, memberdef_exists) ||
   -1==prepareStatement(db, memberdef_incomplete) ||
   -1==prepareStatement(db, memberdef_insert) ||
@@ -1372,7 +1388,6 @@ static void writeInnerNamespaces(const NamespaceSDict *nl, struct Refid outer_re
   }
 }
 
-
 static void writeTemplateArgumentList(const ArgumentList * al,
                                       const Definition * scope,
                                       const FileDef * fileScope)
@@ -1416,12 +1431,13 @@ static void writeMemberTemplateLists(const MemberDef *md)
     writeTemplateArgumentList(templMd,md->getClassDef(),md->getFileDef());
   }
 }
+
 static void writeTemplateList(const ClassDef *cd)
 {
   writeTemplateArgumentList(cd->templateArguments(),cd,0);
 }
 
-QCString getSQLDocBlock(const Definition *scope,
+static QCString getSQLDocBlock(const Definition *scope,
   const Definition *def,
   const QCString &doc,
   const QCString &fileName,
@@ -1787,7 +1803,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     }
   }
 
-  bindTextParameter(memberdef_insert,":name",md->name());
+  bindTextParameter(memberdef_insert,":name",md->name(),FALSE);
 
   // Extract references from initializer
   if (md->hasMultiLineInitializer() || md->hasOneLineInitializer())
@@ -2477,7 +2493,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
 
   bindIntParameter(compounddef_insert,":rowid",refid.rowid);
   // + name
-  bindTextParameter(compounddef_insert,":name",pd->name());
+  bindTextParameter(compounddef_insert,":name",pd->name(),FALSE);
 
   QCString title;
   if (pd==Doxygen::mainPage) // main page is special
@@ -2581,8 +2597,7 @@ void generateSqlite3()
     return;
   }
 
-# ifdef SQLITE3_DEBUG
-  // debug: show all executed statements
+# ifdef SQLITE3_ENABLE_SQL_TRACE
   sqlite3_trace(db, &sqlLog, NULL);
 # endif
 
@@ -2598,7 +2613,9 @@ void generateSqlite3()
     return;
   }
 
-  recordMetadata();
+  insertMeta();
+
+  insertProject();
 
   // + classes
   ClassSDict::Iterator cli(*Doxygen::classSDict);
