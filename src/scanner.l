@@ -5537,6 +5537,28 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN( ClassTemplSpec );
 					  }
 					}
+<CompoundName>{SCOPENAME}{BN}*/"("	{
+					  if (insideCS) // C# generic class
+					  {
+                                            REJECT;
+					  }
+					  else if (!insideObjC) // C++ template specialization
+					  {
+                                            REJECT;
+					  }
+					  roundCount = 0;
+					  current->name = yytext ;
+					  if (current->spec & Entry::Protocol)
+					  {
+					    current->name+="-p";
+					  }
+					  lineCount();
+					  lastClassTemplSpecContext = ClassVar;
+					  if (insideObjC) // protocol list
+					  {
+					    BEGIN( ObjCProtocolList );
+					  }
+					}
 <CSGeneric>"<"				{
 					  if (current->tArgLists==0)
 					  {
@@ -5556,7 +5578,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  currentArgumentContext = ClassVar;
 					  BEGIN( ReadTempArgs );
   					}
-<ObjCProtocolList>"<"			{
+<ObjCProtocolList>"<"|"("		{
   					  insideProtocolList=TRUE;
   					  BEGIN( Bases );
   					}
@@ -6171,7 +6193,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  lastStringContext=SkipRound;
 					  BEGIN(SkipString);
   					}
-<Bases>","|(">"({BN}*"{")?)|({BN}+"implements"{BN}*)	{ lineCount();
+<Bases>","|((">"|")")({BN}*"{")?)|({BN}+"implements"{BN}*)	{ lineCount();
                                           if (insideProtocolList)
 					  {
 					    baseName+="-p";
@@ -6199,7 +6221,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  baseVirt=Normal;
 					  baseName.resize(0);
-                                          if (*yytext=='>')
+                                          if ((*yytext=='>') || (*yytext==')'))
 					  { // end of a ObjC protocol list
   					    insideProtocolList=FALSE;
 					    if (yyleng==1)
