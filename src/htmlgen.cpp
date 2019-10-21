@@ -548,6 +548,7 @@ void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
   }
   m_t << "</span>";
   m_t << "&#160;";
+  m_col=0;
 }
 
 void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
