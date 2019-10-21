@@ -1460,16 +1460,19 @@ tcl_inf("<- %s\n",text);
   }
   else if (what==1)
   { // start new comment
+    if (tcl.comment)
+    {
+      tcl_comment(99,""); // inbody
+    }
     tcl.string_comment=text;
-    tcl_comment(99,"");
-    tcl.string_comment="";
     tcl.comment=1;
   }
   else if (what==2)
   { // add to comment
-    tcl.string_comment=text;
-    tcl_comment(99,"");
-    tcl.string_comment="";
+    if (tcl.comment)
+    {
+      tcl.string_comment+=text;
+    }
   }
   else if (what==-1 || what == -2)
   { // end of comment without/with command
@@ -1548,7 +1551,6 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
               myEntry1=tcl_entry_namespace(tcl.scan.at(0)->ns);
             }
             processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
-            if (!myEntry1->doc.isEmpty() && tcl.comment==0) processedDoc = "<BR>" + processedDoc; // to separate comment blocks
             parseCommentBlock(tcl.this_parser, myEntry1, processedDoc, tcl.file_name,
               myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
           }
@@ -1571,7 +1573,6 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
             myEntry1=tcl_entry_namespace(tcl.scan.at(0)->ns);
           }
           processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
-          if (!myEntry1->doc.isEmpty() && tcl.comment==0) processedDoc = "<BR>" + processedDoc; // to separate comment blocks
           parseCommentBlock(tcl.this_parser, myEntry1, processedDoc, tcl.file_name,
             myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
         }
