@@ -254,7 +254,25 @@ static int findEmphasisChar(const char *data, int size, char c, int c_size)
   {
     while (i<size && data[i]!=c    && data[i]!='`' && 
                      data[i]!='\\' && data[i]!='@' &&
-                     data[i]!='\n') i++;
+                     data[i]!='\n')
+    {
+      switch (data[i])
+      {
+        case '"':
+          i++;
+          while(i < size && data[i] !='"') i++;
+          if (data[i] == '"') i++;
+          break;
+        case '\'':
+          i++;
+          while(i < size && data[i] !='\'') i++;
+          if (data[i] == '\'') i++;
+          break;
+        default:
+          i++;
+          break;
+      }
+    }
     //printf("findEmphasisChar: data=[%s] i=%d c=%c\n",data,i,data[i]);
 
     // not counting escaped chars or characters that are unlikely 
