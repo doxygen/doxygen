@@ -662,9 +662,10 @@ void FileDefImpl::writeIncludeGraph(OutputList &ol)
   {
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,FALSE);
-    if (incDepGraph.isTooBig())
+    int numNodes;
+    if (incDepGraph.isTooBig(numNodes))
     {
-       warn_uncond("Include graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+       warn_uncond("Include graph for '%s' not generated, too many nodes(%d). Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data(),numNodes);
     }
     else if (!incDepGraph.isTrivial())
     {
@@ -686,9 +687,10 @@ void FileDefImpl::writeIncludedByGraph(OutputList &ol)
   {
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,TRUE);
-    if (incDepGraph.isTooBig())
+    int numNodes;
+    if (incDepGraph.isTooBig(numNodes))
     {
-       warn_uncond("Included by graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+       warn_uncond("Included by graph for '%s' not generated, too many nodes(%d). Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data(),numNodes);
     }
     else if (!incDepGraph.isTrivial())
     {

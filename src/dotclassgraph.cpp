@@ -418,10 +418,9 @@ bool DotClassGraph::isTrivial() const
     return !UML_LOOK && m_startNode->children()==0;
 }
 
-bool DotClassGraph::isTooBig() const
+bool DotClassGraph::isTooBig(int &numNodes) const
 {
-  int numNodes = 0;
-  numNodes+= m_startNode->children() ? m_startNode->children()->count() : 0;
+  numNodes= m_startNode->children() ? m_startNode->children()->count() : 0;
   if (m_graphType==Inheritance)
   {
     numNodes+= m_startNode->parents() ? m_startNode->parents()->count() : 0;

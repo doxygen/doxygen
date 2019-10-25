@@ -210,8 +210,8 @@ bool DotCallGraph::isTrivial() const
   return m_startNode->children()==0;
 }
 
-bool DotCallGraph::isTooBig() const
+bool DotCallGraph::isTooBig(int &numNodes) const
 {
-  int numNodes = m_startNode->children() ? m_startNode->children()->count() : 0;
+  numNodes = m_startNode->children() ? m_startNode->children()->count() : 0;
   return numNodes>=DOT_GRAPH_MAX_NODES;
 }

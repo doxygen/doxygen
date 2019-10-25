@@ -27,7 +27,7 @@ public:
   DotClassGraph(const ClassDef *cd,GraphType t);
   ~DotClassGraph();
   bool isTrivial() const;
-  bool isTooBig() const;
+  bool isTooBig(int &numNodes) const;
   QCString writeGraph(FTextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
     const char *path, const char *fileName, const char *relPath,
     bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1);

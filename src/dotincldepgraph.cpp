@@ -211,9 +211,9 @@ bool DotInclDepGraph::isTrivial() const
   return m_startNode->children()==0;
 }
 
-bool DotInclDepGraph::isTooBig() const
+bool DotInclDepGraph::isTooBig(int &numNodes) const
 {
-  int numNodes = m_startNode->children() ? m_startNode->children()->count() : 0;
+  numNodes = m_startNode->children() ? m_startNode->children()->count() : 0;
   return numNodes>=Config_getInt(DOT_GRAPH_MAX_NODES);
 }
 

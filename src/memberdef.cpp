@@ -2928,9 +2928,10 @@ void MemberDefImpl::_writeCallGraph(OutputList &ol) const
      )
   {
     DotCallGraph callGraph(this,FALSE);
-    if (callGraph.isTooBig())
+    int numNodes;
+    if (callGraph.isTooBig(numNodes))
     {
-       warn_uncond("Call graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",qPrint(qualifiedName()));
+       warn_uncond("Call graph for '%s' not generated, too many nodes(%d). Consider increasing DOT_GRAPH_MAX_NODES.\n",qPrint(qualifiedName()),numNodes);
     }
     else if (!callGraph.isTrivial())
     {
@@ -2951,9 +2952,10 @@ void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
      )
   {
     DotCallGraph callerGraph(this, TRUE);
-    if (callerGraph.isTooBig())
+    int numNodes;
+    if (callerGraph.isTooBig(numNodes))
     {
-       warn_uncond("Caller graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",qPrint(qualifiedName()));
+       warn_uncond("Caller graph for '%s' not generated, too many nodes(%d). Consider increasing DOT_GRAPH_MAX_NODES.\n",qPrint(qualifiedName()),numNodes);
     }
     else if (!callerGraph.isTrivial())
     {

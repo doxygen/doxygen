@@ -1954,7 +1954,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       if (haveDot && (classDiagrams || classGraph))
       {
         DotClassGraph *cg = getClassGraph();
-        result = !cg->isTrivial() && !cg->isTooBig();
+        int numNodes;
+        result = !cg->isTrivial() && !cg->isTooBig(numNodes);
       }
       else if (classDiagrams)
       {
@@ -3107,7 +3108,8 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
       DotInclDepGraph *incGraph = getIncludeGraph();
-      return (haveDot && !incGraph->isTooBig() && !incGraph->isTrivial());
+      int numNodes;
+      return (haveDot && !incGraph->isTooBig(numNodes) && !incGraph->isTrivial());
     }
     TemplateVariant includeGraph() const
     {
@@ -3159,7 +3161,8 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
       DotInclDepGraph *incGraph = getIncludedByGraph();
-      return (haveDot && !incGraph->isTooBig() && !incGraph->isTrivial());
+      int numNodes;
+      return (haveDot && !incGraph->isTooBig(numNodes) && !incGraph->isTrivial());
     }
     TemplateVariant includedByGraph() const
     {
@@ -5020,7 +5023,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
           (m_memberDef->isFunction() || m_memberDef->isSlot() || m_memberDef->isSignal()))
       {
         DotCallGraph *cg = getCallGraph();
-        return !cg->isTooBig() && !cg->isTrivial();
+        int numNodes;
+        return !cg->isTooBig(numNodes) && !cg->isTrivial();
       }
       return TemplateVariant(FALSE);
     }
@@ -5092,7 +5096,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
           (m_memberDef->isFunction() || m_memberDef->isSlot() || m_memberDef->isSignal()))
       {
         DotCallGraph *cg = getCallerGraph();
-        return !cg->isTooBig() && !cg->isTrivial();
+        int numNodes;
+        return !cg->isTooBig(numNodes) && !cg->isTrivial();
       }
       return TemplateVariant(FALSE);
     }

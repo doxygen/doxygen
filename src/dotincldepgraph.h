@@ -31,7 +31,7 @@ class DotInclDepGraph : public DotGraph
                         const char *path,const char *fileName,const char *relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
-    bool isTooBig() const;
+    bool isTooBig(int &numNodes) const;
     void writeXML(FTextStream &t);
     void writeDocbook(FTextStream &t);
 
