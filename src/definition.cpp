@@ -420,7 +420,7 @@ void DefinitionImpl::setId(const char *id)
   m_impl->id = id;
   if (Doxygen::clangUsrMap) 
   {
-    //printf("DefinitionImpl::setId '%s'->'%s'\n",id,m_name.data());
+    //printf("DefinitionImpl::setId '%s'->'%s'\n",id,m_impl->name.data());
     Doxygen::clangUsrMap->insert(id,this);
   }
 }

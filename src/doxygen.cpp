@@ -294,7 +294,7 @@ void statistics()
 
 
 static void addMemberDocs(const Entry *root,MemberDef *md, const char *funcDecl,
-                   ArgumentList *al,bool over_load,uint64 spec);
+                   const ArgumentList *al,bool over_load,uint64 spec);
 static void findMember(const Entry *root,
                        const QCString &relates,
                        const QCString &type,
@@ -464,21 +464,18 @@ static void addSTLClass(const std::unique_ptr<Entry> &root,const STLInfo *info)
   // add template arguments to class
   if (info->templType1)
   {
-    ArgumentList *al = new ArgumentList;
-    Argument *a=new Argument;
-    a->type="typename";
-    a->name=info->templType1;
-    al->append(a);
+    ArgumentList al;
+    Argument a;
+    a.type="typename";
+    a.name=info->templType1;
+    al.push_back(a);
     if (info->templType2) // another template argument
     {
-      a=new Argument;
-      a->type="typename";
-      a->name=info->templType2;
-      al->append(a);
+      a.type="typename";
+      a.name=info->templType2;
+      al.push_back(a);
     }
-    classEntry->tArgLists = new QList<ArgumentList>;
-    classEntry->tArgLists->setAutoDelete(TRUE);
-    classEntry->tArgLists->append(al);
+    classEntry->tArgLists.push_back(al);
   }
   // add member variables
   if (info->templName1)
@@ -1105,17 +1102,15 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
   return resultScope;
 }
 
-ArgumentList *getTemplateArgumentsFromName(
+ArgumentList getTemplateArgumentsFromName(
                   const QCString &name,
-                  const QList<ArgumentList> *tArgLists)
+                  const std::vector<ArgumentList> &tArgLists)
 {
-  if (tArgLists==0) return 0;
-
-  QListIterator<ArgumentList> ali(*tArgLists);
   // for each scope fragment, check if it is a template and advance through
   // the list if so.
   int i,p=0;
-  while ((i=name.find("::",p))!=-1)
+  auto alIt = tArgLists.begin();
+  while ((i=name.find("::",p))!=-1 && alIt!=tArgLists.end())
   {
     NamespaceDef *nd = Doxygen::namespaceSDict->find(name.left(i));
     if (nd==0)
@@ -1123,15 +1118,15 @@ ArgumentList *getTemplateArgumentsFromName(
       ClassDef *cd = getClass(name.left(i));
       if (cd)
       {
-        if (cd->templateArguments())
+        if (!cd->templateArguments().empty())
         {
-          ++ali;
+          ++alIt;
         }
       }
     }
     p=i+2;
   }
-  return ali.current();
+  return alIt!=tArgLists.end() ? *alIt : ArgumentList();
 }
 
 static
@@ -1240,13 +1235,12 @@ static void addClassToContext(const Entry *root)
     }
     //cd->setName(fullName); // change name to match docs
 
-    if (cd->templateArguments()==0 || (cd->isForwardDeclared() && (root->spec&Entry::ForwardDecl)==0))
+    if (cd->templateArguments().empty() || (cd->isForwardDeclared() && (root->spec&Entry::ForwardDecl)==0))
     {
       // this happens if a template class declared with @class is found
       // before the actual definition or if a forward declaration has different template
       // parameter names.
-      ArgumentList *tArgList =
-        getTemplateArgumentsFromName(cd->name(),root->tArgLists);
+      ArgumentList tArgList = getTemplateArgumentsFromName(cd->name(),root->tArgLists);
       cd->setTemplateArguments(tArgList);
     }
 
@@ -1280,12 +1274,11 @@ static void addClassToContext(const Entry *root)
         buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang,tagInfo);
       }
     }
-    ArgumentList *tArgList = 0;
+    ArgumentList tArgList;
     if ((root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java) && (i=fullName.find('<'))!=-1)
     {
       // a Java/C# generic class looks like a C++ specialization, so we need to split the
       // name and template arguments here
-      tArgList = new ArgumentList;
       stringToArgumentList(fullName.mid(i),tArgList);
       fullName=fullName.left(i);
     }
@@ -1296,7 +1289,7 @@ static void addClassToContext(const Entry *root)
     cd=createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
         fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum);
     Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p\n",
-        qPrint(fullName),sec,root->tArgLists ? (int)root->tArgLists->count() : -1, tagInfo);
+        qPrint(fullName),sec,root->tArgLists.size(), tagInfo);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setLanguage(root->lang);
@@ -1561,7 +1554,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
                                      md->typeString(),md->name(),md->argsString(),md->excpString(),
                                      md->protection(),md->virtualness(),md->isStatic(),Member,
                                      md->memberType(),
-                                     0,0,"");
+                                     ArgumentList(),ArgumentList(),"");
       imd->setMemberClass(cd);
       imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
       imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
@@ -2055,7 +2048,7 @@ static void findUsingDeclarations(const Entry *root)
       if (usingCd==0) // definition not in the input => add an artificial class
       {
         Debug::print(Debug::Classes,0,"  New using class '%s' (sec=0x%08x)! #tArgLists=%d\n",
-             qPrint(name),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
+             qPrint(name),root->section,root->tArgLists.size());
         usingCd = createClassDef(
                      "<using>",1,1,
                      name,
@@ -2135,8 +2128,8 @@ static void findUsingDeclImports(const Entry *root)
                     {
                       fileName = root->tagInfo->tagName;
                     }
-                    const ArgumentList *templAl = md->templateArguments();
-                    const ArgumentList *al = md->templateArguments();
+                    const ArgumentList &templAl = md->templateArguments();
+                    const ArgumentList &al = md->templateArguments();
                     newMd = createMemberDef(
                       fileName,root->startLine,root->startColumn,
                       md->typeString(),memName,md->argsString(),
@@ -2336,7 +2329,8 @@ static MemberDef *addVariableToClass(
       fileName,root->startLine,root->startColumn,
       type,name,args,root->exception,
       prot,Normal,root->stat,related,
-      mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0, root->metaData);
+      mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
+      ArgumentList(), root->metaData);
   md->setTagInfo(root->tagInfo);
   md->setMemberClass(cd); // also sets outer scope (i.e. getOuterScope())
   //md->setDefFile(root->fileName);
@@ -2595,7 +2589,8 @@ static MemberDef *addVariableToFile(
       fileName,root->startLine,root->startColumn,
       type,name,args,0,
       root->protection, Normal,root->stat,Member,
-      mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0, root->metaData);
+      mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
+      ArgumentList(), root->metaData);
   md->setTagInfo(root->tagInfo);
   md->setMemberSpecifiers(root->spec);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -2739,19 +2734,16 @@ static bool isVarWithConstructor(const Entry *root)
                    // we need to rely on heuristics :-(
   {
     //printf("typeIsClass\n");
-    ArgumentList *al = root->argList;
-    if (al==0 || al->isEmpty())
+    if (root->argList.empty())
     {
       result=FALSE; // empty arg list -> function prototype.
       goto done;
     }
-    ArgumentListIterator ali(*al);
-    Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
+    for (const Argument &a : root->argList)
     {
-      if (!a->name.isEmpty() || !a->defval.isEmpty())
+      if (!a.name.isEmpty() || !a.defval.isEmpty())
       {
-        if (a->name.find(initChars)==0)
+        if (a.name.find(initChars)==0)
         {
           result=TRUE;
         }
@@ -2761,31 +2753,31 @@ static bool isVarWithConstructor(const Entry *root)
         }
         goto done;
       }
-      if (a->type.isEmpty() || getResolvedClass(ctx,fd,a->type)!=0)
+      if (a.type.isEmpty() || getResolvedClass(ctx,fd,a.type)!=0)
       {
         result=FALSE; // arg type is a known type
         goto done;
       }
-      if (checkIfTypedef(ctx,fd,a->type))
+      if (checkIfTypedef(ctx,fd,a.type))
       {
          //printf("%s:%d: false (arg is typedef)\n",__FILE__,__LINE__);
          result=FALSE; // argument is a typedef
          goto done;
       }
-      if (a->type.at(a->type.length()-1)=='*' ||
-          a->type.at(a->type.length()-1)=='&')
+      if (a.type.at(a.type.length()-1)=='*' ||
+          a.type.at(a.type.length()-1)=='&')
                      // type ends with * or & => pointer or reference
       {
         result=FALSE;
         goto done;
       }
-      if (a->type.find(initChars)==0)
+      if (a.type.find(initChars)==0)
       {
         result=TRUE; // argument type starts with typical initializer char
         goto done;
       }
-      QCString resType=resolveTypeDef(ctx,a->type);
-      if (resType.isEmpty()) resType=a->type;
+      QCString resType=resolveTypeDef(ctx,a.type);
+      if (resType.isEmpty()) resType=a.type;
       int len;
       if (idChars.match(resType,0,&len)==0) // resType starts with identifier
       {
@@ -3129,7 +3121,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   MemberDef *const md = createMemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
       "", "", root->protection, root->virt, root->stat, Member,
-      type, 0, root->argList, root->metaData);
+      type, ArgumentList(), root->argList, root->metaData);
   md->setTagInfo(root->tagInfo);
   md->setMemberClass(cd);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -3206,7 +3198,7 @@ static void buildInterfaceAndServiceList(const Entry *root)
                  qPrint(root->fileName),
                  root->startLine,
                  root->bodyLine,
-                 root->tArgLists ? (int)root->tArgLists->count() : -1,
+                 root->tArgLists.size(),
                  root->mGrpId,
                  root->spec,
                  root->proto,
@@ -3317,7 +3309,8 @@ static void addMethodToClass(const Entry *root,ClassDef *cd,
       stat && root->relatesType != MemberOf,
       relates.isEmpty() ? Member :
           root->relatesType == MemberOf ? Foreign : Related,
-      mtype,root->tArgLists ? root->tArgLists->getLast() : 0,root->argList, root->metaData);
+      mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
+      root->argList, root->metaData);
   md->setTagInfo(root->tagInfo);
   md->setMemberClass(cd);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -3347,54 +3340,27 @@ static void addMethodToClass(const Entry *root,ClassDef *cd,
     // for PHP we use Class::method and Namespace\method
     scopeSeparator="::";
   }
+//  QCString optArgs = root->argList.empty() ? args : QCString();
   if (!relates.isEmpty() || isFriend || Config_getBool(HIDE_SCOPE_NAMES))
   {
     if (!type.isEmpty())
     {
-      if (root->argList)
-      {
-        def=type+" "+name;
-      }
-      else
-      {
-        def=type+" "+name+args;
-      }
+      def=type+" "+name; //+optArgs;
     }
     else
     {
-      if (root->argList)
-      {
-        def=name;
-      }
-      else
-      {
-        def=name+args;
-      }
+      def=name; //+optArgs;
     }
   }
   else
   {
     if (!type.isEmpty())
     {
-      if (root->argList)
-      {
-        def=type+" "+qualScope+scopeSeparator+name;
-      }
-      else
-      {
-        def=type+" "+qualScope+scopeSeparator+name+args;
-      }
+      def=type+" "+qualScope+scopeSeparator+name; //+optArgs;
     }
     else
     {
-      if (root->argList)
-      {
-        def=qualScope+scopeSeparator+name;
-      }
-      else
-      {
-        def=qualScope+scopeSeparator+name+args;
-      }
+      def=qualScope+scopeSeparator+name; //+optArgs;
     }
   }
   if (def.left(7)=="friend ") def=def.right(def.length()-7);
@@ -3457,7 +3423,7 @@ static void buildFunctionList(const Entry *root)
                  qPrint(root->fileName),
                  root->startLine,
                  root->bodyLine,
-                 root->tArgLists ? (int)root->tArgLists->count() : -1,
+                 root->tArgLists.size(),
                  root->mGrpId,
                  root->spec,
                  root->proto,
@@ -3577,16 +3543,16 @@ static void buildFunctionList(const Entry *root)
               if (rnd) rnsName = rnd->name().copy();
               //printf("matching arguments for %s%s %s%s\n",
               //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
-              ArgumentList *mdAl = md->argumentList();
-              const ArgumentList *mdTempl = md->templateArguments();
+              ArgumentList &mdAl = md->argumentList();
+              const ArgumentList &mdTempl = md->templateArguments();
 
               // in case of template functions, we need to check if the
               // functions have the same number of template parameters
               bool sameNumTemplateArgs = TRUE;
               bool matchingReturnTypes = TRUE;
-              if (mdTempl!=0 && root->tArgLists)
+              if (!mdTempl.empty() && !root->tArgLists.empty())
               {
-                if (mdTempl->count()!=root->tArgLists->getLast()->count())
+                if (mdTempl.size()!=root->tArgLists.back().size())
                 {
                   sameNumTemplateArgs = FALSE;
                 }
@@ -3634,11 +3600,12 @@ static void buildFunctionList(const Entry *root)
                 if (found)
                 {
                   // merge argument lists
-                  mergeArguments(mdAl,root->argList,!root->doc.isEmpty());
+                  ArgumentList mergedArgList = root->argList;
+                  mergeArguments(mdAl,mergedArgList,!root->doc.isEmpty());
                   // merge documentation
                   if (md->documentation().isEmpty() && !root->doc.isEmpty())
                   {
-                    ArgumentList *argList = new ArgumentList;
+                    ArgumentList argList;
                     stringToArgumentList(root->args,argList);
                     if (root->proto)
                     {
@@ -3712,13 +3679,14 @@ static void buildFunctionList(const Entry *root)
           //       root->type.data(),rname.data(),root->args.data(),root->bodyLine);
 
           // new global function
-          ArgumentList *tArgList = root->tArgLists ? root->tArgLists->getLast() : 0;
           QCString name=removeRedundantWhiteSpace(rname);
           md=createMemberDef(
               root->fileName,root->startLine,root->startColumn,
               root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,Member,
-              MemberType_Function,tArgList,root->argList,root->metaData);
+              MemberType_Function,
+              !root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
+              root->argList,root->metaData);
 
           md->setTagInfo(root->tagInfo);
           md->setLanguage(root->lang);
@@ -3762,27 +3730,14 @@ static void buildFunctionList(const Entry *root)
           }
 
           QCString def;
+          //QCString optArgs = root->argList.empty() ? QCString() : root->args;
           if (!root->type.isEmpty())
           {
-            if (root->argList)
-            {
-              def=root->type+" "+scope+name;
-            }
-            else
-            {
-              def=root->type+" "+scope+name+root->args;
-            }
+            def=root->type+" "+scope+name; //+optArgs;
           }
           else
           {
-            if (root->argList)
-            {
-              def=scope+name.copy();
-            }
-            else
-            {
-              def=scope+name+root->args;
-            }
+            def=scope+name; //+optArgs;
           }
           Debug::print(Debug::Functions,0,
                      "  Global Function:\n"
@@ -3906,8 +3861,8 @@ static void findFriends()
              ) // if the member is related and the arguments match then the
                // function is actually a friend.
           {
-            ArgumentList *mmdAl = mmd->argumentList();
-            ArgumentList *fmdAl = fmd->argumentList();
+            ArgumentList &mmdAl = mmd->argumentList();
+            ArgumentList &fmdAl = fmd->argumentList();
             mergeArguments(mmdAl,fmdAl);
             if (!fmd->documentation().isEmpty())
             {
@@ -4023,8 +3978,8 @@ static void transferFunctionReferences()
     }
     if (mdef && mdec)
     {
-      ArgumentList *mdefAl = mdef->argumentList();
-      ArgumentList *mdecAl = mdec->argumentList();
+      ArgumentList &mdefAl = mdef->argumentList();
+      ArgumentList &mdecAl = mdec->argumentList();
       if (
           matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdefAl,
                           mdec->getOuterScope(),mdec->getFileDef(),mdecAl,
@@ -4144,31 +4099,26 @@ static void transferRelatedFunctionDocumentation()
  * Example: A template class A with template arguments <R,S,T>
  * that inherits from B<T,T,S> will have T and S in the dictionary.
  */
-static QDict<int> *getTemplateArgumentsInName(ArgumentList *templateArguments,const QCString &name)
+static QDict<int> *getTemplateArgumentsInName(const ArgumentList &templateArguments,const QCString &name)
 {
   QDict<int> *templateNames = new QDict<int>(17);
   templateNames->setAutoDelete(TRUE);
   static QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
-  if (templateArguments)
+  int count=0;
+  for (const Argument &arg : templateArguments)
   {
-    ArgumentListIterator ali(*templateArguments);
-    Argument *arg;
-    int count=0;
-    for (ali.toFirst();(arg=ali.current());++ali,count++)
+    int i,p=0,l;
+    while ((i=re.match(name,p,&l))!=-1)
     {
-      int i,p=0,l;
-      while ((i=re.match(name,p,&l))!=-1)
+      QCString n = name.mid(i,l);
+      if (n==arg.name)
       {
-        QCString n = name.mid(i,l);
-        if (n==arg->name)
+        if (templateNames->find(n)==0)
         {
-          if (templateNames->find(n)==0)
-          {
-            templateNames->insert(n,new int(count));
-          }
+          templateNames->insert(n,new int(count));
         }
-        p=i+l;
       }
+      p=i+l;
     }
   }
   return templateNames;
@@ -4219,12 +4169,12 @@ static void findUsedClassesForClass(const Entry *root,
                            ClassDef *masterCd,
                            ClassDef *instanceCd,
                            bool isArtificial,
-                           ArgumentList *actualArgs=0,
+                           const ArgumentList &actualArgs=ArgumentList(),
                            QDict<int> *templateNames=0
                            )
 {
   masterCd->setVisited(TRUE);
-  ArgumentList *formalArgs = masterCd->templateArguments();
+  const ArgumentList &formalArgs = masterCd->templateArguments();
   if (masterCd->memberNameInfoSDict())
   {
     MemberNameInfoSDict::Iterator mnili(*masterCd->memberNameInfoSDict());
@@ -4250,10 +4200,7 @@ static void findUsedClassesForClass(const Entry *root,
           QCString templSpec;
           bool found=FALSE;
           // the type can contain template variables, replace them if present
-          if (actualArgs)
-          {
-            type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
-          }
+          type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
 
           //printf("      template substitution gives=%s\n",type.data());
           while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec,root->lang)!=-1)
@@ -4293,37 +4240,32 @@ static void findUsedClassesForClass(const Entry *root,
             BaseInfo bi(usedName,Public,Normal);
             findClassRelation(root,context,instanceCd,&bi,templateNames,TemplateInstances,isArtificial);
 
-            if (masterCd->templateArguments())
+            int count=0;
+            for (const Argument &arg : masterCd->templateArguments())
             {
-              ArgumentListIterator ali(*masterCd->templateArguments());
-              Argument *arg;
-              int count=0;
-              for (ali.toFirst();(arg=ali.current());++ali,++count)
+              if (arg.name==usedName) // type is a template argument
               {
-                if (arg->name==usedName) // type is a template argument
-                {
-                  found=TRUE;
-                  Debug::print(Debug::Classes,0,"    New used class '%s'\n", qPrint(usedName));
+                found=TRUE;
+                Debug::print(Debug::Classes,0,"    New used class '%s'\n", qPrint(usedName));
 
-                  ClassDef *usedCd = Doxygen::hiddenClasses->find(usedName);
-                  if (usedCd==0)
-                  {
-                    usedCd = createClassDef(
-                        masterCd->getDefFileName(),masterCd->getDefLine(),
-                        masterCd->getDefColumn(),
-                        usedName,
-                        ClassDef::Class);
-                    //printf("making %s a template argument!!!\n",usedCd->name().data());
-                    usedCd->makeTemplateArgument();
-                    usedCd->setUsedOnly(TRUE);
-                    usedCd->setLanguage(masterCd->getLanguage());
-                    Doxygen::hiddenClasses->append(usedName,usedCd);
-                  }
-                  if (isArtificial) usedCd->setArtificial(TRUE);
-                  Debug::print(Debug::Classes,0,"      Adding used class '%s' (1)\n", qPrint(usedCd->name()));
-                  instanceCd->addUsedClass(usedCd,md->name(),md->protection());
-                  usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
+                ClassDef *usedCd = Doxygen::hiddenClasses->find(usedName);
+                if (usedCd==0)
+                {
+                  usedCd = createClassDef(
+                      masterCd->getDefFileName(),masterCd->getDefLine(),
+                      masterCd->getDefColumn(),
+                      usedName,
+                      ClassDef::Class);
+                  //printf("making %s a template argument!!!\n",usedCd->name().data());
+                  usedCd->makeTemplateArgument();
+                  usedCd->setUsedOnly(TRUE);
+                  usedCd->setLanguage(masterCd->getLanguage());
+                  Doxygen::hiddenClasses->append(usedName,usedCd);
                 }
+                if (isArtificial) usedCd->setArtificial(TRUE);
+                Debug::print(Debug::Classes,0,"      Adding used class '%s' (1)\n", qPrint(usedCd->name()));
+                instanceCd->addUsedClass(usedCd,md->name(),md->protection());
+                usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
               }
             }
 
@@ -4390,14 +4332,14 @@ static void findBaseClassesForClass(
       ClassDef *instanceCd,
       FindBaseClassRelation_Mode mode,
       bool isArtificial,
-      ArgumentList *actualArgs=0,
+      const ArgumentList &actualArgs=ArgumentList(),
       QDict<int> *templateNames=0
     )
 {
   //if (masterCd->visited) return;
   masterCd->setVisited(TRUE);
   // The base class could ofcouse also be a non-nested class
-  ArgumentList *formalArgs = masterCd->templateArguments();
+  const ArgumentList &formalArgs = masterCd->templateArguments();
   QListIterator<BaseInfo> bii(*root->extends);
   BaseInfo *bi=0;
   for (bii.toFirst();(bi=bii.current());++bii)
@@ -4411,10 +4353,7 @@ static void findBaseClassesForClass(
       delTempNames=TRUE;
     }
     BaseInfo tbi(bi->name,bi->prot,bi->virt);
-    if (actualArgs) // substitute the formal template arguments of the base class
-    {
-      tbi.name = substituteTemplateArgumentsInString(bi->name,formalArgs,actualArgs);
-    }
+    tbi.name = substituteTemplateArgumentsInString(bi->name,formalArgs,actualArgs);
     //printf("bi->name=%s tbi.name=%s\n",bi->name.data(),tbi.name.data());
 
     if (mode==DocumentedOnly)
@@ -4492,14 +4431,13 @@ static bool findTemplateInstanceRelation(const Entry *root,
       const Entry *templateRoot = it->second;
       Debug::print(Debug::Classes,0,"        template root found %s templSpec=%s!\n",
           qPrint(templateRoot->name),qPrint(templSpec));
-      ArgumentList *templArgs = new ArgumentList;
+      ArgumentList templArgs;
       stringToArgumentList(templSpec,templArgs);
       findBaseClassesForClass(templateRoot,context,templateClass,instanceClass,
           TemplateInstances,isArtificial,templArgs,templateNames);
 
       findUsedClassesForClass(templateRoot,context,templateClass,instanceClass,
           isArtificial,templArgs,templateNames);
-      delete templArgs;
     }
     else
     {
@@ -5107,7 +5045,7 @@ static void computeTemplateClassRelations()
       {
         Debug::print(Debug::Classes,0,"    Template instance %s : \n",qPrint(tcd->name()));
         QCString templSpec = tdi.currentKey();
-        ArgumentList *templArgs = new ArgumentList;
+        ArgumentList templArgs;
         stringToArgumentList(templSpec,templArgs);
         QList<BaseInfo> *baseList=root->extends;
         QListIterator<BaseInfo> it(*baseList);
@@ -5116,8 +5054,8 @@ static void computeTemplateClassRelations()
         {
           // check if the base class is a template argument
           BaseInfo tbi(bi->name,bi->prot,bi->virt);
-          ArgumentList *tl = cd->templateArguments();
-          if (tl)
+          const ArgumentList &tl = cd->templateArguments();
+          if (!tl.empty())
           {
             QDict<int> *baseClassNames = tcd->getTemplateBaseClassNames();
             QDict<int> *templateNames = getTemplateArgumentsInName(tl,bi->name);
@@ -5129,18 +5067,20 @@ static void computeTemplateClassRelations()
             for (qdi.toFirst();qdi.current();++qdi)
             {
               int templIndex = *qdi.current();
-              Argument *actArg = 0;
-              if (templIndex<(int)templArgs->count())
+              Argument actArg;
+              bool hasActArg=FALSE;
+              if (templIndex<(int)templArgs.size())
               {
-                actArg=templArgs->at(templIndex);
+                actArg=templArgs.at(templIndex);
+                hasActArg=TRUE;
               }
-              if (actArg!=0 &&
+              if (hasActArg &&
                   baseClassNames!=0 &&
-                  baseClassNames->find(actArg->type)!=0 &&
-                  actualTemplateNames->find(actArg->type)==0
+                  baseClassNames->find(actArg.type)!=0 &&
+                  actualTemplateNames->find(actArg.type)==0
                  )
               {
-                actualTemplateNames->insert(actArg->type,new int(templIndex));
+                actualTemplateNames->insert(actArg.type,new int(templIndex));
               }
             }
             delete templateNames;
@@ -5155,7 +5095,6 @@ static void computeTemplateClassRelations()
             delete actualTemplateNames;
           }
         }
-        delete templArgs;
       } // class has no base classes
     }
   }
@@ -5294,13 +5233,13 @@ static void generateXRefPages()
 
 static void addMemberDocs(const Entry *root,
                    MemberDef *md, const char *funcDecl,
-                   ArgumentList *al,
+                   const ArgumentList *al,
                    bool over_load,
                    uint64 spec
                   )
 {
-  //printf("addMemberDocs: '%s'::'%s' '%s' funcDecl='%s' mSpec=%d\n",
-  //     root->parent->name.data(),md->name().data(),md->argsString(),funcDecl,spec);
+  //printf("addMemberDocs: '%s'::'%s' '%s' funcDecl='%s' mSpec=%lld\n",
+  //     root->parent()->name.data(),md->name().data(),md->argsString(),funcDecl,spec);
   QCString fDecl=funcDecl;
   // strip extern specifier
   fDecl.stripPrefix("extern ");
@@ -5324,11 +5263,12 @@ static void addMemberDocs(const Entry *root,
   // TODO determine scope based on root not md
   Definition *rscope = md->getOuterScope();
 
-  ArgumentList *mdAl = md->argumentList();
+  ArgumentList &mdAl = md->argumentList();
   if (al)
   {
+    ArgumentList mergedAl = *al;
     //printf("merging arguments (1) docs=%d\n",root->doc.isEmpty());
-    mergeArguments(mdAl,al,!root->doc.isEmpty());
+    mergeArguments(mdAl,mergedAl,!root->doc.isEmpty());
   }
   else
   {
@@ -5340,7 +5280,8 @@ static void addMemberDocs(const Entry *root,
        )
     {
       //printf("merging arguments (2)\n");
-      mergeArguments(mdAl,root->argList,!root->doc.isEmpty());
+      ArgumentList mergedArgList = root->argList;
+      mergeArguments(mdAl,mergedArgList,!root->doc.isEmpty());
     }
   }
   if (over_load)  // the \overload keyword was used
@@ -5511,9 +5452,9 @@ static bool findGlobalMember(const Entry *root,
         NamespaceDef *rnd = 0;
         if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict->find(namespaceName);
 
-        const ArgumentList *mdAl = const_cast<const MemberDef *>(md)->argumentList();
+        const ArgumentList &mdAl = const_cast<const MemberDef *>(md)->argumentList();
         bool matching=
-          (mdAl==0 && root->argList->count()==0) ||
+          (mdAl.empty() && root->argList.empty()) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
           matchArguments2(md->getOuterScope(),const_cast<const MemberDef *>(md)->getFileDef(),mdAl,
                           rnd ? rnd : Doxygen::globalScope,fd,root->argList,
@@ -5522,15 +5463,12 @@ static bool findGlobalMember(const Entry *root,
         // for template members we need to check if the number of
         // template arguments is the same, otherwise we are dealing with
         // different functions.
-        if (matching && root->tArgLists)
+        if (matching && !root->tArgLists.empty())
         {
-          const ArgumentList *mdTempl = md->templateArguments();
-          if (mdTempl)
+          const ArgumentList &mdTempl = md->templateArguments();
+          if (root->tArgLists.back().size()!=mdTempl.size())
           {
-            if (root->tArgLists->getLast()->count()!=mdTempl->count())
-            {
-              matching=FALSE;
-            }
+            matching=FALSE;
           }
         }
 
@@ -5550,11 +5488,11 @@ static bool findGlobalMember(const Entry *root,
         }
 
         // for template member we also need to check the return type
-        if (md->templateArguments()!=0 && root->tArgLists!=0)
+        if (!md->templateArguments().empty() && !root->tArgLists.empty())
         {
           //printf("Comparing return types '%s'<->'%s'\n",
           //    md->typeString(),type);
-          if (md->templateArguments()->count()!=root->tArgLists->getLast()->count() ||
+          if (md->templateArguments().size()!=root->tArgLists.back().size() ||
               qstrcmp(md->typeString(),type)!=0)
           {
             //printf(" ---> no matching\n");
@@ -5565,7 +5503,7 @@ static bool findGlobalMember(const Entry *root,
         if (matching) // add docs to the member
         {
           Debug::print(Debug::FindMembers,0,"5. Match found\n");
-          addMemberDocs(root,md->resolveAlias(),decl,root->argList,FALSE,root->spec);
+          addMemberDocs(root,md->resolveAlias(),decl,&root->argList,FALSE,root->spec);
           found=TRUE;
         }
       }
@@ -5573,7 +5511,7 @@ static bool findGlobalMember(const Entry *root,
     if (!found && root->relatesType != Duplicate && root->section==Entry::FUNCTION_SEC) // no match
     {
       QCString fullFuncDecl=decl;
-      if (root->argList) fullFuncDecl+=argListToString(root->argList,TRUE);
+      if (!root->argList.empty()) fullFuncDecl+=argListToString(root->argList,TRUE);
       QCString warnMsg =
          QCString("no matching file member found for \n")+substitute(fullFuncDecl,"%","%%");
       if (mn->count()>0)
@@ -5609,17 +5547,17 @@ static bool findGlobalMember(const Entry *root,
 }
 
 static bool isSpecialization(
-                  const QList<ArgumentList> &srcTempArgLists,
-                  const QList<ArgumentList> &dstTempArgLists
+                  const std::vector<ArgumentList> &srcTempArgLists,
+                  const std::vector<ArgumentList> &dstTempArgLists
     )
 {
-    QListIterator<ArgumentList> srclali(srcTempArgLists);
-    QListIterator<ArgumentList> dstlali(dstTempArgLists);
-    for (;srclali.current();++srclali,++dstlali)
+    auto srcIt = srcTempArgLists.begin();
+    auto dstIt = dstTempArgLists.begin();
+    while (srcIt!=srcTempArgLists.end() && dstIt!=dstTempArgLists.end())
     {
-      ArgumentList *sal = srclali.current();
-      ArgumentList *dal = dstlali.current();
-      if (!(sal && dal && sal->count()==dal->count())) return TRUE;
+      if ((*srcIt).size()!=(*dstIt).size()) return TRUE;
+      ++srcIt;
+      ++dstIt;
     }
     return FALSE;
 }
@@ -5629,15 +5567,15 @@ static bool scopeIsTemplate(const Definition *d)
   bool result=FALSE;
   if (d && d->definitionType()==Definition::TypeClass)
   {
-    result = (dynamic_cast<const ClassDef*>(d))->templateArguments() || scopeIsTemplate(d->getOuterScope());
+    result = !(dynamic_cast<const ClassDef*>(d))->templateArguments().empty() ||
+             scopeIsTemplate(d->getOuterScope());
   }
   return result;
 }
 
 static QCString substituteTemplatesInString(
-    const QList<ArgumentList> &srcTempArgLists,
-    const QList<ArgumentList> &dstTempArgLists,
-    ArgumentList *funcTempArgList, // can be used to match template specializations
+    const std::vector<ArgumentList> &srcTempArgLists,
+    const std::vector<ArgumentList> &dstTempArgLists,
     const QCString &src
     )
 {
@@ -5651,61 +5589,59 @@ static QCString substituteTemplatesInString(
     dst+=src.mid(p,i-p);
     QCString name=src.mid(i,l);
 
-    QListIterator<ArgumentList> srclali(srcTempArgLists);
-    QListIterator<ArgumentList> dstlali(dstTempArgLists);
-    for (;srclali.current() && !found;++srclali,++dstlali)
+    auto srcIt = srcTempArgLists.begin();
+    auto dstIt = dstTempArgLists.begin();
+    while (srcIt!=srcTempArgLists.end() && !found)
     {
-      ArgumentListIterator tsali(*srclali.current());
-      ArgumentListIterator tdali(*dstlali.current());
-      ArgumentListIterator *fali=0;
-      Argument *tsa =0,*tda=0, *fa=0;
-      if (funcTempArgList)
+      const ArgumentList *tdAli = 0;
+      std::vector<Argument>::const_iterator tdaIt;
+      if (dstIt!=dstTempArgLists.end())
       {
-        fali = new ArgumentListIterator(*funcTempArgList);
-        fa = fali->current();
+        tdAli = &(*dstIt);
+        tdaIt = tdAli->begin();
+        ++dstIt;
       }
 
-      for (tsali.toFirst();(tsa=tsali.current()) && !found;++tsali)
+      const ArgumentList &tsaLi = *srcIt;
+      for (auto tsaIt = tsaLi.begin(); tsaIt!=tsaLi.end() && !found; ++tsaIt)
       {
-        tda = tdali.current();
+        Argument tsa = *tsaIt;
+        const Argument *tda = 0;
+        if (tdAli && tdaIt!=tdAli->end())
+        {
+          tda = &(*tdaIt);
+          ++tdaIt;
+        }
         //if (tda) printf("tsa=%s|%s tda=%s|%s\n",
-        //    tsa->type.data(),tsa->name.data(),
+        //    tsa.type.data(),tsa.name.data(),
         //    tda->type.data(),tda->name.data());
-        if (name==tsa->name)
+        if (name==tsa.name)
         {
           if (tda && tda->name.isEmpty())
           {
+            QCString tdaName = tda->name;
+            QCString tdaType = tda->type;
             int vc=0;
-            if (tda->type.left(6)=="class ") vc=6;
-            else if (tda->type.left(9)=="typename ") vc=9;
+            if (tdaType.left(6)=="class ") vc=6;
+            else if (tdaType.left(9)=="typename ") vc=9;
             if (vc>0) // convert type=="class T" to type=="class" name=="T"
             {
-              tda->name = tda->type.mid(vc);
-              tda->type = tda->type.left(vc-1);
+              tdaName = tdaType.mid(vc);
+            }
+            if (!tdaName.isEmpty())
+            {
+              name=tdaName; // substitute
+              found=TRUE;
             }
           }
-          if (tda && !tda->name.isEmpty())
-          {
-            name=tda->name; // substitute
-            found=TRUE;
-          }
-          else if (fa)
-          {
-            name=fa->type;
-            found=TRUE;
-          }
         }
-        if (tda)
-          ++tdali;
-        else if (fali)
-        { ++(*fali); fa=fali->current(); }
       }
 
-      delete fali;
       //printf("   srcList='%s' dstList='%s faList='%s'\n",
       //  argListToString(srclali.current()).data(),
       //  argListToString(dstlali.current()).data(),
       //  funcTempArgList ? argListToString(funcTempArgList).data() : "<none>");
+      ++srcIt;
     }
     dst+=name;
     p=i+l;
@@ -5717,48 +5653,39 @@ static QCString substituteTemplatesInString(
 }
 
 static void substituteTemplatesInArgList(
-                  const QList<ArgumentList> &srcTempArgLists,
-                  const QList<ArgumentList> &dstTempArgLists,
-                  ArgumentList *src,
-                  ArgumentList *dst,
-                  ArgumentList *funcTempArgs = 0
+                  const std::vector<ArgumentList> &srcTempArgLists,
+                  const std::vector<ArgumentList> &dstTempArgLists,
+                  const ArgumentList &src,
+                  ArgumentList &dst
                  )
 {
-  ArgumentListIterator sali(*src);
-  ArgumentListIterator dali(*dst);
-  Argument *sa=0;
-  Argument *da=dali.current();
-
-  for (sali.toFirst();(sa=sali.current());++sali) // for each member argument
+  auto dstIt = dst.begin();
+  for (const Argument &sa : src)
   {
-    QCString dstType = substituteTemplatesInString(
-                                  srcTempArgLists,dstTempArgLists,funcTempArgs,
-                                  sa->type);
-    QCString dstArray = substituteTemplatesInString(
-                                  srcTempArgLists,dstTempArgLists,funcTempArgs,
-                                  sa->array);
-    if (da==0)
+    QCString dstType =  substituteTemplatesInString(srcTempArgLists,dstTempArgLists,sa.type);
+    QCString dstArray = substituteTemplatesInString(srcTempArgLists,dstTempArgLists,sa.array);
+    if (dstIt == dst.end())
     {
-      da=new Argument(*sa);
-      dst->append(da);
-      da->type=dstType;
-      da->array=dstArray;
-      da=0;
+      Argument da = sa;
+      da.type  = dstType;
+      da.array = dstArray;
+      dst.push_back(da);
+      dstIt = dst.end();
     }
     else
     {
-      da->type=dstType;
-      da->type=dstArray;
-      ++dali;
-      da=dali.current();
+      Argument da = *dstIt;
+      da.type  = dstType;
+      da.array = dstArray;
+      ++dstIt;
     }
   }
-  dst->constSpecifier     = src->constSpecifier;
-  dst->volatileSpecifier  = src->volatileSpecifier;
-  dst->pureSpecifier      = src->pureSpecifier;
-  dst->trailingReturnType = substituteTemplatesInString(
+  dst.constSpecifier     = src.constSpecifier;
+  dst.volatileSpecifier  = src.volatileSpecifier;
+  dst.pureSpecifier      = src.pureSpecifier;
+  dst.trailingReturnType = substituteTemplatesInString(
                              srcTempArgLists,dstTempArgLists,
-                             funcTempArgs,src->trailingReturnType);
+                             src.trailingReturnType);
   //printf("substituteTemplatesInArgList: replacing %s with %s\n",
   //    argListToString(src).data(),argListToString(dst).data()
   //    );
@@ -5786,10 +5713,10 @@ static void findMember(const Entry *root,
 {
   Debug::print(Debug::FindMembers,0,
                "findMember(root=%p,funcDecl='%s',related='%s',overload=%d,"
-               "isFunc=%d mGrpId=%d tArgList=%p (#=%d) "
+               "isFunc=%d mGrpId=%d #tArgList=%d "
                "spec=%lld lang=%x\n",
                root,qPrint(funcDecl),qPrint(relates),overloaded,isFunc,root->mGrpId,
-               root->tArgLists,root->tArgLists ? root->tArgLists->count() : 0,
+               root->tArgLists.size(),
                root->spec,root->lang
               );
 
@@ -5946,9 +5873,8 @@ static void findMember(const Entry *root,
   // empty while funcSpec is not empty we assume this is a
   // specialization of a method. If not, we clear the funcSpec and treat
   // this as a normal method of a template class.
-  if (!(root->tArgLists &&
-        root->tArgLists->count()>0 &&
-        root->tArgLists->getFirst()->count()==0
+  if (!(root->tArgLists.size()>0 &&
+        root->tArgLists.front().size()==0
        )
      )
   {
@@ -5995,7 +5921,7 @@ static void findMember(const Entry *root,
     if (funcSpec.isEmpty())
     {
       int argListIndex=0;
-      tempScopeName=cd->qualifiedNameWithTemplateParameters(root->tArgLists,&argListIndex);
+      tempScopeName=cd->qualifiedNameWithTemplateParameters(&root->tArgLists,&argListIndex);
     }
     else
     {
@@ -6145,39 +6071,33 @@ static void findMember(const Entry *root,
                   "4. class definition %s found\n",cd->name().data());
 
               // get the template parameter lists found at the member declaration
-              QList<ArgumentList> declTemplArgs;
-              cd->getTemplateParameterLists(declTemplArgs);
-              const ArgumentList *templAl = md->templateArguments();
-              if (templAl)
+              std::vector<ArgumentList> declTemplArgs = cd->getTemplateParameterLists();
+              const ArgumentList &templAl = md->templateArguments();
+              if (!templAl.empty())
               {
-                declTemplArgs.append(templAl);
+                declTemplArgs.push_back(templAl);
               }
 
               // get the template parameter lists found at the member definition
-              QList<ArgumentList> *defTemplArgs = root->tArgLists;
+              const std::vector<ArgumentList> &defTemplArgs = root->tArgLists;
               //printf("defTemplArgs=%p\n",defTemplArgs);
 
               // do we replace the decl argument lists with the def argument lists?
               bool substDone=FALSE;
-              ArgumentList *argList=0;
+              ArgumentList argList;
 
               /* substitute the occurrences of class template names in the
                * argument list before matching
                */
-              ArgumentList *mdAl = md->argumentList();
-              if (declTemplArgs.count()>0 && defTemplArgs &&
-                  declTemplArgs.count()==defTemplArgs->count() &&
-                  mdAl
-                 )
+              const ArgumentList &mdAl = md->argumentList();
+              if (declTemplArgs.size()>0 && declTemplArgs.size()==defTemplArgs.size())
               {
                 /* the function definition has template arguments
                  * and the class definition also has template arguments, so
                  * we must substitute the template names of the class by that
                  * of the function definition before matching.
                  */
-                argList = new ArgumentList;
-                substituteTemplatesInArgList(declTemplArgs,*defTemplArgs,
-                    mdAl,argList);
+                substituteTemplatesInArgList(declTemplArgs,defTemplArgs,mdAl,argList);
 
                 substDone=TRUE;
               }
@@ -6194,7 +6114,7 @@ static void findMember(const Entry *root,
 
               bool matching=
                 md->isVariable() || md->isTypedef() || // needed for function pointers
-                (mdAl==0 && root->argList->count()==0) ||
+                (mdAl.empty() && root->argList.empty()) ||
                 matchArguments2(
                     md->getClassDef(),md->getFileDef(),argList,
                     cd,fd,root->argList,
@@ -6206,7 +6126,7 @@ static void findMember(const Entry *root,
               }
 
               // for template member we also need to check the return type
-              if (md->templateArguments()!=0 && root->tArgLists!=0)
+              if (!md->templateArguments().empty() && !root->tArgLists.empty())
               {
                 QCString memType = md->typeString();
                 memType.stripPrefix("static "); // see bug700696
@@ -6217,8 +6137,8 @@ static void findMember(const Entry *root,
                 Debug::print(Debug::FindMembers,0,
                    "5b. Comparing return types '%s'<->'%s' #args %d<->%d\n",
                     qPrint(md->typeString()),qPrint(funcType),
-                    md->templateArguments()->count(),root->tArgLists->getLast()->count());
-                if (md->templateArguments()->count()!=root->tArgLists->getLast()->count() ||
+                    md->templateArguments().size(),root->tArgLists.back().size());
+                if (md->templateArguments().size()!=root->tArgLists.back().size() ||
                     qstrcmp(memType,funcType))
                 {
                   //printf(" ---> no matching\n");
@@ -6227,9 +6147,9 @@ static void findMember(const Entry *root,
               }
               bool rootIsUserDoc = (root->section&Entry::MEMBERDOC_SEC)!=0;
               bool classIsTemplate = scopeIsTemplate(md->getClassDef());
-              bool mdIsTemplate    = md->templateArguments()!=0;
+              bool mdIsTemplate    = md->templateArguments().hasParameters();
               bool classOrMdIsTemplate = mdIsTemplate || classIsTemplate;
-              bool rootIsTemplate  = root->tArgLists!=0;
+              bool rootIsTemplate  = !root->tArgLists.empty();
               //printf("classIsTemplate=%d mdIsTemplate=%d rootIsTemplate=%d\n",classIsTemplate,mdIsTemplate,rootIsTemplate);
               if (!rootIsUserDoc && // don't check out-of-line @fn references, see bug722457
                   (mdIsTemplate || rootIsTemplate) && // either md or root is a template
@@ -6245,19 +6165,19 @@ static void findMember(const Entry *root,
 
 
               Debug::print(Debug::FindMembers,0,
-                  "6. match results of matchArguments2 = %d\n",matching);
+                  "6. match results of matchArguments2 = %d substDone=%d\n",matching,substDone);
 
               if (substDone) // found a new argument list
               {
                 if (matching) // replace member's argument list
                 {
                   md->setDefinitionTemplateParameterLists(root->tArgLists);
-                  md->setArgumentList(argList); // new owner of the list => no delete
+                  md->setArgumentList(argList);
                 }
                 else // no match
                 {
                   if (!funcTempList.isEmpty() &&
-                      isSpecialization(declTemplArgs,*defTemplArgs))
+                      isSpecialization(declTemplArgs,defTemplArgs))
                   {
                     // check if we are dealing with a partial template
                     // specialization. In this case we add it to the class
@@ -6267,7 +6187,6 @@ static void findMember(const Entry *root,
                         md->protection(),md->isStatic(),md->virtualness(),spec,relates);
                     return;
                   }
-                  delete argList;
                 }
               }
               if (matching)
@@ -6303,9 +6222,9 @@ static void findMember(const Entry *root,
                 //printf("ccd->name()==%s className=%s\n",ccd->name().data(),className.data());
                 if (ccd!=0 && rightScopeMatch(ccd->name(),className))
                 {
-                  const ArgumentList *templAl = md->templateArguments();
-                  if (root->tArgLists && templAl!=0 &&
-                      root->tArgLists->getLast()->count()<=templAl->count())
+                  const ArgumentList &templAl = md->templateArguments();
+                  if (!root->tArgLists.empty() && !templAl.empty() &&
+                      root->tArgLists.back().size()<=templAl.size())
                   {
                     Debug::print(Debug::FindMembers,0,"7. add template specialization\n");
                     addMethodToClass(root,ccd,type,md->name(),args,isFriend,
@@ -6356,17 +6275,13 @@ static void findMember(const Entry *root,
             if (noMatchCount>1) warnMsg+="uniquely ";
             warnMsg+="matching class member found for \n";
 
-            if (root->tArgLists)
+            for (const ArgumentList &al : root->tArgLists)
             {
-              QListIterator<ArgumentList> alli(*root->tArgLists);
-              ArgumentList *al;
-              for (;(al=alli.current());++alli)
-              {
-                warnMsg+="  template ";
-                warnMsg+=tempArgListToString(al,root->lang);
-                warnMsg+='\n';
-              }
+              warnMsg+="  template ";
+              warnMsg+=tempArgListToString(al,root->lang);
+              warnMsg+='\n';
             }
+
             QCString fullFuncDecl=funcDecl.copy();
             if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
 
@@ -6382,8 +6297,8 @@ static void findMember(const Entry *root,
                 const ClassDef *cd=md->getClassDef();
                 if (cd!=0 && rightScopeMatch(cd->name(),className))
                 {
-                  const ArgumentList *templAl = md->templateArguments();
-                  if (templAl!=0)
+                  const ArgumentList &templAl = md->templateArguments();
+                  if (templAl.hasParameters())
                   {
                     warnMsg+="  'template ";
                     warnMsg+=tempArgListToString(templAl,root->lang);
@@ -6430,7 +6345,7 @@ static void findMember(const Entry *root,
             }
           }
           MemberType mtype=MemberType_Function;
-          ArgumentList *tArgList = new ArgumentList;
+          ArgumentList tArgList;
           //  getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
           md=createMemberDef(
               root->fileName,root->startLine,root->startColumn,
@@ -6464,7 +6379,6 @@ static void findMember(const Entry *root,
           mn->append(md);
           cd->insertMember(md);
           md->setRefItems(root->sli);
-          delete tArgList;
         }
         else
         {
@@ -6499,7 +6413,7 @@ static void findMember(const Entry *root,
           else                           mtype=MemberType_Function;
 
           // new overloaded member function
-          ArgumentList *tArgList =
+          ArgumentList tArgList =
             getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
           //printf("new related member %s args='%s'\n",md->name().data(),funcArgs.data());
           MemberDef *md=createMemberDef(
@@ -6590,7 +6504,7 @@ static void findMember(const Entry *root,
           MemberDef *rmd;
           while ((rmd=mni.current()) && newMember) // see if we got another member with matching arguments
           {
-            ArgumentList *rmdAl = rmd->argumentList();
+            const ArgumentList &rmdAl = rmd->argumentList();
 
             newMember=
               className!=rmd->getOuterScope()->name() ||
@@ -6645,8 +6559,9 @@ static void findMember(const Entry *root,
               root->stat && !isMemberOf,
               isMemberOf ? Foreign : Related,
               mtype,
-              (root->tArgLists ? root->tArgLists->getLast() : 0),
-              funcArgs.isEmpty() ? 0 : root->argList,root->metaData);
+              (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
+              funcArgs.isEmpty() ? ArgumentList() : root->argList,
+              root->metaData);
 
           if (isDefine && mdDefine)
           {
@@ -6685,7 +6600,7 @@ static void findMember(const Entry *root,
               const MemberDef *rmd;
               while ((rmd=rmni.current()) && !found) // see if we got another member with matching arguments
               {
-                const ArgumentList *rmdAl = rmd->argumentList();
+                const ArgumentList &rmdAl = rmd->argumentList();
                 // check for matching argument lists
                 if (
                     matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl,
@@ -6786,7 +6701,7 @@ localObjCMethod:
             root->fileName,root->startLine,root->startColumn,
             funcType,funcName,funcArgs,exceptions,
             root->protection,root->virt,root->stat,Member,
-            MemberType_Function,0,root->argList,root->metaData);
+            MemberType_Function,ArgumentList(),root->argList,root->metaData);
         md->setTagInfo(root->tagInfo);
         md->setLanguage(root->lang);
         md->setId(root->id);
@@ -7141,7 +7056,7 @@ static void findEnums(const Entry *root)
           root->protection,Normal,FALSE,
           isMemberOf ? Foreign : isRelated ? Related : Member,
           MemberType_Enumeration,
-          0,0,root->metaData);
+          ArgumentList(),ArgumentList(),root->metaData);
       md->setTagInfo(root->tagInfo);
       md->setLanguage(root->lang);
       md->setId(root->id);
@@ -7357,7 +7272,7 @@ static void addEnumValuesToEnums(const Entry *root)
                       fileName,e->startLine,e->startColumn,
                       e->type,e->name,e->args,0,
                       e->protection, Normal,e->stat,Member,
-                      MemberType_EnumValue,0,0,e->metaData);
+                      MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData);
                   if      (md->getClassDef())     fmd->setMemberClass(md->getClassDef());
                   else if (md->getNamespaceDef()) fmd->setNamespace(md->getNamespaceDef());
                   else if (md->getFileDef())      fmd->setFileDef(md->getFileDef());
@@ -7755,8 +7670,8 @@ static void computeMemberRelations()
               mcd->isBaseClass(bmcd,TRUE))
           {
             //printf("  derived scope\n");
-            ArgumentList *bmdAl = bmd->argumentList();
-            ArgumentList *mdAl =  md->argumentList();
+            const ArgumentList &bmdAl = bmd->argumentList();
+            const ArgumentList &mdAl =  md->argumentList();
             //printf(" Base argList='%s'\n Super argList='%s'\n",
             //        argListToString(bmdAl.pointer()).data(),
             //        argListToString(mdAl.pointer()).data()
@@ -8591,7 +8506,8 @@ static void findDefineDocumentation(Entry *root)
     {
       MemberDef *md=createMemberDef(root->tagInfo->tagName,1,1,
                     "#define",root->name,root->args,0,
-                    Public,Normal,FALSE,Member,MemberType_Define,0,0,"");
+                    Public,Normal,FALSE,Member,MemberType_Define,
+                    ArgumentList(),ArgumentList(),"");
       md->setTagInfo(root->tagInfo);
       md->setLanguage(root->lang);
       //printf("Searching for '%s' fd=%p\n",filePathName.data(),fd);

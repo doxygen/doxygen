@@ -441,9 +441,9 @@ void VhdlParser::createFunction(const char *imp,uint64 spec,const char *fn)
       QCStringList q1=QCStringList::split(",",fname);
       for (uint ii=0;ii<q1.count();ii++)
       {
-        Argument *arg=new Argument;
-        arg->name=q1[ii];
-        current->argList->append(arg);
+        Argument arg;
+        arg.name=q1[ii];
+        current->argList.push_back(arg);
       }
     }
     return;
@@ -532,7 +532,7 @@ void VhdlParser::addConfigureNode(const char* a,const char*b, bool,bool isLeaf,b
 
 
 void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
-    const char *s4,const char *s5,const char *s6)
+                          const char *s4,const char *s5,const char *s6)
 {
   (void)s5; // avoid unused warning
   QCString name=s2;
@@ -540,21 +540,21 @@ void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
 
   for (uint u=0;u<ql.count();u++)
   {
-    Argument *arg=new Argument;
-    arg->name=ql[u];
+    Argument arg;
+    arg.name=ql[u];
     if (s3)
     {
-      arg->type=s3;
+      arg.type=s3;
     }
-    arg->type+=" ";
-    arg->type+=s4;
+    arg.type+=" ";
+    arg.type+=s4;
     if (s6)
     {
-      arg->type+=s6;
+      arg.type+=s6;
     }
     if (parse_sec==GEN_SEC && param_sec==0)
     {
-      arg->defval="gen!";
+      arg.defval="gen!";
     }
 
     if (parse_sec==PARAM_SEC)
@@ -562,10 +562,10 @@ void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
     //  assert(false);
     }
 
-    arg->defval+=s1;
-    arg->attrib="";//s6;
+    arg.defval+=s1;
+    arg.attrib="";//s6;
 
-    current->argList->append(arg);
+    current->argList.push_back(arg);
     current->args+=s2;
     current->args+=",";
   }

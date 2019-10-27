@@ -352,7 +352,7 @@ static void addType()
     }
     current->type += current->args ;
     current->args.resize(0) ;
-    current->argList->clear();
+    current->argList.clear();
 }
 
 
@@ -372,7 +372,7 @@ static QCString stripQuotes(const char *s)
 
 static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
-static void handleParametersCommentBlocks(ArgumentList *al);
+static void handleParametersCommentBlocks(ArgumentList &al);
 
 //-----------------------------------------------------------------
 
@@ -418,28 +418,10 @@ static void prependScope()
   {
     //printf("--- prependScope %s to %s\n",current_root->name.data(),current->name.data());
     current->name.prepend(current_root->name+"::");
-    if (current_root->tArgLists)
+    //printf("prependScope #=%d #current=%d\n",current_root->tArgLists->count(),current->tArgLists->count());
+    for (const ArgumentList &srcAl : current_root->tArgLists)
     {
-      if (current->tArgLists==0)
-      {
-	current->tArgLists = new QList<ArgumentList>;
-	current->tArgLists->setAutoDelete(TRUE);
-      }
-      //printf("prependScope #=%d #current=%d\n",current_root->tArgLists->count(),current->tArgLists->count());
-      QListIterator<ArgumentList> talsi(*current_root->tArgLists);
-      ArgumentList *srcAl=0;
-      for (talsi.toLast();(srcAl=talsi.current());--talsi)
-      {
-        ArgumentList *dstAl = new ArgumentList;
-	QListIterator<Argument> tali(*srcAl);
-        Argument *a;
-        for (;(a=tali.current());++tali)
-        {
-          dstAl->append(new Argument(*a));
-        //printf("appending argument %s %s\n",a->type.data(),a->name.data());
-        }	  
-        current->tArgLists->insert(0,dstAl);	
-      }
+      current->tArgLists.insert(current->tArgLists.begin(),srcAl);
     }
   }
 }
@@ -450,14 +432,12 @@ static void prependScope()
 static bool checkForKnRstyleC()
 {
   if (((QCString)yyFileName).right(2).lower()!=".c") return FALSE; // must be a C file
-  if (!current->argList) return FALSE; // must have arguments
-  ArgumentListIterator ali(*current->argList);
-  Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
+  if (current->argList.empty()) return FALSE; // must have arguments
+  for (const Argument &a : current->argList)
   {
     // in K&R style argument do not have a type, but doxygen expects a type
     // so it will think the argument has no name
-    if (a->type.isEmpty() || !a->name.isEmpty()) return FALSE;
+    if (a.type.isEmpty() || !a.name.isEmpty()) return FALSE;
   }
   return TRUE;
 }
@@ -545,30 +525,27 @@ static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
 static void addKnRArgInfo(const QCString &type,const QCString &name,
                           const QCString &brief,const QCString &docs)
 {
-  if (current->argList==0) return;
-  ArgumentListIterator ali(*current->argList);
-  Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
+  for (Argument &a : current->argList)
   {
-    if (a->type==name)
+    if (a.type==name)
     {
-      a->type=type.stripWhiteSpace();
-      if (a->type.left(9)=="register ") // strip keyword
+      a.type=type.stripWhiteSpace();
+      if (a.type.left(9)=="register ") // strip keyword
       {
-	a->type=a->type.mid(9);
+	a.type=a.type.mid(9);
       }
-      a->name=name.stripWhiteSpace();
+      a.name=name.stripWhiteSpace();
       if (!brief.isEmpty() && !docs.isEmpty())
       {
-        a->docs=brief+"\n\n"+docs;
+        a.docs=brief+"\n\n"+docs;
       }
       else if (!brief.isEmpty())
       {
-        a->docs=brief;
+        a.docs=brief;
       }
       else
       {
-	a->docs=docs;
+	a.docs=docs;
       }
     }
   }
@@ -577,17 +554,14 @@ static void addKnRArgInfo(const QCString &type,const QCString &name,
 //-----------------------------------------------------------------------------
 
 
-void fixArgumentListForJavaScript(ArgumentList *al)
+void fixArgumentListForJavaScript(ArgumentList &al)
 {
-  if (al==0) return;
-  ArgumentListIterator ali(*al);
-  Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
+  for (Argument &a : al)
   {
-    if (!a->type.isEmpty() && a->name.isEmpty())
+    if (!a.type.isEmpty() && a.name.isEmpty())
     { // a->type is actually the (typeless) parameter name, so move it
-      a->name=a->type;
-      a->type.resize(0);
+      a.name=a.type;
+      a.type.resize(0);
     }
   }
 }
@@ -904,7 +878,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount() ;
 					}
 
@@ -913,7 +887,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount() ;
 					}
 
@@ -923,7 +897,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount() ;
 					}
 
@@ -933,7 +907,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount();
 					}
 
@@ -943,7 +917,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount();
 					}
 
@@ -953,7 +927,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount();
 					}
 <FindMembers>{B}*("public"|"methods"|"__published"){BN}*":"{BN}* { 
@@ -962,7 +936,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount() ;
 					}
 <FindMembers>{B}*"internal"{BN}*":"{BN}* {  // for now treat C++/CLI's internal as package...
@@ -973,7 +947,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    current->type.resize(0); 
 					    current->name.resize(0); 
 					    current->args.resize(0);
-					    current->argList->clear();
+					    current->argList.clear();
 					    lineCount() ;
 					  }
 					  else
@@ -987,7 +961,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount() ;
 					}
 <FindMembers>{B}*"private"{BN}*":"{BN}*	{ 
@@ -996,7 +970,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount() ;
 					}
 <FindMembers>{B}*"event"{BN}+           { 
@@ -1087,7 +1061,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount() ;
   					}
 <FindMembers>{B}*"@protected"{BN}+	{
@@ -1096,7 +1070,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount() ;
   					}
 <FindMembers>{B}*"@public"{BN}+	{
@@ -1105,7 +1079,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
-					  current->argList->clear();
+					  current->argList.clear();
 					  lineCount() ;
   					}
 <FindMembers>[\-+]{BN}*			{
@@ -1130,7 +1104,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    current->type.resize(0); 
 					    current->name.resize(0); 
 					    current->args.resize(0);
-					    current->argList->clear();
+					    current->argList.clear();
 					    BEGIN( ObjCMethod );
 					  }
   					}
@@ -1150,8 +1124,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <ObjCMethod>":"{B}*			{ // start of parameter list
   					  current->name += ':';
-  					  Argument *a = new Argument;
-					  current->argList->append(a);
+  					  Argument a;
+					  current->argList.push_back(a);
   					  BEGIN( ObjCParams );
   					}
 <ObjCReturnType>[^)]*			{ // TODO: check if nested braches are possible.
@@ -1171,26 +1145,26 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    current->name += keyw+":";
 					  }
-					  if (current->argList->getLast()->type.isEmpty())
+					  if (current->argList.back().type.isEmpty())
 					  {
-					    current->argList->getLast()->type="id";
+					    current->argList.back().type="id";
 					  }
-  					  Argument *a = new Argument;
-  					  a->attrib=(QCString)"["+keyw+"]";
-					  current->argList->append(a);
+  					  Argument a;
+  					  a.attrib=(QCString)"["+keyw+"]";
+					  current->argList.push_back(a);
   					}
 <ObjCParams>{ID}{BN}*			{ // name of parameter
   					  lineCount();
-  					  current->argList->getLast()->name=QCString(yytext).stripWhiteSpace();
+  					  current->argList.back().name=QCString(yytext).stripWhiteSpace();
   					}
 <ObjCParams>","{BN}*"..."		{ // name of parameter
   					  lineCount();
 					  // do we want the comma as part of the name?
   					  //current->name += ",";
-  					  Argument *a = new Argument;
-  					  a->attrib="[,]";
-  					  a->type="...";
-					  current->argList->append(a);
+  					  Argument a;
+  					  a.attrib="[,]";
+  					  a.type="...";
+					  current->argList.push_back(a);
   					}
    /*
 <ObjCParams>":"				{ 
@@ -1199,12 +1173,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
    */
 <ObjCParams>"("				{
 				 	  roundCount=0;
-					  current->argList->getLast()->type.resize(0);
+					  current->argList.back().type.resize(0);
 					  BEGIN( ObjCParamType );
 					}
 <ObjCParamType>"("                      {
                                           roundCount++;
-  					  current->argList->getLast()->type+=yytext;
+  					  current->argList.back().type+=yytext;
                                         }
 <ObjCParamType>")"/{B}*			{
                                           if (roundCount<=0)
@@ -1213,18 +1187,22 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           }
                                           else
                                           {
-                                            current->argList->getLast()->type+=yytext;
+                                            current->argList.back().type+=yytext;
                                             roundCount--;
                                           }
 					}
 <ObjCParamType>[^()]*			{
-        				  current->argList->getLast()->type+=QCString(yytext).stripWhiteSpace();
+        				  current->argList.back().type+=QCString(yytext).stripWhiteSpace();
   					}
 <ObjCMethod,ObjCParams>";"		{ // end of method declaration
-					  if (current->argList->getLast() && current->argList->getLast()->type.isEmpty())
+					  if (!current->argList.empty() && current->argList.back().type.isEmpty())
 					  {
-					    current->argList->getLast()->type="id";
+					    current->argList.back().type="id";
 					  }
+                                          if (current->argList.empty()) // method without parameters
+                                          {
+                                            current->argList.noParameters = TRUE;
+                                          }
   					  current->args = argListToString(current->argList);
 					  //printf("argList=%s\n",current->args.data());
   					  unput(';');
@@ -1235,10 +1213,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           //printf("Type=%s Name=%s args=%s\n",
 					  //    current->type.data(),current->name.data(),argListToString(current->argList).data()
 					  //    );
-					  if (current->argList->getLast() && current->argList->getLast()->type.isEmpty())
+					  if (!current->argList.empty() && current->argList.back().type.isEmpty())
 					  {
-					    current->argList->getLast()->type="id";
+					    current->argList.back().type="id";
 					  }
+                                          if (current->argList.empty()) // method without parameters
+                                          {
+                                            current->argList.noParameters = TRUE;
+                                          }
   					  current->args = argListToString(current->argList);
                                           unput('{');
   					  BEGIN( Function );
@@ -1960,15 +1942,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <FindMembers>("template"|"generic")({BN}*)"<"/[>]?	{  // generic is a C++/CLI extension
   					  lineCount();
-					  if (current->tArgLists==0)
-					  {
-					    current->tArgLists = new QList<ArgumentList>;
-					    current->tArgLists->setAutoDelete(TRUE);
-					  }
-					  ArgumentList *al = new ArgumentList;
+					  ArgumentList al;
 					  //current->spec |= (yytext[0]=='g') ? Entry::Generic : Entry::Template;
-					  current->tArgLists->append(al);
-					  currentArgumentList = al;
+					  current->tArgLists.push_back(al);
+					  currentArgumentList = &current->tArgLists.back();
 					  templateStr="<";
 					  fullArgString = templateStr;
 					  copyArgString = &templateStr;
@@ -4491,7 +4468,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    fullArgString=current->args.copy();
 					    copyArgString=&current->args;
 					    BEGIN( ReadFuncArgType ) ;
-					    //printf(">>> Read function arguments current->argList->count()=%d\n",current->argList->count());
+					    //printf(">>> Read function arguments current->argList.size()=%d\n",current->argList.size());
 					  }
 					}
   /*
@@ -4704,8 +4681,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <ReadTempArgs>">"			{
 					  *copyArgString+=*yytext;
 					  fullArgString+=*yytext;
-					  //printf("end template list %s\n",copyArgString->data());
-					  stringToArgumentList(fullArgString,currentArgumentList);
+					  //printf("end template list '%s'\n",copyArgString->data());
+					  stringToArgumentList(fullArgString,*currentArgumentList);
 					  BEGIN( currentArgumentContext );
 					}
 <CopyArgRound>"("			{
@@ -4857,12 +4834,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FuncQual>{BN}*"const"{BN}*       	{ // const member function
   					  lineCount() ; 
   					  current->args += " const "; 
-					  current->argList->constSpecifier=TRUE;
+					  current->argList.constSpecifier=TRUE;
 					}
 <FuncQual>{BN}*"volatile"{BN}*    	{ // volatile member function
   					  lineCount() ; 
   					  current->args += " volatile "; 
-					  current->argList->volatileSpecifier=TRUE;
+					  current->argList.volatileSpecifier=TRUE;
 					}
 <FuncQual>{BN}*"noexcept"{BN}*    	{ // noexcept qualifier
   					  lineCount() ; 
@@ -4880,25 +4857,25 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
 <FuncQual>{BN}*"&"                      {
                                           current->args += " &";
-                                          current->argList->refQualifier=RefQualifierLValue;
+                                          current->argList.refQualifier=RefQualifierLValue;
                                         }
 <FuncQual>{BN}*"&&"                     {
                                           current->args += " &&";
-                                          current->argList->refQualifier=RefQualifierRValue;
+                                          current->argList.refQualifier=RefQualifierRValue;
                                         }
 
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"0"{BN}*  	{ // pure virtual member function
   					  lineCount() ; 
 					  current->args += " = 0"; 
 					  current->virt = Pure; 
-					  current->argList->pureSpecifier=TRUE;
+					  current->argList.pureSpecifier=TRUE;
                                           BEGIN(FuncQual);
 					}
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"delete"{BN}*     { // C++11 explicitly delete member
                                           lineCount();
                                           current->args += " = delete";
 					  current->spec |= Entry::Delete;
-					  current->argList->isDeleted=TRUE;
+					  current->argList.isDeleted=TRUE;
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"default"{BN}*     { // C++11 explicitly defaulted constructor/assignment operator
@@ -4909,7 +4886,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
 <FuncQual>{BN}*"->"{BN}*                {
                                           lineCount();
-                                          current->argList->trailingReturnType = " -> ";
+                                          current->argList.trailingReturnType = " -> ";
                                           current->args += " -> ";
                                           BEGIN(TrailingReturn);
                                         }
@@ -4918,12 +4895,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>.                       {
-                                          current->argList->trailingReturnType+=yytext;
+                                          current->argList.trailingReturnType+=yytext;
                                           current->args+=yytext;
                                         }
 <TrailingReturn>\n                      {
                                           lineCount();
-                                          current->argList->trailingReturnType+=yytext;
+                                          current->argList.trailingReturnType+=yytext;
                                           current->args+=' ';
                                         }
 <FuncRound,FuncFunc>{BN}*","{BN}*	{ 
@@ -5009,9 +4986,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           if (insideCS && qstrcmp(yytext,"where")==0)
 					  { 
 					    // type constraint for a method
-                                            delete current->typeConstr;
-                                            current->typeConstr = new ArgumentList;
-					    current->typeConstr->append(new Argument);
+					    current->typeConstr.clear();
+					    current->typeConstr.push_back(Argument());
 					    lastCSConstraint = YY_START;
 					    BEGIN( CSConstraintName );
 					  }
@@ -5048,6 +5024,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <OldStyleArgs>{ID} 			{ current->args += yytext; }
 <OldStyleArgs>"{"			{
+                                          if (current->argList.empty())
+                                          {
+                                            current->argList.noParameters=TRUE;
+                                          }
   					  current->args = argListToString(current->argList);
   					  unput('{');
 					  BEGIN(FuncQual);
@@ -5479,7 +5459,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->type.resize(0) ;
 					  current->name.resize(0) ;
 					  current->args.resize(0) ;
-					  current->argList->clear();
+					  current->argList.clear();
 					  BEGIN( FindMembers ) ;
 					}
 <Bases>";"			{
@@ -5509,7 +5489,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    current->type.resize(0) ;
 					    current->name.resize(0) ;
 					    current->args.resize(0) ;
-					    current->argList->clear();
+					    current->argList.clear();
 					  }
 					  BEGIN( FindMembers ) ;
 					}
@@ -5538,16 +5518,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					}
 <CSGeneric>"<"				{
-					  if (current->tArgLists==0)
-					  {
-					    current->tArgLists = new QList<ArgumentList>;
-					    current->tArgLists->setAutoDelete(TRUE);
-					  }
-					  ArgumentList *al = new ArgumentList;
+					  ArgumentList al;
 					  // check bug 612858 before enabling the next line
 					  //current->spec |= Entry::Template;
-					  current->tArgLists->append(al);
-					  currentArgumentList = al;
+					  current->tArgLists.push_back(al);
+					  currentArgumentList = &current->tArgLists.back();
 					  templateStr="<";
 					  current->name += "<";
 					  fullArgString = templateStr;
@@ -5585,7 +5560,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  current->name += yytext;
 					}
 <CompoundName>{SCOPENAME}{BN}*";"	{ // forward declaration
-                                          if (current->tArgLists && current->tArgLists->count()>0)
+                                          if (!current->tArgLists.empty())
                                           {
                                             // found a forward template declaration, this has
                                             // a purpose of its own
@@ -5759,9 +5734,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else if (insideCS && qstrcmp(yytext,"where")==0) // C# type constraint
 					  {
-                                            delete current->typeConstr;
-                                            current->typeConstr = new ArgumentList;
-					    current->typeConstr->append(new Argument);
+                                            current->typeConstr.clear();
+					    current->typeConstr.push_back(Argument());
 					    lastCSConstraint = YY_START;
 					    BEGIN( CSConstraintName );
 					  }
@@ -5821,7 +5795,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN( CopyArgComment );
 					}
 <CSConstraintType,CSConstraintName>"#"	{ // artificially inserted token to signal end of comment block
-                                          current->typeConstr->getLast()->docs = fullArgString;
+                                          current->typeConstr.back().docs = fullArgString;
   					}
 <CSConstraintType>"{"			{ // end of type constraint reached
                                           // parse documentation of the constraints
@@ -5839,24 +5813,24 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
 <CSConstraintName>{ID}                  {
                                           // parameter name
-                                          current->typeConstr->getLast()->name=yytext;
+                                          current->typeConstr.back().name=yytext;
                                         }
 <CSConstraintType>"where"		{ // another constraint for a different param
-					  current->typeConstr->append(new Argument);
+					  current->typeConstr.push_back(Argument());
                                           BEGIN( CSConstraintName );
   					}
 <CSConstraintType>({ID}".")*{ID}("<"{ID}">")?("()")?  {
-                                          if (current->typeConstr->getLast()->type.isEmpty())
+                                          if (current->typeConstr.back().type.isEmpty())
                                               // first type constraint for this parameter
                                           {
-                                            current->typeConstr->getLast()->type=yytext;
+                                            current->typeConstr.back().type=yytext;
                                           }
                                           else // new type constraint for same parameter
                                           {
-                                            QCString name = current->typeConstr->getLast()->name;
-                                            current->typeConstr->append(new Argument);
-                                            current->typeConstr->getLast()->name=name;
-                                            current->typeConstr->getLast()->type=yytext;
+                                            QCString name = current->typeConstr.back().name;
+                                            current->typeConstr.push_back(Argument());
+                                            current->typeConstr.back().name=name;
+                                            current->typeConstr.back().type=yytext;
                                           }
                                         }
 <CSConstraintName,CSConstraintType>\n	{
@@ -6038,9 +6012,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           if (insideCS && baseScope.stripWhiteSpace()=="where")
 					  { 
 					    // type constraint for a class
-                                            delete current->typeConstr;
-                                            current->typeConstr = new ArgumentList;
-					    current->typeConstr->append(new Argument);
+                                            current->typeConstr.clear();
+					    current->typeConstr.push_back(Argument());
 					    lastCSConstraint = YY_START;
 					    BEGIN( CSConstraintName );
 					  }
@@ -6461,7 +6434,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      //current->type.resize(0);
 					      //current->name.resize(0);
 					      //current->args.resize(0);
-					      //current->argList->clear();
+					      //current->argList.clear();
 					      //curlyCount=0;
 					      //BEGIN( SkipCurlyBlock );
 
@@ -6864,16 +6837,16 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <PrototypeQual>{B}*"const"{B}*    	{ 
   					  current->args += " const "; 
-					  current->argList->constSpecifier=TRUE;
+					  current->argList.constSpecifier=TRUE;
 					}
 <PrototypeQual>{B}*"volatile"{B}* 	{ 
   					  current->args += " volatile "; 
-					  current->argList->volatileSpecifier=TRUE;
+					  current->argList.volatileSpecifier=TRUE;
 					}
 <PrototypeQual>{B}*"="{B}*"0"{B}*	{ 
 					  current->args += " = 0"; 
 					  current->virt = Pure; 
-					  current->argList->pureSpecifier=TRUE;
+					  current->argList.pureSpecifier=TRUE;
 					}
 <PrototypeQual>"throw"{B}*"("	        {
   					  current->exception = "throw(";
@@ -7068,17 +7041,15 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   }
 }
 
-static void handleParametersCommentBlocks(ArgumentList *al)
+static void handleParametersCommentBlocks(ArgumentList &al)
 {
   //printf(">>>>>>> handleParametersCommentBlocks()\n");
-  ArgumentListIterator ali(*al);
-  Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
+  for (Argument &a : al)
   {
     //printf("    Param %s docs=%s\n",a->name.data(),a->docs.data());
-    if (!a->docs.isEmpty())
+    if (!a.docs.isEmpty())
     {
-      if  (!a->name && a->type == "...") a->name= "...";
+      if  (!a.name && a.type == "...") a.name= "...";
       int position=0;
       bool needsEntry;
 
@@ -7095,7 +7066,7 @@ static void handleParametersCommentBlocks(ArgumentList *al)
       while (parseCommentBlock(
 	     g_thisParser,
 	     current.get(),
-	     a->docs,            // text
+	     a.docs,             // text
 	     yyFileName,         // file
 	     current->docLine,   // line of block start
 	     FALSE, 
@@ -7114,7 +7085,7 @@ static void handleParametersCommentBlocks(ArgumentList *al)
       {
 	newEntry();
       }
-      a->docs = current->doc;
+      a.docs = current->doc;
 
       // restore context
       current->doc       = orgDoc;

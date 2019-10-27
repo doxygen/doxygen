@@ -43,11 +43,7 @@ Entry::Entry()
   groups = new QList<Grouping>;
   groups->setAutoDelete(TRUE);
   anchors = new QList<SectionInfo>; // Doxygen::sectionDict takes ownership of the items!
-  argList = new ArgumentList;
-  argList->setAutoDelete(TRUE);
   //printf("Entry::Entry() tArgList=0\n");
-  tArgLists = 0;
-  typeConstr = 0;
   mGrpId = -1;
   tagInfo = 0;
   sli = 0;
@@ -81,8 +77,8 @@ Entry::Entry(const Entry &e)
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
-  argList     = e.argList->deepCopy();
-  tArgLists = 0;
+  argList     = e.argList;
+  tArgLists   = e.tArgLists;
   program     = e.program;
   initializer = e.initializer;
   includeFile = e.includeFile;
@@ -102,7 +98,7 @@ Entry::Entry(const Entry &e)
   write       = e.write;
   inside      = e.inside;
   exception   = e.exception;
-  typeConstr  = 0;
+  typeConstr  = e.typeConstr;
   bodyLine    = e.bodyLine;
   endBodyLine = e.endBodyLine;
   mGrpId      = e.mGrpId;
@@ -167,18 +163,6 @@ Entry::Entry(const Entry &e)
     anchors->append(s); // shallow copy, object are owned by Doxygen::sectionDict
   }
 
-  // deep copy type constraint list
-  if (e.typeConstr)
-  {
-    typeConstr  = e.typeConstr->deepCopy();
-  }
-
-  // deep copy template argument lists
-  if (e.tArgLists)
-  {
-    tArgLists = copyArgumentLists(e.tArgLists);
-  }
-
   m_fileDef = e.m_fileDef;
 
 }
@@ -192,10 +176,7 @@ Entry::~Entry()
   delete extends;
   delete groups;
   delete anchors;
-  delete argList;
-  delete tArgLists;
   delete tagInfo;
-  delete typeConstr;
   delete sli;
   num--;
 }
@@ -324,12 +305,12 @@ void Entry::reset()
   extends->clear();
   groups->clear();
   anchors->clear();
-  argList->clear();
+  argList.clear();
+  tArgLists.clear();
+  argList.reset();
+  typeConstr.reset();
   if (tagInfo)    { delete tagInfo; tagInfo=0; }
-  if (tArgLists)  { delete tArgLists; tArgLists=0; }
   if (sli)        { delete sli; sli=0; }
-  if (typeConstr) { delete typeConstr; typeConstr=0; }
-  //if (mtArgList) { delete mtArgList; mtArgList=0; }
   m_fileDef = 0;
 }
 

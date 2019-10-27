@@ -396,15 +396,13 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
            (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
                md->getOuterScope()->definitionType()==Definition::TypeFile); 
 
-      const ArgumentList *srcMdAl  = srcMd->argumentList();
-      const ArgumentList *mdAl     = md->argumentList();
-      const ArgumentList *tSrcMdAl = srcMd->templateArguments();
-      const ArgumentList *tMdAl    = md->templateArguments();
-      
+      const ArgumentList &srcMdAl  = srcMd->argumentList();
+      const ArgumentList &mdAl     = md->argumentList();
+      const ArgumentList &tSrcMdAl = srcMd->templateArguments();
+      const ArgumentList &tMdAl    = md->templateArguments();
+
       if (srcMd->isFunction() && md->isFunction() && // both are a function
-          ((tSrcMdAl==0 && tMdAl==0) || 
-           (tSrcMdAl!=0 && tMdAl!=0 && tSrcMdAl->count()==tMdAl->count())
-          ) &&       // same number of template arguments
+          (tSrcMdAl.size()==tMdAl.size()) &&       // same number of template arguments
           matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),srcMdAl,
                           md->getOuterScope(),md->getFileDef(),mdAl,
                           TRUE

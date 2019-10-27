@@ -16,7 +16,7 @@
 #ifndef ARGUMENTS_H
 #define ARGUMENTS_H
 
-#include <qlist.h>
+#include <vector>
 #include <qcstring.h>
 
 class StorageIntf;
@@ -27,34 +27,6 @@ class StorageIntf;
  */
 struct Argument
 {
-  /*! Construct a new argument. */
-  Argument() {}
-  /*! Copy an argument (does a deep copy of all strings). */
-  Argument(const Argument &a)
-  {
-    attrib=a.attrib;
-    type=a.type;
-    name=a.name;
-    array=a.array;
-    defval=a.defval;
-    docs=a.docs;
-    typeConstraint=a.typeConstraint;
-  }
-  /*! Assignment of an argument (does a deep copy of all strings). */
-  Argument &operator=(const Argument &a)
-  {
-    if (this!=&a)
-    {
-      attrib=a.attrib;
-      type=a.type;
-      name=a.name;
-      array=a.array;
-      defval=a.defval;
-      docs=a.docs;
-      typeConstraint=a.typeConstraint;
-    }
-    return *this;
-  }
   /*! return TRUE if this argument is documentation and the argument has a
    *  non empty name.
    */
@@ -86,37 +58,42 @@ enum RefQualifierType
  *  put after the argument list, such as whether the member is const, 
  *  volatile or pure virtual.
  */
-class ArgumentList : public QList<Argument> 
+class ArgumentList : public std::vector<Argument>
 {
   public:
-    /*! Creates an empty argument list */
-    ArgumentList() : QList<Argument>(), 
-                     constSpecifier(FALSE),
-                     volatileSpecifier(FALSE),
-                     pureSpecifier(FALSE),
-                     isDeleted(FALSE),
-                     refQualifier(RefQualifierNone)
-                     { setAutoDelete(TRUE); }
-    /*! Destroys the argument list */
-   ~ArgumentList() {}
-    /*! Makes a deep copy of this object */
-    ArgumentList *deepCopy() const;
     /*! Does any argument of this list have documentation? */
     bool hasDocumentation() const;
-    /*! Does the member modify the state of the class? default: FALSE. */
-    bool constSpecifier;
-    /*! Is the member volatile? default: FALSE. */
-    bool volatileSpecifier;
-    /*! Is this a pure virtual member? default: FALSE */
-    bool pureSpecifier;
+    /*! Does this list have zero or more parameters */
+    bool hasParameters() const
+    {
+      return !empty() || noParameters;
+    }
+    void reset()
+    {
+      clear();
+      constSpecifier = FALSE;
+      volatileSpecifier = FALSE;
+      pureSpecifier = FALSE;
+      trailingReturnType.resize(0);
+      isDeleted = FALSE;
+      refQualifier = RefQualifierNone;
+      noParameters = FALSE;
+    }
+
+    /*! Does the member modify the state of the class? */
+    bool constSpecifier = FALSE;
+    /*! Is the member volatile? */
+    bool volatileSpecifier = FALSE;
+    /*! Is this a pure virtual member? */
+    bool pureSpecifier = FALSE;
     /*! C++11 style Trailing return type? */
     QCString trailingReturnType;
     /*! method with =delete */
-    bool isDeleted;
+    bool isDeleted = FALSE;
     /*! C++11 ref qualifier */
-    RefQualifierType refQualifier;
+    RefQualifierType refQualifier = RefQualifierNone;
+    /*! is it an explicit empty list */
+    bool noParameters = FALSE;
 };
-
-typedef QListIterator<Argument> ArgumentListIterator;
 
 #endif
