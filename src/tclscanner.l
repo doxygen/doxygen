@@ -1622,37 +1622,32 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
 static void tcl_command_ARGLIST(QCString &arglist)
 {
 D
-  Argument *myArg;
   QCStringList myArgs;
   QCString myArglist="";
 
-  if (!tcl.entry_current->argList)
-  {
-    tcl.entry_current->argList=new ArgumentList;
-  }
   tcl_split_list(arglist,myArgs);
   for (uint i=0;i<myArgs.count();i++)
   {
     QCStringList myArgs1;
-    myArg=new Argument;
+    Argument myArg;
 
     tcl_split_list(*myArgs.at(i),myArgs1);
     if (myArgs1.count()==2)
     {
-      myArg->name= (*myArgs1.at(0));
-      myArg->defval= (*myArgs1.at(1));
-      if (myArg->defval.isEmpty())
+      myArg.name= (*myArgs1.at(0));
+      myArg.defval= (*myArgs1.at(1));
+      if (myArg.defval.isEmpty())
       {
-        myArg->defval = " ";
+        myArg.defval = " ";
       }
-      myArglist += "?" + QCString(myArg->name) + "? ";
+      myArglist += "?" + QCString(myArg.name) + "? ";
     }
     else
     {
-      myArg->name= (*myArgs.at(i));
-      myArglist += myArg->name + " ";
+      myArg.name= (*myArgs.at(i));
+      myArglist += myArg.name + " ";
     }
-    tcl.entry_current->argList->append(myArg);
+    tcl.entry_current->argList.push_back(myArg);
   }
   arglist = myArglist;
   tcl.entry_current->args = arglist;

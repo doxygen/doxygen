@@ -338,43 +338,41 @@ void XMLCodeGenerator::finish()
   if (m_insideCodeLine) endCodeLine();
 }
 
-static void writeTemplateArgumentList(const ArgumentList *al,
-                                      FTextStream &t,
+static void writeTemplateArgumentList(FTextStream &t,
+                                      const ArgumentList &al,
                                       const Definition *scope,
                                       const FileDef *fileScope,
                                       int indent)
 {
   QCString indentStr;
   indentStr.fill(' ',indent);
-  if (al)
+  if (al.hasParameters())
   {
     t << indentStr << "<templateparamlist>" << endl;
-    ArgumentListIterator ali(*al);
-    const Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
+    for (const Argument &a : al)
     {
       t << indentStr << "  <param>" << endl;
-      if (!a->type.isEmpty())
+      if (!a.type.isEmpty())
       {
         t << indentStr <<  "    <type>";
-        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->type);
+        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.type);
         t << "</type>" << endl;
       }
-      if (!a->name.isEmpty())
+      if (!a.name.isEmpty())
       {
-        t << indentStr <<  "    <declname>" << convertToXML(a->name) << "</declname>" << endl;
-        t << indentStr <<  "    <defname>" << convertToXML(a->name) << "</defname>" << endl;
+        t << indentStr <<  "    <declname>" << convertToXML(a.name) << "</declname>" << endl;
+        t << indentStr <<  "    <defname>" << convertToXML(a.name) << "</defname>" << endl;
       }
-      if (!a->defval.isEmpty())
+      if (!a.defval.isEmpty())
       {
         t << indentStr << "    <defval>";
-        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->defval);
+        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.defval);
         t << "</defval>" << endl;
       }
-      if (!a->typeConstraint.isEmpty())
+      if (!a.typeConstraint.isEmpty())
       {
         t << indentStr << "    <typeconstraint>";
-        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->typeConstraint);
+        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.typeConstraint);
         t << "</typeconstraint>" << endl;
       }
       t << indentStr << "  </param>" << endl;
@@ -385,16 +383,12 @@ static void writeTemplateArgumentList(const ArgumentList *al,
 
 static void writeMemberTemplateLists(const MemberDef *md,FTextStream &t)
 {
-  const ArgumentList *templMd = md->templateArguments();
-  if (templMd) // function template prefix
-  {
-    writeTemplateArgumentList(templMd,t,md->getClassDef(),md->getFileDef(),8);
-  }
+  writeTemplateArgumentList(t,md->templateArguments(),md->getClassDef(),md->getFileDef(),8);
 }
 
 static void writeTemplateList(const ClassDef *cd,FTextStream &t)
 {
-  writeTemplateArgumentList(cd->templateArguments(),t,cd,0,4);
+  writeTemplateArgumentList(t,cd->templateArguments(),cd,0,4);
 }
 
 static void writeXMLDocBlock(FTextStream &t,
@@ -591,9 +585,9 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
 
   if (isFunc)
   {
-    const ArgumentList *al = md->argumentList();
+    const ArgumentList &al = md->argumentList();
     t << " const=\"";
-    if (al!=0 && al->constSpecifier)    t << "yes"; else t << "no"; 
+    if (al.constSpecifier)    t << "yes"; else t << "no"; 
     t << "\"";
 
     t << " explicit=\"";
@@ -604,10 +598,10 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
     if (md->isInline()) t << "yes"; else t << "no";
     t << "\"";
 
-    if (al!=0 && al->refQualifier!=RefQualifierNone)
+    if (al.refQualifier!=RefQualifierNone)
     {
       t << " refqual=\"";
-      if (al->refQualifier==RefQualifierLValue) t << "lvalue"; else t << "rvalue";
+      if (al.refQualifier==RefQualifierLValue) t << "lvalue"; else t << "rvalue";
       t << "\"";
     }
 
@@ -641,7 +635,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
       t << " noexcept=\"yes\"";
     }
 
-    if (al && al->volatileSpecifier)
+    if (al.volatileSpecifier)
     {
       t << " volatile=\"yes\"";
     }
@@ -840,51 +834,55 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
 
   if (isFunc) //function
   {
-    const ArgumentList *declAl = md->declArgumentList();
-    const ArgumentList *defAl = md->argumentList();
-    if (declAl && defAl && declAl->count()>0)
+    const ArgumentList &declAl = md->declArgumentList();
+    const ArgumentList &defAl = md->argumentList();
+    if (declAl.hasParameters())
     {
-      ArgumentListIterator declAli(*declAl);
-      ArgumentListIterator defAli(*defAl);
-      const Argument *a;
-      for (declAli.toFirst();(a=declAli.current());++declAli)
+      auto defIt = defAl.begin();
+      for (const Argument &a : declAl)
       {
-        Argument *defArg = defAli.current();
+        //const Argument *defArg = defAli.current();
+        const Argument *defArg = 0;
+        if (defIt!=defAl.end())
+        {
+          defArg = &(*defIt);
+          ++defIt;
+        }
         t << "        <param>" << endl;
-        if (!a->attrib.isEmpty())
+        if (!a.attrib.isEmpty())
         {
           t << "          <attributes>";
-          writeXMLString(t,a->attrib);
+          writeXMLString(t,a.attrib);
           t << "</attributes>" << endl;
         }
-        if (!a->type.isEmpty())
+        if (!a.type.isEmpty())
         {
           t << "          <type>";
-          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a->type);
+          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a.type);
           t << "</type>" << endl;
         }
-        if (!a->name.isEmpty())
+        if (!a.name.isEmpty())
         {
           t << "          <declname>";
-          writeXMLString(t,a->name); 
+          writeXMLString(t,a.name); 
           t << "</declname>" << endl;
         }
-        if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
+        if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
         {
           t << "          <defname>";
           writeXMLString(t,defArg->name);
           t << "</defname>" << endl;
         }
-        if (!a->array.isEmpty())
+        if (!a.array.isEmpty())
         {
           t << "          <array>"; 
-          writeXMLString(t,a->array); 
+          writeXMLString(t,a.array); 
           t << "</array>" << endl;
         }
-        if (!a->defval.isEmpty())
+        if (!a.defval.isEmpty())
         {
           t << "          <defval>";
-          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a->defval);
+          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a.defval);
           t << "</defval>" << endl;
         }
         if (defArg && defArg->hasDocumentation())
@@ -895,25 +893,22 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
           t << "</briefdescription>" << endl;
         }
         t << "        </param>" << endl;
-        if (defArg) ++defAli;
       }
     }
   }
   else if (md->memberType()==MemberType_Define && 
           md->argsString()) // define
   {
-    if (md->argumentList()->count()==0) // special case for "foo()" to
+    if (md->argumentList().empty())     // special case for "foo()" to
                                         // disguish it from "foo".
     {
       t << "        <param></param>" << endl;
     }
     else
     {
-      ArgumentListIterator ali(*md->argumentList());
-      const Argument *a;
-      for (ali.toFirst();(a=ali.current());++ali)
+      for (const Argument &a : md->argumentList())
       {
-        t << "        <param><defname>" << a->type << "</defname></param>" << endl;
+        t << "        <param><defname>" << a.type << "</defname></param>" << endl;
       }
     }
   }

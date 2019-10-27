@@ -18,20 +18,20 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
-#include "types.h"
-
 #include <qlist.h>
 #include <qgstring.h>
 
 #include <vector>
 #include <memory>
 
+#include "types.h"
+#include "arguments.h"
+
 struct SectionInfo;
 class QFile;
 class FileDef;
 class FileStorage;
 class StorageIntf;
-class ArgumentList;
 struct ListItemInfo;
 
 /** This class stores information about an inheritance relation
@@ -268,8 +268,8 @@ class Entry
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
-    ArgumentList *argList;    //!< member arguments as a list
-    QList<ArgumentList> *tArgLists; //!< template argument declarations
+    ArgumentList argList;     //!< member arguments as a list
+    std::vector<ArgumentList> tArgLists; //!< template argument declarations
     QGString	 program;     //!< the program text
     QGString     initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
@@ -289,7 +289,7 @@ class Entry
     QCString     write;       //!< property write accessor
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
-    ArgumentList *typeConstr; //!< where clause (C#) for type constraints
+    ArgumentList typeConstr;  //!< where clause (C#) for type constraints
     int          bodyLine;    //!< line number of the definition in the source
     int          endBodyLine; //!< line number where the definition ends
     int          mGrpId;      //!< member group id

@@ -181,7 +181,7 @@ static Specifier 	virt;
 
 static QCString          debugStr;
 static QCString          result; // function result
-static Argument          *parameter; // element of parameter list
+static Argument         *parameter; // element of parameter list
 static QCString          argType;  // fortran type of an argument of a parameter list
 static QCString          argName;  // last identifier name in variable list
 static QCString          initializer;  // initial value of a variable
@@ -1141,9 +1141,11 @@ private                                 {
 				       }
 <Parameterlist>{COMMA}|{BS}            { current->args += yytext;
 					 CommentInPrepass *c = locatePrepassComment(yyColNr-(int)yyleng, yyColNr);
-					 if (c!=NULL) {
-                                           if(current->argList->count()>0) {
-					     current->argList->at(current->argList->count()-1)->docs = c->str;
+					 if (c!=NULL)
+                                         {
+                                           if (!current->argList.empty())
+                                           {
+					     current->argList.back().docs = c->str;
 					   }
 					 }		         
 				       }
@@ -1152,15 +1154,13 @@ private                                 {
                                            QCString param = yytext;
 					   // std::cout << "3=========> got parameter " << param << std::endl;
 					   current->args += param;
-					   Argument *arg = new Argument;
-					   arg->name = param;
-					   arg->type = "";
-					   current->argList->append(arg);
+					   Argument arg;
+					   arg.name = param;
+					   current->argList.push_back(arg);
  				       } 
 <Parameterlist>{NOARGS}                {   
 				           newLine();
 					   //printf("3=========> without parameterlist \n");
- 					   //current->argList = ;
                                            addCurrentEntry(true);
 					   startScope(last_entry);
 					   BEGIN(SubprogBody);				           
@@ -1280,9 +1280,9 @@ private                                 {
 <PrototypeArgs>{
 "("|")"|","|{BS_}			{ current->args += yytext; }
 {ID}					{ current->args += yytext; 
-					  Argument *a = new Argument;
-					  a->name = QCString(yytext).lower();
-					  current->argList->append(a);
+					  Argument a;
+					  a.name = QCString(yytext).lower();
+					  current->argList.push_back(a);
 					}
 }
 
@@ -1787,8 +1787,7 @@ static void copyEntry(Entry *dest, const std::unique_ptr<Entry> &src)
    dest->bodyLine    = src->bodyLine;
    dest->endBodyLine = src->endBodyLine;
    dest->args        = src->args;
-   delete dest->argList;
-   dest->argList     = new ArgumentList(*src->argList);
+   dest->argList     = src->argList;
    dest->doc         = src->doc;
    dest->brief       = src->brief;
 }
@@ -2011,14 +2010,13 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
 static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = FALSE)
 {
   QCString cname(name.lower());
-  for (unsigned int i=0; i<subprog->argList->count(); i++) 
+  for (Argument &arg : subprog->argList)
   {
-    Argument *arg = subprog->argList->at(i);
-    if ((!byTypeName && arg->name.lower() == cname) ||
-	(byTypeName && arg->type.lower() == cname)
+    if ((!byTypeName && arg.name.lower() == cname) ||
+ 	 (byTypeName && arg.type.lower() == cname)
        )
     {
-      return arg;
+      return &arg;
     }
   }
   return 0;
@@ -2212,7 +2210,9 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
       Argument *arg = findArgument(scope, it.key());
 
       if (arg)
+      {
         applyModifiers(arg, it.data());
+      }
     }
 
     // find return type for function
@@ -2384,7 +2384,7 @@ static void addSubprogram(const char *text)
   current->bodyLine  = yyLineNr; // used for source reference start of body of routine
   current->startLine  = yyLineNr; // used for source reference start of definition
   current->args.resize(0);
-  current->argList->clear();
+  current->argList.clear();
   docBlock.resize(0);
 }
 
@@ -2439,18 +2439,15 @@ static void addInterface(QCString name, InterfaceType type)
 
 /*! Get the argument \a name.
  */
-static Argument* getParameter(const QCString &name)
+static Argument *getParameter(const QCString &name)
 {
   // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isNull()?QCString("null"):docs)<<std::endl;
   Argument *ret = 0;
-  if (current_root->argList==0) return 0;
-  ArgumentListIterator ali(*current_root->argList);
-  Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
+  for (Argument &a:current_root->argList)
   {
-    if (a->name.lower()==name.lower())
+    if (a.name.lower()==name.lower())
     {
-      ret=a;
+      ret=&a;
       //printf("parameter found: %s\n",(const char*)name);
       break;
     }

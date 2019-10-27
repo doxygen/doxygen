@@ -1183,8 +1183,6 @@ void TagFileParser::buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMe
     me->args       = tmi->arglist;
     if (!me->args.isEmpty())
     {
-      delete me->argList;
-      me->argList = new ArgumentList;
       stringToArgumentList(me->args,me->argList);
     }
     if (tmi->enumValues.count()>0)
@@ -1356,23 +1354,17 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
     }
     if (tci->templateArguments)
     {
-      if (ce->tArgLists==0)
-      {
-        ce->tArgLists = new QList<ArgumentList>;
-        ce->tArgLists->setAutoDelete(TRUE);
-      }
-      ArgumentList *al = new ArgumentList;
-      ce->tArgLists->append(al);
-
+      ArgumentList al;
       QListIterator<QCString> sli(*tci->templateArguments);
       QCString *argName;
       for (;(argName=sli.current());++sli)
       {
-        Argument *a = new Argument;
-        a->type = "class";
-        a->name = *argName;
-        al->append(a);
+        Argument a;
+        a.type = "class";
+        a.name = *argName;
+        al.push_back(a);
       }
+      ce->tArgLists.push_back(al);
     }
 
     buildMemberList(ce,tci->members);

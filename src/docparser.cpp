@@ -413,12 +413,12 @@ static void checkArgumentName(const QCString &name)
 {                
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0) return; // not a member
-  const ArgumentList *al=g_memberDef->isDocsForDefinition() ?
+  const ArgumentList &al=g_memberDef->isDocsForDefinition() ?
 	                 g_memberDef->argumentList() :
                          g_memberDef->declArgumentList();
   SrcLangExt lang = g_memberDef->getLanguage();
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
-  if (al==0) return; // no argument list
+  if (al.empty()) return; // no argument list
 
   static QRegExp re("$?[a-zA-Z0-9_\\x80-\\xFF]+\\.*");
   int p=0,i=0,l;
@@ -427,12 +427,10 @@ static void checkArgumentName(const QCString &name)
     QCString aName=name.mid(i,l);
     if (lang==SrcLangExt_Fortran) aName=aName.lower();
     //printf("aName='%s'\n",aName.data());
-    ArgumentListIterator ali(*al);
-    const Argument *a;
     bool found=FALSE;
-    for (ali.toFirst();(a=ali.current());++ali)
+    for (const Argument &a : al)
     {
-      QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+      QCString argName = g_memberDef->isDefine() ? a.type : a.name;
       if (lang==SrcLangExt_Fortran) argName=argName.lower();
       argName=argName.stripWhiteSpace();
       //printf("argName='%s' aName=%s\n",argName.data(),aName.data());
@@ -460,7 +458,6 @@ static void checkArgumentName(const QCString &name)
             inheritedMd->docLine(),qPrint(inheritedMd->docFile()));
         docFile = g_memberDef->getDefFileName();
         docLine = g_memberDef->getDefLine();
-        
       }
       QCString alStr = argListToString(al);
       warn_doc_error(docFile,docLine,
@@ -500,28 +497,26 @@ static void checkUnOrMultipleDocumentedParams()
 {
   if (g_memberDef && g_hasParamCommand && Config_getBool(WARN_IF_DOC_ERROR))
   {
-    const ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
+    const ArgumentList &al=g_memberDef->isDocsForDefinition() ?
       g_memberDef->argumentList() :
       g_memberDef->declArgumentList();
     SrcLangExt lang = g_memberDef->getLanguage();
-    if (al!=0)
+    if (!al.empty())
     {
-      ArgumentListIterator ali(*al);
-      const Argument *a;
       bool found=FALSE;
-      for (ali.toFirst();(a=ali.current());++ali)
+      for (const Argument &a: al)
       {
         int count = 0;
-        QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+        QCString argName = g_memberDef->isDefine() ? a.type : a.name;
         if (lang==SrcLangExt_Fortran) argName = argName.lower();
         argName=argName.stripWhiteSpace();
         QCString aName = argName;
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
         if (lang==SrcLangExt_Python && (argName=="self" || argName=="cls"))
-        { 
+        {
           // allow undocumented self / cls parameter for Python
         }
-        else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a->docs.isEmpty()) 
+        else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a.docs.isEmpty()) 
         {
           found = TRUE;
         }
@@ -552,16 +547,16 @@ static void checkUnOrMultipleDocumentedParams()
             QCString(g_memberDef->qualifiedName()) + 
             QCString(argListToString(al)) +
             " are not documented:\n";
-        for (ali.toFirst();(a=ali.current());++ali)
+        for (const Argument &a : al)
         {
-          QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+          QCString argName = g_memberDef->isDefine() ? a.type : a.name;
           if (lang==SrcLangExt_Fortran) argName = argName.lower();
           argName=argName.stripWhiteSpace();
           if (lang==SrcLangExt_Python && (argName=="self" || argName=="cls"))
-          { 
+          {
             // allow undocumented self / cls parameter for Python
           }
-          else if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
+          else if (!argName.isEmpty() && g_paramsFound.find(argName)==0)
           {
             if (!first)
             {

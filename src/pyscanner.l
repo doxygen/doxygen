@@ -378,7 +378,7 @@ static void searchFoundDef()
   current->type.resize(0);
   current->name.resize(0);
   current->args.resize(0);
-  current->argList->clear();
+  current->argList.clear();
   g_packageCommentAllowed = FALSE;
   gstat=FALSE;
   //printf("searchFoundDef at=%d\n",yyLineNr);
@@ -387,7 +387,7 @@ static void searchFoundDef()
 static void searchFoundClass()
 {
   current->section = Entry::CLASS_SEC;
-  current->argList->clear();
+  current->argList.clear();
   current->type += "class" ;
   current->fileName  = yyFileName;
   current->startLine  = yyLineNr;
@@ -928,6 +928,10 @@ STARTDOCSYMS      "##"
 			      BEGIN(FunctionParams);
 		            }
     ")"                     { // end of parameter list
+                              if (current->argList.empty())
+                              {
+                                current->argList.noParameters=TRUE;
+                              }
         		      current->args = argListToString(current->argList);
         		      g_funcParamsEnd = TRUE;
                             }
@@ -942,10 +946,10 @@ STARTDOCSYMS      "##"
                         }
     {IDENTIFIER}        { // Name of parameter
 			  lineCount();
-			  Argument *a = new Argument;
-			  current->argList->append(a);
-			  current->argList->getLast()->name = QCString(yytext).stripWhiteSpace();
-			  current->argList->getLast()->type = g_argType;
+			  Argument a;
+			  a.name = QCString(yytext).stripWhiteSpace();
+			  a.type = g_argType;
+			  current->argList.push_back(a);
                           g_argType = "";
                         }
     "="		        { // default value
@@ -1032,8 +1036,8 @@ STARTDOCSYMS      "##"
      ","		{
 			  if (g_braceCount == 0)
 			  {
-			    if (current->argList->getLast())
-			      current->argList->getLast()->type += g_defVal.data();
+			    if (!current->argList.empty())
+			      current->argList.back().type += g_defVal;
 			    if (*yytext != ',')
 			      unput(*yytext);
 			    BEGIN(FunctionParams);
@@ -1082,8 +1086,8 @@ STARTDOCSYMS      "##"
      ","		{
 			  if (g_braceCount == 0)
 			  {
-			    if (current->argList->getLast())
-			      current->argList->getLast()->defval=QCString(g_defVal.data()).stripWhiteSpace();
+			    if (!current->argList.empty())
+			      current->argList.back().defval=QCString(g_defVal).stripWhiteSpace();
 			    if (*yytext == ')')
 			      unput(*yytext);
 			    BEGIN(FunctionParams);

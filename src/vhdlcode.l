@@ -434,14 +434,10 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
 static void setParameterList(const MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
-  const ArgumentList *al = md->argumentList();
-  if (al==0) return;
-  ArgumentListIterator ali(*al);
-  const Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
+  for (const Argument &a: md->argumentList())
   {
-    g_parmName = a->name.copy();
-    g_parmType = a->type.copy();
+    g_parmName = a.name.copy();
+    g_parmType = a.type.copy();
     int i = g_parmType.find('*');
     if (i!=-1) g_parmType = g_parmType.left(i);
     i = g_parmType.find('&');
@@ -683,9 +679,8 @@ static void codifyMapLines(const char *text)
 
 static void writeFuncProto()
 {
-  QList<Argument> ql;
   QCString name,ret;
-  VhdlDocGen::parseFuncProto(g_FuncProto,ql,name,ret,FALSE);
+  VhdlDocGen::parseFuncProto(g_FuncProto,name,ret,FALSE);
 
   if (name.isEmpty())
   {
@@ -702,7 +697,7 @@ static void writeFuncProto()
   {
     temp.stripPrefix("_");// _{package body name}
   }
-  MemberDef *mdef=VhdlDocGen::findFunction(ql,name,temp,FALSE);
+  MemberDef *mdef=VhdlDocGen::findFunction(name,temp);
 
   if (mdef)
   {
