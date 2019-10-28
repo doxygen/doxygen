@@ -6298,13 +6298,14 @@ static void findMember(const Entry *root,
                 if (cd!=0 && rightScopeMatch(cd->name(),className))
                 {
                   const ArgumentList &templAl = md->templateArguments();
+                  warnMsg+="  '";
                   if (templAl.hasParameters())
                   {
-                    warnMsg+="  'template ";
+                    warnMsg+="template ";
                     warnMsg+=tempArgListToString(templAl,root->lang);
                     warnMsg+='\n';
+                    warnMsg+="  ";
                   }
-                  warnMsg+="  ";
                   if (md->typeString())
                   {
                     warnMsg+=md->typeString();
