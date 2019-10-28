@@ -1,5 +1,6 @@
 #ifndef VHDLPARSERTOKENMANAGER_H
 #define VHDLPARSERTOKENMANAGER_H
+#include "stdio.h"
 #include "JavaCC.h"
 #include "CharStream.h"
 #include "Token.h"
@@ -116,23 +117,27 @@ void  TokenLexicalActions(Token *matchedToken);
   public: virtual ~VhdlParserTokenManager();
   void ReInit(JAVACC_CHARSTREAM *stream, int lexState = 0, VhdlParser *parserArg = NULL);
   void SwitchTo(int lexState);
+  void clear();
   const JAVACC_SIMPLE_STRING jjKindsForBitVector(int i, unsigned long long vec);
   const JAVACC_SIMPLE_STRING jjKindsForStateVector(int lexState, int vec[], int start, int end);
-    JAVACC_CHARSTREAM  *input_stream;
-    int jjrounds[77];
-    int jjstateSet[2 * 77];
-    JAVACC_STRING_TYPE jjimage;
-    JAVACC_STRING_TYPE image;
-    int jjimageLen;
-    int lengthOfMatch;
-    JAVACC_CHAR_TYPE curChar;
-    TokenManagerErrorHandler *errorHandler;
-    bool errorHandlerCreated;
-    public: void setErrorHandler(TokenManagerErrorHandler *eh) {
+  JAVACC_CHARSTREAM*        input_stream;
+  int                       jjrounds[77];
+  int                       jjstateSet[2 * 77];
+  JAVACC_STRING_TYPE        jjimage;
+  JAVACC_STRING_TYPE        image;
+  int                       jjimageLen;
+  int                       lengthOfMatch;
+  JAVACC_CHAR_TYPE          curChar;
+  TokenManagerErrorHandler* errorHandler;
+  bool                      errorHandlerCreated;
+
+public: 
+  void setErrorHandler(TokenManagerErrorHandler *eh) {
       if (errorHandlerCreated && errorHandler != NULL) delete errorHandler;
       errorHandler = eh;
       errorHandlerCreated = false;
     }
+    
 };
 }
 }

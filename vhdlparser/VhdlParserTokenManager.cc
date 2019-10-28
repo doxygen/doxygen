@@ -1,5 +1,6 @@
 /* VhdlParserTokenManager.cc */
-#include "./VhdlParserTokenManager.h"
+#include "VhdlParserTokenManager.h"
+#include "TokenMgrError.h"
 namespace vhdl {
 namespace parser {
 static const unsigned long long jjbitVec0[] = {
@@ -3036,7 +3037,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
             }
          } while(i != startsAt);
       }
-      else if ((int)curChar < 128)
+      else if (curChar < 128)
       {
          unsigned long long l = 1ULL << (curChar & 077);
          (void)l;
@@ -3321,10 +3322,10 @@ bool VhdlParserTokenManager::jjCanMove_1(int hiByte, int i1, int i2, unsigned lo
 Token * VhdlParserTokenManager::jjFillToken(){
    Token *t;
    JAVACC_STRING_TYPE curTokenImage;
-   int beginLine;
-   int endLine;
-   int beginColumn;
-   int endColumn;
+   int beginLine   = -1;
+   int endLine     = -1;
+   int beginColumn = -1;
+   int endColumn   = -1;
    JAVACC_STRING_TYPE im = jjstrLiteralImages[jjmatchedKind];
    curTokenImage = (im.length() == 0) ? input_stream->GetImage() : im;
    if (input_stream->getTrackLineColumn()) {
@@ -3333,7 +3334,9 @@ Token * VhdlParserTokenManager::jjFillToken(){
      endLine = input_stream->getEndLine();
      endColumn = input_stream->getEndColumn();
    }
-   t = Token::newToken(jjmatchedKind, curTokenImage);
+   t = Token::newToken(jjmatchedKind);
+   t->kind = jjmatchedKind;
+   t->image = curTokenImage;
    t->specialToken = NULL;
    t->next = NULL;
 
@@ -3591,7 +3594,7 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
 }
   /** Reinitialise parser. */
   void VhdlParserTokenManager::ReInit(JAVACC_CHARSTREAM *stream, int lexState, VhdlParser *parserArg) {
-    if (input_stream) delete input_stream;
+    clear();
     jjmatchedPos = jjnewStateCnt = 0;
     curLexState = lexState;
     input_stream = stream;
@@ -3612,10 +3615,17 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
 
   /** Switch to specified lex state. */
   void VhdlParserTokenManager::SwitchTo(int lexState) {
-    if (lexState >= 1 || lexState < 0)
-      assert(false);
-      //throw 1;//new TokenMgrError("Error: Ignoring invalid lexical state : " + lexState + ". State unchanged.", TokenMgrError.INVALID_LEXICAL_STATE);
-    else
+    if (lexState >= 1 || lexState < 0) {
+      JAVACC_STRING_TYPE message;
+#ifdef WIDE_CHAR
+      message += L"Error: Ignoring invalid lexical state : ";
+      message += lexState; message += L". State unchanged.";
+#else
+      message += "Error: Ignoring invalid lexical state : ";
+      message += lexState; message += ". State unchanged.";
+#endif
+      throw new TokenMgrError(message, INVALID_LEXICAL_STATE);
+    } else
       curLexState = lexState;
   }
 
@@ -3623,14 +3633,23 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
   VhdlParserTokenManager::VhdlParserTokenManager (JAVACC_CHARSTREAM *stream, int lexState, VhdlParser *parserArg)
   {
     input_stream = NULL;
+    errorHandlerCreated = false;
     ReInit(stream, lexState, parserArg);
   }
 
   // Destructor
   VhdlParserTokenManager::~VhdlParserTokenManager () {
-    if (input_stream) delete input_stream;
-    if (errorHandlerCreated) delete errorHandler;
+    clear();
   }
+
+  // clear
+  void VhdlParserTokenManager::clear() {
+    //Since input_stream was generated outside of TokenManager
+    //TokenManager should not take care of deleting it
+    //if (input_stream) delete input_stream;
+    if (errorHandlerCreated) delete errorHandler;    
+  }
+
 
 }
 }
