@@ -1121,7 +1121,6 @@ void VhdlDocGen::prepareComment(QCString& qcs)
 /*!
  * parses a function proto
  * @param text function string
- * @param qlist stores the function types
  * @param name points to the function name
  * @param ret Stores the return type
  * @param doc ???

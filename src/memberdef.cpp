@@ -262,7 +262,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void makeRelated();
     virtual void makeForeign();
     virtual void setInheritsDocsFrom(MemberDef *md);
-    virtual void setTagInfo(TagInfo *i);
+    virtual void setTagInfo(const TagInfo *i);
     virtual void setArgsString(const char *as);
     virtual void setReimplements(MemberDef *md);
     virtual void insertReimplementedBy(MemberDef *md);
@@ -774,7 +774,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void makeRelated() {}
     virtual void makeForeign() {}
     virtual void setInheritsDocsFrom(MemberDef *md) {}
-    virtual void setTagInfo(TagInfo *i) {}
+    virtual void setTagInfo(const TagInfo *i) {}
     virtual void setArgsString(const char *as) {}
     virtual void setReimplements(MemberDef *md) {}
     virtual void insertReimplementedBy(MemberDef *md) {}
@@ -4928,7 +4928,7 @@ QCString MemberDefImpl::qualifiedName() const
   }
 }
 
-void MemberDefImpl::setTagInfo(TagInfo *ti)
+void MemberDefImpl::setTagInfo(const TagInfo *ti)
 {
   if (ti)
   {

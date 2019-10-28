@@ -1197,11 +1197,10 @@ void TagFileParser::buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMe
         ev->name       = evi->name;
         ev->id         = evi->clangid;
         ev->section    = Entry::VARIABLE_SEC;
-        TagInfo *ti    = new TagInfo;
-        ti->tagName    = m_tagName;
-        ti->anchor     = evi->anchor;
-        ti->fileName   = evi->file;
-        ev->tagInfo    = ti;
+        ev->tagInfoData.tagName    = m_tagName;
+        ev->tagInfoData.anchor     = evi->anchor;
+        ev->tagInfoData.fileName   = evi->file;
+        ev->hasTagInfo    = TRUE;
         me->moveToSubEntryAndKeep(ev);
       }
     }
@@ -1215,11 +1214,10 @@ void TagFileParser::buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMe
       me->groups->append(new Grouping(ce->name,Grouping::GROUPING_INGROUP));
     }
     addDocAnchors(me,tmi->docAnchors);
-    TagInfo *ti    = new TagInfo;
-    ti->tagName    = m_tagName;
-    ti->anchor     = tmi->anchor;
-    ti->fileName   = tmi->anchorFile;
-    me->tagInfo    = ti;
+    me->tagInfoData.tagName    = m_tagName;
+    me->tagInfoData.anchor     = tmi->anchor;
+    me->tagInfoData.fileName   = tmi->anchorFile;
+    me->hasTagInfo    = TRUE;
     if (tmi->kind=="define")
     {
       me->type="#define";
@@ -1339,12 +1337,11 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
       ce->name+="-p";
     }
     addDocAnchors(ce,tci->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->anchor   = tci->anchor;
-    ti->fileName = tci->filename;
+    ce->tagInfoData.tagName  = m_tagName;
+    ce->tagInfoData.anchor   = tci->anchor;
+    ce->tagInfoData.fileName = tci->filename;
+    ce->hasTagInfo  = TRUE;
     ce->id       = tci->clangId;
-    ce->tagInfo  = ti;
     ce->lang     = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
     // transfer base class list
     if (tci->bases)
@@ -1380,10 +1377,9 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
     fe->section = guessSection(tfi->name);
     fe->name     = tfi->name;
     addDocAnchors(fe,tfi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tfi->filename;
-    fe->tagInfo  = ti;
+    fe->tagInfoData.tagName  = m_tagName;
+    fe->tagInfoData.fileName = tfi->filename;
+    fe->hasTagInfo = TRUE;
 
     QCString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
     fe->fileName = fullName;
@@ -1417,11 +1413,10 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
     ne->section  = Entry::NAMESPACE_SEC;
     ne->name     = tni->name;
     addDocAnchors(ne,tni->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tni->filename;
+    ne->tagInfoData.tagName  = m_tagName;
+    ne->tagInfoData.fileName = tni->filename;
+    ne->hasTagInfo  = TRUE;
     ne->id       = tni->clangId;
-    ne->tagInfo  = ti;
 
     buildMemberList(ne,tni->members);
     root->moveToSubEntryAndKeep(ne);
@@ -1436,10 +1431,9 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
     pe->section  = Entry::PACKAGE_SEC;
     pe->name     = tpgi->name;
     addDocAnchors(pe,tpgi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tpgi->filename;
-    pe->tagInfo  = ti;
+    pe->tagInfoData.tagName  = m_tagName;
+    pe->tagInfoData.fileName = tpgi->filename;
+    pe->hasTagInfo  = TRUE;
 
     buildMemberList(pe,tpgi->members);
     root->moveToSubEntryAndKeep(pe);
@@ -1455,10 +1449,9 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
     ge->name     = tgi->name;
     ge->type     = tgi->title;
     addDocAnchors(ge,tgi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tgi->filename;
-    ge->tagInfo  = ti;
+    ge->tagInfoData.tagName  = m_tagName;
+    ge->tagInfoData.fileName = tgi->filename;
+    ge->hasTagInfo  = TRUE;
 
     buildMemberList(ge,tgi->members);
     root->moveToSubEntryAndKeep(ge);
@@ -1493,10 +1486,9 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
     pe->name     = tpi->name;
     pe->args     = tpi->title;
     addDocAnchors(pe,tpi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tpi->filename;
-    pe->tagInfo  = ti;
+    pe->tagInfoData.tagName  = m_tagName;
+    pe->tagInfoData.fileName = tpi->filename;
+    pe->hasTagInfo  = TRUE;
     root->moveToSubEntryAndKeep(pe);
   }
 }

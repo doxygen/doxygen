@@ -45,7 +45,7 @@ Entry::Entry()
   anchors = new QList<SectionInfo>; // Doxygen::sectionDict takes ownership of the items!
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
-  tagInfo = 0;
+  hasTagInfo = FALSE;
   sli = 0;
   relatesType = Simple;
   hidden = FALSE;
@@ -60,7 +60,8 @@ Entry::Entry(const Entry &e)
   section     = e.section;
   type        = e.type;
   name        = e.name;
-  tagInfo     = e.tagInfo;
+  hasTagInfo  = e.hasTagInfo;
+  tagInfoData = e.tagInfoData;
   protection  = e.protection;
   mtype       = e.mtype;
   spec        = e.spec;
@@ -176,7 +177,6 @@ Entry::~Entry()
   delete extends;
   delete groups;
   delete anchors;
-  delete tagInfo;
   delete sli;
   num--;
 }
@@ -309,7 +309,6 @@ void Entry::reset()
   tArgLists.clear();
   argList.reset();
   typeConstr.reset();
-  if (tagInfo)    { delete tagInfo; tagInfo=0; }
   if (sli)        { delete sli; sli=0; }
   m_fileDef = 0;
 }

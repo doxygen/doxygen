@@ -244,13 +244,13 @@ class Entry
     void setFileDef(FileDef *fd);
     FileDef *fileDef() const { return m_fileDef; }
 
-  public:
-
     // identification
     int          section;     //!< entry type (see Sections);
     QCString	 type;        //!< member type
     QCString	 name;        //!< member name
-    TagInfo     *tagInfo;     //!< tag file info
+    bool         hasTagInfo;  //!< is tag info valid
+    TagInfo      tagInfoData; //!< tag file info data
+    const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : 0; }
 
     // content
     Protection protection;    //!< class protection

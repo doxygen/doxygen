@@ -544,7 +544,7 @@ static void addSTLClasses(const std::unique_ptr<Entry> &root)
 //----------------------------------------------------------------------------
 
 static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n,
-                                              FileDef *fileScope,TagInfo *tagInfo);
+                                              FileDef *fileScope,const TagInfo *tagInfo);
 
 static void addPageToContext(PageDef *pd,Entry *root)
 {
@@ -557,7 +557,7 @@ static void addPageToContext(PageDef *pd,Entry *root)
     }
     scope = stripAnonymousNamespaceScope(scope);
     scope+="::"+pd->name();
-    Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo);
+    Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo());
     if (d)
     {
       pd->setPageScope(d);
@@ -588,7 +588,7 @@ static void addRelatedPage(Entry *root)
   PageDef *pd = addRelatedPage(root->name,root->args,doc,root->anchors,
       root->docFile,root->docLine,
       root->sli,
-      gd,root->tagInfo,
+      gd,root->tagInfo(),
       FALSE,
       root->lang
      );
@@ -604,8 +604,8 @@ static void addRelatedPage(Entry *root)
 static void buildGroupListFiltered(const Entry *root,bool additional, bool includeExternal)
 {
   if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty() &&
-        ((!includeExternal && root->tagInfo==0) ||
-         ( includeExternal && root->tagInfo!=0))
+        ((!includeExternal && root->tagInfo()==0) ||
+         ( includeExternal && root->tagInfo()!=0))
      )
   {
     if ((root->groupDocType==Entry::GROUPDOC_NORMAL && !additional) ||
@@ -636,10 +636,10 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
       }
       else
       {
-        if (root->tagInfo)
+        if (root->tagInfo())
         {
-          gd = createGroupDef(root->fileName,root->startLine,root->name,root->type,root->tagInfo->fileName);
-          gd->setReference(root->tagInfo->tagName);
+          gd = createGroupDef(root->fileName,root->startLine,root->name,root->type,root->tagInfo()->fileName);
+          gd->setReference(root->tagInfo()->tagName);
         }
         else
         {
@@ -689,7 +689,7 @@ static void findGroupScope(const Entry *root)
       }
       scope = stripAnonymousNamespaceScope(scope);
       scope+="::"+gd->name();
-      Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo);
+      Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo());
       if (d)
       {
         gd->setGroupScope(d);
@@ -733,7 +733,7 @@ static void buildFileList(const Entry *root)
 {
   if (((root->section==Entry::FILEDOC_SEC) ||
         ((root->section & Entry::FILE_MASK) && Config_getBool(EXTRACT_ALL))) &&
-      !root->name.isEmpty() && !root->tagInfo // skip any file coming from tag files
+      !root->name.isEmpty() && !root->tagInfo() // skip any file coming from tag files
      )
   {
     bool ambig;
@@ -955,7 +955,7 @@ static Definition *findScope(Entry *root,int level=0)
  *  not found and set the parent/child scope relation if the scope is found.
  */
 static Definition *buildScopeFromQualifiedName(const QCString name,
-                                               int level,SrcLangExt lang,TagInfo *tagInfo)
+                                               int level,SrcLangExt lang,const TagInfo *tagInfo)
 {
   //printf("buildScopeFromQualifiedName(%s) level=%d\n",name.data(),level);
   int i=0;
@@ -1014,7 +1014,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,
 }
 
 static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n,
-                                              FileDef *fileScope,TagInfo *tagInfo)
+                                              FileDef *fileScope,const TagInfo *tagInfo)
 {
   //printf("<findScopeFromQualifiedName(%s,%s)\n",startScope ? startScope->name().data() : 0, n.data());
   Definition *resultScope=startScope;
@@ -1261,7 +1261,7 @@ static void addClassToContext(const Entry *root)
 
     QCString tagName;
     QCString refFileName;
-    TagInfo *tagInfo = root->tagInfo;
+    const TagInfo *tagInfo = root->tagInfo();
     int i;
     if (tagInfo)
     {
@@ -1716,7 +1716,7 @@ static void buildNamespaceList(const Entry *root)
         {
           nd->setLanguage(root->lang);
         }
-        if (root->tagInfo==0) // if we found the namespace in a tag file
+        if (root->tagInfo()==0) // if we found the namespace in a tag file
                                    // and also in a project file, then remove
                                    // the tag file reference
         {
@@ -1736,7 +1736,7 @@ static void buildNamespaceList(const Entry *root)
       {
         QCString tagName;
         QCString tagFileName;
-        TagInfo *tagInfo = root->tagInfo;
+        const TagInfo *tagInfo = root->tagInfo();
         if (tagInfo)
         {
           tagName     = tagInfo->tagName;
@@ -2124,9 +2124,9 @@ static void findUsingDeclImports(const Entry *root)
                   MemberDef *newMd = 0;
                   {
                     QCString fileName = root->fileName;
-                    if (fileName.isEmpty() && root->tagInfo)
+                    if (fileName.isEmpty() && root->tagInfo())
                     {
-                      fileName = root->tagInfo->tagName;
+                      fileName = root->tagInfo()->tagName;
                     }
                     const ArgumentList &templAl = md->templateArguments();
                     const ArgumentList &al = md->templateArguments();
@@ -2319,9 +2319,9 @@ static MemberDef *addVariableToClass(
   }
 
   QCString fileName = root->fileName;
-  if (fileName.isEmpty() && root->tagInfo)
+  if (fileName.isEmpty() && root->tagInfo())
   {
-    fileName = root->tagInfo->tagName;
+    fileName = root->tagInfo()->tagName;
   }
 
   // new member variable, typedef or enum value
@@ -2331,7 +2331,7 @@ static MemberDef *addVariableToClass(
       prot,Normal,root->stat,related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       ArgumentList(), root->metaData);
-  md->setTagInfo(root->tagInfo);
+  md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd); // also sets outer scope (i.e. getOuterScope())
   //md->setDefFile(root->fileName);
   //md->setDefLine(root->startLine);
@@ -2577,13 +2577,13 @@ static MemberDef *addVariableToFile(
   }
 
   QCString fileName = root->fileName;
-  if (fileName.isEmpty() && root->tagInfo)
+  if (fileName.isEmpty() && root->tagInfo())
   {
-    fileName = root->tagInfo->tagName;
+    fileName = root->tagInfo()->tagName;
   }
 
   Debug::print(Debug::Variables,0,
-    "    new variable, nd=%s tagInfo=%p!\n",nd?qPrint(nd->name()):"<global>",root->tagInfo);
+    "    new variable, nd=%s tagInfo=%p!\n",nd?qPrint(nd->name()):"<global>",root->tagInfo());
   // new global variable, enum value or typedef
   MemberDef *md=createMemberDef(
       fileName,root->startLine,root->startColumn,
@@ -2591,7 +2591,7 @@ static MemberDef *addVariableToFile(
       root->protection, Normal,root->stat,Member,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       ArgumentList(), root->metaData);
-  md->setTagInfo(root->tagInfo);
+  md->setTagInfo(root->tagInfo());
   md->setMemberSpecifiers(root->spec);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -3114,15 +3114,15 @@ static void addInterfaceOrServiceToServiceOrSingleton(
       ? MemberType_Interface
       : MemberType_Service;
   QCString fileName = root->fileName;
-  if (fileName.isEmpty() && root->tagInfo)
+  if (fileName.isEmpty() && root->tagInfo())
   {
-    fileName = root->tagInfo->tagName;
+    fileName = root->tagInfo()->tagName;
   }
   MemberDef *const md = createMemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
       "", "", root->protection, root->virt, root->stat, Member,
       type, ArgumentList(), root->argList, root->metaData);
-  md->setTagInfo(root->tagInfo);
+  md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setDocsForDefinition(false);
@@ -3292,9 +3292,9 @@ static void addMethodToClass(const Entry *root,ClassDef *cd,
   }
 
   QCString fileName = root->fileName;
-  if (fileName.isEmpty() && root->tagInfo)
+  if (fileName.isEmpty() && root->tagInfo())
   {
-    fileName = root->tagInfo->tagName;
+    fileName = root->tagInfo()->tagName;
   }
 
   //printf("root->name='%s; args='%s' root->argList='%s'\n",
@@ -3311,7 +3311,7 @@ static void addMethodToClass(const Entry *root,ClassDef *cd,
           root->relatesType == MemberOf ? Foreign : Related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList, root->metaData);
-  md->setTagInfo(root->tagInfo);
+  md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setDocsForDefinition(!root->proto);
@@ -3688,7 +3688,7 @@ static void buildFunctionList(const Entry *root)
               !root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
               root->argList,root->metaData);
 
-          md->setTagInfo(root->tagInfo);
+          md->setTagInfo(root->tagInfo());
           md->setLanguage(root->lang);
           md->setId(root->id);
           //md->setDefFile(root->fileName);
@@ -4833,7 +4833,7 @@ static bool findClassRelation(
               int si = baseClassName.findRev("::");
               if (si!=-1) // class is nested
               {
-                Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,root->tagInfo);
+                Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,root->tagInfo());
                 if (sd==0 || sd==Doxygen::globalScope) // outer scope not found
                 {
                   baseClass->setArtificial(TRUE); // see bug678139
@@ -6355,7 +6355,7 @@ static void findMember(const Entry *root,
               root->virt,root->stat,Member,
               mtype,tArgList,root->argList,root->metaData);
           //printf("new specialized member %s args='%s'\n",md->name().data(),funcArgs.data());
-          md->setTagInfo(root->tagInfo);
+          md->setTagInfo(root->tagInfo());
           md->setLanguage(root->lang);
           md->setId(root->id);
           md->setMemberClass(cd);
@@ -6422,7 +6422,7 @@ static void findMember(const Entry *root,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,Related,
               mtype,tArgList,root->argList,root->metaData);
-          md->setTagInfo(root->tagInfo);
+          md->setTagInfo(root->tagInfo());
           md->setLanguage(root->lang);
           md->setId(root->id);
           md->setTypeConstraints(root->typeConstr);
@@ -6582,7 +6582,7 @@ static void findMember(const Entry *root,
           //
           md->setDefinitionTemplateParameterLists(root->tArgLists);
 
-          md->setTagInfo(root->tagInfo);
+          md->setTagInfo(root->tagInfo());
 
 
 
@@ -6703,7 +6703,7 @@ localObjCMethod:
             funcType,funcName,funcArgs,exceptions,
             root->protection,root->virt,root->stat,Member,
             MemberType_Function,ArgumentList(),root->argList,root->metaData);
-        md->setTagInfo(root->tagInfo);
+        md->setTagInfo(root->tagInfo());
         md->setLanguage(root->lang);
         md->setId(root->id);
         md->makeImplementationDetail();
@@ -7058,7 +7058,7 @@ static void findEnums(const Entry *root)
           isMemberOf ? Foreign : isRelated ? Related : Member,
           MemberType_Enumeration,
           ArgumentList(),ArgumentList(),root->metaData);
-      md->setTagInfo(root->tagInfo);
+      md->setTagInfo(root->tagInfo());
       md->setLanguage(root->lang);
       md->setId(root->id);
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
@@ -7256,7 +7256,7 @@ static void addEnumValuesToEnums(const Entry *root)
                 //printf("md->qualifiedName()=%s e->name=%s tagInfo=%p name=%s\n",
                 //    md->qualifiedName().data(),e->name.data(),e->tagInfo,e->name.data());
                 QCString qualifiedName = substitute(root->name,"::",".");
-                if (!scope.isEmpty() && root->tagInfo)
+                if (!scope.isEmpty() && root->tagInfo())
                 {
                   qualifiedName=substitute(scope,"::",".")+"."+qualifiedName;
                 }
@@ -7265,9 +7265,9 @@ static void addEnumValuesToEnums(const Entry *root)
                    )
                 {
                   QCString fileName = e->fileName;
-                  if (fileName.isEmpty() && e->tagInfo)
+                  if (fileName.isEmpty() && e->tagInfo())
                   {
-                    fileName = e->tagInfo->tagName;
+                    fileName = e->tagInfo()->tagName;
                   }
                   MemberDef *fmd=createMemberDef(
                       fileName,e->startLine,e->startColumn,
@@ -7278,7 +7278,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   else if (md->getNamespaceDef()) fmd->setNamespace(md->getNamespaceDef());
                   else if (md->getFileDef())      fmd->setFileDef(md->getFileDef());
                   fmd->setOuterScope(md->getOuterScope());
-                  fmd->setTagInfo(e->tagInfo);
+                  fmd->setTagInfo(e->tagInfo());
                   fmd->setLanguage(e->lang);
                   fmd->setId(e->id);
                   fmd->setDocumentation(e->doc,e->docFile,e->docLine);
@@ -8503,13 +8503,13 @@ static void findDefineDocumentation(Entry *root)
     //printf("found define '%s' '%s' brief='%s' doc='%s'\n",
     //       root->name.data(),root->args.data(),root->brief.data(),root->doc.data());
 
-    if (root->tagInfo && !root->name.isEmpty()) // define read from a tag file
+    if (root->tagInfo() && !root->name.isEmpty()) // define read from a tag file
     {
-      MemberDef *md=createMemberDef(root->tagInfo->tagName,1,1,
+      MemberDef *md=createMemberDef(root->tagInfo()->tagName,1,1,
                     "#define",root->name,root->args,0,
                     Public,Normal,FALSE,Member,MemberType_Define,
                     ArgumentList(),ArgumentList(),"");
-      md->setTagInfo(root->tagInfo);
+      md->setTagInfo(root->tagInfo());
       md->setLanguage(root->lang);
       //printf("Searching for '%s' fd=%p\n",filePathName.data(),fd);
       md->setFileDef(root->parent()->fileDef());
@@ -8728,7 +8728,7 @@ static void findMainPage(Entry *root)
 {
   if (root->section == Entry::MAINPAGEDOC_SEC)
   {
-    if (Doxygen::mainPage==0 && root->tagInfo==0)
+    if (Doxygen::mainPage==0 && root->tagInfo()==0)
     {
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
@@ -8767,7 +8767,7 @@ static void findMainPage(Entry *root)
         Doxygen::mainPage->addSectionsToDefinition(root->anchors);
       }
     }
-    else if (root->tagInfo==0)
+    else if (root->tagInfo()==0)
     {
       warn(root->fileName,root->startLine,
            "found more than one \\mainpage comment block! (first occurrence: %s, line %d), Skipping current block!",
@@ -8782,7 +8782,7 @@ static void findMainPageTagFiles(Entry *root)
 {
   if (root->section == Entry::MAINPAGEDOC_SEC)
   {
-    if (Doxygen::mainPage && root->tagInfo)
+    if (Doxygen::mainPage && root->tagInfo())
     {
       Doxygen::mainPage->addSectionsToDefinition(root->anchors);
     }

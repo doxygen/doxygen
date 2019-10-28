@@ -6616,7 +6616,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const char *fileName,int startLine,
     const QList<ListItemInfo> *sli,
     GroupDef *gd,
-    TagInfo *tagInfo,
+    const TagInfo *tagInfo,
     bool xref,
     SrcLangExt lang
     )
