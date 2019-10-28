@@ -38,8 +38,6 @@ Entry::Entry()
   num++;
   m_parent=0;
   section = EMPTY_SEC;
-  groups = new QList<Grouping>;
-  groups->setAutoDelete(TRUE);
   anchors = new QList<SectionInfo>; // Doxygen::sectionDict takes ownership of the items!
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
@@ -101,8 +99,6 @@ Entry::Entry(const Entry &e)
   bodyLine    = e.bodyLine;
   endBodyLine = e.endBodyLine;
   mGrpId      = e.mGrpId;
-  groups      = new QList<Grouping>;
-  groups->setAutoDelete(TRUE);
   anchors     = new QList<SectionInfo>;
   fileName    = e.fileName;
   startLine   = e.startLine;
@@ -138,15 +134,8 @@ Entry::Entry(const Entry &e)
   }
 
   extends = e.extends;
-  
-  // deep copy group list
-  QListIterator<Grouping> gli(*e.groups);
-  Grouping *g;
-  for (;(g=gli.current());++gli)
-  {
-    groups->append(new Grouping(*g));
-  }
-  
+  groups  = e.groups;
+
   QListIterator<SectionInfo> sli2(*e.anchors);
   SectionInfo *s;
   for (;(s=sli2.current());++sli2)
@@ -164,7 +153,6 @@ Entry::~Entry()
   //printf("Deleting entry %d name %s type %x children %d\n",
   //       num,name.data(),section,sublist->count());
 
-  delete groups;
   delete anchors;
   delete sli;
   num--;
@@ -292,7 +280,7 @@ void Entry::reset()
   metaData.resize(0);
   m_sublist.clear();
   extends.clear();
-  groups->clear();
+  groups.clear();
   anchors->clear();
   argList.clear();
   tArgLists.clear();

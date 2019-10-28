@@ -251,51 +251,10 @@ static void initEntry()
   current->stat       = gstat;
   current->lang       = language;
   //printf("*** initEntry() language=%d\n",language);
-  //if (!autoGroupStack.isEmpty())
-  //{
-  //  //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
-  //  current->groups->append(new Grouping(*autoGroupStack.top()));
-  //}
   Doxygen::docGroup.initGroupInfo(current.get());
   isTypedef=FALSE;
 }
 
-
-//-----------------------------------------------------------------------------
-
-///// remove any automatic grouping and add new one (if given)
-//static void setCurrentGroup( QCString *newgroup, Grouping::GroupPri_t pri )
-//{
-//   /* remove auto group name from current entry and discard it */
-//   Grouping *g = current->groups->first();
-//   int i=0; 
-//   while (g)
-//   {
-//     if (g->pri <= Grouping::GROUPING_AUTO_DEF)
-//     {
-//       current->groups->remove(i);
-//       i--;
-//     }
-//     g=current->groups->next();
-//     i++;
-//   }
-//
-//   /* use new group name instead? */
-//   if ( newgroup )
-//   {
-//      current->groups->append(new Grouping(*newgroup, pri));
-//   } 
-//}
-//
-//static int newMemberGroupId()
-//{
-//  static int curGroupId=0;
-//  return curGroupId++;
-//}
-//
-// forward declarations
-//static void startGroupInDoc();
-//static void endGroup();
 
 //-----------------------------------------------------------------------------
 
@@ -3510,10 +3469,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
                                             mtype = Method;
                                             virt = Normal;
-					    if (current->groups)
-					    {
-					      current->groups->clear();
-					    }
+					    current->groups.clear();
 					    initEntry();
 					  }
 					}
@@ -4215,14 +4171,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      varEntry->brief = current->brief.copy();
 					      varEntry->mGrpId = current->mGrpId;
                                               varEntry->initializer = current->initializer;
-
-					      // deep copy group list
-					      QListIterator<Grouping> gli(*current->groups);
-					      Grouping *g;
-					      for (;(g=gli.current());++gli)
-					      {
-						varEntry->groups->append(new Grouping(*g));
-					      }
+                                              varEntry->groups = current->groups;
 					      if (current->sli) // copy special list items
 					      {
 						QListIterator<ListItemInfo> li(*current->sli);
@@ -7132,14 +7081,9 @@ static void parseCompounds(const std::unique_ptr<Entry> &rt)
 
       // deep copy group list from parent (see bug 727732)
       static bool autoGroupNested = Config_getBool(GROUP_NESTED_COMPOUNDS);
-      if (autoGroupNested && rt->groups && ce->section!=Entry::ENUM_SEC && !(ce->spec&Entry::Enum))
+      if (autoGroupNested && ce->section!=Entry::ENUM_SEC && !(ce->spec&Entry::Enum))
       {
-        QListIterator<Grouping> gli(*rt->groups);
-        Grouping *g;
-        for (;(g=gli.current());++gli)
-        {
-          ce->groups->append(new Grouping(*g));
-        }
+        ce->groups = rt->groups;
       }
 
       int ni=ce->name.findRev("::"); if (ni==-1) ni=0; else ni+=2;

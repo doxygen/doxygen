@@ -2141,8 +2141,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle argument of ingroup command ------- */
 
 <InGroupParam>{LABELID}			{ // group id
-  					  current->groups->append(
-					    new Grouping(yytext, Grouping::GROUPING_INGROUP)
+  					  current->groups.push_back(
+					     Grouping(yytext, Grouping::GROUPING_INGROUP)
 					  );
 					  inGroupParamFound=TRUE;
   					}

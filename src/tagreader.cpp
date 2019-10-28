@@ -1201,7 +1201,7 @@ void TagFileParser::buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMe
     me->id         = tmi->clangId;
     if (ce->section == Entry::GROUPDOC_SEC)
     {
-      me->groups->append(new Grouping(ce->name,Grouping::GROUPING_INGROUP));
+      me->groups.push_back(Grouping(ce->name,Grouping::GROUPING_INGROUP));
     }
     addDocAnchors(me,tmi->docAnchors);
     me->tagInfoData.tagName    = m_tagName;
@@ -1458,7 +1458,7 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
           [&](const std::unique_ptr<Entry> &e) { return e->name = *it; });
       if (i!=children.end())
       {
-        (*i)->groups->append(new Grouping(tgi->name,Grouping::GROUPING_INGROUP));
+        (*i)->groups.push_back(Grouping(tgi->name,Grouping::GROUPING_INGROUP));
       }
     }
   }

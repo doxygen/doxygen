@@ -568,11 +568,9 @@ static void addPageToContext(PageDef *pd,Entry *root)
 static void addRelatedPage(Entry *root)
 {
   GroupDef *gd=0;
-  QListIterator<Grouping> gli(*root->groups);
-  Grouping *g;
-  for (;(g=gli.current());++gli)
+  for (const Grouping &g : root->groups)
   {
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname))) break;
+    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname))) break;
   }
   //printf("---> addRelatedPage() %s gd=%p\n",root->name.data(),gd);
   QCString doc;
@@ -759,12 +757,10 @@ static void buildFileList(const Entry *root)
       fd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       fd->addSectionsToDefinition(root->anchors);
       fd->setRefItems(root->sli);
-      QListIterator<Grouping> gli(*root->groups);
-      Grouping *g;
-      for (;(g=gli.current());++gli)
+      for (const Grouping &g : root->groups)
       {
         GroupDef *gd=0;
-        if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
+        if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
         {
           gd->addFile(fd);
           fd->makePartOfGroup(gd);
@@ -1947,12 +1943,13 @@ static void findUsingDirectives(const Entry *root)
         nd->setMetaData(root->metaData);
         nd->setInline((root->spec&Entry::Inline)!=0);
 
-        QListIterator<Grouping> gli(*root->groups);
-        Grouping *g;
-        for (;(g=gli.current());++gli)
+        //QListIterator<Grouping> gli(*root->groups);
+        //Grouping *g;
+        //for (;(g=gli.current());++gli)
+        for (const Grouping &g : root->groups)
         {
           GroupDef *gd=0;
-          if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
+          if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
             gd->addNamespace(nd);
         }
 
@@ -3575,9 +3572,9 @@ static void buildFunctionList(const Entry *root)
                  )
               {
                 GroupDef *gd=0;
-                if (root->groups->getFirst() && !root->groups->getFirst()->groupname.isEmpty())
+                if (!root->groups.empty() && !root->groups.front().groupname.isEmpty())
                 {
-                  gd = Doxygen::groupSDict->find(root->groups->getFirst()->groupname);
+                  gd = Doxygen::groupSDict->find(root->groups.front().groupname);
                 }
                 //printf("match!\n");
                 //printf("mnd=%p rnd=%p nsName=%s rnsName=%s\n",mnd,rnd,nsName.data(),rnsName.data());
@@ -3641,16 +3638,15 @@ static void buildFunctionList(const Entry *root)
                   md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
 
                   // merge ingroup specifiers
-                  if (md->getGroupDef()==0 && root->groups->getFirst()!=0)
+                  if (md->getGroupDef()==0 && !root->groups.empty())
                   {
                     addMemberToGroups(root,md);
                   }
-                  else if (md->getGroupDef()!=0 && root->groups->count()==0)
+                  else if (md->getGroupDef()!=0 && root->groups.empty())
                   {
                     //printf("existing member is grouped, new member not\n");
-                    root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
                   }
-                  else if (md->getGroupDef()!=0 && root->groups->getFirst()!=0)
+                  else if (md->getGroupDef()!=0 && !root->groups.empty())
                   {
                     //printf("both members are grouped\n");
                   }
@@ -7455,7 +7451,7 @@ static void findEnumDocumentation(const Entry *root)
               md->setRefItems(root->sli);
 
               const GroupDef *gd=md->getGroupDef();
-              if (gd==0 &&root->groups->getFirst()!=0) // member not grouped but out-of-line documentation is
+              if (gd==0 && !root->groups.empty()) // member not grouped but out-of-line documentation is
               {
                 addMemberToGroups(root,md);
               }
@@ -7489,7 +7485,7 @@ static void findEnumDocumentation(const Entry *root)
               md->setMemberGroupId(root->mGrpId);
 
               const GroupDef *gd=md->getGroupDef();
-              if (gd==0 && root->groups->getFirst()!=0) // member not grouped but out-of-line documentation is
+              if (gd==0 && !root->groups.empty()) // member not grouped but out-of-line documentation is
               {
                 addMemberToGroups(root,md);
               }

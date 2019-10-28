@@ -292,7 +292,7 @@ class Entry
     int          endBodyLine; //!< line number where the definition ends
     int          mGrpId;      //!< member group id
     std::vector<BaseInfo> extends; //!< list of base classes
-    QList<Grouping> *groups;  //!< list of groups this entry belongs to
+    std::vector<Grouping> groups;  //!< list of groups this entry belongs to
     QList<SectionInfo> *anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source

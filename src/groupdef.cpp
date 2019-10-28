@@ -1460,12 +1460,10 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
 
 void addClassToGroups(const Entry *root,ClassDef *cd)
 {
-  QListIterator<Grouping> gli(*root->groups);
-  Grouping *g;
-  for (;(g=gli.current());++gli)
+  for (const Grouping &g : root->groups)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
+    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
     {
       if (gd->addClass(cd)) 
       {
@@ -1478,14 +1476,12 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
 
 void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
 {
-  //printf("root->groups->count()=%d\n",root->groups->count());
-  QListIterator<Grouping> gli(*root->groups);
-  Grouping *g;
-  for (;(g=gli.current());++gli)
+  //printf("root->groups.size()=%d\n",root->groups.size());
+  for (const Grouping &g : root->groups)
   {
     GroupDef *gd=0;
     //printf("group '%s'\n",s->data());
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
+    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
     {
       if (gd->addNamespace(nd)) nd->makePartOfGroup(gd);
       //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
@@ -1495,14 +1491,12 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
 
 void addDirToGroups(const Entry *root,DirDef *dd)
 {
-  //printf("*** root->groups->count()=%d\n",root->groups->count());
-  QListIterator<Grouping> gli(*root->groups);
-  Grouping *g;
-  for (;(g=gli.current());++gli)
+  //printf("*** root->groups.size()=%d\n",root->groups.size());
+  for (const Grouping &g : root->groups)
   {
     GroupDef *gd=0;
     //printf("group '%s'\n",g->groupname.data());
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
+    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
     {
       gd->addDir(dd);
       dd->makePartOfGroup(gd);
@@ -1513,14 +1507,11 @@ void addDirToGroups(const Entry *root,DirDef *dd)
 
 void addGroupToGroups(const Entry *root,GroupDef *subGroup)
 {
-  //printf("addGroupToGroups for %s groups=%d\n",root->name.data(),
-  //    root->groups?root->groups->count():-1);
-  QListIterator<Grouping> gli(*root->groups);
-  Grouping *g;
-  for (;(g=gli.current());++gli)
+  //printf("addGroupToGroups for %s groups=%d\n",root->name.data(),root->groups.size());
+  for (const Grouping &g : root->groups)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
+    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
     {
       if (gd==subGroup)
       {
@@ -1546,20 +1537,18 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
 {
   //printf("addMemberToGroups:  Root %p = %s, md %p=%s groups=%d\n", 
   //    root, root->name.data(), md, md->name().data(), root->groups->count() );
-  QListIterator<Grouping> gli(*root->groups);
-  Grouping *g;
 
   // Search entry's group list for group with highest pri.
   Grouping::GroupPri_t pri = Grouping::GROUPING_LOWEST;
   GroupDef *fgd=0;
-  for (;(g=gli.current());++gli)
+  for (const Grouping &g : root->groups)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() &&
-        (gd=Doxygen::groupSDict->find(g->groupname)) &&
-        g->pri >= pri)
+    if (!g.groupname.isEmpty() &&
+        (gd=Doxygen::groupSDict->find(g.groupname)) &&
+        g.pri >= pri)
     {
-      if (fgd && gd!=fgd && g->pri==pri) 
+      if (fgd && gd!=fgd && g.pri==pri) 
       {
         warn(root->fileName.data(), root->startLine,
             "Member %s found in multiple %s groups! "
@@ -1570,7 +1559,7 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
       }
 
       fgd = gd;
-      pri = g->pri;
+      pri = g.pri;
     }
   }
   //printf("fgd=%p\n",fgd);
@@ -1650,12 +1639,10 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
 
 void addExampleToGroups(const Entry *root,PageDef *eg)
 {
-  QListIterator<Grouping> gli(*root->groups);
-  Grouping *g;
-  for (;(g=gli.current());++gli)
+  for (const Grouping &g : root->groups)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
+    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
     {
       gd->addExample(eg);
       eg->makePartOfGroup(gd);
