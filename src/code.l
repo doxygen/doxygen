@@ -982,7 +982,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
       }
     }
     const NamespaceDef *nd = getResolvedNamespace(className);
-    if (nd && nd->isLinkableInProject())
+    if (nd && nd->isLinkable())
     {
       g_theCallContext.setScope(nd);
       addToSearchIndex(className);
