@@ -5476,8 +5476,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    // there can be only one base class here
 					    if (!baseName.isEmpty())
 					    {
-					      current->extends->append(
-					        new BaseInfo(baseName,Public,Normal));
+					      current->extends.push_back(
+					        BaseInfo(baseName,Public,Normal));
 					      baseName.resize(0);
 					    }
 					    current_root->moveToSubEntryAndRefresh( current ) ;
@@ -6156,8 +6156,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->name = removeRedundantWhiteSpace(current->name);
   					  if (!baseName.isEmpty())
 					  {
-  					    current->extends->append(
-					      new BaseInfo(baseName,baseProt,baseVirt)
+  					    current->extends.push_back(
+					      BaseInfo(baseName,baseProt,baseVirt)
 					    );
 					  }
 					  if ((current->spec & (Entry::Interface|Entry::Struct)) || 
@@ -6198,8 +6198,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->startColumn = yyColNr;
 					  current->name = removeRedundantWhiteSpace(current->name);
   					  if (!baseName.isEmpty())
-  					    current->extends->append(
-					      new BaseInfo(baseName,baseProt,baseVirt)
+  					    current->extends.push_back(
+					       BaseInfo(baseName,baseProt,baseVirt)
 					    );
 					  curlyCount=0;
 					  if (insideObjC)

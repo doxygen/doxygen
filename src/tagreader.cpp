@@ -100,14 +100,14 @@ class TagClassInfo
 {
   public:
     enum Kind { None=-1, Class, Struct, Union, Interface, Exception, Protocol, Category, Enum, Service, Singleton };
-    TagClassInfo() { bases=0, templateArguments=0; members.setAutoDelete(TRUE); isObjC=FALSE; kind = None; }
-   ~TagClassInfo() { delete bases; delete templateArguments; }
+    TagClassInfo() { templateArguments=0; members.setAutoDelete(TRUE); isObjC=FALSE; kind = None; }
+   ~TagClassInfo() { delete templateArguments; }
     QCString name;
     QCString filename;
     QCString clangId;
     QCString anchor;
     TagAnchorInfoList docAnchors;
-    QList<BaseInfo> *bases;
+    std::vector<BaseInfo> bases;
     QList<TagMemberInfo> members;
     QList<QCString> *templateArguments;
     QCStringList classList;
@@ -623,12 +623,7 @@ class TagFileParser : public QXmlDefaultHandler
         {
           virt = Virtual;
         }
-        if (m_curClass->bases==0) 
-        {
-          m_curClass->bases = new QList<BaseInfo>;
-          m_curClass->bases->setAutoDelete(TRUE);
-        }
-        m_curClass->bases->append(new BaseInfo(m_curString,prot,virt));
+        m_curClass->bases.push_back(BaseInfo(m_curString,prot,virt));
       }
       else
       {
@@ -640,7 +635,7 @@ class TagFileParser : public QXmlDefaultHandler
     {
       if (m_state==InClass && m_curClass)
       {
-        m_curClass->bases->getLast()->name = m_curString;
+        m_curClass->bases.back().name = m_curString;
       }
       else
       {
@@ -990,14 +985,9 @@ void TagFileParser::dump()
   {
     msg("class '%s'\n",cd->name.data());
     msg("  filename '%s'\n",cd->filename.data());
-    if (cd->bases)
+    for (const BaseInfo &bi : cd->bases)
     {
-      QListIterator<BaseInfo> bii(*cd->bases);
-      BaseInfo *bi;
-      for ( bii.toFirst() ; (bi=bii.current()) ; ++bii) 
-      {
-        msg( "  base: %s \n", bi->name.data() );
-      }
+      msg( "  base: %s \n", bi.name.data() );
     }
 
     QListIterator<TagMemberInfo> mci(cd->members);
@@ -1344,11 +1334,8 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
     ce->id       = tci->clangId;
     ce->lang     = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
     // transfer base class list
-    if (tci->bases)
-    {
-      delete ce->extends;
-      ce->extends = tci->bases; tci->bases = 0;
-    }
+    ce->extends  = tci->bases;
+    tci->bases.clear();
     if (tci->templateArguments)
     {
       ArgumentList al;

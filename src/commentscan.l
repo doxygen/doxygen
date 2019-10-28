@@ -1824,7 +1824,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yytext);
 					  // we add subpage labels as a kind of "inheritance" relation to prevent
 					  // needing to add another list to the Entry class.
-					  current->extends->append(new BaseInfo(yytext,Public,Normal));
+					  current->extends.push_back(BaseInfo(yytext,Public,Normal));
 					  BEGIN(SubpageTitle);
   					}
 <SubpageLabel>{DOCNL}			{ // missing argument
@@ -2224,8 +2224,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle argument of inherit command ------- */
 
 <InheritParam>({ID}("::"|"."))*{ID}	{ // found argument
-					  current->extends->append(
-					    new BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
+					  current->extends.push_back(
+					    BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
 					  );
 					  BEGIN( Comment );
   					}
@@ -2247,8 +2247,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle argument of extends and implements commands ------- */
 
 <ExtendsParam>({ID}("::"|"."))*{ID}	{ // found argument
-					  current->extends->append(
-					    new BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
+					  current->extends.push_back(
+					    BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
 					  );
 					  BEGIN( Comment );
   					}

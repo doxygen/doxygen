@@ -315,7 +315,7 @@ static bool findClassRelation(
                            const Entry *root,
                            Definition *context,
                            ClassDef *cd,
-                           BaseInfo *bi,
+                           const BaseInfo *bi,
                            QDict<int> *templateNames,
                            /*bool insertUndocumented*/
                            FindBaseClassRelation_Mode mode,
@@ -502,11 +502,11 @@ static void addSTLClass(const std::unique_ptr<Entry> &root,const STLInfo *info)
   }
   if (info->baseClass1)
   {
-    classEntry->extends->append(new BaseInfo(info->baseClass1,Public,info->virtualInheritance?Virtual:Normal));
+    classEntry->extends.push_back(BaseInfo(info->baseClass1,Public,info->virtualInheritance?Virtual:Normal));
   }
   if (info->baseClass2)
   {
-    classEntry->extends->append(new BaseInfo(info->baseClass2,Public,info->virtualInheritance?Virtual:Normal));
+    classEntry->extends.push_back(BaseInfo(info->baseClass2,Public,info->virtualInheritance?Virtual:Normal));
   }
   if (info->iterators)
   {
@@ -4340,20 +4340,18 @@ static void findBaseClassesForClass(
   masterCd->setVisited(TRUE);
   // The base class could ofcouse also be a non-nested class
   const ArgumentList &formalArgs = masterCd->templateArguments();
-  QListIterator<BaseInfo> bii(*root->extends);
-  BaseInfo *bi=0;
-  for (bii.toFirst();(bi=bii.current());++bii)
+  for (const BaseInfo &bi : root->extends)
   {
     //printf("masterCd=%s bi->name='%s' #actualArgs=%d\n",
     //    masterCd->localName().data(),bi->name.data(),actualArgs?(int)actualArgs->count():-1);
     bool delTempNames=FALSE;
     if (templateNames==0)
     {
-      templateNames = getTemplateArgumentsInName(formalArgs,bi->name);
+      templateNames = getTemplateArgumentsInName(formalArgs,bi.name);
       delTempNames=TRUE;
     }
-    BaseInfo tbi(bi->name,bi->prot,bi->virt);
-    tbi.name = substituteTemplateArgumentsInString(bi->name,formalArgs,actualArgs);
+    BaseInfo tbi = bi;
+    tbi.name = substituteTemplateArgumentsInString(bi.name,formalArgs,actualArgs);
     //printf("bi->name=%s tbi.name=%s\n",bi->name.data(),tbi.name.data());
 
     if (mode==DocumentedOnly)
@@ -4550,7 +4548,7 @@ static bool findClassRelation(
                            const Entry *root,
                            Definition *context,
                            ClassDef *cd,
-                           BaseInfo *bi,
+                           const BaseInfo *bi,
                            QDict<int> *templateNames,
                            FindBaseClassRelation_Mode mode,
                            bool isArtificial
@@ -4778,13 +4776,13 @@ static bool findClassRelation(
               usedName=biName;
               //printf("***** usedName=%s templSpec=%s\n",usedName.data(),templSpec.data());
             }
-            static bool sipSupport = Config_getBool(SIP_SUPPORT);
-            if (sipSupport) bi->prot=Public;
+            Protection prot = bi->prot;
+            if (Config_getBool(SIP_SUPPORT)) prot=Public;
             if (!cd->isSubClass(baseClass)) // check for recursion, see bug690787
             {
-              cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
+              cd->insertBaseClass(baseClass,usedName,prot,bi->virt,templSpec);
               // add this class as super class to the base class
-              baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
+              baseClass->insertSubClass(cd,prot,bi->virt,templSpec);
             }
             else
             {
@@ -4916,8 +4914,8 @@ static bool isClassSection(const Entry *root)
     else if (root->section & Entry::COMPOUNDDOC_MASK)
          // is it a documentation block with inheritance info.
     {
-      bool extends = root->extends->count()>0;
-      if (extends) return TRUE;
+      bool hasExtends = !root->extends.empty();
+      if (hasExtends) return TRUE;
     }
   }
   return FALSE;
@@ -5047,18 +5045,15 @@ static void computeTemplateClassRelations()
         QCString templSpec = tdi.currentKey();
         ArgumentList templArgs;
         stringToArgumentList(templSpec,templArgs);
-        QList<BaseInfo> *baseList=root->extends;
-        QListIterator<BaseInfo> it(*baseList);
-        BaseInfo *bi;
-        for (;(bi=it.current());++it) // for each base class of the template
+        for (const BaseInfo &bi : root->extends)
         {
           // check if the base class is a template argument
-          BaseInfo tbi(bi->name,bi->prot,bi->virt);
+          BaseInfo tbi = bi;
           const ArgumentList &tl = cd->templateArguments();
           if (!tl.empty())
           {
             QDict<int> *baseClassNames = tcd->getTemplateBaseClassNames();
-            QDict<int> *templateNames = getTemplateArgumentsInName(tl,bi->name);
+            QDict<int> *templateNames = getTemplateArgumentsInName(tl,bi.name);
             // for each template name that we inherit from we need to
             // substitute the formal with the actual arguments
             QDict<int> *actualTemplateNames = new QDict<int>(17);
@@ -5085,7 +5080,7 @@ static void computeTemplateClassRelations()
             }
             delete templateNames;
 
-            tbi.name = substituteTemplateArgumentsInString(bi->name,tl,templArgs);
+            tbi.name = substituteTemplateArgumentsInString(bi.name,tl,templArgs);
             // find a documented base class in the correct scope
             if (!findClassRelation(root,cd,tcd,&tbi,actualTemplateNames,DocumentedOnly,FALSE))
             {
@@ -8803,11 +8798,9 @@ static void computePageRelations(Entry *root)
                     Doxygen::mainPage;
     if (pd)
     {
-      QListIterator<BaseInfo> bii(*root->extends);
-      BaseInfo *bi;
-      for (bii.toFirst();(bi=bii.current());++bii)
+      for (const BaseInfo &bi : root->extends)
       {
-        PageDef *subPd = Doxygen::pageSDict->find(bi->name);
+        PageDef *subPd = Doxygen::pageSDict->find(bi.name);
         if (pd==subPd)
         {
          err("page defined at line %d of file %s with label %s is a direct "

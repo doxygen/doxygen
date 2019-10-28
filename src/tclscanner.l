@@ -2700,7 +2700,7 @@ tcl_inf("->\n");
     {
       for (unsigned int i = 2; i < tcl.list_commandwords.count(); i = i + 2)
       {
-        tcl.scan.at(0)->entry_cl->extends->append(new BaseInfo((*tcl.list_commandwords.at(i)),Public,Normal));
+        tcl.scan.at(0)->entry_cl->extends.push_back(BaseInfo((*tcl.list_commandwords.at(i)),Public,Normal));
       }
     }
     goto command_end;

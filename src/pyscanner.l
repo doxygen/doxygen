@@ -1245,8 +1245,8 @@ STARTDOCSYMS      "##"
                        }
 
     {SCOPE}            {
-                         current->extends->append(
-					      new BaseInfo(substitute(yytext,".","::"),Public,Normal)
+                         current->extends.push_back(
+					      BaseInfo(substitute(yytext,".","::"),Public,Normal)
 					    );
                          //Has base class-do stuff
                        }
