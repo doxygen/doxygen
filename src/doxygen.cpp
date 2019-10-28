@@ -10032,29 +10032,31 @@ static void usage(const char *name,const char *versionString)
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
-  msg("    If - is used for configName doxygen will write to standard output.\n\n");
   msg("2) Use doxygen to update an old configuration file:\n");
   msg("    %s [-s] -u [configName]\n\n",name);
   msg("3) Use doxygen to generate documentation using an existing ");
   msg("configuration file:\n");
   msg("    %s [configName]\n\n",name);
-  msg("    If - is used for configName doxygen will read from standard input.\n\n");
   msg("4) Use doxygen to generate a template file controlling the layout of the\n");
   msg("   generated documentation:\n");
-  msg("    %s -l [layoutFileName.xml]\n\n",name);
+  msg("    %s -l [layoutFileName]\n\n",name);
+  msg("    In case layoutFileName is omitted layoutFileName.xml will be used as filename.\n");
+  msg("    If - is used for layoutFileName doxygen will write to standard output.\n\n");
   msg("5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
   msg("    RTF:        %s -w rtf styleSheetFile\n",name);
   msg("    HTML:       %s -w html headerFile footerFile styleSheetFile [configFile]\n",name);
   msg("    LaTeX:      %s -w latex headerFile footerFile styleSheetFile [configFile]\n\n",name);
   msg("6) Use doxygen to generate a rtf extensions file\n");
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
+  msg("    If - is used for extensionsFile doxygen will write to standard output.\n\n");
   msg("7) Use doxygen to compare the used configuration file with the template configuration file\n");
   msg("    %s -x [configFile]\n\n",name);
   msg("8) Use doxygen to show a list of built-in emojis.\n");
   msg("    %s -f emoji outputFileName\n\n",name);
   msg("    If - is used for outputFileName doxygen will write to standard output.\n\n");
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
-  msg("If configName is omitted 'Doxyfile' will be used as a default.\n\n");
+  msg("If configName is omitted 'Doxyfile' will be used as a default.\n");
+  msg("If - is used for configFile doxygen will write / read the configuration to /from standard output / input.\n\n");
   msg("-v print version string\n");
 }
 
@@ -10281,9 +10283,14 @@ void readConfiguration(int argc, char **argv)
         genConfig=TRUE;
         break;
       case 'l':
-        layoutName=getArg(argc,argv,optind);
-        if (!layoutName)
-        { layoutName="DoxygenLayout.xml"; }
+        if (optind+1>=argc)
+        {
+          layoutName="DoxygenLayout.xml";
+        }
+        else
+        {
+          layoutName=argv[optind+1];
+        }
         writeDefaultLayoutFile(layoutName);
         cleanUpDoxygen();
         exit(0);
