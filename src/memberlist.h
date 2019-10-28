@@ -26,7 +26,6 @@
 class GroupDef;
 class MemberGroup;
 class MemberGroupList;
-class StorageIntf;
 
 /** A list of MemberDef objects. */
 class MemberList : private QList<MemberDef>

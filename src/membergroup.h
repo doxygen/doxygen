@@ -32,7 +32,6 @@ class FileDef;
 class GroupDef;
 class OutputList;
 class Definition;
-class StorageIntf;
 class FTextStream;
 struct ListItemInfo;
 

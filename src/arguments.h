@@ -19,8 +19,6 @@
 #include <vector>
 #include <qcstring.h>
 
-class StorageIntf;
-
 /*! \brief This class contains the information about the argument of a
  *         function or template
  *

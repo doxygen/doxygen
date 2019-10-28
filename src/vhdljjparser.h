@@ -30,7 +30,6 @@ void  parserVhdlfile(const char* inputBuffer);
 
 class Entry;
 class ClassSDict;
-class FileStorage;
 class ClassDef;
 class MemberDef;
 struct VhdlConfNode;

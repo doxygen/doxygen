@@ -30,8 +30,6 @@
 struct SectionInfo;
 class QFile;
 class FileDef;
-class FileStorage;
-class StorageIntf;
 struct ListItemInfo;
 
 /** This class stores information about an inheritance relation
