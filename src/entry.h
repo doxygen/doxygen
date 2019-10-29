@@ -18,7 +18,6 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
-#include <qlist.h>
 #include <qgstring.h>
 
 #include <vector>
@@ -195,9 +194,6 @@ class Entry
     Entry(const Entry &);
    ~Entry();
 
-    /*! Returns the static size of the Entry (so excluding any dynamic memory) */
-    int getSize();
-
     void addSpecialListItem(const char *listName,int index);
 
     /*! Returns the parent for this Entry or 0 if this entry has no parent. */
@@ -206,7 +202,6 @@ class Entry
     /*! Returns the list of children for this Entry
      *  @see addSubEntry() and removeSubEntry()
      */
-    //const QList<Entry> *children() const { return m_sublist; }
     const std::vector< std::unique_ptr<Entry> > &children() const { return m_sublist; }
 
     /*! @name add entry as a child and pass ownership.
@@ -297,7 +292,7 @@ class Entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     int		startColumn;  //!< start column of entry in the source
-    QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
+    std::vector<ListItemInfo> sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
     SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item

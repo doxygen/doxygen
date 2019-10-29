@@ -1659,7 +1659,7 @@ QCString GroupDefImpl::getOutputFileBase() const
 void GroupDefImpl::addListReferences()
 {
   {
-    QList<ListItemInfo> *xrefItems = xrefListItems();
+    const std::vector<ListItemInfo> &xrefItems = xrefListItems();
     addRefItem(xrefItems,
              getOutputFileBase(),
              theTranslator->trGroup(TRUE,TRUE),

@@ -15,6 +15,7 @@
  *
  */
 
+#include <algorithm>
 #include <ctype.h>
 #include <qregexp.h>
 #include "md5.h"
@@ -59,7 +60,7 @@ class DefinitionImpl::IMPL
 
     MemberSDict *sourceRefByDict;
     MemberSDict *sourceRefsDict;
-    QList<ListItemInfo> *xrefListItems;
+    std::vector<ListItemInfo> xrefListItems;
     GroupList *partOfGroups;
 
     DocInfo   *details;    // not exported
@@ -97,7 +98,7 @@ class DefinitionImpl::IMPL
 
 DefinitionImpl::IMPL::IMPL()
   : sectionDict(0), sourceRefByDict(0), sourceRefsDict(0),
-    xrefListItems(0), partOfGroups(0),
+    partOfGroups(0),
     details(0), inbodyDocs(0), brief(0), body(0), hidden(FALSE), isArtificial(FALSE),
     outerScope(0), lang(SrcLangExt_Unknown)
 {
@@ -109,7 +110,6 @@ DefinitionImpl::IMPL::~IMPL()
   delete sourceRefByDict;
   delete sourceRefsDict;
   delete partOfGroups;
-  delete xrefListItems;
   delete brief;
   delete details;
   delete body;
@@ -150,7 +150,6 @@ void DefinitionImpl::IMPL::init(const char *df, const char *n)
   sectionDict     = 0, 
   outerScope      = Doxygen::globalScope;
   partOfGroups    = 0;
-  xrefListItems   = 0;
   hidden          = FALSE;
   isArtificial    = FALSE;
   lang            = SrcLangExt_Unknown;
@@ -327,7 +326,6 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
   m_impl->sourceRefByDict = 0;
   m_impl->sourceRefsDict = 0;
   m_impl->partOfGroups = 0;
-  m_impl->xrefListItems = 0;
   m_impl->brief = 0;
   m_impl->details = 0;
   m_impl->body = 0;
@@ -370,10 +368,6 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
     {
       makePartOfGroup(gd);
     }
-  }
-  if (d.m_impl->xrefListItems)
-  {
-    setRefItems(d.m_impl->xrefListItems);
   }
   if (d.m_impl->brief)
   {
@@ -1614,76 +1608,47 @@ void DefinitionImpl::makePartOfGroup(GroupDef *gd)
   m_impl->partOfGroups->append(gd);
 }
 
-void DefinitionImpl::setRefItems(const QList<ListItemInfo> *sli)
+void DefinitionImpl::setRefItems(const std::vector<ListItemInfo> &sli)
 {
-  //printf("%s::setRefItems()\n",name().data());
-  if (sli)
-  {
-    // deep copy the list
-    if (m_impl->xrefListItems==0) 
-    {
-      m_impl->xrefListItems=new QList<ListItemInfo>;
-      m_impl->xrefListItems->setAutoDelete(TRUE);
-    }
-    QListIterator<ListItemInfo> slii(*sli);
-    ListItemInfo *lii;
-    for (slii.toFirst();(lii=slii.current());++slii)
-    {
-      m_impl->xrefListItems->append(new ListItemInfo(*lii));
-    } 
-  }
+  m_impl->xrefListItems = sli;
 }
 
 void DefinitionImpl::mergeRefItems(Definition *d)
 {
-  //printf("%s::mergeRefItems()\n",name().data());
-  QList<ListItemInfo> *xrefList = d->xrefListItems();
-  if (xrefList!=0)
-  {
-    // deep copy the list
-    if (m_impl->xrefListItems==0) 
-    {
-      m_impl->xrefListItems=new QList<ListItemInfo>;
-      m_impl->xrefListItems->setAutoDelete(TRUE);
-    }
-    QListIterator<ListItemInfo> slii(*xrefList);
-    QListIterator<ListItemInfo> mlii(*m_impl->xrefListItems);
-    ListItemInfo *lii;
-    ListItemInfo *mii;
-    for (slii.toFirst();(lii=slii.current());++slii)
-    {
-      bool found = false;
-      for (mlii.toFirst();(mii=mlii.current());++mlii)
-      {
-        if ((qstrcmp(lii->type,mii->type)==0) && (lii->itemId == mii->itemId))
-	{
-          found = true;
-          break;
-	}
-      }
-      if (!found) m_impl->xrefListItems->append(new ListItemInfo(*lii));
-    } 
-  }
+  auto otherXrefList = d->xrefListItems();
+
+  // append vectors
+  m_impl->xrefListItems.reserve(m_impl->xrefListItems.size()+otherXrefList.size());
+  m_impl->xrefListItems.insert (m_impl->xrefListItems.end(),
+                                otherXrefList.begin(),otherXrefList.end());
+
+  // sort results on itemId
+  std::sort(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
+            [](const ListItemInfo &left,const ListItemInfo &right)
+            { return left.itemId<right.itemId ||
+                     (left.itemId==right.itemId && qstrcmp(left.type,right.type)<0);
+            });
+
+  // filter out duplicates
+  auto last = std::unique(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
+            [](const ListItemInfo &left,const ListItemInfo &right)
+            { return left.itemId==right.itemId && left.type==right.type; });
+  m_impl->xrefListItems.erase(last, m_impl->xrefListItems.end());
 }
 
 int DefinitionImpl::_getXRefListId(const char *listName) const
 {
-  if (m_impl->xrefListItems)
+  for (const ListItemInfo &lii : m_impl->xrefListItems)
   {
-    QListIterator<ListItemInfo> slii(*m_impl->xrefListItems);
-    ListItemInfo *lii;
-    for (slii.toFirst();(lii=slii.current());++slii)
+    if (lii.type==listName)
     {
-      if (qstrcmp(lii->type,listName)==0)
-      {
-        return lii->itemId;
-      }
+      return lii.itemId;
     }
   }
   return -1;
 }
 
-QList<ListItemInfo> *DefinitionImpl::xrefListItems() const
+const std::vector<ListItemInfo> &DefinitionImpl::xrefListItems() const
 {
   return m_impl->xrefListItems;
 }

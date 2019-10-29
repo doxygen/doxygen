@@ -41,7 +41,6 @@ Entry::Entry()
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
   hasTagInfo = FALSE;
-  sli = 0;
   relatesType = Simple;
   hidden = FALSE;
   groupDocType = GROUPDOC_NORMAL;
@@ -102,41 +101,23 @@ Entry::Entry(const Entry &e)
   fileName    = e.fileName;
   startLine   = e.startLine;
   startColumn = e.startColumn;
-  if (e.sli)
-  {
-    sli = new QList<ListItemInfo>;
-    sli->setAutoDelete(TRUE);
-    QListIterator<ListItemInfo> slii(*e.sli);
-    ListItemInfo *ili;
-    for (slii.toFirst();(ili=slii.current());++slii)
-    {
-      sli->append(new ListItemInfo(*ili));
-    }
-  }
-  else
-  {
-    sli=0;
-  }
+  sli         = e.sli;
   lang        = e.lang;
   hidden      = e.hidden;
   artificial  = e.artificial;
   groupDocType = e.groupDocType;
   id          = e.id;
+  extends     = e.extends;
+  groups      = e.groups;
+  m_fileDef   = e.m_fileDef;
 
   m_parent    = e.m_parent;
-
   // deep copy child entries
   m_sublist.reserve(e.m_sublist.size());
   for (const auto &cur : e.m_sublist)
   {
     m_sublist.push_back(std::make_unique<Entry>(*cur));
   }
-
-  extends = e.extends;
-  groups  = e.groups;
-
-  m_fileDef = e.m_fileDef;
-
 }
 
 Entry::~Entry()
@@ -145,7 +126,6 @@ Entry::~Entry()
   //printf("Deleting entry %d name %s type %x children %d\n",
   //       num,name.data(),section,sublist->count());
 
-  delete sli;
   num--;
 }
 
@@ -277,14 +257,8 @@ void Entry::reset()
   tArgLists.clear();
   argList.reset();
   typeConstr.reset();
-  if (sli)        { delete sli; sli=0; }
+  sli.clear();
   m_fileDef = 0;
-}
-
-
-int Entry::getSize()
-{
-  return sizeof(Entry);
 }
 
 void Entry::setFileDef(FileDef *fd)
@@ -298,15 +272,10 @@ void Entry::setFileDef(FileDef *fd)
 
 void Entry::addSpecialListItem(const char *listName,int itemId)
 {
-  if (sli==0)
-  {
-    sli = new QList<ListItemInfo>;
-    sli->setAutoDelete(TRUE);
-  }
-  ListItemInfo *ili=new ListItemInfo;
-  ili->type = listName;
-  ili->itemId = itemId;
-  sli->append(ili);
+  ListItemInfo ili;
+  ili.type = listName;
+  ili.itemId = itemId;
+  sli.push_back(ili);
 }
 
 

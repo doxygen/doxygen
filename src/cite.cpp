@@ -296,7 +296,7 @@ void CiteDict::generatePage() const
 
   // 7. add it as a page
   addRelatedPage(CiteConsts::fileName,
-       theTranslator->trCiteReferences(),doc,CiteConsts::fileName,1,0,0,0);
+       theTranslator->trCiteReferences(),doc,CiteConsts::fileName,1);
 
   // 8. for latex we just copy the bib files to the output and let 
   //    latex do this work.

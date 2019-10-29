@@ -6613,7 +6613,7 @@ found:
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const QCString &doc,
     const char *fileName,int startLine,
-    const QList<ListItemInfo> *sli,
+    const std::vector<ListItemInfo> &sli,
     GroupDef *gd,
     const TagInfo *tagInfo,
     bool xref,
@@ -6701,30 +6701,28 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
 //----------------------------------------------------------------------------
 
-void addRefItem(const QList<ListItemInfo> *sli,
+void addRefItem(const std::vector<ListItemInfo> &sli,
     const char *key, 
     const char *prefix, const char *name,const char *title,const char *args,Definition *scope)
 {
   //printf("addRefItem(sli=%p,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",sli,key,prefix,name,title,args);
-  if (sli && key && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
+  if (key && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
   {
-    QListIterator<ListItemInfo> slii(*sli);
-    ListItemInfo *lii;
-    for (slii.toFirst();(lii=slii.current());++slii)
+    for (const ListItemInfo &lii : sli)
     {
-      RefList *refList = Doxygen::xrefLists->find(lii->type);
+      RefList *refList = Doxygen::xrefLists->find(lii.type);
       if (refList
           &&
           (
            // either not a built-in list or the list is enabled
-           (lii->type!="todo"       || Config_getBool(GENERATE_TODOLIST)) &&
-           (lii->type!="test"       || Config_getBool(GENERATE_TESTLIST)) &&
-           (lii->type!="bug"        || Config_getBool(GENERATE_BUGLIST))  &&
-           (lii->type!="deprecated" || Config_getBool(GENERATE_DEPRECATEDLIST))
+           (lii.type!="todo"       || Config_getBool(GENERATE_TODOLIST)) &&
+           (lii.type!="test"       || Config_getBool(GENERATE_TESTLIST)) &&
+           (lii.type!="bug"        || Config_getBool(GENERATE_BUGLIST))  &&
+           (lii.type!="deprecated" || Config_getBool(GENERATE_DEPRECATEDLIST))
           )
          )
       {
-        RefItem *item = refList->getRefItem(lii->itemId);
+        RefItem *item = refList->getRefItem(lii.itemId);
         ASSERT(item!=0);
 
         item->prefix = prefix;

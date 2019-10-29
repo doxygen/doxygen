@@ -206,6 +206,6 @@ void RefList::generatePage()
   }
   doc += "</dl>\n";
   //printf("generatePage('%s')\n",doc.data());
-  addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,0,0,0,TRUE);
+  addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,std::vector<ListItemInfo>(),0,0,TRUE);
 }
 

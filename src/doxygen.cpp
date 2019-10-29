@@ -3939,7 +3939,7 @@ static void transferFunctionDocumentation()
         MemberNameIterator mni2(*mn);
         for (;(mdef=mni2.current());++mni2)
         {
-          if (!mdec->isAlias() && !mdef->isAlias())
+          if (mdec!=mdef && !mdec->isAlias() && !mdef->isAlias())
           {
             combineDeclarationAndDefinition(mdec,mdef);
           }
@@ -5180,7 +5180,7 @@ static void addListReferences()
       name = pd->getGroupDef()->getOutputFileBase();
     }
     {
-      QList<ListItemInfo> *xrefItems = pd->xrefListItems();
+      const std::vector<ListItemInfo> &xrefItems = pd->xrefListItems();
       addRefItem(xrefItems,
           name,
           theTranslator->trPage(TRUE,TRUE),
@@ -5197,7 +5197,7 @@ static void addListReferences()
     //{
     //  name = dd->getGroupDef()->getOutputFileBase();
     //}
-    QList<ListItemInfo> *xrefItems = dd->xrefListItems();
+    const std::vector<ListItemInfo> &xrefItems = dd->xrefListItems();
     addRefItem(xrefItems,
         name,
         theTranslator->trDir(TRUE,TRUE),

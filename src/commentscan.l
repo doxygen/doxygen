@@ -533,7 +533,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
   if (listName==0) return;
   //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
 
-  ListItemInfo *lii=0;
+  const ListItemInfo *lii=0;
   RefList *refList = Doxygen::xrefLists->find(listName);
   if (refList==0) // new list
   {
@@ -541,16 +541,13 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     Doxygen::xrefLists->insert(listName,refList);
     //printf("new list!\n");
   }
-  if (current->sli)
+  for (const ListItemInfo &item : current->sli)
   {
-    QListIterator<ListItemInfo> slii(*current->sli);
-    for (slii.toLast();(lii=slii.current());--slii)
+    if (qstrcmp(item.type,listName)==0) 
     {
-      if (qstrcmp(lii->type,listName)==0) 
-      {
-        //printf("found %s lii->type=%s\n",listName,lii->type);
-        break;
-      }
+      //printf("found %s lii->type=%s\n",listName,lii->type);
+      lii = &item;
+      break;
     }
   }
   if (lii && append) // already found item of same type just before this one

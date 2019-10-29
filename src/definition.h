@@ -258,7 +258,7 @@ class Definition : public DefinitionIntf
     virtual GroupList *partOfGroups() const = 0;
     virtual bool isLinkableViaGroup() const = 0;
 
-    virtual QList<ListItemInfo> *xrefListItems() const = 0;
+    virtual const std::vector<ListItemInfo> &xrefListItems() const = 0;
 
     virtual Definition *findInnerCompound(const char *name) const = 0;
     virtual Definition *getOuterScope() const = 0;
@@ -314,7 +314,7 @@ class Definition : public DefinitionIntf
     virtual void setBodySegment(int bls,int ble) = 0;
     virtual void setBodyDef(FileDef *fd) = 0;
 
-    virtual void setRefItems(const QList<ListItemInfo> *sli) = 0;
+    virtual void setRefItems(const std::vector<ListItemInfo> &sli) = 0;
     virtual void setOuterScope(Definition *d) = 0;
 
     virtual void setHidden(bool b) = 0;

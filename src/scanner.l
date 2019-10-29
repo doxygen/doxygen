@@ -4172,15 +4172,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      varEntry->mGrpId = current->mGrpId;
                                               varEntry->initializer = current->initializer;
                                               varEntry->groups = current->groups;
-					      if (current->sli) // copy special list items
-					      {
-						QListIterator<ListItemInfo> li(*current->sli);
-						ListItemInfo *lii;
-						for (li.toFirst();(lii=li.current());++li)
-						{
-						  varEntry->addSpecialListItem(lii->type,lii->itemId);
-						}
-					      }
+                                              varEntry->sli = current->sli;
 
 					      //printf("Add: type='%s',name='%s',args='%s' brief=%s doc=%s\n",
 					      //      varEntry->type.data(),varEntry->name.data(),
@@ -5211,16 +5203,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else
 					  {
-					    if (current->sli && previous) // copy special list items
+					    if (!current->sli.empty() && previous) // copy special list items
 					    {
-					      QListIterator<ListItemInfo> li(*current->sli);
-					      ListItemInfo *lii;
-					      for (li.toFirst();(lii=li.current());++li)
-					      {
-						previous->addSpecialListItem(lii->type,lii->itemId);
-					      }
-					      delete current->sli;
-					      current->sli = 0;
+                                              previous->sli = current->sli;
+					      current->sli.clear();
 					    }
 					    if (previous) previous->endBodyLine=yyLineNr;
 					    BEGIN( lastCurlyContext ) ;
