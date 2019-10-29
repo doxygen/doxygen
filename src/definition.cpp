@@ -430,13 +430,10 @@ QCString DefinitionImpl::id() const
   return m_impl->id;
 }
 
-void DefinitionImpl::addSectionsToDefinition(QList<SectionInfo> *anchorList)
+void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList)
 {
-  if (!anchorList) return;
   //printf("%s: addSectionsToDefinition(%d)\n",name().data(),anchorList->count());
-  QListIterator<SectionInfo> it(*anchorList);
-  SectionInfo *si;
-  for (;(si=it.current());++it)
+  for (const SectionInfo *si : anchorList)
   {
     //printf("Add section '%s' to definition '%s'\n",
     //    si->label.data(),name().data());

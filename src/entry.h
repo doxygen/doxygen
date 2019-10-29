@@ -293,7 +293,7 @@ class Entry
     int          mGrpId;      //!< member group id
     std::vector<BaseInfo> extends; //!< list of base classes
     std::vector<Grouping> groups;  //!< list of groups this entry belongs to
-    QList<SectionInfo> *anchors; //!< list of anchors defined in this entry
+    std::vector<const SectionInfo*> anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     int		startColumn;  //!< start column of entry in the source

@@ -83,7 +83,7 @@ class DefinitionImpl : virtual public Definition
     virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine);
     virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine);
     virtual void setReference(const char *r);
-    virtual void addSectionsToDefinition(QList<SectionInfo> *anchorList);
+    virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
     virtual void setBodySegment(int bls,int ble);
     virtual void setBodyDef(FileDef *fd);
     virtual void addSourceReferencedBy(const MemberDef *d);
@@ -241,7 +241,7 @@ class DefinitionAliasImpl : virtual public Definition
     virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine) {}
     virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine) {}
     virtual void setReference(const char *r) {}
-    virtual void addSectionsToDefinition(QList<SectionInfo> *anchorList) {}
+    virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) {}
     virtual void setBodySegment(int bls,int ble) {}
     virtual void setBodyDef(FileDef *fd) {}
     virtual void addSourceReferencedBy(const MemberDef *d) {}

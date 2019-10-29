@@ -18,6 +18,7 @@
 #ifndef DEFINITION_H
 #define DEFINITION_H
 
+#include <vector>
 #include <qlist.h>
 #include <qdict.h>
 
@@ -331,7 +332,7 @@ class Definition : public DefinitionIntf
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.
      */
-    virtual void addSectionsToDefinition(QList<SectionInfo> *anchorList) = 0;
+    virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) = 0;
     virtual void addSourceReferencedBy(const MemberDef *d) = 0;
     virtual void addSourceReferences(const MemberDef *d) = 0;
     virtual void mergeRefItems(Definition *d) = 0;

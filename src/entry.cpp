@@ -38,7 +38,6 @@ Entry::Entry()
   num++;
   m_parent=0;
   section = EMPTY_SEC;
-  anchors = new QList<SectionInfo>; // Doxygen::sectionDict takes ownership of the items!
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
   hasTagInfo = FALSE;
@@ -99,7 +98,7 @@ Entry::Entry(const Entry &e)
   bodyLine    = e.bodyLine;
   endBodyLine = e.endBodyLine;
   mGrpId      = e.mGrpId;
-  anchors     = new QList<SectionInfo>;
+  anchors     = e.anchors;
   fileName    = e.fileName;
   startLine   = e.startLine;
   startColumn = e.startColumn;
@@ -136,13 +135,6 @@ Entry::Entry(const Entry &e)
   extends = e.extends;
   groups  = e.groups;
 
-  QListIterator<SectionInfo> sli2(*e.anchors);
-  SectionInfo *s;
-  for (;(s=sli2.current());++sli2)
-  {
-    anchors->append(s); // shallow copy, object are owned by Doxygen::sectionDict
-  }
-
   m_fileDef = e.m_fileDef;
 
 }
@@ -153,7 +145,6 @@ Entry::~Entry()
   //printf("Deleting entry %d name %s type %x children %d\n",
   //       num,name.data(),section,sublist->count());
 
-  delete anchors;
   delete sli;
   num--;
 }
@@ -281,7 +272,7 @@ void Entry::reset()
   m_sublist.clear();
   extends.clear();
   groups.clear();
-  anchors->clear();
+  anchors.clear();
   argList.clear();
   tArgLists.clear();
   argList.reset();

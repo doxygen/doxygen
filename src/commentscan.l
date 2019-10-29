@@ -605,7 +605,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
                          g_sectionTitle,SectionInfo::Anchor,
                          g_sectionLevel);
       Doxygen::sectionDict->append(anchorLabel,si);
-      current->anchors->append(si);
+      current->anchors.push_back(si);
     }
   }
   outputXRef.resize(0);
@@ -673,7 +673,7 @@ static void addSection()
                           g_sectionTitle,sectionLevelToType(g_sectionLevel),g_sectionLevel);
 
     // add section to this entry
-    current->anchors->append(si);
+    current->anchors.push_back(si);
 
     // add section to the global dictionary
     Doxygen::sectionDict->append(g_sectionLabel,si);
@@ -850,7 +850,7 @@ static void addAnchor(const char *anchor)
   {
     si = new SectionInfo(yyFileName,yyLineNr,anchor,0,SectionInfo::Anchor,0);
     Doxygen::sectionDict->append(anchor,si);
-    current->anchors->append(si);
+    current->anchors.push_back(si);
   }
 }
 

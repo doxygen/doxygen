@@ -1152,7 +1152,7 @@ void TagFileParser::addDocAnchors(const std::unique_ptr<Entry> &e,const TagAncho
       SectionInfo *si=new SectionInfo(ta->fileName,-1,ta->label,ta->title,
           SectionInfo::Anchor,0,m_tagName);
       Doxygen::sectionDict->append(ta->label,si);
-      e->anchors->append(si);
+      e->anchors.push_back(si);
     }
     else
     {

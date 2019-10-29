@@ -6612,7 +6612,6 @@ found:
 
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const QCString &doc,
-    const QList<SectionInfo> * /*anchors*/,
     const char *fileName,int startLine,
     const QList<ListItemInfo> *sli,
     GroupDef *gd,
