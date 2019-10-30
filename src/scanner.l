@@ -6923,7 +6923,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <*>\?                                   {
-  					  if (insideCS) 
+  					  if (insideCS && (YY_START != SkipRound)) 
 					  {
 					    if (current->type.isEmpty())
 					    {
