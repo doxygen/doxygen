@@ -2793,7 +2793,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					    g_name.resize(0);
 					  }
 					  g_type.resize(0);
-					  g_bracketCount=0;
+					  // g_bracketCount=0; // ex.  when we parse this syntax " if( myobject.getPair()) " , we have problem that g_braceCount has wrong value as zero at "getPair(".
 					  if (g_memCallContext==Body)
 					  {
 					    BEGIN(FuncCall);
