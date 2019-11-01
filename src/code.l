@@ -2793,7 +2793,6 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					    g_name.resize(0);
 					  }
 					  g_type.resize(0);
-					  g_bracketCount=0;
 					  if (g_memCallContext==Body)
 					  {
 					    BEGIN(FuncCall);
