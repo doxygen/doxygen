@@ -1680,7 +1680,7 @@ bool FileDefImpl::generateSourceFile() const
 void FileDefImpl::addListReferences()
 {
   {
-    QList<ListItemInfo> *xrefItems = xrefListItems();
+    const std::vector<ListItemInfo> &xrefItems = xrefListItems();
     addRefItem(xrefItems,
                getOutputFileBase(),
                theTranslator->trFile(TRUE,TRUE),

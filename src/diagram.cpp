@@ -247,7 +247,7 @@ static void writeVectorBox(FTextStream &t,DiagramItem *di,
                            float x,float y,bool children=FALSE)
 {
   if (di->virtualness()==Virtual) t << "dashed\n";
-  t << " (" << di->label() << ") " << x << " " << y << " box\n";
+  t << " (" << convertToPSString(di->label()) << ") " << x << " " << y << " box\n";
   if (children) t << x << " " << y << " mark\n";
   if (di->virtualness()==Virtual) t << "solid\n";
 }
@@ -1297,7 +1297,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     for (;(di=rit.current());++rit)
     {
       done=di->isInList();
-      t << "(" << di->label() << ") cw\n";
+      t << "(" << convertToPSString(di->label()) << ") cw\n";
     }
   }
   QListIterator<DiagramRow> sit(*super);
@@ -1310,7 +1310,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     for (;(di=rit.current());++rit)
     {
       done=di->isInList();
-      t << "(" << di->label() << ") cw\n";
+      t << "(" << convertToPSString(di->label()) << ") cw\n";
     }
   }
 

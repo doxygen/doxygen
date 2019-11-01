@@ -276,7 +276,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
            // otherwise look for global class definitions
            (varType=getResolvedClass(g_currentDefinition,g_sourceFileDef,typeName,0,0,TRUE,TRUE))
 	 ) && // and it must be a template
-         varType->templateArguments())
+         !varType->templateArguments().empty())
     {
       newDef = varType->getVariableInstance( templateArgs );
     }
@@ -679,14 +679,10 @@ static void addUsingDirective(const char *name)
 static void setParameterList(const MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
-  const ArgumentList *al = md->argumentList();
-  if (al==0) return;
-  ArgumentListIterator it(*al);
-  const Argument *a;
-  for (;(a=it.current());++it)
+  for (const Argument &a : md->argumentList())
   {
-    g_parmName = a->name.copy();
-    g_parmType = a->type.copy();
+    g_parmName = a.name;
+    g_parmType = a.type;
     int i = g_parmType.find('*');
     if (i!=-1) g_parmType = g_parmType.left(i);
     i = g_parmType.find('&');
@@ -986,7 +982,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
       }
     }
     const NamespaceDef *nd = getResolvedNamespace(className);
-    if (nd && nd->isLinkableInProject())
+    if (nd && nd->isLinkable())
     {
       g_theCallContext.setScope(nd);
       addToSearchIndex(className);
@@ -2797,7 +2793,6 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					    g_name.resize(0);
 					  }
 					  g_type.resize(0);
-					  g_bracketCount=0;
 					  if (g_memCallContext==Body)
 					  {
 					    BEGIN(FuncCall);

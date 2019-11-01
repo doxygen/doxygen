@@ -1444,10 +1444,10 @@ void addDefine()
   MemberDef *md=createMemberDef(
       g_yyFileName,g_yyLineNr-g_yyMLines,g_yyColNr,
       "#define",g_defName,g_defArgsStr,0,
-      Public,Normal,FALSE,Member,MemberType_Define,0,0,"");
+      Public,Normal,FALSE,Member,MemberType_Define,ArgumentList(),ArgumentList(),"");
   if (!g_defArgsStr.isEmpty())
   {
-    ArgumentList *argList = new ArgumentList;
+    ArgumentList argList;
     //printf("addDefine() g_defName='%s' g_defArgsStr='%s'\n",g_defName.data(),g_defArgsStr.data());
     stringToArgumentList(g_defArgsStr,argList);
     md->setArgumentList(argList);

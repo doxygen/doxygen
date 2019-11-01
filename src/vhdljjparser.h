@@ -1,6 +1,9 @@
 #ifndef VHDLJJPARSER_H
 #define VHDLJJPARSER_H
 
+#include <vector>
+#include <memory>
+
 #include "parserintf.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +30,6 @@ void  parserVhdlfile(const char* inputBuffer);
 
 class Entry;
 class ClassSDict;
-class FileStorage;
 class ClassDef;
 class MemberDef;
 struct VhdlConfNode;
@@ -45,7 +47,7 @@ class VHDLLanguageScanner : public ParserInterface
     void finishTranslationUnit() {}
     void parseInput(const char * fileName,
                     const char *fileBuf,
-                    Entry *root,
+                    const std::unique_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
   
@@ -95,7 +97,7 @@ struct VhdlConfNode
 
 void vhdlscanFreeScanner();
 
-QList<VhdlConfNode>& getVhdlConfiguration();
-QList<Entry>& getVhdlInstList();
+const QList<VhdlConfNode>& getVhdlConfiguration();
+const std::vector<std::unique_ptr<Entry> >&getVhdlInstList();
 
 #endif

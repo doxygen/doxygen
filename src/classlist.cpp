@@ -167,8 +167,8 @@ void GenericsSDict::insert(const QCString &key,ClassDef *cd)
   int i=key.find('<');
   if (i==-1) return;
   ArgumentList argList;
-  stringToArgumentList(key.mid(i),&argList);
-  int c = argList.count();
+  stringToArgumentList(key.mid(i),argList);
+  int c = argList.size();
   if (c==0) return;
   GenericsCollection *collection = m_dict.find(key.left(i));
   if (collection==0) // new name
@@ -200,8 +200,8 @@ ClassDef *GenericsSDict::find(const QCString &key)
     if (collection)
     {
       ArgumentList argList;
-      stringToArgumentList(key.mid(i),&argList);
-      int c = argList.count();
+      stringToArgumentList(key.mid(i),argList);
+      int c = argList.size();
       return collection->find(c);
     }
   }

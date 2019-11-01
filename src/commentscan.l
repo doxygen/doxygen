@@ -415,11 +415,8 @@ static GuardType        guardType;           // kind of guard for conditional se
 static bool             enabledSectionFound;
 static QCString         functionProto;       // function prototype
 static QStack<GuardedSection> guards;        // tracks nested conditional sections (if,ifnot,..)
-static Entry*		current      = 0 ;   // working entry
-//static Entry*		current_root = 0 ;   // parent of working entry
+static Entry           *current = 0;         // working entry
 
-
-//static Entry*		previous     = 0 ;   // TODO: remove need for this
 static bool             needNewEntry;
 
 static QCString         g_sectionLabel;
@@ -533,11 +530,10 @@ static QCString stripQuotes(const char *s)
 static void addXRefItem(const char *listName,const char *itemTitle,
                         const char *listTitle,bool append)
 {
-  Entry *docEntry = current; // inBody && previous ? previous : current;
   if (listName==0) return;
   //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
 
-  ListItemInfo *lii=0;
+  const ListItemInfo *lii=0;
   RefList *refList = Doxygen::xrefLists->find(listName);
   if (refList==0) // new list
   {
@@ -545,16 +541,13 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     Doxygen::xrefLists->insert(listName,refList);
     //printf("new list!\n");
   }
-  if (docEntry->sli)
+  for (const ListItemInfo &item : current->sli)
   {
-    QListIterator<ListItemInfo> slii(*docEntry->sli);
-    for (slii.toLast();(lii=slii.current());--slii)
+    if (qstrcmp(item.type,listName)==0) 
     {
-      if (qstrcmp(lii->type,listName)==0) 
-      {
-        //printf("found %s lii->type=%s\n",listName,lii->type);
-        break;
-      }
+      //printf("found %s lii->type=%s\n",listName,lii->type);
+      lii = &item;
+      break;
     }
   }
   if (lii && append) // already found item of same type just before this one
@@ -580,16 +573,16 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     ASSERT(item!=0);
     item->text = outputXRef;
     item->listAnchor = anchorLabel;
-    docEntry->addSpecialListItem(listName,itemId);
+    current->addSpecialListItem(listName,itemId);
     QCString cmdString;
     cmdString.sprintf(" \\xrefitem %s %d.",listName,itemId);
     if (inBody)
     {
-      docEntry->inbodyDocs += cmdString;
+      current->inbodyDocs += cmdString;
     }
     else
     {
-      docEntry->doc += cmdString;
+      current->doc += cmdString;
     }
     SectionInfo *si = Doxygen::sectionDict->find(anchorLabel);
     if (si)
@@ -609,7 +602,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
                          g_sectionTitle,SectionInfo::Anchor,
                          g_sectionLevel);
       Doxygen::sectionDict->append(anchorLabel,si);
-      docEntry->anchors->append(si);
+      current->anchors.push_back(si);
     }
   }
   outputXRef.resize(0);
@@ -677,7 +670,7 @@ static void addSection()
                           g_sectionTitle,sectionLevelToType(g_sectionLevel),g_sectionLevel);
 
     // add section to this entry
-    current->anchors->append(si);
+    current->anchors.push_back(si);
 
     // add section to the global dictionary
     Doxygen::sectionDict->append(g_sectionLabel,si);
@@ -854,7 +847,7 @@ static void addAnchor(const char *anchor)
   {
     si = new SectionInfo(yyFileName,yyLineNr,anchor,0,SectionInfo::Anchor,0);
     Doxygen::sectionDict->append(anchor,si);
-    current->anchors->append(si);
+    current->anchors.push_back(si);
   }
 }
 
@@ -1828,7 +1821,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yytext);
 					  // we add subpage labels as a kind of "inheritance" relation to prevent
 					  // needing to add another list to the Entry class.
-					  current->extends->append(new BaseInfo(yytext,Public,Normal));
+					  current->extends.push_back(BaseInfo(yytext,Public,Normal));
 					  BEGIN(SubpageTitle);
   					}
 <SubpageLabel>{DOCNL}			{ // missing argument
@@ -2145,8 +2138,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle argument of ingroup command ------- */
 
 <InGroupParam>{LABELID}			{ // group id
-  					  current->groups->append(
-					    new Grouping(yytext, Grouping::GROUPING_INGROUP)
+  					  current->groups.push_back(
+					     Grouping(yytext, Grouping::GROUPING_INGROUP)
 					  );
 					  inGroupParamFound=TRUE;
   					}
@@ -2228,8 +2221,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle argument of inherit command ------- */
 
 <InheritParam>({ID}("::"|"."))*{ID}	{ // found argument
-					  current->extends->append(
-					    new BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
+					  current->extends.push_back(
+					    BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
 					  );
 					  BEGIN( Comment );
   					}
@@ -2251,8 +2244,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle argument of extends and implements commands ------- */
 
 <ExtendsParam>({ID}("::"|"."))*{ID}	{ // found argument
-					  current->extends->append(
-					    new BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
+					  current->extends.push_back(
+					    BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
 					  );
 					  BEGIN( Comment );
   					}

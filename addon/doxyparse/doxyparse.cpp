@@ -183,28 +183,25 @@ std::string sanitizeString(std::string data) {
   return !new_data.isEmpty() ? new_data.data() : "";
 }
 
-std::string argumentData(Argument *argument) {
+std::string argumentData(const Argument &argument) {
   std::string data = "";
-  if (argument->type != NULL && argument->type.size() > 1)
-    data = sanitizeString(argument->type.data());
-  else if (argument->name != NULL)
-    data = sanitizeString(argument->name.data());
+  if (argument.type.size() > 1)
+    data = sanitizeString(argument.type.data());
+  else if (!argument.name.isEmpty())
+    data = sanitizeString(argument.name.data());
   return data;
 }
 
 std::string functionSignature(MemberDef* md) {
   std::string signature = sanitizeString(md->name().data());
   if(md->isFunction()){
-    ArgumentList *argList = md->argumentList();
+    const ArgumentList &argList = md->argumentList();
     signature += "(";
-    if (argList) {
-      ArgumentListIterator iterator(*argList);
-      Argument * argument = iterator.toFirst();
-      if(argument != NULL) {
-        signature += argumentData(argument);
-        for(++iterator; (argument = iterator.current()); ++iterator) {
-          signature += std::string(",") + argumentData(argument);
-        }
+    auto it = argList.begin();
+    if(it!=argList.end()) {
+      signature += argumentData(*it);
+      for(++it; it!=argList.end(); ++it) {
+        signature += std::string(",") + argumentData(*it);
       }
     }
     signature += ")";
@@ -255,19 +252,14 @@ void cModule(ClassDef* cd) {
   }
 }
 
-static bool checkOverrideArg(ArgumentList *argList, MemberDef *md) {
-  ArgumentListIterator iterator(*argList);
-  Argument * argument = iterator.toFirst();
-
-  if(!md->isFunction() || argList->count() == 0){
-      return false;
+static bool checkOverrideArg(const ArgumentList &argList, MemberDef *md) {
+  if(!md->isFunction() || argList.empty()){
+    return false;
   }
 
-  if(argument != NULL) {
-    for(; (argument = iterator.current()); ++iterator){
-        if(md->name() == argument->name) {
-            return true;
-        }
+  for (const Argument &argument : argList) {
+    if(md->name() == argument.name) {
+      return true;
     }
   }
 
@@ -278,17 +270,15 @@ void functionInformation(MemberDef* md) {
   std::string temp = "";
   int size = md->getEndBodyLine() - md->getStartBodyLine() + 1;
   printNumberOfLines(size);
-  ArgumentList *argList = md->argumentList();
-  if (argList) {
-      ArgumentListIterator iterator(*argList);
-      Argument * argument = iterator.toFirst();
-      if(argument != NULL) {
-        temp = argumentData(argument);
+  const ArgumentList &argList = md->argumentList();
+  if (!argList.empty())
+  {
+    temp = argumentData(argList.front());
 // TODO: This is a workaround; better not include "void" in argList, in the first place. 
-          if(temp != "void") {
-              printNumberOfArguments(argList->count());
-          }
-      }
+    if (temp!="void")
+    {
+      printNumberOfArguments(argList.size());
+    }
   }
 
   printNumberOfConditionalPaths(md);

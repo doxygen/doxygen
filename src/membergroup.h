@@ -18,6 +18,8 @@
 #ifndef MEMBERGROUP_H
 #define MEMBERGROUP_H
 
+#include <vector>
+
 #include <qlist.h>
 #include "sortdict.h"
 #include "types.h"
@@ -32,7 +34,6 @@ class FileDef;
 class GroupDef;
 class OutputList;
 class Definition;
-class StorageIntf;
 class FTextStream;
 struct ListItemInfo;
 
@@ -80,7 +81,7 @@ class MemberGroup
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void setInGroup(bool b);
     void addListReferences(Definition *d);
-    void setRefItems(const QList<ListItemInfo> *sli);
+    void setRefItems(const std::vector<ListItemInfo> &sli);
     MemberList *members() const { return memberList; }
     QCString anchor() const;
 
@@ -100,7 +101,7 @@ class MemberGroup
     const Definition *m_parent;
     QCString m_docFile;
     int m_docLine;
-    QList<ListItemInfo> *m_xrefListItems;
+    std::vector<ListItemInfo> m_xrefListItems;
 };
 
 /** A list of MemberGroup objects. */
@@ -132,15 +133,13 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
 /** Data collected for a member group */
 struct MemberGroupInfo
 {
-  MemberGroupInfo() : docLine(-1), m_sli(0) {}
- ~MemberGroupInfo() { delete m_sli; m_sli=0; }
-  void setRefItems(const QList<ListItemInfo> *sli);
+  void setRefItems(const std::vector<ListItemInfo> &sli);
   QCString header;
   QCString doc;
   QCString docFile;
-  int docLine;
+  int docLine = -1;
   QCString compoundName;
-  QList<ListItemInfo> *m_sli;
+  std::vector<ListItemInfo> m_sli;
 };
 
 #endif

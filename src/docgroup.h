@@ -16,7 +16,7 @@
 #ifndef DOCGROUP_H
 #define DOCGROUP_H
 
-#include <qstack.h>
+#include <vector>
 #include <qstring.h>
 #include "membergroup.h"
 
@@ -47,7 +47,7 @@ class DocGroup
     int              m_memberGroupId;
     QCString         m_memberGroupRelates;
     QCString         m_memberGroupDocs;
-    QStack<Grouping> m_autoGroupStack;
+    std::vector<Grouping> m_autoGroupStack;
     QCString         m_compoundName;
 };
 

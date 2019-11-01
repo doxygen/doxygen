@@ -1422,23 +1422,20 @@ void PerlModDocVisitor::visitPost(DocParBlock *)
 }
 
 
-static void addTemplateArgumentList(ArgumentList *al,PerlModOutput &output,const char *)
+static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output,const char *)
 {
-  if (!al)
-    return;
+  if (!al.hasParameters()) return;
   output.openList("template_parameters");
-  ArgumentListIterator ali(*al);
-  Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
+  for (const Argument &a : al)
   {
     output.openHash();
-    if (!a->type.isEmpty())
-      output.addFieldQuotedString("type", a->type);
-    if (!a->name.isEmpty())
-      output.addFieldQuotedString("declaration_name", a->name)
-	.addFieldQuotedString("definition_name", a->name);
-    if (!a->defval.isEmpty())
-      output.addFieldQuotedString("default", a->defval);
+    if (!a.type.isEmpty())
+      output.addFieldQuotedString("type", a.type);
+    if (!a.name.isEmpty())
+      output.addFieldQuotedString("declaration_name", a.name)
+	.addFieldQuotedString("definition_name", a.name);
+    if (!a.defval.isEmpty())
+      output.addFieldQuotedString("default", a.defval);
     output.closeHash();
   }
   output.closeList();
@@ -1609,45 +1606,46 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
       md->memberType()!=MemberType_Enumeration)
     m_output.addFieldQuotedString("type", md->typeString());
   
-  const ArgumentList *al = md->argumentList();
+  const ArgumentList &al = md->argumentList();
   if (isFunc) //function
   {
-    m_output.addFieldBoolean("const", al!=0 && al->constSpecifier)
-      .addFieldBoolean("volatile", al!=0 && al->volatileSpecifier);
+    m_output.addFieldBoolean("const",    al.constSpecifier)
+            .addFieldBoolean("volatile", al.volatileSpecifier);
 
     m_output.openList("parameters");
-    const ArgumentList *declAl = md->declArgumentList();
-    const ArgumentList *defAl  = md->argumentList();
-    if (declAl && defAl && declAl->count()>0)
+    const ArgumentList &declAl = md->declArgumentList();
+    if (!declAl.empty())
     {
-      ArgumentListIterator declAli(*declAl);
-      ArgumentListIterator defAli(*defAl);
-      const Argument *a;
-      for (declAli.toFirst();(a=declAli.current());++declAli)
+      auto defIt = al.begin();
+      for (const Argument &a : declAl)
       {
-	const Argument *defArg = defAli.current();
+	const Argument *defArg = 0;
+        if (defIt!=al.end())
+        {
+          defArg = &(*defIt);
+          ++defIt;
+        }
 	m_output.openHash();
 
-	if (!a->name.isEmpty())
-	  m_output.addFieldQuotedString("declaration_name", a->name);
+	if (!a.name.isEmpty())
+	  m_output.addFieldQuotedString("declaration_name", a.name);
 
-	if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
+	if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
 	  m_output.addFieldQuotedString("definition_name", defArg->name);
 
-	if (!a->type.isEmpty())
-	  m_output.addFieldQuotedString("type", a->type);
+	if (!a.type.isEmpty())
+	  m_output.addFieldQuotedString("type", a.type);
 
-	if (!a->array.isEmpty())
-	  m_output.addFieldQuotedString("array", a->array);
+	if (!a.array.isEmpty())
+	  m_output.addFieldQuotedString("array", a.array);
 
-	if (!a->defval.isEmpty())
-	  m_output.addFieldQuotedString("default_value", a->defval);
+	if (!a.defval.isEmpty())
+	  m_output.addFieldQuotedString("default_value", a.defval);
 
-	if (!a->attrib.isEmpty())
-	  m_output.addFieldQuotedString("attributes", a->attrib);
+	if (!a.attrib.isEmpty())
+	  m_output.addFieldQuotedString("attributes", a.attrib);
 	
 	m_output.closeHash();
-	if (defArg) ++defAli;
       }
     }
     m_output.closeList();
@@ -1656,12 +1654,10 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 	   md->argsString()!=0) // define
   {
     m_output.openList("parameters");
-    ArgumentListIterator ali(*al);
-    const Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
+    for (const Argument &a : al)
     {
       m_output.openHash()
-	.addFieldQuotedString("name", a->type)
+	.addFieldQuotedString("name", a.type)
 	.closeHash();
     }
     m_output.closeList();

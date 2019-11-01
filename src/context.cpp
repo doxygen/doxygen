@@ -2381,7 +2381,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
           addTemplateDecls(parent,tl);
         }
         const ClassDef *cd=dynamic_cast<const ClassDef *>(d);
-        if (cd->templateArguments())
+        if (!cd->templateArguments().empty())
         {
           ArgumentListContext *al = ArgumentListContext::alloc(cd->templateArguments(),cd,relPathAsString());
           // since a TemplateVariant does take ownership of the object, we add it
@@ -2422,10 +2422,10 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant typeConstraints() const
     {
-      if (m_classDef->typeConstraints())
+      if (!m_classDef->typeConstraints().empty())
       {
         Cachable &cache = getCache();
-        if (!cache.typeConstraints && m_classDef->typeConstraints())
+        if (!cache.typeConstraints && !m_classDef->typeConstraints().empty())
         {
           cache.typeConstraints.reset(ArgumentListContext::alloc(m_classDef->typeConstraints(),m_classDef,relPathAsString()));
         }
@@ -4529,7 +4529,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     TemplateVariant templateArgs() const
     {
       Cachable &cache = getCache();
-      if (!cache.templateArgs && m_memberDef->templateArguments())
+      if (!cache.templateArgs && !m_memberDef->templateArguments().empty())
       {
         cache.templateArgs.reset(ArgumentListContext::alloc(m_memberDef->templateArguments(),m_memberDef,relPathAsString()));
       }
@@ -4644,7 +4644,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       return createLinkedText(m_memberDef,relPathAsString(),
                               m_memberDef->displayDefinition());
     }
-    const ArgumentList *getDefArgList() const
+    const ArgumentList &getDefArgList() const
     {
       return (m_memberDef->isDocsForDefinition()) ?
               m_memberDef->argumentList() : m_memberDef->declArgumentList();
@@ -4654,8 +4654,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.arguments)
       {
-        const ArgumentList *defArgList = getDefArgList();
-        if (defArgList && !m_memberDef->isProperty())
+        const ArgumentList &defArgList = getDefArgList();
+        if (!m_memberDef->isProperty())
         {
           cache.arguments.reset(ArgumentListContext::alloc(defArgList,m_memberDef,relPathAsString()));
         }
@@ -4668,35 +4668,31 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasParameters() const
     {
-      return getDefArgList()!=0;
+      return !getDefArgList().empty();
     }
     TemplateVariant hasConstQualifier() const
     {
-      const ArgumentList *al = getDefArgList();
-      return al ? al->constSpecifier : FALSE;
+      return getDefArgList().constSpecifier;
     }
     TemplateVariant hasVolatileQualifier() const
     {
-      const ArgumentList *al = getDefArgList();
-      return al ? al->volatileSpecifier : FALSE;
+      return getDefArgList().volatileSpecifier;
     }
     TemplateVariant hasRefQualifierLValue() const
     {
-      const ArgumentList *al = getDefArgList();
-      return al ? al->refQualifier==RefQualifierLValue : FALSE;
+      return getDefArgList().refQualifier==RefQualifierLValue;
     }
     TemplateVariant hasRefQualifierRValue() const
     {
-      const ArgumentList *al = getDefArgList();
-      return al ? al->refQualifier==RefQualifierRValue : FALSE;
+      return getDefArgList().refQualifier==RefQualifierRValue;
     }
     TemplateVariant trailingReturnType() const
     {
-      const ArgumentList *al = getDefArgList();
-      if (al && !al->trailingReturnType.isEmpty())
+      const ArgumentList &al = getDefArgList();
+      if (!al.trailingReturnType.isEmpty())
       {
         return createLinkedText(m_memberDef,relPathAsString(),
-                                al->trailingReturnType);
+                                al.trailingReturnType);
       }
       else
       {
@@ -4710,13 +4706,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     void addTemplateDecls(TemplateList *tl) const
     {
       const ClassDef *cd=m_memberDef->getClassDef();
-      if (m_memberDef->definitionTemplateParameterLists())
+      if (!m_memberDef->definitionTemplateParameterLists().empty())
       {
-        QListIterator<ArgumentList> ali(*m_memberDef->definitionTemplateParameterLists());
-        ArgumentList *tal;
-        for (ali.toFirst();(tal=ali.current());++ali)
+        for (const ArgumentList &tal : m_memberDef->definitionTemplateParameterLists())
         {
-          if (tal->count()>0)
+          if (!tal.empty())
           {
             ArgumentListContext *al = ArgumentListContext::alloc(tal,m_memberDef,relPathAsString());
             tl->append(al);
@@ -4727,21 +4721,16 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         if (cd && !m_memberDef->isRelated() && !m_memberDef->isTemplateSpecialization())
         {
-          QList<ArgumentList> tempParamLists;
-          cd->getTemplateParameterLists(tempParamLists);
-          //printf("#tempParamLists=%d\n",tempParamLists.count());
-          QListIterator<ArgumentList> ali(tempParamLists);
-          ArgumentList *tal;
-          for (ali.toFirst();(tal=ali.current());++ali)
+          for (const ArgumentList &tal : cd->getTemplateParameterLists())
           {
-            if (tal->count()>0)
+            if (!tal.empty())
             {
               ArgumentListContext *al = ArgumentListContext::alloc(tal,m_memberDef,relPathAsString());
               tl->append(al);
             }
           }
         }
-        if (m_memberDef->templateArguments()) // function template prefix
+        if (!m_memberDef->templateArguments().empty()) // function template prefix
         {
           ArgumentListContext *al = ArgumentListContext::alloc(
               m_memberDef->templateArguments(),m_memberDef,relPathAsString());
@@ -4785,18 +4774,15 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.paramDocs)
       {
-        if (m_memberDef->argumentList() && m_memberDef->argumentList()->hasDocumentation())
+        if (m_memberDef->argumentList().hasDocumentation())
         {
           QCString paramDocs;
-          ArgumentListIterator ali(*m_memberDef->argumentList());
-          Argument *a;
-          // convert the parameter documentation into a list of @param commands
-          for (ali.toFirst();(a=ali.current());++ali)
+          for (Argument &a : m_memberDef->argumentList())
           {
-            if (a->hasDocumentation())
+            if (a.hasDocumentation())
             {
-              QCString direction = extractDirection(a->docs);
-              paramDocs+="@param"+direction+" "+a->name+" "+a->docs;
+              QCString direction = extractDirection(a.docs);
+              paramDocs+="@param"+direction+" "+a.name+" "+a.docs;
             }
           }
           cache.paramDocs.reset(new TemplateVariant(parseDoc(m_memberDef,
@@ -4929,7 +4915,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     TemplateVariant typeConstraints() const
     {
       Cachable &cache = getCache();
-      if (!cache.typeConstraints && m_memberDef->typeConstraints())
+      if (cache.typeConstraints && !m_memberDef->typeConstraints().empty())
       {
         cache.typeConstraints.reset(ArgumentListContext::alloc(m_memberDef->typeConstraints(),m_memberDef,relPathAsString()));
       }
@@ -8446,7 +8432,7 @@ TemplateVariant NamespaceMembersIndexContext::get(const char *name) const
 
 //------------------------------------------------------------------------
 
-//%% struct InheritanceGraph: a connected graph reprenting part of the overall interitance tree
+//%% struct InheritanceGraph: a connected graph reprenting part of the overall inheritance tree
 //%% {
 class InheritanceGraphContext::Private
 {
@@ -9413,7 +9399,7 @@ TemplateListIntf::ConstIterator *InheritedMemberInfoListContext::createIterator(
 class ArgumentContext::Private
 {
   public:
-    Private(const Argument *arg,const Definition *def,const QCString &relPath) :
+    Private(const Argument &arg,const Definition *def,const QCString &relPath) :
       m_argument(arg), m_def(def), m_relPath(relPath)
     {
       static bool init=FALSE;
@@ -9435,33 +9421,33 @@ class ArgumentContext::Private
     }
     TemplateVariant type() const
     {
-      return createLinkedText(m_def,m_relPath,m_argument->type);
+      return createLinkedText(m_def,m_relPath,m_argument.type);
     }
     TemplateVariant attrib() const
     {
-      return m_argument->attrib;
+      return m_argument.attrib;
     }
     TemplateVariant name() const
     {
-      return m_argument->name;
+      return m_argument.name;
     }
     TemplateVariant defVal() const
     {
-      return createLinkedText(m_def,m_relPath,m_argument->defval);
+      return createLinkedText(m_def,m_relPath,m_argument.defval);
     }
     TemplateVariant array() const
     {
-      return m_argument->array;
+      return m_argument.array;
     }
     TemplateVariant docs() const
     {
       if (!m_cache.docs && m_def)
       {
-        if (!m_argument->docs.isEmpty())
+        if (!m_argument.docs.isEmpty())
         {
           m_cache.docs.reset(new TemplateVariant(
                              parseDoc(m_def,m_def->docFile(),m_def->docLine(),
-                             m_relPath,m_argument->docs,TRUE)));
+                             m_relPath,m_argument.docs,TRUE)));
         }
         else
         {
@@ -9472,7 +9458,7 @@ class ArgumentContext::Private
     }
     TemplateVariant namePart() const
     {
-      QCString result = m_argument->attrib;
+      QCString result = m_argument.attrib;
       int l = result.length();
       if (l>2 && result.at(0)=='[' && result.at(l-1)==']')
       {
@@ -9482,7 +9468,7 @@ class ArgumentContext::Private
       return result;
     }
   private:
-    const Argument *m_argument;
+    const Argument &m_argument;
     const Definition *m_def;
     QCString m_relPath;
     struct Cachable
@@ -9496,7 +9482,7 @@ class ArgumentContext::Private
 
 PropertyMapper<ArgumentContext::Private> ArgumentContext::Private::s_inst;
 
-ArgumentContext::ArgumentContext(const Argument *al,const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentContext")
+ArgumentContext::ArgumentContext(const Argument &al,const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentContext")
 {
   p = new Private(al,def,relPath);
 }
@@ -9517,7 +9503,7 @@ TemplateVariant ArgumentContext::get(const char *name) const
 class ArgumentListContext::Private : public GenericNodeListContext
 {
   public:
-    void addArgument(const Argument *arg,const Definition *def,const QCString &relPath)
+    void addArgument(const Argument &arg,const Definition *def,const QCString &relPath)
     {
       append(ArgumentContext::alloc(arg,def,relPath));
     }
@@ -9528,18 +9514,13 @@ ArgumentListContext::ArgumentListContext() : RefCountedContext("ArgumentListCont
   p = new Private;
 }
 
-ArgumentListContext::ArgumentListContext(const ArgumentList *list,
+ArgumentListContext::ArgumentListContext(const ArgumentList &list,
                         const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentListContext")
 {
   p = new Private;
-  if (list)
+  for (const Argument &arg : list)
   {
-    ArgumentListIterator ali(*list);
-    const Argument *arg;
-    for (ali.toFirst();(arg=ali.current());++ali)
-    {
-      p->addArgument(arg,def,relPath);
-    }
+    p->addArgument(arg,def,relPath);
   }
 }
 

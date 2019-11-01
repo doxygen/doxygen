@@ -73,7 +73,7 @@ static QFile            inputFile;
 static Protection	protection;
 
 static Entry*		current_root = 0 ;
-static Entry*		current      = 0 ;
+static std::unique_ptr<Entry> current;
 static Entry*		previous     = 0 ;
 static Entry*		bodyEntry    = 0 ;
 static int		yyLineNr     = 1 ;
@@ -145,16 +145,14 @@ static void initEntry()
   current->virt       = virt;
   current->stat       = gstat;
   current->lang       = SrcLangExt_Python; 
-  current->setParent(current_root);
-  Doxygen::docGroup.initGroupInfo(current);
+  Doxygen::docGroup.initGroupInfo(current.get());
   gstat = FALSE;
 }
 
 static void newEntry()
 {
-  previous = current;
-  current_root->addSubEntry(current);
-  current = new Entry ;
+  previous = current.get();
+  current_root->moveToSubEntryAndRefresh(current);
   initEntry();
 }
 
@@ -240,8 +238,7 @@ static void addFrom(bool all)
   current->fileName = yyFileName; 
   //printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
   current->section=all ? Entry::USINGDIR_SEC : Entry::USINGDECL_SEC;
-  current_root->addSubEntry(current);
-  current = new Entry ;
+  current_root->moveToSubEntryAndRefresh(current);
   initEntry();
 }
 //-----------------------------------------------------------------------------
@@ -261,43 +258,6 @@ static void incLineNr()
   yyLineNr++;
 }
 
-#if 0
-// Appends the current-name to current-type;
-// Destroys current-name.
-// Destroys current->args and current->argList
-static void addType( Entry* current )
-{
-    uint tl=current->type.length();
-    if ( tl>0 && !current->name.isEmpty() && current->type.at(tl-1)!='.') 
-    {
-      current->type += ' ' ;
-    }
-    current->type += current->name ;
-    current->name.resize(0) ;
-    tl=current->type.length();
-    if ( tl>0 && !current->args.isEmpty() && current->type.at(tl-1)!='.') 
-    {
-      current->type += ' ' ;
-    }
-    current->type += current->args ;
-    current->args.resize(0) ;
-    current->argList->clear();
-}
-
-static QCString stripQuotes(const char *s)
-{
-  QCString name;
-  if (s==0 || *s==0) return name;
-  name=s;
-  if (name.at(0)=='"' && name.at(name.length()-1)=='"')
-  {
-    name=name.mid(1,name.length()-2);
-  }
-  return name;
-}
-#endif
-//-----------------------------------------------------------------
-
 //-----------------------------------------------------------------
 static void startCommentBlock(bool brief)
 {
@@ -312,15 +272,6 @@ static void startCommentBlock(bool brief)
     current->docLine = yyLineNr;
   }
 }
-
-/*
-static void appendDocBlock() {
-  previous = current;
-  current_root->addSubEntry(current);
-  current = new Entry;
-  initEntry();
-}
-*/
 
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
@@ -341,7 +292,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   QCString processedDoc = preprocessCommentBlock(doc,yyFileName,lineNr);
   while (parseCommentBlock(
 	g_thisParser,
-	(docBlockInBody && previous) ? previous : current,
+	(docBlockInBody && previous) ? previous : current.get(),
 	processedDoc, // text
 	yyFileName,   // file
 	lineNr,
@@ -427,7 +378,7 @@ static void searchFoundDef()
   current->type.resize(0);
   current->name.resize(0);
   current->args.resize(0);
-  current->argList->clear();
+  current->argList.clear();
   g_packageCommentAllowed = FALSE;
   gstat=FALSE;
   //printf("searchFoundDef at=%d\n",yyLineNr);
@@ -436,7 +387,7 @@ static void searchFoundDef()
 static void searchFoundClass()
 {
   current->section = Entry::CLASS_SEC;
-  current->argList->clear();
+  current->argList.clear();
   current->type += "class" ;
   current->fileName  = yyFileName;
   current->startLine  = yyLineNr;
@@ -765,8 +716,7 @@ STARTDOCSYMS      "##"
 			current->fileName = yyFileName; 
 			//printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
 			current->section=Entry::USINGDECL_SEC;
-			current_root->addSubEntry(current);
-			current = new Entry ;
+			current_root->moveToSubEntryAndRefresh(current);
 			initEntry();
 			BEGIN(Search);
                       }
@@ -963,7 +913,7 @@ STARTDOCSYMS      "##"
                             }
     {B}":"{B}		    { // function without arguments
 			      g_specialBlock = TRUE; // expecting a docstring
-			      bodyEntry = current;
+			      bodyEntry = current.get();
                               BEGIN(FunctionBody);
 			    }
 
@@ -978,6 +928,10 @@ STARTDOCSYMS      "##"
 			      BEGIN(FunctionParams);
 		            }
     ")"                     { // end of parameter list
+                              if (current->argList.empty())
+                              {
+                                current->argList.noParameters=TRUE;
+                              }
         		      current->args = argListToString(current->argList);
         		      g_funcParamsEnd = TRUE;
                             }
@@ -992,10 +946,10 @@ STARTDOCSYMS      "##"
                         }
     {IDENTIFIER}        { // Name of parameter
 			  lineCount();
-			  Argument *a = new Argument;
-			  current->argList->append(a);
-			  current->argList->getLast()->name = QCString(yytext).stripWhiteSpace();
-			  current->argList->getLast()->type = g_argType;
+			  Argument a;
+			  a.name = QCString(yytext).stripWhiteSpace();
+			  a.type = g_argType;
+			  current->argList.push_back(a);
                           g_argType = "";
                         }
     "="		        { // default value
@@ -1082,8 +1036,8 @@ STARTDOCSYMS      "##"
      ","		{
 			  if (g_braceCount == 0)
 			  {
-			    if (current->argList->getLast())
-			      current->argList->getLast()->type += g_defVal.data();
+			    if (!current->argList.empty())
+			      current->argList.back().type += g_defVal;
 			    if (*yytext != ',')
 			      unput(*yytext);
 			    BEGIN(FunctionParams);
@@ -1132,8 +1086,8 @@ STARTDOCSYMS      "##"
      ","		{
 			  if (g_braceCount == 0)
 			  {
-			    if (current->argList->getLast())
-			      current->argList->getLast()->defval=QCString(g_defVal.data()).stripWhiteSpace();
+			    if (!current->argList.empty())
+			      current->argList.back().defval=QCString(g_defVal).stripWhiteSpace();
 			    if (*yytext == ')')
 			      unput(*yytext);
 			    BEGIN(FunctionParams);
@@ -1291,8 +1245,8 @@ STARTDOCSYMS      "##"
                        }
 
     {SCOPE}            {
-                         current->extends->append(
-					      new BaseInfo(substitute(yytext,".","::"),Public,Normal)
+                         current->extends.push_back(
+					      BaseInfo(substitute(yytext,".","::"),Public,Normal)
 					    );
                          //Has base class-do stuff
                        }
@@ -1346,7 +1300,7 @@ STARTDOCSYMS      "##"
       				 current->program+=yytext;
 			         //current->startLine = yyLineNr;
 				 g_curIndent=computeIndent(yytext);
-				 bodyEntry = current;
+				 bodyEntry = current.get();
 				 DBG_CTX((stderr,"setting indent %d\n",g_curIndent));
 				 //printf("current->program=[%s]\n",current->program.data());
 				 //g_hideClassDocs = TRUE;
@@ -1452,9 +1406,10 @@ STARTDOCSYMS      "##"
 			// do something based on the type of the IDENTIFIER
 			if (current->type.isEmpty())
                         {
-                          QListIterator<Entry> eli(*(current_root->children()));
-                          Entry *child;
-                          for (eli.toFirst();(child=eli.current());++eli)
+                          //QListIterator<Entry> eli(*(current_root->children()));
+                          //Entry *child;
+                          //for (eli.toFirst();(child=eli.current());++eli)
+                          for (const auto &child : current_root->children())
                           {
                             if (child->name == QCString(yytext))
                             {
@@ -1619,7 +1574,7 @@ STARTDOCSYMS      "##"
       			  incLineNr();
 			  docBlock += yytext;
       			}
-    \\.		        { // espaced char
+    \\.		        { // escaped char
 			  docBlock += yytext;
       			}
     .			{
@@ -1654,7 +1609,7 @@ STARTDOCSYMS      "##"
       			         addToString(yytext);
       				 incLineNr();
                                }
-    \\.			       { // espaced char
+    \\.			       { // escaped char
       			         addToString(yytext);
                                }
     "\"\"\""		       { // triple double quotes
@@ -1677,7 +1632,7 @@ STARTDOCSYMS      "##"
       			         addToString(yytext);
       				 incLineNr();
                                }
-    \\.			       { // espaced char
+    \\.			       { // escaped char
       			         addToString(yytext);
                                }
     "'''"		       { // triple single quotes
@@ -1754,10 +1709,9 @@ STARTDOCSYMS      "##"
 static void parseCompounds(Entry *rt)
 {
   //printf("parseCompounds(%s)\n",rt->name.data());
-  EntryListIterator eli(*rt->children());
-  Entry *ce;
-  for (;(ce=eli.current());++eli)
+  for (int i=0; i<rt->children().size(); ++i)
   {
+    Entry *ce = rt->children()[i].get();
     if (!ce->program.isEmpty())
     {
       //printf("-- %s ---------\n%s\n---------------\n",
@@ -1768,7 +1722,7 @@ static void parseCompounds(Entry *rt)
       pyscannerYYrestart( pyscannerYYin ) ;
       if (ce->section&Entry::COMPOUND_MASK)
       {
-        current_root = ce ;
+        current_root = ce;
         BEGIN( Search );
       }
       else if (ce->parent())
@@ -1780,18 +1734,17 @@ static void parseCompounds(Entry *rt)
       }
       yyFileName = ce->fileName;
       yyLineNr   = ce->bodyLine ;
-      if (current) delete current;
-      current = new Entry;
+      current = std::make_unique<Entry>();
       initEntry();
 
-      Doxygen::docGroup.enterCompound(yyFileName,yyLineNr,ce->name);
-      
+      QCString name = ce->name;
+      Doxygen::docGroup.enterCompound(yyFileName,yyLineNr,name);
+
       pyscannerYYlex() ;
       g_lexInit=TRUE;
-      delete current; current=0;
       ce->program.resize(0);
 
-      Doxygen::docGroup.leaveCompound(yyFileName,yyLineNr,ce->name);
+      Doxygen::docGroup.leaveCompound(yyFileName,yyLineNr,name);
 
     }
     parseCompounds(ce);
@@ -1801,7 +1754,7 @@ static void parseCompounds(Entry *rt)
 //----------------------------------------------------------------------------
 
 
-static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
+static void parseMain(const char *fileName,const char *fileBuf,const std::unique_ptr<Entry> &rt)
 {
   initParser();
 
@@ -1812,7 +1765,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
   mtype         = Method;
   gstat         = FALSE;
   virt          = Normal;
-  current_root  = rt;
+  current_root  = rt.get();
   g_specialBlock = FALSE;
 
 
@@ -1836,7 +1789,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
       g_moduleScope+=baseName;
     }
 
-    current            = new Entry;
+    current            = std::make_unique<Entry>();
     initEntry();
     current->name      = g_moduleScope;
     current->section   = Entry::NAMESPACE_SEC;
@@ -1845,11 +1798,11 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     current->startLine = yyLineNr;
     current->bodyLine  = yyLineNr;
 
-    rt->addSubEntry(current);
+    current_root  = current.get();
 
-    current_root  = current ;
+    rt->moveToSubEntryAndRefresh(current);
+
     initParser();
-    current       = new Entry;
 
     Doxygen::docGroup.enterFile(yyFileName,yyLineNr);
     
@@ -1863,7 +1816,6 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     Doxygen::docGroup.leaveFile(yyFileName,yyLineNr);
 
     current_root->program.resize(0);
-    delete current; current=0;
 
     parseCompounds(current_root);
 
@@ -1936,7 +1888,7 @@ void pyscanFreeScanner()
 
 void PythonLanguageScanner::parseInput(const char *fileName,
                                        const char *fileBuf,
-                                       Entry *root,
+                                       const std::unique_ptr<Entry> &root,
                                        bool /*sameTranslationUnit*/,
                                        QStrList & /*filesInSameTranslationUnit*/)
 {

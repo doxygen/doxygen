@@ -56,7 +56,6 @@ MemberGroup::MemberGroup(int id,const char *hdr,const char *d,const char *docFil
   m_numDocMembers = -1;
   m_docFile       = docFile;
   m_docLine       = docLine;
-  m_xrefListItems = 0;
   //printf("Member group docs='%s'\n",doc.data());
 }
 
@@ -340,7 +339,7 @@ QCString MemberGroup::anchor() const
 void MemberGroup::addListReferences(Definition *def)
 {
   memberList->addListReferences(def);
-  if (m_xrefListItems && def)
+  if (def)
   {
     QCString name = def->getOutputFileBase()+"#"+anchor();
     addRefItem(m_xrefListItems,
@@ -357,23 +356,9 @@ void MemberGroup::findSectionsInDocumentation(const Definition *d)
   memberList->findSectionsInDocumentation(d);
 }
 
-void MemberGroup::setRefItems(const QList<ListItemInfo> *sli)
+void MemberGroup::setRefItems(const std::vector<ListItemInfo> &sli)
 {
-  if (sli)
-  {
-    // deep copy the list
-    if (m_xrefListItems==0) 
-    {
-      m_xrefListItems=new QList<ListItemInfo>;
-      m_xrefListItems->setAutoDelete(TRUE);
-    }
-    QListIterator<ListItemInfo> slii(*sli);
-    ListItemInfo *lii;
-    for (slii.toFirst();(lii=slii.current());++slii)
-    {
-      m_xrefListItems->append(new ListItemInfo(*lii));
-    } 
-  }
+  m_xrefListItems = sli;
 }
 
 void MemberGroup::writeTagFile(FTextStream &tagFile)
@@ -383,18 +368,7 @@ void MemberGroup::writeTagFile(FTextStream &tagFile)
 
 //--------------------------------------------------------------------------
 
-void MemberGroupInfo::setRefItems(const QList<ListItemInfo> *sli)
+void MemberGroupInfo::setRefItems(const std::vector<ListItemInfo> &sli)
 {
-  if (!sli) return;
-  if (m_sli==0)
-  {
-    m_sli = new QList<ListItemInfo>;
-    m_sli->setAutoDelete(TRUE);
-  }
-  QListIterator<ListItemInfo> slii(*sli);
-  ListItemInfo *ili;
-  for (slii.toFirst();(ili=slii.current());++slii)
-  {
-    m_sli->append(new ListItemInfo(*ili));
-  }
+  m_sli = sli;
 }

@@ -78,7 +78,7 @@
 \TMP@EnsureCode 58 = 12 % : (for siunitx)
 \TMP@EnsureCode124 = 12 % |
 \TMP@EnsureCode 36 =  3 % $ = math shift
-\TMP@EnsureCode 38 =  4 % & = tab alignmment character
+\TMP@EnsureCode 38 =  4 % & = tab alignment character
 \TMP@EnsureCode 32 = 10 % space
 \TMP@EnsureCode 94 =  7 % ^
 \TMP@EnsureCode 95 =  8 % _
@@ -840,7 +840,7 @@
 }% \tabu@reset
 \def\tabu@setsave #1{\expandafter\tabu@sets@ve #1\@nil{#1}}
 \long\def\tabu@sets@ve #1\@nil #2{\@temptokena\expandafter{\the\@temptokena \def#2{#1}}}
-%% The Rewritting Process -------------------------------------------
+%% The Rewriting Process -------------------------------------------
 \def\tabu@newcolumntype #1{%
     \expandafter\tabu@new@columntype
         \csname NC@find@\string#1\expandafter\endcsname
@@ -1056,7 +1056,7 @@
    \else #2\tabucolX
    \fi
 }% \tabu@hsize
-%% \usetabu  and  \preamble: rewritting process ---------------------
+%% \usetabu  and  \preamble: rewriting process ---------------------
 \tabu@privatecolumntype \usetabu [1]{%
     \ifx\\#1\\\tabu@saveerr{}\else
         \@ifundefined{tabu@saved@\string#1}
@@ -1072,7 +1072,7 @@
             {\csname tabu@saved@\string#1\expandafter\endcsname\expandafter\z@}%
     \fi
 }% \NC@rewrite@\preamble
-%% Controlling the rewritting process -------------------------------
+%% Controlling the rewriting process -------------------------------
 \tabu@newcolumntype \tabu@rewritefirst{%
     \iftabu@long    \aftergroup \tabu@longpream  % <the whole implementation is here !>
     \else           \aftergroup \tabu@pream
@@ -2388,7 +2388,7 @@
         \PackageWarning{tabu}
         {\string\@arrayright\space is missing from the
         \MessageBreak definition of \string\endarray.
-        \MessageBreak Comptability with delarray.sty is broken.}%
+        \MessageBreak Compatibility with delarray.sty is broken.}%
     \fi\fi
 }% \tabu@fix@arrayright
 \def\tabu@adl@xarraydashrule #1#2#3{%

@@ -289,7 +289,7 @@ void DotGraph::writeGraphHeader(FTextStream &t,const QCString &title)
   {
     t << " // INTERACTIVE_SVG=YES\n";
   }
-  t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size repacement
+  t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
   if (Config_getBool(DOT_TRANSPARENT))
   {
     t << "  bgcolor=\"transparent\";" << endl;

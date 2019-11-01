@@ -12,12 +12,12 @@
 namespace vhdl {
 namespace parser {
   struct JJCalls {
-    int gen;
-    Token *first;
-    int arg;
-    JJCalls *next;
+    int        gen;
+    int        arg;
+    JJCalls*   next;
+    Token*     first;
     ~JJCalls() { if (next) delete next; }
-    JJCalls() { next = NULL; arg = 0; gen = -1; first = NULL; }
+     JJCalls() { next = NULL; arg = 0; gen = -1; first = NULL; }
   };
 
 class VhdlParser {
@@ -582,7 +582,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_1() || jj_done;
+    return (!jj_3_1() || jj_done);
  { jj_save(0, xla); }
   }
 
@@ -590,7 +590,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_2() || jj_done;
+    return (!jj_3_2() || jj_done);
  { jj_save(1, xla); }
   }
 
@@ -598,7 +598,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_3() || jj_done;
+    return (!jj_3_3() || jj_done);
  { jj_save(2, xla); }
   }
 
@@ -606,7 +606,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_4() || jj_done;
+    return (!jj_3_4() || jj_done);
  { jj_save(3, xla); }
   }
 
@@ -614,7 +614,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_5() || jj_done;
+    return (!jj_3_5() || jj_done);
  { jj_save(4, xla); }
   }
 
@@ -622,7 +622,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_6() || jj_done;
+    return (!jj_3_6() || jj_done);
  { jj_save(5, xla); }
   }
 
@@ -630,7 +630,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_7() || jj_done;
+    return (!jj_3_7() || jj_done);
  { jj_save(6, xla); }
   }
 
@@ -638,7 +638,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_8() || jj_done;
+    return (!jj_3_8() || jj_done);
  { jj_save(7, xla); }
   }
 
@@ -646,7 +646,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_9() || jj_done;
+    return (!jj_3_9() || jj_done);
  { jj_save(8, xla); }
   }
 
@@ -654,7 +654,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_10() || jj_done;
+    return (!jj_3_10() || jj_done);
  { jj_save(9, xla); }
   }
 
@@ -662,7 +662,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_11() || jj_done;
+    return (!jj_3_11() || jj_done);
  { jj_save(10, xla); }
   }
 
@@ -670,7 +670,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_12() || jj_done;
+    return (!jj_3_12() || jj_done);
  { jj_save(11, xla); }
   }
 
@@ -678,7 +678,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_13() || jj_done;
+    return (!jj_3_13() || jj_done);
  { jj_save(12, xla); }
   }
 
@@ -686,7 +686,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_14() || jj_done;
+    return (!jj_3_14() || jj_done);
  { jj_save(13, xla); }
   }
 
@@ -694,7 +694,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_15() || jj_done;
+    return (!jj_3_15() || jj_done);
  { jj_save(14, xla); }
   }
 
@@ -702,7 +702,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_16() || jj_done;
+    return (!jj_3_16() || jj_done);
  { jj_save(15, xla); }
   }
 
@@ -710,7 +710,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_17() || jj_done;
+    return (!jj_3_17() || jj_done);
  { jj_save(16, xla); }
   }
 
@@ -718,7 +718,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_18() || jj_done;
+    return (!jj_3_18() || jj_done);
  { jj_save(17, xla); }
   }
 
@@ -726,7 +726,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_19() || jj_done;
+    return (!jj_3_19() || jj_done);
  { jj_save(18, xla); }
   }
 
@@ -734,7 +734,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_20() || jj_done;
+    return (!jj_3_20() || jj_done);
  { jj_save(19, xla); }
   }
 
@@ -742,7 +742,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_21() || jj_done;
+    return (!jj_3_21() || jj_done);
  { jj_save(20, xla); }
   }
 
@@ -750,7 +750,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_22() || jj_done;
+    return (!jj_3_22() || jj_done);
  { jj_save(21, xla); }
   }
 
@@ -758,7 +758,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_23() || jj_done;
+    return (!jj_3_23() || jj_done);
  { jj_save(22, xla); }
   }
 
@@ -766,7 +766,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_24() || jj_done;
+    return (!jj_3_24() || jj_done);
  { jj_save(23, xla); }
   }
 
@@ -774,7 +774,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_25() || jj_done;
+    return (!jj_3_25() || jj_done);
  { jj_save(24, xla); }
   }
 
@@ -782,7 +782,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_26() || jj_done;
+    return (!jj_3_26() || jj_done);
  { jj_save(25, xla); }
   }
 
@@ -790,7 +790,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_27() || jj_done;
+    return (!jj_3_27() || jj_done);
  { jj_save(26, xla); }
   }
 
@@ -798,7 +798,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_28() || jj_done;
+    return (!jj_3_28() || jj_done);
  { jj_save(27, xla); }
   }
 
@@ -806,7 +806,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_29() || jj_done;
+    return (!jj_3_29() || jj_done);
  { jj_save(28, xla); }
   }
 
@@ -814,7 +814,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_30() || jj_done;
+    return (!jj_3_30() || jj_done);
  { jj_save(29, xla); }
   }
 
@@ -822,7 +822,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_31() || jj_done;
+    return (!jj_3_31() || jj_done);
  { jj_save(30, xla); }
   }
 
@@ -830,7 +830,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_32() || jj_done;
+    return (!jj_3_32() || jj_done);
  { jj_save(31, xla); }
   }
 
@@ -838,7 +838,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_33() || jj_done;
+    return (!jj_3_33() || jj_done);
  { jj_save(32, xla); }
   }
 
@@ -846,7 +846,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_34() || jj_done;
+    return (!jj_3_34() || jj_done);
  { jj_save(33, xla); }
   }
 
@@ -854,7 +854,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_35() || jj_done;
+    return (!jj_3_35() || jj_done);
  { jj_save(34, xla); }
   }
 
@@ -862,7 +862,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_36() || jj_done;
+    return (!jj_3_36() || jj_done);
  { jj_save(35, xla); }
   }
 
@@ -870,7 +870,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_37() || jj_done;
+    return (!jj_3_37() || jj_done);
  { jj_save(36, xla); }
   }
 
@@ -878,7 +878,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_38() || jj_done;
+    return (!jj_3_38() || jj_done);
  { jj_save(37, xla); }
   }
 
@@ -886,7 +886,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_39() || jj_done;
+    return (!jj_3_39() || jj_done);
  { jj_save(38, xla); }
   }
 
@@ -894,7 +894,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_40() || jj_done;
+    return (!jj_3_40() || jj_done);
  { jj_save(39, xla); }
   }
 
@@ -902,7 +902,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_41() || jj_done;
+    return (!jj_3_41() || jj_done);
  { jj_save(40, xla); }
   }
 
@@ -910,7 +910,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_42() || jj_done;
+    return (!jj_3_42() || jj_done);
  { jj_save(41, xla); }
   }
 
@@ -918,7 +918,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_43() || jj_done;
+    return (!jj_3_43() || jj_done);
  { jj_save(42, xla); }
   }
 
@@ -926,7 +926,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_44() || jj_done;
+    return (!jj_3_44() || jj_done);
  { jj_save(43, xla); }
   }
 
@@ -934,7 +934,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_45() || jj_done;
+    return (!jj_3_45() || jj_done);
  { jj_save(44, xla); }
   }
 
@@ -942,7 +942,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_46() || jj_done;
+    return (!jj_3_46() || jj_done);
  { jj_save(45, xla); }
   }
 
@@ -950,7 +950,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_47() || jj_done;
+    return (!jj_3_47() || jj_done);
  { jj_save(46, xla); }
   }
 
@@ -958,7 +958,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_48() || jj_done;
+    return (!jj_3_48() || jj_done);
  { jj_save(47, xla); }
   }
 
@@ -966,7 +966,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_49() || jj_done;
+    return (!jj_3_49() || jj_done);
  { jj_save(48, xla); }
   }
 
@@ -974,7 +974,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_50() || jj_done;
+    return (!jj_3_50() || jj_done);
  { jj_save(49, xla); }
   }
 
@@ -982,7 +982,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_51() || jj_done;
+    return (!jj_3_51() || jj_done);
  { jj_save(50, xla); }
   }
 
@@ -990,7 +990,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_52() || jj_done;
+    return (!jj_3_52() || jj_done);
  { jj_save(51, xla); }
   }
 
@@ -998,7 +998,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_53() || jj_done;
+    return (!jj_3_53() || jj_done);
  { jj_save(52, xla); }
   }
 
@@ -1006,7 +1006,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_54() || jj_done;
+    return (!jj_3_54() || jj_done);
  { jj_save(53, xla); }
   }
 
@@ -1014,7 +1014,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_55() || jj_done;
+    return (!jj_3_55() || jj_done);
  { jj_save(54, xla); }
   }
 
@@ -1022,7 +1022,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_56() || jj_done;
+    return (!jj_3_56() || jj_done);
  { jj_save(55, xla); }
   }
 
@@ -1030,7 +1030,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_57() || jj_done;
+    return (!jj_3_57() || jj_done);
  { jj_save(56, xla); }
   }
 
@@ -1038,7 +1038,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_58() || jj_done;
+    return (!jj_3_58() || jj_done);
  { jj_save(57, xla); }
   }
 
@@ -1046,7 +1046,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_59() || jj_done;
+    return (!jj_3_59() || jj_done);
  { jj_save(58, xla); }
   }
 
@@ -1054,7 +1054,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_60() || jj_done;
+    return (!jj_3_60() || jj_done);
  { jj_save(59, xla); }
   }
 
@@ -1062,7 +1062,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_61() || jj_done;
+    return (!jj_3_61() || jj_done);
  { jj_save(60, xla); }
   }
 
@@ -1070,7 +1070,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_62() || jj_done;
+    return (!jj_3_62() || jj_done);
  { jj_save(61, xla); }
   }
 
@@ -1078,7 +1078,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_63() || jj_done;
+    return (!jj_3_63() || jj_done);
  { jj_save(62, xla); }
   }
 
@@ -1086,7 +1086,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_64() || jj_done;
+    return (!jj_3_64() || jj_done);
  { jj_save(63, xla); }
   }
 
@@ -1094,7 +1094,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_65() || jj_done;
+    return (!jj_3_65() || jj_done);
  { jj_save(64, xla); }
   }
 
@@ -1102,7 +1102,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_66() || jj_done;
+    return (!jj_3_66() || jj_done);
  { jj_save(65, xla); }
   }
 
@@ -1110,7 +1110,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_67() || jj_done;
+    return (!jj_3_67() || jj_done);
  { jj_save(66, xla); }
   }
 
@@ -1118,7 +1118,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_68() || jj_done;
+    return (!jj_3_68() || jj_done);
  { jj_save(67, xla); }
   }
 
@@ -1126,7 +1126,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_69() || jj_done;
+    return (!jj_3_69() || jj_done);
  { jj_save(68, xla); }
   }
 
@@ -1134,7 +1134,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_70() || jj_done;
+    return (!jj_3_70() || jj_done);
  { jj_save(69, xla); }
   }
 
@@ -1142,7 +1142,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_71() || jj_done;
+    return (!jj_3_71() || jj_done);
  { jj_save(70, xla); }
   }
 
@@ -1150,7 +1150,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_72() || jj_done;
+    return (!jj_3_72() || jj_done);
  { jj_save(71, xla); }
   }
 
@@ -1158,7 +1158,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_73() || jj_done;
+    return (!jj_3_73() || jj_done);
  { jj_save(72, xla); }
   }
 
@@ -1166,7 +1166,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_74() || jj_done;
+    return (!jj_3_74() || jj_done);
  { jj_save(73, xla); }
   }
 
@@ -1174,7 +1174,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_75() || jj_done;
+    return (!jj_3_75() || jj_done);
  { jj_save(74, xla); }
   }
 
@@ -1182,7 +1182,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_76() || jj_done;
+    return (!jj_3_76() || jj_done);
  { jj_save(75, xla); }
   }
 
@@ -1190,7 +1190,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_77() || jj_done;
+    return (!jj_3_77() || jj_done);
  { jj_save(76, xla); }
   }
 
@@ -1198,7 +1198,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_78() || jj_done;
+    return (!jj_3_78() || jj_done);
  { jj_save(77, xla); }
   }
 
@@ -1206,7 +1206,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_79() || jj_done;
+    return (!jj_3_79() || jj_done);
  { jj_save(78, xla); }
   }
 
@@ -1214,7 +1214,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_80() || jj_done;
+    return (!jj_3_80() || jj_done);
  { jj_save(79, xla); }
   }
 
@@ -1222,7 +1222,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_81() || jj_done;
+    return (!jj_3_81() || jj_done);
  { jj_save(80, xla); }
   }
 
@@ -1230,7 +1230,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_82() || jj_done;
+    return (!jj_3_82() || jj_done);
  { jj_save(81, xla); }
   }
 
@@ -1238,7 +1238,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_83() || jj_done;
+    return (!jj_3_83() || jj_done);
  { jj_save(82, xla); }
   }
 
@@ -1246,7 +1246,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_84() || jj_done;
+    return (!jj_3_84() || jj_done);
  { jj_save(83, xla); }
   }
 
@@ -1254,7 +1254,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_85() || jj_done;
+    return (!jj_3_85() || jj_done);
  { jj_save(84, xla); }
   }
 
@@ -1262,7 +1262,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_86() || jj_done;
+    return (!jj_3_86() || jj_done);
  { jj_save(85, xla); }
   }
 
@@ -1270,7 +1270,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_87() || jj_done;
+    return (!jj_3_87() || jj_done);
  { jj_save(86, xla); }
   }
 
@@ -1278,7 +1278,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_88() || jj_done;
+    return (!jj_3_88() || jj_done);
  { jj_save(87, xla); }
   }
 
@@ -1286,7 +1286,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_89() || jj_done;
+    return (!jj_3_89() || jj_done);
  { jj_save(88, xla); }
   }
 
@@ -1294,7 +1294,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_90() || jj_done;
+    return (!jj_3_90() || jj_done);
  { jj_save(89, xla); }
   }
 
@@ -1302,7 +1302,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_91() || jj_done;
+    return (!jj_3_91() || jj_done);
  { jj_save(90, xla); }
   }
 
@@ -1310,7 +1310,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_92() || jj_done;
+    return (!jj_3_92() || jj_done);
  { jj_save(91, xla); }
   }
 
@@ -1318,7 +1318,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_93() || jj_done;
+    return (!jj_3_93() || jj_done);
  { jj_save(92, xla); }
   }
 
@@ -1326,7 +1326,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_94() || jj_done;
+    return (!jj_3_94() || jj_done);
  { jj_save(93, xla); }
   }
 
@@ -1334,7 +1334,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_95() || jj_done;
+    return (!jj_3_95() || jj_done);
  { jj_save(94, xla); }
   }
 
@@ -1342,7 +1342,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_96() || jj_done;
+    return (!jj_3_96() || jj_done);
  { jj_save(95, xla); }
   }
 
@@ -1350,7 +1350,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_97() || jj_done;
+    return (!jj_3_97() || jj_done);
  { jj_save(96, xla); }
   }
 
@@ -1358,7 +1358,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_98() || jj_done;
+    return (!jj_3_98() || jj_done);
  { jj_save(97, xla); }
   }
 
@@ -1366,7 +1366,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_99() || jj_done;
+    return (!jj_3_99() || jj_done);
  { jj_save(98, xla); }
   }
 
@@ -1374,7 +1374,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_100() || jj_done;
+    return (!jj_3_100() || jj_done);
  { jj_save(99, xla); }
   }
 
@@ -1382,7 +1382,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_101() || jj_done;
+    return (!jj_3_101() || jj_done);
  { jj_save(100, xla); }
   }
 
@@ -1390,7 +1390,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_102() || jj_done;
+    return (!jj_3_102() || jj_done);
  { jj_save(101, xla); }
   }
 
@@ -1398,7 +1398,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_103() || jj_done;
+    return (!jj_3_103() || jj_done);
  { jj_save(102, xla); }
   }
 
@@ -1406,7 +1406,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_104() || jj_done;
+    return (!jj_3_104() || jj_done);
  { jj_save(103, xla); }
   }
 
@@ -1414,7 +1414,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_105() || jj_done;
+    return (!jj_3_105() || jj_done);
  { jj_save(104, xla); }
   }
 
@@ -1422,7 +1422,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_106() || jj_done;
+    return (!jj_3_106() || jj_done);
  { jj_save(105, xla); }
   }
 
@@ -1430,7 +1430,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_107() || jj_done;
+    return (!jj_3_107() || jj_done);
  { jj_save(106, xla); }
   }
 
@@ -1438,7 +1438,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_108() || jj_done;
+    return (!jj_3_108() || jj_done);
  { jj_save(107, xla); }
   }
 
@@ -1446,7 +1446,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_109() || jj_done;
+    return (!jj_3_109() || jj_done);
  { jj_save(108, xla); }
   }
 
@@ -1454,7 +1454,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_110() || jj_done;
+    return (!jj_3_110() || jj_done);
  { jj_save(109, xla); }
   }
 
@@ -1462,7 +1462,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_111() || jj_done;
+    return (!jj_3_111() || jj_done);
  { jj_save(110, xla); }
   }
 
@@ -1470,7 +1470,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_112() || jj_done;
+    return (!jj_3_112() || jj_done);
  { jj_save(111, xla); }
   }
 
@@ -1478,7 +1478,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_113() || jj_done;
+    return (!jj_3_113() || jj_done);
  { jj_save(112, xla); }
   }
 
@@ -1486,7 +1486,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_114() || jj_done;
+    return (!jj_3_114() || jj_done);
  { jj_save(113, xla); }
   }
 
@@ -1494,7 +1494,7 @@ void parseInline();
  {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     jj_done = false;
-    return !jj_3_115() || jj_done;
+    return (!jj_3_115() || jj_done);
  { jj_save(114, xla); }
   }
 
@@ -8867,38 +8867,45 @@ void parseInline();
     return false;
   }
 
-  public: TokenManager *token_source;
-  public: CharStream *jj_input_stream;
+
+public: 
+  TokenManager *token_source;
+  CharStream   *jj_input_stream;
   /** Current token. */
-  public: Token *token;
+  Token        *token;
   /** Next token. */
-  public: Token *jj_nt;
-  private: int jj_ntk;
-  private: JJCalls jj_2_rtns[116];
-  private: bool jj_rescan;
-  private: int jj_gc;
-  private: Token *jj_scanpos, *jj_lastpos;
-  private: int jj_la;
+  Token        *jj_nt;
+private: 
+  int           jj_ntk;
+  JJCalls       jj_2_rtns[116];
+  bool          jj_rescan;
+  int           jj_gc;
+  Token        *jj_scanpos, *jj_lastpos;
+  int           jj_la;
   /** Whether we are looking ahead. */
-  private: bool jj_lookingAhead;
-  private: bool jj_semLA;
-  private: int jj_gen;
-  private: int jj_la1[294];
-  private: ErrorHandler *errorHandler;
-  private: bool errorHandlerCreated;
-  protected: bool hasError;
-  public: void setErrorHandler(ErrorHandler *eh) {
+  bool          jj_lookingAhead;
+  bool          jj_semLA;
+  int           jj_gen;
+  int           jj_la1[294];
+  ErrorHandler *errorHandler;
+  bool          errorHandlerCreated;
+protected: 
+  bool          hasError;
+public: 
+  void setErrorHandler(ErrorHandler *eh) {
     if (errorHandlerCreated) delete errorHandler;
     errorHandler = eh;
     errorHandlerCreated = false;
   }
- Token *head; 
- public: 
+  Token *head; 
+public: 
 
  VhdlParser(TokenManager *tm);
-   public: virtual ~VhdlParser();
+  virtual ~VhdlParser();
 
 void ReInit(TokenManager *tm);
+
+void clear();
 
 Token * jj_consume_token(int kind);
 
@@ -8909,31 +8916,36 @@ Token * getNextToken();
 Token * getToken(int index);
 
 int jj_ntk_f();
- private: int jj_kind;
+private:
+  int jj_kind;
   int **jj_expentries;
   int *jj_expentry;
 
-void jj_add_error_token(int kind, int pos);
+  void jj_add_error_token(int kind, int pos);
+protected:
+  /** Generate ParseException. */
 
-protected: virtual void  parseError();
-  private: int trace_indent;
-  private: bool trace_enabled;
-  /** Enable tracing. */
+  virtual void  parseError();
+private:
+  int  trace_indent;
+  bool trace_enabled;
 
-public: void enable_tracing();
+public:
 
-public: void disable_tracing();
+  void enable_tracing();
 
-void jj_rescan_token();
+  void disable_tracing();
 
-void jj_save(int index, int xla);
+  void jj_rescan_token();
+
+  void jj_save(int index, int xla);
 typedef unsigned long long uint64;
 
 static Entry* current_root;
 static Entry* tempEntry;
 static Entry*  lastEntity  ;
 static Entry*  lastCompound  ;
-static Entry*  current;
+static std::unique_ptr<Entry> current;
 static QCString compSpec;
 static QCString currName;
 static int levelCounter;
@@ -8970,8 +8982,10 @@ static  void mapLibPackage( Entry* root);
 static void createFlow();
 static void error_skipto(int kind);
 static void oneLineComment(QCString qcs);
-static void setMultCommentLine();private: bool jj_done;
+static void setMultCommentLine();
 
+private:
+  bool jj_done;
 };
 }
 }

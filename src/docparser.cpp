@@ -413,12 +413,12 @@ static void checkArgumentName(const QCString &name)
 {                
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0) return; // not a member
-  const ArgumentList *al=g_memberDef->isDocsForDefinition() ?
+  const ArgumentList &al=g_memberDef->isDocsForDefinition() ?
 	                 g_memberDef->argumentList() :
                          g_memberDef->declArgumentList();
   SrcLangExt lang = g_memberDef->getLanguage();
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
-  if (al==0) return; // no argument list
+  if (al.empty()) return; // no argument list
 
   static QRegExp re("$?[a-zA-Z0-9_\\x80-\\xFF]+\\.*");
   int p=0,i=0,l;
@@ -427,12 +427,10 @@ static void checkArgumentName(const QCString &name)
     QCString aName=name.mid(i,l);
     if (lang==SrcLangExt_Fortran) aName=aName.lower();
     //printf("aName='%s'\n",aName.data());
-    ArgumentListIterator ali(*al);
-    const Argument *a;
     bool found=FALSE;
-    for (ali.toFirst();(a=ali.current());++ali)
+    for (const Argument &a : al)
     {
-      QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+      QCString argName = g_memberDef->isDefine() ? a.type : a.name;
       if (lang==SrcLangExt_Fortran) argName=argName.lower();
       argName=argName.stripWhiteSpace();
       //printf("argName='%s' aName=%s\n",argName.data(),aName.data());
@@ -460,7 +458,6 @@ static void checkArgumentName(const QCString &name)
             inheritedMd->docLine(),qPrint(inheritedMd->docFile()));
         docFile = g_memberDef->getDefFileName();
         docLine = g_memberDef->getDefLine();
-        
       }
       QCString alStr = argListToString(al);
       warn_doc_error(docFile,docLine,
@@ -500,28 +497,26 @@ static void checkUnOrMultipleDocumentedParams()
 {
   if (g_memberDef && g_hasParamCommand && Config_getBool(WARN_IF_DOC_ERROR))
   {
-    const ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
+    const ArgumentList &al=g_memberDef->isDocsForDefinition() ?
       g_memberDef->argumentList() :
       g_memberDef->declArgumentList();
     SrcLangExt lang = g_memberDef->getLanguage();
-    if (al!=0)
+    if (!al.empty())
     {
-      ArgumentListIterator ali(*al);
-      const Argument *a;
       int notArgCnt=0;
-      for (ali.toFirst();(a=ali.current());++ali)
+      for (const Argument &a: al)
       {
         int count = 0;
-        QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+        QCString argName = g_memberDef->isDefine() ? a.type : a.name;
         if (lang==SrcLangExt_Fortran) argName = argName.lower();
         argName=argName.stripWhiteSpace();
         QCString aName = argName;
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
         if (lang==SrcLangExt_Python && (argName=="self" || argName=="cls"))
-        { 
+        {
           // allow undocumented self / cls parameter for Python
         }
-        else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a->docs.isEmpty()) 
+        else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a.docs.isEmpty()) 
         {
           notArgCnt++;
         }
@@ -550,20 +545,20 @@ static void checkUnOrMultipleDocumentedParams()
         QCString errMsg=
             "The following parameter";
         errMsg+= (notArgCnt>1 ? "s" : "");
-	errMsg+=" of "+
+        errMsg+=" of "+
             QCString(g_memberDef->qualifiedName()) + 
             QCString(argListToString(al)) +
             (notArgCnt>1 ? " are" : " is") + " not documented:\n";
-        for (ali.toFirst();(a=ali.current());++ali)
+        for (const Argument &a : al)
         {
-          QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+          QCString argName = g_memberDef->isDefine() ? a.type : a.name;
           if (lang==SrcLangExt_Fortran) argName = argName.lower();
           argName=argName.stripWhiteSpace();
           if (lang==SrcLangExt_Python && (argName=="self" || argName=="cls"))
-          { 
+          {
             // allow undocumented self / cls parameter for Python
           }
-          else if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
+          else if (!argName.isEmpty() && g_paramsFound.find(argName)==0)
           {
             if (!first)
             {
@@ -968,7 +963,7 @@ static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttrib
   int retval = RetVal_OK;
   for (li.toFirst();(opt=li.current());++li,++index)
   {
-    if (opt->name=="name") // <a name=label> tag
+    if (opt->name=="name" || opt->name=="id") // <a name=label> or <a id=label> tag
     {
       if (!opt->value.isEmpty())
       {
@@ -5894,9 +5889,10 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
   int retval=RetVal_OK;
   int tagId = Mappers::htmlTagMapper->map(tagName);
   if (g_token->emptyTag && !(tagId&XML_CmdMask) && 
-      tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR)
+      tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P)
   {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"HTML tags may not use the 'empty tag' XHTML syntax.");
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"HTML tag ('<%s/>') may not use the 'empty tag' XHTML syntax.",
+                     tagName.data());
   }
   switch (tagId)
   {
@@ -6441,7 +6437,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected tag </img> found");
       break;
     case HTML_HR:
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected tag </hr> found");
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal </hr> tag found\n");
       break;
     case HTML_A:
       //warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected tag </a> found");
