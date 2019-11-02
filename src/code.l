@@ -2353,12 +2353,6 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_code->codify(yytext);
 					  g_insideProtocolList=FALSE;
   					}
-<SkipSharp>"\""((\\0[Xx0-9]+)|(\\.)|(.))*"\""	{
-  					  g_code->codify(yytext);
-  					}
-<SkipSharp>"'"((\\0[Xx0-9]+)|(\\.)|(.))"'"	{
-  					  g_code->codify(yytext);
-  					}
 <SkipSharp>"<"                          {
   					  g_code->codify(yytext);
   					  ++g_sharpCount; 
@@ -2368,6 +2362,16 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  if (--g_sharpCount<=0)
 					  BEGIN ( Bases );
 					}
+<SkipSharp>"\""                         {
+  					  g_code->codify(yytext);
+  					  g_lastStringContext=YY_START;
+                                          BEGIN(SkipString);
+                                        }
+<SkipSharp>"\'"                         {
+  					  g_code->codify(yytext);
+  					  g_lastStringContext=YY_START;
+                                          BEGIN(SkipStringS);
+                                        }
 <Bases>"("                              {
                                           g_code->codify(yytext);
                                           g_sharpCount=1;
