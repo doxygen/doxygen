@@ -5961,15 +5961,15 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
 
 void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
 {
-  printf("mdec=%s isPrototype()=%d\n",mdec->name().data(),mdec->isPrototype());
+  //printf("mdec=%s isPrototype()=%d\n",mdec->name().data(),mdec->isPrototype());
   if (
       (mdef->isFunction() && !mdef->isStatic() && !mdef->isPrototype()) ||
       (mdef->isVariable() && !mdef->isExternal() && !mdef->isStatic())
      )
   {
-    printf("mdef=(%p,%s) mdec=(%p,%s)\n",
-        mdef, mdef ? mdef->name().data() : "",
-        mdec, mdec ? mdec->name().data() : "");
+    //printf("mdef=(%p,%s) mdec=(%p,%s)\n",
+    //    mdef, mdef ? mdef->name().data() : "",
+    //    mdec, mdec ? mdec->name().data() : "");
 
     const MemberDef *cmdec = const_cast<const MemberDef*>(mdec);
     const MemberDef *cmdef = const_cast<const MemberDef*>(mdef);

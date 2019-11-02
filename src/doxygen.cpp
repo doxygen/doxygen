@@ -1411,7 +1411,7 @@ static void resolveClassNestingRelations()
                 d->addInnerCompound(aliasCd);
                 QCString aliasFullName = d->qualifiedName()+"::"+aliasCd->localName();
                 Doxygen::classSDict->append(aliasFullName,aliasCd);
-                printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
+                //printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
                 aliasCd->setVisited(TRUE);
               }
             }
