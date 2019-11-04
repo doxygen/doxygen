@@ -201,7 +201,7 @@ static void endCondSection()
 {
   if (g_condStack.isEmpty())
   {
-    warn(g_fileName,g_lineNr,"Found \\endcond command without matching \\cond");
+    warn(g_fileName,g_lineNr,"Found '\\endcond' command without matching '\\cond'");
     g_skip=FALSE;
   }
   else
@@ -391,7 +391,7 @@ void replaceComment(int offset);
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<Scan>"//"/.*\n	                   { /* one line C++ comment */ 
+<Scan>"//[!\/]"/.*\n	                   { /* one line C++ comment */ 
 				     g_inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
   				     copyToOutput(yytext,(int)yyleng); 
 				     g_readLineCtx=YY_START;
@@ -400,7 +400,7 @@ void replaceComment(int offset);
 <Scan>"/**/"                       { /* avoid matching next rule for empty C comment, see bug 711723 */
                                      copyToOutput(yytext,(int)yyleng);
                                    }
-<Scan>"/*"[*!]?			   { /* start of a C comment */
+<Scan>"/*"[*!]			   { /* start of a C comment */
                                      if ((g_lang==SrcLangExt_Python) || (g_lang==SrcLangExt_Tcl))
 				     {
 				       REJECT;
@@ -1109,7 +1109,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
     QCString sectionInfo = " ";
     if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx->sectionId.stripWhiteSpace().data());
     warn(g_fileName,ctx->lineNr,"Conditional section%sdoes not have "
-	"a corresponding \\endcond command within this file.",sectionInfo.data());
+	"a corresponding '\\endcond' command within this file.",sectionInfo.data());
   }
   if (g_nestingCount>0 && g_lang!=SrcLangExt_Markdown)
   {
