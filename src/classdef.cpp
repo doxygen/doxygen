@@ -3315,7 +3315,7 @@ bool ClassDefImpl::hasExamples() const
 
 void ClassDefImpl::addTypeConstraint(const QCString &typeConstraint,const QCString &type)
 {
-  //printf("addTypeContraint(%s,%s)\n",type.data(),typeConstraint.data());
+  //printf("addTypeConstraint(%s,%s)\n",type.data(),typeConstraint.data());
   static bool hideUndocRelation = Config_getBool(HIDE_UNDOC_RELATIONS);
   if (typeConstraint.isEmpty() || type.isEmpty()) return;
   ClassDef *cd = const_cast<ClassDef*>(getResolvedClass(this,getFileDef(),typeConstraint));
@@ -3655,7 +3655,7 @@ void ClassDefImpl::mergeMembers()
             {
               MemberDef *srcMd = srcMi->memberDef;
               bool found=FALSE;
-              bool ambigue=FALSE;
+              bool ambiguous=FALSE;
               bool hidden=FALSE;
               MemberNameInfoIterator dstMnii(*dstMni);
               MemberInfo *dstMi;
@@ -3694,7 +3694,7 @@ void ClassDefImpl::mergeMembers()
                     QCString scope=dstMi->scopePath.left(dstMi->scopePath.find(sep)+sepLen);
                     if (scope!=dstMi->ambiguityResolutionScope.left(scope.length()))
                       dstMi->ambiguityResolutionScope.prepend(scope);
-                    ambigue=TRUE;
+                    ambiguous=TRUE;
                   }
                 }
                 else // same members
@@ -3723,12 +3723,12 @@ void ClassDefImpl::mergeMembers()
                     {
                       dstMi->ambiguityResolutionScope.prepend(scope);
                     }
-                    ambigue=TRUE;
+                    ambiguous=TRUE;
                   }
                 }
               }
-              //printf("member %s::%s hidden %d ambigue %d srcMi->ambigClass=%p\n",
-              //    srcCd->name().data(),srcMd->name().data(),hidden,ambigue,srcMi->ambigClass);
+              //printf("member %s::%s hidden %d ambiguous %d srcMi->ambigClass=%p\n",
+              //    srcCd->name().data(),srcMd->name().data(),hidden,ambiguous,srcMi->ambigClass);
 
               // TODO: fix the case where a member is hidden by inheritance
               //       of a member with the same name but with another prototype,
@@ -3757,7 +3757,7 @@ void ClassDefImpl::mergeMembers()
 
                 MemberInfo *newMi = new MemberInfo(srcMd,prot,virt,TRUE);
                 newMi->scopePath=bClass->name()+sep+srcMi->scopePath;
-                if (ambigue)
+                if (ambiguous)
                 {
                   //printf("$$ New member %s %s add scope %s::\n",
                   //     srcMi->ambiguityResolutionScope.data(),
@@ -4733,7 +4733,7 @@ int ClassDefImpl::countAdditionalInheritedMembers() const
       }
     }
   }
-  //printf("countAdditonalInheritedMembers()=%d\n",totalCount);
+  //printf("countAdditionalInheritedMembers()=%d\n",totalCount);
   return totalCount;
 }
 

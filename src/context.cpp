@@ -1079,7 +1079,7 @@ class TranslateContext::Private
         s_inst.addProperty("fileMembers",       &Private::fileMembers);
         //%% string fileMembersDescription
         s_inst.addProperty("fileMembersDescription", &Private::fileMembersDescription);
-        //%% string relatedPagesDescripiton
+        //%% string relatedPagesDescription
         s_inst.addProperty("relatedPagesDesc",  &Private::relatedPagesDesc);
         //%% string more
         s_inst.addProperty("more",              &Private::more);
@@ -1133,7 +1133,7 @@ class TranslateContext::Private
         s_inst.addProperty("referencesRelation",   &Private::referencesRelation);
         //%% markerstring inheritedFrom
         s_inst.addProperty("inheritedFrom",      &Private::inheritedFrom);
-        //%% string addtionalInheritedMembers
+        //%% string additionalInheritedMembers
         s_inst.addProperty("additionalInheritedMembers",&Private::additionalInheritedMembers);
         //%% string includeDependencyGraph:container_name
         s_inst.addProperty("includeDependencyGraph",&Private::includeDependencyGraph);
@@ -8432,7 +8432,7 @@ TemplateVariant NamespaceMembersIndexContext::get(const char *name) const
 
 //------------------------------------------------------------------------
 
-//%% struct InheritanceGraph: a connected graph reprenting part of the overall inheritance tree
+//%% struct InheritanceGraph: a connected graph representing part of the overall inheritance tree
 //%% {
 class InheritanceGraphContext::Private
 {
@@ -10297,7 +10297,7 @@ void generateOutputViaTemplate()
       ctx->set("classMembersIndex",classMembersIndex.get());
       //%% NamespaceMembersIndex namespaceMembersIndex:
       ctx->set("namespaceMembersIndex",namespaceMembersIndex.get());
-      //%% SearchIndicaes searchindicaes
+      //%% SearchIndices searchIndices
       ctx->set("searchIndices",searchIndices.get());
       //%% string space
       ctx->set("space"," ");

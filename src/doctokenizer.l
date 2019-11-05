@@ -329,8 +329,8 @@ static int yyread(char *buf,int max_size)
 
 //--------------------------------------------------------------------------
 //#define REAL_YY_DECL int doctokenizerYYlex (void)
-//#define YY_DECL static int local_doctokinizer(void)
-//#define LOCAL_YY_DECL local_doctokinizer()
+//#define YY_DECL static int local_doctokenizer(void)
+//#define LOCAL_YY_DECL local_doctokenizer()
 
 %}
 

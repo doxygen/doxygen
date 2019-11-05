@@ -1919,7 +1919,7 @@ void LatexGenerator::endMemberDescription()
 
 void LatexGenerator::writeNonBreakableSpace(int) 
 {
-  //printf("writeNonBreakbleSpace()\n");
+  //printf("writeNonBreakableSpace()\n");
   if (insideTabbing)
   {
     t << "\\>";

@@ -94,7 +94,7 @@ static int g_dirCount=0;
 DirDefImpl::DirDefImpl(const char *path) : DefinitionImpl(path,1,1,path)
 {
   bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
-  // get display name (stipping the paths mentioned in STRIP_FROM_PATH)
+  // get display name (stripping the paths mentioned in STRIP_FROM_PATH)
   // get short name (last part of path)
   m_shortName = path;
   m_diskName = path;

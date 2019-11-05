@@ -3230,7 +3230,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  *pCopyRoundGString+=*yytext;
   					}
 
-  /* generic square bracket list copy rules for growable strings, we should only enter here in case of php, left the test part as in GCopyRound to keep it compatible with te round bracket version */
+  /* generic square bracket list copy rules for growable strings, we should only enter here in case of php, left the test part as in GCopyRound to keep it compatible with the round bracket version */
 <GCopySquare>\"                         {
                                           *pCopySquareGString+=*yytext;
                                             pCopyQuotedGString=pCopySquareGString;

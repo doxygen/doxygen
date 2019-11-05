@@ -496,7 +496,7 @@ void replaceComment(int offset);
 				     g_lastCommentContext = YY_START;
                                      BEGIN(Verbatim);
                                    }
-<Scan>.                            { /* any ather character */
+<Scan>.                            { /* any other character */
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 <Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}") { /* end of verbatim block */

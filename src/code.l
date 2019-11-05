@@ -1147,7 +1147,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
   if (xd && xd->isLinkable())
   {
 
-    //printf("g_currentDefiniton=%p g_currentMemberDef=%p xmd=%p g_insideBody=%d\n",g_currentDefinition,g_currentMemberDef,xmd,g_insideBody);
+    //printf("g_currentDefinition=%p g_currentMemberDef=%p xmd=%p g_insideBody=%d\n",g_currentDefinition,g_currentMemberDef,xmd,g_insideBody);
 
     if (xmd->templateMaster()) xmd = xmd->templateMaster();
 

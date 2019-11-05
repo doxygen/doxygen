@@ -430,7 +430,7 @@ void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
                 fd,          // fileDef
                 -1,          // startLine
                 -1,          // endLine
-                FALSE,       // inlineFragement
+                FALSE,       // inlineFragment
                 0,           // memberDef
                 TRUE         // showLineNumbers
                 );
@@ -900,7 +900,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
           md->argsString()) // define
   {
     if (md->argumentList().empty())     // special case for "foo()" to
-                                        // disguish it from "foo".
+                                        // distinguish it from "foo".
     {
       t << "        <param></param>" << endl;
     }

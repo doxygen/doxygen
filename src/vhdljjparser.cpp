@@ -347,7 +347,7 @@ void VhdlParser::addCompInst(const char *n, const char* instName, const char* co
     current->write=genLabels.right(genLabels.length()-u);
     current->read=genLabels.left(u);
   }
-  //printf  (" \n genlable: [%s]  inst: [%s]  name: [%s] %d\n",n,instName,comp,iLine);
+  //printf  (" \n genlabel: [%s]  inst: [%s]  name: [%s] %d\n",n,instName,comp,iLine);
 
   if (lastCompound)
   {

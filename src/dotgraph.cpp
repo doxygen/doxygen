@@ -117,7 +117,7 @@ QCString DotGraph::writeGraph(
         EmbeddedOutputFormat ef,  // html, latex, ...
         const char* path,         // output folder
         const char* fileName,     // name of the code file (for code patcher)
-        const char* relPath,      // output folder relativ to code file
+        const char* relPath,      // output folder relative to code file
         bool generateImageMap,    // in case of bitmap, shall there be code generated?
         int graphId)              // number of this graph in the current code, used in svg code
 {
