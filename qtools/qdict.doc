@@ -175,7 +175,7 @@
 
   Setting \e caseSensitive to TRUE will treat "abc" and "Abc" as different
   keys.  Setting it to FALSE will make the dictionary ignore case.
-  Case insensitive comparison includes the whole Unicode alphabeth.
+  Case insensitive comparison includes the whole Unicode alphabet.
 */
 
 /*!
