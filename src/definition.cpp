@@ -51,22 +51,21 @@
 class DefinitionImpl::IMPL
 {
   public:
-    IMPL();
    ~IMPL();
     void init(const char *df, const char *n);
     void setDefFileName(const QCString &df);
 
-    SectionDict *sectionDict;  // dictionary of all sections, not accessible
+    SectionDict *sectionDict = 0;  // dictionary of all sections, not accessible
 
-    MemberSDict *sourceRefByDict;
-    MemberSDict *sourceRefsDict;
+    MemberSDict *sourceRefByDict = 0;
+    MemberSDict *sourceRefsDict = 0;
     std::vector<ListItemInfo> xrefListItems;
-    GroupList *partOfGroups;
+    GroupList *partOfGroups = 0;
 
-    DocInfo   *details;    // not exported
-    DocInfo   *inbodyDocs; // not exported
-    BriefInfo *brief;      // not exported
-    BodyInfo  *body;       // not exported
+    DocInfo   *details = 0;    // not exported
+    DocInfo   *inbodyDocs = 0; // not exported
+    BriefInfo *brief = 0;      // not exported
+    BodyInfo  *body = 0;       // not exported
     QCString   briefSignatures;
     QCString   docSignatures;
 
@@ -75,16 +74,17 @@ class DefinitionImpl::IMPL
     QCString qualifiedName;
     QCString ref;   // reference to external documentation
 
-    bool hidden;
-    bool isArtificial;
+    bool hidden = FALSE;
+    bool isArtificial = FALSE;
+    bool isAnonymous = FALSE;
 
-    Definition *outerScope;  // not owner
+    Definition *outerScope = 0;  // not owner
 
     // where the item was defined
     QCString defFileName;
     QCString defFileExt;
 
-    SrcLangExt lang;
+    SrcLangExt lang = SrcLangExt_Unknown;
 
     QCString id; // clang unique id
 
@@ -96,13 +96,6 @@ class DefinitionImpl::IMPL
     Cookie *cookie;
 };
 
-DefinitionImpl::IMPL::IMPL()
-  : sectionDict(0), sourceRefByDict(0), sourceRefsDict(0),
-    partOfGroups(0),
-    details(0), inbodyDocs(0), brief(0), body(0), hidden(FALSE), isArtificial(FALSE),
-    outerScope(0), lang(SrcLangExt_Unknown)
-{
-}
 
 DefinitionImpl::IMPL::~IMPL()
 {
@@ -304,7 +297,7 @@ DefinitionImpl::DefinitionImpl(const char *df,int dl,int dc,
                        const char *d,bool isSymbol)
 {
   m_impl = new DefinitionImpl::IMPL;
-  m_impl->name = name;
+  setName(name);
   m_impl->defLine = dl;
   m_impl->defColumn = dc;
   m_impl->init(df,name);
@@ -406,6 +399,9 @@ void DefinitionImpl::setName(const char *name)
 {
   if (name==0) return;
   m_impl->name = name;
+  m_impl->isAnonymous = m_impl->name.isEmpty() ||
+                        m_impl->name.at(0)=='@' ||
+                        m_impl->name.find("::@")!=-1;
 }
 
 void DefinitionImpl::setId(const char *id)
@@ -2201,6 +2197,11 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
 QCString DefinitionImpl::name() const
 {
   return m_impl->name;
+}
+
+bool DefinitionImpl::isAnonymous() const
+{
+  return m_impl->isAnonymous;
 }
 
 int DefinitionImpl::getDefLine() const

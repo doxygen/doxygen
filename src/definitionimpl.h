@@ -32,6 +32,7 @@ class DefinitionImpl : virtual public Definition
 
     virtual bool isAlias() const { return FALSE; }
     virtual QCString name() const;
+    virtual bool isAnonymous() const;
     virtual QCString localName() const;
     virtual QCString qualifiedName() const;
     virtual QCString symbolName() const;
@@ -142,6 +143,8 @@ class DefinitionAliasImpl : virtual public Definition
     virtual bool isAlias() const { return TRUE; }
     virtual QCString name() const
     { return m_def->name(); }
+    virtual bool isAnonymous() const
+    { return m_def->isAnonymous(); }
     virtual QCString localName() const
     { return m_def->localName(); }
     virtual QCString qualifiedName() const

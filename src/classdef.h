@@ -302,7 +302,6 @@ class ClassDef : virtual public Definition
     virtual bool isJavaEnum() const = 0;
 
     virtual bool isGeneric() const = 0;
-    virtual bool isAnonymous() const = 0;
     virtual const ClassSDict *innerClasses() const = 0;
     virtual QCString title() const = 0;
 

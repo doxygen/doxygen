@@ -1792,9 +1792,9 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
   // + standard member sections
   // + detailed member documentation
   // - examples using the class
-  
+
   if (cd->isReference())        return; // skip external references.
-  if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
+  if (cd->isAnonymous())        return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
 
   m_output.openHash()

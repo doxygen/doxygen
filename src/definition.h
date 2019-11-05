@@ -112,6 +112,11 @@ class Definition : public DefinitionIntf
     /*! Returns the name of the definition */
     virtual QCString name() const = 0;
 
+    /*! Returns TRUE iff this definition has an artificially generated name
+     * (typically starting with a @) that is used for nameless definitions
+     */
+    virtual bool isAnonymous() const = 0;
+
     /*! Returns the name of the definition as it appears in the output */
     virtual QCString displayName(bool includeScope=TRUE) const = 0;
 

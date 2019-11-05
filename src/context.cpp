@@ -2353,7 +2353,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
           const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
-            if (cd->name().find('@')==-1 &&
+            if (!cd->isAnonymous() &&
                 cd->isLinkableInProject() &&
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0
@@ -2941,7 +2941,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
           const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
-            if (cd->name().find('@')==-1 &&
+            if (!cd->isAnonymous() &&
                 cd->isLinkableInProject() &&
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0)
@@ -3405,7 +3405,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
           const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
-            if (cd->name().find('@')==-1 &&
+            if (!cd->isAnonymous() &&
                 cd->isLinkableInProject() &&
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0)
@@ -4450,8 +4450,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant isAnonymous() const
     {
-      QCString name = m_memberDef->name();
-      return !name.isEmpty() && name.at(0)=='@';
+      return m_memberDef->isAnonymous();
     }
     TemplateVariant anonymousType() const
     {
@@ -5725,7 +5724,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
           const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
-            if (cd->name().find('@')==-1 &&
+            if (!cd->isAnonymous() &&
                 cd->isLinkableInProject() &&
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0)
@@ -6543,7 +6542,7 @@ class NestingContext::Private : public GenericNodeListContext
       const NamespaceDef *nd;
       for (nli.toFirst();(nd=nli.current());++nli)
       {
-        if (nd->localName().find('@')==-1 &&
+        if (!nd->isAnonymous() &&
             (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
         {
           bool hasChildren = namespaceHasVisibleChild(nd,addClasses,false,ClassDef::Class);
@@ -8799,7 +8798,7 @@ class AllMembersListContext::Private : public GenericNodeListContext
           {
             MemberDef *md=mi->memberDef;
             const ClassDef  *cd=md->getClassDef();
-            if (cd && !md->name().isEmpty() && md->name()[0]!='@')
+            if (cd && !md->isAnonymous())
             {
               if ((cd->isLinkable() && md->isLinkable()) ||
                   (!cd->isArtificial() && !hideUndocMembers &&

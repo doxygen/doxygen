@@ -1771,7 +1771,7 @@ QCString MemberDefImpl::getOutputFileBase() const
       return baseName;
     }
   }
-  else if (nspace && nspace->isLinkableInProject())
+  else if (nspace)
   {
     baseName=nspace->getOutputFileBase();
   }
@@ -1877,7 +1877,7 @@ void MemberDefImpl::_computeLinkableInProject()
     m_isLinkableCached = templateMaster()->isLinkableInProject() ? 2 : 1;
     return;
   }
-  if (name().isEmpty() || name().at(0)=='@')
+  if (isAnonymous())
   {
     //printf("name invalid\n");
     m_isLinkableCached = 1; // not a valid or a dummy name
@@ -2257,10 +2257,10 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   ol.startMemberDeclaration();
 
   // start a new member declaration
-  bool isAnonymous = annoClassDef || m_impl->annMemb || m_impl->annEnumType;
+  bool isAnonType = annoClassDef || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
   ol.startMemberItem(anchor(),
-                     isAnonymous ? 1 : !m_impl->tArgList.empty() ? 3 : 0,
+                     isAnonType ? 1 : !m_impl->tArgList.empty() ? 3 : 0,
                      inheritId
                     );
 
@@ -2301,9 +2301,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // *** write template lists
   if (m_impl->tArgList.hasParameters() && getLanguage()==SrcLangExt_Cpp)
   {
-    if (!isAnonymous) ol.startMemberTemplateParams();
+    if (!isAnonType) ol.startMemberTemplateParams();
     writeTemplatePrefix(ol,m_impl->tArgList);
-    if (!isAnonymous) ol.endMemberTemplateParams(anchor(),inheritId);
+    if (!isAnonType) ol.endMemberTemplateParams(anchor(),inheritId);
   }
 
   // *** write type
@@ -2343,7 +2343,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       QCString varName=ltype.right(ltype.length()-ir).stripWhiteSpace();
       //printf(">>>>>> ltype='%s' varName='%s'\n",ltype.data(),varName.data());
       ol.docify("}");
-      if (varName.isEmpty() && (name().isEmpty() || name().at(0)=='@'))
+      if (varName.isEmpty() && isAnonymous())
       {
         ol.docify(";");
       }
@@ -2425,13 +2425,13 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
 
   // *** write name
-  if (!name().isEmpty() && name().at(0)!='@') // hide anonymous stuff
+  if (!isAnonymous()) // hide anonymous stuff
   {
     static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
     static bool extractStatic  = Config_getBool(EXTRACT_STATIC);
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
-    if (!(name().isEmpty() || name().at(0)=='@') && // name valid
+    if (!name().isEmpty() && // name valid
         (hasDocumentation() || isReference()) && // has docs
         !(m_impl->prot==Private && !extractPrivate && (m_impl->virt==Normal || !extractPrivateVirtual) && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
         !(isStatic() && getClassDef()==0 && !extractStatic) // hidden due to static-ness
@@ -2479,7 +2479,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
 
   // add to index
-  if (isEnumerate() && name().at(0)=='@')
+  if (isEnumerate() && isAnonymous())
   {
     // don't add to index
   }
@@ -3202,7 +3202,7 @@ QCString MemberDefImpl::displayDefinition() const
   QCString title = name();
   if (isEnumerate())
   {
-    if (title.at(0)=='@')
+    if (isAnonymous())
     {
       ldef = title = "anonymous enum";
       if (!m_impl->enumBaseType.isEmpty())
@@ -3221,7 +3221,7 @@ QCString MemberDefImpl::displayDefinition() const
   }
   else if (isEnumValue())
   {
-    if (ldef.at(0)=='@')
+    if (isAnonymous())
     {
       ldef=ldef.mid(2);
     }

@@ -72,7 +72,7 @@ bool ClassSDict::declVisible(const ClassDef::CompoundType *filter) const
     ClassDef *cd=0;
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
-      if (cd->name().find('@')==-1 &&
+      if (!cd->isAnonymous() &&
           (filter==0 || *filter==cd->compoundType())
          )
       {
@@ -103,7 +103,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
       //printf("  ClassSDict::writeDeclaration for %s\n",cd->name().data());
-      if (cd->name().find('@')==-1 &&
+      if (!cd->isAnonymous() &&
           !cd->isExtension() &&
           (cd->protection()!=Private || extractPrivate) &&
           (filter==0 || *filter==cd->compoundType())
@@ -137,7 +137,7 @@ void ClassSDict::writeDocumentation(OutputList &ol,const Definition * container)
       //  cd->name().data(),cd->getOuterScope(),cd->isLinkableInProject(),cd->isEmbeddedInOuterScope(),
       //  container,cd->partOfGroups() ? cd->partOfGroups()->count() : 0);
 
-      if (cd->name().find('@')==-1 &&
+      if (!cd->isAnonymous() &&
           cd->isLinkableInProject() &&
           cd->isEmbeddedInOuterScope() &&
           !cd->isAlias() &&

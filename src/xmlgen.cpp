@@ -514,7 +514,6 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   // enum values are written as part of the enum
   if (md->memberType()==MemberType_EnumValue) return;
   if (md->isHidden()) return;
-  //if (md->name().at(0)=='@') return; // anonymous member
 
   // group members are only visible in their group
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
@@ -1090,7 +1089,7 @@ static void writeListOfAllMembers(const ClassDef *cd,FTextStream &t)
       for (mii.toFirst();(mi=mii.current());++mii)
       {
         const MemberDef *md=mi->memberDef;
-        if (md->name().at(0)!='@') // skip anonymous members
+        if (!md->isAnonymous())
         {
           Protection prot = mi->prot;
           Specifier virt=md->virtualness();
@@ -1132,7 +1131,7 @@ static void writeInnerClasses(const ClassSDict *cl,FTextStream &t)
     const ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
-      if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
+      if (!cd->isHidden() && !cd->isAnonymous())
       {
         t << "    <innerclass refid=\"" << classOutputFileBase(cd)
           << "\" prot=\"";
@@ -1157,7 +1156,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
     const NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
+      if (!nd->isHidden() && !nd->isAnonymous())
       {
         t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
           << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
@@ -1247,7 +1246,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
 
   if (cd->isReference())        return; // skip external references.
   if (cd->isHidden())           return; // skip hidden classes.
-  if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
+  if (cd->isAnonymous())        return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
   if (cd->isArtificial())       return; // skip artificially created classes
 

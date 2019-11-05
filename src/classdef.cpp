@@ -133,7 +133,6 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual MemberDef *isSmartPointer() const;
     virtual bool isJavaEnum() const;
     virtual bool isGeneric() const;
-    virtual bool isAnonymous() const;
     virtual const ClassSDict *innerClasses() const;
     virtual QCString title() const;
     virtual QCString generatedFromFiles() const;
@@ -423,8 +422,6 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
     { return getCdAlias()->isJavaEnum(); }
     virtual bool isGeneric() const
     { return getCdAlias()->isGeneric(); }
-    virtual bool isAnonymous() const
-    { return getCdAlias()->isAnonymous(); }
     virtual const ClassSDict *innerClasses() const
     { return getCdAlias()->innerClasses(); }
     virtual QCString title() const
@@ -687,8 +684,6 @@ class ClassDefImpl::IMPL
 
     bool isGeneric;
 
-    bool isAnonymous;
-
     uint64 spec;
 
     QCString metaData;
@@ -751,7 +746,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
     isLocal=FALSE;
   }
   isGeneric = (lang==SrcLangExt_CSharp || lang==SrcLangExt_Java) && QCString(name).find('<')!=-1;
-  isAnonymous = QCString(name).find('@')!=-1;
 }
 
 ClassDefImpl::IMPL::IMPL() : vhdlSummaryTitles(17)
@@ -835,6 +829,10 @@ QCString ClassDefImpl::displayName(bool includeScope) const
       n=className();
     }
   }
+  if (isAnonymous())
+  {
+    n = removeAnonymousScopes(n);
+  }
   QCString sep=getLanguageSpecificSeparator(lang);
   if (sep!="::")
   {
@@ -849,14 +847,7 @@ QCString ClassDefImpl::displayName(bool includeScope) const
   //  n = n.left(n.length()-2);
   //}
   //printf("ClassDefImpl::displayName()=%s\n",n.data());
-  if (n.find('@')!=-1)
-  {
-    return removeAnonymousScopes(n);
-  }
-  else
-  {
-    return n;
-  }
+  return n;
 }
 
 // inserts a base/super class in the inheritance list
@@ -3077,7 +3068,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
       //printf("%s: Member %s of class %s md->protection()=%d mi->prot=%d prot=%d inherited=%d\n",
       //    name().data(),md->name().data(),cd->name().data(),md->protection(),mi->prot,prot,mi->inherited);
 
-      if (cd && !md->name().isEmpty() && md->name()[0]!='@')
+      if (cd && !md->name().isEmpty() && !md->isAnonymous())
       {
         bool memberWritten=FALSE;
         if (cd->isLinkable() && md->isLinkable())
@@ -5299,18 +5290,12 @@ bool ClassDefImpl::isSliceLocal() const
 
 void ClassDefImpl::setName(const char *name)
 {
-  m_impl->isAnonymous = QCString(name).find('@')!=-1;
   DefinitionImpl::setName(name);
 }
 
 void ClassDefImpl::setMetaData(const char *md)
 {
   m_impl->metaData = md;
-}
-
-bool ClassDefImpl::isAnonymous() const
-{
-  return m_impl->isAnonymous;
 }
 
 QCString ClassDefImpl::collaborationGraphFileName() const

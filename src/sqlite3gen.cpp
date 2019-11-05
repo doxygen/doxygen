@@ -1125,7 +1125,7 @@ static void associateMember(const MemberDef *md, struct Refid member_refid, stru
   // TODO: skip EnumValue only to guard against recording refids and member records
   // for enumvalues until we can support documenting them as entities.
   if (md->memberType()==MemberType_EnumValue) return;
-  if (md->name().at(0)!='@') // skip anonymous members
+  if (!md->isAnonymous()) // skip anonymous members
   {
     bindIntParameter(member_insert, ":scope_rowid", scope_refid.rowid);
     bindIntParameter(member_insert, ":memberdef_rowid", member_refid.rowid);
@@ -1276,7 +1276,7 @@ static void writeInnerClasses(const ClassSDict *cl, struct Refid outer_refid)
   const ClassDef *cd;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
+    if (!cd->isHidden() && !cd->isAnonymous())
     {
       struct Refid inner_refid = insertRefid(cd->getOutputFileBase());
 
@@ -1365,7 +1365,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl, struct Refid outer_re
     const NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
+      if (!nd->isHidden() && !nd->isAnonymous())
       {
         struct Refid inner_refid = insertRefid(nd->getOutputFileBase());
 
@@ -1954,7 +1954,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
 
   if (cd->isReference())        return; // skip external references.
   if (cd->isHidden())           return; // skip hidden classes.
-  if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
+  if (cd->isAnonymous())        return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
 
   struct Refid refid = insertRefid(cd->getOutputFileBase());

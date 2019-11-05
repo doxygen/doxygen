@@ -1604,7 +1604,7 @@ static void processTagLessClasses(ClassDef *rootCd,
             if (type.find(icd->name())!=-1) // matching tag less struct/union
             {
               QCString name = md->name();
-              if (name.at(0)=='@') name = "__unnamed__";
+              if (md->isAnonymous()) name = "__unnamed__";
               if (!prefix.isEmpty()) name.prepend(prefix+".");
               //printf("    found %s for class %s\n",name.data(),cd->name().data());
               ClassDef *ncd = createTagLessInstance(rootCd,icd,name);
@@ -2461,7 +2461,7 @@ static MemberDef *addVariableToFile(
   QCString def;
 
   // determine the definition of the global variable
-  if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@' &&
+  if (nd && !nd->isAnonymous() &&
       !Config_getBool(HIDE_SCOPE_NAMES)
      )
     // variable is inside a namespace, so put the scope before the name
@@ -2616,7 +2616,7 @@ static MemberDef *addVariableToFile(
   addMemberToGroups(root,md);
 
   md->setRefItems(root->sli);
-  if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
+  if (nd && !nd->isAnonymous())
   {
     md->setNamespace(nd);
     nd->insertMember(md);
@@ -7027,7 +7027,7 @@ static void findEnums(const Entry *root)
       mnsd=Doxygen::memberNameSDict;
       isGlobal=FALSE;
     }
-    else if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@') // found enum inside namespace
+    else if (nd) // found enum inside namespace
     {
       mnsd=Doxygen::functionNameSDict;
       isGlobal=TRUE;
@@ -7076,7 +7076,7 @@ static void findEnums(const Entry *root)
         baseType.prepend(" : ");
       }
 
-      if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
+      if (nd)
       {
         if (isRelated || Config_getBool(HIDE_SCOPE_NAMES))
         {
@@ -7095,7 +7095,7 @@ static void findEnums(const Entry *root)
       // even if we have already added the enum to a namespace, we still
       // also want to add it to other appropriate places such as file
       // or class.
-      if (isGlobal)
+      if (isGlobal && (nd==0 || !nd->isAnonymous()))
       {
         if (!defSet) md->setDefinition(name+baseType);
         if (fd==0 && root->parent())
@@ -7204,7 +7204,7 @@ static void addEnumValuesToEnums(const Entry *root)
       mnsd=Doxygen::memberNameSDict;
       isGlobal=FALSE;
     }
-    else if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@') // found enum inside namespace
+    else if (nd && !nd->isAnonymous()) // found enum inside namespace
     {
       //printf("Enum in namespace '%s'::'%s'\n",nd->name().data(),name.data());
       mnsd=Doxygen::functionNameSDict;
@@ -7312,7 +7312,7 @@ static void addEnumValuesToEnums(const Entry *root)
                     {
                       //printf("found enum value with same name %s in scope %s\n",
                       //    fmd->name().data(),fmd->getOuterScope()->name().data());
-                      if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
+                      if (nd && !nd->isAnonymous())
                       {
                         const NamespaceDef *fnd=fmd->getNamespaceDef();
                         if (fnd==nd) // enum value is inside a namespace
