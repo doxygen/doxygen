@@ -61,7 +61,7 @@ void Usage(void)
 "              to write output directly to stdout.\n"
 #ifdef USE_FREETYPE
 " -F <font>   Use specified font for PNG output.  This must be a font specifier\n"
-"              compatbile with fontconfig (see 'fc-list'), and overrides the\n"
+"              compatible with fontconfig (see 'fc-list'), and overrides the\n"
 "              MSCGEN_FONT environment variable if also set.\n"
 #endif
 " -p          Print parsed msc output (for parser debug).\n"
