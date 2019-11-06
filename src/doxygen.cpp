@@ -9824,7 +9824,7 @@ void readFormulaRepository(QCString dir, bool cmp)
             exit(1);
           }
           QCString formLabel;
-          formLabel.sprintf("\\form#%d",f->getId());
+          formLabel.sprintf("\\_fakeform#%d",f->getId());
           if (formLabel != formName)
           {
             err("discrepancy between formula repositories! Remove "
