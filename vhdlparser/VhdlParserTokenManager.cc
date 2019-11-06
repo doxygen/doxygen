@@ -2491,25 +2491,25 @@ static const unsigned long long jjtoSkip[] = {
    switch(curChar)
    {
       case 65:
-         return jjMoveStringLiteralDfa12_0(active0, 0L, active1, 0x8000000ULL);
+         return jjMoveStringLiteralDfa12_0(active0, 0x200000ULL, active1, 0x8000000ULL);
       case 69:
          if ((active0 & 0x20000ULL) != 0L)
          {
             jjmatchedKind = 17;
             jjmatchedPos = 11;
          }
-         return jjMoveStringLiteralDfa12_0(active0, 0x200000ULL, active1, 0L);
+         break;
       case 79:
          return jjMoveStringLiteralDfa12_0(active0, 0x40000000ULL, active1, 0L);
       case 97:
-         return jjMoveStringLiteralDfa12_0(active0, 0L, active1, 0x8000000ULL);
+         return jjMoveStringLiteralDfa12_0(active0, 0x200000ULL, active1, 0x8000000ULL);
       case 101:
          if ((active0 & 0x20000ULL) != 0L)
          {
             jjmatchedKind = 17;
             jjmatchedPos = 11;
          }
-         return jjMoveStringLiteralDfa12_0(active0, 0x200000ULL, active1, 0L);
+         break;
       case 111:
          return jjMoveStringLiteralDfa12_0(active0, 0x40000000ULL, active1, 0L);
       default :
