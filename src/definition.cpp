@@ -997,7 +997,7 @@ bool readCodeFragment(const char *fileName,
   }
   result = transcodeCharacterStringToUTF8(result);
   if (!result.isEmpty() && result.at(result.length()-1)!='\n') result += "\n";
-  //fprintf(stderr,"readCodeFragement(%d-%d)=%s\n",startLine,endLine,result.data());
+  //printf("readCodeFragment(%d-%d)=%s\n",startLine,endLine,result.data());
   return found;
 }
 

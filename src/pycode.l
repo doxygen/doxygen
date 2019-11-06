@@ -1276,7 +1276,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
     {BB}/({NONEMPTY}|{EXPCHAR}) {
                                  // This implements poor
-				 // indendation-tracking;
+				 // indentation-tracking;
                                  // should be improved.
 				 // (translate tabs to space, etc)
   		                 codifyLines(yytext);

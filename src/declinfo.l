@@ -290,7 +290,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   //        yyextra->type.data(),yyextra->scope.data(),yyextra->name.data(),yyextra->args.data());
 
   int nb = yyextra->name.findRev('[');
-  if (nb!=-1 && yyextra->args.isEmpty()) // correct for [] in yyextra->name ambigity (due to Java return yyextra->type allowing [])
+  if (nb!=-1 && yyextra->args.isEmpty()) // correct for [] in yyextra->name ambiguity (due to Java return yyextra->type allowing [])
   {
     yyextra->args.prepend(yyextra->name.right(yyextra->name.length()-nb));
     yyextra->name=yyextra->name.left(nb);

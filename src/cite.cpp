@@ -151,7 +151,7 @@ void CiteDict::generatePage() const
           p=s+1;
 
 	  int i;
-          if ((i = line.find("crossref")) != -1) /* assumption crossreference is on one line and the only item */
+          if ((i = line.find("crossref")) != -1) /* assumption cross reference is on one line and the only item */
           {
             int j=line.find("{",i);
             int k=line.find("}",i);

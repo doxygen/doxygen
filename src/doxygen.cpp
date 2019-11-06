@@ -1317,7 +1317,7 @@ static void addClassToContext(const Entry *root)
     //printf("ClassDict.insert(%s)\n",fullName.data());
     Doxygen::classSDict->append(fullName,cd);
 
-    if (cd->isGeneric()) // generics are also stored in a separate dictionary for fast lookup of instantions
+    if (cd->isGeneric()) // generics are also stored in a separate dictionary for fast lookup of instances
     {
       //printf("inserting generic '%s' cd=%p\n",fullName.data(),cd);
       Doxygen::genericsDict->insert(fullName,cd);
@@ -6540,7 +6540,7 @@ static void findMember(const Entry *root,
 
           // first note that we pass:
           //   (root->tArgLists ? root->tArgLists->last() : 0)
-          // for the template arguments fo the new "member."
+          // for the template arguments for the new "member."
           // this accurately reflects the template arguments of
           // the related function, which don't have to do with
           // those of the related class.
@@ -9497,7 +9497,7 @@ static void parseFiles(const std::unique_ptr<Entry> &root)
       }
     }
   }
-  else // normal pocessing
+  else // normal processing
 #endif
   {
     StringListIterator it(g_inputFiles);
@@ -9588,7 +9588,7 @@ static QDict<void> g_pathsVisited(1009);
 //----------------------------------------------------------------------------
 // Read all files matching at least one pattern in 'patList' in the
 // directory represented by 'fi'.
-// The directory is read iff the recusiveFlag is set.
+// The directory is read iff the recursiveFlag is set.
 // The contents of all files is append to the input string
 
 int readDir(QFileInfo *fi,
@@ -11924,7 +11924,7 @@ void generateOutput()
 
   cleanUpDoxygen();
 
-  finializeSearchIndexer();
+  finalizeSearchIndexer();
 //  Doxygen::symbolStorage->close();
   QDir thisDir;
   thisDir.remove(Doxygen::objDBFileName);
