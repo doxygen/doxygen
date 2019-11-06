@@ -39,6 +39,7 @@
 #include "doxygen.h"
 #include "portable.h"
 #include "cite.h"
+#include "growbuf.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -177,6 +178,10 @@ static void processSection()
 
 static void handleHtmlTag()
 {
+  static GrowBuf growBuf;
+  growBuf.clear();
+  g_token->attribsStr="";
+
   QCString tagText=yytext;
   g_token->attribs.clear();
   g_token->endTag = FALSE;
@@ -207,54 +212,58 @@ static void handleHtmlTag()
   {
     char c=tagText.at(i);
     // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+    while (i<(int)yyleng && isspace((uchar)c)) { growBuf.addChar(c);c=tagText.at(++i); }
     // check for end of the tag
     if (c == '>') break;
     // Check for XML style "empty" tag.
     if (c == '/') 
     {
+      growBuf.addChar(c);
       g_token->emptyTag = TRUE;
       break;
     }
     startName=i;
     // search for end of name
-    while (i<(int)yyleng && !isspace((uchar)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
+    while (i<(int)yyleng && !isspace((uchar)c) && c!='=' && c!= '>') { growBuf.addChar(c);c=tagText.at(++i); }
     endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower(); 
     // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); } 
+    while (i<(int)yyleng && isspace((uchar)c)) { growBuf.addChar(c);c=tagText.at(++i); } 
     if (tagText.at(i)=='=') // option has value
     {
+      growBuf.addChar(c);
       c=tagText.at(++i);
       // skip spaces
-      while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); } 
+      while (i<(int)yyleng && isspace((uchar)c)) { growBuf.addChar(c);c=tagText.at(++i); } 
       if (tagText.at(i)=='\'') // option '...'
       {
+        growBuf.addChar(c);
         c=tagText.at(++i);
 	startAttrib=i;
 	
 	// search for matching quote 
-        while (i<(int)yyleng && c!='\'') { c=tagText.at(++i); } 
+        while (i<(int)yyleng && c!='\'') { growBuf.addChar(c);c=tagText.at(++i); } 
 	endAttrib=i;
-        if (i<(int)yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) {growBuf.addChar(c);c=tagText.at(++i);}
       }
       else if (tagText.at(i)=='"') // option "..."
       {
+        growBuf.addChar(c);
         c=tagText.at(++i);
 	startAttrib=i;
 	// search for matching quote 
-        while (i<(int)yyleng && c!='"') { c=tagText.at(++i); } 
+        while (i<(int)yyleng && c!='"') { growBuf.addChar(c);c=tagText.at(++i); } 
 	endAttrib=i;
-        if (i<(int)yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) {growBuf.addChar(c);c=tagText.at(++i);}
       }
       else // value without any quotes
       {
 	startAttrib=i;
 	// search for separator or end symbol
-        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); } 
+        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { growBuf.addChar(c);c=tagText.at(++i); } 
 	endAttrib=i;
-	if (i<(int)yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) {growBuf.addChar(c);c=tagText.at(++i);}
       }
       opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib); 
       if (opt.name == "align") opt.value = opt.value.lower();
@@ -271,6 +280,8 @@ static void handleHtmlTag()
     //    opt.name.data(),opt.value.data());
     g_token->attribs.append(&opt);
   }
+  growBuf.addChar(0);
+  g_token->attribsStr = growBuf.get();
 }
   
 static QCString stripEmptyLines(const QCString &s)

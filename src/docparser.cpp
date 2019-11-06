@@ -6286,7 +6286,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_UNKNOWN:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported xml/html tag <%s> found", qPrint(tagName));
-      m_children.append(new DocWord(this, "<"+tagName+tagHtmlAttribs.toString()+">"));
+      m_children.append(new DocWord(this, "<"+tagName+g_token->attribsStr+">"));
       break;
   case XML_INHERITDOC:
       handleInheritDoc();
