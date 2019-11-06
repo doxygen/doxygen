@@ -1114,7 +1114,7 @@ class IDoxygen
     virtual ICompoundIterator *memberByName(const char * name) const = 0;
 
     /*! Releases the memory for the object hierarchy obtained by 
-     *  createdObjecModelFromXML(). First release all iterators before calling
+     *  createdObjectModel(). First release all iterators before calling
      *  this function.
      */
     virtual void release() = 0;
