@@ -803,7 +803,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
 inline void errorHandleDefaultToken(DocNode *parent,int tok,
                                QList<DocNode> &children,const char *txt)
 {
-  char *cmd_start = "\\";
+  const char *cmd_start = "\\";
   switch (tok)
   {
     case TK_COMMAND_AT:
@@ -2313,7 +2313,7 @@ void DocSecRefList::parse()
   {
     if (tok==TK_COMMAND_AT || tok == TK_COMMAND_BS)
     {
-      char *cmd_start = (tok==TK_COMMAND_AT ? "@" : "\\");
+      const char *cmd_start = (tok==TK_COMMAND_AT ? "@" : "\\");
       switch (Mappers::cmdMapper->map(g_token->name))
       {
         case CMD_SECREFITEM:
@@ -2648,7 +2648,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
   {
     if (!defaultHandleToken(this,tok,m_children,FALSE))
     {
-      char *cmd_start = "\\";
+      const char *cmd_start = "\\";
       switch (tok)
       {
         case TK_COMMAND_AT:
@@ -3797,7 +3797,7 @@ int DocHtmlDescTitle::parse()
   {
     if (!defaultHandleToken(this,tok,m_children))
     {
-      char *cmd_start = "\\";
+      const char *cmd_start = "\\";
       switch (tok)
       {
         case TK_COMMAND_AT:
