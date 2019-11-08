@@ -186,6 +186,9 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 // \f$..\f$
 // \f[..\f]
 // \f{..\f}
+// \fig$..\fig$
+// \fig[..\fig]
+// \fig{..\fig}
 // \verbatim..\endverbatim
 // \latexonly..\endlatexonly
 // \htmlonly..\endhtmlonly
@@ -238,6 +241,21 @@ static QCString isBlockCommand(const char *data,int offset,int size)
     else if (data[end]=='{')
     {
       return "f}";
+    }
+  }
+  else if (blockName=="fig" && end<size)
+  {
+    if (data[end]=='$')
+    {
+      return "fig$";
+    }
+    else if (data[end]=='[')
+    {
+      return "fig]";
+    }
+    else if (data[end]=='{')
+    {
+      return "fig}";
     }
   }
   return QCString();

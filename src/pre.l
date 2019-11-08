@@ -2575,7 +2575,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar('/');outputChar('*');
 					  //g_commentCount++;
   					}
-<SkipCComment>[\\@][\\@]("f{"|"f$"|"f[") {
+<SkipCComment>[\\@][\\@]("f{"|"f$"|"f["|"fig$"|"fig["|"fig{") {
   					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCComment>^({B}*"*"+)?{B}{0,3}"~~~"[~]*   {
@@ -2727,9 +2727,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             BEGIN(g_condCtx);
                                           }
   					}
-<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
+<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}"|"fig$"|"fig]"|"fig}") { /* end of verbatim block */
   					  outputArray(yytext,(int)yyleng);
 					  if (yytext[1]=='f' && g_blockName=="f")
+					  {
+					    BEGIN(SkipCComment);
+					  }
+					  else if (&yytext[1]==g_blockName && g_blockName=="fig")
 					  {
 					    BEGIN(SkipCComment);
 					  }

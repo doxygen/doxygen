@@ -25,7 +25,7 @@
 class Formula
 {
   public:
-    Formula(const char *text);
+    Formula(const char *text, bool inpfig=FALSE);
    ~Formula();
     int getId();
     QCString getFormulaText() const { return form; }
@@ -39,7 +39,7 @@ class Formula
 class FormulaList : public QList<Formula>
 {
   public:
-    void generateBitmaps(const char *path);
+    void generateBitmaps(const char *path, bool fig = FALSE, bool rtf = FALSE);
 };
 
 /** Iterator for Formula objects in a FormulaList. */

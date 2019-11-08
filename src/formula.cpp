@@ -30,10 +30,18 @@
 #include "doxygen.h"
 #include "ftextstream.h"
 
-Formula::Formula(const char *text)
+Formula::Formula(const char *text, bool fig)
 {
-  static int count=0;
-  number = count++;
+  static int form_count=0;
+  static int fig_count=0;
+  if (fig)
+  {
+    number = fig_count++;
+  }
+  else
+  {
+    number = form_count++;
+  }
   form=text;
 }
 
@@ -46,8 +54,26 @@ int Formula::getId()
   return number;
 }
 
-void FormulaList::generateBitmaps(const char *path)
+void FormulaList::generateBitmaps(const char *path, bool fig, bool rtf)
 {
+  QCString    texBaseName;
+  const char *pngPreName;
+  const char *formPreName;
+  const char *repository;
+  if (fig)
+  {
+    texBaseName="_figures";
+    pngPreName="figform_";
+    formPreName="_figform";
+    repository = "figure.repository";
+  }
+  else
+  {
+    texBaseName="_formulas";
+    pngPreName="form_";
+    formPreName="_form";
+    repository = "formula.repository";
+  }
   int x1,y1,x2,y2;
   QDir d(path);
   // store the original directory
@@ -57,12 +83,11 @@ void FormulaList::generateBitmaps(const char *path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
   // generate a latex file containing one formula per page.
-  QCString texName="_formulas.tex";
   QList<int> pagesToGenerate;
   pagesToGenerate.setAutoDelete(TRUE);
   FormulaListIterator fli(*this);
   Formula *formula;
-  QFile f(texName);
+  QFile f(texBaseName+".tex");
   bool formulaError=FALSE;
   if (f.open(IO_WriteOnly))
   {
@@ -80,7 +105,7 @@ void FormulaList::generateBitmaps(const char *path)
     for (fli.toFirst();(formula=fli.current());++fli)
     {
       QCString resultName;
-      resultName.sprintf("form_%d.png",formula->getId());
+      resultName.sprintf("%s%d.png",pngPreName,formula->getId());
       // only formulas for which no image exists are generated
       QFileInfo fi(resultName);
       if (!fi.exists())
@@ -101,10 +126,10 @@ void FormulaList::generateBitmaps(const char *path)
     //system("latex _formulas.tex </dev/null >/dev/null");
     QCString latexCmd = "latex";
     portable_sysTimerStart();
-    if (portable_system(latexCmd,"_formulas.tex")!=0)
+    if (portable_system(latexCmd,(texBaseName+".tex").data())!=0)
     {
       err("Problems running latex. Check your installation or look "
-          "for typos in _formulas.tex and check _formulas.log!\n");
+          "for typos in %s and check %s!\n",(texBaseName+".tex").data(),(texBaseName+".log").data());
       formulaError=TRUE;
       //return;
     }
@@ -116,15 +141,15 @@ void FormulaList::generateBitmaps(const char *path)
     for (;(pagePtr=pli.current());++pli,++pageIndex)
     {
       int pageNum=*pagePtr;
-      msg("Generating image form_%d.png for formula\n",pageNum);
+      msg("Generating image %s%d.png for formula\n",pngPreName,pageNum);
       char dviArgs[4096];
       char psArgs[4096];
       QCString formBase;
-      formBase.sprintf("_form%d",pageNum);
+      formBase.sprintf("%s%d",formPreName,pageNum);
       // run dvips to convert the page with number pageIndex to an
       // postscript file.
-      sprintf(dviArgs,"-q -D 600 -n 1 -p %d -o %s_tmp.ps _formulas.dvi",
-          pageIndex,formBase.data());
+      sprintf(dviArgs,"-q -D 600 -n 1 -p %d -o %s_tmp.ps %s",
+          pageIndex,formBase.data(),(texBaseName+".dvi").data());
       portable_sysTimerStart();
       if (portable_system("dvips",dviArgs)!=0)
       {
@@ -161,25 +186,8 @@ void FormulaList::generateBitmaps(const char *path)
           err("Couldn't extract bounding box!\n");
         }
       } 
-      // next we generate a postscript file which contains the eps
-      // and displays it in the right colors and the right bounding box
-      f.setName(formBase+".ps");
-      if (f.open(IO_WriteOnly))
-      {
-        FTextStream t(&f);
-        t << "1 1 1 setrgbcolor" << endl;  // anti-alias to white background
-        t << "newpath" << endl;
-        t << "-1 -1 moveto" << endl;
-        t << (x2-x1+2) << " -1 lineto" << endl;
-        t << (x2-x1+2) << " " << (y2-y1+2) << " lineto" << endl;
-        t << "-1 " << (y2-y1+2) << " lineto" <<endl;
-        t << "closepath" << endl;
-        t << "fill" << endl;
-        t << -x1 << " " << -y1 << " translate" << endl;
-        t << "0 0 0 setrgbcolor" << endl;
-        t << "(" << formBase << ".eps) run" << endl;
-        f.close();
-      }
+
+      char gsArgs[4096];
       // scale the image so that it is four times larger than needed.
       // and the sizes are a multiple of four.
       double scaleFactor = 16.0/3.0; 
@@ -188,16 +196,50 @@ void FormulaList::generateBitmaps(const char *path)
       scaleFactor *= zoomFactor/10.0;
       int gx = (((int)((x2-x1)*scaleFactor))+3)&~1;
       int gy = (((int)((y2-y1)*scaleFactor))+3)&~1;
-      // Then we run ghostscript to convert the postscript to a pixmap
-      // The pixmap is a truecolor image, where only black and white are
-      // used.  
-
-      char gsArgs[4096];
-      sprintf(gsArgs,"-q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
-                    "-sOutputFile=%s.pnm -dNOPAUSE -dBATCH -- %s.ps",
-                    gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
-                    formBase.data(),formBase.data()
-             );
+      if (!fig)
+      {
+        // next we generate a postscript file which contains the eps
+        // and displays it in the right colors and the right bounding box
+        f.setName(formBase+".ps");
+        if (f.open(IO_WriteOnly))
+        {
+          FTextStream t(&f);
+          t << "1 1 1 setrgbcolor" << endl;  // anti-alias to white background
+          t << "newpath" << endl;
+          t << "-1 -1 moveto" << endl;
+          t << (x2-x1+2) << " -1 lineto" << endl;
+          t << (x2-x1+2) << " " << (y2-y1+2) << " lineto" << endl;
+          t << "-1 " << (y2-y1+2) << " lineto" <<endl;
+          t << "closepath" << endl;
+          t << "fill" << endl;
+          t << -x1 << " " << -y1 << " translate" << endl;
+          t << "0 0 0 setrgbcolor" << endl;
+          t << "(" << formBase << ".eps) run" << endl;
+          f.close();
+        }
+        // Then we run ghostscript to convert the postscript to a pixmap
+        // The pixmap is a truecolor image, where only black and white are
+        // used.  
+  
+        sprintf(gsArgs,"-q -g%dx%d -r%dx%d -sDEVICE=ppmraw "
+                      "-sOutputFile=%s.pnm -dNOPAUSE -dBATCH -- %s.ps",
+                      gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
+                      formBase.data(),formBase.data()
+               );
+      }
+      else
+      {
+	if (!rtf)
+	{
+	  gx /= 4;
+	  gy /= 4;
+	}
+        sprintf(gsArgs,"-q -g%dx%d -r%dx%d -sDEVICE=pngalpha "
+                      "-sOutputFile=%s%d.png -dNOPAUSE -dEPSFitPage -dBATCH -- %s.eps",
+                      gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
+		      pngPreName,pageNum,formBase.data()
+               );
+      }
       portable_sysTimerStart();
       if (portable_system(portable_ghostScriptCommand(),gsArgs)!=0)
       {
@@ -207,117 +249,128 @@ void FormulaList::generateBitmaps(const char *path)
         return;
       }
       portable_sysTimerStop();
-      f.setName(formBase+".pnm");
-      uint imageX=0,imageY=0;
-      // we read the generated image again, to obtain the pixel data.
-      if (f.open(IO_ReadOnly))
+      if(!fig)
       {
-        QTextStream t(&f);
-        QCString s;
-        if (!t.eof())
-          s=t.readLine().utf8();
-        if (s.length()<2 || s.left(2)!="P6")
-          err("ghostscript produced an illegal image format!");
-        else
+        f.setName(formBase+".pnm");
+        uint imageX=0,imageY=0;
+        // we read the generated image again, to obtain the pixel data.
+        if (f.open(IO_ReadOnly))
         {
-          // assume the size is after the first line that does not start with
-          // # excluding the first line of the file.
-          while (!t.eof() && (s=t.readLine().utf8()) && !s.isEmpty() && s.at(0)=='#') { }
-          sscanf(s,"%d %d",&imageX,&imageY);
-        }
-        if (imageX>0 && imageY>0)
-        {
-          //printf("Converting image...\n");
-          char *data = new char[imageX*imageY*3]; // rgb 8:8:8 format
-          uint i,x,y,ix,iy;
-          f.readBlock(data,imageX*imageY*3);
-          Image srcImage(imageX,imageY),
-                filteredImage(imageX,imageY),
-                dstImage(imageX/4,imageY/4);
-          uchar *ps=srcImage.getData();
-          // convert image to black (1) and white (0) index.
-          for (i=0;i<imageX*imageY;i++) *ps++= (data[i*3]==0 ? 1 : 0);
-          // apply a simple box filter to the image 
-          static int filterMask[]={1,2,1,2,8,2,1,2,1};
-          for (y=0;y<srcImage.getHeight();y++)
+          QTextStream t(&f);
+          QCString s;
+          if (!t.eof())
+            s=t.readLine().utf8();
+          if (s.length()<2 || s.left(2)!="P6")
+            err("ghostscript produced an illegal image format!");
+          else
           {
-            for (x=0;x<srcImage.getWidth();x++)
+            // assume the size is after the first line that does not start with
+            // # excluding the first line of the file.
+            while (!t.eof() && (s=t.readLine().utf8()) && !s.isEmpty() && s.at(0)=='#') { }
+            sscanf(s,"%d %d",&imageX,&imageY);
+          }
+          if (imageX>0 && imageY>0)
+          {
+            //printf("Converting image...\n");
+            char *data = new char[imageX*imageY*3]; // rgb 8:8:8 format
+            uint i,x,y,ix,iy;
+            f.readBlock(data,imageX*imageY*3);
+            Image srcImage(imageX,imageY),
+                  filteredImage(imageX,imageY),
+                  dstImage(imageX/4,imageY/4);
+            uchar *ps=srcImage.getData();
+            // convert image to black (1) and white (0) index.
+            for (i=0;i<imageX*imageY;i++) *ps++= (data[i*3]==0 ? 1 : 0);
+            // apply a simple box filter to the image 
+            static int filterMask[]={1,2,1,2,8,2,1,2,1};
+            for (y=0;y<srcImage.getHeight();y++)
             {
-              int s=0;
-              for (iy=0;iy<2;iy++)
+              for (x=0;x<srcImage.getWidth();x++)
               {
-                for (ix=0;ix<2;ix++)
+                int s=0;
+                for (iy=0;iy<2;iy++)
                 {
-                  s+=srcImage.getPixel(x+ix-1,y+iy-1)*filterMask[iy*3+ix];
+                  for (ix=0;ix<2;ix++)
+                  {
+                    s+=srcImage.getPixel(x+ix-1,y+iy-1)*filterMask[iy*3+ix];
+                  }
                 }
+                filteredImage.setPixel(x,y,s);
               }
-              filteredImage.setPixel(x,y,s);
             }
-          }
-          // down-sample the image to 1/16th of the area using 16 gray scale
-          // colors.
-          // TODO: optimize this code.
-          for (y=0;y<dstImage.getHeight();y++)
-          {
-            for (x=0;x<dstImage.getWidth();x++)
+            // down-sample the image to 1/16th of the area using 16 gray scale
+            // colors.
+            // TODO: optimize this code.
+            for (y=0;y<dstImage.getHeight();y++)
             {
-              int xp=x<<2;
-              int yp=y<<2;
-              int c=filteredImage.getPixel(xp+0,yp+0)+
-                    filteredImage.getPixel(xp+1,yp+0)+
-                    filteredImage.getPixel(xp+2,yp+0)+
-                    filteredImage.getPixel(xp+3,yp+0)+
-                    filteredImage.getPixel(xp+0,yp+1)+
-                    filteredImage.getPixel(xp+1,yp+1)+
-                    filteredImage.getPixel(xp+2,yp+1)+
-                    filteredImage.getPixel(xp+3,yp+1)+
-                    filteredImage.getPixel(xp+0,yp+2)+
-                    filteredImage.getPixel(xp+1,yp+2)+
-                    filteredImage.getPixel(xp+2,yp+2)+
-                    filteredImage.getPixel(xp+3,yp+2)+
-                    filteredImage.getPixel(xp+0,yp+3)+
-                    filteredImage.getPixel(xp+1,yp+3)+
-                    filteredImage.getPixel(xp+2,yp+3)+
-                    filteredImage.getPixel(xp+3,yp+3);
-              // here we scale and clip the color value so the
-              // resulting image has a reasonable contrast
-              dstImage.setPixel(x,y,QMIN(15,(c*15)/(16*10)));
+              for (x=0;x<dstImage.getWidth();x++)
+              {
+                int xp=x<<2;
+                int yp=y<<2;
+                int c=filteredImage.getPixel(xp+0,yp+0)+
+                      filteredImage.getPixel(xp+1,yp+0)+
+                      filteredImage.getPixel(xp+2,yp+0)+
+                      filteredImage.getPixel(xp+3,yp+0)+
+                      filteredImage.getPixel(xp+0,yp+1)+
+                      filteredImage.getPixel(xp+1,yp+1)+
+                      filteredImage.getPixel(xp+2,yp+1)+
+                      filteredImage.getPixel(xp+3,yp+1)+
+                      filteredImage.getPixel(xp+0,yp+2)+
+                      filteredImage.getPixel(xp+1,yp+2)+
+                      filteredImage.getPixel(xp+2,yp+2)+
+                      filteredImage.getPixel(xp+3,yp+2)+
+                      filteredImage.getPixel(xp+0,yp+3)+
+                      filteredImage.getPixel(xp+1,yp+3)+
+                      filteredImage.getPixel(xp+2,yp+3)+
+                      filteredImage.getPixel(xp+3,yp+3);
+                // here we scale and clip the color value so the
+                // resulting image has a reasonable contrast
+                dstImage.setPixel(x,y,QMIN(15,(c*15)/(16*10)));
+              }
             }
+            // save the result as a bitmap
+            QCString resultName;
+            resultName.sprintf("%s%d.png",pngPreName,pageNum);
+            // the option parameter 1 is used here as a temporary hack
+            // to select the right color palette! 
+            dstImage.save(resultName,1);
+            delete[] data;
           }
-          // save the result as a bitmap
-          QCString resultName;
-          resultName.sprintf("form_%d.png",pageNum);
-          // the option parameter 1 is used here as a temporary hack
-          // to select the right color palette! 
-          dstImage.save(resultName,1);
-          delete[] data;
-        }
-        f.close();
-      } 
+          f.close();
+        } 
+        // remove intermediate image files
+        thisDir.remove(formBase+".pnm");
+        thisDir.remove(formBase+".ps");
+      }
       // remove intermediate image files
       thisDir.remove(formBase+"_tmp.ps");
       thisDir.remove(formBase+".eps");
-      thisDir.remove(formBase+".pnm");
-      thisDir.remove(formBase+".ps");
     }
     // remove intermediate files produced by latex
-    thisDir.remove("_formulas.dvi");
-    if (!formulaError) thisDir.remove("_formulas.log"); // keep file in case of errors
-    thisDir.remove("_formulas.aux");
+    thisDir.remove((texBaseName+".dvi").data());
+    if (!formulaError) thisDir.remove((texBaseName+".log").data()); // keep file in case of errors
+    thisDir.remove((texBaseName+".aux").data());
   }
   // remove the latex file itself
-  if (!formulaError) thisDir.remove("_formulas.tex");
+  if (!formulaError) thisDir.remove((texBaseName+".tex").data());
   // write/update the formula repository so we know what text the 
   // generated images represent (we use this next time to avoid regeneration
   // of the images, and to avoid forcing the user to delete all images in order
   // to let a browser refresh the images).
-  f.setName("formula.repository");
+  f.setName(repository);
   if (f.open(IO_WriteOnly))
   {
     FTextStream t(&f);
     for (fli.toFirst();(formula=fli.current());++fli)
     {
-      t << "\\form#" << formula->getId() << ":" << formula->getFormulaText() << endl;
+      if (fig)
+      {
+        t << "\\figform#" << formula->getId() << ":" << formula->getFormulaText() << endl;
+      }
+      else
+      {
+        t << "\\form#" << formula->getId() << ":" << formula->getFormulaText() << endl;
+      }
     }
     f.close();
   }

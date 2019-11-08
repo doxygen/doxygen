@@ -119,6 +119,9 @@ class Doxygen
     static FormulaList              *formulaList;
     static FormulaDict              *formulaDict;
     static FormulaDict              *formulaNameDict;
+    static FormulaList              *figureList;
+    static FormulaDict              *figureDict;
+    static FormulaDict              *figureNameDict;
     static StringDict                tagDestinationDict;
     static StringDict                aliasDict;
     static QIntDict<MemberGroupInfo> memGrpInfoDict;
@@ -162,7 +165,7 @@ void searchInputFiles(StringList &inputFiles);
 void parseInput();
 void generateOutput();
 void readAliases();
-void readFormulaRepository(QCString dir, bool cmp = FALSE);
+void readFormulaRepository(QCString dir, bool cmp, bool fig = FALSE);
 void cleanUpDoxygen();
 int readFileOrDirectory(const char *s,
                         FileNameList *fnList,

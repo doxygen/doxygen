@@ -17,24 +17,25 @@
 /*! \page formulas Including formulas 
 
 Doxygen allows you to put \LaTeX formulas in the
-output (this works only for the HTML, \LaTeX and RTF output. To be able to include 
-formulas (as images) in the HTML and RTF documentation, you will also need to 
+output (this works only for the HTML, \LaTeX, Docbook and RTF output. To be able to include 
+formulas (as b/w images) in the HTML, Docbook and RTF documentation, you will also need to 
 have the following tools installed
 <ul>
 <li>\c latex: the \LaTeX compiler, needed to parse the formulas. 
-    To test I have used the teTeX 1.0 distribution.
 <li>\c dvips: a tool to convert DVI files to PostScript files 
-    I have used version 5.92b from Radical Eye software for testing.
-<li>\c gs: the GhostScript interpreter for converting PostScript files 
-    to bitmaps. I have used Aladdin GhostScript 8.0 for testing.
+<li>\c ps2epsi: to get the bounding box from PostScript files
+<li>\c gs: the GhostScript interpreter for converting PostScript files to bitmaps.
 </ul>
 For the HTML output there is also an alternative solution using
 <a href="https://www.mathjax.org">MathJax</a> which does not
 require the above tools. If you enable \ref cfg_use_mathjax "USE_MATHJAX" in
 the configuration then the latex formulas will be copied to the HTML "as is" and a
-client side javascript will parse them and turn them into (interactive) images.
+client side javascript will parse them and turn them into (interactive) images.<br>
+Note that MathJax only supports a part of the possibilities from \LaTeX.<br>
+For \LaTeX the formulas are also "as is" into the \LaTeX output, so in principle the
+full palette of \LaTeX.s available<br>
 
-There are three ways to include formulas in the documentation.
+There are basically three ways to include formulas in the documentation.
 <ol>
 <li>Using in-text formulas that appear in the running text. 
     These formulas should be put between a pair of \\f\$ 
@@ -98,10 +99,21 @@ For the first two commands one should make sure formulas contain
 valid commands in \LaTeX's math-mode. For the third command
 the section should contain valid command for the specific environment.
 
+As written before the above mentioned commands, when generating images, are generating b/w images to be included
+in the documentation.
+(in case of \LaTeX the formula is used "as is", and in MathJax the formulas are limited to the \LaTeX that is
+supported by MathJax).<br>
+To overcome the b/w limitations the analogous command pairs `\fig$...\fig$`, `\fig[...\fig]` and `\fig{...\fig}`
+exists. For \LaTeX there is no difference as the formula code is still placed "as is" in the latex output, for the
+other formats always images are included in a similar way as for the `\f...` commands, but without the conversion to
+b/w, so having the possibility to use the full palette of \LaTeX commands. (Note for obvious reasons the MahtJax
+possibility does not existt for the `\fig...` commands).
+
 \warning Currently, doxygen is not very fault tolerant in recovering 
 from typos in formulas. It may be necessary to remove the
-files <code>formula.repository</code> that are written to the html and rtf directories to 
-get rid of an incorrect formula as well as the <code>form_*</code> files.
+files <code>formula.repository</code> that are written to the html, docbook and rtf output directories to 
+get rid of an incorrect formula as well as the <code>form_*</code> files (in case of `\f...` type commands,
+in case if `\fig...` type commands the names are <code>figure.repository</code> and <code>figform_*</code>).
 
 \htmlonly
 Go to the <a href="tables.html">next</a> section or return to the

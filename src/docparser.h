@@ -673,7 +673,7 @@ class DocIncOperator : public DocNode
 class DocFormula : public DocNode
 {
   public:
-    DocFormula(DocNode *parent,int id);
+    DocFormula(DocNode *parent,int id,bool fig = FALSE);
     Kind kind() const          { return Kind_Formula; }
     QCString name() const       { return m_name; }
     QCString text() const       { return m_text; }
@@ -681,12 +681,14 @@ class DocFormula : public DocNode
     int id() const             { return m_id; }
     void accept(DocVisitor *v) { v->visit(this); }
     bool isInline()            { return m_text.length()>0 ? m_text.at(0)!='\\' : TRUE; }
+    bool isFig()               { return m_fig;}
 
   private:
     QCString  m_name;
     QCString  m_text;
     QCString  m_relPath;
-    int      m_id;
+    int       m_id;
+    bool      m_fig;
 };
 
 /** Node representing an entry in the index. */

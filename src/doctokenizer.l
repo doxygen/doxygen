@@ -364,6 +364,7 @@ VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
 SPCMD2    {CMD}[\\@<>&$#%~".+=|-]
 SPCMD3    {CMD}form#[0-9]+
+SPCMD3f   {CMD}figform#[0-9]+
 SPCMD4    {CMD}"::"
 SPCMD5    {CMD}":"
 INOUT	  "inout"|"in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
@@ -584,6 +585,13 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 ASSERT(ok);
 			 return TK_COMMAND_SEL();
   		       }
+<St_Para>{SPCMD3f}     {
+                         g_token->name = "figform";
+                         bool ok;
+                         g_token->id = QCString(yytext).right((int)yyleng-9).toInt(&ok);
+                         ASSERT(ok);
+                         return TK_COMMAND_SEL();
+                       }
 <St_Para>{CMD}"n"\n    { /* \n followed by real newline */
                          yylineno++;
                          g_token->name = yytext+1;

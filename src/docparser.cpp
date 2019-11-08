@@ -1489,6 +1489,12 @@ reparsetoken:
             children.append(form);
           }
           break;
+        case CMD_FIGURE:
+          {
+            DocFormula *form=new DocFormula(parent,g_token->id, TRUE);
+            children.append(form);
+          }
+          break;
         case CMD_ANCHOR:
           {
             DocAnchor *anchor = handleAnchor(parent);
@@ -2202,17 +2208,34 @@ bool DocXRefItem::parse()
 
 //---------------------------------------------------------------------------
 
-DocFormula::DocFormula(DocNode *parent,int id) :
+DocFormula::DocFormula(DocNode *parent,int id,bool fig) :
       m_relPath(g_relPath)
 {
   m_parent = parent; 
   QCString formCmd;
-  formCmd.sprintf("\\form#%d",id);
-  Formula *formula=Doxygen::formulaNameDict->find(formCmd);
+  Formula *formula;
+  if (fig)
+  {
+    formCmd.sprintf("\\figform#%d",id);
+    formula=Doxygen::figureNameDict->find(formCmd);
+  }
+  else
+  {
+    formCmd.sprintf("\\form#%d",id);
+    formula=Doxygen::formulaNameDict->find(formCmd);
+  }
   if (formula)
   {
     m_id = formula->getId();
-    m_name.sprintf("form_%d",m_id);
+    m_fig = fig;
+    if (fig)
+    {
+      m_name.sprintf("figform_%d",m_id);
+    }
+    else
+    {
+      m_name.sprintf("form_%d",m_id);
+    }
     m_text = formula->getFormulaText();
   }
   else // wrong \form#<n> command
@@ -5829,6 +5852,12 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_FORMULA:
       {
         DocFormula *form=new DocFormula(this,g_token->id);
+        m_children.append(form);
+      }
+      break;
+    case CMD_FIGURE:
+      {
+        DocFormula *form=new DocFormula(this,g_token->id, TRUE);
         m_children.append(form);
       }
       break;

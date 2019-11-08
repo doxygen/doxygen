@@ -476,7 +476,7 @@ void replaceComment(int offset);
                                      }
                                      BEGIN(VerbatimCode);
   				   }
-<CComment,ReadLine>[\\@]("f$"|"f["|"f{") {
+<CComment,ReadLine>[\\@]("f$"|"f["|"f{"|"fig$"|"fig["|"fig{") {
                                      copyToOutput(yytext,(int)yyleng); 
 				     g_blockName=&yytext[1];
 				     if (g_blockName.at(1)=='[')
@@ -486,6 +486,14 @@ void replaceComment(int offset);
 				     else if (g_blockName.at(1)=='{')
 				     {
 				       g_blockName.at(1)='}';
+				     }
+				     else if (g_blockName.at(3)=='[')
+				     {
+				       g_blockName.at(3)=']';
+				     }
+				     else if (g_blockName.at(3)=='{')
+				     {
+				       g_blockName.at(3)='}';
 				     }
 				     g_lastCommentContext = YY_START;
 				     BEGIN(Verbatim);
@@ -499,7 +507,7 @@ void replaceComment(int offset);
 <Scan>.                            { /* any other character */
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
-<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}") { /* end of verbatim block */
+<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"fig$"|"fig]"|"fig}") { /* end of verbatim block */
                                      copyToOutput(yytext,(int)yyleng);
 				     if (&yytext[1]==g_blockName) // end of formula
 				     {
