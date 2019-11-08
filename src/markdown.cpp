@@ -1954,7 +1954,7 @@ static bool isHRuler(const char *data,int size)
   return n>=3; // at least 3 characters needed for a hruler
 }
 
-static QCString extractTitleId(QCString &title, int level)
+static QCString extractTitleId(QCString &title, int level, QCString &fileName)
 {
   TRACE(title);
   // match e.g. '{#id-b11} ' and capture 'id-b11'
@@ -1973,7 +1973,16 @@ static QCString extractTitleId(QCString &title, int level)
   {
     static AtomicInt autoId { 0 };
     QCString id;
-    id.sprintf("autotoc_md%d",autoId++);
+    if( Config_getBool(TOC_INCLUDE_HEADINGS_PERMALINKS))
+    {
+        id.sprintf( "autotoc_md_%s_%s",
+                    markdownFileNameToId(fileName).data(),
+                    markdownFileNameToId(title.lower()).data() );
+    }
+    else
+    {
+        id.sprintf("autotoc_md%d",autoId++);
+    }
     //printf("auto-generated id='%s' title='%s'\n",qPrint(id),qPrint(title));
     TRACE_RESULT(id);
     return id;
@@ -2012,7 +2021,7 @@ int Markdown::isAtxHeader(const char *data,int size,
 
   // store result
   convertStringFragment(header,data+i,end-i);
-  id = extractTitleId(header, level);
+  id = extractTitleId(header, level, m_fileName);
   if (!id.isEmpty()) // strip #'s between title and id
   {
     i=header.length()-1;
@@ -3131,7 +3140,7 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
         while (pi<size && data[pi]==' ') pi++;
         QCString header;
         convertStringFragment(header,data+pi,i-pi-1);
-        id = extractTitleId(header, level);
+        id = extractTitleId(header, level, m_fileName);
         //printf("header='%s' is='%s'\n",qPrint(header),qPrint(id));
         if (!header.isEmpty())
         {
@@ -3284,7 +3293,7 @@ QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
     {
       convertStringFragment(title,data+i,end1-i-1);
       docs+="\n\n"+docs_org.mid(end2);
-      id = extractTitleId(title, 0);
+      id = extractTitleId(title, 0, m_fileName);
       //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
       TRACE_RESULT(title);
       return title;
@@ -3298,7 +3307,7 @@ QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
   else
   {
     docs=docs_org;
-    id = extractTitleId(title, 0);
+    id = extractTitleId(title, 0, m_fileName);
   }
   //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",qPrint(title),qPrint(docs),qPrint(id));
   TRACE_RESULT(title);
