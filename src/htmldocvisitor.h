@@ -149,6 +149,7 @@ class HtmlDocVisitor : public DocVisitor
     const Definition *m_ctx;
     QCString m_fileName;
     QCString m_langExt;
+    QCString m_anchorHtml;
 };
 
 #endif

@@ -2026,6 +2026,15 @@ to disable this feature.
 ]]>
       </docs>
     </option>
+    <option type='string' id='HTML_HEADING_ANCHOR' format='string' defval='' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ The \c HTML_HEADING_ANCHOR entry specifies the (encoded) anchor character to
+ use before all headings so that they provide a clickable anchor.
+ You can use encoded characters here, e.g. `"&#128279;"` for printing the link symbol emoji.
+]]>
+      </docs>
+    </option>
     <option type='string' id='HTML_FILE_EXTENSION' format='string' defval='.html' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
