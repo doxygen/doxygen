@@ -280,7 +280,7 @@ int QTextCodec::heuristicNameMatch(const char* hint) const
 }
 
 
-// returns a string cotnaining the letters and numbers from input,
+// returns a string containing the letters and numbers from input,
 // with a space separating run of a character class.  e.g. "iso8859-1"
 // becomes "iso 8859 1"
 static QString lettersAndNumbers( const char * input )

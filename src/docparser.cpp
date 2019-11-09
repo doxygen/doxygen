@@ -4562,7 +4562,7 @@ void DocSimpleSect::appendLinkWord(const QCString &word)
   {
     p = (DocPara *)m_children.getLast();
     
-    // Comma-seperate <seealso> links.
+    // Comma-separate <seealso> links.
     p->injectToken(TK_WORD,",");
     p->injectToken(TK_WHITESPACE," ");
   }

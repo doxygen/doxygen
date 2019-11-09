@@ -329,7 +329,7 @@ public:
       return m_rep.at(i);
     }
 
-    /** Indexing operator. Equavalent to at(). */
+    /** Indexing operator. Equivalent to at(). */
     char &operator[]( int i ) const
     {
       return m_rep.at((uint)i);

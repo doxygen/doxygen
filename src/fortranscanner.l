@@ -141,7 +141,7 @@ static const char *     inputString;
 static int		inputPosition;
 static bool             isFixedForm;
 static QCString         inputStringPrepass; ///< Input string for prepass of line cont. '&'
-static QCString         inputStringSemi; ///< Input string after command separetor ';'
+static QCString         inputStringSemi; ///< Input string after command separator ';'
 static unsigned int     inputPositionPrepass;
 static int              lineCountPrepass = 0;
 
@@ -1841,7 +1841,7 @@ static QCString extractFromParens(const QCString name)
   return extracted;
 }
 
-/*! remove unuseful spaces from bind statement */
+/*! remove useless spaces from bind statement */
 static QCString extractBind(const QCString name)
 {
   QCString parensPart = extractFromParens(name);
@@ -2540,7 +2540,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       // strip direction
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::IN]));
       loc_doc.stripWhiteSpace();
-      // in case of empty documentation or (now) just name, consider it as no documemntation
+      // in case of empty documentation or (now) just name, consider it as no documentation
       if (!loc_doc.isEmpty() && (loc_doc.lower() != argName.lower()))
       {
         handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::IN] + " " + 

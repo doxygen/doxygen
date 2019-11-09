@@ -2021,7 +2021,7 @@ static int writeBlockQuote(GrowBuf &out,const char *data,int size)
         out.addStr("<blockquote>\n");
       }
     }
-    else if (level<curLevel) // quote level descreased => add end markers
+    else if (level<curLevel) // quote level decreased => add end markers
     {
       for (l=level;l<curLevel;l++)
       {
@@ -2470,7 +2470,7 @@ static QCString detab(const QCString &s,int &refIndent)
           while (stop--) out.addChar(' '); 
         }
         break;
-      case '\n': // reset colomn counter
+      case '\n': // reset column counter
         out.addChar(c);
         col=0;
         break;

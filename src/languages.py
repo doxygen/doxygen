@@ -74,7 +74,7 @@ for f in new_list:
         tmp = tmp.replace("\n","")
         l = re.sub('[^"]*"([^"]*)".*','\\1',tmp)
         l1 = l.replace("-","")
-        # capatalize first letter
+        # capitalize first letter
         l = l.title()
         print("""\
                                    <EnumProperty

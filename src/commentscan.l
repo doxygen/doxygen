@@ -1970,7 +1970,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  BEGIN(Comment);
   					}
 <GuardParamEnd>{B}*			{
-  					  if (!g_spaceBeforeIf.isEmpty()) // needed for 665313 in combation with bug620924
+  					  if (!g_spaceBeforeIf.isEmpty()) // needed for 665313 in combination with bug620924
 					  {
 					    addOutput(g_spaceBeforeIf);
 					  }

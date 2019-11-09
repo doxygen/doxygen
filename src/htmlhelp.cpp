@@ -93,7 +93,7 @@ HtmlHelpIndex::~HtmlHelpIndex()
 }
 
 /*! Stores an item in the index if it is not already present. 
- *  Items are stored in alphetical order, by sorting on the
+ *  Items are stored in alphabetical order, by sorting on the
  *  concatenation of \a level1 and \a level2 (if present).
  *
  *  \param level1 the string at level 1 in the index.

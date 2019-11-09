@@ -89,7 +89,7 @@ struct FileState
 };  
 
 /** @brief Singleton that manages the defines available while 
- *  proprocessing files. 
+ *  preprocessing files. 
  */
 class DefineManager
 {

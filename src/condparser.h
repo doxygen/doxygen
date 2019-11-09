@@ -13,7 +13,7 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * C++ Expression parser for EXTABLED_SETIONS in Doxygen
+ * C++ Expression parser for ENABLED_SECTIONS in Doxygen
  *
  * Features used:
  *     Operators:
