@@ -1285,8 +1285,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
  /*     REAL(KIND_R) :: ARRAY(N)=VALUE  ! Sees "REAL(...)=VALUE"                */
  /*                                     ! Reject patern ":{BS}:".               */
 
-<Start>{ID}{BS}"("[a-z_A-Z0-9 \t\.,:+*\-/%()]+")"{BS}"="{BS}/[^=] {
-                                          // array(.) assignment
+<Start>{ID}{BS}"("[a-z_A-Z0-9 \t\.,:+*\-/%()]+")"{BS}/[=+*\-\/><\.%] {
+                                          // Array(.) variable followed by assignment, arithmetic,
+                                          //   comparison or type structure element.
                                           // Resolves conflicts with fortran keywords that
                                           //   the simple variable reference below cannot.
                                           // Does not work across line continuation.
@@ -1303,15 +1304,14 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           if ( openpar != 0 ) YY_FTN_REJECT;
                                           //
-                                          //printf("===> line number %d array assignment |%s|\n",g_yyLineNr,yytext);
+                                          //printf("===> line number %d array |%s|\n",g_yyLineNr,yytext);
                                           g_insideBody=TRUE;
                                           // extract array name and process it
                                           char *tmp= (char *) malloc(strlen(yytext)+1);
                                           strcpy(tmp,yytext);
                                           strtok(tmp," \t(");
-                                          //printf("     generateLink |%s|\n",tmp);
                                           generateLink(*g_code, tmp);
-                                          // everything else is thrown back into input stream
+                                          // throw everything after array name back into input stream
                                           //printf("     reprocess |%s|\n",yytext+strlen(tmp));
                                           YY_FTN_LESS(strlen(tmp));
                                           free(tmp);
