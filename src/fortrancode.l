@@ -69,6 +69,8 @@
  * YY_USER_ACTION is always called for each scan action
  * YY_FTN_RESET   is used to handle end of lines and reset the column counter
  * YY_FTN_REJECT  resets the column counters when a pattern is rejected and thus rescanned.
+ * YY_FTN_LESS(n) returns all but first n characters to the input stream
+ *                and modifies the column counter accordingly.
  */
 int yy_old_start = 0;
 int yy_my_start  = 0;
@@ -76,6 +78,7 @@ int yy_end       = 1;
 #define YY_USER_ACTION {yy_old_start = yy_my_start; yy_my_start = yy_end; yy_end += yyleng;}
 #define YY_FTN_RESET   {yy_old_start = 0; yy_my_start = 0; yy_end = 1;}
 #define YY_FTN_REJECT  {yy_end = yy_my_start; yy_my_start = yy_old_start; REJECT;}
+#define YY_FTN_LESS(n) {yy_end -= yyleng - n; yyless(n); }
    
 //--------------------------------------------------------------------------------
 
@@ -1119,7 +1122,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                               // everything else is thrown back into input stream
                                               // to prevent {BS} from being gobbled
                                               //printf("     reprocess |%s|\n",yytext+strlen(tmp));
-                                              yyless(strlen(tmp));
+                                              YY_FTN_LESS(strlen(tmp));
                                             }
                                             free(tmp);
                                             g_insideBody=FALSE;
@@ -1237,7 +1240,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                               // everything else is thrown back into input stream
                                               // to prevent {BS} from being gobbled
                                               //printf("     reprocess |%s|\n",yytext+strlen(tmp));
-                                              yyless(strlen(tmp));
+                                              YY_FTN_LESS(strlen(tmp));
                                             }
                                             free(tmp);
 					    g_insideBody=FALSE;
@@ -1270,7 +1273,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                             generateLink(*g_code, tmp);
                                             // everything else is thrown back into input stream
                                             //printf("     reprocess |%s|\n",yytext+strlen(tmp));
-                                            yyless(strlen(tmp));
+                                            YY_FTN_LESS(strlen(tmp));
                                             free(tmp);
 					    g_insideBody=FALSE;
                                         }
