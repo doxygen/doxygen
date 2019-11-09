@@ -1250,32 +1250,53 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
  /*   (.) could contain other variables, structures, function calls, etc.       */
  /*   Difficult to match nested parentheses.                                    */
  /* <Start>{ID}{BS}/"("                                                         */
- /*   Too Simple. Catches both "variable(.)=" and "keyword(.)" [ie, "case(1)"]. */
+ /*   Too Simple.  Modern fortran keywords often conflict with legacy variable  */
+ /*   names.  ie, need to isolate "CASE(1)=" from keyword "CASE(1)".            */
  /* <Start>{ID}{BS}/"("[a-z_A-Z0-9 \t,:\-+/*%()]+")"{BS}"="                     */
- /*   Error:  Dangerous trailing context (due to varying length?):              */
- /* Method below best fix so far, but might not be perfect.                     */
+ /*   Compiler Error:  Dangerous trailing context (due to varying length?).     */
+ /* Method below is the best fix so far, but might not be perfect.              */
  /*   Keeps most assignments from being detected as keywords.                   */
- /*   Does not work across line continuation.                                   */
- /*   What is missed, gets processed as a keyword or simple variable reference. */
+ /*   Does not work across line continuation.  What is missed, gets processed   */
+ /*     as a keyword or simple variable reference.                              */
+ /*   Must reject false positives:                                              */
+ /*     ARRAY1(ARRAY2(n))=VALUE         ! Sees "ARRAY2(n))=VALUE" on pass 2.    */
+ /*                                     ! Reject unbalanced ()s before =.       */
+ /*     IF ( A .EQ. B ) ARRAY(N)=VALUE  ! Sees "IF(...)=VALUE"                  */
+ /*                                     ! Reject pattern "){BS}[a-zA-Z]".       */
+ /*     REAL(KIND_R) :: ARRAY(N)=VALUE  ! Sees "REAL(...)=VALUE"                */
+ /*                                     ! Reject patern ":{BS}:".               */
 
 <Start>{ID}{BS}"("[a-z_A-Z0-9 \t\.,:+*\-/%()]+")"{BS}"="{BS}/[^=] {
-                                            // array(.) assignment
-                                            // resolves conflicts with fortran keywords that
-                                            // the simple variable reference below cannot.
-                                            // yytext matches "array(.)="
-                                            //printf("===> line number %d array assignment |%s|\n",g_yyLineNr,yytext);
-  					    g_insideBody=TRUE;
-                                            // extract array name and process it
-                                            char *tmp= (char *) malloc(strlen(yytext)+1);
-                                            strcpy(tmp,yytext);
-                                            strtok(tmp," \t(");
-                                            //printf("     generateLink |%s|\n",tmp);
-                                            generateLink(*g_code, tmp);
-                                            // everything else is thrown back into input stream
-                                            //printf("     reprocess |%s|\n",yytext+strlen(tmp));
-                                            YY_FTN_LESS(strlen(tmp));
-                                            free(tmp);
-					    g_insideBody=FALSE;
+                                          // array(.) assignment
+                                          // Resolves conflicts with fortran keywords that
+                                          //   the simple variable reference below cannot.
+                                          // Does not work across line continuation.
+                                          //
+                                          // Reject false positives as described above.
+                                          int openpar = 0;      // number of open ()s.
+                                          char lastchar = ' ';  // last non-space char
+                                          for (int n=0; n<yyleng; n++) {
+                                            if ( isalpha(yytext[n]) && lastchar == ')' ) { YY_FTN_REJECT; }
+                                            if ( yytext[n] == ':' && lastchar == ':' ) { YY_FTN_REJECT; }
+                                            if ( yytext[n] != ' ' && yytext[n] != '\t' ) { lastchar = yytext[n]; }
+                                            if ( yytext[n] == '(' ) { openpar++; }
+                                            if ( yytext[n] == ')' ) { openpar--; }
+                                          }
+                                          if ( openpar != 0 ) YY_FTN_REJECT;
+                                          //
+                                          //printf("===> line number %d array assignment |%s|\n",g_yyLineNr,yytext);
+                                          g_insideBody=TRUE;
+                                          // extract array name and process it
+                                          char *tmp= (char *) malloc(strlen(yytext)+1);
+                                          strcpy(tmp,yytext);
+                                          strtok(tmp," \t(");
+                                          //printf("     generateLink |%s|\n",tmp);
+                                          generateLink(*g_code, tmp);
+                                          // everything else is thrown back into input stream
+                                          //printf("     reprocess |%s|\n",yytext+strlen(tmp));
+                                          YY_FTN_LESS(strlen(tmp));
+                                          free(tmp);
+                                          g_insideBody=FALSE;
                                         }
 
 <Start>"%"{BS}{ID}	 		{ // ignore references to elements 
