@@ -171,6 +171,7 @@ bool             Doxygen::generatingXmlOutput = FALSE;
 bool             Doxygen::markdownSupport = TRUE;
 GenericsSDict   *Doxygen::genericsDict;
 DocGroup         Doxygen::docGroup;
+Preprocessor    *Doxygen::preprocessor = 0;
 
 // locally accessible globals
 static std::unordered_map< std::string, const Entry* > g_classEntries;
@@ -9395,7 +9396,7 @@ static void parseFile(ParserInterface *parser,
     BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",fn);
     readInputFile(fileName,inBuf);
-    preprocessFile(fileName,inBuf,preBuf);
+    Doxygen::preprocessor->processFile(fileName,inBuf,preBuf);
   }
   else // no preprocessing
   {
@@ -10078,7 +10079,7 @@ void initDoxygen()
   portable_correct_path();
 
   Doxygen::runningTime.start();
-  initPreprocessor();
+  Doxygen::preprocessor = new Preprocessor();
 
   Doxygen::parserManager = new ParserManager;
   Doxygen::parserManager->registerDefaultParser(         new FileParser);
@@ -10182,7 +10183,7 @@ void cleanUpDoxygen()
   delete Doxygen::globalScope;
   delete Doxygen::xrefLists;
   delete Doxygen::parserManager;
-  cleanUpPreprocessor();
+  delete Doxygen::preprocessor;
   delete theTranslator;
   delete g_outputList;
   Mappers::freeMappers();
@@ -10662,7 +10663,7 @@ void adjustConfiguration()
   while (s)
   {
     QFileInfo fi(s);
-    addSearchDir(fi.absFilePath().utf8());
+    Doxygen::preprocessor->addSearchDir(fi.absFilePath().utf8());
     s=includePath.next();
   }
 
@@ -11266,7 +11267,6 @@ void parseInput()
 
   // we are done with input scanning now, so free up the buffers used by flex
   // (can be around 4MB)
-  preFreeScanner();
   scanFreeScanner();
   pyscanFreeScanner();
 

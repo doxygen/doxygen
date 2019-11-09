@@ -20,10 +20,16 @@
 
 class BufStr;
 
-void initPreprocessor();
-void cleanUpPreprocessor();
-void addSearchDir(const char *dir);
-void preprocessFile(const char *fileName,BufStr &input,BufStr &output);
-void preFreeScanner();
+class Preprocessor
+{
+  public:
+    Preprocessor();
+   ~Preprocessor();
+    void processFile(const char *fileName,BufStr &input,BufStr &output);
+    void addSearchDir(const char *dir);
+ private:
+   class Private;
+   Private *p;
+};
 
 #endif
