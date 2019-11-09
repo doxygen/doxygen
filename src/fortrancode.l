@@ -717,6 +717,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 /*%option debug*/
 
 %x Start
+%x Variable
 %x SubCall
 %x FuncDef
 %x ClassName
@@ -1225,6 +1226,21 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
  /*------ variable references  -------------------------------------*/ 
  /* Give preference to user variables and functions over keywords. */
+
+<Start>[=+*\-\/(]{BS}/{ID}              { // arithmetic operator or "(" preceeds.
+                                          //printf("===> line number %d preceeding operator |%s|\n",g_yyLineNr,yytext);
+					  g_code->codify(yytext);
+                                          yy_push_state(YY_START);
+                                          BEGIN(Variable);
+                                        }
+<Variable>{ID}                          { // Variable mode seeks a variable or function name.
+                                          //printf("===> line number %d expression variable |%s|\n",g_yyLineNr,yytext);
+  					  g_insideBody=TRUE;
+                                          generateLink(*g_code, yytext);
+					  g_insideBody=FALSE;
+                                          // Variable name found, end Variable mode.
+                                          yy_pop_state();
+                                        }
 
 <Start>{ID}{BS}/[=+*\-\/><\.%]          { // Scalar variable followed by assignment, arithmetic,
                                           //   comparison or type structure element.
