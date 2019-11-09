@@ -717,7 +717,7 @@ static QMap<ClassDef*,QList<ClassDef> > packages;
 
 MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& memName)
 {
-  ClassDef* cd,*ecd;
+  ClassDef* cd,*ecd=0;
   MemberDef *mdef=0;
 
   cd=getClass(className);
@@ -793,9 +793,11 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
     if (!packages.contains(ecd)) VhdlDocGen::findAllPackages(ecd);
   }
 
- QMap<ClassDef*,QList<ClassDef> >::Iterator cList=packages.find(ecd);
-      if (cList.key()!=0)
-	  {
+  if (ecd)
+  {
+    QMap<ClassDef*,QList<ClassDef> >::Iterator cList=packages.find(ecd);
+    if (cList!=packages.end())
+    {
       QList<ClassDef> mlist=cList.data();
       for (uint j=0;j<mlist.count();j++)
       {
@@ -804,7 +806,8 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
         mdef=VhdlDocGen::findMemberDef(mlist.at(j),memName,MemberListType_pubMethods);
         if (mdef) return mdef;
       }
-	  }
+    }
+  }
   return 0;
 
 }//findMember
