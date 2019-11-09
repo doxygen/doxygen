@@ -718,6 +718,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 
 %x Start
 %x Variable
+%x Array
 %x SubCall
 %x FuncDef
 %x ClassName
@@ -1316,17 +1317,26 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           YY_FTN_LESS(strlen(tmp));
                                           free(tmp);
                                           g_insideBody=FALSE;
+                                          // Trigger Array mode to prevent keywords in array arguments.
+                                          yy_push_state(YY_START);
+                                          BEGIN(Array);
+                                        }
+
+<Array>")"{BS}/[=><\/\.%]               { // end of array mode
+					  g_code->codify(yytext);
+                                          yy_pop_state();
                                         }
 
 <Start>"%"{BS}{ID}	 		{ // ignore references to elements 
 					  g_code->codify(yytext);
 					}
-<Start>{ID}                             {   // simple variable reference
-                                            //printf("===> line number %d variable |%s|\n",g_yyLineNr,yytext);
-  					    g_insideBody=TRUE;
-                                            generateLink(*g_code, yytext);
-					    g_insideBody=FALSE;
+<Start,Array>{ID}                       { // Simple variable reference.
+                                          //printf("===> line number %d variable |%s|\n",g_yyLineNr,yytext);
+  					  g_insideBody=TRUE;
+                                          generateLink(*g_code, yytext);
+					  g_insideBody=FALSE;
                                         }
+
  /*------ strings --------------------------------------------------*/ 
 <String>\n                              { // string with \n inside
 					  g_contLineNr++;
