@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -16,20 +13,32 @@
  *
  */
 
-#ifndef _CONSTEXP_H
-#define _CONSTEXP_H
+#ifndef _CONSTEXP_P_H
+#define _CONSTEXP_P_H
 
 #include <qcstring.h>
 
-class ConstExpressionParser
+//! @file
+//! @brief Private interface between Parser (constexp.y) and Lexer (constexp.l)
+
+#include "cppvalue.h"
+#define YYSTYPE CPPValue
+
+typedef void* yyscan_t;
+struct constexpYY_state
 {
-  public:
-    ConstExpressionParser();
-   ~ConstExpressionParser();
-    bool parse(const char *fileName,int line,const QCString &expression);
-  private:
-    struct Private;
-    Private *p;
+  QCString    strToken;
+  CPPValue    resultValue;
+  int         constExpLineNr;
+  QCString    constExpFileName;
+
+  const char *inputString;
+  int         inputPosition;
 };
+constexpYY_state* constexpYYget_extra(yyscan_t yyscanner );
+
+extern int constexpYYlex(YYSTYPE *lvalp, yyscan_t);
+extern int constexpYYparse(yyscan_t);
+
 
 #endif

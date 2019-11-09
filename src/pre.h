@@ -28,7 +28,7 @@ class Preprocessor
     void processFile(const char *fileName,BufStr &input,BufStr &output);
     void addSearchDir(const char *dir);
  private:
-   class Private;
+   struct Private;
    Private *p;
 };
 

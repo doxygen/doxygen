@@ -380,6 +380,7 @@ struct preYY_state
   QCString           delimiter;
   QDict<void>        allIncludes;
   DefineManager      defineManager;
+  ConstExpressionParser constExpParser;
 };
 
 // stateless functions
@@ -2704,7 +2705,7 @@ static bool computeExpression(yyscan_t yyscanner,const QCString &expr)
   e = removeIdsAndMarkers(e);
   if (e.isEmpty()) return FALSE;
   //printf("parsing '%s'\n",e.data());
-  return parseconstexp(state->yyFileName,state->yyLineNr,e);
+  return state->constExpParser.parse(state->yyFileName,state->yyLineNr,e);
 }
 
 /*! expands the macro definition in \a name
