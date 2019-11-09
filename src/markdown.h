@@ -36,7 +36,7 @@ class MarkdownFileParser : public ParserInterface
                     const std::unique_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
-    bool needsPreprocessing(const QCString &) { return FALSE; }
+    bool needsPreprocessing(const QCString &) const { return FALSE; }
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,

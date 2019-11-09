@@ -1901,7 +1901,7 @@ void PythonLanguageScanner::parseInput(const char *fileName,
   // printAST(global_root);
 }
 
-bool PythonLanguageScanner::needsPreprocessing(const QCString &)
+bool PythonLanguageScanner::needsPreprocessing(const QCString &) const
 {
   return FALSE;
 }

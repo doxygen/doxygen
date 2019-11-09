@@ -2793,7 +2793,7 @@ void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                      showLineNumbers,searchCtx,collectXRefs,m_format);
 }
 
-bool FortranLanguageScanner::needsPreprocessing(const QCString &extension)
+bool FortranLanguageScanner::needsPreprocessing(const QCString &extension) const
 {
   return extension!=extension.lower(); // use preprocessor only for upper case extensions
 }

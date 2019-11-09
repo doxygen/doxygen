@@ -66,7 +66,7 @@ class VHDLLanguageScanner : public ParserInterface
                    const Definition *searchCtx=0,
                    bool collectXRefs=TRUE
 				   );
-		bool needsPreprocessing(const QCString &) { return TRUE; }
+		bool needsPreprocessing(const QCString &) const { return TRUE; }
 		void resetCodeParserState(){};
 	    void parsePrototype(const char *text);
 };

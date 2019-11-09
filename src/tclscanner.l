@@ -3081,7 +3081,7 @@ tcl_inf("%s (%d,%d) %d %d\n",myStr.data(),startLine,endLine,isExampleBlock,inlin
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
 }
 
-bool TclLanguageScanner::needsPreprocessing(const QCString &extension)
+bool TclLanguageScanner::needsPreprocessing(const QCString &extension) const
 {
   (void)extension;
   return FALSE;

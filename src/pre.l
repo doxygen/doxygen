@@ -334,9 +334,9 @@ struct preYY_state
   FileDef           *yyFileDef;
   FileDef           *inputFileDef;
   int                ifcount    = 0;
-  QStrList          *pathList = 0;  
+  QStrList          *pathList = 0;
   QStack<FileState>  includeStack;
-  QDict<int>        *argDict;
+  QDict<int>        *argDict = 0;
   int                defArgs = -1;
   QCString           defName;
   QCString           defText;
@@ -348,12 +348,12 @@ struct preYY_state
   int                lastCContext;
   int                lastCPPContext;
   QArray<int>        levelGuard;
-  BufStr            *inputBuf;
+  BufStr            *inputBuf = 0;
   int                inputBufPos;
-  BufStr            *outputBuf;
+  BufStr            *outputBuf = 0;
   int                roundCount;
   bool               quoteArg;
-  DefineDict        *expandedDict;
+  DefineDict        *expandedDict = 0;
   int                findDefArgContext;
   bool               expectGuard;
   QCString           guardName;

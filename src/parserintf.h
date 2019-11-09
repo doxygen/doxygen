@@ -78,7 +78,7 @@ class ParserInterface
      *  parser.
      *  @see parseInput()
      */
-    virtual bool needsPreprocessing(const QCString &extension) = 0;
+    virtual bool needsPreprocessing(const QCString &extension) const = 0;
     
     /** Parses a source file or fragment with the goal to produce
      *  highlighted and cross-referenced output.

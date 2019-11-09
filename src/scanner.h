@@ -37,7 +37,7 @@ class CLanguageScanner : public ParserInterface
                     const std::unique_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
-    bool needsPreprocessing(const QCString &extension);
+    bool needsPreprocessing(const QCString &extension) const;
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,

@@ -7364,7 +7364,7 @@ void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
 	       showLineNumbers,searchCtx,collectXRefs);
 }
 
-bool CLanguageScanner::needsPreprocessing(const QCString &extension)
+bool CLanguageScanner::needsPreprocessing(const QCString &extension) const
 {
   QCString fe=extension.lower();
   SrcLangExt lang = getLanguageFromFileName(extension);
