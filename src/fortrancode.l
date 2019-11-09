@@ -1224,26 +1224,29 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           YY_FTN_RESET
                                         }
  /*------ variable references  -------------------------------------*/ 
+ /* Give preference to user variables and functions over keywords. */
 
-<Start>{ID}{BS}/[=%]                    {   // scalar assignment or type structure element.
-                                            // resolves conflicts with fortran keywords that
-                                            // the simple variable reference below cannot.
-                                            //printf("===> line number %d lhs-variable |%s|\n",g_yyLineNr,yytext);
-  					    g_insideBody=TRUE;
-                                            // extract variable name and process it
-                                            char *tmp= (char *) malloc(strlen(yytext)+1);
-                                            strcpy(tmp,yytext);
-                                            strtok(tmp," \t");
-                                            //printf("     generateLink |%s|\n",tmp);
-                                            generateLink(*g_code, tmp);
-                                            if ( strlen(tmp) != strlen(yytext) ) {
-                                              // everything else is thrown back into input stream
-                                              // to prevent {BS} from being gobbled
-                                              //printf("     reprocess |%s|\n",yytext+strlen(tmp));
-                                              YY_FTN_LESS(strlen(tmp));
-                                            }
-                                            free(tmp);
-					    g_insideBody=FALSE;
+<Start>{ID}{BS}/[=+*\-\/><\.%]          { // Scalar variable followed by assignment, arithmetic,
+                                          //   comparison or type structure element.
+                                          // Resolves conflicts with fortran keywords that
+                                          //   the simple variable reference below cannot.
+                                          // Does not work across line continuation.
+                                          //printf("===> line number %d lhs-variable |%s|\n",g_yyLineNr,yytext);
+					  g_insideBody=TRUE;
+                                          // extract variable name and process it
+                                          char *tmp= (char *) malloc(strlen(yytext)+1);
+                                          strcpy(tmp,yytext);
+                                          strtok(tmp," \t");
+                                          //printf("     generateLink |%s|\n",tmp);
+                                          generateLink(*g_code, tmp);
+                                          if ( strlen(tmp) != strlen(yytext) ) {
+                                            // everything else is thrown back into input stream
+                                            // to prevent {BS} from being gobbled
+                                            //printf("     reprocess |%s|\n",yytext+strlen(tmp));
+                                            YY_FTN_LESS(strlen(tmp));
+                                          }
+                                          free(tmp);
+                                          g_insideBody=FALSE;
                                         }
 
  /* array(.)= assignment is hard to catch.                                      */
