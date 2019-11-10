@@ -3910,17 +3910,24 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             if (current->section == Entry::NAMESPACE_SEC && current->type == "namespace")
                                             {
                                               int split_point;
-                                              Entry *first_current = current;
+                                              // save documentation values
+                                              QCString doc       = current->doc;
+                                              int      docLine   = current->docLine;
+                                              QCString docFile   = current->docFile;
+                                              QCString brief     = current->brief;
+                                              int      briefLine = current->briefLine;
+                                              QCString briefFile = current->briefFile;
+                                              // reset documentation values
+                                              current->doc       = "";
+                                              current->docLine   = 0;
+                                              current->docFile   = "";
+                                              current->brief     = "";
+                                              current->briefLine = 0;
+                                              current->briefFile = "";
                                               while ((split_point = current->name.find("::")) != -1)
                                               {
                                                 std::unique_ptr<Entry> new_current = std::make_unique<Entry>(*current);
                                                 current->program = "";
-                                                new_current->doc = "";
-                                                new_current->docLine = 0;
-                                                new_current->docFile = "";
-                                                new_current->brief = "";
-                                                new_current->briefLine = 0;
-                                                new_current->briefFile = "";
                                                 new_current->name  = current->name.mid(split_point + 2);
                                                 current->name  = current->name.left(split_point);
                                                 if (!current_root->name.isEmpty()) current->name.prepend(current_root->name+"::");
@@ -3930,22 +3937,13 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                                 current_root = tmp;
                                                 current.swap(new_current);
                                               }
-                                              // put documentation in the right entity
-                                              if (first_current!=current)
-                                              {
-                                                current->doc = first_current->doc;
-                                                current->docLine = first_current->docLine;
-                                                current->docFile = first_current->docFile;
-                                                current->brief = first_current->brief;
-                                                current->briefLine = first_current->briefLine;
-                                                current->briefFile = first_current->briefFile;
-                                                first_current->doc = "";
-                                                first_current->docLine = 0;
-                                                first_current->docFile = "";
-                                                first_current->brief = "";
-                                                first_current->briefLine = 0;
-                                                first_current->briefFile = "";
-                                              }
+                                              // restore documentation values
+                                              current->doc       = doc;
+                                              current->docLine   = docLine;
+                                              current->docFile   = docFile;
+                                              current->brief     = brief;
+                                              current->briefLine = briefLine;
+                                              current->briefFile = briefFile;
                                             }
 					    QCString &cn = current->name;
 					    QCString rn = current_root->name.copy();
