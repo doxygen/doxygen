@@ -142,7 +142,7 @@ NOTE|note                             yylval.arctype = MSC_ARC_NOTE;     return 
 %%
 
 /* Handle a new line of input.
- *  This counts the line number and duplicates the string incase we need
+ *  This counts the line number and duplicates the string in case we need
  *  it for error reporting.  The line is then returned back for parsing
  *  without the newline characters prefixed.
  */

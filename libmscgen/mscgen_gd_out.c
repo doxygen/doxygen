@@ -119,7 +119,7 @@ static int getGdoPen(struct ADrawTag *ctx)
 
 
 /** Given a colour value, convert to a gd colour reference.
- * This searches the current pallette of colours for the passed colour and
+ * This searches the current palette of colours for the passed colour and
  * returns an existing reference if possible.  Otherwise a new colour reference
  * is allocated and returned.
  */
