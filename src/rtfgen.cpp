@@ -3052,6 +3052,7 @@ void RTFGenerator::writeLineNumber(const char *,const char *,const char *,int l)
   QCString lineNumber;
   lineNumber.sprintf("%05d",l);
   t << lineNumber << " ";
+  col=0;
 }
 void RTFGenerator::startCodeLine(bool)
 {
