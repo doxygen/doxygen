@@ -803,14 +803,15 @@ static bool findDocsForMemberOrCompound(const char *commandName,
 inline void errorHandleDefaultToken(DocNode *parent,int tok,
                                QList<DocNode> &children,const char *txt)
 {
+  const char *cmd_start = "\\";
   switch (tok)
   {
     case TK_COMMAND_AT:
-        // fall through
+      cmd_start = "@";
     case TK_COMMAND_BS:
       children.append(new DocWord(parent,TK_COMMAND_CHAR(tok) + g_token->name));
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a %s",
-       qPrint(TK_COMMAND_CHAR(tok) + g_token->name), txt);
+       qPrint(cmd_start + g_token->name),txt);
       break;
     case TK_SYMBOL:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found found as part of a %s",
@@ -2312,6 +2313,7 @@ void DocSecRefList::parse()
   {
     if (tok==TK_COMMAND_AT || tok == TK_COMMAND_BS)
     {
+      const char *cmd_start = (tok==TK_COMMAND_AT ? "@" : "\\");
       switch (Mappers::cmdMapper->map(g_token->name))
       {
         case CMD_SECREFITEM:
@@ -2339,7 +2341,7 @@ void DocSecRefList::parse()
           goto endsecreflist;
         default:
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\secreflist",
-              qPrint(g_token->name));
+              qPrint(cmd_start + g_token->name));
           goto endsecreflist;
       }
     }
@@ -2646,9 +2648,11 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
   {
     if (!defaultHandleToken(this,tok,m_children,FALSE))
     {
+      const char *cmd_start = "\\";
       switch (tok)
       {
         case TK_COMMAND_AT:
+          cmd_start = "@";
         // fall through
         case TK_COMMAND_BS:
           switch (Mappers::cmdMapper->map(g_token->name))
@@ -2661,7 +2665,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
               goto endlink;
             default:
               warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\link",
-                  qPrint(g_token->name));
+                  qPrint(cmd_start + g_token->name));
               break;
           }
           break;
@@ -3793,9 +3797,11 @@ int DocHtmlDescTitle::parse()
   {
     if (!defaultHandleToken(this,tok,m_children))
     {
+      const char *cmd_start = "\\";
       switch (tok)
       {
         case TK_COMMAND_AT:
+          cmd_start = "@";
         // fall through
         case TK_COMMAND_BS:
           {
@@ -3866,8 +3872,8 @@ int DocHtmlDescTitle::parse()
 
                 break;
               default:
-                warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command \\%s found as part of a <dt> tag",
-                               qPrint(g_token->name));
+                warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s found as part of a <dt> tag",
+                  qPrint(cmd_start + g_token->name));
             }
           }
           break;
