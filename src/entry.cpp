@@ -24,6 +24,7 @@
 #include "doxygen.h"
 #include "arguments.h"
 #include "config.h"
+#include "layout.h"
 //------------------------------------------------------------------
 
 #define HEADER ('D'<<24)+('O'<<16)+('X'<<8)+'!'
@@ -67,6 +68,8 @@ Entry::Entry(const Entry &e)
   subGrouping = e.subGrouping;
   callGraph   = e.callGraph;
   callerGraph = e.callerGraph;
+  includeGraph   = e.includeGraph;
+  includedByGraph = e.includedByGraph;
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
   virt        = e.virt;
@@ -199,6 +202,12 @@ void Entry::reset()
 {
   static bool entryCallGraph   = Config_getBool(CALL_GRAPH);
   static bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
+  static bool entryIncludeGraph            = LayoutDocManager::instance().isVisible(LayoutDocManager::File,LayoutDocEntry::FileIncludeGraph);
+  static bool entryIncludedByGraph         = LayoutDocManager::instance().isVisible(LayoutDocManager::File,LayoutDocEntry::FileIncludedByGraph);
+  static int  entryIncludeGraphMaxDepth    = Config_getBool(MAX_DOT_GRAPH_DEPTH);
+  static int  entryIncludedByGraphMaxDepth = Config_getBool(MAX_DOT_GRAPH_DEPTH);
+  static int  entryIncludeGraphMaxNodes    = Config_getBool(DOT_GRAPH_MAX_NODES);
+  static int  entryIncludedByGraphMaxNodes = Config_getBool(DOT_GRAPH_MAX_NODES);
   static bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
   static bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
   //printf("Entry::reset()\n");
@@ -230,8 +239,22 @@ void Entry::reset()
   bodyLine = -1;
   endBodyLine = -1;
   mGrpId = -1;
-  callGraph   = entryCallGraph;
-  callerGraph = entryCallerGraph;
+  callGraph.isExplicit = false;
+  callGraph.hasGraph   = entryCallGraph;
+  callGraph.maxDepth   = -1;
+  callGraph.maxNodes   = -1;
+  callerGraph.isExplicit = false;
+  callerGraph.hasGraph   = entryCallerGraph;
+  callerGraph.maxDepth   = -1;
+  callerGraph.maxNodes   = -1;
+  includeGraph.isExplicit = false;
+  includeGraph.hasGraph   = entryIncludeGraph;
+  includeGraph.maxDepth   = entryIncludeGraphMaxDepth;
+  includeGraph.maxNodes   = entryIncludeGraphMaxNodes;
+  includedByGraph.isExplicit = false;
+  includedByGraph.hasGraph   = entryIncludedByGraph;
+  includedByGraph.maxDepth   = entryIncludedByGraphMaxDepth;
+  includedByGraph.maxNodes   = entryIncludedByGraphMaxNodes;
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
   section = EMPTY_SEC;

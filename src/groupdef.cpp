@@ -1267,6 +1267,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   LayoutDocEntry *lde;
   for (eli.toFirst();(lde=eli.current());++eli)
   {
+    if (!((LayoutDocEntry *)lde)->isVisible()) continue;
     switch (lde->kind())
     {
       case LayoutDocEntry::BriefDesc: 

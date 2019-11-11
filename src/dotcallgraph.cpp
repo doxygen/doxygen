@@ -21,8 +21,6 @@
 #include "util.h"
 
 #define HIDE_SCOPE_NAMES      Config_getBool(HIDE_SCOPE_NAMES)
-#define DOT_GRAPH_MAX_NODES   Config_getInt(DOT_GRAPH_MAX_NODES)
-#define MAX_DOT_GRAPH_DEPTH   Config_getInt(MAX_DOT_GRAPH_DEPTH)
 
 void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
 {
@@ -83,7 +81,7 @@ void DotCallGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
   while (queue.count()>0 && maxNodes>0)
   {
     DotNode *n = queue.take(0);
-    if (!n->isVisible() && n->distance()<=MAX_DOT_GRAPH_DEPTH) // not yet processed
+    if (!n->isVisible() && n->distance()<=m_maxDepth) // not yet processed
     {
       n->markAsVisible();
       maxNodes--;
@@ -128,9 +126,17 @@ void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
 
 DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
 {
+  static int max_dot_graph_depth = Config_getBool(MAX_DOT_GRAPH_DEPTH);
+  static int dot_graph_max_nodes = Config_getBool(DOT_GRAPH_MAX_NODES);
+
   m_inverse = inverse;
   m_diskName = md->getOutputFileBase()+"_"+md->anchor();
   m_scope    = md->getOuterScope();
+  m_maxDepth = (m_inverse ? md->maxCallerGraphDepth() : md->maxCallGraphDepth());
+  if (m_maxDepth <= 0 ) m_maxDepth = max_dot_graph_depth;
+  m_maxNodes = (m_inverse ? md->maxCallerGraphNodes() : md->maxCallGraphNodes());
+  if (m_maxNodes <= 0 ) m_maxNodes = dot_graph_max_nodes;
+
   QCString uniqueId;
   uniqueId = md->getReference()+"$"+
     md->getOutputFileBase()+"#"+md->anchor();
@@ -155,7 +161,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   m_usedNodes->insert(uniqueId,m_startNode);
   buildGraph(m_startNode,md,1);
 
-  int maxNodes = DOT_GRAPH_MAX_NODES;
+  int maxNodes = m_maxNodes;
   QList<DotNode> openNodeQueue;
   openNodeQueue.append(m_startNode);
   determineVisibleNodes(openNodeQueue,maxNodes);
@@ -213,5 +219,5 @@ bool DotCallGraph::isTrivial() const
 bool DotCallGraph::isTooBig() const
 {
   int numNodes = m_startNode->children() ? m_startNode->children()->count() : 0;
-  return numNodes>=DOT_GRAPH_MAX_NODES;
+  return numNodes>=m_maxNodes;
 }

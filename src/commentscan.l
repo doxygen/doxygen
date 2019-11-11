@@ -108,6 +108,10 @@ static bool handleCallgraph(const QCString &, const QCStringList &);
 static bool handleHideCallgraph(const QCString &, const QCStringList &);
 static bool handleCallergraph(const QCString &, const QCStringList &);
 static bool handleHideCallergraph(const QCString &, const QCStringList &);
+static bool handleIncludegraph(const QCString &, const QCStringList &);
+static bool handleHideIncludegraph(const QCString &, const QCStringList &);
+static bool handleIncludedBygraph(const QCString &, const QCStringList &);
+static bool handleHideIncludedBygraph(const QCString &, const QCStringList &);
 static bool handleReferencedByRelation(const QCString &, const QCStringList &);
 static bool handleHideReferencedByRelation(const QCString &, const QCStringList &);
 static bool handleReferencesRelation(const QCString &, const QCStringList &);
@@ -221,6 +225,10 @@ static DocCmdMap docCmdMap[] =
   { "hidecallgraph",   &handleHideCallgraph,    FALSE },
   { "callergraph",     &handleCallergraph,      FALSE },
   { "hidecallergraph", &handleHideCallergraph,  FALSE },
+  { "includegraph",    &handleIncludegraph,     FALSE },
+  { "hideincludegraph",&handleHideIncludegraph, FALSE },
+  { "includedbygraph", &handleIncludedBygraph,  FALSE },
+  { "hideincludedbygraph", &handleHideIncludedBygraph,  FALSE },
   { "showrefby",       &handleReferencedByRelation,     FALSE },
   { "hiderefby",       &handleHideReferencedByRelation, FALSE },
   { "showrefs",        &handleReferencesRelation,       FALSE },
@@ -2847,27 +2855,101 @@ static bool handleHideInitializer(const QCString &, const QCStringList &)
   return FALSE;
 }
 
-static bool handleCallgraph(const QCString &, const QCStringList &)
+static void handleGraphSettings(const QCString &cmd, const QCStringList &optList, graphSettings &gs)
 {
-  current->callGraph = TRUE; // ON
+  static int max_dot_graph_depth = Config_getInt(MAX_DOT_GRAPH_DEPTH);
+  static int dot_graph_max_nodes = Config_getInt(DOT_GRAPH_MAX_NODES);
+  QCStringList::ConstIterator it;
+  for ( it = optList.begin(); it != optList.end(); ++it )
+  {
+    QCString opt = (*it).stripWhiteSpace().lower();
+    char dum;
+    int val;
+    int i = opt.find(':');
+    if (i>0)  // found ':' but not on position 0 what would mean just a value
+    {
+      if (sscanf(opt.right(opt.length() - i - 1).data(),"%d%c",&val,&dum) != 1)
+      {
+        warn(yyFileName,yyLineNr,"Unknown option:value specified with '\\%s': '%s'", qPrint(cmd),(*it).stripWhiteSpace().data());
+        opt = "";
+      }
+      else
+      {
+        opt = opt.left(i).stripWhiteSpace();
+        if (opt == "maxdepth")
+        {
+          if (val <= 0)  gs.maxDepth=max_dot_graph_depth;
+          else gs.maxDepth=val;
+        }
+        else if (opt == "maxnodes")
+        {
+          if (val <= 0)  gs.maxNodes=dot_graph_max_nodes;
+          else gs.maxNodes=val;
+        }
+        else
+        {
+          warn(yyFileName,yyLineNr,"Unknown option specified with '\\%s': '%s'", qPrint(cmd),(*it).stripWhiteSpace().data());
+        }
+      }
+    }
+    else
+    {
+      warn(yyFileName,yyLineNr,"No option specified with '\\%s': '%s'", qPrint(cmd),(*it).stripWhiteSpace().data());
+    }
+  }
+  gs.isExplicit = TRUE;
+  gs.hasGraph = TRUE; // ON
+}
+
+static bool handleCallgraph(const QCString &cmd, const QCStringList &optList)
+{
+  handleGraphSettings(cmd, optList, current->callGraph);
   return FALSE;
 }
 
 static bool handleHideCallgraph(const QCString &, const QCStringList &)
 {
-  current->callGraph = FALSE; // OFF
+  current->callGraph.isExplicit = TRUE;
+  current->callGraph.hasGraph = FALSE; // OFF
   return FALSE;
 }
 
-static bool handleCallergraph(const QCString &, const QCStringList &)
+static bool handleCallergraph(const QCString &cmd, const QCStringList &optList)
 {
-  current->callerGraph = TRUE; // ON
+  handleGraphSettings(cmd, optList, current->callerGraph);
   return FALSE;
 }
 
 static bool handleHideCallergraph(const QCString &, const QCStringList &)
 {
-  current->callerGraph = FALSE; // OFF
+  current->callerGraph.isExplicit = TRUE;
+  current->callerGraph.hasGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleIncludegraph(const QCString &cmd, const QCStringList &optList)
+{
+  handleGraphSettings(cmd, optList, current->includeGraph);
+  return FALSE;
+}
+
+static bool handleHideIncludegraph(const QCString &, const QCStringList &)
+{
+  current->includeGraph.isExplicit = TRUE;
+  current->includeGraph.hasGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleIncludedBygraph(const QCString &cmd, const QCStringList &optList)
+{
+  handleGraphSettings(cmd, optList, current->includedByGraph);
+  return FALSE;
+}
+
+static bool handleHideIncludedBygraph(const QCString &, const QCStringList &)
+{
+  current->includedByGraph.isExplicit = TRUE;
+  current->includedByGraph.hasGraph = FALSE; // OFF
   return FALSE;
 }
 

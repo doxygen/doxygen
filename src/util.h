@@ -496,4 +496,5 @@ int usedTableLevels();
 void incUsedTableLevels();
 void decUsedTableLevels();
 
+void mergeGraphSettings(QCString &nam,graphSettings &dst,graphSettings gs,char *cmdShow,char *cmdHide);
 #endif

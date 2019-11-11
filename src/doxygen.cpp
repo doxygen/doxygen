@@ -758,6 +758,8 @@ static void buildFileList(const Entry *root)
       fd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       fd->addSectionsToDefinition(root->anchors);
       fd->setRefItems(root->sli);
+      fd->enableIncludeGraph(root->includeGraph);
+      fd->enableIncludedByGraph(root->includedByGraph);
       for (const Grouping &g : root->groups)
       {
         GroupDef *gd=0;
@@ -3633,8 +3635,9 @@ static void buildFunctionList(const Entry *root)
 
                   md->addSectionsToDefinition(root->anchors);
 
-                  md->enableCallGraph(md->hasCallGraph() || root->callGraph);
-                  md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
+                  md->enableCallGraph(root->callGraph);
+                  md->enableCallerGraph(root->callerGraph);
+
                   md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
                   md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
 
@@ -3900,13 +3903,15 @@ static void findFriends()
             }
             mmd->setDocsForDefinition(fmd->isDocsForDefinition());
 
-            mmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
-            mmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
+            mmd->enableCallGraph(fmd->callGraph());
+            fmd->enableCallGraph(mmd->callGraph());
+
+            mmd->enableCallerGraph(fmd->callerGraph());
+            fmd->enableCallerGraph(mmd->callerGraph());
+
             mmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
             mmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
 
-            fmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
-            fmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
             fmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
             fmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
           }
@@ -5332,8 +5337,9 @@ static void addMemberDocs(const Entry *root,
     md->setRefItems(root->sli);
   }
 
-  md->enableCallGraph(md->hasCallGraph() || root->callGraph);
-  md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
+  md->enableCallGraph(root->callGraph);
+  md->enableCallerGraph(root->callerGraph);
+
   md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
   md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
 

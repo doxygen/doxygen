@@ -51,6 +51,8 @@ class DotInclDepGraph : public DotGraph
     QCString        m_inclDepFileName;
     QCString        m_inclByDepFileName;
     bool            m_inverse;
+    int             m_maxDepth;
+    int             m_maxNodes;
 };
 
 #endif

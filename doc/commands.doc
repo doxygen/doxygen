@@ -116,6 +116,8 @@ documentation:
 \refitem cmdhiderefs \\hiderefs
 \refitem cmdhideinitializer \\hideinitializer
 \refitem cmdhtmlinclude \\htmlinclude
+\refitem cmdhideincludedbygraph \\hideincludedbygraph
+\refitem cmdhideincludegraph \\hideincludegraph
 \refitem cmdhtmlonly \\htmlonly
 \refitem cmdidlexcept \\idlexcept 
 \refitem cmdif \\if
@@ -123,7 +125,9 @@ documentation:
 \refitem cmdimage \\image
 \refitem cmdimplements \\implements
 \refitem cmdinclude \\include
+\refitem cmdincludedbygraph \\includedbygraph
 \refitem cmdincludedoc \\includedoc
+\refitem cmdincludegraph \\includegraph
 \refitem cmdincludelineno \\includelineno
 \refitem cmdingroup \\ingroup
 \refitem cmdinternal \\internal
@@ -278,7 +282,7 @@ Structural indicators
   \ref cmdweakgroup "\\weakgroup".
 
 <hr>
-\section cmdcallgraph \\callgraph
+\section cmdcallgraph \\callgraph['{'[option:value][,option:value]*'}']
 
   \addindex \\callgraph
   When this command is put in a comment block of a function or method
@@ -286,20 +290,29 @@ Structural indicators
   generate a call graph for that function (provided the implementation of the
   function or method calls other documented functions). The call graph will be
   generated regardless of the value of \ref cfg_call_graph "CALL_GRAPH".
+  The maximum number of nodes in the graph can be steered by means of 
+  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" and the depth of the graph by means
+  of \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH". The graph can be refined
+  or extended by means of the `options` `maxnodes` and `maxdepth` in case of a
+  positive value that value is used otherwise the value from
+  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" and
+  \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH" are taken.
   \note The completeness (and correctness) of the call graph depends on the
   doxygen code parser which is not perfect.
 
   \sa section \ref cmdcallergraph "\\callergraph",
       section \ref cmdhidecallgraph "\\hidecallgraph",
-      section \ref cmdhidecallergraph "\\hidecallergraph" and
-      option \ref cfg_call_graph "CALL_GRAPH"
+      section \ref cmdhidecallergraph "\\hidecallergraph",
+      option \ref cfg_call_graph "CALL_GRAPH",
+      option \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES and
+      option \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH"
 
 <hr>
 \section cmdhidecallgraph \\hidecallgraph
 
   \addindex \\hidecallgraph
   When this command is put in a comment block of a function or method
-  and then doxygen will not generate a call graph for that function. The
+  then doxygen will not generate a call graph for that function. The
   call graph will not be generated regardless of the value of
   \ref cfg_call_graph "CALL_GRAPH".
   \note The completeness (and correctness) of the call graph depends on the
@@ -311,7 +324,7 @@ Structural indicators
       option \ref cfg_call_graph "CALL_GRAPH"
 
 <hr>
-\section cmdcallergraph \\callergraph
+\section cmdcallergraph \\callergraph['{'[option:value][,option:value]*'}']
 
   \addindex \\callergraph
   When this command is put in a comment block of a function or method
@@ -319,20 +332,29 @@ Structural indicators
   generate a caller graph for that function (provided the implementation of the
   function or method is called by other documented functions). The caller graph will be
   generated regardless of the value of \ref cfg_caller_graph "CALLER_GRAPH".
+  The maximum number of nodes in the graph can be steered by means of 
+  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" and the depth of the graph by means
+  of \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH". The graph can be refined
+  or extended by means of the `options` `maxnodes` and `maxdepth` in case of a
+  positive value that value is used otherwise the value from
+  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" and
+  \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH" are taken.
   \note The completeness (and correctness) of the caller graph depends on the
   doxygen code parser which is not perfect.
 
   \sa section \ref cmdcallgraph "\\callgraph",
       section \ref cmdhidecallgraph "\\hidecallgraph",
-      section \ref cmdhidecallergraph "\\hidecallergraph" and
-      option \ref cfg_caller_graph "CALLER_GRAPH"
+      section \ref cmdhidecallergraph "\\hidecallergraph",
+      option \ref cfg_caller_graph "CALLER_GRAPH",
+      option \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES and
+      option \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH"
 
 <hr>
 \section cmdhidecallergraph \\hidecallergraph
 
   \addindex \\hidecallergraph
   When this command is put in a comment block of a function or method
-  and then doxygen will not generate a caller graph for that function. The
+  then doxygen will not generate a caller graph for that function. The
   caller graph will not be generated regardless of the value of
   \ref cfg_caller_graph "CALLER_GRAPH".
   \note The completeness (and correctness) of the caller graph depends on the
@@ -342,6 +364,88 @@ Structural indicators
       section \ref cmdcallgraph "\\callgraph",
       section \ref cmdhidecallgraph "\\hidecallgraph" and
       option \ref cfg_caller_graph "CALLER_GRAPH"
+
+<hr>
+\section cmdincludegraph \\includegraph['{'[option:value][,option:value]*'}']
+
+  \addindex \\includegraph
+  When this command is put in a comment block of a file
+  and \ref cfg_have_dot "HAVE_DOT" is set to \c YES, then doxygen will
+  generate a include graph for that file. The include graph will be
+  generated regardless of the value of \ref cfg_include_graph "INCLUDE_GRAPH".
+  The maximum number of nodes in the graph can be steered by means of 
+  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" and the depth of the graph by means
+  of \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH". The graph can be refined
+  or extended by means of the `options` `maxnodes` and `maxdepth` in case of a
+  positive value that value is used otherwise the value from
+  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" and
+  \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH" are taken.
+  \note The completeness (and correctness) of the include graph depends on the
+  doxygen code parser which is not perfect.
+
+  \sa section \ref cmdincludedbygraph "\\includedbygraph",
+      section \ref cmdhideincludegraph "\\hideincludegraph",
+      section \ref cmdhideincludedbygraph "\\hideincludedbygraph",
+      option \ref cfg_include_graph "INCLUDE_GRAPH",
+      option \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES and
+      option \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH"
+
+<hr>
+\section cmdhideincludegraph \\hideincludegraph
+
+  \addindex \\hideincludegraph
+  When this command is put in a comment block of a file
+  then doxygen will not generate a include graph for that file. The
+  include graph will not be generated regardless of the value of
+  \ref cfg_include_graph "INCLUDE_GRAPH".
+  \note The completeness (and correctness) of the include graph depends on the
+  doxygen code parser which is not perfect.
+
+  \sa section \ref cmdincludedbygraph "\\includedbygraph",
+      section \ref cmdincludegraph "\\includegraph",
+      section \ref cmdhideincludedbygraph "\\hideincludedbygraph" and
+      option \ref cfg_include_graph "INCLUDE_GRAPH"
+
+<hr>
+\section cmdincludedbygraph \\includedbygraph['{'[option:value][,option:value]*'}']
+
+  \addindex \\includedbygraph
+  When this command is put in a comment block of a file
+  and \ref cfg_have_dot "HAVE_DOT" is set to \c YES, then doxygen will
+  generate a included by graph for that file. The included by graph will be
+  generated regardless of the value of \ref cfg_included_by_graph "INCLUDED_BY_GRAPH".
+  The maximum number of nodes in the graph can be steered by means of 
+  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" and the depth of the graph by means
+  of \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH". The graph can be refined
+  or extended by means of the `options` `maxnodes` and `maxdepth` in case of a
+  positive value that value is used otherwise the value from
+  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" and
+  \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH" are taken.
+  \note The completeness (and correctness) of the included by graph depends on the
+  doxygen code parser which is not perfect.
+
+  \sa section \ref cmdincludegraph "\\includegraph",
+      section \ref cmdhideincludegraph "\\hideincludegraph",
+      section \ref cmdhideincludedbygraph "\\hideincludedbygraph",
+      option \ref cfg_included_by_graph "INCLUDED_BY_GRAPH",
+      option \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES and
+      option \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH"
+
+<hr>
+\section cmdhideincludedbygraph \\hideincludedbygraph
+
+  \addindex \\hideincludedbygraph
+  When this command is put in a comment block of a file
+  then doxygen will not generate a included by graph for that function. The
+  included by graph will not be generated regardless of the value of
+  \ref cfg_included_by_graph "INCLUDED_BY_GRAPH".
+  \note The completeness (and correctness) of the included by graph depends on the
+  doxygen code parser which is not perfect.
+
+  \sa section \ref cmdincludedbygraph "\\includedbygraph",
+      section \ref cmdincludegraph "\\includegraph",
+      section \ref cmdhideincludegraph "\\hideincludegraph" and
+      option \ref cfg_included_by_graph "INCLUDED_BY_GRAPH"
 
 <hr>
 \section cmdshowrefby \\showrefby
