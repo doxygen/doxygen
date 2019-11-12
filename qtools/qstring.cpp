@@ -15300,7 +15300,7 @@ const void* qt_winTchar(const QString& str_in, bool addnul)
     if ( addnul )
 	buf[str.length()] = 0;
 #else
-    // Same endianness of TCHAR
+    // Same endianess of TCHAR
     if ( addnul ) {
 	EXTEND
 	memcpy(buf,uc,sizeof(TCHAR)*str.length());
@@ -15344,7 +15344,7 @@ QString qt_winQString(void* tc)
 	r += QChar(((TCHAR*)tc)[i]&0xff,((TCHAR*)tc)[i]>>8);
     return r;
 #else
-    // Same endianness of TCHAR
+    // Same endianess of TCHAR
     return QString((QChar*)tc,len);
 #endif
 #undef EXTEND
