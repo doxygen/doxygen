@@ -311,7 +311,7 @@ href="https://github.com/doxygen/doxygen/commit/9d83d43f0d8b7058e2f89371a6ab276c
 <li>delayed creation and update of .md5 files after successful creation of output files [<a href="https://github.com/doxygen/doxygen/commit/572035ffcd0e4f7313bab23d375d63008ebbe5a3">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/9dda0c6ddc5117f800afcb19fb8c6be031fe6c27">view</a>]</li>
 <li>do not clobber version placeholder [<a href="https://github.com/doxygen/doxygen/commit/faafe83a69d2f3c27daca0974c9a063bdb81ecdc">view</a>]</li>
 <li>doxyparse addon new features and bugfixes [<a href="https://github.com/doxygen/doxygen/commit/69f51747c37bb24b7e296ff01bb7e45a624f6225">view</a>]</li>
-<li>doxysearch: added wildcard, partial and phrase sesarch [<a href="https://github.com/doxygen/doxygen/commit/6217e3026d29a6f54e0138452706caa1bbc86307">view</a>]</li>
+<li>doxysearch: added wildcard, partial and phrase search [<a href="https://github.com/doxygen/doxygen/commit/6217e3026d29a6f54e0138452706caa1bbc86307">view</a>]</li>
 <li>enable debug for re-entrant lexers [<a href="https://github.com/doxygen/doxygen/commit/2c8eec16b0a0ce46f69af9f09b66c2475066bbe6">view</a>]</li>
 <li>https link to sourceforge.net [<a href="https://github.com/doxygen/doxygen/commit/5705d50298b7b91f81f87baf0dc3a58224acd982">view</a>]</li>
 <li>make similar javadoc banner change for stripping special comments from code [<a href="https://github.com/doxygen/doxygen/commit/77dae25c166c71a57d9ecd64b765bcc616d435ec">view</a>]</li>
