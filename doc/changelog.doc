@@ -5966,7 +5966,7 @@ make sure you add the following:
 \htmlonly
 </p>
 <h1>Doxygen Release 1.3.9.1</h1>
-<h3>Bug fixes</h3>(ids refer to the old buzilla issue, just use it in the search box of the <a href="https://github.com/doxygen/doxygen/issues">issue tracker</a>)<br/>
+<h3>Bug fixes</h3>(ids refer to the old bugzilla issue, just use it in the search box of the <a href="https://github.com/doxygen/doxygen/issues">issue tracker</a>)<br/>
 <ul>
 <li>   Due to an error in the packaging script, an old version of doxywizard 
        was bundled with the Mac OS X version of doxygen.</li>
