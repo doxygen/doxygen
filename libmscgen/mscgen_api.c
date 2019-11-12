@@ -67,7 +67,7 @@ typedef struct GlobalOptionsTag
     /** Size of 'corner' added to note boxes. */
     unsigned int noteCorner;
 
-    /** Anguluar box slope in pixels. */
+    /** Angular box slope in pixels. */
     unsigned int aboxSlope;
 
     /** If TRUE, wrap arc text as well as box contents. */
