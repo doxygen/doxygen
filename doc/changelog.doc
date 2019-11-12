@@ -4286,7 +4286,7 @@ make sure you add the following:
 <li>   Added new config options <code>GENERATE_QHP</code>
        which enables generating .qch (Qt compiled help) file via 
        the Qt's qthelpgenerator tool (part of Qt 4.4+).
-       This type of files can be read with Qt's Assisant to browse the 
+       This type of files can be read with Qt's Assistant to browse the 
        documentation in a similar way as is possible with Microsoft's 
        compiled HTML help (.chm). To further customize the output and run the
        help generator from within doxygen, the following options
