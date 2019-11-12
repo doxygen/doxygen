@@ -8188,7 +8188,7 @@ make sure you add the following:
        the documentation (thanks to John Harris for reporting this).</li>
 <li>   Applied a number of patches sent by Jens Seidel.</li>
 <li>   Fixed compiler limit problem on Windows (thanks to Trevor Robinson).</li>
-<li>   Add -dBATCH in system calls to ghostscipt (needed for formulas) 
+<li>   Add -dBATCH in system calls to ghostscript (needed for formulas) 
        to avoid a command prompt for newer versions of ghostscript 
        (thanks to Marvin Wolfthal).</li>
 <li>   In some situations doxygen wanted to write a files containing a \n.</li>
