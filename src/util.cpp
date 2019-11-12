@@ -5966,7 +5966,7 @@ QCString convertToHtml(const char *s,bool keepEntities)
   static GrowBuf growBuf;
   growBuf.clear();
   if (s==0) return "";
-  growBuf.addStr(getHtmlDirEmbedingChar(getTextDirByConfig(s)));
+  growBuf.addStr(getHtmlDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -6014,7 +6014,7 @@ QCString convertToJSString(const char *s, bool applyTextDir)
   growBuf.clear();
   if (s==0) return "";
   if (applyTextDir)
-    growBuf.addStr(getJsDirEmbedingChar(getTextDirByConfig(s)));
+    growBuf.addStr(getJsDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))

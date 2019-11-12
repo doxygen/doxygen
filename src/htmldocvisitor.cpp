@@ -1259,7 +1259,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   if (needsTag)
     m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(p), contexts[t]) << htmlAttribsToString(p->attribs()) << ">";
   else if(!paragraphAlreadyStarted)
-    m_t << getHtmlDirEmbedingChar(getTextDirByConfig(p)) << htmlAttribsToString(p->attribs());
+    m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(p)) << htmlAttribsToString(p->attribs());
 }
 
 void HtmlDocVisitor::visitPost(DocPara *p)
@@ -1757,7 +1757,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       else
       {
         m_t << "<div class=\"caption\">" << endl;
-        m_t << getHtmlDirEmbedingChar(getTextDirByConfig(img));
+        m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(img));
       }
     }
     else if (inlineImage)
@@ -2491,7 +2491,7 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     if (needsTag)
       m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(para, nodeIndex)) << ">";
     else
-      m_t << getHtmlDirEmbedingChar(getTextDirByConfig(para, nodeIndex));
+      m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(para, nodeIndex));
   }
 }
 

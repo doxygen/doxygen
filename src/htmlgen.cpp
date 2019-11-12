@@ -492,7 +492,7 @@ void HtmlCodeGenerator::codify(const char *str)
 
 void HtmlCodeGenerator::docify(const char *str)
 {
-  m_t << getHtmlDirEmbedingChar(getTextDirByConfig(str));
+  m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(str));
 
   if (str && m_streamSet)
   {
