@@ -205,7 +205,7 @@ Boolean      MscGetOptAsBoolean(struct MscTag *m, MscOptType type, Boolean *cons
  *
  * \param  m      The MSC to analyse.
  * \param  label  The label to find.
- * \retval -1     If the label was not found, otherwise the columnn index.
+ * \retval -1     If the label was not found, otherwise the column index.
  */
 int           MscGetEntityIndex(struct MscTag *m, const char *label);
 
