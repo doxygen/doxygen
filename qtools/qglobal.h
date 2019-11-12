@@ -400,7 +400,7 @@ inline int qRound( double d )
 
 
 //
-// Size-dependent types (architechture-dependent byte order)
+// Size-dependent types (architecture-dependent byte order)
 //
 
 // QT_CLEAN_NAMESPACE is not defined by default; it would break too
