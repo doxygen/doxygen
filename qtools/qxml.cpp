@@ -5175,11 +5175,11 @@ bool QXmlSimpleReader::parseEntityValue()
     const signed char Init             = 0;
     const signed char Dq               = 1; // EntityValue is double quoted
     const signed char DqC              = 2; // signed character
-    const signed char DqPER            = 3; // PERefence
+    const signed char DqPER            = 3; // PEReference
     const signed char DqRef            = 4; // Reference
     const signed char Sq               = 5; // EntityValue is double quoted
     const signed char SqC              = 6; // signed character
-    const signed char SqPER            = 7; // PERefence
+    const signed char SqPER            = 7; // PEReference
     const signed char SqRef            = 8; // Reference
     const signed char Done             = 9;
 
