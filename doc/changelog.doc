@@ -763,7 +763,7 @@ href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/6128">6128</a> - Usage of underscore&#39;s in parameter names [<a href="https://github.com/doxygen/doxygen/commit/c10af45c61a1f9b25c514f397ace16c94cc7c8df">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/6135">6135</a> - [1.8.13 Regression] Segfault building the breathe docs [<a href="https://github.com/doxygen/doxygen/commit/0f02761a158a5e9ddbd5801682482af8986dbc35">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/6137">6137</a> - XML Parsing Error for operator&lt;&lt; methods when outputting to XHTML [<a href="https://github.com/doxygen/doxygen/commit/0e8530e42b69c909ef2c26468b24dfb88cc0997f">view</a>]</li>
-<li>Bug <a href="https://github.com/doxygen/doxygen/issues/6139">6139</a> - Menu does not work without Javascript [<a href="https://github.com/doxygen/doxygen/commit/1be97720b7820361e85242d08d4cac3e46570bfe">view</a>]</li>
+<li>Bug <a href="https://github.com/doxygen/doxygen/issues/6139">6139</a> - Menu does not work without JavaScript [<a href="https://github.com/doxygen/doxygen/commit/1be97720b7820361e85242d08d4cac3e46570bfe">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/6141">6141</a> - Too greedy behavior of @ref const matching [<a href="https://github.com/doxygen/doxygen/commit/04001c8926fb0f37dfcf284b3637b182125bba75">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/6169">6169</a> - doxygen build fails [<a href="https://github.com/doxygen/doxygen/commit/bb5c8dd29782ecbb05a4ef9788f2507e9a156848">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/6170">6170</a> - Add &quot;\~&quot; command to internationalization article [<a href="https://github.com/doxygen/doxygen/commit/e204b982eebd54bd15148a520da6608935e33e50">view</a>]</li>
@@ -3993,7 +3993,7 @@ make sure you add the following:
 <h3>Changes</h3>
 <ul>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3372">3372</a>, <a href="https://github.com/doxygen/doxygen/issues/3012">3012</a>: Replaced the PHP based search engine by a 
-       Javascript/DHTML based one.
+       JavaScript/DHTML based one.
        As a result the search feature no longer requires a HTTP server
        with PHP enabled to be usable. Searching is limited to symbols
        though, but it is now possible to filter on symbol type.</li>

@@ -11649,7 +11649,7 @@ void generateOutput()
   g_s.begin("Generating search indices...\n");
   if (searchEngine && !serverBasedSearch && (generateHtml || g_useOutputTemplate))
   {
-    createJavascriptSearchIndex();
+    createJavaScriptSearchIndex();
   }
 
   // generate search indices (need to do this before writing other HTML
@@ -11668,7 +11668,7 @@ void generateOutput()
     HtmlGenerator::writeSearchData(searchDirName);
     if (!serverBasedSearch) // client side search index
     {
-      writeJavascriptSearchIndex();
+      writeJavaScriptSearchIndex();
     }
   }
   g_s.end();

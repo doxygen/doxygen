@@ -731,7 +731,7 @@ static QCString searchId(const QCString &s)
   return result;
 }
 
-void createJavascriptSearchIndex()
+void createJavaScriptSearchIndex()
 {
   bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
@@ -953,7 +953,7 @@ void createJavascriptSearchIndex()
   }
 }
 
-void writeJavascriptSearchIndex()
+void writeJavaScriptSearchIndex()
 {
   int i;
   int cnt = 0;

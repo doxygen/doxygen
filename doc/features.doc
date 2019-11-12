@@ -69,7 +69,7 @@
     generated automatically.
 <li>Includes a fast, rank based search engine to search for strings or words 
     in the class and member documentation (PHP based).
-<li>Includes an Javascript based live search feature to search for symbols
+<li>Includes an JavaScript based live search feature to search for symbols
     as you type (for small to medium sized projects).
 <li>You can type normal HTML tags in your documentation. Doxygen will convert
     them to their equivalent \LaTeX, RTF, and man-page 

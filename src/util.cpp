@@ -8384,7 +8384,7 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_PHP:      return "PHP";
     case SrcLangExt_ObjC:     return "Objective-C";
     case SrcLangExt_Cpp:      return "C++";
-    case SrcLangExt_JS:       return "Javascript";
+    case SrcLangExt_JS:       return "JavaScript";
     case SrcLangExt_Python:   return "Python";
     case SrcLangExt_Fortran:  return "Fortran";
     case SrcLangExt_VHDL:     return "VHDL";

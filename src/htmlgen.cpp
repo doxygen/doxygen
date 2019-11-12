@@ -229,7 +229,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
                                        const QCString &relPath,
                                        const QCString &navPath=QCString())
 {
-  // Build CSS/Javascript tags depending on treeview, search engine settings
+  // Build CSS/JavaScript tags depending on treeview, search engine settings
   QCString cssFile;
   QStrList extraCssFile;
   QCString generatedBy;
