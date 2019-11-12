@@ -9392,7 +9392,7 @@ make sure you add the following:
        methods were also not correctly recognized.</li>
 <li>   C/C++ comments inside initializers where not handled properly.</li>
 <li>   If the type of an argument of a member definition was prefixed 
-       with a (redudant) scope name of an indirect base class, 
+       with a (redundant) scope name of an indirect base class, 
        then it was not matched against the member declaration if that
        omitted the scope.</li>
 <li>   \name did not work within //! comments</li>
