@@ -6367,7 +6367,7 @@ make sure you add the following:
        Please try it on your favorite legacy C project and report any 
        problems.</li>
 <li>   Included languages updates for Traditional Chinese, 
-       Danish, German, Korian translation.</li>
+       Danish, German, Korean translation.</li>
 <li>   id 120464: doxygen's XML output does now assign a prot="..." 
        attribute for nested classes (thanks to Paul Ross for the patch).</li>
 <li>   Added new configuration switch XML_PROGRAMLISTING to enable/disable 
