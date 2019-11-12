@@ -1250,7 +1250,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           else
                                           {
                                             codifyLines(yytext);
-                                            // comment cannot extend over the end of a line so should always be terminatd at the end of the line.
+                                            // comment cannot extend over the end of a line so should always be terminated at the end of the line.
                                             if (g_currentFontClass && !strcmp(g_currentFontClass,"comment")) endFontClass();
                                           }
 					  g_contLineNr++;
