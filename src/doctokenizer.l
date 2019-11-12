@@ -344,7 +344,7 @@ PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
-MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILTOADDR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 OPTSTARS  ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
@@ -642,13 +642,13 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>{MAILADR}     { // Mail address
+<St_Para>{MAILTOADDR}     { // Mail address
                          g_token->name=yytext;
                          g_token->name.stripPrefix("mailto:");
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
                        }
-<St_Para>"<"{MAILADR}">" { // Mail address
+<St_Para>"<"{MAILTOADDR}">" { // Mail address
                          g_token->name=yytext;
                          g_token->name = g_token->name.mid(1,g_token->name.length()-2);
                          g_token->name.stripPrefix("mailto:");
