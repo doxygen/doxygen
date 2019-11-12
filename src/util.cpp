@@ -3376,7 +3376,7 @@ static QCString getCanonicalTypeForIdentifier(
   if (cd && cd->isUsedOnly()) cd=0; // ignore types introduced by usage relations
 
   //printf("cd=%p mtype=%p\n",cd,mType);
-  //printf("  getCanonicalTypeForIdentifer: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
+  //printf("  getCanonicalTypeForIdentifier: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    symName.data(),
   //    word.data(),
   //    cd?cd->name().data():"<none>",
