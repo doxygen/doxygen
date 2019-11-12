@@ -1446,7 +1446,7 @@ static void resolveClassNestingRelations()
       Definition *d = buildScopeFromQualifiedName(name,name.contains("::"),cd->getLanguage(),0);
       if (d!=cd && !cd->getDefFileName().isEmpty())
                  // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
-                 // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
+                 // for this case doxygen assumes the existence of a namespace N::N in which C is to be found!
                  // also avoid warning for stuff imported via a tagfile.
       {
         d->addInnerCompound(cd);
