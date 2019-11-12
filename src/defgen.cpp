@@ -288,7 +288,7 @@ void generateDEFForMember(MemberDef *md,
     {
       if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
       {
-        t << memPrefix << "referenceby = {" << endl;
+        t << memPrefix << "referencedby = {" << endl;
         t << refPrefix << "id = '"
           << rmd->getBodyDef()->getOutputFileBase()
           << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
