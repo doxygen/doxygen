@@ -77,7 +77,7 @@ struct VhdlConfNode
   { 
     arch=a;              // architecture  e.g. for iobuffer
     arch=arch.lower();
-    binding=b;           // binding e.g.  use entiy work.xxx(bev)
+    binding=b;           // binding e.g.  use entity work.xxx(bev)
     binding=binding.lower();
     confVhdl=config;     // configuration foo is bar
     compSpec=cs;        
