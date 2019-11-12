@@ -1183,7 +1183,7 @@ href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887
 <li>Fix error documentation of in flex debug script [<a href="https://github.com/doxygen/doxygen/commit/09c4e990e4e214900e613343fb9bfbbb08f1bc53">view</a>]</li>
 <li>Fix for broken link in the manual [<a href="https://github.com/doxygen/doxygen/commit/355370151b61f79633b3867634d76eaf8bacce54">view</a>]</li>
 <li>Fix hexChar for inputs 0 &lt;= i &lt; 10 [<a href="https://github.com/doxygen/doxygen/commit/327422d131ed5e6ddf280043b5a56a6fb92d3bbc">view</a> and [<a href="https://github.com/doxygen/doxygen/commit/62da4521880a03b8a92887539eaf76ccad2ee770">view</a>]</li>
-<li>Fix spelling in doc/commands.doc (descriptionm) [<a href="https://github.com/doxygen/doxygen/commit/bd7da008fac074202e3265787907434fbfb40e71">view</a>]</li>
+<li>Fix spelling in doc/commands.doc (description) [<a href="https://github.com/doxygen/doxygen/commit/bd7da008fac074202e3265787907434fbfb40e71">view</a>]</li>
 <li>Fix typo in function name [<a href="https://github.com/doxygen/doxygen/commit/ace0af42e330a96ad691b2d9a08dd3ff4abb2629">view</a> and [<a href="https://github.com/doxygen/doxygen/commit/b890f40d195b9dc5db12aaa398707de138093c66">view</a>]</li>
 <li>Fixed a couple of small memory leaks [<a href="https://github.com/doxygen/doxygen/commit/85ddfc814f33943199928447b4627d05b0920b99">view</a>]</li>
 <li>Fixed a number of memory leaks in the template engine [<a href="https://github.com/doxygen/doxygen/commit/d14bcd1f8f5bd4a2034bae842000630f4e098eb6">view</a>]</li>
