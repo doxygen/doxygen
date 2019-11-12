@@ -453,7 +453,7 @@ void MemberHandler::startArgsString(const QXmlAttributes&)
 void MemberHandler::endArgsString()
 {
   m_argsstring = m_curString.stripWhiteSpace();
-  debug(2,"arggstring=%s\n",m_argsstring.data());
+  debug(2,"argstring=%s\n",m_argsstring.data());
 }
   
 void MemberHandler::startParam(const QXmlAttributes& attrib)
