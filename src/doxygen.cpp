@@ -4648,7 +4648,7 @@ static bool findClassRelation(
           // base class has template specifiers
         {
           // TODO: here we should try to find the correct template specialization
-          // but for now, we only look for the unspecializated base class.
+          // but for now, we only look for the unspecialized base class.
           int e=findEndOfTemplate(baseClassName,i+1);
           //printf("baseClass==0 i=%d e=%d\n",i,e);
           if (e!=-1) // end of template was found at e
