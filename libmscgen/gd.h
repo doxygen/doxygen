@@ -101,7 +101,7 @@ extern "C" {
    pixels are represented by integers, which
    must be 32 bits wide or more.
 
-   True colors are repsented as follows:
+   True colors are represented as follows:
    
    ARGB
 	
