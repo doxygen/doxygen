@@ -1509,7 +1509,7 @@ static unsigned getNumColorChannels(unsigned colorType)
     case 4: return 2; /*grey + alpha*/
     case 6: return 4; /*RGBA*/
   }
-  return 0; /*unexisting color type*/
+  return 0; /*nonexistent color type*/
 }
 
 static unsigned getBpp(unsigned colorType, unsigned bitDepth)
@@ -2023,7 +2023,7 @@ static void filterScanline(unsigned char* out, const unsigned char* scanline, co
         for(i = bytewidth; i <    length; i++) out[i] = (unsigned char)(scanline[i] - paethPredictor(scanline[i - bytewidth], 0, 0));
       }
       break;
-  default: return; /*unexisting filter type given*/
+  default: return; /*nonexistent filter type given*/
   }
 }
 
@@ -2341,10 +2341,10 @@ void LodePNG_encode(LodePNG_Encoder* encoder, unsigned char** out, size_t* outsi
   }
 
   if(encoder->settings.zlibsettings.windowSize > 32768) { encoder->error = 60; return; } /*error: windowsize larger than allowed*/
-  if(encoder->settings.zlibsettings.btype > 2) { encoder->error = 61; return; } /*error: unexisting btype*/
-  if(encoder->infoPng.interlaceMethod > 1) { encoder->error = 71; return; } /*error: unexisting interlace mode*/
-  if((encoder->error = checkColorValidity(info.color.colorType, info.color.bitDepth))) return; /*error: unexisting color type given*/
-  if((encoder->error = checkColorValidity(encoder->infoRaw.color.colorType, encoder->infoRaw.color.bitDepth))) return; /*error: unexisting color type given*/
+  if(encoder->settings.zlibsettings.btype > 2) { encoder->error = 61; return; } /*error: nonexistent btype*/
+  if(encoder->infoPng.interlaceMethod > 1) { encoder->error = 71; return; } /*error: nonexistent interlace mode*/
+  if((encoder->error = checkColorValidity(info.color.colorType, info.color.bitDepth))) return; /*error: nonexistent color type given*/
+  if((encoder->error = checkColorValidity(encoder->infoRaw.color.colorType, encoder->infoRaw.color.bitDepth))) return; /*error: nonexistent color type given*/
 
   if(!LodePNG_InfoColor_equal(&encoder->infoRaw.color, &info.color))
   {
