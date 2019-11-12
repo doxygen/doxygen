@@ -5363,7 +5363,7 @@ make sure you add the following:
        command always ended at the first dot.</li>
 <li>   id 311207: The /* and */ inside a \code ... \endcode code fragment 
        were stripped.</li>
-<li>   id 311577: Putting a documentated class name in the title of the main
+<li>   id 311577: Putting a documented class name in the title of the main
        page caused a LaTeX error if pdf hyperlinks were enabled.</li>
 <li>   id 311665: Fixed compile issue for Solaris.</li>
 <li>   id 312688: Typedefs of arrays were auto-linked to the base type 
@@ -5371,7 +5371,7 @@ make sure you add the following:
 <li>   id 312678: Fixed excessive memory usage for @fn commands 
        due to a memory leak of the scanner buffer 256K of memory was leaked 
        for each command!</li>
-<li>   id 312791: Undocumentated members did not result in warnings if 
+<li>   id 312791: Undocumented members did not result in warnings if 
        SOURCE_BROWSER was enable and the member's definition was part of
        the INPUT.</li>
 <li>   A C-comment inside a \code block could lead to parse problems in the
