@@ -268,7 +268,7 @@ enum gdPaletteQuantizationMethod {
  *  GD_GENERALIZED_CUBIC - Generalized cubic
  *  GD_HERMITE			 - Hermite
  *  GD_HAMMING			 - Hamming
- *  GD_HANNING			 - Hannig
+ *  GD_HANNING			 - Hanning
  *  GD_MITCHELL			 - Mitchell
  *  GD_NEAREST_NEIGHBOUR - Nearest neighbour interpolation
  *  GD_POWER			 - Power
