@@ -478,3 +478,20 @@ void portable_unlink(const char *fileName)
 #endif
 }
 
+void portable_setShortDir(void)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  long     length = 0;
+  TCHAR*   buffer = NULL;
+  // First obtain the size needed by passing NULL and 0.
+  length = GetShortPathName(QDir::currentDirPath().data(), NULL, 0);
+  // Dynamically allocate the correct size
+  // (terminating null char was included in length)
+  buffer = new TCHAR[length];
+  // Now simply call again using same (long) path.
+  length = GetShortPathName(QDir::currentDirPath().data(), buffer, length);
+  // Set the correct directory (short name)
+  QDir::setCurrent(buffer);
+  delete [] buffer;
+#endif
+}
