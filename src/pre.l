@@ -2388,7 +2388,7 @@ static int getNextId(const QCString &expr,int p,int *l)
 static void expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  printf(">expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",expr.data(),rest ? rest->data() : 0, pos, level);
+  //printf(">expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",expr.data(),rest ? rest->data() : 0, pos, level);
   if (state->expansionDict.find(expr)!=0) // check for recursive expansions
   {
     return;
@@ -2486,7 +2486,7 @@ static void expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
       i=p+l;
     }
   }
-  printf("<expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",expr.data(),rest ? rest->data() : 0, pos,level);
+  //printf("<expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",expr.data(),rest ? rest->data() : 0, pos,level);
 }
 
 /*! @brief Process string or character literal.
