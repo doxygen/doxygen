@@ -1606,7 +1606,7 @@ void DefinitionImpl::makePartOfGroup(GroupDef *gd)
 
 void DefinitionImpl::setRefItems(const std::vector<ListItemInfo> &sli)
 {
-  m_impl->xrefListItems = sli;
+  m_impl->xrefListItems.insert(m_impl->xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
 void DefinitionImpl::mergeRefItems(Definition *d)
