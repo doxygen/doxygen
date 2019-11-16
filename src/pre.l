@@ -2389,6 +2389,10 @@ static void expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   //printf(">expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",expr.data(),rest ? rest->data() : 0, pos, level);
+  if (expr.isEmpty())
+  {
+    return;
+  }
   if (state->expansionDict.find(expr)!=0) // check for recursive expansions
   {
     return;
