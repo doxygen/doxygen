@@ -238,8 +238,14 @@ class MemberDef : virtual public Definition
     virtual MemberDef *fromAnonymousMember() const = 0;
 
     // callgraph related members
+    virtual graphSettings callGraph() const = 0;
     virtual bool hasCallGraph() const = 0;
+    virtual int maxCallGraphDepth() const = 0;
+    virtual int maxCallGraphNodes() const = 0;
+    virtual graphSettings callerGraph() const = 0;
     virtual bool hasCallerGraph() const = 0;
+    virtual int maxCallerGraphDepth() const = 0;
+    virtual int maxCallerGraphNodes() const = 0;
     virtual bool visibleMemberGroup(bool hideNoHeader) const = 0;
     // referenced related members
     virtual bool hasReferencesRelation() const = 0;
@@ -351,8 +357,8 @@ class MemberDef : virtual public Definition
     // anonymous scope members
     virtual void setFromAnonymousMember(MemberDef *m) = 0;
 
-    virtual void enableCallGraph(bool e) = 0;
-    virtual void enableCallerGraph(bool e) = 0;
+    virtual void enableCallGraph(graphSettings gs) = 0;
+    virtual void enableCallerGraph(graphSettings gs) = 0;
 
     virtual void enableReferencedByRelation(bool e) = 0;
     virtual void enableReferencesRelation(bool e) = 0;

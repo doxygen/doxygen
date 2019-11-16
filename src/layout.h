@@ -65,16 +65,19 @@ struct LayoutDocEntry
 
             };
   virtual Kind kind() const = 0;
+  virtual bool isVisible() const { return true; }
 };
 
 /** @brief Represents of a piece of a documentation page without configurable parts */
 struct LayoutDocEntrySimple : LayoutDocEntry
 {
   public:
-    LayoutDocEntrySimple(Kind k) : m_kind(k) {}
+    LayoutDocEntrySimple(Kind k, bool isVis = true) : m_kind(k), m_isVisible(isVis) {}
     Kind kind() const { return m_kind; }
+    bool isVisible() const { return m_isVisible; }
   private:
     Kind m_kind;
+    bool m_isVisible;
 };
 
 struct LayoutDocEntrySection: public LayoutDocEntrySimple
@@ -196,6 +199,7 @@ class LayoutDocManager
 
     /** Returns the list of LayoutDocEntry's in representation order for a given page identified by @a part. */
     const QList<LayoutDocEntry> &docEntries(LayoutPart part) const;
+    bool isVisible(LayoutPart part, LayoutDocEntry::Kind kind);
 
     /** returns the (invisible) root of the navigation tree. */
     LayoutNavEntry *rootNavEntry() const;

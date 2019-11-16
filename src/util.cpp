@@ -9015,4 +9015,37 @@ int usedTableLevels()
 
 //------------------------------------------------------
 
+void mergeGraphSettings(QCString nam,graphSettings &dst,graphSettings gs,const char *cmdShow,const char *cmdHide)
+{
+  if (!dst.isExplicit)
+  {
+    dst=gs;
+  }
+  else if (gs.isExplicit)
+  {
+    // both are explicit
+    if (dst.hasGraph != gs.hasGraph)
+    {
+      warn_uncond("'\\%s' and '\\%s' given for file '%s', using '\\%s'.\n",
+                  cmdShow,cmdHide,nam.data(),cmdShow);
+      if (gs.hasGraph) dst = gs;
+    }
+    else if (gs.hasGraph)
+    {
+      // both have hasGraph
+      if (dst.maxDepth != gs.maxDepth)
+      {
+        warn_uncond("Multile definitions of maximal depth with '\\%s' for file '%s', using maximum.\n",
+                    cmdShow,nam.data());
+        dst.maxDepth = QMAX(dst.maxDepth,gs.maxDepth);
+      }
+      if (dst.maxNodes != gs.maxNodes)
+      {
+        warn_uncond("Multile definitions of maximal number of nodes with '\\%s' for file '%s', using maximum.\n",
+                    cmdShow,nam.data());
+        dst.maxNodes = QMAX(dst.maxNodes,gs.maxNodes);
+      }
+    }
+  }
+}
 

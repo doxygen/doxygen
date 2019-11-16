@@ -182,6 +182,15 @@ class FileDef : virtual public Definition
 
     virtual void setVisited(bool v) = 0;
     virtual bool isVisited() const = 0;
+
+    virtual void enableIncludeGraph(graphSettings gs) = 0;
+    virtual void enableIncludedByGraph(graphSettings gs) = 0;
+    virtual bool hasIncludeGraph() const = 0;
+    virtual int maxIncludeGraphDepth() const = 0;
+    virtual int maxIncludeGraphNodes() const = 0;
+    virtual bool hasIncludedByGraph() const = 0;
+    virtual int maxIncludedByGraphDepth() const = 0;
+    virtual int maxIncludedByGraphNodes() const = 0;
 };
 
 FileDef *createFileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);

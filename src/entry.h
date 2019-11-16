@@ -254,8 +254,10 @@ class Entry
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
     bool subGrouping;         //!< automatically group class members?
-    bool callGraph;           //!< do we need to draw the call graph?
-    bool callerGraph;         //!< do we need to draw the caller graph?
+    graphSettings callGraph;       //!< settings for the call graph
+    graphSettings callerGraph;     //!< settings for the caller graph
+    graphSettings includeGraph;    //!< settings for the include graph
+    graphSettings includedByGraph; //!< settings for the included by graph
     bool referencedByRelation;//!< do we need to show the referenced by relation?
     bool referencesRelation;  //!< do we need to show the references relation?
     Specifier    virt;        //!< virtualness of the entry

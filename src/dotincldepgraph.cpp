@@ -84,7 +84,7 @@ void DotInclDepGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes
   while (queue.count()>0 && maxNodes>0)
   {
     DotNode *n = queue.take(0);
-    if (!n->isVisible() && n->distance()<=Config_getInt(MAX_DOT_GRAPH_DEPTH)) // not yet processed
+    if (!n->isVisible() && n->distance()<=m_maxDepth) // not yet processed
     {
       n->markAsVisible();
       maxNodes--;
@@ -133,8 +133,15 @@ void DotInclDepGraph::determineTruncatedNodes(QList<DotNode> &queue)
 
 DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
 {
+  static int max_dot_graph_depth = Config_getBool(MAX_DOT_GRAPH_DEPTH);
+  static int dot_graph_max_nodes = Config_getBool(DOT_GRAPH_MAX_NODES);
+
   m_inverse = inverse;
   ASSERT(fd!=0);
+  m_maxDepth = (m_inverse ? fd->maxIncludedByGraphDepth() : fd->maxIncludeGraphDepth());
+  if (m_maxDepth <= 0 ) m_maxDepth = max_dot_graph_depth;
+  m_maxNodes = (m_inverse ? fd->maxIncludedByGraphNodes() : fd->maxIncludeGraphNodes());
+  if (m_maxNodes <= 0 ) m_maxNodes = dot_graph_max_nodes;
   m_inclDepFileName   = fd->includeDependencyGraphFileName();
   m_inclByDepFileName = fd->includedByDependencyGraphFileName();
   QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
@@ -149,7 +156,7 @@ DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
   m_usedNodes->insert(fd->absFilePath(),m_startNode);
   buildGraph(m_startNode,fd,1);
 
-  int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
+  int maxNodes = m_maxNodes;
   QList<DotNode> openNodeQueue;
   openNodeQueue.append(m_startNode);
   determineVisibleNodes(openNodeQueue,maxNodes);
@@ -214,7 +221,7 @@ bool DotInclDepGraph::isTrivial() const
 bool DotInclDepGraph::isTooBig() const
 {
   int numNodes = m_startNode->children() ? m_startNode->children()->count() : 0;
-  return numNodes>=Config_getInt(DOT_GRAPH_MAX_NODES);
+  return numNodes>=m_maxNodes;
 }
 
 void DotInclDepGraph::writeXML(FTextStream &t)

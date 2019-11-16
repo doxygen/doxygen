@@ -212,8 +212,14 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual bool fromAnonymousScope() const;
     virtual bool anonymousDeclShown() const;
     virtual MemberDef *fromAnonymousMember() const;
+    virtual graphSettings callGraph() const;
     virtual bool hasCallGraph() const;
+    virtual int maxCallGraphDepth() const;
+    virtual int maxCallGraphNodes() const;
+    virtual graphSettings callerGraph() const;
     virtual bool hasCallerGraph() const;
+    virtual int maxCallerGraphDepth() const;
+    virtual int maxCallerGraphNodes() const;
     virtual bool visibleMemberGroup(bool hideNoHeader) const;
     virtual bool hasReferencesRelation() const;
     virtual bool hasReferencedByRelation() const;
@@ -288,8 +294,8 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void makeImplementationDetail();
     virtual void setFromAnonymousScope(bool b) const;
     virtual void setFromAnonymousMember(MemberDef *m);
-    virtual void enableCallGraph(bool e);
-    virtual void enableCallerGraph(bool e);
+    virtual void enableCallGraph(graphSettings gs);
+    virtual void enableCallerGraph(graphSettings gs);
     virtual void enableReferencedByRelation(bool e);
     virtual void enableReferencesRelation(bool e);
     virtual void setTemplateMaster(MemberDef *mt);
@@ -679,10 +685,22 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { return getMdAlias()->anonymousDeclShown(); }
     virtual MemberDef *fromAnonymousMember() const
     { return getMdAlias()->fromAnonymousMember(); }
+    virtual graphSettings callGraph() const
+    { return getMdAlias()->callGraph(); }
     virtual bool hasCallGraph() const
     { return getMdAlias()->hasCallGraph(); }
+    virtual int maxCallGraphDepth() const
+    { return getMdAlias()->maxCallGraphDepth(); }
+    virtual int maxCallGraphNodes() const
+    { return getMdAlias()->maxCallGraphNodes(); }
+    virtual graphSettings callerGraph() const
+    { return getMdAlias()->callerGraph(); }
     virtual bool hasCallerGraph() const
     { return getMdAlias()->hasCallerGraph(); }
+    virtual int maxCallerGraphDepth() const
+    { return getMdAlias()->maxCallerGraphDepth(); }
+    virtual int maxCallerGraphNodes() const
+    { return getMdAlias()->maxCallerGraphNodes(); }
     virtual bool visibleMemberGroup(bool hideNoHeader) const
     { return getMdAlias()->visibleMemberGroup(hideNoHeader); }
     virtual bool hasReferencesRelation() const
@@ -800,8 +818,8 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void makeImplementationDetail() {}
     virtual void setFromAnonymousScope(bool b) const {}
     virtual void setFromAnonymousMember(MemberDef *m) {}
-    virtual void enableCallGraph(bool e) {}
-    virtual void enableCallerGraph(bool e) {}
+    virtual void enableCallGraph(graphSettings gs) {}
+    virtual void enableCallerGraph(graphSettings gs) {}
     virtual void enableReferencedByRelation(bool e) {}
     virtual void enableReferencesRelation(bool e) {}
     virtual void setTemplateMaster(MemberDef *mt) {}
@@ -1399,8 +1417,8 @@ class MemberDefImpl::IMPL
     mutable bool annScope;    // member is part of an anonymous scope
     mutable bool annUsed;     // ugly: needs to be mutable to allow setAnonymousUsed to act as a
                               // const member.
-    bool hasCallGraph;
-    bool hasCallerGraph;
+    graphSettings callGraph;
+    graphSettings callerGraph;
     bool hasReferencedByRelation;
     bool hasReferencesRelation;
     bool explExt;             // member was explicitly declared external
@@ -1460,8 +1478,14 @@ void MemberDefImpl::IMPL::init(Definition *def,
   enumFields=0;
   enumScope=0;
   livesInsideEnum=FALSE;
-  hasCallGraph = FALSE;
-  hasCallerGraph = FALSE;
+  callGraph.isExplicit = false;
+  callGraph.hasGraph = false;
+  callGraph.maxDepth = 0;
+  callGraph.maxNodes = 0;
+  callerGraph.isExplicit = false;
+  callerGraph.hasGraph = FALSE;
+  callerGraph.maxDepth = 0;
+  callerGraph.maxNodes = 0;
   hasReferencedByRelation = FALSE;
   hasReferencesRelation = FALSE;
   initLines=0;
@@ -2870,14 +2894,14 @@ void MemberDefImpl::getLabels(QStrList &sl,const Definition *container) const
 void MemberDefImpl::_writeCallGraph(OutputList &ol) const
 {
   // write call graph
-  if (m_impl->hasCallGraph
+  if (m_impl->callGraph.hasGraph
       && (isFunction() || isSlot() || isSignal()) && Config_getBool(HAVE_DOT)
      )
   {
     DotCallGraph callGraph(this,FALSE);
     if (callGraph.isTooBig())
     {
-       warn_uncond("Call graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",qPrint(qualifiedName()));
+       warn_uncond("Call graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES or using '\\callgraph'.\n",qPrint(qualifiedName()));
     }
     else if (!callGraph.isTrivial())
     {
@@ -2893,14 +2917,14 @@ void MemberDefImpl::_writeCallGraph(OutputList &ol) const
 
 void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
 {
-  if (m_impl->hasCallerGraph
+  if (m_impl->callerGraph.hasGraph
       && (isFunction() || isSlot() || isSignal()) && Config_getBool(HAVE_DOT)
      )
   {
     DotCallGraph callerGraph(this, TRUE);
     if (callerGraph.isTooBig())
     {
-       warn_uncond("Caller graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",qPrint(qualifiedName()));
+       warn_uncond("Caller graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES or using '\\callergraph'.\n",qPrint(qualifiedName()));
     }
     else if (!callerGraph.isTrivial())
     {
@@ -4844,16 +4868,16 @@ void MemberDefImpl::findSectionsInDocumentation()
   docFindSections(documentation(),this,docFile());
 }
 
-void MemberDefImpl::enableCallGraph(bool e)
+void MemberDefImpl::enableCallGraph(graphSettings gs)
 {
-  m_impl->hasCallGraph=e;
-  if (e) Doxygen::parseSourcesNeeded = TRUE;
+  mergeGraphSettings(qualifiedName(),m_impl->callGraph,gs,"callgraph","hidecallgraph");
+  if (gs.hasGraph) Doxygen::parseSourcesNeeded = TRUE;
 }
 
-void MemberDefImpl::enableCallerGraph(bool e)
+void MemberDefImpl::enableCallerGraph(graphSettings gs)
 {
-  m_impl->hasCallerGraph=e;
-  if (e) Doxygen::parseSourcesNeeded = TRUE;
+  mergeGraphSettings(qualifiedName(),m_impl->callerGraph,gs,"callergraph","hidecallergraph");
+  if (gs.hasGraph) Doxygen::parseSourcesNeeded = TRUE;
 }
 
 void MemberDefImpl::enableReferencedByRelation(bool e)
@@ -5525,14 +5549,44 @@ void MemberDefImpl::setAnonymousUsed() const
   m_impl->annUsed = TRUE;
 }
 
+graphSettings MemberDefImpl::callGraph() const
+{
+  return m_impl->callGraph;
+}
+
 bool MemberDefImpl::hasCallGraph() const
 {
-  return m_impl->hasCallGraph;
+  return m_impl->callGraph.hasGraph;
+}
+
+int MemberDefImpl::maxCallGraphDepth() const
+{
+  return m_impl->callGraph.maxDepth;
+}
+
+int MemberDefImpl::maxCallGraphNodes() const
+{
+  return m_impl->callGraph.maxNodes;
+}
+
+graphSettings MemberDefImpl::callerGraph() const
+{
+  return m_impl->callerGraph;
 }
 
 bool MemberDefImpl::hasCallerGraph() const
 {
-  return m_impl->hasCallerGraph;
+  return m_impl->callerGraph.hasGraph;
+}
+
+int MemberDefImpl::maxCallerGraphDepth() const
+{
+  return m_impl->callerGraph.maxDepth;
+}
+
+int MemberDefImpl::maxCallerGraphNodes() const
+{
+  return m_impl->callerGraph.maxNodes;
 }
 
 bool MemberDefImpl::hasReferencedByRelation() const
@@ -6080,10 +6134,11 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       mdef->setMemberDeclaration(mdec);
       mdec->setMemberDefinition(mdef);
 
-      mdef->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
-      mdef->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
-      mdec->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
-      mdec->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
+      mdef->enableCallGraph(mdec->callGraph());
+      mdec->enableCallGraph(mdef->callGraph());
+
+      mdef->enableCallerGraph(mdec->callerGraph());
+      mdec->enableCallerGraph(mdef->callerGraph());
 
       mdef->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
       mdef->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());

@@ -126,6 +126,15 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     virtual void setVisited(bool v) { m_visited = v; }
     virtual bool isVisited() const { return m_visited; }
 
+    virtual void enableIncludeGraph(graphSettings gs);
+    virtual void enableIncludedByGraph(graphSettings gs);
+    virtual bool hasIncludeGraph() const;
+    virtual int maxIncludeGraphDepth() const;
+    virtual int maxIncludeGraphNodes() const;
+    virtual bool hasIncludedByGraph() const;
+    virtual int maxIncludedByGraphDepth() const;
+    virtual int maxIncludedByGraphNodes() const;
+
   private:
     bool m_visited;
     void acquireFileVersion();
@@ -178,6 +187,9 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     ClassSDict           *m_structSDict;
     ClassSDict           *m_exceptionSDict;
     bool                  m_subGrouping;
+    graphSettings         m_includeGraph;
+    graphSettings         m_includedByGraph;
+
 };
 
 FileDef *createFileDef(const char *p,const char *n,const char *ref,const char *dn)
@@ -252,6 +264,15 @@ FileDefImpl::FileDefImpl(const char *p,const char *nm,
   m_memberGroupSDict = 0;
   acquireFileVersion();
   m_subGrouping=Config_getBool(SUBGROUPING);
+
+  m_includeGraph.isExplicit = false;
+  m_includeGraph.hasGraph = LayoutDocManager::instance().isVisible(LayoutDocManager::File,LayoutDocEntry::FileIncludeGraph);
+  m_includeGraph.maxDepth = Config_getBool(MAX_DOT_GRAPH_DEPTH);
+  m_includeGraph.maxNodes = Config_getBool(DOT_GRAPH_MAX_NODES);
+  m_includedByGraph.isExplicit = false;
+  m_includedByGraph.hasGraph = LayoutDocManager::instance().isVisible(LayoutDocManager::File,LayoutDocEntry::FileIncludedByGraph);
+  m_includedByGraph.maxDepth = Config_getBool(MAX_DOT_GRAPH_DEPTH);
+  m_includedByGraph.maxNodes = Config_getBool(DOT_GRAPH_MAX_NODES);
 }
 
 /*! destroy the file definition */
@@ -660,11 +681,12 @@ void FileDefImpl::writeIncludeGraph(OutputList &ol)
 {
   if (Config_getBool(HAVE_DOT) /*&& Config_getBool(INCLUDE_GRAPH)*/)
   {
+    if (!hasIncludeGraph()) return;
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,FALSE);
     if (incDepGraph.isTooBig())
     {
-       warn_uncond("Include graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+       warn_uncond("Include graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES or using '\\includegraph'.\n",name().data());
     }
     else if (!incDepGraph.isTrivial())
     {
@@ -684,11 +706,12 @@ void FileDefImpl::writeIncludedByGraph(OutputList &ol)
 {
   if (Config_getBool(HAVE_DOT) /*&& Config_getBool(INCLUDED_BY_GRAPH)*/)
   {
+    if (!hasIncludedByGraph()) return;
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,TRUE);
     if (incDepGraph.isTooBig())
     {
-       warn_uncond("Included by graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+       warn_uncond("Included by graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES or using '\\includedbygraph'.\n",name().data());
     }
     else if (!incDepGraph.isTrivial())
     {
@@ -2247,3 +2270,42 @@ int FileDefImpl::numDecMembers() const
   return ml ? ml->numDecMembers() : 0;
 }
 
+bool FileDefImpl::hasIncludeGraph() const
+{
+  return m_includeGraph.hasGraph;
+}
+
+int FileDefImpl::maxIncludeGraphDepth() const
+{
+  return m_includeGraph.maxDepth;
+}
+
+int FileDefImpl::maxIncludeGraphNodes() const
+{
+  return m_includeGraph.maxNodes;
+}
+
+bool FileDefImpl::hasIncludedByGraph() const
+{
+  return m_includedByGraph.hasGraph;
+}
+
+int FileDefImpl::maxIncludedByGraphDepth() const
+{
+  return m_includedByGraph.maxDepth;
+}
+
+int FileDefImpl::maxIncludedByGraphNodes() const
+{
+  return m_includedByGraph.maxNodes;
+}
+
+void FileDefImpl::enableIncludeGraph(graphSettings gs)
+{
+  mergeGraphSettings(qualifiedName(),m_includeGraph,gs,"includegraph","hideincludegraph");
+}
+
+void FileDefImpl::enableIncludedByGraph(graphSettings gs)
+{
+  mergeGraphSettings(qualifiedName(),m_includedByGraph,gs,"includedbygraph","hideincludedbygraph");
+}

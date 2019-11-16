@@ -890,10 +890,10 @@ class LayoutParser : public QXmlDefaultHandler
     void startSimpleEntry(LayoutDocEntry::Kind k,const QXmlAttributes &attrib)
     {
       bool isVisible = elemIsVisible(attrib);
-      if (m_part!=-1 && isVisible)
+      if (m_part!=-1 && (isVisible || k == LayoutDocEntry::FileIncludeGraph || k == LayoutDocEntry::FileIncludedByGraph))
       {
         LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(k));
+                                              new LayoutDocEntrySimple(k,isVisible));
       }
     }
 
@@ -1523,6 +1523,16 @@ const QList<LayoutDocEntry> &LayoutDocManager::docEntries(LayoutDocManager::Layo
   return d->docEntries[(int)part];
 }
 
+bool LayoutDocManager::isVisible(LayoutPart part, LayoutDocEntry::Kind kind)
+{
+  QListIterator<LayoutDocEntry> eli(docEntries(part));
+  LayoutDocEntry *lde;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    if (lde->kind() == kind) return ((LayoutDocEntry *)lde)->isVisible();
+  }
+  return false;
+}
 LayoutNavEntry* LayoutDocManager::rootNavEntry() const
 {
   return d->rootNav;

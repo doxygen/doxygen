@@ -45,6 +45,8 @@ class DotCallGraph : public DotGraph
     DotNode        *m_startNode;
     QDict<DotNode> *m_usedNodes;
     bool            m_inverse;
+    int             m_maxDepth;
+    int             m_maxNodes;
     QCString        m_diskName;
     const Definition * m_scope;
 };

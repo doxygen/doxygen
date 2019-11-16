@@ -278,4 +278,12 @@ class LocalToc
     int m_level[numTocTypes];
 };
 
+struct graphSettings
+{
+    bool isExplicit; //!< are settings done explicitly?
+    bool hasGraph;   //!< do we need to draw the graph?
+    int  maxDepth;   //!< maximum depth of the graph
+    int  maxNodes;   //!< maximum number of nodes of graph
+};
+
 #endif
