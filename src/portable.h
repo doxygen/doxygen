@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <qglobal.h>
+#include <qdir.h>
 
 #if defined(_WIN32)
 typedef __int64 portable_off_t;
@@ -37,6 +38,7 @@ double         portable_getSysElapsedTime();
 void           portable_sleep(int ms);
 bool           portable_isAbsolutePath(const char *fileName);
 void           portable_correct_path(void);
+void           portable_setShortDir(void);
 
 extern "C" {
   void *         portable_iconv_open(const char* tocode, const char* fromcode);
