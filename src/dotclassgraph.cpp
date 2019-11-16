@@ -420,13 +420,18 @@ bool DotClassGraph::isTrivial() const
 
 bool DotClassGraph::isTooBig() const
 {
+  return numNodes()>=DOT_GRAPH_MAX_NODES;
+}
+
+int DotClassGraph::numNodes() const
+{
   int numNodes = 0;
   numNodes+= m_startNode->children() ? m_startNode->children()->count() : 0;
   if (m_graphType==Inheritance)
   {
     numNodes+= m_startNode->parents() ? m_startNode->parents()->count() : 0;
   }
-  return numNodes>=DOT_GRAPH_MAX_NODES;
+  return numNodes;
 }
 
 DotClassGraph::~DotClassGraph()
