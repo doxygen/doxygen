@@ -2852,6 +2852,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FindMembers,FindFields,ReadInitializer>"//"([!/]){B}*{CMD}"}".*|"/*"([!*]){B}*{CMD}"}"[^*]*"*/"	{
                                           bool insideEnum = YY_START==FindFields || (YY_START==ReadInitializer && lastInitializerContext==FindFields); // see bug746226
   					  Doxygen::docGroup.close(current.get(),yyFileName,yyLineNr,insideEnum);
+  					  lineCount();
   					}
 <FindMembers>"="			{ // in PHP code this could also be due to "<?="
   					  current->bodyLine = yyLineNr;
