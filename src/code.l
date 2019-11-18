@@ -116,13 +116,9 @@ static int           g_memCallContext;
 static int	     g_lastCContext;
 static int           g_skipInlineInitContext;
 
-static bool          g_insideCpp;
+static SrcLangExt    g_lang;
 static bool          g_insideObjC;
-static bool          g_insideJava;
-static bool          g_insideCS;
-static bool          g_insidePHP;
 static bool          g_insideProtocolList;
-static bool          g_insideSlice;
 
 static bool          g_lexInit = FALSE;
 
@@ -951,11 +947,11 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
   {
     className+="-p";
   }
-  if (g_insidePHP)
+  if (g_lang==SrcLangExt_PHP)
   {
     className = substitute(className,"\\","::"); // for PHP namespaces
   }
-  else if (g_insideCS || g_insideJava)
+  else if (g_lang==SrcLangExt_CSharp || g_lang==SrcLangExt_Java)
   {
     className = substitute(className,".","::"); // for PHP namespaces
   }
@@ -1324,7 +1320,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
   ClassDef *ccd=0;
   QCString locScope=g_classScope;
   QCString locFunc=removeRedundantWhiteSpace(funcName);
-  if (g_insidePHP && locFunc.startsWith("self::")) locFunc=locFunc.mid(4);
+  if (g_lang==SrcLangExt_PHP && locFunc.startsWith("self::")) locFunc=locFunc.mid(4);
   QCString funcScope;
   QCString funcWithScope=locFunc;
   QCString funcWithFullScope=locFunc;
@@ -1799,7 +1795,7 @@ static QCString escapeComment(const char *s)
 
 static bool skipLanguageSpecificKeyword(const QCString &kw)
 {
-  return g_insideCpp && (kw == "remove" || kw == "set" || kw == "get");
+  return g_lang==SrcLangExt_Cpp && (kw == "remove" || kw == "set" || kw == "get");
 }
 
 static bool isCastKeyword(const QCString &s)
@@ -2181,7 +2177,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <ClassName>{ID}("."{ID})*	        |
 <ClassName>{ID}("::"{ID})*	        {
-                                          if(g_insideCS)
+                                          if (g_lang==SrcLangExt_CSharp)
                                             g_curClassName=substitute(yytext,".","::");
                                           else
                                             g_curClassName=yytext;
@@ -2443,7 +2439,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  g_prefixed_with_this_keyword = TRUE;
                                         }
 <Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
-                                          if (g_insideJava && qstrcmp("internal",yytext) ==0) REJECT;
+                                          if (g_lang==SrcLangExt_Java && qstrcmp("internal",yytext) ==0) REJECT;
                                           if (skipLanguageSpecificKeyword(yytext)) REJECT;
   					  startFontClass("keyword");
   					  codifyLines(yytext);
@@ -2559,7 +2555,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_name+=yytext; 
   					}
 <Body,TemplDecl,ObjCMethod>{TYPEKWSL}/{B}* {
-                                          if (!g_insideSlice)
+                                          if (g_lang!=SrcLangExt_Slice)
                                           {
                                             REJECT;
                                           }
@@ -3045,7 +3041,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  endFontClass();
 					}
 <MemberCall2,FuncCall,OldStyleArgs,TemplCast>{TYPEKWSL}/([^a-z_A-Z0-9]) {
-                                          if (!g_insideSlice)
+                                          if (g_lang!=SrcLangExt_Slice)
                                           {
                                             REJECT;
                                           }
@@ -3825,12 +3821,8 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
     g_sourceFileDef = createFileDef("",(exName?exName:"generated"));
     cleanupSourceDef = TRUE;
   }
+  g_lang        = lang;
   g_insideObjC  = lang==SrcLangExt_ObjC;
-  g_insideJava  = lang==SrcLangExt_Java;
-  g_insideCS    = lang==SrcLangExt_CSharp;
-  g_insidePHP   = lang==SrcLangExt_PHP;
-  g_insideCpp   = lang==SrcLangExt_Cpp;
-  g_insideSlice = lang==SrcLangExt_Slice;
   if (g_sourceFileDef) 
   {
     setCurrentDoc("l00001");
