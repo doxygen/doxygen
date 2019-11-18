@@ -1940,11 +1940,4 @@ void PythonLanguageScanner::resetCodeParserState()
 
 //----------------------------------------------------------------------------
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-//----------------------------------------------------------------------------
-extern "C" { // some bogus code to keep the compiler happy
-  void pyscannerYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
-
 #include "pyscanner.l.h"

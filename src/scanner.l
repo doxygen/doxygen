@@ -7402,11 +7402,4 @@ void CLanguageScanner::parsePrototype(const char *text)
 
 //----------------------------------------------------------------------------
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-//----------------------------------------------------------------------------
-extern "C" { // some bogus code to keep the compiler happy
-  void scannerYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
-
 #include "scanner.l.h"

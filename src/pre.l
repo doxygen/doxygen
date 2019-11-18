@@ -3426,11 +3426,5 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-extern "C" { // some bogus code to keep the compiler happy
-//  int  preYYwrap() { return 1 ; }
-  void preYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
 
 #include "pre.l.h"

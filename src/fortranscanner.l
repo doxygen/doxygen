@@ -2836,11 +2836,4 @@ static void scanner_abort()
 
 //----------------------------------------------------------------------------
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-//----------------------------------------------------------------------------
-extern "C" { // some bogus code to keep the compiler happy
-  void fortranscannernerYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
-
 #include "fortranscanner.l.h"

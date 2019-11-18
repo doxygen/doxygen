@@ -635,10 +635,4 @@ void stringToArgumentList(const char *argsString,ArgumentList& al,QCString *extr
   printlex(yy_flex_debug, FALSE, __FILE__, NULL);
 }
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-extern "C" { // some bogus code to keep the compiler happy
-  void defargsYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
-
 #include "defargs.l.h"

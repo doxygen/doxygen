@@ -3281,13 +3281,4 @@ static void handleGuard(const QCString &expr)
   }
 }
 
-
-
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-//----------------------------------------------------------------------------
-extern "C" { // some bogus code to keep the compiler happy
-  void commentscanYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
-
 #include "commentscan.l.h"
