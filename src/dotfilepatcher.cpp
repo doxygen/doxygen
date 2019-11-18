@@ -328,7 +328,7 @@ bool DotFilePatcher::run() const
   bool isSVGFile = m_patchFile.right(4)==".svg";
   int graphId = -1;
   QCString relPath;
-  if (isSVGFile)
+  if (isSVGFile && interactiveSVG_local)
   {
     Map *map = m_maps.at(0); // there is only one 'map' for a SVG file
     interactiveSVG_local = interactiveSVG_local && map->zoomable;
@@ -378,39 +378,36 @@ bool DotFilePatcher::run() const
     //printf("line=[%s]\n",line.stripWhiteSpace().data());
     int i;
     ASSERT(numBytes<maxLineLen);
-    if (isSVGFile)
+    if (isSVGFile && interactiveSVG_local)
     {
-      if (interactiveSVG_local) 
+      if (line.find("<svg")!=-1 && !replacedHeader)
       {
-        if (line.find("<svg")!=-1 && !replacedHeader)
+        int count;
+        count = sscanf(line.data(),"<svg width=\"%dpt\" height=\"%dpt\"",&width,&height);
+        //printf("width=%d height=%d\n",width,height);
+        foundSize = count==2 && (width>500 || height>450);
+        if (foundSize) insideHeader=TRUE;
+      }
+      else if (insideHeader && !replacedHeader && line.find("<title>")!=-1)
+      {
+        if (foundSize)
         {
-          int count;
-          count = sscanf(line.data(),"<svg width=\"%dpt\" height=\"%dpt\"",&width,&height);
-          //printf("width=%d height=%d\n",width,height);
-          foundSize = count==2 && (width>500 || height>450);
-          if (foundSize) insideHeader=TRUE;
-        }
-        else if (insideHeader && !replacedHeader && line.find("<title>")!=-1)
-        {
-          if (foundSize)
+          // insert special replacement header for interactive SVGs
+          t << "<!--zoomable " << height << " -->\n";
+          t << svgZoomHeader;
+          t << "var viewWidth = " << width << ";\n";
+          t << "var viewHeight = " << height << ";\n";
+          if (graphId>=0)
           {
-            // insert special replacement header for interactive SVGs
-            t << "<!--zoomable " << height << " -->\n";
-            t << svgZoomHeader;
-            t << "var viewWidth = " << width << ";\n";
-            t << "var viewHeight = " << height << ";\n";
-            if (graphId>=0)
-            {
-              t << "var sectionId = 'dynsection-" << graphId << "';\n";
-            }
-            t << "</script>\n";
-            t << "<script xlink:href=\"" << relPath << "svgpan.js\"/>\n";
-            t << "<svg id=\"graph\" class=\"graph\">\n";
-            t << "<g id=\"viewport\">\n";
+            t << "var sectionId = 'dynsection-" << graphId << "';\n";
           }
-          insideHeader=FALSE;
-          replacedHeader=TRUE;
+          t << "</script>\n";
+          t << "<script xlink:href=\"" << relPath << "svgpan.js\"/>\n";
+          t << "<svg id=\"graph\" class=\"graph\">\n";
+          t << "<g id=\"viewport\">\n";
         }
+        insideHeader=FALSE;
+        replacedHeader=TRUE;
       }
       if (!insideHeader || !foundSize) // copy SVG and replace refs, 
                                        // unless we are inside the header of the SVG.

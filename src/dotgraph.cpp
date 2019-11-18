@@ -225,7 +225,7 @@ void DotGraph::generateCode(FTextStream &t)
   }
   else if (m_graphFormat==GOF_BITMAP && m_generateImageMap) // produce HTML to include the image
   {
-    if (imgExt=="svg") // add link to SVG file without map file
+    if (imgExt=="svg" && Config_getBool(INTERACTIVE_SVG)) // add link to SVG file without map file
     {
       if (!m_noDivTag) t << "<div class=\"center\">";
       if (m_regenerate || !DotFilePatcher::writeSVGFigureLink(t,m_relPath,m_baseName,absImgName())) // need to patch the links in the generated SVG file
