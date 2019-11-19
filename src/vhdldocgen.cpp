@@ -169,7 +169,7 @@ static void createSVG()
 
     QCString vlargs="-Tsvg \""+ov+"\" "+dir ;
 
-    if (portable_system(Config_getString(DOT_PATH) + "dot",vlargs)!=0)
+    if (Portables::system(Config_getString(DOT_PATH) + "dot",vlargs)!=0)
     {
       err("could not create dot file");
     }
@@ -3796,7 +3796,7 @@ void FlowChart::createSVG()
 
   QCString vlargs="-Tsvg \""+ov+"\" "+dir ;
 
-  if (portable_system(Config_getString(DOT_PATH) + "dot",vlargs)!=0)
+  if (Portables::system(Config_getString(DOT_PATH) + "dot",vlargs)!=0)
   {
     err("could not create dot file");
   }

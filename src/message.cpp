@@ -90,7 +90,7 @@ void initWarningFormat()
 
   if (!Config_getString(WARN_LOGFILE).isEmpty())
   {
-    warnFile = portable_fopen(Config_getString(WARN_LOGFILE),"w");
+    warnFile = Portables::fopen(Config_getString(WARN_LOGFILE),"w");
   }
   if (!warnFile) // point it to something valid, because warn() relies on it
   {

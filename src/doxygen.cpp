@@ -10070,13 +10070,13 @@ static const char *getArg(int argc,char **argv,int &optind)
 void initDoxygen()
 {
   initResources();
-  const char *lang = portable_getenv("LC_ALL");
-  if (lang) portable_setenv("LANG",lang);
+  const char *lang = Portables::getenv("LC_ALL");
+  if (lang) Portables::setenv("LANG",lang);
   setlocale(LC_ALL,"");
   setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   setlocale(LC_NUMERIC,"C");
 
-  portable_correct_path();
+  Portables::correct_path();
 
   Doxygen::runningTime.start();
   Doxygen::preprocessor = new Preprocessor();
@@ -11103,7 +11103,7 @@ void parseInput()
   signal(SIGINT, stopDoxygen);
 #endif
 
-  uint pid = portable_pid();
+  uint pid = Portables::pid();
   Doxygen::objDBFileName.sprintf("doxygen_objdb_%d.tmp",pid);
   Doxygen::objDBFileName.prepend(outputDirectory+"/");
   Doxygen::entryDBFileName.sprintf("doxygen_entrydb_%d.tmp",pid);
@@ -11163,18 +11163,18 @@ void parseInput()
     QCString curFontPath = Config_getString(DOT_FONTPATH);
     if (curFontPath.isEmpty())
     {
-      portable_getenv("DOTFONTPATH");
+      Portables::getenv("DOTFONTPATH");
       QCString newFontPath = ".";
       if (!curFontPath.isEmpty())
       {
-        newFontPath+=portable_pathListSeparator();
+        newFontPath+=Portables::pathListSeparator();
         newFontPath+=curFontPath;
       }
-      portable_setenv("DOTFONTPATH",newFontPath);
+      Portables::setenv("DOTFONTPATH",newFontPath);
     }
     else
     {
-      portable_setenv("DOTFONTPATH",curFontPath);
+      Portables::setenv("DOTFONTPATH",curFontPath);
     }
   }
 
@@ -11800,7 +11800,7 @@ void generateOutput()
       {
         searchDataFile="searchdata.xml";
       }
-      if (!portable_isAbsolutePath(searchDataFile))
+      if (!Portables::isAbsolutePath(searchDataFile))
       {
         searchDataFile.prepend(Config_getString(OUTPUT_DIRECTORY)+"/");
       }
@@ -11862,13 +11862,13 @@ void generateOutput()
     g_s.begin("Running html help compiler...\n");
     QString oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString(HTML_OUTPUT));
-    portable_setShortDir();
-    portable_sysTimerStart();
-    if (portable_system(Config_getString(HHC_LOCATION), "index.hhp", Debug::isFlagSet(Debug::ExtCmd))!=1)
+    Portables::setShortDir();
+    Portables::sysTimerStart();
+    if (Portables::system(Config_getString(HHC_LOCATION), "index.hhp", Debug::isFlagSet(Debug::ExtCmd))!=1)
     {
       err("failed to run html help compiler on index.hhp\n");
     }
-    portable_sysTimerStop();
+    Portables::sysTimerStop();
     QDir::setCurrent(oldDir);
     g_s.end();
   }
@@ -11883,12 +11883,12 @@ void generateOutput()
     QCString const args = QCString().sprintf("%s -o \"%s\"", qhpFileName.data(), qchFileName.data());
     QString const oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString(HTML_OUTPUT));
-    portable_sysTimerStart();
-    if (portable_system(Config_getString(QHG_LOCATION), args.data(), FALSE))
+    Portables::sysTimerStart();
+    if (Portables::system(Config_getString(QHG_LOCATION), args.data(), FALSE))
     {
       err("failed to run qhelpgenerator on index.qhp\n");
     }
-    portable_sysTimerStop();
+    Portables::sysTimerStop();
     QDir::setCurrent(oldDir);
     g_s.end();
   }
@@ -11909,7 +11909,7 @@ void generateOutput()
   {
     msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
          ((double)Doxygen::runningTime.elapsed())/1000.0,
-         portable_getSysElapsedTime()
+         Portables::getSysElapsedTime()
         );
     g_s.print();
   }

@@ -1826,7 +1826,7 @@ static FileState *findFile(yyscan_t yyscanner, const char *fileName,bool localIn
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   //printf("** findFile(%s,%d) state->yyFileName=%s\n",fileName,localInclude,state->yyFileName.data());
-  if (portable_isAbsolutePath(fileName))
+  if (Portables::isAbsolutePath(fileName))
   {
     FileState *fs = checkAndOpenFile(yyscanner,fileName,alreadyIncluded);
     if (fs)
