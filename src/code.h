@@ -26,12 +26,20 @@ class MemberDef;
 class QCString;
 class Definition;
 
-void parseCCode(CodeOutputInterface &,const char *,const QCString &, 
+class CodeScanner
+{
+  public:
+    CodeScanner();
+    virtual ~CodeScanner();
+    void parseCCode(CodeOutputInterface &,const char *,const QCString &,
             SrcLangExt lang, bool isExample, const char *exName,FileDef *fd,
             int startLine,int endLine,bool inlineFragment,
             const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
             bool collectXRefs);
-void resetCCodeParserState();
-void codeFreeScanner();
+    void reset();
+  private:
+    struct Private;
+    Private *p;
+};
 
 #endif

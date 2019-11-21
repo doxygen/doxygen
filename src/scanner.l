@@ -201,6 +201,8 @@ static bool             g_nestedComment=0;
 
 static std::vector< std::pair<Entry*,std::unique_ptr<Entry> > > g_outerScopeEntries;
 
+static CodeScanner g_codeScanner;
+
 static const char *stateToString(int state);
 //-----------------------------------------------------------------------------
 
@@ -7359,6 +7361,7 @@ void CLanguageScanner::parseInput(const char *fileName,
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
+
 void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    const char * scopeName,
                    const QCString & input,
@@ -7375,7 +7378,7 @@ void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    bool collectXRefs
                   )
 {
-  ::parseCCode(codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
+  g_codeScanner.parseCCode(codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
                fileDef,startLine,endLine,inlineFragment,memberDef,
 	       showLineNumbers,searchCtx,collectXRefs);
 }
@@ -7392,7 +7395,7 @@ bool CLanguageScanner::needsPreprocessing(const QCString &extension) const
 
 void CLanguageScanner::resetCodeParserState()
 {
-  ::resetCCodeParserState();
+  g_codeScanner.reset();
 }
 
 void CLanguageScanner::parsePrototype(const char *text)

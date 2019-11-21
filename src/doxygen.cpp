@@ -8992,7 +8992,8 @@ static void generateExampleDocs()
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
     msg("Generating docs for example %s...\n",pd->name().data());
-    resetCCodeParserState();
+    ParserInterface *pIntf = Doxygen::parserManager->getParser(".c"); // TODO: do this on code type
+    pIntf->resetCodeParserState();
     QCString n=pd->getOutputFileBase();
     startFile(*g_outputList,n,n,pd->name());
     startTitle(*g_outputList,n);
@@ -10187,7 +10188,6 @@ void cleanUpDoxygen()
   delete theTranslator;
   delete g_outputList;
   Mappers::freeMappers();
-  codeFreeScanner();
 
   if (Doxygen::symbolMap)
   {
