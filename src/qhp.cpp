@@ -168,8 +168,7 @@ void Qhp::finalize()
   QFile file(fileName);
   if (!file.open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n", fileName.data());
-    exit(1);
+    term(1,"Could not open file %s for writing\n", fileName.data());
   }
   m_doc.dumpTo(file);
 }

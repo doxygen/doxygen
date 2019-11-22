@@ -8800,10 +8800,9 @@ static void computePageRelations(Entry *root)
         PageDef *subPd = Doxygen::pageSDict->find(bi.name);
         if (pd==subPd)
         {
-         err("page defined at line %d of file %s with label %s is a direct "
+         term(1,"page defined at line %d of file %s with label %s is a direct "
              "subpage of itself! Please remove this cyclic dependency.\n",
               pd->docLine(),pd->docFile().data(),pd->name().data());
-          exit(1);
         }
         else if (subPd)
         {
@@ -8828,10 +8827,9 @@ static void checkPageRelations()
     {
       if (ppd==pd)
       {
-        err("page defined at line %d of file %s with label %s is a subpage "
+        term(1,"page defined at line %d of file %s with label %s is a subpage "
             "of itself! Please remove this cyclic dependency.\n",
             pd->docLine(),pd->docFile().data(),pd->name().data());
-        exit(1);
       }
       ppd=ppd->getOuterScope();
     }
@@ -9164,8 +9162,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   }
   else
   {
-    err("Cannot open file %s for writing\n",configFile);
-    exit(1);
+    term(1,"Cannot open file %s for writing\n",configFile);
   }
 }
 static void compareDoxyfile()
@@ -9182,8 +9179,7 @@ static void compareDoxyfile()
   }
   else
   {
-    err("Cannot open file %s for writing\n",configFile);
-    exit(1);
+    term(1,"Cannot open file %s for writing\n",configFile);
   }
 }
 //----------------------------------------------------------------------------
@@ -9821,17 +9817,15 @@ void readFormulaRepository(QCString dir, bool cmp)
         {
           if ((f=Doxygen::formulaDict->find(formText))==0)
           {
-            err("discrepancy between formula repositories! Remove "
+            term(1,"discrepancy between formula repositories! Remove "
                 "formula.repository and from_* files from output directories.");
-            exit(1);
           }
           QCString formLabel;
           formLabel.sprintf("\\form#%d",f->getId());
           if (formLabel != formName)
           {
-            err("discrepancy between formula repositories! Remove "
+            term(1,"discrepancy between formula repositories! Remove "
                 "formula.repository and from_* files from output directories.");
-            exit(1);
           }
           new_repository++;
         }
@@ -9848,9 +9842,8 @@ void readFormulaRepository(QCString dir, bool cmp)
   }
   if (cmp && (current_repository != new_repository))
   {
-    err("size discrepancy between formula repositories! Remove "
+    term(1,"size discrepancy between formula repositories! Remove "
         "formula.repository and from_* files from output directories.");
-    exit(1);
   }
 }
 
@@ -11661,9 +11654,8 @@ void generateOutput()
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
     {
-      err("Could not create search results directory '%s' $PWD='%s'\n",
+      term(1,"Could not create search results directory '%s' $PWD='%s'\n",
           searchDirName.data(),QDir::currentDirPath().data());
-      exit(1);
     }
     HtmlGenerator::writeSearchData(searchDirName);
     if (!serverBasedSearch) // client side search index

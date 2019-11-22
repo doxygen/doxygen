@@ -1101,8 +1101,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
   f1.setName(epsName.data());
   if (!f1.open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n",f1.name().data());
-    exit(1);
+    term(1,"Could not open file %s for writing\n",f1.name().data());
   }
   FTextStream t(&f1);
   

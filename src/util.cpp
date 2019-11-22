@@ -7950,10 +7950,9 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
   {
-    err("unsupported character conversion: '%s'->'%s': %s\n"
+    term(1,"unsupported character conversion: '%s'->'%s': %s\n"
         "Check the INPUT_ENCODING setting in the config file!\n",
         inputEncoding,outputEncoding,strerror(errno));
-    exit(1);
   }
   int tmpBufSize=size*4+1;
   BufStr tmpBuf(tmpBufSize);
@@ -7971,9 +7970,8 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   }
   else
   {
-    err("%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
+    term(1,"%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
         fileName,inputEncoding,outputEncoding);
-    exit(1);
   }
   portable_iconv_close(cd);
   return newSize;

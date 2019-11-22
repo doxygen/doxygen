@@ -147,7 +147,7 @@ bool DotGraph::prepareDotFile()
 {
   if (!m_dir.exists())
   {
-    err("Output dir %s does not exist!\n", m_dir.path().data()); exit(1);
+    term(1,"Output dir %s does not exist!\n", m_dir.path().data());
   }
 
   QCString sigStr(33);
