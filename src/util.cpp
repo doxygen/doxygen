@@ -8033,13 +8033,18 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
 
   int start=0;
   if (size>=2 &&
-      (((uchar)inBuf.at(0)==0xFF && (uchar)inBuf.at(1)==0xFE) || // Little endian BOM
-       ((uchar)inBuf.at(0)==0xFE && (uchar)inBuf.at(1)==0xFF)    // big endian BOM
-      )
-     ) // UCS-2 encoded file
+      ((uchar)inBuf.at(0)==0xFF && (uchar)inBuf.at(1)==0xFE) // Little endian BOM
+     ) // UCS-2LE encoded file
   {
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        "UCS-2","UTF-8");
+        "UCS-2LE","UTF-8");
+  }
+  else if (size>=2 &&
+           ((uchar)inBuf.at(0)==0xFE && (uchar)inBuf.at(1)==0xFF) // big endian BOM
+         ) // UCS-2BE encoded file
+  {
+    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
+        "UCS-2BE","UTF-8");
   }
   else if (size>=3 &&
            (uchar)inBuf.at(0)==0xEF &&
