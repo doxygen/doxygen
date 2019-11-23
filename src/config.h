@@ -77,4 +77,5 @@ namespace Config
   void deinit();
 }
 
+void config_warn(const char *fmt, ...);
 #endif

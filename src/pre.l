@@ -3199,6 +3199,7 @@ Preprocessor::~Preprocessor()
 
 void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output)
 {
+  static bool warningsGiven = false; // Note: reset after all defines have been handled once!
   yyscan_t yyscanner = p->yyscanner;
   YY_EXTRA_TYPE state = preYYget_extra(p->yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
@@ -3247,7 +3248,12 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
       int i_cbrace=ds.find(')');
       bool nonRecursive = i_equals>0 && ds.at(i_equals-1)==':';
 
-      if (i_obrace==0) continue; // no define name
+      if ((i_obrace==0) || (i_equals==0) || (i_equals==1 && ds.at(i_equals-1)==':'))
+      {
+        if (!warningsGiven) config_warn("In PREDEFINED configuration no define name specified in '%s'\n",ds.data());
+        // Note: reset wil be after lopp when all defines have been handled once!
+        continue;
+      }
 
       if (i_obrace<i_equals && i_cbrace<i_equals && 
 	  i_obrace!=-1      && i_cbrace!=-1      && 
@@ -3350,6 +3356,7 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
 	//  def->name.data(),def->definition.data(),def->nargs);
       }
     }
+    warningsGiven=true; // Note: reset after all defines have been handled once!
     //firstTime=FALSE;
   }
  
