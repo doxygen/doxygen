@@ -2391,10 +2391,13 @@ static void expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
   //printf(">expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",expr.data(),rest ? rest->data() : 0, pos, level);
   if (expr.isEmpty())
   {
+    //printf("<expandExpression: empty\n");
     return;
   }
   if (state->expansionDict.find(expr)!=0) // check for recursive expansions
   {
+    expr=expr.left(pos)+"@-"+expr.right(expr.length()-pos);
+    //printf("<expandExpression: already expanded expr='%s'\n",expr.data());
     return;
   }
   else
