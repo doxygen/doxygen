@@ -246,7 +246,7 @@ static void initEntry()
 
 static void lineCount()
 {
-  static int tabSize = Config_getInt(TAB_SIZE);
+  int tabSize = Config_getInt(TAB_SIZE);
   const char *p;
   for (p = yytext ; *p ; ++p )
   {
@@ -269,7 +269,7 @@ static void lineCount()
 static inline int computeIndent(const char *s,int startIndent)
 {
   int col=startIndent;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -4120,7 +4120,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  if (!g_msName.isEmpty() 
 					      /*&& g_msName!=g_current->name*/) // skip typedef T {} T;, removed due to bug608493
 					  {
-					    static bool typedefHidesStruct = Config_getBool(TYPEDEF_HIDES_STRUCT);
+					    bool typedefHidesStruct = Config_getBool(TYPEDEF_HIDES_STRUCT);
 					    // case 1: typedef struct _S { ... } S_t; 
 					    // -> omit typedef and use S_t as the struct name
 					    if (typedefHidesStruct && 
@@ -6207,41 +6207,43 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  BEGIN( DocBlock );
 					}
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>"/**"[*]+{BL} {
+					  bool javadocBanner = Config_getBool(JAVADOC_BANNER);
+                                          lineCount();
 
-					  static bool javadocBanner = Config_getBool(JAVADOC_BANNER);
+					  if( javadocBanner )
+                                          {
+                                            g_lastDocContext = YY_START;
 
-					  if( javadocBanner ) {
-						  g_lastDocContext = YY_START;
+                                            //printf("Found comment banner at %s:%d\n",g_yyFileName,g_yyLineNr);
+                                            if (g_current_root->section & Entry::SCOPE_MASK)
+                                            {
+                                              g_current->inside = g_current_root->name+"::";
+                                            }
+                                            g_current->docLine = g_yyLineNr;
+                                            g_current->docFile = g_yyFileName;
+                                            g_docBlockContext = YY_START;
+                                            g_docBlockInBody  = YY_START==SkipCurly;
+                                            bool javadocAutoBrief = Config_getBool(JAVADOC_AUTOBRIEF);
+                                            g_docBlockAutoBrief = javadocAutoBrief;
 
-						  //printf("Found comment banner at %s:%d\n",g_yyFileName,g_yyLineNr);
-						  if (g_current_root->section & Entry::SCOPE_MASK)
-	                                          {
-						    g_current->inside = g_current_root->name+"::";
-	                                          }
-						  g_current->docLine = g_yyLineNr;
-						  g_current->docFile = g_yyFileName;
-						  g_docBlockContext = YY_START;
-						  g_docBlockInBody  = YY_START==SkipCurly;
-	                                          static bool javadocAutoBrief = Config_getBool(JAVADOC_AUTOBRIEF);
-						  g_docBlockAutoBrief = javadocAutoBrief;
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,g_column));
+                                            g_docBlock=indent;
 
-	                                          QCString indent;
-	                                          indent.fill(' ',computeIndent(yytext,g_column));
-	                                          g_docBlock=indent;
-
-						  if (g_docBlockAutoBrief)
-						  {
-						    g_current->briefLine = g_yyLineNr;
-						    g_current->briefFile = g_yyFileName;
-						  }
-						  startCommentBlock(FALSE);
-						  BEGIN( DocBlock );
-					  } else {
-						  g_current->program += yytext ;
-						  g_lastContext = YY_START ;
-						  BEGIN( Comment ) ;
+                                            if (g_docBlockAutoBrief)
+                                            {
+                                              g_current->briefLine = g_yyLineNr;
+                                              g_current->briefFile = g_yyFileName;
+                                            }
+                                            startCommentBlock(FALSE);
+                                            BEGIN( DocBlock );
+                                          }
+                                          else
+                                          {
+					    g_current->program += yytext ;
+					    g_lastContext = YY_START ;
+					    BEGIN( Comment ) ;
 					  }
-
 					}
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/**"/[^/*] {
 					  g_lastDocContext = YY_START;
@@ -6255,7 +6257,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  g_current->docFile = g_yyFileName;
 					  g_docBlockContext = YY_START;
 					  g_docBlockInBody  = YY_START==SkipCurly;
-                                          static bool javadocAutoBrief = Config_getBool(JAVADOC_AUTOBRIEF);
+                                          bool javadocAutoBrief = Config_getBool(JAVADOC_AUTOBRIEF);
 					  g_docBlockAutoBrief = javadocAutoBrief;
 
                                           QCString indent;
@@ -6916,7 +6918,7 @@ static void newEntry()
 
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
-  static bool hideInBodyDocs = Config_getBool(HIDE_IN_BODY_DOCS);
+  bool hideInBodyDocs = Config_getBool(HIDE_IN_BODY_DOCS);
   if (g_docBlockInBody && hideInBodyDocs) return;
   //printf("parseCommentBlock [%s] brief=%d\n",doc.data(),brief);
   int lineNr = brief ? g_current->briefLine : g_current->docLine;   // line of block start
@@ -7058,7 +7060,7 @@ static void parseCompounds(const std::unique_ptr<Entry> &rt)
       initEntry();
 
       // deep copy group list from parent (see bug 727732)
-      static bool autoGroupNested = Config_getBool(GROUP_NESTED_COMPOUNDS);
+      bool autoGroupNested = Config_getBool(GROUP_NESTED_COMPOUNDS);
       if (autoGroupNested && ce->section!=Entry::ENUM_SEC && !(ce->spec&Entry::Enum))
       {
         ce->groups = rt->groups;
