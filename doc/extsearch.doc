@@ -77,7 +77,7 @@ Since we didn't create or install a doxysearch.db it is OK for the test to
 fail for this reason. How to correct this is discussed in the next section.
 
 Before continuing with the next section add the above 
-URL (without the `?test` part) to the `SEARCHENGINE_URL` tag in
+URL (without the `?test` part) to the \ref cfg_searchengine_url "SEARCHENGINE_URL" tag in
 doxygen's configuration file:
 
     SEARCHENGINE_URL = http://yoursite.com/path/to/cgi/doxysearch.cgi
@@ -135,7 +135,8 @@ and then copy the resulting `doxysearch.db` to the directory where also
 
 The `searchdata.xml` file doesn't contain any absolute paths or links, 
 so how can the search results from multiple projects be linked back to the right documentation set?
-This is where the `EXTERNAL_SEARCH_ID` and `EXTRA_SEARCH_MAPPINGS` options come into play.
+This is where the \ref cfg_external_search_id "EXTERNAL_SEARCH_ID" and
+\ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" options come into play.
 
 To be able to identify the different projects, one needs to
 set a unique ID using \ref cfg_external_search_id "EXTERNAL_SEARCH_ID"
@@ -168,8 +169,8 @@ and the search results will link to the right documentation set.
 
 When you modify the source code, you should re-run doxygen to get up to date
 documentation again. When using external searching you also need to update the
-search index by re-running `doxyindexer`. You could wrap the call to doxygen
-and doxyindexer together in a script to make this process easier.
+search index by re-running `doxyindexer`. You could wrap the call to `doxygen`
+and `doxyindexer` together in a script to make this process easier.
 
 \section extsearch_api Programming interface
 
