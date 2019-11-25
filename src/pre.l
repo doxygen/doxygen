@@ -1934,7 +1934,7 @@ static QCString extractTrailingComment(const char *s)
 static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos);
 static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint pos);
 static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos,char c);
-static void expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level);
+static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level);
 
 static QCString stringize(const QCString &s)
 {
@@ -2385,20 +2385,19 @@ static int getNextId(const QCString &expr,int p,int *l)
  *  starting at position \a pos.
  *  May read additional characters from the input while re-scanning!
  */
-static void expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level)
+static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  //printf(">expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",expr.data(),rest ? rest->data() : 0, pos, level);
+  //printf(">expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",expr.data(),rest ? rest->data() : "", pos, level);
   if (expr.isEmpty())
   {
     //printf("<expandExpression: empty\n");
-    return;
+    return FALSE;
   }
   if (state->expansionDict.find(expr)!=0) // check for recursive expansions
   {
-    expr=expr.left(pos)+"@-"+expr.right(expr.length()-pos);
     //printf("<expandExpression: already expanded expr='%s'\n",expr.data());
-    return;
+    return FALSE;
   }
   else
   {
@@ -2462,16 +2461,25 @@ static void expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
 	  QCString resultExpr=expMacro;
 	  QCString restExpr=expr.right(expr.length()-len-p);
 	  processConcatOperators(resultExpr);
-          //printf(" macroName=%s def->nonRecursive=%d\n",macroName.data(),def->nonRecursive);
+          //printf(" macroName=%s restExpr='%s' def->nonRecursive=%d\n",macroName.data(),restExpr.data(),def->nonRecursive);
+          bool expanded=false;
 	  if (def && !def->nonRecursive)
 	  {
 	    state->expandedDict->insert(macroName,def);
-	    expandExpression(yyscanner,resultExpr,&restExpr,0,level+1);
+	    expanded = expandExpression(yyscanner,resultExpr,&restExpr,0,level+1);
 	    state->expandedDict->remove(macroName);
 	  }
-	  expr=expr.left(p)+resultExpr+restExpr;
-	  //printf(" new expression: '%s' old i=%d new i=%d\n",expr.data(),i,p);
-	  i=p;
+          if (expanded)
+          {
+	    expr=expr.left(p)+resultExpr+restExpr;
+	    //printf(" new expression: '%s' old i=%d new i=%d\n",expr.data(),i,p);
+	    i=p;
+          }
+          else
+          {
+	    expr=expr.left(p)+"@-"+expr.right(expr.length()-p);
+            i=p+l+2;
+          }
 	}
 	else // move to the next macro name
 	{
@@ -2494,6 +2502,7 @@ static void expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
     }
   }
   //printf("<expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",expr.data(),rest ? rest->data() : 0, pos,level);
+  return TRUE;
 }
 
 /*! @brief Process string or character literal.
