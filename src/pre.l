@@ -3250,7 +3250,10 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
       int i_cbrace=ds.find(')');
       bool nonRecursive = i_equals>0 && ds.at(i_equals-1)==':';
 
-      if (i_obrace==0) continue; // no define name
+      if ((i_obrace==0) || (i_equals==0) || (i_equals==1 && ds.at(i_equals-1)==':'))
+      {
+         continue; // no define name
+      }
 
       if (i_obrace<i_equals && i_cbrace<i_equals && 
 	  i_obrace!=-1      && i_cbrace!=-1      && 
