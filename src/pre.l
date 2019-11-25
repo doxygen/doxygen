@@ -2084,7 +2084,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
   }
   if (cc!='(') 
   { 
-    unputChar(yyscanner,expr,rest,j,' '); 
+    unputChar(yyscanner,expr,rest,j,cc); 
     return FALSE; 
   }
   getNextChar(yyscanner,expr,rest,j); // eat the '(' character
