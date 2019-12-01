@@ -2277,8 +2277,8 @@ Commands for displaying examples
   The `option` `lineno` can be used to enable line numbers for the included code if desired.
   The `option` `doc` can be used to treat the file as documentation rather than code.
 
-  \note Some that when using the `{doc}` option,
-       commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
+  \note When using the `{doc}` option,
+       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
        this command due to the moment of parsing.
 
   \note The included documentation should not have comment signs in it as they will appear
@@ -2409,8 +2409,8 @@ Commands for displaying examples
  The `option` `lineno` can be used to enable line numbers for the included code if desired.
  The `option` `doc` can be used to treat the file as documentation rather than code.
 
- \note Some that when using the `{doc}` option,
-       commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
+ \note When using the `{doc}` option,
+       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
        this command due to the moment of parsing.
 
  \note The included documentation should not have comment signs in it as they will appear
