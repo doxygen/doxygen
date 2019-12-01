@@ -3871,7 +3871,6 @@ CodeScanner::CodeScanner()
 {
   p = new Private;
   codeYYlex_init_extra(&p->state,&p->yyscanner);
-  YY_EXTRA_TYPE state = codeYYget_extra(p->yyscanner);
 }
 
 CodeScanner::~CodeScanner()
@@ -3918,6 +3917,7 @@ void CodeScanner::parseCCode(CodeOutputInterface &od,const char *className,const
   yyextra->code = &od;
   yyextra->inputString   = s;
   yyextra->inputPosition = 0;
+  codeYYrestart(0,yyscanner);
   yyextra->currentFontClass = 0;
   yyextra->needsTermination = FALSE;
   yyextra->searchCtx = searchCtx;

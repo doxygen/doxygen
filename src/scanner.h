@@ -29,7 +29,8 @@
 class CLanguageScanner : public ParserInterface
 {
   public:
-    virtual ~CLanguageScanner() {}
+    CLanguageScanner();
+    virtual ~CLanguageScanner();
     void startTranslationUnit(const char *fileName);
     void finishTranslationUnit();
     void parseInput(const char *fileName,
@@ -55,8 +56,9 @@ class CLanguageScanner : public ParserInterface
                   );
     void resetCodeParserState();
     void parsePrototype(const char *text);
+  private:
+    struct Private;
+    Private *p;
 };
-
-void scanFreeScanner();
 
 #endif
