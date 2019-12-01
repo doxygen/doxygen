@@ -2392,7 +2392,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
   if (expr.isEmpty())
   {
     //printf("<expandExpression: empty\n");
-    return FALSE;
+    return TRUE;
   }
   if (state->expansionDict.find(expr)!=0) // check for recursive expansions
   {
@@ -3321,10 +3321,11 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
 	  def->fileDef      = state->yyFileDef;
 	  def->fileName     = fileName;
 	  state->defineManager.addDefine(state->yyFileName,def);
+
+	  //printf("#define '%s' '%s' #nargs=%d\n",
+	  //  def->name.data(),def->definition.data(),def->nargs);
 	}
 
-	//printf("#define '%s' '%s' #nargs=%d\n",
-	//  def->name.data(),def->definition.data(),def->nargs);
       }
       else if ((i_obrace==-1 || i_obrace>i_equals) &&
 	  (i_cbrace==-1 || i_cbrace>i_equals) &&
