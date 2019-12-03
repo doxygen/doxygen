@@ -4283,7 +4283,7 @@ bool getDefs(const QCString &scName,
           int ni=namespaceName.findRev("::");
           //printf("namespaceName=%s ni=%d\n",namespaceName.data(),ni);
           bool notInNS = tmd && ni==-1 && tmd->getNamespaceDef()==0 && (mScope.isEmpty() || mScope==tmd->name());
-          bool sameNS  = tmd && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name();
+          bool sameNS  = tmd && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name() && namespaceName.mid(ni+2)==tmd->name();
           //printf("notInNS=%d sameNS=%d\n",notInNS,sameNS);
           if (tmd && tmd->isStrong() && // C++11 enum class
               (notInNS || sameNS) &&
