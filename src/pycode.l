@@ -1638,4 +1638,33 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   return;
 }
 
+//----------------------------------------------------------------------------
+
+void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+    const char *scopeName,
+    const QCString &input,
+    SrcLangExt /*lang*/,
+    bool isExampleBlock,
+    const char *exampleName,
+    FileDef *fileDef,
+    int startLine,
+    int endLine,
+    bool inlineFragment,
+    const MemberDef *memberDef,
+    bool showLineNumbers,
+    const Definition *searchCtx,
+    bool collectXRefs
+    )
+{
+  ::parsePythonCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+                    fileDef,startLine,endLine,inlineFragment,memberDef,
+                    showLineNumbers,searchCtx,collectXRefs);
+}
+
+void PythonCodeParser::resetCodeParserState()
+{
+  ::resetPythonCodeParserState();
+}
+
+
 #include "pycode.l.h"

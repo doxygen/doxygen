@@ -33,7 +33,7 @@
 using namespace vhdl::parser;
 using namespace std;
 
-static ParserInterface *g_thisParser;
+static OutlineParserInterface *g_thisParser;
 
 static QCString         yyFileName;
 static int              yyLineNr      = 1;
@@ -105,7 +105,7 @@ bool isConstraintFile(const QCString &fileName,const QCString &ext)
 }
 
 
-void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,
+void VHDLOutlineParser::parseInput(const char *fileName,const char *fileBuf,
                           const std::unique_ptr<Entry> &root, bool ,QStrList&)
 {
   g_thisParser=this;
@@ -321,7 +321,7 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
   strComment.resize(0);
 }
 
-void VHDLLanguageScanner::parsePrototype(const char *text)
+void VHDLOutlineParser::parsePrototype(const char *text)
 {
   varName=text;
   varr=TRUE;

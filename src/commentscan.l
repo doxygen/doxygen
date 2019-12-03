@@ -395,7 +395,7 @@ class GuardedSection
  *	statics
  */
 
-static ParserInterface *langParser;          // the language parser that is calling us
+static OutlineParserInterface *langParser;   // the language parser that is calling us
 static QCString         inputString;         // input string
 static int		inputPosition;       // read pointer
 static QCString		yyFileName;          // file name that is read from
@@ -3127,7 +3127,7 @@ QCString preprocessCommentBlock(const QCString &comment,
   }
 }
 
-bool parseCommentBlock(/* in */     ParserInterface *parser,
+bool parseCommentBlock(/* in */     OutlineParserInterface *parser,
                        /* in */     Entry *curEntry,
                        /* in */     const QCString &comment,
 		       /* in */     const QCString &fileName,

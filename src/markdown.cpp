@@ -2576,7 +2576,7 @@ QCString markdownFileNameToId(const QCString &fileName)
 }
 
 
-void MarkdownFileParser::parseInput(const char *fileName, 
+void MarkdownOutlineParser::parseInput(const char *fileName, 
                 const char *fileBuf, 
                 const std::unique_ptr<Entry> &root,
                 bool /*sameTranslationUnit*/,
@@ -2660,47 +2660,14 @@ void MarkdownFileParser::parseInput(const char *fileName,
   g_indentLevel=0;
 }
 
-void MarkdownFileParser::parseCode(CodeOutputInterface &codeOutIntf,
-               const char *scopeName,
-               const QCString &input,
-               SrcLangExt lang,
-               bool isExampleBlock,
-               const char *exampleName,
-               FileDef *fileDef,
-               int startLine,
-               int endLine,
-               bool inlineFragment,
-               const MemberDef *memberDef,
-               bool showLineNumbers,
-               const Definition *searchCtx,
-               bool collectXRefs
-              )
+void MarkdownOutlineParser::parsePrototype(const char *text)
 {
-  ParserInterface *pIntf = Doxygen::parserManager->getParser("*.cpp");
-  if (pIntf!=this)
+  OutlineParserInterface &intf = Doxygen::parserManager->getOutlineParser("*.cpp");
+  if (&intf!=this)
   {
-    pIntf->parseCode(
-       codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
-       fileDef,startLine,endLine,inlineFragment,memberDef,showLineNumbers,
-       searchCtx,collectXRefs);
+    intf.parsePrototype(text);
   }
 }
 
-void MarkdownFileParser::resetCodeParserState()
-{
-  ParserInterface *pIntf = Doxygen::parserManager->getParser("*.cpp");
-  if (pIntf!=this)
-  {
-    pIntf->resetCodeParserState();
-  }
-}
-
-void MarkdownFileParser::parsePrototype(const char *text)
-{
-  ParserInterface *pIntf = Doxygen::parserManager->getParser("*.cpp");
-  if (pIntf!=this)
-  {
-    pIntf->parsePrototype(text);
-  }
-}
+//------------------------------------------------------------------------
 

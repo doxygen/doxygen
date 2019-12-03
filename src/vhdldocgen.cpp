@@ -2379,7 +2379,7 @@ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList&
 
 void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname)
 {
-  ParserInterface *pIntf = Doxygen::parserManager->getParser(".vhd");
+  CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(".vhd");
  // pIntf->resetCodeParserState();
 
   QCString codeFragment=mdef->documentation();
@@ -2405,7 +2405,7 @@ void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString
   codeFragment.prepend("\n");
   ol.pushGeneratorState();
   ol.startCodeFragment();
-  pIntf->parseCode(ol,                   // codeOutIntf
+  intf.parseCode(      ol,               // codeOutIntf
                        0,                // scope
                        codeFragment,     // input
                        SrcLangExt_VHDL,  // lang
@@ -3134,13 +3134,13 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   bool b=readCodeFragment( fd->absFilePath().data(), actualStart,actualEnd,codeFragment);
   if (!b) return;
 
-  VHDLLanguageScanner *pIntf =(VHDLLanguageScanner*) Doxygen::parserManager->getParser(".vhd");
+  VHDLOutlineParser &intf =dynamic_cast<VHDLOutlineParser&>(Doxygen::parserManager->getOutlineParser(".vhd"));
   VhdlDocGen::setFlowMember(mdef);
   std::unique_ptr<Entry> root = std::make_unique<Entry>();
   QStrList filesInSameTu;
-  pIntf->startTranslationUnit("");
-  pIntf->parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);
-  pIntf->finishTranslationUnit();
+  intf.startTranslationUnit("");
+  intf.parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);
+  intf.finishTranslationUnit();
 }
 
 void VhdlDocGen::resetCodeVhdlParserState()
@@ -4312,42 +4312,3 @@ void FlowChart::writeFlowLinks(FTextStream &t)
 } //writeFlowLinks
 
 
-void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
-    const char *scopeName,
-    const QCString &input,
-    SrcLangExt, // lang
-    bool isExampleBlock,
-    const char *exampleName,
-    FileDef *fileDef,
-    int startLine,
-    int endLine,
-    bool inlineFragment,
-    const MemberDef *memberDef,
-    bool showLineNumbers,
-    const Definition *searchCtx,
-    bool collectXRefs
-    )
-{
-
-parseVhdlCode(codeOutIntf,
-                 scopeName,
-                  input,
-                  isExampleBlock,
-                  exampleName,
-                  fileDef,
-                  startLine,
-                  endLine,
-                  inlineFragment,
-                  memberDef,
-                  showLineNumbers,
-                  searchCtx,
-                  collectXRefs
-
-);
-
-
-
-
-
-
-}// class

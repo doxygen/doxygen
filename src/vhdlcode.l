@@ -33,6 +33,7 @@
 #include <qdir.h>
 #include <qcstringlist.h>
 
+#include "vhdlcode.h"
 #include "entry.h"
 #include "doxygen.h"
 #include "message.h"
@@ -1530,17 +1531,26 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 /*@ ----------------------------------------------------------------------------
  */
 
-void resetVhdlCodeParserState()
+static void resetVhdlCodeParserState()
 {
   g_vhdlKeyDict.setAutoDelete(TRUE);
   g_vhdlKeyDict.clear();
 }
 
-void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString &s, 
-                  bool exBlock, const char *exName,FileDef *fd,
-                  int startLine,int endLine,bool inlineFragment,
-                  const MemberDef *memberDef,bool,const Definition *searchCtx,
-                  bool /* collectXRefs */)
+void VHDLCodeParser::parseCode(CodeOutputInterface &od,
+                               const char *className,
+                               const QCString &s, 
+                               SrcLangExt,
+                               bool exBlock,
+                               const char *exName,
+                               FileDef *fd,
+                               int startLine,
+                               int endLine,
+                               bool inlineFragment,
+                               const MemberDef *memberDef,
+                               bool,
+                               const Definition *searchCtx,
+                               bool /* collectXRefs */)
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;

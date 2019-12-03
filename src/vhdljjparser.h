@@ -39,10 +39,10 @@ struct VhdlConfNode;
  *
  * This is the VHDL language parser for doxygen.
  */
-class VHDLLanguageScanner : public ParserInterface
+class VHDLOutlineParser : public OutlineParserInterface
 {
   public:
-    virtual ~VHDLLanguageScanner() {}
+    virtual ~VHDLOutlineParser() {}
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
     void parseInput(const char * fileName,
@@ -50,25 +50,9 @@ class VHDLLanguageScanner : public ParserInterface
                     const std::unique_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
-  
- void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
-                   const QCString &input,
-                   SrcLangExt lang,
-                   bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=0,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=0,
-                   bool collectXRefs=TRUE
-				   );
-		bool needsPreprocessing(const QCString &) const { return TRUE; }
-		void resetCodeParserState(){};
-	    void parsePrototype(const char *text);
+
+    bool needsPreprocessing(const QCString &) const { return TRUE; }
+    void parsePrototype(const char *text);
 };
 
 struct VhdlConfNode

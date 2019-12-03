@@ -18,10 +18,11 @@
 #ifndef PARSERINTF_H
 #define PARSERINTF_H
 
-#include <qdict.h>
 #include <qstrlist.h>
 
 #include <memory>
+#include <map>
+#include <string>
 
 #include "types.h"
 
@@ -31,16 +32,16 @@ class CodeOutputInterface;
 class MemberDef;
 class Definition;
 
-/** \brief Abstract interface for programming language parsers.
+/** \brief Abstract interface for outline parsers.
  *
  *  By implementing the methods of this interface one can add
- *  a new language parser to doxygen. The parser can make use of the 
+ *  a new language parser to doxygen. The parser implementation can make use of the 
  *  comment block parser to parse the contents of special comment blocks.
  */
-class ParserInterface
+class OutlineParserInterface
 {
   public:
-    virtual ~ParserInterface() {}
+    virtual ~OutlineParserInterface() {}
 
     /** Starts processing a translation unit (source files + headers).
      *  After this call parseInput() is called with sameTranslationUnit
@@ -80,6 +81,27 @@ class ParserInterface
      */
     virtual bool needsPreprocessing(const QCString &extension) const = 0;
     
+    /** Callback function called by the comment block scanner.
+     *  It provides a string \a text containing the prototype of a function
+     *  or variable. The parser should parse this and store the information
+     *  in the Entry node that corresponds with the node for which the
+     *  comment block parser was invoked.
+     */
+    virtual void parsePrototype(const char *text) = 0;
+
+};
+
+/** \brief Abstract interface for code parsers.
+ *
+ *  By implementing the methods of this interface one can add
+ *  a new language parser to doxygen. This interface is used for
+ *  syntax highlighting, but also to extract cross references and call graphs.
+ */
+class CodeParserInterface
+{
+  public:
+    virtual ~CodeParserInterface() {}
+
     /** Parses a source file or fragment with the goal to produce
      *  highlighted and cross-referenced output.
      *  @param[in] codeOutIntf Abstract interface for writing the result.
@@ -125,14 +147,6 @@ class ParserInterface
      */
     virtual void resetCodeParserState() = 0;
 
-    /** Callback function called by the comment block scanner.
-     *  It provides a string \a text containing the prototype of a function
-     *  or variable. The parser should parse this and store the information
-     *  in the Entry node that corresponds with the node for which the
-     *  comment block parser was invoked.
-     */
-    virtual void parsePrototype(const char *text) = 0;
-
 };
 
 //-----------------------------------------------------------------------------
@@ -145,18 +159,22 @@ class ParserInterface
 class ParserManager
 {
   public:
-    /** Creates the parser manager object. 
-     */
-    ParserManager()
-      : m_defaultParser(0) { m_parsers.setAutoDelete(TRUE); }
-   ~ParserManager()
+    struct ParserPair
     {
-      delete m_defaultParser;
-    }
+      ParserPair(std::unique_ptr<OutlineParserInterface> oli,
+                 std::unique_ptr<CodeParserInterface> cpi) noexcept
+        : outlineParser(std::move(oli)), codeParser(std::move(cpi)) 
+      {
+      }
 
-    void registerDefaultParser(ParserInterface *parser)
+      std::unique_ptr<OutlineParserInterface> outlineParser;
+      std::unique_ptr<CodeParserInterface>    codeParser;
+    };
+
+    ParserManager(std::unique_ptr<OutlineParserInterface> outlineParser,
+                  std::unique_ptr<CodeParserInterface> codeParser)
+      : m_defaultParsers(std::move(outlineParser),std::move(codeParser))
     {
-      m_defaultParser = parser;
     }
 
     /** Registers an additional parser.
@@ -165,9 +183,11 @@ class ParserManager
      *  @param[in] parser    The parser that is to be used for the
      *                       given name.
      */
-    void registerParser(const char *name,ParserInterface *parser)
+    void registerParser(const char *name,std::unique_ptr<OutlineParserInterface> outlineParser,
+                                         std::unique_ptr<CodeParserInterface> codeParser)
     {
-      m_parsers.insert(name,parser);
+      m_parsers.emplace(std::string(name),
+                        ParserPair(std::move(outlineParser),std::move(codeParser)));
     }
 
     /** Registers a file \a extension with a parser with name \a parserName. 
@@ -176,13 +196,16 @@ class ParserManager
     bool registerExtension(const char *extension, const char *parserName)
     {
       if (parserName==0 || extension==0) return FALSE;
-      ParserInterface *intf = m_parsers.find(parserName);
-      if (intf==0) return FALSE;
-      if (m_extensions.find(extension)!=0) // extension already exists
+
+      const auto &parserIt = m_parsers.find(parserName);
+      if (parserIt == m_parsers.end()) return FALSE;
+
+      auto extensionIt = m_extensions.find(extension);
+      if (extensionIt != m_extensions.end()) // extension already exists
       {
-        m_extensions.remove(extension); // remove it
+        m_extensions.erase(extensionIt); // remove it (e.g. user specified extension overrules built in one)
       }
-      m_extensions.insert(extension,intf); // add new mapping
+      m_extensions.emplace(std::string(extension),parserIt->second); // add new mapping
       return TRUE;
     }
 
@@ -190,22 +213,36 @@ class ParserManager
      *  If there is no parser explicitly registered for the supplied extension, 
      *  the interface to the default parser will be returned.
      */
-    ParserInterface *getParser(const char *extension)
+    OutlineParserInterface &getOutlineParser(const char *extension)
     {
-      QCString ext = QCString(extension).lower();
-      if (ext.isEmpty()) ext=".no_extension";
-      ParserInterface *intf = m_extensions.find(ext);
-      if (intf==0 && ext.length()>4)
-      {
-        intf = m_extensions.find(ext.left(4));
-      }
-      return intf ? intf : m_defaultParser;
+      return *getParsers(extension).outlineParser;
+    }
+
+    /** Gets the interface to the parser associated with given \a extension.
+     *  If there is no parser explicitly registered for the supplied extension, 
+     *  the interface to the default parser will be returned.
+     */
+    CodeParserInterface &getCodeParser(const char *extension)
+    {
+      return *getParsers(extension).codeParser;
     }
 
   private:
-    QDict<ParserInterface> m_parsers;
-    QDict<ParserInterface> m_extensions;
-    ParserInterface *m_defaultParser;
+    ParserPair &getParsers(const char *extension)
+    {
+      QCString ext = QCString(extension).lower().data();
+      if (ext.isEmpty()) ext=".no_extension";
+      auto it = m_extensions.find(ext.data());
+      if (it==m_extensions.end() && ext.length()>4)
+      {
+        it = m_extensions.find(ext.left(4).data());
+      }
+      return it!=m_extensions.end() ? it->second : m_defaultParsers;
+    }
+
+    std::map<std::string,ParserPair> m_parsers;
+    std::map<std::string,ParserPair &> m_extensions;
+    ParserPair m_defaultParsers;
 };
 
 #endif

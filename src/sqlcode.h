@@ -19,7 +19,7 @@
 #ifndef SQLCODE_H
 #define SQLCODE_H
 
-#include "types.h"
+#include "parserintf.h"
 
 class CodeOutputInterface;
 class FileDef;
@@ -27,11 +27,28 @@ class MemberDef;
 class QCString;
 class Definition;
 
-extern void parseSqlCode(CodeOutputInterface &,const char *,const QCString &,
-             bool ,const char *,FileDef *fd,
-	     int startLine,int endLine,bool inlineFragment,
-             const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
-             bool collectXRefs);
-extern void resetSqlCodeParserState();
+/** SQL scanner. Only support syntax highlighting of code at the moment.
+ */
+class SQLCodeParser : public CodeParserInterface
+{
+  public:
+    void parseCode(CodeOutputInterface &codeOutIntf,
+                   const char *scopeName,
+                   const QCString &input,
+                   SrcLangExt,
+                   bool isExampleBlock,
+                   const char *exampleName=0,
+                   FileDef *fileDef=0,
+                   int startLine=-1,
+                   int endLine=-1,
+                   bool inlineFragment=FALSE,
+                   const MemberDef *memberDef=0,
+                   bool showLineNumbers=TRUE,
+                   const Definition *searchCtx=0,
+                   bool collectXRefs=TRUE
+                  );
+    void resetCodeParserState();
+};
+
 
 #endif

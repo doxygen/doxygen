@@ -3861,25 +3861,23 @@ static void restoreObjCContext(yyscan_t yyscanner)
   }
 }
 
-struct CodeScanner::Private
+struct CCodeParser::Private
 {
   yyscan_t yyscanner;
   codeYY_state state;
 };
 
-CodeScanner::CodeScanner()
+CCodeParser::CCodeParser() : p(std::make_unique<CCodeParser::Private>())
 {
-  p = new Private;
   codeYYlex_init_extra(&p->state,&p->yyscanner);
 }
 
-CodeScanner::~CodeScanner()
+CCodeParser::~CCodeParser()
 {
   codeYYlex_destroy(p->yyscanner);
-  delete p;
 }
 
-void CodeScanner::reset()
+void CCodeParser::resetCodeParserState()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   //printf("***CodeParser::reset()\n");
@@ -3895,7 +3893,7 @@ void CodeScanner::reset()
   yyextra->anchorCount = 0;
 }
 
-void CodeScanner::parseCCode(CodeOutputInterface &od,const char *className,const QCString &s, 
+void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const QCString &s, 
                 SrcLangExt lang,bool exBlock, const char *exName,FileDef *fd,
 		int startLine,int endLine,bool inlineFragment,
 		const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
@@ -3912,7 +3910,7 @@ void CodeScanner::parseCCode(CodeOutputInterface &od,const char *className,const
 
   if (yyextra->codeClassSDict==0)
   {
-    reset();
+    resetCodeParserState();
   }
   yyextra->code = &od;
   yyextra->inputString   = s;

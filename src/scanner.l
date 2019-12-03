@@ -58,7 +58,7 @@
 
 struct scannerYY_state
 {
-  ParserInterface *thisParser;
+  OutlineParserInterface *thisParser;
   const char *     inputString = 0;
   int              inputPosition = 0;
   int              lastContext = 0;
@@ -189,7 +189,6 @@ struct scannerYY_state
   int              fencedSize = 0;
   bool             nestedComment = 0;
   std::vector< std::pair<Entry*,std::unique_ptr<Entry> > > outerScopeEntries;
-  CodeScanner      codeScanner;
 };
 
 static const char *stateToString(int state);
@@ -7321,29 +7320,27 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 
 //----------------------------------------------------------------------------
 
-struct CLanguageScanner::Private
+struct COutlineParser::Private
 {
   yyscan_t yyscanner;
   scannerYY_state state;
 };
 
-CLanguageScanner::CLanguageScanner()
+COutlineParser::COutlineParser() : p(std::make_unique<COutlineParser::Private>())
 {
-  p = new Private;
   scannerYYlex_init_extra(&p->state,&p->yyscanner);
 }
 
-CLanguageScanner::~CLanguageScanner()
+COutlineParser::~COutlineParser()
 {
   scannerYYlex_destroy(p->yyscanner);
-  delete p;
 }
 
-void CLanguageScanner::startTranslationUnit(const char *)
+void COutlineParser::startTranslationUnit(const char *)
 {
 }
 
-void CLanguageScanner::finishTranslationUnit()
+void COutlineParser::finishTranslationUnit()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   bool processWithClang = yyextra->insideCpp || yyextra->insideObjC;
@@ -7353,7 +7350,7 @@ void CLanguageScanner::finishTranslationUnit()
   }
 }
 
-void CLanguageScanner::parseInput(const char *fileName,
+void COutlineParser::parseInput(const char *fileName,
                                   const char *fileBuf,
                                   const std::unique_ptr<Entry> &root,
                                   bool sameTranslationUnit,
@@ -7371,29 +7368,7 @@ void CLanguageScanner::parseInput(const char *fileName,
 }
 
 
-void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
-                   const char * scopeName,
-                   const QCString & input,
-                   SrcLangExt lang,
-                   bool isExampleBlock,
-                   const char * exampleName,
-                   FileDef * fileDef,
-                   int startLine,
-                   int endLine,
-                   bool inlineFragment,
-		   const MemberDef *memberDef,
-		   bool showLineNumbers,
-                   const Definition *searchCtx,
-                   bool collectXRefs
-                  )
-{
-  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->codeScanner.parseCCode(codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
-               fileDef,startLine,endLine,inlineFragment,memberDef,
-	       showLineNumbers,searchCtx,collectXRefs);
-}
-
-bool CLanguageScanner::needsPreprocessing(const QCString &extension) const
+bool COutlineParser::needsPreprocessing(const QCString &extension) const
 {
   QCString fe=extension.lower();
   SrcLangExt lang = getLanguageFromFileName(extension);
@@ -7403,13 +7378,7 @@ bool CLanguageScanner::needsPreprocessing(const QCString &extension) const
     );
 }
 
-void CLanguageScanner::resetCodeParserState()
-{
-  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->codeScanner.reset();
-}
-
-void CLanguageScanner::parsePrototype(const char *text)
+void COutlineParser::parsePrototype(const char *text)
 {
   ::parsePrototype(p->yyscanner,text);
 }

@@ -65,7 +65,7 @@
  */
 
   
-static ParserInterface *g_thisParser;
+static OutlineParserInterface *g_thisParser;
 static const char *     inputString;
 static int		inputPosition;
 static QFile            inputFile;
@@ -1886,7 +1886,7 @@ void pyscanFreeScanner()
 
 //----------------------------------------------------------------------------
 
-void PythonLanguageScanner::parseInput(const char *fileName,
+void PythonOutlineParser::parseInput(const char *fileName,
                                        const char *fileBuf,
                                        const std::unique_ptr<Entry> &root,
                                        bool /*sameTranslationUnit*/,
@@ -1901,41 +1901,15 @@ void PythonLanguageScanner::parseInput(const char *fileName,
   // printAST(global_root);
 }
 
-bool PythonLanguageScanner::needsPreprocessing(const QCString &) const
+bool PythonOutlineParser::needsPreprocessing(const QCString &) const
 {
   return FALSE;
 }
 
-void PythonLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
-    const char *scopeName,
-    const QCString &input,
-    SrcLangExt /*lang*/,
-    bool isExampleBlock,
-    const char *exampleName,
-    FileDef *fileDef,
-    int startLine,
-    int endLine,
-    bool inlineFragment,
-    const MemberDef *memberDef,
-    bool showLineNumbers,
-    const Definition *searchCtx,
-    bool collectXRefs
-    )
-{
-  ::parsePythonCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
-                    fileDef,startLine,endLine,inlineFragment,memberDef,
-                    showLineNumbers,searchCtx,collectXRefs);
-}
-
-void PythonLanguageScanner::parsePrototype(const char *text)
+void PythonOutlineParser::parsePrototype(const char *text)
 {
   ::parsePrototype(text);
 
-}
-
-void PythonLanguageScanner::resetCodeParserState()
-{
-  ::resetPythonCodeParserState();
 }
 
 //----------------------------------------------------------------------------

@@ -75,10 +75,12 @@
 #include "searchindex.h"
 #include "parserintf.h"
 #include "htags.h"
+#include "pycode.h"
 #include "pyscanner.h"
+#include "fortrancode.h"
 #include "fortranscanner.h"
-#include "xmlscanner.h"
-#include "sqlscanner.h"
+#include "xmlcode.h"
+#include "sqlcode.h"
 #include "tclscanner.h"
 #include "code.h"
 #include "objcache.h"
@@ -8992,8 +8994,8 @@ static void generateExampleDocs()
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
     msg("Generating docs for example %s...\n",pd->name().data());
-    ParserInterface *pIntf = Doxygen::parserManager->getParser(".c"); // TODO: do this on code type
-    pIntf->resetCodeParserState();
+    CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(".c"); // TODO: do this on code type
+    intf.resetCodeParserState();
     QCString n=pd->getOutputFileBase();
     startFile(*g_outputList,n,n,pd->name());
     startTitle(*g_outputList,n);
@@ -9349,7 +9351,7 @@ static void copyExtraFiles(QStrList files,const QCString &filesOption,const QCSt
 
 //----------------------------------------------------------------------------
 
-static ParserInterface *getParserForFile(const char *fn)
+static OutlineParserInterface &getParserForFile(const char *fn)
 {
   QCString fileName=fn;
   QCString extension;
@@ -9364,10 +9366,10 @@ static ParserInterface *getParserForFile(const char *fn)
     extension = ".no_extension";
   }
 
-  return Doxygen::parserManager->getParser(extension);
+  return Doxygen::parserManager->getOutlineParser(extension);
 }
 
-static void parseFile(ParserInterface *parser,
+static void parseFile(OutlineParserInterface &parser,
                       const std::unique_ptr<Entry> &root,FileDef *fd,const char *fn,
                       bool sameTu,QStrList &filesInSameTu)
 {
@@ -9392,7 +9394,7 @@ static void parseFile(ParserInterface *parser,
   BufStr preBuf(fi.size()+4096);
 
   if (Config_getBool(ENABLE_PREPROCESSING) &&
-      parser->needsPreprocessing(extension))
+      parser.needsPreprocessing(extension))
   {
     BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",fn);
@@ -9423,7 +9425,7 @@ static void parseFile(ParserInterface *parser,
 
   std::unique_ptr<Entry> fileRoot = std::make_unique<Entry>();
   // use language parse to parse the file
-  parser->parseInput(fileName,convBuf.data(),fileRoot,sameTu,filesInSameTu);
+  parser.parseInput(fileName,convBuf.data(),fileRoot,sameTu,filesInSameTu);
   fileRoot->setFileDef(fd);
   root->moveToSubEntryAndKeep(fileRoot);
 }
@@ -9455,8 +9457,8 @@ static void parseFiles(const std::unique_ptr<Entry> &root)
       if (fd->isSource() && !fd->isReference()) // this is a source file
       {
         QStrList filesInSameTu;
-        ParserInterface * parser = getParserForFile(s->data());
-        parser->startTranslationUnit(s->data());
+        OutlineParserInterface &parser = getParserForFile(s->data());
+        parser.startTranslationUnit(s->data());
         parseFile(parser,root,fd,s->data(),FALSE,filesInSameTu);
         //printf("  got %d extra files in tu\n",filesInSameTu.count());
 
@@ -9478,7 +9480,7 @@ static void parseFiles(const std::unique_ptr<Entry> &root)
           }
           incFile = filesInSameTu.next();
         }
-        parser->finishTranslationUnit();
+        parser.finishTranslationUnit();
         g_processedFiles.insert(*s,(void*)0x8);
       }
     }
@@ -9491,10 +9493,10 @@ static void parseFiles(const std::unique_ptr<Entry> &root)
         QStrList filesInSameTu;
         FileDef *fd=findFileDef(Doxygen::inputNameDict,s->data(),ambig);
         ASSERT(fd!=0);
-        ParserInterface * parser = getParserForFile(s->data());
-        parser->startTranslationUnit(s->data());
+        OutlineParserInterface &parser = getParserForFile(s->data());
+        parser.startTranslationUnit(s->data());
         parseFile(parser,root,fd,s->data(),FALSE,filesInSameTu);
-        parser->finishTranslationUnit();
+        parser.finishTranslationUnit();
         g_processedFiles.insert(*s,(void*)0x8);
       }
     }
@@ -9510,8 +9512,8 @@ static void parseFiles(const std::unique_ptr<Entry> &root)
       QStrList filesInSameTu;
       FileDef *fd=findFileDef(Doxygen::inputNameDict,s->data(),ambig);
       ASSERT(fd!=0);
-      ParserInterface * parser = getParserForFile(s->data());
-      parser->startTranslationUnit(s->data());
+      OutlineParserInterface &parser = getParserForFile(s->data());
+      parser.startTranslationUnit(s->data());
       parseFile(parser,root,fd,s->data(),FALSE,filesInSameTu);
     }
   }
@@ -10068,6 +10070,19 @@ static const char *getArg(int argc,char **argv,int &optind)
 
 //----------------------------------------------------------------------------
 
+/** @brief /dev/null outline parser */
+class NullOutlineParser : public OutlineParserInterface
+{
+  public:
+    void startTranslationUnit(const char *) {}
+    void finishTranslationUnit() {}
+    void parseInput(const char *, const char *,const std::unique_ptr<Entry> &, bool, QStrList &) {}
+    bool needsPreprocessing(const QCString &) const { return FALSE; }
+    void parsePrototype(const char *) {}
+};
+
+
+
 void initDoxygen()
 {
   initResources();
@@ -10082,18 +10097,28 @@ void initDoxygen()
   Doxygen::runningTime.start();
   Doxygen::preprocessor = new Preprocessor();
 
-  Doxygen::parserManager = new ParserManager;
-  Doxygen::parserManager->registerDefaultParser(         new FileParser);
-  Doxygen::parserManager->registerParser("c",            new CLanguageScanner);
-  Doxygen::parserManager->registerParser("python",       new PythonLanguageScanner);
-  Doxygen::parserManager->registerParser("fortran",      new FortranLanguageScanner);
-  Doxygen::parserManager->registerParser("fortranfree",  new FortranLanguageScannerFree);
-  Doxygen::parserManager->registerParser("fortranfixed", new FortranLanguageScannerFixed);
-  Doxygen::parserManager->registerParser("vhdl",         new VHDLLanguageScanner);
-  Doxygen::parserManager->registerParser("xml",          new XMLScanner);
-  Doxygen::parserManager->registerParser("sql",          new SQLScanner);
-  Doxygen::parserManager->registerParser("tcl",          new TclLanguageScanner);
-  Doxygen::parserManager->registerParser("md",           new MarkdownFileParser);
+  Doxygen::parserManager = new ParserManager(            std::make_unique<NullOutlineParser>(),
+                                                         std::make_unique<FileCodeParser>());
+  Doxygen::parserManager->registerParser("c",            std::make_unique<COutlineParser>(),
+                                                         std::make_unique<CCodeParser>());
+  Doxygen::parserManager->registerParser("python",       std::make_unique<PythonOutlineParser>(),
+                                                         std::make_unique<PythonCodeParser>());
+  Doxygen::parserManager->registerParser("fortran",      std::make_unique<FortranOutlineParser>(),
+                                                         std::make_unique<FortranCodeParser>());
+  Doxygen::parserManager->registerParser("fortranfree",  std::make_unique<FortranOutlineParserFree>(),
+                                                         std::make_unique<FortranCodeParserFree>());
+  Doxygen::parserManager->registerParser("fortranfixed", std::make_unique<FortranOutlineParserFixed>(),
+                                                         std::make_unique<FortranCodeParserFixed>());
+  Doxygen::parserManager->registerParser("vhdl",         std::make_unique<VHDLOutlineParser>(),
+                                                         std::make_unique<VHDLCodeParser>());
+  Doxygen::parserManager->registerParser("xml",          std::make_unique<NullOutlineParser>(),
+                                                         std::make_unique<XMLCodeParser>());
+  Doxygen::parserManager->registerParser("sql",          std::make_unique<NullOutlineParser>(),
+                                                         std::make_unique<SQLCodeParser>());
+  Doxygen::parserManager->registerParser("tcl",          std::make_unique<TclOutlineParser>(),
+                                                         std::make_unique<TclCodeParser>());
+  Doxygen::parserManager->registerParser("md",           std::make_unique<MarkdownOutlineParser>(),
+                                                         std::make_unique<FileCodeParser>());
 
   // register any additional parsers here...
 
