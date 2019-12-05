@@ -162,7 +162,7 @@ class ParserManager
     struct ParserPair
     {
       ParserPair(std::unique_ptr<OutlineParserInterface> oli,
-                 std::unique_ptr<CodeParserInterface> cpi) noexcept
+                 std::unique_ptr<CodeParserInterface> cpi)
         : outlineParser(std::move(oli)), codeParser(std::move(cpi)) 
       {
       }
