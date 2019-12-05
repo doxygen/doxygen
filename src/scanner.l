@@ -7329,6 +7329,9 @@ struct COutlineParser::Private
 COutlineParser::COutlineParser() : p(std::make_unique<COutlineParser::Private>())
 {
   scannerYYlex_init_extra(&p->state,&p->yyscanner);
+#ifdef FLEX_DEBUG
+  scannerYYset_debug(1,p->yyscanner);
+#endif
 }
 
 COutlineParser::~COutlineParser()

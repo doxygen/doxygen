@@ -1093,6 +1093,9 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   yyscan_t yyscanner;
   commentcnvYY_state extra;
   commentcnvYYlex_init_extra(&extra,&yyscanner);
+#ifdef FLEX_DEBUG
+  commentcnvYYset_debug(1,yyscanner);
+#endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("convertCppComments(%s)\n",fileName);
   yyextra->inBuf    = inBuf;

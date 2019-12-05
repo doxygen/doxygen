@@ -3870,6 +3870,9 @@ struct CCodeParser::Private
 CCodeParser::CCodeParser() : p(std::make_unique<CCodeParser::Private>())
 {
   codeYYlex_init_extra(&p->state,&p->yyscanner);
+#ifdef FLEX_DEBUG
+  codeYYset_debug(1,p->yyscanner);
+#endif
 }
 
 CCodeParser::~CCodeParser()
