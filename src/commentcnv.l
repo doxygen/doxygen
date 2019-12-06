@@ -119,6 +119,8 @@ static void replaceComment(yyscan_t yyscanner,int offset);
 
 %}
 
+MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+
 %option noyywrap
 
 %x Scan
@@ -335,6 +337,10 @@ static void replaceComment(yyscan_t yyscanner,int offset);
                                        yyextra->commentStack.push(new CommentCtx(yyextra->lineNr));
 				     }
   				   }
+<CComment,ReadLine>{MAILADR}      |
+<CComment,ReadLine>"<"{MAILADR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
 <CComment>"{@code"/[ \t\n]	   {
                                      copyToOutput(yyscanner,"@code",5); 
 				     yyextra->lastCommentContext = YY_START;
@@ -519,7 +525,7 @@ static void replaceComment(yyscan_t yyscanner,int offset);
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 
-<CComment>[^\\!@*\n{\"\/]*           { /* anything that is not a '*' or command */ 
+<CComment>[^ <\\!@*\n{\"\/]*       { /* anything that is not a '*' or command */ 
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 <CComment>"*"+[^*/\\@\n{\"]*       { /* stars without slashes */
