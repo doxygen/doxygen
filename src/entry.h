@@ -202,26 +202,26 @@ class Entry
     /*! Returns the list of children for this Entry
      *  @see addSubEntry() and removeSubEntry()
      */
-    const std::vector< std::unique_ptr<Entry> > &children() const { return m_sublist; }
+    const std::vector< std::shared_ptr<Entry> > &children() const { return m_sublist; }
 
     /*! @name add entry as a child and pass ownership.
      *  @note This makes the entry passed invalid! (TODO: tclscanner.l still has use after move!)
      *  @{
      */
     void moveToSubEntryAndKeep(Entry* e);
-    void moveToSubEntryAndKeep(std::unique_ptr<Entry> &e);
+    void moveToSubEntryAndKeep(std::shared_ptr<Entry> &e);
     /*! @} */
 
     /*! @name add entry as a child, pass ownership and reinitialize entry */
     void moveToSubEntryAndRefresh(Entry* &e);
-    void moveToSubEntryAndRefresh(std::unique_ptr<Entry> &e);
+    void moveToSubEntryAndRefresh(std::shared_ptr<Entry> &e);
 
     /*! take \a child of of to list of children and move it into \a moveTo */
-    void moveFromSubEntry(const Entry *child,std::unique_ptr<Entry> &moveTo);
+    void moveFromSubEntry(const Entry *child,std::shared_ptr<Entry> &moveTo);
 
     /*! make a copy of \a e and add it as a child to this entry */
     void copyToSubEntry (Entry* e);
-    void copyToSubEntry (const std::unique_ptr<Entry> &e);
+    void copyToSubEntry (const std::shared_ptr<Entry> &e);
 
     /*! Removes entry \a e from the list of children.
      *  The entry will be deleted if found.
@@ -332,7 +332,7 @@ class Entry
 
   private:
     Entry         *m_parent;    //!< parent node in the tree
-    std::vector< std::unique_ptr<Entry> > m_sublist;
+    std::vector< std::shared_ptr<Entry> > m_sublist;
     Entry &operator=(const Entry &);
     FileDef       *m_fileDef;
 };

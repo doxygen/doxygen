@@ -38,7 +38,7 @@ class PythonOutlineParser : public OutlineParserInterface
     void finishTranslationUnit() {}
     void parseInput(const char * fileName, 
                     const char *fileBuf, 
-                    const std::unique_ptr<Entry> &root,
+                    const std::shared_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
     bool needsPreprocessing(const QCString &extension) const;

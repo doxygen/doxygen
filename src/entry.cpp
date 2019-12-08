@@ -116,7 +116,7 @@ Entry::Entry(const Entry &e)
   m_sublist.reserve(e.m_sublist.size());
   for (const auto &cur : e.m_sublist)
   {
-    m_sublist.push_back(std::make_unique<Entry>(*cur));
+    m_sublist.push_back(std::make_shared<Entry>(*cur));
   }
 }
 
@@ -136,11 +136,11 @@ void Entry::moveToSubEntryAndRefresh(Entry *&current)
   current = new Entry;
 }
 
-void Entry::moveToSubEntryAndRefresh(std::unique_ptr<Entry> &current)
+void Entry::moveToSubEntryAndRefresh(std::shared_ptr<Entry> &current)
 {
   current->m_parent=this;
-  m_sublist.push_back(std::move(current));
-  current = std::make_unique<Entry>();
+  m_sublist.push_back(current);
+  current = std::make_shared<Entry>();
 }
 
 void Entry::moveToSubEntryAndKeep(Entry *current)
@@ -149,10 +149,10 @@ void Entry::moveToSubEntryAndKeep(Entry *current)
   m_sublist.emplace_back(current);
 }
 
-void Entry::moveToSubEntryAndKeep(std::unique_ptr<Entry> &current)
+void Entry::moveToSubEntryAndKeep(std::shared_ptr<Entry> &current)
 {
   current->m_parent=this;
-  m_sublist.push_back(std::move(current));
+  m_sublist.push_back(current);
 }
 
 void Entry::copyToSubEntry(Entry *current)
@@ -162,20 +162,20 @@ void Entry::copyToSubEntry(Entry *current)
   m_sublist.emplace_back(copy);
 }
 
-void Entry::copyToSubEntry(const std::unique_ptr<Entry> &current)
+void Entry::copyToSubEntry(const std::shared_ptr<Entry> &current)
 {
-  std::unique_ptr<Entry> copy = std::make_unique<Entry>(*current);
+  std::shared_ptr<Entry> copy = std::make_shared<Entry>(*current);
   copy->m_parent=this;
-  m_sublist.push_back(std::move(copy));
+  m_sublist.push_back(copy);
 }
 
-void Entry::moveFromSubEntry(const Entry *child,std::unique_ptr<Entry> &moveTo)
+void Entry::moveFromSubEntry(const Entry *child,std::shared_ptr<Entry> &moveTo)
 {
   auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
-      [child](const std::unique_ptr<Entry>&elem) { return elem.get()==child; });
+      [child](const std::shared_ptr<Entry>&elem) { return elem.get()==child; });
   if (it!=m_sublist.end())
   {
-    moveTo = std::move(*it);
+    moveTo = *it;
     m_sublist.erase(it);
   }
   else
@@ -187,7 +187,7 @@ void Entry::moveFromSubEntry(const Entry *child,std::unique_ptr<Entry> &moveTo)
 void Entry::removeSubEntry(const Entry *e)
 {
   auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
-      [e](const std::unique_ptr<Entry>&elem) { return elem.get()==e; });
+      [e](const std::shared_ptr<Entry>&elem) { return elem.get()==e; });
   if (it!=m_sublist.end())
   {
     m_sublist.erase(it);

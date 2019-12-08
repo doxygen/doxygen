@@ -422,9 +422,9 @@ static STLInfo g_stlinfo[] =
   { 0,                      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }
 };
 
-static void addSTLMember(const std::unique_ptr<Entry> &root,const char *type,const char *name)
+static void addSTLMember(const std::shared_ptr<Entry> &root,const char *type,const char *name)
 {
-  std::unique_ptr<Entry> memEntry = std::make_unique<Entry>();
+  std::shared_ptr<Entry> memEntry = std::make_shared<Entry>();
   memEntry->name       = name;
   memEntry->type       = type;
   memEntry->protection = Public;
@@ -435,9 +435,9 @@ static void addSTLMember(const std::unique_ptr<Entry> &root,const char *type,con
   root->moveToSubEntryAndKeep(memEntry);
 }
 
-static void addSTLIterator(const std::unique_ptr<Entry> &classEntry,const char *name)
+static void addSTLIterator(const std::shared_ptr<Entry> &classEntry,const char *name)
 {
-  std::unique_ptr<Entry> iteratorClassEntry = std::make_unique<Entry>();
+  std::shared_ptr<Entry> iteratorClassEntry = std::make_shared<Entry>();
   iteratorClassEntry->fileName  = "[STL]";
   iteratorClassEntry->startLine = 1;
   iteratorClassEntry->name      = name;
@@ -448,14 +448,14 @@ static void addSTLIterator(const std::unique_ptr<Entry> &classEntry,const char *
   classEntry->moveToSubEntryAndKeep(iteratorClassEntry);
 }
 
-static void addSTLClass(const std::unique_ptr<Entry> &root,const STLInfo *info)
+static void addSTLClass(const std::shared_ptr<Entry> &root,const STLInfo *info)
 {
   //printf("Adding STL class %s\n",info->className);
   QCString fullName = info->className;
   fullName.prepend("std::");
 
   // add fake Entry for the class
-  std::unique_ptr<Entry> classEntry = std::make_unique<Entry>();
+  std::shared_ptr<Entry> classEntry = std::make_shared<Entry>();
   classEntry->fileName  = "[STL]";
   classEntry->startLine = 1;
   classEntry->name      = fullName;
@@ -490,9 +490,9 @@ static void addSTLClass(const std::unique_ptr<Entry> &root,const STLInfo *info)
     addSTLMember(classEntry,info->templType2,info->templName2);
   }
   if (fullName=="std::auto_ptr" || fullName=="std::smart_ptr" || fullName=="std::shared_ptr" ||
-      fullName=="std::unique_ptr" || fullName=="std::weak_ptr")
+      fullName=="std::shared_ptr" || fullName=="std::weak_ptr")
   {
-    std::unique_ptr<Entry> memEntry = std::make_unique<Entry>();
+    std::shared_ptr<Entry> memEntry = std::make_shared<Entry>();
     memEntry->name       = "operator->";
     memEntry->args       = "()";
     memEntry->type       = "T*";
@@ -523,9 +523,9 @@ static void addSTLClass(const std::unique_ptr<Entry> &root,const STLInfo *info)
 }
 
 
-static void addSTLClasses(const std::unique_ptr<Entry> &root)
+static void addSTLClasses(const std::shared_ptr<Entry> &root)
 {
-  std::unique_ptr<Entry> namespaceEntry = std::make_unique<Entry>();
+  std::shared_ptr<Entry> namespaceEntry = std::make_shared<Entry>();
   namespaceEntry->fileName  = "[STL]";
   namespaceEntry->startLine = 1;
   namespaceEntry->name      = "std";
@@ -9201,7 +9201,7 @@ static void compareDoxyfile()
 
 //----------------------------------------------------------------------------
 
-static void readTagFile(const std::unique_ptr<Entry> &root,const char *tl)
+static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
 {
   QCString tagLine = tl;
   QCString fileName;
@@ -9370,7 +9370,7 @@ static OutlineParserInterface &getParserForFile(const char *fn)
 }
 
 static void parseFile(OutlineParserInterface &parser,
-                      const std::unique_ptr<Entry> &root,FileDef *fd,const char *fn,
+                      const std::shared_ptr<Entry> &root,FileDef *fd,const char *fn,
                       bool sameTu,QStrList &filesInSameTu)
 {
 #if USE_LIBCLANG
@@ -9423,7 +9423,7 @@ static void parseFile(OutlineParserInterface &parser,
     fd->getAllIncludeFilesRecursively(filesInSameTu);
   }
 
-  std::unique_ptr<Entry> fileRoot = std::make_unique<Entry>();
+  std::shared_ptr<Entry> fileRoot = std::make_shared<Entry>();
   // use language parse to parse the file
   parser.parseInput(fileName,convBuf.data(),fileRoot,sameTu,filesInSameTu);
   fileRoot->setFileDef(fd);
@@ -9431,7 +9431,7 @@ static void parseFile(OutlineParserInterface &parser,
 }
 
 //! parse the list of input files
-static void parseFiles(const std::unique_ptr<Entry> &root)
+static void parseFiles(const std::shared_ptr<Entry> &root)
 {
 #if USE_LIBCLANG
   static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
@@ -10076,7 +10076,7 @@ class NullOutlineParser : public OutlineParserInterface
   public:
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
-    void parseInput(const char *, const char *,const std::unique_ptr<Entry> &, bool, QStrList &) {}
+    void parseInput(const char *, const char *,const std::shared_ptr<Entry> &, bool, QStrList &) {}
     bool needsPreprocessing(const QCString &) const { return FALSE; }
     void parsePrototype(const char *) {}
 };
@@ -11266,7 +11266,7 @@ void parseInput()
    *             Handle Tag Files                                           *
    **************************************************************************/
 
-  std::unique_ptr<Entry> root = std::make_unique<Entry>();
+  std::shared_ptr<Entry> root = std::make_shared<Entry>();
   msg("Reading and parsing tag files\n");
 
   QStrList &tagFileList = Config_getList(TAGFILES);

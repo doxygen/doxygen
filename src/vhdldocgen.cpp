@@ -72,7 +72,7 @@ static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCStri
 static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
 static void assignBinding(VhdlConfNode* conf);
 static void addInstance(ClassDef* entity, ClassDef* arch, ClassDef *inst,
-                        const std::unique_ptr<Entry> &cur);
+                        const std::shared_ptr<Entry> &cur);
 
 //---------- create svg -------------------------------------------------------------
 static void createSVG();
@@ -2535,7 +2535,7 @@ static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCStr
 
   qcs.stripPrefix("=");
 
-  std::unique_ptr<Entry> current = std::make_unique<Entry>();
+  std::shared_ptr<Entry> current = std::make_shared<Entry>();
   current->spec=VhdlDocGen::UCF_CONST;
   current->section=Entry::VARIABLE_SEC;
   current->bodyLine=line;
@@ -2900,7 +2900,7 @@ void VhdlDocGen::computeVhdlComponentRelations()
 }
 
 static void addInstance(ClassDef* classEntity, ClassDef* ar,
-                        ClassDef *cd , const std::unique_ptr<Entry> &cur)
+                        ClassDef *cd , const std::shared_ptr<Entry> &cur)
 {
 
   QCString bName,n1;
@@ -3136,7 +3136,7 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
 
   VHDLOutlineParser &intf =dynamic_cast<VHDLOutlineParser&>(Doxygen::parserManager->getOutlineParser(".vhd"));
   VhdlDocGen::setFlowMember(mdef);
-  std::unique_ptr<Entry> root = std::make_unique<Entry>();
+  std::shared_ptr<Entry> root = std::make_shared<Entry>();
   QStrList filesInSameTu;
   intf.startTranslationUnit("");
   intf.parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);

@@ -48,16 +48,15 @@ static Entry* oldEntry;
 static bool varr=FALSE;
 static QCString varName;
 
-static std::vector< std::unique_ptr<Entry> > instFiles;
-static std::vector< std::unique_ptr<Entry> > libUse;
+static std::vector< std::shared_ptr<Entry> > instFiles;
+static std::vector< std::shared_ptr<Entry> > libUse;
 static std::vector<Entry*> lineEntry;
 
-Entry*   VhdlParser::currentCompound=0;
 Entry*   VhdlParser::tempEntry=0;
 Entry*   VhdlParser::lastEntity=0  ;
 Entry*   VhdlParser::lastCompound=0  ;
 Entry*   VhdlParser::current_root  = 0;
-std::unique_ptr<Entry> VhdlParser::current=0;
+std::shared_ptr<Entry> VhdlParser::current=0;
 QCString VhdlParser::compSpec;
 QCString VhdlParser::currName;
 QCString VhdlParser::confName;
@@ -90,7 +89,7 @@ static void insertEntryAtLine(const Entry* ce,int line);
 //-------------------------------------
 
 const QList<VhdlConfNode>& getVhdlConfiguration() { return  configL; }
-const std::vector<std::unique_ptr<Entry> > &getVhdlInstList() { return  instFiles; }
+const std::vector<std::shared_ptr<Entry> > &getVhdlInstList() { return  instFiles; }
 
 Entry* getVhdlCompound()
 {
@@ -106,7 +105,7 @@ bool isConstraintFile(const QCString &fileName,const QCString &ext)
 
 
 void VHDLOutlineParser::parseInput(const char *fileName,const char *fileBuf,
-                          const std::unique_ptr<Entry> &root, bool ,QStrList&)
+                          const std::shared_ptr<Entry> &root, bool ,QStrList&)
 {
   g_thisParser=this;
   bool inLine=false;
@@ -140,10 +139,9 @@ void VHDLOutlineParser::parseInput(const char *fileName,const char *fileBuf,
   VhdlParser::current_root=root.get();
   VhdlParser::lastCompound=0;
   VhdlParser::lastEntity=0;
-  VhdlParser::currentCompound=0;
   VhdlParser::lastEntity=0;
   oldEntry = 0;
-  VhdlParser::current=std::make_unique<Entry>();
+  VhdlParser::current=std::make_shared<Entry>();
   VhdlParser::initEntry(VhdlParser::current.get());
   Doxygen::docGroup.enterFile(fileName,yyLineNr);
   vhdlFileName = fileName;
@@ -355,10 +353,10 @@ void VhdlParser::addCompInst(const char *n, const char* instName, const char* co
     if (true) // !findInstant(current->type))
     {
       initEntry(current.get());
-      instFiles.emplace_back(std::make_unique<Entry>(*current));
+      instFiles.emplace_back(std::make_shared<Entry>(*current));
     }
 
-    current=std::make_unique<Entry>();
+    current=std::make_shared<Entry>();
   }
   else
   {
@@ -396,7 +394,7 @@ void VhdlParser::addVhdlType(const char *n,int startLine,int section,
 
     if (!lastCompound && (section==Entry::VARIABLE_SEC) &&  (spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
     {
-      libUse.emplace_back(std::make_unique<Entry>(*current));
+      libUse.emplace_back(std::make_shared<Entry>(*current));
       current->reset();
     }
     newEntry();

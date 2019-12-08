@@ -2966,7 +2966,7 @@ static void tcl_parse(const QCString ns, const QCString cls)
 //! Parse text file and build up entry tree.
 void TclOutlineParser::parseInput(const char *fileName,
                                     const char *input,
-                                    const std::unique_ptr<Entry> &root,
+                                    const std::shared_ptr<Entry> &root,
                                     bool /*sameTranslationUnit*/,
                                     QStrList & /*filesInSameTranslationUnit*/)
 {

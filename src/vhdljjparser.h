@@ -47,7 +47,7 @@ class VHDLOutlineParser : public OutlineParserInterface
     void finishTranslationUnit() {}
     void parseInput(const char * fileName,
                     const char *fileBuf,
-                    const std::unique_ptr<Entry> &root,
+                    const std::shared_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
 
@@ -82,6 +82,6 @@ struct VhdlConfNode
 void vhdlscanFreeScanner();
 
 const QList<VhdlConfNode>& getVhdlConfiguration();
-const std::vector<std::unique_ptr<Entry> >&getVhdlInstList();
+const std::vector<std::shared_ptr<Entry> >&getVhdlInstList();
 
 #endif

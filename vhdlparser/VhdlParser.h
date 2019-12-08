@@ -8426,7 +8426,7 @@ static Entry* current_root;
 static Entry* tempEntry;
 static Entry*  lastEntity  ;
 static Entry*  lastCompound  ;
-static std::unique_ptr<Entry> current;
+static std::shared_ptr<Entry> current;
 static QCString compSpec;
 static QCString currName;
 static int levelCounter;
@@ -8437,7 +8437,6 @@ static QCString forL;
 static int param_sec ;
 static int parse_sec;
 static int currP;
-static Entry* currentCompound;
 
 //----------------------------------------
 

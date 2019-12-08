@@ -5891,7 +5891,7 @@ void VhdlParser::package_declaration() {QCString s;
     }
     if (!hasError) {
 lastCompound=current.get();
-                          std::unique_ptr<Entry> clone=std::make_unique<Entry>(*current);
+                          std::shared_ptr<Entry> clone=std::make_shared<Entry>(*current);
                           clone->section=Entry::NAMESPACE_SEC;
                           clone->spec=VhdlDocGen::PACKAGE;
                           clone->name=s;

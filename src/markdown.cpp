@@ -2578,11 +2578,11 @@ QCString markdownFileNameToId(const QCString &fileName)
 
 void MarkdownOutlineParser::parseInput(const char *fileName, 
                 const char *fileBuf, 
-                const std::unique_ptr<Entry> &root,
+                const std::shared_ptr<Entry> &root,
                 bool /*sameTranslationUnit*/,
                 QStrList & /*filesInSameTranslationUnit*/)
 {
-  std::unique_ptr<Entry> current = std::make_unique<Entry>();
+  std::shared_ptr<Entry> current = std::make_shared<Entry>();
   current->lang = SrcLangExt_Markdown;
   current->fileName = fileName;
   current->docFile  = fileName;

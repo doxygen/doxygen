@@ -145,7 +145,7 @@ static QCString         inputStringSemi; ///< Input string after command separat
 static unsigned int     inputPositionPrepass;
 static int              lineCountPrepass = 0;
 
-static QList<Entry>  subrCurrent;
+static std::vector< std::shared_ptr<Entry> >  subrCurrent;
 
 struct CommentInPrepass {
   int column;
@@ -162,14 +162,15 @@ static QFile            inputFile;
 static QCString		yyFileName;
 static int		yyLineNr     = 1 ;
 static int		yyColNr     = 0 ;
-static Entry*		current_root = 0 ;
-static Entry*		global_root  = 0 ;
-static Entry*		file_root    = 0 ;
-static Entry*		last_entry   = 0 ;
-static Entry*		last_enum    = 0 ;
-static std::unique_ptr<Entry> current;
+static Entry           *current_root = 0;
+static Entry           *global_scope = 0;
+static std::shared_ptr<Entry> global_root;
+static std::shared_ptr<Entry> file_root;
+static std::shared_ptr<Entry> last_entry;
+static std::shared_ptr<Entry> last_enum;
+static std::shared_ptr<Entry> current;
 static ScanVar          v_type       = V_IGNORE; // type of parsed variable
-static std::vector<Entry*>  moduleProcedures; // list of all interfaces which contain unresolved 
+static std::vector<std::shared_ptr<Entry> >  moduleProcedures; // list of all interfaces which contain unresolved 
                                           // module procedures
 static QCString         docBlock;
 static bool             docBlockInBody = FALSE;
@@ -202,7 +203,6 @@ static SymbolModifiers currentModifiers;
 //! Holds program scope->symbol name->symbol modifiers.
 static QMap<Entry*,QMap<QCString,SymbolModifiers> > modifiers;
 
-static Entry           *global_scope = 0;
 static int              anonCount    = 0 ;
 //-----------------------------------------------------------------------------
 
@@ -491,13 +491,13 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           QCString name = QCString(yytext).stripWhiteSpace();
                                           name = name.right(name.length() - 9).stripWhiteSpace().lower();
                                           addInterface(name, ifType);
-                                          startScope(last_entry);
+                                          startScope(last_entry.get());
                                         }
 }
 
 <InterfaceBody>^{BS}end{BS}interface({BS_}{ID})? {
                                           // end scope only if GENERIC interface
-                                          if (ifType == IF_GENERIC)last_entry->parent()->endBodyLine = yyLineNr - 1;
+                                          if (ifType == IF_GENERIC) last_entry->parent()->endBodyLine = yyLineNr - 1;
                                           if (ifType == IF_GENERIC && !endScope(current_root))
                                             yyterminate();
 
@@ -510,12 +510,12 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <ModuleProcedure>{ID}                   { if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                           {
                                             addInterface(yytext, ifType);
-                                            startScope(last_entry);
+                                            startScope(last_entry.get());
                                           }
 
                                           current->section = Entry::FUNCTION_SEC ;
                                           current->name = yytext; 
-                                          moduleProcedures.push_back(current.get());
+                                          moduleProcedures.push_back(current);
                                           addCurrentEntry(true);
                                         }
 <ModuleProcedure>"\n"                   { yyColNr -= 1;
@@ -639,7 +639,7 @@ private                                 {
                                           current->startLine  = yyLineNr;
 
                                           /* if type is part of a module, mod name is necessary for output */
-                                          if ((current_root) && 
+                                          if (current_root && 
                                               (current_root->section == Entry::CLASS_SEC
                                                || current_root->section == Entry::NAMESPACE_SEC))
                                           {
@@ -647,7 +647,7 @@ private                                 {
                                           }
 
                                           addCurrentEntry(true);
-                                          startScope(last_entry); 
+                                          startScope(last_entry.get()); 
                                           BEGIN(TypedefBody);
                                         }
 }
@@ -727,7 +727,7 @@ private                                 {
 
 					   if (!endScope(current_root))
 					     yyterminate();
-                                           subrCurrent.remove(0u);
+                                           subrCurrent.pop_back();
 					   yy_pop_state() ;
 				        }
 <BlockData>{
@@ -736,7 +736,7 @@ private                                 {
 }
 <Start,ModuleBody,TypedefBody,SubprogBody,Enum>{
 ^{BS}{TYPE_SPEC}/{SEPARATE}             {
-                                          last_enum = 0;
+                                          last_enum.reset();
                                           if (YY_START == Enum)
                                           {
 					    argType = "@"; // enum marker
@@ -867,7 +867,7 @@ private                                 {
                                             {
                                               current_root->copyToSubEntry(current);
                                               // add to the scope surrounding the enum (copy!)
-                                              last_enum = current.get();
+                                              last_enum = current;
                                               current_root->parent()->moveToSubEntryAndRefresh(current);
                                               initEntry();
                                             }
@@ -1066,7 +1066,7 @@ private                                 {
                                           }
 
                                           addCurrentEntry(true);
-                                          startScope(last_entry); 
+                                          startScope(last_entry.get()); 
 					  BEGIN( Enum ) ;
                                         }
 <Enum>"end"{BS}"enum"                   {
@@ -1083,7 +1083,7 @@ private                                 {
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
                                            addInterface("$interface$", ifType);
-                                           startScope(last_entry);
+                                           startScope(last_entry.get());
                                          }
 
                                          // TYPE_SPEC is for old function style function result
@@ -1109,7 +1109,7 @@ private                                 {
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
                                            addInterface("$interface$", ifType);
-                                           startScope(last_entry);
+                                           startScope(last_entry.get());
                                          }
 
                                          result = QCString(yytext).stripWhiteSpace();
@@ -1136,7 +1136,7 @@ private                                 {
 				         current->args += ")";
 				         current->args = removeRedundantWhiteSpace(current->args);
                                          addCurrentEntry(true);
-					 startScope(last_entry);
+					 startScope(last_entry.get());
 					 BEGIN(SubprogBody);
 				       }
 <Parameterlist>{COMMA}|{BS}            { current->args += yytext;
@@ -1162,7 +1162,7 @@ private                                 {
 				           newLine();
 					   //printf("3=========> without parameterlist \n");
                                            addCurrentEntry(true);
-					   startScope(last_entry);
+					   startScope(last_entry.get());
 					   BEGIN(SubprogBody);				           
 }
 <SubprogBody>result{BS}\({BS}{ID}      {  
@@ -1214,20 +1214,19 @@ private                                 {
 					  unput(*yytext);                                        
 					  if (v_type == V_VARIABLE) 
 					  {
-                                            std::unique_ptr<Entry> tmp_entry;
-                                            current.swap(tmp_entry);
+                                            std::shared_ptr<Entry> tmp_entry = current;
                                             // temporarily switch to the previous entry
                                             if (last_enum)
                                             {
-                                              current.reset(last_enum);
+                                              current = last_enum;
                                             }
                                             else
                                             {
-					      current.reset(last_entry);
+					      current = last_entry;
                                             }
   					    handleCommentBlock(docBlock,TRUE);
                                             // switch back
- 					    tmp_entry.swap(current);
+ 					    current = tmp_entry;
                                           }
 					  else if (v_type == V_PARAMETER) 
 					  {
@@ -1779,7 +1778,7 @@ static void popBuffer() {
 }
 
 /** used to copy entry to an interface module procedure */
-static void copyEntry(Entry *dest, const std::unique_ptr<Entry> &src) 
+static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> &src) 
 {
    dest->type        = src->type;
    dest->fileName    = src->fileName;
@@ -2306,7 +2305,7 @@ static int yyread(char *buf,int max_size)
 
 static void initParser()
 {
-  last_entry = 0;
+  last_entry.reset();
 }
 
 static void initEntry()
@@ -2333,7 +2332,7 @@ static void addCurrentEntry(bool case_insens)
 {
   if (case_insens) current->name = current->name.lower();
   //printf("===Adding entry %s to %s\n", current->name.data(), current_root->name.data());
-  last_entry = current.get();
+  last_entry = current;
   current_root->moveToSubEntryAndRefresh(current);
   initEntry();
 }
@@ -2367,14 +2366,14 @@ static void addModule(const char *name, bool isModule)
   current->startLine  = yyLineNr;
   current->protection = Public ;
   addCurrentEntry(true);
-  startScope(last_entry);
+  startScope(last_entry.get());
 }
 
 
 static void addSubprogram(const char *text)
 {
   DBG_CTX((stderr,"1=========> got subprog, type: %s\n",text)); 
-  subrCurrent.prepend(current.get());
+  subrCurrent.push_back(current);
   current->section = Entry::FUNCTION_SEC ;
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
   functionLine = (subtype.find("function") != -1);
@@ -2487,7 +2486,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   QCString processedDoc = preprocessCommentBlock(doc,yyFileName,lineNr);
   while (parseCommentBlock(
 	g_thisParser,
-	docBlockInBody ? subrCurrent.getFirst() : current.get(),
+	docBlockInBody ? subrCurrent.back().get() : current.get(),
 	processedDoc, // text
 	yyFileName, // file
 	lineNr,
@@ -2515,9 +2514,8 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   QCString loc_doc;
   loc_doc = doc.stripWhiteSpace();
 
-  std::unique_ptr<Entry> tmp_entry;
-  current.swap(tmp_entry);
-  current.reset(subrCurrent.getFirst()); // temporarily switch to the entry of the subroutine / function
+  std::shared_ptr<Entry> tmp_entry = current;
+  current = subrCurrent.back(); // temporarily switch to the entry of the subroutine / function
 
   // Still in the specification section so no inbodyDocs yet, but parameter documentation
   current->inbodyDocs = "";
@@ -2566,7 +2564,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       loc_doc.stripWhiteSpace();
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
-        tmp_entry.swap(current);
+        current = tmp_entry;
         return;
       }
       handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::OUT] + " " + 
@@ -2610,7 +2608,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   }
 
   // reset current back to the part inside the routine
-  tmp_entry.swap(current);
+  current = tmp_entry;
 }
 //----------------------------------------------------------------------------
 /// Handle result description as defined after the declaration of the parameter
@@ -2619,9 +2617,8 @@ static void subrHandleCommentBlockResult(const QCString &doc,bool brief)
   QCString loc_doc;
   loc_doc = doc.stripWhiteSpace();
 
-  std::unique_ptr<Entry> tmp_entry;
-  current.swap(tmp_entry);
-  current.reset(subrCurrent.getFirst()); // temporarily switch to the entry of the subroutine / function
+  std::shared_ptr<Entry> tmp_entry = current;
+  current = subrCurrent.back(); // temporarily switch to the entry of the subroutine / function
 
   // Still in the specification section so no inbodyDocs yet, but parameter documentation
   current->inbodyDocs = "";
@@ -2640,7 +2637,7 @@ static void subrHandleCommentBlockResult(const QCString &doc,bool brief)
   }
 
   // reset current back to the part inside the routine
-  tmp_entry.swap(current);
+  current = tmp_entry;
 }
 
 //----------------------------------------------------------------------------
@@ -2661,7 +2658,7 @@ level--;
 
 
 static void parseMain(const char *fileName,const char *fileBuf,
-                      const std::unique_ptr<Entry> &rt, FortranFormat format)
+                      const std::shared_ptr<Entry> &rt, FortranFormat format)
 {
   char *tmpBuf = NULL;
   initParser();
@@ -2677,7 +2674,7 @@ static void parseMain(const char *fileName,const char *fileBuf,
   gstat         = FALSE;
   virt          = Normal;
   current_root  = rt.get();
-  global_root   = rt.get();
+  global_root   = rt;
   inputFile.setName(fileName);
   if (inputFile.open(IO_ReadOnly))
   {
@@ -2719,11 +2716,11 @@ static void parseMain(const char *fileName,const char *fileBuf,
     Doxygen::docGroup.enterFile(yyFileName,yyLineNr);
 
     // add entry for the file
-    current          = std::make_unique<Entry>();
+    current          = std::make_shared<Entry>();
     current->lang    = SrcLangExt_Fortran; 
     current->name    = yyFileName;
     current->section = Entry::SOURCE_SEC;
-    file_root        = current.get();
+    file_root        = current;
     current_root->moveToSubEntryAndRefresh(current);
     current->lang    = SrcLangExt_Fortran; 
 
@@ -2759,7 +2756,7 @@ static void parseMain(const char *fileName,const char *fileBuf,
 
 void FortranOutlineParser::parseInput(const char *fileName,
                                         const char *fileBuf,
-                                        const std::unique_ptr<Entry> &root,
+                                        const std::shared_ptr<Entry> &root,
                                         bool /*sameTranslationUnit*/,
                                         QStrList & /*filesInSameTranslationUnit*/)
 {
@@ -2799,7 +2796,7 @@ static void scanner_abort()
 
   for (const auto &ce : global_root->children())
   {
-     if (ce.get() == file_root) start=TRUE;
+     if (ce == file_root) start=TRUE;
      if (start) ce->reset(); 
   } 
 

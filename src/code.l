@@ -3877,6 +3877,10 @@ CCodeParser::CCodeParser() : p(std::make_unique<CCodeParser::Private>())
 
 CCodeParser::~CCodeParser()
 {
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->classScopeLengthStack.clear();
+  delete yyextra->codeClassSDict;
+  yyextra->codeClassSDict=0;
   codeYYlex_destroy(p->yyscanner);
 }
 
