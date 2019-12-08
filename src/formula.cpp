@@ -100,15 +100,15 @@ void FormulaList::generateBitmaps(const char *path)
     //printf("Running latex...\n");
     //system("latex _formulas.tex </dev/null >/dev/null");
     QCString latexCmd = "latex";
-    Portables::sysTimerStart();
-    if (Portables::system(latexCmd,"_formulas.tex")!=0)
+    Portable::sysTimerStart();
+    if (Portable::system(latexCmd,"_formulas.tex")!=0)
     {
       err("Problems running latex. Check your installation or look "
           "for typos in _formulas.tex and check _formulas.log!\n");
       formulaError=TRUE;
       //return;
     }
-    Portables::sysTimerStop();
+    Portable::sysTimerStop();
     //printf("Running dvips...\n");
     QListIterator<int> pli(pagesToGenerate);
     int *pagePtr;
@@ -125,27 +125,27 @@ void FormulaList::generateBitmaps(const char *path)
       // postscript file.
       sprintf(dviArgs,"-q -D 600 -n 1 -p %d -o %s_tmp.ps _formulas.dvi",
           pageIndex,formBase.data());
-      Portables::sysTimerStart();
-      if (Portables::system("dvips",dviArgs)!=0)
+      Portable::sysTimerStart();
+      if (Portable::system("dvips",dviArgs)!=0)
       {
         err("Problems running dvips. Check your installation!\n");
-        Portables::sysTimerStop();
+        Portable::sysTimerStop();
         QDir::setCurrent(oldDir);
         return;
       }
-      Portables::sysTimerStop();
+      Portable::sysTimerStop();
       // run ps2epsi to convert to an encapsulated postscript file with
       // boundingbox (dvips with -E has some problems here).
       sprintf(psArgs,"%s_tmp.ps %s.eps",formBase.data(),formBase.data()); 
-      Portables::sysTimerStart();
-      if (Portables::system("ps2epsi",psArgs)!=0)
+      Portable::sysTimerStart();
+      if (Portable::system("ps2epsi",psArgs)!=0)
       {
         err("Problems running ps2epsi. Check your installation!\n");
-        Portables::sysTimerStop();
+        Portable::sysTimerStop();
         QDir::setCurrent(oldDir);
         return;
       }
-      Portables::sysTimerStop();
+      Portable::sysTimerStop();
       // now we read the generated postscript file to extract the bounding box
       QFileInfo fi(formBase+".eps");
       if (fi.exists())
@@ -198,15 +198,15 @@ void FormulaList::generateBitmaps(const char *path)
                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
                     formBase.data(),formBase.data()
              );
-      Portables::sysTimerStart();
-      if (Portables::system(Portables::ghostScriptCommand(),gsArgs)!=0)
+      Portable::sysTimerStart();
+      if (Portable::system(Portable::ghostScriptCommand(),gsArgs)!=0)
       {
-        err("Problem running ghostscript %s %s. Check your installation!\n",Portables::ghostScriptCommand(),gsArgs);
-        Portables::sysTimerStop();
+        err("Problem running ghostscript %s %s. Check your installation!\n",Portable::ghostScriptCommand(),gsArgs);
+        Portable::sysTimerStop();
         QDir::setCurrent(oldDir);
         return;
       }
-      Portables::sysTimerStop();
+      Portable::sysTimerStop();
       f.setName(formBase+".pnm");
       uint imageX=0,imageY=0;
       // we read the generated image again, to obtain the pixel data.

@@ -38,12 +38,12 @@ static QCString g_dotFontPath;
 static void setDotFontPath(const char *path)
 {
   ASSERT(g_dotFontPath.isEmpty());
-  g_dotFontPath = Portables::getenv("DOTFONTPATH");
+  g_dotFontPath = Portable::getenv("DOTFONTPATH");
   QCString newFontPath = Config_getString(DOT_FONTPATH);
   QCString spath = path;
   if (!newFontPath.isEmpty() && !spath.isEmpty())
   {
-    newFontPath.prepend(spath+Portables::pathListSeparator());
+    newFontPath.prepend(spath+Portable::pathListSeparator());
   }
   else if (newFontPath.isEmpty() && !spath.isEmpty())
   {
@@ -51,21 +51,21 @@ static void setDotFontPath(const char *path)
   }
   else
   {
-    Portables::unsetenv("DOTFONTPATH");
+    Portable::unsetenv("DOTFONTPATH");
     return;
   }
-  Portables::setenv("DOTFONTPATH",newFontPath);
+  Portable::setenv("DOTFONTPATH",newFontPath);
 }
 
 static void unsetDotFontPath()
 {
   if (g_dotFontPath.isEmpty())
   {
-    Portables::unsetenv("DOTFONTPATH");
+    Portable::unsetenv("DOTFONTPATH");
   }
   else
   {
-    Portables::setenv("DOTFONTPATH",g_dotFontPath);
+    Portable::setenv("DOTFONTPATH",g_dotFontPath);
   }
   g_dotFontPath="";
 }
@@ -183,7 +183,7 @@ bool DotManager::run() const
     setDotFontPath(Config_getString(DOCBOOK_OUTPUT));
     setPath=TRUE;
   }
-  Portables::sysTimerStart();
+  Portable::sysTimerStart();
   // fill work queue with dot operations
   DotRunner *dr;
   int prev=1;
@@ -211,7 +211,7 @@ bool DotManager::run() const
         msg("Running dot for graph %d/%d\n",prev,numDotRuns);
         prev++;
       }
-      Portables::sleep(100);
+      Portable::sleep(100);
     }
     while ((int)numDotRuns>=prev)
     {
@@ -229,7 +229,7 @@ bool DotManager::run() const
       m_workers.at(i)->wait();
     }
   }
-  Portables::sysTimerStop();
+  Portable::sysTimerStop();
   if (setPath)
   {
     unsetDotFontPath();

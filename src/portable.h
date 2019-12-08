@@ -17,7 +17,7 @@ typedef off_t portable_off_t;
  *  @brief Portable versions of functions that are platform dependent.
  */
 
-namespace Portables
+namespace Portable
 {
   int            system(const char *command,const char *args,bool commandHasConsole=true);
   unsigned int   pid(void);

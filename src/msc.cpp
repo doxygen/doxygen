@@ -95,7 +95,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,MscOutputFormat format)
 {
   QCString absOutFile = outDir;
-  absOutFile+=Portables::pathSeparator();
+  absOutFile+=Portable::pathSeparator();
   absOutFile+=outFile;
 
   mscgen_format_t msc_format;
@@ -130,12 +130,12 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          absOutFile.data(),absOutFile.data());
-    Portables::sysTimerStart();
-    if (Portables::system("epstopdf",epstopdfArgs)!=0)
+    Portable::sysTimerStart();
+    if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err("Problems running epstopdf. Check your TeX installation!\n");
     }
-    Portables::sysTimerStop();
+    Portable::sysTimerStop();
   }
 
   Doxygen::indexList->addImageFile(imgName);

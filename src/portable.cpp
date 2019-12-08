@@ -37,7 +37,7 @@ static double  g_sysElapsedTime;
 static QTime   g_time;
 
 
-int Portables::system(const char *command,const char *args,bool commandHasConsole)
+int Portable::system(const char *command,const char *args,bool commandHasConsole)
 {
 
   if (command==0) return 1;
@@ -196,7 +196,7 @@ int Portables::system(const char *command,const char *args,bool commandHasConsol
 
 }
 
-unsigned int Portables::pid(void)
+unsigned int Portable::pid(void)
 {
   unsigned int pid;
 #if !defined(_WIN32) || defined(__CYGWIN__)
@@ -240,7 +240,7 @@ void loadEnvironment()
 }
 #endif
 
-void Portables::setenv(const char *name,const char *value)
+void Portable::setenv(const char *name,const char *value)
 {
     if (value==0) value="";
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -255,7 +255,7 @@ void Portables::setenv(const char *name,const char *value)
 #endif
 }
 
-void Portables::unsetenv(const char *variable)
+void Portable::unsetenv(const char *variable)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     SetEnvironmentVariable(variable,0);
@@ -276,7 +276,7 @@ void Portables::unsetenv(const char *variable)
 #endif
 }
 
-const char *Portables::getenv(const char *variable)
+const char *Portable::getenv(const char *variable)
 {  
 #if defined(_WIN32) && !defined(__CYGWIN__)
     return ::getenv(variable);
@@ -297,7 +297,7 @@ const char *Portables::getenv(const char *variable)
 #endif
 }
 
-portable_off_t Portables::fseek(FILE *f,portable_off_t offset, int whence)
+portable_off_t Portable::fseek(FILE *f,portable_off_t offset, int whence)
 {
 #if defined(__MINGW32__)
   return fseeko64(f,offset,whence);
@@ -308,7 +308,7 @@ portable_off_t Portables::fseek(FILE *f,portable_off_t offset, int whence)
 #endif
 }
 
-portable_off_t Portables::ftell(FILE *f)
+portable_off_t Portable::ftell(FILE *f)
 {
 #if defined(__MINGW32__)
   return ftello64(f);  
@@ -319,7 +319,7 @@ portable_off_t Portables::ftell(FILE *f)
 #endif
 }
 
-FILE *Portables::fopen(const char *fileName,const char *mode)
+FILE *Portable::fopen(const char *fileName,const char *mode)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   QString fn(fileName);
@@ -330,7 +330,7 @@ FILE *Portables::fopen(const char *fileName,const char *mode)
 #endif
 }
 
-char  Portables::pathSeparator(void)
+char  Portable::pathSeparator(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   return '\\';
@@ -339,7 +339,7 @@ char  Portables::pathSeparator(void)
 #endif
 }
 
-char  Portables::pathListSeparator(void)
+char  Portable::pathListSeparator(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   return ';';
@@ -348,7 +348,7 @@ char  Portables::pathListSeparator(void)
 #endif
 }
 
-const char *Portables::ghostScriptCommand(void)
+const char *Portable::ghostScriptCommand(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     return "gswin32c.exe";
@@ -357,7 +357,7 @@ const char *Portables::ghostScriptCommand(void)
 #endif
 }
 
-const char *Portables::commandExtension(void)
+const char *Portable::commandExtension(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     return ".exe";
@@ -366,7 +366,7 @@ const char *Portables::commandExtension(void)
 #endif
 }
 
-bool Portables::fileSystemIsCaseSensitive(void)
+bool Portable::fileSystemIsCaseSensitive(void)
 {
 #if defined(_WIN32) || defined(macintosh) || defined(__MACOSX__) || defined(__APPLE__) || defined(__CYGWIN__)
   return FALSE;
@@ -375,7 +375,7 @@ bool Portables::fileSystemIsCaseSensitive(void)
 #endif
 }
 
-FILE * Portables::popen(const char *name,const char *type)
+FILE * Portable::popen(const char *name,const char *type)
 {
   #if defined(_MSC_VER) || defined(__BORLANDC__)
   return ::_popen(name,type);
@@ -384,7 +384,7 @@ FILE * Portables::popen(const char *name,const char *type)
   #endif
 }
 
-int Portables::pclose(FILE *stream)
+int Portable::pclose(FILE *stream)
 {
   #if defined(_MSC_VER) || defined(__BORLANDC__)
   return ::_pclose(stream);
@@ -393,22 +393,22 @@ int Portables::pclose(FILE *stream)
   #endif
 }
 
-void Portables::sysTimerStart(void)
+void Portable::sysTimerStart(void)
 {
   g_time.start();
 }
 
-void Portables::sysTimerStop(void)
+void Portable::sysTimerStop(void)
 {
   g_sysElapsedTime+=((double)g_time.elapsed())/1000.0;
 }
 
-double Portables::getSysElapsedTime(void)
+double Portable::getSysElapsedTime(void)
 {
   return g_sysElapsedTime;
 }
 
-void Portables::sleep(int ms)
+void Portable::sleep(int ms)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   Sleep(ms);
@@ -417,7 +417,7 @@ void Portables::sleep(int ms)
 #endif
 }
 
-bool Portables::isAbsolutePath(const char *fileName)
+bool Portable::isAbsolutePath(const char *fileName)
 {
 # ifdef _WIN32
   if (isalpha (fileName [0]) && fileName[1] == ':')
@@ -439,17 +439,17 @@ bool Portables::isAbsolutePath(const char *fileName)
  *
  * This routine was inspired by the cause for bug 766059 was that in the Windows path there were forward slashes.
  */
-void Portables::correct_path(void)
+void Portable::correct_path(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  const char *p = Portables::getenv("PATH");
+  const char *p = Portable::getenv("PATH");
   if (!p) return; // no path nothing to correct
   QCString result = substitute(p,'/','\\');
-  if (result!=p) Portables::setenv("PATH",result.data());
+  if (result!=p) Portable::setenv("PATH",result.data());
 #endif
 }
 
-void Portables::unlink(const char *fileName)
+void Portable::unlink(const char *fileName)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   _unlink(fileName);
@@ -458,7 +458,7 @@ void Portables::unlink(const char *fileName)
 #endif
 }
 
-void Portables::setShortDir(void)
+void Portable::setShortDir(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   long     length = 0;

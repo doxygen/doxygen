@@ -1338,14 +1338,14 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    epsBaseName.data(),epsBaseName.data());
     //printf("Converting eps using '%s'\n",epstopdfArgs.data());
-    Portables::sysTimerStart();
-    if (Portables::system("epstopdf",epstopdfArgs)!=0)
+    Portable::sysTimerStart();
+    if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
        err("Problems running epstopdf. Check your TeX installation!\n");
-       Portables::sysTimerStop();
+       Portable::sysTimerStop();
        return;
     }
-    Portables::sysTimerStop();
+    Portable::sysTimerStop();
   }
 }
 

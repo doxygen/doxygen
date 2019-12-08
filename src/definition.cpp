@@ -744,12 +744,12 @@ class FilterCache
         // file already processed, get the results after filtering from the tmp file
         Debug::print(Debug::FilterOutput,0,"Reusing filter result for %s from %s at offset=%d size=%d\n",
                qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
-        f = Portables::fopen(Doxygen::filterDBFileName,"rb");
+        f = Portable::fopen(Doxygen::filterDBFileName,"rb");
         if (f)
         {
           bool success=TRUE;
           str.resize(item->fileSize+1);
-          if (Portables::fseek(f,item->filePos,SEEK_SET)==-1)
+          if (Portable::fseek(f,item->filePos,SEEK_SET)==-1)
           {
             err("Failed to seek to position %d in filter database file %s\n",(int)item->filePos,qPrint(Doxygen::filterDBFileName));
             success=FALSE;
@@ -780,8 +780,8 @@ class FilterCache
         // filter file
         QCString cmd=filter+" \""+fileName+"\"";
         Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-        f = Portables::popen(cmd,"r");
-        FILE *bf = Portables::fopen(Doxygen::filterDBFileName,"a+b");
+        f = Portable::popen(cmd,"r");
+        FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
         FilterCacheItem *item = new FilterCacheItem;
         item->filePos = m_endPos;
         if (bf==0)
@@ -790,7 +790,7 @@ class FilterCache
           err("Error opening filter database file %s\n",qPrint(Doxygen::filterDBFileName));
           str.addChar('\0');
           delete item;
-          Portables::pclose(f);
+          Portable::pclose(f);
           return FALSE;
         }
         // append the filtered output to the database file
@@ -806,7 +806,7 @@ class FilterCache
                 qPrint(Doxygen::filterDBFileName),bytesWritten,bytesRead);
             str.addChar('\0');
             delete item;
-            Portables::pclose(f);
+            Portable::pclose(f);
             fclose(bf);
             return FALSE;
           }
@@ -821,14 +821,14 @@ class FilterCache
                qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
         // update end of file position
         m_endPos += size;
-        Portables::pclose(f);
+        Portable::pclose(f);
         fclose(bf);
       }
       else // no filtering
       {
         // normal file
         //printf("getFileContents(%s): no filter\n",qPrint(fileName));
-        f = Portables::fopen(fileName,"r");
+        f = Portable::fopen(fileName,"r");
         while (!feof(f))
         {
           int bytesRead = fread(buf,1,blockSize,f);
