@@ -89,18 +89,18 @@ class MemberGroup
     int docLine() const { return m_docLine; }
 
   private: 
-    MemberList *memberList;      // list of all members in the group
-    MemberList *inDeclSection;
-    int grpId;
+    MemberList *memberList = 0;      // list of all members in the group
+    MemberList *inDeclSection = 0;
+    int grpId = 0;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file
     QCString doc;
-    bool inSameSection;
-    int  m_numDecMembers;
-    int  m_numDocMembers;
-    const Definition *m_parent;
+    bool inSameSection = 0;
+    int  m_numDecMembers = 0;
+    int  m_numDocMembers = 0;
+    const Definition *m_parent = 0;
     QCString m_docFile;
-    int m_docLine;
+    int m_docLine = 0;
     std::vector<ListItemInfo> m_xrefListItems;
 };
 

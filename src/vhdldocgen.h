@@ -307,11 +307,11 @@ class FlowChart
     ~FlowChart();
 
 private:
-    int id;
-    int stamp;
-    int type;
+    int id = 0;
+    int stamp = 0;
+    int type = 0;
 
-    int line;
+    int line = 0;
 
     QCString label;
     QCString text;

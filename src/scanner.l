@@ -187,7 +187,7 @@ struct scannerYY_state
   int              column = 0;
 
   int              fencedSize = 0;
-  bool             nestedComment = 0;
+  bool             nestedComment = false;
   std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
 };
 
