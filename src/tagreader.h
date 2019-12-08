@@ -23,6 +23,6 @@ class Entry;
 
 #include <memory>
 
-void parseTagFile(const std::unique_ptr<Entry> &root,const char *fullPathName);
+void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullPathName);
 
 #endif

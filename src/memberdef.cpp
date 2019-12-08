@@ -3707,10 +3707,10 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     else
       ol.parseText(theTranslator->trInitialValue());
     ol.endBold();
-    ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
-    pIntf->resetCodeParserState();
+    CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
+    intf.resetCodeParserState();
     ol.startCodeFragment();
-    pIntf->parseCode(ol,scopeName,m_impl->initializer,lang,FALSE,0,const_cast<FileDef*>(getFileDef()),
+    intf.parseCode(ol,scopeName,m_impl->initializer,lang,FALSE,0,const_cast<FileDef*>(getFileDef()),
                      -1,-1,TRUE,this,FALSE,this);
     ol.endCodeFragment();
   }

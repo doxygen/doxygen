@@ -262,7 +262,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   struct yyguts_t *yyg = (struct yyguts_t*)g_yyscanner;
 
 #ifdef FLEX_DEBUG
-  yyset_debug(1,g_yyscanner);
+  declinfoYYset_debug(1,g_yyscanner);
 #endif
 
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);

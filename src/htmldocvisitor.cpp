@@ -518,8 +518,8 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::Code: 
       forceEndParagraph(s);
       m_t << PREFRAG_START;
-      Doxygen::parserManager->getParser(lang)
-                            ->parseCode(m_ci,
+      Doxygen::parserManager->getCodeParser(lang)
+                             .parseCode(m_ci,
                                         s->context(),
                                         s->text(),
                                         langExt,
@@ -666,8 +666,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::Include: 
       forceEndParagraph(inc);
       m_t << PREFRAG_START;
-      Doxygen::parserManager->getParser(inc->extension())
-                            ->parseCode(m_ci,                 
+      Doxygen::parserManager->getCodeParser(inc->extension())
+                             .parseCode(m_ci,                 
                                         inc->context(),
                                         inc->text(),
                                         langExt,
@@ -690,8 +690,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            inc->text(),
                                            langExt,
@@ -732,8 +732,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       {
          forceEndParagraph(inc);
          m_t << PREFRAG_START;
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -757,8 +757,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -810,8 +810,8 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
         QFileInfo cfi( op->includeFileName() );
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
-      Doxygen::parserManager->getParser(locLangExt)
-                            ->parseCode(
+      Doxygen::parserManager->getCodeParser(locLangExt)
+                             .parseCode(
                                 m_ci,
                                 op->context(),
                                 op->text(),

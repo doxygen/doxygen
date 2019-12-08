@@ -31,7 +31,7 @@ static Entry* current_root;
 static Entry* tempEntry;
 static Entry*  lastEntity  ;
 static Entry*  lastCompound  ;
-static std::unique_ptr<Entry> current;
+static std::shared_ptr<Entry> current;
 static QCString compSpec;
 static QCString currName;
 static int levelCounter;
@@ -42,7 +42,6 @@ static QCString forL;
 static int param_sec ;
 static int parse_sec;
 static int currP;
-static Entry* currentCompound;
 
 //----------------------------------------
 
@@ -1730,7 +1729,7 @@ void package_declaration():  {QCString s;}
  <PACKAGE_T> s=identifier() <IS_T>
                           {
                           lastCompound=current.get();
-                          std::unique_ptr<Entry> clone=std::make_unique<Entry>(*current);
+                          std::shared_ptr<Entry> clone=std::make_shared<Entry>(*current);
                           clone->section=Entry::NAMESPACE_SEC;
                           clone->spec=VhdlDocGen::PACKAGE;
                           clone->name=s;

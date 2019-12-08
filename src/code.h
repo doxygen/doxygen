@@ -18,28 +18,37 @@
 #ifndef CODE_H
 #define CODE_H
 
-#include "types.h"
+#include "parserintf.h"
 
-class CodeOutputInterface;
 class FileDef;
 class MemberDef;
 class QCString;
 class Definition;
 
-class CodeScanner
+class CCodeParser : public CodeParserInterface
 {
   public:
-    CodeScanner();
-    virtual ~CodeScanner();
-    void parseCCode(CodeOutputInterface &,const char *,const QCString &,
-            SrcLangExt lang, bool isExample, const char *exName,FileDef *fd,
-            int startLine,int endLine,bool inlineFragment,
-            const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
-            bool collectXRefs);
-    void reset();
+    CCodeParser();
+    virtual ~CCodeParser();
+    void parseCode(CodeOutputInterface &codeOutIntf,
+                   const char *scopeName,
+                   const QCString &input,
+                   SrcLangExt lang,
+                   bool isExampleBlock,
+                   const char *exampleName=0,
+                   FileDef *fileDef=0,
+                   int startLine=-1,
+                   int endLine=-1,
+                   bool inlineFragment=FALSE,
+                   const MemberDef *memberDef=0,
+                   bool showLineNumbers=TRUE,
+                   const Definition *searchCtx=0,
+                   bool collectXRefs=TRUE
+                  );
+    void resetCodeParserState();
   private:
     struct Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 #endif

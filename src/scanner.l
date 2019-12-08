@@ -58,7 +58,7 @@
 
 struct scannerYY_state
 {
-  ParserInterface *thisParser;
+  OutlineParserInterface *thisParser;
   const char *     inputString = 0;
   int              inputPosition = 0;
   int              lastContext = 0;
@@ -90,12 +90,12 @@ struct scannerYY_state
   int              curlyCount   = 0 ;
   int              squareCount  = 0 ;
   int              padCount     = 0 ;
-  std::unique_ptr<Entry> current;
-  Entry*           current_root = 0 ;
-  Entry*           previous     = 0 ;
-  std::unique_ptr<Entry> tempEntry;
-  Entry*           firstTypedefEntry = 0 ;
-  Entry*           memspecEntry = 0 ;
+  std::shared_ptr<Entry> current;
+  std::shared_ptr<Entry> current_root;
+  std::shared_ptr<Entry> previous;
+  std::shared_ptr<Entry> tempEntry;
+  std::shared_ptr<Entry> firstTypedefEntry;
+  std::shared_ptr<Entry> memspecEntry;
   int              yyLineNr     = 1 ;
   int              yyBegLineNr  = 1 ;
   int              yyColNr      = 1 ;
@@ -188,8 +188,7 @@ struct scannerYY_state
 
   int              fencedSize = 0;
   bool             nestedComment = false;
-  std::vector< std::pair<Entry*,std::unique_ptr<Entry> > > outerScopeEntries;
-  CodeScanner      codeScanner;
+  std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
 };
 
 static const char *stateToString(int state);
@@ -1002,7 +1001,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  lineCount(yyscanner);
   					}
 <PackageName>";"			{
-                                          Entry *tmp = yyextra->current.get();
+                                          std::shared_ptr<Entry> tmp = yyextra->current;
 					  yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           yyextra->current_root = tmp;
 					  initEntry(yyscanner);
@@ -1685,7 +1684,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    //printf("import name = %s -> %s\n",yytext,yyextra->current->name.data());
 					    yyextra->current->section=Entry::USINGDECL_SEC;
 					  }
-                                          yyextra->previous = yyextra->current.get();
+                                          yyextra->previous = yyextra->current;
 					  yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
 					  initEntry(yyscanner);
 					  BEGIN(Using);
@@ -1703,7 +1702,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->current->fileName = yyextra->yyFileName; 
   					  yyextra->current->section=Entry::USINGDECL_SEC;
                                           yyextra->current->startLine = yyextra->yyLineNr;
-                                          yyextra->previous = yyextra->current.get();
+                                          yyextra->previous = yyextra->current;
 					  yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
 					  initEntry(yyscanner);
 					  if (yyextra->insideCS) /* Hack: in C# a using declaration and 
@@ -2483,7 +2482,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           if (yyextra->previous && yyextra->previous->section==Entry::GROUPDOC_SEC)
 					  {
 					    // link open command to the group defined in the yyextra->previous entry
-					    Doxygen::docGroup.open(yyextra->previous,yyextra->yyFileName,yyextra->yyLineNr);
+					    Doxygen::docGroup.open(yyextra->previous.get(),yyextra->yyFileName,yyextra->yyLineNr);
 					  }
 					  else
 					  {
@@ -3491,7 +3490,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      // add to the scope surrounding the enum (copy!)
                                               // we cannot during it directly as that would invalidate the iterator in parseCompounds.
                                               //printf("*** adding outer scope entry for %s\n",yyextra->current->name.data());
-                                              yyextra->outerScopeEntries.emplace_back(yyextra->current_root->parent(), std::make_unique<Entry>(*yyextra->current));
+                                              yyextra->outerScopeEntries.emplace_back(yyextra->current_root->parent(), std::make_shared<Entry>(*yyextra->current));
 					    }
 					    yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
 					    initEntry(yyscanner);
@@ -3588,7 +3587,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else
 					  {
 					    yyextra->current->endBodyLine = yyextra->yyLineNr;
-                                            Entry * original_root = yyextra->current_root; // save root this namespace is in
+                                            std::shared_ptr<Entry> original_root = yyextra->current_root; // save root this namespace is in
                                             if (yyextra->current->section == Entry::NAMESPACE_SEC && yyextra->current->type == "namespace")
                                             {
                                               int split_point;
@@ -3608,16 +3607,17 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                               yyextra->current->briefFile = "";
                                               while ((split_point = yyextra->current->name.find("::")) != -1)
                                               {
-                                                std::unique_ptr<Entry> new_current = std::make_unique<Entry>(*yyextra->current);
+                                                std::shared_ptr<Entry> new_current = std::make_shared<Entry>(*yyextra->current);
                                                 yyextra->current->program = "";
                                                 new_current->name  = yyextra->current->name.mid(split_point + 2);
                                                 yyextra->current->name  = yyextra->current->name.left(split_point);
                                                 if (!yyextra->current_root->name.isEmpty()) yyextra->current->name.prepend(yyextra->current_root->name+"::");
 
-                                                Entry *tmp = yyextra->current.get();
+                                                std::shared_ptr<Entry> tmp = yyextra->current;
                                                 yyextra->current_root->moveToSubEntryAndKeep(yyextra->current);
                                                 yyextra->current_root = tmp;
-                                                yyextra->current.swap(new_current);
+
+                                                yyextra->current = new_current;
                                               }
                                               // restore documentation values
                                               yyextra->current->doc       = doc;
@@ -3659,7 +3659,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      }
 					      else
 					      {
-					        yyextra->memspecEntry = yyextra->current.get();
+					        yyextra->memspecEntry = yyextra->current;
 					        yyextra->current_root->copyToSubEntry( yyextra->current ) ;
 						if (yyextra->current->section==Entry::NAMESPACE_SEC ||
 						    (yyextra->current->spec==Entry::Interface) ||
@@ -3670,7 +3670,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                                   yyextra->current->reset();
                                                   yyextra->current_root = original_root; // restore scope from before namespace descent
 						  initEntry(yyscanner);
-						  yyextra->memspecEntry = 0;
+						  yyextra->memspecEntry.reset();
 						  BEGIN( FindMembers ) ;
 						}
 						else
@@ -3725,7 +3725,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  //printf("Adding compound %s %s %s\n",yyextra->current->type.data(),yyextra->current->name.data(),yyextra->current->args.data());
 					  if (!yyextra->firstTypedefEntry)
 					  {
-					    yyextra->firstTypedefEntry = yyextra->current.get();
+					    yyextra->firstTypedefEntry = yyextra->current;
 					  }
 					  yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
 					  initEntry(yyscanner);
@@ -3741,7 +3741,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  // add compound definition to the tree
   					  yyextra->current->args = yyextra->current->args.simplifyWhiteSpace();
   					  yyextra->current->type = yyextra->current->type.simplifyWhiteSpace();
-					  yyextra->memspecEntry = yyextra->current.get();
+					  yyextra->memspecEntry = yyextra->current;
 					  yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
 					  initEntry(yyscanner);
 					  unput(';');
@@ -3795,7 +3795,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    // anonymous compound. If so we insert a 
 					    // special 'anonymous' variable.
 					    //Entry *p=yyextra->current_root;
-					    const Entry *p=yyextra->current.get();
+                                            const Entry *p=yyextra->current.get();
 					    while (p)
 					    {
 					      // only look for class scopes, not namespace scopes
@@ -3813,7 +3813,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 						}
 					      }
 					      //p=p->parent;
-					      if (p==yyextra->current.get()) p=yyextra->current_root; else p=p->parent();
+					      if (p==yyextra->current.get()) p=yyextra->current_root.get(); else p=p->parent();
 					    }
 					  }
 					  //printf("yyextra->msName=%s yyextra->current->name=%s\n",yyextra->msName.data(),yyextra->current->name.data());
@@ -3834,7 +3834,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    }
 					    else // case 2: create a typedef field
 					    {
-                                              std::unique_ptr<Entry> varEntry=std::make_unique<Entry>();
+                                              std::shared_ptr<Entry> varEntry=std::make_shared<Entry>();
 					      varEntry->lang = yyextra->language;
 					      varEntry->protection = yyextra->current->protection ;
 					      varEntry->mtype = yyextra->current->mtype;
@@ -3894,8 +3894,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->msName.resize(0);
 					    yyextra->msArgs.resize(0);
 					    yyextra->isTypedef=FALSE;
-					    yyextra->firstTypedefEntry=0;
-					    yyextra->memspecEntry=0;
+					    yyextra->firstTypedefEntry.reset();
+					    yyextra->memspecEntry.reset();
 					    yyextra->current->reset();
 					    initEntry(yyscanner);
 					    BEGIN( FindMembers );
@@ -4826,7 +4826,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    {
 					      findAndRemoveWord(yyextra->current->type,"function");
 					    }
-					    yyextra->previous = yyextra->current.get();
+					    yyextra->previous = yyextra->current;
 					    yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
 					    initEntry(yyscanner);
 					    // Objective C 2.0: Required/Optional section
@@ -4920,9 +4920,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    yyextra->current->endBodyLine=yyextra->yyLineNr;
                                             // take yyextra->previous out of yyextra->current_root and move it into yyextra->current
-					    yyextra->current.swap(yyextra->tempEntry); // remember yyextra->current
-                                            yyextra->current_root->moveFromSubEntry(yyextra->previous,yyextra->current);
-					    yyextra->previous = 0;
+					    yyextra->tempEntry = yyextra->current; // remember yyextra->current
+                                            yyextra->current_root->moveFromSubEntry(yyextra->previous.get(),yyextra->current);
+					    yyextra->previous.reset();
 
 					    yyextra->docBlockContext   = SkipCurlyEndDoc;
 					    yyextra->docBlockInBody    = FALSE;
@@ -4964,7 +4964,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   				          //addToBody("}");
                                           if (yyextra->tempEntry) // we can only switch back to yyextra->current if no new item was created
 					  {
-					    yyextra->tempEntry.swap(yyextra->current);
+					    yyextra->current = yyextra->tempEntry;
 					    yyextra->tempEntry.reset();
 					  }
   					  BEGIN( yyextra->lastCurlyContext );
@@ -6616,8 +6616,8 @@ static void initParser(yyscan_t yyscanner)
   yyextra->insideCode=FALSE;
   yyextra->insideCli=Config_getBool(CPP_CLI_SUPPORT);
   yyextra->previous = 0;
-  yyextra->firstTypedefEntry = 0;
-  yyextra->memspecEntry =0;
+  yyextra->firstTypedefEntry.reset();
+  yyextra->memspecEntry.reset();
 }
 
 static void initEntry(yyscan_t yyscanner)
@@ -6929,13 +6929,13 @@ static void newEntry(yyscan_t yyscanner)
                     // already added to yyextra->current_root, so we should not add it again 
                     // (see bug723314)
   {
-    yyextra->previous = yyextra->current.get();
+    yyextra->previous = yyextra->current;
     yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   }
   else
   {
-    yyextra->previous = yyextra->current.get();
-    yyextra->tempEntry.swap(yyextra->current);
+    yyextra->previous = yyextra->current;
+    yyextra->current  = yyextra->tempEntry;
     yyextra->tempEntry.reset();
   }
   initEntry(yyscanner);
@@ -6950,7 +6950,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;   // line of block start
 
   // fill in inbodyFile && inbodyLine the first time, see bug 633891
-  Entry *docEntry = yyextra->docBlockInBody && yyextra->previous ? yyextra->previous : yyextra->current.get();
+  std::shared_ptr<Entry> docEntry = yyextra->docBlockInBody && yyextra->previous ? yyextra->previous : yyextra->current;
   if (yyextra->docBlockInBody && docEntry && docEntry->inbodyLine==-1)
   {
     docEntry->inbodyFile = yyextra->yyFileName;
@@ -6962,7 +6962,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   QCString processedDoc = preprocessCommentBlock(stripIndentation(doc),yyextra->yyFileName,lineNr);
   while (parseCommentBlock(
 	yyextra->thisParser,
-	yyextra->docBlockInBody && yyextra->previous ? yyextra->previous : yyextra->current.get(),
+	yyextra->docBlockInBody && yyextra->previous ? yyextra->previous.get() : yyextra->current.get(),
 	processedDoc, // text
 	yyextra->yyFileName,   // file
 	lineNr,       // line of block start
@@ -7055,7 +7055,7 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
 
 //----------------------------------------------------------------------------
 
-static void parseCompounds(yyscan_t yyscanner,const std::unique_ptr<Entry> &rt)
+static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("parseCompounds(%s)\n",rt->name.data());
@@ -7075,14 +7075,14 @@ static void parseCompounds(yyscan_t yyscanner,const std::unique_ptr<Entry> &rt)
 	BEGIN( FindFields ) ;
       else
 	BEGIN( FindMembers ) ;
-      yyextra->current_root = ce.get() ;
+      yyextra->current_root = ce;
       yyextra->yyFileName = ce->fileName;
       //setContext();
       yyextra->yyLineNr = ce->startLine ;
       yyextra->yyColNr = ce->startColumn ;
       yyextra->insideObjC = ce->lang==SrcLangExt_ObjC;
       //printf("---> Inner block starts at line %d objC=%d\n",yyextra->yyLineNr,yyextra->insideObjC);
-      yyextra->current = std::make_unique<Entry>();
+      yyextra->current = std::make_shared<Entry>();
       yyextra->stat = FALSE;
       initEntry(yyscanner);
 
@@ -7170,7 +7170,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::unique_ptr<Entry> &rt)
 static void parseMain(yyscan_t yyscanner,
                       const char *fileName,
                       const char *fileBuf,
-                      const std::unique_ptr<Entry> &rt,
+                      const std::shared_ptr<Entry> &rt,
                       bool sameTranslationUnit,
                       QStrList & filesInSameTranslationUnit)
 {
@@ -7188,7 +7188,7 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->mtype         = Method;
   yyextra->stat         = FALSE;
   yyextra->virt          = Normal;
-  yyextra->current_root  = rt.get();
+  yyextra->current_root  = rt;
   yyextra->yyLineNr= 1 ; 
   yyextra->yyFileName = fileName;
   setContext(yyscanner);
@@ -7207,10 +7207,10 @@ static void parseMain(yyscan_t yyscanner,
   rt->lang = yyextra->language;
   msg("Parsing file %s...\n",yyextra->yyFileName.data());
 
-  yyextra->current_root  = rt.get() ;
+  yyextra->current_root  = rt;
   initParser(yyscanner);
   Doxygen::docGroup.enterFile(yyextra->yyFileName,yyextra->yyLineNr);
-  yyextra->current = std::make_unique<Entry>();
+  yyextra->current = std::make_shared<Entry>();
   //printf("yyextra->current=%p yyextra->current_root=%p\n",yyextra->current,yyextra->current_root);
   int sec=guessSection(yyextra->yyFileName);
   if (sec)
@@ -7321,29 +7321,30 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 
 //----------------------------------------------------------------------------
 
-struct CLanguageScanner::Private
+struct COutlineParser::Private
 {
   yyscan_t yyscanner;
   scannerYY_state state;
 };
 
-CLanguageScanner::CLanguageScanner()
+COutlineParser::COutlineParser() : p(std::make_unique<COutlineParser::Private>())
 {
-  p = new Private;
   scannerYYlex_init_extra(&p->state,&p->yyscanner);
+#ifdef FLEX_DEBUG
+  scannerYYset_debug(1,p->yyscanner);
+#endif
 }
 
-CLanguageScanner::~CLanguageScanner()
+COutlineParser::~COutlineParser()
 {
   scannerYYlex_destroy(p->yyscanner);
-  delete p;
 }
 
-void CLanguageScanner::startTranslationUnit(const char *)
+void COutlineParser::startTranslationUnit(const char *)
 {
 }
 
-void CLanguageScanner::finishTranslationUnit()
+void COutlineParser::finishTranslationUnit()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   bool processWithClang = yyextra->insideCpp || yyextra->insideObjC;
@@ -7353,9 +7354,9 @@ void CLanguageScanner::finishTranslationUnit()
   }
 }
 
-void CLanguageScanner::parseInput(const char *fileName,
+void COutlineParser::parseInput(const char *fileName,
                                   const char *fileBuf,
-                                  const std::unique_ptr<Entry> &root,
+                                  const std::shared_ptr<Entry> &root,
                                   bool sameTranslationUnit,
                                   QStrList & filesInSameTranslationUnit)
 {
@@ -7371,29 +7372,7 @@ void CLanguageScanner::parseInput(const char *fileName,
 }
 
 
-void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
-                   const char * scopeName,
-                   const QCString & input,
-                   SrcLangExt lang,
-                   bool isExampleBlock,
-                   const char * exampleName,
-                   FileDef * fileDef,
-                   int startLine,
-                   int endLine,
-                   bool inlineFragment,
-		   const MemberDef *memberDef,
-		   bool showLineNumbers,
-                   const Definition *searchCtx,
-                   bool collectXRefs
-                  )
-{
-  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->codeScanner.parseCCode(codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
-               fileDef,startLine,endLine,inlineFragment,memberDef,
-	       showLineNumbers,searchCtx,collectXRefs);
-}
-
-bool CLanguageScanner::needsPreprocessing(const QCString &extension) const
+bool COutlineParser::needsPreprocessing(const QCString &extension) const
 {
   QCString fe=extension.lower();
   SrcLangExt lang = getLanguageFromFileName(extension);
@@ -7403,13 +7382,7 @@ bool CLanguageScanner::needsPreprocessing(const QCString &extension) const
     );
 }
 
-void CLanguageScanner::resetCodeParserState()
-{
-  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->codeScanner.reset();
-}
-
-void CLanguageScanner::parsePrototype(const char *text)
+void COutlineParser::parsePrototype(const char *text)
 {
   ::parsePrototype(p->yyscanner,text);
 }

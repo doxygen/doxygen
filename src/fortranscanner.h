@@ -24,51 +24,35 @@
  *
  *  This is the Fortran language parser for doxygen.
  */
-class FortranLanguageScanner : public ParserInterface
+class FortranOutlineParser : public OutlineParserInterface
 {
   public:
-    FortranLanguageScanner(FortranFormat format=FortranFormat_Unknown) : m_format(format) { }
-    virtual ~FortranLanguageScanner() {}
+    FortranOutlineParser(FortranFormat format=FortranFormat_Unknown) : m_format(format) { }
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
     void parseInput(const char *fileName,
                     const char *fileBuf,
-                    const std::unique_ptr<Entry> &root,
+                    const std::shared_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
     bool needsPreprocessing(const QCString &extension) const;
-    void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
-                   const QCString &input,
-                   SrcLangExt lang,
-                   bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=0,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=0,
-                   bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
     void parsePrototype(const char *text);
 
   private:
     FortranFormat m_format;
 };
 
-class FortranLanguageScannerFree : public FortranLanguageScanner
+class FortranOutlineParserFree : public FortranOutlineParser
 {
   public:
-    FortranLanguageScannerFree() : FortranLanguageScanner(FortranFormat_Free) { }
+    FortranOutlineParserFree() : FortranOutlineParser(FortranFormat_Free) { }
 };
 
-class FortranLanguageScannerFixed : public FortranLanguageScanner
+class FortranOutlineParserFixed : public FortranOutlineParser
 {
   public:
-    FortranLanguageScannerFixed() : FortranLanguageScanner(FortranFormat_Fixed) { }
+    FortranOutlineParserFixed() : FortranOutlineParser(FortranFormat_Fixed) { }
 };
+
 
 #endif

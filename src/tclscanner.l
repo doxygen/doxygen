@@ -429,7 +429,7 @@ static struct
   QCString input_string; // file contents
   int input_position; // position in file
   QCString file_name; // name of used file
-  ParserInterface *this_parser; // myself
+  OutlineParserInterface *this_parser; // myself
   int command; // true if command was found
   int comment; // set true if comment was scanned
   int brace_level; // bookkeeping of braces
@@ -2964,9 +2964,9 @@ static void tcl_parse(const QCString ns, const QCString cls)
 }
 
 //! Parse text file and build up entry tree.
-void TclLanguageScanner::parseInput(const char *fileName,
+void TclOutlineParser::parseInput(const char *fileName,
                                     const char *input,
-                                    const std::unique_ptr<Entry> &root,
+                                    const std::shared_ptr<Entry> &root,
                                     bool /*sameTranslationUnit*/,
                                     QStrList & /*filesInSameTranslationUnit*/)
 {
@@ -2995,8 +2995,40 @@ tcl_inf("%s\n",fileName);
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
+
+bool TclOutlineParser::needsPreprocessing(const QCString &extension) const
+{
+  (void)extension;
+  return FALSE;
+}
+
+void TclOutlineParser::parsePrototype(const char *text)
+{
+  (void)text;
+}
+
+static int yyread(char *buf,int max_size)
+{
+  int c=0;
+
+  *buf = '\0';
+  while ( c < max_size && tcl.input_string.at(tcl.input_position) )
+  {
+    *buf = tcl.input_string.at(tcl.input_position++) ;
+    c++; buf++;
+  }
+  //printf("Read from=%d size=%d max=%d c=%d\n",tcl.input_position,strlen(&tcl.input_string[tcl.input_position]),max_size,c);
+  return c;
+}
+
+//----------------------------------------------------------------------------
+
+void TclCodeParser::resetCodeParserState()
+{
+}
+
 //! Parse file and codify.
-void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
+void TclCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
                    const char * scopeName,
                    const QCString & input,
                    SrcLangExt lang,
@@ -3100,36 +3132,6 @@ tcl_inf("%s (%d,%d) %d %d\n",myStr.data(),startLine,endLine,isExampleBlock,inlin
   tcl.entry.clear();
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
 }
-
-bool TclLanguageScanner::needsPreprocessing(const QCString &extension) const
-{
-  (void)extension;
-  return FALSE;
-}
-
-void TclLanguageScanner::resetCodeParserState()
-{
-}
-
-void TclLanguageScanner::parsePrototype(const char *text)
-{
-  (void)text;
-}
-
-static int yyread(char *buf,int max_size)
-{
-  int c=0;
-
-  *buf = '\0';
-  while ( c < max_size && tcl.input_string.at(tcl.input_position) )
-  {
-    *buf = tcl.input_string.at(tcl.input_position++) ;
-    c++; buf++;
-  }
-  //printf("Read from=%d size=%d max=%d c=%d\n",tcl.input_position,strlen(&tcl.input_string[tcl.input_position]),max_size,c);
-  return c;
-}
-
 //----------------------------------------------------------------------------
 
 // to avoid a warning
