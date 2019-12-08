@@ -369,12 +369,12 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
                            outputDir.data(), baseName.data(),
 			   outputDir.data(), baseName.data());
-      portable_sysTimerStart();
-      if (portable_system("epstopdf",epstopdfArgs)!=0)
+      Portables::sysTimerStart();
+      if (Portables::system("epstopdf",epstopdfArgs)!=0)
       {
 	err("Problems running epstopdf. Check your TeX installation!\n");
       }
-      portable_sysTimerStop();
+      Portables::sysTimerStop();
       return baseName;
     }
   }
@@ -1818,7 +1818,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 
 static void readTextFileByName(const QCString &file,QCString &text)
 {
-  if (portable_isAbsolutePath(file.data()))
+  if (Portables::isAbsolutePath(file.data()))
   {
     QFileInfo fi(file);
     if (fi.exists())
@@ -1831,7 +1831,7 @@ static void readTextFileByName(const QCString &file,QCString &text)
   char *s=examplePathList.first();
   while (s)
   {
-    QCString absFileName = QCString(s)+portable_pathSeparator()+file;
+    QCString absFileName = QCString(s)+Portables::pathSeparator()+file;
     QFileInfo fi(absFileName);
     if (fi.exists())
     {
