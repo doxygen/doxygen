@@ -674,7 +674,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
                          QCString name = &yytext[2];
 			 name = name.left(name.length()-1);
-			 QCString value = portable_getenv(name);
+			 QCString value = Portable::getenv(name);
 			 for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
                        }
 <St_Para>{HTMLTAG}     { /* html tag */ 

@@ -603,7 +603,7 @@ static FILE *tryPath(const char *path,const char *fileName)
   QFileInfo fi(absName);
   if (fi.exists() && fi.isFile())
   {
-    FILE *f=portable_fopen(absName,"r");
+    FILE *f=Portable::fopen(absName,"r");
     if (!f) config_err("could not open file %s for reading\n",absName.data());
     return f;
   }
@@ -619,7 +619,7 @@ static FILE *findFile(const char *fileName)
   {
     return 0;
   }
-  if (portable_isAbsolutePath(fileName))
+  if (Portable::isAbsolutePath(fileName))
   {
     return tryPath(NULL, fileName);
   }
@@ -1012,7 +1012,7 @@ static void substEnvVarsInString(QCString &s)
   while ((i=re.match(s,p,&l))!=-1 || (i=re2.match(s,p,&l))!=-1)
   {
     //printf("Found environment var s.mid(%d,%d)='%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
-    QCString env=portable_getenv(s.mid(i+2,l-3));
+    QCString env=Portable::getenv(s.mid(i+2,l-3));
     substEnvVarsInString(env); // recursively expand variables if needed.
     s = s.left(i)+env+s.right(s.length()-i-l);
     p=i+env.length(); // next time start at the end of the expanded string
@@ -1579,7 +1579,7 @@ void Config::checkAndCorrect()
     }
     else
     {
-      QFileInfo dp(dotPath+"/dot"+portable_commandExtension());
+      QFileInfo dp(dotPath+"/dot"+Portable::commandExtension());
       if (!dp.exists() || !dp.isFile())
       {
 	warn_uncond("the dot tool could not be found at %s\n",dotPath.data());
@@ -1607,10 +1607,10 @@ void Config::checkAndCorrect()
     QFileInfo pu(plantumlJarPath);
     if (pu.exists() && pu.isDir()) // PLANTUML_JAR_PATH is directory
     {
-      QFileInfo jar(plantumlJarPath+portable_pathSeparator()+"plantuml.jar");
+      QFileInfo jar(plantumlJarPath+Portable::pathSeparator()+"plantuml.jar");
       if (jar.exists() && jar.isFile())
       {
-        plantumlJarPath = jar.dirPath(TRUE).utf8()+portable_pathSeparator();
+        plantumlJarPath = jar.dirPath(TRUE).utf8()+Portable::pathSeparator();
       }
       else
       {
@@ -1621,7 +1621,7 @@ void Config::checkAndCorrect()
     }
     else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
     {
-      plantumlJarPath = pu.dirPath(TRUE).utf8()+portable_pathSeparator();
+      plantumlJarPath = pu.dirPath(TRUE).utf8()+Portable::pathSeparator();
     }
     else
     {
@@ -1635,7 +1635,7 @@ void Config::checkAndCorrect()
   QCString &diaPath = Config_getString(DIA_PATH);
   if (!diaPath.isEmpty())
   {
-    QFileInfo dp(diaPath+"/dia"+portable_commandExtension());
+    QFileInfo dp(diaPath+"/dia"+Portable::commandExtension());
     if (!dp.exists() || !dp.isFile())
     {
       warn_uncond("dia could not be found at %s\n",diaPath.data());

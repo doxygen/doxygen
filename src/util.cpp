@@ -2428,7 +2428,7 @@ static QCString getFilterFromList(const char *name,const QStrList &filterList,bo
     if (i_equals!=-1)
     {
       QCString filterPattern = fs.left(i_equals);
-      QRegExp fpat(filterPattern,portable_fileSystemIsCaseSensitive(),TRUE); 
+      QRegExp fpat(filterPattern,Portable::fileSystemIsCaseSensitive(),TRUE); 
       if (fpat.match(name)!=-1) 
       {
         // found a match!
@@ -2589,7 +2589,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
 static QDateTime getCurrentDateTime()
 {
   QDateTime current = QDateTime::currentDateTime();
-  QCString sourceDateEpoch = portable_getenv("SOURCE_DATE_EPOCH");
+  QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
   if (!sourceDateEpoch.isEmpty())
   {
     bool ok;
@@ -7928,14 +7928,22 @@ void stackTrace()
     p += sprintf(p,"%p ", backtraceFrames[x]);
   }
   fprintf(stderr,"========== STACKTRACE START ==============\n");
-  if (FILE *fp = popen(cmd, "r"))
+  #if defined(_WIN32) && !defined(__CYGWIN__)
+  if (FILE *fp = _popen(cmd, "r"))
+  #else
+  if (FILE *fp = ::popen(cmd, "r"))
+  #endif
   {
     char resBuf[512];
     while (size_t len = fread(resBuf, 1, sizeof(resBuf), fp))
     {
       fwrite(resBuf, 1, len, stderr);
     }
-    pclose(fp);
+    #if defined(_WIN32) && !defined(__CYGWIN__)
+    _pclose(fp);
+    #else
+    ::pclose(fp);
+    #endif
   }
   fprintf(stderr,"============ STACKTRACE END ==============\n");
   //fprintf(stderr,"%s\n", frameStrings[x]);
@@ -8011,7 +8019,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
   {
     QCString cmd=filterName+" \""+fileName+"\"";
     Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-    FILE *f=portable_popen(cmd,"r");
+    FILE *f=Portable::popen(cmd,"r");
     if (!f)
     {
       err("could not execute filter %s\n",filterName.data());
@@ -8025,7 +8033,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
       //printf(">>>>>>>>Reading %d bytes\n",numRead);
       inBuf.addArray(buf,numRead),size+=numRead;
     }
-    portable_pclose(f);
+    Portable::pclose(f);
     inBuf.at(inBuf.curPos()) ='\0';
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
     Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(inBuf));

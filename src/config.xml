@@ -953,7 +953,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='portable_fileSystemIsCaseSensitive()'>
+    <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='Portable::fileSystemIsCaseSensitive()'>
       <docs>
 <![CDATA[
  If the \c CASE_SENSE_NAMES tag is set to \c NO then doxygen

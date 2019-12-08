@@ -2015,7 +2015,7 @@ void FileDefImpl::acquireFileVersion()
     msg("Version of %s : ",m_filePath.data());
     QCString cmd = vercmd+" \""+m_filePath+"\"";
     Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-    FILE *f=portable_popen(cmd,"r");
+    FILE *f=Portable::popen(cmd,"r");
     if (!f)
     {
       err("could not execute %s\n",vercmd.data());
@@ -2024,7 +2024,7 @@ void FileDefImpl::acquireFileVersion()
     const int bufSize=1024;
     char buf[bufSize];
     int numRead = (int)fread(buf,1,bufSize-1,f);
-    portable_pclose(f);
+    Portable::pclose(f);
     if (numRead>0 && numRead<bufSize)
     {
       buf[numRead]='\0';
