@@ -73,9 +73,9 @@ struct VhdlConfNode
   QCString arch;
   QCString binding;
   QCString compSpec;
-  int level;
-  bool isLeaf;
-  bool isInlineConf;
+  int level = 0;
+  bool isLeaf = false;
+  bool isInlineConf = false;
 
 };
 

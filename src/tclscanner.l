@@ -1503,7 +1503,7 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
     {
 tcl_inf("-> %s\n",(const char *)tcl.string_comment);
       int myPos=0;
-      bool myNew=0;
+      bool myNew=false;
       int myLine=tcl.line_comment;
       BufStr myI(1024);
       BufStr myO(1024);

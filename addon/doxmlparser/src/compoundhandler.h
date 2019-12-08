@@ -54,10 +54,10 @@ class IncludeHandler : public IInclude, public BaseHandler<IncludeHandler>
     { return m_isLocal; }
 
   private:
-    IBaseHandler *m_parent;
+    IBaseHandler *m_parent = 0;
     StringImpl m_name;             // element's content
     StringImpl m_refId;            // refid
-    bool m_isLocal;                // local
+    bool m_isLocal = false;        // local
 };
 
 class IncludeIterator : public BaseIterator<IIncludeIterator,IInclude,IncludeHandler>
@@ -86,10 +86,10 @@ class RelatedCompound : public IRelatedCompound
     virtual const IString *name() const { return &m_name; }
     
   private:  
-    CompoundHandler *m_parent;
+    CompoundHandler *m_parent = 0;
     QString m_id;                  // refid
-    Protection m_protection;       // prot
-    Kind m_kind;                   // virt
+    Protection m_protection = Public; // prot
+    Kind m_kind = Normal;          // virt
     StringImpl m_name;             // element's content
 };
 
@@ -193,42 +193,42 @@ class CompoundHandler : public IClass,
                                                                 // XML elements:
                                                                 // -------------
     StringImpl                     m_name;                      // compoundname
-    TitleHandler*                  m_titleHandler;              // title
+    TitleHandler*                  m_titleHandler = 0;              // title
     QList<RelatedCompound>         m_subClasses;                // basecompoundref
     QList<RelatedCompound>         m_superClasses;              // derivedcompoundref
     QList<IncludeHandler>          m_includes;                  // includes
     QList<IncludeHandler>          m_includedBy;                // includedBy
-    GraphHandler*                  m_includeDependencyGraph;    // incdepgraph
-    GraphHandler*                  m_includedByDependencyGraph; // invincdepgraph
+    GraphHandler*                  m_includeDependencyGraph = 0;// incdepgraph
+    GraphHandler*                  m_includedByDependencyGraph = 0; // invincdepgraph
     QList<QString>                 m_innerCompounds;            // innerdir/innerfile/innerclass/innernamespace/innergroup
     TemplateParamListHandler*      m_templateParamList;         // templateparamlist
     QList<SectionHandler>          m_sections;                  // sectiondef
-    DocHandler*                    m_brief;                     // briefdescription
-    DocHandler*                    m_detailed;                  // detaileddescription
-    GraphHandler*                  m_inheritanceGraph;          // inheritancegraph
-    GraphHandler*                  m_collaborationGraph;        // collaborationgraph
-    ProgramListingHandler*         m_programListing;            // programlisting
+    DocHandler*                    m_brief = 0;                 // briefdescription
+    DocHandler*                    m_detailed = 0;              // detaileddescription
+    GraphHandler*                  m_inheritanceGraph = 0;      // inheritancegraph
+    GraphHandler*                  m_collaborationGraph = 0;    // collaborationgraph
+    ProgramListingHandler*         m_programListing = 0;        // programlisting
                                                                 // location
     StringImpl                     m_defFile;                   // - file
-    int                            m_defLine;                   // - line
+    int                            m_defLine = 0;               // - line
     StringImpl                     m_defBodyFile;               // - bodyfile
-    int                            m_defBodyStart;              // - bodystart 
-    int                            m_defBodyEnd;                // - bodyend
-    ListOfAllMembersHandler*       m_members;                   // listofallmember
+    int                            m_defBodyStart = 0;          // - bodystart 
+    int                            m_defBodyEnd = 0;            // - bodyend
+    ListOfAllMembersHandler*       m_members = 0;               // listofallmember
 
                                                                 // XML attributes:
                                                                 // ---------------
     StringImpl                     m_id;                        // id
-    CompoundKind                   m_kind;                      // kind
+    CompoundKind                   m_kind = Invalid;            // kind
     StringImpl                     m_kindString;                // kind as a string
     StringImpl                     m_protection;                // prot
 
     // local variables
     QString                        m_xmlDir;                    // directory where the info is found
-    int                            m_refCount;                  // object reference counter
+    int                            m_refCount = 0;              // object reference counter
     QDict<MemberHandler>           m_memberDict;                // id->member lookup
     QDict<QList<MemberHandler> >   m_memberNameDict;            // name->memberlist lookup
-    MainHandler*                   m_mainHandler;               // parent object
+    MainHandler*                   m_mainHandler = 0;           // parent object
 };
 
 void compoundhandler_init();

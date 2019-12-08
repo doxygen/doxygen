@@ -245,7 +245,7 @@ class TemplateStruct::Private
     Private() : fields(17), refCount(0)
     { fields.setAutoDelete(TRUE); }
     QDict<TemplateVariant> fields;
-    int refCount;
+    int refCount = 0;
 };
 
 TemplateStruct::TemplateStruct()
@@ -306,8 +306,8 @@ class TemplateList::Private
   public:
     Private() : index(-1), refCount(0) {}
     QValueList<TemplateVariant> elems;
-    int index;
-    int refCount;
+    int index = -1;
+    int refCount = 0;
 };
 
 
@@ -398,7 +398,7 @@ class TemplateListConstIterator : public TemplateListIntf::ConstIterator
   private:
     const TemplateList &m_list;
     QValueList<TemplateVariant>::ConstIterator m_it;
-    int m_index;
+    int m_index = 0;
 };
 
 TemplateListIntf::ConstIterator *TemplateList::createIterator() const
@@ -565,21 +565,21 @@ class TemplateContextImpl : public TemplateContext
     void addIndexEntry(const QCString &indexName,const QValueList<TemplateKeyValue> &arguments);
 
   private:
-    const TemplateEngine *m_engine;
+    const TemplateEngine *m_engine = 0;
     QCString m_templateName;
-    int m_line;
+    int m_line = 0;
     QCString m_outputDir;
     QList< QDict<TemplateVariant> > m_contextStack;
     TemplateBlockContext m_blockContext;
     QDict<TemplateEscapeIntf*> m_escapeIntfDict;
-    TemplateEscapeIntf *m_activeEscapeIntf;
-    TemplateSpacelessIntf *m_spacelessIntf;
-    bool m_spacelessEnabled;
-    bool m_tabbingEnabled;
+    TemplateEscapeIntf *m_activeEscapeIntf = 0;
+    TemplateSpacelessIntf *m_spacelessIntf = 0;
+    bool m_spacelessEnabled = false;
+    bool m_tabbingEnabled = false;
     TemplateAutoRef<TemplateStruct> m_indices;
     QDict< QStack<TemplateVariant> > m_indexStacks;
     QCString m_encoding;
-    void *m_fromUtf8;
+    void *m_fromUtf8 = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -1445,7 +1445,7 @@ class ExprAstNumber : public ExprAst
     int number() const { return m_number; }
     virtual TemplateVariant resolve(TemplateContext *) { return TemplateVariant(m_number); }
   private:
-    int m_number;
+    int m_number = 0;
 };
 
 /** @brief Class representing a variable in the AST */
@@ -1497,7 +1497,7 @@ class ExprAstFunctionVariable : public ExprAst
       return v;
     }
   private:
-    ExprAst *m_var;
+    ExprAst *m_var = 0;
     QList<ExprAst> m_args;
 };
 
@@ -1526,7 +1526,7 @@ class ExprAstFilter : public ExprAst
     }
   private:
     QCString m_name;
-    ExprAst *m_arg;
+    ExprAst *m_arg = 0;
 };
 
 /** @brief Class representing a filter applied to an expression in the AST */
@@ -1542,7 +1542,7 @@ class ExprAstFilterAppl : public ExprAst
       return m_filter->apply(m_expr->resolve(c),c);
     }
   private:
-    ExprAst *m_expr;
+    ExprAst *m_expr = 0;
     ExprAstFilter *m_filter;
 };
 
@@ -1568,7 +1568,7 @@ class ExprAstNegate : public ExprAst
     virtual TemplateVariant resolve(TemplateContext *c)
     { return TemplateVariant(!m_expr->resolve(c).toBool()); }
   private:
-    ExprAst *m_expr;
+    ExprAst *m_expr = 0;
 };
 
 class ExprAstUnary : public ExprAst
@@ -1589,8 +1589,8 @@ class ExprAstUnary : public ExprAst
       }
     }
   private:
-    Operator::Type m_operator;
-    ExprAst *m_exp;
+    Operator::Type m_operator = Operator::Or;
+    ExprAst *m_exp = 0;
 };
 
 /** @brief Class representing a binary operator in the AST */
@@ -1696,9 +1696,9 @@ class ExprAstBinary : public ExprAst
       }
     }
   private:
-    Operator::Type m_operator;
-    ExprAst *m_lhs;
-    ExprAst *m_rhs;
+    Operator::Type m_operator = Operator::Or;
+    ExprAst *m_lhs = 0;
+    ExprAst *m_rhs = 0;
 };
 
 //----------------------------------------------------------
@@ -1715,7 +1715,7 @@ class TemplateNode
     TemplateNode *parent() { return m_parent; }
 
   private:
-    TemplateNode *m_parent;
+    TemplateNode *m_parent = 0;
 };
 
 //----------------------------------------------------------
@@ -1736,7 +1736,7 @@ class TemplateParser
     QCString templateName() const { return m_templateName; }
     void warn(const char *fileName,int line,const char *fmt,...) const;
   private:
-    const TemplateEngine *m_engine;
+    const TemplateEngine *m_engine = 0;
     QCString m_templateName;
     QList<TemplateToken> &m_tokens;
 };
@@ -2282,9 +2282,9 @@ class ExpressionParser
       return TRUE;
     }
 
-    const TemplateParser *m_parser;
+    const TemplateParser *m_parser = 0;
     ExprToken m_curToken;
-    int m_line;
+    int m_line = 0;
     const char *m_tokenStream;
 };
 
@@ -2296,9 +2296,9 @@ class TemplateToken
   public:
     enum Type { Text, Variable, Block };
     TemplateToken(Type t,const char *d,int l) : type(t), data(d), line(l) {}
-    Type type;
+    Type type = Text;
     QCString data;
-    int line;
+    int line = 0;
 };
 
 //----------------------------------------------------------
@@ -2339,7 +2339,7 @@ class TemplateImpl : public TemplateNode, public Template
     TemplateBlockContext *blockContext() { return &m_blockContext; }
 
   private:
-    TemplateEngine *m_engine;
+    TemplateEngine *m_engine = 0;
     QCString m_name;
     TemplateNodeList m_nodes;
     TemplateBlockContext m_blockContext;
@@ -2358,8 +2358,8 @@ class TemplateStructWeakRef : public TemplateStructIntf
     virtual int addRef() { return ++m_refCount; }
     virtual int release() { int count=--m_refCount; if (count<=0) { delete this; } return count; }
   private:
-    TemplateStructIntf *m_ref;
-    int m_refCount;
+    TemplateStructIntf *m_ref = 0;
+    int m_refCount = 0;
 };
 
 //----------------------------------------------------------
@@ -2789,8 +2789,8 @@ class TemplateNodeVariable : public TemplateNode
 
   private:
     QCString m_templateName;
-    int m_line;
-    ExprAst *m_var;
+    int m_line = 0;
+    ExprAst *m_var = 0;
     QList<ExprAst> m_args;
 };
 
@@ -2853,7 +2853,7 @@ template<class T> class TemplateNodeCreator : public TemplateNode
       }
     }
     QCString m_templateName;
-    int m_line;
+    int m_line = 0;
 };
 
 //----------------------------------------------------------
@@ -2950,8 +2950,8 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
     {
       GuardedNodes() : guardAst(0) {}
      ~GuardedNodes() { delete guardAst; }
-      int line;
-      ExprAst *guardAst;
+      int line = 0;
+      ExprAst *guardAst = 0;
       TemplateNodeList trueNodes;
     };
     QList<GuardedNodes> m_ifGuardedNodes;
@@ -3009,7 +3009,7 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
     }
   private:
     TemplateNodeList m_repeatNodes;
-    ExprAst *m_expr;
+    ExprAst *m_expr = 0;
 };
 
 //----------------------------------------------------------
@@ -3175,9 +3175,9 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
     }
 
   private:
-    bool m_down;
-    ExprAst *m_startExpr;
-    ExprAst *m_endExpr;
+    bool m_down = false;
+    ExprAst *m_startExpr = 0;
+    ExprAst *m_endExpr = 0;
     QCString m_var;
     TemplateNodeList m_loopNodes;
 };
@@ -3332,8 +3332,8 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
     }
 
   private:
-    bool m_reversed;
-    ExprAst *m_expr;
+    bool m_reversed = false;
+    ExprAst *m_expr = 0;
     QValueList<QCString> m_vars;
     TemplateNodeList m_loopNodes;
     TemplateNodeList m_emptyNodes;
@@ -3534,7 +3534,7 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
     }
 
   private:
-    ExprAst *m_extendExpr;
+    ExprAst *m_extendExpr = 0;
     TemplateNodeList m_nodes;
 };
 
@@ -3591,7 +3591,7 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
     }
 
   private:
-    ExprAst *m_includeExpr;
+    ExprAst *m_includeExpr = 0;
 };
 
 //----------------------------------------------------------
@@ -3724,8 +3724,8 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
     }
 
   private:
-    ExprAst *m_templateExpr;
-    ExprAst *m_fileExpr;
+    ExprAst *m_templateExpr = 0;
+    ExprAst *m_fileExpr = 0;
 };
 
 //----------------------------------------------------------
@@ -3839,7 +3839,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
     }
 
   private:
-    ExprAst         *m_treeExpr;
+    ExprAst         *m_treeExpr = 0;
     TemplateNodeList m_treeNodes;
 };
 
@@ -3853,7 +3853,7 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
       Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
      ~Mapping() { delete value; }
       QCString name;
-      ExprAst *value;
+      ExprAst *value = 0;
     };
   public:
     TemplateNodeIndexEntry(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
@@ -4128,7 +4128,7 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
       }
     }
   private:
-    uint m_index;
+    uint m_index = 0;
     QList<ExprAst> m_args;
 };
 
@@ -4142,7 +4142,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
       Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
      ~Mapping() { delete value; }
       QCString name;
-      ExprAst *value;
+      ExprAst *value = 0;
     };
   public:
     TemplateNodeSet(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
@@ -4175,7 +4175,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
       }
     }
   private:
-    Mapping *m_mapping;
+    Mapping *m_mapping = 0;
 };
 
 //----------------------------------------------------------
@@ -4323,8 +4323,8 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
   private:
     TemplateNodeList m_nodes;
     QCString m_var;
-    ExprAst *m_listExpr;
-    ExprAst *m_patternExpr;
+    ExprAst *m_listExpr = 0;
+    ExprAst *m_patternExpr = 0;
 };
 
 //----------------------------------------------------------
@@ -4427,8 +4427,8 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
       }
     }
   private:
-    ExprAst *m_resExpr;
-    ExprAst *m_asExpr;
+    ExprAst *m_resExpr = 0;
+    ExprAst *m_asExpr = 0;
 };
 
 //----------------------------------------------------------
@@ -4645,11 +4645,11 @@ class TemplateLexer
                   const char *data,int line,int startPos,int endPos,
                   TemplateToken::Type type);
     void reset();
-    const TemplateEngine *m_engine;
+    const TemplateEngine *m_engine = 0;
     QCString m_fileName;
     QCString m_data;
-    char m_openChar;
-    char m_closeChar;
+    char m_openChar = 0;
+    char m_closeChar = 0;
 };
 
 TemplateLexer::TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const QCString &data) :
@@ -5070,10 +5070,10 @@ class TemplateEngine::Private
         int line() const { return m_line; }
 
       private:
-        Type m_type;
+        Type m_type = Template;
         QCString m_fileName;
         QCString m_blockName;
-        int m_line;
+        int m_line = 0;
     };
   public:
     Private(TemplateEngine *engine) : m_templateCache(17) /*, m_indent(0)*/, m_engine(engine)
@@ -5185,7 +5185,7 @@ class TemplateEngine::Private
   private:
     QDict<Template> m_templateCache;
     //mutable int m_indent;
-    TemplateEngine *m_engine;
+    TemplateEngine *m_engine = 0;
     QList<IncludeEntry> m_includeStack;
     QCString m_extension;
     QCString m_templateDirName;

@@ -80,8 +80,8 @@ struct TokenInfo
   // comment blocks
   
   // list token info
-  bool isEnumList;
-  int indent;
+  bool isEnumList = false;
+  int indent = 0;
 
   // sections
   QCString sectionId;
@@ -94,22 +94,22 @@ struct TokenInfo
   QCString verb;
 
   // xrefitem
-  int id;
+  int id = -1;
 
   // html tag
   HtmlAttribList attribs;
-  bool endTag;
-  bool emptyTag;
+  bool endTag = false;
+  bool emptyTag = false;
 
   // whitespace
   QCString chars;
 
   // url
-  bool isEMailAddr;
+  bool isEMailAddr = false;
 
   // param attributes
   enum ParamDir { In=1, Out=2, InOut=3, Unspecified=0 };
-  ParamDir paramDir;
+  ParamDir paramDir = Unspecified;
 };
 
 // globals

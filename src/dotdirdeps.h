@@ -43,9 +43,9 @@ class DotDirDeps : public DotGraph
     virtual QCString getImgAltText() const;
 
   private:
-    const DirDef *m_dir;
+    const DirDef *m_dir = 0;
 
-    bool m_linkRelations;
+    bool m_linkRelations = false;
 };
 
 #endif
