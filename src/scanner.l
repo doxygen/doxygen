@@ -1941,6 +1941,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <CopyHereDocEnd>\n			{ 
+                                          lineCount(yyscanner);
                                           *yyextra->pCopyHereDocGString += yytext;
                                         }
 <CopyHereDocEnd>{ID}			{ 
@@ -7186,10 +7187,12 @@ static void parseMain(yyscan_t yyscanner,
   //depthIf       = 0;
   yyextra->protection    = Public;
   yyextra->mtype         = Method;
-  yyextra->stat         = FALSE;
+  yyextra->stat          = FALSE;
   yyextra->virt          = Normal;
   yyextra->current_root  = rt;
-  yyextra->yyLineNr= 1 ; 
+  yyextra->yyLineNr      = 1 ;
+  yyextra->yyBegLineNr   = 1;
+  yyextra->yyBegColNr    = 0;
   yyextra->yyFileName = fileName;
   setContext(yyscanner);
   bool processWithClang = yyextra->insideCpp || yyextra->insideObjC;

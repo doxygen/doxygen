@@ -300,12 +300,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
     treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
-			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n"
-			"<script type=\"text/javascript\">\n"
-			"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
-			"  $(document).ready(initResizable);\n"
-			"/* @license-end */"
-			"</script>";
+			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
   }
 
   if (searchEngine)
@@ -2372,7 +2367,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpa
 											"$(document).ready(function(){initNavTree('") +
 			QCString(name) + Doxygen::htmlFileExtension +
 			QCString("','") + relpath +
-			QCString("');});\n"
+			QCString("'); initResizable(); });\n"
 							 "/* @license-end */\n"
 							 "</script>\n"
 							 "<div id=\"doc-content\">\n");
