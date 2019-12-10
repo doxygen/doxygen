@@ -1613,6 +1613,9 @@ QCString name_ext1() : {QCString s,s1,s2;}
  {
 
   (
+ LOOKAHEAD(<APOSTROPHE_T><SUBTYPE_T>)
+ <APOSTROPHE_T><SUBTYPE_T>{s+="'subtype";}
+|
  LOOKAHEAD(<DOT_T> suffix())
  <DOT_T> s1=suffix(){s+=".";s+=s1;}
 |
