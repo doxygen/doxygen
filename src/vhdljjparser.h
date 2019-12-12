@@ -83,5 +83,5 @@ void vhdlscanFreeScanner();
 
 const QList<VhdlConfNode>& getVhdlConfiguration();
 const std::vector<std::shared_ptr<Entry> >&getVhdlInstList();
-
+QCString filter2008VhdlComment(const char *s);
 #endif

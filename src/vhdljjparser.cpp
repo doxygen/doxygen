@@ -29,6 +29,7 @@
 #include "arguments.h"
 #include "types.h"
 #include "VhdlParserIF.h"
+#include "growbuf.h"
 
 using namespace vhdl::parser;
 using namespace std;
@@ -169,7 +170,7 @@ void VhdlParser::lineCount(const char* text)
 {
   for (const char* c=text ; *c ; ++c )
   {
-    yyLineNr += (*c == '\n') ;
+    if (*c == '\n') yyLineNr++;
   }
 }
 
@@ -743,4 +744,36 @@ void insertEntryAtLine(const Entry* ce,int line)
 const char *getVhdlFileName(void)
 {
   return vhdlFileName;
+}
+
+QCString filter2008VhdlComment(const char *s)
+{
+  GrowBuf growBuf;
+  const char *p=s+3; // skip /*!
+  char c='\0';
+  while (*p == ' ' || *p == '\t') p++;
+  while ((c=*p++))
+  {
+    growBuf.addChar(c);
+    if (c == '\n')
+    {
+      // special handling of space followed by * at beginning of line
+      while (*p == ' ' || *p == '\t') p++;
+      while (*p == '*') p++;
+      // special attention in case character at end is /
+      if (*p == '/') p++;
+    }
+  }
+  // special attention in case */ at end of last line
+  int len = growBuf.getPos();
+  if (growBuf.at(len-1) == '/' && growBuf.at(len-2) == '*')
+  {
+    len -= 2;
+    while (growBuf.at(len-1) == '*') len--;
+    c = growBuf.at(len-1);
+    while ((c = growBuf.at(len-1)) == ' ' || c == '\t') len--;
+    growBuf.setPos(len);
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
 }
