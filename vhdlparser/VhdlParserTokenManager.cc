@@ -1,6 +1,5 @@
 /* VhdlParserTokenManager.cc */
-#include "VhdlParserTokenManager.h"
-#include "TokenMgrError.h"
+#include "/Users/dimitri/doxygen/vhdlparser/VhdlParserTokenManager.h"
 namespace vhdl {
 namespace parser {
 static const unsigned long long jjbitVec0[] = {
@@ -18,227 +17,227 @@ static const int jjnextStates[] = {
    40, 42, 56, 57, 58, 61, 60, 59, 61, 65, 66, 67, 68, 69, 71, 9, 
    10, 28, 29, 45, 47, 50, 52, 27, 30, 
 };
-static JJChar jjstrLiteralChars_0[] = {0};
-static JJChar jjstrLiteralChars_1[] = {0};
-static JJChar jjstrLiteralChars_2[] = {0};
-static JJChar jjstrLiteralChars_3[] = {0};
-static JJChar jjstrLiteralChars_4[] = {0};
-static JJChar jjstrLiteralChars_5[] = {0};
-static JJChar jjstrLiteralChars_6[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_0[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_1[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_2[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_3[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_4[] = {0};
 
-static JJChar jjstrLiteralChars_7[] = {0};
-static JJChar jjstrLiteralChars_8[] = {0};
-static JJChar jjstrLiteralChars_9[] = {0};
-static JJChar jjstrLiteralChars_10[] = {0};
-static JJChar jjstrLiteralChars_11[] = {0};
-static JJChar jjstrLiteralChars_12[] = {0};
-static JJChar jjstrLiteralChars_13[] = {0};
-static JJChar jjstrLiteralChars_14[] = {0};
-static JJChar jjstrLiteralChars_15[] = {0};
-static JJChar jjstrLiteralChars_16[] = {0};
-static JJChar jjstrLiteralChars_17[] = {0};
-static JJChar jjstrLiteralChars_18[] = {0};
-static JJChar jjstrLiteralChars_19[] = {0};
-static JJChar jjstrLiteralChars_20[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_5[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_6[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_7[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_8[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_9[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_10[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_11[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_12[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_13[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_14[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_15[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_16[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_17[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_18[] = {0};
 
-static JJChar jjstrLiteralChars_21[] = {0};
-static JJChar jjstrLiteralChars_22[] = {0};
-static JJChar jjstrLiteralChars_23[] = {0};
-static JJChar jjstrLiteralChars_24[] = {0};
-static JJChar jjstrLiteralChars_25[] = {0};
-static JJChar jjstrLiteralChars_26[] = {0};
-static JJChar jjstrLiteralChars_27[] = {0};
-static JJChar jjstrLiteralChars_28[] = {0};
-static JJChar jjstrLiteralChars_29[] = {0};
-static JJChar jjstrLiteralChars_30[] = {0};
-static JJChar jjstrLiteralChars_31[] = {0};
-static JJChar jjstrLiteralChars_32[] = {0};
-static JJChar jjstrLiteralChars_33[] = {0};
-static JJChar jjstrLiteralChars_34[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_19[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_20[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_21[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_22[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_23[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_24[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_25[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_26[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_27[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_28[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_29[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_30[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_31[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_32[] = {0};
 
-static JJChar jjstrLiteralChars_35[] = {0};
-static JJChar jjstrLiteralChars_36[] = {0};
-static JJChar jjstrLiteralChars_37[] = {0};
-static JJChar jjstrLiteralChars_38[] = {0};
-static JJChar jjstrLiteralChars_39[] = {0};
-static JJChar jjstrLiteralChars_40[] = {0};
-static JJChar jjstrLiteralChars_41[] = {0};
-static JJChar jjstrLiteralChars_42[] = {0};
-static JJChar jjstrLiteralChars_43[] = {0};
-static JJChar jjstrLiteralChars_44[] = {0};
-static JJChar jjstrLiteralChars_45[] = {0};
-static JJChar jjstrLiteralChars_46[] = {0};
-static JJChar jjstrLiteralChars_47[] = {0};
-static JJChar jjstrLiteralChars_48[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_33[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_34[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_35[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_36[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_37[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_38[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_39[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_40[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_41[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_42[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_43[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_44[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_45[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_46[] = {0};
 
-static JJChar jjstrLiteralChars_49[] = {0};
-static JJChar jjstrLiteralChars_50[] = {0};
-static JJChar jjstrLiteralChars_51[] = {0};
-static JJChar jjstrLiteralChars_52[] = {0};
-static JJChar jjstrLiteralChars_53[] = {0};
-static JJChar jjstrLiteralChars_54[] = {0};
-static JJChar jjstrLiteralChars_55[] = {0};
-static JJChar jjstrLiteralChars_56[] = {0};
-static JJChar jjstrLiteralChars_57[] = {0};
-static JJChar jjstrLiteralChars_58[] = {0};
-static JJChar jjstrLiteralChars_59[] = {0};
-static JJChar jjstrLiteralChars_60[] = {0};
-static JJChar jjstrLiteralChars_61[] = {0};
-static JJChar jjstrLiteralChars_62[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_47[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_48[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_49[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_50[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_51[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_52[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_53[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_54[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_55[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_56[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_57[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_58[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_59[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_60[] = {0};
 
-static JJChar jjstrLiteralChars_63[] = {0};
-static JJChar jjstrLiteralChars_64[] = {0};
-static JJChar jjstrLiteralChars_65[] = {0};
-static JJChar jjstrLiteralChars_66[] = {0};
-static JJChar jjstrLiteralChars_67[] = {0};
-static JJChar jjstrLiteralChars_68[] = {0};
-static JJChar jjstrLiteralChars_69[] = {0};
-static JJChar jjstrLiteralChars_70[] = {0};
-static JJChar jjstrLiteralChars_71[] = {0};
-static JJChar jjstrLiteralChars_72[] = {0};
-static JJChar jjstrLiteralChars_73[] = {0};
-static JJChar jjstrLiteralChars_74[] = {0};
-static JJChar jjstrLiteralChars_75[] = {0};
-static JJChar jjstrLiteralChars_76[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_61[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_62[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_63[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_64[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_65[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_66[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_67[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_68[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_69[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_70[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_71[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_72[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_73[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_74[] = {0};
 
-static JJChar jjstrLiteralChars_77[] = {0};
-static JJChar jjstrLiteralChars_78[] = {0};
-static JJChar jjstrLiteralChars_79[] = {0};
-static JJChar jjstrLiteralChars_80[] = {0};
-static JJChar jjstrLiteralChars_81[] = {0};
-static JJChar jjstrLiteralChars_82[] = {0};
-static JJChar jjstrLiteralChars_83[] = {0};
-static JJChar jjstrLiteralChars_84[] = {0};
-static JJChar jjstrLiteralChars_85[] = {0};
-static JJChar jjstrLiteralChars_86[] = {0};
-static JJChar jjstrLiteralChars_87[] = {0};
-static JJChar jjstrLiteralChars_88[] = {0};
-static JJChar jjstrLiteralChars_89[] = {0};
-static JJChar jjstrLiteralChars_90[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_75[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_76[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_77[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_78[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_79[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_80[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_81[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_82[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_83[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_84[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_85[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_86[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_87[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_88[] = {0};
 
-static JJChar jjstrLiteralChars_91[] = {0};
-static JJChar jjstrLiteralChars_92[] = {0};
-static JJChar jjstrLiteralChars_93[] = {0};
-static JJChar jjstrLiteralChars_94[] = {0};
-static JJChar jjstrLiteralChars_95[] = {0};
-static JJChar jjstrLiteralChars_96[] = {0};
-static JJChar jjstrLiteralChars_97[] = {0};
-static JJChar jjstrLiteralChars_98[] = {0};
-static JJChar jjstrLiteralChars_99[] = {0};
-static JJChar jjstrLiteralChars_100[] = {0};
-static JJChar jjstrLiteralChars_101[] = {0};
-static JJChar jjstrLiteralChars_102[] = {0};
-static JJChar jjstrLiteralChars_103[] = {0};
-static JJChar jjstrLiteralChars_104[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_89[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_90[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_91[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_92[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_93[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_94[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_95[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_96[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_97[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_98[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_99[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_100[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_101[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_102[] = {0};
 
-static JJChar jjstrLiteralChars_105[] = {0};
-static JJChar jjstrLiteralChars_106[] = {0};
-static JJChar jjstrLiteralChars_107[] = {0};
-static JJChar jjstrLiteralChars_108[] = {0};
-static JJChar jjstrLiteralChars_109[] = {0};
-static JJChar jjstrLiteralChars_110[] = {0};
-static JJChar jjstrLiteralChars_111[] = {0};
-static JJChar jjstrLiteralChars_112[] = {0};
-static JJChar jjstrLiteralChars_113[] = {0};
-static JJChar jjstrLiteralChars_114[] = {0};
-static JJChar jjstrLiteralChars_115[] = {0};
-static JJChar jjstrLiteralChars_116[] = {0};
-static JJChar jjstrLiteralChars_117[] = {0};
-static JJChar jjstrLiteralChars_118[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_103[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_104[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_105[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_106[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_107[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_108[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_109[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_110[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_111[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_112[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_113[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_114[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_115[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_116[] = {0};
 
-static JJChar jjstrLiteralChars_119[] = {0};
-static JJChar jjstrLiteralChars_120[] = {0};
-static JJChar jjstrLiteralChars_121[] = {0};
-static JJChar jjstrLiteralChars_122[] = {0};
-static JJChar jjstrLiteralChars_123[] = {0};
-static JJChar jjstrLiteralChars_124[] = {0};
-static JJChar jjstrLiteralChars_125[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_117[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_118[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_119[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_120[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_121[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_122[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_123[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_124[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_125[] = {0};
 
-static JJChar jjstrLiteralChars_126[] = {0x26, 0};
-static JJChar jjstrLiteralChars_127[] = {0x27, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_126[] = {0x26, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_127[] = {0x27, 0};
 
-static JJChar jjstrLiteralChars_128[] = {0x28, 0};
-static JJChar jjstrLiteralChars_129[] = {0x29, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_128[] = {0x28, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_129[] = {0x29, 0};
 
-static JJChar jjstrLiteralChars_130[] = {0x2a, 0x2a, 0};
-static JJChar jjstrLiteralChars_131[] = {0x2a, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_130[] = {0x2a, 0x2a, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_131[] = {0x2a, 0};
 
-static JJChar jjstrLiteralChars_132[] = {0x2b, 0};
-static JJChar jjstrLiteralChars_133[] = {0x2d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_132[] = {0x2b, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_133[] = {0x2d, 0};
 
-static JJChar jjstrLiteralChars_134[] = {0x2c, 0};
-static JJChar jjstrLiteralChars_135[] = {0x3a, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_134[] = {0x2c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_135[] = {0x3a, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_136[] = {0x3a, 0};
-static JJChar jjstrLiteralChars_137[] = {0x3b, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_136[] = {0x3a, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_137[] = {0x3b, 0};
 
-static JJChar jjstrLiteralChars_138[] = {0x3c, 0x3d, 0};
-static JJChar jjstrLiteralChars_139[] = {0x3e, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_138[] = {0x3c, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_139[] = {0x3e, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_140[] = {0x3c, 0};
-static JJChar jjstrLiteralChars_141[] = {0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_140[] = {0x3c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_141[] = {0x3e, 0};
 
-static JJChar jjstrLiteralChars_142[] = {0x3d, 0};
-static JJChar jjstrLiteralChars_143[] = {0x2f, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_142[] = {0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_143[] = {0x2f, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_144[] = {0x3d, 0x3e, 0};
-static JJChar jjstrLiteralChars_145[] = {0x3c, 0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_144[] = {0x3d, 0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_145[] = {0x3c, 0x3e, 0};
 
-static JJChar jjstrLiteralChars_146[] = {0x3c, 0x3c, 0};
-static JJChar jjstrLiteralChars_147[] = {0x3e, 0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_146[] = {0x3c, 0x3c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_147[] = {0x3e, 0x3e, 0};
 
-static JJChar jjstrLiteralChars_148[] = {0x3f, 0x3f, 0};
-static JJChar jjstrLiteralChars_149[] = {0x3f, 0x3e, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_148[] = {0x3f, 0x3f, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_149[] = {0x3f, 0x3e, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_150[] = {0x3f, 0x3c, 0x3d, 0};
-static JJChar jjstrLiteralChars_151[] = {0x3f, 0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_150[] = {0x3f, 0x3c, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_151[] = {0x3f, 0x3e, 0};
 
-static JJChar jjstrLiteralChars_152[] = {0x3f, 0x3c, 0};
-static JJChar jjstrLiteralChars_153[] = {0x3f, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_152[] = {0x3f, 0x3c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_153[] = {0x3f, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_154[] = {0x3f, 0x2f, 0x3d, 0};
-static JJChar jjstrLiteralChars_155[] = {0x3f, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_154[] = {0x3f, 0x2f, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_155[] = {0x3f, 0};
 
-static JJChar jjstrLiteralChars_156[] = {0x7c, 0};
-static JJChar jjstrLiteralChars_157[] = {0x2e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_156[] = {0x7c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_157[] = {0x2e, 0};
 
-static JJChar jjstrLiteralChars_158[] = {0x2f, 0};
-static JJChar jjstrLiteralChars_159[] = {0x40, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_158[] = {0x2f, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_159[] = {0x40, 0};
 
-static JJChar jjstrLiteralChars_160[] = {0x5e, 0};
-static JJChar jjstrLiteralChars_161[] = {0x5b, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_160[] = {0x5e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_161[] = {0x5b, 0};
 
-static JJChar jjstrLiteralChars_162[] = {0x5d, 0};
-static JJChar jjstrLiteralChars_163[] = {0x7b, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_162[] = {0x5d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_163[] = {0x7b, 0};
 
-static JJChar jjstrLiteralChars_164[] = {0x7d, 0};
-static JJChar jjstrLiteralChars_165[] = {0};
-static JJChar jjstrLiteralChars_166[] = {0};
-static JJChar jjstrLiteralChars_167[] = {0};
-static JJChar jjstrLiteralChars_168[] = {0};
-static JJChar jjstrLiteralChars_169[] = {0};
-static JJChar jjstrLiteralChars_170[] = {0};
-static JJChar jjstrLiteralChars_171[] = {0};
-static JJChar jjstrLiteralChars_172[] = {0};
-static JJChar jjstrLiteralChars_173[] = {0};
-static JJChar jjstrLiteralChars_174[] = {0};
-static JJChar jjstrLiteralChars_175[] = {0};
-static JJChar jjstrLiteralChars_176[] = {0};
-static JJChar jjstrLiteralChars_177[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_164[] = {0x7d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_165[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_166[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_167[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_168[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_169[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_170[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_171[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_172[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_173[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_174[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_175[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_176[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_177[] = {0};
 
-static JJChar jjstrLiteralChars_178[] = {0};
-static JJChar jjstrLiteralChars_179[] = {0};
-static JJChar jjstrLiteralChars_180[] = {0};
-static JJChar jjstrLiteralChars_181[] = {0};
-static JJChar jjstrLiteralChars_182[] = {0};
-static JJChar jjstrLiteralChars_183[] = {0};
-static JJChar jjstrLiteralChars_184[] = {0};
-static JJChar jjstrLiteralChars_185[] = {0};
-static JJChar jjstrLiteralChars_186[] = {0};
-static JJChar jjstrLiteralChars_187[] = {0};
-static JJChar jjstrLiteralChars_188[] = {0};
-static JJChar jjstrLiteralChars_189[] = {0};
-static const JJString jjstrLiteralImages[] = {
+static JAVACC_CHAR_TYPE jjstrLiteralChars_178[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_179[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_180[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_181[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_182[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_183[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_184[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_185[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_186[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_187[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_188[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_189[] = {0};
+static const JAVACC_STRING_TYPE jjstrLiteralImages[] = {
 jjstrLiteralChars_0, 
 jjstrLiteralChars_1, 
 jjstrLiteralChars_2, 
@@ -432,9 +431,9 @@ jjstrLiteralChars_189,
 };
 
 /** Lexer state names. */
-static const JJChar lexStateNames_arr_0[] = 
+static const JAVACC_CHAR_TYPE lexStateNames_arr_0[] = 
 {0x44, 0x45, 0x46, 0x41, 0x55, 0x4c, 0x54, 0};
-static const JJString lexStateNames[] = {
+static const JAVACC_STRING_TYPE lexStateNames[] = {
 lexStateNames_arr_0, 
 };
 static const unsigned long long jjtoToken[] = {
@@ -444,7 +443,7 @@ static const unsigned long long jjtoSkip[] = {
    0x7deULL, 0x0ULL, 0x0ULL, 
 };
 
-  void  VhdlParserTokenManager::setDebugStream(FILE *ds){ debugStream = ds; }
+void  VhdlParserTokenManager::setDebugStream(FILE *ds){ debugStream = ds; }
 
  int  VhdlParserTokenManager::jjStopAtPos(int pos, int kind){
    jjmatchedKind = kind;
@@ -3321,12 +3320,12 @@ bool VhdlParserTokenManager::jjCanMove_1(int hiByte, int i1, int i2, unsigned lo
 
 Token * VhdlParserTokenManager::jjFillToken(){
    Token *t;
-   JJString curTokenImage;
-   int beginLine   = -1;
-   int endLine     = -1;
-   int beginColumn = -1;
-   int endColumn   = -1;
-   JJString im = jjstrLiteralImages[jjmatchedKind];
+   JAVACC_STRING_TYPE curTokenImage;
+   int beginLine;
+   int endLine;
+   int beginColumn;
+   int endColumn;
+   JAVACC_STRING_TYPE im = jjstrLiteralImages[jjmatchedKind];
    curTokenImage = (im.length() == 0) ? input_stream->GetImage() : im;
    if (input_stream->getTrackLineColumn()) {
      beginLine = input_stream->getBeginLine();
@@ -3334,11 +3333,9 @@ Token * VhdlParserTokenManager::jjFillToken(){
      endLine = input_stream->getEndLine();
      endColumn = input_stream->getEndColumn();
    }
-   t = Token::newToken(jjmatchedKind);
-   t->kind = jjmatchedKind;
-   t->image = curTokenImage;
-   t->specialToken = nullptr;
-   t->next = nullptr;
+   t = Token::newToken(jjmatchedKind, curTokenImage);
+   t->specialToken = NULL;
+   t->next = NULL;
 
    if (input_stream->getTrackLineColumn()) {
    t->beginLine = beginLine;
@@ -3353,7 +3350,7 @@ const int defaultLexState = 0;
 /** Get the next Token. */
 
 Token * VhdlParserTokenManager::getNextToken(){
-  Token *matchedToken = nullptr;
+  Token *matchedToken;
   int curPos = 0;
 
   for (;;)
@@ -3386,13 +3383,13 @@ Token * VhdlParserTokenManager::getNextToken(){
       }
       else
       {
-         SkipLexicalActions(nullptr);
+         SkipLexicalActions(NULL);
          goto EOFLoop;
       }
    }
    int error_line = input_stream->getEndLine();
    int error_column = input_stream->getEndColumn();
-   JJString error_after;
+   JAVACC_STRING_TYPE error_after;
    bool EOFSeen = false;
    if (input_stream->endOfInput()) {
       EOFSeen = true;
@@ -3593,15 +3590,17 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
    }
 }
   /** Reinitialise parser. */
-  void VhdlParserTokenManager::ReInit(JAVACC_CHARSTREAM *stream, int lexState) {
-    clear();
+  void VhdlParserTokenManager::ReInit(JAVACC_CHARSTREAM *stream, int lexState, VhdlParser *parserArg) {
+    if (input_stream) delete input_stream;
     jjmatchedPos = jjnewStateCnt = 0;
     curLexState = lexState;
     input_stream = stream;
     ReInitRounds();
     debugStream = stdout; // init
     SwitchTo(lexState);
+    parser = parserArg;
     errorHandler = new TokenManagerErrorHandler();
+    errorHandlerCreated = true;
   }
 
   void VhdlParserTokenManager::ReInitRounds() {
@@ -3613,40 +3612,25 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
 
   /** Switch to specified lex state. */
   void VhdlParserTokenManager::SwitchTo(int lexState) {
-    if (lexState >= 1 || lexState < 0) {
-      JJString message;
-#ifdef WIDE_CHAR
-      message += L"Error: Ignoring invalid lexical state : ";
-      message += lexState; message += L". State unchanged.";
-#else
-      message += "Error: Ignoring invalid lexical state : ";
-      message += lexState; message += ". State unchanged.";
-#endif
-      throw new TokenMgrError(message, INVALID_LEXICAL_STATE);
-    } else
+    if (lexState >= 1 || lexState < 0)
+      assert(false);
+      //throw 1;//new TokenMgrError("Error: Ignoring invalid lexical state : " + lexState + ". State unchanged.", TokenMgrError.INVALID_LEXICAL_STATE);
+    else
       curLexState = lexState;
   }
 
   /** Constructor. */
-  VhdlParserTokenManager::VhdlParserTokenManager (JAVACC_CHARSTREAM *stream, int lexState)
+  VhdlParserTokenManager::VhdlParserTokenManager (JAVACC_CHARSTREAM *stream, int lexState, VhdlParser *parserArg)
   {
-    input_stream = nullptr;
-    ReInit(stream, lexState);
+    input_stream = NULL;
+    ReInit(stream, lexState, parserArg);
   }
 
   // Destructor
   VhdlParserTokenManager::~VhdlParserTokenManager () {
-    clear();
+    if (input_stream) delete input_stream;
+    if (errorHandlerCreated) delete errorHandler;
   }
-
-  // clear
-  void VhdlParserTokenManager::clear() {
-    //Since input_stream was generated outside of TokenManager
-    //TokenManager should not take care of deleting it
-    //if (input_stream) delete input_stream;
-    if (errorHandler) delete errorHandler, errorHandler = nullptr;    
-  }
-
 
 }
 }
