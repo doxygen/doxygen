@@ -107,17 +107,17 @@ SKIP:
 // VHDL 2008 doxygen comment /*! .... */
 SKIP :
 {
-  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!"  (~[])* "*/" >
+  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
   {
    {
-     QCString q(image.data());
-     q.stripPrefix("/*!");
-     q.resize(q.length()-2);
+     QCString q = filter2008VhdlComment(image.data());
      ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
    }
   }
-  | <MULT_VHDL_2008_COMMENT : "/*"  (~[])* "*/" >  {::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
-}
+  | <MULT_VHDL_2008_COMMENT : "/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
+    {
+      ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
+    }
 
 /* KEYWORDS */
 
