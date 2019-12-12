@@ -750,7 +750,7 @@ QCString filter2008VhdlComment(const char *s)
 {
   GrowBuf growBuf;
   const char *p=s+3; // skip /*!
-  char c,pc='\0';
+  char c='\0';
   while (*p == ' ' || *p == '\t') p++;
   while ((c=*p++))
   {
