@@ -41,7 +41,7 @@ static Boolean        lex_utf8 = FALSE;
 /* Local function prototypes */
 static void newline(const char *text, unsigned int n);
 static char *trimQstring(char *s);
-
+static const char *stateToString(int state);
 %}
 
 /* Not used, so prevent compiler warning */
@@ -49,7 +49,8 @@ static char *trimQstring(char *s);
 %option noinput
 %option noyywrap
 
-%x IN_COMMENT BODY
+%x IN_COMMENT
+%x BODY
 %%
 
 <INITIAL>{
@@ -141,7 +142,7 @@ NOTE|note                             yylval.arctype = MSC_ARC_NOTE;     return 
 %%
 
 /* Handle a new line of input.
- *  This counts the line number and duplicates the string incase we need
+ *  This counts the line number and duplicates the string in case we need
  *  it for error reporting.  The line is then returned back for parsing
  *  without the newline characters prefixed.
  */
@@ -233,4 +234,5 @@ Boolean lex_getutf8(void)
     return lex_utf8;
 }
 
+#include "mscgen_lexer.l.h"
 /* END OF FILE */

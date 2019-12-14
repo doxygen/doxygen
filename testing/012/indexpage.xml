@@ -7,7 +7,7 @@
     </briefdescription>
     <detaileddescription>
       <para>See <ref refid="citelist_1CITEREF_knuth79" kindref="member">[3]</ref> for more info.</para>
-      <para>Oter references with crosreference see <ref refid="citelist_1CITEREF_Be09" kindref="member">[1]</ref> and <ref refid="citelist_1CITEREF_BertholdHeinzVigerske2009" kindref="member">[2]</ref> for more info. </para>
+      <para>Other references with cross references see <ref refid="citelist_1CITEREF_Be09" kindref="member">[1]</ref> and <ref refid="citelist_1CITEREF_BertholdHeinzVigerske2009" kindref="member">[2]</ref> for more info. </para>
     </detaileddescription>
   </compounddef>
 </doxygen>

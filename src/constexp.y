@@ -19,13 +19,8 @@
 %{
 
 #include "cppvalue.h"
-#include "constexp.h"
+#include "constexp_p.h"
 #include "message.h"
-
-#if defined(_MSC_VER)
-#define MSDOS
-#endif
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,7 +28,7 @@
 int constexpYYerror(yyscan_t yyscanner, const char *s)
 {
   struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-  warn(yyextra->g_constExpFileName, yyextra->g_constExpLineNr,
+  warn(yyextra->constExpFileName, yyextra->constExpLineNr,
        "preprocessing issue while doing constant expression evaluation: %s",s);
   return 0;
 }
@@ -80,7 +75,7 @@ int constexpYYerror(yyscan_t yyscanner, const char *s)
 start: constant_expression
        {
          struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-         yyextra->g_resultValue = $1; return 0;
+         yyextra->resultValue = $1; return 0;
        }
 ;
 
@@ -272,27 +267,27 @@ primary_expression: constant
 constant: TOK_OCTALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseOctal(yyextra->g_strToken);
+	    $$ = parseOctal(yyextra->strToken);
 	  }
 	| TOK_DECIMALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseDecimal(yyextra->g_strToken);
+	    $$ = parseDecimal(yyextra->strToken);
 	  }
 	| TOK_HEXADECIMALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseHexadecimal(yyextra->g_strToken);
+	    $$ = parseHexadecimal(yyextra->strToken);
 	  }
 	| TOK_CHARACTER
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseCharacter(yyextra->g_strToken);
+	    $$ = parseCharacter(yyextra->strToken);
 	  }
 	| TOK_FLOAT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseFloat(yyextra->g_strToken);
+	    $$ = parseFloat(yyextra->strToken);
 	  }
 ;
 

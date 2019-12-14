@@ -664,7 +664,8 @@ void FileDefImpl::writeIncludeGraph(OutputList &ol)
     DotInclDepGraph incDepGraph(this,FALSE);
     if (incDepGraph.isTooBig())
     {
-       warn_uncond("Include graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+       warn_uncond("Include graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           name().data(), incDepGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!incDepGraph.isTrivial())
     {
@@ -688,7 +689,8 @@ void FileDefImpl::writeIncludedByGraph(OutputList &ol)
     DotInclDepGraph incDepGraph(this,TRUE);
     if (incDepGraph.isTooBig())
     {
-       warn_uncond("Included by graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+       warn_uncond("Included by graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           name().data(), incDepGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!incDepGraph.isTrivial())
     {
@@ -735,7 +737,7 @@ void FileDefImpl::writeClassDeclarations(OutputList &ol,const QCString &title,Cl
 
 void FileDefImpl::writeInlineClasses(OutputList &ol)
 {
-  // temporarily undo the disbling could be done by startMemberDocumentation()
+  // temporarily undo the disabling could be done by startMemberDocumentation()
   // as a result of setting SEPARATE_MEMBER_PAGES to YES; see bug730512
   bool isEnabled = ol.isEnabled(OutputGenerator::Html);
   ol.enable(OutputGenerator::Html);
@@ -1231,8 +1233,8 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
   else
 #endif
   {
-    ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
-    pIntf->resetCodeParserState();
+    CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
+    intf.resetCodeParserState();
     ol.startCodeFragment();
     bool needs2PassParsing = 
         Doxygen::parseSourcesNeeded &&                // we need to parse (filtered) sources for cross-references
@@ -1242,13 +1244,13 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
     if (needs2PassParsing)
     {
       // parse code for cross-references only (see bug707641)
-      pIntf->parseCode(devNullIntf,0,
+      intf.parseCode(devNullIntf,0,
                        fileToString(absFilePath(),TRUE,TRUE),
                        getLanguage(),
                        FALSE,0,this
                       );
     }
-    pIntf->parseCode(ol,0,
+    intf.parseCode(ol,0,
         fileToString(absFilePath(),filterSourceFiles,TRUE),
         getLanguage(),      // lang
         FALSE,              // isExampleBlock
@@ -1293,9 +1295,9 @@ void FileDefImpl::parseSource(bool sameTu,QStrList &filesInSameTu)
   else
 #endif
   {
-    ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
-    pIntf->resetCodeParserState();
-    pIntf->parseCode(
+    CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
+    intf.resetCodeParserState();
+    intf.parseCode(
             devNullIntf,0,
             fileToString(absFilePath(),filterSourceFiles,TRUE),
             getLanguage(),
@@ -1680,7 +1682,7 @@ bool FileDefImpl::generateSourceFile() const
 void FileDefImpl::addListReferences()
 {
   {
-    QList<ListItemInfo> *xrefItems = xrefListItems();
+    const std::vector<ListItemInfo> &xrefItems = xrefListItems();
     addRefItem(xrefItems,
                getOutputFileBase(),
                theTranslator->trFile(TRUE,TRUE),
@@ -2013,7 +2015,7 @@ void FileDefImpl::acquireFileVersion()
     msg("Version of %s : ",m_filePath.data());
     QCString cmd = vercmd+" \""+m_filePath+"\"";
     Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-    FILE *f=portable_popen(cmd,"r");
+    FILE *f=Portable::popen(cmd,"r");
     if (!f)
     {
       err("could not execute %s\n",vercmd.data());
@@ -2022,7 +2024,7 @@ void FileDefImpl::acquireFileVersion()
     const int bufSize=1024;
     char buf[bufSize];
     int numRead = (int)fread(buf,1,bufSize-1,f);
-    portable_pclose(f);
+    Portable::pclose(f);
     if (numRead>0 && numRead<bufSize)
     {
       buf[numRead]='\0';

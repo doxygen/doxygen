@@ -66,6 +66,11 @@ p.startli, p.startdd {
 	margin-top: 2px;
 }
 
+th p.starttd, p.intertd, p.endtd {
+        font-size: 100%;
+        font-weight: 700;
+}
+
 p.starttd {
 	margin-top: 0px;
 }
@@ -535,7 +540,7 @@ table.memberdecls {
         white-space: nowrap;
 }
 
-.memItemRight {
+.memItemRight, .memTemplItemRight {
 	width: 100%;
 }
 

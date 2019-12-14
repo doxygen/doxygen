@@ -196,7 +196,7 @@
     <xsd:attribute name="readonly" type="DoxBool" use="optional"/>
     <xsd:attribute name="bound" type="DoxBool" use="optional"/>
     <xsd:attribute name="removable" type="DoxBool" use="optional"/>
-    <xsd:attribute name="contrained" type="DoxBool" use="optional"/>
+    <xsd:attribute name="constrained" type="DoxBool" use="optional"/>
     <xsd:attribute name="transient" type="DoxBool" use="optional"/>
     <xsd:attribute name="maybevoid" type="DoxBool" use="optional"/>
     <xsd:attribute name="maybedefault" type="DoxBool" use="optional"/>

@@ -17,6 +17,7 @@
 #include "qgstring.h"
 
 #include <qstring.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -88,8 +89,9 @@ int QCString::find( const QCString &str, int index, bool cs ) const
 
 int QCString::find( const QRegExp &rx, int index ) const
 {
-  QString d = QString::fromLatin1( data() );
-  return d.find( rx, index );
+  if ( index < 0 )
+    index += length();
+  return rx.match( data(), index );
 }
 
 int QCString::findRev( char c, int index, bool cs) const
@@ -146,8 +148,16 @@ int QCString::findRev( const char *str, int index, bool cs) const
 
 int QCString::findRev( const QRegExp &rx, int index ) const
 {
-  QString d = QString::fromLatin1( data() );
-  return d.findRev( rx, index );
+  if ( index < 0 )			// neg index ==> start from end
+    index += length();
+  if ( (uint)index > length() )		// bad index
+    return -1;
+  while( index >= 0 ) {
+    if ( rx.match( data(), index ) == index )
+      return index;
+    index--;
+  }
+  return -1;
 }
 
 int QCString::contains( char c, bool cs ) const
@@ -194,8 +204,26 @@ int QCString::contains( const char *str, bool cs ) const
 
 int QCString::contains( const QRegExp &rx ) const
 {
-  QString d = QString::fromLatin1( data() );
-  return d.contains( rx );
+  if ( isEmpty() )
+    return rx.match( data() ) < 0 ? 0 : 1;
+  int count = 0;
+  int index = -1;
+  int len = length();
+  while ( index < len-1 ) {			// count overlapping matches
+    index = rx.match( data(), index+1 );
+    if ( index < 0 )
+      break;
+    count++;
+  }
+  return count;
+}
+
+bool QCString::startsWith( const char *s ) const
+{
+  const char *p = data();
+  if (p==0 || s==0) return s==0;
+  while (*p!=0 && *p==*s) p++,s++;
+  return *s==0;
 }
 
 bool QCString::stripPrefix(const char *prefix)
@@ -417,53 +445,204 @@ QCString &QCString::replace( uint index, uint len, const char *s)
 
 QCString &QCString::replace( const QRegExp &rx, const char *str )
 {
-  QString d = QString::fromLatin1( data() );
-  QString r = QString::fromLatin1( str );
-  d.replace( rx, r );
-  operator=( d.ascii() );
+  if ( isEmpty() )
+    return *this;
+  int index = 0;
+  int slen  = qstrlen(str);
+  int len;
+  while ( index < (int)length() ) {
+    index = rx.match( data(), index, &len, FALSE );
+    if ( index >= 0 ) {
+      replace( index, len, str );
+      index += slen;
+      if ( !len )
+        break;	// Avoid infinite loop on 0-length matches, e.g. [a-z]*
+    }
+    else
+      break;
+  }
   return *this;
 }
 
-short QCString::toShort(bool *ok) const
+static bool ok_in_base( char c, int base )
 {
-  QString s(data());
-  return s.toShort(ok);
+    if ( base <= 10 )
+	return c>='0' && c<='9' && (c-'0') < base;
+    else
+	return (c>='0' && c<='9') ||
+               (c >= 'a' && c < char('a'+base-10)) ||
+               (c >= 'A' && c < char('A'+base-10));
 }
 
-ushort QCString::toUShort(bool *ok) const
+short QCString::toShort(bool *ok, int base) const
 {
-  QString s(data());
-  return s.toUShort(ok);
+  long v = toLong( ok, base );
+  if ( ok && *ok && (v < -32768 || v > 32767) ) {
+    *ok = FALSE;
+    v = 0;
+  }
+  return (short)v;
 }
 
-int QCString::toInt(bool *ok) const
+ushort QCString::toUShort(bool *ok,int base) const
 {
-  QString s(data());
-  return s.toInt(ok);
+  ulong v = toULong( ok, base );
+  if ( ok && *ok && (v > 65535) ) {
+    *ok = FALSE;
+    v = 0;
+  }
+  return (ushort)v;
 }
 
-uint QCString::toUInt(bool *ok) const
+int QCString::toInt(bool *ok, int base) const
 {
-  QString s(data());
-  return s.toUInt(ok);
+  return (int)toLong( ok, base );
 }
 
-long QCString::toLong(bool *ok) const
+uint QCString::toUInt(bool *ok,int base) const
 {
-  QString s(data());
-  return s.toLong(ok);
+  return (uint)toULong( ok, base );
 }
 
-ulong QCString::toULong(bool *ok) const
+
+long QCString::toLong(bool *ok,int base) const
 {
-  QString s(data());
-  return s.toULong(ok);
+  const char *p = data();
+  long val=0;
+  int l = length();
+  const long max_mult = INT_MAX / base;
+  bool is_ok = FALSE;
+  int neg = 0;
+  if ( !p )
+    goto bye;
+  while ( l && isspace(*p) )			// skip leading space
+    l--,p++;
+  if ( l && *p == '-' ) {
+    l--;
+    p++;
+    neg = 1;
+  } else if ( *p == '+' ) {
+    l--;
+    p++;
+  }
+
+  // NOTE: toULong() code is similar
+  if ( !l || !ok_in_base(*p,base) )
+    goto bye;
+  while ( l && ok_in_base(*p,base) ) {
+    l--;
+    int dv;
+    if ( *p>='0' && *p<='9' ) {
+      dv = *p-'0';
+    } else {
+      if ( *p >= 'a' && *p <= 'z' )
+        dv = *p - 'a' + 10;
+      else
+        dv = *p - 'A' + 10;
+    }
+    if ( val > max_mult || (val == max_mult && dv > (INT_MAX%base)+neg) )
+      goto bye;
+    val = base*val + dv;
+    p++;
+  }
+  if ( neg )
+    val = -val;
+  while ( l && isspace(*p) )			// skip trailing space
+    l--,p++;
+  if ( !l )
+    is_ok = TRUE;
+bye:
+  if ( ok )
+    *ok = is_ok;
+  return is_ok ? val : 0;
 }
 
-uint64 QCString::toUInt64(bool *ok) const
+ulong QCString::toULong(bool *ok,int base) const
 {
-  QString s(data());
-  return s.toUInt64(ok);
+  const char *p = data();
+  ulong val=0;
+  int l = length();
+  const ulong max_mult = 429496729;		// UINT_MAX/10, rounded down
+  bool is_ok = FALSE;
+  if ( !p )
+    goto bye;
+  while ( l && isspace(*p) )			// skip leading space
+    l--,p++;
+  if ( *p == '+' )
+    l--,p++;
+
+  // NOTE: toLong() code is similar
+  if ( !l || !ok_in_base(*p,base) )
+    goto bye;
+  while ( l && ok_in_base(*p,base) ) {
+    l--;
+    uint dv;
+    if ( *p>='0' && *p<='9' ) {
+      dv = *p-'0';
+    } else {
+      if ( *p >= 'a' && *p <= 'z' )
+        dv = *p - 'a' + 10;
+      else
+        dv = *p - 'A' + 10;
+    }
+    if ( val > max_mult || (val == max_mult && dv > (UINT_MAX%base)) )
+      goto bye;
+    val = base*val + dv;
+    p++;
+  }
+
+  while ( l && isspace(*p) )			// skip trailing space
+    l--,p++;
+  if ( !l )
+    is_ok = TRUE;
+bye:
+  if ( ok )
+    *ok = is_ok;
+  return is_ok ? val : 0;
+}
+
+uint64 QCString::toUInt64(bool *ok,int base) const
+{
+  const char *p = data();
+  uint64 val=0;
+  int l = length();
+  const uint64 max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
+  bool is_ok = FALSE;
+  if ( !p )
+    goto bye;
+  while ( l && isspace(*p) )		 	   // skip leading space
+    l--,p++;
+  if ( *p == '+' )
+    l--,p++;
+
+  // NOTE: toULong() code is similar
+  if ( !l || !ok_in_base(*p,base) )
+    goto bye;
+  while ( l && ok_in_base(*p,base) ) {
+    l--;
+    uint dv;
+    if ( *p>='0' && *p<='9' ) {
+      dv = *p-'0';
+    } else {
+      if ( *p >= 'a' && *p <= 'z' )
+        dv = *p - 'a' + 10;
+      else
+        dv = *p - 'A' + 10;
+    }
+    if ( val > max_mult || (val == max_mult && dv > (ULLONG_MAX%base)) )
+      goto bye;
+    val = base*val + dv;
+    p++;
+  }
+
+  while ( l && isspace(*p) )			// skip trailing space
+    l--,p++;
+  if ( !l )
+    is_ok = TRUE;
+bye:
+  if ( ok )
+    *ok = is_ok;
+  return is_ok ? val : 0;
 }
 
 QCString &QCString::setNum(short n)

@@ -28,12 +28,13 @@
 #define MAX_LATEX_GRAPH_INCH  150
 #define MAX_LATEX_GRAPH_SIZE  (MAX_LATEX_GRAPH_INCH * 72)
 
+//-----------------------------------------------------------------------------------------
 
 // since dot silently reproduces the input file when it does not
 // support the PNG format, we need to check the result.
 static void checkPngResult(const char *imgName)
 {
-  FILE *f = portable_fopen(imgName,"rb");
+  FILE *f = Portable::fopen(imgName,"rb");
   if (f)
   {
     char data[4];
@@ -62,8 +63,8 @@ static void checkPngResult(const char *imgName)
 
 static bool resetPDFSize(const int width,const int height, const char *base)
 {
-  QString tmpName = QString::fromUtf8(QCString(base)+".tmp");
-  QString patchFile = QString::fromUtf8(QCString(base)+".dot");
+  QCString tmpName = QCString(base)+".tmp";
+  QCString patchFile = QCString(base)+".dot";
   if (!QDir::current().rename(patchFile,tmpName))
   {
     err("Failed to rename file %s to %s!\n",patchFile.data(),tmpName.data());
@@ -114,7 +115,7 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
 {
   const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
   int bblen = strlen(bb);
-  FILE *f = portable_fopen(fileName,"rb");
+  FILE *f = Portable::fopen(fileName,"rb");
   if (!f) 
   {
     //printf("readBoundingBox: could not open %s\n",fileName);
@@ -142,12 +143,11 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
   return FALSE;
 }
 
-bool DotRunner::DOT_CLEANUP;
-bool DotRunner::DOT_MULTI_TARGETS;
-DotConstString DotRunner::DOT_EXE;
+//---------------------------------------------------------------------------------
 
 DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
-  : m_file(absDotName), m_md5Hash(md5Hash), m_cleanUp(DOT_CLEANUP)
+  : m_file(absDotName), m_md5Hash(md5Hash), m_cleanUp(Config_getBool(DOT_CLEANUP)),
+    m_dotExe(Config_getString(DOT_PATH)+"dot")
 {
   m_jobs.setAutoDelete(TRUE);
 }
@@ -183,7 +183,7 @@ bool DotRunner::run()
   DotJob *s;
 
   // create output
-  if (DOT_MULTI_TARGETS)
+  if (Config_getBool(DOT_MULTI_TARGETS))
   {
     dotArgs=QCString("\"")+m_file.data()+"\"";
     for (li.toFirst();(s=li.current());++li)
@@ -191,14 +191,14 @@ bool DotRunner::run()
       dotArgs+=' ';
       dotArgs+=s->args.data();
     }
-    if ((exitCode=portable_system(DOT_EXE.data(),dotArgs,FALSE))!=0) goto error;
+    if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
   }
   else
   {
     for (li.toFirst();(s=li.current());++li)
     {
       dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
-      if ((exitCode=portable_system(DOT_EXE.data(),dotArgs,FALSE))!=0) goto error;
+      if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
     }
   }
 
@@ -214,7 +214,7 @@ bool DotRunner::run()
       {
         if (!resetPDFSize(width,height,getBaseNameOfOutput(s->output.data()))) goto error;
         dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
-        if ((exitCode=portable_system(DOT_EXE.data(),dotArgs,FALSE))!=0) goto error;
+        if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
       }
     }
 
@@ -228,14 +228,14 @@ bool DotRunner::run()
   if (m_cleanUp) 
   {
     //printf("removing dot file %s\n",m_file.data());
-    portable_unlink(m_file.data());
+    Portable::unlink(m_file.data());
   }
 
   // create checksum file
   if (!m_md5Hash.isEmpty()) 
   {
     QCString md5Name = getBaseNameOfOutput(m_file.data()) + ".md5";
-    FILE *f = portable_fopen(md5Name,"w");
+    FILE *f = Portable::fopen(md5Name,"w");
     if (f)
     {
       fwrite(m_md5Hash.data(),1,32,f); 
@@ -245,7 +245,7 @@ bool DotRunner::run()
   return TRUE;
 error:
   err("Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
-    exitCode,DOT_EXE.data(),dotArgs.data());
+    exitCode,m_dotExe.data(),dotArgs.data());
   return FALSE;
 }
 

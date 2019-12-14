@@ -124,23 +124,23 @@ class NamespaceDefImpl : public DefinitionImpl, public NamespaceDef
     QCString              fileName;
     FileList              files;
 
-    NamespaceSDict       *usingDirList;
-    SDict<Definition> *usingDeclList;
-    SDict<Definition>    *m_innerCompounds;
+    NamespaceSDict       *usingDirList = 0;
+    SDict<Definition>    *usingDeclList = 0;
+    SDict<Definition>    *m_innerCompounds = 0;
 
-    MemberSDict          *m_allMembersDict;
+    MemberSDict          *m_allMembersDict = 0;
     QList<MemberList>     m_memberLists;
-    MemberGroupSDict     *memberGroupSDict;
-    ClassSDict           *classSDict;
-    ClassSDict           *interfaceSDict;
-    ClassSDict           *structSDict;
-    ClassSDict           *exceptionSDict;
-    NamespaceSDict       *namespaceSDict;
-    bool                  m_subGrouping;
+    MemberGroupSDict     *memberGroupSDict = 0;
+    ClassSDict           *classSDict = 0;
+    ClassSDict           *interfaceSDict = 0;
+    ClassSDict           *structSDict = 0;
+    ClassSDict           *exceptionSDict = 0;
+    NamespaceSDict       *namespaceSDict = 0;
+    bool                  m_subGrouping = false;
     enum { NAMESPACE, MODULE, CONSTANT_GROUP, LIBRARY } m_type;
-    bool m_isPublished;
+    bool m_isPublished = false;
     QCString              metaData;
-    bool                  m_inline;
+    bool                  m_inline = false;
 };
 
 NamespaceDef *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
@@ -246,7 +246,7 @@ class NamespaceDefAliasImpl : public DefinitionAliasImpl, public NamespaceDef
     bool isVisited() const { return m_visited; }
 
   private:
-    bool m_visited;
+    bool m_visited = false;
 };
 
 NamespaceDef *createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd)
@@ -1269,7 +1269,7 @@ void NamespaceDefImpl::addListReferences()
 {
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   {
-    QList<ListItemInfo> *xrefItems = xrefListItems();
+    const std::vector<ListItemInfo> &xrefItems = xrefListItems();
     addRefItem(xrefItems,
         qualifiedName(),
         getLanguage()==SrcLangExt_Fortran ? 

@@ -1561,6 +1561,7 @@ void writeDefaultLayoutFile(const char *fileName)
     return;
   }
   QTextStream t(&f);
+  t.setEncoding(QTextStream::UnicodeUTF8);
   t << substitute(layout_default,"$doxygenversion",getVersion());
 }
 

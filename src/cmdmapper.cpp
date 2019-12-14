@@ -239,14 +239,14 @@ int Mapper::map(const char *n)
   return !name.isEmpty() && (result=m_map.find(name)) ? *result: 0;
 }
 
-QString Mapper::find(const int n)
+QCString Mapper::find(const int n)
 {
   QDictIterator<int> mapIterator(m_map);
   for (int *curVal = mapIterator.toFirst();(curVal = mapIterator.current());++mapIterator)
   {
     if (*curVal == n || (*curVal == (n | SIMPLESECT_BIT))) return mapIterator.currentKey();
   }
-  return NULL;
+  return QCString();
 }
 
 Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_map(89), m_cs(caseSensitive)

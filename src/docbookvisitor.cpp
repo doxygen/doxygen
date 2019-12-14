@@ -36,6 +36,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "growbuf.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
@@ -48,6 +49,25 @@
 #define DB_VIS_C2(y)
 #define DB_VIS_C2a(x,y)
 #endif
+
+static QCString filterId(const char *s)
+{
+  static GrowBuf growBuf;
+  growBuf.clear();
+  if (s==0) return "";
+  const unsigned char *p=(const unsigned char *)s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case ':':  growBuf.addStr("_1");   break;
+      default:   growBuf.addChar(c);       break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
 
 void DocbookDocVisitor::visitCaption(const QList<DocNode> &children)
 {
@@ -280,8 +300,8 @@ DB_VIS_C
   {
     case DocVerbatim::Code: // fall though
       m_t << "<literallayout><computeroutput>";
-      Doxygen::parserManager->getParser(m_langExt)
-        ->parseCode(m_ci,s->context(),s->text(),langExt,
+      Doxygen::parserManager->getCodeParser(m_langExt)
+         .parseCode(m_ci,s->context(),s->text(),langExt,
             s->isExample(),s->exampleFile());
       m_t << "</computeroutput></literallayout>";
       break;
@@ -374,7 +394,7 @@ void DocbookDocVisitor::visit(DocAnchor *anc)
 {
 DB_VIS_C
   if (m_hide) return;
-  m_t << "<anchor xml:id=\"_" <<  stripPath(anc->file()) << "_1" << anc->anchor() << "\"/>";
+  m_t << "<anchor xml:id=\"_" <<  stripPath(anc->file()) << "_1" << filterId(anc->anchor()) << "\"/>";
 }
 
 void DocbookDocVisitor::visit(DocInclude *inc)
@@ -389,8 +409,8 @@ DB_VIS_C
         m_t << "<literallayout><computeroutput>";
         QFileInfo cfi( inc->file() );
         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-        Doxygen::parserManager->getParser(inc->extension())
-          ->parseCode(m_ci,inc->context(),
+        Doxygen::parserManager->getCodeParser(inc->extension())
+           .parseCode(m_ci,inc->context(),
               inc->text(),
               langExt,
               inc->isExample(),
@@ -401,8 +421,8 @@ DB_VIS_C
       break;
     case DocInclude::Include:
       m_t << "<literallayout><computeroutput>";
-      Doxygen::parserManager->getParser(inc->extension())
-        ->parseCode(m_ci,inc->context(),
+      Doxygen::parserManager->getCodeParser(inc->extension())
+         .parseCode(m_ci,inc->context(),
             inc->text(),
             langExt,
             inc->isExample(),
@@ -421,8 +441,8 @@ DB_VIS_C
       break;
     case DocInclude::Snippet:
       m_t << "<literallayout><computeroutput>";
-      Doxygen::parserManager->getParser(inc->extension())
-        ->parseCode(m_ci,
+      Doxygen::parserManager->getCodeParser(inc->extension())
+         .parseCode(m_ci,
             inc->context(),
             extractBlock(inc->text(),inc->blockId()),
             langExt,
@@ -436,8 +456,8 @@ DB_VIS_C
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          m_t << "<literallayout><computeroutput>";
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -489,8 +509,8 @@ DB_VIS_C
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
 
-      Doxygen::parserManager->getParser(locLangExt)
-        ->parseCode(m_ci,op->context(),
+      Doxygen::parserManager->getCodeParser(locLangExt)
+         .parseCode(m_ci,op->context(),
             op->text(),langExt,op->isExample(),
             op->exampleFile(),
             fd,     // fileDef
@@ -550,7 +570,7 @@ void DocbookDocVisitor::visit(DocCite *cite)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (!cite->file().isEmpty()) startLink(cite->file(),cite->anchor());
+  if (!cite->file().isEmpty()) startLink(cite->file(),filterId(cite->anchor()));
   filter(cite->text());
   if (!cite->file().isEmpty()) endLink();
 }

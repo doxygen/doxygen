@@ -51,7 +51,7 @@ class LT_Ref : public LinkedTextImpl, public ILT_Ref
     StringImpl    m_refId;
     StringImpl    m_extId;
     StringImpl    m_text;
-    TargetKind m_targetKind;
+    TargetKind m_targetKind = TargetKind::Member;
 };
 
 LinkedTextHandler::LinkedTextHandler(IBaseHandler *parent,

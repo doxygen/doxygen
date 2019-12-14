@@ -22,14 +22,16 @@
 
 void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
 {
+  int fontSize = Config_getInt(DOT_FONTSIZE);
+  QCString fontName = Config_getString(DOT_FONTNAME);
   t << "digraph \"" << dd->displayName() << "\" {\n";
   if (Config_getBool(DOT_TRANSPARENT))
   {
     t << "  bgcolor=transparent;\n";
   }
   t << "  compound=true\n";
-  t << "  node [ fontsize=\"" << DotGraph::DOT_FONTSIZE << "\", fontname=\"" << DotGraph::DOT_FONTNAME << "\"];\n";
-  t << "  edge [ labelfontsize=\"" << DotGraph::DOT_FONTSIZE << "\", labelfontname=\"" << DotGraph::DOT_FONTNAME << "\"];\n";
+  t << "  node [ fontsize=\"" << fontSize << "\", fontname=\"" << fontName << "\"];\n";
+  t << "  edge [ labelfontsize=\"" << fontSize << "\", labelfontname=\"" << fontName << "\"];\n";
 
   QDict<DirDef> dirsInGraph(257);
 
@@ -39,7 +41,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
     t << "  subgraph cluster" << dd->parent()->getOutputFileBase() << " {\n";
     t << "    graph [ bgcolor=\"#ddddee\", pencolor=\"black\", label=\"" 
       << dd->parent()->shortName() 
-      << "\" fontname=\"" << DotGraph::DOT_FONTNAME << "\", fontsize=\"" << DotGraph::DOT_FONTSIZE << "\", URL=\"";
+      << "\" fontname=\"" << fontName << "\", fontsize=\"" << fontSize << "\", URL=\"";
     t << dd->parent()->getOutputFileBase() << Doxygen::htmlFileExtension;
     t << "\"]\n";
   }
@@ -138,8 +140,8 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
     for (udi.toFirst();(udir=udi.current());++udi) // foreach used dir
     {
       const DirDef *usedDir=udir->dir();
-      if ((dir!=dd || !udir->inherited()) &&     // only show direct dependendies for this dir
-        (usedDir!=dd || !udir->inherited()) && // only show direct dependendies for this dir
+      if ((dir!=dd || !udir->inherited()) &&     // only show direct dependencies for this dir
+        (usedDir!=dd || !udir->inherited()) && // only show direct dependencies for this dir
         !usedDir->isParentOf(dir) &&             // don't point to own parent
         dirsInGraph.find(usedDir->getOutputFileBase())) // only point to nodes that are in the graph
       {

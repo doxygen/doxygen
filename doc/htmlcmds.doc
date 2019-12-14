@@ -25,6 +25,8 @@ of a HTML tag are passed on to the HTML output only
 <ul>
 <li><tt>\<A HREF="..."\></tt> Starts a hyperlink 
                        (if supported by the output format). 
+<li><tt>\<A ID="..."\></tt> Starts a named anchor 
+                       (if supported by the output format).
 <li><tt>\<A NAME="..."\></tt> Starts a named anchor 
                        (if supported by the output format).
 <li><tt>\</A\></tt>    Ends a link or anchor 
@@ -302,7 +304,7 @@ The list of entities with their descriptions has been taken from <a href="http:/
 <li><tt>\&notin;</tt>`&nbsp;&nbsp;&nbsp;`                 not an element of: &notin;
 <li><tt>\&ni;</tt>`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`  contains as member: &ni;
 <li><tt>\&prod;</tt>`&nbsp;&nbsp;&nbsp;&nbsp;`            n-ary product = product sign: &prod;
-<li><tt>\&sum;</tt>`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`       n-ary sumation: &sum;
+<li><tt>\&sum;</tt>`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`       n-ary summation: &sum;
 <li><tt>\&minus;</tt>`&nbsp;&nbsp;&nbsp;`                 minus sign: &minus;
 <li><tt>\&lowast;</tt>`&nbsp;&nbsp;`                      asterisk operator: &lowast;
 <li><tt>\&radic;</tt>`&nbsp;&nbsp;&nbsp;`                 square root = radical sign: &radic;

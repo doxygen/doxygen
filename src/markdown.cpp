@@ -480,7 +480,7 @@ static int processNmdash(GrowBuf &out,const char *data,int off,int size)
   {
     count++;
   }
-  if (count==2 && off>=2 && qstrncmp(data-2,"<!",2)==0) return 0; // start HTML comment
+  if (count>=2 && off>=2 && qstrncmp(data-2,"<!",2)==0) return 1-count; // start HTML comment
   if (count==2 && (data[2]=='>')) return 0; // end HTML comment
   if (count==2 && (off<8 || qstrncmp(data-8,"operator",8)!=0)) // -- => ndash
   {
@@ -1084,9 +1084,9 @@ static void processInline(GrowBuf &out,const char *data,int size)
     if (end>=size) break;
     i=end;
     end = action(out,data+i,i,size-i);
-    if (!end)
+    if (end<=0)
     {
-      end=i+1;
+      end=i+1-end;
     }
     else
     {
@@ -2021,7 +2021,7 @@ static int writeBlockQuote(GrowBuf &out,const char *data,int size)
         out.addStr("<blockquote>\n");
       }
     }
-    else if (level<curLevel) // quote level descreased => add end markers
+    else if (level<curLevel) // quote level decreased => add end markers
     {
       for (l=level;l<curLevel;l++)
       {
@@ -2064,7 +2064,7 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
       emptyLines++;
       i=end;
     }
-    else if (indent>=refIndent+codeBlockIndent) // enough indent to contine the code block
+    else if (indent>=refIndent+codeBlockIndent) // enough indent to continue the code block
     {
       while (emptyLines>0) // write skipped empty lines
       {
@@ -2176,7 +2176,7 @@ static void writeFencedCodeBlock(GrowBuf &out,const char *data,const char *lng,
   }
   out.addStr(data+blockStart,blockEnd-blockStart);
   out.addStr("\n");
-  out.addStr("@endcode");
+  out.addStr("@endcode\n");
 }
 
 static QCString processQuotations(const QCString &s,int refIndent)
@@ -2470,7 +2470,7 @@ static QCString detab(const QCString &s,int &refIndent)
           while (stop--) out.addChar(' '); 
         }
         break;
-      case '\n': // reset colomn counter
+      case '\n': // reset column counter
         out.addChar(c);
         col=0;
         break;
@@ -2576,13 +2576,13 @@ QCString markdownFileNameToId(const QCString &fileName)
 }
 
 
-void MarkdownFileParser::parseInput(const char *fileName, 
+void MarkdownOutlineParser::parseInput(const char *fileName, 
                 const char *fileBuf, 
-                Entry *root,
+                const std::shared_ptr<Entry> &root,
                 bool /*sameTranslationUnit*/,
                 QStrList & /*filesInSameTranslationUnit*/)
 {
-  Entry *current = new Entry;
+  std::shared_ptr<Entry> current = std::make_shared<Entry>();
   current->lang = SrcLangExt_Markdown;
   current->fileName = fileName;
   current->docFile  = fileName;
@@ -2590,7 +2590,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString docs = fileBuf;
   QCString id;
   QCString title=extractPageTitle(docs,id).stripWhiteSpace();
-  if (QString(id).startsWith("autotoc_md")) id = "";
+  if (id.startsWith("autotoc_md")) id = "";
   g_indentLevel=title.isEmpty() ? 0 : -1;
   QCString titleFn = QFileInfo(fileName).baseName().utf8();
   QCString fn      = QFileInfo(fileName).fileName().utf8();
@@ -2630,7 +2630,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString processedDocs = preprocessCommentBlock(docs,fileName,lineNr);
   while (parseCommentBlock(
         this,
-        current,
+        current.get(),
         processedDocs,
         fileName,
         lineNr,
@@ -2644,8 +2644,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
     if (needsEntry)
     {
       QCString docFile = current->docFile;
-      root->addSubEntry(current);
-      current = new Entry;
+      root->moveToSubEntryAndRefresh(current);
       current->lang = SrcLangExt_Markdown;
       current->docFile = docFile;
       current->docLine = lineNr;
@@ -2653,7 +2652,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   }
   if (needsEntry)
   {
-    root->addSubEntry(current);
+    root->moveToSubEntryAndKeep(current);
   }
 
   // restore setting
@@ -2661,47 +2660,14 @@ void MarkdownFileParser::parseInput(const char *fileName,
   g_indentLevel=0;
 }
 
-void MarkdownFileParser::parseCode(CodeOutputInterface &codeOutIntf,
-               const char *scopeName,
-               const QCString &input,
-               SrcLangExt lang,
-               bool isExampleBlock,
-               const char *exampleName,
-               FileDef *fileDef,
-               int startLine,
-               int endLine,
-               bool inlineFragment,
-               const MemberDef *memberDef,
-               bool showLineNumbers,
-               const Definition *searchCtx,
-               bool collectXRefs
-              )
+void MarkdownOutlineParser::parsePrototype(const char *text)
 {
-  ParserInterface *pIntf = Doxygen::parserManager->getParser("*.cpp");
-  if (pIntf!=this)
+  OutlineParserInterface &intf = Doxygen::parserManager->getOutlineParser("*.cpp");
+  if (&intf!=this)
   {
-    pIntf->parseCode(
-       codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
-       fileDef,startLine,endLine,inlineFragment,memberDef,showLineNumbers,
-       searchCtx,collectXRefs);
+    intf.parsePrototype(text);
   }
 }
 
-void MarkdownFileParser::resetCodeParserState()
-{
-  ParserInterface *pIntf = Doxygen::parserManager->getParser("*.cpp");
-  if (pIntf!=this)
-  {
-    pIntf->resetCodeParserState();
-  }
-}
-
-void MarkdownFileParser::parsePrototype(const char *text)
-{
-  ParserInterface *pIntf = Doxygen::parserManager->getParser("*.cpp");
-  if (pIntf!=this)
-  {
-    pIntf->parsePrototype(text);
-  }
-}
+//------------------------------------------------------------------------
 

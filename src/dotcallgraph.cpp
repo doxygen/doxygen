@@ -212,6 +212,11 @@ bool DotCallGraph::isTrivial() const
 
 bool DotCallGraph::isTooBig() const
 {
-  int numNodes = m_startNode->children() ? m_startNode->children()->count() : 0;
-  return numNodes>=DOT_GRAPH_MAX_NODES;
+  return numNodes()>=DOT_GRAPH_MAX_NODES;
 }
+
+int DotCallGraph::numNodes() const
+{
+  return m_startNode->children() ? m_startNode->children()->count() : 0;
+}
+

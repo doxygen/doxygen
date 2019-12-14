@@ -26,33 +26,18 @@ class Definition;
 /** Class representing a section in a page */
 struct SectionInfo
 {
-  enum SectionType { Page          = 0, 
-                     Section       = 1, 
-                     Subsection    = 2, 
-                     Subsubsection = 3, 
-                     Paragraph     = 4, 
+  enum SectionType { Page          = 0,
+                     Section       = 1,
+                     Subsection    = 2,
+                     Subsubsection = 3,
+                     Paragraph     = 4,
                      Anchor        = 5,
                      Table         = 6
                    };
   SectionInfo(const char *f,const int lin,const char *l,const char *t,
               SectionType st,int lev,const char *r=0) :
     label(l), title(t), type(st), ref(r), definition(0),
-    fileName(f), lineNr(lin), generated(FALSE), level(lev)
-  {
-  }
-  SectionInfo(const SectionInfo &s)
-  {
-    label=s.label.copy();
-    title=s.title.copy();
-    type =s.type;
-    ref=s.ref.copy();
-    definition=s.definition;
-    fileName=s.fileName.copy();
-    lineNr=s.lineNr;
-    generated=s.generated;
-    level=s.level;
-  }
- ~SectionInfo() {}
+    fileName(f), lineNr(lin), generated(FALSE), level(lev) {}
   QCString label;
   QCString title;
   SectionType type;

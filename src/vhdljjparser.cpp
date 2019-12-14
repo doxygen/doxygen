@@ -29,11 +29,12 @@
 #include "arguments.h"
 #include "types.h"
 #include "VhdlParserIF.h"
+#include "growbuf.h"
 
 using namespace vhdl::parser;
 using namespace std;
 
-static ParserInterface *g_thisParser;
+static OutlineParserInterface *g_thisParser;
 
 static QCString         yyFileName;
 static int              yyLineNr      = 1;
@@ -48,16 +49,15 @@ static Entry* oldEntry;
 static bool varr=FALSE;
 static QCString varName;
 
-static QList<Entry> instFiles;
-static QList<Entry> libUse;
-static QList<Entry> lineEntry;
+static std::vector< std::shared_ptr<Entry> > instFiles;
+static std::vector< std::shared_ptr<Entry> > libUse;
+static std::vector<Entry*> lineEntry;
 
-Entry*   VhdlParser::currentCompound=0;
 Entry*   VhdlParser::tempEntry=0;
 Entry*   VhdlParser::lastEntity=0  ;
 Entry*   VhdlParser::lastCompound=0  ;
-Entry*   VhdlParser::current=0;
 Entry*   VhdlParser::current_root  = 0;
+std::shared_ptr<Entry> VhdlParser::current=0;
 QCString VhdlParser::compSpec;
 QCString VhdlParser::currName;
 QCString VhdlParser::confName;
@@ -84,13 +84,13 @@ static QCString strComment;
 static int iCodeLen;
 static const char *vhdlFileName = 0;
 
-bool  checkMultiComment(QCString& qcs,int line);
-QList<Entry>* getEntryAtLine(const Entry* ce,int line);
+static bool checkMultiComment(QCString& qcs,int line);
+static void insertEntryAtLine(const Entry* ce,int line);
 
 //-------------------------------------
 
-QList<VhdlConfNode>& getVhdlConfiguration() { return  configL; }
-QList<Entry>& getVhdlInstList() { return  instFiles; }
+const QList<VhdlConfNode>& getVhdlConfiguration() { return  configL; }
+const std::vector<std::shared_ptr<Entry> > &getVhdlInstList() { return  instFiles; }
 
 Entry* getVhdlCompound()
 {
@@ -105,8 +105,8 @@ bool isConstraintFile(const QCString &fileName,const QCString &ext)
 }
 
 
-void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root,
-                          bool ,QStrList&)
+void VHDLOutlineParser::parseInput(const char *fileName,const char *fileBuf,
+                          const std::shared_ptr<Entry> &root, bool ,QStrList&)
 {
   g_thisParser=this;
   bool inLine=false;
@@ -128,34 +128,31 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
 
   if (xilinx_ucf)
   {
-    VhdlDocGen::parseUCF(fileBuf,root,yyFileName,FALSE);
+    VhdlDocGen::parseUCF(fileBuf,root.get(),yyFileName,FALSE);
     return;
   }
   if (altera_qsf)
   {
-    VhdlDocGen::parseUCF(fileBuf,root,yyFileName,TRUE);
+    VhdlDocGen::parseUCF(fileBuf,root.get(),yyFileName,TRUE);
     return;
   }
-  libUse.setAutoDelete(true);
   yyLineNr=1;
-  VhdlParser::current_root=root;
+  VhdlParser::current_root=root.get();
   VhdlParser::lastCompound=0;
   VhdlParser::lastEntity=0;
-  VhdlParser::currentCompound=0;
   VhdlParser::lastEntity=0;
   oldEntry = 0;
-  VhdlParser::current=new Entry();
-  VhdlParser::initEntry(VhdlParser::current);
+  VhdlParser::current=std::make_shared<Entry>();
+  VhdlParser::initEntry(VhdlParser::current.get());
   Doxygen::docGroup.enterFile(fileName,yyLineNr);
   vhdlFileName = fileName;
   lineParse=new int[200]; // Dimitri: dangerous constant: should be bigger than largest token id in VhdlParserConstants.h
   VhdlParserIF::parseVhdlfile(fileBuf,inLine);
 
-  delete VhdlParser::current;
-  VhdlParser::current=0;
+  VhdlParser::current.reset();
 
   if (!inLine)
-  VhdlParser::mapLibPackage(root);
+  VhdlParser::mapLibPackage(root.get());
 
   delete[] lineParse;
   yyFileName.resize(0);
@@ -173,7 +170,7 @@ void VhdlParser::lineCount(const char* text)
 {
   for (const char* c=text ; *c ; ++c )
   {
-    yyLineNr += (*c == '\n') ;
+    if (*c == '\n') yyLineNr++;
   }
 }
 
@@ -198,34 +195,33 @@ void VhdlParser::initEntry(Entry *e)
 
 void VhdlParser::newEntry()
 {
+  previous = current.get();
   if (current->spec==VhdlDocGen::ENTITY ||
       current->spec==VhdlDocGen::PACKAGE ||
       current->spec==VhdlDocGen::ARCHITECTURE ||
       current->spec==VhdlDocGen::PACKAGE_BODY)
   {
-    current_root->addSubEntry(current);
+    current_root->moveToSubEntryAndRefresh(current);
   }
   else
   {
     if (lastCompound)
     {
-      lastCompound->addSubEntry(current);
+      lastCompound->moveToSubEntryAndRefresh(current);
     }
     else
     {
       if (lastEntity)
       {
-	lastEntity->addSubEntry(current);
+	lastEntity->moveToSubEntryAndRefresh(current);
       }
       else
       {
-	current_root->addSubEntry(current);
+	current_root->moveToSubEntryAndRefresh(current);
       }
     }
   }
-  previous = current;
-  current = new Entry ;
-  initEntry(current);
+  initEntry(current.get());
 }
 
 void VhdlParser::handleFlowComment(const char* doc)
@@ -259,7 +255,7 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
 
   Protection protection=Public;
 
-  if (oldEntry==current)
+  if (oldEntry==current.get())
   {
     //printf("\n find pending message  < %s > at line: %d \n ",doc.data(),iDocLine);
     str_doc.doc=doc;
@@ -269,7 +265,7 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
     return;
   }
 
-  oldEntry=current;
+  oldEntry=current.get();
 
   if (brief)
   {
@@ -293,7 +289,7 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
   QCString processedDoc = preprocessCommentBlock(doc,yyFileName,iDocLine);
   while (parseCommentBlock(
         g_thisParser,
-        current,
+        current.get(),
         processedDoc, // text
         yyFileName, // file
         iDocLine,   // line of block start
@@ -324,7 +320,7 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
   strComment.resize(0);
 }
 
-void VHDLLanguageScanner::parsePrototype(const char *text)
+void VHDLOutlineParser::parsePrototype(const char *text)
 {
   varName=text;
   varr=TRUE;
@@ -343,27 +339,25 @@ void VhdlParser::addCompInst(const char *n, const char* instName, const char* co
   {
     current->args=lastCompound->name;             // architecture name
   }
-  current->includeName=comp;                    // component/enity/configuration
+  current->includeName=comp;                    // component/entity/configuration
   int u=genLabels.find("|",1);
   if (u>0)
   {
     current->write=genLabels.right(genLabels.length()-u);
     current->read=genLabels.left(u);
   }
-  //printf  (" \n genlable: [%s]  inst: [%s]  name: [%s] %d\n",n,instName,comp,iLine);
+  //printf  (" \n genlabel: [%s]  inst: [%s]  name: [%s] %d\n",n,instName,comp,iLine);
 
   if (lastCompound)
   {
     current->args=lastCompound->name;
     if (true) // !findInstant(current->type))
     {
-      initEntry(current);
-      instFiles.append(new Entry(*current));
+      initEntry(current.get());
+      instFiles.emplace_back(std::make_shared<Entry>(*current));
     }
 
-    Entry *temp=current;  // hold  current pointer  (temp=oldEntry)
-    current=new Entry;     // (oldEntry != current)
-    delete  temp;
+    current=std::make_shared<Entry>();
   }
   else
   {
@@ -401,7 +395,7 @@ void VhdlParser::addVhdlType(const char *n,int startLine,int section,
 
     if (!lastCompound && (section==Entry::VARIABLE_SEC) &&  (spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
     {
-      libUse.append(new Entry(*current));
+      libUse.emplace_back(std::make_shared<Entry>(*current));
       current->reset();
     }
     newEntry();
@@ -446,9 +440,9 @@ void VhdlParser::createFunction(const char *imp,uint64 spec,const char *fn)
       QCStringList q1=QCStringList::split(",",fname);
       for (uint ii=0;ii<q1.count();ii++)
       {
-        Argument *arg=new Argument;
-        arg->name=q1[ii];
-        current->argList->append(arg);
+        Argument arg;
+        arg.name=q1[ii];
+        current->argList.push_back(arg);
       }
     }
     return;
@@ -537,7 +531,7 @@ void VhdlParser::addConfigureNode(const char* a,const char*b, bool,bool isLeaf,b
 
 
 void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
-    const char *s4,const char *s5,const char *s6)
+                          const char *s4,const char *s5,const char *s6)
 {
   (void)s5; // avoid unused warning
   QCString name=s2;
@@ -545,21 +539,21 @@ void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
 
   for (uint u=0;u<ql.count();u++)
   {
-    Argument *arg=new Argument;
-    arg->name=ql[u];
+    Argument arg;
+    arg.name=ql[u];
     if (s3)
     {
-      arg->type=s3;
+      arg.type=s3;
     }
-    arg->type+=" ";
-    arg->type+=s4;
+    arg.type+=" ";
+    arg.type+=s4;
     if (s6)
     {
-      arg->type+=s6;
+      arg.type+=s6;
     }
     if (parse_sec==GEN_SEC && param_sec==0)
     {
-      arg->defval="gen!";
+      arg.defval="gen!";
     }
 
     if (parse_sec==PARAM_SEC)
@@ -567,10 +561,10 @@ void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
     //  assert(false);
     }
 
-    arg->defval+=s1;
-    arg->attrib="";//s6;
+    arg.defval+=s1;
+    arg.attrib="";//s6;
 
-    current->argList->append(arg);
+    current->argList.push_back(arg);
     current->args+=s2;
     current->args+=",";
   }
@@ -584,37 +578,36 @@ void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
  * .....
  * library
  * package
- * enity zzz
+ * entity zzz
  * .....
  * and so on..
  */
 void VhdlParser::mapLibPackage( Entry* root)
 {
-  QList<Entry> epp=libUse;
-  EntryListIterator eli(epp);
-  Entry *rt;
-  for (;(rt=eli.current());++eli)
+  //QList<Entry> epp=libUse;
+  //EntryListIterator eli(epp);
+  //Entry *rt;
+  //for (;(rt=eli.current());++eli)
+  for (const auto &rt : libUse)
   {
     if (addLibUseClause(rt->name))
     {
-      Entry *current;
-      EntryListIterator eLib(*root->children());
       bool bFound=FALSE;
-      for (eLib.toFirst();(current=eLib.current());++eLib)
+      for (const auto &current : root->children())
       {
-        if (VhdlDocGen::isVhdlClass(current))
+        if (VhdlDocGen::isVhdlClass(current.get()))
         {
           if (current->startLine > rt->startLine)
           {
             bFound=TRUE;
-            current->addSubEntry(new Entry(*rt));
+            current->copyToSubEntry(rt);
             break;
           }
         }
       }//for
       if (!bFound)
       {
-        root->addSubEntry(new Entry(*rt));
+        root->copyToSubEntry(rt);
       }
     } //if
   }// for
@@ -718,40 +711,69 @@ void VhdlParser::oneLineComment(QCString qcs)
 
 bool  checkMultiComment(QCString& qcs,int line)
 {
-  QList<Entry> *pTemp=getEntryAtLine(VhdlParser::current_root,line);
+  insertEntryAtLine(VhdlParser::current_root,line);
 
-  if (pTemp->isEmpty()) return false;
+  if (lineEntry.empty()) return false;
 
   VhdlDocGen::prepareComment(qcs);
-  while (!pTemp->isEmpty())
+  while (!lineEntry.empty())
   {
-    Entry *e=(Entry*)pTemp->getFirst();
+    Entry *e=lineEntry.back();
     e->briefLine=line;
     e->brief+=qcs;
 
-    pTemp->removeFirst();
+    lineEntry.pop_back();
   }
   return true;
 }
 
 // returns the vhdl parsed types at line xxx
-QList<Entry>* getEntryAtLine(const Entry* ce,int line)
+void insertEntryAtLine(const Entry* ce,int line)
 {
-  EntryListIterator eli(*ce->children());
-  Entry *rt;
-  for (;(rt=eli.current());++eli)
+  for (const auto &rt : ce->children())
   {
     if (rt->bodyLine==line)
     {
-      lineEntry.insert(0,rt);
+      lineEntry.push_back(rt.get());
     }
 
-    getEntryAtLine(rt,line);
+    insertEntryAtLine(rt.get(),line);
   }
-  return &lineEntry;
 }
 
 const char *getVhdlFileName(void)
 {
   return vhdlFileName;
+}
+
+QCString filter2008VhdlComment(const char *s)
+{
+  GrowBuf growBuf;
+  const char *p=s+3; // skip /*!
+  char c='\0';
+  while (*p == ' ' || *p == '\t') p++;
+  while ((c=*p++))
+  {
+    growBuf.addChar(c);
+    if (c == '\n')
+    {
+      // special handling of space followed by * at beginning of line
+      while (*p == ' ' || *p == '\t') p++;
+      while (*p == '*') p++;
+      // special attention in case character at end is /
+      if (*p == '/') p++;
+    }
+  }
+  // special attention in case */ at end of last line
+  int len = growBuf.getPos();
+  if (growBuf.at(len-1) == '/' && growBuf.at(len-2) == '*')
+  {
+    len -= 2;
+    while (growBuf.at(len-1) == '*') len--;
+    c = growBuf.at(len-1);
+    while ((c = growBuf.at(len-1)) == ' ' || c == '\t') len--;
+    growBuf.setPos(len);
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
 }

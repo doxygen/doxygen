@@ -30,6 +30,7 @@
 #include <qregexp.h>
 #include <qstack.h>
 #include <qglobal.h>
+#include <qthread.h>
   
 #include "configimpl.h"
 #include "version.h"
@@ -42,6 +43,8 @@
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
+
+static const char *stateToString(int state);
 
 static const char *warning_str = "warning: ";
 static const char *error_str = "error: ";
@@ -600,7 +603,7 @@ static FILE *tryPath(const char *path,const char *fileName)
   QFileInfo fi(absName);
   if (fi.exists() && fi.isFile())
   {
-    FILE *f=portable_fopen(absName,"r");
+    FILE *f=Portable::fopen(absName,"r");
     if (!f) config_err("could not open file %s for reading\n",absName.data());
     return f;
   }
@@ -616,7 +619,7 @@ static FILE *findFile(const char *fileName)
   {
     return 0;
   }
-  if (portable_isAbsolutePath(fileName))
+  if (Portable::isAbsolutePath(fileName))
   {
     return tryPath(NULL, fileName);
   }
@@ -1009,7 +1012,7 @@ static void substEnvVarsInString(QCString &s)
   while ((i=re.match(s,p,&l))!=-1 || (i=re2.match(s,p,&l))!=-1)
   {
     //printf("Found environment var s.mid(%d,%d)='%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
-    QCString env=portable_getenv(s.mid(i+2,l-3));
+    QCString env=Portable::getenv(s.mid(i+2,l-3));
     substEnvVarsInString(env); // recursively expand variables if needed.
     s = s.left(i)+env+s.right(s.length()-i-l);
     p=i+env.length(); // next time start at the end of the expanded string
@@ -1287,14 +1290,13 @@ static void cleanUpPaths(QStrList &str)
       if (fi.exists() && fi.isDir())
       {
         int i = str.at();
-        QString p = fi.absFilePath();
-        if (p.at(p.length()-1)!='/')
-          p.append('/');
+        QCString p = fi.absFilePath().utf8();
+        if (p[p.length()-1]!='/') p+='/';
         str.remove();
         if (str.at()==i) // did not remove last item
-          str.insert(i,p.utf8());
+          str.insert(i,p);
         else
-          str.append(p.utf8());
+          str.append(p);
       }
     }
     sfp = str.next();
@@ -1493,7 +1495,7 @@ void Config::checkAndCorrect()
     alias=alias.stripWhiteSpace();
     if (alias.find(re1)!=0 && alias.find(re2)!=0)
     {
-      err("Illegal alias format '%s'. Use \"name=value\" or \"name(n)=value\", where n is the number of arguments\n",
+      err("Illegal alias format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
 	  alias.data());
     }
     s=aliasList.next();
@@ -1531,6 +1533,7 @@ void Config::checkAndCorrect()
   //  dotImageFormat = "png";
   //}
 
+  // correct DOT_FONTNAME if needed
   QCString &dotFontName=Config_getString(DOT_FONTNAME);
   if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
   {
@@ -1538,7 +1541,32 @@ void Config::checkAndCorrect()
                "You may want to clear or change DOT_FONTNAME.\n"
                "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
   }
+  else if (dotFontName.isEmpty())
+  {
+    dotFontName = "Helvetica";
+  }
 
+  // clip dotFontSize against the maximum bounds
+  int &dotFontSize = Config_getInt(DOT_FONTSIZE);
+  if (dotFontSize<4)
+  {
+    dotFontSize=4;
+  }
+  else if (dotFontSize>24)
+  {
+    dotFontSize=24;
+  }
+
+  // clip number of threads
+  int &dotNumThreads = Config_getInt(DOT_NUM_THREADS);
+  if (dotNumThreads>32)
+  {
+    dotNumThreads=32;
+  }
+  else if (dotNumThreads<=0)
+  {
+    dotNumThreads=QMAX(2,QThread::idealThreadCount()+1);
+  }
 
   // check dot path
   QCString &dotPath = Config_getString(DOT_PATH);
@@ -1551,7 +1579,7 @@ void Config::checkAndCorrect()
     }
     else
     {
-      QFileInfo dp(dotPath+"/dot"+portable_commandExtension());
+      QFileInfo dp(dotPath+"/dot"+Portable::commandExtension());
       if (!dp.exists() || !dp.isFile())
       {
 	warn_uncond("the dot tool could not be found at %s\n",dotPath.data());
@@ -1579,10 +1607,10 @@ void Config::checkAndCorrect()
     QFileInfo pu(plantumlJarPath);
     if (pu.exists() && pu.isDir()) // PLANTUML_JAR_PATH is directory
     {
-      QFileInfo jar(plantumlJarPath+portable_pathSeparator()+"plantuml.jar");
+      QFileInfo jar(plantumlJarPath+Portable::pathSeparator()+"plantuml.jar");
       if (jar.exists() && jar.isFile())
       {
-        plantumlJarPath = jar.dirPath(TRUE).utf8()+portable_pathSeparator();
+        plantumlJarPath = jar.dirPath(TRUE).utf8()+Portable::pathSeparator();
       }
       else
       {
@@ -1593,7 +1621,7 @@ void Config::checkAndCorrect()
     }
     else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
     {
-      plantumlJarPath = pu.dirPath(TRUE).utf8()+portable_pathSeparator();
+      plantumlJarPath = pu.dirPath(TRUE).utf8()+Portable::pathSeparator();
     }
     else
     {
@@ -1607,7 +1635,7 @@ void Config::checkAndCorrect()
   QCString &diaPath = Config_getString(DIA_PATH);
   if (!diaPath.isEmpty())
   {
-    QFileInfo dp(diaPath+"/dia"+portable_commandExtension());
+    QFileInfo dp(diaPath+"/dia"+Portable::commandExtension());
     if (!dp.exists() || !dp.isFile())
     {
       warn_uncond("dia could not be found at %s\n",diaPath.data());
@@ -1882,3 +1910,4 @@ void Config::deinit()
   ConfigImpl::instance()->deleteInstance();
 }
 
+#include "configimpl.l.h"

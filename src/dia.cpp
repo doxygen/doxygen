@@ -29,7 +29,7 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,DiaOutputFormat format)
 {
   QCString absOutFile = outDir;
-  absOutFile+=portable_pathSeparator();
+  absOutFile+=Portable::pathSeparator();
   absOutFile+=outFile;
 
   // chdir to the output dir, so dot can find the font file.
@@ -37,7 +37,7 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
   // go to the html output directory (i.e. path)
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
-  QCString diaExe = Config_getString(DIA_PATH)+"dia"+portable_commandExtension();
+  QCString diaExe = Config_getString(DIA_PATH)+"dia"+Portable::commandExtension();
   QCString diaArgs;
   QCString extension;
   diaArgs+="-n ";
@@ -62,26 +62,26 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
 
   int exitCode;
   //printf("*** running: %s %s outDir:%s %s\n",diaExe.data(),diaArgs.data(),outDir,outFile);
-  portable_sysTimerStart();
-  if ((exitCode=portable_system(diaExe,diaArgs,FALSE))!=0)
+  Portable::sysTimerStart();
+  if ((exitCode=Portable::system(diaExe,diaArgs,FALSE))!=0)
   {
     err("Problems running %s. Check your installation or look typos in you dia file %s\n",
         diaExe.data(),inFile);
-    portable_sysTimerStop();
+    Portable::sysTimerStop();
     goto error;
   }
-  portable_sysTimerStop();
+  Portable::sysTimerStop();
   if ( (format==DIA_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          outFile,outFile);
-    portable_sysTimerStart();
-    if (portable_system("epstopdf",epstopdfArgs)!=0)
+    Portable::sysTimerStart();
+    if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err("Problems running epstopdf. Check your TeX installation!\n");
     }
-    portable_sysTimerStop();
+    Portable::sysTimerStop();
   }
 
 error:

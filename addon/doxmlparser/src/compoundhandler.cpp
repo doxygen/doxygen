@@ -86,7 +86,7 @@ class CompoundIdIterator : public ICompoundIterator,
     { delete this; }
 
   private:
-    const MainHandler *m_mainHandler;
+    const MainHandler *m_mainHandler = 0;
 };
 
 //----------------------------------------------------------------------------

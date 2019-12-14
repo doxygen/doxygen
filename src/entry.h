@@ -18,17 +18,17 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
-#include "types.h"
-
-#include <qlist.h>
 #include <qgstring.h>
+
+#include <vector>
+#include <memory>
+
+#include "types.h"
+#include "arguments.h"
 
 struct SectionInfo;
 class QFile;
 class FileDef;
-class FileStorage;
-class StorageIntf;
-class ArgumentList;
 struct ListItemInfo;
 
 /** This class stores information about an inheritance relation
@@ -194,13 +194,7 @@ class Entry
     Entry(const Entry &);
    ~Entry();
 
-    /*! Returns the static size of the Entry (so excluding any dynamic memory) */
-    int getSize();
-
     void addSpecialListItem(const char *listName,int index);
-
-    // while parsing a file these function can be used to navigate/build the tree
-    void setParent(Entry *parent) { m_parent = parent; }
 
     /*! Returns the parent for this Entry or 0 if this entry has no parent. */
     Entry *parent() const { return m_parent; }
@@ -208,33 +202,48 @@ class Entry
     /*! Returns the list of children for this Entry
      *  @see addSubEntry() and removeSubEntry()
      */
-    const QList<Entry> *children() const { return m_sublist; }
+    const std::vector< std::shared_ptr<Entry> > &children() const { return m_sublist; }
 
-    /*! Adds entry \a e as a child to this entry */
-    void addSubEntry (Entry* e) ;
+    /*! @name add entry as a child and pass ownership.
+     *  @note This makes the entry passed invalid! (TODO: tclscanner.l still has use after move!)
+     *  @{
+     */
+    void moveToSubEntryAndKeep(Entry* e);
+    void moveToSubEntryAndKeep(std::shared_ptr<Entry> &e);
+    /*! @} */
+
+    /*! @name add entry as a child, pass ownership and reinitialize entry */
+    void moveToSubEntryAndRefresh(Entry* &e);
+    void moveToSubEntryAndRefresh(std::shared_ptr<Entry> &e);
+
+    /*! take \a child of of to list of children and move it into \a moveTo */
+    void moveFromSubEntry(const Entry *child,std::shared_ptr<Entry> &moveTo);
+
+    /*! make a copy of \a e and add it as a child to this entry */
+    void copyToSubEntry (Entry* e);
+    void copyToSubEntry (const std::shared_ptr<Entry> &e);
 
     /*! Removes entry \a e from the list of children.
-     *  Returns a pointer to the entry or 0 if the entry was not a child.
-     *  Note the entry will not be deleted.
+     *  The entry will be deleted if found.
      */
-    Entry *removeSubEntry(Entry *e);
+    void removeSubEntry(const Entry *e);
 
     /*! Restore the state of this Entry to the default value it has
      *  at construction time.
      */
     void reset();
 
-    void changeSection(int sec) { section = sec; }
+    void markAsProcessed() const { ((Entry*)(this))->section = Entry::EMPTY_SEC; }
     void setFileDef(FileDef *fd);
     FileDef *fileDef() const { return m_fileDef; }
-
-  public:
 
     // identification
     int          section;     //!< entry type (see Sections);
     QCString	 type;        //!< member type
     QCString	 name;        //!< member name
-    TagInfo     *tagInfo;     //!< tag file info
+    bool         hasTagInfo;  //!< is tag info valid
+    TagInfo      tagInfoData; //!< tag file info data
+    const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : 0; }
 
     // content
     Protection protection;    //!< class protection
@@ -252,8 +261,8 @@ class Entry
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
-    ArgumentList *argList;    //!< member arguments as a list
-    QList<ArgumentList> *tArgLists; //!< template argument declarations
+    ArgumentList argList;     //!< member arguments as a list
+    std::vector<ArgumentList> tArgLists; //!< template argument declarations
     QGString	 program;     //!< the program text
     QGString     initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
@@ -273,17 +282,17 @@ class Entry
     QCString     write;       //!< property write accessor
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
-    ArgumentList *typeConstr; //!< where clause (C#) for type constraints
+    ArgumentList typeConstr;  //!< where clause (C#) for type constraints
     int          bodyLine;    //!< line number of the definition in the source
     int          endBodyLine; //!< line number where the definition ends
     int          mGrpId;      //!< member group id
-    QList<BaseInfo> *extends; //!< list of base classes
-    QList<Grouping> *groups;  //!< list of groups this entry belongs to
-    QList<SectionInfo> *anchors; //!< list of anchors defined in this entry
+    std::vector<BaseInfo> extends; //!< list of base classes
+    std::vector<Grouping> groups;  //!< list of groups this entry belongs to
+    std::vector<const SectionInfo*> anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     int		startColumn;  //!< start column of entry in the source
-    QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
+    std::vector<ListItemInfo> sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
     SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item
@@ -323,12 +332,9 @@ class Entry
 
   private:
     Entry         *m_parent;    //!< parent node in the tree
-    QList<Entry>  *m_sublist;   //!< entries that are children of this one
+    std::vector< std::shared_ptr<Entry> > m_sublist;
     Entry &operator=(const Entry &);
     FileDef       *m_fileDef;
 };
-
-typedef QList<Entry> EntryList;
-typedef QListIterator<Entry> EntryListIterator;
 
 #endif

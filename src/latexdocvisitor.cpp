@@ -368,8 +368,8 @@ void LatexDocVisitor::visit(DocVerbatim *s)
       {
         m_t << "\n\\begin{DoxyCode}{" << usedTableLevels() << "}\n";
 	LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-        Doxygen::parserManager->getParser(lang)
-                              ->parseCode(m_ci,s->context(),s->text(),langExt,
+        Doxygen::parserManager->getCodeParser(lang)
+                               .parseCode(m_ci,s->context(),s->text(),langExt,
                                           s->isExample(),s->exampleFile());
 	LatexCodeGenerator::setDoxyCodeOpen(FALSE);
         m_t << "\\end{DoxyCode}\n";
@@ -480,8 +480,8 @@ void LatexDocVisitor::visit(DocInclude *inc)
 	 LatexCodeGenerator::setDoxyCodeOpen(TRUE);
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,inc->context(),
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
                                            inc->isExample(),
@@ -501,8 +501,8 @@ void LatexDocVisitor::visit(DocInclude *inc)
     case DocInclude::Include: 
       m_t << "\n\\begin{DoxyCodeInclude}{" << usedTableLevels() << "}\n";
       LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-      Doxygen::parserManager->getParser(inc->extension())
-                            ->parseCode(m_ci,inc->context(),
+      Doxygen::parserManager->getCodeParser(inc->extension())
+                             .parseCode(m_ci,inc->context(),
                                         inc->text(),langExt,inc->isExample(),
                                         inc->exampleFile(),
                                         0,     // fileDef
@@ -531,8 +531,8 @@ void LatexDocVisitor::visit(DocInclude *inc)
       {
          m_t << "\n\\begin{DoxyCodeInclude}{" << usedTableLevels() << "}\n";
          LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -549,8 +549,8 @@ void LatexDocVisitor::visit(DocInclude *inc)
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          m_t << "\n\\begin{DoxyCodeInclude}{" << usedTableLevels() << "}\n";
          LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -602,8 +602,8 @@ void LatexDocVisitor::visit(DocIncOperator *op)
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
 
-      Doxygen::parserManager->getParser(locLangExt)
-                            ->parseCode(m_ci,op->context(),op->text(),langExt,
+      Doxygen::parserManager->getCodeParser(locLangExt)
+                             .parseCode(m_ci,op->context(),op->text(),langExt,
                                         op->isExample(),op->exampleFile(),
                                         fd,     // fileDef
                                         op->line(),    // startLine

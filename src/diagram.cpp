@@ -107,7 +107,7 @@ class DiagramRowIterator : public QListIterator<DiagramRow>
       : QListIterator<DiagramRow>(d) {}
 };
 
-/** Class represeting the tree layout for the built-in class diagram. */
+/** Class representing the tree layout for the built-in class diagram. */
 class TreeDiagram : public QList<DiagramRow>
 {
   public:
@@ -247,7 +247,7 @@ static void writeVectorBox(FTextStream &t,DiagramItem *di,
                            float x,float y,bool children=FALSE)
 {
   if (di->virtualness()==Virtual) t << "dashed\n";
-  t << " (" << di->label() << ") " << x << " " << y << " box\n";
+  t << " (" << convertToPSString(di->label()) << ") " << x << " " << y << " box\n";
   if (children) t << x << " " << y << " mark\n";
   if (di->virtualness()==Virtual) t << "solid\n";
 }
@@ -308,7 +308,7 @@ QCString DiagramItem::label() const
   QCString result;
   if (!templSpec.isEmpty())
   {
-    // we use classDef->name() here and not diplayName() in order
+    // we use classDef->name() here and not displayName() in order
     // to get the name used in the inheritance relation.
     QCString n = classDef->name();
     if (/*n.right(2)=="-g" ||*/ n.right(2)=="-p")
@@ -1297,7 +1297,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     for (;(di=rit.current());++rit)
     {
       done=di->isInList();
-      t << "(" << di->label() << ") cw\n";
+      t << "(" << convertToPSString(di->label()) << ") cw\n";
     }
   }
   QListIterator<DiagramRow> sit(*super);
@@ -1310,7 +1310,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     for (;(di=rit.current());++rit)
     {
       done=di->isInList();
-      t << "(" << di->label() << ") cw\n";
+      t << "(" << convertToPSString(di->label()) << ") cw\n";
     }
   }
 
@@ -1338,14 +1338,14 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    epsBaseName.data(),epsBaseName.data());
     //printf("Converting eps using '%s'\n",epstopdfArgs.data());
-    portable_sysTimerStart();
-    if (portable_system("epstopdf",epstopdfArgs)!=0)
+    Portable::sysTimerStart();
+    if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
        err("Problems running epstopdf. Check your TeX installation!\n");
-       portable_sysTimerStop();
+       Portable::sysTimerStop();
        return;
     }
-    portable_sysTimerStop();
+    Portable::sysTimerStop();
   }
 }
 

@@ -15,6 +15,7 @@
  *
  */
 
+#include <algorithm>
 #include <ctype.h>
 #include <qregexp.h>
 #include "md5.h"
@@ -50,22 +51,21 @@
 class DefinitionImpl::IMPL
 {
   public:
-    IMPL();
    ~IMPL();
     void init(const char *df, const char *n);
     void setDefFileName(const QCString &df);
 
-    SectionDict *sectionDict;  // dictionary of all sections, not accessible
+    SectionDict *sectionDict = 0;  // dictionary of all sections, not accessible
 
-    MemberSDict *sourceRefByDict;
-    MemberSDict *sourceRefsDict;
-    QList<ListItemInfo> *xrefListItems;
-    GroupList *partOfGroups;
+    MemberSDict *sourceRefByDict = 0;
+    MemberSDict *sourceRefsDict = 0;
+    std::vector<ListItemInfo> xrefListItems;
+    GroupList *partOfGroups = 0;
 
-    DocInfo   *details;    // not exported
-    DocInfo   *inbodyDocs; // not exported
-    BriefInfo *brief;      // not exported
-    BodyInfo  *body;       // not exported
+    DocInfo   *details = 0;    // not exported
+    DocInfo   *inbodyDocs = 0; // not exported
+    BriefInfo *brief = 0;      // not exported
+    BodyInfo  *body = 0;       // not exported
     QCString   briefSignatures;
     QCString   docSignatures;
 
@@ -74,16 +74,17 @@ class DefinitionImpl::IMPL
     QCString qualifiedName;
     QCString ref;   // reference to external documentation
 
-    bool hidden;
-    bool isArtificial;
+    bool hidden = FALSE;
+    bool isArtificial = FALSE;
+    bool isAnonymous = FALSE;
 
-    Definition *outerScope;  // not owner
+    Definition *outerScope = 0;  // not owner
 
     // where the item was defined
     QCString defFileName;
     QCString defFileExt;
 
-    SrcLangExt lang;
+    SrcLangExt lang = SrcLangExt_Unknown;
 
     QCString id; // clang unique id
 
@@ -95,13 +96,6 @@ class DefinitionImpl::IMPL
     Cookie *cookie;
 };
 
-DefinitionImpl::IMPL::IMPL()
-  : sectionDict(0), sourceRefByDict(0), sourceRefsDict(0),
-    xrefListItems(0), partOfGroups(0),
-    details(0), inbodyDocs(0), brief(0), body(0), hidden(FALSE), isArtificial(FALSE),
-    outerScope(0), lang(SrcLangExt_Unknown)
-{
-}
 
 DefinitionImpl::IMPL::~IMPL()
 {
@@ -109,7 +103,6 @@ DefinitionImpl::IMPL::~IMPL()
   delete sourceRefByDict;
   delete sourceRefsDict;
   delete partOfGroups;
-  delete xrefListItems;
   delete brief;
   delete details;
   delete body;
@@ -150,7 +143,6 @@ void DefinitionImpl::IMPL::init(const char *df, const char *n)
   sectionDict     = 0, 
   outerScope      = Doxygen::globalScope;
   partOfGroups    = 0;
-  xrefListItems   = 0;
   hidden          = FALSE;
   isArtificial    = FALSE;
   lang            = SrcLangExt_Unknown;
@@ -305,7 +297,7 @@ DefinitionImpl::DefinitionImpl(const char *df,int dl,int dc,
                        const char *d,bool isSymbol)
 {
   m_impl = new DefinitionImpl::IMPL;
-  m_impl->name = name;
+  setName(name);
   m_impl->defLine = dl;
   m_impl->defColumn = dc;
   m_impl->init(df,name);
@@ -327,7 +319,6 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
   m_impl->sourceRefByDict = 0;
   m_impl->sourceRefsDict = 0;
   m_impl->partOfGroups = 0;
-  m_impl->xrefListItems = 0;
   m_impl->brief = 0;
   m_impl->details = 0;
   m_impl->body = 0;
@@ -371,10 +362,6 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
       makePartOfGroup(gd);
     }
   }
-  if (d.m_impl->xrefListItems)
-  {
-    setRefItems(d.m_impl->xrefListItems);
-  }
   if (d.m_impl->brief)
   {
     m_impl->brief = new BriefInfo(*d.m_impl->brief);
@@ -412,6 +399,9 @@ void DefinitionImpl::setName(const char *name)
 {
   if (name==0) return;
   m_impl->name = name;
+  m_impl->isAnonymous = m_impl->name.isEmpty() ||
+                        m_impl->name.at(0)=='@' ||
+                        m_impl->name.find("::@")!=-1;
 }
 
 void DefinitionImpl::setId(const char *id)
@@ -420,7 +410,7 @@ void DefinitionImpl::setId(const char *id)
   m_impl->id = id;
   if (Doxygen::clangUsrMap) 
   {
-    //printf("DefinitionImpl::setId '%s'->'%s'\n",id,m_name.data());
+    //printf("DefinitionImpl::setId '%s'->'%s'\n",id,m_impl->name.data());
     Doxygen::clangUsrMap->insert(id,this);
   }
 }
@@ -430,13 +420,10 @@ QCString DefinitionImpl::id() const
   return m_impl->id;
 }
 
-void DefinitionImpl::addSectionsToDefinition(QList<SectionInfo> *anchorList)
+void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList)
 {
-  if (!anchorList) return;
   //printf("%s: addSectionsToDefinition(%d)\n",name().data(),anchorList->count());
-  QListIterator<SectionInfo> it(*anchorList);
-  SectionInfo *si;
-  for (;(si=it.current());++it)
+  for (const SectionInfo *si : anchorList)
   {
     //printf("Add section '%s' to definition '%s'\n",
     //    si->label.data(),name().data());
@@ -757,12 +744,12 @@ class FilterCache
         // file already processed, get the results after filtering from the tmp file
         Debug::print(Debug::FilterOutput,0,"Reusing filter result for %s from %s at offset=%d size=%d\n",
                qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
-        f = portable_fopen(Doxygen::filterDBFileName,"rb");
+        f = Portable::fopen(Doxygen::filterDBFileName,"rb");
         if (f)
         {
           bool success=TRUE;
           str.resize(item->fileSize+1);
-          if (portable_fseek(f,item->filePos,SEEK_SET)==-1)
+          if (Portable::fseek(f,item->filePos,SEEK_SET)==-1)
           {
             err("Failed to seek to position %d in filter database file %s\n",(int)item->filePos,qPrint(Doxygen::filterDBFileName));
             success=FALSE;
@@ -793,8 +780,8 @@ class FilterCache
         // filter file
         QCString cmd=filter+" \""+fileName+"\"";
         Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-        f = portable_popen(cmd,"r");
-        FILE *bf = portable_fopen(Doxygen::filterDBFileName,"a+b");
+        f = Portable::popen(cmd,"r");
+        FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
         FilterCacheItem *item = new FilterCacheItem;
         item->filePos = m_endPos;
         if (bf==0)
@@ -803,7 +790,7 @@ class FilterCache
           err("Error opening filter database file %s\n",qPrint(Doxygen::filterDBFileName));
           str.addChar('\0');
           delete item;
-          portable_pclose(f);
+          Portable::pclose(f);
           return FALSE;
         }
         // append the filtered output to the database file
@@ -819,7 +806,7 @@ class FilterCache
                 qPrint(Doxygen::filterDBFileName),bytesWritten,bytesRead);
             str.addChar('\0');
             delete item;
-            portable_pclose(f);
+            Portable::pclose(f);
             fclose(bf);
             return FALSE;
           }
@@ -834,14 +821,14 @@ class FilterCache
                qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
         // update end of file position
         m_endPos += size;
-        portable_pclose(f);
+        Portable::pclose(f);
         fclose(bf);
       }
       else // no filtering
       {
         // normal file
         //printf("getFileContents(%s): no filter\n",qPrint(fileName));
-        f = portable_fopen(fileName,"r");
+        f = Portable::fopen(fileName,"r");
         while (!feof(f))
         {
           int bytesRead = fread(buf,1,blockSize,f);
@@ -1010,7 +997,7 @@ bool readCodeFragment(const char *fileName,
   }
   result = transcodeCharacterStringToUTF8(result);
   if (!result.isEmpty() && result.at(result.length()-1)!='\n') result += "\n";
-  //fprintf(stderr,"readCodeFragement(%d-%d)=%s\n",startLine,endLine,result.data());
+  //printf("readCodeFragment(%d-%d)=%s\n",startLine,endLine,result.data());
   return found;
 }
 
@@ -1275,26 +1262,26 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName) const
     {
       //printf("Adding code fragment '%s' ext='%s'\n",
       //    codeFragment.data(),m_impl->defFileExt.data());
-      ParserInterface *pIntf = Doxygen::parserManager->getParser(m_impl->defFileExt);
-      pIntf->resetCodeParserState();
+      CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(m_impl->defFileExt);
+      intf.resetCodeParserState();
       //printf("Read:\n'%s'\n\n",codeFragment.data());
       const MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = dynamic_cast <const MemberDef*>(this);
 
       ol.startCodeFragment();
-      pIntf->parseCode(ol,               // codeOutIntf
-                       scopeName,        // scope
-                       codeFragment,     // input
-                       m_impl->lang,     // lang
-                       FALSE,            // isExample
-                       0,                // exampleName
-                       m_impl->body->fileDef,  // fileDef
-                       actualStart,      // startLine
-                       actualEnd,        // endLine
-                       TRUE,             // inlineFragment
-                       thisMd,           // memberDef
-                       TRUE              // show line numbers
-                      );
+      intf.parseCode(ol,               // codeOutIntf
+                     scopeName,        // scope
+                     codeFragment,     // input
+                     m_impl->lang,     // lang
+                     FALSE,            // isExample
+                     0,                // exampleName
+                     m_impl->body->fileDef,  // fileDef
+                     actualStart,      // startLine
+                     actualEnd,        // endLine
+                     TRUE,             // inlineFragment
+                     thisMd,           // memberDef
+                     TRUE              // show line numbers
+                    );
       ol.endCodeFragment();
     }
   }
@@ -1617,76 +1604,47 @@ void DefinitionImpl::makePartOfGroup(GroupDef *gd)
   m_impl->partOfGroups->append(gd);
 }
 
-void DefinitionImpl::setRefItems(const QList<ListItemInfo> *sli)
+void DefinitionImpl::setRefItems(const std::vector<ListItemInfo> &sli)
 {
-  //printf("%s::setRefItems()\n",name().data());
-  if (sli)
-  {
-    // deep copy the list
-    if (m_impl->xrefListItems==0) 
-    {
-      m_impl->xrefListItems=new QList<ListItemInfo>;
-      m_impl->xrefListItems->setAutoDelete(TRUE);
-    }
-    QListIterator<ListItemInfo> slii(*sli);
-    ListItemInfo *lii;
-    for (slii.toFirst();(lii=slii.current());++slii)
-    {
-      m_impl->xrefListItems->append(new ListItemInfo(*lii));
-    } 
-  }
+  m_impl->xrefListItems.insert(m_impl->xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
 void DefinitionImpl::mergeRefItems(Definition *d)
 {
-  //printf("%s::mergeRefItems()\n",name().data());
-  QList<ListItemInfo> *xrefList = d->xrefListItems();
-  if (xrefList!=0)
-  {
-    // deep copy the list
-    if (m_impl->xrefListItems==0) 
-    {
-      m_impl->xrefListItems=new QList<ListItemInfo>;
-      m_impl->xrefListItems->setAutoDelete(TRUE);
-    }
-    QListIterator<ListItemInfo> slii(*xrefList);
-    QListIterator<ListItemInfo> mlii(*m_impl->xrefListItems);
-    ListItemInfo *lii;
-    ListItemInfo *mii;
-    for (slii.toFirst();(lii=slii.current());++slii)
-    {
-      bool found = false;
-      for (mlii.toFirst();(mii=mlii.current());++mlii)
-      {
-        if ((qstrcmp(lii->type,mii->type)==0) && (lii->itemId == mii->itemId))
-	{
-          found = true;
-          break;
-	}
-      }
-      if (!found) m_impl->xrefListItems->append(new ListItemInfo(*lii));
-    } 
-  }
+  auto otherXrefList = d->xrefListItems();
+
+  // append vectors
+  m_impl->xrefListItems.reserve(m_impl->xrefListItems.size()+otherXrefList.size());
+  m_impl->xrefListItems.insert (m_impl->xrefListItems.end(),
+                                otherXrefList.begin(),otherXrefList.end());
+
+  // sort results on itemId
+  std::sort(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
+            [](const ListItemInfo &left,const ListItemInfo &right)
+            { return left.itemId<right.itemId ||
+                     (left.itemId==right.itemId && qstrcmp(left.type,right.type)<0);
+            });
+
+  // filter out duplicates
+  auto last = std::unique(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
+            [](const ListItemInfo &left,const ListItemInfo &right)
+            { return left.itemId==right.itemId && left.type==right.type; });
+  m_impl->xrefListItems.erase(last, m_impl->xrefListItems.end());
 }
 
 int DefinitionImpl::_getXRefListId(const char *listName) const
 {
-  if (m_impl->xrefListItems)
+  for (const ListItemInfo &lii : m_impl->xrefListItems)
   {
-    QListIterator<ListItemInfo> slii(*m_impl->xrefListItems);
-    ListItemInfo *lii;
-    for (slii.toFirst();(lii=slii.current());++slii)
+    if (lii.type==listName)
     {
-      if (qstrcmp(lii->type,listName)==0)
-      {
-        return lii->itemId;
-      }
+      return lii.itemId;
     }
   }
   return -1;
 }
 
-QList<ListItemInfo> *DefinitionImpl::xrefListItems() const
+const std::vector<ListItemInfo> &DefinitionImpl::xrefListItems() const
 {
   return m_impl->xrefListItems;
 }
@@ -2239,6 +2197,11 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
 QCString DefinitionImpl::name() const
 {
   return m_impl->name;
+}
+
+bool DefinitionImpl::isAnonymous() const
+{
+  return m_impl->isAnonymous;
 }
 
 int DefinitionImpl::getDefLine() const

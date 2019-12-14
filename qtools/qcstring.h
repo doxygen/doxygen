@@ -282,19 +282,20 @@ public:
     QCString &remove( uint index, uint len );
     QCString &replace( uint index, uint len, const char *s);
     QCString &replace( const QRegExp &rx, const char *str );
-    short toShort( bool *ok=0 ) const;
-    ushort toUShort( bool *ok=0 ) const;
-    int	toInt( bool *ok=0 ) const;
-    uint toUInt( bool *ok=0 ) const;
-    long toLong( bool *ok=0 ) const;
-    ulong toULong( bool *ok=0 )	const;
-    uint64 toUInt64( bool *ok=0 ) const;
+    short toShort( bool *ok=0, int base=10 ) const;
+    ushort toUShort( bool *ok=0, int base=10 ) const;
+    int	toInt( bool *ok=0, int base=10 ) const;
+    uint toUInt( bool *ok=0, int base=10 ) const;
+    long toLong( bool *ok=0, int base=10 ) const;
+    ulong toULong( bool *ok=0, int base=10 )	const;
+    uint64 toUInt64( bool *ok=0, int base=10 ) const;
     QCString &setNum(short n);
     QCString &setNum(ushort n);
     QCString &setNum(int n);
     QCString &setNum(uint n);
     QCString &setNum(long n);
     QCString &setNum(ulong n);
+    bool startsWith( const char *s ) const;
 
     /** Converts the string to a plain C string */
     operator const char *() const
@@ -328,7 +329,7 @@ public:
       return m_rep.at(i);
     }
 
-    /** Indexing operator. Equavalent to at(). */
+    /** Indexing operator. Equivalent to at(). */
     char &operator[]( int i ) const
     {
       return m_rep.at((uint)i);

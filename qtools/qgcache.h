@@ -70,16 +70,16 @@ protected:
     void    setMaxCost( int maxCost );
     void    clear();
 
-    bool    insert_string( const QString &key, QCollection::Item,
+    bool    insert_string( const QCString &key, QCollection::Item,
 			   int cost, int priority );
     bool    insert_other( const char *key, QCollection::Item,
 			  int cost, int priority );
-    bool    remove_string( const QString &key );
+    bool    remove_string( const QCString &key );
     bool    remove_other( const char *key );
-    QCollection::Item take_string( const QString &key );
+    QCollection::Item take_string( const QCString &key );
     QCollection::Item take_other( const char *key );
 
-    QCollection::Item find_string( const QString &key, bool ref=TRUE ) const;
+    QCollection::Item find_string( const QCString &key, bool ref=TRUE ) const;
     QCollection::Item find_other( const char *key, bool ref=TRUE ) const;
 
     void    statistics() const;
@@ -112,7 +112,7 @@ protected:
     QCollection::Item toLast();
 
     QCollection::Item get() const;
-    QString	      getKeyString() const;
+    QCString	      getKeyString() const;
     const char       *getKeyAscii()  const;
     intptr_t	      getKeyInt()    const;
 
