@@ -2814,7 +2814,15 @@ static void addDefine(yyscan_t yyscanner)
     while ((c=*p++) && (c==' ' || c=='\t')) k++;
     state->defLitText=state->defLitText.mid(l+1,k-l-1)+state->defLitText.stripWhiteSpace();
   }
-  md->setInitializer(state->defLitText.stripWhiteSpace());
+  QCString defLitTextStripped = state->defLitText.stripWhiteSpace();
+  if (defLitTextStripped.contains('\n')>=1)
+  {
+    md->setInitializer(state->defLitText);
+  }
+  else
+  {
+    md->setInitializer(defLitTextStripped);
+  }
 
   //printf("pre.l: md->setFileDef(%p)\n",state->inputFileDef);
   md->setFileDef(state->inputFileDef);
