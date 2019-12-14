@@ -791,7 +791,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
   				       BEGIN(yyextra->condCtx);
                                      }
   				   }
-<CondLine>[ \t]*
+<CondLine>[ \t]*/\n |
 <CComment,ReadLine>[\\@]"cond"[ \t\r]*/\n |
 <CondLine>.			   { // forgot section id?
   				     if (YY_START!=CondLine) yyextra->condCtx=YY_START;
@@ -942,24 +942,32 @@ static inline int computeIndent(const char *s)
 
 static inline void copyToOutput(yyscan_t yyscanner,const char *s,int len)
 {
+  int tabSize=Config_getInt(TAB_SIZE);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   int i;
   if (yyextra->skip) // only add newlines.
   {
-    for (i=0;i<len;i++) 
+    for (i=0;i<len;i++)
     {
-      if (s[i]=='\n') 
+      switch(s[i])
       {
-	ADDCHAR('\n');
-	//fprintf(stderr,"---> skip %d\n",g_lineNr);
-	yyextra->lineNr++;
+        case '\n':
+	  ADDCHAR('\n');
+	  yyextra->lineNr++;
+          yyextra->col=0;
+          break;
+        case '\t':
+          yyextra->col+=tabSize-(yyextra->col%tabSize);
+          break;
+        default:
+          yyextra->col++;
+          break;
       }
     }
   }
   else if (len>0)
   {
     ADDARRAY(s,len);
-    static int tabSize=Config_getInt(TAB_SIZE);
     for (i=0;i<len;i++) 
     {
       switch (s[i])
