@@ -523,7 +523,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InMember:    m_curMember->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InPackage:   m_curPackage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InDir:       m_curDir->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
-        default:   warn("Unexpected tag 'docanchor' found"); break;  // Not really necessary anymore
+        default: break; // will not be reached
       }
     }
 
