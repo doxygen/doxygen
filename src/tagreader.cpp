@@ -496,6 +496,23 @@ class TagFileParser : public QXmlDefaultHandler
 
     void endDocAnchor()
     {
+      // Check whether or not the tag is automatically generate, in that case ignore the tag.
+      switch(m_state)
+      {
+        case InClass:
+        case InFile:
+        case InNamespace:
+        case InGroup:
+        case InPage:
+        case InMember:
+        case InPackage:
+        case InDir:
+          if (QString(m_curString).startsWith("autotoc_md")) return;
+          break;
+        default:
+          warn("Unexpected tag 'docanchor' found");
+          return;
+      }
       switch(m_state)
       {
         case InClass:     m_curClass->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
@@ -506,7 +523,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InMember:    m_curMember->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InPackage:   m_curPackage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InDir:       m_curDir->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
-        default:   warn("Unexpected tag 'docanchor' found"); break; 
+        default: break; // will not be reached
       }
     }
 

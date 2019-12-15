@@ -528,7 +528,7 @@ void DefinitionImpl::writeDocAnchorsToTagFile(FTextStream &tagFile) const
     SectionInfo *si;
     for (;(si=sdi.current());++sdi)
     {
-      if (!si->generated && si->ref.isEmpty())
+      if (!si->generated && si->ref.isEmpty() && !si->label.startsWith("autotoc_md"))
       {
         //printf("write an entry!\n");
         if (definitionType()==TypeMember) tagFile << "  ";
