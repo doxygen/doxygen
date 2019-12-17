@@ -280,7 +280,10 @@ void LatexDocVisitor::visit(DocLineBreak *)
 void LatexDocVisitor::visit(DocHorRuler *)
 {
   if (m_hide) return;
-  m_t << "\\DoxyHorRuler\n";
+  if (insideTable())
+    m_t << "\\DoxyHorRuler{1}\n";
+  else
+    m_t << "\\DoxyHorRuler{0}\n";
 }
 
 void LatexDocVisitor::visit(DocStyleChange *s)
