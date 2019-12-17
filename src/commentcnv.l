@@ -106,6 +106,7 @@ static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len);
 static inline void copyToOutput(yyscan_t yyscanner,const char *s,int len);
 static void startCondSection(yyscan_t yyscanner,const char *sectId);
 static void endCondSection(yyscan_t yyscanner);
+static void handleCondSectionId(yyscan_t yyscanner,const char *expression);
 static void replaceAliases(yyscan_t yyscanner,const char *s);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
@@ -768,57 +769,15 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
     				     }
 				    }
 <CondLine>[!()&| \ta-z_A-Z0-9.\-]+ {
-  				     bool oldSkip=yyextra->skip;
-                                     startCondSection(yyscanner,yytext);
-				     if ((yyextra->condCtx==CComment || yyextra->readLineCtx==SComment) && 
-                                         !oldSkip && yyextra->skip) 
-    			             {
-				       if (yyextra->lang!=SrcLangExt_Python &&
-					   yyextra->lang!=SrcLangExt_VHDL &&
-					   yyextra->lang!=SrcLangExt_Markdown &&
-					   yyextra->lang!=SrcLangExt_Fortran)
-				       {
- 				         ADDCHAR('*');
-     				         ADDCHAR('/');
-				       }
-    				     }
-                                     if (yyextra->readLineCtx==SComment)
-                                     {
-                                       BEGIN(SComment);
-                                     }
-                                     else
-                                     {
-  				       BEGIN(yyextra->condCtx);
-                                     }
+                                     handleCondSectionId(yyscanner,yytext);
   				   }
-<CondLine>[ \t]*/\n |
-<CComment,ReadLine>[\\@]"cond"[ \t\r]*/\n |
+<CComment,ReadLine>[\\@]"cond"[ \t\r]*/\n {
+  				     yyextra->condCtx=YY_START;
+                                     handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
+                                   }
 <CondLine>.			   { // forgot section id?
-  				     if (YY_START!=CondLine) yyextra->condCtx=YY_START;
-  				     bool oldSkip=yyextra->skip;
-  				     startCondSection(yyscanner," "); // fake section id causing the section to be hidden unconditionally
-				     if ((yyextra->condCtx==CComment || yyextra->readLineCtx==SComment) && 
-                                         !oldSkip && yyextra->skip) 
-    			             {
-				       //printf("** Adding terminator for comment!\n");
-				       if (yyextra->lang!=SrcLangExt_Python &&
-					   yyextra->lang!=SrcLangExt_VHDL &&
-					   yyextra->lang!=SrcLangExt_Markdown &&
-					   yyextra->lang!=SrcLangExt_Fortran)
-				       {
- 				         ADDCHAR('*');
-     				         ADDCHAR('/');
-				       }
-    				     }
+                                     handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
 				     if (*yytext=='\n') yyextra->lineNr++;
-                                     if (yyextra->readLineCtx==SComment)
-                                     {
-                                       BEGIN(SComment);
-                                     }
-                                     else
-                                     {
-  				       BEGIN(yyextra->condCtx);
-                                     }
   				   }
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,yytext);
@@ -1009,6 +968,33 @@ static void endCondSection(yyscan_t yyscanner)
     yyextra->skip=ctx->skip;
   }
   //printf("endCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
+}
+
+static void handleCondSectionId(yyscan_t yyscanner,const char *expression)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  bool oldSkip=yyextra->skip;
+  startCondSection(yyscanner,expression);
+  if ((yyextra->condCtx==CComment || yyextra->readLineCtx==SComment) && 
+      !oldSkip && yyextra->skip) 
+  {
+    if (yyextra->lang!=SrcLangExt_Python &&
+        yyextra->lang!=SrcLangExt_VHDL &&
+        yyextra->lang!=SrcLangExt_Markdown &&
+        yyextra->lang!=SrcLangExt_Fortran)
+    {
+      ADDCHAR('*');
+      ADDCHAR('/');
+    }
+  }
+  if (yyextra->readLineCtx==SComment)
+  {
+    BEGIN(SComment);
+  }
+  else
+  {
+    BEGIN(yyextra->condCtx);
+  }
 }
 
 /** copies string \a s with length \a len to the output, while 
