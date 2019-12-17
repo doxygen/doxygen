@@ -78,6 +78,7 @@ static bool handleFile(const QCString &, const QCStringList &);
 static bool handleDir(const QCString &, const QCStringList &);
 static bool handleExample(const QCString &, const QCStringList &);
 static bool handleDetails(const QCString &, const QCStringList &);
+static bool handleNoop(const QCString &, const QCStringList &);
 static bool handleName(const QCString &, const QCStringList &);
 static bool handleTodo(const QCString &, const QCStringList &);
 static bool handleTest(const QCString &, const QCStringList &);
@@ -131,6 +132,8 @@ static bool handleParBlock(const QCString &, const QCStringList &);
 static bool handleEndParBlock(const QCString &, const QCStringList &);
 static bool handleParam(const QCString &, const QCStringList &);
 static bool handleRetval(const QCString &, const QCStringList &);
+
+static const char *stateToString(int state);
 
 typedef bool (*DocCmdFunc)(const QCString &name, const QCStringList &optList);
 
@@ -279,6 +282,7 @@ static DocCmdMap docCmdMap[] =
   { "warning",         0,                       TRUE  },
   { "snippet",         0,                       TRUE  },
   { "snippetlineno",   0,                       TRUE  },
+  { "noop",            &handleNoop,             TRUE },
   { 0, 0, FALSE }
 };
 
@@ -391,7 +395,7 @@ class GuardedSection
  *	statics
  */
 
-static ParserInterface *langParser;          // the language parser that is calling us
+static OutlineParserInterface *langParser;   // the language parser that is calling us
 static QCString         inputString;         // input string
 static int		inputPosition;       // read pointer
 static QCString		yyFileName;          // file name that is read from
@@ -411,11 +415,8 @@ static GuardType        guardType;           // kind of guard for conditional se
 static bool             enabledSectionFound;
 static QCString         functionProto;       // function prototype
 static QStack<GuardedSection> guards;        // tracks nested conditional sections (if,ifnot,..)
-static Entry*		current      = 0 ;   // working entry
-//static Entry*		current_root = 0 ;   // parent of working entry
+static Entry           *current = 0;         // working entry
 
-
-//static Entry*		previous     = 0 ;   // TODO: remove need for this
 static bool             needNewEntry;
 
 static QCString         g_sectionLabel;
@@ -529,11 +530,10 @@ static QCString stripQuotes(const char *s)
 static void addXRefItem(const char *listName,const char *itemTitle,
                         const char *listTitle,bool append)
 {
-  Entry *docEntry = current; // inBody && previous ? previous : current;
   if (listName==0) return;
   //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
 
-  ListItemInfo *lii=0;
+  const ListItemInfo *lii=0;
   RefList *refList = Doxygen::xrefLists->find(listName);
   if (refList==0) // new list
   {
@@ -541,16 +541,13 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     Doxygen::xrefLists->insert(listName,refList);
     //printf("new list!\n");
   }
-  if (docEntry->sli)
+  for (const ListItemInfo &item : current->sli)
   {
-    QListIterator<ListItemInfo> slii(*docEntry->sli);
-    for (slii.toLast();(lii=slii.current());--slii)
+    if (qstrcmp(item.type,listName)==0) 
     {
-      if (qstrcmp(lii->type,listName)==0) 
-      {
-        //printf("found %s lii->type=%s\n",listName,lii->type);
-        break;
-      }
+      //printf("found %s lii->type=%s\n",listName,lii->type);
+      lii = &item;
+      break;
     }
   }
   if (lii && append) // already found item of same type just before this one
@@ -576,16 +573,16 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     ASSERT(item!=0);
     item->text = outputXRef;
     item->listAnchor = anchorLabel;
-    docEntry->addSpecialListItem(listName,itemId);
+    current->addSpecialListItem(listName,itemId);
     QCString cmdString;
     cmdString.sprintf(" \\xrefitem %s %d.",listName,itemId);
     if (inBody)
     {
-      docEntry->inbodyDocs += cmdString;
+      current->inbodyDocs += cmdString;
     }
     else
     {
-      docEntry->doc += cmdString;
+      current->doc += cmdString;
     }
     SectionInfo *si = Doxygen::sectionDict->find(anchorLabel);
     if (si)
@@ -605,7 +602,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
                          g_sectionTitle,SectionInfo::Anchor,
                          g_sectionLevel);
       Doxygen::sectionDict->append(anchorLabel,si);
-      docEntry->anchors->append(si);
+      current->anchors.push_back(si);
     }
   }
   outputXRef.resize(0);
@@ -673,7 +670,7 @@ static void addSection()
                           g_sectionTitle,sectionLevelToType(g_sectionLevel),g_sectionLevel);
 
     // add section to this entry
-    current->anchors->append(si);
+    current->anchors.push_back(si);
 
     // add section to the global dictionary
     Doxygen::sectionDict->append(g_sectionLabel,si);
@@ -850,7 +847,7 @@ static void addAnchor(const char *anchor)
   {
     si = new SectionInfo(yyFileName,yyLineNr,anchor,0,SectionInfo::Anchor,0);
     Doxygen::sectionDict->append(anchor,si);
-    current->anchors->append(si);
+    current->anchors.push_back(si);
   }
 }
 
@@ -998,6 +995,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 %x	CopyDoc
 %x      GuardExpr
 %x      CdataSection
+%x      Noop
 
 %%
 
@@ -1175,7 +1173,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  addOutput(yytext);
   					}
 <Comment>{B}*{CMD}"~"[a-z_A-Z-]*		{ // language switch command
-                                          QCString langId = QString(yytext).stripWhiteSpace().data()+2;
+                                          QCString langId = QCString(yytext).stripWhiteSpace().data()+2;
 			       	          if (!langId.isEmpty() &&
 					      qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)!=0)
 				          { // enable language specific section
@@ -1185,7 +1183,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>{B}*{CMD}"f{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
 					  setOutput(OutputDoc);
 					  formulaText="\\begin";
-					  formulaEnv=QString(yytext).stripWhiteSpace().data()+2;
+					  formulaEnv=QCString(yytext).stripWhiteSpace().data()+2;
 					  if (formulaEnv.at(formulaEnv.length()-1)=='{')
 					  {
 					    // remove trailing open brace
@@ -1823,7 +1821,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yytext);
 					  // we add subpage labels as a kind of "inheritance" relation to prevent
 					  // needing to add another list to the Entry class.
-					  current->extends->append(new BaseInfo(yytext,Public,Normal));
+					  current->extends.push_back(BaseInfo(yytext,Public,Normal));
 					  BEGIN(SubpageTitle);
   					}
 <SubpageLabel>{DOCNL}			{ // missing argument
@@ -1972,7 +1970,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  BEGIN(Comment);
   					}
 <GuardParamEnd>{B}*			{
-  					  if (!g_spaceBeforeIf.isEmpty()) // needed for 665313 in combation with bug620924
+  					  if (!g_spaceBeforeIf.isEmpty()) // needed for 665313 in combination with bug620924
 					  {
 					    addOutput(g_spaceBeforeIf);
 					  }
@@ -2129,11 +2127,19 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  current->name+=*yytext;
   					}
 
+  /* ----- handle argument of noop command ------- */
+<Noop>{DOCNL}				{ // end of argument
+					  if (*yytext=='\n') yyLineNr++;
+					  addOutput('\n');
+					  BEGIN( Comment );
+					}
+<Noop>.					{ // ignore other stuff
+					}
   /* ----- handle argument of ingroup command ------- */
 
 <InGroupParam>{LABELID}			{ // group id
-  					  current->groups->append(
-					    new Grouping(yytext, Grouping::GROUPING_INGROUP)
+  					  current->groups.push_back(
+					     Grouping(yytext, Grouping::GROUPING_INGROUP)
 					  );
 					  inGroupParamFound=TRUE;
   					}
@@ -2215,8 +2221,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle argument of inherit command ------- */
 
 <InheritParam>({ID}("::"|"."))*{ID}	{ // found argument
-					  current->extends->append(
-					    new BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
+					  current->extends.push_back(
+					    BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
 					  );
 					  BEGIN( Comment );
   					}
@@ -2238,8 +2244,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle argument of extends and implements commands ------- */
 
 <ExtendsParam>({ID}("::"|"."))*{ID}	{ // found argument
-					  current->extends->append(
-					    new BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
+					  current->extends.push_back(
+					    BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
 					  );
 					  BEGIN( Comment );
   					}
@@ -2462,11 +2468,11 @@ static bool handlePage(const QCString &, const QCStringList &)
 static bool handleMainpage(const QCString &, const QCStringList &)
 {
   bool stop=makeStructuralIndicator(Entry::MAINPAGEDOC_SEC);
+  current->name = "";
   if (!stop) 
   {
     current->name = "mainpage";
   }
-  current->name = "";
   BEGIN( PageDocArg2 );
   return stop;
 }
@@ -2537,6 +2543,12 @@ static bool handleDetails(const QCString &, const QCStringList &)
                        // as a new paragraph
   }
   setOutput(OutputDoc);
+  return FALSE;
+}
+
+static bool handleNoop(const QCString &, const QCStringList &)
+{
+  BEGIN( Noop );
   return FALSE;
 }
 
@@ -3115,7 +3127,7 @@ QCString preprocessCommentBlock(const QCString &comment,
   }
 }
 
-bool parseCommentBlock(/* in */     ParserInterface *parser,
+bool parseCommentBlock(/* in */     OutlineParserInterface *parser,
                        /* in */     Entry *curEntry,
                        /* in */     const QCString &comment,
 		       /* in */     const QCString &fileName,
@@ -3269,12 +3281,4 @@ static void handleGuard(const QCString &expr)
   }
 }
 
-
-
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-//----------------------------------------------------------------------------
-extern "C" { // some bogus code to keep the compiler happy
-  void commentscanYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
-
+#include "commentscan.l.h"

@@ -1079,7 +1079,7 @@ class TranslateContext::Private
         s_inst.addProperty("fileMembers",       &Private::fileMembers);
         //%% string fileMembersDescription
         s_inst.addProperty("fileMembersDescription", &Private::fileMembersDescription);
-        //%% string relatedPagesDescripiton
+        //%% string relatedPagesDescription
         s_inst.addProperty("relatedPagesDesc",  &Private::relatedPagesDesc);
         //%% string more
         s_inst.addProperty("more",              &Private::more);
@@ -1133,7 +1133,7 @@ class TranslateContext::Private
         s_inst.addProperty("referencesRelation",   &Private::referencesRelation);
         //%% markerstring inheritedFrom
         s_inst.addProperty("inheritedFrom",      &Private::inheritedFrom);
-        //%% string addtionalInheritedMembers
+        //%% string additionalInheritedMembers
         s_inst.addProperty("additionalInheritedMembers",&Private::additionalInheritedMembers);
         //%% string includeDependencyGraph:container_name
         s_inst.addProperty("includeDependencyGraph",&Private::includeDependencyGraph);
@@ -1302,8 +1302,8 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
 static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const QCString &relPath,
                                  const QCString &code,int startLine=-1,int endLine=-1,bool showLineNumbers=FALSE)
 {
-  ParserInterface *pIntf = Doxygen::parserManager->getParser(md->getDefFileExtension());
-  pIntf->resetCodeParserState();
+  CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(md->getDefFileExtension());
+  intf.resetCodeParserState();
   QGString s;
   FTextStream t(&s);
   switch (g_globals.outputFormat)
@@ -1311,14 +1311,14 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
     case ContextOutputFormat_Html:
       {
         HtmlCodeGenerator codeGen(t,relPath);
-        pIntf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
+        intf.parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
             startLine,endLine,TRUE,md,showLineNumbers,md);
       }
       break;
     case ContextOutputFormat_Latex:
       {
         LatexCodeGenerator codeGen(t,relPath,md->docFile());
-        pIntf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
+        intf.parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
             startLine,endLine,TRUE,md,showLineNumbers,md);
       }
       break;
@@ -1333,8 +1333,8 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
 static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
 {
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
-  ParserInterface *pIntf = Doxygen::parserManager->getParser(fd->getDefFileExtension());
-  pIntf->resetCodeParserState();
+  CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
+  intf.resetCodeParserState();
   QGString s;
   FTextStream t(&s);
   switch (g_globals.outputFormat)
@@ -1342,7 +1342,7 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
     case ContextOutputFormat_Html:
       {
         HtmlCodeGenerator codeGen(t,relPath);
-        pIntf->parseCode(codeGen,0,
+        intf.parseCode(codeGen,0,
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
@@ -1361,7 +1361,7 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
     case ContextOutputFormat_Latex:
       {
         LatexCodeGenerator codeGen(t,relPath,fd->docFile());
-        pIntf->parseCode(codeGen,0,
+        intf.parseCode(codeGen,0,
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
@@ -1978,7 +1978,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
-                             g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                             g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -1987,7 +1987,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             {
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                              g_globals.outputDir,
-                             g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+".tex",
+                             g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+".tex",
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -2077,7 +2077,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
-                             g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                             g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -2086,7 +2086,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             {
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                              g_globals.outputDir,
-                             g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+".tex",
+                             g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+".tex",
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -2353,7 +2353,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
           const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
-            if (cd->name().find('@')==-1 &&
+            if (!cd->isAnonymous() &&
                 cd->isLinkableInProject() &&
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0
@@ -2381,7 +2381,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
           addTemplateDecls(parent,tl);
         }
         const ClassDef *cd=dynamic_cast<const ClassDef *>(d);
-        if (cd->templateArguments())
+        if (!cd->templateArguments().empty())
         {
           ArgumentListContext *al = ArgumentListContext::alloc(cd->templateArguments(),cd,relPathAsString());
           // since a TemplateVariant does take ownership of the object, we add it
@@ -2422,10 +2422,10 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant typeConstraints() const
     {
-      if (m_classDef->typeConstraints())
+      if (!m_classDef->typeConstraints().empty())
       {
         Cachable &cache = getCache();
-        if (!cache.typeConstraints && m_classDef->typeConstraints())
+        if (!cache.typeConstraints && !m_classDef->typeConstraints().empty())
         {
           cache.typeConstraints.reset(ArgumentListContext::alloc(m_classDef->typeConstraints(),m_classDef,relPathAsString()));
         }
@@ -2941,7 +2941,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
           const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
-            if (cd->name().find('@')==-1 &&
+            if (!cd->isAnonymous() &&
                 cd->isLinkableInProject() &&
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0)
@@ -3123,7 +3123,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3132,7 +3132,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             {
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                   g_globals.outputDir,
-                  g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+".tex",
+                  g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+".tex",
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3175,7 +3175,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3184,7 +3184,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             {
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                   g_globals.outputDir,
-                  g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+".tex",
+                  g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+".tex",
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3405,7 +3405,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
           const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
-            if (cd->name().find('@')==-1 &&
+            if (!cd->isAnonymous() &&
                 cd->isLinkableInProject() &&
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0)
@@ -3613,7 +3613,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
               graph->writeGraph(t,GOF_BITMAP,
                                 EOF_Html,
                                 g_globals.outputDir,
-                                g_globals.outputDir+portable_pathSeparator()+m_dirDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                                g_globals.outputDir+Portable::pathSeparator()+m_dirDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId,
@@ -3625,7 +3625,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
               graph->writeGraph(t,GOF_EPS,
                                 EOF_LaTeX,
                                 g_globals.outputDir,
-                                g_globals.outputDir+portable_pathSeparator()+m_dirDef->getOutputFileBase()+".tex",
+                                g_globals.outputDir+Portable::pathSeparator()+m_dirDef->getOutputFileBase()+".tex",
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId,
@@ -4450,8 +4450,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant isAnonymous() const
     {
-      QCString name = m_memberDef->name();
-      return !name.isEmpty() && name.at(0)=='@';
+      return m_memberDef->isAnonymous();
     }
     TemplateVariant anonymousType() const
     {
@@ -4529,7 +4528,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     TemplateVariant templateArgs() const
     {
       Cachable &cache = getCache();
-      if (!cache.templateArgs && m_memberDef->templateArguments())
+      if (!cache.templateArgs && !m_memberDef->templateArguments().empty())
       {
         cache.templateArgs.reset(ArgumentListContext::alloc(m_memberDef->templateArguments(),m_memberDef,relPathAsString()));
       }
@@ -4644,7 +4643,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       return createLinkedText(m_memberDef,relPathAsString(),
                               m_memberDef->displayDefinition());
     }
-    const ArgumentList *getDefArgList() const
+    const ArgumentList &getDefArgList() const
     {
       return (m_memberDef->isDocsForDefinition()) ?
               m_memberDef->argumentList() : m_memberDef->declArgumentList();
@@ -4654,8 +4653,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.arguments)
       {
-        const ArgumentList *defArgList = getDefArgList();
-        if (defArgList && !m_memberDef->isProperty())
+        const ArgumentList &defArgList = getDefArgList();
+        if (!m_memberDef->isProperty())
         {
           cache.arguments.reset(ArgumentListContext::alloc(defArgList,m_memberDef,relPathAsString()));
         }
@@ -4668,35 +4667,31 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasParameters() const
     {
-      return getDefArgList()!=0;
+      return !getDefArgList().empty();
     }
     TemplateVariant hasConstQualifier() const
     {
-      const ArgumentList *al = getDefArgList();
-      return al ? al->constSpecifier : FALSE;
+      return getDefArgList().constSpecifier;
     }
     TemplateVariant hasVolatileQualifier() const
     {
-      const ArgumentList *al = getDefArgList();
-      return al ? al->volatileSpecifier : FALSE;
+      return getDefArgList().volatileSpecifier;
     }
     TemplateVariant hasRefQualifierLValue() const
     {
-      const ArgumentList *al = getDefArgList();
-      return al ? al->refQualifier==RefQualifierLValue : FALSE;
+      return getDefArgList().refQualifier==RefQualifierLValue;
     }
     TemplateVariant hasRefQualifierRValue() const
     {
-      const ArgumentList *al = getDefArgList();
-      return al ? al->refQualifier==RefQualifierRValue : FALSE;
+      return getDefArgList().refQualifier==RefQualifierRValue;
     }
     TemplateVariant trailingReturnType() const
     {
-      const ArgumentList *al = getDefArgList();
-      if (al && !al->trailingReturnType.isEmpty())
+      const ArgumentList &al = getDefArgList();
+      if (!al.trailingReturnType.isEmpty())
       {
         return createLinkedText(m_memberDef,relPathAsString(),
-                                al->trailingReturnType);
+                                al.trailingReturnType);
       }
       else
       {
@@ -4710,13 +4705,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     void addTemplateDecls(TemplateList *tl) const
     {
       const ClassDef *cd=m_memberDef->getClassDef();
-      if (m_memberDef->definitionTemplateParameterLists())
+      if (!m_memberDef->definitionTemplateParameterLists().empty())
       {
-        QListIterator<ArgumentList> ali(*m_memberDef->definitionTemplateParameterLists());
-        ArgumentList *tal;
-        for (ali.toFirst();(tal=ali.current());++ali)
+        for (const ArgumentList &tal : m_memberDef->definitionTemplateParameterLists())
         {
-          if (tal->count()>0)
+          if (!tal.empty())
           {
             ArgumentListContext *al = ArgumentListContext::alloc(tal,m_memberDef,relPathAsString());
             tl->append(al);
@@ -4727,21 +4720,16 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         if (cd && !m_memberDef->isRelated() && !m_memberDef->isTemplateSpecialization())
         {
-          QList<ArgumentList> tempParamLists;
-          cd->getTemplateParameterLists(tempParamLists);
-          //printf("#tempParamLists=%d\n",tempParamLists.count());
-          QListIterator<ArgumentList> ali(tempParamLists);
-          ArgumentList *tal;
-          for (ali.toFirst();(tal=ali.current());++ali)
+          for (const ArgumentList &tal : cd->getTemplateParameterLists())
           {
-            if (tal->count()>0)
+            if (!tal.empty())
             {
               ArgumentListContext *al = ArgumentListContext::alloc(tal,m_memberDef,relPathAsString());
               tl->append(al);
             }
           }
         }
-        if (m_memberDef->templateArguments()) // function template prefix
+        if (!m_memberDef->templateArguments().empty()) // function template prefix
         {
           ArgumentListContext *al = ArgumentListContext::alloc(
               m_memberDef->templateArguments(),m_memberDef,relPathAsString());
@@ -4785,18 +4773,15 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.paramDocs)
       {
-        if (m_memberDef->argumentList() && m_memberDef->argumentList()->hasDocumentation())
+        if (m_memberDef->argumentList().hasDocumentation())
         {
           QCString paramDocs;
-          ArgumentListIterator ali(*m_memberDef->argumentList());
-          Argument *a;
-          // convert the parameter documentation into a list of @param commands
-          for (ali.toFirst();(a=ali.current());++ali)
+          for (Argument &a : m_memberDef->argumentList())
           {
-            if (a->hasDocumentation())
+            if (a.hasDocumentation())
             {
-              QCString direction = extractDirection(a->docs);
-              paramDocs+="@param"+direction+" "+a->name+" "+a->docs;
+              QCString direction = extractDirection(a.docs);
+              paramDocs+="@param"+direction+" "+a.name+" "+a.docs;
             }
           }
           cache.paramDocs.reset(new TemplateVariant(parseDoc(m_memberDef,
@@ -4929,7 +4914,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     TemplateVariant typeConstraints() const
     {
       Cachable &cache = getCache();
-      if (!cache.typeConstraints && m_memberDef->typeConstraints())
+      if (cache.typeConstraints && !m_memberDef->typeConstraints().empty())
       {
         cache.typeConstraints.reset(ArgumentListContext::alloc(m_memberDef->typeConstraints(),m_memberDef,relPathAsString()));
       }
@@ -5041,7 +5026,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -5050,7 +5035,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                   g_globals.outputDir,
-                  g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+".tex",
+                  g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+".tex",
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -5113,7 +5098,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -5122,7 +5107,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                   g_globals.outputDir,
-                  g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+".tex",
+                  g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+".tex",
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -5383,7 +5368,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
               graph->writeGraph(t,GOF_BITMAP,
                                 EOF_Html,
                                 g_globals.outputDir,
-                                g_globals.outputDir+portable_pathSeparator()+m_groupDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                                g_globals.outputDir+Portable::pathSeparator()+m_groupDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId);
@@ -5394,7 +5379,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
               graph->writeGraph(t,GOF_EPS,
                                 EOF_LaTeX,
                                 g_globals.outputDir,
-                                g_globals.outputDir+portable_pathSeparator()+m_groupDef->getOutputFileBase()+".tex",
+                                g_globals.outputDir+Portable::pathSeparator()+m_groupDef->getOutputFileBase()+".tex",
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId);
@@ -5739,7 +5724,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
           const ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
           {
-            if (cd->name().find('@')==-1 &&
+            if (!cd->isAnonymous() &&
                 cd->isLinkableInProject() &&
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0)
@@ -6557,7 +6542,7 @@ class NestingContext::Private : public GenericNodeListContext
       const NamespaceDef *nd;
       for (nli.toFirst();(nd=nli.current());++nli)
       {
-        if (nd->localName().find('@')==-1 &&
+        if (!nd->isAnonymous() &&
             (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
         {
           bool hasChildren = namespaceHasVisibleChild(nd,addClasses,false,ClassDef::Class);
@@ -8446,7 +8431,7 @@ TemplateVariant NamespaceMembersIndexContext::get(const char *name) const
 
 //------------------------------------------------------------------------
 
-//%% struct InheritanceGraph: a connected graph reprenting part of the overall interitance tree
+//%% struct InheritanceGraph: a connected graph representing part of the overall inheritance tree
 //%% {
 class InheritanceGraphContext::Private
 {
@@ -8476,7 +8461,7 @@ class InheritanceGraphContext::Private
                           /*GOF_BITMAP,
                           EOF_Html,*/
                           g_globals.outputDir,
-                          g_globals.outputDir+portable_pathSeparator()+"inherits"+Doxygen::htmlFileExtension,
+                          g_globals.outputDir+Portable::pathSeparator()+"inherits"+Doxygen::htmlFileExtension,
                           m_id);
       }
       return TemplateVariant(result.data(),TRUE);
@@ -8813,7 +8798,7 @@ class AllMembersListContext::Private : public GenericNodeListContext
           {
             MemberDef *md=mi->memberDef;
             const ClassDef  *cd=md->getClassDef();
-            if (cd && !md->name().isEmpty() && md->name()[0]!='@')
+            if (cd && !md->isAnonymous())
             {
               if ((cd->isLinkable() && md->isLinkable()) ||
                   (!cd->isArtificial() && !hideUndocMembers &&
@@ -9302,7 +9287,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
             MemberDef *md;
             for (li.toFirst();(md=li.current());++li)
             {
-              if (lt==md->getSectionList(mg->parent())->listType() &&
+              if (lt==md->getSectionList()->listType() &&
                   !md->isReimplementedBy(inheritedFrom) &&
                   md->isBriefSectionVisible())
               {
@@ -9413,7 +9398,7 @@ TemplateListIntf::ConstIterator *InheritedMemberInfoListContext::createIterator(
 class ArgumentContext::Private
 {
   public:
-    Private(const Argument *arg,const Definition *def,const QCString &relPath) :
+    Private(const Argument &arg,const Definition *def,const QCString &relPath) :
       m_argument(arg), m_def(def), m_relPath(relPath)
     {
       static bool init=FALSE;
@@ -9435,33 +9420,33 @@ class ArgumentContext::Private
     }
     TemplateVariant type() const
     {
-      return createLinkedText(m_def,m_relPath,m_argument->type);
+      return createLinkedText(m_def,m_relPath,m_argument.type);
     }
     TemplateVariant attrib() const
     {
-      return m_argument->attrib;
+      return m_argument.attrib;
     }
     TemplateVariant name() const
     {
-      return m_argument->name;
+      return m_argument.name;
     }
     TemplateVariant defVal() const
     {
-      return createLinkedText(m_def,m_relPath,m_argument->defval);
+      return createLinkedText(m_def,m_relPath,m_argument.defval);
     }
     TemplateVariant array() const
     {
-      return m_argument->array;
+      return m_argument.array;
     }
     TemplateVariant docs() const
     {
       if (!m_cache.docs && m_def)
       {
-        if (!m_argument->docs.isEmpty())
+        if (!m_argument.docs.isEmpty())
         {
           m_cache.docs.reset(new TemplateVariant(
                              parseDoc(m_def,m_def->docFile(),m_def->docLine(),
-                             m_relPath,m_argument->docs,TRUE)));
+                             m_relPath,m_argument.docs,TRUE)));
         }
         else
         {
@@ -9472,7 +9457,7 @@ class ArgumentContext::Private
     }
     TemplateVariant namePart() const
     {
-      QCString result = m_argument->attrib;
+      QCString result = m_argument.attrib;
       int l = result.length();
       if (l>2 && result.at(0)=='[' && result.at(l-1)==']')
       {
@@ -9482,7 +9467,7 @@ class ArgumentContext::Private
       return result;
     }
   private:
-    const Argument *m_argument;
+    const Argument &m_argument;
     const Definition *m_def;
     QCString m_relPath;
     struct Cachable
@@ -9496,7 +9481,7 @@ class ArgumentContext::Private
 
 PropertyMapper<ArgumentContext::Private> ArgumentContext::Private::s_inst;
 
-ArgumentContext::ArgumentContext(const Argument *al,const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentContext")
+ArgumentContext::ArgumentContext(const Argument &al,const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentContext")
 {
   p = new Private(al,def,relPath);
 }
@@ -9517,7 +9502,7 @@ TemplateVariant ArgumentContext::get(const char *name) const
 class ArgumentListContext::Private : public GenericNodeListContext
 {
   public:
-    void addArgument(const Argument *arg,const Definition *def,const QCString &relPath)
+    void addArgument(const Argument &arg,const Definition *def,const QCString &relPath)
     {
       append(ArgumentContext::alloc(arg,def,relPath));
     }
@@ -9528,18 +9513,13 @@ ArgumentListContext::ArgumentListContext() : RefCountedContext("ArgumentListCont
   p = new Private;
 }
 
-ArgumentListContext::ArgumentListContext(const ArgumentList *list,
+ArgumentListContext::ArgumentListContext(const ArgumentList &list,
                         const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentListContext")
 {
   p = new Private;
-  if (list)
+  for (const Argument &arg : list)
   {
-    ArgumentListIterator ali(*list);
-    const Argument *arg;
-    for (ali.toFirst();(arg=ali.current());++ali)
-    {
-      p->addArgument(arg,def,relPath);
-    }
+    p->addArgument(arg,def,relPath);
   }
 }
 
@@ -10316,7 +10296,7 @@ void generateOutputViaTemplate()
       ctx->set("classMembersIndex",classMembersIndex.get());
       //%% NamespaceMembersIndex namespaceMembersIndex:
       ctx->set("namespaceMembersIndex",namespaceMembersIndex.get());
-      //%% SearchIndicaes searchindicaes
+      //%% SearchIndices searchIndices
       ctx->set("searchIndices",searchIndices.get());
       //%% string space
       ctx->set("space"," ");

@@ -1,36 +1,43 @@
+#include "portable.h"
+
 #include <stdlib.h>
-#include <ctype.h>
+#include <stdio.h>
+
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #undef UNICODE
 #define _WIN32_DCOM
 #include <windows.h>
 #else
 #include <unistd.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
 extern char **environ;
 #endif
 
+#include <ctype.h>
 #include <qglobal.h>
 #include <qdatetime.h>
+#include <qglobal.h>
+#include <qdir.h>
+#include <map>
+#include <string>
 
-#if defined(_MSC_VER) || defined(__BORLANDC__)
-#define popen _popen
-#define pclose _pclose
-#endif
-
-#include "portable.h"
 #include "util.h"
 #ifndef NODEBUG
 #include "debug.h"
 #endif
 
+#if !defined(_WIN32) || defined(__CYGWIN__)
+static bool environmentLoaded = false;
+static std::map<std::string,std::string> proc_env = std::map<std::string,std::string>();
+#endif
+
 static double  g_sysElapsedTime;
 static QTime   g_time;
 
-int portable_system(const char *command,const char *args,bool commandHasConsole)
+
+int Portable::system(const char *command,const char *args,bool commandHasConsole)
 {
 
   if (command==0) return 1;
@@ -127,7 +134,7 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
 #else // Win32 specific
   if (commandHasConsole)
   {
-    return system(fullCmd);
+    return ::system(fullCmd);
   }
   else
   {
@@ -189,13 +196,13 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
 
 }
 
-uint portable_pid()
+unsigned int Portable::pid(void)
 {
-  uint pid;
+  unsigned int pid;
 #if !defined(_WIN32) || defined(__CYGWIN__)
-  pid = (uint)getpid();
+  pid = (unsigned int)getpid();
 #else
-  pid = (uint)GetCurrentProcessId();
+  pid = (unsigned int)GetCurrentProcessId();
 #endif
   return pid;
 }
@@ -205,88 +212,50 @@ uint portable_pid()
   static char **last_environ;
 #endif
 
-void portable_setenv(const char *name,const char *value)
+#if !defined(_WIN32) || defined(__CYGWIN__)
+void loadEnvironment()
+{
+  if(environ != NULL)
+  {
+    unsigned int i = 0;
+    char* current = environ[i];
+
+    while(current != NULL)                            // parse all strings contained by environ til the last element (NULL)
+    {
+      std::string env_var(current);                   // load current environment variable string
+      size_t pos = env_var.find("=");
+      if(pos != std::string::npos)                    // only parse the variable, if it is a valid environment variable...
+      {                                               // ...which has to contain an equal sign as delimiter by definition
+        std::string name = env_var.substr(0,pos);     // the string til the equal sign contains the name
+        std::string value = env_var.substr(pos + 1);  // the string from the equal sign contains the value
+
+        proc_env[name] = value;                       // save the value by the name as its key in the classes map
+      }
+      i++;
+      current = environ[i];
+    }
+  }
+
+  environmentLoaded = true;
+}
+#endif
+
+void Portable::setenv(const char *name,const char *value)
 {
     if (value==0) value="";
 #if defined(_WIN32) && !defined(__CYGWIN__)
     SetEnvironmentVariable(name,value);
 #else
-    char **ep = 0;
-    size_t size;
-    const size_t namelen=qstrlen(name);
-    const size_t vallen=qstrlen(value) + 1;
-
-    size = 0;
-    if (environ!=0)
-    {
-      for (ep = environ; *ep; ++ep)
-      {
-        if (!qstrncmp (*ep, name, (uint)namelen) &&
-            (*ep)[namelen] == '=')
-          break;
-        else
-          ++size;
-      }
+    if(!environmentLoaded) // if the environment variables are not loaded already...
+    {                                 // ...call loadEnvironment to store them in class
+      loadEnvironment();
     }
 
-    if (environ==0 || *ep==0) /* add new string */
-    {
-      char **new_environ;
-      if (environ == last_environ && environ!=0)
-      {
-        // We allocated this space; we can extend it. 
-        new_environ = (char **) realloc (last_environ, (size + 2) * sizeof (char *));
-      }
-      else
-      {
-        new_environ = (char **) malloc ((size + 2) * sizeof (char *));
-      }
-
-      if (new_environ==0) // no more memory 
-      {
-        return;
-      }
-
-      new_environ[size] = (char *)malloc (namelen + 1 + vallen);
-      if (new_environ[size]==0)
-      {
-        free (new_environ);
-        return;
-      }
-
-      if (environ != last_environ)
-      {
-        memcpy ((char *) new_environ, environ, size * sizeof (char *));
-      }
-
-      memcpy(new_environ[size], name, namelen);
-      new_environ[size][namelen] = '=';
-      memcpy(&new_environ[size][namelen + 1], value, vallen);
-      new_environ[size + 1] = 0;
-      last_environ = environ = new_environ;
-    }
-    else /* replace existing string */
-    {
-      size_t len = qstrlen (*ep);
-      if (len + 1 < namelen + 1 + vallen)
-      {
-        /* The existing string is too short; malloc a new one.  */
-        char *newString = (char *)malloc(namelen + 1 + vallen);
-        if (newString==0)
-        {
-          return;
-        }
-        *ep = newString;
-      }
-      memcpy(*ep, name, namelen);
-      (*ep)[namelen] = '=';
-      memcpy(&(*ep)[namelen + 1], value, vallen);
-    }
-
+    proc_env[name] = std::string(value); // create or replace exisiting value
 #endif
 }
 
-void portable_unsetenv(const char *variable)
+void Portable::unsetenv(const char *variable)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     SetEnvironmentVariable(variable,0);
@@ -300,32 +269,35 @@ void portable_unsetenv(const char *variable)
       return; // not properly formatted
     }
 
-    len = qstrlen(variable);
-
-    ep = environ;
-    while (*ep != NULL)
+    if(proc_env.find(variable) != proc_env.end())
     {
-      if (!qstrncmp(*ep, variable, (uint)len) && (*ep)[len]=='=')
-      {
-        /* Found it.  Remove this pointer by moving later ones back.  */
-        char **dp = ep;
-        do dp[0] = dp[1]; while (*dp++);
-        /* Continue the loop in case NAME appears again.  */
-      }
-      else
-      {
-        ++ep;
-      }
+      proc_env[variable].erase();
     }
 #endif
 }
 
-const char *portable_getenv(const char *variable)
-{
-  return getenv(variable);
+const char *Portable::getenv(const char *variable)
+{  
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    return ::getenv(variable);
+#else
+    if(!environmentLoaded) // if the environment variables are not loaded already...
+    {                                 // ...call loadEnvironment to store them in class
+      loadEnvironment();
+    }
+
+    if(proc_env.find(variable) != proc_env.end())
+    {
+      return proc_env[variable].c_str();
+    }
+    else
+    {
+      return NULL;
+    }
+#endif
 }
 
-portable_off_t portable_fseek(FILE *f,portable_off_t offset, int whence)
+portable_off_t Portable::fseek(FILE *f,portable_off_t offset, int whence)
 {
 #if defined(__MINGW32__)
   return fseeko64(f,offset,whence);
@@ -336,7 +308,7 @@ portable_off_t portable_fseek(FILE *f,portable_off_t offset, int whence)
 #endif
 }
 
-portable_off_t portable_ftell(FILE *f)
+portable_off_t Portable::ftell(FILE *f)
 {
 #if defined(__MINGW32__)
   return ftello64(f);  
@@ -347,18 +319,18 @@ portable_off_t portable_ftell(FILE *f)
 #endif
 }
 
-FILE *portable_fopen(const char *fileName,const char *mode)
+FILE *Portable::fopen(const char *fileName,const char *mode)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   QString fn(fileName);
   QString m(mode);
   return _wfopen((wchar_t*)fn.ucs2(),(wchar_t*)m.ucs2());
 #else
-  return fopen(fileName,mode);
+  return ::fopen(fileName,mode);
 #endif
 }
 
-char  portable_pathSeparator()
+char  Portable::pathSeparator(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   return '\\';
@@ -367,7 +339,7 @@ char  portable_pathSeparator()
 #endif
 }
 
-char  portable_pathListSeparator()
+char  Portable::pathListSeparator(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   return ';';
@@ -376,7 +348,7 @@ char  portable_pathListSeparator()
 #endif
 }
 
-const char *portable_ghostScriptCommand()
+const char *Portable::ghostScriptCommand(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     return "gswin32c.exe";
@@ -385,7 +357,7 @@ const char *portable_ghostScriptCommand()
 #endif
 }
 
-const char *portable_commandExtension()
+const char *Portable::commandExtension(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     return ".exe";
@@ -394,7 +366,7 @@ const char *portable_commandExtension()
 #endif
 }
 
-bool portable_fileSystemIsCaseSensitive()
+bool Portable::fileSystemIsCaseSensitive(void)
 {
 #if defined(_WIN32) || defined(macintosh) || defined(__MACOSX__) || defined(__APPLE__) || defined(__CYGWIN__)
   return FALSE;
@@ -403,32 +375,40 @@ bool portable_fileSystemIsCaseSensitive()
 #endif
 }
 
-FILE * portable_popen(const char *name,const char *type)
+FILE * Portable::popen(const char *name,const char *type)
 {
-  return popen(name,type);
+  #if defined(_MSC_VER) || defined(__BORLANDC__)
+  return ::_popen(name,type);
+  #else
+  return ::popen(name,type);
+  #endif
 }
 
-int portable_pclose(FILE *stream)
+int Portable::pclose(FILE *stream)
 {
-  return pclose(stream);
+  #if defined(_MSC_VER) || defined(__BORLANDC__)
+  return ::_pclose(stream);
+  #else
+  return ::pclose(stream);
+  #endif
 }
 
-void portable_sysTimerStart()
+void Portable::sysTimerStart(void)
 {
   g_time.start();
 }
 
-void portable_sysTimerStop()
+void Portable::sysTimerStop(void)
 {
   g_sysElapsedTime+=((double)g_time.elapsed())/1000.0;
 }
 
-double portable_getSysElapsedTime()
+double Portable::getSysElapsedTime(void)
 {
   return g_sysElapsedTime;
 }
 
-void portable_sleep(int ms)
+void Portable::sleep(int ms)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   Sleep(ms);
@@ -437,7 +417,7 @@ void portable_sleep(int ms)
 #endif
 }
 
-bool portable_isAbsolutePath(const char *fileName)
+bool Portable::isAbsolutePath(const char *fileName)
 {
 # ifdef _WIN32
   if (isalpha (fileName [0]) && fileName[1] == ':')
@@ -457,24 +437,41 @@ bool portable_isAbsolutePath(const char *fileName)
 /**
  * Correct a possible wrong PATH variable
  *
- * This routine was inspired by the cause for bug 766059 was that in the Windows path there were forward slahes.
+ * This routine was inspired by the cause for bug 766059 was that in the Windows path there were forward slashes.
  */
-void portable_correct_path(void)
+void Portable::correct_path(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  const char *p = portable_getenv("PATH");
+  const char *p = Portable::getenv("PATH");
   if (!p) return; // no path nothing to correct
   QCString result = substitute(p,'/','\\');
-  if (result!=p) portable_setenv("PATH",result.data());
+  if (result!=p) Portable::setenv("PATH",result.data());
 #endif
 }
 
-void portable_unlink(const char *fileName)
+void Portable::unlink(const char *fileName)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   _unlink(fileName);
 #else
-  unlink(fileName);
+  ::unlink(fileName);
 #endif
 }
 
+void Portable::setShortDir(void)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  long     length = 0;
+  TCHAR*   buffer = NULL;
+  // First obtain the size needed by passing NULL and 0.
+  length = GetShortPathName(QDir::currentDirPath().data(), NULL, 0);
+  // Dynamically allocate the correct size
+  // (terminating null char was included in length)
+  buffer = new TCHAR[length];
+  // Now simply call again using same (long) path.
+  length = GetShortPathName(QDir::currentDirPath().data(), buffer, length);
+  // Set the correct directory (short name)
+  QDir::setCurrent(buffer);
+  delete [] buffer;
+#endif
+}

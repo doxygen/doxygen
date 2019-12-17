@@ -32,6 +32,7 @@ class DotInclDepGraph : public DotGraph
                         bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
     bool isTooBig() const;
+    int numNodes() const;
     void writeXML(FTextStream &t);
     void writeDocbook(FTextStream &t);
 

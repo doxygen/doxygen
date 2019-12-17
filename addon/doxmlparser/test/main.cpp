@@ -707,7 +707,7 @@ int main(int argc,char **argv)
       printf("==== inheritance graph ==== \n");
       DumpGraph(cls->inheritanceGraph());
 
-      printf("==== collabration graph ==== \n");
+      printf("==== collaboration graph ==== \n");
       DumpGraph(cls->collaborationGraph());
 
       printf("==== base classes ==== \n");

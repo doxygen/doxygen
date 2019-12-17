@@ -217,7 +217,7 @@ int           MscGetEntityIndex(struct MscTag *m, const char *label);
  * @{
  */
 
-/** Reset the entity interator.
+/** Reset the entity iterator.
  * This moves the pointer to the current entity to the head of the list.
  */
 void          MscResetEntityIterator(Msc m);
@@ -249,7 +249,7 @@ const char   *MscGetEntAttrib(Msc m, unsigned int entIdx, MscAttribType a);
  * @{
  */
 
-/** Reset the arc interator.
+/** Reset the arc iterator.
  * This moves the pointer to the current arc to the head of the list.
  */
 void          MscResetArcIterator   (Msc m);

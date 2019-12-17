@@ -283,7 +283,7 @@ class RTFGenerator : public OutputGenerator
     bool m_prettyCode;
 
     bool m_bstartedBody;  // has startbody been called yet?
-    int  m_listLevel; // // RTF does not really have a addative indent...manually set list level.
+    int  m_listLevel; // // RTF does not really have a additive indent...manually set list level.
     bool m_omitParagraph; // should a the next paragraph command be ignored?
     int  m_numCols; // number of columns in a table
     QCString relPath;

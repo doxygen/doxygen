@@ -60,6 +60,7 @@ class FormulaList;
 class FormulaDict;
 class FormulaNameDict;
 class SectionDict;
+class Preprocessor;
 struct MemberGroupInfo;
 
 typedef QList<QCString>    StringList;
@@ -152,6 +153,7 @@ class Doxygen
     static bool                      markdownSupport;
     static GenericsSDict            *genericsDict;
     static DocGroup                  docGroup;
+    static Preprocessor             *preprocessor;
 };
 
 void initDoxygen();

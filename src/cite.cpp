@@ -79,7 +79,7 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
       {
         if (i) t << ",";
         i++;
-        t << bibTmpFile << QString().setNum(i);
+        t << bibTmpFile << QCString().setNum(i);
       }
     }
     bibdata = citeDataList.next();
@@ -151,7 +151,7 @@ void CiteDict::generatePage() const
           p=s+1;
 
 	  int i;
-          if ((i = line.find("crossref")) != -1) /* assumption crosreference is on one line and the only item */
+          if ((i = line.find("crossref")) != -1) /* assumption cross reference is on one line and the only item */
           {
             int j=line.find("{",i);
             int k=line.find("}",i);
@@ -235,14 +235,14 @@ void CiteDict::generatePage() const
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
   int exitCode;
-  portable_sysTimerStop();
-  if ((exitCode=portable_system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
+  Portable::sysTimerStop();
+  if ((exitCode=Portable::system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
                          citeListFile+"\"")) != 0)
   {
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         exitCode);
   }
-  portable_sysTimerStop();
+  Portable::sysTimerStop();
 
   QDir::setCurrent(oldDir);
 
@@ -296,7 +296,7 @@ void CiteDict::generatePage() const
 
   // 7. add it as a page
   addRelatedPage(CiteConsts::fileName,
-       theTranslator->trCiteReferences(),doc,0,CiteConsts::fileName,1,0,0,0);
+       theTranslator->trCiteReferences(),doc,CiteConsts::fileName,1);
 
   // 8. for latex we just copy the bib files to the output and let 
   //    latex do this work.

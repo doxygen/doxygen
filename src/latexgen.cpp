@@ -223,6 +223,7 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
   {
     m_t << l << " ";
   }
+  m_col=0;
 }
 
 
@@ -621,6 +622,11 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "    \\normalfont\\normalsize\\bfseries\\SS@subparafont%\n"
        "  }%\n"
        "}\n"
+       "\\makeatother\n"
+       "\n";
+  // 
+  t << "\\makeatletter\n"
+       "\\newcommand\\hrulefilll{\\leavevmode\\leaders\\hrule\\hskip 0pt plus 1filll\\kern\\z@}\n"
        "\\makeatother\n"
        "\n";
 
@@ -1919,7 +1925,7 @@ void LatexGenerator::endMemberDescription()
 
 void LatexGenerator::writeNonBreakableSpace(int) 
 {
-  //printf("writeNonBreakbleSpace()\n");
+  //printf("writeNonBreakableSpace()\n");
   if (insideTabbing)
   {
     t << "\\>";

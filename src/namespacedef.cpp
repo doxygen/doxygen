@@ -124,23 +124,23 @@ class NamespaceDefImpl : public DefinitionImpl, public NamespaceDef
     QCString              fileName;
     FileList              files;
 
-    NamespaceSDict       *usingDirList;
-    SDict<Definition> *usingDeclList;
-    SDict<Definition>    *m_innerCompounds;
+    NamespaceSDict       *usingDirList = 0;
+    SDict<Definition>    *usingDeclList = 0;
+    SDict<Definition>    *m_innerCompounds = 0;
 
-    MemberSDict          *m_allMembersDict;
+    MemberSDict          *m_allMembersDict = 0;
     QList<MemberList>     m_memberLists;
-    MemberGroupSDict     *memberGroupSDict;
-    ClassSDict           *classSDict;
-    ClassSDict           *interfaceSDict;
-    ClassSDict           *structSDict;
-    ClassSDict           *exceptionSDict;
-    NamespaceSDict       *namespaceSDict;
-    bool                  m_subGrouping;
+    MemberGroupSDict     *memberGroupSDict = 0;
+    ClassSDict           *classSDict = 0;
+    ClassSDict           *interfaceSDict = 0;
+    ClassSDict           *structSDict = 0;
+    ClassSDict           *exceptionSDict = 0;
+    NamespaceSDict       *namespaceSDict = 0;
+    bool                  m_subGrouping = false;
     enum { NAMESPACE, MODULE, CONSTANT_GROUP, LIBRARY } m_type;
-    bool m_isPublished;
+    bool m_isPublished = false;
     QCString              metaData;
-    bool                  m_inline;
+    bool                  m_inline = false;
 };
 
 NamespaceDef *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
@@ -246,7 +246,7 @@ class NamespaceDefAliasImpl : public DefinitionAliasImpl, public NamespaceDef
     bool isVisited() const { return m_visited; }
 
   private:
-    bool m_visited;
+    bool m_visited = false;
 };
 
 NamespaceDef *createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd)
@@ -349,12 +349,12 @@ void NamespaceDefImpl::distributeMemberGroupDocumentation()
 
 void NamespaceDefImpl::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),this,0,docFile());
+  docFindSections(documentation(),this,docFile());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    mg->findSectionsInDocumentation();
+    mg->findSectionsInDocumentation(this);
   }
   QListIterator<MemberList> mli(m_memberLists);
   MemberList *ml;
@@ -362,7 +362,7 @@ void NamespaceDefImpl::findSectionsInDocumentation()
   {
     if (ml->listType()&MemberListType_declarationLists)
     {
-      ml->findSectionsInDocumentation();
+      ml->findSectionsInDocumentation(this);
     }
   }
 }
@@ -467,92 +467,119 @@ void NamespaceDefImpl::addMembersToMemberGroup()
 
 void NamespaceDefImpl::insertMember(MemberDef *md)
 {
-  //printf("%s::insertMember(%s)\n",qPrint(name()),qPrint(md->name()));
+  //printf("%s::insertMember(%s) isInline=%d hasDocs=%d\n",qPrint(name()),qPrint(md->name()),
+  //    isInline(),hasDocumentation());
   if (md->isHidden()) return;
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
-  if (allMemberList==0)
-  {
-    allMemberList = new MemberList(MemberListType_allMembersList);
-    m_memberLists.append(allMemberList);
-  }
-  allMemberList->append(md); 
-  if (m_allMembersDict==0)
-  {
-    m_allMembersDict = new MemberSDict;
-  }
-  //printf("%s::m_allMembersDict->append(%s)\n",name().data(),md->localName().data());
-  m_allMembersDict->append(md->localName(),md); 
-  //::addNamespaceMemberNameToIndex(md);
-  //static bool sortBriefDocs=Config_getBool(SORT_BRIEF_DOCS);
-  switch(md->memberType())
-  {
-    case MemberType_Variable:     
-      addMemberToList(MemberListType_decVarMembers,md);
-      addMemberToList(MemberListType_docVarMembers,md);
-      break;
-    case MemberType_Function: 
-      addMemberToList(MemberListType_decFuncMembers,md);
-      addMemberToList(MemberListType_docFuncMembers,md);
-      break;
-    case MemberType_Typedef:      
-      addMemberToList(MemberListType_decTypedefMembers,md);
-      addMemberToList(MemberListType_docTypedefMembers,md);
-      break;
-    case MemberType_Sequence:      
-      addMemberToList(MemberListType_decSequenceMembers,md);
-      addMemberToList(MemberListType_docSequenceMembers,md);
-      break;
-    case MemberType_Dictionary:      
-      addMemberToList(MemberListType_decDictionaryMembers,md);
-      addMemberToList(MemberListType_docDictionaryMembers,md);
-      break;
-    case MemberType_Enumeration:  
-      addMemberToList(MemberListType_decEnumMembers,md);
-      addMemberToList(MemberListType_docEnumMembers,md);
-      break;
-    case MemberType_EnumValue:    
-      break;
-    case MemberType_Define:       
-      addMemberToList(MemberListType_decDefineMembers,md);
-      addMemberToList(MemberListType_docDefineMembers,md);
-      break;
-    default:
-      err("NamespaceDefImpl::insertMembers(): "
-           "member '%s' with class scope '%s' inserted in namespace scope '%s'!\n",
-           md->name().data(),
-           md->getClassDef() ? md->getClassDef()->name().data() : "",
-           name().data());
-  }
-  // if this is an inline namespace, then insert an alias of this member in the outer scope.
-  if (isInline())
+
+  // if this is an inline namespace that is not documented, then insert the 
+  // member in the parent scope instead
+  if (isInline() && !hasDocumentation())
   {
     Definition *outerScope = getOuterScope();
     if (outerScope)
     {
-      MemberDef *aliasMd = 0;
       if (outerScope->definitionType()==Definition::TypeNamespace)
       {
-        aliasMd = createMemberDefAlias(outerScope,md);
-        dynamic_cast<NamespaceDef*>(outerScope)->insertMember(aliasMd);
+        NamespaceDef *nd = dynamic_cast<NamespaceDef*>(outerScope);
+        nd->insertMember(md);
+        md->setNamespace(nd);
       }
       else if (outerScope->definitionType()==Definition::TypeFile)
       {
-        aliasMd = createMemberDefAlias(outerScope,md);
-        dynamic_cast<FileDef*>(outerScope)->insertMember(aliasMd);
+        FileDef *fd = dynamic_cast<FileDef*>(outerScope);
+        fd->insertMember(md);
+        md->setFileDef(fd);
+        md->setOuterScope(fd);
       }
-      if (aliasMd)
+    }
+  }
+  else // member is a non-inline namespace or a documented inline namespace
+  {
+    MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+    if (allMemberList==0)
+    {
+      allMemberList = new MemberList(MemberListType_allMembersList);
+      m_memberLists.append(allMemberList);
+    }
+    allMemberList->append(md); 
+    if (m_allMembersDict==0)
+    {
+      m_allMembersDict = new MemberSDict;
+    }
+    //printf("%s::m_allMembersDict->append(%s)\n",name().data(),md->localName().data());
+    m_allMembersDict->append(md->localName(),md); 
+    //::addNamespaceMemberNameToIndex(md);
+    //static bool sortBriefDocs=Config_getBool(SORT_BRIEF_DOCS);
+    switch(md->memberType())
+    {
+      case MemberType_Variable:     
+        addMemberToList(MemberListType_decVarMembers,md);
+        addMemberToList(MemberListType_docVarMembers,md);
+        break;
+      case MemberType_Function: 
+        addMemberToList(MemberListType_decFuncMembers,md);
+        addMemberToList(MemberListType_docFuncMembers,md);
+        break;
+      case MemberType_Typedef:      
+        addMemberToList(MemberListType_decTypedefMembers,md);
+        addMemberToList(MemberListType_docTypedefMembers,md);
+        break;
+      case MemberType_Sequence:      
+        addMemberToList(MemberListType_decSequenceMembers,md);
+        addMemberToList(MemberListType_docSequenceMembers,md);
+        break;
+      case MemberType_Dictionary:      
+        addMemberToList(MemberListType_decDictionaryMembers,md);
+        addMemberToList(MemberListType_docDictionaryMembers,md);
+        break;
+      case MemberType_Enumeration:  
+        addMemberToList(MemberListType_decEnumMembers,md);
+        addMemberToList(MemberListType_docEnumMembers,md);
+        break;
+      case MemberType_EnumValue:    
+        break;
+      case MemberType_Define:       
+        addMemberToList(MemberListType_decDefineMembers,md);
+        addMemberToList(MemberListType_docDefineMembers,md);
+        break;
+      default:
+        err("NamespaceDefImpl::insertMembers(): "
+            "member '%s' with class scope '%s' inserted in namespace scope '%s'!\n",
+            md->name().data(),
+            md->getClassDef() ? md->getClassDef()->name().data() : "",
+            name().data());
+    }
+    // if this is an inline namespace, then insert an alias of this member in the outer scope.
+    if (isInline())
+    {
+      Definition *outerScope = getOuterScope();
+      if (outerScope)
       {
-        MemberName *mn;
-        QCString name = md->name();
-        if ((mn=Doxygen::functionNameSDict->find(name)))
+        MemberDef *aliasMd = 0;
+        if (outerScope->definitionType()==Definition::TypeNamespace)
         {
-          mn->append(aliasMd);
+          aliasMd = createMemberDefAlias(outerScope,md);
+          dynamic_cast<NamespaceDef*>(outerScope)->insertMember(aliasMd);
         }
-        else
+        else if (outerScope->definitionType()==Definition::TypeFile)
         {
-          mn = new MemberName(name);
-          mn->append(aliasMd);
-          Doxygen::functionNameSDict->append(name,mn);
+          aliasMd = createMemberDefAlias(outerScope,md);
+          dynamic_cast<FileDef*>(outerScope)->insertMember(aliasMd);
+        }
+        if (aliasMd)
+        {
+          MemberName *mn;
+          QCString name = md->name();
+          if ((mn=Doxygen::functionNameSDict->find(name)))
+          {
+            mn->append(aliasMd);
+          }
+          else
+          {
+            mn = new MemberName(name);
+            mn->append(aliasMd);
+            Doxygen::functionNameSDict->append(name,mn);
+          }
         }
       }
     }
@@ -1242,7 +1269,7 @@ void NamespaceDefImpl::addListReferences()
 {
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   {
-    QList<ListItemInfo> *xrefItems = xrefListItems();
+    const std::vector<ListItemInfo> &xrefItems = xrefListItems();
     addRefItem(xrefItems,
         qualifiedName(),
         getLanguage()==SrcLangExt_Fortran ? 
@@ -1460,7 +1487,7 @@ void NamespaceDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 
   if (ml->listType()&MemberListType_declarationLists)
   {
-    md->setSectionList(this,ml);
+    md->setSectionList(ml);
   }
 }
 

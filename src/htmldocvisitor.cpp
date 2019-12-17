@@ -65,7 +65,7 @@ static const char *contexts[10] =
   "intertd"    // 9
 };
 
-static QCString convertIndexWordToAnchor(const QString &word)
+static QCString convertIndexWordToAnchor(const QCString &word)
 {
   static char hex[] = "0123456789abcdef";
   static int cnt = 0;
@@ -518,8 +518,8 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::Code: 
       forceEndParagraph(s);
       m_t << PREFRAG_START;
-      Doxygen::parserManager->getParser(lang)
-                            ->parseCode(m_ci,
+      Doxygen::parserManager->getCodeParser(lang)
+                             .parseCode(m_ci,
                                         s->context(),
                                         s->text(),
                                         langExt,
@@ -666,8 +666,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::Include: 
       forceEndParagraph(inc);
       m_t << PREFRAG_START;
-      Doxygen::parserManager->getParser(inc->extension())
-                            ->parseCode(m_ci,                 
+      Doxygen::parserManager->getCodeParser(inc->extension())
+                             .parseCode(m_ci,                 
                                         inc->context(),
                                         inc->text(),
                                         langExt,
@@ -690,8 +690,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            inc->text(),
                                            langExt,
@@ -732,8 +732,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       {
          forceEndParagraph(inc);
          m_t << PREFRAG_START;
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -757,8 +757,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -810,8 +810,8 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
         QFileInfo cfi( op->includeFileName() );
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
-      Doxygen::parserManager->getParser(locLangExt)
-                            ->parseCode(
+      Doxygen::parserManager->getCodeParser(locLangExt)
+                             .parseCode(
                                 m_ci,
                                 op->context(),
                                 op->text(),
@@ -1550,7 +1550,7 @@ void HtmlDocVisitor::visitPre(DocHtmlTable *t)
     }
   }
 
-  QString attrs = htmlAttribsToString(t->attribs());
+  QCString attrs = htmlAttribsToString(t->attribs());
   if (attrs.isEmpty())
   {
     m_t << "<table";
@@ -1685,7 +1685,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       forceEndParagraph(img);
     }
     if (m_hide) return;
-    QString baseName=img->name();
+    QCString baseName=img->name();
     int i;
     if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
     {
@@ -1912,9 +1912,9 @@ void HtmlDocVisitor::visitPost(DocRef *ref)
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  QString refName=ref->file();
+  QCString refName=ref->file();
   if (refName.right(Doxygen::htmlFileExtension.length())!=
-      QString(Doxygen::htmlFileExtension))
+      QCString(Doxygen::htmlFileExtension))
   {
     refName+=Doxygen::htmlFileExtension;
   }
@@ -1946,7 +1946,7 @@ void HtmlDocVisitor::visitPost(DocSecRefList *s)
 
 //void HtmlDocVisitor::visitPre(DocLanguage *l)
 //{
-//  QString langId = Config_getEnum(OUTPUT_LANGUAGE);
+//  QCString langId = Config_getEnum(OUTPUT_LANGUAGE);
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    pushEnabled();
@@ -1956,7 +1956,7 @@ void HtmlDocVisitor::visitPost(DocSecRefList *s)
 //
 //void HtmlDocVisitor::visitPost(DocLanguage *l) 
 //{
-//  QString langId = Config_getEnum(OUTPUT_LANGUAGE);
+//  QCString langId = Config_getEnum(OUTPUT_LANGUAGE);
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    popEnabled();
@@ -2144,7 +2144,7 @@ void HtmlDocVisitor::visitPre(DocHtmlBlockQuote *b)
 {
   if (m_hide) return;
   forceEndParagraph(b);
-  QString attrs = htmlAttribsToString(b->attribs());
+  QCString attrs = htmlAttribsToString(b->attribs());
   if (attrs.isEmpty())
   {
     m_t << "<blockquote" << getDirHtmlClassOfNode(getTextDirByConfig(b), "doxtable")

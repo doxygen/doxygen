@@ -26,37 +26,24 @@
  *  supports C++ and various languages that are closely related to C++, 
  *  such as C, C#, Objective-C, Java, PHP, and IDL.
  */
-class CLanguageScanner : public ParserInterface
+class COutlineParser : public OutlineParserInterface
 {
   public:
-    virtual ~CLanguageScanner() {}
+    COutlineParser();
+    virtual ~COutlineParser();
     void startTranslationUnit(const char *fileName);
     void finishTranslationUnit();
     void parseInput(const char *fileName,
                     const char *fileBuf,
-                    Entry *root,
+                    const std::shared_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
-    bool needsPreprocessing(const QCString &extension);
-    void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
-                   const QCString &input,
-                   SrcLangExt lang,
-                   bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=0,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=0,
-                   bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+    bool needsPreprocessing(const QCString &extension) const;
     void parsePrototype(const char *text);
+  private:
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
-void scanFreeScanner();
 
 #endif

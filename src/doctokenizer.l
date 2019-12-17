@@ -57,8 +57,7 @@ static bool g_insidePre;
 static int g_sharpCount=0;
 
 // context for section finding phase
-static Definition  *g_definition;
-static MemberGroup *g_memberGroup;
+static const Definition  *g_definition;
 static QCString     g_secLabel;
 static QCString     g_secTitle;
 static SectionInfo::SectionType g_secType;
@@ -77,6 +76,7 @@ struct DocLexerContext
 
 static QStack<DocLexerContext> g_lexerStack;
 
+static const char *stateToString(int state);
 //--------------------------------------------------------------------------
 
 void doctokenizerYYpushContext()
@@ -159,11 +159,7 @@ static void processSection()
 {
   //printf("%s: found section/anchor with name '%s'\n",g_fileName.data(),g_secLabel.data());
   QCString file;
-  if (g_memberGroup)
-  {
-    file = g_memberGroup->parent()->getOutputFileBase();
-  }
-  else if (g_definition)
+  if (g_definition)
   {
     file = g_definition->getOutputFileBase();
   }
@@ -333,8 +329,8 @@ static int yyread(char *buf,int max_size)
 
 //--------------------------------------------------------------------------
 //#define REAL_YY_DECL int doctokenizerYYlex (void)
-//#define YY_DECL static int local_doctokinizer(void)
-//#define LOCAL_YY_DECL local_doctokinizer()
+//#define YY_DECL static int local_doctokenizer(void)
+//#define LOCAL_YY_DECL local_doctokenizer()
 
 %}
 
@@ -354,12 +350,13 @@ LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
 OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
 ENDLIST   {BLANK}*"."{BLANK}*\n
-ATTRNAME  [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
+ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
-FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+@&#]
-FILEECHAR [a-z_A-Z0-9\-\+@&#]
+URLPROTOCOL ("http:"|"https:"|"ftp:"|"file:"|"news:"|"irc")
+FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+&#]
+FILEECHAR [a-z_A-Z0-9\-\+&#]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)+
 FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
@@ -629,17 +626,17 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 }
 			 return TK_COMMAND_SEL();
   		       }
-<St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK}/\. { // URL.
+<St_Para>{URLPROTOCOL}{URLMASK}/\. { // URL.
                          g_token->name=yytext;
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK} { // URL
+<St_Para>{URLPROTOCOL}{URLMASK} { // URL
                          g_token->name=yytext;
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>"<"("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK}">" { // URL
+<St_Para>"<"{URLPROTOCOL}{URLMASK}">" { // URL
                          g_token->name=yytext;
                          g_token->name = g_token->name.mid(1,g_token->name.length()-2);
 			 g_token->isEMailAddr=FALSE;
@@ -677,7 +674,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
                          QCString name = &yytext[2];
 			 name = name.left(name.length()-1);
-			 QCString value = portable_getenv(name);
+			 QCString value = Portable::getenv(name);
 			 for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
                        }
 <St_Para>{HTMLTAG}     { /* html tag */ 
@@ -1369,8 +1366,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 
 //--------------------------------------------------------------------------
 
-void doctokenizerYYFindSections(const char *input,Definition *d,
-                                MemberGroup *mg,const char *fileName)
+void doctokenizerYYFindSections(const char *input,const Definition *d,
+                                const char *fileName)
 {
   if (input==0) return;
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
@@ -1378,7 +1375,6 @@ void doctokenizerYYFindSections(const char *input,Definition *d,
   //printf("parsing --->'%s'<---\n",input);
   g_inputPos    = 0;
   g_definition  = d;
-  g_memberGroup = mg;
   g_fileName    = fileName;
   BEGIN(St_Sections);
   doctokenizerYYlineno = 1;
@@ -1615,9 +1611,5 @@ void doctokenizerYYendAutoList()
 //  printlex(yy_flex_debug, FALSE, __FILE__, g_fileName);
 //  return retval;
 //}
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-extern "C" { // some bogus code to keep the compiler happy
-    void doctokenizerYYdummy() { yy_flex_realloc(0,0); }
-}
-#endif
 
+#include "doctokenizer.l.h"

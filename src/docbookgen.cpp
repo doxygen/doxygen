@@ -233,7 +233,7 @@ void DocbookCodeGenerator::writeLineNumber(const char *ref,const char *fileName,
   {
     m_t << l << " ";
   }
-
+  m_col=0;
 }
 void DocbookCodeGenerator::setCurrentDoc(const Definition *,const char *,bool)
 {

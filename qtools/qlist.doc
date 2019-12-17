@@ -858,7 +858,7 @@
 
 /*!
   \fn type *QListIterator::operator*()
-  Asterix operator. Returns a pointer to the current iterator item.
+  Asterisk operator. Returns a pointer to the current iterator item.
   Same as current().
 */
 

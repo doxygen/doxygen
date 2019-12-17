@@ -426,7 +426,7 @@ struct SearchIndexExternal::Private
 {
   Private() : docEntries(12251) {}
   SDict<SearchDocEntry> docEntries;
-  SearchDocEntry *current;
+  SearchDocEntry *current = 0;
 };
 
 SearchIndexExternal::SearchIndexExternal() : SearchIndexIntf(External)
@@ -1372,7 +1372,7 @@ void initSearchIndexer()
   }
 }
 
-void finializeSearchIndexer()
+void finalizeSearchIndexer()
 {
   delete Doxygen::searchIndex;
 }

@@ -1138,7 +1138,7 @@ class AllMembersListContext : public RefCountedContext, public TemplateListIntf
 class ArgumentContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static ArgumentContext *alloc(const Argument *arg,const Definition *def,const QCString &relPath)
+    static ArgumentContext *alloc(const Argument &arg,const Definition *def,const QCString &relPath)
     { return new ArgumentContext(arg,def,relPath); }
 
     // TemplateStructIntf methods
@@ -1147,7 +1147,7 @@ class ArgumentContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    ArgumentContext(const Argument *arg,const Definition *def,const QCString &relPath);
+    ArgumentContext(const Argument &arg,const Definition *def,const QCString &relPath);
    ~ArgumentContext();
     class Private;
     Private *p;
@@ -1159,7 +1159,7 @@ class ArgumentListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
     static ArgumentListContext *alloc() { return new ArgumentListContext; }
-    static ArgumentListContext *alloc(const ArgumentList *al,const Definition *def,const QCString &relPath)
+    static ArgumentListContext *alloc(const ArgumentList &al,const Definition *def,const QCString &relPath)
     { return new ArgumentListContext(al,def,relPath); }
 
     // TemplateListIntf
@@ -1171,7 +1171,7 @@ class ArgumentListContext : public RefCountedContext, public TemplateListIntf
 
   private:
     ArgumentListContext();
-    ArgumentListContext(const ArgumentList *al,const Definition *def,const QCString &relPath);
+    ArgumentListContext(const ArgumentList &al,const Definition *def,const QCString &relPath);
    ~ArgumentListContext();
     class Private;
     Private *p;

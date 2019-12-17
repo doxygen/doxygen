@@ -953,7 +953,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='portable_fileSystemIsCaseSensitive()'>
+    <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='Portable::fileSystemIsCaseSensitive()'>
       <docs>
 <![CDATA[
  If the \c CASE_SENSE_NAMES tag is set to \c NO then doxygen
@@ -1404,7 +1404,9 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <value name='*.markdown'/>
       <value name='*.md'/>
       <value name='*.mm'/>
-      <value name='*.dox'/>
+      <value name='*.dox' desc='(to be provided as doxygen C comment)'/>
+      <value name='*.doc' desc='(to be provided as doxygen C comment)'/>
+      <value name='*.txt' desc='(to be provided as doxygen C comment)'/>
       <value name='*.py'/>
       <value name='*.pyw'/>
       <value name='*.f90'/>

@@ -95,7 +95,6 @@ class VhdlDocGen
     static bool     deleteCharRev(QCString &s,char c);
     static void     deleteAllChars(QCString &s,char c);
     static void     parseFuncProto(const char* text,
-                                   QList<Argument>& , 
                                    QCString& name,
                                    QCString& ret,
                                    bool doc=false);
@@ -113,9 +112,8 @@ class VhdlDocGen
                                 const QCString& key,
                                 MemberListType type);
     static ClassDef *getClass(const char *name);
-    static MemberDef* findFunction(const QList<Argument> &ql,
-                                   const QCString& name,
-                                   const QCString& package, bool type);
+    static MemberDef* findFunction(const QCString& name,
+                                   const QCString& package);
     static QCString getClassTitle(const ClassDef*);
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
@@ -155,11 +153,11 @@ class VhdlDocGen
     static void formatString(const QCString&,OutputList& ol,const MemberDef*);
 
     static void writeFormatString(const QCString&,OutputList& ol,const MemberDef*);
-    static void writeFunctionProto(OutputList& ol,const ArgumentList *al,const MemberDef*);
-    static void writeProcessProto(OutputList& ol,const ArgumentList *al,const MemberDef*);
-    static void writeProcedureProto(OutputList& ol, const ArgumentList *al,const MemberDef*);
-    static bool writeFuncProcDocu(const MemberDef *mdef, OutputList& ol,const ArgumentList* al,bool type=false);
-    static void writeRecordProto(const MemberDef *mdef, OutputList& ol,const ArgumentList *al);
+    static void writeFunctionProto(OutputList& ol,const ArgumentList &al,const MemberDef*);
+    static void writeProcessProto(OutputList& ol,const ArgumentList &al,const MemberDef*);
+    static void writeProcedureProto(OutputList& ol, const ArgumentList &al,const MemberDef*);
+    static bool writeFuncProcDocu(const MemberDef *mdef, OutputList& ol,const ArgumentList &al,bool type=false);
+    static void writeRecordProto(const MemberDef *mdef, OutputList& ol,const ArgumentList &al);
 
     static bool writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
 
@@ -179,7 +177,7 @@ class VhdlDocGen
 
     static bool writeClassType(const ClassDef *,OutputList &ol ,QCString & cname);
 
-    static QCString convertArgumentListToString(const ArgumentList* al,bool f);
+    static QCString convertArgumentListToString(const ArgumentList &al,bool f);
     static QCString getProcessNumber();
     static QCString getRecordNumber();
    
@@ -196,7 +194,6 @@ class VhdlDocGen
     static void correctMemberProperties(MemberDef *md);
     
     static void writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname);
-    static void writeAlphbeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
 
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
@@ -225,7 +222,7 @@ class VhdlDocGen
 
   private:
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
-    static bool compareArgList(ArgumentList*,ArgumentList*);
+    static bool compareArgList(const ArgumentList &,const ArgumentList &);
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
     static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
@@ -294,7 +291,7 @@ class FlowChart
     static void moveToPrevLevel();
     static int getTimeStamp();
     static void writeFlowChart();
-    static void alignFuncProc(QCString & q,const ArgumentList*  al,bool isFunc);
+    static void alignFuncProc(QCString & q,const ArgumentList &al,bool isFunc);
     static QCString convertNameToFileName();
     static void printNode(const FlowChart* n);
     static void printFlowTree();
@@ -310,11 +307,11 @@ class FlowChart
     ~FlowChart();
 
 private:
-    int id;
-    int stamp;
-    int type;
+    int id = 0;
+    int stamp = 0;
+    int type = 0;
 
-    int line;
+    int line = 0;
 
     QCString label;
     QCString text;

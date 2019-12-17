@@ -97,6 +97,7 @@ static bool          g_endComment;
 
 static void endFontClass();
 static void adjustScopesAndSuites(unsigned indentLength);
+static const char *stateToString(int state);
 
 
 /*! Represents a stack of variable to class mappings as found in the
@@ -1275,7 +1276,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
     {BB}/({NONEMPTY}|{EXPCHAR}) {
                                  // This implements poor
-				 // indendation-tracking;
+				 // indentation-tracking;
                                  // should be improved.
 				 // (translate tabs to space, etc)
   		                 codifyLines(yytext);
@@ -1315,7 +1316,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
     \\{B}\n                    { // line continuation
   		                 codifyLines(yytext);
                                }
-    \\.			       { // espaced char
+    \\.			       { // escaped char
   		                 codify(yytext);
                                }
     {STRINGPREFIX}?{TRIDOUBLEQUOTE} { // triple double quotes
@@ -1338,7 +1339,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
     \\{B}\n                    { // line continuation
   		                 codifyLines(yytext);
                                }
-    \\.			       { // espaced char
+    \\.			       { // escaped char
   		                 codify(yytext);
                                }
     {STRINGPREFIX}?{TRISINGLEQUOTE} { // triple single quotes
@@ -1637,12 +1638,33 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   return;
 }
 
+//----------------------------------------------------------------------------
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-extern "C" { // some bogus code to keep the compiler happy
-  void pycodeYYdummy() { yy_flex_realloc(0,0); } 
+void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+    const char *scopeName,
+    const QCString &input,
+    SrcLangExt /*lang*/,
+    bool isExampleBlock,
+    const char *exampleName,
+    FileDef *fileDef,
+    int startLine,
+    int endLine,
+    bool inlineFragment,
+    const MemberDef *memberDef,
+    bool showLineNumbers,
+    const Definition *searchCtx,
+    bool collectXRefs
+    )
+{
+  ::parsePythonCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+                    fileDef,startLine,endLine,inlineFragment,memberDef,
+                    showLineNumbers,searchCtx,collectXRefs);
 }
-#elif YY_FLEX_MAJOR_VERSION<=2 && YY_FLEX_MINOR_VERSION<=5 && YY_FLEX_SUBMINOR_VERSION<33
-#error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
-#endif
 
+void PythonCodeParser::resetCodeParserState()
+{
+  ::resetPythonCodeParserState();
+}
+
+
+#include "pycode.l.h"

@@ -127,7 +127,7 @@ const char * table_schema[][2] = {
    * I rolled this back when I had trouble getting a FileDef for all types
    * (PageDef in particular).
    *
-   * Note: all colums referencing path would need an update.
+   * Note: all columns referencing path would need an update.
    */
   { "path",
     "CREATE TABLE IF NOT EXISTS path (\n"
@@ -233,7 +233,7 @@ const char * table_schema[][2] = {
   },
   { "reimplements",
     "CREATE TABLE IF NOT EXISTS reimplements (\n"
-      "\t-- Inherited member reimplmentation relations.\n"
+      "\t-- Inherited member reimplementation relations.\n"
       "\trowid                  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
       "\tmemberdef_rowid        INTEGER NOT NULL REFERENCES memberdef, -- reimplementing memberdef id.\n"
       "\treimplemented_rowid    INTEGER NOT NULL REFERENCES memberdef, -- reimplemented memberdef id.\n"
@@ -1015,26 +1015,34 @@ static void insertMemberReference(const MemberDef *src, const MemberDef *dst, co
 
 static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, const Definition *def)
 {
-  const ArgumentList *declAl = md->declArgumentList();
-  const ArgumentList *defAl = md->argumentList();
-  if (declAl!=0 && defAl!=0 && declAl->count()>0)
+  const ArgumentList &declAl = md->declArgumentList();
+  const ArgumentList &defAl = md->argumentList();
+  if (declAl.size()>0)
   {
-    ArgumentListIterator declAli(*declAl);
-    ArgumentListIterator defAli(*defAl);
-    const Argument *a;
-    for (declAli.toFirst();(a=declAli.current());++declAli)
+//    ArgumentListIterator declAli(*declAl);
+//    ArgumentListIterator defAli(*defAl);
+//    const Argument *a;
+//    for (declAli.toFirst();(a=declAli.current());++declAli)
+    auto defIt = defAl.begin();
+    for (const Argument &a : declAl)
     {
-      const Argument *defArg = defAli.current();
-
-      if (!a->attrib.isEmpty())
+      //const Argument *defArg = defAli.current();
+      const Argument *defArg = 0;
+      if (defIt!=defAl.end())
       {
-        bindTextParameter(param_select,":attributes",a->attrib);
-        bindTextParameter(param_insert,":attributes",a->attrib);
+        defArg = &(*defIt);
+        ++defIt;
       }
-      if (!a->type.isEmpty())
+
+      if (!a.attrib.isEmpty())
+      {
+        bindTextParameter(param_select,":attributes",a.attrib);
+        bindTextParameter(param_insert,":attributes",a.attrib);
+      }
+      if (!a.type.isEmpty())
       {
         StringList l;
-        linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a->type);
+        linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a.type);
 
         StringListIterator li(l);
         QCString *s;
@@ -1046,32 +1054,31 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
           insertMemberReference(src_refid,dst_refid, "argument");
           ++li;
         }
-        bindTextParameter(param_select,":type",a->type);
-        bindTextParameter(param_insert,":type",a->type);
+        bindTextParameter(param_select,":type",a.type);
+        bindTextParameter(param_insert,":type",a.type);
       }
-      if (!a->name.isEmpty())
+      if (!a.name.isEmpty())
       {
-        bindTextParameter(param_select,":declname",a->name);
-        bindTextParameter(param_insert,":declname",a->name);
+        bindTextParameter(param_select,":declname",a.name);
+        bindTextParameter(param_insert,":declname",a.name);
       }
-      if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
+      if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
       {
         bindTextParameter(param_select,":defname",defArg->name);
         bindTextParameter(param_insert,":defname",defArg->name);
       }
-      if (!a->array.isEmpty())
+      if (!a.array.isEmpty())
       {
-        bindTextParameter(param_select,":array",a->array);
-        bindTextParameter(param_insert,":array",a->array);
+        bindTextParameter(param_select,":array",a.array);
+        bindTextParameter(param_insert,":array",a.array);
       }
-      if (!a->defval.isEmpty())
+      if (!a.defval.isEmpty())
       {
         StringList l;
-        linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a->defval);
-        bindTextParameter(param_select,":defval",a->defval);
-        bindTextParameter(param_insert,":defval",a->defval);
+        linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a.defval);
+        bindTextParameter(param_select,":defval",a.defval);
+        bindTextParameter(param_insert,":defval",a.defval);
       }
-      if (defArg) ++defAli;
 
       int param_id=step(param_select,TRUE,TRUE);
       if (param_id==0) {
@@ -1091,18 +1098,16 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
 
 static void insertMemberDefineParams(int memberdef_id,const MemberDef *md, const Definition *def)
 {
-    if (md->argumentList()->count()==0) // special case for "foo()" to
-                                        // disguish it from "foo".
+    if (md->argumentList().empty()) // special case for "foo()" to
+                                    // distinguish it from "foo".
     {
       DBG_CTX(("no params\n"));
     }
     else
     {
-      ArgumentListIterator ali(*md->argumentList());
-      Argument *a;
-      for (ali.toFirst();(a=ali.current());++ali)
+      for (const Argument &a : md->argumentList())
       {
-        bindTextParameter(param_insert,":defname",a->type);
+        bindTextParameter(param_insert,":defname",a.type);
         int param_id=step(param_insert,TRUE);
         if (param_id==-1) {
           continue;
@@ -1120,7 +1125,7 @@ static void associateMember(const MemberDef *md, struct Refid member_refid, stru
   // TODO: skip EnumValue only to guard against recording refids and member records
   // for enumvalues until we can support documenting them as entities.
   if (md->memberType()==MemberType_EnumValue) return;
-  if (md->name().at(0)!='@') // skip anonymous members
+  if (!md->isAnonymous()) // skip anonymous members
   {
     bindIntParameter(member_insert, ":scope_rowid", scope_refid.rowid);
     bindIntParameter(member_insert, ":memberdef_rowid", member_refid.rowid);
@@ -1271,7 +1276,7 @@ static void writeInnerClasses(const ClassSDict *cl, struct Refid outer_refid)
   const ClassDef *cd;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
+    if (!cd->isHidden() && !cd->isAnonymous())
     {
       struct Refid inner_refid = insertRefid(cd->getOutputFileBase());
 
@@ -1360,7 +1365,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl, struct Refid outer_re
     const NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
+      if (!nd->isHidden() && !nd->isAnonymous())
       {
         struct Refid inner_refid = insertRefid(nd->getOutputFileBase());
 
@@ -1373,48 +1378,39 @@ static void writeInnerNamespaces(const NamespaceSDict *nl, struct Refid outer_re
 }
 
 
-static void writeTemplateArgumentList(const ArgumentList * al,
+static void writeTemplateArgumentList(const ArgumentList &al,
                                       const Definition * scope,
                                       const FileDef * fileScope)
 {
-  if (al)
+  for (const Argument &a : al)
   {
-    ArgumentListIterator ali(*al);
-    Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
+    if (!a.type.isEmpty())
     {
-      if (!a->type.isEmpty())
-      {
-        #warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->type);
-        bindTextParameter(param_select,":type",a->type);
-        bindTextParameter(param_insert,":type",a->type);
-      }
-      if (!a->name.isEmpty())
-      {
-        bindTextParameter(param_select,":declname",a->name);
-        bindTextParameter(param_insert,":declname",a->name);
-        bindTextParameter(param_select,":defname",a->name);
-        bindTextParameter(param_insert,":defname",a->name);
-      }
-      if (!a->defval.isEmpty())
-      {
-        #warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->defval);
-        bindTextParameter(param_select,":defval",a->defval);
-        bindTextParameter(param_insert,":defval",a->defval);
-      }
-      if (!step(param_select,TRUE,TRUE))
-        step(param_insert);
+//#warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.type);
+      bindTextParameter(param_select,":type",a.type);
+      bindTextParameter(param_insert,":type",a.type);
     }
+    if (!a.name.isEmpty())
+    {
+      bindTextParameter(param_select,":declname",a.name);
+      bindTextParameter(param_insert,":declname",a.name);
+      bindTextParameter(param_select,":defname",a.name);
+      bindTextParameter(param_insert,":defname",a.name);
+    }
+    if (!a.defval.isEmpty())
+    {
+//#warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.defval);
+      bindTextParameter(param_select,":defval",a.defval);
+      bindTextParameter(param_insert,":defval",a.defval);
+    }
+    if (!step(param_select,TRUE,TRUE))
+      step(param_insert);
   }
 }
 
 static void writeMemberTemplateLists(const MemberDef *md)
 {
-  const ArgumentList *templMd = md->templateArguments();
-  if (templMd) // function template prefix
-  {
-    writeTemplateArgumentList(templMd,md->getClassDef(),md->getFileDef());
-  }
+  writeTemplateArgumentList(md->templateArguments(),md->getClassDef(),md->getFileDef());
 }
 static void writeTemplateList(const ClassDef *cd)
 {
@@ -1675,12 +1671,9 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
 
   if (isFunc)
   {
-    const ArgumentList *al = md->argumentList();
-    if (al!=0)
-    {
-      bindIntParameter(memberdef_insert,":const",al->constSpecifier);
-      bindIntParameter(memberdef_insert,":volatile",al->volatileSpecifier);
-    }
+    const ArgumentList &al = md->argumentList();
+    bindIntParameter(memberdef_insert,":const",al.constSpecifier);
+    bindIntParameter(memberdef_insert,":volatile",al.volatileSpecifier);
     bindIntParameter(memberdef_insert,":explicit",md->isExplicit());
     bindIntParameter(memberdef_insert,":inline",md->isInline());
     bindIntParameter(memberdef_insert,":final",md->isFinal());
@@ -1961,7 +1954,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
 
   if (cd->isReference())        return; // skip external references.
   if (cd->isHidden())           return; // skip hidden classes.
-  if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
+  if (cd->isAnonymous())        return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
 
   struct Refid refid = insertRefid(cd->getOutputFileBase());

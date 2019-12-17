@@ -41,6 +41,7 @@
 #include "ftvhelp.h"
 #include "dot.h"
 #include "dotgfxhierarchytable.h"
+#include "dotlegendgraph.h"
 #include "pagedef.h"
 #include "dirdef.h"
 #include "vhdldocgen.h"
@@ -367,7 +368,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
           {
             const MemberList *enumList = md->enumFieldList();
             bool isDir = enumList!=0 && md->isEnumerate();
-            bool isAnonymous = md->name().find('@')!=-1;
+            bool isAnonymous = md->isAnonymous();
             static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
             static bool extractStatic = Config_getBool(EXTRACT_STATIC);
             if (!isAnonymous &&
@@ -1659,7 +1660,7 @@ static void writeNamespaceTree(const NamespaceSDict *nsDict,FTVHelp *ftv,
     const NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (nd->localName().find('@')==-1 &&
+      if (!nd->isAnonymous() &&
           (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
       {
 
@@ -1942,6 +1943,11 @@ inline bool isId1(int c)
   return (c<127 && c>31); // printable ASCII character
 }
 
+static QCString letterToString(uint letter)
+{
+  return QString(QChar(letter)).utf8();
+}
+
 static QCString letterToLabel(uint startLetter)
 {
   char s[11]; // max 0x12345678 + '\0'
@@ -2100,7 +2106,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
     if (headerItems) alphaLinks += "&#160;|&#160;";
     headerItems++;
     QCString li = letterToLabel(*pLetter);
-    QCString ls = QString(QChar(*pLetter)).utf8();
+    QCString ls = letterToString(*pLetter);
     alphaLinks += (QCString)"<a class=\"qindex\" href=\"#letter_" +
                   li + "\">" +
                   ls + "</a>";
@@ -2243,7 +2249,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
               ol.writeString("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">"
                   "<tr>"
                   "<td><div class=\"ah\">&#160;&#160;");
-              ol.writeString(QString(QChar(cell->letter())).utf8());
+              ol.writeString(letterToString(cell->letter()));
               ol.writeString(         "&#160;&#160;</div>"
                   "</td>"
                   "</tr>"
@@ -2838,7 +2844,7 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
           if (!firstItem)    ol.endItemListItem();
           if (!firstSection) ol.endItemList();
           QCString cs = letterToLabel(ml->letter());
-          QCString cl = QString(QChar(ml->letter())).utf8();
+          QCString cl = letterToString(ml->letter());
           QCString anchor=(QCString)"index_"+convertToId(cs);
           QCString title=(QCString)"- "+cl+" -";
           ol.startSection(anchor,title,SectionInfo::Subsection);
@@ -3119,7 +3125,7 @@ static void writeQuickMemberIndex(OutputList &ol,
   {
     uint i = ml->letter();
     QCString is = letterToLabel(i);
-    QCString ci = QString(QChar(i)).utf8();
+    QCString ci = letterToString(i);
     QCString anchor;
     QCString extension=Doxygen::htmlFileExtension;
     if (!multiPage)
@@ -3209,7 +3215,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
       {
         fileName+="_"+letterToLabel(page);
       }
-      QCString cs = QString(QChar(page)).utf8();
+      QCString cs = letterToString(page);
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
@@ -3388,7 +3394,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
       {
         fileName+="_"+letterToLabel(page);
       }
-      QCString cs = QString(QChar(page)).utf8();
+      QCString cs = letterToString(page);
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
@@ -3564,7 +3570,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
       {
         fileName+="_"+letterToLabel(page);
       }
-      QCString cs = QString(QChar(page)).utf8();
+      QCString cs = letterToString(page);
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
@@ -3919,7 +3925,9 @@ void writeGraphInfo(OutputList &ol)
   if (!Config_getBool(HAVE_DOT) || !Config_getBool(GENERATE_HTML)) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  generateGraphLegend(Config_getString(HTML_OUTPUT));
+
+  DotLegendGraph gd;
+  gd.writeGraph(Config_getString(HTML_OUTPUT));
 
   bool &stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
   bool oldStripCommentsState = stripCommentsStateRef;
@@ -3944,7 +3952,7 @@ void writeGraphInfo(OutputList &ol)
     legendDocs = legendDocs.left(s+8) + "[!-- SVG 0 --]\n" + legendDocs.mid(e);
     //printf("legendDocs=%s\n",legendDocs.data());
   }
-  FileDef *fd = createFileDef("","graph_legend");
+  FileDef *fd = createFileDef("","graph_legend.dox");
   ol.generateDoc("graph_legend",1,fd,0,legendDocs,FALSE,FALSE);
   delete fd;
 
@@ -4052,7 +4060,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           {
             const MemberList *enumList = md->enumFieldList();
             bool isDir = enumList!=0 && md->isEnumerate();
-            if (md->isVisible() && md->name().find('@')==-1)
+            if (md->isVisible() && !md->isAnonymous())
             {
               Doxygen::indexList->addContentsItem(isDir,
                   md->name(),md->getReference(),
@@ -5197,7 +5205,7 @@ void renderMemberIndicesAsJs(FTextStream &t,
           if (!firstLetter) t << "," << endl;
           uint letter = ml->letter();
           QCString is = letterToLabel(letter);
-          QCString ci = QString(QChar(letter)).utf8();
+          QCString ci = letterToString(letter);
           QCString anchor;
           QCString extension=Doxygen::htmlFileExtension;
           QCString fullName = getInfo(i)->fname;

@@ -58,7 +58,7 @@ uchar_clamp(double clr, unsigned char max) {
 		result = (clr < 0) ? 0 : max;
 	}/* if */
 
-	return result;
+	return (unsigned char)result;
 }/* uchar_clamp*/
 
 

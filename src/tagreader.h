@@ -21,6 +21,8 @@
 
 class Entry;
 
-void parseTagFile(Entry *root,const char *fullPathName);
+#include <memory>
+
+void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullPathName);
 
 #endif

@@ -108,7 +108,7 @@ By means of the doxygen configuration parameter
 For convenience a zip with the result of running the script can also be downloaded from 
 http://www.doxygen.nl/dl/github_emojis.zip
 
-For a overview of the supported emoji one can issue the comand:<br>
+For an overview of the supported emoji one can issue the command:<br>
 `doxygen -f emoji <outputFileName>`
 
 \htmlonly

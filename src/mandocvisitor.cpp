@@ -204,8 +204,8 @@ void ManDocVisitor::visit(DocVerbatim *s)
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;
       m_t << ".nf" << endl;
-      Doxygen::parserManager->getParser(lang)
-                            ->parseCode(m_ci,s->context(),s->text(),
+      Doxygen::parserManager->getCodeParser(lang)
+                             .parseCode(m_ci,s->context(),s->text(),
                                         langExt,
                                         s->isExample(),s->exampleFile());
       if (!m_firstCol) m_t << endl;
@@ -257,8 +257,8 @@ void ManDocVisitor::visit(DocInclude *inc)
          m_t << ".nf" << endl;
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,inc->context(),
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
                                            inc->isExample(),
@@ -281,8 +281,8 @@ void ManDocVisitor::visit(DocInclude *inc)
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;
       m_t << ".nf" << endl;
-      Doxygen::parserManager->getParser(inc->extension())
-                            ->parseCode(m_ci,inc->context(),
+      Doxygen::parserManager->getCodeParser(inc->extension())
+                             .parseCode(m_ci,inc->context(),
                                         inc->text(),
                                         langExt,
                                         inc->isExample(),
@@ -318,8 +318,8 @@ void ManDocVisitor::visit(DocInclude *inc)
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;
       m_t << ".nf" << endl;
-      Doxygen::parserManager->getParser(inc->extension())
-                            ->parseCode(m_ci,
+      Doxygen::parserManager->getCodeParser(inc->extension())
+                             .parseCode(m_ci,
                                         inc->context(),
                                         extractBlock(inc->text(),inc->blockId()),
                                         langExt,
@@ -338,8 +338,8 @@ void ManDocVisitor::visit(DocInclude *inc)
          m_t << ".nf" << endl;
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         Doxygen::parserManager->getCodeParser(inc->extension())
+                                .parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -397,8 +397,8 @@ void ManDocVisitor::visit(DocIncOperator *op)
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
 
-      Doxygen::parserManager->getParser(locLangExt)
-                            ->parseCode(m_ci,op->context(),op->text(),langExt,
+      Doxygen::parserManager->getCodeParser(locLangExt)
+                             .parseCode(m_ci,op->context(),op->text(),langExt,
                                         op->isExample(),op->exampleFile(),
                                         fd,     // fileDef
                                         op->line(),    // startLine
@@ -904,25 +904,6 @@ void ManDocVisitor::visitPost(DocSecRefList *)
   if (!m_firstCol) m_t << endl;
   m_t << ".PP" << endl;
 }
-
-//void ManDocVisitor::visitPre(DocLanguage *l)
-//{
-//  QString langId = Config_getEnum(OUTPUT_LANGUAGE);
-//  if (l->id().lower()!=langId.lower())
-//  {
-//    pushEnabled();
-//    m_hide = TRUE;
-//  }
-//}
-//
-//void ManDocVisitor::visitPost(DocLanguage *l) 
-//{
-//  QString langId = Config_getEnum(OUTPUT_LANGUAGE);
-//  if (l->id().lower()!=langId.lower())
-//  {
-//    popEnabled();
-//  }
-//}
 
 void ManDocVisitor::visitPre(DocParamSect *s)
 {

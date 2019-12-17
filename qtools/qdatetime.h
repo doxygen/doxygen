@@ -39,7 +39,7 @@
 #define QDATETIME_H
 
 #ifndef QT_H
-#include "qstring.h"
+#include "qcstring.h"
 #endif // QT_H
 
 
@@ -65,10 +65,10 @@ public:
     int	   daysInMonth() const;			// 28..31
     int	   daysInYear()	 const;			// 365 or 366
 
-    virtual QString monthName( int month ) const;
-    virtual QString dayName( int weekday ) const;
+    virtual QCString monthName( int month ) const;
+    virtual QCString dayName( int weekday ) const;
 
-    QString toString()	 const;
+    QCString toString()	 const;
 
     bool   setYMD( int y, int m, int d );
 
@@ -119,7 +119,7 @@ public:
     int	   second()	 const;			// 0..59
     int	   msec()	 const;			// 0..999
 
-    QString toString()	 const;
+    QCString toString()	 const;
 
     bool   setHMS( int h, int m, int s, int ms=0 );
 
@@ -175,7 +175,7 @@ public:
     void   setTime_t( uint secsSince1Jan1970UTC );
     void   setTimeUtc_t( uint secsSince1Jan1970UTC );
 
-    QString toString()	const;
+    QCString toString()	const;
 
     QDateTime addDays( int days )	const;
     QDateTime addSecs( int secs )	const;

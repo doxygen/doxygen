@@ -18,6 +18,8 @@
 #ifndef MEMBERGROUP_H
 #define MEMBERGROUP_H
 
+#include <vector>
+
 #include <qlist.h>
 #include "sortdict.h"
 #include "types.h"
@@ -32,7 +34,6 @@ class FileDef;
 class GroupDef;
 class OutputList;
 class Definition;
-class StorageIntf;
 class FTextStream;
 struct ListItemInfo;
 
@@ -41,7 +42,7 @@ class MemberGroup
 {
   public:
     MemberGroup();
-    MemberGroup(const Definition *parent,int id,const char *header,
+    MemberGroup(int id,const char *header,
                 const char *docs,const char *docFile,int docLine);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
@@ -71,19 +72,7 @@ class MemberGroup
     void countDocMembers();
     int countGroupedInheritedMembers(MemberListType lt);
     void distributeMemberGroupDocumentation();
-    void findSectionsInDocumentation();
-    /*
-    int varCount() const;
-    int funcCount() const;
-    int enumCount() const;
-    int enumValueCount() const;
-    int typedefCount() const;
-    int sequenceCount() const;
-    int dictionaryCount() const;
-    int protoCount() const;
-    int defineCount() const;
-    int friendCount() const;
-    */
+    void findSectionsInDocumentation(const Definition *d);
     int numDecMembers() const;
     int numDecEnumValues() const;
     int numDocMembers() const;
@@ -92,28 +81,27 @@ class MemberGroup
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void setInGroup(bool b);
     void addListReferences(Definition *d);
-    void setRefItems(const QList<ListItemInfo> *sli);
+    void setRefItems(const std::vector<ListItemInfo> &sli);
     MemberList *members() const { return memberList; }
-    const Definition *parent() const { return m_parent; }
     QCString anchor() const;
 
     QCString docFile() const { return m_docFile; }
     int docLine() const { return m_docLine; }
 
   private: 
-    MemberList *memberList;      // list of all members in the group
-    MemberList *inDeclSection;
-    int grpId;
+    MemberList *memberList = 0;      // list of all members in the group
+    MemberList *inDeclSection = 0;
+    int grpId = 0;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file
     QCString doc;
-    bool inSameSection;
-    int  m_numDecMembers;
-    int  m_numDocMembers;
-    const Definition *m_parent;
+    bool inSameSection = 0;
+    int  m_numDecMembers = 0;
+    int  m_numDocMembers = 0;
+    const Definition *m_parent = 0;
     QCString m_docFile;
-    int m_docLine;
-    QList<ListItemInfo> *m_xrefListItems;
+    int m_docLine = 0;
+    std::vector<ListItemInfo> m_xrefListItems;
 };
 
 /** A list of MemberGroup objects. */
@@ -145,15 +133,13 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
 /** Data collected for a member group */
 struct MemberGroupInfo
 {
-  MemberGroupInfo() : docLine(-1), m_sli(0) {}
- ~MemberGroupInfo() { delete m_sli; m_sli=0; }
-  void setRefItems(const QList<ListItemInfo> *sli);
+  void setRefItems(const std::vector<ListItemInfo> &sli);
   QCString header;
   QCString doc;
   QCString docFile;
-  int docLine;
+  int docLine = -1;
   QCString compoundName;
-  QList<ListItemInfo> *m_sli;
+  std::vector<ListItemInfo> m_sli;
 };
 
 #endif

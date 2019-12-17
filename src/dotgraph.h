@@ -34,11 +34,6 @@ class DotGraph
     DotGraph() : m_curNodeNumber(0), m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE), m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() {}
 
-    static QCString DOT_FONTNAME; // will be initialized in initDot
-    static int DOT_FONTSIZE;      // will be initialized in initDot
-
-    static bool writeVecGfxFigure(FTextStream& out, const QCString& baseName, const QCString& figureName);
-
   protected:
     /** returns node numbers. The Counter is reset by the constructor */
     int getNextNodeNumber() { return ++m_curNodeNumber; }
@@ -72,10 +67,6 @@ class DotGraph
 
     virtual void computeTheGraph() = 0;
 
-    static QCString IMG_EXT;
-
-    friend void initDot();
-
     QCString absBaseName() const { return m_absPath + m_baseName; }
     QCString absDotName()  const { return m_absPath + m_baseName + ".dot"; }
     QCString imgName()     const;
@@ -83,22 +74,22 @@ class DotGraph
     QCString relImgName()  const { return m_relPath + imgName(); }
 
     // the following variables are used while writing the graph to a .dot file
-    GraphOutputFormat      m_graphFormat;
-    EmbeddedOutputFormat   m_textFormat;
+    GraphOutputFormat      m_graphFormat = GOF_BITMAP;
+    EmbeddedOutputFormat   m_textFormat = EOF_Html;
     QDir                   m_dir;
     QCString               m_fileName;
     QCString               m_relPath;
-    bool                   m_generateImageMap;
-    int                    m_graphId;
+    bool                   m_generateImageMap = false;
+    int                    m_graphId = 0;
 
     QCString               m_absPath;
     QCString               m_baseName;
     QGString               m_theGraph;
-    bool                   m_regenerate;
-    bool                   m_doNotAddImageToIndex;
-    bool                   m_noDivTag;
-    bool                   m_zoomable;
-    bool                   m_urlOnly;
+    bool                   m_regenerate = false;
+    bool                   m_doNotAddImageToIndex = false;
+    bool                   m_noDivTag = false;
+    bool                   m_zoomable = true;
+    bool                   m_urlOnly = false;
 
   private:
     DotGraph(const DotGraph &);

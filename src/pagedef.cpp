@@ -99,7 +99,7 @@ PageDefImpl::~PageDefImpl()
 
 void PageDefImpl::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),this,0,docFile());
+  docFindSections(documentation(),this,docFile());
 }
 
 GroupDef *PageDefImpl::getGroupDef() const 

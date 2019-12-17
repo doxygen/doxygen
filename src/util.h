@@ -186,12 +186,12 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
 
 QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
 
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
+bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList &srcAl,
+                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList &dstAl,
                      bool checkCV
                     );
 
-void mergeArguments(ArgumentList *,ArgumentList *,bool forceNameOverwrite=FALSE);
+void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=FALSE);
 
 QCString substituteClassNames(const QCString &s);
 
@@ -232,9 +232,9 @@ inline bool isId(int c)
 
 QCString removeRedundantWhiteSpace(const QCString &s);
 
-QCString argListToString(const ArgumentList *al,bool useCanonicalType=FALSE,bool showDefVals=TRUE);
+QCString argListToString(const ArgumentList &al,bool useCanonicalType=FALSE,bool showDefVals=TRUE);
 
-QCString tempArgListToString(const ArgumentList *al,SrcLangExt lang);
+QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang);
 
 QCString generateMarker(int id);
 
@@ -291,6 +291,8 @@ QCString convertToDocBook(const char *s);
 
 QCString convertToJSString(const char *s, bool applyTextDir = true);
 
+QCString convertToPSString(const char *s);
+
 QCString getOverloadDocs();
 
 void addMembersToMemberGroup(/* in,out */ MemberList *ml,
@@ -303,14 +305,14 @@ int extractClassNameFromType(const QCString &type,int &pos,
 QCString normalizeNonTemplateArgumentsInString(
        const QCString &name,
        const Definition *context,
-       const ArgumentList *formalArgs);
+       const ArgumentList &formalArgs);
 
 QCString substituteTemplateArgumentsInString(
        const QCString &name,
-       ArgumentList *formalArgs,
-       ArgumentList *actualArgs);
+       const ArgumentList &formalArgs,
+       const ArgumentList &actualArgs);
 
-QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);
+//QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
@@ -325,18 +327,18 @@ int getScopeFragment(const QCString &s,int p,int *l);
 
 int filterCRLF(char *buf,int len);
 
-void addRefItem(const QList<ListItemInfo> *sli,const char *prefix,
+void addRefItem(const std::vector<ListItemInfo> &sli,const char *prefix,
                 const char *key,
                 const char *name,const char *title,const char *args,Definition *scope);
 
 PageDef *addRelatedPage(const char *name,
                         const QCString &ptitle,
                         const QCString &doc,
-                        const QList<SectionInfo> *anchors,
                         const char *fileName,int startLine,
-                        const QList<ListItemInfo> *sli,
+                        const std::vector<ListItemInfo> &sli = std::vector<ListItemInfo>(),
                         GroupDef *gd=0,
-                        TagInfo *tagInfo=0,
+                        const TagInfo *tagInfo=0,
+                        bool xref=FALSE,
                         SrcLangExt lang=SrcLangExt_Unknown
                        );
 
@@ -404,7 +406,7 @@ const ClassDef *newResolveTypedef(const FileDef *fileScope,
                                   const MemberDef **pMemType=0,
                                   QCString *pTemplSpec=0,
                                   QCString *pResolvedType=0,
-                                  ArgumentList *actTemplParams=0);
+                                  const ArgumentList *actTemplParams=0);
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 
@@ -421,7 +423,7 @@ int countAliasArguments(const QCString argList);
 QCString resolveAliasCmd(const QCString aliasCmd);
 QCString expandAlias(const QCString &aliasName,const QCString &aliasValue);
 
-void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList *al);
+void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al);
 
 QCString convertCharEntitiesToUTF8(const QCString &s);
 
