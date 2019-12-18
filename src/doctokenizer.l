@@ -203,6 +203,7 @@ static void handleHtmlTag()
   // Parse the attributes. Each attribute is a name, value pair
   // The result is stored in g_token->attribs.
   int startName,endName,startAttrib,endAttrib;
+  int startAttribList = i;
   while (i<(int)yyleng)
   {
     char c=tagText.at(i);
@@ -237,7 +238,7 @@ static void handleHtmlTag()
 	// search for matching quote 
         while (i<(int)yyleng && c!='\'') { c=tagText.at(++i); } 
 	endAttrib=i;
-        if (i<(int)yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) { c=tagText.at(++i);}
       }
       else if (tagText.at(i)=='"') // option "..."
       {
@@ -246,7 +247,7 @@ static void handleHtmlTag()
 	// search for matching quote 
         while (i<(int)yyleng && c!='"') { c=tagText.at(++i); } 
 	endAttrib=i;
-        if (i<(int)yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) { c=tagText.at(++i);}
       }
       else // value without any quotes
       {
@@ -254,7 +255,7 @@ static void handleHtmlTag()
 	// search for separator or end symbol
         while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); } 
 	endAttrib=i;
-	if (i<(int)yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) { c=tagText.at(++i);}
       }
       opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib); 
       if (opt.name == "align") opt.value = opt.value.lower();
@@ -271,6 +272,7 @@ static void handleHtmlTag()
     //    opt.name.data(),opt.value.data());
     g_token->attribs.append(&opt);
   }
+  g_token->attribsStr = tagText.mid(startAttribList,i-startAttribList);
 }
   
 static QCString stripEmptyLines(const QCString &s)
