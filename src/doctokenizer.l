@@ -344,8 +344,9 @@ PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
-MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
-MAILADR2  {BLANK}*[a-z_A-Z0-9+-]+({BLANK}*[Dd][Oo][Tt]{BLANK}*[a-z_A-Z0-9+-]+)?{BLANK}*[Aa][Tt]{BLANK}*[a-z_A-Z0-9-]+({BLANK}*[Dd][Oo][Tt]{BLANK}*[a-z_A-Z0-9\-]+)+{BLANK}*[a-z_A-Z0-9\-]+{BLANK}*
+MAILADDR  ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILWS    [\t a-z_A-Z0-9+-]
+MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT"|"_dot_"|"_DOT_"){BLANK}+{MAILWS}+
 OPTSTARS  ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
@@ -643,20 +644,20 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>{MAILADR}     { // Mail address
+<St_Para>{MAILADDR}    { // Mail address
                          g_token->name=yytext;
                          g_token->name.stripPrefix("mailto:");
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
                        }
-<St_Para>"<"{MAILADR}">" { // Mail address
+<St_Para>"<"{MAILADDR}">" { // Mail address
                          g_token->name=yytext;
                          g_token->name = g_token->name.mid(1,g_token->name.length()-2);
                          g_token->name.stripPrefix("mailto:");
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
                        }
-<St_Para>"<"{MAILADR2}">" { // anti spame mail address
+<St_Para>"<"{MAILADDR2}">" { // anti spam mail address
                          g_token->name=yytext;
 			 return TK_WORD;
                        }
