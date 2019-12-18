@@ -4307,7 +4307,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <CopyArgComment,CopyArgVerbatim>.	{ yyextra->fullArgString+=*yytext; }
 <CopyArgComment>{CMD}("brief"|"short"){B}+ {
   					  warn(yyextra->yyFileName,yyextra->yyLineNr,
-					      "Ignoring %cbrief command yyextra->inside argument documentation",*yytext
+					      "Ignoring %cbrief command inside argument documentation",*yytext
 					     );
                                           yyextra->fullArgString+=' ';
                                         }
@@ -6421,7 +6421,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <DocCopyBlock><<EOF>>			{
   					  warn(yyextra->yyFileName,yyextra->yyLineNr,
-					      "reached end of file while yyextra->inside a '%s' block!\n"
+					      "reached end of file while inside a '%s' block!\n"
 					      "The command that should end the block seems to be missing!\n",
 					      yyextra->docBlockName.data());
   					  yyterminate();
