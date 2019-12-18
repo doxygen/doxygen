@@ -345,6 +345,7 @@ CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
 MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILADR2  {BLANK}*[a-z_A-Z0-9+-]+({BLANK}*[Dd][Oo][Tt]{BLANK}*[a-z_A-Z0-9+-]+)?{BLANK}*[Aa][Tt]{BLANK}*[a-z_A-Z0-9-]+({BLANK}*[Dd][Oo][Tt]{BLANK}*[a-z_A-Z0-9\-]+)+{BLANK}*[a-z_A-Z0-9\-]+{BLANK}*
 OPTSTARS  ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
@@ -654,6 +655,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name.stripPrefix("mailto:");
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
+                       }
+<St_Para>"<"{MAILADR2}">" { // anti spame mail address
+                         g_token->name=yytext;
+			 return TK_WORD;
                        }
 <St_Para>"$"{ID}":"[^:\n$][^\n$]*"$" { /* RCS tag */
                          QCString tagName(yytext+1);
