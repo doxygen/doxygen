@@ -100,6 +100,7 @@ struct TokenInfo
   HtmlAttribList attribs;
   bool endTag = false;
   bool emptyTag = false;
+  QCString attribsStr;
 
   // whitespace
   QCString chars;
