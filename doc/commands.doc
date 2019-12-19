@@ -2599,7 +2599,7 @@ Commands for visual enhancements
   a Python file for instance, the syntax highlight will be done according
   to the Python syntax. 
 
-  If it unclear from the context which language is meant (for instance the
+  If it is unclear from the context which language is meant (for instance the
   comment is in a <code>.txt</code> or <code>.markdown</code> file) then you can also explicitly
   indicate the language, by putting the file extension typically
   that doxygen associated with the language in curly brackets after the
