@@ -18,7 +18,7 @@ def xopen(fname, mode='r', encoding='utf-8'):
 	else:
 		return open(fname, mode=mode, encoding=encoding) # Python 3 with encoding
 
-def xpopen(cmd, encoding='utf-8-sig'):
+def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
 	'''Unified file pipe opening for Python 2 an Python 3.
 
 	Python 2 does not have the encoding argument. Python 3 has one. and
@@ -27,9 +27,12 @@ def xpopen(cmd, encoding='utf-8-sig'):
 	if sys.version_info[0] == 2:
 		return os.popen(cmd).read() # Python 2 without encoding
 	else:
-		proc = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
-		proc.wait
-		return proc.stdout.read()
+		if (getStderr):
+			proc = subprocess.run(cmd1,encoding=encoding,capture_output=True) # Python 3 with encoding
+			return proc.stderr
+		else:
+			proc = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
+			return proc.stdout.read()
 
 class Tester:
 	def __init__(self,args,test):
@@ -139,6 +142,7 @@ class Tester:
 			print('HTML_FILE_EXTENSION=.xhtml', file=f)
 			if (self.args.pdf):
 				print('GENERATE_LATEX=YES', file=f)
+				print('LATEX_BATCHMODE=YES', file=f)
 				print('LATEX_OUTPUT=%s/latex' % self.test_out, file=f)
 			if self.args.subdirs:
 				print('CREATE_SUBDIRS=YES', file=f)
@@ -261,10 +265,12 @@ class Tester:
 				index_xsd.append(glob.glob('%s/index.xsd' % (xmlxsd_output)))
 				index_xsd.append(glob.glob('%s/*/*/index.xsd' % (xmlxsd_output)))
 				index_xsd = ' '.join(list(itertools.chain.from_iterable(index_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
-				exe_string = '%s --noout --schema %s %s %s' % (self.args.xmllint,index_xsd,index_xml,redirx)
+				exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,index_xsd,index_xml)
+				exe_string1 = exe_string
+				exe_string += ' %s' % (redirx)
 				exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-				xmllint_out = xpopen(exe_string).read()
+				xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 				if xmllint_out:
 					xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
 				else:
@@ -285,10 +291,12 @@ class Tester:
 				compound_xsd.append(glob.glob('%s/compound.xsd' % (xmlxsd_output)))
 				compound_xsd.append(glob.glob('%s/*/*/compound.xsd' % (xmlxsd_output)))
 				compound_xsd = ' '.join(list(itertools.chain.from_iterable(compound_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
-				exe_string = '%s --noout --schema %s %s %s' % (self.args.xmllint,compound_xsd,compound_xml,redirx)
+				exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,compound_xsd,compound_xml)
+				exe_string1 = exe_string
+				exe_string += ' %s' % (redirx)
 				exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-				xmllint_out = xpopen(exe_string).read()
+				xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 				if xmllint_out:
 					xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
 				else:
@@ -318,11 +326,13 @@ class Tester:
 			tests.append(glob.glob('%s/*.xml' % (docbook_output)))
 			tests.append(glob.glob('%s/*/*/*.xml' % (docbook_output)))
 			tests = ' '.join(list(itertools.chain.from_iterable(tests))).replace(self.args.outputdir +'/','').replace('\\','/')
-			exe_string = '%s --nonet --postvalid %s %s' % (self.args.xmllint,tests,redirx)
+			exe_string = '%s --nonet --postvalid %s' % (self.args.xmllint,tests)
+			exe_string1 = exe_string
+			exe_string += ' %s' % (redirx)
 			exe_string += ' %s more "%s/temp"' % (separ,docbook_output)
 
 			failed_docbook=False
-			xmllint_out = xpopen(exe_string).read()
+			xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 			xmllint_out = self.cleanup_xmllint_docbook(xmllint_out)
 			if xmllint_out:
 				msg += (xmllint_out,)
@@ -336,10 +346,12 @@ class Tester:
 				redirx=' 2> %s/temp >nul:'%html_output
 			else:
 				redirx='2>%s/temp >/dev/null'%html_output
-			exe_string = '%s --path dtd --nonet --postvalid %s/*xhtml %s %s ' % (self.args.xmllint,html_output,redirx,separ)
-			exe_string += 'more "%s/temp"' % (html_output)
+			exe_string = '%s --path dtd --nonet --postvalid %s/*xhtml' % (self.args.xmllint,html_output)
+			exe_string1 = exe_string
+			exe_string += ' %s' % (redirx)
+			exe_string += ' %s more "%s/temp"' % (separ,html_output)
 			failed_html=False
-			xmllint_out = xpopen(exe_string).read()
+			xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 			xmllint_out = self.cleanup_xmllint(xmllint_out)
 			if xmllint_out:
 				msg += (xmllint_out,)
@@ -351,12 +363,22 @@ class Tester:
 			latex_output='%s/latex' % self.test_out
 			if (sys.platform == 'win32'):
 				redirl='>nul: 2>temp'
+				mk='make.bat'
 			else:
 				redirl='>/dev/null 2>temp'
-			exe_string = 'cd %s %s echo "q" | make %s %s' % (latex_output,separ,redirl,separ)
-			exe_string += 'more temp'
-			latex_out = xpopen(exe_string).read()
+				mk='make'
+			cur_directory = os.getcwd()
+			os.chdir(latex_output)
+			exe_string = mk
+			exe_string1 = exe_string
+			exe_string += ' %s' % (redirl)
+			exe_string += ' %s more temp' % (separ)
+			latex_out = xpopen(exe_string,exe_string1,getStderr=True)
+			os.chdir(cur_directory);
 			if latex_out.find("Error")!=-1:
+				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+				failed_html=True
+			elif xopen(latex_output + "/refman.log",'r').read().find("Error")!= -1:
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
 				failed_html=True
 			elif xopen(latex_output + "/refman.log",'r').read().find("Emergency stop")!= -1:
