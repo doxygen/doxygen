@@ -2795,7 +2795,7 @@ static void addDefine(yyscan_t yyscanner)
   {
     ArgumentList argList;
     //printf("addDefine() state->defName='%s' state->defArgsStr='%s'\n",state->defName.data(),state->defArgsStr.data());
-    stringToArgumentList(state->defArgsStr,argList);
+    stringToArgumentList(SrcLangExt_Cpp, state->defArgsStr,argList);
     md->setArgumentList(argList);
   }
   //printf("Setting initializer for '%s' to '%s'\n",state->defName.data(),state->defText.data());

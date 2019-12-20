@@ -86,6 +86,7 @@ static int              g_lastDocContext;
 static int              g_lastDocChar;
 static int              g_lastExtendsContext;
 static QCString         g_delimiter;
+static SrcLangExt       g_lang;
 
 static const char *stateToString(int state);
 /* -----------------------------------------------------------------
@@ -481,9 +482,16 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <ReadFuncArgType,ReadFuncArgPtr>"extends" {
-                                          g_curTypeConstraint.resize(0);
-                                          g_lastExtendsContext=YY_START;
-                                          BEGIN(ReadTypeConstraint);
+                                           if (g_lang!=SrcLangExt_Java)
+                                           {
+                                             REJECT;
+                                           }
+                                           else
+                                           {
+                                             g_curTypeConstraint.resize(0);
+                                             g_lastExtendsContext=YY_START;
+                                             BEGIN(ReadTypeConstraint);
+                                           }
                                         }
 <ReadFuncArgType,ReadFuncArgPtr>"$"?{ID} { 
   					  QCString name=yytext; //resolveDefines(yytext);
@@ -601,7 +609,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
  *              for complex types are written to
  */
  
-void stringToArgumentList(const char *argsString,ArgumentList& al,QCString *extraTypeChars)
+void stringToArgumentList(SrcLangExt lang, const char *argsString,ArgumentList& al,QCString *extraTypeChars)
 {
   if (argsString==0) return;
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);
@@ -623,6 +631,7 @@ void stringToArgumentList(const char *argsString,ArgumentList& al,QCString *extr
   g_curArgDefValue.resize(0);
   g_curArgName.resize(0);
   g_argList = &al;
+  g_lang = lang;
   defargsYYrestart( defargsYYin );
   BEGIN( Start );
   defargsYYlex();

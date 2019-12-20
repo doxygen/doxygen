@@ -1397,7 +1397,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   ArgumentList actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
-    stringToArgumentList(strippedTemplateParams,actTemplParams);
+    stringToArgumentList(scope->getLanguage(),strippedTemplateParams,actTemplParams);
   }
 
   int qualifierIndex = computeQualifiedIndex(name);
@@ -3874,7 +3874,7 @@ static void findMembersWithSpecificName(MemberName *mn,
       {
         const ArgumentList &mdAl = md->argumentList();
         ArgumentList argList;
-        stringToArgumentList(args,argList);
+        stringToArgumentList(md->getLanguage(),args,argList);
         match=matchArguments2(
             md->getOuterScope(),fd,mdAl,
             Doxygen::globalScope,fd,argList,
@@ -4005,7 +4005,7 @@ bool getDefs(const QCString &scName,
         ArgumentList argList;
         if (args)
         {
-          stringToArgumentList(args,argList);
+          stringToArgumentList(fcd->getLanguage(),args,argList);
         }
         for (mmli.toFirst();(mmd=mmli.current());++mmli)
         {
@@ -4124,7 +4124,7 @@ bool getDefs(const QCString &scName,
 
     if (args)
     {
-      stringToArgumentList(args, argList);
+      stringToArgumentList(SrcLangExt_Cpp, args, argList);
     }
 
     for (mmli.toFirst(); (mmd = mmli.current()); ++mmli)
@@ -4227,7 +4227,7 @@ bool getDefs(const QCString &scName,
             if (args && qstrcmp(args,"()")!=0)
             {
               const ArgumentList &mmdAl = mmd->argumentList();
-              stringToArgumentList(args,argList);
+              stringToArgumentList(mmd->getLanguage(),args,argList);
               match=matchArguments2(
                   mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
                   fnd,mmd->getFileDef(),argList,

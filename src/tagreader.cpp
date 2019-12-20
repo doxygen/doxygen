@@ -1190,7 +1190,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,QList<TagMe
     me->args       = tmi->arglist;
     if (!me->args.isEmpty())
     {
-      stringToArgumentList(me->args,me->argList);
+      stringToArgumentList(SrcLangExt_Cpp,me->args,me->argList);
     }
     if (tmi->enumValues.count()>0)
     {

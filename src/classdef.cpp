@@ -4274,7 +4274,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const char *t
     for (mnii.toFirst();(mi=mnii.current());++mnii)
     {
       ArgumentList actualArguments;
-      stringToArgumentList(templSpec,actualArguments);
+      stringToArgumentList(getLanguage(),templSpec,actualArguments);
       MemberDef *md = mi->memberDef;
       MemberDef *imd = md->createTemplateInstanceMember(
                           cd->templateArguments(),actualArguments);

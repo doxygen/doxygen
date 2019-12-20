@@ -18,10 +18,12 @@
 #ifndef DEFARGS_H
 #define DEFARGS_H
 
+#include "types.h"
+
 class ArgumentList;
 class QCString;
 
-extern void stringToArgumentList(const char *argsString,ArgumentList& argList,
+extern void stringToArgumentList(SrcLangExt lang, const char *argsString,ArgumentList& argList,
                                  QCString *extraTypeChars=0);
 
 #endif

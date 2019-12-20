@@ -1503,7 +1503,7 @@ void MemberDefImpl::IMPL::init(Definition *def,
   // convert function declaration arguments (if any)
   if (!args.isEmpty())
   {
-    stringToArgumentList(args,declArgList,&extraTypeChars);
+    stringToArgumentList(def->getLanguage(),args,declArgList,&extraTypeChars);
     //printf("setDeclArgList %s to %s const=%d\n",args.data(),
     //    argListToString(declArgList).data(),declArgList->constSpecifier);
   }
@@ -6010,7 +6010,7 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
         if (mdefAl.hasParameters())
         {
           ArgumentList mdefAlComb;
-          stringToArgumentList(mdef->argsString(),mdefAlComb);
+          stringToArgumentList(mdef->getLanguage(),mdef->argsString(),mdefAlComb);
           transferArgumentDocumentation(mdefAl,mdefAlComb);
           mdec->setArgumentList(mdefAlComb);
         }
@@ -6023,7 +6023,7 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
         if (mdecAl.hasParameters())
         {
           ArgumentList mdecAlComb;
-          stringToArgumentList(mdec->argsString(),mdecAlComb);
+          stringToArgumentList(mdec->getLanguage(),mdec->argsString(),mdecAlComb);
           transferArgumentDocumentation(mdecAl,mdecAlComb);
           mdef->setDeclArgumentList(mdecAlComb);
         }

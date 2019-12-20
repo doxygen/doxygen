@@ -1060,7 +1060,7 @@ static void addClassToContext(const Entry *root)
     {
       // a Java/C# generic class looks like a C++ specialization, so we need to split the
       // name and template arguments here
-      stringToArgumentList(fullName.mid(i),tArgList);
+      stringToArgumentList(root->lang,fullName.mid(i),tArgList);
       fullName=fullName.left(i);
     }
     else
@@ -3388,7 +3388,7 @@ static void buildFunctionList(const Entry *root)
                   if (md->documentation().isEmpty() && !root->doc.isEmpty())
                   {
                     ArgumentList argList;
-                    stringToArgumentList(root->args,argList);
+                    stringToArgumentList(root->lang,root->args,argList);
                     if (root->proto)
                     {
                       //printf("setDeclArgumentList to %p\n",argList);
@@ -4211,7 +4211,7 @@ static bool findTemplateInstanceRelation(const Entry *root,
       Debug::print(Debug::Classes,0,"        template root found %s templSpec=%s!\n",
           qPrint(templateRoot->name),qPrint(templSpec));
       ArgumentList templArgs;
-      stringToArgumentList(templSpec,templArgs);
+      stringToArgumentList(root->lang,templSpec,templArgs);
       findBaseClassesForClass(templateRoot,context,templateClass,instanceClass,
           TemplateInstances,isArtificial,templArgs,templateNames);
 
@@ -4825,7 +4825,7 @@ static void computeTemplateClassRelations()
         Debug::print(Debug::Classes,0,"    Template instance %s : \n",qPrint(tcd->name()));
         QCString templSpec = tdi.currentKey();
         ArgumentList templArgs;
-        stringToArgumentList(templSpec,templArgs);
+        stringToArgumentList(tcd->getLanguage(),templSpec,templArgs);
         for (const BaseInfo &bi : root->extends)
         {
           // check if the base class is a template argument
