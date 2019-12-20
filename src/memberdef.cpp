@@ -4170,6 +4170,7 @@ void MemberDefImpl::warnIfUndocumentedParams() const
       !isReference() &&
       !Doxygen::suppressDocWarnings)
   {
+    QCString returnType = typeString();
     if (!m_impl->hasDocumentedParams)
     {
       warn_doc_error(getDefFileName(),getDefLine(),
@@ -4177,7 +4178,7 @@ void MemberDefImpl::warnIfUndocumentedParams() const
           qPrint(qualifiedName()));
     }
     if (!m_impl->hasDocumentedReturnType &&
-        isFunction() && hasDocumentation())
+        isFunction() && hasDocumentation() && !returnType.isEmpty())
     {
       warn_doc_error(getDefFileName(),getDefLine(),
           "return type of member %s is not documented",
