@@ -807,14 +807,19 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           generateLink(*g_code, yytext);
 					  g_insideBody=FALSE;
 
-					  /* append module name to use dict */
-                                          useEntry = new UseEntry();
-					  //useEntry->module = yytext;
-                                          //useMembers->append(yytext, useEntry);
-					  //addUse(yytext);
-					  useEntry->module = tmp;
-                                          useMembers->append(tmp, useEntry);
-					  addUse(tmp);
+					  /* get module entry from use dict */
+					  /* else append module name to use dict */
+					  useEntry = useMembers->find(tmp);
+					  if (! useEntry) 
+					  {
+                                            useEntry = new UseEntry();
+					    //useEntry->module = yytext;
+                                            //useMembers->append(yytext, useEntry);
+					    //addUse(yytext);
+					    useEntry->module = tmp;
+                                            useMembers->append(tmp, useEntry);
+					    addUse(tmp);
+					  }
                                         }           
 <Use,UseOnly,Import>{BS},{BS}           { codifyLines(yytext); }
 <UseOnly,Import>{BS}&{BS}"\n"           { codifyLines(yytext);
