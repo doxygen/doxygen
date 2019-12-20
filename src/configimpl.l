@@ -1484,21 +1484,201 @@ void Config::checkAndCorrect()
     s=includePath.next();
   }
 
-  // check aliases
+  // check EXTENSION_MAPPING
+  QStrList &extmapList = Config_getList(EXTENSION_MAPPING);
+  s=extmapList.first();
+  while (s)
+  {
+    QCString extmap=s;
+    extmap=extmap.stripWhiteSpace();
+    int i_equals=extmap.find('=');
+    if (i_equals==-1)
+    {
+      err("Illegal EXTENSION_MAPPING format '%s', no equal sign specified use 'ext=language'\n",extmap.data());
+    }
+    else
+    {
+      QCString ext = extmap.left(i_equals);
+      QCString lang = extmap.mid(i_equals+1);
+      if (ext.isEmpty())
+      {
+        err("Illegal EXTENSION_MAPPING format '%s', no extension to replace specified use 'ext=language'\n",extmap.data());
+      }
+      else if (lang.isEmpty())
+      {
+        err("Illegal EXTENSION_MAPPING format '%s', no replacement language specified use 'ext=language'\n",extmap.data());
+      }
+    }
+    s=extmapList.next();
+  }
+
+  // check PREDEFINED
+  if (Config_getBool(ENABLE_PREPROCESSING))
+  {
+    QStrList &predefList = Config_getList(PREDEFINED);
+    s=predefList.first();
+    while (s)
+    {
+      QCString predef=s;
+      predef=predef.stripWhiteSpace();
+      int i_equals=predef.find('=');
+      int i_obrace=predef.find('(');
+      if ((i_obrace==0) || (i_equals==0) || (i_equals==1 && predef.at(i_equals-1)==':'))
+      {
+        err("Illegal PREDEFINED format '%s', no define name specified\n",predef.data());
+      }
+      s=predefList.next();
+    }
+  }
+
+  // check ALIASES
   QStrList &aliasList = Config_getList(ALIASES);
   s=aliasList.first();
   while (s)
   {
     QRegExp re1("[a-z_A-Z][a-z_A-Z0-9]*[ \t]*=");         // alias without argument
-    QRegExp re2("[a-z_A-Z][a-z_A-Z0-9]*{[0-9]*}[ \t]*="); // alias with argument
+    QRegExp re2("[a-z_A-Z][a-z_A-Z0-9]*{[0-9]+}[ \t]*="); // alias with argument
     QCString alias=s;
     alias=alias.stripWhiteSpace();
     if (alias.find(re1)!=0 && alias.find(re2)!=0)
     {
-      err("Illegal alias format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
+      err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
 	  alias.data());
     }
     s=aliasList.next();
+  }
+
+  // check FILTER_PATTERNS
+  QStrList& filterList    = Config_getList(FILTER_PATTERNS);
+  s=filterList.first();
+  while (s)
+  {
+    QCString filter=s;
+    filter=filter.stripWhiteSpace();
+    int i=filter.find('=');
+    if (i==-1)
+    {
+      err("Illegal FILTER_PATTERNS format, no equal sign specified in '%s'\n",filter.data());
+    }
+    else
+    {
+      QCString myName=filter.left(i).stripWhiteSpace();
+      QCString myValue=filter.right(filter.length()-i-1).stripWhiteSpace();
+      if (myName.isEmpty())
+      {
+        err("Illegal FILTER_PATTERNS format '%s', no name specified\n",filter.data());
+      }
+      else if (myValue.isEmpty())
+      {
+        err("Illegal FILTER_PATTERNS format '%s', no filter specified\n",filter.data());
+      }
+    }
+    s=filterList.next();
+  }
+
+  // check FILTER_SOURCE_PATTERNS
+  QStrList& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
+  s=filterSrcList.first();
+  while (s)
+  {
+    QCString filterSrc=s;
+    filterSrc=filterSrc.stripWhiteSpace();
+    int i=filterSrc.find('=');
+    if (i==-1)
+    {
+      err("Illegal FILTER_SOURCE_PATTERNS format, no name specified in '%s'\n",filterSrc.data());
+    }
+    else
+    {
+      QCString myName=filterSrc.left(i).stripWhiteSpace();
+      if (myName.isEmpty())
+      {
+        err("Illegal FILTER_SOURCE_PATTERNS format '%s', no name specified\n",filterSrc.data());
+      }
+    }
+    s=filterSrcList.next();
+  }
+
+  // check TAGFILES
+  QStrList& tagfilesList    = Config_getList(TAGFILES);
+  s=tagfilesList.first();
+  while (s)
+  {
+    QCString tagfiles=s;
+    tagfiles=tagfiles.stripWhiteSpace();
+    int i=tagfiles.find('=');
+    if (i!=-1)
+    {
+      QCString myName=tagfiles.left(i).stripWhiteSpace();
+      QCString myValue=tagfiles.right(tagfiles.length()-i-1).stripWhiteSpace();
+      if (myName.isEmpty())
+      {
+        err("Illegal TAGFILES format '%s', no name specified\n",tagfiles.data());
+      }
+      else if (myValue.isEmpty())
+      {
+        err("Illegal TAGFILES format '%s', no tagfiles specified\n",tagfiles.data());
+      }
+    }
+    s=tagfilesList.next();
+  }
+
+  // check EXTRA_SEARCH_MAPPINGS
+  if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTML))
+  {
+    QStrList& searchList = Config_getList(EXTRA_SEARCH_MAPPINGS);
+    s=searchList.first();
+    while (s)
+    {
+      QCString search=s;
+      search=search.stripWhiteSpace();
+      int i=search.find('=');
+      if (i==-1)
+      {
+        err("Illegal EXTRA_SEARCH_MAPPINGS format, no equal sign specified in '%s'\n",search.data());
+      }
+      else
+      {
+        QCString myName=search.left(i).stripWhiteSpace();
+        QCString myValue=search.right(search.length()-i-1).stripWhiteSpace();
+        if (myName.isEmpty())
+        {
+          err("Illegal EXTRA_SEARCH_MAPPINGS format '%s', no tagname specified\n",search.data());
+        }
+        else if (myValue.isEmpty())
+        {
+          err("Illegal EXTRA_SEARCH_MAPPINGS format '%s', no location specified\n",search.data());
+        }
+      }
+      s=searchList.next();
+    }
+  }
+
+  // check TCL_SUBST
+  QStrList tclsubstList = Config_getList(TCL_SUBST);
+  s=tclsubstList.first();
+  while (s)
+  {
+    QCString tclsubst=s;
+    int i=tclsubst.find('=');
+    if (i==-1)
+    {
+      err("Illegal TCL_SUBST format, no equal sign specified in '%s'\n",tclsubst.data());
+    }
+    else
+    {
+      QCString myName=tclsubst.left(i).stripWhiteSpace();
+      QCString myValue=tclsubst.right(tclsubst.length()-i-1).stripWhiteSpace();
+      if (myName.isEmpty())
+      {
+        err("Illegal TCL_SUBST format '%s', no name to replace specified\n",tclsubst.data());
+      }
+      else if (myValue.isEmpty())
+      {
+        err("Illegal TCL_SUBST format '%s', no replacement value specified\n",tclsubst.data());
+      }
+    }
+    s = tclsubstList.next();
   }
 
   // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled

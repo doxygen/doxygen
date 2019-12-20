@@ -8993,6 +8993,7 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
   {
     fileName = tagLine.left(eqPos).stripWhiteSpace();
     destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
+    if (fileName.isEmpty() || destName.isEmpty()) return;
     QFileInfo fi(fileName);
     Doxygen::tagDestinationDict.insert(fi.absFilePath().utf8(),new QCString(destName));
     //printf("insert tagDestination %s->%s\n",fi.fileName().data(),destName.data());
@@ -10496,11 +10497,22 @@ void adjustConfiguration()
   while (mapping)
   {
     QCString mapStr = mapping;
-    int i;
-    if ((i=mapStr.find('='))!=-1)
+    int i=mapStr.find('=');
+    if (i==-1)
     {
-      QCString ext=mapStr.left(i).stripWhiteSpace().lower();
-      QCString language=mapStr.mid(i+1).stripWhiteSpace().lower();
+      mapping = extMaps.next();
+      continue;
+    }
+    else
+    {
+      QCString ext = mapStr.left(i).stripWhiteSpace().lower();
+      QCString language = mapStr.mid(i+1).stripWhiteSpace().lower();
+      if (ext.isEmpty() || language.isEmpty())
+      {
+        mapping = extMaps.next();
+        continue;
+      }
+
       if (!updateLanguageMapping(ext,language))
       {
         err("Failed to map file extension '%s' to unsupported language '%s'.\n"
@@ -10515,7 +10527,6 @@ void adjustConfiguration()
     }
     mapping = extMaps.next();
   }
-
 
   // add predefined macro name to a dictionary
   QStrList &expandAsDefinedList =Config_getList(EXPAND_AS_DEFINED);
