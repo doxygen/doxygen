@@ -2145,11 +2145,11 @@ bool MemberDefImpl::isBriefSectionVisible() const
 
   // Hide friend (class|struct|union) declarations if HIDE_FRIEND_COMPOUNDS is true
   bool visibleIfFriendCompound = !(hideFriendCompounds &&
-                                   isFriend() &&
+                                   isFriend() /*&&
                                    (m_impl->type=="friend class" ||
                                     m_impl->type=="friend struct" ||
                                     m_impl->type=="friend union"
-                                   )
+                                   )*/
                                   );
 
   // only include members that are non-private unless EXTRACT_PRIVATE is
@@ -2719,11 +2719,11 @@ bool MemberDefImpl::isDetailedSectionLinkable() const
   // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
   // is true
   bool friendCompoundFilter = !(Config_getBool(HIDE_FRIEND_COMPOUNDS) &&
-                                isFriend() &&
+                                isFriend() /*&&
                                 (m_impl->type=="friend class" ||
                                  m_impl->type=="friend struct" ||
                                  m_impl->type=="friend union"
-                                )
+                                )*/
                                );
 
 
@@ -4185,13 +4185,6 @@ void MemberDefImpl::warnIfUndocumentedParams() const
           qPrint(qualifiedName()));
     }
   }
-}
-
-bool MemberDefImpl::isFriendClass() const
-{
-  return (isFriend() &&
-         (m_impl->type=="friend class" || m_impl->type=="friend struct" ||
-          m_impl->type=="friend union"));
 }
 
 bool MemberDefImpl::isDocumentedFriendClass() const
@@ -6134,6 +6127,14 @@ bool MemberDefImpl::isFriendToHide() const
       m_impl->type=="friend union");
   return isFriendToHide;
 }
+
+bool MemberDefImpl::isFriendClass() const
+{
+  return (isFriend() &&
+         (m_impl->type=="friend class" || m_impl->type=="friend struct" ||
+          m_impl->type=="friend union"));
+}
+
 
 bool MemberDefImpl::isNotFriend() const
 {
