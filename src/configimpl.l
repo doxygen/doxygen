@@ -1321,6 +1321,38 @@ void Config::init()
   ConfigImpl::instance()->init();
 }
 
+static void checkList(QStrList &list,const char *name, bool equalRequired,bool valueRequired)
+{
+  const char *s=list.first();
+  while (s)
+  {
+    QCString item=s;
+    item=item.stripWhiteSpace();
+    int i=item.find('=');
+    if (i==-1 && equalRequired)
+    {
+      err("Illegal format for option %s, no equal sign ('=') specified for item '%s'\n",name,item.data());
+    }
+    if (i!=-1)
+    {
+      QCString myName=item.left(i).stripWhiteSpace();
+      if (myName.isEmpty())
+      {
+        err("Illegal format for option %s, no name specified for item '%s'\n",name,item.data());
+      }
+      else if (valueRequired)
+      {
+        QCString myValue=item.right(item.length()-i-1).stripWhiteSpace();
+        if (myValue.isEmpty())
+        {
+          err("Illegal format for option %s, no value specified for item '%s'\n",name,item.data());
+        }
+      }
+    }
+    s=list.next();
+  }
+}
+
 void Config::checkAndCorrect()
 {
   ConfigValues::instance().init();
@@ -1484,22 +1516,59 @@ void Config::checkAndCorrect()
     s=includePath.next();
   }
 
-  // check aliases
+  // check PREDEFINED
+  if (Config_getBool(ENABLE_PREPROCESSING))
+  {
+    QStrList &predefList = Config_getList(PREDEFINED);
+    s=predefList.first();
+    while (s)
+    {
+      QCString predef=s;
+      predef=predef.stripWhiteSpace();
+      int i_equals=predef.find('=');
+      int i_obrace=predef.find('(');
+      if ((i_obrace==0) || (i_equals==0) || (i_equals==1 && predef.at(i_equals-1)==':'))
+      {
+        err("Illegal PREDEFINED format '%s', no define name specified\n",predef.data());
+      }
+      s=predefList.next();
+    }
+  }
+
+  // check ALIASES
   QStrList &aliasList = Config_getList(ALIASES);
   s=aliasList.first();
   while (s)
   {
     QRegExp re1("[a-z_A-Z][a-z_A-Z0-9]*[ \t]*=");         // alias without argument
-    QRegExp re2("[a-z_A-Z][a-z_A-Z0-9]*{[0-9]*}[ \t]*="); // alias with argument
+    QRegExp re2("[a-z_A-Z][a-z_A-Z0-9]*{[0-9]+}[ \t]*="); // alias with argument
     QCString alias=s;
     alias=alias.stripWhiteSpace();
     if (alias.find(re1)!=0 && alias.find(re2)!=0)
     {
-      err("Illegal alias format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
+      err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
 	  alias.data());
     }
     s=aliasList.next();
   }
+
+  // check FILTER_PATTERNS
+  checkList(Config_getList(FILTER_PATTERNS),"FILTER_PATTERNS",TRUE,TRUE);
+
+  // check FILTER_SOURCE_PATTERNS
+  checkList(Config_getList(FILTER_SOURCE_PATTERNS),"FILTER_SOURCE_PATTERNS",FALSE,FALSE);
+
+  // check TAGFILES
+  checkList(Config_getList(TAGFILES),"TAGFILES",FALSE,TRUE);
+
+  // check EXTRA_SEARCH_MAPPINGS
+  if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTML))
+  {
+    checkList(Config_getList(EXTRA_SEARCH_MAPPINGS),"EXTRA_SEARCH_MAPPING",TRUE,TRUE);
+  }
+
+  // check TCL_SUBST
+  checkList(Config_getList(TCL_SUBST),"TCL_SUBST",TRUE,TRUE);
 
   // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
   if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(GENERATE_HTMLHELP))
