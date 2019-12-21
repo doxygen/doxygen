@@ -1321,6 +1321,38 @@ void Config::init()
   ConfigImpl::instance()->init();
 }
 
+static void checkList(QStrList &list,const char *name, bool equalRequired,bool valueRequired)
+{
+  const char *s=list.first();
+  while (s)
+  {
+    QCString item=s;
+    item=item.stripWhiteSpace();
+    int i=item.find('=');
+    if (i==-1 && equalRequired)
+    {
+      err("Illegal format for option %s, no equal sign ('=') specified for item '%s'\n",name,item.data());
+    }
+    if (i!=-1)
+    {
+      QCString myName=item.left(i).stripWhiteSpace();
+      if (myName.isEmpty())
+      {
+        err("Illegal format for option %s, no name specified for item '%s'\n",name,item.data());
+      }
+      else if (valueRequired)
+      {
+        QCString myValue=item.right(item.length()-i-1).stripWhiteSpace();
+        if (myValue.isEmpty())
+        {
+          err("Illegal format for option %s, no value specified for item '%s'\n",name,item.data());
+        }
+      }
+    }
+    s=list.next();
+  }
+}
+
 void Config::checkAndCorrect()
 {
   ConfigValues::instance().init();
@@ -1484,34 +1516,6 @@ void Config::checkAndCorrect()
     s=includePath.next();
   }
 
-  // check EXTENSION_MAPPING
-  QStrList &extmapList = Config_getList(EXTENSION_MAPPING);
-  s=extmapList.first();
-  while (s)
-  {
-    QCString extmap=s;
-    extmap=extmap.stripWhiteSpace();
-    int i_equals=extmap.find('=');
-    if (i_equals==-1)
-    {
-      err("Illegal EXTENSION_MAPPING format '%s', no equal sign specified use 'ext=language'\n",extmap.data());
-    }
-    else
-    {
-      QCString ext = extmap.left(i_equals);
-      QCString lang = extmap.mid(i_equals+1);
-      if (ext.isEmpty())
-      {
-        err("Illegal EXTENSION_MAPPING format '%s', no extension to replace specified use 'ext=language'\n",extmap.data());
-      }
-      else if (lang.isEmpty())
-      {
-        err("Illegal EXTENSION_MAPPING format '%s', no replacement language specified use 'ext=language'\n",extmap.data());
-      }
-    }
-    s=extmapList.next();
-  }
-
   // check PREDEFINED
   if (Config_getBool(ENABLE_PREPROCESSING))
   {
@@ -1549,137 +1553,22 @@ void Config::checkAndCorrect()
   }
 
   // check FILTER_PATTERNS
-  QStrList& filterList    = Config_getList(FILTER_PATTERNS);
-  s=filterList.first();
-  while (s)
-  {
-    QCString filter=s;
-    filter=filter.stripWhiteSpace();
-    int i=filter.find('=');
-    if (i==-1)
-    {
-      err("Illegal FILTER_PATTERNS format, no equal sign specified in '%s'\n",filter.data());
-    }
-    else
-    {
-      QCString myName=filter.left(i).stripWhiteSpace();
-      QCString myValue=filter.right(filter.length()-i-1).stripWhiteSpace();
-      if (myName.isEmpty())
-      {
-        err("Illegal FILTER_PATTERNS format '%s', no name specified\n",filter.data());
-      }
-      else if (myValue.isEmpty())
-      {
-        err("Illegal FILTER_PATTERNS format '%s', no filter specified\n",filter.data());
-      }
-    }
-    s=filterList.next();
-  }
+  checkList(Config_getList(FILTER_PATTERNS),"FILTER_PATTERNS",TRUE,TRUE);
 
   // check FILTER_SOURCE_PATTERNS
-  QStrList& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
-  s=filterSrcList.first();
-  while (s)
-  {
-    QCString filterSrc=s;
-    filterSrc=filterSrc.stripWhiteSpace();
-    int i=filterSrc.find('=');
-    if (i==-1)
-    {
-      err("Illegal FILTER_SOURCE_PATTERNS format, no name specified in '%s'\n",filterSrc.data());
-    }
-    else
-    {
-      QCString myName=filterSrc.left(i).stripWhiteSpace();
-      if (myName.isEmpty())
-      {
-        err("Illegal FILTER_SOURCE_PATTERNS format '%s', no name specified\n",filterSrc.data());
-      }
-    }
-    s=filterSrcList.next();
-  }
+  checkList(Config_getList(FILTER_SOURCE_PATTERNS),"FILTER_SOURCE_PATTERNS",FALSE,FALSE);
 
   // check TAGFILES
-  QStrList& tagfilesList    = Config_getList(TAGFILES);
-  s=tagfilesList.first();
-  while (s)
-  {
-    QCString tagfiles=s;
-    tagfiles=tagfiles.stripWhiteSpace();
-    int i=tagfiles.find('=');
-    if (i!=-1)
-    {
-      QCString myName=tagfiles.left(i).stripWhiteSpace();
-      QCString myValue=tagfiles.right(tagfiles.length()-i-1).stripWhiteSpace();
-      if (myName.isEmpty())
-      {
-        err("Illegal TAGFILES format '%s', no name specified\n",tagfiles.data());
-      }
-      else if (myValue.isEmpty())
-      {
-        err("Illegal TAGFILES format '%s', no tagfiles specified\n",tagfiles.data());
-      }
-    }
-    s=tagfilesList.next();
-  }
+  checkList(Config_getList(TAGFILES),"TAGFILES",FALSE,TRUE);
 
   // check EXTRA_SEARCH_MAPPINGS
   if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTML))
   {
-    QStrList& searchList = Config_getList(EXTRA_SEARCH_MAPPINGS);
-    s=searchList.first();
-    while (s)
-    {
-      QCString search=s;
-      search=search.stripWhiteSpace();
-      int i=search.find('=');
-      if (i==-1)
-      {
-        err("Illegal EXTRA_SEARCH_MAPPINGS format, no equal sign specified in '%s'\n",search.data());
-      }
-      else
-      {
-        QCString myName=search.left(i).stripWhiteSpace();
-        QCString myValue=search.right(search.length()-i-1).stripWhiteSpace();
-        if (myName.isEmpty())
-        {
-          err("Illegal EXTRA_SEARCH_MAPPINGS format '%s', no tagname specified\n",search.data());
-        }
-        else if (myValue.isEmpty())
-        {
-          err("Illegal EXTRA_SEARCH_MAPPINGS format '%s', no location specified\n",search.data());
-        }
-      }
-      s=searchList.next();
-    }
+    checkList(Config_getList(EXTRA_SEARCH_MAPPINGS),"EXTRA_SEARCH_MAPPING",TRUE,TRUE);
   }
 
   // check TCL_SUBST
-  QStrList tclsubstList = Config_getList(TCL_SUBST);
-  s=tclsubstList.first();
-  while (s)
-  {
-    QCString tclsubst=s;
-    int i=tclsubst.find('=');
-    if (i==-1)
-    {
-      err("Illegal TCL_SUBST format, no equal sign specified in '%s'\n",tclsubst.data());
-    }
-    else
-    {
-      QCString myName=tclsubst.left(i).stripWhiteSpace();
-      QCString myValue=tclsubst.right(tclsubst.length()-i-1).stripWhiteSpace();
-      if (myName.isEmpty())
-      {
-        err("Illegal TCL_SUBST format '%s', no name to replace specified\n",tclsubst.data());
-      }
-      else if (myValue.isEmpty())
-      {
-        err("Illegal TCL_SUBST format '%s', no replacement value specified\n",tclsubst.data());
-      }
-    }
-    s = tclsubstList.next();
-  }
+  checkList(Config_getList(TCL_SUBST),"TCL_SUBST",TRUE,TRUE);
 
   // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
   if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(GENERATE_HTMLHELP))
