@@ -728,16 +728,19 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				     yyextra->inRoseComment=FALSE;
 				     BEGIN(Scan); 
                                    }
+<ReadLine>"/**"                    {
+				     copyToOutput(yyscanner,"/&zwj;**",8);
+				   }
 <ReadLine>"*/"                     {
 				     copyToOutput(yyscanner,"*&zwj;/",7);
 				   }
 <ReadLine>"*"                      {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				   }
-<ReadLine>[^\\@\n\*]*              {
+<ReadLine>[^\\@\n\*/]*             {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				   }
-<ReadLine>[^\\@\n\*]*/\n           {
+<ReadLine>[^\\@\n\*/]*/\n          {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				     BEGIN(yyextra->readLineCtx);
 				   }
