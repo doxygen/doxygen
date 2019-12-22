@@ -108,7 +108,8 @@ static Entry         *g_current;
 static QCString       g_fileName;
 static int            g_lineNr;
 static int            g_indentLevel=0;  // 0 is outside markdown, -1=page level
-
+static char           g_doxynbsputf8[3] = {'\xc2', '\xa0', '\0'}; // UTF-8 nbsp
+static char          *g_doxynbsp = "&_doxy_nbsp;";
 //----------
 
 const int codeBlockIndent = 4;
@@ -1044,7 +1045,7 @@ static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int
         if (qstrncmp(&data[i+1],endBlockName,l)==0)
         {
           //printf("found end at %d\n",i);
-          out.addStr(data,i+1+l);
+          out.addStr(substitute(QCString(data).left(i+1+l),g_doxynbsp,g_doxynbsputf8));
           return i+1+l;
         }
       }
@@ -2174,7 +2175,7 @@ static void writeFencedCodeBlock(GrowBuf &out,const char *data,const char *lng,
   {
     out.addStr("{"+lang+"}");
   }
-  out.addStr(data+blockStart,blockEnd-blockStart);
+  out.addStr(substitute(QCString(data+blockStart).left(blockEnd-blockStart),g_doxynbsp,g_doxynbsputf8));
   out.addStr("\n");
   out.addStr("@endcode\n");
 }
@@ -2484,7 +2485,7 @@ static QCString detab(const QCString &s,int &refIndent)
           // special handling of the UTF-8 nbsp character 0xc2 0xa0
           if (c == '\xc2' && data[i] == '\xa0')
           {
-            out.addStr("&nbsp;");
+            out.addStr(g_doxynbsp);
             i++;
           }
           else
@@ -2561,7 +2562,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
   processInline(out,s,s.length());
   out.addChar(0);
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(out.get()));
-  return out.get();
+  return substitute(out.get(),g_doxynbsp,"&nbsp;");
 }
 
 //---------------------------------------------------------------------------
