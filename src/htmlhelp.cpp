@@ -308,8 +308,7 @@ void HtmlHelp::initialize()
   m_fromUtf8 = portable_iconv_open(str,"UTF-8"); 
   if (m_fromUtf8==(void *)(-1))
   {
-    err("unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", str);
-    exit(1);
+    term("unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", str);
   }
 
   /* open the contents file */
@@ -317,8 +316,7 @@ void HtmlHelp::initialize()
   cf = new QFile(fName);
   if (!cf->open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n",fName.data());
-    exit(1);
+    term("Could not open file %s for writing\n",fName.data());
   }
   /* Write the header of the contents file */
   cts.setDevice(cf);
@@ -334,8 +332,7 @@ void HtmlHelp::initialize()
   kf = new QFile(fName);
   if (!kf->open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n",fName.data());
-    exit(1);
+    term("Could not open file %s for writing\n",fName.data());
   }
   /* Write the header of the contents file */
   kts.setDevice(kf);
