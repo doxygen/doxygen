@@ -30,6 +30,8 @@ extern void warn_doc_error(const char *file,int line,const char *fmt, ...);
 extern void warn_uncond(const char *fmt, ...);
 extern void err(const char *fmt, ...);
 extern void err_full(const char *file,int line,const char *fmt, ...);
+extern void term(const int exitVal, const char *fmt, ...);
+extern void term_full(const int exitVal, const char *file,int line,const char *fmt, ...);
 void initWarningFormat();
 
 extern void printlex(int dbg, bool enter, const char *lexName, const char *fileName);

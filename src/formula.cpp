@@ -51,7 +51,10 @@ void FormulaList::generateBitmaps(const char *path)
   int x1,y1,x2,y2;
   QDir d(path);
   // store the original directory
-  if (!d.exists()) { err("Output dir %s does not exist!\n",path); exit(1); }
+  if (!d.exists())
+  {
+    term(1,"Output dir %s does not exist!\n",path);
+  }
   QCString oldDir = QDir::currentDirPath().utf8();
   // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
