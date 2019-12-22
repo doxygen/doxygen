@@ -729,7 +729,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				     BEGIN(Scan); 
                                    }
 <ReadLine>"/**"                    {
-				     copyToOutput("/&zwj;**",8);
+				     copyToOutput(yyscanner,"/&zwj;**",8);
 				   }
 <ReadLine>"*/"                     {
 				     copyToOutput(yyscanner,"*&zwj;/",7);
