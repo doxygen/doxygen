@@ -272,7 +272,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   QDir d(outDir);
   if (!d.exists())
   {
-    term(1,"Output dir %s does not exist!\n",outDir);
+    term("Output dir %s does not exist!\n",outDir);
   }
 
   QCString imgExt = getDotImageExtension();
@@ -325,7 +325,7 @@ void writeDotImageMapFromFile(FTextStream &t,
   QDir d(outDir);
   if (!d.exists())
   {
-    term(1,"Output dir %s does not exist!\n",outDir.data());
+    term("Output dir %s does not exist!\n",outDir.data());
   }
 
   QCString mapName = baseName+".map";

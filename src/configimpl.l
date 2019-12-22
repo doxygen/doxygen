@@ -56,14 +56,14 @@ void config_err(const char *fmt, ...)
   vfprintf(stderr, (QCString(error_str) + fmt).data(), args);
   va_end(args); 
 }
-void config_term(const int exitVal, const char *fmt, ...)
+void config_term(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
   vfprintf(stderr, (QCString(error_str) + fmt).data(), args);
   va_end(args);
   fprintf(stderr, "%s\n", "Exiting...");
-  exit(exitVal);
+  exit(1);
 }
 
 void config_warn(const char *fmt, ...)
@@ -223,11 +223,11 @@ QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) c
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    config_term(1,"%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
   else if (opt->kind()!=ConfigOption::O_String)
   {
-    config_term(1,"%s<%d>: Internal error: Requested option %s not of string type!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested option %s not of string type!\n",fileName,num,name);
   }
   return *((ConfigString *)opt)->valueRef();
 }
@@ -237,11 +237,11 @@ QStrList &ConfigImpl::getList(const char *fileName,int num,const char *name) con
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    config_term(1,"%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
   else if (opt->kind()!=ConfigOption::O_List)
   {
-    config_term(1,"%s<%d>: Internal error: Requested option %s not of list type!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested option %s not of list type!\n",fileName,num,name);
   }
   return *((ConfigList *)opt)->valueRef();
 }
@@ -251,11 +251,11 @@ QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) con
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    config_term(1,"%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
   else if (opt->kind()!=ConfigOption::O_Enum)
   {
-    config_term(1,"%s<%d>: Internal error: Requested option %s not of enum type!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested option %s not of enum type!\n",fileName,num,name);
   }
   return *((ConfigEnum *)opt)->valueRef();
 }
@@ -265,11 +265,11 @@ int &ConfigImpl::getInt(const char *fileName,int num,const char *name) const
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    config_term(1,"%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
   else if (opt->kind()!=ConfigOption::O_Int)
   {
-    config_term(1,"%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
   }
   return *((ConfigInt *)opt)->valueRef();
 }
@@ -279,11 +279,11 @@ bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    config_term(1,"%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
   else if (opt->kind()!=ConfigOption::O_Bool)
   {
-    config_term(1,"%s<%d>: Internal error: Requested option %s not of boolean type!\n",fileName,num,name);
+    config_term("%s<%d>: Internal error: Requested option %s not of boolean type!\n",fileName,num,name);
   }
   return *((ConfigBool *)opt)->valueRef();
 }
@@ -566,7 +566,7 @@ static QCString configStringRecode(
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
   {
-    config_term(1,"Error: unsupported character conversion: '%s'->'%s'\n",
+    config_term("Error: unsupported character conversion: '%s'->'%s'\n",
         inputEncoding.data(),outputEncoding.data());
   }
   size_t iLeft=(size_t)inputSize;
@@ -582,7 +582,7 @@ static QCString configStringRecode(
   }
   else
   {
-    config_term(1,"Error: failed to translate characters from %s to %s: %s\n",
+    config_term("Error: failed to translate characters from %s to %s: %s\n",
         inputEncoding.data(),outputEncoding.data(),strerror(errno));
   }
   portable_iconv_close(cd);
@@ -636,7 +636,7 @@ static FILE *findFile(const char *fileName)
 static void readIncludeFile(const char *incName)
 {
   if (includeDepth==MAX_INCLUDE_DEPTH) {
-    config_term(1,"maximum include depth (%d) reached, %s is not included. Aborting...\n",
+    config_term("maximum include depth (%d) reached, %s is not included. Aborting...\n",
 	MAX_INCLUDE_DEPTH,incName);
   } 
 
@@ -675,7 +675,7 @@ static void readIncludeFile(const char *incName)
   } 
   else
   {
-    config_term(1,"@INCLUDE = %s: not found!\n",inc.data());
+    config_term("@INCLUDE = %s: not found!\n",inc.data());
   }
 }
 
@@ -1157,7 +1157,7 @@ void ConfigImpl::init()
       ConfigOption * opt = ConfigImpl::instance()->get(depName);
       if (opt==0)
       {
-        config_term(1,"Config option '%s' has invalid depends relation on unknown option '%s'\n",
+        config_term("Config option '%s' has invalid depends relation on unknown option '%s'\n",
             option->name().data(),depName.data());
       }
     }
@@ -1224,7 +1224,7 @@ static QCString configFileToString(const char *name)
   }
   if (!fileOpened)  
   {
-    config_term(1,"cannot open file '%s' for reading\n",name);
+    config_term("cannot open file '%s' for reading\n",name);
   }
   return "";
 }
@@ -1434,7 +1434,7 @@ void Config::checkAndCorrect()
     QFileInfo fi(headerFile);
     if (!fi.exists())
     {
-      term(1,"tag HTML_HEADER: header file '%s' "
+      config_term("tag HTML_HEADER: header file '%s' "
 	  "does not exist\n",headerFile.data());
     }
   }
@@ -1445,7 +1445,7 @@ void Config::checkAndCorrect()
     QFileInfo fi(footerFile);
     if (!fi.exists())
     {
-      term(1,"tag HTML_FOOTER: footer file '%s' "
+      config_term("tag HTML_FOOTER: footer file '%s' "
 	  "does not exist\n",footerFile.data());
     }
   }
@@ -1459,7 +1459,7 @@ void Config::checkAndCorrect()
       QFileInfo fi(MathJaxCodefile);
       if (!fi.exists())
       {
-        term(1,"tag MATHJAX_CODEFILE file '%s' "
+        config_term("tag MATHJAX_CODEFILE file '%s' "
 	    "does not exist\n",MathJaxCodefile.data());
       }
     }
@@ -1478,7 +1478,7 @@ void Config::checkAndCorrect()
     QFileInfo fi(latexHeaderFile);
     if (!fi.exists())
     {
-      term(1,"tag LATEX_HEADER: header file '%s' "
+      config_term("tag LATEX_HEADER: header file '%s' "
 	  "does not exist\n",latexHeaderFile.data());
     }
   }
@@ -1489,7 +1489,7 @@ void Config::checkAndCorrect()
     QFileInfo fi(latexFooterFile);
     if (!fi.exists())
     {
-      term(1,"tag LATEX_FOOTER: footer file '%s' "
+      config_term("tag LATEX_FOOTER: footer file '%s' "
 	  "does not exist\n",latexFooterFile.data());
     }
   }

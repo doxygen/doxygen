@@ -288,7 +288,7 @@ static void writeLatexMakefile()
   QFile file(fileName);
   if (!file.open(IO_WriteOnly))
   {
-    term(1,"Could not open file %s for writing\n",fileName.data());
+    term("Could not open file %s for writing\n",fileName.data());
   }
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   QCString latex_command = theTranslator->latexCommandName();
@@ -386,7 +386,7 @@ static void writeMakeBat()
   bool generateBib = !Doxygen::citeDict->isEmpty();
   if (!file.open(IO_WriteOnly))
   {
-    term(1,"Could not open file %s for writing\n",fileName.data());
+    term("Could not open file %s for writing\n",fileName.data());
   }
   FTextStream t(&file);
   t << "set Dir_Old=%cd%\n";
@@ -466,7 +466,7 @@ void LatexGenerator::init()
   QDir d(dir);
   if (!d.exists() && !d.mkdir(dir))
   {
-    term(1,"Could not create output directory %s\n",dir.data());
+    term("Could not create output directory %s\n",dir.data());
   }
 
   writeLatexMakefile();

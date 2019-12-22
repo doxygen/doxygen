@@ -289,7 +289,7 @@ void DocbookGenerator::init()
   QDir d(dir);
   if (!d.exists() && !d.mkdir(dir))
   {
-    term(1,"Could not create output directory %s\n",dir.data());
+    term("Could not create output directory %s\n",dir.data());
   }
 
   createSubDirs(d);

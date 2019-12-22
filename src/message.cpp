@@ -251,7 +251,7 @@ extern void err_full(const char *file,int line,const char *fmt, ...)
   va_end(args);
 }
 
-void term(const int exitVal, const char *fmt, ...)
+void term(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -262,21 +262,7 @@ void term(const int exitVal, const char *fmt, ...)
     for (int i = 0; i < strlen(error_str); i++) fprintf(warnFile, " ");
     fprintf(warnFile, "%s\n", "Exiting...");
   }
-  exit(exitVal);
-}
-
-extern void term_full(const int exitVal, const char *file,int line,const char *fmt, ...)
-{
-  va_list args;
-  va_start(args, fmt);
-  do_warn(TRUE, file, line, error_str, fmt, args);
-  va_end(args);
-  if (warnFile != stderr)
-  {
-    for (int i = 0; i < strlen(error_str); i++) fprintf(warnFile, " ");
-    fprintf(warnFile, "%s\n", "Exiting...");
-  }
-  exit(exitVal);
+  exit(1);
 }
 
 void printlex(int dbg, bool enter, const char *lexName, const char *fileName)

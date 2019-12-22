@@ -46,7 +46,7 @@ void OutputGenerator::startPlainFile(const char *name)
   file = new QFile(fileName);
   if (!file->open(IO_WriteOnly))
   {
-    term(1,"Could not open file %s for writing\n",fileName.data());
+    term("Could not open file %s for writing\n",fileName.data());
   }
   t.setDevice(file);
 }

@@ -327,7 +327,7 @@ class DocCmdMapper
       {
 	if (m_map.find(p->cmdName)!=0)
 	{
-	  term(1,"DocCmdMapper: command %s already added\n",p->cmdName);
+	  term("DocCmdMapper: command %s already added\n",p->cmdName);
 	}
 	Cmd *cmd = new Cmd;
 	cmd->func = p->handler;

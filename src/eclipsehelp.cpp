@@ -72,7 +72,7 @@ void EclipseHelp::initialize()
   m_tocfile = new QFile(name);
   if (!m_tocfile->open(IO_WriteOnly)) 
   {
-    term(1,"Could not open file %s for writing\n", name.data());
+    term("Could not open file %s for writing\n", name.data());
   }
 
   // -- initialize its text stream

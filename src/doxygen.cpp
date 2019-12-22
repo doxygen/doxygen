@@ -8584,7 +8584,7 @@ static void computePageRelations(Entry *root)
         PageDef *subPd = Doxygen::pageSDict->find(bi.name);
         if (pd==subPd)
         {
-         term(1,"page defined at line %d of file %s with label %s is a direct "
+         term("page defined at line %d of file %s with label %s is a direct "
              "subpage of itself! Please remove this cyclic dependency.\n",
               pd->docLine(),pd->docFile().data(),pd->name().data());
         }
@@ -8611,7 +8611,7 @@ static void checkPageRelations()
     {
       if (ppd==pd)
       {
-        term(1,"page defined at line %d of file %s with label %s is a subpage "
+        term("page defined at line %d of file %s with label %s is a subpage "
             "of itself! Please remove this cyclic dependency.\n",
             pd->docLine(),pd->docFile().data(),pd->name().data());
       }
@@ -8946,7 +8946,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   }
   else
   {
-    term(1,"Cannot open file %s for writing\n",configFile);
+    term("Cannot open file %s for writing\n",configFile);
   }
 }
 static void compareDoxyfile()
@@ -8963,7 +8963,7 @@ static void compareDoxyfile()
   }
   else
   {
-    term(1,"Cannot open file %s for writing\n",configFile);
+    term("Cannot open file %s for writing\n",configFile);
   }
 }
 //----------------------------------------------------------------------------
@@ -9602,14 +9602,14 @@ void readFormulaRepository(QCString dir, bool cmp)
         {
           if ((f=Doxygen::formulaDict->find(formText))==0)
           {
-            term(1,"discrepancy between formula repositories! Remove "
+            term("discrepancy between formula repositories! Remove "
                 "formula.repository and from_* files from output directories.");
           }
           QCString formLabel;
           formLabel.sprintf("\\form#%d",f->getId());
           if (formLabel != formName)
           {
-            term(1,"discrepancy between formula repositories! Remove "
+            term("discrepancy between formula repositories! Remove "
                 "formula.repository and from_* files from output directories.");
           }
           new_repository++;
@@ -9627,7 +9627,7 @@ void readFormulaRepository(QCString dir, bool cmp)
   }
   if (cmp && (current_repository != new_repository))
   {
-    term(1,"size discrepancy between formula repositories! Remove "
+    term("size discrepancy between formula repositories! Remove "
         "formula.repository and from_* files from output directories.");
   }
 }
@@ -11468,7 +11468,7 @@ void generateOutput()
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
     {
-      term(1,"Could not create search results directory '%s' $PWD='%s'\n",
+      term("Could not create search results directory '%s' $PWD='%s'\n",
           searchDirName.data(),QDir::currentDirPath().data());
     }
     HtmlGenerator::writeSearchData(searchDirName);

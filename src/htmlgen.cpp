@@ -728,7 +728,7 @@ void HtmlGenerator::init()
   QDir d(dname);
   if (!d.exists() && !d.mkdir(dname))
   {
-    term(1,"Could not create output directory %s\n",dname.data());
+    term("Could not create output directory %s\n",dname.data());
   }
   //writeLogo(dname);
   if (!Config_getString(HTML_HEADER).isEmpty())

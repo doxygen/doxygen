@@ -62,7 +62,7 @@ void DocSets::initialize()
   QFile makefile(mfName);
   if (!makefile.open(IO_WriteOnly))
   {
-    term(1,"Could not open file %s for writing\n",mfName.data());
+    term("Could not open file %s for writing\n",mfName.data());
   }
   FTextStream ts(&makefile);
 
@@ -112,7 +112,7 @@ void DocSets::initialize()
   QFile plist(plName);
   if (!plist.open(IO_WriteOnly))
   {
-    term(1,"Could not open file %s for writing\n",plName.data());
+    term("Could not open file %s for writing\n",plName.data());
   }
   FTextStream ts(&plist);
 
@@ -147,7 +147,7 @@ void DocSets::initialize()
   m_nf = new QFile(notes);
   if (!m_nf->open(IO_WriteOnly))
   {
-    term(1,"Could not open file %s for writing\n",notes.data());
+    term("Could not open file %s for writing\n",notes.data());
   }
   //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
   QCString indexName="index";
@@ -167,7 +167,7 @@ void DocSets::initialize()
   m_tf = new QFile(tokens);
   if (!m_tf->open(IO_WriteOnly))
   {
-    term(1,"Could not open file %s for writing\n",tokens.data());
+    term("Could not open file %s for writing\n",tokens.data());
   }
   m_tts.setDevice(m_tf);
   m_tts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
