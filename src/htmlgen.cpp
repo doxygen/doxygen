@@ -300,12 +300,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
     treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
-			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n"
-			"<script type=\"text/javascript\">\n"
-			"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
-			"  $(document).ready(initResizable);\n"
-			"/* @license-end */"
-			"</script>";
+			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
   }
 
   if (searchEngine)
@@ -548,6 +543,7 @@ void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
   }
   m_t << "</span>";
   m_t << "&#160;";
+  m_col=0;
 }
 
 void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
@@ -732,8 +728,7 @@ void HtmlGenerator::init()
   QDir d(dname);
   if (!d.exists() && !d.mkdir(dname))
   {
-    err("Could not create output directory %s\n",dname.data());
-    exit(1);
+    term("Could not create output directory %s\n",dname.data());
   }
   //writeLogo(dname);
   if (!Config_getString(HTML_HEADER).isEmpty())
@@ -2371,7 +2366,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpa
 											"$(document).ready(function(){initNavTree('") +
 			QCString(name) + Doxygen::htmlFileExtension +
 			QCString("','") + relpath +
-			QCString("');});\n"
+			QCString("'); initResizable(); });\n"
 							 "/* @license-end */\n"
 							 "</script>\n"
 							 "<div id=\"doc-content\">\n");

@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
 #include "doxygen.h"
 #include "util.h"
 #include "entry.h"
@@ -8,7 +23,6 @@
 void DocGroup::enterFile(const char *fileName,int)
 {
   m_openCount = 0;
-  m_autoGroupStack.setAutoDelete(TRUE);
   m_autoGroupStack.clear();
   m_memberGroupId = DOX_NOGROUP;
   m_memberGroupDocs.resize(0);
@@ -25,7 +39,7 @@ void DocGroup::leaveFile(const char *fileName,int line)
   m_memberGroupId=DOX_NOGROUP;
   m_memberGroupRelates.resize(0);
   m_memberGroupDocs.resize(0);
-  if (!m_autoGroupStack.isEmpty())
+  if (!m_autoGroupStack.empty())
   {
     warn(fileName,line,"end of file while inside a group");
   }
@@ -94,10 +108,10 @@ void DocGroup::open(Entry *e,const char *,int, bool implicit)
 {
   if (!implicit) m_openCount++;
   //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%d\n",
-  //  	e->name.data(),e->section,m_autoGroupStack.count());
+  //  	e->name.data(),e->section,m_autoGroupStack.size());
   if (e->section==Entry::GROUPDOC_SEC) // auto group
   {
-    m_autoGroupStack.push(new Grouping(e->name,e->groupingPri()));
+    m_autoGroupStack.push_back(Grouping(e->name,e->groupingPri()));
   }
   else // start of a member group
   {
@@ -133,7 +147,7 @@ void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline,boo
     }
   }
   //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) m_autoGroupStack=%d\n",
-  //    e->name.data(),e->section,fileName,line,m_autoGroupStack.count());
+  //    e->name.data(),e->section,fileName,line,m_autoGroupStack.size());
   if (m_memberGroupId!=DOX_NOGROUP) // end of member group
   {
     MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(m_memberGroupId);
@@ -149,13 +163,13 @@ void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline,boo
     if (!foundInline) e->mGrpId=DOX_NOGROUP;
     //printf("new group id=%d\n",m_memberGroupId);
   }
-  else if (!m_autoGroupStack.isEmpty()) // end of auto group
+  else if (!m_autoGroupStack.empty()) // end of auto group
   {
-    Grouping *grp = m_autoGroupStack.pop();
+    Grouping grp = m_autoGroupStack.back();
+    m_autoGroupStack.pop_back();
     // see bug577005: we should not remove the last group for e
-    if (!foundInline) e->groups->removeLast();
+    if (!foundInline && !e->groups.empty()) e->groups.pop_back();
     //printf("Removing %s e=%p\n",grp->groupname.data(),e);
-    delete grp;
     if (!foundInline) initGroupInfo(e);
   }
 }
@@ -166,12 +180,12 @@ void DocGroup::initGroupInfo(Entry *e)
   //       m_memberGroupRelates.data(),e);
   e->mGrpId     = m_memberGroupId;
   e->relates    = m_memberGroupRelates;
-  if (!m_autoGroupStack.isEmpty())
+  if (!m_autoGroupStack.empty())
   {
     //printf("Appending group %s to %s: count=%d entry=%p\n",
     //	m_autoGroupStack.top()->groupname.data(),
     //	e->name.data(),e->groups->count(),e);
-    e->groups->append(new Grouping(*m_autoGroupStack.top()));
+    e->groups.push_back(Grouping(m_autoGroupStack.back()));
   }
 }
 

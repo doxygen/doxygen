@@ -31,7 +31,7 @@ static Entry* current_root;
 static Entry* tempEntry;
 static Entry*  lastEntity  ;
 static Entry*  lastCompound  ;
-static Entry*  current;
+static std::shared_ptr<Entry> current;
 static QCString compSpec;
 static QCString currName;
 static int levelCounter;
@@ -42,7 +42,6 @@ static QCString forL;
 static int param_sec ;
 static int parse_sec;
 static int currP;
-static Entry* currentCompound;
 
 //----------------------------------------
 
@@ -108,17 +107,17 @@ SKIP:
 // VHDL 2008 doxygen comment /*! .... */
 SKIP :
 {
-  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!"  (~[])* "*/" >
+  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
   {
    {
-     QCString q(image.data());
-     q.stripPrefix("/*!");
-     q.resize(q.length()-2);
+     QCString q = filter2008VhdlComment(image.data());
      ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
    }
   }
-  | <MULT_VHDL_2008_COMMENT : "/*"  (~[])* "*/" >  {::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
-}
+  | <MULT_VHDL_2008_COMMENT : "/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
+    {
+      ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
+    }
 
 /* KEYWORDS */
 
@@ -134,7 +133,7 @@ TOKEN [IGNORE_CASE] :
 | <ARRAY_T: "array"> {VhdlParser::setLineParsed(ARRAY_T);}
 | <ASSERT_T: "assert">
 | <ASSUME_T: "assume">
-| <ASSUME_GUARANTEE_T: "assume_guarentee">
+| <ASSUME_GUARANTEE_T: "assume_guarantee">
 | <ATTRIBUTE_T: "attribute"> {::vhdl::parser::VhdlParser::setLineParsed(ATTRIBUTE_T);}
 | <BEGIN_T: "begin">
 | <BLOCK_T: "block">
@@ -409,7 +408,7 @@ void architecture_body() : {QCString s,s1;}
                   QCString t=s1+"::"+s;
                   genLabels.resize(0);
                   pushLabel(genLabels,s1);
-                  lastCompound=current;
+                  lastCompound=current.get();
                   addVhdlType(t,getLine(ARCHITECTURE_T),Entry::CLASS_SEC,VhdlDocGen::ARCHITECTURE,0,0,Private);
     }
    try{
@@ -1012,7 +1011,7 @@ void entity_declaration() :  {QCString s;}
    // try{
     <ENTITY_T> s=identifier()  <IS_T>
              {
-                lastEntity=current;
+                lastEntity=current.get();
                 lastCompound=0;
                 addVhdlType(s.data(),getLine(ENTITY_T),Entry::CLASS_SEC,VhdlDocGen::ENTITY,0,0,Public);
                }
@@ -1209,7 +1208,7 @@ QCString full_type_declaration() :  {Entry *tmpEntry;QCString s,s1,s2;}
 {
 <TYPE_T> s=identifier() <IS_T>
 {
-  tmpEntry=current;
+  tmpEntry=current.get();
   addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,0,Public);
 }
  try{
@@ -1614,6 +1613,9 @@ QCString name_ext1() : {QCString s,s1,s2;}
  {
 
   (
+ LOOKAHEAD(<APOSTROPHE_T><SUBTYPE_T>)
+ <APOSTROPHE_T><SUBTYPE_T>{s+="'subtype";}
+|
  LOOKAHEAD(<DOT_T> suffix())
  <DOT_T> s1=suffix(){s+=".";s+=s1;}
 |
@@ -1693,7 +1695,7 @@ void package_body() :  {QCString s;}
 {
 <PACKAGE_T> <BODY_T> s=name() <IS_T>
  {
-                        lastCompound=current;
+                        lastCompound=current.get();
                         s.prepend("_");
                         addVhdlType(s,getLine(),Entry::CLASS_SEC,VhdlDocGen::PACKAGE_BODY,0,0,Protected);
                       }
@@ -1729,15 +1731,15 @@ void package_declaration():  {QCString s;}
 
  <PACKAGE_T> s=identifier() <IS_T>
                           {
-                          lastCompound=current;
-                          Entry *clone=new Entry(*current);
+                          lastCompound=current.get();
+                          std::shared_ptr<Entry> clone=std::make_shared<Entry>(*current);
                           clone->section=Entry::NAMESPACE_SEC;
                           clone->spec=VhdlDocGen::PACKAGE;
                           clone->name=s;
                           clone->startLine=getLine(PACKAGE_T);
                           clone->bodyLine=getLine(PACKAGE_T);
                           clone->protection=Package;
-                          current_root->addSubEntry(clone);
+                          current_root->moveToSubEntryAndKeep(clone);
                           addVhdlType(s,getLine(PACKAGE_T),Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
                           }
     package_declarative_part()
@@ -1932,7 +1934,7 @@ void process_statement() : {QCString s,s1,s2;Token *tok=0;}
    currName=s;
 
    current->name=currName;
-   tempEntry=current;
+   tempEntry=current.get();
    current->endBodyLine=getLine();
    currP=0;
  if(tok)
@@ -2292,7 +2294,7 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
  {
               currP=VhdlDocGen::PROCEDURE;
               createFunction(s.data(),currP,0);
-              tempEntry=current;
+              tempEntry=current.get();
                current->startLine=getLine(PROCEDURE_T);
                current->bodyLine=getLine(PROCEDURE_T);
 
@@ -2309,14 +2311,14 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
      createFunction(tok->image.c_str(),currP,s.data());
      else
      createFunction(0,currP,s.data());
-      tempEntry=current;
+      tempEntry=current.get();
       current->startLine=getLine(FUNCTION_T);
       current->bodyLine=getLine(FUNCTION_T);
   }
  [{ param_sec=PARAM_SEC; } <LPAREN_T> formal_parameter_list() <RPAREN_T> { param_sec=0; }]
     <RETURN_T> s=type_mark()
              {
-                tempEntry=current;
+                tempEntry=current.get();
                 current->type=s;
                 newEntry();
               }

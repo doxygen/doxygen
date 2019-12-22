@@ -662,7 +662,7 @@ static char *getLine(const char        *string,
  * \param  x           The x position at which the entity text should be centered.
  * \param  y           The y position where the text should be placed.
  * \param  entLabel    The label to render, which maybe \a NULL in which case
- *                       no ouput is produced.
+ *                       no output is produced.
  * \param  entUrl      The URL for rendering the label as a hyperlink.  This
  *                       maybe \a NULL if not required.
  * \param  entId       The text identifier for the arc.
@@ -704,7 +704,7 @@ static void entityText(Context          *ctx,
             /* Check if a URL is associated */
             if(entUrl)
             {
-                /* If no explict colour has been set, make URLS blue */
+                /* If no explicit colour has been set, make URLS blue */
                 ctx->drw.setPen(&ctx->drw, ADRAW_COL_BLUE);
 
                 /* Image map output */
@@ -1431,7 +1431,7 @@ static void arcLine(Context          *ctx,
  */
 static Boolean checkMsc(Msc m)
 {
-    /* Check all arc entites are known */
+    /* Check all arc entities are known */
     MscResetArcIterator(m);
     do
     {
@@ -1710,7 +1710,7 @@ int mscgen_generate(const char *inputFile,
         assert(startCol != -1);
         assert(endCol != -1 || isBroadcastArc(MscGetCurrentArcDest(m)));
 
-        /* Check for entity colouring if not set explicity on the arc */
+        /* Check for entity colouring if not set explicitly on the arc */
         if (arcTextColour == NULL)
         {
           arcTextColour = MscGetEntAttrib(m, startCol, MSC_ATTR_ARC_TEXT_COLOUR);

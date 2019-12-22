@@ -117,7 +117,7 @@ QCString DotGraph::writeGraph(
         EmbeddedOutputFormat ef,  // html, latex, ...
         const char* path,         // output folder
         const char* fileName,     // name of the code file (for code patcher)
-        const char* relPath,      // output folder relativ to code file
+        const char* relPath,      // output folder relative to code file
         bool generateImageMap,    // in case of bitmap, shall there be code generated?
         int graphId)              // number of this graph in the current code, used in svg code
 {
@@ -147,7 +147,7 @@ bool DotGraph::prepareDotFile()
 {
   if (!m_dir.exists())
   {
-    err("Output dir %s does not exist!\n", m_dir.path().data()); exit(1);
+    term("Output dir %s does not exist!\n", m_dir.path().data());
   }
 
   QCString sigStr(33);
@@ -289,7 +289,7 @@ void DotGraph::writeGraphHeader(FTextStream &t,const QCString &title)
   {
     t << " // INTERACTIVE_SVG=YES\n";
   }
-  t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size repacement
+  t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
   if (Config_getBool(DOT_TRANSPARENT))
   {
     t << "  bgcolor=\"transparent\";" << endl;

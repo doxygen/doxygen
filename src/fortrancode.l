@@ -17,7 +17,7 @@
  */
 
 /**
- @todo - continutation lines not always recognized
+ @todo - continuation lines not always recognized
        - merging of use-statements with same module name and different only-names
        - rename part of use-statement
        - links to interface functions 
@@ -521,7 +521,7 @@ static bool getGenericProcedureLink(const ClassDef *cd,
   return FALSE;
 }
 
-static bool getLink(UseSDict *usedict, // dictonary with used modules
+static bool getLink(UseSDict *usedict, // dictionary with used modules
                     const char *memberText,  // exact member text
 		    CodeOutputInterface &ol,
 		    const char *text)
@@ -1395,16 +1395,34 @@ void parseFortranCode(CodeOutputInterface &od,const char *,const QCString &s,
   return;
 }
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION)
-extern "C" { // some bogus code to keep the compiler happy
-  void fortrancodeYYdummy() { yy_flex_realloc(0,0); }
+//---------------------------------------------------------
+
+void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
+                   const char * scopeName,
+                   const QCString & input,
+                   SrcLangExt /*lang*/,
+                   bool isExampleBlock,
+                   const char * exampleName,
+                   FileDef * fileDef,
+                   int startLine,
+                   int endLine,
+                   bool inlineFragment,
+		   const MemberDef *memberDef,
+                   bool showLineNumbers,
+                   const Definition *searchCtx,
+                   bool collectXRefs
+                  )
+{
+  ::parseFortranCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+                     fileDef,startLine,endLine,inlineFragment,memberDef,
+                     showLineNumbers,searchCtx,collectXRefs,m_format);
 }
-#elif YY_FLEX_MAJOR_VERSION<=2 && YY_FLEX_MINOR_VERSION<=5 && YY_FLEX_SUBMINOR_VERSION<33
-#error "You seem to be using a version of flex newer than 2.5.4 but older than 2.5.33. These versions do NOT work with doxygen! Please use version <=2.5.4 or >=2.5.33 or expect things to be parsed wrongly!"
-#else
-extern "C" { // some bogus code to keep the compiler happy
-  void fortrancodeYYdummy() { yy_top_state(); } 
+
+void FortranCodeParser::resetCodeParserState()
+{
+  ::resetFortranCodeParserState();
 }
-#endif
+
+//---------------------------------------------------------
 
 #include "fortrancode.l.h"

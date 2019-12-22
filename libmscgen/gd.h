@@ -333,7 +333,7 @@ typedef double (* interpolation_method )(double);
      <Accessor Macros>
 
    (Previous versions of this library encouraged directly manipulating
-   the contents ofthe struct but we are attempting to move away from
+   the contents of the struct but we are attempting to move away from
    this practice so the fields are no longer documented here.  If you
    need to poke at the internals of this struct, feel free to look at
    *gd.h*.)
@@ -1572,7 +1572,7 @@ BGD_DECLARE(int) gdTransformAffineBoundingBox(gdRectPtr src, const double affine
  *
  * Constants:
  *   GD_CMP_IMAGE       - Actual image IS different
- *   GD_CMP_NUM_COLORS  - Number of colors in pallette differ
+ *   GD_CMP_NUM_COLORS  - Number of colors in palette differ
  *   GD_CMP_COLOR       - Image colors differ
  *   GD_CMP_SIZE_X      - Image width differs
  *   GD_CMP_SIZE_Y      - Image heights differ

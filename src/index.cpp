@@ -368,7 +368,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
           {
             const MemberList *enumList = md->enumFieldList();
             bool isDir = enumList!=0 && md->isEnumerate();
-            bool isAnonymous = md->name().find('@')!=-1;
+            bool isAnonymous = md->isAnonymous();
             static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
             static bool extractStatic = Config_getBool(EXTRACT_STATIC);
             if (!isAnonymous &&
@@ -1660,7 +1660,7 @@ static void writeNamespaceTree(const NamespaceSDict *nsDict,FTVHelp *ftv,
     const NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (nd->localName().find('@')==-1 &&
+      if (!nd->isAnonymous() &&
           (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
       {
 
@@ -4060,7 +4060,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           {
             const MemberList *enumList = md->enumFieldList();
             bool isDir = enumList!=0 && md->isEnumerate();
-            if (md->isVisible() && md->name().find('@')==-1)
+            if (md->isVisible() && !md->isAnonymous())
             {
               Doxygen::indexList->addContentsItem(isDir,
                   md->name(),md->getReference(),

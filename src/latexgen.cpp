@@ -223,6 +223,7 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
   {
     m_t << l << " ";
   }
+  m_col=0;
 }
 
 
@@ -287,8 +288,7 @@ static void writeLatexMakefile()
   QFile file(fileName);
   if (!file.open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n",fileName.data());
-    exit(1);
+    term("Could not open file %s for writing\n",fileName.data());
   }
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   QCString latex_command = theTranslator->latexCommandName();
@@ -386,8 +386,7 @@ static void writeMakeBat()
   bool generateBib = !Doxygen::citeDict->isEmpty();
   if (!file.open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n",fileName.data());
-    exit(1);
+    term("Could not open file %s for writing\n",fileName.data());
   }
   FTextStream t(&file);
   t << "set Dir_Old=%cd%\n";
@@ -467,8 +466,7 @@ void LatexGenerator::init()
   QDir d(dir);
   if (!d.exists() && !d.mkdir(dir))
   {
-    err("Could not create output directory %s\n",dir.data());
-    exit(1);
+    term("Could not create output directory %s\n",dir.data());
   }
 
   writeLatexMakefile();
@@ -621,6 +619,11 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "    \\normalfont\\normalsize\\bfseries\\SS@subparafont%\n"
        "  }%\n"
        "}\n"
+       "\\makeatother\n"
+       "\n";
+  // 
+  t << "\\makeatletter\n"
+       "\\newcommand\\hrulefilll{\\leavevmode\\leaders\\hrule\\hskip 0pt plus 1filll\\kern\\z@}\n"
        "\\makeatother\n"
        "\n";
 
@@ -1919,7 +1922,7 @@ void LatexGenerator::endMemberDescription()
 
 void LatexGenerator::writeNonBreakableSpace(int) 
 {
-  //printf("writeNonBreakbleSpace()\n");
+  //printf("writeNonBreakableSpace()\n");
   if (insideTabbing)
   {
     t << "\\>";

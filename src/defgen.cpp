@@ -144,71 +144,66 @@ void generateDEFForMember(MemberDef *md,
 
   if (isFunc) //function
   {
-    ArgumentList *declAl = new ArgumentList;
-    const ArgumentList *defAl = md->argumentList();
-    stringToArgumentList(md->argsString(),declAl);
+    const ArgumentList &defAl = md->argumentList();
+    ArgumentList declAl;
+    stringToArgumentList(md->getLanguage(),md->argsString(),declAl);
     QCString fcnPrefix = "  " + memPrefix + "param-";
 
-    if (defAl && declAl->count()>0)
+    auto defIt = defAl.begin();
+    for (const Argument &a : declAl)
     {
-      ArgumentListIterator declAli(*declAl);
-      ArgumentListIterator defAli(*defAl);
-      Argument *a;
-      for (declAli.toFirst();(a=declAli.current());++declAli)
+      const Argument *defArg = 0;
+      if (defIt!=defAl.end())
       {
-        Argument *defArg = defAli.current();
-        t << memPrefix << "param = {" << endl;
-        if (!a->attrib.isEmpty())
-        {
-          t << fcnPrefix << "attributes = ";
-          writeDEFString(t,a->attrib);
-          t << ';' << endl;
-        }
-        if (!a->type.isEmpty())
-        {
-          t << fcnPrefix << "type = <<_EnD_oF_dEf_TeXt_" << endl
-            << a->type << endl << "_EnD_oF_dEf_TeXt_;" << endl;
-        }
-        if (!a->name.isEmpty())
-        {
-          t << fcnPrefix << "declname = ";
-          writeDEFString(t,a->name);
-          t << ';' << endl;
-        }
-        if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
-        {
-          t << fcnPrefix << "defname = ";
-          writeDEFString(t,defArg->name);
-          t << ';' << endl;
-        }
-        if (!a->array.isEmpty())
-        {
-          t << fcnPrefix << "array = ";
-          writeDEFString(t,a->array); 
-          t << ';' << endl;
-        }
-        if (!a->defval.isEmpty())
-        {
-          t << fcnPrefix << "defval = <<_EnD_oF_dEf_TeXt_" << endl
-            << a->defval << endl << "_EnD_oF_dEf_TeXt_;" << endl;
-        }
-        if (defArg) ++defAli;
-        t << "      }; /*" << fcnPrefix << "-param */" << endl;
+        defArg = &(*defIt);
+        ++defIt;
       }
+      t << memPrefix << "param = {" << endl;
+      if (!a.attrib.isEmpty())
+      {
+        t << fcnPrefix << "attributes = ";
+        writeDEFString(t,a.attrib);
+        t << ';' << endl;
+      }
+      if (!a.type.isEmpty())
+      {
+        t << fcnPrefix << "type = <<_EnD_oF_dEf_TeXt_" << endl
+          << a.type << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+      }
+      if (!a.name.isEmpty())
+      {
+        t << fcnPrefix << "declname = ";
+        writeDEFString(t,a.name);
+        t << ';' << endl;
+      }
+      if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
+      {
+        t << fcnPrefix << "defname = ";
+        writeDEFString(t,defArg->name);
+        t << ';' << endl;
+      }
+      if (!a.array.isEmpty())
+      {
+        t << fcnPrefix << "array = ";
+        writeDEFString(t,a.array); 
+        t << ';' << endl;
+      }
+      if (!a.defval.isEmpty())
+      {
+        t << fcnPrefix << "defval = <<_EnD_oF_dEf_TeXt_" << endl
+          << a.defval << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+      }
+      t << "      }; /*" << fcnPrefix << "-param */" << endl;
     }
-    delete declAl;
   }
   else if (  md->memberType()==MemberType_Define
       && md->argsString()!=0)
   {
-    ArgumentListIterator ali(*md->argumentList());
-    Argument *a;
     QCString defPrefix = "  " + memPrefix + "def-";
-
-    for (ali.toFirst();(a=ali.current());++ali)
+    for (const Argument &a : md->argumentList())
     {
       t << memPrefix << "param  = {" << endl;
-      t << defPrefix << "name = '" << a->type << "';" << endl;
+      t << defPrefix << "name = '" << a.type << "';" << endl;
       t << "      }; /*" << defPrefix << "-param */" << endl;
     }
   }
@@ -577,9 +572,8 @@ void generateDEF()
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-        err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
+        term("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
             "exist and cannot be created\n",outputDirectory.data());
-        exit(1);
       }
       else
       {

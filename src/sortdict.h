@@ -128,7 +128,7 @@ class SDict
 
     /*! Appends an element to the dictionary. The element is owned by the
      *  dictionary.
-     *  \param key The unique key to use to quicky find the item later on.
+     *  \param key The unique key to use to quickly find the item later on.
      *  \param d The compound to add.
      *  \sa find()
      */
@@ -146,7 +146,7 @@ class SDict
 
     /*! Prepends an element to the dictionary. The element is owned by the
      *  dictionary.
-     *  \param key The unique key to use to quicky find the item later on.
+     *  \param key The unique key to use to quickly find the item later on.
      *  \param d The compound to add.
      *  \sa find()
      */
@@ -190,7 +190,7 @@ class SDict
       m_list->sort();
     }
     /*! Inserts a compound into the dictionary in a sorted way.
-     *  \param key The unique key to use to quicky find the item later on.
+     *  \param key The unique key to use to quickly find the item later on.
      *  \param d The compound to add.
      *  \sa find()
      */
@@ -244,7 +244,7 @@ class SDict
       return m_list->find(item);
     }
 
-    /*! Equavalent to find(). */
+    /*! Equivalent to find(). */
     T *operator[](const char *key) const
     {
       return m_dict->find(key);
@@ -470,7 +470,7 @@ class SIntDict
 
     /*! Appends a compound to the dictionary. The element is owned by the
      *  dictionary.
-     *  \param key The unique key to use to quicky find the item later on.
+     *  \param key The unique key to use to quickly find the item later on.
      *  \param d The compound to add.
      *  \sa find()
      */
@@ -488,7 +488,7 @@ class SIntDict
 
     /*! Prepend a compound to the dictionary. The element is owned by the
      *  dictionary.
-     *  \param key The unique key to use to quicky find the item later on.
+     *  \param key The unique key to use to quickly find the item later on.
      *  \param d The compound to add.
      *  \sa find()
      */
@@ -521,7 +521,7 @@ class SIntDict
     }
 
     /*! Inserts a compound into the dictionary in a sorted way.
-     *  \param key The unique key to use to quicky find the item later on.
+     *  \param key The unique key to use to quickly find the item later on.
      *  \param d The compound to add.
      *  \sa find()
      */
@@ -553,7 +553,7 @@ class SIntDict
       return m_dict->find(key);
     }
 
-    /*! Equavalent to find(). */
+    /*! Equivalent to find(). */
     T *operator[](int key) const
     {
       return m_dict->find(key);

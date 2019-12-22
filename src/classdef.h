@@ -18,6 +18,8 @@
 #ifndef CLASSDEF_H
 #define CLASSDEF_H
 
+#include <vector>
+
 #include <qlist.h>
 #include <qdict.h>
 #include <qptrdict.h>
@@ -154,10 +156,9 @@ class ClassDef : virtual public Definition
     /** show this class in the declaration section of its parent? */
     virtual bool visibleInParentsDeclList() const = 0;
 
-    /** Returns the template arguments of this class 
-     *  Will return 0 if not applicable.
+    /** Returns the template arguments of this class
      */
-    virtual ArgumentList *templateArguments() const = 0;
+    virtual const ArgumentList &templateArguments() const = 0;
 
     /** Returns the namespace this compound is in, or 0 if it has a global
      *  scope.
@@ -228,10 +229,10 @@ class ClassDef : virtual public Definition
      *  will return a list with one ArgumentList containing one argument
      *  with type="class" and name="T".
      */
-    virtual void getTemplateParameterLists(QList<ArgumentList> &lists) const = 0;
+    virtual std::vector<ArgumentList> getTemplateParameterLists() const = 0;
 
     virtual QCString qualifiedNameWithTemplateParameters(
-        QList<ArgumentList> *actualParams=0,int *actualParamIndex=0) const = 0;
+        const std::vector<ArgumentList> *actualParams=0,int *actualParamIndex=0) const = 0;
 
     /** Returns TRUE if there is at least one pure virtual member in this
      *  class.
@@ -301,14 +302,13 @@ class ClassDef : virtual public Definition
     virtual bool isJavaEnum() const = 0;
 
     virtual bool isGeneric() const = 0;
-    virtual bool isAnonymous() const = 0;
     virtual const ClassSDict *innerClasses() const = 0;
     virtual QCString title() const = 0;
 
     virtual QCString generatedFromFiles() const = 0;
     virtual const FileList &usedFiles() const = 0;
 
-    virtual const ArgumentList *typeConstraints() const = 0;
+    virtual const ArgumentList &typeConstraints() const = 0;
     virtual const ExampleSDict *exampleList() const = 0;
     virtual bool hasExamples() const = 0;
     virtual QCString getMemberListFileName() const = 0;
@@ -331,10 +331,10 @@ class ClassDef : virtual public Definition
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const char *name) = 0;
     virtual void setClassSpecifier(uint64 spec) = 0;
-    virtual void setTemplateArguments(ArgumentList *al) = 0;
+    virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setTemplateBaseClassNames(QDict<int> *templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;
-    virtual void setTypeConstraints(ArgumentList *al) = 0;
+    virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setCategoryOf(ClassDef *cd) = 0;
     virtual void setUsedOnly(bool b) = 0;
     virtual void setTagLessReference(ClassDef *cd) = 0;

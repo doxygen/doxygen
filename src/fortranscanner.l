@@ -136,16 +136,16 @@ static const char *directionParam[] =
  *
  *	statics
  */
-static ParserInterface *g_thisParser; 
+static OutlineParserInterface *g_thisParser; 
 static const char *     inputString;
 static int		inputPosition;
 static bool             isFixedForm;
 static QCString         inputStringPrepass; ///< Input string for prepass of line cont. '&'
-static QCString         inputStringSemi; ///< Input string after command separetor ';'
+static QCString         inputStringSemi; ///< Input string after command separator ';'
 static unsigned int     inputPositionPrepass;
 static int              lineCountPrepass = 0;
 
-static QList<Entry>  subrCurrent;
+static std::vector< std::shared_ptr<Entry> >  subrCurrent;
 
 struct CommentInPrepass {
   int column;
@@ -162,14 +162,15 @@ static QFile            inputFile;
 static QCString		yyFileName;
 static int		yyLineNr     = 1 ;
 static int		yyColNr     = 0 ;
-static Entry*		current_root = 0 ;
-static Entry*		global_root  = 0 ;
-static Entry*		file_root    = 0 ;
-static Entry*		current      = 0 ;
-static Entry*		last_entry   = 0 ;
-static Entry*		last_enum    = 0 ;
+static Entry           *current_root = 0;
+static Entry           *global_scope = 0;
+static std::shared_ptr<Entry> global_root;
+static std::shared_ptr<Entry> file_root;
+static std::shared_ptr<Entry> last_entry;
+static std::shared_ptr<Entry> last_enum;
+static std::shared_ptr<Entry> current;
 static ScanVar          v_type       = V_IGNORE; // type of parsed variable
-static QList<Entry>     moduleProcedures; // list of all interfaces which contain unresolved 
+static std::vector<std::shared_ptr<Entry> >  moduleProcedures; // list of all interfaces which contain unresolved 
                                           // module procedures
 static QCString         docBlock;
 static bool             docBlockInBody = FALSE;
@@ -181,7 +182,7 @@ static Specifier 	virt;
 
 static QCString          debugStr;
 static QCString          result; // function result
-static Argument          *parameter; // element of parameter list
+static Argument         *parameter; // element of parameter list
 static QCString          argType;  // fortran type of an argument of a parameter list
 static QCString          argName;  // last identifier name in variable list
 static QCString          initializer;  // initial value of a variable
@@ -202,7 +203,6 @@ static SymbolModifiers currentModifiers;
 //! Holds program scope->symbol name->symbol modifiers.
 static QMap<Entry*,QMap<QCString,SymbolModifiers> > modifiers;
 
-static Entry           *global_scope = NULL;
 static int              anonCount    = 0 ;
 //-----------------------------------------------------------------------------
 
@@ -211,7 +211,7 @@ static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
 static void subrHandleCommentBlock(const QCString &doc,bool brief);
 static void subrHandleCommentBlockResult(const QCString &doc,bool brief);
-static void addCurrentEntry(int case_insens);
+static void addCurrentEntry(bool case_insens);
 static void addModule(const char *name, bool isModule=FALSE);
 static void addSubprogram(const char *text);
 static void addInterface(QCString name, InterfaceType type);
@@ -221,7 +221,7 @@ static void scanner_abort();
 static void startScope(Entry *scope);
 static bool endScope(Entry *scope, bool isGlobalRoot=FALSE);
 //static bool isTypeName(QCString name);
-static void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root);
+static void resolveModuleProcedures(Entry *current_root);
 static int getAmpersandAtTheStart(const char *buf, int length);
 static int getAmpOrExclAtTheEnd(const char *buf, int length, char ch);
 static void truncatePrepass(int index);
@@ -241,6 +241,7 @@ static const char *stateToString(int state);
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 #define YY_USER_ACTION yyColNr+=(int)yyleng;
+#define INVALID_ENTRY ((Entry*)0x8)
 //-----------------------------------------------------------------------------
 
 %}
@@ -444,8 +445,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           current->name=yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry;
+					  current_root->moveToSubEntryAndRefresh(current);
                                           current->lang = SrcLangExt_Fortran; 
                                           yy_pop_state();
                                         }
@@ -459,8 +459,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
   					  current->name= useModuleName+"::"+yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDECL_SEC;
-					  current_root->addSubEntry(current);
-					  current = new Entry ;
+					  current_root->moveToSubEntryAndRefresh(current);
                                           current->lang = SrcLangExt_Fortran; 
   					}
 <Use,UseOnly>"\n"                       {
@@ -492,13 +491,13 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           QCString name = QCString(yytext).stripWhiteSpace();
                                           name = name.right(name.length() - 9).stripWhiteSpace().lower();
                                           addInterface(name, ifType);
-                                          startScope(last_entry);
+                                          startScope(last_entry.get());
                                         }
 }
 
 <InterfaceBody>^{BS}end{BS}interface({BS_}{ID})? {
                                           // end scope only if GENERIC interface
-                                          if (ifType == IF_GENERIC)last_entry->parent()->endBodyLine = yyLineNr - 1;
+                                          if (ifType == IF_GENERIC) last_entry->parent()->endBodyLine = yyLineNr - 1;
                                           if (ifType == IF_GENERIC && !endScope(current_root))
                                             yyterminate();
 
@@ -511,13 +510,13 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <ModuleProcedure>{ID}                   { if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                           {
                                             addInterface(yytext, ifType);
-                                            startScope(last_entry);
+                                            startScope(last_entry.get());
                                           }
 
                                           current->section = Entry::FUNCTION_SEC ;
                                           current->name = yytext; 
-                                          moduleProcedures.append(current);
-                                          addCurrentEntry(1);
+                                          moduleProcedures.push_back(current);
+                                          addCurrentEntry(true);
                                         }
 <ModuleProcedure>"\n"                   { yyColNr -= 1;
 					  unput(*yytext); 
@@ -558,13 +557,13 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 					    yy_pop_state();
                                        }
 <Start,ModuleBody,ModuleBodyContains>"end"({BS}(module|program)({BS_}{ID})?)?{BS}/(\n|!|;) { // end module
-					    resolveModuleProcedures(moduleProcedures, current_root);
+					    resolveModuleProcedures(current_root);
 					    if (!endScope(current_root))
 					      yyterminate();
                                             defaultProtection = Public;
 					    if (global_scope)
                                             {
-                                              if (global_scope != (Entry *) -1)
+                                              if (global_scope != INVALID_ENTRY)
                                                 yy_push_state(Start);
                                               else
                                                 yy_pop_state(); // cannot pop artrificial entry
@@ -572,7 +571,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                             else
                                             {
                                               yy_push_state(Start);
-                                              global_scope = (Entry *)-1; // signal that the global_scope has already been used.
+                                              global_scope = INVALID_ENTRY; // signal that the global_scope has already been used.
                                             }
                                        }
 <Module>{ID}                           {  
@@ -618,7 +617,7 @@ abstract                                {
                                         }
 extends{ARGS}                           {
                                           QCString basename = extractFromParens(yytext).lower();
-                                          current->extends->append(new BaseInfo(basename, Public, Normal));
+                                          current->extends.push_back(BaseInfo(basename, Public, Normal));
                                         }
 public                                  {
                                           current->protection = Public;
@@ -640,15 +639,15 @@ private                                 {
                                           current->startLine  = yyLineNr;
 
                                           /* if type is part of a module, mod name is necessary for output */
-                                          if ((current_root) && 
+                                          if (current_root && 
                                               (current_root->section == Entry::CLASS_SEC
                                                || current_root->section == Entry::NAMESPACE_SEC))
                                           {
                                             current->name = current_root->name + "::" + current->name;
                                           }
 
-                                          addCurrentEntry(1);
-                                          startScope(last_entry); 
+                                          addCurrentEntry(true);
+                                          startScope(last_entry.get()); 
                                           BEGIN(TypedefBody);
                                         }
 }
@@ -679,7 +678,7 @@ private                                 {
                                           current->fileName = yyFileName;
                                           current->bodyLine = yyLineNr;
                                           current->startLine  = yyLineNr;
-                                          addCurrentEntry(1);
+                                          addCurrentEntry(true);
                                         }
 {BS}"=>"[^(\n|\!)]*                     { /* Specific bindings come after the ID. */
                                           QCString args = yytext;
@@ -728,7 +727,7 @@ private                                 {
 
 					   if (!endScope(current_root))
 					     yyterminate();
-                                           subrCurrent.remove(0u);
+                                           subrCurrent.pop_back();
 					   yy_pop_state() ;
 				        }
 <BlockData>{
@@ -737,7 +736,7 @@ private                                 {
 }
 <Start,ModuleBody,TypedefBody,SubprogBody,Enum>{
 ^{BS}{TYPE_SPEC}/{SEPARATE}             {
-                                          last_enum = 0;
+                                          last_enum.reset();
                                           if (YY_START == Enum)
                                           {
 					    argType = "@"; // enum marker
@@ -866,17 +865,15 @@ private                                 {
                                             current->startLine  = yyLineNr;
                                             if (argType == "@")
                                             {
-                                              current_root->addSubEntry(current);
-                                              current = new Entry(*current);
+                                              current_root->copyToSubEntry(current);
                                               // add to the scope surrounding the enum (copy!)
-                                              current_root->parent()->addSubEntry(current);
                                               last_enum = current;
-                                              current = new Entry ;
+                                              current_root->parent()->moveToSubEntryAndRefresh(current);
                                               initEntry();
                                             }
                                             else
                                             {
-                                              addCurrentEntry(1);
+                                              addCurrentEntry(true);
                                             }
                                           } 
 					  else if (!argType.isEmpty())
@@ -889,7 +886,7 @@ private                                 {
 					      if (!docBlock.isNull()) 
 					      {
   					        subrHandleCommentBlock(docBlock,TRUE);
-					      }					    
+					      }
 					    }
 					    // save, it may be function return type
 					    if (parameter)
@@ -1068,8 +1065,8 @@ private                                 {
                                             current->name = current_root->name + "::" + current->name;
                                           }
 
-                                          addCurrentEntry(1);
-                                          startScope(last_entry); 
+                                          addCurrentEntry(true);
+                                          startScope(last_entry.get()); 
 					  BEGIN( Enum ) ;
                                         }
 <Enum>"end"{BS}"enum"                   {
@@ -1086,7 +1083,7 @@ private                                 {
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
                                            addInterface("$interface$", ifType);
-                                           startScope(last_entry);
+                                           startScope(last_entry.get());
                                          }
 
                                          // TYPE_SPEC is for old function style function result
@@ -1112,7 +1109,7 @@ private                                 {
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
                                            addInterface("$interface$", ifType);
-                                           startScope(last_entry);
+                                           startScope(last_entry.get());
                                          }
 
                                          result = QCString(yytext).stripWhiteSpace();
@@ -1138,15 +1135,17 @@ private                                 {
 <Parameterlist>")"                     {
 				         current->args += ")";
 				         current->args = removeRedundantWhiteSpace(current->args);
-                                         addCurrentEntry(1);
-					 startScope(last_entry);
+                                         addCurrentEntry(true);
+					 startScope(last_entry.get());
 					 BEGIN(SubprogBody);
 				       }
 <Parameterlist>{COMMA}|{BS}            { current->args += yytext;
 					 CommentInPrepass *c = locatePrepassComment(yyColNr-(int)yyleng, yyColNr);
-					 if (c!=NULL) {
-                                           if(current->argList->count()>0) {
-					     current->argList->at(current->argList->count()-1)->docs = c->str;
+					 if (c!=NULL)
+                                         {
+                                           if (!current->argList.empty())
+                                           {
+					     current->argList.back().docs = c->str;
 					   }
 					 }		         
 				       }
@@ -1155,17 +1154,15 @@ private                                 {
                                            QCString param = yytext;
 					   // std::cout << "3=========> got parameter " << param << std::endl;
 					   current->args += param;
-					   Argument *arg = new Argument;
-					   arg->name = param;
-					   arg->type = "";
-					   current->argList->append(arg);
+					   Argument arg;
+					   arg.name = param;
+					   current->argList.push_back(arg);
  				       } 
 <Parameterlist>{NOARGS}                {   
 				           newLine();
 					   //printf("3=========> without parameterlist \n");
- 					   //current->argList = ;
-                                           addCurrentEntry(1);
-					   startScope(last_entry);
+                                           addCurrentEntry(true);
+					   startScope(last_entry.get());
 					   BEGIN(SubprogBody);				           
 }
 <SubprogBody>result{BS}\({BS}{ID}      {  
@@ -1217,11 +1214,19 @@ private                                 {
 					  unput(*yytext);                                        
 					  if (v_type == V_VARIABLE) 
 					  {
-					    Entry *tmp_entry = current; 
-					    current = last_entry; // temporarily switch to the previous entry
-                                            if (last_enum) current = last_enum;
+                                            std::shared_ptr<Entry> tmp_entry = current;
+                                            // temporarily switch to the previous entry
+                                            if (last_enum)
+                                            {
+                                              current = last_enum;
+                                            }
+                                            else
+                                            {
+					      current = last_entry;
+                                            }
   					    handleCommentBlock(docBlock,TRUE);
- 					    current=tmp_entry;
+                                            // switch back
+ 					    current = tmp_entry;
                                           }
 					  else if (v_type == V_PARAMETER) 
 					  {
@@ -1274,9 +1279,9 @@ private                                 {
 <PrototypeArgs>{
 "("|")"|","|{BS_}			{ current->args += yytext; }
 {ID}					{ current->args += yytext; 
-					  Argument *a = new Argument;
-					  a->name = QCString(yytext).lower();
-					  current->argList->append(a);
+					  Argument a;
+					  a.name = QCString(yytext).lower();
+					  current->argList.push_back(a);
 					}
 }
 
@@ -1773,34 +1778,29 @@ static void popBuffer() {
 }
 
 /** used to copy entry to an interface module procedure */
-static void copyEntry(Entry *dest, Entry *src) 
+static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> &src) 
 {
-   dest->type     = src->type;
-   dest->fileName = src->fileName;
-   dest->startLine = src->startLine;
-   dest->bodyLine = src->bodyLine;
+   dest->type        = src->type;
+   dest->fileName    = src->fileName;
+   dest->startLine   = src->startLine;
+   dest->bodyLine    = src->bodyLine;
    dest->endBodyLine = src->endBodyLine;
-   dest->args     = src->args;
-   dest->argList  = new ArgumentList(*src->argList);
-   dest->doc      = src->doc;
-   dest->brief    = src->brief;
+   dest->args        = src->args;
+   dest->argList     = src->argList;
+   dest->doc         = src->doc;
+   dest->brief       = src->brief;
 }
 
 /** fill empty interface module procedures with info from 
     corresponding module subprogs 
     @TODO: handle procedures in used modules
 */
-void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root)
+void resolveModuleProcedures(Entry *current_root)
 {
-  if (moduleProcedures.isEmpty()) return;
- 
-  EntryListIterator eli1(moduleProcedures);
-  // for all module procedures
-  for (Entry *ce1; (ce1=eli1.current()); ++eli1) 
+  for (const auto &ce1 : moduleProcedures)
   {
     // check all entries in this module
-    EntryListIterator eli2(*current_root->children());
-    for (Entry *ce2; (ce2=eli2.current()); ++eli2) 
+    for (const auto &ce2 : current_root->children())
     {
       if (ce1->name == ce2->name) 
       {
@@ -1840,7 +1840,7 @@ static QCString extractFromParens(const QCString name)
   return extracted;
 }
 
-/*! remove non usefull spaces from bind statement */
+/*! remove useless spaces from bind statement */
 static QCString extractBind(const QCString name)
 {
   QCString parensPart = extractFromParens(name);
@@ -2009,39 +2009,18 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
 static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = FALSE)
 {
   QCString cname(name.lower());
-  for (unsigned int i=0; i<subprog->argList->count(); i++) 
+  for (Argument &arg : subprog->argList)
   {
-    Argument *arg = subprog->argList->at(i);
-    if ((!byTypeName && arg->name.lower() == cname) ||
-	(byTypeName && arg->type.lower() == cname)
+    if ((!byTypeName && arg.name.lower() == cname) ||
+ 	 (byTypeName && arg.type.lower() == cname)
        )
     {
-      return arg;
+      return &arg;
     }
   }
   return 0;
 }
 
-/*! Find function with given name in \a entry. */
-#if 0
-static Entry *findFunction(Entry* entry, QCString name)
-{
-  QCString cname(name.lower());
-
-  EntryListIterator eli(*entry->children());
-  Entry *ce;
-  for (;(ce=eli.current());++eli) 
-  {
-    if (ce->section != Entry::FUNCTION_SEC)
-      continue;
-
-    if (ce->name.lower() == cname)
-      return ce;
-  }
-
-  return 0;
-}
-#endif
 
 /*! Apply modifiers stored in \a mdfs to the \a typeName string. */
 static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs) 
@@ -2199,10 +2178,10 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
 {
   if (global_scope == scope)
   {
-    global_scope = NULL;
+    global_scope = 0;
     return TRUE;
   }
-  if (global_scope == (Entry *) -1)
+  if (global_scope == INVALID_ENTRY)
   {
     return TRUE;
   }
@@ -2230,7 +2209,9 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
       Argument *arg = findArgument(scope, it.key());
 
       if (arg)
+      {
         applyModifiers(arg, it.data());
+      }
     }
 
     // find return type for function
@@ -2250,11 +2231,9 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
       // iterate functions of interface and 
       // try to find types for dummy(ie. argument) procedures.
       //cout<<"Search in "<<scope->name<<endl;
-      EntryListIterator eli(*scope->children());
-      Entry *ce;
       int count = 0;
       int found = FALSE;
-      for (;(ce=eli.current());++eli) 
+      for (const auto &ce : scope->children())
       {
         count++;
         if (ce->section != Entry::FUNCTION_SEC)
@@ -2273,7 +2252,7 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
       {
         // clear all modifiers of the scope
         modifiers.remove(scope);
-        delete scope->parent()->removeSubEntry(scope);
+        scope->parent()->removeSubEntry(scope);
         scope = 0;
         return TRUE;
       }
@@ -2282,16 +2261,14 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
   if (scope->section!=Entry::FUNCTION_SEC) 
   { // not function section 
     // iterate variables: get and apply modifiers
-    EntryListIterator eli(*scope->children());
-    Entry *ce;
-    for (;(ce=eli.current());++eli) 
+    for (const auto &ce : scope->children())
     {
       if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
       if (mdfsMap.contains(ce->name.lower()))
-        applyModifiers(ce, mdfsMap[ce->name.lower()]);
+        applyModifiers(ce.get(), mdfsMap[ce->name.lower()]);
     }
   }
 
@@ -2328,7 +2305,7 @@ static int yyread(char *buf,int max_size)
 
 static void initParser()
 {
-  last_entry = 0;
+  last_entry.reset();
 }
 
 static void initEntry()
@@ -2345,19 +2322,18 @@ static void initEntry()
   current->virt       = virt;
   current->stat       = gstat;
   current->lang       = SrcLangExt_Fortran; 
-  Doxygen::docGroup.initGroupInfo(current);
+  Doxygen::docGroup.initGroupInfo(current.get());
 }
 
 /**
   adds current entry to current_root and creates new current
 */
-static void addCurrentEntry(int case_insens)
+static void addCurrentEntry(bool case_insens)
 {
   if (case_insens) current->name = current->name.lower();
   //printf("===Adding entry %s to %s\n", current->name.data(), current_root->name.data());
-  current_root->addSubEntry(current);
   last_entry = current;
-  current = new Entry ;
+  current_root->moveToSubEntryAndRefresh(current);
   initEntry();
 }
 
@@ -2375,7 +2351,7 @@ static void addModule(const char *name, bool isModule)
   if (name!=NULL)
   {
     current->name = name;
-  } 
+  }
   else
   {
     QCString fname = yyFileName;
@@ -2389,15 +2365,15 @@ static void addModule(const char *name, bool isModule)
   current->bodyLine  = yyLineNr; // used for source reference
   current->startLine  = yyLineNr;
   current->protection = Public ;
-  addCurrentEntry(1);
-  startScope(last_entry);
+  addCurrentEntry(true);
+  startScope(last_entry.get());
 }
 
 
 static void addSubprogram(const char *text)
 {
   DBG_CTX((stderr,"1=========> got subprog, type: %s\n",text)); 
-  subrCurrent.prepend(current);
+  subrCurrent.push_back(current);
   current->section = Entry::FUNCTION_SEC ;
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
   functionLine = (subtype.find("function") != -1);
@@ -2407,7 +2383,7 @@ static void addSubprogram(const char *text)
   current->bodyLine  = yyLineNr; // used for source reference start of body of routine
   current->startLine  = yyLineNr; // used for source reference start of definition
   current->args.resize(0);
-  current->argList->clear();
+  current->argList.clear();
   docBlock.resize(0);
 }
 
@@ -2454,7 +2430,7 @@ static void addInterface(QCString name, InterfaceType type)
   current->fileName = yyFileName;
   current->bodyLine  = yyLineNr; 
   current->startLine  = yyLineNr;
-  addCurrentEntry(1);
+  addCurrentEntry(true);
 }
 
 
@@ -2462,18 +2438,15 @@ static void addInterface(QCString name, InterfaceType type)
 
 /*! Get the argument \a name.
  */
-static Argument* getParameter(const QCString &name)
+static Argument *getParameter(const QCString &name)
 {
   // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isNull()?QCString("null"):docs)<<std::endl;
   Argument *ret = 0;
-  if (current_root->argList==0) return 0;
-  ArgumentListIterator ali(*current_root->argList);
-  Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
+  for (Argument &a:current_root->argList)
   {
-    if (a->name.lower()==name.lower())
+    if (a.name.lower()==name.lower())
     {
-      ret=a;
+      ret=&a;
       //printf("parameter found: %s\n",(const char*)name);
       break;
     }
@@ -2513,7 +2486,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   QCString processedDoc = preprocessCommentBlock(doc,yyFileName,lineNr);
   while (parseCommentBlock(
 	g_thisParser,
-	docBlockInBody ? subrCurrent.getFirst() : current,
+	docBlockInBody ? subrCurrent.back().get() : current.get(),
 	processedDoc, // text
 	yyFileName, // file
 	lineNr,
@@ -2526,11 +2499,11 @@ static void handleCommentBlock(const QCString &doc,bool brief)
         )) 
   {
 	   DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
-   if (needsEntry) addCurrentEntry(0);
+   if (needsEntry) addCurrentEntry(false);
   }
   DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
 
-  if (needsEntry) addCurrentEntry(0);
+  if (needsEntry) addCurrentEntry(false);
   docBlockInBody = FALSE;
 }
 
@@ -2541,8 +2514,8 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   QCString loc_doc;
   loc_doc = doc.stripWhiteSpace();
 
-  Entry *tmp_entry = current; 
-  current = subrCurrent.getFirst(); // temporarily switch to the entry of the subroutine / function
+  std::shared_ptr<Entry> tmp_entry = current;
+  current = subrCurrent.back(); // temporarily switch to the entry of the subroutine / function
 
   // Still in the specification section so no inbodyDocs yet, but parameter documentation
   current->inbodyDocs = "";
@@ -2565,15 +2538,12 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       // strip direction
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::IN]));
       loc_doc.stripWhiteSpace();
-      // in case of empty documentation or (now) just name, consider it as no documemntation
-      if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
+      // in case of empty documentation or (now) just name, consider it as no documentation
+      if (!loc_doc.isEmpty() && (loc_doc.lower() != argName.lower()))
       {
-        // reset current back to the part inside the routine
-        current=tmp_entry;
-        return;
-      }
-      handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::IN] + " " + 
+        handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::IN] + " " + 
                          argName + " " + loc_doc,brief);
+      }
     }
     else
     {
@@ -2594,7 +2564,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       loc_doc.stripWhiteSpace();
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
-        current=tmp_entry;
+        current = tmp_entry;
         return;
       }
       handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::OUT] + " " + 
@@ -2616,13 +2586,11 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
     {
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::INOUT]));
       loc_doc.stripWhiteSpace();
-      if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
+      if (!loc_doc.isEmpty() && (loc_doc.lower() != argName.lower()))
       {
-        current=tmp_entry;
-        return;
+        handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::INOUT] + " " + 
+                           argName + " " + loc_doc,brief);
       }
-      handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::INOUT] + " " + 
-                         argName + " " + loc_doc,brief);
     }
     else
     {
@@ -2633,19 +2601,14 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
     }
   }
   // analogous to the [in] case; here no direction specified
-  else
+  else if (!loc_doc.isEmpty() && (loc_doc.lower() != argName.lower()))
   {
-    if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
-    {
-      current=tmp_entry;
-      return;
-    }
     handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
                        argName + " " + loc_doc,brief);
   }
 
   // reset current back to the part inside the routine
-  current=tmp_entry;
+  current = tmp_entry;
 }
 //----------------------------------------------------------------------------
 /// Handle result description as defined after the declaration of the parameter
@@ -2654,8 +2617,8 @@ static void subrHandleCommentBlockResult(const QCString &doc,bool brief)
   QCString loc_doc;
   loc_doc = doc.stripWhiteSpace();
 
-  Entry *tmp_entry = current; 
-  current = subrCurrent.getFirst(); // temporarily switch to the entry of the subroutine / function
+  std::shared_ptr<Entry> tmp_entry = current;
+  current = subrCurrent.back(); // temporarily switch to the entry of the subroutine / function
 
   // Still in the specification section so no inbodyDocs yet, but parameter documentation
   current->inbodyDocs = "";
@@ -2668,15 +2631,13 @@ static void subrHandleCommentBlockResult(const QCString &doc,bool brief)
      ) (void)loc_doc; // Do nothing work has been done by stripPrefix; (void)loc_doc: to overcome 'empty controlled statement' warning
   loc_doc.stripWhiteSpace();
 
-  if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
+  if (!loc_doc.isEmpty() && (loc_doc.lower() != argName.lower()))
   {
-    current=tmp_entry;
-    return;
+    handleCommentBlock(QCString("\n\n@returns ") + loc_doc,brief);
   }
-  handleCommentBlock(QCString("\n\n@returns ") + loc_doc,brief);
 
   // reset current back to the part inside the routine
-  current=tmp_entry;
+  current = tmp_entry;
 }
 
 //----------------------------------------------------------------------------
@@ -2687,18 +2648,17 @@ static void debugCompounds(Entry *rt)  // print Entry structure (for debugging)
 {
  level++;
   printf("%d) debugCompounds(%s) line %d\n",level, rt->name.data(), rt->bodyLine);
-  EntryListIterator eli(*rt->children());
-  Entry *ce;
-  for (;(ce=eli.current());++eli)
+  for (const auto &ce : rt->children())
   {
-     debugCompounds(ce); 
-  } 
+     debugCompounds(ce.get());
+  }
 level--;
 }
 #endif
 
 
-static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, FortranFormat format)
+static void parseMain(const char *fileName,const char *fileBuf,
+                      const std::shared_ptr<Entry> &rt, FortranFormat format)
 {
   char *tmpBuf = NULL;
   initParser();
@@ -2713,7 +2673,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
   mtype         = Method;
   gstat         = FALSE;
   virt          = Normal;
-  current_root  = rt;
+  current_root  = rt.get();
   global_root   = rt;
   inputFile.setName(fileName);
   if (inputFile.open(IO_ReadOnly))
@@ -2750,18 +2710,18 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
     yyFileName = fileName;
     msg("Parsing file %s...\n",yyFileName.data());
 
-    global_scope = rt;
-    startScope(rt); // implies current_root = rt
+    global_scope = rt.get();
+    startScope(rt.get()); // implies current_root = rt
     initParser();
     Doxygen::docGroup.enterFile(yyFileName,yyLineNr);
 
-    current          = new Entry;
+    // add entry for the file
+    current          = std::make_shared<Entry>();
     current->lang    = SrcLangExt_Fortran; 
     current->name    = yyFileName;
     current->section = Entry::SOURCE_SEC;
-    current_root->addSubEntry(current);
     file_root        = current;
-    current          = new Entry;
+    current_root->moveToSubEntryAndRefresh(current);
     current->lang    = SrcLangExt_Fortran; 
 
     fortranscannerYYrestart( fortranscannerYYin );
@@ -2772,12 +2732,12 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
     fortranscannerYYlex();
     Doxygen::docGroup.leaveFile(yyFileName,yyLineNr);
 
-    if (global_scope && global_scope != (Entry *) -1) endScope(current_root, TRUE); // TRUE - global root
+    if (global_scope && global_scope != INVALID_ENTRY) endScope(current_root, TRUE); // TRUE - global root
 
     //debugCompounds(rt); //debug 
 
     rt->program.resize(0);
-    delete current; current=0;
+    //delete current; current=0;
     moduleProcedures.clear();
     if (tmpBuf) {
       free((char*)tmpBuf);
@@ -2794,9 +2754,9 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
 
 //----------------------------------------------------------------------------
 
-void FortranLanguageScanner::parseInput(const char *fileName,
+void FortranOutlineParser::parseInput(const char *fileName,
                                         const char *fileBuf,
-                                        Entry *root,
+                                        const std::shared_ptr<Entry> &root,
                                         bool /*sameTranslationUnit*/,
                                         QStrList & /*filesInSameTranslationUnit*/)
 {
@@ -2809,37 +2769,11 @@ void FortranLanguageScanner::parseInput(const char *fileName,
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
-void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
-                   const char * scopeName,
-                   const QCString & input,
-                   SrcLangExt /*lang*/,
-                   bool isExampleBlock,
-                   const char * exampleName,
-                   FileDef * fileDef,
-                   int startLine,
-                   int endLine,
-                   bool inlineFragment,
-		   const MemberDef *memberDef,
-                   bool showLineNumbers,
-                   const Definition *searchCtx,
-                   bool collectXRefs
-                  )
-{
-  ::parseFortranCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
-                     fileDef,startLine,endLine,inlineFragment,memberDef,
-                     showLineNumbers,searchCtx,collectXRefs,m_format);
-}
-
-bool FortranLanguageScanner::needsPreprocessing(const QCString &extension)
+bool FortranOutlineParser::needsPreprocessing(const QCString &extension) const
 {
   return extension!=extension.lower(); // use preprocessor only for upper case extensions
 }
-void FortranLanguageScanner::resetCodeParserState()
-{
-  ::resetFortranCodeParserState();
-}
-
-void FortranLanguageScanner::parsePrototype(const char *text)
+void FortranOutlineParser::parsePrototype(const char *text)
 {
   QCString buffer = QCString(text);
   pushBuffer(buffer);
@@ -2850,17 +2784,17 @@ void FortranLanguageScanner::parsePrototype(const char *text)
   popBuffer();
 }
 
+//----------------------------------------------------------------------------
+
 static void scanner_abort() 
 {
   fprintf(stderr,"********************************************************************\n");
   fprintf(stderr,"Error in file %s line: %d, state: %d(%s)\n",yyFileName.data(),yyLineNr,YY_START,stateToString(YY_START));
   fprintf(stderr,"********************************************************************\n");
    
-  EntryListIterator eli(*global_root->children());
-  Entry *ce;
   bool start=FALSE;
 
-  for (;(ce=eli.current());++eli)
+  for (const auto &ce : global_root->children())
   {
      if (ce == file_root) start=TRUE;
      if (start) ce->reset(); 
@@ -2874,12 +2808,5 @@ static void scanner_abort()
 }
 
 //----------------------------------------------------------------------------
-
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-//----------------------------------------------------------------------------
-extern "C" { // some bogus code to keep the compiler happy
-  void fortranscannernerYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
 
 #include "fortranscanner.l.h"

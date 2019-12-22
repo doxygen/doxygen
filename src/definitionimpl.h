@@ -32,6 +32,7 @@ class DefinitionImpl : virtual public Definition
 
     virtual bool isAlias() const { return FALSE; }
     virtual QCString name() const;
+    virtual bool isAnonymous() const;
     virtual QCString localName() const;
     virtual QCString qualifiedName() const;
     virtual QCString symbolName() const;
@@ -66,7 +67,7 @@ class DefinitionImpl : virtual public Definition
     virtual SrcLangExt getLanguage() const;
     virtual GroupList *partOfGroups() const;
     virtual bool isLinkableViaGroup() const;
-    virtual QList<ListItemInfo> *xrefListItems() const;
+    virtual const std::vector<ListItemInfo> &xrefListItems() const;
     virtual Definition *findInnerCompound(const char *name) const;
     virtual Definition *getOuterScope() const;
     virtual MemberSDict *getReferencesMembers() const;
@@ -83,12 +84,12 @@ class DefinitionImpl : virtual public Definition
     virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine);
     virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine);
     virtual void setReference(const char *r);
-    virtual void addSectionsToDefinition(QList<SectionInfo> *anchorList);
+    virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
     virtual void setBodySegment(int bls,int ble);
     virtual void setBodyDef(FileDef *fd);
     virtual void addSourceReferencedBy(const MemberDef *d);
     virtual void addSourceReferences(const MemberDef *d);
-    virtual void setRefItems(const QList<ListItemInfo> *sli);
+    virtual void setRefItems(const std::vector<ListItemInfo> &sli);
     virtual void mergeRefItems(Definition *d);
     virtual void addInnerCompound(const Definition *d);
     virtual void setOuterScope(Definition *d);
@@ -142,6 +143,8 @@ class DefinitionAliasImpl : virtual public Definition
     virtual bool isAlias() const { return TRUE; }
     virtual QCString name() const
     { return m_def->name(); }
+    virtual bool isAnonymous() const
+    { return m_def->isAnonymous(); }
     virtual QCString localName() const
     { return m_def->localName(); }
     virtual QCString qualifiedName() const
@@ -210,7 +213,7 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->partOfGroups(); }
     virtual bool isLinkableViaGroup() const
     { return m_def->isLinkableViaGroup(); }
-    virtual QList<ListItemInfo> *xrefListItems() const
+    virtual const std::vector<ListItemInfo> &xrefListItems() const
     { return m_def->xrefListItems(); }
     virtual Definition *findInnerCompound(const char *name) const
     { return m_def->findInnerCompound(name); }
@@ -241,12 +244,12 @@ class DefinitionAliasImpl : virtual public Definition
     virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine) {}
     virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine) {}
     virtual void setReference(const char *r) {}
-    virtual void addSectionsToDefinition(QList<SectionInfo> *anchorList) {}
+    virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) {}
     virtual void setBodySegment(int bls,int ble) {}
     virtual void setBodyDef(FileDef *fd) {}
     virtual void addSourceReferencedBy(const MemberDef *d) {}
     virtual void addSourceReferences(const MemberDef *d) {}
-    virtual void setRefItems(const QList<ListItemInfo> *sli) {}
+    virtual void setRefItems(const std::vector<ListItemInfo> &sli) {}
     virtual void mergeRefItems(Definition *d) {}
     virtual void addInnerCompound(const Definition *d) {}
     virtual void setOuterScope(Definition *d) {}

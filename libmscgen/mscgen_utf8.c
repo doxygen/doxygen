@@ -95,7 +95,7 @@ Boolean Utf8Decode(const char *s, unsigned int *r, unsigned int *bytes)
             }
         }
 
-        /* Success if no NULL was encoutered */
+        /* Success if no NULL was encountered */
         return t == *bytes;
     }
 }

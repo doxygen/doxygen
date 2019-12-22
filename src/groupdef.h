@@ -18,6 +18,8 @@
 #ifndef GROUPDEF_H
 #define GROUPDEF_H
 
+#include <memory>
+
 #include "sortdict.h"
 #include "definition.h"
 
@@ -138,13 +140,13 @@ class GroupListIterator : public QListIterator<GroupDef>
     virtual ~GroupListIterator() {}
 };
 
-void addClassToGroups(Entry *root,ClassDef *cd);
-void addNamespaceToGroups(Entry *root,NamespaceDef *nd);
-void addGroupToGroups(Entry *root,GroupDef *subGroup);
-void addMemberToGroups(Entry *root,MemberDef *md);
-void addPageToGroups(Entry *root,PageDef *pd);
-void addExampleToGroups(Entry *root,PageDef *eg);
-void addDirToGroups(Entry *root,DirDef *dd);
+void addClassToGroups    (const Entry *root,ClassDef *cd);
+void addNamespaceToGroups(const Entry *root,NamespaceDef *nd);
+void addGroupToGroups    (const Entry *root,GroupDef *subGroup);
+void addMemberToGroups   (const Entry *root,MemberDef *md);
+void addPageToGroups     (const Entry *root,PageDef *pd);
+void addExampleToGroups  (const Entry *root,PageDef *eg);
+void addDirToGroups      (const Entry *root,DirDef *dd);
 
 #endif
 

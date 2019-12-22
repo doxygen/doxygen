@@ -35,9 +35,15 @@
   \endgroup%
 }
 
-\newcommand{\DoxyHorRuler}{%
+\newcommand{\DoxyHorRuler}[1]{%
   \setlength{\parskip}{0ex plus 0ex minus 0ex}%
-  \hrule%
+  \ifthenelse{#1=0}%
+  {%
+    \hrule%
+  }%
+  {%
+    \hrulefilll%
+  }%
 }
 \newcommand{\DoxyLabelFont}{}
 \newcommand{\entrylabel}[1]{%
