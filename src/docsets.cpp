@@ -322,7 +322,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     case SrcLangExt_PHP:     lang="php"; break;        // PHP4/5
     case SrcLangExt_D:       lang="d"; break;          // D
     case SrcLangExt_Java:    lang="java"; break;       // Java
-    case SrcLangExt_JS:      lang="javascript"; break; // Javascript
+    case SrcLangExt_JS:      lang="javascript"; break; // JavaScript
     case SrcLangExt_Python:  lang="python"; break;     // Python
     case SrcLangExt_Fortran: lang="fortran"; break;    // Fortran
     case SrcLangExt_VHDL:    lang="vhdl"; break;       // VHDL

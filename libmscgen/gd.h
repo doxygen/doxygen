@@ -101,7 +101,7 @@ extern "C" {
    pixels are represented by integers, which
    must be 32 bits wide or more.
 
-   True colors are repsented as follows:
+   True colors are represented as follows:
    
    ARGB
 	
@@ -268,7 +268,7 @@ enum gdPaletteQuantizationMethod {
  *  GD_GENERALIZED_CUBIC - Generalized cubic
  *  GD_HERMITE			 - Hermite
  *  GD_HAMMING			 - Hamming
- *  GD_HANNING			 - Hannig
+ *  GD_HANNING			 - Hanning
  *  GD_MITCHELL			 - Mitchell
  *  GD_NEAREST_NEIGHBOUR - Nearest neighbour interpolation
  *  GD_POWER			 - Power
@@ -1499,7 +1499,7 @@ BGD_DECLARE(void) gdImageFlipHorizontal(gdImagePtr im);
 BGD_DECLARE(void) gdImageFlipVertical(gdImagePtr im);
 BGD_DECLARE(void) gdImageFlipBoth(gdImagePtr im);
 
-#define GD_FLIP_HORINZONTAL 1
+#define GD_FLIP_HORIZONTAL 1
 #define GD_FLIP_VERTICAL 2
 #define GD_FLIP_BOTH 3
 

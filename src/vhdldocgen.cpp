@@ -82,7 +82,7 @@ static QList<MemberDef>* getPorts(ClassDef *cd);
 static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd);
 static void endDot(FTextStream &t);
 static void writeTable(QList<MemberDef>* port,FTextStream & t);
-static void endTabel(FTextStream &t);
+static void endTable(FTextStream &t);
 static void writeClassToDot(FTextStream &t,ClassDef* cd);
 static void writeVhdlDotLink(FTextStream &t,const QCString &a,const QCString &b,const QCString &style);
 //static void writeVhdlPortToolTip(FTextStream& t,QList<MemberDef>* port,ClassDef *cd);
@@ -228,7 +228,7 @@ void VhdlDocGen::writeOverview()
     startTable(t,cd->name());
     writeClassToDot(t,cd);
     writeTable(port,t);
-    endTabel(t);
+    endTable(t);
 
    // writeVhdlPortToolTip(t,port,cd);
     writeVhdlEntityToolTip(t,cd);
@@ -448,7 +448,7 @@ static void writeColumn(FTextStream &t,MemberDef *md,bool start)
   }
 }
 
-static void endTabel(FTextStream &t)
+static void endTable(FTextStream &t)
 {
   t << "</TABLE>>\n";
   t << "] \n";

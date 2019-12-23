@@ -765,7 +765,7 @@
       <xsd:enumeration value="PHP" />
       <xsd:enumeration value="Objective-C" />
       <xsd:enumeration value="C++" />
-      <xsd:enumeration value="Javascript" />
+      <xsd:enumeration value="JavaScript" />
       <xsd:enumeration value="Python" />
       <xsd:enumeration value="Fortran" />
       <xsd:enumeration value="VHDL" />

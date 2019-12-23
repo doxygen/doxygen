@@ -188,7 +188,7 @@ Topics TODO
   - Qt Help (qhp)
   - Eclipse Help
 - Search index
-  - Javascript based
+  - JavaScript based
   - Server based
   - External
 - Citations

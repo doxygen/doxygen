@@ -3376,7 +3376,7 @@ static QCString getCanonicalTypeForIdentifier(
   if (cd && cd->isUsedOnly()) cd=0; // ignore types introduced by usage relations
 
   //printf("cd=%p mtype=%p\n",cd,mType);
-  //printf("  getCanonicalTypeForIdentifer: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
+  //printf("  getCanonicalTypeForIdentifier: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    symName.data(),
   //    word.data(),
   //    cd?cd->name().data():"<none>",
@@ -5966,7 +5966,7 @@ QCString convertToHtml(const char *s,bool keepEntities)
   static GrowBuf growBuf;
   growBuf.clear();
   if (s==0) return "";
-  growBuf.addStr(getHtmlDirEmbedingChar(getTextDirByConfig(s)));
+  growBuf.addStr(getHtmlDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -6014,7 +6014,7 @@ QCString convertToJSString(const char *s, bool applyTextDir)
   growBuf.clear();
   if (s==0) return "";
   if (applyTextDir)
-    growBuf.addStr(getJsDirEmbedingChar(getTextDirByConfig(s)));
+    growBuf.addStr(getJsDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -8395,7 +8395,7 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_PHP:      return "PHP";
     case SrcLangExt_ObjC:     return "Objective-C";
     case SrcLangExt_Cpp:      return "C++";
-    case SrcLangExt_JS:       return "Javascript";
+    case SrcLangExt_JS:       return "JavaScript";
     case SrcLangExt_Python:   return "Python";
     case SrcLangExt_Fortran:  return "Fortran";
     case SrcLangExt_VHDL:     return "VHDL";

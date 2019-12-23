@@ -7532,7 +7532,7 @@ QCString getDirHtmlClassOfPage(QCString pageTitle)
   return result;
 }
 
-QCString getHtmlDirEmbedingChar(QString::Direction textDir)
+QCString getHtmlDirEmbeddingChar(QString::Direction textDir)
 {
   if (textDir == QString::DirLTR)
     return "&#x202A;";
@@ -7541,7 +7541,7 @@ QCString getHtmlDirEmbedingChar(QString::Direction textDir)
   return "";
 }
 
-QCString getJsDirEmbedingChar(QString::Direction textDir)
+QCString getJsDirEmbeddingChar(QString::Direction textDir)
 {
   if (textDir == QString::DirLTR)
     return "\\u202A";

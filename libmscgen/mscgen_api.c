@@ -67,7 +67,7 @@ typedef struct GlobalOptionsTag
     /** Size of 'corner' added to note boxes. */
     unsigned int noteCorner;
 
-    /** Anguluar box slope in pixels. */
+    /** Angular box slope in pixels. */
     unsigned int aboxSlope;
 
     /** If TRUE, wrap arc text as well as box contents. */
@@ -1062,7 +1062,7 @@ static void arcBox(Context           *ctx,
  * \param arcIdUrl       The URL for rendering the test identifier as a hyperlink.
  *                        This maybe \a NULL if not required.
  * \param arcTextColour  Colour for the arc text, or NULL to use default.
- * \param arcTextColour  Colour for the arc text backgroun, or NULL to use default.
+ * \param arcTextColour  Colour for the arc text background, or NULL to use default.
  * \param arcType        The type of arc, used to control output semantics.
  */
 static void arcText(Context           *ctx,

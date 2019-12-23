@@ -64,7 +64,7 @@ class PlantumlManager
     QDict< QList<QCString> >    m_pngPlantumlFiles;
     QDict< QList<QCString> >    m_svgPlantumlFiles;
     QDict< QList<QCString> >    m_epsPlantumlFiles;
-    QDict< QCString >           m_pngPlantumlContent;     // use circular queue for using multi-proecessor (multi threading)
+    QDict< QCString >           m_pngPlantumlContent;     // use circular queue for using multi-processor (multi threading)
     QDict< QCString >           m_svgPlantumlContent;
     QDict< QCString >           m_epsPlantumlContent;
     QCString                    m_cachedPlantumlAllContent;         // read from CACHE_FILENAME file

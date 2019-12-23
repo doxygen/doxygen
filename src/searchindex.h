@@ -165,8 +165,8 @@ struct SearchIndexInfo
   QCString text;
 };
 
-void createJavascriptSearchIndex();
-void writeJavascriptSearchIndex();
+void createJavaScriptSearchIndex();
+void writeJavaScriptSearchIndex();
 const SearchIndexInfo *getSearchIndices();
 
 #endif

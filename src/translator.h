@@ -51,12 +51,12 @@ class Translator
      */
     virtual QCString latexFontenc() { return "T1"; }
     /*!
-     * Sets the commands to be insered directly after the `\\begin{document}`
+     * Sets the commands to be inserted directly after the `\\begin{document}`
      * in the LaTeX document.
      */
     virtual QCString latexDocumentPre() { return ""; }
     /*!
-     * Sets the commands to be insered directly before the `\\end{document}`
+     * Sets the commands to be inserted directly before the `\\end{document}`
      * in the LaTeX document.
      */
     virtual QCString latexDocumentPost() { return ""; }

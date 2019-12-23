@@ -2181,7 +2181,7 @@ bool MemberDefImpl::isBriefSectionVisible() const
 
 
   //printf("visibleIfStatic=%d visibleIfDocumented=%d visibleIfEnabled=%d "
-  //       "visibleIfPrivate=%d visibltIfNotDefaultCDTor=%d "
+  //       "visibleIfPrivate=%d visibleIfNotDefaultCDTor=%d "
   //       "visibleIfFriendCompound=%d !annScope=%d\n",
   //       visibleIfStatic,visibleIfDocumented,
   //       visibleIfEnabled,visibleIfPrivate,visibleIfNotDefaultCDTor,
@@ -2744,7 +2744,7 @@ bool MemberDefImpl::isDetailedSectionVisible(bool inGroup,bool inFile) const
   bool visible = isDetailedSectionLinkable() && groupFilter && fileFilter &&
                  !isReference();
   bool result = visible || simpleFilter;
-  //printf("%s::isDetailedSectionVisble: %d groupFilter=%d fileFilter=%d\n",
+  //printf("%s::isDetailedSectionVisible: %d groupFilter=%d fileFilter=%d\n",
   //    name().data(),result,groupFilter,fileFilter);
   return result;
 }

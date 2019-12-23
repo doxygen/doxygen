@@ -1230,7 +1230,7 @@ static void resolveClassNestingRelations()
       Definition *d = buildScopeFromQualifiedName(name,name.contains("::"),cd->getLanguage(),0);
       if (d!=cd && !cd->getDefFileName().isEmpty())
                  // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
-                 // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
+                 // for this case doxygen assumes the existence of a namespace N::N in which C is to be found!
                  // also avoid warning for stuff imported via a tagfile.
       {
         d->addInnerCompound(cd);
@@ -4432,7 +4432,7 @@ static bool findClassRelation(
           // base class has template specifiers
         {
           // TODO: here we should try to find the correct template specialization
-          // but for now, we only look for the unspecializated base class.
+          // but for now, we only look for the unspecialized base class.
           int e=findEndOfTemplate(baseClassName,i+1);
           //printf("baseClass==0 i=%d e=%d\n",i,e);
           if (e!=-1) // end of template was found at e
@@ -11456,7 +11456,7 @@ void generateOutput()
   g_s.begin("Generating search indices...\n");
   if (searchEngine && !serverBasedSearch && (generateHtml || g_useOutputTemplate))
   {
-    createJavascriptSearchIndex();
+    createJavaScriptSearchIndex();
   }
 
   // generate search indices (need to do this before writing other HTML
@@ -11474,7 +11474,7 @@ void generateOutput()
     HtmlGenerator::writeSearchData(searchDirName);
     if (!serverBasedSearch) // client side search index
     {
-      writeJavascriptSearchIndex();
+      writeJavaScriptSearchIndex();
     }
   }
   g_s.end();
