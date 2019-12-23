@@ -51,6 +51,7 @@
 #include "config.h"
 #include "section.h"
 #include "message.h"
+#include "portable.h"
 
 //-----------
 
@@ -1031,7 +1032,7 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
 
 static void addStrEscapeUtf8Nbsp(GrowBuf &out,const char *s,int len)
 {
-  if (strnstr(s,g_doxy_nsbp,len)==0) // no escape needed -> fast
+  if (Portable::strnstr(s,g_doxy_nsbp,len)==0) // no escape needed -> fast
   {
     out.addStr(s,len);
   }
