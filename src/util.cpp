@@ -1397,7 +1397,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   ArgumentList actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
-    stringToArgumentList(strippedTemplateParams,actTemplParams);
+    stringToArgumentList(scope->getLanguage(),strippedTemplateParams,actTemplParams);
   }
 
   int qualifierIndex = computeQualifiedIndex(name);
@@ -2428,7 +2428,7 @@ static QCString getFilterFromList(const char *name,const QStrList &filterList,bo
     if (i_equals!=-1)
     {
       QCString filterPattern = fs.left(i_equals);
-      QRegExp fpat(filterPattern,portable_fileSystemIsCaseSensitive(),TRUE); 
+      QRegExp fpat(filterPattern,Portable::fileSystemIsCaseSensitive(),TRUE); 
       if (fpat.match(name)!=-1) 
       {
         // found a match!
@@ -2589,7 +2589,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
 static QDateTime getCurrentDateTime()
 {
   QDateTime current = QDateTime::currentDateTime();
-  QCString sourceDateEpoch = portable_getenv("SOURCE_DATE_EPOCH");
+  QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
   if (!sourceDateEpoch.isEmpty())
   {
     bool ok;
@@ -3874,7 +3874,7 @@ static void findMembersWithSpecificName(MemberName *mn,
       {
         const ArgumentList &mdAl = md->argumentList();
         ArgumentList argList;
-        stringToArgumentList(args,argList);
+        stringToArgumentList(md->getLanguage(),args,argList);
         match=matchArguments2(
             md->getOuterScope(),fd,mdAl,
             Doxygen::globalScope,fd,argList,
@@ -4005,7 +4005,7 @@ bool getDefs(const QCString &scName,
         ArgumentList argList;
         if (args)
         {
-          stringToArgumentList(args,argList);
+          stringToArgumentList(fcd->getLanguage(),args,argList);
         }
         for (mmli.toFirst();(mmd=mmli.current());++mmli)
         {
@@ -4124,7 +4124,7 @@ bool getDefs(const QCString &scName,
 
     if (args)
     {
-      stringToArgumentList(args, argList);
+      stringToArgumentList(SrcLangExt_Cpp, args, argList);
     }
 
     for (mmli.toFirst(); (mmd = mmli.current()); ++mmli)
@@ -4227,7 +4227,7 @@ bool getDefs(const QCString &scName,
             if (args && qstrcmp(args,"()")!=0)
             {
               const ArgumentList &mmdAl = mmd->argumentList();
-              stringToArgumentList(args,argList);
+              stringToArgumentList(mmd->getLanguage(),args,argList);
               match=matchArguments2(
                   mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
                   fnd,mmd->getFileDef(),argList,
@@ -4283,7 +4283,7 @@ bool getDefs(const QCString &scName,
           int ni=namespaceName.findRev("::");
           //printf("namespaceName=%s ni=%d\n",namespaceName.data(),ni);
           bool notInNS = tmd && ni==-1 && tmd->getNamespaceDef()==0 && (mScope.isEmpty() || mScope==tmd->name());
-          bool sameNS  = tmd && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name();
+          bool sameNS  = tmd && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name() && namespaceName.mid(ni+2)==tmd->name();
           //printf("notInNS=%d sameNS=%d\n",notInNS,sameNS);
           if (tmd && tmd->isStrong() && // C++11 enum class
               (notInNS || sameNS) &&
@@ -7928,14 +7928,22 @@ void stackTrace()
     p += sprintf(p,"%p ", backtraceFrames[x]);
   }
   fprintf(stderr,"========== STACKTRACE START ==============\n");
-  if (FILE *fp = popen(cmd, "r"))
+  #if defined(_WIN32) && !defined(__CYGWIN__)
+  if (FILE *fp = _popen(cmd, "r"))
+  #else
+  if (FILE *fp = ::popen(cmd, "r"))
+  #endif
   {
     char resBuf[512];
     while (size_t len = fread(resBuf, 1, sizeof(resBuf), fp))
     {
       fwrite(resBuf, 1, len, stderr);
     }
-    pclose(fp);
+    #if defined(_WIN32) && !defined(__CYGWIN__)
+    _pclose(fp);
+    #else
+    ::pclose(fp);
+    #endif
   }
   fprintf(stderr,"============ STACKTRACE END ==============\n");
   //fprintf(stderr,"%s\n", frameStrings[x]);
@@ -7950,10 +7958,9 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
   {
-    err("unsupported character conversion: '%s'->'%s': %s\n"
+    term("unsupported character conversion: '%s'->'%s': %s\n"
         "Check the INPUT_ENCODING setting in the config file!\n",
         inputEncoding,outputEncoding,strerror(errno));
-    exit(1);
   }
   int tmpBufSize=size*4+1;
   BufStr tmpBuf(tmpBufSize);
@@ -7971,9 +7978,8 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   }
   else
   {
-    err("%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
+    term("%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
         fileName,inputEncoding,outputEncoding);
-    exit(1);
   }
   portable_iconv_close(cd);
   return newSize;
@@ -8011,7 +8017,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
   {
     QCString cmd=filterName+" \""+fileName+"\"";
     Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-    FILE *f=portable_popen(cmd,"r");
+    FILE *f=Portable::popen(cmd,"r");
     if (!f)
     {
       err("could not execute filter %s\n",filterName.data());
@@ -8025,7 +8031,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
       //printf(">>>>>>>>Reading %d bytes\n",numRead);
       inBuf.addArray(buf,numRead),size+=numRead;
     }
-    portable_pclose(f);
+    Portable::pclose(f);
     inBuf.at(inBuf.curPos()) ='\0';
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
     Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(inBuf));
@@ -8033,13 +8039,18 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
 
   int start=0;
   if (size>=2 &&
-      (((uchar)inBuf.at(0)==0xFF && (uchar)inBuf.at(1)==0xFE) || // Little endian BOM
-       ((uchar)inBuf.at(0)==0xFE && (uchar)inBuf.at(1)==0xFF)    // big endian BOM
-      )
-     ) // UCS-2 encoded file
+      ((uchar)inBuf.at(0)==0xFF && (uchar)inBuf.at(1)==0xFE) // Little endian BOM
+     ) // UCS-2LE encoded file
   {
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        "UCS-2","UTF-8");
+        "UCS-2LE","UTF-8");
+  }
+  else if (size>=2 &&
+           ((uchar)inBuf.at(0)==0xFE && (uchar)inBuf.at(1)==0xFF) // big endian BOM
+         ) // UCS-2BE encoded file
+  {
+    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
+        "UCS-2BE","UTF-8");
   }
   else if (size>=3 &&
            (uchar)inBuf.at(0)==0xEF &&

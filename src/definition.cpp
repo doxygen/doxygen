@@ -528,7 +528,7 @@ void DefinitionImpl::writeDocAnchorsToTagFile(FTextStream &tagFile) const
     SectionInfo *si;
     for (;(si=sdi.current());++sdi)
     {
-      if (!si->generated && si->ref.isEmpty())
+      if (!si->generated && si->ref.isEmpty() && !si->label.startsWith("autotoc_md"))
       {
         //printf("write an entry!\n");
         if (definitionType()==TypeMember) tagFile << "  ";
@@ -744,12 +744,12 @@ class FilterCache
         // file already processed, get the results after filtering from the tmp file
         Debug::print(Debug::FilterOutput,0,"Reusing filter result for %s from %s at offset=%d size=%d\n",
                qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
-        f = portable_fopen(Doxygen::filterDBFileName,"rb");
+        f = Portable::fopen(Doxygen::filterDBFileName,"rb");
         if (f)
         {
           bool success=TRUE;
           str.resize(item->fileSize+1);
-          if (portable_fseek(f,item->filePos,SEEK_SET)==-1)
+          if (Portable::fseek(f,item->filePos,SEEK_SET)==-1)
           {
             err("Failed to seek to position %d in filter database file %s\n",(int)item->filePos,qPrint(Doxygen::filterDBFileName));
             success=FALSE;
@@ -780,8 +780,8 @@ class FilterCache
         // filter file
         QCString cmd=filter+" \""+fileName+"\"";
         Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-        f = portable_popen(cmd,"r");
-        FILE *bf = portable_fopen(Doxygen::filterDBFileName,"a+b");
+        f = Portable::popen(cmd,"r");
+        FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
         FilterCacheItem *item = new FilterCacheItem;
         item->filePos = m_endPos;
         if (bf==0)
@@ -790,7 +790,7 @@ class FilterCache
           err("Error opening filter database file %s\n",qPrint(Doxygen::filterDBFileName));
           str.addChar('\0');
           delete item;
-          portable_pclose(f);
+          Portable::pclose(f);
           return FALSE;
         }
         // append the filtered output to the database file
@@ -806,7 +806,7 @@ class FilterCache
                 qPrint(Doxygen::filterDBFileName),bytesWritten,bytesRead);
             str.addChar('\0');
             delete item;
-            portable_pclose(f);
+            Portable::pclose(f);
             fclose(bf);
             return FALSE;
           }
@@ -821,14 +821,14 @@ class FilterCache
                qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
         // update end of file position
         m_endPos += size;
-        portable_pclose(f);
+        Portable::pclose(f);
         fclose(bf);
       }
       else // no filtering
       {
         // normal file
         //printf("getFileContents(%s): no filter\n",qPrint(fileName));
-        f = portable_fopen(fileName,"r");
+        f = Portable::fopen(fileName,"r");
         while (!feof(f))
         {
           int bytesRead = fread(buf,1,blockSize,f);
@@ -1262,26 +1262,26 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName) const
     {
       //printf("Adding code fragment '%s' ext='%s'\n",
       //    codeFragment.data(),m_impl->defFileExt.data());
-      ParserInterface *pIntf = Doxygen::parserManager->getParser(m_impl->defFileExt);
-      pIntf->resetCodeParserState();
+      CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(m_impl->defFileExt);
+      intf.resetCodeParserState();
       //printf("Read:\n'%s'\n\n",codeFragment.data());
       const MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = dynamic_cast <const MemberDef*>(this);
 
       ol.startCodeFragment();
-      pIntf->parseCode(ol,               // codeOutIntf
-                       scopeName,        // scope
-                       codeFragment,     // input
-                       m_impl->lang,     // lang
-                       FALSE,            // isExample
-                       0,                // exampleName
-                       m_impl->body->fileDef,  // fileDef
-                       actualStart,      // startLine
-                       actualEnd,        // endLine
-                       TRUE,             // inlineFragment
-                       thisMd,           // memberDef
-                       TRUE              // show line numbers
-                      );
+      intf.parseCode(ol,               // codeOutIntf
+                     scopeName,        // scope
+                     codeFragment,     // input
+                     m_impl->lang,     // lang
+                     FALSE,            // isExample
+                     0,                // exampleName
+                     m_impl->body->fileDef,  // fileDef
+                     actualStart,      // startLine
+                     actualEnd,        // endLine
+                     TRUE,             // inlineFragment
+                     thisMd,           // memberDef
+                     TRUE              // show line numbers
+                    );
       ol.endCodeFragment();
     }
   }
@@ -1606,7 +1606,7 @@ void DefinitionImpl::makePartOfGroup(GroupDef *gd)
 
 void DefinitionImpl::setRefItems(const std::vector<ListItemInfo> &sli)
 {
-  m_impl->xrefListItems = sli;
+  m_impl->xrefListItems.insert(m_impl->xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
 void DefinitionImpl::mergeRefItems(Definition *d)

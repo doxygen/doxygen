@@ -927,7 +927,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c HIDE_FRIEND_COMPOUNDS tag is set to \c YES, doxygen will hide all
- friend (class|struct|union) declarations.
+ friend declarations.
  If set to \c NO, these declarations will be included in the
  documentation.
 ]]>
@@ -953,7 +953,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='portable_fileSystemIsCaseSensitive()'>
+    <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='Portable::fileSystemIsCaseSensitive()'>
       <docs>
 <![CDATA[
  If the \c CASE_SENSE_NAMES tag is set to \c NO then doxygen

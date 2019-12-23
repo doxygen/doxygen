@@ -2277,8 +2277,8 @@ Commands for displaying examples
   The `option` `lineno` can be used to enable line numbers for the included code if desired.
   The `option` `doc` can be used to treat the file as documentation rather than code.
 
-  \note Some that when using the `{doc}` option,
-       commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
+  \note When using the `{doc}` option,
+       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
        this command due to the moment of parsing.
 
   \note The included documentation should not have comment signs in it as they will appear
@@ -2409,8 +2409,8 @@ Commands for displaying examples
  The `option` `lineno` can be used to enable line numbers for the included code if desired.
  The `option` `doc` can be used to treat the file as documentation rather than code.
 
- \note Some that when using the `{doc}` option,
-       commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
+ \note When using the `{doc}` option,
+       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
        this command due to the moment of parsing.
 
  \note The included documentation should not have comment signs in it as they will appear
@@ -2599,7 +2599,7 @@ Commands for visual enhancements
   a Python file for instance, the syntax highlight will be done according
   to the Python syntax. 
 
-  If it unclear from the context which language is meant (for instance the
+  If it is unclear from the context which language is meant (for instance the
   comment is in a <code>.txt</code> or <code>.markdown</code> file) then you can also explicitly
   indicate the language, by putting the file extension typically
   that doxygen associated with the language in curly brackets after the

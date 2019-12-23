@@ -109,19 +109,19 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
 static void findXRefSymbols(FileDef *fd)
 {
   // get the interface to a parser that matches the file extension
-  ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
+  CodeParserInterface &intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
 
   // get the programming language from the file name
   SrcLangExt lang = getLanguageFromFileName(fd->name());
 
   // reset the parsers state
-  pIntf->resetCodeParserState();
+  intf.resetCodeParserState();
 
   // create a new backend object 
   XRefDummyCodeGenerator *xrefGen = new XRefDummyCodeGenerator(fd);
 
   // parse the source code
-  pIntf->parseCode(*xrefGen,
+  intf.parseCode(*xrefGen,
                 0,
                 fileToString(fd->absFilePath()),
                 lang,

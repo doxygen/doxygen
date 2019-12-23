@@ -414,6 +414,7 @@
       <xsd:element name="underline" type="docMarkupType" />
       <xsd:element name="emphasis" type="docMarkupType" />
       <xsd:element name="computeroutput" type="docMarkupType" />
+      <xsd:element name="ins" type="docMarkupType" />
       <xsd:element name="subscript" type="docMarkupType" />
       <xsd:element name="superscript" type="docMarkupType" />
       <xsd:element name="center" type="docMarkupType" />

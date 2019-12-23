@@ -264,7 +264,7 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
 
     // PIMPL idiom
     class IMPL;
-    IMPL *m_impl;
+    IMPL *m_impl = 0;
 };
 
 ClassDef *createClassDef(
@@ -522,7 +522,7 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
                  QPtrDict<void> *visitedClasses=0) const {}
 
   private:
-    mutable bool m_visited;
+    mutable bool m_visited = false;
 };
 
 
@@ -560,27 +560,27 @@ class ClassDefImpl::IMPL
     /*! Include information about the header file should be included
      *  in the documentation. 0 by default, set by setIncludeFile().
      */
-    IncludeInfo *incInfo;
+    IncludeInfo *incInfo = 0;
 
     /*! List of base class (or super-classes) from which this class derives
      *  directly.
      */
-    BaseClassList *inherits;
+    BaseClassList *inherits = 0;
 
     /*! List of sub-classes that directly derive from this class
      */
-    BaseClassList *inheritedBy;
+    BaseClassList *inheritedBy = 0;
 
     /*! Namespace this class is part of
      *  (this is the inner most namespace in case of nested namespaces)
      */
-    NamespaceDef  *nspace;
+    NamespaceDef  *nspace = 0;
 
     /*! File this class is defined in */
-    FileDef *fileDef;
+    FileDef *fileDef = 0;
 
     /*! List of all members (including inherited members) */
-    MemberNameInfoSDict *allMemberNameInfoSDict;
+    MemberNameInfoSDict *allMemberNameInfoSDict = 0;
 
     /*! Template arguments of this class */
     ArgumentList tempArgs;
@@ -592,7 +592,7 @@ class ClassDefImpl::IMPL
     FileList files;
 
     /*! Examples that use this class */
-    ExampleSDict *exampleSDict;
+    ExampleSDict *exampleSDict = 0;
 
     /*! Holds the kind of "class" this is. */
     ClassDef::CompoundType compType;
@@ -606,30 +606,30 @@ class ClassDefImpl::IMPL
     /*! The inner classes contained in this class. Will be 0 if there are
      *  no inner classes.
      */
-    ClassSDict *innerClasses;
+    ClassSDict *innerClasses = 0;
 
     /* classes for the collaboration diagram */
-    UsesClassDict *usesImplClassDict;
-    UsesClassDict *usedByImplClassDict;
-    UsesClassDict *usesIntfClassDict;
+    UsesClassDict *usesImplClassDict = 0;
+    UsesClassDict *usedByImplClassDict = 0;
+    UsesClassDict *usesIntfClassDict = 0;
 
-    ConstraintClassDict *constraintClassDict;
+    ConstraintClassDict *constraintClassDict = 0;
 
     /*! Template instances that exists of this class, the key in the
      *  dictionary is the template argument list.
      */
-    mutable QDict<ClassDef> *templateInstances;
+    mutable QDict<ClassDef> *templateInstances = 0;
 
     /*! Template instances that exists of this class, as defined by variables.
      *  We do NOT want to document these individually. The key in the
      *  dictionary is the template argument list.
      */
-    mutable QDict<ClassDef> *variableInstances;
+    mutable QDict<ClassDef> *variableInstances = 0;
 
-    QDict<int> *templBaseClassNames;
+    QDict<int> *templBaseClassNames = 0;
 
     /*! The class this class is an instance of. */
-    const ClassDef *templateMaster;
+    const ClassDef *templateMaster = 0;
 
     /*! local class name which could be a typedef'ed alias name. */
     QCString className;
@@ -637,54 +637,54 @@ class ClassDefImpl::IMPL
     /*! If this class is a Objective-C category, then this points to the
      *  class which is extended.
      */
-    ClassDef *categoryOf;
+    ClassDef *categoryOf = 0;
 
     QList<MemberList> memberLists;
 
     /* user defined member groups */
-    MemberGroupSDict *memberGroupSDict;
+    MemberGroupSDict *memberGroupSDict = 0;
 
     /*! Is this an abstract class? */
-    bool isAbstract;
+    bool isAbstract = false;
 
     /*! Is the class part of an unnamed namespace? */
-    bool isStatic;
+    bool isStatic = false;
 
     /*! TRUE if classes members are merged with those of the base classes. */
-    bool membersMerged;
+    bool membersMerged = false;
 
     /*! TRUE if the class is defined in a source file rather than a header file. */
-    bool isLocal;
+    bool isLocal = false;
 
-    bool isTemplArg;
+    bool isTemplArg = false;
 
     /*! Does this class group its user-grouped members
      *  as a sub-section of the normal (public/protected/..)
      *  groups?
      */
-    bool subGrouping;
+    bool subGrouping = false;
 
     /** Reason of existence is a "use" relation */
-    bool usedOnly;
+    bool usedOnly = false;
 
     /** List of titles to use for the summary */
     SDict<QCString> vhdlSummaryTitles;
 
     /** Is this a simple (non-nested) C structure? */
-    bool isSimple;
+    bool isSimple = false;
 
     /** Does this class overloaded the -> operator? */
-    MemberDef *arrowOperator;
+    MemberDef *arrowOperator = 0;
 
-    ClassList *taggedInnerClasses;
-    ClassDef *tagLessRef;
+    ClassList *taggedInnerClasses = 0;
+    ClassDef *tagLessRef = 0;
 
     /** Does this class represent a Java style enum? */
-    bool isJavaEnum;
+    bool isJavaEnum = false;
 
-    bool isGeneric;
+    bool isGeneric = false;
 
-    uint64 spec;
+    uint64 spec = 0;
 
     QCString metaData;
 };
@@ -1706,7 +1706,8 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     DotClassGraph inheritanceGraph(this,Inheritance);
     if (inheritanceGraph.isTooBig())
     {
-       warn_uncond("Inheritance graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+       warn_uncond("Inheritance graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           name().data(), inheritanceGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!inheritanceGraph.isTrivial())
     {
@@ -4273,7 +4274,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const char *t
     for (mnii.toFirst();(mi=mnii.current());++mnii)
     {
       ArgumentList actualArguments;
-      stringToArgumentList(templSpec,actualArguments);
+      stringToArgumentList(getLanguage(),templSpec,actualArguments);
       MemberDef *md = mi->memberDef;
       MemberDef *imd = md->createTemplateInstanceMember(
                           cd->templateArguments(),actualArguments);

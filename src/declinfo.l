@@ -262,7 +262,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   struct yyguts_t *yyg = (struct yyguts_t*)g_yyscanner;
 
 #ifdef FLEX_DEBUG
-  yyset_debug(1,g_yyscanner);
+  declinfoYYset_debug(1,g_yyscanner);
 #endif
 
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);
@@ -347,11 +347,6 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   return;
 }
 
-//extern "C" { // some bogus code to keep the compiler happy
-//  int  declinfoYYwrap() { return 1 ; }
-//  void declinfoYYdummy() { yy_flex_realloc(0,0); } 
-//}
-
 #if 0
 void dumpDecl(const char *s)
 {
@@ -385,11 +380,5 @@ int main()
 }
 #endif
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-//----------------------------------------------------------------------------
-extern "C" { // some bogus code to keep the compiler happy
-  void declinfoYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
 
 #include "declinfo.l.h"

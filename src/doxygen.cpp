@@ -75,10 +75,12 @@
 #include "searchindex.h"
 #include "parserintf.h"
 #include "htags.h"
+#include "pycode.h"
 #include "pyscanner.h"
+#include "fortrancode.h"
 #include "fortranscanner.h"
-#include "xmlscanner.h"
-#include "sqlscanner.h"
+#include "xmlcode.h"
+#include "sqlcode.h"
 #include "tclscanner.h"
 #include "code.h"
 #include "objcache.h"
@@ -104,6 +106,7 @@
 #include "fileparser.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "stlsupport.h"
 
 // provided by the generated file resources.cpp
 extern void initResources();
@@ -322,225 +325,6 @@ static bool findClassRelation(
                            FindBaseClassRelation_Mode mode,
                            bool isArtificial
                           );
-
-/** A struct contained the data for an STL class */
-struct STLInfo
-{
-  const char *className;
-  const char *baseClass1;
-  const char *baseClass2;
-  const char *templType1;
-  const char *templName1;
-  const char *templType2;
-  const char *templName2;
-  bool virtualInheritance;
-  bool iterators;
-};
-
-static STLInfo g_stlinfo[] =
-{
-  // className              baseClass1                      baseClass2             templType1     templName1     templType2    templName2     virtInheritance  // iterators
-  { "allocator",            0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "array",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE }, // C++11
-  { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // deprecated
-  { "smart_ptr",            0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
-  { "unique_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
-  { "shared_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++14
-  { "weak_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
-  { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "error_code",           0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "error_category",       0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "system_error",         0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "error_condition",      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "thread",               0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "basic_ios",            "ios_base",                     0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_istream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
-  { "basic_ostream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
-  { "basic_iostream",       "basic_istream<Char>",          "basic_ostream<Char>", "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_ifstream",       "basic_istream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_ofstream",       "basic_ostream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_fstream",        "basic_iostream<Char>",         0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_istringstream",  "basic_istream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_ostringstream",  "basic_ostream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_stringstream",   "basic_iostream<Char>",         0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "ios",                  "basic_ios<char>",              0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wios",                 "basic_ios<wchar_t>",           0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "istream",              "basic_istream<char>",          0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wistream",             "basic_istream<wchar_t>",       0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ostream",              "basic_ostream<char>",          0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wostream",             "basic_ostream<wchar_t>",       0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ifstream",             "basic_ifstream<char>",         0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wifstream",            "basic_ifstream<wchar_t>",      0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ofstream",             "basic_ofstream<char>",         0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wofstream",            "basic_ofstream<wchar_t>",      0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "fstream",              "basic_fstream<char>",          0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wfstream",             "basic_fstream<wchar_t>",       0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "istringstream",        "basic_istringstream<char>",    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wistringstream",       "basic_istringstream<wchar_t>", 0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ostringstream",        "basic_ostringstream<char>",    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wostringstream",       "basic_ostringstream<wchar_t>", 0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "stringstream",         "basic_stringstream<char>",     0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wstringstream",        "basic_stringstream<wchar_t>",  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "basic_string",         0,                              0,                     "Char",        0,             0,            0,             FALSE,              TRUE  },
-  { "string",               "basic_string<char>",           0,                     0,             0,             0,            0,             FALSE,              TRUE  },
-  { "wstring",              "basic_string<wchar_t>",        0,                     0,             0,             0,            0,             FALSE,              TRUE  },
-  { "complex",              0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bitset",               0,                              0,                     "Bits",        0,             0,            0,             FALSE,              FALSE },
-  { "deque",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
-  { "list",                 0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
-  { "forward_list",         0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  }, // C++11
-  { "map",                  0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
-  { "unordered_map",        0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  }, // C++11
-  { "multimap",             0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
-  { "unordered_multimap",   0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  }, // C++11
-  { "set",                  0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
-  { "unordered_set",        0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  }, // C++11
-  { "multiset",             0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
-  { "unordered_multiset",   0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  }, // C++11
-  { "vector",               0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
-  { "queue",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "priority_queue",       0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "stack",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "valarray",             0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "exception",            0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bad_alloc",            "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bad_cast",             "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bad_typeid",           "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "logic_error",          "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ios_base::failure",    "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "runtime_error",        "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bad_exception",        "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "domain_error",         "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "invalid_argument",     "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "length_error",         "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "out_of_range",         "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "range_error",          "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "overflow_error",       "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "underflow_error",      "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { 0,                      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }
-};
-
-static void addSTLMember(const std::unique_ptr<Entry> &root,const char *type,const char *name)
-{
-  std::unique_ptr<Entry> memEntry = std::make_unique<Entry>();
-  memEntry->name       = name;
-  memEntry->type       = type;
-  memEntry->protection = Public;
-  memEntry->section    = Entry::VARIABLE_SEC;
-  memEntry->brief      = "STL member";
-  memEntry->hidden     = FALSE;
-  memEntry->artificial = TRUE;
-  root->moveToSubEntryAndKeep(memEntry);
-}
-
-static void addSTLIterator(const std::unique_ptr<Entry> &classEntry,const char *name)
-{
-  std::unique_ptr<Entry> iteratorClassEntry = std::make_unique<Entry>();
-  iteratorClassEntry->fileName  = "[STL]";
-  iteratorClassEntry->startLine = 1;
-  iteratorClassEntry->name      = name;
-  iteratorClassEntry->section   = Entry::CLASS_SEC;
-  iteratorClassEntry->brief     = "STL iterator class";
-  iteratorClassEntry->hidden    = FALSE;
-  iteratorClassEntry->artificial= TRUE;
-  classEntry->moveToSubEntryAndKeep(iteratorClassEntry);
-}
-
-static void addSTLClass(const std::unique_ptr<Entry> &root,const STLInfo *info)
-{
-  //printf("Adding STL class %s\n",info->className);
-  QCString fullName = info->className;
-  fullName.prepend("std::");
-
-  // add fake Entry for the class
-  std::unique_ptr<Entry> classEntry = std::make_unique<Entry>();
-  classEntry->fileName  = "[STL]";
-  classEntry->startLine = 1;
-  classEntry->name      = fullName;
-  classEntry->section   = Entry::CLASS_SEC;
-  classEntry->brief     = "STL class";
-  classEntry->hidden    = FALSE;
-  classEntry->artificial= TRUE;
-
-  // add template arguments to class
-  if (info->templType1)
-  {
-    ArgumentList al;
-    Argument a;
-    a.type="typename";
-    a.name=info->templType1;
-    al.push_back(a);
-    if (info->templType2) // another template argument
-    {
-      a.type="typename";
-      a.name=info->templType2;
-      al.push_back(a);
-    }
-    classEntry->tArgLists.push_back(al);
-  }
-  // add member variables
-  if (info->templName1)
-  {
-    addSTLMember(classEntry,info->templType1,info->templName1);
-  }
-  if (info->templName2)
-  {
-    addSTLMember(classEntry,info->templType2,info->templName2);
-  }
-  if (fullName=="std::auto_ptr" || fullName=="std::smart_ptr" || fullName=="std::shared_ptr" ||
-      fullName=="std::unique_ptr" || fullName=="std::weak_ptr")
-  {
-    std::unique_ptr<Entry> memEntry = std::make_unique<Entry>();
-    memEntry->name       = "operator->";
-    memEntry->args       = "()";
-    memEntry->type       = "T*";
-    memEntry->protection = Public;
-    memEntry->section    = Entry::FUNCTION_SEC;
-    memEntry->brief      = "STL member";
-    memEntry->hidden     = FALSE;
-    memEntry->artificial = FALSE;
-    classEntry->moveToSubEntryAndKeep(memEntry);
-  }
-  if (info->baseClass1)
-  {
-    classEntry->extends.push_back(BaseInfo(info->baseClass1,Public,info->virtualInheritance?Virtual:Normal));
-  }
-  if (info->baseClass2)
-  {
-    classEntry->extends.push_back(BaseInfo(info->baseClass2,Public,info->virtualInheritance?Virtual:Normal));
-  }
-  if (info->iterators)
-  {
-    // add iterator class
-    addSTLIterator(classEntry,fullName+"::iterator");
-    addSTLIterator(classEntry,fullName+"::const_iterator");
-    addSTLIterator(classEntry,fullName+"::reverse_iterator");
-    addSTLIterator(classEntry,fullName+"::const_reverse_iterator");
-  }
-  root->moveToSubEntryAndKeep(classEntry);
-}
-
-
-static void addSTLClasses(const std::unique_ptr<Entry> &root)
-{
-  std::unique_ptr<Entry> namespaceEntry = std::make_unique<Entry>();
-  namespaceEntry->fileName  = "[STL]";
-  namespaceEntry->startLine = 1;
-  namespaceEntry->name      = "std";
-  namespaceEntry->section   = Entry::NAMESPACE_SEC;
-  namespaceEntry->brief     = "STL namespace";
-  namespaceEntry->hidden    = FALSE;
-  namespaceEntry->artificial= TRUE;
-
-  STLInfo *info = g_stlinfo;
-  while (info->className)
-  {
-    addSTLClass(namespaceEntry,info);
-    info++;
-  }
-
-  root->moveToSubEntryAndKeep(namespaceEntry);
-}
 
 //----------------------------------------------------------------------------
 
@@ -1276,7 +1060,7 @@ static void addClassToContext(const Entry *root)
     {
       // a Java/C# generic class looks like a C++ specialization, so we need to split the
       // name and template arguments here
-      stringToArgumentList(fullName.mid(i),tArgList);
+      stringToArgumentList(root->lang,fullName.mid(i),tArgList);
       fullName=fullName.left(i);
     }
     else
@@ -3604,7 +3388,7 @@ static void buildFunctionList(const Entry *root)
                   if (md->documentation().isEmpty() && !root->doc.isEmpty())
                   {
                     ArgumentList argList;
-                    stringToArgumentList(root->args,argList);
+                    stringToArgumentList(root->lang,root->args,argList);
                     if (root->proto)
                     {
                       //printf("setDeclArgumentList to %p\n",argList);
@@ -4427,7 +4211,7 @@ static bool findTemplateInstanceRelation(const Entry *root,
       Debug::print(Debug::Classes,0,"        template root found %s templSpec=%s!\n",
           qPrint(templateRoot->name),qPrint(templSpec));
       ArgumentList templArgs;
-      stringToArgumentList(templSpec,templArgs);
+      stringToArgumentList(root->lang,templSpec,templArgs);
       findBaseClassesForClass(templateRoot,context,templateClass,instanceClass,
           TemplateInstances,isArtificial,templArgs,templateNames);
 
@@ -5041,7 +4825,7 @@ static void computeTemplateClassRelations()
         Debug::print(Debug::Classes,0,"    Template instance %s : \n",qPrint(tcd->name()));
         QCString templSpec = tdi.currentKey();
         ArgumentList templArgs;
-        stringToArgumentList(templSpec,templArgs);
+        stringToArgumentList(tcd->getLanguage(),templSpec,templArgs);
         for (const BaseInfo &bi : root->extends)
         {
           // check if the base class is a template argument
@@ -8800,10 +8584,9 @@ static void computePageRelations(Entry *root)
         PageDef *subPd = Doxygen::pageSDict->find(bi.name);
         if (pd==subPd)
         {
-         err("page defined at line %d of file %s with label %s is a direct "
+         term("page defined at line %d of file %s with label %s is a direct "
              "subpage of itself! Please remove this cyclic dependency.\n",
               pd->docLine(),pd->docFile().data(),pd->name().data());
-          exit(1);
         }
         else if (subPd)
         {
@@ -8828,10 +8611,9 @@ static void checkPageRelations()
     {
       if (ppd==pd)
       {
-        err("page defined at line %d of file %s with label %s is a subpage "
+        term("page defined at line %d of file %s with label %s is a subpage "
             "of itself! Please remove this cyclic dependency.\n",
             pd->docLine(),pd->docFile().data(),pd->name().data());
-        exit(1);
       }
       ppd=ppd->getOuterScope();
     }
@@ -8992,7 +8774,8 @@ static void generateExampleDocs()
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
     msg("Generating docs for example %s...\n",pd->name().data());
-    resetCCodeParserState();
+    CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(".c"); // TODO: do this on code type
+    intf.resetCodeParserState();
     QCString n=pd->getOutputFileBase();
     startFile(*g_outputList,n,n,pd->name());
     startTitle(*g_outputList,n);
@@ -9163,8 +8946,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   }
   else
   {
-    err("Cannot open file %s for writing\n",configFile);
-    exit(1);
+    term("Cannot open file %s for writing\n",configFile);
   }
 }
 static void compareDoxyfile()
@@ -9181,8 +8963,7 @@ static void compareDoxyfile()
   }
   else
   {
-    err("Cannot open file %s for writing\n",configFile);
-    exit(1);
+    term("Cannot open file %s for writing\n",configFile);
   }
 }
 //----------------------------------------------------------------------------
@@ -9198,7 +8979,7 @@ static void compareDoxyfile()
 
 //----------------------------------------------------------------------------
 
-static void readTagFile(const std::unique_ptr<Entry> &root,const char *tl)
+static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
 {
   QCString tagLine = tl;
   QCString fileName;
@@ -9208,6 +8989,7 @@ static void readTagFile(const std::unique_ptr<Entry> &root,const char *tl)
   {
     fileName = tagLine.left(eqPos).stripWhiteSpace();
     destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
+    if (fileName.isEmpty() || destName.isEmpty()) return;
     QFileInfo fi(fileName);
     Doxygen::tagDestinationDict.insert(fi.absFilePath().utf8(),new QCString(destName));
     //printf("insert tagDestination %s->%s\n",fi.fileName().data(),destName.data());
@@ -9348,7 +9130,7 @@ static void copyExtraFiles(QStrList files,const QCString &filesOption,const QCSt
 
 //----------------------------------------------------------------------------
 
-static ParserInterface *getParserForFile(const char *fn)
+static OutlineParserInterface &getParserForFile(const char *fn)
 {
   QCString fileName=fn;
   QCString extension;
@@ -9363,11 +9145,11 @@ static ParserInterface *getParserForFile(const char *fn)
     extension = ".no_extension";
   }
 
-  return Doxygen::parserManager->getParser(extension);
+  return Doxygen::parserManager->getOutlineParser(extension);
 }
 
-static void parseFile(ParserInterface *parser,
-                      const std::unique_ptr<Entry> &root,FileDef *fd,const char *fn,
+static void parseFile(OutlineParserInterface &parser,
+                      const std::shared_ptr<Entry> &root,FileDef *fd,const char *fn,
                       bool sameTu,QStrList &filesInSameTu)
 {
 #if USE_LIBCLANG
@@ -9391,7 +9173,7 @@ static void parseFile(ParserInterface *parser,
   BufStr preBuf(fi.size()+4096);
 
   if (Config_getBool(ENABLE_PREPROCESSING) &&
-      parser->needsPreprocessing(extension))
+      parser.needsPreprocessing(extension))
   {
     BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",fn);
@@ -9420,15 +9202,15 @@ static void parseFile(ParserInterface *parser,
     fd->getAllIncludeFilesRecursively(filesInSameTu);
   }
 
-  std::unique_ptr<Entry> fileRoot = std::make_unique<Entry>();
+  std::shared_ptr<Entry> fileRoot = std::make_shared<Entry>();
   // use language parse to parse the file
-  parser->parseInput(fileName,convBuf.data(),fileRoot,sameTu,filesInSameTu);
+  parser.parseInput(fileName,convBuf.data(),fileRoot,sameTu,filesInSameTu);
   fileRoot->setFileDef(fd);
   root->moveToSubEntryAndKeep(fileRoot);
 }
 
 //! parse the list of input files
-static void parseFiles(const std::unique_ptr<Entry> &root)
+static void parseFiles(const std::shared_ptr<Entry> &root)
 {
 #if USE_LIBCLANG
   static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
@@ -9454,8 +9236,8 @@ static void parseFiles(const std::unique_ptr<Entry> &root)
       if (fd->isSource() && !fd->isReference()) // this is a source file
       {
         QStrList filesInSameTu;
-        ParserInterface * parser = getParserForFile(s->data());
-        parser->startTranslationUnit(s->data());
+        OutlineParserInterface &parser = getParserForFile(s->data());
+        parser.startTranslationUnit(s->data());
         parseFile(parser,root,fd,s->data(),FALSE,filesInSameTu);
         //printf("  got %d extra files in tu\n",filesInSameTu.count());
 
@@ -9477,7 +9259,7 @@ static void parseFiles(const std::unique_ptr<Entry> &root)
           }
           incFile = filesInSameTu.next();
         }
-        parser->finishTranslationUnit();
+        parser.finishTranslationUnit();
         g_processedFiles.insert(*s,(void*)0x8);
       }
     }
@@ -9490,10 +9272,10 @@ static void parseFiles(const std::unique_ptr<Entry> &root)
         QStrList filesInSameTu;
         FileDef *fd=findFileDef(Doxygen::inputNameDict,s->data(),ambig);
         ASSERT(fd!=0);
-        ParserInterface * parser = getParserForFile(s->data());
-        parser->startTranslationUnit(s->data());
+        OutlineParserInterface &parser = getParserForFile(s->data());
+        parser.startTranslationUnit(s->data());
         parseFile(parser,root,fd,s->data(),FALSE,filesInSameTu);
-        parser->finishTranslationUnit();
+        parser.finishTranslationUnit();
         g_processedFiles.insert(*s,(void*)0x8);
       }
     }
@@ -9509,8 +9291,8 @@ static void parseFiles(const std::unique_ptr<Entry> &root)
       QStrList filesInSameTu;
       FileDef *fd=findFileDef(Doxygen::inputNameDict,s->data(),ambig);
       ASSERT(fd!=0);
-      ParserInterface * parser = getParserForFile(s->data());
-      parser->startTranslationUnit(s->data());
+      OutlineParserInterface &parser = getParserForFile(s->data());
+      parser.startTranslationUnit(s->data());
       parseFile(parser,root,fd,s->data(),FALSE,filesInSameTu);
     }
   }
@@ -9820,17 +9602,15 @@ void readFormulaRepository(QCString dir, bool cmp)
         {
           if ((f=Doxygen::formulaDict->find(formText))==0)
           {
-            err("discrepancy between formula repositories! Remove "
+            term("discrepancy between formula repositories! Remove "
                 "formula.repository and from_* files from output directories.");
-            exit(1);
           }
           QCString formLabel;
           formLabel.sprintf("\\form#%d",f->getId());
           if (formLabel != formName)
           {
-            err("discrepancy between formula repositories! Remove "
+            term("discrepancy between formula repositories! Remove "
                 "formula.repository and from_* files from output directories.");
-            exit(1);
           }
           new_repository++;
         }
@@ -9847,9 +9627,8 @@ void readFormulaRepository(QCString dir, bool cmp)
   }
   if (cmp && (current_repository != new_repository))
   {
-    err("size discrepancy between formula repositories! Remove "
+    term("size discrepancy between formula repositories! Remove "
         "formula.repository and from_* files from output directories.");
-    exit(1);
   }
 }
 
@@ -10067,32 +9846,55 @@ static const char *getArg(int argc,char **argv,int &optind)
 
 //----------------------------------------------------------------------------
 
+/** @brief /dev/null outline parser */
+class NullOutlineParser : public OutlineParserInterface
+{
+  public:
+    void startTranslationUnit(const char *) {}
+    void finishTranslationUnit() {}
+    void parseInput(const char *, const char *,const std::shared_ptr<Entry> &, bool, QStrList &) {}
+    bool needsPreprocessing(const QCString &) const { return FALSE; }
+    void parsePrototype(const char *) {}
+};
+
+
+
 void initDoxygen()
 {
   initResources();
-  const char *lang = portable_getenv("LC_ALL");
-  if (lang) portable_setenv("LANG",lang);
+  const char *lang = Portable::getenv("LC_ALL");
+  if (lang) Portable::setenv("LANG",lang);
   setlocale(LC_ALL,"");
   setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   setlocale(LC_NUMERIC,"C");
 
-  portable_correct_path();
+  Portable::correct_path();
 
   Doxygen::runningTime.start();
   Doxygen::preprocessor = new Preprocessor();
 
-  Doxygen::parserManager = new ParserManager;
-  Doxygen::parserManager->registerDefaultParser(         new FileParser);
-  Doxygen::parserManager->registerParser("c",            new CLanguageScanner);
-  Doxygen::parserManager->registerParser("python",       new PythonLanguageScanner);
-  Doxygen::parserManager->registerParser("fortran",      new FortranLanguageScanner);
-  Doxygen::parserManager->registerParser("fortranfree",  new FortranLanguageScannerFree);
-  Doxygen::parserManager->registerParser("fortranfixed", new FortranLanguageScannerFixed);
-  Doxygen::parserManager->registerParser("vhdl",         new VHDLLanguageScanner);
-  Doxygen::parserManager->registerParser("xml",          new XMLScanner);
-  Doxygen::parserManager->registerParser("sql",          new SQLScanner);
-  Doxygen::parserManager->registerParser("tcl",          new TclLanguageScanner);
-  Doxygen::parserManager->registerParser("md",           new MarkdownFileParser);
+  Doxygen::parserManager = new ParserManager(            std::make_unique<NullOutlineParser>(),
+                                                         std::make_unique<FileCodeParser>());
+  Doxygen::parserManager->registerParser("c",            std::make_unique<COutlineParser>(),
+                                                         std::make_unique<CCodeParser>());
+  Doxygen::parserManager->registerParser("python",       std::make_unique<PythonOutlineParser>(),
+                                                         std::make_unique<PythonCodeParser>());
+  Doxygen::parserManager->registerParser("fortran",      std::make_unique<FortranOutlineParser>(),
+                                                         std::make_unique<FortranCodeParser>());
+  Doxygen::parserManager->registerParser("fortranfree",  std::make_unique<FortranOutlineParserFree>(),
+                                                         std::make_unique<FortranCodeParserFree>());
+  Doxygen::parserManager->registerParser("fortranfixed", std::make_unique<FortranOutlineParserFixed>(),
+                                                         std::make_unique<FortranCodeParserFixed>());
+  Doxygen::parserManager->registerParser("vhdl",         std::make_unique<VHDLOutlineParser>(),
+                                                         std::make_unique<VHDLCodeParser>());
+  Doxygen::parserManager->registerParser("xml",          std::make_unique<NullOutlineParser>(),
+                                                         std::make_unique<XMLCodeParser>());
+  Doxygen::parserManager->registerParser("sql",          std::make_unique<NullOutlineParser>(),
+                                                         std::make_unique<SQLCodeParser>());
+  Doxygen::parserManager->registerParser("tcl",          std::make_unique<TclOutlineParser>(),
+                                                         std::make_unique<TclCodeParser>());
+  Doxygen::parserManager->registerParser("md",           std::make_unique<MarkdownOutlineParser>(),
+                                                         std::make_unique<FileCodeParser>());
 
   // register any additional parsers here...
 
@@ -10187,7 +9989,6 @@ void cleanUpDoxygen()
   delete theTranslator;
   delete g_outputList;
   Mappers::freeMappers();
-  codeFreeScanner();
 
   if (Doxygen::symbolMap)
   {
@@ -10689,11 +10490,22 @@ void adjustConfiguration()
   while (mapping)
   {
     QCString mapStr = mapping;
-    int i;
-    if ((i=mapStr.find('='))!=-1)
+    int i=mapStr.find('=');
+    if (i==-1)
     {
-      QCString ext=mapStr.left(i).stripWhiteSpace().lower();
-      QCString language=mapStr.mid(i+1).stripWhiteSpace().lower();
+      mapping = extMaps.next();
+      continue;
+    }
+    else
+    {
+      QCString ext = mapStr.left(i).stripWhiteSpace().lower();
+      QCString language = mapStr.mid(i+1).stripWhiteSpace().lower();
+      if (ext.isEmpty() || language.isEmpty())
+      {
+        mapping = extMaps.next();
+        continue;
+      }
+
       if (!updateLanguageMapping(ext,language))
       {
         err("Failed to map file extension '%s' to unsupported language '%s'.\n"
@@ -10708,7 +10520,6 @@ void adjustConfiguration()
     }
     mapping = extMaps.next();
   }
-
 
   // add predefined macro name to a dictionary
   QStrList &expandAsDefinedList =Config_getList(EXPAND_AS_DEFINED);
@@ -11103,7 +10914,7 @@ void parseInput()
   signal(SIGINT, stopDoxygen);
 #endif
 
-  uint pid = portable_pid();
+  uint pid = Portable::pid();
   Doxygen::objDBFileName.sprintf("doxygen_objdb_%d.tmp",pid);
   Doxygen::objDBFileName.prepend(outputDirectory+"/");
   Doxygen::entryDBFileName.sprintf("doxygen_entrydb_%d.tmp",pid);
@@ -11163,18 +10974,18 @@ void parseInput()
     QCString curFontPath = Config_getString(DOT_FONTPATH);
     if (curFontPath.isEmpty())
     {
-      portable_getenv("DOTFONTPATH");
+      Portable::getenv("DOTFONTPATH");
       QCString newFontPath = ".";
       if (!curFontPath.isEmpty())
       {
-        newFontPath+=portable_pathListSeparator();
+        newFontPath+=Portable::pathListSeparator();
         newFontPath+=curFontPath;
       }
-      portable_setenv("DOTFONTPATH",newFontPath);
+      Portable::setenv("DOTFONTPATH",newFontPath);
     }
     else
     {
-      portable_setenv("DOTFONTPATH",curFontPath);
+      Portable::setenv("DOTFONTPATH",curFontPath);
     }
   }
 
@@ -11241,7 +11052,7 @@ void parseInput()
    *             Handle Tag Files                                           *
    **************************************************************************/
 
-  std::unique_ptr<Entry> root = std::make_unique<Entry>();
+  std::shared_ptr<Entry> root = std::make_shared<Entry>();
   msg("Reading and parsing tag files\n");
 
   QStrList &tagFileList = Config_getList(TAGFILES);
@@ -11256,10 +11067,7 @@ void parseInput()
    *             Parse source files                                         *
    **************************************************************************/
 
-  if (Config_getBool(BUILTIN_STL_SUPPORT))
-  {
-    addSTLClasses(root);
-  }
+  addSTLSupport(root);
 
   g_s.begin("Parsing files\n");
   parseFiles(root);
@@ -11267,7 +11075,6 @@ void parseInput()
 
   // we are done with input scanning now, so free up the buffers used by flex
   // (can be around 4MB)
-  scanFreeScanner();
   pyscanFreeScanner();
 
   /**************************************************************************
@@ -11661,9 +11468,8 @@ void generateOutput()
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
     {
-      err("Could not create search results directory '%s' $PWD='%s'\n",
+      term("Could not create search results directory '%s' $PWD='%s'\n",
           searchDirName.data(),QDir::currentDirPath().data());
-      exit(1);
     }
     HtmlGenerator::writeSearchData(searchDirName);
     if (!serverBasedSearch) // client side search index
@@ -11800,7 +11606,7 @@ void generateOutput()
       {
         searchDataFile="searchdata.xml";
       }
-      if (!portable_isAbsolutePath(searchDataFile))
+      if (!Portable::isAbsolutePath(searchDataFile))
       {
         searchDataFile.prepend(Config_getString(OUTPUT_DIRECTORY)+"/");
       }
@@ -11862,12 +11668,13 @@ void generateOutput()
     g_s.begin("Running html help compiler...\n");
     QString oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString(HTML_OUTPUT));
-    portable_sysTimerStart();
-    if (portable_system(Config_getString(HHC_LOCATION), "index.hhp", Debug::isFlagSet(Debug::ExtCmd))!=1)
+    Portable::setShortDir();
+    Portable::sysTimerStart();
+    if (Portable::system(Config_getString(HHC_LOCATION), "index.hhp", Debug::isFlagSet(Debug::ExtCmd))!=1)
     {
       err("failed to run html help compiler on index.hhp\n");
     }
-    portable_sysTimerStop();
+    Portable::sysTimerStop();
     QDir::setCurrent(oldDir);
     g_s.end();
   }
@@ -11882,12 +11689,12 @@ void generateOutput()
     QCString const args = QCString().sprintf("%s -o \"%s\"", qhpFileName.data(), qchFileName.data());
     QString const oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString(HTML_OUTPUT));
-    portable_sysTimerStart();
-    if (portable_system(Config_getString(QHG_LOCATION), args.data(), FALSE))
+    Portable::sysTimerStart();
+    if (Portable::system(Config_getString(QHG_LOCATION), args.data(), FALSE))
     {
       err("failed to run qhelpgenerator on index.qhp\n");
     }
-    portable_sysTimerStop();
+    Portable::sysTimerStop();
     QDir::setCurrent(oldDir);
     g_s.end();
   }
@@ -11908,7 +11715,7 @@ void generateOutput()
   {
     msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
          ((double)Doxygen::runningTime.elapsed())/1000.0,
-         portable_getSysElapsedTime()
+         Portable::getSysElapsedTime()
         );
     g_s.print();
   }

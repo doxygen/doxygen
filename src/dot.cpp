@@ -38,12 +38,12 @@ static QCString g_dotFontPath;
 static void setDotFontPath(const char *path)
 {
   ASSERT(g_dotFontPath.isEmpty());
-  g_dotFontPath = portable_getenv("DOTFONTPATH");
+  g_dotFontPath = Portable::getenv("DOTFONTPATH");
   QCString newFontPath = Config_getString(DOT_FONTPATH);
   QCString spath = path;
   if (!newFontPath.isEmpty() && !spath.isEmpty())
   {
-    newFontPath.prepend(spath+portable_pathListSeparator());
+    newFontPath.prepend(spath+Portable::pathListSeparator());
   }
   else if (newFontPath.isEmpty() && !spath.isEmpty())
   {
@@ -51,21 +51,21 @@ static void setDotFontPath(const char *path)
   }
   else
   {
-    portable_unsetenv("DOTFONTPATH");
+    Portable::unsetenv("DOTFONTPATH");
     return;
   }
-  portable_setenv("DOTFONTPATH",newFontPath);
+  Portable::setenv("DOTFONTPATH",newFontPath);
 }
 
 static void unsetDotFontPath()
 {
   if (g_dotFontPath.isEmpty())
   {
-    portable_unsetenv("DOTFONTPATH");
+    Portable::unsetenv("DOTFONTPATH");
   }
   else
   {
-    portable_setenv("DOTFONTPATH",g_dotFontPath);
+    Portable::setenv("DOTFONTPATH",g_dotFontPath);
   }
   g_dotFontPath="";
 }
@@ -183,7 +183,7 @@ bool DotManager::run() const
     setDotFontPath(Config_getString(DOCBOOK_OUTPUT));
     setPath=TRUE;
   }
-  portable_sysTimerStart();
+  Portable::sysTimerStart();
   // fill work queue with dot operations
   DotRunner *dr;
   int prev=1;
@@ -211,7 +211,7 @@ bool DotManager::run() const
         msg("Running dot for graph %d/%d\n",prev,numDotRuns);
         prev++;
       }
-      portable_sleep(100);
+      Portable::sleep(100);
     }
     while ((int)numDotRuns>=prev)
     {
@@ -229,7 +229,7 @@ bool DotManager::run() const
       m_workers.at(i)->wait();
     }
   }
-  portable_sysTimerStop();
+  Portable::sysTimerStop();
   if (setPath)
   {
     unsetDotFontPath();
@@ -272,7 +272,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   QDir d(outDir);
   if (!d.exists())
   {
-    err("Output dir %s does not exist!\n",outDir); exit(1);
+    term("Output dir %s does not exist!\n",outDir);
   }
 
   QCString imgExt = getDotImageExtension();
@@ -325,7 +325,7 @@ void writeDotImageMapFromFile(FTextStream &t,
   QDir d(outDir);
   if (!d.exists())
   {
-    err("Output dir %s does not exist!\n",outDir.data()); exit(1);
+    term("Output dir %s does not exist!\n",outDir.data());
   }
 
   QCString mapName = baseName+".map";

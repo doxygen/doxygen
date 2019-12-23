@@ -42,9 +42,9 @@ class DocGroup
 
   private:
     int findExistingGroup(int &groupId,const MemberGroupInfo *info);
-    int              m_openCount;
+    int              m_openCount = 0;
     QCString         m_memberGroupHeader;
-    int              m_memberGroupId;
+    int              m_memberGroupId = 0;
     QCString         m_memberGroupRelates;
     QCString         m_memberGroupDocs;
     std::vector<Grouping> m_autoGroupStack;

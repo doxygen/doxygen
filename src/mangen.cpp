@@ -112,14 +112,12 @@ void ManGenerator::init()
   QDir d(manOutput);
   if (!d.exists() && !d.mkdir(manOutput))
   {
-    err("Could not create output directory %s\n",manOutput.data());
-    exit(1);
+    term("Could not create output directory %s\n",manOutput.data());
   }
   d.setPath(manOutput + "/" + getSubdir());
   if (!d.exists() && !d.mkdir(manOutput + "/" + getSubdir()))
   {
-    err("Could not create output directory %s/%s\n",manOutput.data(), getSubdir().data());
-    exit(1);
+    term("Could not create output directory %s/%s\n",manOutput.data(), getSubdir().data());
   }
   createSubDirs(d);
 }

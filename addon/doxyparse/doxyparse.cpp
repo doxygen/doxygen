@@ -89,19 +89,19 @@ static bool is_c_code = true;
 static void findXRefSymbols(FileDef *fd)
 {
   // get the interface to a parser that matches the file extension
-  ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
+  CodeParserInterface &intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
 
   // get the programming language from the file name
   SrcLangExt lang = getLanguageFromFileName(fd->name());
 
   // reset the parsers state
-  pIntf->resetCodeParserState();
+  intf.resetCodeParserState();
 
   // create a new backend object
   Doxyparse *parse = new Doxyparse(fd);
 
   // parse the source code
-  pIntf->parseCode(*parse, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
+  intf.parseCode(*parse, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
 
   // dismiss the object.
   delete parse;

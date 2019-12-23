@@ -13,232 +13,232 @@ static const unsigned long long jjbitVec3[] = {
    0x0ULL, 0x0ULL, 0xffffffff00000000ULL, 0xffffffffffffffffULL
 };
 static const int jjnextStates[] = {
-   54, 55, 56, 57, 58, 61, 65, 66, 67, 76, 21, 48, 49, 2, 37, 38, 
+   58, 59, 60, 61, 62, 65, 69, 70, 71, 80, 21, 50, 51, 2, 37, 38, 
    0, 3, 4, 5, 7, 12, 13, 15, 16, 24, 23, 25, 33, 34, 36, 39, 
-   40, 42, 56, 57, 58, 61, 60, 59, 61, 65, 66, 67, 68, 69, 71, 9, 
-   10, 28, 29, 45, 47, 50, 52, 27, 30, 
+   40, 42, 46, 47, 49, 53, 54, 56, 60, 61, 62, 65, 64, 63, 65, 69, 
+   70, 71, 72, 73, 75, 9, 10, 28, 29, 27, 30, 
 };
-static JJChar jjstrLiteralChars_0[] = {0};
-static JJChar jjstrLiteralChars_1[] = {0};
-static JJChar jjstrLiteralChars_2[] = {0};
-static JJChar jjstrLiteralChars_3[] = {0};
-static JJChar jjstrLiteralChars_4[] = {0};
-static JJChar jjstrLiteralChars_5[] = {0};
-static JJChar jjstrLiteralChars_6[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_0[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_1[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_2[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_3[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_4[] = {0};
 
-static JJChar jjstrLiteralChars_7[] = {0};
-static JJChar jjstrLiteralChars_8[] = {0};
-static JJChar jjstrLiteralChars_9[] = {0};
-static JJChar jjstrLiteralChars_10[] = {0};
-static JJChar jjstrLiteralChars_11[] = {0};
-static JJChar jjstrLiteralChars_12[] = {0};
-static JJChar jjstrLiteralChars_13[] = {0};
-static JJChar jjstrLiteralChars_14[] = {0};
-static JJChar jjstrLiteralChars_15[] = {0};
-static JJChar jjstrLiteralChars_16[] = {0};
-static JJChar jjstrLiteralChars_17[] = {0};
-static JJChar jjstrLiteralChars_18[] = {0};
-static JJChar jjstrLiteralChars_19[] = {0};
-static JJChar jjstrLiteralChars_20[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_5[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_6[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_7[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_8[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_9[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_10[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_11[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_12[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_13[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_14[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_15[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_16[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_17[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_18[] = {0};
 
-static JJChar jjstrLiteralChars_21[] = {0};
-static JJChar jjstrLiteralChars_22[] = {0};
-static JJChar jjstrLiteralChars_23[] = {0};
-static JJChar jjstrLiteralChars_24[] = {0};
-static JJChar jjstrLiteralChars_25[] = {0};
-static JJChar jjstrLiteralChars_26[] = {0};
-static JJChar jjstrLiteralChars_27[] = {0};
-static JJChar jjstrLiteralChars_28[] = {0};
-static JJChar jjstrLiteralChars_29[] = {0};
-static JJChar jjstrLiteralChars_30[] = {0};
-static JJChar jjstrLiteralChars_31[] = {0};
-static JJChar jjstrLiteralChars_32[] = {0};
-static JJChar jjstrLiteralChars_33[] = {0};
-static JJChar jjstrLiteralChars_34[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_19[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_20[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_21[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_22[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_23[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_24[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_25[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_26[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_27[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_28[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_29[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_30[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_31[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_32[] = {0};
 
-static JJChar jjstrLiteralChars_35[] = {0};
-static JJChar jjstrLiteralChars_36[] = {0};
-static JJChar jjstrLiteralChars_37[] = {0};
-static JJChar jjstrLiteralChars_38[] = {0};
-static JJChar jjstrLiteralChars_39[] = {0};
-static JJChar jjstrLiteralChars_40[] = {0};
-static JJChar jjstrLiteralChars_41[] = {0};
-static JJChar jjstrLiteralChars_42[] = {0};
-static JJChar jjstrLiteralChars_43[] = {0};
-static JJChar jjstrLiteralChars_44[] = {0};
-static JJChar jjstrLiteralChars_45[] = {0};
-static JJChar jjstrLiteralChars_46[] = {0};
-static JJChar jjstrLiteralChars_47[] = {0};
-static JJChar jjstrLiteralChars_48[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_33[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_34[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_35[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_36[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_37[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_38[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_39[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_40[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_41[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_42[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_43[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_44[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_45[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_46[] = {0};
 
-static JJChar jjstrLiteralChars_49[] = {0};
-static JJChar jjstrLiteralChars_50[] = {0};
-static JJChar jjstrLiteralChars_51[] = {0};
-static JJChar jjstrLiteralChars_52[] = {0};
-static JJChar jjstrLiteralChars_53[] = {0};
-static JJChar jjstrLiteralChars_54[] = {0};
-static JJChar jjstrLiteralChars_55[] = {0};
-static JJChar jjstrLiteralChars_56[] = {0};
-static JJChar jjstrLiteralChars_57[] = {0};
-static JJChar jjstrLiteralChars_58[] = {0};
-static JJChar jjstrLiteralChars_59[] = {0};
-static JJChar jjstrLiteralChars_60[] = {0};
-static JJChar jjstrLiteralChars_61[] = {0};
-static JJChar jjstrLiteralChars_62[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_47[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_48[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_49[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_50[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_51[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_52[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_53[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_54[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_55[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_56[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_57[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_58[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_59[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_60[] = {0};
 
-static JJChar jjstrLiteralChars_63[] = {0};
-static JJChar jjstrLiteralChars_64[] = {0};
-static JJChar jjstrLiteralChars_65[] = {0};
-static JJChar jjstrLiteralChars_66[] = {0};
-static JJChar jjstrLiteralChars_67[] = {0};
-static JJChar jjstrLiteralChars_68[] = {0};
-static JJChar jjstrLiteralChars_69[] = {0};
-static JJChar jjstrLiteralChars_70[] = {0};
-static JJChar jjstrLiteralChars_71[] = {0};
-static JJChar jjstrLiteralChars_72[] = {0};
-static JJChar jjstrLiteralChars_73[] = {0};
-static JJChar jjstrLiteralChars_74[] = {0};
-static JJChar jjstrLiteralChars_75[] = {0};
-static JJChar jjstrLiteralChars_76[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_61[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_62[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_63[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_64[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_65[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_66[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_67[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_68[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_69[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_70[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_71[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_72[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_73[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_74[] = {0};
 
-static JJChar jjstrLiteralChars_77[] = {0};
-static JJChar jjstrLiteralChars_78[] = {0};
-static JJChar jjstrLiteralChars_79[] = {0};
-static JJChar jjstrLiteralChars_80[] = {0};
-static JJChar jjstrLiteralChars_81[] = {0};
-static JJChar jjstrLiteralChars_82[] = {0};
-static JJChar jjstrLiteralChars_83[] = {0};
-static JJChar jjstrLiteralChars_84[] = {0};
-static JJChar jjstrLiteralChars_85[] = {0};
-static JJChar jjstrLiteralChars_86[] = {0};
-static JJChar jjstrLiteralChars_87[] = {0};
-static JJChar jjstrLiteralChars_88[] = {0};
-static JJChar jjstrLiteralChars_89[] = {0};
-static JJChar jjstrLiteralChars_90[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_75[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_76[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_77[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_78[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_79[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_80[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_81[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_82[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_83[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_84[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_85[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_86[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_87[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_88[] = {0};
 
-static JJChar jjstrLiteralChars_91[] = {0};
-static JJChar jjstrLiteralChars_92[] = {0};
-static JJChar jjstrLiteralChars_93[] = {0};
-static JJChar jjstrLiteralChars_94[] = {0};
-static JJChar jjstrLiteralChars_95[] = {0};
-static JJChar jjstrLiteralChars_96[] = {0};
-static JJChar jjstrLiteralChars_97[] = {0};
-static JJChar jjstrLiteralChars_98[] = {0};
-static JJChar jjstrLiteralChars_99[] = {0};
-static JJChar jjstrLiteralChars_100[] = {0};
-static JJChar jjstrLiteralChars_101[] = {0};
-static JJChar jjstrLiteralChars_102[] = {0};
-static JJChar jjstrLiteralChars_103[] = {0};
-static JJChar jjstrLiteralChars_104[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_89[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_90[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_91[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_92[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_93[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_94[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_95[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_96[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_97[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_98[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_99[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_100[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_101[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_102[] = {0};
 
-static JJChar jjstrLiteralChars_105[] = {0};
-static JJChar jjstrLiteralChars_106[] = {0};
-static JJChar jjstrLiteralChars_107[] = {0};
-static JJChar jjstrLiteralChars_108[] = {0};
-static JJChar jjstrLiteralChars_109[] = {0};
-static JJChar jjstrLiteralChars_110[] = {0};
-static JJChar jjstrLiteralChars_111[] = {0};
-static JJChar jjstrLiteralChars_112[] = {0};
-static JJChar jjstrLiteralChars_113[] = {0};
-static JJChar jjstrLiteralChars_114[] = {0};
-static JJChar jjstrLiteralChars_115[] = {0};
-static JJChar jjstrLiteralChars_116[] = {0};
-static JJChar jjstrLiteralChars_117[] = {0};
-static JJChar jjstrLiteralChars_118[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_103[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_104[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_105[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_106[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_107[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_108[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_109[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_110[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_111[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_112[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_113[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_114[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_115[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_116[] = {0};
 
-static JJChar jjstrLiteralChars_119[] = {0};
-static JJChar jjstrLiteralChars_120[] = {0};
-static JJChar jjstrLiteralChars_121[] = {0};
-static JJChar jjstrLiteralChars_122[] = {0};
-static JJChar jjstrLiteralChars_123[] = {0};
-static JJChar jjstrLiteralChars_124[] = {0};
-static JJChar jjstrLiteralChars_125[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_117[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_118[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_119[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_120[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_121[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_122[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_123[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_124[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_125[] = {0};
 
-static JJChar jjstrLiteralChars_126[] = {0x26, 0};
-static JJChar jjstrLiteralChars_127[] = {0x27, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_126[] = {0x26, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_127[] = {0x27, 0};
 
-static JJChar jjstrLiteralChars_128[] = {0x28, 0};
-static JJChar jjstrLiteralChars_129[] = {0x29, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_128[] = {0x28, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_129[] = {0x29, 0};
 
-static JJChar jjstrLiteralChars_130[] = {0x2a, 0x2a, 0};
-static JJChar jjstrLiteralChars_131[] = {0x2a, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_130[] = {0x2a, 0x2a, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_131[] = {0x2a, 0};
 
-static JJChar jjstrLiteralChars_132[] = {0x2b, 0};
-static JJChar jjstrLiteralChars_133[] = {0x2d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_132[] = {0x2b, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_133[] = {0x2d, 0};
 
-static JJChar jjstrLiteralChars_134[] = {0x2c, 0};
-static JJChar jjstrLiteralChars_135[] = {0x3a, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_134[] = {0x2c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_135[] = {0x3a, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_136[] = {0x3a, 0};
-static JJChar jjstrLiteralChars_137[] = {0x3b, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_136[] = {0x3a, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_137[] = {0x3b, 0};
 
-static JJChar jjstrLiteralChars_138[] = {0x3c, 0x3d, 0};
-static JJChar jjstrLiteralChars_139[] = {0x3e, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_138[] = {0x3c, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_139[] = {0x3e, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_140[] = {0x3c, 0};
-static JJChar jjstrLiteralChars_141[] = {0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_140[] = {0x3c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_141[] = {0x3e, 0};
 
-static JJChar jjstrLiteralChars_142[] = {0x3d, 0};
-static JJChar jjstrLiteralChars_143[] = {0x2f, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_142[] = {0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_143[] = {0x2f, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_144[] = {0x3d, 0x3e, 0};
-static JJChar jjstrLiteralChars_145[] = {0x3c, 0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_144[] = {0x3d, 0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_145[] = {0x3c, 0x3e, 0};
 
-static JJChar jjstrLiteralChars_146[] = {0x3c, 0x3c, 0};
-static JJChar jjstrLiteralChars_147[] = {0x3e, 0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_146[] = {0x3c, 0x3c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_147[] = {0x3e, 0x3e, 0};
 
-static JJChar jjstrLiteralChars_148[] = {0x3f, 0x3f, 0};
-static JJChar jjstrLiteralChars_149[] = {0x3f, 0x3e, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_148[] = {0x3f, 0x3f, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_149[] = {0x3f, 0x3e, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_150[] = {0x3f, 0x3c, 0x3d, 0};
-static JJChar jjstrLiteralChars_151[] = {0x3f, 0x3e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_150[] = {0x3f, 0x3c, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_151[] = {0x3f, 0x3e, 0};
 
-static JJChar jjstrLiteralChars_152[] = {0x3f, 0x3c, 0};
-static JJChar jjstrLiteralChars_153[] = {0x3f, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_152[] = {0x3f, 0x3c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_153[] = {0x3f, 0x3d, 0};
 
-static JJChar jjstrLiteralChars_154[] = {0x3f, 0x2f, 0x3d, 0};
-static JJChar jjstrLiteralChars_155[] = {0x3f, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_154[] = {0x3f, 0x2f, 0x3d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_155[] = {0x3f, 0};
 
-static JJChar jjstrLiteralChars_156[] = {0x7c, 0};
-static JJChar jjstrLiteralChars_157[] = {0x2e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_156[] = {0x7c, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_157[] = {0x2e, 0};
 
-static JJChar jjstrLiteralChars_158[] = {0x2f, 0};
-static JJChar jjstrLiteralChars_159[] = {0x40, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_158[] = {0x2f, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_159[] = {0x40, 0};
 
-static JJChar jjstrLiteralChars_160[] = {0x5e, 0};
-static JJChar jjstrLiteralChars_161[] = {0x5b, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_160[] = {0x5e, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_161[] = {0x5b, 0};
 
-static JJChar jjstrLiteralChars_162[] = {0x5d, 0};
-static JJChar jjstrLiteralChars_163[] = {0x7b, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_162[] = {0x5d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_163[] = {0x7b, 0};
 
-static JJChar jjstrLiteralChars_164[] = {0x7d, 0};
-static JJChar jjstrLiteralChars_165[] = {0};
-static JJChar jjstrLiteralChars_166[] = {0};
-static JJChar jjstrLiteralChars_167[] = {0};
-static JJChar jjstrLiteralChars_168[] = {0};
-static JJChar jjstrLiteralChars_169[] = {0};
-static JJChar jjstrLiteralChars_170[] = {0};
-static JJChar jjstrLiteralChars_171[] = {0};
-static JJChar jjstrLiteralChars_172[] = {0};
-static JJChar jjstrLiteralChars_173[] = {0};
-static JJChar jjstrLiteralChars_174[] = {0};
-static JJChar jjstrLiteralChars_175[] = {0};
-static JJChar jjstrLiteralChars_176[] = {0};
-static JJChar jjstrLiteralChars_177[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_164[] = {0x7d, 0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_165[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_166[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_167[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_168[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_169[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_170[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_171[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_172[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_173[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_174[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_175[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_176[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_177[] = {0};
 
-static JJChar jjstrLiteralChars_178[] = {0};
-static JJChar jjstrLiteralChars_179[] = {0};
-static JJChar jjstrLiteralChars_180[] = {0};
-static JJChar jjstrLiteralChars_181[] = {0};
-static JJChar jjstrLiteralChars_182[] = {0};
-static JJChar jjstrLiteralChars_183[] = {0};
-static JJChar jjstrLiteralChars_184[] = {0};
-static JJChar jjstrLiteralChars_185[] = {0};
-static JJChar jjstrLiteralChars_186[] = {0};
-static JJChar jjstrLiteralChars_187[] = {0};
-static JJChar jjstrLiteralChars_188[] = {0};
-static JJChar jjstrLiteralChars_189[] = {0};
-static const JJString jjstrLiteralImages[] = {
+static JAVACC_CHAR_TYPE jjstrLiteralChars_178[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_179[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_180[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_181[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_182[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_183[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_184[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_185[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_186[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_187[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_188[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_189[] = {0};
+static const JAVACC_STRING_TYPE jjstrLiteralImages[] = {
 jjstrLiteralChars_0, 
 jjstrLiteralChars_1, 
 jjstrLiteralChars_2, 
@@ -432,9 +432,9 @@ jjstrLiteralChars_189,
 };
 
 /** Lexer state names. */
-static const JJChar lexStateNames_arr_0[] = 
+static const JAVACC_CHAR_TYPE lexStateNames_arr_0[] = 
 {0x44, 0x45, 0x46, 0x41, 0x55, 0x4c, 0x54, 0};
-static const JJString lexStateNames[] = {
+static const JAVACC_STRING_TYPE lexStateNames[] = {
 lexStateNames_arr_0, 
 };
 static const unsigned long long jjtoToken[] = {
@@ -444,7 +444,7 @@ static const unsigned long long jjtoSkip[] = {
    0x7deULL, 0x0ULL, 0x0ULL, 
 };
 
-  void  VhdlParserTokenManager::setDebugStream(FILE *ds){ debugStream = ds; }
+void  VhdlParserTokenManager::setDebugStream(FILE *ds){ debugStream = ds; }
 
  int  VhdlParserTokenManager::jjStopAtPos(int pos, int kind){
    jjmatchedKind = kind;
@@ -2687,7 +2687,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
    curChar = input_stream->readChar();
    curPos = 0;
    int startsAt = 0;
-   jjnewStateCnt = 77;
+   jjnewStateCnt = 81;
    int i = 1;
    jjstateSet[0] = startState;
    int kind = 0x7fffffff;
@@ -2916,72 +2916,79 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 44:
                   if (curChar == 33)
-                     { jjCheckNAddTwoStates(45, 47); }
+                     { jjCheckNAddTwoStates(45, 46); }
                   break;
                case 45:
-                  { jjCheckNAddTwoStates(45, 47); }
+                  if ((0xfffffbffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(45, 46); }
                   break;
                case 46:
+                  if (curChar == 42)
+                     { jjCheckNAddStates(34, 36); }
+                  break;
+               case 47:
+                  if ((0xffff7bffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(48, 46); }
+                  break;
+               case 48:
+                  if ((0xfffffbffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(48, 46); }
+                  break;
+               case 49:
                   if (curChar == 47 && kind > 9)
                      kind = 9;
                   break;
-               case 47:
-                  if (curChar == 42)
-                     jjstateSet[jjnewStateCnt++] = 46;
-                  break;
-               case 48:
+               case 50:
                   if (curChar == 42)
                      jjstateSet[jjnewStateCnt++] = 44;
                   break;
-               case 49:
-                  if (curChar == 42)
-                     { jjCheckNAddTwoStates(50, 52); }
-                  break;
-               case 50:
-                  { jjCheckNAddTwoStates(50, 52); }
-                  break;
                case 51:
+                  if (curChar == 42)
+                     { jjCheckNAddTwoStates(52, 53); }
+                  break;
+               case 52:
+                  if ((0xfffffbffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(52, 53); }
+                  break;
+               case 53:
+                  if (curChar == 42)
+                     { jjCheckNAddStates(37, 39); }
+                  break;
+               case 54:
+                  if ((0xffff7bffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(55, 53); }
+                  break;
+               case 55:
+                  if ((0xfffffbffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(55, 53); }
+                  break;
+               case 56:
                   if (curChar == 47 && kind > 10)
                      kind = 10;
                   break;
-               case 52:
-                  if (curChar == 42)
-                     jjstateSet[jjnewStateCnt++] = 51;
-                  break;
-               case 53:
+               case 57:
                   if ((0x3ff000000000000ULL & l) == 0L)
                      break;
                   if (kind > 165)
                      kind = 165;
                   { jjCheckNAddStates(0, 10); }
                   break;
-               case 55:
+               case 59:
                   if ((0x3ff000000000000ULL & l) == 0L)
                      break;
                   if (kind > 165)
                      kind = 165;
-                  { jjCheckNAddTwoStates(54, 55); }
+                  { jjCheckNAddTwoStates(58, 59); }
                   break;
-               case 57:
+               case 61:
                   if ((0x3ff000000000000ULL & l) == 0L)
                      break;
                   if (kind > 170)
                      kind = 170;
-                  { jjCheckNAddStates(34, 37); }
-                  break;
-               case 58:
-                  if (curChar == 46)
-                     { jjCheckNAdd(59); }
-                  break;
-               case 59:
-                  if ((0x3ff000000000000ULL & l) == 0L)
-                     break;
-                  if (kind > 170)
-                     kind = 170;
-                  { jjCheckNAddStates(38, 40); }
+                  { jjCheckNAddStates(40, 43); }
                   break;
                case 62:
-                  if ((0x280000000000ULL & l) != 0L)
+                  if (curChar == 46)
                      { jjCheckNAdd(63); }
                   break;
                case 63:
@@ -2989,49 +2996,60 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                      break;
                   if (kind > 170)
                      kind = 170;
-                  { jjCheckNAddTwoStates(64, 63); }
+                  { jjCheckNAddStates(44, 46); }
                   break;
                case 66:
-                  if ((0x3ff000000000000ULL & l) != 0L)
-                     { jjCheckNAddStates(41, 43); }
+                  if ((0x280000000000ULL & l) != 0L)
+                     { jjCheckNAdd(67); }
                   break;
                case 67:
-                  if (curChar == 35)
-                     { jjCheckNAdd(68); }
-                  break;
-               case 68:
-                  if ((0x3ff000000000000ULL & l) != 0L)
-                     { jjCheckNAddStates(44, 46); }
-                  break;
-               case 69:
-                  if (curChar == 46)
-                     { jjCheckNAdd(70); }
+                  if ((0x3ff000000000000ULL & l) == 0L)
+                     break;
+                  if (kind > 170)
+                     kind = 170;
+                  { jjCheckNAddTwoStates(68, 67); }
                   break;
                case 70:
                   if ((0x3ff000000000000ULL & l) != 0L)
-                     { jjCheckNAddTwoStates(70, 71); }
+                     { jjCheckNAddStates(47, 49); }
                   break;
                case 71:
+                  if (curChar == 35)
+                     { jjCheckNAdd(72); }
+                  break;
+               case 72:
+                  if ((0x3ff000000000000ULL & l) != 0L)
+                     { jjCheckNAddStates(50, 52); }
+                  break;
+               case 73:
+                  if (curChar == 46)
+                     { jjCheckNAdd(74); }
+                  break;
+               case 74:
+                  if ((0x3ff000000000000ULL & l) != 0L)
+                     { jjCheckNAddTwoStates(74, 75); }
+                  break;
+               case 75:
                   if (curChar != 35)
                      break;
                   if (kind > 172)
                      kind = 172;
-                  jjstateSet[jjnewStateCnt++] = 72;
+                  jjstateSet[jjnewStateCnt++] = 76;
                   break;
-               case 73:
+               case 77:
                   if ((0x280000000000ULL & l) != 0L)
-                     { jjCheckNAdd(74); }
+                     { jjCheckNAdd(78); }
                   break;
-               case 74:
+               case 78:
                   if ((0x3ff000000000000ULL & l) == 0L)
                      break;
                   if (kind > 172)
                      kind = 172;
-                  { jjCheckNAddTwoStates(75, 74); }
+                  { jjCheckNAddTwoStates(79, 78); }
                   break;
-               case 76:
+               case 80:
                   if ((0x3ff000000000000ULL & l) != 0L)
-                     { jjCheckNAddTwoStates(76, 21); }
+                     { jjCheckNAddTwoStates(80, 21); }
                   break;
                default : break;
             }
@@ -3072,7 +3090,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 9:
                   if ((0x7fffffffffffffffULL & l) != 0L)
-                     { jjAddStates(47, 48); }
+                     { jjAddStates(53, 54); }
                   break;
                case 12:
                   if (curChar == 95)
@@ -3126,7 +3144,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 28:
                   if ((0x7fffffffffffffffULL & l) != 0L)
-                     { jjAddStates(49, 50); }
+                     { jjAddStates(55, 56); }
                   break;
                case 30:
                   if ((0x7fffffffffffffffULL & l) == 0L)
@@ -3146,50 +3164,58 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   { jjAddStates(31, 33); }
                   break;
                case 45:
-                  { jjAddStates(51, 52); }
+                  { jjCheckNAddTwoStates(45, 46); }
                   break;
-               case 50:
-                  { jjAddStates(53, 54); }
+               case 47:
+               case 48:
+                  { jjCheckNAddTwoStates(48, 46); }
+                  break;
+               case 52:
+                  { jjCheckNAddTwoStates(52, 53); }
                   break;
                case 54:
-                  if (curChar == 95)
-                     jjstateSet[jjnewStateCnt++] = 55;
+               case 55:
+                  { jjCheckNAddTwoStates(55, 53); }
                   break;
-               case 56:
-                  if (curChar == 95)
-                     jjstateSet[jjnewStateCnt++] = 57;
-                  break;
-               case 60:
+               case 58:
                   if (curChar == 95)
                      jjstateSet[jjnewStateCnt++] = 59;
                   break;
-               case 61:
-                  if ((0x2000000020ULL & l) != 0L)
-                     { jjCheckNAddTwoStates(62, 63); }
+               case 60:
+                  if (curChar == 95)
+                     jjstateSet[jjnewStateCnt++] = 61;
                   break;
                case 64:
                   if (curChar == 95)
-                     { jjCheckNAdd(63); }
+                     jjstateSet[jjnewStateCnt++] = 63;
                   break;
                case 65:
-                  if (curChar == 95)
-                     jjstateSet[jjnewStateCnt++] = 66;
+                  if ((0x2000000020ULL & l) != 0L)
+                     { jjCheckNAddTwoStates(66, 67); }
                   break;
                case 68:
-                  if ((0x7fffffe07fffffeULL & l) != 0L)
-                     { jjCheckNAddStates(44, 46); }
+                  if (curChar == 95)
+                     { jjCheckNAdd(67); }
                   break;
-               case 70:
-                  if ((0x7fffffe07fffffeULL & l) != 0L)
-                     { jjCheckNAddTwoStates(70, 71); }
+               case 69:
+                  if (curChar == 95)
+                     jjstateSet[jjnewStateCnt++] = 70;
                   break;
                case 72:
-                  if ((0x2000000020ULL & l) != 0L)
-                     { jjCheckNAddTwoStates(73, 74); }
+                  if ((0x7fffffe07fffffeULL & l) != 0L)
+                     { jjCheckNAddStates(50, 52); }
                   break;
-               case 75:
+               case 74:
+                  if ((0x7fffffe07fffffeULL & l) != 0L)
+                     { jjCheckNAddTwoStates(74, 75); }
+                  break;
+               case 76:
+                  if ((0x2000000020ULL & l) != 0L)
+                     { jjCheckNAddTwoStates(77, 78); }
+                  break;
+               case 79:
                   if (curChar == 95)
-                     { jjCheckNAdd(74); }
+                     { jjCheckNAdd(78); }
                   break;
                default : break;
             }
@@ -3215,7 +3241,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 9:
                   if (jjCanMove_1(hiByte, i1, i2, l1, l2))
-                     { jjAddStates(47, 48); }
+                     { jjAddStates(53, 54); }
                   break;
                case 15:
                   if (jjCanMove_1(hiByte, i1, i2, l1, l2))
@@ -3227,14 +3253,14 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 28:
                   if (jjCanMove_1(hiByte, i1, i2, l1, l2))
-                     { jjAddStates(49, 50); }
+                     { jjAddStates(55, 56); }
                   break;
                case 30:
                   if (!jjCanMove_1(hiByte, i1, i2, l1, l2))
                      break;
                   if (kind > 189)
                      kind = 189;
-                  { jjAddStates(55, 56); }
+                  { jjAddStates(57, 58); }
                   break;
                case 33:
                   if (!jjCanMove_0(hiByte, i1, i2, l1, l2))
@@ -3252,11 +3278,21 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 45:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-                     { jjAddStates(51, 52); }
+                     { jjCheckNAddTwoStates(45, 46); }
                   break;
-               case 50:
+               case 47:
+               case 48:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-                     { jjAddStates(53, 54); }
+                     { jjCheckNAddTwoStates(48, 46); }
+                  break;
+               case 52:
+                  if (jjCanMove_0(hiByte, i1, i2, l1, l2))
+                     { jjCheckNAddTwoStates(52, 53); }
+                  break;
+               case 54:
+               case 55:
+                  if (jjCanMove_0(hiByte, i1, i2, l1, l2))
+                     { jjCheckNAddTwoStates(55, 53); }
                   break;
                default : if (i1 == 0 || l1 == 0 || i2 == 0 ||  l2 == 0) break; else break;
             }
@@ -3269,7 +3305,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
          kind = 0x7fffffff;
       }
       ++curPos;
-      if ((i = jjnewStateCnt), (jjnewStateCnt = startsAt), (i == (startsAt = 77 - startsAt)))
+      if ((i = jjnewStateCnt), (jjnewStateCnt = startsAt), (i == (startsAt = 81 - startsAt)))
          break;
       if (input_stream->endOfInput()) { break; }
       curChar = input_stream->readChar();
@@ -3321,12 +3357,12 @@ bool VhdlParserTokenManager::jjCanMove_1(int hiByte, int i1, int i2, unsigned lo
 
 Token * VhdlParserTokenManager::jjFillToken(){
    Token *t;
-   JJString curTokenImage;
+   JAVACC_STRING_TYPE curTokenImage;
    int beginLine   = -1;
    int endLine     = -1;
    int beginColumn = -1;
    int endColumn   = -1;
-   JJString im = jjstrLiteralImages[jjmatchedKind];
+   JAVACC_STRING_TYPE im = jjstrLiteralImages[jjmatchedKind];
    curTokenImage = (im.length() == 0) ? input_stream->GetImage() : im;
    if (input_stream->getTrackLineColumn()) {
      beginLine = input_stream->getBeginLine();
@@ -3337,8 +3373,8 @@ Token * VhdlParserTokenManager::jjFillToken(){
    t = Token::newToken(jjmatchedKind);
    t->kind = jjmatchedKind;
    t->image = curTokenImage;
-   t->specialToken = nullptr;
-   t->next = nullptr;
+   t->specialToken = NULL;
+   t->next = NULL;
 
    if (input_stream->getTrackLineColumn()) {
    t->beginLine = beginLine;
@@ -3353,7 +3389,7 @@ const int defaultLexState = 0;
 /** Get the next Token. */
 
 Token * VhdlParserTokenManager::getNextToken(){
-  Token *matchedToken = nullptr;
+  Token *matchedToken;
   int curPos = 0;
 
   for (;;)
@@ -3386,13 +3422,13 @@ Token * VhdlParserTokenManager::getNextToken(){
       }
       else
       {
-         SkipLexicalActions(nullptr);
+         SkipLexicalActions(NULL);
          goto EOFLoop;
       }
    }
    int error_line = input_stream->getEndLine();
    int error_column = input_stream->getEndColumn();
-   JJString error_after;
+   JAVACC_STRING_TYPE error_after;
    bool EOFSeen = false;
    if (input_stream->endOfInput()) {
       EOFSeen = true;
@@ -3447,16 +3483,14 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
       case 9 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
    {
-     QCString q(image.data());
-     q.stripPrefix("/*!");
-     q.resize(q.length()-2);
+     QCString q = filter2008VhdlComment(image.data());
      ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
    }
          break;
        }
       case 10 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                                                    ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();
+      ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();
          break;
        }
       default :
@@ -3593,7 +3627,7 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
    }
 }
   /** Reinitialise parser. */
-  void VhdlParserTokenManager::ReInit(JAVACC_CHARSTREAM *stream, int lexState) {
+  void VhdlParserTokenManager::ReInit(JAVACC_CHARSTREAM *stream, int lexState, VhdlParser *parserArg) {
     clear();
     jjmatchedPos = jjnewStateCnt = 0;
     curLexState = lexState;
@@ -3601,20 +3635,22 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
     ReInitRounds();
     debugStream = stdout; // init
     SwitchTo(lexState);
+    parser = parserArg;
     errorHandler = new TokenManagerErrorHandler();
+    errorHandlerCreated = true;
   }
 
   void VhdlParserTokenManager::ReInitRounds() {
     int i;
     jjround = 0x80000001;
-    for (i = 77; i-- > 0;)
+    for (i = 81; i-- > 0;)
       jjrounds[i] = 0x80000000;
   }
 
   /** Switch to specified lex state. */
   void VhdlParserTokenManager::SwitchTo(int lexState) {
     if (lexState >= 1 || lexState < 0) {
-      JJString message;
+      JAVACC_STRING_TYPE message;
 #ifdef WIDE_CHAR
       message += L"Error: Ignoring invalid lexical state : ";
       message += lexState; message += L". State unchanged.";
@@ -3628,10 +3664,11 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
   }
 
   /** Constructor. */
-  VhdlParserTokenManager::VhdlParserTokenManager (JAVACC_CHARSTREAM *stream, int lexState)
+  VhdlParserTokenManager::VhdlParserTokenManager (JAVACC_CHARSTREAM *stream, int lexState, VhdlParser *parserArg)
   {
-    input_stream = nullptr;
-    ReInit(stream, lexState);
+    input_stream = NULL;
+    errorHandlerCreated = false;
+    ReInit(stream, lexState, parserArg);
   }
 
   // Destructor
@@ -3644,7 +3681,7 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
     //Since input_stream was generated outside of TokenManager
     //TokenManager should not take care of deleting it
     //if (input_stream) delete input_stream;
-    if (errorHandler) delete errorHandler, errorHandler = nullptr;    
+    if (errorHandlerCreated) delete errorHandler;    
   }
 
 
