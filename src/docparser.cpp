@@ -285,9 +285,9 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
 {
   QCString result;
   bool ambig;
-  FileDef *fd;
+  FileDef *fd = findFileDef(Doxygen::imageNameDict,fileName,ambig);
   //printf("Search for %s\n",fileName);
-  if (fd=findFileDef(Doxygen::imageNameDict,fileName,ambig))
+  if (fd)
   {
     if (ambig & dowarn)
     {
@@ -1841,8 +1841,8 @@ static void readTextFileByName(const QCString &file,QCString &text)
 
   // as a fallback we also look in the exampleNameDict
   bool ambig;
-  FileDef *fd;
-  if (fd=findFileDef(Doxygen::exampleNameDict,file,ambig))
+  FileDef *fd = findFileDef(Doxygen::exampleNameDict,file,ambig);
+  if (fd)
   {
     text = fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
     if (ambig)
