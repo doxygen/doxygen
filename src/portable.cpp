@@ -476,13 +476,41 @@ void Portable::setShortDir(void)
 #endif
 }
 
+/* Return the first occurrence of NEEDLE in HAYSTACK.  */
+static const char * portable_memmem (const char *haystack, size_t haystack_len,
+                        const char *needle, size_t needle_len)
+{
+  const char *const last_possible = haystack + haystack_len - needle_len;
 
-char *Portable::strnstr(const char *haystack, const char *needle, size_t haystack_len)
+  if (needle_len == 0)
+    // The first occurrence of the empty string should to occur at the beginning of the string.
+  {
+    return haystack;
+  }
+
+  // Sanity check
+  if (haystack_len < needle_len)
+  {
+    return 0;
+  }
+
+  for (const char *begin = haystack; begin <= last_possible; ++begin)
+  {
+    if (begin[0] == needle[0] && !memcmp(&begin[1], needle + 1, needle_len - 1))
+    {
+      return begin;
+    }
+  }
+
+  return 0;
+}
+
+const char *Portable::strnstr(const char *haystack, const char *needle, size_t haystack_len)
 {
   size_t needle_len = strnlen(needle, haystack_len);
   if (needle_len < haystack_len || !needle[needle_len]) 
   {
-    char *x = static_cast<char*>(memmem(haystack, haystack_len, needle, needle_len));
+    const char *x = portable_memmem(haystack, haystack_len, needle, needle_len);
     if (x && !memchr(haystack, 0, x - haystack))
     {
       return x;

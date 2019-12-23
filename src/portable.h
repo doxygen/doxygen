@@ -42,7 +42,7 @@ namespace Portable
   bool           isAbsolutePath(const char *fileName);
   void           correct_path(void);
   void           setShortDir(void);
-  char *         strnstr(const char *haystack, const char *needle, size_t haystack_len);
+  const char *   strnstr(const char *haystack, const char *needle, size_t haystack_len);
 }
 
 
