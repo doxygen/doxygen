@@ -181,6 +181,9 @@ enum HtmlTagType
   HTML_UNDERLINE = 35,
   HTML_INS       = 36,
   HTML_DEL       = 37,
+  HTML_THEAD     = 38,
+  HTML_TBODY     = 39,
+  HTML_TFOOT     = 40,
 
   XML_CmdMask    = 0x100,
 
