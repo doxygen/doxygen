@@ -388,10 +388,10 @@ class DocStyleChange : public DocNode
                  Ins           = (1<<13)
                };
 
-    DocStyleChange(DocNode *parent,uint position,Style s,bool enable,
+    DocStyleChange(DocNode *parent,uint position,Style s,QCString tagName,bool enable,
                    const HtmlAttribList *attribs=0) : 
       m_position(position), m_style(s), m_enable(enable)
-      { m_parent = parent; if (attribs) m_attribs=*attribs; }
+      { m_parent = parent; if (attribs) m_attribs=*attribs; m_tagName = tagName.lower();}
     Kind kind() const                     { return Kind_StyleChange; }
     Style style() const                   { return m_style; }
     const char *styleString() const;
@@ -399,12 +399,14 @@ class DocStyleChange : public DocNode
     uint position() const                 { return m_position; }
     void accept(DocVisitor *v)            { v->visit(this); }
     const HtmlAttribList &attribs() const { return m_attribs; }
+    QCString tagName() const              { return m_tagName; }
 
   private:
     uint     m_position = 0;
     Style    m_style = Bold;
     bool     m_enable = false;
     HtmlAttribList m_attribs;
+    QCString m_tagName;
 };
 
 /** Node representing a special symbol */
