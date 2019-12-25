@@ -398,6 +398,7 @@ static QString getDocsForNode(const QDomElement &child)
 
   // Remove / replace doxygen markup strings
   // the regular expressions are hard to read so the intention will be given
+  // Note: see also configgen.py in the src directory for other doxygen parts
   QRegExp regexp;
   // remove \n at end and replace by a space
   regexp.setPattern(SA("\\n$"));
@@ -432,6 +433,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("\"External Indexing and Searching\""));
   regexp.setPattern(SA("\\\\ref[ ]+external"));
   docs.replace(regexp,SA("\"Linking to external documentation\""));
+  regexp.setPattern(SA("\\\\ref[ ]+formulas"));
+  docs.replace(regexp,SA("\"Including formulas\""));
   // fallback for not handled
   docs.replace(SA("\\\\ref"),SA(""));
   // \b word -> <b>word<\b>
