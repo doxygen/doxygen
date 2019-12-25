@@ -266,11 +266,11 @@ void LatexCodeGenerator::setDoxyCodeOpen(bool val)
 
 LatexGenerator::LatexGenerator() : OutputGenerator()
 {
-  dir=Config_getString(LATEX_OUTPUT);
-  //printf("LatexGenerator::LatexGenerator() insideTabbing=FALSE\n");
-  insideTabbing=FALSE;
-  firstDescItem=TRUE;
-  disableLinks=FALSE;
+  m_dir=Config_getString(LATEX_OUTPUT);
+  //printf("LatexGenerator::LatexGenerator() m_insideTabbing=FALSE\n");
+  m_insideTabbing=FALSE;
+  m_firstDescItem=TRUE;
+  m_disableLinks=FALSE;
   m_indent=0;
   templateMemberItem = FALSE;
   m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
@@ -886,11 +886,11 @@ void LatexGenerator::startFile(const char *name,const char *,const char *)
   setEncoding(Config_getString(LATEX_OUTPUT_ENCODING));
 #endif
   QCString fileName=name;
-  relPath = relativePathToRoot(fileName);
+  m_relPath = relativePathToRoot(fileName);
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
   startPlainFile(fileName);
   m_codeGen.setTextStream(t);
-  m_codeGen.setRelativePath(relPath);
+  m_codeGen.setRelativePath(m_relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
 }
 
@@ -1481,7 +1481,7 @@ void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
 void LatexGenerator::startTextLink(const char *f,const char *anchor)
 {
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (!disableLinks && pdfHyperlinks)
+  if (!m_disableLinks && pdfHyperlinks)
   {
     t << "\\mbox{\\hyperlink{";
     if (f) t << stripPath(f);
@@ -1497,7 +1497,7 @@ void LatexGenerator::startTextLink(const char *f,const char *anchor)
 void LatexGenerator::endTextLink()
 {
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (!disableLinks && pdfHyperlinks)
+  if (!m_disableLinks && pdfHyperlinks)
   {
     t << "}";
   }
@@ -1508,7 +1508,7 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
                                      const char *anchor, const char *text)
 {
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (!disableLinks && !ref && pdfHyperlinks)
+  if (!m_disableLinks && !ref && pdfHyperlinks)
   {
     t << "\\mbox{\\hyperlink{";
     if (f) t << stripPath(f);
@@ -1606,12 +1606,12 @@ void LatexGenerator::startGroupHeader(int extraIndentLevel)
   {
     t << "\\doxysubsection{";
   }
-  disableLinks=TRUE;
+  m_disableLinks=TRUE;
 }
 
 void LatexGenerator::endGroupHeader(int)
 {
-  disableLinks=FALSE;
+  m_disableLinks=FALSE;
   t << "}" << endl;
 }
 
@@ -1625,12 +1625,12 @@ void LatexGenerator::startMemberHeader(const char *,int)
   {
     t << "\\doxysubsection*{";
   }
-  disableLinks=TRUE;
+  m_disableLinks=TRUE;
 }
 
 void LatexGenerator::endMemberHeader()
 {
-  disableLinks=FALSE;
+  m_disableLinks=FALSE;
   t << "}" << endl;
 }
 
@@ -1696,12 +1696,12 @@ void LatexGenerator::startMemberDoc(const char *clname,
   }
   t << "}";
   t << "\n{\\footnotesize\\ttfamily ";
-  //disableLinks=TRUE;
+  //m_disableLinks=TRUE;
 }
 
 void LatexGenerator::endMemberDoc(bool)
 {
-  disableLinks=FALSE;
+  m_disableLinks=FALSE;
   t << "}\n\n";
   //if (Config_getBool(COMPACT_LATEX)) t << "\\hfill";
 }
@@ -1822,7 +1822,7 @@ void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
 
 void LatexGenerator::docify(const char *str)
 {
-  filterLatexString(t,str,insideTabbing,FALSE,FALSE);
+  filterLatexString(t,str,m_insideTabbing,FALSE,FALSE);
 }
 
 void LatexGenerator::writeChar(char c)
@@ -1842,7 +1842,7 @@ void LatexGenerator::startClassDiagram()
 void LatexGenerator::endClassDiagram(const ClassDiagram &d,
                                        const char *fileName,const char *)
 {
-  d.writeFigure(t,dir,fileName);
+  d.writeFigure(t,m_dir,fileName);
 }
 
 
@@ -1852,7 +1852,7 @@ void LatexGenerator::startAnonTypeScope(int indent)
   {
     t << "\\begin{tabbing}" << endl;
     t << "xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=\\kill" << endl;
-    insideTabbing=TRUE;
+    m_insideTabbing=TRUE;
   }
   m_indent=indent;
 }
@@ -1862,7 +1862,7 @@ void LatexGenerator::endAnonTypeScope(int indent)
   if (indent==0)
   {
     t << endl << "\\end{tabbing}";
-    insideTabbing=FALSE;
+    m_insideTabbing=FALSE;
   }
   m_indent=indent;
 }
@@ -1886,7 +1886,7 @@ void LatexGenerator::endMemberTemplateParams(const char *,const char *)
 void LatexGenerator::startMemberItem(const char *,int annoType,const char *) 
 { 
   //printf("LatexGenerator::startMemberItem(%d)\n",annType);
-  if (!insideTabbing)
+  if (!m_insideTabbing)
   {
     t << "\\item " << endl; 
     templateMemberItem = (annoType == 3);
@@ -1895,7 +1895,7 @@ void LatexGenerator::startMemberItem(const char *,int annoType,const char *)
 
 void LatexGenerator::endMemberItem() 
 {
-  if (insideTabbing)
+  if (m_insideTabbing)
   {
     t << "\\\\";
   } 
@@ -1905,7 +1905,7 @@ void LatexGenerator::endMemberItem()
 
 void LatexGenerator::startMemberDescription(const char *,const char *,bool) 
 {
-  if (!insideTabbing)
+  if (!m_insideTabbing)
   { 
     t << "\\begin{DoxyCompactList}\\small\\item\\em "; 
   }
@@ -1918,7 +1918,7 @@ void LatexGenerator::startMemberDescription(const char *,const char *,bool)
 
 void LatexGenerator::endMemberDescription() 
 { 
-  if (!insideTabbing)
+  if (!m_insideTabbing)
   {
     //t << "\\item\\end{DoxyCompactList}"; 
     t << "\\end{DoxyCompactList}"; 
@@ -1933,7 +1933,7 @@ void LatexGenerator::endMemberDescription()
 void LatexGenerator::writeNonBreakableSpace(int) 
 {
   //printf("writeNonBreakableSpace()\n");
-  if (insideTabbing)
+  if (m_insideTabbing)
   {
     t << "\\>";
   }
@@ -2006,7 +2006,7 @@ void LatexGenerator::lastIndexPage()
 
 void LatexGenerator::startMemberList()  
 { 
-  if (!insideTabbing)
+  if (!m_insideTabbing)
   {
     t << "\\begin{DoxyCompactItemize}" << endl; 
   }
@@ -2014,8 +2014,8 @@ void LatexGenerator::startMemberList()
 
 void LatexGenerator::endMemberList()    
 {
-  //printf("LatexGenerator::endMemberList(%d)\n",insideTabbing);
-  if (!insideTabbing)
+  //printf("LatexGenerator::endMemberList(%d)\n",m_insideTabbing);
+  if (!m_insideTabbing)
   {
     t << "\\end{DoxyCompactItemize}"   << endl; 
   }
@@ -2071,7 +2071,7 @@ void LatexGenerator::startDotGraph()
 
 void LatexGenerator::endDotGraph(DotClassGraph &g) 
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
 }
 
 void LatexGenerator::startInclDepGraph() 
@@ -2080,7 +2080,7 @@ void LatexGenerator::startInclDepGraph()
 
 void LatexGenerator::endInclDepGraph(DotInclDepGraph &g) 
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
 }
 
 void LatexGenerator::startGroupCollaboration() 
@@ -2089,7 +2089,7 @@ void LatexGenerator::startGroupCollaboration()
 
 void LatexGenerator::endGroupCollaboration(DotGroupCollaboration &g) 
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
 }
 
 void LatexGenerator::startCallGraph() 
@@ -2098,7 +2098,7 @@ void LatexGenerator::startCallGraph()
 
 void LatexGenerator::endCallGraph(DotCallGraph &g) 
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
 }
 
 void LatexGenerator::startDirDepGraph() 
@@ -2107,7 +2107,7 @@ void LatexGenerator::startDirDepGraph()
 
 void LatexGenerator::endDirDepGraph(DotDirDeps &g) 
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
 }
 
 void LatexGenerator::startDescription() 
@@ -2118,21 +2118,21 @@ void LatexGenerator::startDescription()
 void LatexGenerator::endDescription()   
 { 
   t << "\\end{description}" << endl; 
-  firstDescItem=TRUE;
+  m_firstDescItem=TRUE;
 }
 
 void LatexGenerator::startDescItem()    
 { 
-  firstDescItem=TRUE;
+  m_firstDescItem=TRUE;
   t << "\\item["; 
 }
 
 void LatexGenerator::endDescItem()      
 { 
-  if (firstDescItem) 
+  if (m_firstDescItem) 
   {
     t << "]" << endl;
-    firstDescItem=FALSE;
+    m_firstDescItem=FALSE;
   } 
   else
   {
@@ -2213,7 +2213,7 @@ void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 void LatexGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
 {
   LatexDocVisitor *visitor =
-    new LatexDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""),insideTabbing);
+    new LatexDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""),m_insideTabbing);
   n->accept(visitor);
   delete visitor;
 }
@@ -2293,7 +2293,7 @@ void LatexGenerator::endInlineHeader()
 
 void LatexGenerator::lineBreak(const char *)
 {
-  if (insideTabbing)
+  if (m_insideTabbing)
   {
     t << "\\\\\n";
   }
@@ -2334,24 +2334,24 @@ void LatexGenerator::endMemberDocSimple(bool isEnum)
 
 void LatexGenerator::startInlineMemberType()
 {
-  insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
+  m_insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
 }
 
 void LatexGenerator::endInlineMemberType()
 {
   t << "&" << endl;
-  insideTabbing = FALSE;
+  m_insideTabbing = FALSE;
 }
 
 void LatexGenerator::startInlineMemberName()
 {
-  insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
+  m_insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
 }
 
 void LatexGenerator::endInlineMemberName()
 {
   t << "&" << endl;
-  insideTabbing = FALSE;
+  m_insideTabbing = FALSE;
 }
 
 void LatexGenerator::startInlineMemberDoc()

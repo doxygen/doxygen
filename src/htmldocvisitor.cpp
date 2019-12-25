@@ -1912,12 +1912,7 @@ void HtmlDocVisitor::visitPost(DocRef *ref)
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  QCString refName=ref->file();
-  if (refName.right(Doxygen::htmlFileExtension.length())!=
-      QCString(Doxygen::htmlFileExtension))
-  {
-    refName+=Doxygen::htmlFileExtension;
-  }
+  QCString refName=addHtmlExtensionIfMissing(ref->file());
   m_t << "<li><a href=\"" << refName << "#" << ref->anchor() << "\">";
 
 }
@@ -2098,7 +2093,7 @@ void HtmlDocVisitor::visitPre(DocXRefItem *x)
   {
     m_t << "<dl" << getDirHtmlClassOfNode(getTextDirByConfig(x), x->key())  
         << "><dt><b><a class=\"el\" href=\""
-        << x->relPath() << x->file() << Doxygen::htmlFileExtension 
+        << x->relPath() << addHtmlExtensionIfMissing(x->file())
         << "#" << x->anchor() << "\">";
   }
   else 
@@ -2262,7 +2257,10 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
   }
   m_t << "href=\"";
   m_t << externalRef(relPath,ref,TRUE);
-  if (!file.isEmpty()) m_t << file << Doxygen::htmlFileExtension;
+  if (!file.isEmpty())
+  {
+    m_t << addHtmlExtensionIfMissing(file);
+  }
   if (!anchor.isEmpty()) m_t << "#" << anchor;
   m_t << "\"";
   if (!tooltip.isEmpty()) m_t << " title=\"" << convertToHtml(tooltip) << "\"";

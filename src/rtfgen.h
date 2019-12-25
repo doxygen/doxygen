@@ -33,12 +33,12 @@ class RTFGenerator : public OutputGenerator
     static void writeExtensionsFile(QFile &file);
 
     void enable() 
-    { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
-    void disable() { active=FALSE; }
+    { if (m_genStack->top()) m_active=*m_genStack->top(); else m_active=TRUE; }
+    void disable() { m_active=FALSE; }
     void enableIf(OutputType o)  { if (o==RTF) enable();  }
     void disableIf(OutputType o) { if (o==RTF) disable(); }
     void disableIfNot(OutputType o) { if (o!=RTF) disable(); }
-    bool isEnabled(OutputType o) { return (o==RTF && active); } 
+    bool isEnabled(OutputType o) { return (o==RTF && m_active); } 
     OutputGenerator *get(OutputType o) { return (o==RTF) ? this : 0; }
 
     void writeDoc(DocNode *,const Definition *,const MemberDef *);
@@ -279,14 +279,14 @@ class RTFGenerator : public OutputGenerator
     const char *rtf_Code_DepthStyle();
     void incrementIndentLevel();
     void decrementIndentLevel();
-    int  col;
+    int  m_col;
     bool m_prettyCode;
 
     bool m_bstartedBody;  // has startbody been called yet?
     int  m_listLevel; // // RTF does not really have a additive indent...manually set list level.
     bool m_omitParagraph; // should a the next paragraph command be ignored?
     int  m_numCols; // number of columns in a table
-    QCString relPath;
+    QCString m_relPath;
 
     void beginRTFDocument();
     void beginRTFChapter();

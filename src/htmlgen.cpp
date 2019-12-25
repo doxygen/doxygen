@@ -752,7 +752,7 @@ void HtmlCodeGenerator::_writeCodeLink(const char *className,
   }
   m_t << "href=\"";
   m_t << externalRef(m_relPath,ref,TRUE);
-  if (f) m_t << f << Doxygen::htmlFileExtension;
+  if (f) m_t << addHtmlExtensionIfMissing(f);
   if (anchor) m_t << "#" << anchor;
   m_t << "\"";
   if (tooltip) m_t << " title=\"" << convertToHtml(tooltip) << "\"";
@@ -773,7 +773,7 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
   {
     m_t << "<a href=\"";
     m_t << externalRef(m_relPath,docInfo.ref,TRUE);
-    m_t << docInfo.url << Doxygen::htmlFileExtension;
+    m_t << addHtmlExtensionIfMissing(docInfo.url);
     if (!docInfo.anchor.isEmpty())
     {
       m_t << "#" << docInfo.anchor;
@@ -805,7 +805,7 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
     {
       m_t << "<a href=\"";
       m_t << externalRef(m_relPath,defInfo.ref,TRUE);
-      m_t << defInfo.url << Doxygen::htmlFileExtension;
+      m_t << addHtmlExtensionIfMissing(defInfo.url);
       if (!defInfo.anchor.isEmpty())
       {
         m_t << "#" << defInfo.anchor;
@@ -826,7 +826,7 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
     {
       m_t << "<a href=\"";
       m_t << externalRef(m_relPath,declInfo.ref,TRUE);
-      m_t << declInfo.url << Doxygen::htmlFileExtension;
+      m_t << addHtmlExtensionIfMissing(declInfo.url);
       if (!declInfo.anchor.isEmpty())
       {
         m_t << "#" << declInfo.anchor;
@@ -893,7 +893,7 @@ void HtmlCodeGenerator::writeCodeAnchor(const char *anchor)
 
 HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
-  dir=Config_getString(HTML_OUTPUT);
+  m_dir=Config_getString(HTML_OUTPUT);
   m_emptySection=FALSE;
   m_sectionCount=0;
 }
@@ -1086,21 +1086,17 @@ void HtmlGenerator::startFile(const char *name,const char *,
                               const char *title)
 {
   //printf("HtmlGenerator::startFile(%s)\n",name);
-  QCString fileName=name;
-  lastTitle=title;
-  relPath = relativePathToRoot(fileName);
+  m_relPath = relativePathToRoot(name);
+  QCString fileName = addHtmlExtensionIfMissing(name);
+  m_lastTitle=title;
 
-  if (fileName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension)
-  {
-    fileName+=Doxygen::htmlFileExtension;
-  }
   startPlainFile(fileName);
   m_codeGen.setTextStream(t);
-  m_codeGen.setRelativePath(relPath);
+  m_codeGen.setRelativePath(m_relPath);
   Doxygen::indexList->addIndexFile(fileName);
 
-  lastFile = fileName;
-  t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title)),relPath);
+  m_lastFile = fileName;
+  t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title)),m_relPath);
 
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
     << getVersion() << " -->" << endl;
@@ -1111,7 +1107,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
     t << "<script type=\"text/javascript\">\n";
 		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << relPath<< "search\",false,'" << theTranslator->trSearch() << "');\n";
+      << m_relPath<< "search\",false,'" << theTranslator->trSearch() << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
   }
@@ -1119,13 +1115,12 @@ void HtmlGenerator::startFile(const char *name,const char *,
   m_sectionCount=0;
 }
 
-void HtmlGenerator::writeSearchInfo(FTextStream &t,const QCString &relPath)
+void HtmlGenerator::writeSearchInfo(FTextStream &t,const QCString &)
 {
   static bool searchEngine      = Config_getBool(SEARCHENGINE);
   static bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   if (searchEngine && !serverBasedSearch)
   {
-    (void)relPath;
     t << "<!-- window showing the filter options -->\n";
     t << "<div id=\"MSearchSelectWindow\"\n";
     t << "     onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
@@ -1145,7 +1140,7 @@ void HtmlGenerator::writeSearchInfo(FTextStream &t,const QCString &relPath)
 
 void HtmlGenerator::writeSearchInfo()
 {
-  writeSearchInfo(t,relPath);
+  writeSearchInfo(t,m_relPath);
 }
 
 
@@ -1175,7 +1170,7 @@ QCString HtmlGenerator::writeLogoAsString(const char *path)
 
 void HtmlGenerator::writeLogo()
 {
-  t << writeLogoAsString(relPath);
+  t << writeLogoAsString(m_relPath);
 }
 
 void HtmlGenerator::writePageFooter(FTextStream &t,const QCString &lastTitle,
@@ -1189,7 +1184,7 @@ void HtmlGenerator::writeFooter(const char *navPath)
   // Currently only tooltips in HTML
   TooltipManager::instance()->writeTooltips(m_codeGen);
 
-  writePageFooter(t,lastTitle,relPath,navPath);
+  writePageFooter(t,m_lastTitle,m_relPath,navPath);
 }
 
 void HtmlGenerator::endFile()
@@ -1326,8 +1321,8 @@ void HtmlGenerator::startIndexItem(const char *ref,const char *f)
       t << "<a class=\"el\" ";
     }
     t << "href=\"";
-    t << externalRef(relPath,ref,TRUE);
-    if (f) t << f << Doxygen::htmlFileExtension;
+    t << externalRef(m_relPath,ref,TRUE);
+    if (f) t << addHtmlExtensionIfMissing(f);
     t << "\">";
   }
   else
@@ -1354,7 +1349,7 @@ void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
 {
   t << "<li>";
   if (path) docify(path);
-  t << "<a class=\"el\" href=\"" << f << Doxygen::htmlFileExtension << "\">";
+  t << "<a class=\"el\" href=\"" << addHtmlExtensionIfMissing(f) << "\">";
   docify(name);
   t << "</a> ";
 }
@@ -1372,8 +1367,8 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
     t << "<a class=\"el\" ";
   }
   t << "href=\"";
-  t << externalRef(relPath,ref,TRUE);
-  if (f) t << f << Doxygen::htmlFileExtension;
+  t << externalRef(m_relPath,ref,TRUE);
+  if (f) t << addHtmlExtensionIfMissing(f);
   if (anchor) t << "#" << anchor;
   t << "\">";
   docify(name);
@@ -1383,7 +1378,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
 void HtmlGenerator::startTextLink(const char *f,const char *anchor)
 {
   t << "<a href=\"";
-  if (f)   t << relPath << f << Doxygen::htmlFileExtension;
+  if (f)   t << m_relPath << addHtmlExtensionIfMissing(f);
   if (anchor) t << "#" << anchor;
   t << "\">";
 }
@@ -1586,7 +1581,7 @@ static void endSectionContent(FTextStream &t)
 
 void HtmlGenerator::startClassDiagram()
 {
-  startSectionHeader(t,relPath,m_sectionCount);
+  startSectionHeader(t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
@@ -1599,12 +1594,12 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   startSectionSummary(t,m_sectionCount);
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
-  d.writeImage(tt,dir,relPath,fileName);
+  d.writeImage(tt,m_dir,m_relPath,fileName);
   if (!result.isEmpty())
   {
     t << " <div class=\"center\">" << endl;
     t << "  <img src=\"";
-    t << relPath << fileName << ".png\" usemap=\"#" << convertToId(name);
+    t << m_relPath << fileName << ".png\" usemap=\"#" << convertToId(name);
     t << "_map\" alt=\"\"/>" << endl;
     t << "  <map id=\"" << convertToId(name);
     t << "_map\" name=\"" << convertToId(name);
@@ -1617,7 +1612,7 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   {
     t << " <div class=\"center\">" << endl;
     t << "  <img src=\"";
-    t << relPath << fileName << ".png\" alt=\"\"/>" << endl;
+    t << m_relPath << fileName << ".png\" alt=\"\"/>" << endl;
     t << " </div>";
   }
   endSectionContent(t);
@@ -1970,7 +1965,7 @@ void HtmlGenerator::endMemberDoc(bool hasArgs)
 
 void HtmlGenerator::startDotGraph()
 {
-  startSectionHeader(t,relPath,m_sectionCount);
+  startSectionHeader(t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endDotGraph(DotClassGraph &g)
@@ -1982,11 +1977,11 @@ void HtmlGenerator::endDotGraph(DotClassGraph &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir,fileName,relPath,TRUE,TRUE,m_sectionCount);
+  g.writeGraph(t,GOF_BITMAP,EOF_Html,m_dir,m_fileName,m_relPath,TRUE,TRUE,m_sectionCount);
   if (generateLegend && !umlLook)
   {
     t << "<center><span class=\"legend\">[";
-    startHtmlLink(relPath+"graph_legend"+Doxygen::htmlFileExtension);
+    startHtmlLink(m_relPath+"graph_legend"+Doxygen::htmlFileExtension);
     t << theTranslator->trLegend();
     endHtmlLink();
     t << "]</span></center>";
@@ -1998,7 +1993,7 @@ void HtmlGenerator::endDotGraph(DotClassGraph &g)
 
 void HtmlGenerator::startInclDepGraph()
 {
-  startSectionHeader(t,relPath,m_sectionCount);
+  startSectionHeader(t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
@@ -2008,7 +2003,7 @@ void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir,fileName,relPath,TRUE,m_sectionCount);
+  g.writeGraph(t,GOF_BITMAP,EOF_Html,m_dir,m_fileName,m_relPath,TRUE,m_sectionCount);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2016,7 +2011,7 @@ void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
 
 void HtmlGenerator::startGroupCollaboration()
 {
-  startSectionHeader(t,relPath,m_sectionCount);
+  startSectionHeader(t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
@@ -2026,7 +2021,7 @@ void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir,fileName,relPath,TRUE,m_sectionCount);
+  g.writeGraph(t,GOF_BITMAP,EOF_Html,m_dir,m_fileName,m_relPath,TRUE,m_sectionCount);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2034,7 +2029,7 @@ void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 
 void HtmlGenerator::startCallGraph()
 {
-  startSectionHeader(t,relPath,m_sectionCount);
+  startSectionHeader(t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endCallGraph(DotCallGraph &g)
@@ -2044,7 +2039,7 @@ void HtmlGenerator::endCallGraph(DotCallGraph &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir,fileName,relPath,TRUE,m_sectionCount);
+  g.writeGraph(t,GOF_BITMAP,EOF_Html,m_dir,m_fileName,m_relPath,TRUE,m_sectionCount);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2052,7 +2047,7 @@ void HtmlGenerator::endCallGraph(DotCallGraph &g)
 
 void HtmlGenerator::startDirDepGraph()
 {
-  startSectionHeader(t,relPath,m_sectionCount);
+  startSectionHeader(t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
@@ -2062,7 +2057,7 @@ void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir,fileName,relPath,TRUE,m_sectionCount);
+  g.writeGraph(t,GOF_BITMAP,EOF_Html,m_dir,m_fileName,m_relPath,TRUE,m_sectionCount);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2070,7 +2065,7 @@ void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
 
 void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
 {
-  g.writeGraph(t,dir,fileName);
+  g.writeGraph(t,m_dir,m_fileName);
 }
 
 void HtmlGenerator::startMemberGroupHeader(bool)
@@ -2547,7 +2542,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpa
 											"<script type=\"text/javascript\">\n"
 											"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
 											"$(document).ready(function(){initNavTree('") +
-			QCString(name) + Doxygen::htmlFileExtension +
+			QCString(addHtmlExtensionIfMissing(name)) +
 			QCString("','") + relpath +
 			QCString("'); initResizable(); });\n"
 							 "/* @license-end */\n"
@@ -2559,12 +2554,12 @@ QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpa
 
 void HtmlGenerator::writeSplitBar(const char *name)
 {
-  t << writeSplitBarAsString(name,relPath);
+  t << writeSplitBarAsString(name,m_relPath);
 }
 
 void HtmlGenerator::writeNavigationPath(const char *s)
 {
-  t << substitute(s,"$relpath^",relPath);
+  t << substitute(s,"$relpath^",m_relPath);
 }
 
 void HtmlGenerator::startContents()
@@ -2589,7 +2584,7 @@ void HtmlGenerator::endPageDoc()
 
 void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli,const char *file)
 {
-  writeDefaultQuickLinks(t,compact,hli,file,relPath);
+  writeDefaultQuickLinks(t,compact,hli,file,m_relPath);
 }
 
 // PHP based search script
@@ -2978,18 +2973,18 @@ void HtmlGenerator::writeInheritedSectionTitle(
   {
     classLink+= externalLinkTarget();
     classLink += " href=\"";
-    classLink+= externalRef(relPath,ref,TRUE);
+    classLink+= externalRef(m_relPath,ref,TRUE);
   }
   else
   {
     classLink += "href=\"";
-    classLink+=relPath;
+    classLink+=m_relPath;
   }
-  classLink+=file+Doxygen::htmlFileExtension+a;
+  classLink=classLink+addHtmlExtensionIfMissing(file)+a;
   classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
   t << "<tr class=\"inherit_header " << id << "\">"
     << "<td colspan=\"2\" onclick=\"javascript:toggleInherit('" << id << "')\">"
-    << "<img src=\"" << relPath << "closed.png\" alt=\"-\"/>&#160;"
+    << "<img src=\"" << m_relPath << "closed.png\" alt=\"-\"/>&#160;"
     << theTranslator->trInheritedFrom(convertToHtml(title,FALSE),classLink)
     << "</td></tr>" << endl;
 }
@@ -3007,8 +3002,7 @@ void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const c
   t << "<a href=\"";
   if (file)
   {
-    t << relPath << file;
-    t << Doxygen::htmlFileExtension;
+    t << m_relPath << addHtmlExtensionIfMissing(file);
   }
   else
   {

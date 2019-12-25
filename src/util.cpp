@@ -7089,6 +7089,15 @@ bool checkExtension(const char *fName, const char *ext)
   return (QCString(fName).right(QCString(ext).length())==ext);
 }
 
+QCString addHtmlExtensionIfMissing(const char *fName)
+{
+  if (QFileInfo(fName).extension(FALSE).isEmpty())
+  {
+    return QCString(fName)+Doxygen::htmlFileExtension;
+  }
+  return fName;
+}
+
 QCString stripExtensionGeneral(const char *fName, const char *ext)
 {
   QCString result=fName;
