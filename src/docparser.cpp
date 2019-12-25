@@ -882,7 +882,7 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
  *  encountered.
  */
 static void handleStyleEnter(DocNode *parent,QList<DocNode> &children,
-          DocStyleChange::Style s,const QCString tagName,const HtmlAttribList *attribs)
+          DocStyleChange::Style s,const QCString &tagName,const HtmlAttribList *attribs)
 {
   DBG(("HandleStyleEnter\n"));
   DocStyleChange *sc= new DocStyleChange(parent,g_nodeStack.count(),s,tagName,TRUE,attribs);
@@ -897,9 +897,10 @@ static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
          DocStyleChange::Style s,const char *tagName)
 {
   DBG(("HandleStyleLeave\n"));
+  QCString tagNameLower = QCString(tagName).lower();
   if (g_styleStack.isEmpty() ||                           // no style change
       g_styleStack.top()->style()!=s ||                   // wrong style change
-      g_styleStack.top()->tagName()!=QCString(tagName).lower() ||                   // wrong style change
+      g_styleStack.top()->tagName()!=tagNameLower ||      // wrong style change
       g_styleStack.top()->position()!=g_nodeStack.count() // wrong position
      )
   {
@@ -908,7 +909,7 @@ static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
       warn_doc_error(g_fileName,doctokenizerYYlineno,"found </%s> tag without matching <%s>",
           qPrint(tagName),qPrint(tagName));
     }
-    else if (g_styleStack.top()->tagName()!=QCString(tagName).lower())
+    else if (g_styleStack.top()->tagName()!=tagNameLower)
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"found </%s> tag while expecting </%s>",
           qPrint(tagName),qPrint(g_styleStack.top()->tagName()));

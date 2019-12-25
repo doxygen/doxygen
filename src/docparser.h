@@ -388,8 +388,8 @@ class DocStyleChange : public DocNode
                  Ins           = (1<<13)
                };
 
-    DocStyleChange(DocNode *parent,uint position,Style s,QCString tagName,bool enable,
-                   const HtmlAttribList *attribs=0) : 
+    DocStyleChange(DocNode *parent,uint position,Style s,const QCString &tagName,bool enable,
+                   const HtmlAttribList *attribs=0) :
       m_position(position), m_style(s), m_enable(enable)
       { m_parent = parent; if (attribs) m_attribs=*attribs; m_tagName = tagName.lower();}
     Kind kind() const                     { return Kind_StyleChange; }
