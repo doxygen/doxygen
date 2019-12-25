@@ -86,12 +86,12 @@ class HtmlGenerator : public OutputGenerator
     static QCString writeSplitBarAsString(const char *name,const char *relpath);
    
     void enable() 
-    { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
-    void disable() { active=FALSE; }
+    { if (m_genStack->top()) m_active=*m_genStack->top(); else m_active=TRUE; }
+    void disable() { m_active=FALSE; }
     void enableIf(OutputType o)  { if (o==Html) enable();  }
     void disableIf(OutputType o) { if (o==Html) disable(); }
     void disableIfNot(OutputType o) { if (o!=Html) disable(); }
-    bool isEnabled(OutputType o) { return (o==Html && active); } 
+    bool isEnabled(OutputType o) { return (o==Html && m_active); } 
     OutputGenerator *get(OutputType o) { return (o==Html) ? this : 0; }
 
     // ---- CodeOutputInterface
@@ -339,9 +339,9 @@ class HtmlGenerator : public OutputGenerator
 
   private:
     static void writePageFooter(FTextStream &t,const QCString &,const QCString &,const QCString &);
-    QCString lastTitle;
-    QCString lastFile;
-    QCString relPath;
+    QCString m_lastTitle;
+    QCString m_lastFile;
+    QCString m_relPath;
     void docify(const char *text,bool inHtmlComment);
 
     HtmlGenerator &operator=(const HtmlGenerator &g);

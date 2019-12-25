@@ -26,49 +26,49 @@
 OutputGenerator::OutputGenerator()
 {
   //printf("OutputGenerator::OutputGenerator()\n");
-  file=0;
-  active=TRUE;
-  genStack = new QStack<bool>;
-  genStack->setAutoDelete(TRUE);
+  m_file=0;
+  m_active=TRUE;
+  m_genStack = new QStack<bool>;
+  m_genStack->setAutoDelete(TRUE);
 }
 
 OutputGenerator::~OutputGenerator()
 {
   //printf("OutputGenerator::~OutputGenerator()\n");
-  delete file;
-  delete genStack;
+  delete m_file;
+  delete m_genStack;
 }
 
 void OutputGenerator::startPlainFile(const char *name)
 {
   //printf("startPlainFile(%s)\n",name);
-  fileName=dir+"/"+name;
-  file = new QFile(fileName);
-  if (!file->open(IO_WriteOnly))
+  m_fileName=m_dir+"/"+name;
+  m_file = new QFile(m_fileName);
+  if (!m_file->open(IO_WriteOnly))
   {
-    term("Could not open file %s for writing\n",fileName.data());
+    term("Could not open file %s for writing\n",m_fileName.data());
   }
-  t.setDevice(file);
+  t.setDevice(m_file);
 }
 
 void OutputGenerator::endPlainFile()
 {
   t.unsetDevice();
-  delete file;
-  file=0;
-  fileName.resize(0);
+  delete m_file;
+  m_file=0;
+  m_fileName.resize(0);
 }
 
 void OutputGenerator::pushGeneratorState()
 {
-  genStack->push(new bool(isEnabled()));
+  m_genStack->push(new bool(isEnabled()));
   //printf("%p:pushGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
 }
 
 void OutputGenerator::popGeneratorState()
 {
   //printf("%p:popGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
-  bool *lb = genStack->pop();
+  bool *lb = m_genStack->pop();
   ASSERT(lb!=0);
   if (lb==0) return; // for some robustness against superfluous \endhtmlonly commands.
   if (*lb) enable(); else disable();

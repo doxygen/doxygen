@@ -260,7 +260,7 @@ void DocbookCodeGenerator::endCodeFragment()
 DocbookGenerator::DocbookGenerator() : OutputGenerator()
 {
 DB_GEN_C
-  dir=Config_getString(DOCBOOK_OUTPUT);
+  m_dir=Config_getString(DOCBOOK_OUTPUT);
   //insideTabbing=FALSE;
   //firstDescItem=TRUE;
   //disableLinks=FALSE;
@@ -917,7 +917,7 @@ DB_GEN_C
   t << "                <imagedata width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" 
                          << relPath << fileName << ".png\">" << "</imagedata>" << endl;
   t << "            </imageobject>" << endl;
-  d.writeImage(t,dir,relPath,fileName,FALSE);
+  d.writeImage(t,m_dir,relPath,fileName,FALSE);
   t << "        </mediaobject>" << endl;
   t << "    </informalfigure>" << endl;
   t << "</para>" << endl;
@@ -1108,7 +1108,7 @@ DB_GEN_C
 void DocbookGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
 DB_GEN_C
-  g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,FALSE);
+  g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),m_fileName,relPath,FALSE);
 }
 void DocbookGenerator::startDotGraph()
 {
@@ -1117,7 +1117,7 @@ DB_GEN_C
 void DocbookGenerator::endDotGraph(DotClassGraph &g)
 {
 DB_GEN_C
-  g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),fileName,relPath,TRUE,FALSE);
+  g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT),m_fileName,relPath,TRUE,FALSE);
 }
 void DocbookGenerator::startInclDepGraph()
 {
@@ -1126,7 +1126,7 @@ DB_GEN_C
 void DocbookGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT), fileName,relPath,FALSE);
+  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT), m_fileName,relPath,FALSE);
 }
 void DocbookGenerator::startCallGraph()
 {
@@ -1135,7 +1135,7 @@ DB_GEN_C
 void DocbookGenerator::endCallGraph(DotCallGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT), fileName,relPath,FALSE);
+  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT), m_fileName,relPath,FALSE);
 }
 void DocbookGenerator::startDirDepGraph()
 {
@@ -1144,7 +1144,7 @@ DB_GEN_C
 void DocbookGenerator::endDirDepGraph(DotDirDeps &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT), fileName,relPath,FALSE);
+  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,Config_getString(DOCBOOK_OUTPUT), m_fileName,relPath,FALSE);
 }
 void DocbookGenerator::startMemberDocList()
 {

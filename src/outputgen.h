@@ -340,7 +340,7 @@ class OutputGenerator : public BaseOutputDocInterface
     void startPlainFile(const char *name);
     void endPlainFile();
     //QCString getContents() const;
-    bool isEnabled() const { return active; }
+    bool isEnabled() const { return m_active; }
     void pushGeneratorState();
     void popGeneratorState();
     //void setEncoding(const QCString &enc) { encoding = enc; }
@@ -489,11 +489,11 @@ class OutputGenerator : public BaseOutputDocInterface
 
   protected:
     FTextStream t;
-    QFile *file;
-    QCString fileName;
-    QCString dir;
-    bool active;
-    QStack<bool> *genStack;
+    QFile *m_file;
+    QCString m_fileName;
+    QCString m_dir;
+    bool m_active;
+    QStack<bool> *m_genStack;
 
   private:
     OutputGenerator(const OutputGenerator &o);

@@ -82,12 +82,12 @@ class LatexGenerator : public OutputGenerator
     //OutputGenerator *clone() { return new LatexGenerator(*this); }
     //void append(const OutputGenerator *o);
     void enable() 
-    { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
-    void disable() { active=FALSE; }
+    { if (m_genStack->top()) m_active=*m_genStack->top(); else m_active=TRUE; }
+    void disable() { m_active=FALSE; }
     void enableIf(OutputType o)  { if (o==Latex) enable();  }
     void disableIf(OutputType o) { if (o==Latex) disable(); }
     void disableIfNot(OutputType o) { if (o!=Latex) disable(); }
-    bool isEnabled(OutputType o) { return (o==Latex && active); } 
+    bool isEnabled(OutputType o) { return (o==Latex && m_active); } 
     OutputGenerator *get(OutputType o) { return (o==Latex) ? this : 0; }
 
     // --- CodeOutputInterface
@@ -328,10 +328,10 @@ class LatexGenerator : public OutputGenerator
   private:
     LatexGenerator(const LatexGenerator &);
     LatexGenerator &operator=(const LatexGenerator &);
-    bool insideTabbing;
-    bool firstDescItem;
-    bool disableLinks;
-    QCString relPath;
+    bool m_insideTabbing;
+    bool m_firstDescItem;
+    bool m_disableLinks;
+    QCString m_relPath;
     int m_indent;
     bool templateMemberItem;
     bool m_prettyCode;
