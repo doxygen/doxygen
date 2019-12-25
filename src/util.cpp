@@ -7089,6 +7089,19 @@ bool checkExtension(const char *fName, const char *ext)
   return (QCString(fName).right(QCString(ext).length())==ext);
 }
 
+bool hasExtension(const char *fName)
+{
+  return !(QFileInfo(fName).extension(FALSE).isEmpty());
+}
+bool hasExtension(QCString fName)
+{
+  return !(QFileInfo(fName).extension(FALSE).isEmpty());
+}
+bool hasExtension(QString fName)
+{
+  return !(QFileInfo(fName).extension(FALSE).isEmpty());
+}
+
 QCString stripExtensionGeneral(const char *fName, const char *ext)
 {
   QCString result=fName;

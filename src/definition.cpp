@@ -532,7 +532,7 @@ void DefinitionImpl::writeDocAnchorsToTagFile(FTextStream &tagFile) const
       {
         //printf("write an entry!\n");
         if (definitionType()==TypeMember) tagFile << "  ";
-        tagFile << "    <docanchor file=\"" << si->fileName << "\"";
+        tagFile << "    <docanchor file=\"" << si->fileName << (hasExtension(si->fileName) ? "" : Doxygen::htmlFileExtension) << "\"";
         if (!si->title.isEmpty())
         {
           tagFile << " title=\"" << convertToXML(si->title) << "\"";
