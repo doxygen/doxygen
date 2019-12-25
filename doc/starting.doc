@@ -187,7 +187,7 @@ IE8, IE9, and Opera to test the generated output).
 
 Some of the features the HTML section (such as 
 \ref cfg_generate_treeview "GENERATE_TREEVIEW" or the search engine) 
-require a browser that supports Dynamic HTML and Javascript enabled. 
+require a browser that supports Dynamic HTML and JavaScript enabled. 
 
 \subsection latex_out LaTeX output
 \addindex LaTeX

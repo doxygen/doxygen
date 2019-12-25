@@ -18,6 +18,8 @@
 #ifndef MEMBERDEF_H
 #define MEMBERDEF_H
 
+#include <vector>
+
 #include <qlist.h>
 #include <sys/types.h>
 
@@ -221,11 +223,11 @@ class MemberDef : virtual public Definition
     virtual bool isPrototype() const = 0;
 
     // argument related members
-    virtual const ArgumentList *argumentList() const = 0;
-    virtual ArgumentList *argumentList() = 0;
-    virtual const ArgumentList *declArgumentList() const = 0;
-    virtual const ArgumentList *templateArguments() const = 0;
-    virtual const QList<ArgumentList> *definitionTemplateParameterLists() const = 0;
+    virtual const ArgumentList &argumentList() const = 0;
+    virtual ArgumentList &argumentList() = 0;
+    virtual const ArgumentList &declArgumentList() const = 0;
+    virtual const ArgumentList &templateArguments() const = 0;
+    virtual const std::vector<ArgumentList> &definitionTemplateParameterLists() const = 0;
 
     // member group related members
     virtual int getMemberGroupId() const = 0;
@@ -265,7 +267,7 @@ class MemberDef : virtual public Definition
     virtual QCString getDeclType() const = 0;
     virtual void getLabels(QStrList &sl,const Definition *container) const = 0;
 
-    virtual const ArgumentList *typeConstraints() const = 0;
+    virtual const ArgumentList &typeConstraints() const = 0;
 
     // overrules
     virtual QCString documentation() const = 0;
@@ -305,7 +307,7 @@ class MemberDef : virtual public Definition
     virtual void makeRelated() = 0;
     virtual void makeForeign() = 0;
     virtual void setInheritsDocsFrom(MemberDef *md) = 0;
-    virtual void setTagInfo(TagInfo *i) = 0;
+    virtual void setTagInfo(const TagInfo *i) = 0;
     virtual void setArgsString(const char *as) = 0;
     virtual void incrementFlowKeyWordCount() = 0;
 
@@ -331,10 +333,10 @@ class MemberDef : virtual public Definition
     virtual void setDeclFile(const QCString &df,int line,int column) = 0;
 
     // argument related members
-    virtual void setArgumentList(ArgumentList *al) = 0;
-    virtual void setDeclArgumentList(ArgumentList *al) = 0;
-    virtual void setDefinitionTemplateParameterLists(QList<ArgumentList> *lists) = 0;
-    virtual void setTypeConstraints(ArgumentList *al) = 0;
+    virtual void setArgumentList(const ArgumentList &al) = 0;
+    virtual void setDeclArgumentList(const ArgumentList &al) = 0;
+    virtual void setDefinitionTemplateParameterLists(const std::vector<ArgumentList> &lists) = 0;
+    virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setType(const char *t) = 0;
     virtual void setAccessorType(ClassDef *cd,const char *t) = 0;
 
@@ -384,8 +386,8 @@ class MemberDef : virtual public Definition
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual MemberDef *createTemplateInstanceMember(ArgumentList *formalArgs,
-               ArgumentList *actualArgs) const = 0;
+    virtual MemberDef *createTemplateInstanceMember(const ArgumentList &formalArgs,
+               const ArgumentList &actualArgs) const = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual void addToSearchIndex() const = 0;
 
@@ -421,8 +423,8 @@ class MemberDef : virtual public Definition
 MemberDef *createMemberDef(const char *defFileName,int defLine,int defColumn,
               const char *type,const char *name,const char *args,
               const char *excp,Protection prot,Specifier virt,bool stat,
-              Relationship related,MemberType t,const ArgumentList *tal,
-              const ArgumentList *al,const char *metaData);
+              Relationship related,MemberType t,const ArgumentList &tal,
+              const ArgumentList &al,const char *metaData);
 
 MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd);
 

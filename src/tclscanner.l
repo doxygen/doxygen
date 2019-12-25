@@ -429,7 +429,7 @@ static struct
   QCString input_string; // file contents
   int input_position; // position in file
   QCString file_name; // name of used file
-  ParserInterface *this_parser; // myself
+  OutlineParserInterface *this_parser; // myself
   int command; // true if command was found
   int comment; // set true if comment was scanned
   int brace_level; // bookkeeping of braces
@@ -486,6 +486,8 @@ Entry* tcl_entry_new()
 //  myEntry->mtype      = Method;
 //  myEntry->virt       = Normal;
 //  myEntry->stat       = FALSE;
+  myEntry->docFile    = tcl.file_name;
+  myEntry->inbodyFile = tcl.file_name;
   myEntry->fileName   = tcl.file_name;
   myEntry->lang       = SrcLangExt_Tcl;
   Doxygen::docGroup.initGroupInfo(myEntry);
@@ -534,6 +536,13 @@ static void tcl_name(const QCString &ns0, const QCString &name0, QCString &ns, Q
   {
     ns = "";
     name = myNm;
+  }
+  else if (myNm.length()-myStart == 2)
+  {
+    // ending with :: so get name equal to last component
+    ns = myNm.mid(0,myStart);
+    myStart = ns.findRev("::");
+    name = myNm.mid(myStart+2);
   }
   else
   {
@@ -1494,7 +1503,7 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
     {
 tcl_inf("-> %s\n",(const char *)tcl.string_comment);
       int myPos=0;
-      bool myNew=0;
+      bool myNew=false;
       int myLine=tcl.line_comment;
       BufStr myI(1024);
       BufStr myO(1024);
@@ -1622,37 +1631,32 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
 static void tcl_command_ARGLIST(QCString &arglist)
 {
 D
-  Argument *myArg;
   QCStringList myArgs;
   QCString myArglist="";
 
-  if (!tcl.entry_current->argList)
-  {
-    tcl.entry_current->argList=new ArgumentList;
-  }
   tcl_split_list(arglist,myArgs);
   for (uint i=0;i<myArgs.count();i++)
   {
     QCStringList myArgs1;
-    myArg=new Argument;
+    Argument myArg;
 
     tcl_split_list(*myArgs.at(i),myArgs1);
     if (myArgs1.count()==2)
     {
-      myArg->name= (*myArgs1.at(0));
-      myArg->defval= (*myArgs1.at(1));
-      if (myArg->defval.isEmpty())
+      myArg.name= (*myArgs1.at(0));
+      myArg.defval= (*myArgs1.at(1));
+      if (myArg.defval.isEmpty())
       {
-        myArg->defval = " ";
+        myArg.defval = " ";
       }
-      myArglist += "?" + QCString(myArg->name) + "? ";
+      myArglist += "?" + QCString(myArg.name) + "? ";
     }
     else
     {
-      myArg->name= (*myArgs.at(i));
-      myArglist += myArg->name + " ";
+      myArg.name= (*myArgs.at(i));
+      myArglist += myArg.name + " ";
     }
-    tcl.entry_current->argList->append(myArg);
+    tcl.entry_current->argList.push_back(myArg);
   }
   arglist = myArglist;
   tcl.entry_current->args = arglist;
@@ -2151,6 +2155,8 @@ D
   tcl.entry_current->mtype = Method;
   tcl.entry_current->name = myName;
   tcl.entry_current->startLine = tcl.line_command;
+  tcl.entry_current->docLine = tcl.line_comment;
+  tcl.entry_current->inbodyLine = tcl.line_comment;
   tcl.entry_current->bodyLine = tcl.line_body0;
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl_protection(tcl.entry_current);
@@ -2193,6 +2199,8 @@ D
   tcl.entry_current->mtype = Method;
   tcl.entry_current->name = myName;
   tcl.entry_current->startLine = tcl.line_command;
+  tcl.entry_current->docLine = tcl.line_comment;
+  tcl.entry_current->inbodyLine = tcl.line_comment;
   tcl.entry_current->bodyLine = tcl.line_body0;
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl_protection(tcl.entry_current);
@@ -2230,6 +2238,8 @@ D
   tcl.entry_current->mtype = Method;
   tcl.entry_current->name = myName;
   tcl.entry_current->startLine = tcl.line_command;
+  tcl.entry_current->docLine = tcl.line_comment;
+  tcl.entry_current->inbodyLine = tcl.line_comment;
   tcl.entry_current->bodyLine = tcl.line_body0;
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl_protection(tcl.entry_current);
@@ -2265,6 +2275,8 @@ D
   tcl.entry_current->mtype = Method;
   tcl.entry_current->name = myName;
   tcl.entry_current->startLine = tcl.line_command;
+  tcl.entry_current->docLine = tcl.line_comment;
+  tcl.entry_current->inbodyLine = tcl.line_comment;
   tcl.entry_current->bodyLine = tcl.line_body0;
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl_protection(tcl.entry_current);
@@ -2298,6 +2310,8 @@ D
   tcl.entry_current->section = Entry::NAMESPACE_SEC;
   tcl.entry_current->name = myName;
   tcl.entry_current->startLine = tcl.line_command;
+  tcl.entry_current->docLine = tcl.line_comment;
+  tcl.entry_current->inbodyLine = tcl.line_comment;
   tcl.entry_current->bodyLine = tcl.line_body0;
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl.entry_main->moveToSubEntryAndKeep(tcl.entry_current);
@@ -2336,6 +2350,8 @@ D
   tcl.entry_current->section = Entry::CLASS_SEC;
   tcl.entry_current->name = myName;
   tcl.entry_current->startLine = tcl.line_command;
+  tcl.entry_current->docLine = tcl.line_comment;
+  tcl.entry_current->inbodyLine = tcl.line_comment;
   tcl.entry_current->bodyLine = tcl.line_body0;
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl.entry_main->moveToSubEntryAndKeep(tcl.entry_current);
@@ -2368,6 +2384,8 @@ D
   tcl.entry_current->section = Entry::CLASS_SEC;
   tcl.entry_current->name = myName;
   tcl.entry_current->startLine = tcl.line_command;
+  tcl.entry_current->docLine = tcl.line_comment;
+  tcl.entry_current->inbodyLine = tcl.line_comment;
   tcl.entry_current->bodyLine = tcl.line_body0;
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl.entry_main->moveToSubEntryAndKeep(tcl.entry_current);
@@ -2420,6 +2438,8 @@ D
     tcl.entry_current->mtype = Method;
     tcl.entry_current->name = myMethod;
     tcl.entry_current->startLine = tcl.line_command;
+    tcl.entry_current->docLine = tcl.line_comment;
+    tcl.entry_current->inbodyLine = tcl.line_comment;
     tcl.entry_current->bodyLine = tcl.line_body0;
     tcl.entry_current->endBodyLine = tcl.line_body1;
     tcl_protection(tcl.entry_current);
@@ -2490,6 +2510,8 @@ D
   tcl.entry_current->section = Entry::VARIABLE_SEC;
   tcl.entry_current->name = myName;
   tcl.entry_current->startLine = tcl.line_command;
+  tcl.entry_current->docLine = tcl.line_comment;
+  tcl.entry_current->inbodyLine = tcl.line_comment;
   tcl.entry_current->bodyLine = tcl.line_body0;
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl_protection(tcl.entry_current);
@@ -2705,7 +2727,7 @@ tcl_inf("->\n");
     {
       for (unsigned int i = 2; i < tcl.list_commandwords.count(); i = i + 2)
       {
-        tcl.scan.at(0)->entry_cl->extends->append(new BaseInfo((*tcl.list_commandwords.at(i)),Public,Normal));
+        tcl.scan.at(0)->entry_cl->extends.push_back(BaseInfo((*tcl.list_commandwords.at(i)),Public,Normal));
       }
     }
     goto command_end;
@@ -2942,9 +2964,9 @@ static void tcl_parse(const QCString ns, const QCString cls)
 }
 
 //! Parse text file and build up entry tree.
-void TclLanguageScanner::parseInput(const char *fileName,
+void TclOutlineParser::parseInput(const char *fileName,
                                     const char *input,
-                                    const std::unique_ptr<Entry> &root,
+                                    const std::shared_ptr<Entry> &root,
                                     bool /*sameTranslationUnit*/,
                                     QStrList & /*filesInSameTranslationUnit*/)
 {
@@ -2973,8 +2995,40 @@ tcl_inf("%s\n",fileName);
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
+
+bool TclOutlineParser::needsPreprocessing(const QCString &extension) const
+{
+  (void)extension;
+  return FALSE;
+}
+
+void TclOutlineParser::parsePrototype(const char *text)
+{
+  (void)text;
+}
+
+static int yyread(char *buf,int max_size)
+{
+  int c=0;
+
+  *buf = '\0';
+  while ( c < max_size && tcl.input_string.at(tcl.input_position) )
+  {
+    *buf = tcl.input_string.at(tcl.input_position++) ;
+    c++; buf++;
+  }
+  //printf("Read from=%d size=%d max=%d c=%d\n",tcl.input_position,strlen(&tcl.input_string[tcl.input_position]),max_size,c);
+  return c;
+}
+
+//----------------------------------------------------------------------------
+
+void TclCodeParser::resetCodeParserState()
+{
+}
+
 //! Parse file and codify.
-void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
+void TclCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
                    const char * scopeName,
                    const QCString & input,
                    SrcLangExt lang,
@@ -3078,36 +3132,6 @@ tcl_inf("%s (%d,%d) %d %d\n",myStr.data(),startLine,endLine,isExampleBlock,inlin
   tcl.entry.clear();
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
 }
-
-bool TclLanguageScanner::needsPreprocessing(const QCString &extension)
-{
-  (void)extension;
-  return FALSE;
-}
-
-void TclLanguageScanner::resetCodeParserState()
-{
-}
-
-void TclLanguageScanner::parsePrototype(const char *text)
-{
-  (void)text;
-}
-
-static int yyread(char *buf,int max_size)
-{
-  int c=0;
-
-  *buf = '\0';
-  while ( c < max_size && tcl.input_string.at(tcl.input_position) )
-  {
-    *buf = tcl.input_string.at(tcl.input_position++) ;
-    c++; buf++;
-  }
-  //printf("Read from=%d size=%d max=%d c=%d\n",tcl.input_position,strlen(&tcl.input_string[tcl.input_position]),max_size,c);
-  return c;
-}
-
 //----------------------------------------------------------------------------
 
 // to avoid a warning
@@ -3115,12 +3139,5 @@ void tclDummy()
 {
   yy_top_state();
 }
-
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-//----------------------------------------------------------------------------
-extern "C" { // some bogus code to keep the compiler happy
-  void tclscannerYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
 
 #include "tclscanner.l.h"

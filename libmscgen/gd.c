@@ -2273,7 +2273,7 @@ BGD_DECLARE(void) gdImageFillToBorder (gdImagePtr im, int x, int y, int border, 
 	/* Seek left */
 	int leftLimit, rightLimit;
 	int i;
-	int restoreAlphaBleding;
+	int restoreAlphaBlending;
 
 	if (border < 0 || color < 0) {
 		/* Refuse to fill to a non-solid border */
@@ -2288,7 +2288,7 @@ BGD_DECLARE(void) gdImageFillToBorder (gdImagePtr im, int x, int y, int border, 
 
 	leftLimit = (-1);
 
-	restoreAlphaBleding = im->alphaBlendingFlag;
+	restoreAlphaBlending = im->alphaBlendingFlag;
 	im->alphaBlendingFlag = 0;
 
 	if (x >= im->sx) {
@@ -2310,7 +2310,7 @@ BGD_DECLARE(void) gdImageFillToBorder (gdImagePtr im, int x, int y, int border, 
 		leftLimit = i;
 	}
 	if (leftLimit == (-1)) {
-		im->alphaBlendingFlag = restoreAlphaBleding;
+		im->alphaBlendingFlag = restoreAlphaBlending;
 		return;
 	}
 	/* Seek right */
@@ -2354,7 +2354,7 @@ BGD_DECLARE(void) gdImageFillToBorder (gdImagePtr im, int x, int y, int border, 
 			}
 		}
 	}
-	im->alphaBlendingFlag = restoreAlphaBleding;
+	im->alphaBlendingFlag = restoreAlphaBlending;
 }
 
 /*

@@ -66,6 +66,11 @@
 \usepackage{doxygen}
 \usepackage{manual}
 %%
+%gave problems when in doxygen.sty
+\makeatletter
+\newcommand\hrulefilll{\leavevmode\leaders\hrule\hskip 0pt plus 1filll\kern\z@}
+\makeatother
+%%
 % unfortunately constructs like: 
 %   \renewcommand{\doxysection}[1]{\doxysubsection{##1}}
 % using values from book.cls (see also doxygen.sty) and redefining sections to correct level.

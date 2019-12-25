@@ -197,11 +197,9 @@ add_library(_doxygen STATIC
     #
     ${GENERATED_SRC}/ce_parse.cpp
     #
-    plantuml.cpp
     arguments.cpp
     cite.cpp
     clangparser.cpp
-    fileparser.cpp
     classdef.cpp
     classlist.cpp
     cmdmapper.cpp
@@ -212,13 +210,16 @@ add_library(_doxygen STATIC
     defgen.cpp
     define.cpp
     definition.cpp
+    dia.cpp
     diagram.cpp
     dirdef.cpp
+    docbookgen.cpp
+    docbookvisitor.cpp
+    docgroup.cpp
     docparser.cpp
     docsets.cpp
     dot.cpp
     dotcallgraph.cpp
-    dotlegendgraph.cpp
     dotclassgraph.cpp
     dotdirdeps.cpp
     dotfilepatcher.cpp
@@ -226,6 +227,7 @@ add_library(_doxygen STATIC
     dotgraph.cpp
     dotgroupcollaboration.cpp
     dotincldepgraph.cpp
+    dotlegendgraph.cpp
     dotnode.cpp
     dotrunner.cpp
     doxygen.cpp
@@ -234,6 +236,7 @@ add_library(_doxygen STATIC
     entry.cpp
     filedef.cpp
     filename.cpp
+    fileparser.cpp
     formula.cpp
     ftextstream.cpp
     ftvhelp.cpp
@@ -241,7 +244,6 @@ add_library(_doxygen STATIC
     htags.cpp
     htmldocvisitor.cpp
     htmlentity.cpp
-    resourcemgr.cpp
     htmlgen.cpp
     htmlhelp.cpp
     image.cpp
@@ -252,7 +254,6 @@ add_library(_doxygen STATIC
     layout.cpp
     mandocvisitor.cpp
     mangen.cpp
-    sqlite3gen.cpp
     markdown.cpp
     memberdef.cpp
     membergroup.cpp
@@ -260,20 +261,23 @@ add_library(_doxygen STATIC
     membername.cpp
     message.cpp
     msc.cpp
-    dia.cpp
     namespacedef.cpp
     objcache.cpp
     outputgen.cpp
     outputlist.cpp
     pagedef.cpp
     perlmodgen.cpp
+    plantuml.cpp
     qhp.cpp
     qhpxmlwriter.cpp
     reflist.cpp
+    resourcemgr.cpp
     rtfdocvisitor.cpp
     rtfgen.cpp
     rtfstyle.cpp
     searchindex.cpp
+    sqlite3gen.cpp
+    stlsupport.cpp
     tagreader.cpp
     template.cpp
     textdocvisitor.cpp
@@ -283,9 +287,6 @@ add_library(_doxygen STATIC
     vhdljjparser.cpp
     xmldocvisitor.cpp
     xmlgen.cpp
-    docbookvisitor.cpp
-    docbookgen.cpp
-    docgroup.cpp
 )
 
 ##foreach(lex_file ${LEX_FILES})

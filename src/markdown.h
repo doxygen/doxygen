@@ -25,38 +25,20 @@ class Entry;
 QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,const QCString &s);
 QCString markdownFileNameToId(const QCString &fileName);
 
-class MarkdownFileParser : public ParserInterface
+class MarkdownOutlineParser : public OutlineParserInterface
 {
   public:
-    virtual ~MarkdownFileParser() {}
+    virtual ~MarkdownOutlineParser() {}
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
     void parseInput(const char *fileName, 
                     const char *fileBuf, 
-                    const std::unique_ptr<Entry> &root,
+                    const std::shared_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
-    bool needsPreprocessing(const QCString &) { return FALSE; }
-    void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
-                   const QCString &input,
-                   SrcLangExt lang,
-                   bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=0,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=0,
-                   bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+    bool needsPreprocessing(const QCString &) const { return FALSE; }
     void parsePrototype(const char *text);
 };
-
-
 
 
 #endif

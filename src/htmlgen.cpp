@@ -49,6 +49,7 @@
 #include "bufstr.h"
 #include "resourcemgr.h"
 #include "tooltip.h"
+#include "growbuf.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -56,6 +57,7 @@
 static QCString g_header;
 static QCString g_footer;
 static QCString g_mathjax_code;
+static QCString g_latex_macro;
 
 static bool DoxyCodeLineOpen = FALSE;
 
@@ -111,6 +113,174 @@ static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlig
   }
 }
 
+//------------------------------------------------------------------------
+/// Convert a set of LaTeX `\(re)newcommand` to a form readable by MathJax
+/// LaTeX syntax:
+///       \newcommand{\cmd}{replacement}
+///         or
+///       \renewcommand{\cmd}{replacement}
+/// MathJax syntax:
+///        cmd: "{replacement}"
+///
+/// LaTeX syntax:
+///       \newcommand{\cmd}[nr]{replacement}
+///         or
+///       \renewcommand{\cmd}[nr]{replacement}
+/// MathJax syntax:
+///        cmd: ["{replacement}",nr]
+static QCString getConvertLatexMacro()
+{
+  QCString macrofile = Config_getString(FORMULA_MACROFILE);
+  if (macrofile.isEmpty()) return "";
+  QCString s = fileToString(macrofile);
+  macrofile = QFileInfo(macrofile).absFilePath().utf8();
+  int size = s.length();
+  GrowBuf out(size);
+  const char *data = s.data();
+  int line = 1;
+  int cnt = 0;
+  int i = 0;
+  QCString nr;
+  while (i < size)
+  {
+    nr = "";
+    // skip initial white space, but count lines
+    while (i < size && (data[i] == ' ' || data[i] == '\t' || data[i] == '\n'))
+    {
+      if (data[i] == '\n') line++;
+      i++;
+    }
+    if (i >= size) break;
+    // check for \newcommand or \renewcommand
+    if (data[i] != '\\')
+    {
+      warn(macrofile,line, "file contains non valid code, expected '\\' got '%c'\n",data[i]);
+      return "";
+    }
+    i++;
+    if (!qstrncmp(data + i, "newcommand", strlen("newcommand"))) i += strlen("newcommand");
+    else if (!qstrncmp(data + i, "renewcommand", strlen("renewcommand"))) i += strlen("renewcommand");
+    else
+    {
+      warn(macrofile,line, "file contains non valid code, expected 'newcommand' or 'renewcommand'");
+      return "";
+    }
+    // handle {cmd}
+    if (data[i] != '{')
+    {
+      warn(macrofile,line, "file contains non valid code, expected '{' got '%c'\n",data[i]);
+      return "";
+    }
+    i++;
+    if (data[i] != '\\')
+    {
+      warn(macrofile,line, "file contains non valid code, expected '\\' got '%c'\n",data[i]);
+      return "";
+    }
+    i++;
+    // run till }, i.e. cmd
+    out.addStr("    ");
+    while (i < size && (data[i] != '}')) out.addChar(data[i++]);
+    if (i >= size)
+    {
+      warn(macrofile,line, "file contains non valid code, no closing '}' for command");
+      return "";
+    }
+    out.addChar(':');
+    out.addChar(' ');
+    i++;
+
+    if (data[i] == '[')
+    {
+      // handle [nr]
+      // run till ]
+      out.addChar('[');
+      i++;
+      while (i < size && (data[i] != ']')) nr += data[i++];
+      if (i >= size)
+      {
+        warn(macrofile,line, "file contains non valid code, no closing ']'");
+        return "";
+      }
+      i++;
+    }
+    else if (data[i] != '{')
+    {
+      warn(macrofile,line, "file contains non valid code, expected '[' or '{' got '%c'\n",data[i]);
+      return "";
+    }
+    // handle {replacement}
+    // retest as the '[' part might have advanced so we can have a new '{'
+    if (data[i] != '{')
+    {
+      warn(macrofile,line, "file contains non valid code, expected '{' got '%c'\n",data[i]);
+      return "";
+    }
+    out.addChar('"');
+    out.addChar('{');
+    i++;
+    // run till }
+    cnt = 1;
+    while (i < size && cnt)
+    {
+      switch(data[i])
+      {
+        case '\\':
+          out.addChar('\\'); // need to escape it for MathJax js code
+          out.addChar('\\');
+          i++;
+          if (data[i] == '\\') // we have an escaped backslash
+          {
+            out.addChar('\\');
+            out.addChar('\\');
+            i++;
+          }
+          else if (data[i] != '"') out.addChar(data[i++]); // double quote handled separately
+          break;
+        case '{':
+          cnt++;
+          out.addChar(data[i++]);
+          break;
+        case '}':
+          cnt--;
+          if (cnt) out.addChar(data[i]);
+          i++;
+          break;
+        case '"':
+          out.addChar('\\'); // need to escape it for MathJax js code
+          out.addChar(data[i++]);
+          break;
+        case '\n':
+          line++;
+          out.addChar(data[i++]);
+          break;
+        default:
+          out.addChar(data[i++]);
+          break;
+      }
+    }
+    if (i > size)
+    {
+      warn(macrofile,line, "file contains non valid code, no closing '}' for replacement");
+      return "";
+    }
+    out.addChar('}');
+    out.addChar('"');
+    if (!nr.isEmpty())
+    {
+      out.addChar(',');
+      out.addStr(nr);
+    }
+    if (!nr.isEmpty())
+    {
+      out.addChar(']');
+    }
+    out.addChar(',');
+    out.addChar('\n');
+  }
+  out.addChar(0);
+  return out.get();
+}
 //------------------------------------------------------------------------
 
 /// Clear a text block \a s from \a begin to \a end markers
@@ -229,7 +399,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
                                        const QCString &relPath,
                                        const QCString &navPath=QCString())
 {
-  // Build CSS/Javascript tags depending on treeview, search engine settings
+  // Build CSS/JavaScript tags depending on treeview, search engine settings
   QCString cssFile;
   QStrList extraCssFile;
   QCString generatedBy;
@@ -300,12 +470,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
     treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
-			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n"
-			"<script type=\"text/javascript\">\n"
-			"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
-			"  $(document).ready(initResizable);\n"
-			"/* @license-end */"
-			"</script>";
+			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
   }
 
   if (searchEngine)
@@ -381,7 +546,18 @@ static QCString substituteHtmlKeywords(const QCString &s,
       mathJaxJs += g_mathjax_code;
       mathJaxJs += "\n";
     }
-    mathJaxJs += "</script>";
+    mathJaxJs += "</script>\n";
+    if (!g_latex_macro.isEmpty())
+    {
+      mathJaxJs += "<script type=\"text/x-mathjax-config\">\n"
+                   "  MathJax.Hub.Config({\n"
+		   "   TeX: { Macros: {\n";
+      mathJaxJs += g_latex_macro;
+      mathJaxJs += "\n"
+                   "  } }\n"
+                   "});\n"
+                   "</script>\n";
+    }
     mathJaxJs += "<script type=\"text/javascript\" async=\"async\" src=\"" + path + "MathJax.js\"></script>\n";
   }
 
@@ -492,7 +668,7 @@ void HtmlCodeGenerator::codify(const char *str)
 
 void HtmlCodeGenerator::docify(const char *str)
 {
-  m_t << getHtmlDirEmbedingChar(getTextDirByConfig(str));
+  m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(str));
 
   if (str && m_streamSet)
   {
@@ -548,6 +724,7 @@ void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
   }
   m_t << "</span>";
   m_t << "&#160;";
+  m_col=0;
 }
 
 void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
@@ -732,8 +909,7 @@ void HtmlGenerator::init()
   QDir d(dname);
   if (!d.exists() && !d.mkdir(dname))
   {
-    err("Could not create output directory %s\n",dname.data());
-    exit(1);
+    term("Could not create output directory %s\n",dname.data());
   }
   //writeLogo(dname);
   if (!Config_getString(HTML_HEADER).isEmpty())
@@ -763,6 +939,8 @@ void HtmlGenerator::init()
       g_mathjax_code=fileToString(Config_getString(MATHJAX_CODEFILE));
       //printf("g_mathjax_code='%s'\n",g_mathjax_code.data());
     }
+    g_latex_macro=getConvertLatexMacro();
+    //printf("converted g_latex_macro='%s'\n",g_latex_macro.data());
   }
   createSubDirs(d);
 
@@ -2371,7 +2549,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpa
 											"$(document).ready(function(){initNavTree('") +
 			QCString(name) + Doxygen::htmlFileExtension +
 			QCString("','") + relpath +
-			QCString("');});\n"
+			QCString("'); initResizable(); });\n"
 							 "/* @license-end */\n"
 							 "</script>\n"
 							 "<div id=\"doc-content\">\n");

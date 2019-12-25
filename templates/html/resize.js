@@ -91,6 +91,7 @@ function initResizable()
       }
       collapsedWidth=width;
     }
+    (document.getElementById(location.hash.slice(1))||document.body).scrollIntoView();
   }
 
   function collapseExpand()

@@ -74,22 +74,22 @@ class DotGraph
     QCString relImgName()  const { return m_relPath + imgName(); }
 
     // the following variables are used while writing the graph to a .dot file
-    GraphOutputFormat      m_graphFormat;
-    EmbeddedOutputFormat   m_textFormat;
+    GraphOutputFormat      m_graphFormat = GOF_BITMAP;
+    EmbeddedOutputFormat   m_textFormat = EOF_Html;
     QDir                   m_dir;
     QCString               m_fileName;
     QCString               m_relPath;
-    bool                   m_generateImageMap;
-    int                    m_graphId;
+    bool                   m_generateImageMap = false;
+    int                    m_graphId = 0;
 
     QCString               m_absPath;
     QCString               m_baseName;
     QGString               m_theGraph;
-    bool                   m_regenerate;
-    bool                   m_doNotAddImageToIndex;
-    bool                   m_noDivTag;
-    bool                   m_zoomable;
-    bool                   m_urlOnly;
+    bool                   m_regenerate = false;
+    bool                   m_doNotAddImageToIndex = false;
+    bool                   m_noDivTag = false;
+    bool                   m_zoomable = true;
+    bool                   m_urlOnly = false;
 
   private:
     DotGraph(const DotGraph &);

@@ -34,7 +34,7 @@ class MemberDef;
 /*! Initialize the search indexer */
 void initSearchIndexer();
 /*! Cleanup the search indexer */
-void finializeSearchIndexer();
+void finalizeSearchIndexer();
 
 //------- server side search index ----------------------
 
@@ -165,8 +165,8 @@ struct SearchIndexInfo
   QCString text;
 };
 
-void createJavascriptSearchIndex();
-void writeJavascriptSearchIndex();
+void createJavaScriptSearchIndex();
+void writeJavaScriptSearchIndex();
 const SearchIndexInfo *getSearchIndices();
 
 #endif

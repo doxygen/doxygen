@@ -91,7 +91,7 @@ struct MscTag
  * Local Functions
  ***************************************************************************/
 
-/** Find come attrbute in an attribute list.
+/** Find come attribute in an attribute list.
  *
  * \param[in] attr  Head of the linked list to search.
  * \param[in] a     The attribute type to find.

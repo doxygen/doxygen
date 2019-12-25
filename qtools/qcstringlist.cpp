@@ -157,11 +157,11 @@ QCStringList QCStringList::grep( const QRegExp &expr ) const
 QCString QCStringList::join( const QCString &sep ) const
 {
     QCString res;
-    bool alredy = FALSE;
+    bool already = FALSE;
     for ( QCStringList::ConstIterator it = begin(); it != end(); ++it ) {
-	if ( alredy )
+	if ( already )
 	    res += sep;
-	alredy = TRUE;
+	already = TRUE;
 	res += *it;
     }
 

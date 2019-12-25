@@ -253,7 +253,7 @@ ADraw;
  * image functions to be executed.
  *
  * \param[in] w                The width of the output image.
- * \param[in] h                The height of the ouput image.
+ * \param[in] h                The height of the output image.
  * \param[in] file             The file to which the image should be written.
  * \param[in] fontName         The name of the font to use for rendering.
  * \param[in] type             The output type to generate.

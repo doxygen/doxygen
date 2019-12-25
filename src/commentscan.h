@@ -19,7 +19,7 @@
 #include "types.h"
 
 class Entry;
-class ParserInterface;
+class OutlineParserInterface;
 
 /** @file
  *  @brief Interface for the comment block parser */
@@ -72,7 +72,7 @@ QCString preprocessCommentBlock(const QCString &comment,
  *         where to proceed parsing. FALSE indicates no further processing is
  *         needed.
  */
-bool parseCommentBlock(ParserInterface *parser,
+bool parseCommentBlock(OutlineParserInterface *parser,
                        Entry *curEntry,
                        const QCString &comment,
 	               const QCString &fileName,

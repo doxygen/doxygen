@@ -414,6 +414,7 @@
       <xsd:element name="underline" type="docMarkupType" />
       <xsd:element name="emphasis" type="docMarkupType" />
       <xsd:element name="computeroutput" type="docMarkupType" />
+      <xsd:element name="ins" type="docMarkupType" />
       <xsd:element name="subscript" type="docMarkupType" />
       <xsd:element name="superscript" type="docMarkupType" />
       <xsd:element name="center" type="docMarkupType" />
@@ -764,7 +765,7 @@
       <xsd:enumeration value="PHP" />
       <xsd:enumeration value="Objective-C" />
       <xsd:enumeration value="C++" />
-      <xsd:enumeration value="Javascript" />
+      <xsd:enumeration value="JavaScript" />
       <xsd:enumeration value="Python" />
       <xsd:enumeration value="Fortran" />
       <xsd:enumeration value="VHDL" />

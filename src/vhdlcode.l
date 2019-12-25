@@ -33,6 +33,7 @@
 #include <qdir.h>
 #include <qcstringlist.h>
 
+#include "vhdlcode.h"
 #include "entry.h"
 #include "doxygen.h"
 #include "message.h"
@@ -434,14 +435,10 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
 static void setParameterList(const MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
-  const ArgumentList *al = md->argumentList();
-  if (al==0) return;
-  ArgumentListIterator ali(*al);
-  const Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
+  for (const Argument &a: md->argumentList())
   {
-    g_parmName = a->name.copy();
-    g_parmType = a->type.copy();
+    g_parmName = a.name.copy();
+    g_parmType = a.type.copy();
     int i = g_parmType.find('*');
     if (i!=-1) g_parmType = g_parmType.left(i);
     i = g_parmType.find('&');
@@ -683,9 +680,8 @@ static void codifyMapLines(const char *text)
 
 static void writeFuncProto()
 {
-  QList<Argument> ql;
   QCString name,ret;
-  VhdlDocGen::parseFuncProto(g_FuncProto,ql,name,ret,FALSE);
+  VhdlDocGen::parseFuncProto(g_FuncProto,name,ret,FALSE);
 
   if (name.isEmpty())
   {
@@ -702,7 +698,7 @@ static void writeFuncProto()
   {
     temp.stripPrefix("_");// _{package body name}
   }
-  MemberDef *mdef=VhdlDocGen::findFunction(ql,name,temp,FALSE);
+  MemberDef *mdef=VhdlDocGen::findFunction(name,temp);
 
   if (mdef)
   {
@@ -1535,17 +1531,26 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 /*@ ----------------------------------------------------------------------------
  */
 
-void resetVhdlCodeParserState()
+static void resetVhdlCodeParserState()
 {
   g_vhdlKeyDict.setAutoDelete(TRUE);
   g_vhdlKeyDict.clear();
 }
 
-void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString &s, 
-                  bool exBlock, const char *exName,FileDef *fd,
-                  int startLine,int endLine,bool inlineFragment,
-                  const MemberDef *memberDef,bool,const Definition *searchCtx,
-                  bool /* collectXRefs */)
+void VHDLCodeParser::parseCode(CodeOutputInterface &od,
+                               const char *className,
+                               const QCString &s, 
+                               SrcLangExt,
+                               bool exBlock,
+                               const char *exName,
+                               FileDef *fd,
+                               int startLine,
+                               int endLine,
+                               bool inlineFragment,
+                               const MemberDef *memberDef,
+                               bool,
+                               const Definition *searchCtx,
+                               bool /* collectXRefs */)
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
@@ -1638,14 +1643,6 @@ void codeFreeVhdlScanner()
   }
 #endif
 }
-
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-extern "C" { // some bogus code to keep the compiler happy
-  void vhdlcodeYYdummy() { yy_flex_realloc(0,0); } 
-}
-#elif YY_FLEX_MAJOR_VERSION<=2 && YY_FLEX_MINOR_VERSION<=5 && YY_FLEX_SUBMINOR_VERSION<33
-#error "You seem to be using a version of flex newer than 2.5.4 but older than 2.5.33. These versions do NOT work with doxygen! Please use version <=2.5.4 or >=2.5.33 or expect things to be parsed wrongly!"
-#endif
 
 #include "vhdlcode.l.h"
 

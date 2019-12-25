@@ -65,17 +65,17 @@
  */
 
   
-static ParserInterface *g_thisParser;
+static OutlineParserInterface *g_thisParser;
 static const char *     inputString;
 static int		inputPosition;
 static QFile            inputFile;
 
 static Protection	protection;
 
-static Entry*		current_root = 0 ;
-static std::unique_ptr<Entry> current;
-static Entry*		previous     = 0 ;
-static Entry*		bodyEntry    = 0 ;
+static std::shared_ptr<Entry> current_root;
+static std::shared_ptr<Entry> current;
+static std::shared_ptr<Entry> previous;
+static std::shared_ptr<Entry> bodyEntry;
 static int		yyLineNr     = 1 ;
 static QCString		yyFileName;
 static MethodTypes 	mtype;
@@ -151,7 +151,7 @@ static void initEntry()
 
 static void newEntry()
 {
-  previous = current.get();
+  previous = current;
   current_root->moveToSubEntryAndRefresh(current);
   initEntry();
 }
@@ -292,7 +292,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   QCString processedDoc = preprocessCommentBlock(doc,yyFileName,lineNr);
   while (parseCommentBlock(
 	g_thisParser,
-	(docBlockInBody && previous) ? previous : current.get(),
+	(docBlockInBody && previous) ? previous.get() : current.get(),
 	processedDoc, // text
 	yyFileName,   // file
 	lineNr,
@@ -378,7 +378,7 @@ static void searchFoundDef()
   current->type.resize(0);
   current->name.resize(0);
   current->args.resize(0);
-  current->argList->clear();
+  current->argList.clear();
   g_packageCommentAllowed = FALSE;
   gstat=FALSE;
   //printf("searchFoundDef at=%d\n",yyLineNr);
@@ -387,7 +387,7 @@ static void searchFoundDef()
 static void searchFoundClass()
 {
   current->section = Entry::CLASS_SEC;
-  current->argList->clear();
+  current->argList.clear();
   current->type += "class" ;
   current->fileName  = yyFileName;
   current->startLine  = yyLineNr;
@@ -913,7 +913,7 @@ STARTDOCSYMS      "##"
                             }
     {B}":"{B}		    { // function without arguments
 			      g_specialBlock = TRUE; // expecting a docstring
-			      bodyEntry = current.get();
+			      bodyEntry = current;
                               BEGIN(FunctionBody);
 			    }
 
@@ -928,6 +928,10 @@ STARTDOCSYMS      "##"
 			      BEGIN(FunctionParams);
 		            }
     ")"                     { // end of parameter list
+                              if (current->argList.empty())
+                              {
+                                current->argList.noParameters=TRUE;
+                              }
         		      current->args = argListToString(current->argList);
         		      g_funcParamsEnd = TRUE;
                             }
@@ -942,10 +946,10 @@ STARTDOCSYMS      "##"
                         }
     {IDENTIFIER}        { // Name of parameter
 			  lineCount();
-			  Argument *a = new Argument;
-			  current->argList->append(a);
-			  current->argList->getLast()->name = QCString(yytext).stripWhiteSpace();
-			  current->argList->getLast()->type = g_argType;
+			  Argument a;
+			  a.name = QCString(yytext).stripWhiteSpace();
+			  a.type = g_argType;
+			  current->argList.push_back(a);
                           g_argType = "";
                         }
     "="		        { // default value
@@ -1032,8 +1036,8 @@ STARTDOCSYMS      "##"
      ","		{
 			  if (g_braceCount == 0)
 			  {
-			    if (current->argList->getLast())
-			      current->argList->getLast()->type += g_defVal.data();
+			    if (!current->argList.empty())
+			      current->argList.back().type += g_defVal;
 			    if (*yytext != ',')
 			      unput(*yytext);
 			    BEGIN(FunctionParams);
@@ -1082,8 +1086,8 @@ STARTDOCSYMS      "##"
      ","		{
 			  if (g_braceCount == 0)
 			  {
-			    if (current->argList->getLast())
-			      current->argList->getLast()->defval=QCString(g_defVal.data()).stripWhiteSpace();
+			    if (!current->argList.empty())
+			      current->argList.back().defval=QCString(g_defVal).stripWhiteSpace();
 			    if (*yytext == ')')
 			      unput(*yytext);
 			    BEGIN(FunctionParams);
@@ -1241,8 +1245,8 @@ STARTDOCSYMS      "##"
                        }
 
     {SCOPE}            {
-                         current->extends->append(
-					      new BaseInfo(substitute(yytext,".","::"),Public,Normal)
+                         current->extends.push_back(
+					      BaseInfo(substitute(yytext,".","::"),Public,Normal)
 					    );
                          //Has base class-do stuff
                        }
@@ -1296,7 +1300,7 @@ STARTDOCSYMS      "##"
       				 current->program+=yytext;
 			         //current->startLine = yyLineNr;
 				 g_curIndent=computeIndent(yytext);
-				 bodyEntry = current.get();
+				 bodyEntry = current;
 				 DBG_CTX((stderr,"setting indent %d\n",g_curIndent));
 				 //printf("current->program=[%s]\n",current->program.data());
 				 //g_hideClassDocs = TRUE;
@@ -1702,12 +1706,12 @@ STARTDOCSYMS      "##"
 
 //----------------------------------------------------------------------------
 
-static void parseCompounds(Entry *rt)
+static void parseCompounds(std::shared_ptr<Entry> rt)
 {
   //printf("parseCompounds(%s)\n",rt->name.data());
   for (int i=0; i<rt->children().size(); ++i)
   {
-    Entry *ce = rt->children()[i].get();
+    std::shared_ptr<Entry> ce = rt->children()[i];
     if (!ce->program.isEmpty())
     {
       //printf("-- %s ---------\n%s\n---------------\n",
@@ -1723,14 +1727,14 @@ static void parseCompounds(Entry *rt)
       }
       else if (ce->parent())
       {
-        current_root = ce->parent();
+        current_root = rt;
 	//printf("Searching for member variables in %s parent=%s\n",
 	//    ce->name.data(),ce->parent->name.data());
 	BEGIN( SearchMemVars );
       }
       yyFileName = ce->fileName;
       yyLineNr   = ce->bodyLine ;
-      current = std::make_unique<Entry>();
+      current = std::make_shared<Entry>();
       initEntry();
 
       QCString name = ce->name;
@@ -1750,7 +1754,7 @@ static void parseCompounds(Entry *rt)
 //----------------------------------------------------------------------------
 
 
-static void parseMain(const char *fileName,const char *fileBuf,const std::unique_ptr<Entry> &rt)
+static void parseMain(const char *fileName,const char *fileBuf,const std::shared_ptr<Entry> &rt)
 {
   initParser();
 
@@ -1761,7 +1765,7 @@ static void parseMain(const char *fileName,const char *fileBuf,const std::unique
   mtype         = Method;
   gstat         = FALSE;
   virt          = Normal;
-  current_root  = rt.get();
+  current_root  = rt;
   g_specialBlock = FALSE;
 
 
@@ -1785,7 +1789,7 @@ static void parseMain(const char *fileName,const char *fileBuf,const std::unique
       g_moduleScope+=baseName;
     }
 
-    current            = std::make_unique<Entry>();
+    current            = std::make_shared<Entry>();
     initEntry();
     current->name      = g_moduleScope;
     current->section   = Entry::NAMESPACE_SEC;
@@ -1794,7 +1798,7 @@ static void parseMain(const char *fileName,const char *fileBuf,const std::unique
     current->startLine = yyLineNr;
     current->bodyLine  = yyLineNr;
 
-    current_root  = current.get();
+    current_root  = current;
 
     rt->moveToSubEntryAndRefresh(current);
 
@@ -1882,9 +1886,9 @@ void pyscanFreeScanner()
 
 //----------------------------------------------------------------------------
 
-void PythonLanguageScanner::parseInput(const char *fileName,
+void PythonOutlineParser::parseInput(const char *fileName,
                                        const char *fileBuf,
-                                       const std::unique_ptr<Entry> &root,
+                                       const std::shared_ptr<Entry> &root,
                                        bool /*sameTranslationUnit*/,
                                        QStrList & /*filesInSameTranslationUnit*/)
 {
@@ -1897,50 +1901,17 @@ void PythonLanguageScanner::parseInput(const char *fileName,
   // printAST(global_root);
 }
 
-bool PythonLanguageScanner::needsPreprocessing(const QCString &)
+bool PythonOutlineParser::needsPreprocessing(const QCString &) const
 {
   return FALSE;
 }
 
-void PythonLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
-    const char *scopeName,
-    const QCString &input,
-    SrcLangExt /*lang*/,
-    bool isExampleBlock,
-    const char *exampleName,
-    FileDef *fileDef,
-    int startLine,
-    int endLine,
-    bool inlineFragment,
-    const MemberDef *memberDef,
-    bool showLineNumbers,
-    const Definition *searchCtx,
-    bool collectXRefs
-    )
-{
-  ::parsePythonCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
-                    fileDef,startLine,endLine,inlineFragment,memberDef,
-                    showLineNumbers,searchCtx,collectXRefs);
-}
-
-void PythonLanguageScanner::parsePrototype(const char *text)
+void PythonOutlineParser::parsePrototype(const char *text)
 {
   ::parsePrototype(text);
 
 }
 
-void PythonLanguageScanner::resetCodeParserState()
-{
-  ::resetPythonCodeParserState();
-}
-
 //----------------------------------------------------------------------------
-
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-//----------------------------------------------------------------------------
-extern "C" { // some bogus code to keep the compiler happy
-  void pyscannerYYdummy() { yy_flex_realloc(0,0); } 
-}
-#endif
 
 #include "pyscanner.l.h"

@@ -175,7 +175,7 @@
 //
 
 
-// Should be sorted most-authorative to least-authorative
+// Should be sorted most-authoritative to least-authoritative
 
 #if defined(__SC__)
 #define _CC_SYM_
@@ -400,7 +400,7 @@ inline int qRound( double d )
 
 
 //
-// Size-dependent types (architechture-dependent byte order)
+// Size-dependent types (architecture-dependent byte order)
 //
 
 // QT_CLEAN_NAMESPACE is not defined by default; it would break too

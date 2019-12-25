@@ -16,7 +16,7 @@
 #ifndef DOCGROUP_H
 #define DOCGROUP_H
 
-#include <qstack.h>
+#include <vector>
 #include <qstring.h>
 #include "membergroup.h"
 
@@ -42,12 +42,12 @@ class DocGroup
 
   private:
     int findExistingGroup(int &groupId,const MemberGroupInfo *info);
-    int              m_openCount;
+    int              m_openCount = 0;
     QCString         m_memberGroupHeader;
-    int              m_memberGroupId;
+    int              m_memberGroupId = 0;
     QCString         m_memberGroupRelates;
     QCString         m_memberGroupDocs;
-    QStack<Grouping> m_autoGroupStack;
+    std::vector<Grouping> m_autoGroupStack;
     QCString         m_compoundName;
 };
 
