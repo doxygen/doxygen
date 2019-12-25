@@ -21,6 +21,7 @@ from xml.dom import minidom, Node
 def transformDocs(doc):
 	# join lines, unless it is an empty line
 	# remove doxygen layout constructs
+        # Note: also look at expert.cpp of doxywizard for doxywizard parts
 	doc = doc.strip()
 	doc = doc.replace("\n", " ")
 	doc = doc.replace("\r", " ")
@@ -57,6 +58,7 @@ def transformDocs(doc):
 				 doc)
 	doc = re.sub('\\\\ref +external', '"Linking to external documentation"',
 				 doc)
+	doc = re.sub('\\\\ref +formulas', '"Including formulas"', doc)
 	# fallback for not handled
 	doc = re.sub('\\\\ref', '', doc)
 	#<a href="address">description</a> -> description (see: address)

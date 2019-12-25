@@ -56,6 +56,15 @@ void FormulaList::generateBitmaps(const char *path)
     term("Output dir %s does not exist!\n",path);
   }
   QCString oldDir = QDir::currentDirPath().utf8();
+  QCString macroFile = Config_getString(FORMULA_MACROFILE);
+  QCString stripMacroFile;
+  if (!macroFile.isEmpty())
+  {
+    QFileInfo fi(macroFile);
+    macroFile=fi.absFilePath().utf8();
+    stripMacroFile = fi.fileName().data();
+  }
+
   // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
@@ -77,6 +86,11 @@ void FormulaList::generateBitmaps(const char *path)
     t << "\\usepackage[utf8]{inputenc}" << endl; // looks like some older distributions with newunicode package 1.1 need this option.
     writeExtraLatexPackages(t);
     writeLatexSpecialFormulaChars(t);
+    if (!macroFile.isEmpty())
+    {
+      copyFile(macroFile,stripMacroFile);
+      t << "\\input{" << stripMacroFile << "}" << endl;
+    }
     t << "\\pagestyle{empty}" << endl; 
     t << "\\begin{document}" << endl;
     int page=0;
