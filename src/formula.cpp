@@ -334,7 +334,7 @@ void FormulaList::generateBitmaps(const char *path)
     FTextStream t(&f);
     for (fli.toFirst();(formula=fli.current());++fli)
     {
-      t << "\\_fakeform#" << formula->getId() << ":" << formula->getFormulaText() << endl;
+      t << "\\_form#" << formula->getId() << ":" << formula->getFormulaText() << endl;
     }
     f.close();
   }
