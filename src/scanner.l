@@ -6260,16 +6260,19 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  BEGIN(DocCopyBlock);
   					}
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                {
-                                          yyextra->docBlock+=substitute(yytext,"*"," ");
+
+                                          QCString pat = substitute(yytext,"*"," ");
+                                          yyextra->docBlock+=pat;
                                           yyextra->docBlockName="~~~";
-                                          yyextra->fencedSize=yyleng;
+                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                {
-                                          yyextra->docBlock+=substitute(yytext,"*"," ");
+                                          QCString pat = substitute(yytext,"*"," ");
+                                          yyextra->docBlock+=pat;
                                           yyextra->docBlockName="```";
-                                          yyextra->fencedSize=yyleng;
+                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
@@ -6385,15 +6388,17 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
-                                          yyextra->docBlock+=substitute(yytext,"*"," ");
-                                          if (yyextra->fencedSize==yyleng)
+                                          QCString pat = substitute(yytext,"*"," ");
+                                          yyextra->docBlock+=pat;
+                                          if (yyextra->fencedSize==pat.stripWhiteSpace().length())
                                           {
                                             BEGIN(DocBlock);
                                           }
                                         }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
-                                          yyextra->docBlock+=substitute(yytext,"*"," ");
-                                          if (yyextra->fencedSize==yyleng)
+                                          QCString pat = substitute(yytext,"*"," ");
+                                          yyextra->docBlock+=pat;
+                                          if (yyextra->fencedSize==pat.stripWhiteSpace().length())
                                           {
                                             BEGIN(DocBlock);
                                           }
