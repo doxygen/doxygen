@@ -9606,7 +9606,7 @@ void readFormulaRepository(QCString dir, bool cmp)
                 "formula.repository and from_* files from output directories.");
           }
           QCString formLabel;
-          formLabel.sprintf("\\form#%d",f->getId());
+          formLabel.sprintf("\\_form#%d",f->getId());
           if (formLabel != formName)
           {
             term("discrepancy between formula repositories! Remove "

@@ -367,7 +367,7 @@ LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
 SPCMD2    {CMD}[\\@<>&$#%~".+=|-]
-SPCMD3    {CMD}form#[0-9]+
+SPCMD3    {CMD}_form#[0-9]+
 SPCMD4    {CMD}"::"
 SPCMD5    {CMD}":"
 INOUT	  "inout"|"in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
@@ -582,9 +582,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                              yylineno++; 
   		          }
 <St_Para>{SPCMD3}      {
-  			 g_token->name = "form";
+  			 g_token->name = "_form";
 			 bool ok;
-			 g_token->id = QCString(yytext).right((int)yyleng-6).toInt(&ok);
+			 g_token->id = QCString(yytext).right((int)yyleng-7).toInt(&ok);
 			 ASSERT(ok);
 			 return TK_COMMAND_SEL();
   		       }

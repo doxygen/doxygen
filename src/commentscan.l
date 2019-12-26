@@ -621,12 +621,12 @@ static QCString addFormula()
     f = new Formula(fText);
     Doxygen::formulaList->append(f);
     Doxygen::formulaDict->insert(fText,f);
-    formLabel.sprintf("\\form#%d",f->getId());
+    formLabel.sprintf("\\_form#%d",f->getId());
     Doxygen::formulaNameDict->insert(formLabel,f);
   }
   else
   {
-    formLabel.sprintf("\\form#%d",f->getId());
+    formLabel.sprintf("\\_form#%d",f->getId());
   }
   int i;
   for (i=0;i<formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to

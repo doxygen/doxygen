@@ -2223,7 +2223,7 @@ DocFormula::DocFormula(DocNode *parent,int id) :
 {
   m_parent = parent; 
   QCString formCmd;
-  formCmd.sprintf("\\form#%d",id);
+  formCmd.sprintf("\\_form#%d",id);
   Formula *formula=Doxygen::formulaNameDict->find(formCmd);
   if (formula)
   {
@@ -2231,7 +2231,7 @@ DocFormula::DocFormula(DocNode *parent,int id) :
     m_name.sprintf("form_%d",m_id);
     m_text = formula->getFormulaText();
   }
-  else // wrong \form#<n> command
+  else // wrong \_form#<n> command
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Wrong formula id %d",id);
     m_id = -1;
