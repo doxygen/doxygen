@@ -187,6 +187,9 @@ void XmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Bold:
       if (s->enable()) m_t << "<bold>";      else m_t << "</bold>";
       break;
+    case DocStyleChange::S:
+      if (s->enable()) m_t << "<s>";      else m_t << "</s>";
+      break;
     case DocStyleChange::Strike:
       if (s->enable()) m_t << "<strike>";      else m_t << "</strike>";
       break;

@@ -136,6 +136,7 @@ void ManDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "\\fB";      else m_t << "\\fP";
       m_firstCol=FALSE;
       break;
+    case DocStyleChange::S:
     case DocStyleChange::Strike:
     case DocStyleChange::Del:
       /* not supported */
