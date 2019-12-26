@@ -625,7 +625,7 @@ void LatexDocVisitor::visit(DocFormula *f)
     {
       switch (c)
       {
-        case '\'': m_t << "\\text{'}"; break;
+        case '\'': m_t << "\\textnormal{\\textquotesingle}"; break;
         default:  m_t << c; break;
       }
     }
