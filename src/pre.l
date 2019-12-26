@@ -1420,7 +1420,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <CopyCComment>\\[\r]?\n                 {
                                           yyextra->defLitText+=yytext;
-                                          outputChar(yyscanner,'\n');
                                           yyextra->defText+=" ";
                                           yyextra->yyLineNr++;
                                           yyextra->yyMLines++;
@@ -1432,7 +1431,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <CopyCComment>\n			{ 
   					  yyextra->yyLineNr++;
-  					  outputChar(yyscanner,'\n');
 					  yyextra->defLitText+=yytext;
 					  yyextra->defText+=' ';
   					}
