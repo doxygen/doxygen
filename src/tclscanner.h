@@ -25,18 +25,23 @@
  *
  *  This is the Tcl language parser for doxygen.
  */
-class TclLanguageScanner : public ParserInterface
+class TclOutlineParser : public OutlineParserInterface
 {
   public:
-    virtual ~TclLanguageScanner() {}
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
     void parseInput(const char *fileName,
                     const char *fileBuf,
-                    const std::unique_ptr<Entry> &root,
+                    const std::shared_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
-    bool needsPreprocessing(const QCString &extension);
+    bool needsPreprocessing(const QCString &extension) const;
+    void parsePrototype(const char *text);
+};
+
+class TclCodeParser : public CodeParserInterface
+{
+  public:
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,
@@ -53,7 +58,6 @@ class TclLanguageScanner : public ParserInterface
                    bool collectXRefs=TRUE
                   );
     void resetCodeParserState();
-    void parsePrototype(const char *text);
 };
 
 #endif

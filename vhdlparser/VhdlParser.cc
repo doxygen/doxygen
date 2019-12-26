@@ -6181,6 +6181,19 @@ QCString VhdlParser::name_ext() {QCString s,s1,s2;if (!hasError) {
     
     if (jj_2_49(2147483647)) {if (!hasError) {
       
+      jj_consume_token(APOSTROPHE_T);
+      }
+      if (!hasError) {
+      
+      jj_consume_token(SUBTYPE_T);
+      }
+      if (!hasError) {
+      
+s+="'subtype";
+      }
+      
+    } else if (jj_2_50(2147483647)) {if (!hasError) {
+      
       jj_consume_token(DOT_T);
       }
       if (!hasError) {
@@ -6192,7 +6205,7 @@ QCString VhdlParser::name_ext() {QCString s,s1,s2;if (!hasError) {
 s+=".";s+=s1;
       }
       
-    } else if (jj_2_50(2147483647)) {if (!hasError) {
+    } else if (jj_2_51(2147483647)) {if (!hasError) {
       
       s1 = test_att_name();
       }
@@ -6201,7 +6214,7 @@ s+=".";s+=s1;
 s+=s1;
       }
       
-    } else if (jj_2_51(2147483647)) {if (!hasError) {
+    } else if (jj_2_52(2147483647)) {if (!hasError) {
       
       jj_consume_token(LPAREN_T);
       }
@@ -6218,7 +6231,7 @@ s+=s1;
 s+="(";s+=s1;s+=")";
       }
       
-    } else if (jj_2_52(2147483647)) {if (!hasError) {
+    } else if (jj_2_53(2147483647)) {if (!hasError) {
       
       jj_consume_token(LPAREN_T);
       }
@@ -6279,7 +6292,7 @@ assert(false);
 
 QCString VhdlParser::test_att_name() {QCString s,s1;if (!hasError) {
     
-    if (jj_2_53(2147483647)) {if (!hasError) {
+    if (jj_2_54(2147483647)) {if (!hasError) {
       
       s1 = signature();
       }
@@ -6502,7 +6515,7 @@ assert(false);
 
 
 QCString VhdlParser::numeric_literal() {QCString s;
-    if (jj_2_54(2147483647)) {if (!hasError) {
+    if (jj_2_55(2147483647)) {if (!hasError) {
       
       s = physical_literal();
       }
@@ -6803,7 +6816,7 @@ void VhdlParser::package_body_declarative_item() {
       }
     default:
       jj_la1[152] = jj_gen;
-      if (jj_2_55(3)) {if (!hasError) {
+      if (jj_2_56(3)) {if (!hasError) {
         
         group_template_declaration();
         }
@@ -6877,7 +6890,7 @@ void VhdlParser::package_declaration() {QCString s;if (!hasError) {
     if (!hasError) {
     
 lastCompound=current.get();
-                          std::unique_ptr<Entry> clone=std::make_unique<Entry>(*current);
+                          std::shared_ptr<Entry> clone=std::make_shared<Entry>(*current);
                           clone->section=Entry::NAMESPACE_SEC;
                           clone->spec=VhdlDocGen::PACKAGE;
                           clone->name=s;
@@ -7050,7 +7063,7 @@ void VhdlParser::package_declarative_item() {
       }
     default:
       jj_la1[159] = jj_gen;
-      if (jj_2_56(2147483647)) {if (!hasError) {
+      if (jj_2_57(2147483647)) {if (!hasError) {
         
         attribute_declaration();
         }
@@ -7080,7 +7093,7 @@ void VhdlParser::package_declarative_item() {
           }
         default:
           jj_la1[160] = jj_gen;
-          if (jj_2_57(3)) {if (!hasError) {
+          if (jj_2_58(3)) {if (!hasError) {
             
             group_template_declaration();
             }
@@ -7096,7 +7109,7 @@ void VhdlParser::package_declarative_item() {
               }
             default:
               jj_la1[161] = jj_gen;
-              if (jj_2_58(5)) {if (!hasError) {
+              if (jj_2_59(5)) {if (!hasError) {
                 
                 package_instantiation_declaration();
                 }
@@ -7184,7 +7197,7 @@ assert(false);
 
 QCString VhdlParser::physical_literal() {QCString s,s1;if (!hasError) {
     
-    if (jj_2_59(2147483647)) {if (!hasError) {
+    if (jj_2_60(2147483647)) {if (!hasError) {
       
       s = abstract_literal();
       }
@@ -7331,7 +7344,7 @@ void VhdlParser::port_map_aspect() {if (!hasError) {
 
 
 QCString VhdlParser::primary() {QCString s,s1;
-    if (jj_2_60(2147483647)) {if (!hasError) {
+    if (jj_2_61(2147483647)) {if (!hasError) {
       
       s = function_call();
       }
@@ -7340,7 +7353,7 @@ QCString VhdlParser::primary() {QCString s,s1;
 return s;
       }
       
-    } else if (jj_2_61(2147483647)) {if (!hasError) {
+    } else if (jj_2_62(2147483647)) {if (!hasError) {
       
       jj_consume_token(LPAREN_T);
       }
@@ -7357,7 +7370,7 @@ return s;
 s="("+s1+")"; return s;
       }
       
-    } else if (jj_2_62(2147483647)) {if (!hasError) {
+    } else if (jj_2_63(2147483647)) {if (!hasError) {
       
       s = qualified_expression();
       }
@@ -7366,7 +7379,7 @@ s="("+s1+")"; return s;
 return s;
       }
       
-    } else if (jj_2_63(2147483647)) {if (!hasError) {
+    } else if (jj_2_64(2147483647)) {if (!hasError) {
       
       s = type_conversion();
       }
@@ -7375,7 +7388,7 @@ return s;
 return s;
       }
       
-    } else if (jj_2_64(2147483647)) {if (!hasError) {
+    } else if (jj_2_65(2147483647)) {if (!hasError) {
       
       s = literal();
       }
@@ -7384,7 +7397,7 @@ return s;
 s.prepend(" ");return s;
       }
       
-    } else if (jj_2_65(2147483647)) {if (!hasError) {
+    } else if (jj_2_66(2147483647)) {if (!hasError) {
       
       s = name();
       }
@@ -7445,12 +7458,12 @@ void VhdlParser::primary_unit() {
       }
     default:
       jj_la1[167] = jj_gen;
-      if (jj_2_66(2147483647)) {if (!hasError) {
+      if (jj_2_67(2147483647)) {if (!hasError) {
         
         package_instantiation_declaration();
         }
         
-      } else if (jj_2_67(4)) {if (!hasError) {
+      } else if (jj_2_68(4)) {if (!hasError) {
         
         interface_package_declaration();
         }
@@ -7513,7 +7526,7 @@ assert(false);
 
 QCString VhdlParser::procedure_call_statement() {QCString s,s1;if (!hasError) {
     
-    if (jj_2_68(2)) {if (!hasError) {
+    if (jj_2_69(2)) {if (!hasError) {
       
       s = identifier();
       }
@@ -7629,7 +7642,7 @@ return s;
       }
     default:
       jj_la1[170] = jj_gen;
-      if (jj_2_69(3)) {if (!hasError) {
+      if (jj_2_70(3)) {if (!hasError) {
         
         s = attribute_declaration();
         }
@@ -7664,7 +7677,7 @@ return s;
           }
         default:
           jj_la1[171] = jj_gen;
-          if (jj_2_70(3)) {if (!hasError) {
+          if (jj_2_71(3)) {if (!hasError) {
             
             s = group_template_declaration();
             }
@@ -7980,7 +7993,7 @@ s=s1+"'";
     }
     if (!hasError) {
     
-    if (jj_2_71(2147483647)) {if (!hasError) {
+    if (jj_2_72(2147483647)) {if (!hasError) {
       
       s1 = aggregate();
       }
@@ -8024,7 +8037,7 @@ assert(false);
 
 
 QCString VhdlParser::range() {QCString s,s1,s2;
-    if (jj_2_72(2147483647)) {if (!hasError) {
+    if (jj_2_73(2147483647)) {if (!hasError) {
       
       s = simple_expression();
       }
@@ -8041,7 +8054,7 @@ QCString VhdlParser::range() {QCString s,s1,s2;
 return s+" "+s1+" "+s2;
       }
       
-    } else if (jj_2_73(2147483647)) {if (!hasError) {
+    } else if (jj_2_74(2147483647)) {if (!hasError) {
       
       s = attribute_name();
       }
@@ -8384,7 +8397,7 @@ return s;
       }
       if (!hasError) {
       
-      if (jj_2_74(2147483647)) {if (!hasError) {
+      if (jj_2_75(2147483647)) {if (!hasError) {
         
         s1 = physical_type_definition();
         }
@@ -8614,7 +8627,7 @@ assert(false);
 QCString VhdlParser::sequence_of_statement() {QCString s,s1;if (!hasError) {
     
     while (!hasError) {
-      if (jj_2_75(3)) {
+      if (jj_2_76(3)) {
         ;
       } else {
         goto end_label_37;
@@ -8637,7 +8650,7 @@ assert(false);
 
 
 QCString VhdlParser::sequential_statement() {QCString s;
-    if (jj_2_76(2147483647)) {if (!hasError) {
+    if (jj_2_77(2147483647)) {if (!hasError) {
       
       s = signal_assignment_statement();
       }
@@ -8646,7 +8659,7 @@ QCString VhdlParser::sequential_statement() {QCString s;
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
       }
       
-    } else if (jj_2_77(3)) {if (!hasError) {
+    } else if (jj_2_78(3)) {if (!hasError) {
       
       s = assertion_statement();
       }
@@ -8655,7 +8668,7 @@ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
       }
       
-    } else if (jj_2_78(3)) {if (!hasError) {
+    } else if (jj_2_79(3)) {if (!hasError) {
       
       s = report_statement();
       }
@@ -8664,7 +8677,7 @@ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
       }
       
-    } else if (jj_2_79(3)) {if (!hasError) {
+    } else if (jj_2_80(3)) {if (!hasError) {
       
       s = wait_statement();
       }
@@ -8673,7 +8686,7 @@ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
       }
       
-    } else if (jj_2_80(2147483647)) {if (!hasError) {
+    } else if (jj_2_81(2147483647)) {if (!hasError) {
       
       s = variable_assignment_statement();
       }
@@ -8682,7 +8695,7 @@ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
       }
       
-    } else if (jj_2_81(3)) {if (!hasError) {
+    } else if (jj_2_82(3)) {if (!hasError) {
       
       s = procedure_call_statement();
       }
@@ -8691,7 +8704,7 @@ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
       }
       
-    } else if (jj_2_82(3)) {if (!hasError) {
+    } else if (jj_2_83(3)) {if (!hasError) {
       
       if_statement();
       }
@@ -8700,7 +8713,7 @@ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
 return s;
       }
       
-    } else if (jj_2_83(3)) {if (!hasError) {
+    } else if (jj_2_84(3)) {if (!hasError) {
       
       case_statement();
       }
@@ -8709,7 +8722,7 @@ return s;
 return s;
       }
       
-    } else if (jj_2_84(3)) {if (!hasError) {
+    } else if (jj_2_85(3)) {if (!hasError) {
       
       loop_statement();
       }
@@ -8718,7 +8731,7 @@ return s;
 return s;
       }
       
-    } else if (jj_2_85(3)) {if (!hasError) {
+    } else if (jj_2_86(3)) {if (!hasError) {
       
       s = next_statement();
       }
@@ -8727,7 +8740,7 @@ return s;
 return s;
       }
       
-    } else if (jj_2_86(3)) {if (!hasError) {
+    } else if (jj_2_87(3)) {if (!hasError) {
       
       s = exit_statement();
       }
@@ -8736,7 +8749,7 @@ return s;
 return s;
       }
       
-    } else if (jj_2_87(3)) {if (!hasError) {
+    } else if (jj_2_88(3)) {if (!hasError) {
       
       s = return_statement();
       }
@@ -8915,7 +8928,7 @@ assert(false);
 
 
 QCString VhdlParser::signal_assignment_statement() {QCString s,s1,s2,s3;
-    if (jj_2_89(2147483647)) {if (!hasError) {
+    if (jj_2_90(2147483647)) {if (!hasError) {
       
       conditional_signal_assignment_wave();
       }
@@ -8924,7 +8937,7 @@ QCString VhdlParser::signal_assignment_statement() {QCString s,s1,s2,s3;
 return "";
       }
       
-    } else if (jj_2_90(2147483647)) {if (!hasError) {
+    } else if (jj_2_91(2147483647)) {if (!hasError) {
       
       selected_signal_assignment_wave();
       }
@@ -8941,7 +8954,7 @@ return "";
       case BASIC_IDENTIFIER:
       case EXTENDED_CHARACTER:{if (!hasError) {
         
-        if (jj_2_88(2)) {if (!hasError) {
+        if (jj_2_89(2)) {if (!hasError) {
           
           s = identifier();
           }
@@ -9291,7 +9304,7 @@ s+=s1;
     if (!hasError) {
     
     while (!hasError) {
-      if (jj_2_91(2147483647)) {
+      if (jj_2_92(2147483647)) {
         ;
       } else {
         goto end_label_40;
@@ -9431,7 +9444,7 @@ tempEntry->endBodyLine=getLine(END_T);
 
 
 void VhdlParser::subprogram_declaration() {
-    if (jj_2_92(2147483647)) {if (!hasError) {
+    if (jj_2_93(2147483647)) {if (!hasError) {
       
       subprogram_instantiation_declaration();
       }
@@ -9585,7 +9598,7 @@ return s;
       }
     default:
       jj_la1[214] = jj_gen;
-      if (jj_2_93(2147483647)) {if (!hasError) {
+      if (jj_2_94(2147483647)) {if (!hasError) {
         
         s = attribute_declaration();
         }
@@ -9620,7 +9633,7 @@ return s;
           }
         default:
           jj_la1[215] = jj_gen;
-          if (jj_2_94(3)) {if (!hasError) {
+          if (jj_2_95(3)) {if (!hasError) {
             
             s = group_template_declaration();
             }
@@ -9773,7 +9786,7 @@ param_sec=0;
       }
       if (!hasError) {
       
-      if (jj_2_95(2)) {if (!hasError) {
+      if (jj_2_96(2)) {if (!hasError) {
         
         gen_interface_list();
         }
@@ -9784,7 +9797,7 @@ param_sec=0;
       }
       if (!hasError) {
       
-      if (jj_2_96(2)) {if (!hasError) {
+      if (jj_2_97(2)) {if (!hasError) {
         
         gen_assoc_list();
         }
@@ -9989,7 +10002,7 @@ QCString VhdlParser::subtype_indication() {QCString s,s1,s2;if (!hasError) {
     }
     if (!hasError) {
     
-    if (jj_2_97(2147483647)) {if (!hasError) {
+    if (jj_2_98(2147483647)) {if (!hasError) {
       
       s1 = name();
       }
@@ -10000,7 +10013,7 @@ QCString VhdlParser::subtype_indication() {QCString s,s1,s2;if (!hasError) {
     }
     if (!hasError) {
     
-    if (jj_2_98(2147483647)) {if (!hasError) {
+    if (jj_2_99(2147483647)) {if (!hasError) {
       
       s2 = constraint();
       }
@@ -10016,7 +10029,7 @@ assert(false);
 
 
 QCString VhdlParser::suffix() {QCString s;
-    if (jj_2_99(2147483647)) {if (!hasError) {
+    if (jj_2_100(2147483647)) {if (!hasError) {
       
       s = name();
       }
@@ -10113,7 +10126,7 @@ QCString VhdlParser::term() {QCString s,s1,s2;if (!hasError) {
     if (!hasError) {
     
     while (!hasError) {
-      if (jj_2_100(2)) {
+      if (jj_2_101(2)) {
         ;
       } else {
         goto end_label_43;
@@ -10176,7 +10189,7 @@ assert(false);
 
 
 QCString VhdlParser::type_declaration() {QCString s;
-    if (jj_2_101(3)) {if (!hasError) {
+    if (jj_2_102(3)) {if (!hasError) {
       
       s = full_type_declaration();
       }
@@ -10259,7 +10272,7 @@ return s;
       }
     default:
       jj_la1[228] = jj_gen;
-      if (jj_2_102(2)) {if (!hasError) {
+      if (jj_2_103(2)) {if (!hasError) {
         
         protected_type_body();
         }
@@ -10423,7 +10436,7 @@ QCString VhdlParser::variable_assignment_statement() {QCString s,s1,s2;
     case BASIC_IDENTIFIER:
     case EXTENDED_CHARACTER:{if (!hasError) {
       
-      if (jj_2_103(2)) {if (!hasError) {
+      if (jj_2_104(2)) {if (!hasError) {
         
         s = identifier();
         }
@@ -10860,7 +10873,7 @@ void VhdlParser::protected_type_body_declarative_item() {
       }
     default:
       jj_la1[243] = jj_gen;
-      if (jj_2_104(2147483647)) {if (!hasError) {
+      if (jj_2_105(2147483647)) {if (!hasError) {
         
         attribute_declaration();
         }
@@ -10883,7 +10896,7 @@ void VhdlParser::protected_type_body_declarative_item() {
           }
         default:
           jj_la1[244] = jj_gen;
-          if (jj_2_105(3)) {if (!hasError) {
+          if (jj_2_106(3)) {if (!hasError) {
             
             group_template_declaration();
             }
@@ -11415,7 +11428,7 @@ void VhdlParser::case_scheme() {if (!hasError) {
     }
     if (!hasError) {
     
-    if (jj_2_106(3)) {if (!hasError) {
+    if (jj_2_107(3)) {if (!hasError) {
       
       ttend();
       }
@@ -11452,7 +11465,7 @@ void VhdlParser::when_stats() {if (!hasError) {
       }
       if (!hasError) {
       
-      if (jj_2_107(2)) {if (!hasError) {
+      if (jj_2_108(2)) {if (!hasError) {
         
         label();
         }
@@ -11558,7 +11571,7 @@ void VhdlParser::generate_statement_body1() {if (!hasError) {
     case VARIABLE_T:{if (!hasError) {
       
       while (!hasError) {
-        if (jj_2_108(2147483647)) {
+        if (jj_2_109(2147483647)) {
           ;
         } else {
           goto end_label_51;
@@ -11736,7 +11749,7 @@ assert(false);
 
 
 QCString VhdlParser::absolute_pathname() {QCString s,s1;
-    if (jj_2_109(2147483647)) {if (!hasError) {
+    if (jj_2_110(2147483647)) {if (!hasError) {
       
       jj_consume_token(DOT_T);
       }
@@ -11786,7 +11799,7 @@ QCString VhdlParser::relative_pathname() {QCString s,s1,s2;if (!hasError) {
     }
     if (!hasError) {
     
-    if (jj_2_110(2147483647)) {if (!hasError) {
+    if (jj_2_111(2147483647)) {if (!hasError) {
       
       s1 = pathname_element_list();
       }
@@ -11892,7 +11905,7 @@ s+=".";
     if (!hasError) {
     
     while (!hasError) {
-      if (jj_2_111(2147483647)) {
+      if (jj_2_112(2147483647)) {
         ;
       } else {
         goto end_label_54;
@@ -11933,7 +11946,7 @@ assert(false);
 
 
 void VhdlParser::conditional_signal_assignment_wave() {
-    if (jj_2_112(2147483647)) {if (!hasError) {
+    if (jj_2_113(2147483647)) {if (!hasError) {
       
       conditional_force_assignment();
       }
@@ -12130,7 +12143,7 @@ void VhdlParser::conditional_force_assignment() {if (!hasError) {
 
 
 void VhdlParser::selected_signal_assignment_wave() {
-    if (jj_2_113(2147483647)) {if (!hasError) {
+    if (jj_2_114(2147483647)) {if (!hasError) {
       
       selected_force_assignment();
       }
@@ -12197,7 +12210,7 @@ void VhdlParser::selected_variable_assignment() {if (!hasError) {
 
 
 void VhdlParser::select_name() {
-    if (jj_2_114(2147483647)) {if (!hasError) {
+    if (jj_2_115(2147483647)) {if (!hasError) {
       
       aggregate();
       }
@@ -12387,7 +12400,7 @@ void VhdlParser::sel_var_list() {if (!hasError) {
     if (!hasError) {
     
     while (!hasError) {
-      if (jj_2_115(2147483647)) {
+      if (jj_2_116(2147483647)) {
         ;
       } else {
         goto end_label_55;
@@ -12859,7 +12872,7 @@ Token * VhdlParser::jj_consume_token(int kind)  {
       jj_gen++;
       if (++jj_gc > 100) {
         jj_gc = 0;
-        for (int i = 0; i < 115; i++) {
+        for (int i = 0; i < 116; i++) {
           JJCalls *c = &jj_2_rtns[i];
           while (c != NULL) {
             if (c->gen < jj_gen) c->first = NULL;
@@ -12948,7 +12961,7 @@ int VhdlParser::jj_ntk_f(){
 
   void VhdlParser::jj_rescan_token(){
     jj_rescan = true;
-    for (int i = 0; i < 115; i++) {
+    for (int i = 0; i < 116; i++) {
       JJCalls *p = &jj_2_rtns[i];
       do {
         if (p->gen > jj_gen) {
@@ -13069,6 +13082,7 @@ int VhdlParser::jj_ntk_f(){
             case 112: jj_3_113(); break;
             case 113: jj_3_114(); break;
             case 114: jj_3_115(); break;
+            case 115: jj_3_116(); break;
           }
         }
         p = p->next;

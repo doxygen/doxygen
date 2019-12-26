@@ -34,7 +34,7 @@
 // support the PNG format, we need to check the result.
 static void checkPngResult(const char *imgName)
 {
-  FILE *f = portable_fopen(imgName,"rb");
+  FILE *f = Portable::fopen(imgName,"rb");
   if (f)
   {
     char data[4];
@@ -115,7 +115,7 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
 {
   const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
   int bblen = strlen(bb);
-  FILE *f = portable_fopen(fileName,"rb");
+  FILE *f = Portable::fopen(fileName,"rb");
   if (!f) 
   {
     //printf("readBoundingBox: could not open %s\n",fileName);
@@ -191,14 +191,14 @@ bool DotRunner::run()
       dotArgs+=' ';
       dotArgs+=s->args.data();
     }
-    if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
+    if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
   }
   else
   {
     for (li.toFirst();(s=li.current());++li)
     {
       dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
-      if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
+      if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
     }
   }
 
@@ -214,7 +214,7 @@ bool DotRunner::run()
       {
         if (!resetPDFSize(width,height,getBaseNameOfOutput(s->output.data()))) goto error;
         dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
-        if ((exitCode=portable_system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
+        if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
       }
     }
 
@@ -228,14 +228,14 @@ bool DotRunner::run()
   if (m_cleanUp) 
   {
     //printf("removing dot file %s\n",m_file.data());
-    portable_unlink(m_file.data());
+    Portable::unlink(m_file.data());
   }
 
   // create checksum file
   if (!m_md5Hash.isEmpty()) 
   {
     QCString md5Name = getBaseNameOfOutput(m_file.data()) + ".md5";
-    FILE *f = portable_fopen(md5Name,"w");
+    FILE *f = Portable::fopen(md5Name,"w");
     if (f)
     {
       fwrite(m_md5Hash.data(),1,32,f); 

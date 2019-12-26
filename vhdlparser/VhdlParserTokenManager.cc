@@ -13,10 +13,10 @@ static const unsigned long long jjbitVec3[] = {
    0x0ULL, 0x0ULL, 0xffffffff00000000ULL, 0xffffffffffffffffULL
 };
 static const int jjnextStates[] = {
-   54, 55, 56, 57, 58, 61, 65, 66, 67, 76, 21, 48, 49, 2, 37, 38, 
+   58, 59, 60, 61, 62, 65, 69, 70, 71, 80, 21, 50, 51, 2, 37, 38, 
    0, 3, 4, 5, 7, 12, 13, 15, 16, 24, 23, 25, 33, 34, 36, 39, 
-   40, 42, 56, 57, 58, 61, 60, 59, 61, 65, 66, 67, 68, 69, 71, 9, 
-   10, 28, 29, 45, 47, 50, 52, 27, 30, 
+   40, 42, 46, 47, 49, 53, 54, 56, 60, 61, 62, 65, 64, 63, 65, 69, 
+   70, 71, 72, 73, 75, 9, 10, 28, 29, 27, 30, 
 };
 static JAVACC_CHAR_TYPE jjstrLiteralChars_0[] = {0};
 static JAVACC_CHAR_TYPE jjstrLiteralChars_1[] = {0};
@@ -2491,25 +2491,25 @@ void  VhdlParserTokenManager::setDebugStream(FILE *ds){ debugStream = ds; }
    switch(curChar)
    {
       case 65:
-         return jjMoveStringLiteralDfa12_0(active0, 0L, active1, 0x8000000ULL);
+         return jjMoveStringLiteralDfa12_0(active0, 0x200000ULL, active1, 0x8000000ULL);
       case 69:
          if ((active0 & 0x20000ULL) != 0L)
          {
             jjmatchedKind = 17;
             jjmatchedPos = 11;
          }
-         return jjMoveStringLiteralDfa12_0(active0, 0x200000ULL, active1, 0L);
+         break;
       case 79:
          return jjMoveStringLiteralDfa12_0(active0, 0x40000000ULL, active1, 0L);
       case 97:
-         return jjMoveStringLiteralDfa12_0(active0, 0L, active1, 0x8000000ULL);
+         return jjMoveStringLiteralDfa12_0(active0, 0x200000ULL, active1, 0x8000000ULL);
       case 101:
          if ((active0 & 0x20000ULL) != 0L)
          {
             jjmatchedKind = 17;
             jjmatchedPos = 11;
          }
-         return jjMoveStringLiteralDfa12_0(active0, 0x200000ULL, active1, 0L);
+         break;
       case 111:
          return jjMoveStringLiteralDfa12_0(active0, 0x40000000ULL, active1, 0L);
       default :
@@ -2687,7 +2687,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
    curChar = input_stream->readChar();
    curPos = 0;
    int startsAt = 0;
-   jjnewStateCnt = 77;
+   jjnewStateCnt = 81;
    int i = 1;
    jjstateSet[0] = startState;
    int kind = 0x7fffffff;
@@ -2916,72 +2916,79 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 44:
                   if (curChar == 33)
-                     { jjCheckNAddTwoStates(45, 47); }
+                     { jjCheckNAddTwoStates(45, 46); }
                   break;
                case 45:
-                  { jjCheckNAddTwoStates(45, 47); }
+                  if ((0xfffffbffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(45, 46); }
                   break;
                case 46:
+                  if (curChar == 42)
+                     { jjCheckNAddStates(34, 36); }
+                  break;
+               case 47:
+                  if ((0xffff7bffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(48, 46); }
+                  break;
+               case 48:
+                  if ((0xfffffbffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(48, 46); }
+                  break;
+               case 49:
                   if (curChar == 47 && kind > 9)
                      kind = 9;
                   break;
-               case 47:
-                  if (curChar == 42)
-                     jjstateSet[jjnewStateCnt++] = 46;
-                  break;
-               case 48:
+               case 50:
                   if (curChar == 42)
                      jjstateSet[jjnewStateCnt++] = 44;
                   break;
-               case 49:
-                  if (curChar == 42)
-                     { jjCheckNAddTwoStates(50, 52); }
-                  break;
-               case 50:
-                  { jjCheckNAddTwoStates(50, 52); }
-                  break;
                case 51:
+                  if (curChar == 42)
+                     { jjCheckNAddTwoStates(52, 53); }
+                  break;
+               case 52:
+                  if ((0xfffffbffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(52, 53); }
+                  break;
+               case 53:
+                  if (curChar == 42)
+                     { jjCheckNAddStates(37, 39); }
+                  break;
+               case 54:
+                  if ((0xffff7bffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(55, 53); }
+                  break;
+               case 55:
+                  if ((0xfffffbffffffffffULL & l) != 0L)
+                     { jjCheckNAddTwoStates(55, 53); }
+                  break;
+               case 56:
                   if (curChar == 47 && kind > 10)
                      kind = 10;
                   break;
-               case 52:
-                  if (curChar == 42)
-                     jjstateSet[jjnewStateCnt++] = 51;
-                  break;
-               case 53:
+               case 57:
                   if ((0x3ff000000000000ULL & l) == 0L)
                      break;
                   if (kind > 165)
                      kind = 165;
                   { jjCheckNAddStates(0, 10); }
                   break;
-               case 55:
+               case 59:
                   if ((0x3ff000000000000ULL & l) == 0L)
                      break;
                   if (kind > 165)
                      kind = 165;
-                  { jjCheckNAddTwoStates(54, 55); }
+                  { jjCheckNAddTwoStates(58, 59); }
                   break;
-               case 57:
+               case 61:
                   if ((0x3ff000000000000ULL & l) == 0L)
                      break;
                   if (kind > 170)
                      kind = 170;
-                  { jjCheckNAddStates(34, 37); }
-                  break;
-               case 58:
-                  if (curChar == 46)
-                     { jjCheckNAdd(59); }
-                  break;
-               case 59:
-                  if ((0x3ff000000000000ULL & l) == 0L)
-                     break;
-                  if (kind > 170)
-                     kind = 170;
-                  { jjCheckNAddStates(38, 40); }
+                  { jjCheckNAddStates(40, 43); }
                   break;
                case 62:
-                  if ((0x280000000000ULL & l) != 0L)
+                  if (curChar == 46)
                      { jjCheckNAdd(63); }
                   break;
                case 63:
@@ -2989,49 +2996,60 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                      break;
                   if (kind > 170)
                      kind = 170;
-                  { jjCheckNAddTwoStates(64, 63); }
+                  { jjCheckNAddStates(44, 46); }
                   break;
                case 66:
-                  if ((0x3ff000000000000ULL & l) != 0L)
-                     { jjCheckNAddStates(41, 43); }
+                  if ((0x280000000000ULL & l) != 0L)
+                     { jjCheckNAdd(67); }
                   break;
                case 67:
-                  if (curChar == 35)
-                     { jjCheckNAdd(68); }
-                  break;
-               case 68:
-                  if ((0x3ff000000000000ULL & l) != 0L)
-                     { jjCheckNAddStates(44, 46); }
-                  break;
-               case 69:
-                  if (curChar == 46)
-                     { jjCheckNAdd(70); }
+                  if ((0x3ff000000000000ULL & l) == 0L)
+                     break;
+                  if (kind > 170)
+                     kind = 170;
+                  { jjCheckNAddTwoStates(68, 67); }
                   break;
                case 70:
                   if ((0x3ff000000000000ULL & l) != 0L)
-                     { jjCheckNAddTwoStates(70, 71); }
+                     { jjCheckNAddStates(47, 49); }
                   break;
                case 71:
+                  if (curChar == 35)
+                     { jjCheckNAdd(72); }
+                  break;
+               case 72:
+                  if ((0x3ff000000000000ULL & l) != 0L)
+                     { jjCheckNAddStates(50, 52); }
+                  break;
+               case 73:
+                  if (curChar == 46)
+                     { jjCheckNAdd(74); }
+                  break;
+               case 74:
+                  if ((0x3ff000000000000ULL & l) != 0L)
+                     { jjCheckNAddTwoStates(74, 75); }
+                  break;
+               case 75:
                   if (curChar != 35)
                      break;
                   if (kind > 172)
                      kind = 172;
-                  jjstateSet[jjnewStateCnt++] = 72;
+                  jjstateSet[jjnewStateCnt++] = 76;
                   break;
-               case 73:
+               case 77:
                   if ((0x280000000000ULL & l) != 0L)
-                     { jjCheckNAdd(74); }
+                     { jjCheckNAdd(78); }
                   break;
-               case 74:
+               case 78:
                   if ((0x3ff000000000000ULL & l) == 0L)
                      break;
                   if (kind > 172)
                      kind = 172;
-                  { jjCheckNAddTwoStates(75, 74); }
+                  { jjCheckNAddTwoStates(79, 78); }
                   break;
-               case 76:
+               case 80:
                   if ((0x3ff000000000000ULL & l) != 0L)
-                     { jjCheckNAddTwoStates(76, 21); }
+                     { jjCheckNAddTwoStates(80, 21); }
                   break;
                default : break;
             }
@@ -3072,7 +3090,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 9:
                   if ((0x7fffffffffffffffULL & l) != 0L)
-                     { jjAddStates(47, 48); }
+                     { jjAddStates(53, 54); }
                   break;
                case 12:
                   if (curChar == 95)
@@ -3126,7 +3144,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 28:
                   if ((0x7fffffffffffffffULL & l) != 0L)
-                     { jjAddStates(49, 50); }
+                     { jjAddStates(55, 56); }
                   break;
                case 30:
                   if ((0x7fffffffffffffffULL & l) == 0L)
@@ -3146,50 +3164,58 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   { jjAddStates(31, 33); }
                   break;
                case 45:
-                  { jjAddStates(51, 52); }
+                  { jjCheckNAddTwoStates(45, 46); }
                   break;
-               case 50:
-                  { jjAddStates(53, 54); }
+               case 47:
+               case 48:
+                  { jjCheckNAddTwoStates(48, 46); }
+                  break;
+               case 52:
+                  { jjCheckNAddTwoStates(52, 53); }
                   break;
                case 54:
-                  if (curChar == 95)
-                     jjstateSet[jjnewStateCnt++] = 55;
+               case 55:
+                  { jjCheckNAddTwoStates(55, 53); }
                   break;
-               case 56:
-                  if (curChar == 95)
-                     jjstateSet[jjnewStateCnt++] = 57;
-                  break;
-               case 60:
+               case 58:
                   if (curChar == 95)
                      jjstateSet[jjnewStateCnt++] = 59;
                   break;
-               case 61:
-                  if ((0x2000000020ULL & l) != 0L)
-                     { jjCheckNAddTwoStates(62, 63); }
+               case 60:
+                  if (curChar == 95)
+                     jjstateSet[jjnewStateCnt++] = 61;
                   break;
                case 64:
                   if (curChar == 95)
-                     { jjCheckNAdd(63); }
+                     jjstateSet[jjnewStateCnt++] = 63;
                   break;
                case 65:
-                  if (curChar == 95)
-                     jjstateSet[jjnewStateCnt++] = 66;
+                  if ((0x2000000020ULL & l) != 0L)
+                     { jjCheckNAddTwoStates(66, 67); }
                   break;
                case 68:
-                  if ((0x7fffffe07fffffeULL & l) != 0L)
-                     { jjCheckNAddStates(44, 46); }
+                  if (curChar == 95)
+                     { jjCheckNAdd(67); }
                   break;
-               case 70:
-                  if ((0x7fffffe07fffffeULL & l) != 0L)
-                     { jjCheckNAddTwoStates(70, 71); }
+               case 69:
+                  if (curChar == 95)
+                     jjstateSet[jjnewStateCnt++] = 70;
                   break;
                case 72:
-                  if ((0x2000000020ULL & l) != 0L)
-                     { jjCheckNAddTwoStates(73, 74); }
+                  if ((0x7fffffe07fffffeULL & l) != 0L)
+                     { jjCheckNAddStates(50, 52); }
                   break;
-               case 75:
+               case 74:
+                  if ((0x7fffffe07fffffeULL & l) != 0L)
+                     { jjCheckNAddTwoStates(74, 75); }
+                  break;
+               case 76:
+                  if ((0x2000000020ULL & l) != 0L)
+                     { jjCheckNAddTwoStates(77, 78); }
+                  break;
+               case 79:
                   if (curChar == 95)
-                     { jjCheckNAdd(74); }
+                     { jjCheckNAdd(78); }
                   break;
                default : break;
             }
@@ -3215,7 +3241,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 9:
                   if (jjCanMove_1(hiByte, i1, i2, l1, l2))
-                     { jjAddStates(47, 48); }
+                     { jjAddStates(53, 54); }
                   break;
                case 15:
                   if (jjCanMove_1(hiByte, i1, i2, l1, l2))
@@ -3227,14 +3253,14 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 28:
                   if (jjCanMove_1(hiByte, i1, i2, l1, l2))
-                     { jjAddStates(49, 50); }
+                     { jjAddStates(55, 56); }
                   break;
                case 30:
                   if (!jjCanMove_1(hiByte, i1, i2, l1, l2))
                      break;
                   if (kind > 189)
                      kind = 189;
-                  { jjAddStates(55, 56); }
+                  { jjAddStates(57, 58); }
                   break;
                case 33:
                   if (!jjCanMove_0(hiByte, i1, i2, l1, l2))
@@ -3252,11 +3278,21 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   break;
                case 45:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-                     { jjAddStates(51, 52); }
+                     { jjCheckNAddTwoStates(45, 46); }
                   break;
-               case 50:
+               case 47:
+               case 48:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-                     { jjAddStates(53, 54); }
+                     { jjCheckNAddTwoStates(48, 46); }
+                  break;
+               case 52:
+                  if (jjCanMove_0(hiByte, i1, i2, l1, l2))
+                     { jjCheckNAddTwoStates(52, 53); }
+                  break;
+               case 54:
+               case 55:
+                  if (jjCanMove_0(hiByte, i1, i2, l1, l2))
+                     { jjCheckNAddTwoStates(55, 53); }
                   break;
                default : if (i1 == 0 || l1 == 0 || i2 == 0 ||  l2 == 0) break; else break;
             }
@@ -3269,7 +3305,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
          kind = 0x7fffffff;
       }
       ++curPos;
-      if ((i = jjnewStateCnt), (jjnewStateCnt = startsAt), (i == (startsAt = 77 - startsAt)))
+      if ((i = jjnewStateCnt), (jjnewStateCnt = startsAt), (i == (startsAt = 81 - startsAt)))
          break;
       if (input_stream->endOfInput()) { break; }
       curChar = input_stream->readChar();
@@ -3447,16 +3483,14 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
       case 9 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
    {
-     QCString q(image.data());
-     q.stripPrefix("/*!");
-     q.resize(q.length()-2);
+     QCString q = filter2008VhdlComment(image.data());
      ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
    }
          break;
        }
       case 10 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                                                    ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();
+      ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();
          break;
        }
       default :
@@ -3609,7 +3643,7 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
   void VhdlParserTokenManager::ReInitRounds() {
     int i;
     jjround = 0x80000001;
-    for (i = 77; i-- > 0;)
+    for (i = 81; i-- > 0;)
       jjrounds[i] = 0x80000000;
   }
 

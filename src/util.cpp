@@ -955,7 +955,7 @@ class AccessStack
  */
 int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Definition *item)
 {
-  //printf("<isAccesibleFrom(scope=%s,item=%s itemScope=%s)\n",
+  //printf("<isAccessibleFrom(scope=%s,item=%s itemScope=%s)\n",
   //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
 
   static AccessStack accessStack;
@@ -1397,7 +1397,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   ArgumentList actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
-    stringToArgumentList(strippedTemplateParams,actTemplParams);
+    stringToArgumentList(scope->getLanguage(),strippedTemplateParams,actTemplParams);
   }
 
   int qualifierIndex = computeQualifiedIndex(name);
@@ -2428,7 +2428,7 @@ static QCString getFilterFromList(const char *name,const QStrList &filterList,bo
     if (i_equals!=-1)
     {
       QCString filterPattern = fs.left(i_equals);
-      QRegExp fpat(filterPattern,portable_fileSystemIsCaseSensitive(),TRUE); 
+      QRegExp fpat(filterPattern,Portable::fileSystemIsCaseSensitive(),TRUE); 
       if (fpat.match(name)!=-1) 
       {
         // found a match!
@@ -2589,7 +2589,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
 static QDateTime getCurrentDateTime()
 {
   QDateTime current = QDateTime::currentDateTime();
-  QCString sourceDateEpoch = portable_getenv("SOURCE_DATE_EPOCH");
+  QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
   if (!sourceDateEpoch.isEmpty())
   {
     bool ok;
@@ -3376,7 +3376,7 @@ static QCString getCanonicalTypeForIdentifier(
   if (cd && cd->isUsedOnly()) cd=0; // ignore types introduced by usage relations
 
   //printf("cd=%p mtype=%p\n",cd,mType);
-  //printf("  getCanonicalTypeForIdentifer: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
+  //printf("  getCanonicalTypeForIdentifier: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    symName.data(),
   //    word.data(),
   //    cd?cd->name().data():"<none>",
@@ -3874,7 +3874,7 @@ static void findMembersWithSpecificName(MemberName *mn,
       {
         const ArgumentList &mdAl = md->argumentList();
         ArgumentList argList;
-        stringToArgumentList(args,argList);
+        stringToArgumentList(md->getLanguage(),args,argList);
         match=matchArguments2(
             md->getOuterScope(),fd,mdAl,
             Doxygen::globalScope,fd,argList,
@@ -4005,7 +4005,7 @@ bool getDefs(const QCString &scName,
         ArgumentList argList;
         if (args)
         {
-          stringToArgumentList(args,argList);
+          stringToArgumentList(fcd->getLanguage(),args,argList);
         }
         for (mmli.toFirst();(mmd=mmli.current());++mmli)
         {
@@ -4124,7 +4124,7 @@ bool getDefs(const QCString &scName,
 
     if (args)
     {
-      stringToArgumentList(args, argList);
+      stringToArgumentList(SrcLangExt_Cpp, args, argList);
     }
 
     for (mmli.toFirst(); (mmd = mmli.current()); ++mmli)
@@ -4227,7 +4227,7 @@ bool getDefs(const QCString &scName,
             if (args && qstrcmp(args,"()")!=0)
             {
               const ArgumentList &mmdAl = mmd->argumentList();
-              stringToArgumentList(args,argList);
+              stringToArgumentList(mmd->getLanguage(),args,argList);
               match=matchArguments2(
                   mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
                   fnd,mmd->getFileDef(),argList,
@@ -4283,7 +4283,7 @@ bool getDefs(const QCString &scName,
           int ni=namespaceName.findRev("::");
           //printf("namespaceName=%s ni=%d\n",namespaceName.data(),ni);
           bool notInNS = tmd && ni==-1 && tmd->getNamespaceDef()==0 && (mScope.isEmpty() || mScope==tmd->name());
-          bool sameNS  = tmd && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name();
+          bool sameNS  = tmd && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name() && namespaceName.mid(ni+2)==tmd->name();
           //printf("notInNS=%d sameNS=%d\n",notInNS,sameNS);
           if (tmd && tmd->isStrong() && // C++11 enum class
               (notInNS || sameNS) &&
@@ -5966,7 +5966,7 @@ QCString convertToHtml(const char *s,bool keepEntities)
   static GrowBuf growBuf;
   growBuf.clear();
   if (s==0) return "";
-  growBuf.addStr(getHtmlDirEmbedingChar(getTextDirByConfig(s)));
+  growBuf.addStr(getHtmlDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -6014,7 +6014,7 @@ QCString convertToJSString(const char *s, bool applyTextDir)
   growBuf.clear();
   if (s==0) return "";
   if (applyTextDir)
-    growBuf.addStr(getJsDirEmbedingChar(getTextDirByConfig(s)));
+    growBuf.addStr(getJsDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -6612,11 +6612,10 @@ found:
 
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const QCString &doc,
-    const QList<SectionInfo> * /*anchors*/,
     const char *fileName,int startLine,
-    const QList<ListItemInfo> *sli,
+    const std::vector<ListItemInfo> &sli,
     GroupDef *gd,
-    TagInfo *tagInfo,
+    const TagInfo *tagInfo,
     bool xref,
     SrcLangExt lang
     )
@@ -6702,30 +6701,28 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
 //----------------------------------------------------------------------------
 
-void addRefItem(const QList<ListItemInfo> *sli,
+void addRefItem(const std::vector<ListItemInfo> &sli,
     const char *key, 
     const char *prefix, const char *name,const char *title,const char *args,Definition *scope)
 {
   //printf("addRefItem(sli=%p,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",sli,key,prefix,name,title,args);
-  if (sli && key && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
+  if (key && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
   {
-    QListIterator<ListItemInfo> slii(*sli);
-    ListItemInfo *lii;
-    for (slii.toFirst();(lii=slii.current());++slii)
+    for (const ListItemInfo &lii : sli)
     {
-      RefList *refList = Doxygen::xrefLists->find(lii->type);
+      RefList *refList = Doxygen::xrefLists->find(lii.type);
       if (refList
           &&
           (
            // either not a built-in list or the list is enabled
-           (lii->type!="todo"       || Config_getBool(GENERATE_TODOLIST)) &&
-           (lii->type!="test"       || Config_getBool(GENERATE_TESTLIST)) &&
-           (lii->type!="bug"        || Config_getBool(GENERATE_BUGLIST))  &&
-           (lii->type!="deprecated" || Config_getBool(GENERATE_DEPRECATEDLIST))
+           (lii.type!="todo"       || Config_getBool(GENERATE_TODOLIST)) &&
+           (lii.type!="test"       || Config_getBool(GENERATE_TESTLIST)) &&
+           (lii.type!="bug"        || Config_getBool(GENERATE_BUGLIST))  &&
+           (lii.type!="deprecated" || Config_getBool(GENERATE_DEPRECATEDLIST))
           )
          )
       {
-        RefItem *item = refList->getRefItem(lii->itemId);
+        RefItem *item = refList->getRefItem(lii.itemId);
         ASSERT(item!=0);
 
         item->prefix = prefix;
@@ -7090,6 +7087,15 @@ QCString rtfFormatBmkStr(const char *name)
 bool checkExtension(const char *fName, const char *ext)
 {
   return (QCString(fName).right(QCString(ext).length())==ext);
+}
+
+QCString addHtmlExtensionIfMissing(const char *fName)
+{
+  if (QFileInfo(fName).extension(FALSE).isEmpty())
+  {
+    return QCString(fName)+Doxygen::htmlFileExtension;
+  }
+  return fName;
 }
 
 QCString stripExtensionGeneral(const char *fName, const char *ext)
@@ -7931,14 +7937,22 @@ void stackTrace()
     p += sprintf(p,"%p ", backtraceFrames[x]);
   }
   fprintf(stderr,"========== STACKTRACE START ==============\n");
-  if (FILE *fp = popen(cmd, "r"))
+  #if defined(_WIN32) && !defined(__CYGWIN__)
+  if (FILE *fp = _popen(cmd, "r"))
+  #else
+  if (FILE *fp = ::popen(cmd, "r"))
+  #endif
   {
     char resBuf[512];
     while (size_t len = fread(resBuf, 1, sizeof(resBuf), fp))
     {
       fwrite(resBuf, 1, len, stderr);
     }
-    pclose(fp);
+    #if defined(_WIN32) && !defined(__CYGWIN__)
+    _pclose(fp);
+    #else
+    ::pclose(fp);
+    #endif
   }
   fprintf(stderr,"============ STACKTRACE END ==============\n");
   //fprintf(stderr,"%s\n", frameStrings[x]);
@@ -7953,10 +7967,9 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
   {
-    err("unsupported character conversion: '%s'->'%s': %s\n"
+    term("unsupported character conversion: '%s'->'%s': %s\n"
         "Check the INPUT_ENCODING setting in the config file!\n",
         inputEncoding,outputEncoding,strerror(errno));
-    exit(1);
   }
   int tmpBufSize=size*4+1;
   BufStr tmpBuf(tmpBufSize);
@@ -7974,9 +7987,8 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   }
   else
   {
-    err("%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
+    term("%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
         fileName,inputEncoding,outputEncoding);
-    exit(1);
   }
   portable_iconv_close(cd);
   return newSize;
@@ -8014,7 +8026,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
   {
     QCString cmd=filterName+" \""+fileName+"\"";
     Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-    FILE *f=portable_popen(cmd,"r");
+    FILE *f=Portable::popen(cmd,"r");
     if (!f)
     {
       err("could not execute filter %s\n",filterName.data());
@@ -8028,7 +8040,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
       //printf(">>>>>>>>Reading %d bytes\n",numRead);
       inBuf.addArray(buf,numRead),size+=numRead;
     }
-    portable_pclose(f);
+    Portable::pclose(f);
     inBuf.at(inBuf.curPos()) ='\0';
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
     Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(inBuf));
@@ -8036,13 +8048,18 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
 
   int start=0;
   if (size>=2 &&
-      (((uchar)inBuf.at(0)==0xFF && (uchar)inBuf.at(1)==0xFE) || // Little endian BOM
-       ((uchar)inBuf.at(0)==0xFE && (uchar)inBuf.at(1)==0xFF)    // big endian BOM
-      )
-     ) // UCS-2 encoded file
+      ((uchar)inBuf.at(0)==0xFF && (uchar)inBuf.at(1)==0xFE) // Little endian BOM
+     ) // UCS-2LE encoded file
   {
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        "UCS-2","UTF-8");
+        "UCS-2LE","UTF-8");
+  }
+  else if (size>=2 &&
+           ((uchar)inBuf.at(0)==0xFE && (uchar)inBuf.at(1)==0xFF) // big endian BOM
+         ) // UCS-2BE encoded file
+  {
+    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
+        "UCS-2BE","UTF-8");
   }
   else if (size>=3 &&
            (uchar)inBuf.at(0)==0xEF &&
@@ -8387,7 +8404,7 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_PHP:      return "PHP";
     case SrcLangExt_ObjC:     return "Objective-C";
     case SrcLangExt_Cpp:      return "C++";
-    case SrcLangExt_JS:       return "Javascript";
+    case SrcLangExt_JS:       return "JavaScript";
     case SrcLangExt_Python:   return "Python";
     case SrcLangExt_Fortran:  return "Fortran";
     case SrcLangExt_VHDL:     return "VHDL";
@@ -8649,7 +8666,7 @@ bool namespaceHasVisibleChild(const NamespaceDef *nd,bool includeClasses,bool fi
     const NamespaceDef *cnd;
     for (cnli.toFirst();(cnd=cnli.current());++cnli)
     {
-      if (cnd->isLinkableInProject() && cnd->localName().find('@')==-1)
+      if (cnd->isLinkableInProject() && !cnd->isAnonymous())
       {
         return TRUE;
       }

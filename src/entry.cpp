@@ -38,15 +38,9 @@ Entry::Entry()
   num++;
   m_parent=0;
   section = EMPTY_SEC;
-  extends = new QList<BaseInfo>;
-  extends->setAutoDelete(TRUE);
-  groups = new QList<Grouping>;
-  groups->setAutoDelete(TRUE);
-  anchors = new QList<SectionInfo>; // Doxygen::sectionDict takes ownership of the items!
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
-  tagInfo = 0;
-  sli = 0;
+  hasTagInfo = FALSE;
   relatesType = Simple;
   hidden = FALSE;
   groupDocType = GROUPDOC_NORMAL;
@@ -60,7 +54,8 @@ Entry::Entry(const Entry &e)
   section     = e.section;
   type        = e.type;
   name        = e.name;
-  tagInfo     = e.tagInfo;
+  hasTagInfo  = e.hasTagInfo;
+  tagInfoData = e.tagInfoData;
   protection  = e.protection;
   mtype       = e.mtype;
   spec        = e.spec;
@@ -102,69 +97,27 @@ Entry::Entry(const Entry &e)
   bodyLine    = e.bodyLine;
   endBodyLine = e.endBodyLine;
   mGrpId      = e.mGrpId;
-  extends     = new QList<BaseInfo>;
-  extends->setAutoDelete(TRUE);
-  groups      = new QList<Grouping>;
-  groups->setAutoDelete(TRUE);
-  anchors     = new QList<SectionInfo>;
+  anchors     = e.anchors;
   fileName    = e.fileName;
   startLine   = e.startLine;
   startColumn = e.startColumn;
-  if (e.sli)
-  {
-    sli = new QList<ListItemInfo>;
-    sli->setAutoDelete(TRUE);
-    QListIterator<ListItemInfo> slii(*e.sli);
-    ListItemInfo *ili;
-    for (slii.toFirst();(ili=slii.current());++slii)
-    {
-      sli->append(new ListItemInfo(*ili));
-    }
-  }
-  else
-  {
-    sli=0;
-  }
+  sli         = e.sli;
   lang        = e.lang;
   hidden      = e.hidden;
   artificial  = e.artificial;
   groupDocType = e.groupDocType;
   id          = e.id;
+  extends     = e.extends;
+  groups      = e.groups;
+  m_fileDef   = e.m_fileDef;
 
   m_parent    = e.m_parent;
-
   // deep copy child entries
   m_sublist.reserve(e.m_sublist.size());
   for (const auto &cur : e.m_sublist)
   {
-    m_sublist.push_back(std::make_unique<Entry>(*cur));
+    m_sublist.push_back(std::make_shared<Entry>(*cur));
   }
-
-  // deep copy base class list
-  QListIterator<BaseInfo> bli(*e.extends);
-  BaseInfo *bi;
-  for (;(bi=bli.current());++bli)
-  {
-    extends->append(new BaseInfo(*bi));
-  }
-  
-  // deep copy group list
-  QListIterator<Grouping> gli(*e.groups);
-  Grouping *g;
-  for (;(g=gli.current());++gli)
-  {
-    groups->append(new Grouping(*g));
-  }
-  
-  QListIterator<SectionInfo> sli2(*e.anchors);
-  SectionInfo *s;
-  for (;(s=sli2.current());++sli2)
-  {
-    anchors->append(s); // shallow copy, object are owned by Doxygen::sectionDict
-  }
-
-  m_fileDef = e.m_fileDef;
-
 }
 
 Entry::~Entry()
@@ -173,11 +126,6 @@ Entry::~Entry()
   //printf("Deleting entry %d name %s type %x children %d\n",
   //       num,name.data(),section,sublist->count());
 
-  delete extends;
-  delete groups;
-  delete anchors;
-  delete tagInfo;
-  delete sli;
   num--;
 }
 
@@ -188,11 +136,11 @@ void Entry::moveToSubEntryAndRefresh(Entry *&current)
   current = new Entry;
 }
 
-void Entry::moveToSubEntryAndRefresh(std::unique_ptr<Entry> &current)
+void Entry::moveToSubEntryAndRefresh(std::shared_ptr<Entry> &current)
 {
   current->m_parent=this;
-  m_sublist.push_back(std::move(current));
-  current = std::make_unique<Entry>();
+  m_sublist.push_back(current);
+  current = std::make_shared<Entry>();
 }
 
 void Entry::moveToSubEntryAndKeep(Entry *current)
@@ -201,10 +149,10 @@ void Entry::moveToSubEntryAndKeep(Entry *current)
   m_sublist.emplace_back(current);
 }
 
-void Entry::moveToSubEntryAndKeep(std::unique_ptr<Entry> &current)
+void Entry::moveToSubEntryAndKeep(std::shared_ptr<Entry> &current)
 {
   current->m_parent=this;
-  m_sublist.push_back(std::move(current));
+  m_sublist.push_back(current);
 }
 
 void Entry::copyToSubEntry(Entry *current)
@@ -214,20 +162,20 @@ void Entry::copyToSubEntry(Entry *current)
   m_sublist.emplace_back(copy);
 }
 
-void Entry::copyToSubEntry(const std::unique_ptr<Entry> &current)
+void Entry::copyToSubEntry(const std::shared_ptr<Entry> &current)
 {
-  std::unique_ptr<Entry> copy = std::make_unique<Entry>(*current);
+  std::shared_ptr<Entry> copy = std::make_shared<Entry>(*current);
   copy->m_parent=this;
-  m_sublist.push_back(std::move(copy));
+  m_sublist.push_back(copy);
 }
 
-void Entry::moveFromSubEntry(const Entry *child,std::unique_ptr<Entry> &moveTo)
+void Entry::moveFromSubEntry(const Entry *child,std::shared_ptr<Entry> &moveTo)
 {
   auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
-      [child](const std::unique_ptr<Entry>&elem) { return elem.get()==child; });
+      [child](const std::shared_ptr<Entry>&elem) { return elem.get()==child; });
   if (it!=m_sublist.end())
   {
-    moveTo = std::move(*it);
+    moveTo = *it;
     m_sublist.erase(it);
   }
   else
@@ -239,7 +187,7 @@ void Entry::moveFromSubEntry(const Entry *child,std::unique_ptr<Entry> &moveTo)
 void Entry::removeSubEntry(const Entry *e)
 {
   auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
-      [e](const std::unique_ptr<Entry>&elem) { return elem.get()==e; });
+      [e](const std::shared_ptr<Entry>&elem) { return elem.get()==e; });
   if (it!=m_sublist.end())
   {
     m_sublist.erase(it);
@@ -302,22 +250,15 @@ void Entry::reset()
   id.resize(0);
   metaData.resize(0);
   m_sublist.clear();
-  extends->clear();
-  groups->clear();
-  anchors->clear();
+  extends.clear();
+  groups.clear();
+  anchors.clear();
   argList.clear();
   tArgLists.clear();
   argList.reset();
   typeConstr.reset();
-  if (tagInfo)    { delete tagInfo; tagInfo=0; }
-  if (sli)        { delete sli; sli=0; }
+  sli.clear();
   m_fileDef = 0;
-}
-
-
-int Entry::getSize()
-{
-  return sizeof(Entry);
 }
 
 void Entry::setFileDef(FileDef *fd)
@@ -331,15 +272,10 @@ void Entry::setFileDef(FileDef *fd)
 
 void Entry::addSpecialListItem(const char *listName,int itemId)
 {
-  if (sli==0)
-  {
-    sli = new QList<ListItemInfo>;
-    sli->setAutoDelete(TRUE);
-  }
-  ListItemInfo *ili=new ListItemInfo;
-  ili->type = listName;
-  ili->itemId = itemId;
-  sli->append(ili);
+  ListItemInfo ili;
+  ili.type = listName;
+  ili.itemId = itemId;
+  sli.push_back(ili);
 }
 
 

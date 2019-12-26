@@ -216,7 +216,7 @@ If you don't mind spending some time on it, there are several options:
 - If the grammar of X is somewhat different than you can write an input
   filter that translates X into something similar enough to C/C++ for
   doxygen to understand (this approach is taken for VB, Object Pascal, and
-  Javascript, see http://www.doxygen.org/download.html#helpers).
+  JavaScript, see http://www.doxygen.org/download.html#helpers).
 - If the grammar is completely different one could write a parser for X and 
   write a backend that produces a similar syntax tree as is done by 
   \c src/scanner.l (and also by \c src/tagreader.cpp while reading tag files).

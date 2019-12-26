@@ -107,7 +107,7 @@ class DiagramRowIterator : public QListIterator<DiagramRow>
       : QListIterator<DiagramRow>(d) {}
 };
 
-/** Class represeting the tree layout for the built-in class diagram. */
+/** Class representing the tree layout for the built-in class diagram. */
 class TreeDiagram : public QList<DiagramRow>
 {
   public:
@@ -308,7 +308,7 @@ QCString DiagramItem::label() const
   QCString result;
   if (!templSpec.isEmpty())
   {
-    // we use classDef->name() here and not diplayName() in order
+    // we use classDef->name() here and not displayName() in order
     // to get the name used in the inheritance relation.
     QCString n = classDef->name();
     if (/*n.right(2)=="-g" ||*/ n.right(2)=="-p")
@@ -1101,8 +1101,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
   f1.setName(epsName.data());
   if (!f1.open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n",f1.name().data());
-    exit(1);
+    term("Could not open file %s for writing\n",f1.name().data());
   }
   FTextStream t(&f1);
   
@@ -1338,14 +1337,14 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    epsBaseName.data(),epsBaseName.data());
     //printf("Converting eps using '%s'\n",epstopdfArgs.data());
-    portable_sysTimerStart();
-    if (portable_system("epstopdf",epstopdfArgs)!=0)
+    Portable::sysTimerStart();
+    if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
        err("Problems running epstopdf. Check your TeX installation!\n");
-       portable_sysTimerStop();
+       Portable::sysTimerStop();
        return;
     }
-    portable_sysTimerStop();
+    Portable::sysTimerStop();
   }
 }
 

@@ -18,6 +18,7 @@
 #ifndef DEFINITION_H
 #define DEFINITION_H
 
+#include <vector>
 #include <qlist.h>
 #include <qdict.h>
 
@@ -110,6 +111,11 @@ class Definition : public DefinitionIntf
 
     /*! Returns the name of the definition */
     virtual QCString name() const = 0;
+
+    /*! Returns TRUE iff this definition has an artificially generated name
+     * (typically starting with a @) that is used for nameless definitions
+     */
+    virtual bool isAnonymous() const = 0;
 
     /*! Returns the name of the definition as it appears in the output */
     virtual QCString displayName(bool includeScope=TRUE) const = 0;
@@ -257,7 +263,7 @@ class Definition : public DefinitionIntf
     virtual GroupList *partOfGroups() const = 0;
     virtual bool isLinkableViaGroup() const = 0;
 
-    virtual QList<ListItemInfo> *xrefListItems() const = 0;
+    virtual const std::vector<ListItemInfo> &xrefListItems() const = 0;
 
     virtual Definition *findInnerCompound(const char *name) const = 0;
     virtual Definition *getOuterScope() const = 0;
@@ -313,7 +319,7 @@ class Definition : public DefinitionIntf
     virtual void setBodySegment(int bls,int ble) = 0;
     virtual void setBodyDef(FileDef *fd) = 0;
 
-    virtual void setRefItems(const QList<ListItemInfo> *sli) = 0;
+    virtual void setRefItems(const std::vector<ListItemInfo> &sli) = 0;
     virtual void setOuterScope(Definition *d) = 0;
 
     virtual void setHidden(bool b) = 0;
@@ -331,7 +337,7 @@ class Definition : public DefinitionIntf
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.
      */
-    virtual void addSectionsToDefinition(QList<SectionInfo> *anchorList) = 0;
+    virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) = 0;
     virtual void addSourceReferencedBy(const MemberDef *d) = 0;
     virtual void addSourceReferences(const MemberDef *d) = 0;
     virtual void mergeRefItems(Definition *d) = 0;

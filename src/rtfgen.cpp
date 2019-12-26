@@ -65,8 +65,8 @@ static QCString dateToRTFDateString()
 
 RTFGenerator::RTFGenerator() : OutputGenerator()
 {
-  dir=Config_getString(RTF_OUTPUT);
-  col=0;
+  m_dir=Config_getString(RTF_OUTPUT);
+  m_col=0;
   //insideTabbing=FALSE;
   m_listLevel = 0;
   m_bstartedBody = FALSE;
@@ -78,26 +78,6 @@ RTFGenerator::RTFGenerator() : OutputGenerator()
 RTFGenerator::~RTFGenerator()
 {
 }
-
-//void RTFGenerator::append(const OutputGenerator *g)
-//{
-//  t << g->getContents();
-//  col+=((RTFGenerator *)g)->col;
-//  //insideTabbing=insideTabbing || ((RTFGenerator *)g)->insideTabbing;
-//  m_listLevel=((RTFGenerator *)g)->m_listLevel;
-//  m_omitParagraph=((RTFGenerator *)g)->m_omitParagraph;
-//  //printf("RTFGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
-//  //    insideTabbing ? "TRUE" : "FALSE" );
-//}
-
-//OutputGenerator *RTFGenerator::copy()
-//{
-//  RTFGenerator *result = new RTFGenerator;
-//  //result->insideTabbing=insideTabbing;
-//  result->m_listLevel=m_listLevel;
-//  result->m_omitParagraph=m_omitParagraph;
-//  return result;
-//}
 
 void RTFGenerator::writeStyleSheetFile(QFile &file)
 {
@@ -175,8 +155,7 @@ void RTFGenerator::init()
   QDir d(dir);
   if (!d.exists() && !d.mkdir(dir))
   {
-    err("Could not create output directory %s\n",dir.data());
-    exit(1);
+    term("Could not create output directory %s\n",dir.data());
   }
   rtf_Style.setAutoDelete(TRUE);
 
@@ -376,7 +355,7 @@ void RTFGenerator::startFile(const char *name,const char *,const char *)
 {
   //setEncoding(QCString().sprintf("CP%s",theTranslator->trRTFansicp()));
   QCString fileName=name;
-  relPath = relativePathToRoot(fileName);
+  m_relPath = relativePathToRoot(fileName);
 
   if (fileName.right(4)!=".rtf" ) fileName+=".rtf";
   startPlainFile(fileName);
@@ -1848,17 +1827,17 @@ void RTFGenerator::codify(const char *str)
 
       switch(c)
       {
-        case '\t':  spacesToNextTabStop = Config_getInt(TAB_SIZE) - (col%Config_getInt(TAB_SIZE));
+        case '\t':  spacesToNextTabStop = Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
                     t << Doxygen::spaces.left(spacesToNextTabStop);
-                    col+=spacesToNextTabStop;
+                    m_col+=spacesToNextTabStop;
                     break;
         case '\n':  newParagraph();
-                    t << '\n'; col=0;
+                    t << '\n'; m_col=0;
                     break;
-        case '{':   t << "\\{"; col++;          break;
-        case '}':   t << "\\}"; col++;          break;
-        case '\\':  t << "\\\\"; col++;         break;
-        default:    p=(const unsigned char *)writeUtf8Char(t,(const char *)p-1); col++; break;
+        case '{':   t << "\\{"; m_col++;          break;
+        case '}':   t << "\\}"; m_col++;          break;
+        case '\\':  t << "\\\\"; m_col++;         break;
+        default:    p=(const unsigned char *)writeUtf8Char(t,(const char *)p-1); m_col++; break;
       }
     }
   }
@@ -1883,7 +1862,7 @@ void RTFGenerator::endClassDiagram(const ClassDiagram &d,
   newParagraph();
 
   // create a png file
-  d.writeImage(t,dir,relPath,fileName,FALSE);
+  d.writeImage(t,m_dir,m_relPath,fileName,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -1952,7 +1931,7 @@ void RTFGenerator::endCodeFragment()
 {
   //newParagraph();
   //styleStack.pop();
-  //printf("RTFGenerator::endCodeFrament() top=%s\n",styleStack.top());
+  //printf("RTFGenerator::endCodeFragment() top=%s\n",styleStack.top());
   //t << rtf_Style_Reset << styleStack.top() << endl;
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
@@ -2511,7 +2490,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
   newParagraph();
 
   QCString fn =
-    g.writeGraph(t,GOF_BITMAP,EOF_Rtf,Config_getString(RTF_OUTPUT),fileName,relPath,TRUE,FALSE);
+    g.writeGraph(t,GOF_BITMAP,EOF_Rtf,Config_getString(RTF_OUTPUT),m_fileName,m_relPath,TRUE,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2535,7 +2514,7 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
   newParagraph();
 
   QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_Rtf,Config_getString(RTF_OUTPUT),
-                         fileName,relPath,FALSE);
+                         m_fileName,m_relPath,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2566,7 +2545,7 @@ void RTFGenerator::endCallGraph(DotCallGraph &g)
   newParagraph();
 
   QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_Rtf,Config_getString(RTF_OUTPUT),
-                        fileName,relPath,FALSE);
+                        m_fileName,m_relPath,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2589,7 +2568,7 @@ void RTFGenerator::endDirDepGraph(DotDirDeps &g)
   newParagraph();
 
   QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_Rtf,Config_getString(RTF_OUTPUT),
-                        fileName,relPath,FALSE);
+                        m_fileName,m_relPath,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -3052,11 +3031,12 @@ void RTFGenerator::writeLineNumber(const char *,const char *,const char *,int l)
   QCString lineNumber;
   lineNumber.sprintf("%05d",l);
   t << lineNumber << " ";
+  m_col=0;
 }
 void RTFGenerator::startCodeLine(bool)
 {
   DoxyCodeLineOpen = TRUE;
-  col=0;
+  m_col=0;
 }
 void RTFGenerator::endCodeLine()
 {

@@ -327,18 +327,17 @@ int getScopeFragment(const QCString &s,int p,int *l);
 
 int filterCRLF(char *buf,int len);
 
-void addRefItem(const QList<ListItemInfo> *sli,const char *prefix,
+void addRefItem(const std::vector<ListItemInfo> &sli,const char *prefix,
                 const char *key,
                 const char *name,const char *title,const char *args,Definition *scope);
 
 PageDef *addRelatedPage(const char *name,
                         const QCString &ptitle,
                         const QCString &doc,
-                        const QList<SectionInfo> *anchors,
                         const char *fileName,int startLine,
-                        const QList<ListItemInfo> *sli,
+                        const std::vector<ListItemInfo> &sli = std::vector<ListItemInfo>(),
                         GroupDef *gd=0,
-                        TagInfo *tagInfo=0,
+                        const TagInfo *tagInfo=0,
                         bool xref=FALSE,
                         SrcLangExt lang=SrcLangExt_Unknown
                        );
@@ -364,6 +363,8 @@ QCString rtfFormatBmkStr(const char *name);
 QCString linkToText(SrcLangExt lang,const char *link,bool isFileName);
 
 bool checkExtension(const char *fName, const char *ext);
+
+QCString addHtmlExtensionIfMissing(const char *fName);
 
 QCString stripExtensionGeneral(const char *fName, const char *ext);
 

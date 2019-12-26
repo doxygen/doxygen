@@ -285,10 +285,19 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
 {
   QCString result;
   bool ambig;
-  FileDef *fd;
+  FileDef *fd = findFileDef(Doxygen::imageNameDict,fileName,ambig);
   //printf("Search for %s\n",fileName);
-  if ((fd=findFileDef(Doxygen::imageNameDict,fileName,ambig)) && !ambig)
+  if (fd)
   {
+    if (ambig & dowarn)
+    {
+      QCString text;
+      text.sprintf("image file name %s is ambiguous.\n",qPrint(fileName));
+      text+="Possible candidates:\n";
+      text+=showFileDefMatches(Doxygen::imageNameDict,fileName);
+      warn_doc_error(g_fileName,doctokenizerYYlineno,text);
+    }
+
     QCString inputFile = fd->absFilePath();
     QFile inImage(inputFile);
     if (inImage.open(IO_ReadOnly))
@@ -369,24 +378,13 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
                            outputDir.data(), baseName.data(),
 			   outputDir.data(), baseName.data());
-      portable_sysTimerStart();
-      if (portable_system("epstopdf",epstopdfArgs)!=0)
+      Portable::sysTimerStart();
+      if (Portable::system("epstopdf",epstopdfArgs)!=0)
       {
 	err("Problems running epstopdf. Check your TeX installation!\n");
       }
-      portable_sysTimerStop();
+      Portable::sysTimerStop();
       return baseName;
-    }
-  }
-  else if (ambig)
-  {
-    if (dowarn)
-    {
-      QCString text;
-      text.sprintf("image file name %s is ambiguous.\n",qPrint(fileName));
-      text+="Possible candidates:\n";
-      text+=showFileDefMatches(Doxygen::imageNameDict,fileName);
-      warn_doc_error(g_fileName,doctokenizerYYlineno,text);
     }
   }
   else
@@ -503,7 +501,7 @@ static void checkUnOrMultipleDocumentedParams()
     SrcLangExt lang = g_memberDef->getLanguage();
     if (!al.empty())
     {
-      bool found=FALSE;
+      int notArgCnt=0;
       for (const Argument &a: al)
       {
         int count = 0;
@@ -518,7 +516,7 @@ static void checkUnOrMultipleDocumentedParams()
         }
         else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a.docs.isEmpty()) 
         {
-          found = TRUE;
+          notArgCnt++;
         }
         else
         {
@@ -539,14 +537,16 @@ static void checkUnOrMultipleDocumentedParams()
                          " has multiple @param documentation sections");
         }
       }
-      if (found)
+      if (notArgCnt>0)
       {
         bool first=TRUE;
         QCString errMsg=
-            "The following parameters of "+
+            "The following parameter";
+        errMsg+= (notArgCnt>1 ? "s" : "");
+        errMsg+=" of "+
             QCString(g_memberDef->qualifiedName()) + 
             QCString(argListToString(al)) +
-            " are not documented:\n";
+            (notArgCnt>1 ? " are" : " is") + " not documented:\n";
         for (const Argument &a : al)
         {
           QCString argName = g_memberDef->isDefine() ? a.type : a.name;
@@ -801,14 +801,15 @@ static bool findDocsForMemberOrCompound(const char *commandName,
 inline void errorHandleDefaultToken(DocNode *parent,int tok,
                                QList<DocNode> &children,const char *txt)
 {
+  const char *cmd_start = "\\";
   switch (tok)
   {
     case TK_COMMAND_AT:
-        // fall through
+      cmd_start = "@";
     case TK_COMMAND_BS:
       children.append(new DocWord(parent,TK_COMMAND_CHAR(tok) + g_token->name));
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a %s",
-       qPrint(TK_COMMAND_CHAR(tok) + g_token->name), txt);
+       qPrint(cmd_start + g_token->name),txt);
       break;
     case TK_SYMBOL:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found found as part of a %s",
@@ -881,10 +882,10 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
  *  encountered.
  */
 static void handleStyleEnter(DocNode *parent,QList<DocNode> &children,
-          DocStyleChange::Style s,const HtmlAttribList *attribs)
+          DocStyleChange::Style s,const QCString &tagName,const HtmlAttribList *attribs)
 {
   DBG(("HandleStyleEnter\n"));
-  DocStyleChange *sc= new DocStyleChange(parent,g_nodeStack.count(),s,TRUE,attribs);
+  DocStyleChange *sc= new DocStyleChange(parent,g_nodeStack.count(),s,tagName,TRUE,attribs);
   children.append(sc);
   g_styleStack.push(sc);
 }
@@ -896,8 +897,10 @@ static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
          DocStyleChange::Style s,const char *tagName)
 {
   DBG(("HandleStyleLeave\n"));
+  QCString tagNameLower = QCString(tagName).lower();
   if (g_styleStack.isEmpty() ||                           // no style change
       g_styleStack.top()->style()!=s ||                   // wrong style change
+      g_styleStack.top()->tagName()!=tagNameLower ||      // wrong style change
       g_styleStack.top()->position()!=g_nodeStack.count() // wrong position
      )
   {
@@ -906,10 +909,15 @@ static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
       warn_doc_error(g_fileName,doctokenizerYYlineno,"found </%s> tag without matching <%s>",
           qPrint(tagName),qPrint(tagName));
     }
+    else if (g_styleStack.top()->tagName()!=tagNameLower)
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"found </%s> tag while expecting </%s>",
+          qPrint(tagName),qPrint(g_styleStack.top()->tagName()));
+    }
     else if (g_styleStack.top()->style()!=s)
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"found </%s> tag while expecting </%s>",
-          qPrint(tagName),qPrint(g_styleStack.top()->styleString()));
+          qPrint(tagName),qPrint(g_styleStack.top()->tagName()));
     }
     else
     {
@@ -919,7 +927,7 @@ static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
   }
   else // end the section
   {
-    DocStyleChange *sc= new DocStyleChange(parent,g_nodeStack.count(),s,FALSE);
+    DocStyleChange *sc= new DocStyleChange(parent,g_nodeStack.count(),s,g_styleStack.top()->tagName(),FALSE);
     children.append(sc);
     g_styleStack.pop();
   }
@@ -936,7 +944,7 @@ static void handlePendingStyleCommands(DocNode *parent,QList<DocNode> &children)
     DocStyleChange *sc = g_styleStack.top();
     while (sc && sc->position()>=g_nodeStack.count()) 
     { // there are unclosed style modifiers in the paragraph
-      children.append(new DocStyleChange(parent,g_nodeStack.count(),sc->style(),FALSE));
+      children.append(new DocStyleChange(parent,g_nodeStack.count(),sc->style(),sc->tagName(),FALSE));
       g_initialStyleStack.push(sc);
       g_styleStack.pop();
       sc = g_styleStack.top();
@@ -949,7 +957,7 @@ static void handleInitialStyleCommands(DocPara *parent,QList<DocNode> &children)
   DocStyleChange *sc;
   while ((sc=g_initialStyleStack.pop()))
   {
-    handleStyleEnter(parent,children,sc->style(),&sc->attribs());
+    handleStyleEnter(parent,children,sc->style(),sc->tagName(),&sc->attribs());
   }
 }
 
@@ -1015,6 +1023,7 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Div:          return "div";
     case DocStyleChange::Span:         return "span";
     case DocStyleChange::Strike:       return "strike";
+    case DocStyleChange::S:            return "s";
     case DocStyleChange::Del:          return "del";
     case DocStyleChange::Underline:    return "u";
     case DocStyleChange::Ins:          return "ins";
@@ -1031,7 +1040,7 @@ static void handleUnclosedStyleCommands()
     handleUnclosedStyleCommands();
     warn_doc_error(g_fileName,doctokenizerYYlineno,
              "end of comment block while expecting "
-             "command </%s>",qPrint(sc->styleString()));
+             "command </%s>",qPrint(sc->tagName()));
   }
 }
 
@@ -1166,7 +1175,7 @@ static void handleParameterType(DocNode *parent,QList<DocNode> &children,const Q
 {
   QCString name = g_token->name; // save token name
   QCString name1;
-  int p=0,i,l,ii;
+  int p=0,i,ii;
   while ((i=paramTypes.find('|',p))!=-1)
   {
     name1 = paramTypes.mid(p,i-p);
@@ -1387,9 +1396,9 @@ reparsetoken:
           break;
         case CMD_EMPHASIS:
           {
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
+            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
+            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,tokenName,FALSE));
             if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG) 
@@ -1401,9 +1410,9 @@ reparsetoken:
           break;
         case CMD_BOLD:
           {
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
+            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
+            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,tokenName,FALSE));
             if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG) 
@@ -1415,9 +1424,9 @@ reparsetoken:
           break;
         case CMD_CODE:
           {
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,TRUE));
+            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,FALSE));
+            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,tokenName,FALSE));
             if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG) 
@@ -1538,17 +1547,26 @@ reparsetoken:
           case HTML_BOLD:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Bold,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Bold,tokenName,&g_token->attribs);
             }
             else
             {
               handleStyleLeave(parent,children,DocStyleChange::Bold,tokenName);
             }
             break;
+          case HTML_S:
+            if (!g_token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::S,tokenName,&g_token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::S,tokenName);
+            }
           case HTML_STRIKE:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Strike,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Strike,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1558,7 +1576,7 @@ reparsetoken:
           case HTML_DEL:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Del,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Del,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1568,7 +1586,7 @@ reparsetoken:
           case HTML_UNDERLINE:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Underline,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Underline,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1578,7 +1596,7 @@ reparsetoken:
           case HTML_INS:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Ins,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Ins,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1589,7 +1607,7 @@ reparsetoken:
           case XML_C:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Code,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Code,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1599,7 +1617,7 @@ reparsetoken:
           case HTML_EMPHASIS:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Italic,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Italic,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1609,7 +1627,7 @@ reparsetoken:
           case HTML_SUB:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Subscript,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Subscript,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1619,7 +1637,7 @@ reparsetoken:
           case HTML_SUP:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Superscript,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Superscript,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1629,7 +1647,7 @@ reparsetoken:
           case HTML_CENTER:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Center,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Center,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1639,7 +1657,7 @@ reparsetoken:
           case HTML_SMALL:
             if (!g_token->endTag)
             {
-              handleStyleEnter(parent,children,DocStyleChange::Small,&g_token->attribs);
+              handleStyleEnter(parent,children,DocStyleChange::Small,tokenName,&g_token->attribs);
             }
             else
             {
@@ -1815,7 +1833,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 
 static void readTextFileByName(const QCString &file,QCString &text)
 {
-  if (portable_isAbsolutePath(file.data()))
+  if (Portable::isAbsolutePath(file.data()))
   {
     QFileInfo fi(file);
     if (fi.exists())
@@ -1828,7 +1846,7 @@ static void readTextFileByName(const QCString &file,QCString &text)
   char *s=examplePathList.first();
   while (s)
   {
-    QCString absFileName = QCString(s)+portable_pathSeparator()+file;
+    QCString absFileName = QCString(s)+Portable::pathSeparator()+file;
     QFileInfo fi(absFileName);
     if (fi.exists())
     {
@@ -1840,17 +1858,17 @@ static void readTextFileByName(const QCString &file,QCString &text)
 
   // as a fallback we also look in the exampleNameDict
   bool ambig;
-  FileDef *fd;
-  if ((fd=findFileDef(Doxygen::exampleNameDict,file,ambig)) && !ambig)
+  FileDef *fd = findFileDef(Doxygen::exampleNameDict,file,ambig);
+  if (fd)
   {
     text = fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
-  }
-  else if (ambig)
-  {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"included file name %s is ambiguous"
+    if (ambig)
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"included file name %s is ambiguous"
            "Possible candidates:\n%s",qPrint(file),
            qPrint(showFileDefMatches(Doxygen::exampleNameDict,file))
           );
+    }
   }
   else
   {
@@ -2310,6 +2328,7 @@ void DocSecRefList::parse()
   {
     if (tok==TK_COMMAND_AT || tok == TK_COMMAND_BS)
     {
+      const char *cmd_start = (tok==TK_COMMAND_AT ? "@" : "\\");
       switch (Mappers::cmdMapper->map(g_token->name))
       {
         case CMD_SECREFITEM:
@@ -2337,7 +2356,7 @@ void DocSecRefList::parse()
           goto endsecreflist;
         default:
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\secreflist",
-              qPrint(g_token->name));
+              qPrint(cmd_start + g_token->name));
           goto endsecreflist;
       }
     }
@@ -2644,9 +2663,11 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
   {
     if (!defaultHandleToken(this,tok,m_children,FALSE))
     {
+      const char *cmd_start = "\\";
       switch (tok)
       {
         case TK_COMMAND_AT:
+          cmd_start = "@";
         // fall through
         case TK_COMMAND_BS:
           switch (Mappers::cmdMapper->map(g_token->name))
@@ -2659,7 +2680,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
               goto endlink;
             default:
               warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\link",
-                  qPrint(g_token->name));
+                  qPrint(cmd_start + g_token->name));
               break;
           }
           break;
@@ -2743,17 +2764,17 @@ bool DocDotFile::parse()
   {
     fd = findFileDef(Doxygen::dotFileNameDict,m_name+".dot",ambig);
   }
-  if (fd && !ambig)
+  if (fd)
   {
     m_file = fd->absFilePath();
     ok = true;
-  }
-  else if (ambig)
-  {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"included dot file name %s is ambiguous.\n"
+    if (ambig)
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"included dot file name %s is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(m_name),
            qPrint(showFileDefMatches(Doxygen::dotFileNameDict,m_name))
           );
+    }
   }
   else
   {
@@ -2780,17 +2801,17 @@ bool DocMscFile::parse()
   {
     fd = findFileDef(Doxygen::mscFileNameDict,m_name+".msc",ambig);
   }
-  if (fd && !ambig)
+  if (fd)
   {
     m_file = fd->absFilePath();
     ok = true;
-  }
-  else if (ambig)
-  {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"included msc file name %s is ambiguous.\n"
+    if (ambig)
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"included msc file name %s is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(m_name),
            qPrint(showFileDefMatches(Doxygen::mscFileNameDict,m_name))
           );
+    }
   }
   else
   {
@@ -2819,17 +2840,17 @@ bool DocDiaFile::parse()
   {
     fd = findFileDef(Doxygen::diaFileNameDict,m_name+".dia",ambig);
   }
-  if (fd && !ambig)
+  if (fd)
   {
     m_file = fd->absFilePath();
     ok = true;
-  }
-  else if (ambig)
-  {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"included dia file name %s is ambiguous.\n"
+    if (ambig)
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"included dia file name %s is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(m_name),
            qPrint(showFileDefMatches(Doxygen::diaFileNameDict,m_name))
           );
+    }
   }
   else
   {
@@ -2888,7 +2909,7 @@ bool DocImage::isSVG() const
   QCString  locName = m_url.isEmpty() ? m_name : m_url;
   int len = locName.length();
   int fnd = locName.find('?'); // ignore part from ? until end
-  if (fnd!=-1) fnd=len;
+  if (fnd==-1) fnd=len;
   return fnd>=4 && locName.mid(fnd-4,4)==".svg";
 }
 
@@ -3791,9 +3812,11 @@ int DocHtmlDescTitle::parse()
   {
     if (!defaultHandleToken(this,tok,m_children))
     {
+      const char *cmd_start = "\\";
       switch (tok)
       {
         case TK_COMMAND_AT:
+          cmd_start = "@";
         // fall through
         case TK_COMMAND_BS:
           {
@@ -3864,8 +3887,8 @@ int DocHtmlDescTitle::parse()
 
                 break;
               default:
-                warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command \\%s found as part of a <dt> tag",
-                               qPrint(g_token->name));
+                warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s found as part of a <dt> tag",
+                  qPrint(cmd_start + g_token->name));
             }
           }
           break;
@@ -4560,7 +4583,7 @@ void DocSimpleSect::appendLinkWord(const QCString &word)
   {
     p = (DocPara *)m_children.getLast();
     
-    // Comma-seperate <seealso> links.
+    // Comma-separate <seealso> links.
     p->injectToken(TK_WORD,",");
     p->injectToken(TK_WHITESPACE," ");
   }
@@ -5380,21 +5403,21 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Found unknown command '\\%s'",qPrint(cmdName));
       break;
     case CMD_EMPHASIS:
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
+      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,cmdName,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName); 
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
+      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,cmdName,FALSE));
       if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_BOLD:
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
+      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,cmdName,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName); 
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
+      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,cmdName,FALSE));
       if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_CODE:
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,TRUE));
+      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,cmdName,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName); 
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,FALSE));
+      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,cmdName,FALSE));
       if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_BSLASH:
@@ -5895,6 +5918,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
   switch (tagId)
   {
     case HTML_UL: 
+      if (!g_token->emptyTag)
       {
         DocHtmlList *list = new DocHtmlList(this,tagHtmlAttribs,DocHtmlList::Unordered);
         m_children.append(list);
@@ -5902,6 +5926,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       }
       break;
     case HTML_OL: 
+      if (!g_token->emptyTag)
       {
         DocHtmlList *list = new DocHtmlList(this,tagHtmlAttribs,DocHtmlList::Ordered);
         m_children.append(list);
@@ -5909,6 +5934,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       }
       break;
     case HTML_LI:
+      if (g_token->emptyTag) break;
       if (!insideUL(this) && !insideOL(this))
       {
         warn_doc_error(g_fileName,doctokenizerYYlineno,"lonely <li> tag found");
@@ -5919,21 +5945,25 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       }
       break;
     case HTML_BOLD:
-      handleStyleEnter(this,m_children,DocStyleChange::Bold,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Bold,tagName,&g_token->attribs);
+      break;
+    case HTML_S:
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::S,tagName,&g_token->attribs);
       break;
     case HTML_STRIKE:
-      handleStyleEnter(this,m_children,DocStyleChange::Strike,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Strike,tagName,&g_token->attribs);
       break;
     case HTML_DEL:
-      handleStyleEnter(this,m_children,DocStyleChange::Del,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Del,tagName,&g_token->attribs);
       break;
     case HTML_UNDERLINE:
-      handleStyleEnter(this,m_children,DocStyleChange::Underline,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Underline,tagName,&g_token->attribs);
       break;
     case HTML_INS:
-      handleStyleEnter(this,m_children,DocStyleChange::Ins,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Ins,tagName,&g_token->attribs);
       break;
     case HTML_CODE:
+      if (g_token->emptyTag) break;
       if (/*getLanguageFromFileName(g_fileName)==SrcLangExt_CSharp ||*/ g_xmlComment) 
         // for C# source or inside a <summary> or <remark> section we 
         // treat <code> as an XML tag (so similar to @code)
@@ -5943,32 +5973,33 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       }
       else // normal HTML markup
       {
-        handleStyleEnter(this,m_children,DocStyleChange::Code,&g_token->attribs);
+        handleStyleEnter(this,m_children,DocStyleChange::Code,tagName,&g_token->attribs);
       }
       break;
     case HTML_EMPHASIS:
-      handleStyleEnter(this,m_children,DocStyleChange::Italic,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Italic,tagName,&g_token->attribs);
       break;
     case HTML_DIV:
-      handleStyleEnter(this,m_children,DocStyleChange::Div,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Div,tagName,&g_token->attribs);
       break;
     case HTML_SPAN:
-      handleStyleEnter(this,m_children,DocStyleChange::Span,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Span,tagName,&g_token->attribs);
       break;
     case HTML_SUB:
-      handleStyleEnter(this,m_children,DocStyleChange::Subscript,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Subscript,tagName,&g_token->attribs);
       break;
     case HTML_SUP:
-      handleStyleEnter(this,m_children,DocStyleChange::Superscript,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Superscript,tagName,&g_token->attribs);
       break;
     case HTML_CENTER:
-      handleStyleEnter(this,m_children,DocStyleChange::Center,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Center,tagName,&g_token->attribs);
       break;
     case HTML_SMALL:
-      handleStyleEnter(this,m_children,DocStyleChange::Small,&g_token->attribs);
+      if (!g_token->emptyTag) handleStyleEnter(this,m_children,DocStyleChange::Small,tagName,&g_token->attribs);
       break;
     case HTML_PRE:
-      handleStyleEnter(this,m_children,DocStyleChange::Preformatted,&g_token->attribs);
+      if (g_token->emptyTag) break;
+      handleStyleEnter(this,m_children,DocStyleChange::Preformatted,tagName,&g_token->attribs);
       setInsidePreformatted(TRUE);
       doctokenizerYYsetInsidePre(TRUE);
       break;
@@ -5976,6 +6007,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       retval=TK_NEWPARA;
       break;
     case HTML_DL:
+      if (!g_token->emptyTag)
       {
         DocHtmlDescList *list = new DocHtmlDescList(this,tagHtmlAttribs);
         m_children.append(list);
@@ -5989,6 +6021,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected tag <dd> found");
       break;
     case HTML_TABLE:
+      if (!g_token->emptyTag)
       {
         DocHtmlTable *table = new DocHtmlTable(this,tagHtmlAttribs);
         m_children.append(table);
@@ -6023,22 +6056,22 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       retval=handleAHref(this,m_children,tagHtmlAttribs);
       break;
     case HTML_H1:
-      retval=handleHtmlHeader(tagHtmlAttribs,1);
+      if (!g_token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,1);
       break;
     case HTML_H2:
-      retval=handleHtmlHeader(tagHtmlAttribs,2);
+      if (!g_token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,2);
       break;
     case HTML_H3:
-      retval=handleHtmlHeader(tagHtmlAttribs,3);
+      if (!g_token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,3);
       break;
     case HTML_H4:
-      retval=handleHtmlHeader(tagHtmlAttribs,4);
+      if (!g_token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,4);
       break;
     case HTML_H5:
-      retval=handleHtmlHeader(tagHtmlAttribs,5);
+      if (!g_token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,5);
       break;
     case HTML_H6:
-      retval=handleHtmlHeader(tagHtmlAttribs,6);
+      if (!g_token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,6);
       break;
     case HTML_IMG:
       {
@@ -6046,6 +6079,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       }
       break;
     case HTML_BLOCKQUOTE:
+      if (!g_token->emptyTag)
       {
         DocHtmlBlockQuote *block = new DocHtmlBlockQuote(this,tagHtmlAttribs);
         m_children.append(block);
@@ -6072,7 +6106,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       }
       break;
     case XML_C:
-      handleStyleEnter(this,m_children,DocStyleChange::Code,&g_token->attribs);
+      handleStyleEnter(this,m_children,DocStyleChange::Code,tagName,&g_token->attribs);
       break;
     case XML_PARAM:
     case XML_TYPEPARAM:
@@ -6108,9 +6142,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
         {
           //printf("paramName=%s\n",paramName.data());
-          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,tagName,TRUE));
           m_children.append(new DocWord(this,paramName)); 
-          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,tagName,FALSE));
           if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
         }
         else
@@ -6200,9 +6234,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           bool inSeeBlock = g_inSeeBlock;
           g_token->name = cref;
           g_inSeeBlock = TRUE;
-          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,TRUE));
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,tagName,TRUE));
           handleLinkedWord(this,m_children,TRUE);
-          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,FALSE));
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,tagName,FALSE));
           g_inSeeBlock = inSeeBlock;
         }
         else
@@ -6276,7 +6310,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_UNKNOWN:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported xml/html tag <%s> found", qPrint(tagName));
-      m_children.append(new DocWord(this, "<"+tagName+tagHtmlAttribs.toString()+">"));
+      m_children.append(new DocWord(this, "<"+tagName+g_token->attribsStr+">"));
       break;
   case XML_INHERITDOC:
       handleInheritDoc();
@@ -6340,46 +6374,49 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     //  }
     //  break;
     case HTML_BOLD:
-      handleStyleLeave(this,m_children,DocStyleChange::Bold,"b");
+      handleStyleLeave(this,m_children,DocStyleChange::Bold,tagName);
+      break;
+    case HTML_S:
+      handleStyleLeave(this,m_children,DocStyleChange::S,"s");
       break;
     case HTML_STRIKE:
-      handleStyleLeave(this,m_children,DocStyleChange::Strike,"strike");
+      handleStyleLeave(this,m_children,DocStyleChange::Strike,tagName);
       break;
     case HTML_DEL:
-      handleStyleLeave(this,m_children,DocStyleChange::Del,"del");
+      handleStyleLeave(this,m_children,DocStyleChange::Del,tagName);
       break;
     case HTML_UNDERLINE:
-      handleStyleLeave(this,m_children,DocStyleChange::Underline,"u");
+      handleStyleLeave(this,m_children,DocStyleChange::Underline,tagName);
       break;
     case HTML_INS:
-      handleStyleLeave(this,m_children,DocStyleChange::Ins,"ins");
+      handleStyleLeave(this,m_children,DocStyleChange::Ins,tagName);
       break;
     case HTML_CODE:
-      handleStyleLeave(this,m_children,DocStyleChange::Code,"code");
+      handleStyleLeave(this,m_children,DocStyleChange::Code,tagName);
       break;
     case HTML_EMPHASIS:
-      handleStyleLeave(this,m_children,DocStyleChange::Italic,"em");
+      handleStyleLeave(this,m_children,DocStyleChange::Italic,tagName);
       break;
     case HTML_DIV:
-      handleStyleLeave(this,m_children,DocStyleChange::Div,"div");
+      handleStyleLeave(this,m_children,DocStyleChange::Div,tagName);
       break;
     case HTML_SPAN:
-      handleStyleLeave(this,m_children,DocStyleChange::Span,"span");
+      handleStyleLeave(this,m_children,DocStyleChange::Span,tagName);
       break;
     case HTML_SUB:
-      handleStyleLeave(this,m_children,DocStyleChange::Subscript,"sub");
+      handleStyleLeave(this,m_children,DocStyleChange::Subscript,tagName);
       break;
     case HTML_SUP:
-      handleStyleLeave(this,m_children,DocStyleChange::Superscript,"sup");
+      handleStyleLeave(this,m_children,DocStyleChange::Superscript,tagName);
       break;
     case HTML_CENTER:
-      handleStyleLeave(this,m_children,DocStyleChange::Center,"center");
+      handleStyleLeave(this,m_children,DocStyleChange::Center,tagName);
       break;
     case HTML_SMALL:
-      handleStyleLeave(this,m_children,DocStyleChange::Small,"small");
+      handleStyleLeave(this,m_children,DocStyleChange::Small,tagName);
       break;
     case HTML_PRE:
-      handleStyleLeave(this,m_children,DocStyleChange::Preformatted,"pre");
+      handleStyleLeave(this,m_children,DocStyleChange::Preformatted,tagName);
       setInsidePreformatted(FALSE);
       doctokenizerYYsetInsidePre(FALSE);
       break;
@@ -6461,7 +6498,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       retval = RetVal_CloseXml;
       break;
     case XML_C:
-      handleStyleLeave(this,m_children,DocStyleChange::Code,"c");
+      handleStyleLeave(this,m_children,DocStyleChange::Code,tagName);
       break;
     case XML_ITEM:
     case XML_LISTHEADER:
@@ -7518,7 +7555,7 @@ QCString getDirHtmlClassOfPage(QCString pageTitle)
   return result;
 }
 
-QCString getHtmlDirEmbedingChar(QString::Direction textDir)
+QCString getHtmlDirEmbeddingChar(QString::Direction textDir)
 {
   if (textDir == QString::DirLTR)
     return "&#x202A;";
@@ -7527,7 +7564,7 @@ QCString getHtmlDirEmbedingChar(QString::Direction textDir)
   return "";
 }
 
-QCString getJsDirEmbedingChar(QString::Direction textDir)
+QCString getJsDirEmbeddingChar(QString::Direction textDir)
 {
   if (textDir == QString::DirLTR)
     return "\\u202A";

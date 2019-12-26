@@ -89,6 +89,8 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\</SMALL\></tt> Ends a <tt>\<SMALL\></tt> section.
 <li><tt>\<SPAN></tt>   Starts an inline text fragment with a specific style (HTML only)
 <li><tt>\</SPAN></tt>  Ends an inline text fragment with a specific style (HTML only)
+<li><tt>\<S\></tt>     Starts a section of strike through text.
+<li><tt>\</S\></tt>    Ends a section of strike through text.
 <li><tt>\<STRIKE\></tt> Starts a section of strike through text.
 <li><tt>\</STRIKE\></tt> Ends a section of strike through text.
 <li><tt>\<STRONG\></tt> Starts a section of bold text.
@@ -304,7 +306,7 @@ The list of entities with their descriptions has been taken from <a href="http:/
 <li><tt>\&notin;</tt>`&nbsp;&nbsp;&nbsp;`                 not an element of: &notin;
 <li><tt>\&ni;</tt>`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`  contains as member: &ni;
 <li><tt>\&prod;</tt>`&nbsp;&nbsp;&nbsp;&nbsp;`            n-ary product = product sign: &prod;
-<li><tt>\&sum;</tt>`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`       n-ary sumation: &sum;
+<li><tt>\&sum;</tt>`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`       n-ary summation: &sum;
 <li><tt>\&minus;</tt>`&nbsp;&nbsp;&nbsp;`                 minus sign: &minus;
 <li><tt>\&lowast;</tt>`&nbsp;&nbsp;`                      asterisk operator: &lowast;
 <li><tt>\&radic;</tt>`&nbsp;&nbsp;&nbsp;`                 square root = radical sign: &radic;

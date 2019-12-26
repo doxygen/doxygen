@@ -639,6 +639,7 @@ void PerlModDocVisitor::visit(DocStyleChange *s)
   switch (s->style())
   {
     case DocStyleChange::Bold:          style = "bold"; break;
+    case DocStyleChange::S:             style = "s"; break;
     case DocStyleChange::Strike:        style = "strike"; break;
     case DocStyleChange::Del:           style = "del"; break;
     case DocStyleChange::Underline:     style = "underline"; break;
@@ -1792,9 +1793,9 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
   // + standard member sections
   // + detailed member documentation
   // - examples using the class
-  
+
   if (cd->isReference())        return; // skip external references.
-  if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
+  if (cd->isAnonymous())        return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
 
   m_output.openHash()
@@ -2271,9 +2272,8 @@ bool PerlModGenerator::createOutputDir(QDir &perlModDir)
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-	err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
+	term("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
 	    "exist and cannot be created\n",outputDirectory.data());
-	exit(1);
       }
       else
       {

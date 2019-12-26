@@ -426,7 +426,7 @@ struct SearchIndexExternal::Private
 {
   Private() : docEntries(12251) {}
   SDict<SearchDocEntry> docEntries;
-  SearchDocEntry *current;
+  SearchDocEntry *current = 0;
 };
 
 SearchIndexExternal::SearchIndexExternal() : SearchIndexIntf(External)
@@ -731,7 +731,7 @@ static QCString searchId(const QCString &s)
   return result;
 }
 
-void createJavascriptSearchIndex()
+void createJavaScriptSearchIndex()
 {
   bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
@@ -953,7 +953,7 @@ void createJavascriptSearchIndex()
   }
 }
 
-void writeJavascriptSearchIndex()
+void writeJavaScriptSearchIndex()
 {
   int i;
   int cnt = 0;
@@ -1372,7 +1372,7 @@ void initSearchIndexer()
   }
 }
 
-void finializeSearchIndexer()
+void finalizeSearchIndexer()
 {
   delete Doxygen::searchIndex;
 }

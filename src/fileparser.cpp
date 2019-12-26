@@ -16,7 +16,7 @@
 #include "fileparser.h"
 #include "outputgen.h"
 
-void FileParser::parseCode(CodeOutputInterface &codeOutIntf,
+void FileCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
                const char *,     // scopeName
                const QCString &     input,
                SrcLangExt,       // lang

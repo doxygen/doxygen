@@ -30,7 +30,7 @@ has its own advantages and disadvantages:
 
 <h2>1. Client side searching</h2>
    The easiest way to enable searching is to enable the built-in client
-   side search engine. This engine is implemented using Javascript and DHTML
+   side search engine. This engine is implemented using JavaScript and DHTML
    only and runs entirely on the clients browser. So no additional tooling is
    required to make it work. 
  

@@ -73,7 +73,7 @@ static bool si_bigEndian;
   or to FALSE if this is a little-endian machine.
 
   This function calls qFatal() with a message if the computer is truly weird
-  (i.e. different endianness for 16 bit and 32 bit integers).
+  (i.e. different endianess for 16 bit and 32 bit integers).
 */
 
 bool qSysInfo( int *wordSize, bool *bigEndian )

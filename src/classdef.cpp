@@ -133,7 +133,6 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual MemberDef *isSmartPointer() const;
     virtual bool isJavaEnum() const;
     virtual bool isGeneric() const;
-    virtual bool isAnonymous() const;
     virtual const ClassSDict *innerClasses() const;
     virtual QCString title() const;
     virtual QCString generatedFromFiles() const;
@@ -265,7 +264,7 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
 
     // PIMPL idiom
     class IMPL;
-    IMPL *m_impl;
+    IMPL *m_impl = 0;
 };
 
 ClassDef *createClassDef(
@@ -423,8 +422,6 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
     { return getCdAlias()->isJavaEnum(); }
     virtual bool isGeneric() const
     { return getCdAlias()->isGeneric(); }
-    virtual bool isAnonymous() const
-    { return getCdAlias()->isAnonymous(); }
     virtual const ClassSDict *innerClasses() const
     { return getCdAlias()->innerClasses(); }
     virtual QCString title() const
@@ -525,7 +522,7 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
                  QPtrDict<void> *visitedClasses=0) const {}
 
   private:
-    mutable bool m_visited;
+    mutable bool m_visited = false;
 };
 
 
@@ -563,27 +560,27 @@ class ClassDefImpl::IMPL
     /*! Include information about the header file should be included
      *  in the documentation. 0 by default, set by setIncludeFile().
      */
-    IncludeInfo *incInfo;
+    IncludeInfo *incInfo = 0;
 
     /*! List of base class (or super-classes) from which this class derives
      *  directly.
      */
-    BaseClassList *inherits;
+    BaseClassList *inherits = 0;
 
     /*! List of sub-classes that directly derive from this class
      */
-    BaseClassList *inheritedBy;
+    BaseClassList *inheritedBy = 0;
 
     /*! Namespace this class is part of
      *  (this is the inner most namespace in case of nested namespaces)
      */
-    NamespaceDef  *nspace;
+    NamespaceDef  *nspace = 0;
 
     /*! File this class is defined in */
-    FileDef *fileDef;
+    FileDef *fileDef = 0;
 
     /*! List of all members (including inherited members) */
-    MemberNameInfoSDict *allMemberNameInfoSDict;
+    MemberNameInfoSDict *allMemberNameInfoSDict = 0;
 
     /*! Template arguments of this class */
     ArgumentList tempArgs;
@@ -595,7 +592,7 @@ class ClassDefImpl::IMPL
     FileList files;
 
     /*! Examples that use this class */
-    ExampleSDict *exampleSDict;
+    ExampleSDict *exampleSDict = 0;
 
     /*! Holds the kind of "class" this is. */
     ClassDef::CompoundType compType;
@@ -609,30 +606,30 @@ class ClassDefImpl::IMPL
     /*! The inner classes contained in this class. Will be 0 if there are
      *  no inner classes.
      */
-    ClassSDict *innerClasses;
+    ClassSDict *innerClasses = 0;
 
     /* classes for the collaboration diagram */
-    UsesClassDict *usesImplClassDict;
-    UsesClassDict *usedByImplClassDict;
-    UsesClassDict *usesIntfClassDict;
+    UsesClassDict *usesImplClassDict = 0;
+    UsesClassDict *usedByImplClassDict = 0;
+    UsesClassDict *usesIntfClassDict = 0;
 
-    ConstraintClassDict *constraintClassDict;
+    ConstraintClassDict *constraintClassDict = 0;
 
     /*! Template instances that exists of this class, the key in the
      *  dictionary is the template argument list.
      */
-    mutable QDict<ClassDef> *templateInstances;
+    mutable QDict<ClassDef> *templateInstances = 0;
 
     /*! Template instances that exists of this class, as defined by variables.
      *  We do NOT want to document these individually. The key in the
      *  dictionary is the template argument list.
      */
-    mutable QDict<ClassDef> *variableInstances;
+    mutable QDict<ClassDef> *variableInstances = 0;
 
-    QDict<int> *templBaseClassNames;
+    QDict<int> *templBaseClassNames = 0;
 
     /*! The class this class is an instance of. */
-    const ClassDef *templateMaster;
+    const ClassDef *templateMaster = 0;
 
     /*! local class name which could be a typedef'ed alias name. */
     QCString className;
@@ -640,56 +637,54 @@ class ClassDefImpl::IMPL
     /*! If this class is a Objective-C category, then this points to the
      *  class which is extended.
      */
-    ClassDef *categoryOf;
+    ClassDef *categoryOf = 0;
 
     QList<MemberList> memberLists;
 
     /* user defined member groups */
-    MemberGroupSDict *memberGroupSDict;
+    MemberGroupSDict *memberGroupSDict = 0;
 
     /*! Is this an abstract class? */
-    bool isAbstract;
+    bool isAbstract = false;
 
     /*! Is the class part of an unnamed namespace? */
-    bool isStatic;
+    bool isStatic = false;
 
     /*! TRUE if classes members are merged with those of the base classes. */
-    bool membersMerged;
+    bool membersMerged = false;
 
     /*! TRUE if the class is defined in a source file rather than a header file. */
-    bool isLocal;
+    bool isLocal = false;
 
-    bool isTemplArg;
+    bool isTemplArg = false;
 
     /*! Does this class group its user-grouped members
      *  as a sub-section of the normal (public/protected/..)
      *  groups?
      */
-    bool subGrouping;
+    bool subGrouping = false;
 
     /** Reason of existence is a "use" relation */
-    bool usedOnly;
+    bool usedOnly = false;
 
     /** List of titles to use for the summary */
     SDict<QCString> vhdlSummaryTitles;
 
     /** Is this a simple (non-nested) C structure? */
-    bool isSimple;
+    bool isSimple = false;
 
     /** Does this class overloaded the -> operator? */
-    MemberDef *arrowOperator;
+    MemberDef *arrowOperator = 0;
 
-    ClassList *taggedInnerClasses;
-    ClassDef *tagLessRef;
+    ClassList *taggedInnerClasses = 0;
+    ClassDef *tagLessRef = 0;
 
     /** Does this class represent a Java style enum? */
-    bool isJavaEnum;
+    bool isJavaEnum = false;
 
-    bool isGeneric;
+    bool isGeneric = false;
 
-    bool isAnonymous;
-
-    uint64 spec;
+    uint64 spec = 0;
 
     QCString metaData;
 };
@@ -751,7 +746,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
     isLocal=FALSE;
   }
   isGeneric = (lang==SrcLangExt_CSharp || lang==SrcLangExt_Java) && QCString(name).find('<')!=-1;
-  isAnonymous = QCString(name).find('@')!=-1;
 }
 
 ClassDefImpl::IMPL::IMPL() : vhdlSummaryTitles(17)
@@ -835,6 +829,10 @@ QCString ClassDefImpl::displayName(bool includeScope) const
       n=className();
     }
   }
+  if (isAnonymous())
+  {
+    n = removeAnonymousScopes(n);
+  }
   QCString sep=getLanguageSpecificSeparator(lang);
   if (sep!="::")
   {
@@ -849,14 +847,7 @@ QCString ClassDefImpl::displayName(bool includeScope) const
   //  n = n.left(n.length()-2);
   //}
   //printf("ClassDefImpl::displayName()=%s\n",n.data());
-  if (n.find('@')!=-1)
-  {
-    return removeAnonymousScopes(n);
-  }
-  else
-  {
-    return n;
-  }
+  return n;
 }
 
 // inserts a base/super class in the inheritance list
@@ -1715,7 +1706,8 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     DotClassGraph inheritanceGraph(this,Inheritance);
     if (inheritanceGraph.isTooBig())
     {
-       warn_uncond("Inheritance graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+       warn_uncond("Inheritance graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           name().data(), inheritanceGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!inheritanceGraph.isTrivial())
     {
@@ -3077,7 +3069,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
       //printf("%s: Member %s of class %s md->protection()=%d mi->prot=%d prot=%d inherited=%d\n",
       //    name().data(),md->name().data(),cd->name().data(),md->protection(),mi->prot,prot,mi->inherited);
 
-      if (cd && !md->name().isEmpty() && md->name()[0]!='@')
+      if (cd && !md->name().isEmpty() && !md->isAnonymous())
       {
         bool memberWritten=FALSE;
         if (cd->isLinkable() && md->isLinkable())
@@ -3315,7 +3307,7 @@ bool ClassDefImpl::hasExamples() const
 
 void ClassDefImpl::addTypeConstraint(const QCString &typeConstraint,const QCString &type)
 {
-  //printf("addTypeContraint(%s,%s)\n",type.data(),typeConstraint.data());
+  //printf("addTypeConstraint(%s,%s)\n",type.data(),typeConstraint.data());
   static bool hideUndocRelation = Config_getBool(HIDE_UNDOC_RELATIONS);
   if (typeConstraint.isEmpty() || type.isEmpty()) return;
   ClassDef *cd = const_cast<ClassDef*>(getResolvedClass(this,getFileDef(),typeConstraint));
@@ -3655,7 +3647,7 @@ void ClassDefImpl::mergeMembers()
             {
               MemberDef *srcMd = srcMi->memberDef;
               bool found=FALSE;
-              bool ambigue=FALSE;
+              bool ambiguous=FALSE;
               bool hidden=FALSE;
               MemberNameInfoIterator dstMnii(*dstMni);
               MemberInfo *dstMi;
@@ -3694,7 +3686,7 @@ void ClassDefImpl::mergeMembers()
                     QCString scope=dstMi->scopePath.left(dstMi->scopePath.find(sep)+sepLen);
                     if (scope!=dstMi->ambiguityResolutionScope.left(scope.length()))
                       dstMi->ambiguityResolutionScope.prepend(scope);
-                    ambigue=TRUE;
+                    ambiguous=TRUE;
                   }
                 }
                 else // same members
@@ -3723,12 +3715,12 @@ void ClassDefImpl::mergeMembers()
                     {
                       dstMi->ambiguityResolutionScope.prepend(scope);
                     }
-                    ambigue=TRUE;
+                    ambiguous=TRUE;
                   }
                 }
               }
-              //printf("member %s::%s hidden %d ambigue %d srcMi->ambigClass=%p\n",
-              //    srcCd->name().data(),srcMd->name().data(),hidden,ambigue,srcMi->ambigClass);
+              //printf("member %s::%s hidden %d ambiguous %d srcMi->ambigClass=%p\n",
+              //    srcCd->name().data(),srcMd->name().data(),hidden,ambiguous,srcMi->ambigClass);
 
               // TODO: fix the case where a member is hidden by inheritance
               //       of a member with the same name but with another prototype,
@@ -3757,7 +3749,7 @@ void ClassDefImpl::mergeMembers()
 
                 MemberInfo *newMi = new MemberInfo(srcMd,prot,virt,TRUE);
                 newMi->scopePath=bClass->name()+sep+srcMi->scopePath;
-                if (ambigue)
+                if (ambiguous)
                 {
                   //printf("$$ New member %s %s add scope %s::\n",
                   //     srcMi->ambiguityResolutionScope.data(),
@@ -4282,7 +4274,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const char *t
     for (mnii.toFirst();(mi=mnii.current());++mnii)
     {
       ArgumentList actualArguments;
-      stringToArgumentList(templSpec,actualArguments);
+      stringToArgumentList(getLanguage(),templSpec,actualArguments);
       MemberDef *md = mi->memberDef;
       MemberDef *imd = md->createTemplateInstanceMember(
                           cd->templateArguments(),actualArguments);
@@ -4432,7 +4424,7 @@ void ClassDefImpl::addListReferences()
   if (!isLinkableInProject()) return;
   //printf("ClassDef(%s)::addListReferences()\n",name().data());
   {
-    QList<ListItemInfo> *xrefItems = xrefListItems();
+    const std::vector<ListItemInfo> &xrefItems = xrefListItems();
     addRefItem(xrefItems,
              qualifiedName(),
              lang==SrcLangExt_Fortran ? theTranslator->trType(TRUE,TRUE)
@@ -4733,7 +4725,7 @@ int ClassDefImpl::countAdditionalInheritedMembers() const
       }
     }
   }
-  //printf("countAdditonalInheritedMembers()=%d\n",totalCount);
+  //printf("countAdditionalInheritedMembers()=%d\n",totalCount);
   return totalCount;
 }
 
@@ -5299,18 +5291,12 @@ bool ClassDefImpl::isSliceLocal() const
 
 void ClassDefImpl::setName(const char *name)
 {
-  m_impl->isAnonymous = QCString(name).find('@')!=-1;
   DefinitionImpl::setName(name);
 }
 
 void ClassDefImpl::setMetaData(const char *md)
 {
   m_impl->metaData = md;
-}
-
-bool ClassDefImpl::isAnonymous() const
-{
-  return m_impl->isAnonymous;
 }
 
 QCString ClassDefImpl::collaborationGraphFileName() const

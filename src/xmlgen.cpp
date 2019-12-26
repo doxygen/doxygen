@@ -417,11 +417,11 @@ static void writeXMLDocBlock(FTextStream &t,
 
 void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
 {
-  ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
+  CodeParserInterface &intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
-  pIntf->resetCodeParserState();
+  intf.resetCodeParserState();
   XMLCodeGenerator *xmlGen = new XMLCodeGenerator(t);
-  pIntf->parseCode(*xmlGen,  // codeOutIntf
+  intf.parseCode(*xmlGen,    // codeOutIntf
                 0,           // scopeName
                 fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),
                 langExt,     // lang
@@ -430,7 +430,7 @@ void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
                 fd,          // fileDef
                 -1,          // startLine
                 -1,          // endLine
-                FALSE,       // inlineFragement
+                FALSE,       // inlineFragment
                 0,           // memberDef
                 TRUE         // showLineNumbers
                 );
@@ -514,7 +514,6 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   // enum values are written as part of the enum
   if (md->memberType()==MemberType_EnumValue) return;
   if (md->isHidden()) return;
-  //if (md->name().at(0)=='@') return; // anonymous member
 
   // group members are only visible in their group
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
@@ -900,7 +899,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
           md->argsString()) // define
   {
     if (md->argumentList().empty())     // special case for "foo()" to
-                                        // disguish it from "foo".
+                                        // distinguish it from "foo".
     {
       t << "        <param></param>" << endl;
     }
@@ -981,7 +980,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   if (md->getDefLine()!=-1)
   {
     t << "        <location file=\"" 
-      << stripFromPath(md->getDefFileName()) << "\" line=\"" 
+      << convertToXML(stripFromPath(md->getDefFileName())) << "\" line=\""
       << md->getDefLine() << "\" column=\"" 
       << md->getDefColumn() << "\"" ;
     if (md->getStartBodyLine()!=-1)
@@ -989,14 +988,14 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
       FileDef *bodyDef = md->getBodyDef();
       if (bodyDef)
       {
-        t << " bodyfile=\"" << stripFromPath(bodyDef->absFilePath()) << "\"";
+        t << " bodyfile=\"" << convertToXML(stripFromPath(bodyDef->absFilePath())) << "\"";
       }
       t << " bodystart=\"" << md->getStartBodyLine() << "\" bodyend=\"" 
         << md->getEndBodyLine() << "\"";
     }
     if (md->getDeclLine()!=-1)
     {
-      t << " declfile=\"" << stripFromPath(md->getDeclFileName()) << "\" declline=\""
+      t << " declfile=\"" << convertToXML(stripFromPath(md->getDeclFileName())) << "\" declline=\""
         << md->getDeclLine() << "\" declcolumn=\""
         << md->getDeclColumn() << "\"";
     }
@@ -1090,7 +1089,7 @@ static void writeListOfAllMembers(const ClassDef *cd,FTextStream &t)
       for (mii.toFirst();(mi=mii.current());++mii)
       {
         const MemberDef *md=mi->memberDef;
-        if (md->name().at(0)!='@') // skip anonymous members
+        if (!md->isAnonymous())
         {
           Protection prot = mi->prot;
           Specifier virt=md->virtualness();
@@ -1132,7 +1131,7 @@ static void writeInnerClasses(const ClassSDict *cl,FTextStream &t)
     const ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
-      if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
+      if (!cd->isHidden() && !cd->isAnonymous())
       {
         t << "    <innerclass refid=\"" << classOutputFileBase(cd)
           << "\" prot=\"";
@@ -1157,7 +1156,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
     const NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
+      if (!nd->isHidden() && !nd->isAnonymous())
       {
         t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
           << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
@@ -1247,7 +1246,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
 
   if (cd->isReference())        return; // skip external references.
   if (cd->isHidden())           return; // skip hidden classes.
-  if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
+  if (cd->isAnonymous())        return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
   if (cd->isArtificial())       return; // skip artificially created classes
 
@@ -1419,7 +1418,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
     t << "    </collaborationgraph>" << endl;
   }
   t << "    <location file=\"" 
-    << stripFromPath(cd->getDefFileName()) << "\" line=\"" 
+    << convertToXML(stripFromPath(cd->getDefFileName())) << "\" line=\""
     << cd->getDefLine() << "\"" << " column=\"" 
     << cd->getDefColumn() << "\"" ;
     if (cd->getStartBodyLine()!=-1)
@@ -1427,7 +1426,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
       FileDef *bodyDef = cd->getBodyDef();
       if (bodyDef)
       {
-        t << " bodyfile=\"" << stripFromPath(bodyDef->absFilePath()) << "\"";
+        t << " bodyfile=\"" << convertToXML(stripFromPath(bodyDef->absFilePath())) << "\"";
       }
       t << " bodystart=\"" << cd->getStartBodyLine() << "\" bodyend=\"" 
         << cd->getEndBodyLine() << "\"";
@@ -1507,7 +1506,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
   writeXMLDocBlock(t,nd->docFile(),nd->docLine(),nd,0,nd->documentation());
   t << "    </detaileddescription>" << endl;
   t << "    <location file=\""
-    << stripFromPath(nd->getDefFileName()) << "\" line=\""
+    << convertToXML(stripFromPath(nd->getDefFileName())) << "\" line=\""
     << nd->getDefLine() << "\"" << " column=\""
     << nd->getDefColumn() << "\"/>" << endl ;
   t << "  </compounddef>" << endl;
@@ -1649,7 +1648,7 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
     writeXMLCodeBlock(t,fd);
     t << "    </programlisting>" << endl;
   }
-  t << "    <location file=\"" << stripFromPath(fd->getDefFileName()) << "\"/>" << endl;
+  t << "    <location file=\"" << convertToXML(stripFromPath(fd->getDefFileName())) << "\"/>" << endl;
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;
 
@@ -1763,7 +1762,7 @@ static void generateXMLForDir(DirDef *dd,FTextStream &ti)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,dd->docFile(),dd->docLine(),dd,0,dd->documentation());
   t << "    </detaileddescription>" << endl;
-  t << "    <location file=\"" << stripFromPath(dd->name()) << "\"/>" << endl; 
+  t << "    <location file=\"" << convertToXML(stripFromPath(dd->name())) << "\"/>" << endl;
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;
 

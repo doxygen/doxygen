@@ -307,7 +307,7 @@ class MemberDef : virtual public Definition
     virtual void makeRelated() = 0;
     virtual void makeForeign() = 0;
     virtual void setInheritsDocsFrom(MemberDef *md) = 0;
-    virtual void setTagInfo(TagInfo *i) = 0;
+    virtual void setTagInfo(const TagInfo *i) = 0;
     virtual void setArgsString(const char *as) = 0;
     virtual void incrementFlowKeyWordCount() = 0;
 

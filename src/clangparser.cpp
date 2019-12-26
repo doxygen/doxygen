@@ -87,7 +87,7 @@ static QCString detab(const QCString &s)
           while (stop--) out.addChar(' '); 
         }
         break;
-      case '\n': // reset colomn counter
+      case '\n': // reset column counter
         out.addChar(c);
         col=0;
         break;

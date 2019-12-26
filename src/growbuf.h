@@ -47,6 +47,7 @@ class GrowBuf
                       }
     const char *get()     { return str; }
     int getPos() const    { return pos; }
+    void setPos(const int newPos) { pos = newPos; }
     char at(int i) const  { return str[i]; }
   private:
     char *str;

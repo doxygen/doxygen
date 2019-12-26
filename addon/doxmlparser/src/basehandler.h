@@ -57,7 +57,7 @@ template<class T> class ElementMapper
          void operator()(const QXmlAttributes &attrib) 
            { if (m_parent) (m_parent->*m_handler)(attrib); }
        private:
-         T *m_parent;
+         T *m_parent = 0;
          Handler m_handler;
     };
 
@@ -71,7 +71,7 @@ template<class T> class ElementMapper
         void operator()() 
           { if (m_parent) (m_parent->*m_handler)(); }
       private:
-        T *m_parent;
+        T *m_parent = 0;
         Handler m_handler;
     };
 
@@ -277,9 +277,9 @@ template<class T> class BaseHandler : public QXmlDefaultHandler,
   protected:
     QString                     m_curString;
     QString                     m_skipUntil;
-    int                         m_skipCount;
-    QXmlDefaultHandler         *m_delegateHandler;
-    IFallBackHandler           *m_fallBackHandler;
+    int                         m_skipCount = 0;
+    QXmlDefaultHandler         *m_delegateHandler = 0;
+    IFallBackHandler           *m_fallBackHandler = 0;
 };
 
 //-----------------------------------------------------------------------------

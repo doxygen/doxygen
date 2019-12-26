@@ -33,12 +33,12 @@ class ManGenerator : public OutputGenerator
     //OutputGenerator *clone() { return new ManGenerator(*this); }
     //void append(const OutputGenerator *o);
     void enable() 
-    { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
-    void disable() { active=FALSE; }
+    { if (m_genStack->top()) m_active=*m_genStack->top(); else m_active=TRUE; }
+    void disable() { m_active=FALSE; }
     void enableIf(OutputType o)  { if (o==Man) enable(); }
     void disableIf(OutputType o) { if (o==Man) disable(); }
     void disableIfNot(OutputType o) { if (o!=Man) disable(); }
-    bool isEnabled(OutputType o) { return (o==Man && active); } 
+    bool isEnabled(OutputType o) { return (o==Man && m_active); } 
     OutputGenerator *get(OutputType o) { return (o==Man) ? this : 0; }
 
     void writeDoc(DocNode *,const Definition *,const MemberDef *);
@@ -91,8 +91,8 @@ class ManGenerator : public OutputGenerator
     void endTextLink() {}
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    void startTypewriter() { t << "\\fC"; firstCol=FALSE; }
-    void endTypewriter()   { t << "\\fP"; firstCol=FALSE; }
+    void startTypewriter() { t << "\\fC"; m_firstCol=FALSE; }
+    void endTypewriter()   { t << "\\fP"; m_firstCol=FALSE; }
     void startGroupHeader(int);
     void endGroupHeader(int);
     void startMemberSections() {}
@@ -132,13 +132,13 @@ class ManGenerator : public OutputGenerator
     void writeAnchor(const char *,const char *) {}
     void startCodeFragment();
     void endCodeFragment();
-    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
+    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; m_col=0; }
     void startCodeLine(bool) {}
-    void endCodeLine() { codify("\n"); col=0; }
-    void startEmphasis() { t << "\\fI"; firstCol=FALSE; }
-    void endEmphasis()   { t << "\\fP"; firstCol=FALSE; }
-    void startBold()     { t << "\\fB"; firstCol=FALSE; }
-    void endBold()       { t << "\\fP"; firstCol=FALSE; }
+    void endCodeLine() { codify("\n"); m_col=0; }
+    void startEmphasis() { t << "\\fI"; m_firstCol=FALSE; }
+    void endEmphasis()   { t << "\\fP"; m_firstCol=FALSE; }
+    void startBold()     { t << "\\fB"; m_firstCol=FALSE; }
+    void endBold()       { t << "\\fP"; m_firstCol=FALSE; }
     void startDescription() {}
     void endDescription()   {}
     void startDescItem();
@@ -152,7 +152,7 @@ class ManGenerator : public OutputGenerator
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
-    void writeEndAnnoItem(const char *) { t << endl; firstCol=TRUE; }
+    void writeEndAnnoItem(const char *) { t << endl; m_firstCol=TRUE; }
     void startSubsection();
     void endSubsection();
     void startSubsubsection();
@@ -161,8 +161,8 @@ class ManGenerator : public OutputGenerator
     void endCenter()          {}
     void startSmall()         {}
     void endSmall()           {}
-    void startMemberDescription(const char *,const char *,bool) { t << "\n.RI \""; firstCol=FALSE; }
-    void endMemberDescription()   { t << "\""; firstCol=FALSE; }
+    void startMemberDescription(const char *,const char *,bool) { t << "\n.RI \""; m_firstCol=FALSE; }
+    void endMemberDescription()   { t << "\""; m_firstCol=FALSE; }
     void startMemberDeclaration() {} 
     void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
@@ -203,7 +203,7 @@ class ManGenerator : public OutputGenerator
     void endDescTableRow() {}
     void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }
     void endDescTableTitle() { endEmphasis(); endBold(); }
-    void startDescTableData() { t << endl; firstCol=TRUE; }
+    void startDescTableData() { t << endl; m_firstCol=TRUE; }
     void endDescTableData() {}
 
     void startDotGraph() {}
@@ -264,12 +264,12 @@ class ManGenerator : public OutputGenerator
     void addWord(const char *,bool) {}
 
   private:
-    bool firstCol;
-    bool paragraph;
-    int col;
-    bool upperCase;
-    bool insideTabbing;
-    bool inHeader;
+    bool m_firstCol;
+    bool m_paragraph;
+    int  m_col;
+    bool m_upperCase;
+    bool m_insideTabbing;
+    bool m_inHeader;
 
     ManGenerator(const ManGenerator &g);
     ManGenerator &operator=(const ManGenerator &g);

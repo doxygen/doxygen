@@ -72,7 +72,7 @@ static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCStri
 static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
 static void assignBinding(VhdlConfNode* conf);
 static void addInstance(ClassDef* entity, ClassDef* arch, ClassDef *inst,
-                        const std::unique_ptr<Entry> &cur);
+                        const std::shared_ptr<Entry> &cur);
 
 //---------- create svg -------------------------------------------------------------
 static void createSVG();
@@ -82,7 +82,7 @@ static QList<MemberDef>* getPorts(ClassDef *cd);
 static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd);
 static void endDot(FTextStream &t);
 static void writeTable(QList<MemberDef>* port,FTextStream & t);
-static void endTabel(FTextStream &t);
+static void endTable(FTextStream &t);
 static void writeClassToDot(FTextStream &t,ClassDef* cd);
 static void writeVhdlDotLink(FTextStream &t,const QCString &a,const QCString &b,const QCString &style);
 //static void writeVhdlPortToolTip(FTextStream& t,QList<MemberDef>* port,ClassDef *cd);
@@ -169,7 +169,7 @@ static void createSVG()
 
     QCString vlargs="-Tsvg \""+ov+"\" "+dir ;
 
-    if (portable_system(Config_getString(DOT_PATH) + "dot",vlargs)!=0)
+    if (Portable::system(Config_getString(DOT_PATH) + "dot",vlargs)!=0)
     {
       err("could not create dot file");
     }
@@ -228,7 +228,7 @@ void VhdlDocGen::writeOverview()
     startTable(t,cd->name());
     writeClassToDot(t,cd);
     writeTable(port,t);
-    endTabel(t);
+    endTable(t);
 
    // writeVhdlPortToolTip(t,port,cd);
     writeVhdlEntityToolTip(t,cd);
@@ -448,7 +448,7 @@ static void writeColumn(FTextStream &t,MemberDef *md,bool start)
   }
 }
 
-static void endTabel(FTextStream &t)
+static void endTable(FTextStream &t)
 {
   t << "</TABLE>>\n";
   t << "] \n";
@@ -717,7 +717,7 @@ static QMap<ClassDef*,QList<ClassDef> > packages;
 
 MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& memName)
 {
-  ClassDef* cd,*ecd;
+  ClassDef* cd,*ecd=0;
   MemberDef *mdef=0;
 
   cd=getClass(className);
@@ -793,9 +793,11 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
     if (!packages.contains(ecd)) VhdlDocGen::findAllPackages(ecd);
   }
 
- QMap<ClassDef*,QList<ClassDef> >::Iterator cList=packages.find(ecd);
-      if (cList.key()!=0)
-	  {
+  if (ecd)
+  {
+    QMap<ClassDef*,QList<ClassDef> >::Iterator cList=packages.find(ecd);
+    if (cList!=packages.end())
+    {
       QList<ClassDef> mlist=cList.data();
       for (uint j=0;j<mlist.count();j++)
       {
@@ -804,7 +806,8 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
         mdef=VhdlDocGen::findMemberDef(mlist.at(j),memName,MemberListType_pubMethods);
         if (mdef) return mdef;
       }
-	  }
+    }
+  }
   return 0;
 
 }//findMember
@@ -1121,7 +1124,6 @@ void VhdlDocGen::prepareComment(QCString& qcs)
 /*!
  * parses a function proto
  * @param text function string
- * @param qlist stores the function types
  * @param name points to the function name
  * @param ret Stores the return type
  * @param doc ???
@@ -2377,7 +2379,7 @@ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList&
 
 void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname)
 {
-  ParserInterface *pIntf = Doxygen::parserManager->getParser(".vhd");
+  CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(".vhd");
  // pIntf->resetCodeParserState();
 
   QCString codeFragment=mdef->documentation();
@@ -2403,7 +2405,7 @@ void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString
   codeFragment.prepend("\n");
   ol.pushGeneratorState();
   ol.startCodeFragment();
-  pIntf->parseCode(ol,                   // codeOutIntf
+  intf.parseCode(      ol,               // codeOutIntf
                        0,                // scope
                        codeFragment,     // input
                        SrcLangExt_VHDL,  // lang
@@ -2533,7 +2535,7 @@ static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCStr
 
   qcs.stripPrefix("=");
 
-  std::unique_ptr<Entry> current = std::make_unique<Entry>();
+  std::shared_ptr<Entry> current = std::make_shared<Entry>();
   current->spec=VhdlDocGen::UCF_CONST;
   current->section=Entry::VARIABLE_SEC;
   current->bodyLine=line;
@@ -2898,7 +2900,7 @@ void VhdlDocGen::computeVhdlComponentRelations()
 }
 
 static void addInstance(ClassDef* classEntity, ClassDef* ar,
-                        ClassDef *cd , const std::unique_ptr<Entry> &cur)
+                        ClassDef *cd , const std::shared_ptr<Entry> &cur)
 {
 
   QCString bName,n1;
@@ -3132,13 +3134,13 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   bool b=readCodeFragment( fd->absFilePath().data(), actualStart,actualEnd,codeFragment);
   if (!b) return;
 
-  VHDLLanguageScanner *pIntf =(VHDLLanguageScanner*) Doxygen::parserManager->getParser(".vhd");
+  VHDLOutlineParser &intf =dynamic_cast<VHDLOutlineParser&>(Doxygen::parserManager->getOutlineParser(".vhd"));
   VhdlDocGen::setFlowMember(mdef);
-  std::unique_ptr<Entry> root = std::make_unique<Entry>();
+  std::shared_ptr<Entry> root = std::make_shared<Entry>();
   QStrList filesInSameTu;
-  pIntf->startTranslationUnit("");
-  pIntf->parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);
-  pIntf->finishTranslationUnit();
+  intf.startTranslationUnit("");
+  intf.parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);
+  intf.finishTranslationUnit();
 }
 
 void VhdlDocGen::resetCodeVhdlParserState()
@@ -3794,7 +3796,7 @@ void FlowChart::createSVG()
 
   QCString vlargs="-Tsvg \""+ov+"\" "+dir ;
 
-  if (portable_system(Config_getString(DOT_PATH) + "dot",vlargs)!=0)
+  if (Portable::system(Config_getString(DOT_PATH) + "dot",vlargs)!=0)
   {
     err("could not create dot file");
   }
@@ -4310,42 +4312,3 @@ void FlowChart::writeFlowLinks(FTextStream &t)
 } //writeFlowLinks
 
 
-void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
-    const char *scopeName,
-    const QCString &input,
-    SrcLangExt, // lang
-    bool isExampleBlock,
-    const char *exampleName,
-    FileDef *fileDef,
-    int startLine,
-    int endLine,
-    bool inlineFragment,
-    const MemberDef *memberDef,
-    bool showLineNumbers,
-    const Definition *searchCtx,
-    bool collectXRefs
-    )
-{
-
-parseVhdlCode(codeOutIntf,
-                 scopeName,
-                  input,
-                  isExampleBlock,
-                  exampleName,
-                  fileDef,
-                  startLine,
-                  endLine,
-                  inlineFragment,
-                  memberDef,
-                  showLineNumbers,
-                  searchCtx,
-                  collectXRefs
-
-);
-
-
-
-
-
-
-}// class

@@ -11538,7 +11538,7 @@ static inline bool format(QChar::Decomposition tag, QString & str,
   Applies possible ligatures to a QString, useful when composition-rich
   text requires rendering with glyph-poor fonts, but also
   makes compositions such as QChar(0x0041) ('A') and QChar(0x0308)
-  (Unicode accent diaresis) giving QChar(0x00c4) (German A Umlaut).
+  (Unicode accent diaeresis) giving QChar(0x00c4) (German A Umlaut).
 */
 void QString::compose()
 {
@@ -15300,7 +15300,7 @@ const void* qt_winTchar(const QString& str_in, bool addnul)
     if ( addnul )
 	buf[str.length()] = 0;
 #else
-    // Same endianness of TCHAR
+    // Same endianess of TCHAR
     if ( addnul ) {
 	EXTEND
 	memcpy(buf,uc,sizeof(TCHAR)*str.length());
@@ -15344,7 +15344,7 @@ QString qt_winQString(void* tc)
 	r += QChar(((TCHAR*)tc)[i]&0xff,((TCHAR*)tc)[i]>>8);
     return r;
 #else
-    // Same endianness of TCHAR
+    // Same endianess of TCHAR
     return QString((QChar*)tc,len);
 #endif
 #undef EXTEND

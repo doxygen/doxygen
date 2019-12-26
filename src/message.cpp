@@ -90,7 +90,7 @@ void initWarningFormat()
 
   if (!Config_getString(WARN_LOGFILE).isEmpty())
   {
-    warnFile = portable_fopen(Config_getString(WARN_LOGFILE),"w");
+    warnFile = Portable::fopen(Config_getString(WARN_LOGFILE),"w");
   }
   if (!warnFile) // point it to something valid, because warn() relies on it
   {
@@ -249,6 +249,20 @@ extern void err_full(const char *file,int line,const char *fmt, ...)
   va_start(args, fmt);
   do_warn(TRUE, file, line, error_str, fmt, args);
   va_end(args);
+}
+
+void term(const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
+  va_end(args);
+  if (warnFile != stderr)
+  {
+    for (int i = 0; i < strlen(error_str); i++) fprintf(warnFile, " ");
+    fprintf(warnFile, "%s\n", "Exiting...");
+  }
+  exit(1);
 }
 
 void printlex(int dbg, bool enter, const char *lexName, const char *fileName)

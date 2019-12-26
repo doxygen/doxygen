@@ -104,12 +104,12 @@ class DocbookGenerator : public OutputGenerator
     // generic generator methods
     ///////////////////////////////////////////////////////////////
     void enable() 
-    { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
-    void disable() { active=FALSE; }
+    { if (m_genStack->top()) m_active=*m_genStack->top(); else m_active=TRUE; }
+    void disable() { m_active=FALSE; }
     void enableIf(OutputType o)  { if (o==Docbook) enable();  }
     void disableIf(OutputType o) { if (o==Docbook) disable(); }
     void disableIfNot(OutputType o) { if (o!=Docbook) disable(); }
-    bool isEnabled(OutputType o) { return (o==Docbook && active); } 
+    bool isEnabled(OutputType o) { return (o==Docbook && m_active); } 
     OutputGenerator *get(OutputType o) { return (o==Docbook) ? this : 0; }
 
     // --- CodeOutputInterface

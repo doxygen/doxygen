@@ -30,7 +30,6 @@ void  parserVhdlfile(const char* inputBuffer);
 
 class Entry;
 class ClassSDict;
-class FileStorage;
 class ClassDef;
 class MemberDef;
 struct VhdlConfNode;
@@ -40,36 +39,20 @@ struct VhdlConfNode;
  *
  * This is the VHDL language parser for doxygen.
  */
-class VHDLLanguageScanner : public ParserInterface
+class VHDLOutlineParser : public OutlineParserInterface
 {
   public:
-    virtual ~VHDLLanguageScanner() {}
+    virtual ~VHDLOutlineParser() {}
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
     void parseInput(const char * fileName,
                     const char *fileBuf,
-                    const std::unique_ptr<Entry> &root,
+                    const std::shared_ptr<Entry> &root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
-  
- void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
-                   const QCString &input,
-                   SrcLangExt lang,
-                   bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=0,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=0,
-                   bool collectXRefs=TRUE
-				   );
-		bool needsPreprocessing(const QCString &) { return TRUE; }
-		void resetCodeParserState(){};
-	    void parsePrototype(const char *text);
+
+    bool needsPreprocessing(const QCString &) const { return TRUE; }
+    void parsePrototype(const char *text);
 };
 
 struct VhdlConfNode
@@ -78,7 +61,7 @@ struct VhdlConfNode
   { 
     arch=a;              // architecture  e.g. for iobuffer
     arch=arch.lower();
-    binding=b;           // binding e.g.  use entiy work.xxx(bev)
+    binding=b;           // binding e.g.  use entity work.xxx(bev)
     binding=binding.lower();
     confVhdl=config;     // configuration foo is bar
     compSpec=cs;        
@@ -90,15 +73,15 @@ struct VhdlConfNode
   QCString arch;
   QCString binding;
   QCString compSpec;
-  int level;
-  bool isLeaf;
-  bool isInlineConf;
+  int level = 0;
+  bool isLeaf = false;
+  bool isInlineConf = false;
 
 };
 
 void vhdlscanFreeScanner();
 
 const QList<VhdlConfNode>& getVhdlConfiguration();
-const std::vector<std::unique_ptr<Entry> >&getVhdlInstList();
-
+const std::vector<std::shared_ptr<Entry> >&getVhdlInstList();
+QCString filter2008VhdlComment(const char *s);
 #endif

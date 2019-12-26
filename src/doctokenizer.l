@@ -203,6 +203,7 @@ static void handleHtmlTag()
   // Parse the attributes. Each attribute is a name, value pair
   // The result is stored in g_token->attribs.
   int startName,endName,startAttrib,endAttrib;
+  int startAttribList = i;
   while (i<(int)yyleng)
   {
     char c=tagText.at(i);
@@ -237,7 +238,7 @@ static void handleHtmlTag()
 	// search for matching quote 
         while (i<(int)yyleng && c!='\'') { c=tagText.at(++i); } 
 	endAttrib=i;
-        if (i<(int)yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) { c=tagText.at(++i);}
       }
       else if (tagText.at(i)=='"') // option "..."
       {
@@ -246,7 +247,7 @@ static void handleHtmlTag()
 	// search for matching quote 
         while (i<(int)yyleng && c!='"') { c=tagText.at(++i); } 
 	endAttrib=i;
-        if (i<(int)yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) { c=tagText.at(++i);}
       }
       else // value without any quotes
       {
@@ -254,7 +255,7 @@ static void handleHtmlTag()
 	// search for separator or end symbol
         while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); } 
 	endAttrib=i;
-	if (i<(int)yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) { c=tagText.at(++i);}
       }
       opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib); 
       if (opt.name == "align") opt.value = opt.value.lower();
@@ -271,6 +272,7 @@ static void handleHtmlTag()
     //    opt.name.data(),opt.value.data());
     g_token->attribs.append(&opt);
   }
+  g_token->attribsStr = tagText.mid(startAttribList,i-startAttribList);
 }
   
 static QCString stripEmptyLines(const QCString &s)
@@ -329,8 +331,8 @@ static int yyread(char *buf,int max_size)
 
 //--------------------------------------------------------------------------
 //#define REAL_YY_DECL int doctokenizerYYlex (void)
-//#define YY_DECL static int local_doctokinizer(void)
-//#define LOCAL_YY_DECL local_doctokinizer()
+//#define YY_DECL static int local_doctokenizer(void)
+//#define LOCAL_YY_DECL local_doctokenizer()
 
 %}
 
@@ -344,7 +346,9 @@ PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
-MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILADDR  ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILWS    [\t a-z_A-Z0-9+-]
+MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT"|"_dot_"|"_DOT_"){BLANK}+{MAILWS}+
 OPTSTARS  ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
@@ -402,8 +406,8 @@ WORD1NQ   {ESCWORD}|{CHARWORDQ}+|"{"|"}"
 WORD2NQ   "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">" 
-HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"|"strike"|"u"|"del"|"ins"
-HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"|"STRIKE"|"U"|"DEL"|"INS"
+HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"|"strike"|"u"|"del"|"ins"|"s"
+HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"|"STRIKE"|"U"|"DEL"|"INS"|"S"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
 REFWORD2_PRE   ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?)
 REFWORD2       {REFWORD2_PRE}{FUNCARG2}?
@@ -642,18 +646,22 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>{MAILADR}     { // Mail address
+<St_Para>{MAILADDR}    { // Mail address
                          g_token->name=yytext;
                          g_token->name.stripPrefix("mailto:");
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
                        }
-<St_Para>"<"{MAILADR}">" { // Mail address
+<St_Para>"<"{MAILADDR}">" { // Mail address
                          g_token->name=yytext;
                          g_token->name = g_token->name.mid(1,g_token->name.length()-2);
                          g_token->name.stripPrefix("mailto:");
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
+                       }
+<St_Para>"<"{MAILADDR2}">" { // anti spam mail address
+                         g_token->name=yytext;
+			 return TK_WORD;
                        }
 <St_Para>"$"{ID}":"[^:\n$][^\n$]*"$" { /* RCS tag */
                          QCString tagName(yytext+1);
@@ -674,7 +682,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
                          QCString name = &yytext[2];
 			 name = name.left(name.length()-1);
-			 QCString value = portable_getenv(name);
+			 QCString value = Portable::getenv(name);
 			 for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
                        }
 <St_Para>{HTMLTAG}     { /* html tag */ 
@@ -1611,10 +1619,5 @@ void doctokenizerYYendAutoList()
 //  printlex(yy_flex_debug, FALSE, __FILE__, g_fileName);
 //  return retval;
 //}
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-extern "C" { // some bogus code to keep the compiler happy
-    void doctokenizerYYdummy() { yy_flex_realloc(0,0); }
-}
-#endif
 
 #include "doctokenizer.l.h"

@@ -31,7 +31,7 @@ static Entry* current_root;
 static Entry* tempEntry;
 static Entry*  lastEntity  ;
 static Entry*  lastCompound  ;
-static std::unique_ptr<Entry> current;
+static std::shared_ptr<Entry> current;
 static QCString compSpec;
 static QCString currName;
 static int levelCounter;
@@ -42,7 +42,6 @@ static QCString forL;
 static int param_sec ;
 static int parse_sec;
 static int currP;
-static Entry* currentCompound;
 
 //----------------------------------------
 
@@ -108,17 +107,17 @@ SKIP:
 // VHDL 2008 doxygen comment /*! .... */
 SKIP :
 {
-  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!"  (~[])* "*/" >
+  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
   {
    {
-     QCString q(image.data());
-     q.stripPrefix("/*!");
-     q.resize(q.length()-2);
+     QCString q = filter2008VhdlComment(image.data());
      ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
    }
   }
-  | <MULT_VHDL_2008_COMMENT : "/*"  (~[])* "*/" >  {::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
-}
+  | <MULT_VHDL_2008_COMMENT : "/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
+    {
+      ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
+    }
 
 /* KEYWORDS */
 
@@ -134,7 +133,7 @@ TOKEN [IGNORE_CASE] :
 | <ARRAY_T: "array"> {VhdlParser::setLineParsed(ARRAY_T);}
 | <ASSERT_T: "assert">
 | <ASSUME_T: "assume">
-| <ASSUME_GUARANTEE_T: "assume_guarentee">
+| <ASSUME_GUARANTEE_T: "assume_guarantee">
 | <ATTRIBUTE_T: "attribute"> {::vhdl::parser::VhdlParser::setLineParsed(ATTRIBUTE_T);}
 | <BEGIN_T: "begin">
 | <BLOCK_T: "block">
@@ -1614,6 +1613,9 @@ QCString name_ext1() : {QCString s,s1,s2;}
  {
 
   (
+ LOOKAHEAD(<APOSTROPHE_T><SUBTYPE_T>)
+ <APOSTROPHE_T><SUBTYPE_T>{s+="'subtype";}
+|
  LOOKAHEAD(<DOT_T> suffix())
  <DOT_T> s1=suffix(){s+=".";s+=s1;}
 |
@@ -1730,7 +1732,7 @@ void package_declaration():  {QCString s;}
  <PACKAGE_T> s=identifier() <IS_T>
                           {
                           lastCompound=current.get();
-                          std::unique_ptr<Entry> clone=std::make_unique<Entry>(*current);
+                          std::shared_ptr<Entry> clone=std::make_shared<Entry>(*current);
                           clone->section=Entry::NAMESPACE_SEC;
                           clone->spec=VhdlDocGen::PACKAGE;
                           clone->name=s;

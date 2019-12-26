@@ -40,8 +40,8 @@ QString::Direction getTextDirByConfig(const DocNode *node);
 QString::Direction getTextDirByConfig(const DocPara *para, int nodeIndex);
 QCString getDirHtmlClassOfNode(QString::Direction textDir, const QCString &initValue="");
 QCString getDirHtmlClassOfPage(QCString pageTitle);
-QCString getHtmlDirEmbedingChar(QString::Direction textDir);
-QCString getJsDirEmbedingChar(QString::Direction textDir);
+QCString getHtmlDirEmbeddingChar(QString::Direction textDir);
+QCString getJsDirEmbeddingChar(QString::Direction textDir);
 //---------------------------------------------------------------------------
 
 
@@ -173,10 +173,10 @@ class DocNode
   protected:
     /*! Sets whether or not this item is inside a preformatted section */
     void setInsidePreformatted(bool p) { m_insidePre = p; }
-    DocNode *m_parent;
+    DocNode *m_parent = 0;
   private:
 
-    bool m_insidePre;
+    bool m_insidePre = false;
 };
 
 /** Default accept implementation for compound nodes in the abstract
@@ -294,7 +294,7 @@ class DocURL : public DocNode
 
   private:
     QCString  m_url;
-    bool m_isEmail;
+    bool m_isEmail = false;
 };
 
 /** Node representing a line break */
@@ -385,13 +385,14 @@ class DocStyleChange : public DocNode
                  Strike        = (1<<10),
                  Underline     = (1<<11),
                  Del           = (1<<12),
-                 Ins           = (1<<13)
+                 Ins           = (1<<13),
+                 S             = (1<<14)
                };
 
-    DocStyleChange(DocNode *parent,uint position,Style s,bool enable,
-                   const HtmlAttribList *attribs=0) : 
+    DocStyleChange(DocNode *parent,uint position,Style s,const QCString &tagName,bool enable,
+                   const HtmlAttribList *attribs=0) :
       m_position(position), m_style(s), m_enable(enable)
-      { m_parent = parent; if (attribs) m_attribs=*attribs; }
+      { m_parent = parent; if (attribs) m_attribs=*attribs; m_tagName = tagName.lower();}
     Kind kind() const                     { return Kind_StyleChange; }
     Style style() const                   { return m_style; }
     const char *styleString() const;
@@ -399,12 +400,14 @@ class DocStyleChange : public DocNode
     uint position() const                 { return m_position; }
     void accept(DocVisitor *v)            { v->visit(this); }
     const HtmlAttribList &attribs() const { return m_attribs; }
+    QCString tagName() const              { return m_tagName; }
 
   private:
-    uint     m_position;
-    Style    m_style;
-    bool     m_enable;
+    uint     m_position = 0;
+    Style    m_style = Bold;
+    bool     m_enable = false;
     HtmlAttribList m_attribs;
+    QCString m_tagName;
 };
 
 /** Node representing a special symbol */
@@ -488,7 +491,7 @@ class DocSymbol : public DocNode
     static SymType decodeSymbol(const QCString &symName);
 
   private:
-    SymType  m_symbol;
+    SymType  m_symbol = Sym_Unknown;
 };
 
 /** Node representing a n emoji */
@@ -503,7 +506,7 @@ class DocEmoji : public DocNode
 
   private:
     QCString m_symName;
-    int m_index;
+    int m_index = 0;
 };
 
 /** Node representing some amount of white space */
@@ -562,12 +565,12 @@ class DocVerbatim : public DocNode
   private:
     QCString  m_context;
     QCString  m_text;
-    Type      m_type;
-    bool      m_isExample;
+    Type      m_type = Code;
+    bool      m_isExample = false;
     QCString  m_exampleFile;
     QCString  m_relPath;
     QCString  m_lang;
-    bool      m_isBlock;
+    bool      m_isBlock = false;
     QCString  m_width;
     QCString  m_height;
     QList<DocNode> m_children;
@@ -610,9 +613,9 @@ class DocInclude : public DocNode
     QCString  m_file;
     QCString  m_context;
     QCString  m_text;
-    Type      m_type;
-    bool      m_isExample;
-    bool      m_isBlock;
+    Type      m_type = Include;
+    bool      m_isExample = false;
+    bool      m_isBlock = false;
     QCString  m_exampleFile;
     QCString  m_blockId;
 };
@@ -656,15 +659,15 @@ class DocIncOperator : public DocNode
     void parse();
 
   private:
-    Type     m_type;
-    int      m_line;
-    bool     m_showLineNo;
+    Type     m_type = Line;
+    int      m_line = 0;
+    bool     m_showLineNo = false;
     QCString  m_text;
     QCString  m_pattern;
     QCString  m_context;
-    bool     m_isFirst;
-    bool     m_isLast;
-    bool     m_isExample;
+    bool     m_isFirst = false;
+    bool     m_isLast = false;
+    bool     m_isExample = false;
     QCString  m_exampleFile;
     QCString m_includeFileName;
 };
@@ -686,7 +689,7 @@ class DocFormula : public DocNode
     QCString  m_name;
     QCString  m_text;
     QCString  m_relPath;
-    int      m_id;
+    int      m_id = 0;
 };
 
 /** Node representing an entry in the index. */
@@ -704,8 +707,8 @@ class DocIndexEntry : public DocNode
 
   private:
     QCString     m_entry;
-    const Definition *m_scope;
-    const MemberDef  *m_member;
+    const Definition *m_scope = 0;
+    const MemberDef  *m_member = 0;
 };
 
 //-----------------------------------------------------------------------
@@ -722,9 +725,9 @@ class DocAutoList : public CompAccept<DocAutoList>
     int parse();
 
   private:
-    int      m_indent;
-    bool     m_isEnumList;
-    int      m_depth;
+    int      m_indent = 0;
+    bool     m_isEnumList = false;
+    int      m_depth = 0;
 };
 
 /** Node representing an item of a auto list */
@@ -737,8 +740,8 @@ class DocAutoListItem : public CompAccept<DocAutoListItem>
     int parse();
 
   private:
-    int m_indent;
-    int m_itemNum;
+    int m_indent = 0;
+    int m_itemNum = 0;
 };
 
 
@@ -770,7 +773,7 @@ class DocXRefItem : public CompAccept<DocXRefItem>
     bool parse();
 
   private:
-    int      m_id;
+    int      m_id = 0;
     QCString  m_key;
     QCString  m_file;
     QCString  m_anchor;
@@ -801,12 +804,12 @@ class DocImage : public CompAccept<DocImage>
   private:
     HtmlAttribList m_attribs;
     QCString  m_name;
-    Type      m_type;
+    Type      m_type = Html;
     QCString  m_width;
     QCString  m_height;
     QCString  m_relPath;
     QCString  m_url;
-    bool      m_inlineImage;
+    bool      m_inlineImage = false;
 };
 
 /** Node representing a dot file */
@@ -929,8 +932,8 @@ class DocRef : public CompAccept<DocRef>
 
   private:
     enum RefType { Unknown, Anchor, Section, Table };
-    RefType    m_refType;
-    bool       m_isSubPage;
+    RefType    m_refType = Unknown;
+    bool       m_isSubPage = false;
     QCString   m_file;
     QCString   m_relPath;
     QCString   m_ref;
@@ -986,7 +989,7 @@ class DocHtmlHeader : public CompAccept<DocHtmlHeader>
     int parse();
 
   private:
-    int           m_level;
+    int           m_level = 0;
     HtmlAttribList m_attribs;
 };
 
@@ -1033,7 +1036,7 @@ class DocSection : public CompAccept<DocSection>
     int parse();
 
   private:
-    int      m_level;
+    int       m_level = 0;
     QCString  m_id;
     QCString  m_title;
     QCString  m_anchor;
@@ -1117,7 +1120,7 @@ class DocHtmlList : public CompAccept<DocHtmlList>
     int parseXml();
 
   private:
-    Type          m_type;
+    Type           m_type = Unordered;
     HtmlAttribList m_attribs;
 };
 
@@ -1143,8 +1146,8 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>
     bool hasTitle() const      { return m_title->hasTitle(); }
 
   private:
-    Type            m_type;
-    DocTitle *      m_title;
+    Type            m_type = Unknown;
+    DocTitle *      m_title = 0;
 };
 
 /** Node representing a separator between two simple sections of the
@@ -1183,9 +1186,9 @@ class DocParamSect : public CompAccept<DocParamSect>
     bool hasTypeSpecifier() const  { return m_hasTypeSpecifier; }
 
   private:
-    Type            m_type;
-    bool            m_hasInOutSpecifier;
-    bool            m_hasTypeSpecifier;
+    Type            m_type = Unknown;
+    bool            m_hasInOutSpecifier = false;
+    bool            m_hasTypeSpecifier = false;
 };
 
 /** Node representing a paragraph in the documentation tree */
@@ -1230,8 +1233,8 @@ class DocPara : public CompAccept<DocPara>
 
   private:
     QCString  m_sectionId;
-    bool     m_isFirst;
-    bool     m_isLast;
+    bool      m_isFirst = false;
+    bool      m_isLast = false;
     HtmlAttribList m_attribs;
 };
 
@@ -1271,10 +1274,10 @@ class DocParamList : public DocNode
     QList<DocPara>          m_paragraphs;
     QList<DocNode>          m_params;
     QList<DocNode>          m_paramTypes;
-    DocParamSect::Type      m_type;
-    DocParamSect::Direction m_dir;
-    bool                    m_isFirst;
-    bool                    m_isLast;
+    DocParamSect::Type      m_type = DocParamSect::Unknown;
+    DocParamSect::Direction m_dir = DocParamSect::Unspecified;
+    bool                    m_isFirst = false;
+    bool                    m_isLast = false;
 };
 
 /** Node representing a simple list item */
@@ -1294,7 +1297,7 @@ class DocSimpleListItem : public DocNode
     }
 
   private:
-    DocPara *m_paragraph;
+    DocPara *m_paragraph = 0;
 };
 
 /** Node representing a HTML list item */
@@ -1311,7 +1314,7 @@ class DocHtmlListItem : public CompAccept<DocHtmlListItem>
 
   private:
     HtmlAttribList m_attribs;
-    int            m_itemNum;
+    int            m_itemNum = 0;
 };
 
 /** Node representing a HTML description data */
@@ -1355,12 +1358,12 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>
   private:
     void setRowIndex(int idx)    { m_rowIdx = idx; }
     void setColumnIndex(int idx) { m_colIdx = idx; }
-    bool           m_isHeading;
-    bool           m_isFirst;
-    bool           m_isLast;
+    bool           m_isHeading = false;
+    bool           m_isFirst = false;
+    bool           m_isLast = false;
     HtmlAttribList m_attribs;
-    int            m_rowIdx;
-    int            m_colIdx;
+    int            m_rowIdx = -1;
+    int            m_colIdx = -1;
 };
 
 /** Node representing a HTML table caption */
@@ -1377,7 +1380,7 @@ class DocHtmlCaption : public CompAccept<DocHtmlCaption>
 
   private:
     HtmlAttribList m_attribs;
-    bool           m_hasCaptionId;
+    bool           m_hasCaptionId = false;
     QCString       m_file;
     QCString       m_anchor;
 };
@@ -1414,8 +1417,8 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>
   private:
     void setRowIndex(int idx)    { m_rowIdx = idx; }
     HtmlAttribList m_attribs;
-    int m_visibleCells;
-    int m_rowIdx;
+    int m_visibleCells = -1;
+    int m_rowIdx = -1;
 };
 
 /** Node representing a HTML table */
@@ -1442,9 +1445,9 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>
 
   private:
     void computeTableGrid();
-    DocHtmlCaption    *m_caption;
+    DocHtmlCaption    *m_caption = 0;
     HtmlAttribList     m_attribs;
-    int m_numCols;
+    int m_numCols = 0;
 };
 
 /** Node representing an HTML blockquote */
@@ -1483,8 +1486,8 @@ class DocRoot : public CompAccept<DocRoot>
     bool isEmpty() const { return m_children.isEmpty(); }
 
   private:
-    bool m_indent;
-    bool m_singleLine;
+    bool m_indent = false;
+    bool m_singleLine = false;
 };
 
 

@@ -257,7 +257,7 @@ bool CondParser::parseLevel3()
 
 bool CondParser::parseVar()
 {
-  bool ans = 0;
+  bool ans = false;
   switch (m_tokenType)
   {
     case VARIABLE:

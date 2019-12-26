@@ -42,6 +42,16 @@ DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 
 DotGroupCollaboration::~DotGroupCollaboration()
 {
+  // delete all created Nodes saved in m_usedNodes:QDict
+  if(m_usedNodes != NULL)
+  {
+    QDictIterator<DotNode> it(*m_usedNodes);
+    for(;it.current(); ++it)
+    {
+      delete it.current();
+    }
+  }
+
   delete m_usedNodes;
 }
 

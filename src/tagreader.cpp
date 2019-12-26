@@ -100,14 +100,14 @@ class TagClassInfo
 {
   public:
     enum Kind { None=-1, Class, Struct, Union, Interface, Exception, Protocol, Category, Enum, Service, Singleton };
-    TagClassInfo() { bases=0, templateArguments=0; members.setAutoDelete(TRUE); isObjC=FALSE; kind = None; }
-   ~TagClassInfo() { delete bases; delete templateArguments; }
+    TagClassInfo() { templateArguments=0; members.setAutoDelete(TRUE); isObjC=FALSE; kind = None; }
+   ~TagClassInfo() { delete templateArguments; }
     QCString name;
     QCString filename;
     QCString clangId;
     QCString anchor;
     TagAnchorInfoList docAnchors;
-    QList<BaseInfo> *bases;
+    std::vector<BaseInfo> bases;
     QList<TagMemberInfo> members;
     QList<QCString> *templateArguments;
     QCStringList classList;
@@ -496,6 +496,23 @@ class TagFileParser : public QXmlDefaultHandler
 
     void endDocAnchor()
     {
+      // Check whether or not the tag is automatically generate, in that case ignore the tag.
+      switch(m_state)
+      {
+        case InClass:
+        case InFile:
+        case InNamespace:
+        case InGroup:
+        case InPage:
+        case InMember:
+        case InPackage:
+        case InDir:
+          if (QString(m_curString).startsWith("autotoc_md")) return;
+          break;
+        default:
+          warn("Unexpected tag 'docanchor' found");
+          return;
+      }
       switch(m_state)
       {
         case InClass:     m_curClass->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
@@ -506,7 +523,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InMember:    m_curMember->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InPackage:   m_curPackage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InDir:       m_curDir->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
-        default:   warn("Unexpected tag 'docanchor' found"); break; 
+        default: break; // will not be reached
       }
     }
 
@@ -623,12 +640,7 @@ class TagFileParser : public QXmlDefaultHandler
         {
           virt = Virtual;
         }
-        if (m_curClass->bases==0) 
-        {
-          m_curClass->bases = new QList<BaseInfo>;
-          m_curClass->bases->setAutoDelete(TRUE);
-        }
-        m_curClass->bases->append(new BaseInfo(m_curString,prot,virt));
+        m_curClass->bases.push_back(BaseInfo(m_curString,prot,virt));
       }
       else
       {
@@ -640,7 +652,7 @@ class TagFileParser : public QXmlDefaultHandler
     {
       if (m_state==InClass && m_curClass)
       {
-        m_curClass->bases->getLast()->name = m_curString;
+        m_curClass->bases.back().name = m_curString;
       }
       else
       {
@@ -914,12 +926,12 @@ class TagFileParser : public QXmlDefaultHandler
     }
 
     void dump();
-    void buildLists(const std::unique_ptr<Entry> &root);
+    void buildLists(const std::shared_ptr<Entry> &root);
     void addIncludes();
     
   private:
-    void buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMemberInfo> &members);
-    void addDocAnchors(const std::unique_ptr<Entry> &e,const TagAnchorInfoList &l);
+    void buildMemberList(const std::shared_ptr<Entry> &ce,QList<TagMemberInfo> &members);
+    void addDocAnchors(const std::shared_ptr<Entry> &e,const TagAnchorInfoList &l);
     QList<TagClassInfo>        m_tagFileClasses;
     QList<TagFileInfo>         m_tagFileFiles;
     QList<TagNamespaceInfo>    m_tagFileNamespaces;
@@ -990,14 +1002,9 @@ void TagFileParser::dump()
   {
     msg("class '%s'\n",cd->name.data());
     msg("  filename '%s'\n",cd->filename.data());
-    if (cd->bases)
+    for (const BaseInfo &bi : cd->bases)
     {
-      QListIterator<BaseInfo> bii(*cd->bases);
-      BaseInfo *bi;
-      for ( bii.toFirst() ; (bi=bii.current()) ; ++bii) 
-      {
-        msg( "  base: %s \n", bi->name.data() );
-      }
+      msg( "  base: %s \n", bi.name.data() );
     }
 
     QListIterator<TagMemberInfo> mci(cd->members);
@@ -1149,7 +1156,7 @@ void TagFileParser::dump()
   }
 }
 
-void TagFileParser::addDocAnchors(const std::unique_ptr<Entry> &e,const TagAnchorInfoList &l)
+void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const TagAnchorInfoList &l)
 {
   QListIterator<TagAnchorInfo> tli(l);
   TagAnchorInfo *ta;
@@ -1162,7 +1169,7 @@ void TagFileParser::addDocAnchors(const std::unique_ptr<Entry> &e,const TagAncho
       SectionInfo *si=new SectionInfo(ta->fileName,-1,ta->label,ta->title,
           SectionInfo::Anchor,0,m_tagName);
       Doxygen::sectionDict->append(ta->label,si);
-      e->anchors->append(si);
+      e->anchors.push_back(si);
     }
     else
     {
@@ -1171,19 +1178,19 @@ void TagFileParser::addDocAnchors(const std::unique_ptr<Entry> &e,const TagAncho
   }
 }
 
-void TagFileParser::buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMemberInfo> &members)
+void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,QList<TagMemberInfo> &members)
 {
   QListIterator<TagMemberInfo> mii(members);
   TagMemberInfo *tmi;
   for (;(tmi=mii.current());++mii)
   {
-    std::unique_ptr<Entry> me = std::make_unique<Entry>();
+    std::shared_ptr<Entry> me = std::make_shared<Entry>();
     me->type       = tmi->type;
     me->name       = tmi->name;
     me->args       = tmi->arglist;
     if (!me->args.isEmpty())
     {
-      stringToArgumentList(me->args,me->argList);
+      stringToArgumentList(SrcLangExt_Cpp,me->args,me->argList);
     }
     if (tmi->enumValues.count()>0)
     {
@@ -1192,16 +1199,15 @@ void TagFileParser::buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMe
       TagEnumValueInfo *evi;
       for (evii.toFirst();(evi=evii.current());++evii)
       {
-        std::unique_ptr<Entry> ev = std::make_unique<Entry>();
+        std::shared_ptr<Entry> ev = std::make_shared<Entry>();
         ev->type       = "@";
         ev->name       = evi->name;
         ev->id         = evi->clangid;
         ev->section    = Entry::VARIABLE_SEC;
-        TagInfo *ti    = new TagInfo;
-        ti->tagName    = m_tagName;
-        ti->anchor     = evi->anchor;
-        ti->fileName   = evi->file;
-        ev->tagInfo    = ti;
+        ev->tagInfoData.tagName    = m_tagName;
+        ev->tagInfoData.anchor     = evi->anchor;
+        ev->tagInfoData.fileName   = evi->file;
+        ev->hasTagInfo    = TRUE;
         me->moveToSubEntryAndKeep(ev);
       }
     }
@@ -1212,14 +1218,13 @@ void TagFileParser::buildMemberList(const std::unique_ptr<Entry> &ce,QList<TagMe
     me->id         = tmi->clangId;
     if (ce->section == Entry::GROUPDOC_SEC)
     {
-      me->groups->append(new Grouping(ce->name,Grouping::GROUPING_INGROUP));
+      me->groups.push_back(Grouping(ce->name,Grouping::GROUPING_INGROUP));
     }
     addDocAnchors(me,tmi->docAnchors);
-    TagInfo *ti    = new TagInfo;
-    ti->tagName    = m_tagName;
-    ti->anchor     = tmi->anchor;
-    ti->fileName   = tmi->anchorFile;
-    me->tagInfo    = ti;
+    me->tagInfoData.tagName    = m_tagName;
+    me->tagInfoData.anchor     = tmi->anchor;
+    me->tagInfoData.fileName   = tmi->anchorFile;
+    me->hasTagInfo    = TRUE;
     if (tmi->kind=="define")
     {
       me->type="#define";
@@ -1308,14 +1313,14 @@ static QCString stripPath(const QCString &s)
  *  This tree contains the information extracted from the input in a 
  *  "unrelated" form.
  */
-void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
+void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
 {
   // build class list
   QListIterator<TagClassInfo> cit(m_tagFileClasses);
   TagClassInfo *tci;
   for (cit.toFirst();(tci=cit.current());++cit)
   {
-    std::unique_ptr<Entry> ce = std::make_unique<Entry>();
+    std::shared_ptr<Entry> ce = std::make_shared<Entry>();
     ce->section = Entry::CLASS_SEC;
     switch (tci->kind)
     {
@@ -1339,19 +1344,15 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
       ce->name+="-p";
     }
     addDocAnchors(ce,tci->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->anchor   = tci->anchor;
-    ti->fileName = tci->filename;
+    ce->tagInfoData.tagName  = m_tagName;
+    ce->tagInfoData.anchor   = tci->anchor;
+    ce->tagInfoData.fileName = tci->filename;
+    ce->hasTagInfo  = TRUE;
     ce->id       = tci->clangId;
-    ce->tagInfo  = ti;
     ce->lang     = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
     // transfer base class list
-    if (tci->bases)
-    {
-      delete ce->extends;
-      ce->extends = tci->bases; tci->bases = 0;
-    }
+    ce->extends  = tci->bases;
+    tci->bases.clear();
     if (tci->templateArguments)
     {
       ArgumentList al;
@@ -1376,14 +1377,13 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
   TagFileInfo *tfi;
   for (fit.toFirst();(tfi=fit.current());++fit)
   {
-    std::unique_ptr<Entry> fe = std::make_unique<Entry>();
+    std::shared_ptr<Entry> fe = std::make_shared<Entry>();
     fe->section = guessSection(tfi->name);
     fe->name     = tfi->name;
     addDocAnchors(fe,tfi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tfi->filename;
-    fe->tagInfo  = ti;
+    fe->tagInfoData.tagName  = m_tagName;
+    fe->tagInfoData.fileName = tfi->filename;
+    fe->hasTagInfo = TRUE;
 
     QCString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
     fe->fileName = fullName;
@@ -1413,15 +1413,14 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
   TagNamespaceInfo *tni;
   for (nit.toFirst();(tni=nit.current());++nit)
   {
-    std::unique_ptr<Entry> ne = std::make_unique<Entry>();
+    std::shared_ptr<Entry> ne = std::make_shared<Entry>();
     ne->section  = Entry::NAMESPACE_SEC;
     ne->name     = tni->name;
     addDocAnchors(ne,tni->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tni->filename;
+    ne->tagInfoData.tagName  = m_tagName;
+    ne->tagInfoData.fileName = tni->filename;
+    ne->hasTagInfo  = TRUE;
     ne->id       = tni->clangId;
-    ne->tagInfo  = ti;
 
     buildMemberList(ne,tni->members);
     root->moveToSubEntryAndKeep(ne);
@@ -1432,14 +1431,13 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
   TagPackageInfo *tpgi;
   for (pit.toFirst();(tpgi=pit.current());++pit)
   {
-    std::unique_ptr<Entry> pe = std::make_unique<Entry>();
+    std::shared_ptr<Entry> pe = std::make_shared<Entry>();
     pe->section  = Entry::PACKAGE_SEC;
     pe->name     = tpgi->name;
     addDocAnchors(pe,tpgi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tpgi->filename;
-    pe->tagInfo  = ti;
+    pe->tagInfoData.tagName  = m_tagName;
+    pe->tagInfoData.fileName = tpgi->filename;
+    pe->hasTagInfo  = TRUE;
 
     buildMemberList(pe,tpgi->members);
     root->moveToSubEntryAndKeep(pe);
@@ -1450,15 +1448,14 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
   TagGroupInfo *tgi;
   for (git.toFirst();(tgi=git.current());++git)
   {
-    std::unique_ptr<Entry> ge = std::make_unique<Entry>();
+    std::shared_ptr<Entry> ge = std::make_shared<Entry>();
     ge->section  = Entry::GROUPDOC_SEC;
     ge->name     = tgi->name;
     ge->type     = tgi->title;
     addDocAnchors(ge,tgi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tgi->filename;
-    ge->tagInfo  = ti;
+    ge->tagInfoData.tagName  = m_tagName;
+    ge->tagInfoData.fileName = tgi->filename;
+    ge->hasTagInfo  = TRUE;
 
     buildMemberList(ge,tgi->members);
     root->moveToSubEntryAndKeep(ge);
@@ -1475,10 +1472,10 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
       //for (eli.toFirst();(childNode=eli.current());++eli)
       const auto &children = root->children();
       auto i = std::find_if(children.begin(),children.end(),
-          [&](const std::unique_ptr<Entry> &e) { return e->name = *it; });
+          [&](const std::shared_ptr<Entry> &e) { return e->name = *it; });
       if (i!=children.end())
       {
-        (*i)->groups->append(new Grouping(tgi->name,Grouping::GROUPING_INGROUP));
+        (*i)->groups.push_back(Grouping(tgi->name,Grouping::GROUPING_INGROUP));
       }
     }
   }
@@ -1488,15 +1485,14 @@ void TagFileParser::buildLists(const std::unique_ptr<Entry> &root)
   TagPageInfo *tpi;
   for (pgit.toFirst();(tpi=pgit.current());++pgit)
   {
-    std::unique_ptr<Entry> pe = std::make_unique<Entry>();
+    std::shared_ptr<Entry> pe = std::make_shared<Entry>();
     pe->section  = tpi->filename=="index" ? Entry::MAINPAGEDOC_SEC : Entry::PAGEDOC_SEC;
     pe->name     = tpi->name;
     pe->args     = tpi->title;
     addDocAnchors(pe,tpi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tpi->filename;
-    pe->tagInfo  = ti;
+    pe->tagInfoData.tagName  = m_tagName;
+    pe->tagInfoData.fileName = tpi->filename;
+    pe->hasTagInfo  = TRUE;
     root->moveToSubEntryAndKeep(pe);
   }
 }
@@ -1548,7 +1544,7 @@ void TagFileParser::addIncludes()
   }
 }
 
-void parseTagFile(const std::unique_ptr<Entry> &root,const char *fullName)
+void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
 {
   QFileInfo fi(fullName);
   if (!fi.exists()) return;

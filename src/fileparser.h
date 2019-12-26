@@ -18,15 +18,11 @@
 
 #include "parserintf.h"
 
-/** @brief General file parser */
-class FileParser : public ParserInterface
+/** @brief Generic code parser */
+class FileCodeParser : public CodeParserInterface
 {
   public:
-    virtual ~FileParser() {}
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
-    void parseInput(const char *, const char *,const std::unique_ptr<Entry> &, bool, QStrList &) {}
-    bool needsPreprocessing(const QCString &) { return FALSE; }
+    virtual ~FileCodeParser() {}
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,
@@ -43,8 +39,6 @@ class FileParser : public ParserInterface
                    bool collectXRefs=TRUE
                   );
     void resetCodeParserState() {}
-    void parsePrototype(const char *) {}
 };
-
 
 #endif

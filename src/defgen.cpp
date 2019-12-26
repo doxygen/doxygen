@@ -146,7 +146,7 @@ void generateDEFForMember(MemberDef *md,
   {
     const ArgumentList &defAl = md->argumentList();
     ArgumentList declAl;
-    stringToArgumentList(md->argsString(),declAl);
+    stringToArgumentList(md->getLanguage(),md->argsString(),declAl);
     QCString fcnPrefix = "  " + memPrefix + "param-";
 
     auto defIt = defAl.begin();
@@ -288,7 +288,7 @@ void generateDEFForMember(MemberDef *md,
     {
       if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
       {
-        t << memPrefix << "referenceby = {" << endl;
+        t << memPrefix << "referencedby = {" << endl;
         t << refPrefix << "id = '"
           << rmd->getBodyDef()->getOutputFileBase()
           << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
@@ -572,9 +572,8 @@ void generateDEF()
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-        err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
+        term("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
             "exist and cannot be created\n",outputDirectory.data());
-        exit(1);
       }
       else
       {

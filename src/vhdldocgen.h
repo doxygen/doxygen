@@ -194,7 +194,6 @@ class VhdlDocGen
     static void correctMemberProperties(MemberDef *md);
     
     static void writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname);
-    static void writeAlphbeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
 
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
@@ -308,11 +307,11 @@ class FlowChart
     ~FlowChart();
 
 private:
-    int id;
-    int stamp;
-    int type;
+    int id = 0;
+    int stamp = 0;
+    int type = 0;
 
-    int line;
+    int line = 0;
 
     QCString label;
     QCString text;

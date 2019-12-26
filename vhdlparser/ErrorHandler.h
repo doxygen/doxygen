@@ -31,7 +31,7 @@ JAVACC_SIMPLE_STRING addUnicodeEscapes(JAVACC_STRING_TYPE str);
       // Called when the parser cannot continue parsing.
       // last - the last token successfully parsed.
       // unexpected - the token at which the error occurs.
-      // production - the production in which this error occurrs.
+      // production - the production in which this error occurs.
       virtual void handleParseError(Token *last, Token *unexpected, JAVACC_SIMPLE_STRING production, VhdlParser *parser) {
         error_count++;
         fprintf(stderr, "Encountered: %s at: %d:%d while parsing: %s\n", addUnicodeEscapes(unexpected->image).c_str(), unexpected->beginLine, unexpected->beginColumn, production.c_str());
