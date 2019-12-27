@@ -1763,7 +1763,7 @@ QCString MemberDefImpl::getOutputFileBase() const
   {
     baseName=groupDef->getOutputFileBase();
   }
-  else if (classDef)
+  else if (classDef && classDef->isLinkable())
   {
     baseName=classDef->getOutputFileBase();
     if (inlineSimpleClasses && classDef->isSimple())
@@ -1771,7 +1771,7 @@ QCString MemberDefImpl::getOutputFileBase() const
       return baseName;
     }
   }
-  else if (nspace)
+  else if (nspace && (nspace->isLinkable() || nspace->isAnonymous()))
   {
     baseName=nspace->getOutputFileBase();
   }
@@ -3362,9 +3362,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     else if (getFileDef())      { scopeName=getFileDef()->displayName();      scopedContainer=getFileDef(); }
     ciname = (dynamic_cast<const GroupDef *>(container))->groupTitle();
   }
-  else if (container->definitionType()==TypeFile && getNamespaceDef() && lang != SrcLangExt_Python)
+  else if (container->definitionType()==TypeFile && getNamespaceDef() && getNamespaceDef()->isLinkable())
   { // member is in a namespace, but is written as part of the file documentation
-    // as well, so we need to make sure its label is unique.
+    // as well, so we need to make sure its anchor is unique (it is not really used).
     memAnchor.prepend("file_");
   }
 
