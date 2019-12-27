@@ -1763,7 +1763,7 @@ QCString MemberDefImpl::getOutputFileBase() const
   {
     baseName=groupDef->getOutputFileBase();
   }
-  else if (classDef && classDef->isLinkable())
+  else if (classDef)
   {
     baseName=classDef->getOutputFileBase();
     if (inlineSimpleClasses && classDef->isSimple())
