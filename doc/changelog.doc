@@ -148,7 +148,7 @@
 <li>Skip empty HTML tag [<a href="https://github.com/doxygen/doxygen/commit/b0c0fc0b741f3c51ff9f891a0725d68bca6ecda5">view</a>]</li>
 <li>Small improvements of TCL output [<a href="https://github.com/doxygen/doxygen/commit/640ef05f26882c8abbba174d4758aa6c38d9862b">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/7cd998a90790d4678d7a59f6774c60dc6aff4b98">view</a>]</li>
 <li>Split language parser into &quot;outline parser&quot; and &quot;code parser&quot; [<a href="https://github.com/doxygen/doxygen/commit/3bda58a7b7b4f9094c2fcb2bad71c7174367605e">view</a>]</li>
-<li>Strange &#39;*/&#39; in Fortran nad Markdown with conditional sections [<a href="https://github.com/doxygen/doxygen/commit/dd0920f6b863bba58b0a64e7e983469380b29033">view</a>]</li>
+<li>Strange &#39;*&zwj;/#39; in Fortran nad Markdown with conditional sections [<a href="https://github.com/doxygen/doxygen/commit/dd0920f6b863bba58b0a64e7e983469380b29033">view</a>]</li>
 <li>Support for &lt;a id=&quot;label&quot;&gt; [<a href="https://github.com/doxygen/doxygen/commit/1734f1a16f828013171bb67bb4dcb61be57fad04">view</a>]</li>
 <li>Table caption flows in first table field for RTF output [<a href="https://github.com/doxygen/doxygen/commit/6c4f10c375530d1baf82527787d4887cc343d9bb">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/6d5ac50ae99b913a26a752fe86dfab1643b73a02">view</a>]</li>
 <li>Tests 31 for XHTML output [<a href="https://github.com/doxygen/doxygen/commit/20853fc59e43fafe67986d219d2c5307dccd2e24">view</a>]</li>
