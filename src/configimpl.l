@@ -1541,6 +1541,9 @@ void Config::checkAndCorrect()
     s=aliasList.next();
   }
 
+  // check EXTENSION_MAPPING
+  checkList(Config_getList(EXTENSION_MAPPING),"EXTENSION_MAPPING",TRUE,TRUE);
+
   // check FILTER_PATTERNS
   checkList(Config_getList(FILTER_PATTERNS),"FILTER_PATTERNS",TRUE,TRUE);
 
