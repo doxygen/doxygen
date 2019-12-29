@@ -34,6 +34,8 @@
 class PythonOutlineParser : public OutlineParserInterface
 {
   public:
+    PythonOutlineParser();
+    virtual ~PythonOutlineParser();
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
     void parseInput(const char * fileName, 
@@ -43,8 +45,9 @@ class PythonOutlineParser : public OutlineParserInterface
                     QStrList &filesInSameTranslationUnit);
     bool needsPreprocessing(const QCString &extension) const;
     void parsePrototype(const char *text);
+  private:
+    struct Private;
+    std::unique_ptr<Private> p;
 };
-
-void pyscanFreeScanner();
 
 #endif

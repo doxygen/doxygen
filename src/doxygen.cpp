@@ -11073,10 +11073,6 @@ void parseInput()
   parseFiles(root);
   g_s.end();
 
-  // we are done with input scanning now, so free up the buffers used by flex
-  // (can be around 4MB)
-  pyscanFreeScanner();
-
   /**************************************************************************
    *             Gather information                                         *
    **************************************************************************/
