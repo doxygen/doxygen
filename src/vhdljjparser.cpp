@@ -30,11 +30,13 @@
 #include "types.h"
 #include "VhdlParserIF.h"
 #include "growbuf.h"
+#include "markdown.h"
 
 using namespace vhdl::parser;
 using namespace std;
 
 static OutlineParserInterface *g_thisParser;
+static CommentScanner g_commentScanner;
 
 static QCString         yyFileName;
 static int              yyLineNr      = 1;
@@ -286,8 +288,8 @@ void VhdlParser::handleCommentBlock(const char* doc1,bool brief)
 
   int position=0;
   bool needsEntry=FALSE;
-  QCString processedDoc = preprocessCommentBlock(doc,yyFileName,iDocLine);
-  while (parseCommentBlock(
+  QCString processedDoc = processMarkdownForCommentBlock(doc,yyFileName,iDocLine);
+  while (g_commentScanner.parseCommentBlock(
         g_thisParser,
         current.get(),
         processedDoc, // text

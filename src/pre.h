@@ -18,6 +18,8 @@
 #ifndef PRE_H
 #define PRE_H
 
+#include <memory>
+
 class BufStr;
 
 class Preprocessor
@@ -29,7 +31,7 @@ class Preprocessor
     void addSearchDir(const char *dir);
  private:
    struct Private;
-   Private *p;
+   std::unique_ptr<Private> p;
 };
 
 #endif

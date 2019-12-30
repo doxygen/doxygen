@@ -3194,9 +3194,8 @@ void Preprocessor::addSearchDir(const char *dir)
   if (fi.isDir()) state->pathList->append(fi.absFilePath().utf8());
 } 
 
-Preprocessor::Preprocessor()
+Preprocessor::Preprocessor() : p(std::make_unique<Private>())
 {
-  p = new Private;
   preYYlex_init_extra(&p->state,&p->yyscanner);
   YY_EXTRA_TYPE state = preYYget_extra(p->yyscanner);
   state->pathList = new QStrList;
@@ -3212,7 +3211,6 @@ Preprocessor::~Preprocessor()
   delete state->pathList; 
   state->pathList=0;
   preYYlex_destroy(p->yyscanner);
-  delete p;
 }
 
 void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output)

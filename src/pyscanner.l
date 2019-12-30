@@ -53,6 +53,7 @@
 #include "commentscan.h"
 #include "pycode.h"
 #include "arguments.h"
+#include "markdown.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -66,6 +67,7 @@
 struct pyscannerYY_state
 {
   pyscannerYY_state() : packageNameCache(257) {}
+  CommentScanner          commentScanner;
   OutlineParserInterface *thisParser = 0;
   const char *            inputString = 0;
   int                     inputPosition = 0;
@@ -1617,8 +1619,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int position = 0;
   bool needsEntry;
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
-  QCString processedDoc = preprocessCommentBlock(doc,yyextra->yyFileName,lineNr);
-  while (parseCommentBlock(
+  QCString processedDoc = processMarkdownForCommentBlock(doc,yyextra->yyFileName,lineNr);
+  while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         (yyextra->docBlockInBody && yyextra->previous) ? yyextra->previous.get() : yyextra->current.get(),
         processedDoc, // text

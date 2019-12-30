@@ -52,6 +52,7 @@
 #include "arguments.h"
 
 #include "clangparser.h"
+#include "markdown.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -59,6 +60,7 @@
 struct scannerYY_state
 {
   OutlineParserInterface *thisParser;
+  CommentScanner   commentScanner;
   const char *     inputString = 0;
   int              inputPosition = 0;
   int              lastContext = 0;
@@ -6965,8 +6967,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 
   int position=0;
   bool needsEntry=FALSE;
-  QCString processedDoc = preprocessCommentBlock(stripIndentation(doc),yyextra->yyFileName,lineNr);
-  while (parseCommentBlock(
+  QCString processedDoc = processMarkdownForCommentBlock(stripIndentation(doc),yyextra->yyFileName,lineNr);
+  while (yyextra->commentScanner.parseCommentBlock(
 	yyextra->thisParser,
 	yyextra->docBlockInBody && yyextra->previous ? yyextra->previous.get() : yyextra->current.get(),
 	processedDoc, // text
@@ -7025,7 +7027,7 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
       yyextra->current->brief.resize(0);
 
       //printf("handleParametersCommentBlock [%s]\n",doc.data());
-      while (parseCommentBlock(
+      while (yyextra->commentScanner.parseCommentBlock(
 	     yyextra->thisParser,
 	     yyextra->current.get(),
 	     a.docs,             // text

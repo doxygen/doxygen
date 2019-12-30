@@ -53,6 +53,7 @@
 #include "arguments.h"
 #include "namespacedef.h"
 #include "filedef.h"
+#include "markdown.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -430,6 +431,7 @@ static struct
   int input_position; // position in file
   QCString file_name; // name of used file
   OutlineParserInterface *this_parser; // myself
+  CommentScanner commentScanner;
   int command; // true if command was found
   int comment; // set true if comment was scanned
   int brace_level; // bookkeeping of braces
@@ -1538,16 +1540,16 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
 
         myPos0=myPos;
         myLine0=myLine;
-        processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine);
-        while (parseCommentBlock(tcl.this_parser, &myEntry0, processedDoc, tcl.file_name,
+        processedDoc = processMarkdownForCommentBlock(myDoc,tcl.file_name,myLine);
+        while (tcl.commentScanner.parseCommentBlock(tcl.this_parser, &myEntry0, processedDoc, tcl.file_name,
           myLine, FALSE, tcl.config_autobrief, FALSE, myProt, myPos, myNew))
         {
           if (myNew)
           { // we need a new entry in this case
             myNew=0;
             myEntry = tcl_entry_new();
-            processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
-            parseCommentBlock(tcl.this_parser, myEntry, processedDoc, tcl.file_name,
+            processedDoc = processMarkdownForCommentBlock(myDoc,tcl.file_name,myLine0);
+            tcl.commentScanner.parseCommentBlock(tcl.this_parser, myEntry, processedDoc, tcl.file_name,
               myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
             tcl.entry_inside->moveToSubEntryAndRefresh(myEntry);
           }
@@ -1557,8 +1559,8 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
             {
               myEntry1=tcl_entry_namespace(tcl.scan.at(0)->ns);
             }
-            processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
-            parseCommentBlock(tcl.this_parser, myEntry1, processedDoc, tcl.file_name,
+            processedDoc = processMarkdownForCommentBlock(myDoc,tcl.file_name,myLine0);
+            tcl.commentScanner.parseCommentBlock(tcl.this_parser, myEntry1, processedDoc, tcl.file_name,
               myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
           }
           myPos0=myPos;
@@ -1568,8 +1570,8 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
         { // we need a new entry
           myNew=0;
           myEntry = tcl_entry_new();
-          processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
-          parseCommentBlock(tcl.this_parser, myEntry, processedDoc, tcl.file_name,
+          processedDoc = processMarkdownForCommentBlock(myDoc,tcl.file_name,myLine0);
+          tcl.commentScanner.parseCommentBlock(tcl.this_parser, myEntry, processedDoc, tcl.file_name,
             myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
           tcl.entry_inside->moveToSubEntryAndKeep(myEntry);
         }
@@ -1579,16 +1581,16 @@ tcl_inf("-> %s\n",(const char *)tcl.string_comment);
           {
             myEntry1=tcl_entry_namespace(tcl.scan.at(0)->ns);
           }
-          processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine0);
-          parseCommentBlock(tcl.this_parser, myEntry1, processedDoc, tcl.file_name,
+          processedDoc = processMarkdownForCommentBlock(myDoc,tcl.file_name,myLine0);
+          tcl.commentScanner.parseCommentBlock(tcl.this_parser, myEntry1, processedDoc, tcl.file_name,
             myLine0, FALSE, tcl.config_autobrief, FALSE, myProt, myPos0, myNew);
         }
       }
       else
       { // new entry
         tcl.entry_current = tcl_entry_new();
-        processedDoc = preprocessCommentBlock(myDoc,tcl.file_name,myLine);
-        while (parseCommentBlock(tcl.this_parser, tcl.entry_current, processedDoc,
+        processedDoc = processMarkdownForCommentBlock(myDoc,tcl.file_name,myLine);
+        while (tcl.commentScanner.parseCommentBlock(tcl.this_parser, tcl.entry_current, processedDoc,
           tcl.file_name, myLine, FALSE, tcl.config_autobrief, FALSE,
           myProt, myPos, myNew))
         {

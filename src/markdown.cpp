@@ -2588,6 +2588,49 @@ QCString markdownFileNameToId(const QCString &fileName)
   return "md_"+baseName;
 }
 
+//---------------------------------------------------------------------------
+
+QCString processMarkdownForCommentBlock(const QCString &comment,
+                                        const QCString &fileName,
+                                        int lineNr)
+{
+  if (!comment.isEmpty() && Doxygen::markdownSupport)
+  {
+    QCString result = processMarkdown(fileName,lineNr,0,comment);
+    const char *p = result.data();
+    if (p)
+    {
+      while (*p==' ')  p++; // skip over spaces
+      while (*p=='\n') p++; // skip over newlines
+      if (qstrncmp(p,"<br>",4)==0) p+=4; // skip over <br>
+    }
+    if (p>result.data())
+    {
+      // strip part of the input
+      result = result.mid(p-result.data());
+    }
+    return result;
+  }
+  else
+  {
+    return comment;
+  }
+}
+
+//---------------------------------------------------------------------------
+
+struct MarkdownOutlineParser::Private
+{
+  CommentScanner commentScanner;
+};
+
+MarkdownOutlineParser::MarkdownOutlineParser() : p(std::make_unique<Private>())
+{
+}
+
+MarkdownOutlineParser::~MarkdownOutlineParser()
+{
+}
 
 void MarkdownOutlineParser::parseInput(const char *fileName, 
                 const char *fileBuf, 
@@ -2640,8 +2683,8 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   Protection prot=Public;
   bool needsEntry = FALSE;
   int position=0;
-  QCString processedDocs = preprocessCommentBlock(docs,fileName,lineNr);
-  while (parseCommentBlock(
+  QCString processedDocs = processMarkdownForCommentBlock(docs,fileName,lineNr);
+  while (p->commentScanner.parseCommentBlock(
         this,
         current.get(),
         processedDocs,

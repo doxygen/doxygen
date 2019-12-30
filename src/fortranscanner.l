@@ -67,6 +67,7 @@
 #include "pre.h"
 #include "arguments.h"
 #include "debug.h"
+#include "markdown.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -84,7 +85,7 @@ struct SymbolModifiers {
   enum Protection {NONE_P, PUBLIC, PRIVATE};
   enum Direction {NONE_D, IN, OUT, INOUT};
 
-  //!< This is only used with function return value.
+  //! This is only used with function return value.
   QCString type, returnName;
   Protection protection;
   Direction direction;
@@ -137,6 +138,7 @@ static const char *directionParam[] =
  *	statics
  */
 static OutlineParserInterface *g_thisParser; 
+static CommentScanner   g_commentScanner;
 static const char *     inputString;
 static int		inputPosition;
 static bool             isFixedForm;
@@ -2483,8 +2485,8 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int lineNr = brief ? current->briefLine : current->docLine;
   int position=0;
   bool needsEntry = FALSE;
-  QCString processedDoc = preprocessCommentBlock(doc,yyFileName,lineNr);
-  while (parseCommentBlock(
+  QCString processedDoc = processMarkdownForCommentBlock(doc,yyFileName,lineNr);
+  while (g_commentScanner.parseCommentBlock(
 	g_thisParser,
 	docBlockInBody ? subrCurrent.back().get() : current.get(),
 	processedDoc, // text
