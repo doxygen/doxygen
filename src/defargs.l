@@ -41,6 +41,8 @@
  */
 %option never-interactive
 %option prefix="defargsYY"
+%option reentrant
+%option extra-type="struct defargsYY_state *"
 
 %{
 
@@ -66,77 +68,42 @@
 /* -----------------------------------------------------------------
  *	state variables
  */
-static const char      *g_inputString;
-static int	        g_inputPosition;
-static ArgumentList    *g_argList;
-static QCString        *g_copyArgValue;
-static QCString         g_curArgTypeName;
-static QCString         g_curArgDefValue;
-static QCString		g_curArgName;
-static QCString		g_curArgDocs;
-static QCString		g_curArgAttrib;
-static QCString		g_curArgArray;
-static QCString         g_curTypeConstraint;
-static QCString		g_extraTypeChars;
-static int              g_argRoundCount;
-static int              g_argSharpCount;
-static int              g_argCurlyCount;
-static int              g_readArgContext;
-static int              g_lastDocContext;
-static int              g_lastDocChar;
-static int              g_lastExtendsContext;
-static QCString         g_delimiter;
-static SrcLangExt       g_lang;
+struct defargsYY_state
+{
+  defargsYY_state(const char *inStr,ArgumentList &al,SrcLangExt l)
+    : inputString(inStr), argList(al), lang(l) {}
+  const char      *inputString;
+  ArgumentList    &argList;
+  SrcLangExt       lang;
+  int              inputPosition = 0;
+  QCString        *copyArgValue = 0;
+  QCString         curArgTypeName;
+  QCString         curArgDefValue;
+  QCString         curArgName;
+  QCString         curArgDocs;
+  QCString         curArgAttrib;
+  QCString         curArgArray;
+  QCString         curTypeConstraint;
+  QCString         extraTypeChars;
+  int              argRoundCount = 0;
+  int              argSharpCount = 0;
+  int              argCurlyCount = 0;
+  int              readArgContext = 0;
+  int              lastDocContext = 0;
+  int              lastDocChar = 0;
+  int              lastExtendsContext = 0;
+  QCString         delimiter;
+};
 
 static const char *stateToString(int state);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+static bool nameIsActuallyPartOfType(QCString &name);
+
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
-#define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
+#define	YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
-static int yyread(char *buf,int max_size)
-{
-    int c=0;
-    while( c < max_size && g_inputString[g_inputPosition] )
-    {
-	*buf = g_inputString[g_inputPosition++] ;
-	c++; buf++;
-    }
-    return c;
-}
-
-/* bug_520975 */
-static bool nameIsActuallyPartOfType(QCString &name)
-{
-  static bool first=TRUE;
-  static QDict<void> keywords(17);
-  if (first) // fill keyword dict first time
-  {
-    #define DUMMY_ADDR (void*)0x8
-    keywords.insert("unsigned", DUMMY_ADDR); // foo(... unsigned)
-    keywords.insert("signed",   DUMMY_ADDR); // foo(... signed)
-    keywords.insert("bool",     DUMMY_ADDR); // foo(... bool)
-    keywords.insert("char",     DUMMY_ADDR); // foo(... char)
-    keywords.insert("char8_t",  DUMMY_ADDR); // foo(... char8_t)
-    keywords.insert("char16_t", DUMMY_ADDR); // foo(... char16_t)
-    keywords.insert("char32_t", DUMMY_ADDR); // foo(... char32_t)
-    keywords.insert("int",      DUMMY_ADDR); // foo(... int)
-    keywords.insert("short",    DUMMY_ADDR); // foo(... short)
-    keywords.insert("long",     DUMMY_ADDR); // foo(... long)
-    keywords.insert("float",    DUMMY_ADDR); // foo(... float)
-    keywords.insert("double",   DUMMY_ADDR); // foo(... double)
-    keywords.insert("int8_t",   DUMMY_ADDR); // foo(... int8_t)
-    keywords.insert("uint8_t",  DUMMY_ADDR); // foo(... uint8_t)
-    keywords.insert("int16_t",  DUMMY_ADDR); // foo(... int16_t)
-    keywords.insert("uint16_t", DUMMY_ADDR); // foo(... uint16_t)
-    keywords.insert("int32_t",  DUMMY_ADDR); // foo(... int32_t)
-    keywords.insert("uint32_t", DUMMY_ADDR); // foo(... uint32_t)
-    keywords.insert("const",    DUMMY_ADDR); // foo(... const)
-    keywords.insert("volatile", DUMMY_ADDR); // foo(... volatile)
-    first=FALSE;
-  }
-  return name.length()>0 && keywords.find(name)!=0;
-}
 %}
 
 B       [ \t]
@@ -168,124 +135,124 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <Start>[<(]				{ BEGIN(ReadFuncArgType); }
 
 <ReadFuncArgType>{B}*			{
-  					  g_curArgTypeName+=" ";
+  					  yyextra->curArgTypeName+=" ";
   					}
 <ReadFuncArgType>"["[^\]]*"]"		{ 
-					  if (g_curArgTypeName.stripWhiteSpace().isEmpty())
+					  if (yyextra->curArgTypeName.stripWhiteSpace().isEmpty())
 					  {
-					    g_curArgAttrib=yytext; // for M$-IDL
+					    yyextra->curArgAttrib=yytext; // for M$-IDL
 					  }
 					  else // array type
 					  {
-					    g_curArgArray+=yytext;
+					    yyextra->curArgArray+=yytext;
 					  }
 					}
-<ReadFuncArgDef>"'"\\[0-7]{1,3}"'"	{ g_curArgDefValue+=yytext; }
-<ReadFuncArgDef>"'"\\."'"		{ g_curArgDefValue+=yytext; }
-<ReadFuncArgDef>"'"."'"			{ g_curArgDefValue+=yytext; }
-<ReadFuncArgDef>{RAWBEGIN}              { g_curArgDefValue+=yytext; 
+<ReadFuncArgDef>"'"\\[0-7]{1,3}"'"	{ yyextra->curArgDefValue+=yytext; }
+<ReadFuncArgDef>"'"\\."'"		{ yyextra->curArgDefValue+=yytext; }
+<ReadFuncArgDef>"'"."'"			{ yyextra->curArgDefValue+=yytext; }
+<ReadFuncArgDef>{RAWBEGIN}              { yyextra->curArgDefValue+=yytext; 
                                           QCString text=yytext;
                                           int i=text.find('"');
-                                          g_delimiter = yytext+i+1;
-                                          g_delimiter=g_delimiter.left(g_delimiter.length()-1);
+                                          yyextra->delimiter = yytext+i+1;
+                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
                                           BEGIN( CopyRawString );
                                         }
 <ReadFuncArgDef>\"			{
-  					  g_curArgDefValue+=*yytext;
+  					  yyextra->curArgDefValue+=*yytext;
   					  BEGIN( CopyArgString );
   					}
 <ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*\^]+{B}*/{ID} { 
   					  // function pointer as argument
-					  g_curArgTypeName+=yytext;
-					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
+					  yyextra->curArgTypeName+=yytext;
+					  //yyextra->curArgTypeName=yyextra->curArgTypeName.simplifyWhiteSpace();
 					  BEGIN( ReadFuncArgPtr );
   					}
 <ReadFuncArgPtr>{ID}			{
-					  g_curArgName=yytext;
+					  yyextra->curArgName=yytext;
   					}
 <ReadFuncArgPtr>")"{B}*"("		{ // function pointer
-					  g_curArgTypeName+=yytext;
-					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
-					  g_readArgContext = ReadFuncArgType;
-					  g_copyArgValue=&g_curArgTypeName;
-					  g_argRoundCount=0;
+					  yyextra->curArgTypeName+=yytext;
+					  //yyextra->curArgTypeName=yyextra->curArgTypeName.simplifyWhiteSpace();
+					  yyextra->readArgContext = ReadFuncArgType;
+					  yyextra->copyArgValue=&yyextra->curArgTypeName;
+					  yyextra->argRoundCount=0;
 					  BEGIN( CopyArgRound2 );
 					}
 <ReadFuncArgPtr>")"/{B}*"["		{ // pointer to fixed size array
-					  g_curArgTypeName+=yytext;
-					  g_curArgTypeName+=g_curArgName;
-					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
+					  yyextra->curArgTypeName+=yytext;
+					  yyextra->curArgTypeName+=yyextra->curArgName;
+					  //yyextra->curArgTypeName=yyextra->curArgTypeName.simplifyWhiteSpace();
 					  BEGIN( ReadFuncArgType );
 					}
 <ReadFuncArgPtr>")"			{ // redundant braces detected / remove them
-					  int i=g_curArgTypeName.findRev('('),l=g_curArgTypeName.length();
+					  int i=yyextra->curArgTypeName.findRev('('),l=yyextra->curArgTypeName.length();
 					  if (i!=-1)
-					    g_curArgTypeName=g_curArgTypeName.left(i)+
-					                   g_curArgTypeName.right(l-i-1);
-					  g_curArgTypeName+=g_curArgName;
+					    yyextra->curArgTypeName=yyextra->curArgTypeName.left(i)+
+					                   yyextra->curArgTypeName.right(l-i-1);
+					  yyextra->curArgTypeName+=yyextra->curArgName;
 					  BEGIN( ReadFuncArgType );
 					}
 <ReadFuncArgType>"<="|">="|"->"|">>"|"<<" { // handle operators in defargs
-  					  g_curArgTypeName+=yytext;
+  					  yyextra->curArgTypeName+=yytext;
   					}
 <ReadFuncArgType,ReadFuncArgDef>[({<]	{	 
 					  if (YY_START==ReadFuncArgType)
 					  {
-					    g_curArgTypeName+=*yytext;
-					    g_copyArgValue=&g_curArgTypeName;
+					    yyextra->curArgTypeName+=*yytext;
+					    yyextra->copyArgValue=&yyextra->curArgTypeName;
 					  }
 					  else // YY_START==ReadFuncArgDef
 					  {
-					    g_curArgDefValue+=*yytext;
-					    g_copyArgValue=&g_curArgDefValue;
+					    yyextra->curArgDefValue+=*yytext;
+					    yyextra->copyArgValue=&yyextra->curArgDefValue;
 					  }
-					  g_readArgContext = YY_START; 
+					  yyextra->readArgContext = YY_START; 
 					  if (*yytext=='(')
 					  {
-					    g_argRoundCount=0; 
+					    yyextra->argRoundCount=0; 
 					    BEGIN( CopyArgRound ); 
 					  }
 					  else if (*yytext=='{')
 					  {
-					    g_argCurlyCount=0; 
+					    yyextra->argCurlyCount=0; 
 					    BEGIN( CopyArgCurly ); 
 					  }
 					  else // yytext=='<'
 					  {
-					    g_argSharpCount=0; 
-					    g_argRoundCount=0; 
+					    yyextra->argSharpCount=0; 
+					    yyextra->argRoundCount=0; 
 					    BEGIN( CopyArgSharp ); 
 					  }
 					}
 <CopyArgRound,CopyArgRound2>"("		{
-  					  g_argRoundCount++;
-					  *g_copyArgValue += *yytext;
+  					  yyextra->argRoundCount++;
+					  *yyextra->copyArgValue += *yytext;
   					}
 <CopyArgRound,CopyArgRound2>")"({B}*{ID})* {
-					  *g_copyArgValue += yytext;
-					  if (g_argRoundCount>0) 
+					  *yyextra->copyArgValue += yytext;
+					  if (yyextra->argRoundCount>0) 
 					  {
-					    g_argRoundCount--;
+					    yyextra->argRoundCount--;
 					  }
 					  else 
 					  {
 					    if (YY_START==CopyArgRound2)
 					    {
-					      *g_copyArgValue+=" "+g_curArgName;
+					      *yyextra->copyArgValue+=" "+yyextra->curArgName;
 					    }
-					    BEGIN( g_readArgContext );
+					    BEGIN( yyextra->readArgContext );
 					  }
   					}
 <CopyArgRound>")"/{B}*                  {
-					  *g_copyArgValue += *yytext;
-					  if (g_argRoundCount>0) g_argRoundCount--;
-					  else BEGIN( g_readArgContext );
+					  *yyextra->copyArgValue += *yytext;
+					  if (yyextra->argRoundCount>0) yyextra->argRoundCount--;
+					  else BEGIN( yyextra->readArgContext );
                                         }
 <CopyArgSharp>"<<"                      {
-                                          if (g_argRoundCount>0)
+                                          if (yyextra->argRoundCount>0)
                                           {
                                             // for e.g. < typename A = (i<<3) >
-					    *g_copyArgValue += yytext;
+					    *yyextra->copyArgValue += yytext;
                                           }
                                           else
                                           {
@@ -293,10 +260,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           }
                                         }
 <CopyArgSharp>">>"                      {
-                                          if (g_argRoundCount>0)
+                                          if (yyextra->argRoundCount>0)
                                           {
                                             // for e.g. < typename A = (i>>3) >
-					    *g_copyArgValue += yytext;
+					    *yyextra->copyArgValue += yytext;
                                           }
                                           else
                                           {
@@ -305,66 +272,66 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                         }
 <CopyArgSharp>"<"			{
                                           // don't count < inside (, e.g. for things like: < typename A=(i<6) >
-  					  if (g_argRoundCount==0) g_argSharpCount++;
-					  *g_copyArgValue += *yytext;
+  					  if (yyextra->argRoundCount==0) yyextra->argSharpCount++;
+					  *yyextra->copyArgValue += *yytext;
   					}
 <CopyArgSharp>">"			{
-					  *g_copyArgValue += *yytext;
-                                          if (g_argRoundCount>0 && g_argSharpCount==0)
+					  *yyextra->copyArgValue += *yytext;
+                                          if (yyextra->argRoundCount>0 && yyextra->argSharpCount==0)
                                           {
                                             // don't count > inside )
                                           }
                                           else
                                           {
-                                            if (g_argSharpCount>0)
+                                            if (yyextra->argSharpCount>0)
                                             {
-                                              g_argSharpCount--;
+                                              yyextra->argSharpCount--;
                                             }
                                             else
                                             {
-                                              BEGIN( g_readArgContext );
+                                              BEGIN( yyextra->readArgContext );
                                             }
                                           }
   					}
 <CopyArgSharp>"("                       {
-                                          g_argRoundCount++;
-					  *g_copyArgValue += *yytext;
+                                          yyextra->argRoundCount++;
+					  *yyextra->copyArgValue += *yytext;
                                         }
 <CopyArgSharp>")"                       {
-                                          g_argRoundCount--;
-					  *g_copyArgValue += *yytext;
+                                          yyextra->argRoundCount--;
+					  *yyextra->copyArgValue += *yytext;
                                         }
 <CopyArgCurly>"{"			{
-  					  g_argCurlyCount++;
-					  *g_copyArgValue += *yytext;
+  					  yyextra->argCurlyCount++;
+					  *yyextra->copyArgValue += *yytext;
   					}
 <CopyArgCurly>"}"			{
-					  *g_copyArgValue += *yytext;
-					  if (g_argCurlyCount>0) g_argCurlyCount--;
-					  else BEGIN( g_readArgContext );
+					  *yyextra->copyArgValue += *yytext;
+					  if (yyextra->argCurlyCount>0) yyextra->argCurlyCount--;
+					  else BEGIN( yyextra->readArgContext );
   					}
 <CopyArgString>\\.			{
-					  g_curArgDefValue+=yytext;
+					  yyextra->curArgDefValue+=yytext;
   					}
 <CopyRawString>{RAWEND}                 {
-					  g_curArgDefValue+=yytext;
+					  yyextra->curArgDefValue+=yytext;
                                           QCString delimiter = yytext+1;
                                           delimiter=delimiter.left(delimiter.length()-1);
-                                          if (delimiter==g_delimiter)
+                                          if (delimiter==yyextra->delimiter)
                                           {
 					    BEGIN( ReadFuncArgDef );
                                           }
                                         }
 <CopyArgString>\"			{
-					  g_curArgDefValue+=*yytext;
+					  yyextra->curArgDefValue+=*yytext;
 					  BEGIN( ReadFuncArgDef );
   					}
 <ReadFuncArgType>"="			{
 					  BEGIN( ReadFuncArgDef );
   					}
 <ReadFuncArgType,ReadFuncArgDef>[,)>]{B}*("/*"[*!]|"//"[/!])"<" {
-					  g_lastDocContext=YY_START;
-					  g_lastDocChar=*yytext;  
+					  yyextra->lastDocContext=YY_START;
+					  yyextra->lastDocChar=*yytext;  
 					  QCString text=yytext;
 					  if (text.find("//")!=-1)
 					    BEGIN( ReadDocLine );
@@ -372,49 +339,49 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    BEGIN( ReadDocBlock );
   					}
 <ReadFuncArgType,ReadFuncArgDef>[,)>]	{
-  					  if (*yytext==')' && g_curArgTypeName.stripWhiteSpace().isEmpty())
+  					  if (*yytext==')' && yyextra->curArgTypeName.stripWhiteSpace().isEmpty())
 					  {
-					    g_curArgTypeName+=*yytext;
+					    yyextra->curArgTypeName+=*yytext;
 					    BEGIN(FuncQual);
 					  }
 					  else
 					  {
-					    g_curArgTypeName=removeRedundantWhiteSpace(g_curArgTypeName);
-					    g_curArgDefValue=g_curArgDefValue.stripWhiteSpace();
-					    //printf("curArgType='%s' curArgDefVal='%s'\n",g_curArgTypeName.data(),g_curArgDefValue.data());
-					    int l=g_curArgTypeName.length();
+					    yyextra->curArgTypeName=removeRedundantWhiteSpace(yyextra->curArgTypeName);
+					    yyextra->curArgDefValue=yyextra->curArgDefValue.stripWhiteSpace();
+					    //printf("curArgType='%s' curArgDefVal='%s'\n",yyextra->curArgTypeName.data(),yyextra->curArgDefValue.data());
+					    int l=yyextra->curArgTypeName.length();
 					    if (l>0)
 					    {
 					      int i=l-1;
-					      while (i>=0 && (isspace((uchar)g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='.')) i--;
-					      while (i>=0 && (isId(g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='$')) i--;
+					      while (i>=0 && (isspace((uchar)yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='.')) i--;
+					      while (i>=0 && (isId(yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='$')) i--;
 					      Argument a;
-					      a.attrib  = g_curArgAttrib.copy();
-                                              a.typeConstraint = g_curTypeConstraint.stripWhiteSpace();
+					      a.attrib  = yyextra->curArgAttrib.copy();
+                                              a.typeConstraint = yyextra->curTypeConstraint.stripWhiteSpace();
 					      //printf("a->type=%s a->name=%s i=%d l=%d\n",
 					      //        a->type.data(),a->name.data(),i,l);
 					      a.array.resize(0);
-					      if (i==l-1 && g_curArgTypeName.at(i)==')') // function argument
+					      if (i==l-1 && yyextra->curArgTypeName.at(i)==')') // function argument
 					      {
-						int bi=g_curArgTypeName.find('(');
+						int bi=yyextra->curArgTypeName.find('(');
 						int fi=bi-1;
 						//printf("func arg fi=%d\n",fi);
-						while (fi>=0 && (isId(g_curArgTypeName.at(fi)) || g_curArgTypeName.at(fi)==':')) fi--;
+						while (fi>=0 && (isId(yyextra->curArgTypeName.at(fi)) || yyextra->curArgTypeName.at(fi)==':')) fi--;
 						if (fi>=0)
 						{
-						  a.type  = g_curArgTypeName.left(fi+1);
-						  a.name  = g_curArgTypeName.mid(fi+1,bi-fi-1).stripWhiteSpace();
-						  a.array = g_curArgTypeName.right(l-bi);
+						  a.type  = yyextra->curArgTypeName.left(fi+1);
+						  a.name  = yyextra->curArgTypeName.mid(fi+1,bi-fi-1).stripWhiteSpace();
+						  a.array = yyextra->curArgTypeName.right(l-bi);
 						}
 						else
 						{
-						  a.type = g_curArgTypeName;
+						  a.type = yyextra->curArgTypeName;
 						}
 					      }
-					      else if (i>=0 && g_curArgTypeName.at(i)!=':')
+					      else if (i>=0 && yyextra->curArgTypeName.at(i)!=':')
 					      { // type contains a name
-						a.type = removeRedundantWhiteSpace(g_curArgTypeName.left(i+1)).stripWhiteSpace();
-						a.name = g_curArgTypeName.right(l-i-1).stripWhiteSpace();
+						a.type = removeRedundantWhiteSpace(yyextra->curArgTypeName.left(i+1)).stripWhiteSpace();
+						a.name = yyextra->curArgTypeName.right(l-i-1).stripWhiteSpace();
 
 						// if the type becomes a type specifier only then we make a mistake
 						// and need to correct it to avoid seeing a nameless parameter
@@ -437,14 +404,14 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      }
 					      else // assume only the type was specified, try to determine name later 
 					      {
-						a.type = removeRedundantWhiteSpace(g_curArgTypeName);  
+						a.type = removeRedundantWhiteSpace(yyextra->curArgTypeName);  
 					      }
                                               if (!a.type.isEmpty() && a.type.at(0)=='$') // typeless PHP name?
                                               {
                                                 a.name = a.type;
                                                 a.type = "";
                                               }
-					      a.array  += removeRedundantWhiteSpace(g_curArgArray);
+					      a.array  += removeRedundantWhiteSpace(yyextra->curArgArray);
 					      //printf("array=%s\n",a->array.data());
 					      int alen = a.array.length();
 					      if (alen>2 && a.array.at(0)=='(' && 
@@ -458,18 +425,18 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						  a.array = a.array.mid(i);
 						}
 					      }
-					      a.defval = g_curArgDefValue.copy();
+					      a.defval = yyextra->curArgDefValue.copy();
 					      //printf("a->type=%s a->name=%s a->defval=\"%s\"\n",a->type.data(),a->name.data(),a->defval.data());
-					      a.docs   = g_curArgDocs.stripWhiteSpace();
+					      a.docs   = yyextra->curArgDocs.stripWhiteSpace();
 					      //printf("Argument '%s' '%s' adding docs='%s'\n",a->type.data(),a->name.data(),a->docs.data());
-					      g_argList->push_back(a);
+					      yyextra->argList.push_back(a);
 					    }
-					    g_curArgAttrib.resize(0);
-					    g_curArgTypeName.resize(0);
-					    g_curArgDefValue.resize(0);
-					    g_curArgArray.resize(0);
-					    g_curArgDocs.resize(0);
-                                            g_curTypeConstraint.resize(0);
+					    yyextra->curArgAttrib.resize(0);
+					    yyextra->curArgTypeName.resize(0);
+					    yyextra->curArgDefValue.resize(0);
+					    yyextra->curArgArray.resize(0);
+					    yyextra->curArgDocs.resize(0);
+                                            yyextra->curTypeConstraint.resize(0);
 					    if (*yytext==')')
 					    {
 					      BEGIN(FuncQual);
@@ -482,72 +449,72 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <ReadFuncArgType,ReadFuncArgPtr>"extends" {
-                                           if (g_lang!=SrcLangExt_Java)
+                                           if (yyextra->lang!=SrcLangExt_Java)
                                            {
                                              REJECT;
                                            }
                                            else
                                            {
-                                             g_curTypeConstraint.resize(0);
-                                             g_lastExtendsContext=YY_START;
+                                             yyextra->curTypeConstraint.resize(0);
+                                             yyextra->lastExtendsContext=YY_START;
                                              BEGIN(ReadTypeConstraint);
                                            }
                                         }
 <ReadFuncArgType,ReadFuncArgPtr>"$"?{ID} { 
   					  QCString name=yytext; //resolveDefines(yytext);
-					  if (YY_START==ReadFuncArgType && g_curArgArray=="[]") // Java style array
+					  if (YY_START==ReadFuncArgType && yyextra->curArgArray=="[]") // Java style array
 					  {
-					    g_curArgTypeName+=" []";
-					    g_curArgArray.resize(0);
+					    yyextra->curArgTypeName+=" []";
+					    yyextra->curArgArray.resize(0);
 					  }
 					  //printf("resolveName '%s'->'%s'\n",yytext,name.data());
-  					  g_curArgTypeName+=name;
+  					  yyextra->curArgTypeName+=name;
 					}
 <ReadFuncArgType,ReadFuncArgPtr>.	{ 
-  					  g_curArgTypeName+=*yytext;
+  					  yyextra->curArgTypeName+=*yytext;
 					}
 
 <ReadFuncArgDef,CopyArgString>"<="|"->"|">="|">>"|"<<"	{
-  					  g_curArgDefValue+=yytext;
+  					  yyextra->curArgDefValue+=yytext;
   					}
 <ReadFuncArgDef,CopyArgString,CopyRawString>.		{
-					  g_curArgDefValue+=*yytext;
+					  yyextra->curArgDefValue+=*yytext;
   					}
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>{ID}  {
   					  QCString name=yytext; //resolveDefines(yytext);
-					  *g_copyArgValue+=name;
+					  *yyextra->copyArgValue+=name;
 					}
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>.  {
-					  *g_copyArgValue += *yytext;
+					  *yyextra->copyArgValue += *yytext;
 					}
 <ReadTypeConstraint>[,)>]               {
                                           unput(*yytext);
-                                          BEGIN(g_lastExtendsContext);
+                                          BEGIN(yyextra->lastExtendsContext);
                                         }
 <ReadTypeConstraint>.                   {
-                                          g_curTypeConstraint+=yytext;
+                                          yyextra->curTypeConstraint+=yytext;
                                         }
 <ReadTypeConstraint>\n                  {
-                                          g_curTypeConstraint+=' ';
+                                          yyextra->curTypeConstraint+=' ';
                                         }
 <FuncQual>"const"		       	{
-					  g_argList->constSpecifier=TRUE;
+					  yyextra->argList.constSpecifier=TRUE;
 					}
 <FuncQual>"volatile"		    	{
-					  g_argList->volatileSpecifier=TRUE;
+					  yyextra->argList.volatileSpecifier=TRUE;
 					}
 <FuncQual>"&"		    	        {
-                                          g_argList->refQualifier=RefQualifierLValue;
+                                          yyextra->argList.refQualifier=RefQualifierLValue;
 					}
 <FuncQual>"&&"		    	        {
-                                          g_argList->refQualifier=RefQualifierRValue;
+                                          yyextra->argList.refQualifier=RefQualifierRValue;
 					}
 <FuncQual,TrailingReturn>"="{B}*"0"  	{
-					  g_argList->pureSpecifier=TRUE;
+					  yyextra->argList.pureSpecifier=TRUE;
                                           BEGIN(FuncQual);
 					}
 <FuncQual>"->"                          { // C++11 trailing return type
-                                          g_argList->trailingReturnType=" -> ";
+                                          yyextra->argList.trailingReturnType=" -> ";
                                           BEGIN(TrailingReturn);
                                         }
 <TrailingReturn>{B}/("final"|"override"){B}*  {
@@ -555,40 +522,40 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>.                       {
-                                          g_argList->trailingReturnType+=yytext;
+                                          yyextra->argList.trailingReturnType+=yytext;
                                         }
 <TrailingReturn>\n                      {
-                                          g_argList->trailingReturnType+=yytext;
+                                          yyextra->argList.trailingReturnType+=yytext;
                                         }
 <FuncQual>")"{B}*"["[^]]*"]"		{ // for functions returning a pointer to an array, 
                                           // i.e. ")[]" in "int (*f(int))[4]" with argsString="(int))[4]"
-  					  g_extraTypeChars=yytext;
+  					  yyextra->extraTypeChars=yytext;
   					}
 <ReadDocBlock>[^\*\n]+			{
-  					  g_curArgDocs+=yytext;
+  					  yyextra->curArgDocs+=yytext;
   					}
 <ReadDocLine>[^\n]+			{
-  					  g_curArgDocs+=yytext;
+  					  yyextra->curArgDocs+=yytext;
   					}
 <ReadDocBlock>"*/"			{ 
-  					  if (g_lastDocChar!=0)
-					    unput(g_lastDocChar);
-  					  BEGIN(g_lastDocContext); 
+  					  if (yyextra->lastDocChar!=0)
+					    unput(yyextra->lastDocChar);
+  					  BEGIN(yyextra->lastDocContext); 
 					}
 <ReadDocLine>\n				{
-  					  if (g_lastDocChar!=0)
-					    unput(g_lastDocChar);
-					  BEGIN(g_lastDocContext);
+  					  if (yyextra->lastDocChar!=0)
+					    unput(yyextra->lastDocChar);
+					  BEGIN(yyextra->lastDocContext);
   					}
 <ReadDocBlock>\n			{
-  					  g_curArgDocs+=*yytext;
+  					  yyextra->curArgDocs+=*yytext;
   					}
 <ReadDocBlock>.				{
-  					  g_curArgDocs+=*yytext;
+  					  yyextra->curArgDocs+=*yytext;
   					}
 <*>("/*"[*!]|"//"[/!])("<"?)		{
-  					  g_lastDocContext=YY_START;
-					  g_lastDocChar=0;  
+  					  yyextra->lastDocContext=YY_START;
+					  yyextra->lastDocChar=0;  
 					  if (yytext[1]=='/')
 					    BEGIN( ReadDocLine );
 					  else
@@ -602,6 +569,190 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 /* ----------------------------------------------------------------------------
  */
 
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  int c=0;
+  while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
+  {
+      *buf = yyextra->inputString[yyextra->inputPosition++] ;
+      c++; buf++;
+  }
+  return c;
+}
+
+/*
+The following code is generated using 'gperf keywords.txt'
+where keywords.txt has the following content
+
+---------------------------------
+%define class-name KeywordHash
+%define lookup-function-name find
+%readonly-tables
+%language=C++
+%%
+unsigned
+signed
+bool
+char
+char8_t
+char16_t
+char32_t
+wchar_t
+int
+short
+long
+float
+double
+int8_t
+int16_t
+int32_t
+int64_t
+intmax_t
+intptr_t
+uint8_t
+uint16_t
+uint32_t
+uint64_t
+uintmax_t
+uintptr_t
+const
+volatile
+void
+%%
+---------------------------------
+*/
+//--- begin gperf generated code ----------------------------------------------------------
+
+#define TOTAL_KEYWORDS 28
+#define MIN_WORD_LENGTH 3
+#define MAX_WORD_LENGTH 9
+#define MIN_HASH_VALUE 3
+#define MAX_HASH_VALUE 48
+/* maximum key range = 46, duplicates = 0 */
+
+class KeywordHash
+{
+  private:
+    static inline unsigned int hash (const char *str, size_t len);
+  public:
+    static const char *find (const char *str, size_t len);
+};
+
+inline unsigned int
+KeywordHash::hash (const char *str, size_t len)
+{
+  static const unsigned char asso_values[] =
+  {
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49,  5,
+     5, 30,  0, 49, 25, 49, 10, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49,  0, 49,  0,  5, 49,
+    15,  0, 49, 10, 49, 30, 49, 49,  0, 20,
+     0, 49, 15, 49,  5, 10,  0, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+    49, 49, 49, 49, 49, 49
+  };
+  unsigned int hval = len;
+
+  switch (hval)
+  {
+    default:
+      hval += asso_values[static_cast<unsigned char>(str[4])];
+      /*FALLTHROUGH*/
+    case 4:
+      hval += asso_values[static_cast<unsigned char>(str[3])];
+      /*FALLTHROUGH*/
+    case 3:
+      break;
+  }
+  return hval;
+}
+
+const char *
+KeywordHash::find (const char *str, size_t len)
+{
+  static const char * const wordlist[] =
+  {
+    "", "", "",
+    "int",
+    "bool",
+    "float",
+    "signed",
+    "",
+    "volatile",
+    "char",
+    "short",
+    "double",
+    "wchar_t",
+    "uint16_t",
+    "long",
+    "const",
+    "int8_t",
+    "uint8_t",
+    "char16_t",
+    "void",
+    "", "",
+    "char8_t",
+    "intptr_t",
+    "uintptr_t",
+    "", "", "",
+    "intmax_t",
+    "uintmax_t",
+    "", "",
+    "int64_t",
+    "uint64_t",
+    "", "", "",
+    "int16_t",
+    "uint32_t",
+    "", "", "",
+    "int32_t",
+    "char32_t",
+    "", "", "", "",
+    "unsigned"
+  };
+
+  if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
+  {
+    unsigned int key = hash (str, len);
+
+    if (key <= MAX_HASH_VALUE)
+    {
+      const char *s = wordlist[key];
+
+      if (*str == *s && !qstrcmp (str + 1, s + 1))
+        return s;
+    }
+  }
+  return 0;
+}
+
+//--- end gperf generated code ----------------------------------------------------------
+
+/* bug_520975 */
+static bool nameIsActuallyPartOfType(QCString &name)
+{
+  return KeywordHash::find(name.data(),name.length())!=0;
+}
+
 /*! Converts an argument string into an ArgumentList.
  *  \param[in] argsString the list of Arguments.
  *  \param[out] al a reference to resulting argument list pointer.
@@ -612,36 +763,27 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 void stringToArgumentList(SrcLangExt lang, const char *argsString,ArgumentList& al,QCString *extraTypeChars)
 {
   if (argsString==0) return;
+
+  yyscan_t yyscanner;
+  defargsYY_state extra(argsString,al,lang);
+  defargsYYlex_init_extra(&extra,&yyscanner);
+#ifdef FLEX_DEBUG
+  defargsYYset_debug(1,yyscanner);
+#endif
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);
 
-  g_copyArgValue=0;
-  g_curArgDocs.resize(0);
-  g_curArgAttrib.resize(0);
-  g_curArgArray.resize(0);
-  g_curTypeConstraint.resize(0);
-  g_extraTypeChars.resize(0);
-  g_argRoundCount = 0;
-  g_argSharpCount = 0;
-  g_argCurlyCount = 0;
-  g_lastDocChar = 0;
-
-  g_inputString   = argsString;
-  g_inputPosition = 0;
-  g_curArgTypeName.resize(0);
-  g_curArgDefValue.resize(0);
-  g_curArgName.resize(0);
-  g_argList = &al;
-  g_lang = lang;
-  defargsYYrestart( defargsYYin );
+  defargsYYrestart( 0, yyscanner );
   BEGIN( Start );
-  defargsYYlex();
-  if (g_argList->empty())
+  defargsYYlex(yyscanner);
+  if (yyextra->argList.empty())
   {
-    g_argList->noParameters = TRUE;
+    yyextra->argList.noParameters = TRUE;
   }
-  if (extraTypeChars) *extraTypeChars=g_extraTypeChars;
+  if (extraTypeChars) *extraTypeChars=yyextra->extraTypeChars;
   //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
   printlex(yy_flex_debug, FALSE, __FILE__, NULL);
+  defargsYYlex_destroy(yyscanner);
 }
 
 #include "defargs.l.h"
