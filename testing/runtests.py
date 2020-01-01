@@ -3,6 +3,7 @@
 from __future__ import print_function
 import argparse, glob, itertools, re, shutil, os, sys
 import subprocess
+import shlex
 
 config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
 
@@ -28,10 +29,10 @@ def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
 		return os.popen(cmd).read() # Python 2 without encoding
 	else:
 		if (getStderr):
-			proc = subprocess.run(cmd1,encoding=encoding,capture_output=True) # Python 3 with encoding
-			return proc.stderr
+			proc = subprocess.Popen(shlex.split(cmd1),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
+			return proc.stderr.read()
 		else:
-			proc = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
+			proc = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
 			return proc.stdout.read()
 
 class Tester:
@@ -137,7 +138,7 @@ class Tester:
 				print('GENERATE_DOCBOOK=NO', file=f)
 			if (self.args.xhtml):
 				print('GENERATE_HTML=YES', file=f)
-			# HTML_OUTPUT can also be set locally
+			# HTML_OUTPUT can also have been set locally
 			print('HTML_OUTPUT=%s/html' % self.test_out, file=f)
 			print('HTML_FILE_EXTENSION=.xhtml', file=f)
 			if (self.args.pdf):
@@ -184,7 +185,7 @@ class Tester:
 					print('Non-existing file %s after \'check:\' statement' % check_file)
 					return
 				# convert output to canonical form
-				data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file)).read()
+				data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file))
 				if data:
 					# strip version
 					data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
@@ -326,7 +327,7 @@ class Tester:
 			tests.append(glob.glob('%s/*.xml' % (docbook_output)))
 			tests.append(glob.glob('%s/*/*/*.xml' % (docbook_output)))
 			tests = ' '.join(list(itertools.chain.from_iterable(tests))).replace(self.args.outputdir +'/','').replace('\\','/')
-			exe_string = '%s --nonet --postvalid %s' % (self.args.xmllint,tests)
+			exe_string = '%s --noout --nonet --postvalid %s' % (self.args.xmllint,tests)
 			exe_string1 = exe_string
 			exe_string += ' %s' % (redirx)
 			exe_string += ' %s more "%s/temp"' % (separ,docbook_output)
@@ -346,7 +347,11 @@ class Tester:
 				redirx=' 2> %s/temp >nul:'%html_output
 			else:
 				redirx='2>%s/temp >/dev/null'%html_output
-			exe_string = '%s --path dtd --nonet --postvalid %s/*xhtml' % (self.args.xmllint,html_output)
+			check_file = []
+			check_file.append(glob.glob('%s/*.xhtml' % (html_output)))
+			check_file.append(glob.glob('%s/*/*/*.xhtml' % (html_output)))
+			check_file = ' '.join(list(itertools.chain.from_iterable(check_file))).replace(self.args.outputdir +'/','').replace('\\','/')
+			exe_string = '%s --noout --path dtd --nonet --postvalid %s' % (self.args.xmllint,check_file)
 			exe_string1 = exe_string
 			exe_string += ' %s' % (redirx)
 			exe_string += ' %s more "%s/temp"' % (separ,html_output)
