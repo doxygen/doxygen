@@ -27,7 +27,8 @@
 class FortranOutlineParser : public OutlineParserInterface
 {
   public:
-    FortranOutlineParser(FortranFormat format=FortranFormat_Unknown) : m_format(format) { }
+    FortranOutlineParser(FortranFormat format=FortranFormat_Unknown);
+   ~FortranOutlineParser();
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
     void parseInput(const char *fileName,
@@ -39,7 +40,8 @@ class FortranOutlineParser : public OutlineParserInterface
     void parsePrototype(const char *text);
 
   private:
-    FortranFormat m_format;
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 class FortranOutlineParserFree : public FortranOutlineParser
