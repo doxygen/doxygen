@@ -16,7 +16,6 @@ Token.cc
 TokenMgrError.cc
 VhdlParser.cc
 VhdlParserTokenManager.cc
-VhdlParserIF.cpp
 )
 add_dependencies(vhdlparser
     generate_configvalues_header

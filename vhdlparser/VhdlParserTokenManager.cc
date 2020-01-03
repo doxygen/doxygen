@@ -3453,7 +3453,7 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
    {
       case 3 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-        ::vhdl::parser::VhdlParser::lineCount();
+        parser->outlineParser()->lineCount();
          break;
        }
       case 6 : {
@@ -3461,36 +3461,36 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
     {
     QCString doc(image.data());
     int count=doc.contains("--!");
-    ::vhdl::parser::VhdlParser::setMultCommentLine();
-    ::vhdl::parser::VhdlParser::lineCount(image.data());
+    parser->outlineParser()->setMultCommentLine();
+    parser->outlineParser()->lineCount(image.data());
     if (count == 1)
-      ::vhdl::parser::VhdlParser::oneLineComment(doc);
+      parser->outlineParser()->oneLineComment(doc);
     else
-      ::vhdl::parser::VhdlParser::handleCommentBlock(image.data(),FALSE); ;
+      parser->outlineParser()->handleCommentBlock(image.data(),FALSE); ;
     }
          break;
        }
       case 7 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                                                                               ::vhdl::parser::VhdlParser::handleFlowComment(image.data());
+                                                                               parser->outlineParser()->handleFlowComment(image.data());
          break;
        }
       case 8 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-    ::vhdl::parser::VhdlParser::lineCount(image.data());
+    parser->outlineParser()->lineCount(image.data());
          break;
        }
       case 9 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
    {
      QCString q = filter2008VhdlComment(image.data());
-     ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
+     parser->outlineParser()->handleCommentBlock(q.data(),TRUE);image.clear();
    }
          break;
        }
       case 10 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-      ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();
+      parser->outlineParser()->lineCount(image.data());image.clear();
          break;
        }
       default :
@@ -3503,123 +3503,123 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
    {
       case 17 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                                    ::vhdl::parser::VhdlParser::setLineParsed(ARCHITECTURE_T);
+                                    parser->outlineParser()->setLineParsed(ARCHITECTURE_T);
          break;
        }
       case 18 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                      VhdlParser::setLineParsed(ARRAY_T);
+                      parser->outlineParser()->setLineParsed(ARRAY_T);
          break;
        }
       case 22 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                              ::vhdl::parser::VhdlParser::setLineParsed(ATTRIBUTE_T);
+                              parser->outlineParser()->setLineParsed(ATTRIBUTE_T);
          break;
        }
       case 25 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                    ::vhdl::parser::VhdlParser::setLineParsed(BODY_T);
+                    parser->outlineParser()->setLineParsed(BODY_T);
          break;
        }
       case 28 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                              VhdlParser::setLineParsed(COMPONENT_T);
+                              parser->outlineParser()->setLineParsed(COMPONENT_T);
          break;
        }
       case 30 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                                      VhdlParser::setLineParsed(CONFIGURATION_T);
+                                      parser->outlineParser()->setLineParsed(CONFIGURATION_T);
          break;
        }
       case 31 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                             VhdlParser::setLineParsed(CONSTANT_T);
+                             parser->outlineParser()->setLineParsed(CONSTANT_T);
          break;
        }
       case 32 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                          VhdlParser::setLineParsed(CONTEXT_T);
+                          parser->outlineParser()->setLineParsed(CONTEXT_T);
          break;
        }
       case 39 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                  VhdlParser::setLineParsed(END_T);
+                  parser->outlineParser()->setLineParsed(END_T);
          break;
        }
       case 40 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                        VhdlParser::setLineParsed(ENTITY_T);
+                        parser->outlineParser()->setLineParsed(ENTITY_T);
          break;
        }
       case 43 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                    VhdlParser::setLineParsed(FILE_T);
+                    parser->outlineParser()->setLineParsed(FILE_T);
          break;
        }
       case 46 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                             VhdlParser::setLineParsed(FUNCTION_T);
+                             parser->outlineParser()->setLineParsed(FUNCTION_T);
          break;
        }
       case 49 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                      VhdlParser::setLineParsed(GROUP_T);
+                      parser->outlineParser()->setLineParsed(GROUP_T);
          break;
        }
       case 58 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                          VhdlParser::setLineParsed(LIBRARY_T);
+                          parser->outlineParser()->setLineParsed(LIBRARY_T);
          break;
        }
       case 76 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                          ::vhdl::parser::VhdlParser::setLineParsed(PACKAGE_T);
+                          parser->outlineParser()->setLineParsed(PACKAGE_T);
          break;
        }
       case 78 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                    ::vhdl::parser::VhdlParser::setLineParsed(PORT_T);
+                    parser->outlineParser()->setLineParsed(PORT_T);
          break;
        }
       case 80 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                              ::vhdl::parser::VhdlParser::setLineParsed(PROCEDURE_T);
+                              parser->outlineParser()->setLineParsed(PROCEDURE_T);
          break;
        }
       case 81 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                          ::vhdl::parser::VhdlParser::setLineParsed(PROCESS_T);
+                          parser->outlineParser()->setLineParsed(PROCESS_T);
          break;
        }
       case 86 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                        ::vhdl::parser::VhdlParser::setLineParsed(RECORD_T);
+                        parser->outlineParser()->setLineParsed(RECORD_T);
          break;
        }
       case 100 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                        ::vhdl::parser::VhdlParser::setLineParsed(SIGNAL_T);
+                        parser->outlineParser()->setLineParsed(SIGNAL_T);
          break;
        }
       case 107 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                          ::vhdl::parser::VhdlParser::setLineParsed(SUBTYPE_T);
+                          parser->outlineParser()->setLineParsed(SUBTYPE_T);
          break;
        }
       case 111 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                    ::vhdl::parser::VhdlParser::setLineParsed(TYPE_T);
+                    parser->outlineParser()->setLineParsed(TYPE_T);
          break;
        }
       case 113 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                      ::vhdl::parser::VhdlParser::setLineParsed(UNITS_T);
+                      parser->outlineParser()->setLineParsed(UNITS_T);
          break;
        }
       case 137 : {
         image.append(jjstrLiteralImages[137]);
         lengthOfMatch = jjstrLiteralImages[137].length();
-                  ::vhdl::parser::VhdlParser::setLineParsed(SEMI_T);
+                  parser->outlineParser()->setLineParsed(SEMI_T);
          break;
        }
       default :

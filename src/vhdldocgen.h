@@ -39,6 +39,33 @@ class FileDef;
 class NamespaceDef;
 struct Argument;
 
+
+
+struct VhdlConfNode
+{ 
+  VhdlConfNode(const char*  a,const char*  b,const char* config,const char* cs,bool leaf) 
+  { 
+    arch=a;              // architecture  e.g. for iobuffer
+    arch=arch.lower();
+    binding=b;           // binding e.g.  use entity work.xxx(bev)
+    binding=binding.lower();
+    confVhdl=config;     // configuration foo is bar
+    compSpec=cs;        
+    isInlineConf=false;  // primary configuration?
+    isLeaf=leaf;
+  };
+
+  QCString confVhdl;
+  QCString arch;
+  QCString binding;
+  QCString compSpec;
+  int level = 0;
+  bool isLeaf = false;
+  bool isInlineConf = false;
+
+};
+
+
 /** Class for generating documentation specific for VHDL */
 class VhdlDocGen  
 {

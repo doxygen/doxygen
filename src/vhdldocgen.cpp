@@ -2727,29 +2727,7 @@ void assignBinding(VhdlConfNode * conf)
   entBind=conf->binding;
   QCString conf2=VhdlDocGen::parseForBinding(entBind,arcBind);
 
-  if (qstricmp(conf2,"configuration")==0)
-  {
-    QList<VhdlConfNode> confList =  getVhdlConfiguration();
-    VhdlConfNode* vconf;
-    //  bool found=false;
-    for (uint iter=0;iter<confList.count(); iter++)
-    {
-      vconf= (VhdlConfNode *)confList.at(iter);
-      QCString n=VhdlDocGen::getIndexWord(vconf->confVhdl.data(),0);
-      if (n==entBind)
-      {
-        // found=true;
-        entBind=VhdlDocGen::getIndexWord(vconf->confVhdl.data(),1);
-        QCString a=VhdlDocGen::getIndexWord(conf->compSpec.data(),0);
-        QCString e=VhdlDocGen::getIndexWord(conf->confVhdl.data(),1);
-        a=e+"::"+a;
-        archClass= VhdlDocGen::findVhdlClass(a.data());//Doxygen::classSDict->find(a.data());
-        entClass= VhdlDocGen::findVhdlClass(e.data());//Doxygen::classSDict->find(e.data());
-        break;
-      }
-    }
-  }
-  else  // conf2!=configuration
+  if (conf2!="configuration")
   {
     QCString a,c,e;
     if (conf->isInlineConf)
@@ -2852,17 +2830,6 @@ void VhdlDocGen::computeVhdlComponentRelations()
 {
 
   QCString entity,arch,inst;
-  QList<VhdlConfNode> confList =  getVhdlConfiguration();
-
-  for (uint iter=0;iter<confList.count(); iter++)
-  {
-    VhdlConfNode* conf= (VhdlConfNode *)confList.at(iter);
-    if (!(conf->isInlineConf || conf->isLeaf))
-    {
-      continue;
-    }
-    assignBinding(conf);
-  }
 
   for (const auto &cur : getVhdlInstList())
   {
@@ -3630,7 +3597,7 @@ void FlowChart::addFlowChart(int type,const char* text,const char* exp, const ch
 
   FlowChart *fl=new FlowChart(type,typeString.data(),expression.data(),label);
 
-  fl->line=vhdl::parser::VhdlParser::getLine();
+  fl->line=1; // TODO: use getLine(); of the parser
 
   if (type & (START_NO | VARIABLE_NO))
   {

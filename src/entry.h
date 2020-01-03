@@ -337,4 +337,6 @@ class Entry
     FileDef       *m_fileDef;
 };
 
+typedef std::vector< std::shared_ptr<Entry> > EntryList;
+
 #endif

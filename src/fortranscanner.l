@@ -143,8 +143,6 @@ struct CommentInPrepass
   CommentInPrepass(int column, QCString str) : column(column), str(str) {}
 };
 
-typedef std::vector< std::shared_ptr<Entry> > EntryList;
-
 /* -----------------------------------------------------------------
  *
  *      statics

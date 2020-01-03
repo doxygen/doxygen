@@ -19,21 +19,10 @@
 #include "entry.h"
 #include "vhdldocgen.h"
 #include "vhdlcode.h"
-#include "memberlist.h"
 #include "config.h"
 
-
-
-
 enum  { GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
-void  parserVhdlfile(const char* inputBuffer);
-
-class Entry;
-class ClassSDict;
-class ClassDef;
-class MemberDef;
-struct VhdlConfNode;
-
+//void  parserVhdlfile(const char* inputBuffer);
 
 /** \brief VHDL parser using state-based lexical scanning.
  *
@@ -42,7 +31,8 @@ struct VhdlConfNode;
 class VHDLOutlineParser : public OutlineParserInterface
 {
   public:
-    virtual ~VHDLOutlineParser() {}
+    VHDLOutlineParser();
+    virtual ~VHDLOutlineParser();
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
     void parseInput(const char * fileName,
@@ -53,35 +43,43 @@ class VHDLOutlineParser : public OutlineParserInterface
 
     bool needsPreprocessing(const QCString &) const { return TRUE; }
     void parsePrototype(const char *text);
+
+
+    // interface for generated parser code
+
+    void setLineParsed(int tok);
+    int getLine(int tok);
+    int getLine();
+    void lineCount(const char*);
+    void lineCount();
+    void addProto(const char *s1,const char *s2,const char *s3,const char *s4,const char *s5,const char *s6);
+    //void addConfigureNode(const char* a,const char*b, bool,bool isLeaf,bool inlineConf);
+    void createFunction(const char *impure,uint64 spec,const char *fname);
+    void addVhdlType(const char *n,int startLine,int section, uint64 spec,const char* args,const char* type,Protection prot);
+    void addCompInst(const char *n, const char* instName, const char* comp,int iLine);
+    void handleCommentBlock(const char* doc,bool brief);
+    void handleFlowComment(const char*);
+    void initEntry(Entry *e);
+    void newEntry();
+    bool isFuncProcProced();
+    void pushLabel(QCString &,QCString&);
+    QCString popLabel(QCString & q);
+    bool addLibUseClause(const QCString &type);
+    void mapLibPackage( Entry* root);
+    void createFlow();
+    void error_skipto(int kind);
+    void oneLineComment(QCString qcs);
+    void setMultCommentLine();
+    bool checkMultiComment(QCString& qcs,int line);
+    void insertEntryAtLine(std::shared_ptr<Entry> ce,int line);
+
+  private:
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
-struct VhdlConfNode
-{ 
-  VhdlConfNode(const char*  a,const char*  b,const char* config,const char* cs,bool leaf) 
-  { 
-    arch=a;              // architecture  e.g. for iobuffer
-    arch=arch.lower();
-    binding=b;           // binding e.g.  use entity work.xxx(bev)
-    binding=binding.lower();
-    confVhdl=config;     // configuration foo is bar
-    compSpec=cs;        
-    isInlineConf=false;  // primary configuration?
-    isLeaf=leaf;
-  };
+const EntryList &getVhdlInstList();
 
-  QCString confVhdl;
-  QCString arch;
-  QCString binding;
-  QCString compSpec;
-  int level = 0;
-  bool isLeaf = false;
-  bool isInlineConf = false;
-
-};
-
-void vhdlscanFreeScanner();
-
-const QList<VhdlConfNode>& getVhdlConfiguration();
-const std::vector<std::shared_ptr<Entry> >&getVhdlInstList();
 QCString filter2008VhdlComment(const char *s);
+
 #endif
