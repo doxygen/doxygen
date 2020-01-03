@@ -8,7 +8,7 @@
 <a name="1.8.17"></a>
 </p>
 <ul>
-<li>issue #6715: Errorneous matching of the immediately following block command after @ref [<a href="https://github.com/doxygen/doxygen/commit/4908c39f8bd18556f868bcc70d3f2f6ff0296c8e">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/81da20ff839843634ee6db5f517bfcb7ef87d4b9">view</a>]</li>
+<li>issue #6715: Erroneous matching of the immediately following block command after @ref [<a href="https://github.com/doxygen/doxygen/commit/4908c39f8bd18556f868bcc70d3f2f6ff0296c8e">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/81da20ff839843634ee6db5f517bfcb7ef87d4b9">view</a>]</li>
 <li>issue #7119 Doxygen does not link to C# snippets - regression [<a href="https://github.com/doxygen/doxygen/commit/4952c20194ab1b59e914cabdbe44d609a138b393">view</a>]</li>
 <li>issue #7189: wrong warning on ambiguous image files [<a href="https://github.com/doxygen/doxygen/commit/752753c044af46cc4a22f83be8e4e1ae6be8f373">view</a>]</li>
 <li>issue #7190 1.8.16: Blank FILE_PATTERNS =&gt; no files processed [<a href="https://github.com/doxygen/doxygen/commit/a27369dbf3cccbe4b96bfde1aca49d96d4b396f0">view</a>]</li>
@@ -8949,7 +8949,7 @@ make sure you add the following:
        of course).</li>
 <li>   For member groups, where only the first member is documented, that
        documentation is no longer automatically copied to all other
-       members of the group. You can still enble this by setting
+       members of the group. You can still enable this by setting
        DISTRIBUTE_GROUP_DOC to YES in the config file.</li>
 <li>   The \mainpage block now gets its own chapter in Latex/RTF</li>
 </ul>
