@@ -251,7 +251,7 @@ void Portable::setenv(const char *name,const char *value)
       loadEnvironment();
     }
 
-    proc_env[name] = std::string(value); // create or replace exisiting value
+    proc_env[name] = std::string(value); // create or replace existing value
 #endif
 }
 
