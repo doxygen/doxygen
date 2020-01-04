@@ -824,18 +824,22 @@ void XmlDocVisitor::visitPre(DocImage *img)
 {
   if (m_hide) return;
 
-  QCString baseName=img->name();
-  int i;
-  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+  QCString url = img->url();
+  QCString baseName;
+  if (url.isEmpty())
   {
-    baseName=baseName.right(baseName.length()-i-1);
+    baseName = img->relPath()+img->name();
+  }
+  else
+  {
+    baseName = correctURL(url,img->relPath());
   }
   visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height(), img ->isInlineImage());
 
   // copy the image to the output dir
   FileDef *fd;
   bool ambig;
-  if ((fd=findFileDef(Doxygen::imageNameDict,img->name(),ambig)))
+  if (url.isEmpty() && (fd=findFileDef(Doxygen::imageNameDict,img->name(),ambig)))
   {
     QFile inImage(fd->absFilePath());
     QFile outImage(Config_getString(XML_OUTPUT)+"/"+baseName.data());
