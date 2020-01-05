@@ -83,7 +83,6 @@ CommandMap cmdMap[] =
   { "return",        CMD_RETURN },
   { "returns",       CMD_RETURN },
   { "retval",        CMD_RETVAL },
-  { "rtfonly",       CMD_RTFONLY },
   { "sa",            CMD_SA },
   { "secreflist",    CMD_SECREFLIST },
   { "section",       CMD_SECTION },
