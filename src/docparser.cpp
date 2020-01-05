@@ -652,6 +652,16 @@ static bool insideOL(DocNode *n)
 
 //---------------------------------------------------------------------------
 
+static bool insideTD(DocNode *n)
+{
+  while (n)
+  {
+    if (n->kind()==DocNode::Kind_HtmlCell) return TRUE;
+    n=n->parent();
+  }
+  return FALSE;
+}
+
 static bool insideTable(DocNode *n)
 {
   while (n)
@@ -860,8 +870,9 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
       switch (tok)
       {
         case TK_HTMLTAG:
-          if (insideLI(parent) && Mappers::htmlTagMapper->map(g_token->name) && g_token->endTag)
-          { // ignore </li> as the end of a style command
+          if ((insideLI(parent) && Mappers::htmlTagMapper->map(g_token->name) && g_token->endTag) ||
+              (insideTD(parent) && Mappers::htmlTagMapper->map(g_token->name) && g_token->endTag))
+          { // ignore </li> and </td> as the end of a style command
             continue; 
           }
           return tok;
