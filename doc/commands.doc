@@ -2498,6 +2498,7 @@ Commands for displaying examples
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
+  \sa section \ref cmdlatexonly "\\latexonly". 
 <hr>
 
 \htmlonly</p><center><p>\endhtmlonly
@@ -2697,8 +2698,9 @@ only copy the detailed documentation, not the brief description.
 \section cmddocbookonly \\docbookonly
 
   \addindex \\docbookonly
-  Starts a block of text that will be verbatim included in the
-  generated DocBook documentation only. The block ends with a
+  Starts a block of text that only will be verbatim included in the
+  generated DocBook documentation and tagged with `<docbookonly>` in the generated
+  XML output. The block ends with a
   \ref cmdenddocbookonly "\\enddocbookonly" command.
 
   \sa section \ref cmdmanonly "\\manonly", 
@@ -3142,8 +3144,9 @@ class Receiver
 \section cmdhtmlonly \\htmlonly ["[block]"]
 
   \addindex \\htmlonly
-  Starts a block of text that will be verbatim included in the
-  generated HTML documentation only. The block ends with a
+  Starts a block of text that only will be verbatim included in the
+  generated HTML documentation and tagged with `<htmlonly>` in the generated
+  XML output. The block ends with a
   \ref cmdendhtmlonly "\\endhtmlonly" command.
 
   This command can be used to include HTML code that is too complex
@@ -3233,8 +3236,9 @@ class Receiver
 \section cmdlatexonly \\latexonly
 
   \addindex \\latexonly
-  Starts a block of text that will be verbatim included in the
-  generated \LaTeX documentation only. The block ends with a
+  Starts a block of text that only will be verbatim included in the
+  generated \LaTeX documentation and tagged with `<latexonly>` in the generated
+  XML output. The block ends with a
   \ref cmdendlatexonly "\\endlatexonly" command.
 
   This command can be used to include \LaTeX code that is too
@@ -3249,15 +3253,17 @@ class Receiver
   \sa sections \ref cmdrtfonly "\\rtfonly",
                \ref cmdxmlonly "\\xmlonly",
                \ref cmdmanonly "\\manonly",
-               \ref cmdhtmlonly "\\htmlonly", and
-               \ref cmdhtmlonly "\\docbookonly".
+               \ref cmdhtmlonly "\\htmlonly",
+               \ref cmddocbookonly "\\docbookonly", and
+               \ref cmdlatexinclude "\\latexinclude".
 
 <hr>
 \section cmdmanonly \\manonly
 
   \addindex \\manonly
-  Starts a block of text that will be verbatim included in the
-  generated MAN documentation only. The block ends with a
+  Starts a block of text that only will be verbatim included in the
+  generated MAN documentation and tagged with `<manonly>` in the generated
+  XML output. The block ends with a
   \ref cmdendmanonly "\\endmanonly" command.
 
   This command can be used to include groff code directly into
@@ -3334,8 +3340,9 @@ class Receiver
 \section cmdrtfonly \\rtfonly
 
   \addindex \\rtfonly
-  Starts a block of text that will be verbatim included in the
-  generated RTF documentation only. The block ends with a
+  Starts a block of text that only will be verbatim included in the
+  generated RTF documentation and tagged with `<rtfonly>` in the generated
+  XML output. The block ends with a
   \ref cmdendrtfonly "\\endrtfonly" command.
 
   This command can be used to include RTF code that is too complex
@@ -3371,8 +3378,8 @@ class Receiver
 \section cmdxmlonly \\xmlonly
 
   \addindex \\xmlonly
-  Starts a block of text that will be verbatim included in the
-  generated XML output only. The block ends with a
+  Starts a block of text that only will be verbatim included in the
+  generated XML output. The block ends with a
   \ref cmdendxmlonly "\\endxmlonly" command.
 
   This command can be used to include custom XML tags.
