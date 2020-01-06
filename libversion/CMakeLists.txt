@@ -7,6 +7,7 @@ set(POST_CONFIGURE_DOXYGEN_VERSION_FILE "${GENERATED_SRC}/doxyversion.cpp")
 # setup information for git version handling
 set(PRE_CONFIGURE_GIT_VERSION_FILE "${CMAKE_SOURCE_DIR}/libversion/gitversion.cpp.in")
 set(POST_CONFIGURE_GIT_VERSION_FILE "${GENERATED_SRC}/gitversion.cpp")
+set(GIT_STATE_FILE "${GENERATED_SRC}/git_state")
 
 include(${CMAKE_SOURCE_DIR}/cmake/git_watcher.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/doxygen_version.cmake)
@@ -25,3 +26,4 @@ add_dependencies( doxygen_version check_doxygen_version )
 
 set_source_files_properties(${POST_CONFIGURE_GIT_VERSION_FILE} PROPERTIES GENERATED 1)
 set_source_files_properties(${POST_CONFIGURE_DOXYGEN_VERSION_FILE} PROPERTIES GENERATED 1)
+set_source_files_properties(${GIT_STATE_FILE} PROPERTIES GENERATED 1)
