@@ -426,6 +426,7 @@
       <xsd:element name="xmlonly" type="xsd:string" />
       <xsd:element name="rtfonly" type="xsd:string" />
       <xsd:element name="latexonly" type="xsd:string" />
+      <xsd:element name="docbookonly" type="xsd:string" />
       <xsd:element name="image" type="docImageType" />
       <xsd:element name="dot" type="docImageType" />
       <xsd:element name="msc" type="docImageType" />

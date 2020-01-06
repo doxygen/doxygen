@@ -265,11 +265,36 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       m_t << "</verbatim>"; 
       break;
     case DocVerbatim::HtmlOnly: 
+      if (s->isBlock())
+      {
+        m_t << "<htmlonly block=\"yes\">";
+      }
+      else
+      {
+        m_t << "<htmlonly>";
+      }
+      filter(s->text());
+      m_t << "</htmlonly>";
+      break;
     case DocVerbatim::RtfOnly: 
+      m_t << "<rtfonly>";
+      filter(s->text());
+      m_t << "</rtfonly>";
+      break;
     case DocVerbatim::ManOnly: 
+      m_t << "<manonly>";
+      filter(s->text());
+      m_t << "</manonly>";
+      break;
     case DocVerbatim::LatexOnly: 
+      m_t << "<latexonly>";
+      filter(s->text());
+      m_t << "</latexonly>";
+      break;
     case DocVerbatim::DocbookOnly:
-      /* nothing */ 
+      m_t << "<docbookonly>";
+      filter(s->text());
+      m_t << "</docbookonly>";
       break;
     case DocVerbatim::XmlOnly: 
       m_t << s->text();

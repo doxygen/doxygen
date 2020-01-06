@@ -6,9 +6,21 @@
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-      <para>Text.       
+      <para>Text. <htmlonly> 
+HTML
+</htmlonly> <htmlonly block="yes">
+HTML with block
+</htmlonly> <rtfonly> 
+RTF
+</rtfonly> <manonly> 
+Man
+</manonly> <latexonly> 
+LaTeX
+</latexonly>  
 XML
-  More text. </para>
+ <docbookonly> 
+DocBook
+</docbookonly> More text. </para>
     </detaileddescription>
   </compounddef>
 </doxygen>
