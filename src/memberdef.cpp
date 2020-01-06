@@ -2943,8 +2943,10 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
         {
           //Definition *bd=bmd->group;
           //if (bd==0) bd=bcd;
+          SrcLangExt lang = bmd->getLanguage();
+          QCString sep = getLanguageSpecificSeparator(lang,TRUE);
           ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
-              bmd->anchor(),bcd->displayName());
+              bmd->anchor(),bcd->displayName() + sep + bmd->name());
 
           //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
           //    bmd->anchor(),bcd->name());
@@ -2955,8 +2957,10 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
         }
         else
         {
+          SrcLangExt lang = bmd->getLanguage();
+          QCString sep = getLanguageSpecificSeparator(lang,TRUE);
           ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-              0,bcd->displayName());
+              0,bcd->displayName() + sep + bmd->name());
           if (bcd->isLinkableInProject()/* && !Config_getBool(PDF_HYPERLINKS)*/ )
           {
             writePageRef(ol,bcd->getOutputFileBase(),bcd->anchor());
@@ -3033,8 +3037,10 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
         {
           //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
           //    bmd->anchor(),bcd->name());
+          SrcLangExt lang = bmd->getLanguage();
+          QCString sep = getLanguageSpecificSeparator(lang,TRUE);
           ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
-              bmd->anchor(),bcd->displayName());
+              bmd->anchor(),bcd->displayName() + sep + bmd->name());
 
           if (bmd->isLinkableInProject() )
           {
