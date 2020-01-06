@@ -1047,6 +1047,7 @@ static void handleUnclosedStyleCommands()
 static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignoreAutoLinkFlag=FALSE)
 {
   QCString name = linkToText(SrcLangExt_Unknown,g_token->name,TRUE);
+  QCString lnkname = g_token->name;
   static bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
   if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
   {
@@ -1061,14 +1062,43 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
   int len = g_token->name.length();
   ClassDef *cd=0;
   bool ambig;
+  bool found;
   FileDef *fd = findFileDef(Doxygen::inputNameDict,g_fileName,ambig);
   //printf("handleLinkedWord(%s) g_context=%s\n",g_token->name.data(),g_context.data());
-  if (!g_insideHtmlLink && 
+  /* first try with specified name, in case it fails try with the lowercase version.
+   * If the later is OK check if it is Fortran, if not fail otherwise use the Fortran link
+   */
+  found = (!g_insideHtmlLink &&
       (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member,TRUE,fd,TRUE)
        || (!g_context.isEmpty() &&  // also try with global scope
-           resolveRef("",g_token->name,g_inSeeBlock,&compound,&member,FALSE,0,TRUE))
-      )
-     )
+           resolveRef("",g_token->name,g_inSeeBlock,&compound,&member,FALSE,0,TRUE))));
+  if (!found)
+  {
+    lnkname = (g_token->name).lower();
+    if (lnkname != g_token->name)
+    {
+      Definition *compound_save=compound;
+      MemberDef  *member_save=member;
+      compound=0;
+      member=0;
+
+      found = (!g_insideHtmlLink &&
+        (resolveRef(g_context,lnkname,g_inSeeBlock,&compound,&member,TRUE,fd,TRUE)
+         || (!g_context.isEmpty() &&  // also try with global scope
+             resolveRef("",lnkname,g_inSeeBlock,&compound,&member,FALSE,0,TRUE))));
+      if (found)
+      {
+	if ((!(member && (member->getLanguage() == SrcLangExt_Fortran))) &&
+	    (!(compound && (compound->getLanguage() == SrcLangExt_Fortran)))) found = false;
+      }
+      if (!found)
+      {
+        compound=compound_save=compound;
+        member=member_save;
+      }
+    }
+  }
+  if (found)
   {
     //printf("resolveRef %s = %p (linkable?=%d)\n",qPrint(g_token->name),member,member ? member->isLinkable() : FALSE);
     if (member && member->isLinkable()) // member link
