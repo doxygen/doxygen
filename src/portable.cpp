@@ -348,10 +348,59 @@ char  Portable::pathListSeparator(void)
 #endif
 }
 
+#if defined(_WIN32) && !defined(__CYGWIN__)
+static const bool ExistsOnPath(const char *fileName)
+{
+  QFileInfo fi1(fileName);
+  if (fi1.exists()) return true;
+
+  const char *p = Portable::getenv("PATH");
+  char listSep = Portable::pathListSeparator();
+  char pathSep = Portable::pathSeparator();
+  QCString paths(p);
+  int strt = 0;
+  int idx;
+  while ((idx = paths.find(listSep,strt)) != -1)
+  {
+    QCString locFile(paths.mid(strt,idx-strt));
+    locFile += pathSep;
+    locFile += fileName;
+    QFileInfo fi(locFile);
+    if (fi.exists()) return true;
+    strt = idx + 1;
+  }
+  // to be sure the last path component is checked as well
+  QCString locFile(paths.mid(strt));
+  if (!locFile.isEmpty())
+  {
+    locFile += pathSep;
+    locFile += fileName;
+    QFileInfo fi(locFile);
+    if (fi.exists()) return true;
+  }
+  return false;
+}
+#endif
+
 const char *Portable::ghostScriptCommand(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    return "gswin32c.exe";
+    static char *gsexe = NULL;
+    if (!gsexe)
+    {
+        char *gsExec[] = {"gswin32c.exe","gswin64c.exe"};
+        for (int i = 0; i < sizeof(gsExec) / sizeof(*gsExec); i++)
+        {
+            if (ExistsOnPath(gsExec[i]))
+	    {
+                gsexe = gsExec[i];
+                return gsexe;
+            }
+        }
+        gsexe = gsExec[0];
+        return gsexe;
+    }
+    return gsexe;
 #else
     return "gs";
 #endif

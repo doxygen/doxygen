@@ -251,7 +251,7 @@ Ghostscript can be <a href="https://sourceforge.net/projects/ghostscript/">downl
 from Sourceforge.
 
 After installing \LaTeX and Ghostscript you'll need to make sure the tools
-latex.exe, pdflatex.exe, and gswin32c.exe are present in the search path of a
+latex.exe, pdflatex.exe, and gswin32c.exe (or gswin64c.exe) are present in the search path of a
 command box. Follow <a href="https://www.computerhope.com/issues/ch000549.htm">these</a>
 instructions if you are unsure and run the commands from a command box to verify it works.
 
