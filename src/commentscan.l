@@ -2417,6 +2417,7 @@ static bool handleElseIf(yyscan_t yyscanner,const QCString &, const QCStringList
   else
   {
     yyextra->guardType = yyextra->enabledSectionFound ? Guard_Skip : Guard_If;
+    yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
     BEGIN(GuardParam);
   }
   return FALSE;
@@ -2432,6 +2433,7 @@ static bool handleElse(yyscan_t yyscanner,const QCString &, const QCStringList &
   }
   else
   {
+    yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
     BEGIN( SkipGuardedSection );
   }
   return FALSE;
