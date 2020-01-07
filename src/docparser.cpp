@@ -3473,6 +3473,7 @@ int DocHtmlRow::parse()
   g_nodeStack.push(this);
   DBG(("DocHtmlRow::parse() start\n"));
 
+restartrow:
   bool isHeading=FALSE;
   bool isFirst=TRUE;
   DocHtmlCell *cell=0;
@@ -3492,10 +3493,14 @@ int DocHtmlRow::parse()
     {
       isHeading=TRUE;
     }
+    else if (tagId==HTML_TR) // found <tr> or </tr>, signalling a row withour columns, skip it, skip it
+    {
+      goto restartrow;
+    }
     else // found some other tag
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"expected <td> or <th> tag but "
-          "found <%s> instead!",qPrint(g_token->name));
+          "found <%s> instead!",qPrint((g_token->endTag ? "/" : "")+g_token->name));
       doctokenizerYYpushBackHtmlTag(g_token->name);
       goto endrow;
     }
