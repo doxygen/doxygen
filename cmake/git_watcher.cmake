@@ -178,6 +178,7 @@ function(SetupGitMonitoring)
         ALL
 	DEPENDS ${PRE_CONFIGURE_GIT_VERSION_FILE}
 	BYPRODUCTS ${POST_CONFIGURE_GIT_VERSION_FILE}
+	BYPRODUCTS ${GIT_STATE_FILE}
         COMMENT "Checking the git repository for changes..."
         COMMAND
             ${CMAKE_COMMAND}
