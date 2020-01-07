@@ -42,6 +42,7 @@
 #include "namespacedef.h"
 #include "filename.h"
 #include "resourcemgr.h"
+#include "portable.h"
 
 static bool DoxyCodeOpen = FALSE;
 static bool DoxyCodeLineOpen = FALSE;
