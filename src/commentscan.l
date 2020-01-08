@@ -351,6 +351,11 @@ class DocCmdMapper
 DocCmdMapper *DocCmdMapper::s_instance=0;
   
   
+bool isDoxygenScanCmd(QCString cmdName)
+{
+  return (DocCmdMapper::map(cmdName) ? TRUE : FALSE);
+}
+
 #define YY_NEVER_INTERACTIVE 1
 
 enum XRefKind
