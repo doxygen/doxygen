@@ -202,6 +202,10 @@ class PrintDocVisitor : public DocVisitor
                if (inc->isBlock()) printf(" block=\"yes\"");
                break;
         case DocInclude::LatexInclude: printf("latexinclude"); break;
+        case DocInclude::RtfInclude: printf("rtfinclude"); break;
+        case DocInclude::DocbookInclude: printf("docbookinclude"); break;
+        case DocInclude::ManInclude: printf("maninclude"); break;
+        case DocInclude::XmlInclude: printf("xmlinclude"); break;
         case DocInclude::VerbInclude: printf("verbinclude"); break;
         case DocInclude::Snippet: printf("snippet"); break;
         case DocInclude::SnipWithLines: printf("snipwithlines"); break;

@@ -180,6 +180,10 @@ static bool isDocIncludeVisible(DocInclude *s)
   {
     case DocInclude::DontInclude:
     case DocInclude::LatexInclude:
+    case DocInclude::RtfInclude:
+    case DocInclude::ManInclude:
+    case DocInclude::XmlInclude:
+    case DocInclude::DocbookInclude:
       return FALSE;
     default:
       return TRUE;
@@ -715,6 +719,10 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::DontInclude:
     case DocInclude::LatexInclude:
+    case DocInclude::RtfInclude:
+    case DocInclude::ManInclude:
+    case DocInclude::XmlInclude:
+    case DocInclude::DocbookInclude:
     case DocInclude::DontIncWithLines:
       break;
     case DocInclude::HtmlInclude:

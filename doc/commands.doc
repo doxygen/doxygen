@@ -72,6 +72,7 @@ documentation:
 \refitem cmddetails \\details
 \refitem cmddiafile \\diafile
 \refitem cmddir \\dir
+\refitem cmddocbookinclude \\docbookinclude
 \refitem cmddocbookonly \\docbookonly
 \refitem cmddontinclude \\dontinclude
 \refitem cmddot \\dot
@@ -135,6 +136,7 @@ documentation:
 \refitem cmdline \\line
 \refitem cmdlink \\link
 \refitem cmdmainpage \\mainpage
+\refitem cmdmaninclude \\maninclude
 \refitem cmdmanonly \\manonly
 \refitem cmdmemberof \\memberof
 \refitem cmdmsc \\msc
@@ -175,6 +177,7 @@ documentation:
 \refitem cmdreturn \\return
 \refitem cmdreturns \\returns
 \refitem cmdretval \\retval
+\refitem cmdrtfinclude \\rtfinclude
 \refitem cmdrtfonly \\rtfonly
 \refitem cmdsa \\sa
 \refitem cmdsecreflist \\secreflist
@@ -211,6 +214,7 @@ documentation:
 \refitem cmdvhdlflow \\vhdlflow
 \refitem cmdwarning \\warning
 \refitem cmdweakgroup \\weakgroup
+\refitem cmdxmlinclude \\xmlinclude
 \refitem cmdxmlonly \\xmlonly
 \refitem cmdxrefitem \\xrefitem
 \refitem cmddollar \\\$
@@ -2457,8 +2461,8 @@ Commands for displaying examples
 \section cmdverbinclude \\verbinclude <file-name>
 
   \addindex \\verbinclude
-  This command includes the file \<file-name\> verbatim in the documentation.
-  The command is equivalent to pasting the file in the documentation and
+  This command includes the contents of the file \<file-name\> verbatim in the documentation.
+  The command is equivalent to pasting the contents of the file in the documentation and
   placing \ref cmdverbatim "\\verbatim" and \ref cmdendverbatim "\\endverbatim"
   commands around it.
 
@@ -2469,8 +2473,9 @@ Commands for displaying examples
 \section cmdhtmlinclude \\htmlinclude ["[block]"] <file-name>
 
   \addindex \\htmlinclude
-  This command includes the file \<file-name\> as is in the HTML documentation.
-  The command is equivalent to pasting the file in the documentation and
+  This command includes the contents of the file \<file-name\> as is in the HTML documentation
+  and tagged with `<htmlonly>` in the generated XML output.
+  The command is equivalent to pasting the contents of the file in the documentation and
   placing \ref cmdhtmlonly "\\htmlonly" and \ref cmdendhtmlonly "\\endhtmlonly"
   commands around it.
 
@@ -2490,8 +2495,9 @@ Commands for displaying examples
 \section cmdlatexinclude \\latexinclude <file-name>
 
   \addindex \\latexinclude
-  This command includes the file \<file-name\> as is in the \LaTeX documentation.
-  The command is equivalent to pasting the file in the documentation and
+  This command includes the contents of the file \<file-name\> as is in the \LaTeX documentation
+  and tagged with `<latexonly>` in the generated XML output.
+  The command is equivalent to pasting the contents of the file in the documentation and
   placing \ref cmdlatexonly "\\latexonly" and \ref cmdendlatexonly "\\endlatexonly"
   commands around it.
 
@@ -2499,6 +2505,65 @@ Commands for displaying examples
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
   \sa section \ref cmdlatexonly "\\latexonly". 
+<hr>
+
+\section cmdrtfinclude \\rtfinclude <file-name>
+
+  \addindex \\rtfinclude
+  This command includes the contents of the file \<file-name\> as is in the RTF documentation
+  and tagged with `<rtfonly>` in the generated XML output.
+  The command is equivalent to pasting the contents of the file in the documentation and
+  placing \ref cmdrtfonly "\\rtfonly" and \ref cmdendrtfonly "\\endrtfonly"
+  commands around it.
+
+  Files or directories that doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+
+  \sa section \ref cmdrtfonly "\\rtfonly". 
+<hr>
+
+\section cmdmaninclude \\maninclude <file-name>
+
+  \addindex \\maninclude
+  This command includes the contents of the file \<file-name\> as is in the MAN documentation
+  and tagged with `<manonly>` in the generated XML output.
+  The command is equivalent to pasting the contents of the file in the documentation and
+  placing \ref cmdmanonly "\\manonly" and \ref cmdendmanonly "\\endmanonly"
+  commands around it.
+
+  Files or directories that doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+
+  \sa section \ref cmdmanonly "\\manonly". 
+<hr>
+
+\section cmddocbookinclude \\docbookinclude <file-name>
+
+  \addindex \\docbookinclude
+  This command includes the contents of the file \<file-name\> as is in the DocBook documentation
+  and tagged with `<docbookonly>` in the generated XML output.
+  The command is equivalent to pasting the contents of the file in the documentation and
+  placing \ref cmddocbookonly "\\docbookonly" and \ref cmdenddocbookonly "\\enddocbookonly"
+  commands around it.
+
+  Files or directories that doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+
+  \sa section \ref cmddocbookonly "\\docbookonly". 
+<hr>
+
+\section cmdxmlinclude \\xmlinclude <file-name>
+
+  \addindex \\xmlinclude
+  This command includes contents of the the file \<file-name\> as is in the XML documentation.
+  The command is equivalent to pasting the contents of the file in the documentation and
+  placing \ref cmdxmlonly "\\xmlonly" and \ref cmdendxmlonly "\\endxmlonly"
+  commands around it.
+
+  Files or directories that doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+
+  \sa section \ref cmdxmlonly "\\xmlonly". 
 <hr>
 
 \htmlonly</p><center><p>\endhtmlonly

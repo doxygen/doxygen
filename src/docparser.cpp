@@ -2000,9 +2000,11 @@ void DocInclude::parse()
     case VerbInclude: 
       // fall through
     case HtmlInclude:
-      readTextFileByName(m_file,m_text);
-      break;
     case LatexInclude:
+    case DocInclude::RtfInclude:
+    case DocInclude::ManInclude:
+    case DocInclude::XmlInclude:
+    case DocInclude::DocbookInclude:
       readTextFileByName(m_file,m_text);
       break;
     case Snippet:
@@ -5775,6 +5777,18 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_LATEXINCLUDE:
       handleInclude(cmdName,DocInclude::LatexInclude);
+      break;
+    case CMD_RTFINCLUDE:
+      handleInclude(cmdName,DocInclude::RtfInclude);
+      break;
+    case CMD_MANINCLUDE:
+      handleInclude(cmdName,DocInclude::ManInclude);
+      break;
+    case CMD_XMLINCLUDE:
+      handleInclude(cmdName,DocInclude::XmlInclude);
+      break;
+    case CMD_DOCBOOKINCLUDE:
+      handleInclude(cmdName,DocInclude::DocbookInclude);
       break;
     case CMD_VERBINCLUDE:
       handleInclude(cmdName,DocInclude::VerbInclude);

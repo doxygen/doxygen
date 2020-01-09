@@ -286,6 +286,10 @@ static DocCmdMap docCmdMap[] =
   { "snippet",         0,                       TRUE  },
   { "snippetlineno",   0,                       TRUE  },
   { "noop",            &handleNoop,             TRUE },
+  { "rtfinclude",      0,                       FALSE },
+  { "docbookinclude",  0,                       FALSE },
+  { "maninclude",      0,                       FALSE },
+  { "xmlinclude",      0,                       FALSE },
   { 0, 0, FALSE }
 };
 

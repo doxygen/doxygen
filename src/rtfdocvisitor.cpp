@@ -473,6 +473,12 @@ void RTFDocVisitor::visit(DocInclude *inc)
     case DocInclude::DontIncWithLines:
     case DocInclude::HtmlInclude:
     case DocInclude::LatexInclude:
+    case DocInclude::ManInclude:
+    case DocInclude::XmlInclude:
+    case DocInclude::DocbookInclude:
+      break;
+    case DocInclude::RtfInclude:
+      m_t << inc->text();
       break;
     case DocInclude::VerbInclude: 
       m_t << "{" << endl;
