@@ -169,21 +169,6 @@ void Entry::copyToSubEntry(const std::shared_ptr<Entry> &current)
   m_sublist.push_back(copy);
 }
 
-void Entry::moveFromSubEntry(const Entry *child,std::shared_ptr<Entry> &moveTo)
-{
-  auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
-      [child](const std::shared_ptr<Entry>&elem) { return elem.get()==child; });
-  if (it!=m_sublist.end())
-  {
-    moveTo = *it;
-    m_sublist.erase(it);
-  }
-  else
-  {
-    moveTo.reset();
-  }
-}
-
 void Entry::removeSubEntry(const Entry *e)
 {
   auto it = std::find_if(m_sublist.begin(),m_sublist.end(),

@@ -216,9 +216,6 @@ class Entry
     void moveToSubEntryAndRefresh(Entry* &e);
     void moveToSubEntryAndRefresh(std::shared_ptr<Entry> &e);
 
-    /*! take \a child of of to list of children and move it into \a moveTo */
-    void moveFromSubEntry(const Entry *child,std::shared_ptr<Entry> &moveTo);
-
     /*! make a copy of \a e and add it as a child to this entry */
     void copyToSubEntry (Entry* e);
     void copyToSubEntry (const std::shared_ptr<Entry> &e);

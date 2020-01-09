@@ -4914,7 +4914,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <SkipCurly>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { 
 					  lineCount(yyscanner);
-  					  if ( yyextra->curlyCount )
+					  if ( yyextra->curlyCount )
 					  {
 					    //addToBody(yytext);
 					    --yyextra->curlyCount ;
@@ -4922,10 +4922,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else
 					  {
 					    yyextra->current->endBodyLine=yyextra->yyLineNr;
-                                            // take yyextra->previous out of yyextra->current_root and move it into yyextra->current
-					    yyextra->tempEntry = yyextra->current; // remember yyextra->current
-                                            yyextra->current_root->moveFromSubEntry(yyextra->previous.get(),yyextra->current);
-					    yyextra->previous.reset();
+					    yyextra->tempEntry = yyextra->current; // temporarily switch to the previous entry
+					    yyextra->current   = yyextra->previous;
 
 					    yyextra->docBlockContext   = SkipCurlyEndDoc;
 					    yyextra->docBlockInBody    = FALSE;
