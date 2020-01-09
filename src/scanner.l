@@ -4274,7 +4274,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    unput(yyextra->lastCopyArgChar);
 					  BEGIN( yyextra->lastCommentInArgContext );
   					}
-<CopyArgCommentLine>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"dot"|"code")/[^a-z_A-Z0-9\-]	{ // verbatim command (which could contain nested comments!)
+<CopyArgCommentLine>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"code")/[^a-z_A-Z0-9\-]	{ // verbatim command (which could contain nested comments!)
 				          yyextra->docBlockName=&yytext[1];
   					  yyextra->fullArgString+=yytext;
 					  BEGIN(CopyArgVerbatim);
@@ -4292,7 +4292,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  yyextra->fullArgString+=yytext;
   					  BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9\-] { // end of verbatim block
+<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9\-] { // end of verbatim block
   					  yyextra->fullArgString+=yytext;
 				          if (yytext[1]=='f') // end of formula
 				          {
@@ -6254,7 +6254,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
   					}
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"dot"|"code")/[^a-z_A-Z0-9\-]	{ // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"code")/[^a-z_A-Z0-9\-]	{ // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock+=yytext;
 				          yyextra->docBlockName=&yytext[1];
                                           yyextra->fencedSize=0;
@@ -6322,7 +6322,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  yyextra->docBlock+=yytext;
 					  BEGIN(DocBlock);
   					}
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
   					  yyextra->docBlock+=yytext;
 					  if (&yytext[4]==yyextra->docBlockName)
 					  {

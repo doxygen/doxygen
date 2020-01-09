@@ -1296,6 +1296,14 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                       g_endMarker="endlatexonly";
 				      BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"manonly"/[^a-z_A-Z0-9] {
+                                      g_endMarker="endmanonly";
+				      BEGIN(St_SecSkip);
+                                    }
+<St_Sections>{CMD}"rtfonly"/[^a-z_A-Z0-9] {
+                                      g_endMarker="endrtfonly";
+				      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"xmlonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endxmlonly";
 				      BEGIN(St_SecSkip);
