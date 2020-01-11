@@ -151,13 +151,13 @@ void FormulaList::generateBitmaps(const char *path)
         return;
       }
       Portable::sysTimerStop();
-      // run ps2epsi to convert to an encapsulated postscript file with
+      // run eps2eps to convert to an encapsulated postscript file with
       // boundingbox (dvips with -E has some problems here).
       sprintf(psArgs,"%s_tmp.ps %s.eps",formBase.data(),formBase.data()); 
       Portable::sysTimerStart();
-      if (Portable::system("ps2epsi",psArgs)!=0)
+      if (Portable::system("eps2eps",psArgs)!=0)
       {
-        err("Problems running ps2epsi. Check your installation!\n");
+        err("Problems running eps2eps. Check your installation!\n");
         Portable::sysTimerStop();
         QDir::setCurrent(oldDir);
         return;
