@@ -304,6 +304,12 @@ void ManDocVisitor::visit(DocInclude *inc)
     case DocInclude::DontIncWithLines:
     case DocInclude::HtmlInclude:
     case DocInclude::LatexInclude:
+    case DocInclude::RtfInclude:
+    case DocInclude::XmlInclude:
+    case DocInclude::DocbookInclude:
+      break;
+    case DocInclude::ManInclude:
+      m_t << inc->text();
       break;
     case DocInclude::VerbInclude: 
       if (!m_firstCol) m_t << endl;

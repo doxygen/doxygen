@@ -503,6 +503,10 @@ void LatexDocVisitor::visit(DocInclude *inc)
     case DocInclude::DontInclude:
     case DocInclude::DontIncWithLines:
     case DocInclude::HtmlInclude:
+    case DocInclude::RtfInclude:
+    case DocInclude::ManInclude:
+    case DocInclude::XmlInclude:
+    case DocInclude::DocbookInclude:
       break;
     case DocInclude::LatexInclude:
       m_t << inc->text();

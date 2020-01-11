@@ -733,6 +733,10 @@ void PerlModDocVisitor::visit(DocInclude *inc)
   case DocInclude::DontIncWithLines: return;
   case DocInclude::HtmlInclude:	type = "htmlonly"; break;
   case DocInclude::LatexInclude: type = "latexonly"; break;
+  case DocInclude::RtfInclude: type = "rtfonly"; break;
+  case DocInclude::ManInclude: type = "manonly"; break;
+  case DocInclude::XmlInclude: type = "xmlonly"; break;
+  case DocInclude::DocbookInclude: type = "docbookonly"; break;
   case DocInclude::VerbInclude:	type = "preformatted"; break;
   case DocInclude::Snippet: return;
   case DocInclude::SnipWithLines: return;

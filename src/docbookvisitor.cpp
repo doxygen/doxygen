@@ -434,6 +434,12 @@ DB_VIS_C
     case DocInclude::DontIncWithLines:
     case DocInclude::HtmlInclude:
     case DocInclude::LatexInclude:
+    case DocInclude::RtfInclude:
+    case DocInclude::ManInclude:
+    case DocInclude::XmlInclude:
+      break;
+    case DocInclude::DocbookInclude:
+      m_t << inc->text();
       break;
     case DocInclude::VerbInclude:
       m_t << "<literallayout>";

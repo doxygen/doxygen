@@ -388,6 +388,24 @@ void XmlDocVisitor::visit(DocInclude *inc)
       filter(inc->text());
       m_t << "</latexonly>";
       break;
+    case DocInclude::RtfInclude:
+      m_t << "<rtfonly>";
+      filter(inc->text());
+      m_t << "</rtfonly>";
+      break;
+    case DocInclude::ManInclude:
+      m_t << "<manonly>";
+      filter(inc->text());
+      m_t << "</manonly>";
+      break;
+    case DocInclude::XmlInclude:
+      filter(inc->text());
+      break;
+    case DocInclude::DocbookInclude:
+      m_t << "<docbookonly>";
+      filter(inc->text());
+      m_t << "</docbookonly>";
+      break;
     case DocInclude::VerbInclude: 
       m_t << "<verbatim>";
       filter(inc->text());

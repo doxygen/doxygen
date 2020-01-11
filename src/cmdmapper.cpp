@@ -149,6 +149,10 @@ CommandMap cmdMap[] =
   { "---",           CMD_MDASH },
   { "_setscope",     CMD_SETSCOPE },
   { "emoji",         CMD_EMOJI },
+  { "rtfinclude",    CMD_RTFINCLUDE },
+  { "docbookinclude",CMD_DOCBOOKINCLUDE },
+  { "maninclude",    CMD_MANINCLUDE },
+  { "xmlinclude",    CMD_XMLINCLUDE },
   { 0,               0 },
 };
 
