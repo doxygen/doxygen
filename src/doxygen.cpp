@@ -3724,7 +3724,7 @@ static void transferFunctionDocumentation()
         MemberNameIterator mni2(*mn);
         for (;(mdef=mni2.current());++mni2)
         {
-          if (mdec!=mdef && !mdec->isAlias() && !mdef->isAlias())
+          if (mdec!=mdef && mdec->getNamespaceDef()==mdef->getNamespaceDef() && !mdec->isAlias() && !mdef->isAlias())
           {
             combineDeclarationAndDefinition(mdec,mdef);
           }
