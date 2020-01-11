@@ -491,18 +491,6 @@ static void addCite(yyscan_t yyscanner);
 
        /* start command character */
 CMD	  ("\\"|"@")
-DCMD1     ("arg"|"attention"|"author"|"cite"|"code")
-DCMD2     ("date"|"dot"|"msc"|"dotfile"|"example"|"startuml")
-DCMD3     ("htmlinclude"|"htmlonly"|"image"|"include")
-DCMD4     ("includelineno"|"internal"|"invariant")
-DCMD5     ("latexinclude"|"latexonly"|"li"|"line"|"manonly"|"name")
-DCMD6     ("note"|"par"|"paragraph"|"param"|"post")
-DCMD7     ("pre"|"remarks"|(("relate"[sd])("also")?))
-DCMD8     ("remarks"|("return"[s]?)|"retval"|"sa"|"section")
-DCMD9     ("see"|"since"|"subsection"|"subsubsection")
-DCMD10    ("throw"|"until"|"verbatim")
-DCMD11    ("verbinclude"|"version"|"warning")
-DETAILEDCMD {CMD}({DCMD1}|{DCMD2}|{DCMD3}|{DCMD4}|{DCMD5}|{DCMD6}|{DCMD7}|{DCMD8}|{DCMD9}|{DCMD10}|{DCMD11})
 XREFCMD   {CMD}("bug"|"deprecated"|"test"|"todo"|"xrefitem")  
 PRE       [pP][rR][eE]
 TABLE	  [tT][aA][bB][lL][eE]
