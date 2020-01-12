@@ -1,17 +1,17 @@
 image: Visual Studio 2017
 
 configuration:
-  - Release
+# - Release
   - Debug
 
 platform:
   - x64
-  - Win32
+# - Win32
 
 environment:
   # VS VERSION IN CMAKE STYLE
   matrix:
-    - VSVERSION: "15 2017"
+#   - VSVERSION: "15 2017"
     - VSVERSION: "14 2015"
 
 cache:
@@ -23,24 +23,46 @@ cache:
 
 init:
   - cmake --version
+  - where perl
+  - path
   - perl --version
   - msbuild /version
 
 install:
   # Static url: https://github.com/MiKTeX/miktex/issues/321#issuecomment-496286866
   # The setup is small enough, and does not need to be cached
+  - where perl
+  - path
   - appveyor-retry appveyor DownloadFile  https://miktex.org/download/win/miktexsetup-x64.zip
+  - where perl
+  - path
   - 7z e miktexsetup-x64.zip
+  - where perl
+  - path
   - appveyor-retry miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
+  - where perl
+  - path
   - miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
+  - where perl
+  - path
   - refreshenv
+  - where perl
+  - path
   - pip install conan
+  - where perl
+  - path
   - ps: |
      "[requires]
       libxml2/2.9.8@bincrafters/stable
       winflexbison/2.5.16@bincrafters/stable" | Out-File -Encoding ASCII -FilePath conanfile.txt
+  - where perl
+  - path
   - conan install . -g virtualrunenv --build missing
+  - where perl
+  - path
   - activate_run.bat
+  - where perl
+  - path
 
 before_build:
   - if "%platform%"=="Win32" ( set "CMAKE_GENERATOR_NAME=Visual Studio %VSVERSION%" )
