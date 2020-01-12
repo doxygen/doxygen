@@ -76,9 +76,11 @@ build:
   parallel: false
 
 test_script:
+  - echo "Before tests"
   - where perl
   - path
   - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - echo "After tests"
   - where perl
   - path
 # Disabled building document due to unreliable MikTeX installation
