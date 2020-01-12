@@ -76,7 +76,11 @@ build:
   parallel: false
 
 test_script:
+  - where perl
+  - path
   - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - where perl
+  - path
 # Disabled building document due to unreliable MikTeX installation
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" -D build_doc=ON ..
 #  - msbuild "doc\docs.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
