@@ -50,14 +50,11 @@ before_build:
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - cmake -G "NMake Makefiles" ..
-  - echo "Before tests"
-  - where perl
-  - path
   - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
   - dir /b /s testing
-  - echo "After tests"
-  - where perl
-  - path
+  - type "C:/projects/doxygen/build/testing/bib2xhtml.pl"
+  - type bibTmpDir/bibTmpFile_1.bib
+  - type "C:/projects/doxygen/build/testing/citelist.doc"
 
 build_script:
 #build:

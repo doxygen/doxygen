@@ -332,16 +332,16 @@ void CiteDict::generatePage() const
   }
 
   // 9. Remove temporary files
-  thisDir.remove(citeListFile);
-  thisDir.remove(doxygenBstFile);
-  thisDir.remove(bib2xhtmlFile);
+  //thisDir.remove(citeListFile);
+  //thisDir.remove(doxygenBstFile);
+  //thisDir.remove(bib2xhtmlFile);
   // we might try to remove too many files as empty files didn't get a corresponding new file
   // but the remove function does not emit an error for it and we don't catch the error return
   // so no problem.
   for (unsigned int j = 1; j <= citeDataList.count(); j++)
   {
-    thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(j) + ".bib");
+    //thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(j) + ".bib");
   }
-  thisDir.rmdir(bibOutputDir);
+  //thisDir.rmdir(bibOutputDir);
 }
 
