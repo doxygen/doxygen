@@ -223,7 +223,7 @@ void CiteDict::generatePage() const
       {
         ++i;
         copyFile(bibFile,bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib");
-        bibOutputFiles = bibOutputFiles + " " + bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib";
+        bibOutputFiles = bibOutputFiles + " \"" + bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib\"";
       }
     }
     bibdata = citeDataList.next();
