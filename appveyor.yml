@@ -54,8 +54,9 @@ before_build:
   - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
   - dir /b /s testing
   - type "C:\projects\doxygen\build\testing\bib2xhtml.pl"
-  - type "bibTmpDir\bibTmpFile_1.bib"
+  - type "C:\projects\doxygen\build\testing\bibTmpDir\bibTmpFile_1.bib"
   - type "C:\projects\doxygen\build\testing\citelist.doc"
+  - type "bibTmpDir\bibTmpFile_1.bib"
 
 build_script:
 #build:
