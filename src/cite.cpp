@@ -237,7 +237,7 @@ void CiteDict::generatePage() const
   //    bibliography in citelist.doc
   int exitCode;
   Portable::sysTimerStop();
-  if ((exitCode=Portable::system("cd")) != 0)
+  if ((exitCode=Portable::system("cd","")) != 0)
   {
     err("Problems running cd Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         0);
