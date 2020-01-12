@@ -48,8 +48,7 @@ before_build:
   - mkdir build
   - cd build
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
-  - dir /s /b "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\vcvars32.bat"
-  - call vcvars32.bat
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - cmake -G "NMake Makefiles" ..
 
 build:
