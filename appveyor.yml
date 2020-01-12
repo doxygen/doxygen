@@ -51,9 +51,10 @@ before_build:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - cmake -G "NMake Makefiles" ..
 
-build:
+build_script:
+#build:
 #  project: "build\\PACKAGE.vcxproj"
-  parallel: false
+#  parallel: false
 
 test_script:
   - echo "Before tests"
