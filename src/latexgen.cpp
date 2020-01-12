@@ -42,6 +42,7 @@
 #include "namespacedef.h"
 #include "filename.h"
 #include "resourcemgr.h"
+#include "portable.h"
 
 static bool DoxyCodeOpen = FALSE;
 static bool DoxyCodeLineOpen = FALSE;
@@ -421,7 +422,8 @@ static void writeMakeBat()
     t << mkidx_command << " refman.idx\n";
     t << "%LATEX_CMD% refman.tex\n";
     t << "dvips -o refman.ps refman.dvi\n";
-    t << "gswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
+    t << Portable::ghostScriptCommand();
+    t << " -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
          "-sOutputFile=refman.pdf -c save pop -f refman.ps\n";
   }
   else // use pdflatex
