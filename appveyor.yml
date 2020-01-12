@@ -24,6 +24,7 @@ cache:
 init:
   - cmake --version
   - perl --version
+  - perl -V
   - msbuild /version
 
 install:
@@ -52,9 +53,9 @@ before_build:
   - cmake -G "NMake Makefiles" ..
   - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
   - dir /b /s testing
-  - type "C:/projects/doxygen/build/testing/bib2xhtml.pl"
-  - type bibTmpDir/bibTmpFile_1.bib
-  - type "C:/projects/doxygen/build/testing/citelist.doc"
+  - type "C:\projects\doxygen\build\testing\bib2xhtml.pl"
+  - type "bibTmpDir\bibTmpFile_1.bib"
+  - type "C:\projects\doxygen\build\testing\citelist.doc"
 
 build_script:
 #build:
