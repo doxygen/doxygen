@@ -232,18 +232,14 @@ void CiteDict::generatePage() const
   QString oldDir = QDir::currentDirPath();
   QDir::setCurrent(outputDir);
 
+  printf("Current directory: #%s#\n",QDir::currentDirPath().data());
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
   int exitCode;
   Portable::sysTimerStop();
-  if ((exitCode=Portable::system("perl","--version")) != 0)
+  if ((exitCode=Portable::system("cd")) != 0)
   {
-    err("Problems running perl --version. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
-        0);
-  }
-  if ((exitCode=Portable::system("perl","-V")) != 0)
-  {
-    err("Problems running perl -V. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
+    err("Problems running cd Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         0);
   }
   if ((exitCode=Portable::system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
