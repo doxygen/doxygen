@@ -240,7 +240,7 @@ void CiteDict::generatePage() const
                          citeListFile+"\"")) != 0)
   {
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
-        exitCode);
+        0);
   }
   Portable::sysTimerStop();
 
