@@ -5,14 +5,14 @@ configuration:
   - Debug
 
 platform:
-  - x64
-# - Win32
+#  - x64
+ - Win32
 
 environment:
   # VS VERSION IN CMAKE STYLE
   matrix:
-#   - VSVERSION: "15 2017"
-    - VSVERSION: "14 2015"
+   - VSVERSION: "15 2017"
+#    - VSVERSION: "14 2015"
 
 cache:
   - C:\Users\Appveyor\.conan -> appveyor.yml
@@ -48,6 +48,7 @@ before_build:
   - mkdir build
   - cd build
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
+  - call vcvars32.bat
   - cmake -G "NMake Makefiles" ..
 
 build:
