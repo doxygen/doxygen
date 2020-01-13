@@ -53,6 +53,9 @@ before_build:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - cmake -G "NMake Makefiles" ..
   - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
+  - dir /s c:\bibtex*
+  - dir /s c:\latex*
+  - where latex
   - where bibtex
   - dir /b /s testing
   - type "C:\projects\doxygen\build\testing\bib2xhtml.pl"
