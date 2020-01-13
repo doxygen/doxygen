@@ -33,6 +33,7 @@ install:
   - 7z e miktexsetup-x64.zip
   - appveyor-retry miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
   - miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
+  - initexmf --admin --force --mklinks
   - refreshenv
   - pip install conan
   - ps: |
@@ -50,7 +51,7 @@ before_build:
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - cmake -G "NMake Makefiles" ..
-  - nmake tests TEST_FLAGS="--id 28 --is 12 --keep --noredir --xml --xhtml"
+  - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
 #  - dir /s c:\bibtex*
 #  - dir /s c:\latex*
   - where latex
