@@ -35,7 +35,7 @@ install:
   - miktexsetup.exe --local-package-repository=C:\miktex-repository  --modify-path=yes --package-set=essential --shared install
   - dir /s "c:\Program Files\MiKTeX 2.9\initexmf.exe"
   - refreshenv
-  - initexmf --admin --force --mklinks || type C:\Users\appveyor\AppData\Local\MiKTeX\2.9\miktex\log\initexmf.log
+  - initexmf --admin --force --mklinks & type C:\Users\appveyor\AppData\Local\MiKTeX\2.9\miktex\log\initexmf.log
   - refreshenv
   - pip install conan
   - ps: |
