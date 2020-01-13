@@ -29,10 +29,8 @@ init:
 install:
   # Static url: https://github.com/MiKTeX/miktex/issues/321#issuecomment-496286866
   # The setup is small enough, and does not need to be cached
-  # - appveyor-retry appveyor DownloadFile  https://miktex.org/download/win/miktexsetup-x64.zip
-  #- 7z e miktexsetup-x64.zip
-  - appveyor-retry appveyor DownloadFile  https://miktex.org/download/win/miktexsetup-2.9.6942.zip
-  - 7z e miktexsetup-2.9.6942.zip
+  - appveyor-retry appveyor DownloadFile  https://miktex.org/download/win/miktexsetup-x64.zip
+  - 7z e miktexsetup-x64.zip
   - appveyor-retry miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
   - miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
   - refreshenv
@@ -52,9 +50,10 @@ before_build:
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - cmake -G "NMake Makefiles" ..
+  - nmake tests TEST_FLAGS="--id 28 --keep --noredir --xhtml"
   - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
-  - dir /s c:\bibtex*
-  - dir /s c:\latex*
+#  - dir /s c:\bibtex*
+#  - dir /s c:\latex*
   - where latex
   - where bibtex
   - dir /b /s testing
