@@ -24,15 +24,15 @@ cache:
 init:
   - cmake --version
   - perl --version
-  - perl -V
   - msbuild /version
 
 install:
   # Static url: https://github.com/MiKTeX/miktex/issues/321#issuecomment-496286866
   # The setup is small enough, and does not need to be cached
   # - appveyor-retry appveyor DownloadFile  https://miktex.org/download/win/miktexsetup-x64.zip
+  #- 7z e miktexsetup-x64.zip
   - appveyor-retry appveyor DownloadFile  https://miktex.org/download/win/miktexsetup-2.9.6942.zip
-  - 7z e miktexsetup-x64.zip
+  - 7z e miktexsetup-2.9.6942.zip
   - appveyor-retry miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
   - miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
   - refreshenv
