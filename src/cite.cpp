@@ -242,7 +242,7 @@ void CiteDict::generatePage() const
     err("Problems running cd Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         0);
   }
-  if ((exitCode=Portable::system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
+  if ((exitCode=Portable::system("perl","-W \""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
                          citeListFile+"\"")) != 0)
   {
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
