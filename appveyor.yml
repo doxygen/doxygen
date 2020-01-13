@@ -29,6 +29,8 @@ init:
 install:
   # Static url: https://github.com/MiKTeX/miktex/issues/321#issuecomment-496286866
   # The setup is small enough, and does not need to be cached
+  - appveyor-retry appveyor DownloadFile  https://miktex.org/download/win/basic-miktex-2.9.7269-x64.exe
+  - basic-miktex-2.9.7269-x64.exe --shared install
   - appveyor-retry appveyor DownloadFile  https://miktex.org/download/win/miktexsetup-x64.zip
   - 7z e miktexsetup-x64.zip
   - appveyor-retry miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
@@ -50,17 +52,16 @@ before_build:
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - cmake -G "NMake Makefiles" ..
-  - nmake tests TEST_FLAGS="--id 28 --keep --noredir --xhtml"
-  - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
+  - nmake tests TEST_FLAGS="--id 28 --is 12 --keep --noredir --xml --xhtml"
 #  - dir /s c:\bibtex*
 #  - dir /s c:\latex*
   - where latex
   - where bibtex
-  - dir /b /s testing
-  - type "C:\projects\doxygen\build\testing\bib2xhtml.pl"
-  - type "C:\projects\doxygen\build\testing\bibTmpDir\bibTmpFile_1.bib"
-  - type "C:\projects\doxygen\build\testing\citelist.doc"
-  - type "bibTmpDir\bibTmpFile_1.bib"
+#  - dir /b /s testing
+#  - type "C:\projects\doxygen\build\testing\bib2xhtml.pl"
+#  - type "C:\projects\doxygen\build\testing\bibTmpDir\bibTmpFile_1.bib"
+#  - type "C:\projects\doxygen\build\testing\citelist.doc"
+#  - type "bibTmpDir\bibTmpFile_1.bib"
 
 build_script:
 #build:
