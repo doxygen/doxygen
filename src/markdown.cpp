@@ -2660,11 +2660,13 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
          QFileInfo(mdfileAsMainPage).absFilePath()) // file reference with path
        )
     {
+      docs.prepend("@anchor " + id + "\n");
       docs.prepend("@mainpage "+title+"\n");
     }
     else if (id=="mainpage" || id=="index")
     {
       if (title.isEmpty()) title = titleFn;
+      docs.prepend("@anchor " + id + "\n");
       docs.prepend("@mainpage "+title+"\n");
     }
     else
