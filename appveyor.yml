@@ -1,17 +1,17 @@
 image: Visual Studio 2017
 
 configuration:
-# - Release
+#  - Release
   - Debug
 
 platform:
-#  - x64
- - Win32
+  - x64
+#  - Win32
 
 environment:
   # VS VERSION IN CMAKE STYLE
   matrix:
-   - VSVERSION: "15 2017"
+    - VSVERSION: "15 2017"
 #    - VSVERSION: "14 2015"
 
 cache:
@@ -32,10 +32,7 @@ install:
   - appveyor-retry appveyor DownloadFile  https://miktex.org/download/win/miktexsetup-x64.zip
   - 7z e miktexsetup-x64.zip
   - appveyor-retry miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
-  - miktexsetup.exe --local-package-repository=C:\miktex-repository  --modify-path=yes --package-set=essential --shared install
-#  - copy "c:\Program Files\MiKTeX 2.9\miktex\bin\x64\miktex-bibtex.exe" "c:\Program Files\MiKTeX 2.9\miktex\bin\x64\bibtex.exe" 
-#  - refreshenv
-#  - initexmf --admin --force --mklinks
+  - miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
   - refreshenv
   - pip install conan
   - ps: |
@@ -50,39 +47,14 @@ before_build:
   - if "%platform%"=="x64" ( set "CMAKE_GENERATOR_NAME=Visual Studio %VSVERSION% Win64")
   - mkdir build
   - cd build
-#  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
-  - cmake -G "NMake Makefiles" ..
-#  - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
-#  - dir /s c:\bibtex*
-#  - dir /s c:\latex*
-  - where latex
-  - where bibtex
-#  - dir /b /s testing
-#  - type "C:\projects\doxygen\build\testing\bib2xhtml.pl"
-#  - type "C:\projects\doxygen\build\testing\bibTmpDir\bibTmpFile_1.bib"
-#  - type "C:\projects\doxygen\build\testing\citelist.doc"
-#  - type "bibTmpDir\bibTmpFile_1.bib"
+  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
 
-build_script:
-#build:
-#  project: "build\\PACKAGE.vcxproj"
-#  parallel: false
-
-on_failure:
-  - dir /s "c:\Program Files\MiKTeX 2.9\miktex\bin\x64"
-  - type C:\ProgramData\MiKTeX\2.9\miktex\log\initexmf_admin.log
+build:
+  project: "build\\PACKAGE.vcxproj"
+  parallel: false
 
 test_script:
-  - echo "Before tests"
-  - where perl
-  - path
-#  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-  - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
-  - dir /b /s testing
-  - echo "After tests"
-  - where perl
-  - path
+  - msbuild "testing\tests.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 # Disabled building document due to unreliable MikTeX installation
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" -D build_doc=ON ..
 #  - msbuild "doc\docs.vcxproj" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"

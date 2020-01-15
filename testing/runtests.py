@@ -153,12 +153,12 @@ class Tester:
 				for cfg in list(itertools.chain.from_iterable(self.args.cfgs)):
 					if cfg.find('=') == -1:
 						print("Not a doxygen configuration item, missing '=' sign: '%s'."%cfg)
-						sys.exit(0)
+						sys.exit(1)
 					print(cfg, file=f)
 
 		if 'check' not in self.config or not self.config['check']:
 			print('Test doesn\'t specify any files to check')
-			sys.exit(0)
+			sys.exit(1)
 
 		# run doxygen
 		if (sys.platform == 'win32'):
@@ -169,9 +169,9 @@ class Tester:
 		if (self.args.noredir):
 			redir=''
 
-		if os.system('%s -d extcmd %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
+		if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
 			print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
-			sys.exit(0)
+			sys.exit(1)
 
 	# update the reference data for this test
 	def update_test(self,testmgr):
@@ -443,7 +443,7 @@ class TestManager:
 		res=self.result()
 		if self.args.xhtml and self.args.inputdir!='.' and not res and not self.args.keep:
 			shutil.rmtree("dtd",ignore_errors=True)
-		return 0 
+		return 0 if self.args.updateref else res
 
 	def prepare_dtd(self):
 		if self.args.inputdir!='.':

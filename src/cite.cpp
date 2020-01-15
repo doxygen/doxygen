@@ -223,7 +223,7 @@ void CiteDict::generatePage() const
       {
         ++i;
         copyFile(bibFile,bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib");
-        bibOutputFiles = bibOutputFiles + " \"" + bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib\"";
+        bibOutputFiles = bibOutputFiles + " " + bibTmpDir + bibTmpFile + QCString().setNum(i) + ".bib";
       }
     }
     bibdata = citeDataList.next();
@@ -232,21 +232,15 @@ void CiteDict::generatePage() const
   QString oldDir = QDir::currentDirPath();
   QDir::setCurrent(outputDir);
 
-  printf("Current directory: #%s#\n",QDir::currentDirPath().data());
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
   int exitCode;
   Portable::sysTimerStop();
-  if ((exitCode=Portable::system("cd","")) != 0)
-  {
-    err("Problems running cd Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
-        0);
-  }
-  if ((exitCode=Portable::system("perl","-W \""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
+  if ((exitCode=Portable::system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
                          citeListFile+"\"")) != 0)
   {
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
-        0);
+        exitCode);
   }
   Portable::sysTimerStop();
 
@@ -338,16 +332,16 @@ void CiteDict::generatePage() const
   }
 
   // 9. Remove temporary files
-  //thisDir.remove(citeListFile);
-  //thisDir.remove(doxygenBstFile);
-  //thisDir.remove(bib2xhtmlFile);
+  thisDir.remove(citeListFile);
+  thisDir.remove(doxygenBstFile);
+  thisDir.remove(bib2xhtmlFile);
   // we might try to remove too many files as empty files didn't get a corresponding new file
   // but the remove function does not emit an error for it and we don't catch the error return
   // so no problem.
   for (unsigned int j = 1; j <= citeDataList.count(); j++)
   {
-    //thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(j) + ".bib");
+    thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(j) + ".bib");
   }
-  //thisDir.rmdir(bibOutputDir);
+  thisDir.rmdir(bibOutputDir);
 }
 
