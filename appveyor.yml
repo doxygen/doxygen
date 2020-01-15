@@ -33,7 +33,6 @@ install:
   - 7z e miktexsetup-x64.zip
   - appveyor-retry miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
   - miktexsetup.exe --local-package-repository=C:\miktex-repository  --modify-path=yes --package-set=essential --shared install
-  - dir /s "c:\Program Files\MiKTeX 2.9\miktex\bin\x64"
 #  - copy "c:\Program Files\MiKTeX 2.9\miktex\bin\x64\miktex-bibtex.exe" "c:\Program Files\MiKTeX 2.9\miktex\bin\x64\bibtex.exe" 
 #  - refreshenv
 #  - initexmf --admin --force --mklinks
@@ -54,7 +53,7 @@ before_build:
 #  - cmake -G "%CMAKE_GENERATOR_NAME%" ..
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - cmake -G "NMake Makefiles" ..
-  - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
+#  - nmake tests TEST_FLAGS="--id 12 --keep --noredir"
 #  - dir /s c:\bibtex*
 #  - dir /s c:\latex*
   - where latex
@@ -69,6 +68,10 @@ build_script:
 #build:
 #  project: "build\\PACKAGE.vcxproj"
 #  parallel: false
+
+on_failure:
+  - dir /s "c:\Program Files\MiKTeX 2.9\miktex\bin\x64"
+  - type C:\ProgramData\MiKTeX\2.9\miktex\log\initexmf_admin.log
 
 test_script:
   - echo "Before tests"
