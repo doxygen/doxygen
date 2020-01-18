@@ -2612,11 +2612,13 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
       type=name;
       static const QRegExp reName("[a-z_A-Z][a-z_A-Z0-9]*");
       int l=0;
+      int j=0;
       int i=args.isEmpty() ? -1 : reName.match(args,0,&l);
       if (i!=-1)
       {
         name=args.mid(i,l);
-        args=args.mid(i+l,args.find(')',i+l)-i-l);
+        j=args.find(')',i+l)-i-l;
+        if (j >= 0) args=args.mid(i+l,j);
       }
       //printf("new: type='%s' name='%s' args='%s'\n",
       //    type.data(),name.data(),args.data());
