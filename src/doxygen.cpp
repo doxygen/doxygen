@@ -2039,7 +2039,7 @@ static MemberDef *addVariableToClass(
       }
       else
       {
-        def=type+" "+name+root->args;
+        def=type+" "+name+args;
       }
     }
     else
