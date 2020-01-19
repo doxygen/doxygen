@@ -75,8 +75,15 @@ int MemberList::compareValues(const MemberDef *c1, const MemberDef *c2) const
       return 1;
   }
   int cmp = qstricmp(c1->name(),c2->name());
-  if (cmp==0) cmp = qstricmp(c1->argsString(),c2->argsString());
-  return cmp!=0 ? cmp : c1->getDefLine()-c2->getDefLine();
+  if (cmp==0 && c1->argsString() && c2->argsString())
+  {
+    cmp = qstricmp(c1->argsString(),c2->argsString());
+  }
+  if (cmp==0)
+  {
+    cmp = c1->getDefLine()-c2->getDefLine();
+  }
+  return cmp;
 }
 
 int MemberList::countInheritableMembers(const ClassDef *inheritedFrom) const
