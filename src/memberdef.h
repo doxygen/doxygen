@@ -240,10 +240,14 @@ class MemberDef : virtual public Definition
     // callgraph related members
     virtual bool hasCallGraph() const = 0;
     virtual bool hasCallerGraph() const = 0;
+    virtual unsigned char getCallGraph() const = 0;
+    virtual unsigned char getCallerGraph() const = 0;
     virtual bool visibleMemberGroup(bool hideNoHeader) const = 0;
     // referenced related members
     virtual bool hasReferencesRelation() const = 0;
     virtual bool hasReferencedByRelation() const = 0;
+    virtual unsigned char getReferencesRelation() const = 0;
+    virtual unsigned char getReferencedByRelation() const = 0;
 
     virtual MemberDef *templateMaster() const = 0;
     virtual QCString getScopeString() const = 0;
@@ -351,11 +355,11 @@ class MemberDef : virtual public Definition
     // anonymous scope members
     virtual void setFromAnonymousMember(MemberDef *m) = 0;
 
-    virtual void enableCallGraph(bool e) = 0;
-    virtual void enableCallerGraph(bool e) = 0;
+    virtual void enableCallGraph(unsigned char e) = 0;
+    virtual void enableCallerGraph(unsigned char e) = 0;
 
-    virtual void enableReferencedByRelation(bool e) = 0;
-    virtual void enableReferencesRelation(bool e) = 0;
+    virtual void enableReferencedByRelation(unsigned char e) = 0;
+    virtual void enableReferencesRelation(unsigned char e) = 0;
 
     virtual void setTemplateMaster(MemberDef *mt) = 0;
     virtual void addListReference(Definition *d) = 0;

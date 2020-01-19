@@ -2483,56 +2483,56 @@ static bool handleHideInitializer(yyscan_t yyscanner,const QCString &, const QCS
 static bool handleCallgraph(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->callGraph = TRUE; // ON
+  yyextra->current->callGraph |= Entry::CALL_SHOW; // ON
   return FALSE;
 }
 
 static bool handleHideCallgraph(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->callGraph = FALSE; // OFF
+  yyextra->current->callGraph |= Entry::CALL_HIDE; // OFF
   return FALSE;
 }
 
 static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->callerGraph = TRUE; // ON
+  yyextra->current->callerGraph |= Entry::CALL_SHOW; // ON
   return FALSE;
 }
 
 static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->callerGraph = FALSE; // OFF
+  yyextra->current->callerGraph |= Entry::CALL_HIDE; // OFF
   return FALSE;
 }
 
 static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->referencedByRelation = TRUE; // ON
+  yyextra->current->referencedByRelation |= Entry::CALL_SHOW; // ON
   return FALSE;
 }
 
 static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->referencedByRelation = FALSE; // OFF
+  yyextra->current->referencedByRelation |= Entry::CALL_HIDE; // OFF
   return FALSE;
 }
 
 static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->referencesRelation = TRUE; // ON
+  yyextra->current->referencesRelation |= Entry::CALL_SHOW; // ON
   return FALSE;
 }
 
 static bool handleHideReferencesRelation(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->referencesRelation = FALSE; // OFF
+  yyextra->current->referencesRelation |= Entry::CALL_HIDE; // OFF
   return FALSE;
 }
 

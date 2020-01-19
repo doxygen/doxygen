@@ -215,10 +215,10 @@ void Entry::reset()
   bodyLine = -1;
   endBodyLine = -1;
   mGrpId = -1;
-  callGraph   = entryCallGraph;
-  callerGraph = entryCallerGraph;
-  referencedByRelation = entryReferencedByRelation;
-  referencesRelation   = entryReferencesRelation;
+  callGraph   = (entryCallGraph ? CALL_CONFIG : 0);
+  callerGraph = (entryCallerGraph ? CALL_CONFIG : 0);
+  referencedByRelation = (entryReferencedByRelation ? CALL_CONFIG : 0);
+  referencesRelation   = (entryReferencesRelation ? CALL_CONFIG : 0);
   section = EMPTY_SEC;
   mtype   = Method;
   virt    = Normal;

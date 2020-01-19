@@ -37,6 +37,7 @@
 #include "searchindex.h"
 #include "parserintf.h"
 #include "objcache.h"
+#include "entry.h"
 
 #include "vhdldocgen.h"
 #include "arguments.h"
@@ -217,6 +218,10 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual bool visibleMemberGroup(bool hideNoHeader) const;
     virtual bool hasReferencesRelation() const;
     virtual bool hasReferencedByRelation() const;
+    virtual unsigned char getCallGraph() const;
+    virtual unsigned char getCallerGraph() const;
+    virtual unsigned char getReferencesRelation() const;
+    virtual unsigned char getReferencedByRelation() const;
     virtual MemberDef *templateMaster() const;
     virtual QCString getScopeString() const;
     virtual ClassDef *getClassDefOfAnonymousType() const;
@@ -288,10 +293,10 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void makeImplementationDetail();
     virtual void setFromAnonymousScope(bool b) const;
     virtual void setFromAnonymousMember(MemberDef *m);
-    virtual void enableCallGraph(bool e);
-    virtual void enableCallerGraph(bool e);
-    virtual void enableReferencedByRelation(bool e);
-    virtual void enableReferencesRelation(bool e);
+    virtual void enableCallGraph(unsigned char e);
+    virtual void enableCallerGraph(unsigned char e);
+    virtual void enableReferencedByRelation(unsigned char e);
+    virtual void enableReferencesRelation(unsigned char e);
     virtual void setTemplateMaster(MemberDef *mt);
     virtual void addListReference(Definition *d);
     virtual void setDocsForDefinition(bool b);
@@ -688,7 +693,15 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual bool hasReferencesRelation() const
     { return getMdAlias()->hasReferencesRelation(); }
     virtual bool hasReferencedByRelation() const
-    { return getMdAlias()->hasReferencedByRelation(); }
+    { return getMdAlias()->getReferencedByRelation(); }
+    virtual unsigned char getCallGraph() const
+    { return getMdAlias()->getCallGraph(); }
+    virtual unsigned char getCallerGraph() const
+    { return getMdAlias()->getCallerGraph(); }
+    virtual unsigned char getReferencesRelation() const
+    { return getMdAlias()->getReferencesRelation(); }
+    virtual unsigned char getReferencedByRelation() const
+    { return getMdAlias()->getReferencedByRelation(); }
     virtual MemberDef *templateMaster() const
     { return getMdAlias()->templateMaster(); }
     virtual QCString getScopeString() const
@@ -800,10 +813,10 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void makeImplementationDetail() {}
     virtual void setFromAnonymousScope(bool b) const {}
     virtual void setFromAnonymousMember(MemberDef *m) {}
-    virtual void enableCallGraph(bool e) {}
-    virtual void enableCallerGraph(bool e) {}
-    virtual void enableReferencedByRelation(bool e) {}
-    virtual void enableReferencesRelation(bool e) {}
+    virtual void enableCallGraph(unsigned char e) {}
+    virtual void enableCallerGraph(unsigned char e) {}
+    virtual void enableReferencedByRelation(unsigned char e) {}
+    virtual void enableReferencesRelation(unsigned char e) {}
     virtual void setTemplateMaster(MemberDef *mt) {}
     virtual void addListReference(Definition *d) {}
     virtual void setDocsForDefinition(bool b) {}
@@ -1399,10 +1412,10 @@ class MemberDefImpl::IMPL
     mutable bool annScope = false;    // member is part of an anonymous scope
     mutable bool annUsed = false;     // ugly: needs to be mutable to allow setAnonymousUsed to act as a
                                       // const member.
-    bool hasCallGraph = false;
-    bool hasCallerGraph = false;
-    bool hasReferencedByRelation = false;
-    bool hasReferencesRelation = false;
+    unsigned char hasCallGraph = 0;
+    unsigned char hasCallerGraph = 0;
+    unsigned char hasReferencedByRelation = 0;
+    unsigned char hasReferencesRelation = 0;
     bool explExt = false;             // member was explicitly declared external
     bool tspec = false;               // member is a template specialization
     bool groupHasDocs = false;        // true if the entry that caused the grouping was documented
@@ -1460,10 +1473,10 @@ void MemberDefImpl::IMPL::init(Definition *def,
   enumFields=0;
   enumScope=0;
   livesInsideEnum=FALSE;
-  hasCallGraph = FALSE;
-  hasCallerGraph = FALSE;
-  hasReferencedByRelation = FALSE;
-  hasReferencesRelation = FALSE;
+  hasCallGraph = 0;
+  hasCallerGraph = 0;
+  hasReferencedByRelation = 0;
+  hasReferencesRelation = 0;
   initLines=0;
   type=t;
   if (mt==MemberType_Typedef) type.stripPrefix("typedef ");
@@ -2870,7 +2883,7 @@ void MemberDefImpl::getLabels(QStrList &sl,const Definition *container) const
 void MemberDefImpl::_writeCallGraph(OutputList &ol) const
 {
   // write call graph
-  if (m_impl->hasCallGraph
+  if (hasCallGraph()
       && (isFunction() || isSlot() || isSignal()) && Config_getBool(HAVE_DOT)
      )
   {
@@ -2894,7 +2907,7 @@ void MemberDefImpl::_writeCallGraph(OutputList &ol) const
 
 void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
 {
-  if (m_impl->hasCallerGraph
+  if (hasCallerGraph()
       && (isFunction() || isSlot() || isSignal()) && Config_getBool(HAVE_DOT)
      )
   {
@@ -4840,28 +4853,28 @@ void MemberDefImpl::findSectionsInDocumentation()
   docFindSections(documentation(),this,docFile());
 }
 
-void MemberDefImpl::enableCallGraph(bool e)
+void MemberDefImpl::enableCallGraph(unsigned char e)
 {
-  m_impl->hasCallGraph=e;
-  if (e) Doxygen::parseSourcesNeeded = TRUE;
+  m_impl->hasCallGraph|=e;
+  if (e&Entry::CALL_SHOW) Doxygen::parseSourcesNeeded = TRUE;
 }
 
-void MemberDefImpl::enableCallerGraph(bool e)
+void MemberDefImpl::enableCallerGraph(unsigned char e)
 {
-  m_impl->hasCallerGraph=e;
-  if (e) Doxygen::parseSourcesNeeded = TRUE;
+  m_impl->hasCallerGraph|=e;
+  if (e&Entry::CALL_SHOW) Doxygen::parseSourcesNeeded = TRUE;
 }
 
-void MemberDefImpl::enableReferencedByRelation(bool e)
+void MemberDefImpl::enableReferencedByRelation(unsigned char e)
 {
-  m_impl->hasReferencedByRelation=e;
-  if (e) Doxygen::parseSourcesNeeded = TRUE;
+  m_impl->hasReferencedByRelation|=e;
+  if (e&Entry::CALL_SHOW) Doxygen::parseSourcesNeeded = TRUE;
 }
 
-void MemberDefImpl::enableReferencesRelation(bool e)
+void MemberDefImpl::enableReferencesRelation(unsigned char e)
 {
-  m_impl->hasReferencesRelation=e;
-  if (e) Doxygen::parseSourcesNeeded = TRUE;
+  m_impl->hasReferencesRelation|=e;
+  if (e&Entry::CALL_SHOW) Doxygen::parseSourcesNeeded = TRUE;
 }
 
 #if 0
@@ -5523,22 +5536,54 @@ void MemberDefImpl::setAnonymousUsed() const
 
 bool MemberDefImpl::hasCallGraph() const
 {
-  return m_impl->hasCallGraph;
+  if (m_impl->hasCallGraph & Entry::CALL_SHOW) return true;
+  else if (m_impl->hasCallGraph & Entry::CALL_HIDE) return false;
+  else if (m_impl->hasCallGraph & Entry::CALL_CONFIG) return true;
+  else return false;
 }
 
 bool MemberDefImpl::hasCallerGraph() const
 {
-  return m_impl->hasCallerGraph;
+  if (m_impl->hasCallerGraph & Entry::CALL_SHOW) return true;
+  else if (m_impl->hasCallerGraph & Entry::CALL_HIDE) return false;
+  else if (m_impl->hasCallerGraph & Entry::CALL_CONFIG) return true;
+  else return false;
 }
 
 bool MemberDefImpl::hasReferencedByRelation() const
 {
-  return m_impl->hasReferencedByRelation;
+  if (m_impl->hasReferencedByRelation & Entry::CALL_SHOW) return true;
+  else if (m_impl->hasReferencedByRelation & Entry::CALL_HIDE) return false;
+  else if (m_impl->hasReferencedByRelation & Entry::CALL_CONFIG) return true;
+  else return false;
 }
 
 bool MemberDefImpl::hasReferencesRelation() const
 {
+  if (m_impl->hasReferencesRelation & Entry::CALL_SHOW) return true;
+  else if (m_impl->hasReferencesRelation & Entry::CALL_HIDE) return false;
+  else if (m_impl->hasReferencesRelation & Entry::CALL_CONFIG) return true;
+  else return false;
+}
+
+unsigned char MemberDefImpl::getCallGraph() const
+{
+  return m_impl->hasCallGraph;
+}
+
+unsigned char MemberDefImpl::getCallerGraph() const
+{
+  return m_impl->hasCallerGraph;
+}
+
+unsigned char MemberDefImpl::getReferencesRelation() const
+{
   return m_impl->hasReferencesRelation;
+}
+
+unsigned char MemberDefImpl::getReferencedByRelation() const
+{
+  return m_impl->hasReferencedByRelation;
 }
 
 MemberDef *MemberDefImpl::templateMaster() const
@@ -6076,15 +6121,15 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       mdef->setMemberDeclaration(mdec);
       mdec->setMemberDefinition(mdef);
 
-      mdef->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
-      mdef->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
-      mdec->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
-      mdec->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
+      mdef->enableCallGraph(mdec->getCallGraph());
+      mdef->enableCallerGraph(mdec->getCallerGraph());
+      mdec->enableCallGraph(mdef->getCallGraph());
+      mdec->enableCallerGraph(mdef->getCallerGraph());
 
-      mdef->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
-      mdef->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
-      mdec->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
-      mdec->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
+      mdef->enableReferencedByRelation(mdec->getReferencedByRelation());
+      mdef->enableReferencesRelation(mdec->getReferencesRelation());
+      mdec->enableReferencedByRelation(mdef->getReferencedByRelation());
+      mdec->enableReferencesRelation(mdef->getReferencesRelation());
     }
   }
 }

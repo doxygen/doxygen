@@ -117,6 +117,25 @@ class Entry
       EXAMPLE_LINENO_SEC     = 0x1B000000,
     };
 
+    /*! Kind of call / hide combination supported
+     * for commands:
+     * - \\callgraph \\hidecallgraph
+     * - \\callergraph \\hidecallergraph
+     * - \\showby \\hideby
+     * - \\showrefs \\hiderefs
+     *
+     * and the commands:
+     * - CALL_GRAPH
+     * - CALLER_GRAPH
+     * - REFERENCED_BY_RELATION
+     * - REFERENCES_RELATION
+     */
+    enum ShowHide {
+       CALL_SHOW   = 0x00000001,  //! explicit call... / show... command
+       CALL_HIDE   = 0x00000002,  //! explicit hide... command
+       CALL_CONFIG = 0x00000004,  //! config set with YES
+    };
+
     // class specifiers (add new items to the end)
     static const uint64 Template        = (1ULL<<0);
     static const uint64 Generic         = (1ULL<<1);
@@ -251,10 +270,10 @@ class Entry
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
     bool subGrouping;         //!< automatically group class members?
-    bool callGraph;           //!< do we need to draw the call graph?
-    bool callerGraph;         //!< do we need to draw the caller graph?
-    bool referencedByRelation;//!< do we need to show the referenced by relation?
-    bool referencesRelation;  //!< do we need to show the references relation?
+    unsigned char callGraph;           //!< do we need to draw the call graph?
+    unsigned char callerGraph;         //!< do we need to draw the caller graph?
+    unsigned char referencedByRelation;//!< do we need to show the referenced by relation?
+    unsigned char referencesRelation;  //!< do we need to show the references relation?
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
