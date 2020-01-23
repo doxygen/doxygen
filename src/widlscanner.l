@@ -21,12 +21,59 @@
 #define YY_NO_UNISTD_H 1
 
 static int g_lineNo = 0;
+static const char* g_fileName = nullptr;
+static const char* g_inputString = nullptr;
+static int g_inputPosition = 0;
+static Entry* g_currentRoot = nullptr;
+
+std::shared_ptr<Entry> createModuleEntry(const char*, const char*);
+std::shared_ptr<Entry> createNamespaceEntry(const char*, const char*);
+
+static int yyread(yyscan_t yyscanner, char *buf, int max_size);
+#undef YY_INPUT
+#define YY_INPUT(buf, result, max_size) result = yyread(yyscanner, buf, max_size);
 
 %}
 
+%x COMMENT
+%x MODULE
 
+IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 
 %%
+
+<INITIAL>{
+    "/*" {
+        BEGIN(COMMENT);
+    }
+
+    module {
+        BEGIN(MODULE);
+    }
+}
+
+<COMMENT>{
+    "*/" {
+        BEGIN(INITIAL);
+    }
+
+    .|\n {
+    }
+}
+
+<MODULE>{
+    {IDENTIFIER} {
+        auto entry = createNamespaceEntry(g_fileName, yytext);
+        Doxygen::docGroup.initGroupInfo(entry.get());
+        g_currentRoot->moveToSubEntryAndKeep(entry);
+        g_currentRoot = entry.get();
+        BEGIN(INITIAL);
+    }
+
+    .|\n {
+        // ignore
+    }
+}
 
 . {
     // ignore
@@ -36,7 +83,23 @@ static int g_lineNo = 0;
     g_lineNo ++;
 }
 
+<<EOF>> {
+    yyterminate();
+}
+
 %%
+
+static int yyread(yyscan_t yyscanner, char* buf, int max_size) {
+    struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+    int c = 0;
+    const char *p = g_inputString + g_inputPosition;
+    while (c < max_size && *p) {
+        *buf++ = *p++;
+        c++;
+    }
+    g_inputPosition += c;
+    return c;
+}
 
 
 WebIDLOutlineParser::WebIDLOutlineParser()
@@ -45,6 +108,19 @@ WebIDLOutlineParser::WebIDLOutlineParser()
 
 WebIDLOutlineParser::~WebIDLOutlineParser()
 {
+}
+
+
+std::shared_ptr<Entry> createNamespaceEntry(
+    const char* fileName,
+    const char* name) {
+    std::shared_ptr<Entry> entry = std::make_shared<Entry>();
+    entry->type = "namespace";
+    entry->fileName = fileName;
+    entry->name = name;
+    entry->section = Entry::NAMESPACE_SEC;
+    entry->lang = SrcLangExt_WebIDL;
+    return entry;
 }
 
 
@@ -63,22 +139,16 @@ void WebIDLOutlineParser::parseInput(
 
     fprintf(stderr, "[WIDL] parsing file %s\n", fileName);
 
-    // test entry
-    std::shared_ptr<Entry> entry = std::make_shared<Entry>();
-    entry->type = "namespace";
-    entry->fileName = fileName;
-    entry->name = "HelloWorld";
-    entry->section = Entry::NAMESPACE_SEC;
-    entry->lang = SrcLangExt_WebIDL;
+    g_fileName = fileName;
+    g_currentRoot = root.get();
 
-    Doxygen::docGroup.initGroupInfo(entry.get());
+    g_inputPosition = 0;
+    g_inputString = fileBuf;
 
-    root->moveToSubEntryAndKeep(entry);
-    root->markAsProcessed();
-
-    root->printDebug();
     Doxygen::docGroup.enterFile(fileName, 0);
     widlscannerYYlex(scanner);
+    root->markAsProcessed();
+    root->printDebug();
     Doxygen::docGroup.leaveFile(fileName, g_lineNo);
 
     widlscannerYYlex_destroy(scanner);
