@@ -1,8 +1,9 @@
 #ifndef DOXYGEN_WIDLCODE_H
 #define DOXYGEN_WIDLCODE_H
 
+#include <stdio.h>
 #include "parserintf.h"
-
+#include "outputgen.h"
 
 class CodeOutputInterface;
 class FileDef;
@@ -29,7 +30,8 @@ class WidlCodeParser : public CodeParserInterface
                    const Definition *searchCtx=0,
                    bool collectXrefs=TRUE
                   ) {
-        codeOutInterface.codify(input);
+        codeOutIntf.codify(input);
+        fprintf(stderr, "[WIDL1] WidlCodeParser(%s)\n", scopeName);
     }
     void resetCodeParserState() {}
 };
