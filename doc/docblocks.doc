@@ -653,7 +653,7 @@ syntax, including parts of the
 extension. 
 
 Markdown is designed to be very easy to read and write. 
-It's formatting is inspired by plain text mail.
+Its formatting is inspired by plain text mail.
 Markdown works great for simple, generic formatting, like an introduction
 page for your project. Doxygen also supports reading of markdown files 
 directly. For more details see chapter \ref markdown.
