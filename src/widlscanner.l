@@ -26,6 +26,8 @@ static const char* g_inputString = nullptr;
 static int g_inputPosition = 0;
 static Entry* g_currentRoot = nullptr;
 static std::string g_lastComment = "";
+static CommentScanner g_commentScanner;
+static WebIDLOutlineParser* g_widlParser = nullptr;
 
 std::shared_ptr<Entry> createModuleEntry(const char*, const char*);
 std::shared_ptr<Entry> createNamespaceEntry(const char*, const char*);
@@ -68,10 +70,28 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 <MODULE>{
     {IDENTIFIER} {
         fprintf(stderr, "Doc for module(%s): \n%s\n", yytext, g_lastComment.c_str());
+
         auto entry = createNamespaceEntry(g_fileName, yytext);
         Doxygen::docGroup.initGroupInfo(entry.get());
         g_currentRoot->moveToSubEntryAndKeep(entry);
         g_currentRoot = entry.get();
+
+        auto protection = Public;
+        int position = 0;
+        bool needsEntry = false;
+        g_commentScanner.parseCommentBlock(
+            g_widlParser,
+            g_currentRoot,
+            g_lastComment.c_str(),
+            g_fileName,
+            g_lineNo,
+            false,
+            false,
+            false,
+            protection,
+            position,
+            needsEntry);
+
         BEGIN(INITIAL);
     }
 
@@ -144,6 +164,7 @@ void WebIDLOutlineParser::parseInput(
 
     fprintf(stderr, "[WIDL] parsing file %s\n", fileName);
 
+    g_widlParser = this;
     g_fileName = fileName;
     g_currentRoot = root.get();
 
