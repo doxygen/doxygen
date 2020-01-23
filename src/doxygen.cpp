@@ -77,6 +77,8 @@
 #include "htags.h"
 #include "pycode.h"
 #include "pyscanner.h"
+#include "widlcode.h"
+#include "widlscanner.h"
 #include "fortrancode.h"
 #include "fortranscanner.h"
 #include "xmlcode.h"
@@ -9152,6 +9154,7 @@ static void parseFile(OutlineParserInterface &parser,
                       const std::shared_ptr<Entry> &root,FileDef *fd,const char *fn,
                       bool sameTu,QStrList &filesInSameTu)
 {
+  fprintf(stderr, "[WIDL] doxygen.cpp:parseFile(%s)\n", fn);
 #if USE_LIBCLANG
   static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
 #else
@@ -9291,6 +9294,8 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
       QStrList filesInSameTu;
       FileDef *fd=findFileDef(Doxygen::inputNameDict,s->data(),ambig);
       ASSERT(fd!=0);
+
+      fprintf(stderr, "[WIDL] doxygen.cpp:parseFiles(%s)\n", s);
       OutlineParserInterface &parser = getParserForFile(s->data());
       parser.startTranslationUnit(s->data());
       parseFile(parser,root,fd,s->data(),FALSE,filesInSameTu);
@@ -9389,6 +9394,7 @@ int readDir(QFileInfo *fi,
            )
 {
   QCString dirName = fi->absFilePath().utf8();
+  fprintf(stderr, "[WIDL] reading directory: %s\n", dirName);
   if (paths && paths->find(dirName)==0)
   {
     paths->insert(dirName,(void*)0x8);
@@ -9895,6 +9901,9 @@ void initDoxygen()
                                                          std::make_unique<TclCodeParser>());
   Doxygen::parserManager->registerParser("md",           std::make_unique<MarkdownOutlineParser>(),
                                                          std::make_unique<FileCodeParser>());
+
+  Doxygen::parserManager->registerParser("widl",         std::make_unique<WebIDLOutlineParser>(),
+                                                         std::make_unique<WidlCodeParser>());
 
   // register any additional parsers here...
 
@@ -10832,6 +10841,7 @@ void searchInputFiles()
   while (s)
   {
     QCString path=s;
+    fprintf(stderr, "[WIDL] file to be processed: %s\n", s);
     uint l = path.length();
     if (l>0)
     {
@@ -11072,6 +11082,8 @@ void parseInput()
   g_s.begin("Parsing files\n");
   parseFiles(root);
   g_s.end();
+
+  //root->printDebug();
 
   /**************************************************************************
    *             Gather information                                         *

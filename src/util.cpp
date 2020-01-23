@@ -7272,6 +7272,7 @@ g_lang2extMap[] =
   { "sql",         "sql",           SrcLangExt_SQL      },
   { "tcl",         "tcl",           SrcLangExt_Tcl      },
   { "md",          "md",            SrcLangExt_Markdown },
+  { "widl",         "widl",         SrcLangExt_WebIDL   },
   { 0,             0,              (SrcLangExt)0        }
 };
 
@@ -7369,6 +7370,8 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".md",       "md");
   updateLanguageMapping(".markdown", "md");
   updateLanguageMapping(".ice",      "slice");
+  updateLanguageMapping(".widl",     "widl");
+  updateLanguageMapping(".ewidl",    "widl");
 }
 
 void addCodeOnlyMappings()
@@ -8412,6 +8415,7 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_SQL:      return "SQL";
     case SrcLangExt_Tcl:      return "Tcl";
     case SrcLangExt_Markdown: return "Markdown";
+    case SrcLangExt_WebIDL:   return "widl";
     case SrcLangExt_Slice:    return "Slice";
   }
   return "Unknown";

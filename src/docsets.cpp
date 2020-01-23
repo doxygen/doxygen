@@ -331,6 +331,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     case SrcLangExt_Tcl:     lang="tcl"; break;        // Tcl
     case SrcLangExt_Markdown:lang="markdown"; break;   // Markdown
     case SrcLangExt_Slice:   lang="slice"; break;      // Slice
+    case SrcLangExt_WebIDL:  lang="widl"; break;       // WebIDL
     case SrcLangExt_Unknown: lang="unknown"; break;    // should not happen!
   }
 

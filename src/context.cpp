@@ -1547,6 +1547,7 @@ class DefinitionContext
         case SrcLangExt_Tcl:      result="tcl";      break;
         case SrcLangExt_Markdown: result="markdown"; break;
         case SrcLangExt_Slice:    result="slice";    break;
+        case SrcLangExt_WebIDL:   result="widl";     break;
       }
       return result;
     }
