@@ -1,0 +1,151 @@
+<doxygenlayout version="1.0">
+  <!-- Navigation index tabs for HTML output -->
+  <navindex>
+    <tab type="mainpage" visible="yes" title="The Basics of Tizen Native API Reference"/>
+    <tab type="modules" visible="yes" title="Native API Reference" intro=""/>
+  </navindex>
+
+  <!-- Layout definition for a class page -->
+  <class>
+    <briefdescription visible="no"/>
+    <includes visible="$SHOW_INCLUDE_FILES"/>
+    <inheritancegraph visible="$CLASS_GRAPH"/>
+    <collaborationgraph visible="$COLLABORATION_GRAPH"/>
+    <allmemberslink visible="no"/>
+    <memberdecl>
+      <nestedclasses visible="no" title=""/>
+      <publictypes title=""/>
+      <publicslots title=""/>
+      <signals title=""/>
+      <publicmethods title=""/>
+      <publicstaticmethods title=""/>
+      <publicattributes title=""/>
+      <publicstaticattributes title=""/>
+      <protectedtypes title=""/>
+      <protectedslots title=""/>
+      <protectedmethods title=""/>
+      <protectedstaticmethods title=""/>
+      <protectedattributes title=""/>
+      <protectedstaticattributes title=""/>
+      <packagetypes title=""/>
+      <packagemethods title=""/>
+      <packagestaticmethods title=""/>
+      <packageattributes title=""/>
+      <packagestaticattributes title=""/>
+      <properties title=""/>
+      <events title=""/>
+      <privatetypes title=""/>
+      <privateslots title=""/>
+      <privatemethods title=""/>
+      <privatestaticmethods title=""/>
+      <privateattributes title=""/>
+      <privatestaticattributes title=""/>
+      <friends title=""/>
+      <related title="" subtitle=""/>
+      <membergroups />
+    </memberdecl>
+    <detaileddescription title=""/>
+    <memberdef>
+      <typedefs visible="no" title=""/>
+      <enums visible="no" title=""/>
+      <constructors title=""/>
+      <functions title=""/>
+      <related title=""/>
+      <variables visible="no" title=""/>
+      <properties title=""/>
+      <events title=""/>
+    </memberdef>
+    <usedfiles visible="$SHOW_USED_FILES"/>
+    <authorsection visible="no"/>
+  </class>
+
+  <!-- Layout definition for a namespace page -->
+  <namespace>
+    <briefdescription visible="no"/>
+    <memberdecl>
+      <nestednamespaces visible="no" title=""/>
+      <classes visible="no" title=""/>
+      <typedefs visible="no" title=""/>
+      <enums visible="no" title=""/>
+      <functions visible="no" title=""/>
+      <variables visible="no" title=""/>
+      <membergroups visible="no"/>
+    </memberdecl>
+    <detaileddescription title=""/>
+    <memberdef>
+      <typedefs visible="no" title=""/>
+      <enums visible="no" title=""/>
+      <functions title=""/>
+      <variables visible="no" title=""/>
+    </memberdef>
+    <authorsection visible="no"/>
+  </namespace>
+
+  <!-- Layout definition for a file page -->
+  <file>
+    <briefdescription visible="no"/>
+    <includes visible="$SHOW_INCLUDE_FILES"/>
+    <includegraph visible="$INCLUDE_GRAPH"/>
+    <includedbygraph visible="$INCLUDED_BY_GRAPH"/>
+    <sourcelink visible="no"/>
+    <memberdecl>
+      <classes visible="no" title=""/>
+      <namespaces visible="yes" title=""/>
+      <defines visible="no" title=""/>
+      <typedefs visible="no" title=""/>
+      <enums visible="no" title=""/>
+      <functions title=""/>
+      <variables visible="no" title=""/>
+      <membergroups visible="no"/>
+    </memberdecl>
+    <detaileddescription title=""/>
+    <memberdef>
+      <defines visible="no" title=""/>
+      <typedefs visible="no" title=""/>
+      <enums visible="no" title=""/>
+      <functions visible="no" title=""/>
+      <variables visible="no" title=""/>
+    </memberdef>
+    <authorsection/>
+  </file>
+
+  <!-- Layout definition for a group page -->
+  <group>
+    <groupgraph visible="$GROUP_GRAPHS"/>
+    <detaileddescription title=" "/>
+    <memberdecl>
+      <functions visible="no" title=""/>
+      <typedefs visible="no" title=""/>
+      <defines visible="no" title=""/>
+    </memberdecl>
+    <memberdef>
+      <pagedocs/>
+      <inlineclasses title=""/>
+      <defines visible="no" title=""/>
+      <typedefs visible="no" title=""/>
+      <enums visible="no" title=""/>
+      <enumvalues visible="no" title=""/>
+      <functions title=""/>
+      <variables visible="no" title=""/>
+      <signals title=""/>
+      <publicslots visible="no" title=""/>
+      <protectedslots visible="no" title=""/>
+      <privateslots title=""/>
+      <events title=""/>
+      <properties title=""/>
+      <friends title=""/>
+    </memberdef>
+    <authorsection visible="no"/>
+  </group>
+
+  <!-- Layout definition for a directory page -->
+  <directory>
+    <briefdescription visible="no"/>
+    <directorygraph visible="no"/>
+    <memberdecl>
+      <dirs visible="no"/>
+      <files visible="no"/>
+    </memberdecl>
+    <detaileddescription title=""/>
+  </directory>
+</doxygenlayout>
