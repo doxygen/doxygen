@@ -25,6 +25,7 @@ static const char* g_fileName = nullptr;
 static const char* g_inputString = nullptr;
 static int g_inputPosition = 0;
 static Entry* g_currentRoot = nullptr;
+static std::string g_lastComment = "";
 
 std::shared_ptr<Entry> createModuleEntry(const char*, const char*);
 std::shared_ptr<Entry> createNamespaceEntry(const char*, const char*);
@@ -45,6 +46,7 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 <INITIAL>{
     "/*" {
         BEGIN(COMMENT);
+        g_lastComment = yytext;
     }
 
     module {
@@ -55,14 +57,17 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 <COMMENT>{
     "*/" {
         BEGIN(INITIAL);
+        g_lastComment += yytext;
     }
 
     .|\n {
+        g_lastComment += yytext;
     }
 }
 
 <MODULE>{
     {IDENTIFIER} {
+        fprintf(stderr, "Doc for module(%s): \n%s\n", yytext, g_lastComment.c_str());
         auto entry = createNamespaceEntry(g_fileName, yytext);
         Doxygen::docGroup.initGroupInfo(entry.get());
         g_currentRoot->moveToSubEntryAndKeep(entry);
