@@ -6754,11 +6754,11 @@ bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root
     bool first=true;
     for (gli.toFirst();(gd=gli.current());++gli)
     {
+      if (!first) { ol.writeString(" &#124; "); } else first=false;
       if (recursivelyAddGroupListToTitle(ol, gd, FALSE))
       {
         ol.writeString(" &raquo; ");
       }
-      if (!first) { ol.writeString(" &#124; "); } else first=FALSE;
       ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
     }
     if (root)
