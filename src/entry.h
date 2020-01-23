@@ -19,6 +19,7 @@
 #define ENTRY_H
 
 #include <qgstring.h>
+#include <qtextstream.h>
 
 #include <vector>
 #include <memory>
@@ -325,6 +326,23 @@ class Entry
         case GROUPDOC_WEAK:   return Grouping::GROUPING_AUTO_WEAK;
         default: return Grouping::GROUPING_LOWEST;
       }
+    }
+
+    void printDebug(int level=0, int maxdepth=-1) const {
+        if (maxdepth > -1 && level > maxdepth) return;
+
+        if (level == 0) fprintf(stderr, "<ast>\n");
+        // print structure
+        for (int i=0; i<level; ++i) {
+            fprintf(stderr, "-");
+        }
+
+        //fprintf(stderr, "<%s> %s\n", type.toStdString(), name.toStdString());
+        QTextStream(stderr, 0x0002) << "[" << section << "] " << type << ": " << name << endl;
+        for (const auto& ep: m_sublist) {
+            ep->printDebug(level+1);
+        }
+        if (level == 0) fprintf(stderr, "</ast>\n");
     }
 
   private:
