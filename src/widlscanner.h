@@ -18,6 +18,11 @@ class WebIDLOutlineParser : public OutlineParserInterface
                     QStrList &filesInSameTranslationUnit);
     bool needsPreprocessing(const QCString &extension) const;
     void parsePrototype(const char *text);
+
+  private:
+    struct Private;
+    std::unique_ptr<Private> p;
+
 };
 
 

@@ -2,6 +2,7 @@
 %option prefix="widlscannerYY"
 %option reentrant
 %option noyywrap
+%option extra-type="struct widlscannerYY_state *"
 
 
 %{
@@ -20,14 +21,20 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-static int g_lineNo = 0;
-static const char* g_fileName = nullptr;
-static const char* g_inputString = nullptr;
-static int g_inputPosition = 0;
-static Entry* g_currentRoot = nullptr;
-static std::string g_lastComment = "";
-static CommentScanner g_commentScanner;
-static WebIDLOutlineParser* g_widlParser = nullptr;
+struct widlscannerYY_state
+{
+    WebIDLOutlineParser* thisParser;
+    CommentScanner commentScanner;
+
+    const char* fileName;
+    int lineNumber;
+
+    const char* inputString;
+    int inputPosition;
+
+    std::shared_ptr<Entry> currentRoot;
+    std::string lastComment;
+};
 
 std::shared_ptr<Entry> createModuleEntry(const char*, const char*);
 std::shared_ptr<Entry> createNamespaceEntry(const char*, const char*);
@@ -48,8 +55,8 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 <INITIAL>{
     "/**" {
         BEGIN(COMMENT);
-        g_lastComment = "";
-        //g_lastComment = yytext;
+        yyextra->lastComment = "";
+        //yyextra->lastComment = yytext;
     }
 
     module {
@@ -60,7 +67,7 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 <COMMENT>{
     ^[ ]+"*/" {
         BEGIN(INITIAL);
-        //g_lastComment += yytext;
+        //yyextra->lastComment += yytext;
     }
 
     ^[ ]+"*" {
@@ -68,26 +75,26 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
     }
 
     .|\n {
-        g_lastComment += yytext;
+        yyextra->lastComment += yytext;
     }
 }
 
 <MODULE>{
     {IDENTIFIER} {
-        auto entry = createNamespaceEntry(g_fileName, yytext);
+        auto entry = createNamespaceEntry(yyextra->fileName, yytext);
         Doxygen::docGroup.initGroupInfo(entry.get());
-        g_currentRoot->moveToSubEntryAndKeep(entry);
-        g_currentRoot = entry.get();
+        yyextra->currentRoot->moveToSubEntryAndKeep(entry);
+        yyextra->currentRoot = entry;
 
         auto protection = Public;
         int position = 0;
         bool needsEntry = false;
-        g_commentScanner.parseCommentBlock(
-            g_widlParser,
-            g_currentRoot,
-            g_lastComment.c_str(),
-            g_fileName,
-            g_lineNo,
+        yyextra->commentScanner.parseCommentBlock(
+            yyextra->thisParser,
+            yyextra->currentRoot.get(),
+            yyextra->lastComment.c_str(),
+            yyextra->fileName,
+            yyextra->lineNumber,
             false,
             false,
             false,
@@ -108,7 +115,7 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 }
 
 \n {
-    g_lineNo ++;
+    yyextra->lineNumber ++;
 }
 
 <<EOF>> {
@@ -120,22 +127,33 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 static int yyread(yyscan_t yyscanner, char* buf, int max_size) {
     struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
     int c = 0;
-    const char *p = g_inputString + g_inputPosition;
+    const char *p = yyextra->inputString + yyextra->inputPosition;
     while (c < max_size && *p) {
         *buf++ = *p++;
         c++;
     }
-    g_inputPosition += c;
+    yyextra->inputPosition += c;
     return c;
 }
 
+struct WebIDLOutlineParser::Private
+{
+    yyscan_t yyscanner;
+    widlscannerYY_state state;
+};
 
 WebIDLOutlineParser::WebIDLOutlineParser()
+    : p(std::make_unique<WebIDLOutlineParser::Private>())
 {
+    widlscannerYYlex_init_extra(&p->state, &p->yyscanner);
+#ifdef FLEX_DEBUG
+    widlscannerYYset_debug(1, p->yyscanner);
+#endif
 }
 
 WebIDLOutlineParser::~WebIDLOutlineParser()
 {
+    widlscannerYYlex_destroy(p->yyscanner);
 }
 
 
@@ -159,28 +177,24 @@ void WebIDLOutlineParser::parseInput(
     bool,
     QStrList&)
 {
-    yyscan_t scanner;
-    widlscannerYYlex_init(&scanner);
-    struct yyguts_t *yyg = (struct yyguts_t*)scanner;
+    struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
     printlex(1, TRUE, __FILE__, fileName);
 
     fprintf(stderr, "[WIDL] parsing file %s\n", fileName);
 
-    g_widlParser = this;
-    g_fileName = fileName;
-    g_currentRoot = root.get();
+    yyextra->thisParser = this;
+    yyextra->fileName = fileName;
+    yyextra->currentRoot = root;
 
-    g_inputPosition = 0;
-    g_inputString = fileBuf;
+    yyextra->inputPosition = 0;
+    yyextra->inputString = fileBuf;
 
     Doxygen::docGroup.enterFile(fileName, 0);
-    widlscannerYYlex(scanner);
+    widlscannerYYlex(p->yyscanner);
     root->markAsProcessed();
     root->printDebug();
-    Doxygen::docGroup.leaveFile(fileName, g_lineNo);
-
-    widlscannerYYlex_destroy(scanner);
+    Doxygen::docGroup.leaveFile(fileName, yyextra->lineNumber);
 
     printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
