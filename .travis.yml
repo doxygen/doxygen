@@ -34,11 +34,36 @@ linux-ppc64le: &linux-ppc64le
               - cmake
               - cmake-data
 
+linux-s390x: &linux-s390x
+  os: linux
+  arch: s390x
+  dist: bionic
+  env:
+      - OS_NAME="linux-s390x"
+  addons:
+      apt:
+          update: true
+          packages:
+              - texlive
+              - texlive-generic-recommended
+              - texlive-extra-utils
+              - texlive-latex-extra
+              - texlive-font-utils
+              - ghostscript
+              - libxml2-utils
+              - cmake
+              - cmake-data
+              - qt5-default
+
 jobs:
     include:
         - <<: *linux-ppc64le
           compiler: gcc
         - <<: *linux-ppc64le
+          compiler: clang
+        - <<: *linux-s390x
+          compiler: gcc
+        - <<: *linux-s390x
           compiler: clang
 #        - os: osx
 #          compiler: clang
@@ -53,7 +78,7 @@ jobs:
 
 before_script:
     - |
-      if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
+      if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ ! "${OS_NAME}" == "linux-ppc64le" ] && [ ! "${OS_NAME}" == "linux-s390x" ]; then
         printf "[requires]
         libxml2/2.9.9@bincrafters/stable
         libiconv/1.15@bincrafters/stable" >> conanfile.txt;
@@ -85,7 +110,7 @@ before_script:
         export CMAKE_LIBRARY_PATH="/usr/local/opt/flex/lib;/usr/local/opt/bison/lib;$CMAKE_LIBRARY_PATH";
         export PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:/Users/travis/Library/TeX/texbin:/Library/TeX/texbin:$PATH";
       fi;
-    - if [ ! "${OS_NAME}" == "linux-ppc64le" ]; then
+    - if [ ! "${OS_NAME}" == "linux-ppc64le" ] && [ ! "${OS_NAME}" == "linux-s390x" ]; then
         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan;
         conan install . -g virtualrunenv --build missing --update;
         source activate_run.sh;
