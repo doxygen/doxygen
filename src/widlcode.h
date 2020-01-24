@@ -31,7 +31,7 @@ class WidlCodeParser : public CodeParserInterface
                    bool collectXrefs=TRUE
                   ) {
         codeOutIntf.codify(input);
-        fprintf(stderr, "[WIDL1] WidlCodeParser(%s)\n", scopeName);
+        //fprintf(stderr, "[WIDL1] WidlCodeParser(%s)\n", scopeName);
     }
     void resetCodeParserState() {}
 };

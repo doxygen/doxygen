@@ -46,9 +46,10 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 %%
 
 <INITIAL>{
-    "/*" {
+    "/**" {
         BEGIN(COMMENT);
-        g_lastComment = yytext;
+        g_lastComment = "";
+        //g_lastComment = yytext;
     }
 
     module {
@@ -57,9 +58,13 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 }
 
 <COMMENT>{
-    "*/" {
+    ^[ ]+"*/" {
         BEGIN(INITIAL);
-        g_lastComment += yytext;
+        //g_lastComment += yytext;
+    }
+
+    ^[ ]+"*" {
+        // ignore
     }
 
     .|\n {
@@ -69,8 +74,6 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]+
 
 <MODULE>{
     {IDENTIFIER} {
-        fprintf(stderr, "Doc for module(%s): \n%s\n", yytext, g_lastComment.c_str());
-
         auto entry = createNamespaceEntry(g_fileName, yytext);
         Doxygen::docGroup.initGroupInfo(entry.get());
         g_currentRoot->moveToSubEntryAndKeep(entry);
@@ -189,8 +192,6 @@ bool WebIDLOutlineParser::needsPreprocessing(const QCString &) const
 
 void WebIDLOutlineParser::parsePrototype(const char *text)
 {
-  fprintf(stderr, "[WIDL] WebIDLOutlineParser::parsePrototype()\n");
-  fprintf(stderr, "[WIDL8] %s\n", text);
 }
 
 
