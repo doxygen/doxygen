@@ -285,8 +285,16 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "Cette liste d'héritage est classée "
-             "approximativement par ordre alphabétique :";
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Liste hiérarchique de toutes les entités :";
+      }
+      else
+      {
+        return "Cette liste d'héritage est classée "
+               "approximativement par ordre alphabétique :";
+      }
     }
 
     /*! This is an introduction to the list with all files. */
@@ -304,6 +312,10 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Liste des structures de données avec une brève description :";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Liste des classes avec une brève description :";
       }
       else
       {
@@ -805,7 +817,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      bool female = true;
+      bool feminine = true;
       QCString result=(QCString)"La documentation de ";
       switch(compType)
       {
@@ -813,14 +825,14 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         case ClassDef::Struct:     result+="cette structure"; break;
         case ClassDef::Union:      result+="cette union"; break;
         case ClassDef::Interface:  result+="cette interface"; break;
-        case ClassDef::Protocol:   result+="ce protocol"; female = false; break;
+        case ClassDef::Protocol:   result+="ce protocol"; feminine = false; break;
         case ClassDef::Category:   result+="cette catégorie"; break;
         case ClassDef::Exception:  result+="cette exception"; break;
         default: break;
       }
-      if (female) result+= " a été générée à partir ";
+      if (feminine) result+= " a été générée à partir ";
       else result+=" a été généré à partir ";
-      if (single) result+="du fichier suivant :";
+      if (feminine) result+="du fichier suivant :";
       else result+="des fichiers suivants :";
       return result;
     }
@@ -2268,20 +2280,23 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     }
     virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
     {
-      QCString result = "Référence de ";
-
+      QCString result = "Référence ";
+      bool feminine = true;
       switch(compType)
       {
-        case ClassDef::Class:      result+="la classe "; break;
-        case ClassDef::Struct:     result+="la structure "; break;
-        case ClassDef::Interface:  result+="l'interface "; break;
-        case ClassDef::Exception:  result+="l'exception "; break;
+        case ClassDef::Class:      result+="de la classe "; break;
+        case ClassDef::Struct:     result+="de la structure "; break;
+        case ClassDef::Union:      result+="de l'union "; break;
+        case ClassDef::Interface:  result+="de l'interface "; break;
+        case ClassDef::Protocol:   result+="du protocole "; feminine=false; break;
+        case ClassDef::Category:   result+="de la catégorie "; break;
+        case ClassDef::Exception:  result+="de l'exception "; break;
         default: break;
       }
 
       if(isLocal)
       {
-        result += "locale ";
+        result += (feminine) ? "locale " : "local ";
       }
 
       result += (QCString)clName;
