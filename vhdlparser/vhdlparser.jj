@@ -15,8 +15,10 @@ options {
   NAMESPACE = "vhdl::parser";
   STATIC=false;
   PARSER_INCLUDES="vhdljjparser.h";
-  TOKEN_MANAGER_INCLUDES="VhdlParser.h";
-
+  TOKEN_MANAGER_INCLUDES="vhdlstring.h";
+ // TOKEN_MANAGER_USES_PARSER = true;
+  TOKEN_MANAGER_SUPER_CLASS = "TokenParser";
+ // DEBUG_PARSER  = true;
  //OUTPUT_DIRECTORY = ".";
  //DEBUG_PARSER=true;
  //DEBUG_LOOKAHEAD=true;
@@ -316,7 +318,7 @@ TOKEN:
  | < #LETTER: (<UPPER_CASE_LETTER>|<LOWER_CASE_LETTER>) >
  | < #UPPER_CASE_LETTER: ["A"-"Z"]  >
  | <BIT_STRING_LITERAL : (<DIGIT>)*<BASE_SPECIFIER>["\""](<LETTER_OR_DIGIT_OR_STD>((["_"])*<LETTER_OR_DIGIT_OR_STD>)*)["\""] >
- | <#BASE_SPECIFIER:["B","O","X","b","o","x","d","D"]>
+ | <#BASE_SPECIFIER: (<DIGIT>)*(["S","U"])*["B","O","X","b","o","x","d","D"] >
  | <#STD_LOGIC:["0","1","L","H","X","Z","W","-","l","h","x","z","w"]>
  | < #DIGIT: ["0"-"9"] >
  | < #SPECIAL_CHARACTER: ["#","&","'","(",")","*","+",",","-",".","/",":",";","<","=",">","_","|"] >
@@ -325,6 +327,7 @@ TOKEN:
  | < #LOWER_CASE_LETTER: ["a"-"z"] >
  | < #QUOTE: ["\""] >
  | <VHDL2008TOOLDIR  : ["`"](<GRAPHIC_CHARACTER>|<STRINGLITERAL>)+ >
+ | <SPEC_ATTR: (["'"]["("]["'"](<GRAPHIC_CHARACTER>)["'"]) >
 
 }
 
@@ -342,6 +345,7 @@ QCString access_type_definition() :
   tok=<ACCESS_T> str1=subtype_indication() { str=tok->image.c_str(); return str+str1; }
 }
 
+
 QCString actual_designator() :
 {QCString str;Token *t=0;}
 {
@@ -349,10 +353,12 @@ t=<OPEN_T> { return t->image.c_str(); }
 |
 LOOKAHEAD(expression())
   str=expression() { return str; }
-|
-  LOOKAHEAD(name())
- str=name() { return str; }
+  | 
+  str=identifier(){return str;}
 }
+
+
+
 
 QCString actual_parameter_part() :
 {QCString s;}
@@ -368,6 +374,7 @@ QCString actual_part() :
  |
    <BOX_T> { return "<>";}
  |
+ LOOKAHEAD(name() <LPAREN_T>)
  s=name() <LPAREN_T> s1=actual_designator() <RPAREN_T> {s+="(";s+=s1+")";return s;}
 
  }
@@ -452,12 +459,15 @@ void architecture_statement_part() :  {}
 QCString array_type_definition ():  { QCString s;}
 {
 
- LOOKAHEAD(unconstraint_array_definition())
-
-  s=unconstraint_array_definition() {return s;}
-  | s=constraint_array_definition()  {return s;}
-
+ LOOKAHEAD(<ARRAY_T> index_constraint() <OF_T>)
+  s=constraint_array_definition()  {return s;}
+  |
+   s=unconstraint_array_definition() {return s;}
+  
 }
+
+
+
 
 QCString assertion() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 {
@@ -504,11 +514,11 @@ QCString attribute_designator (): {QCString s;Token *tok=0;}
   | tok=<RANGE_T> { return tok->image.c_str(); }
 }
 
+
 QCString attribute_name (): {QCString s,s1;}
 {
-  s=identifier() <APOSTROPHE_T> s1=name(){ s+="'"+s1; }[LOOKAHEAD(1)<LPAREN_T>s1=expression() <RPAREN_T> {s+"("+s1+")";}] { return s; }
-}
-
+  s=identifier() <APOSTROPHE_T> (<RANGE_T> | s1=name()) { s+=s1; }[LOOKAHEAD(1)<LPAREN_T>s1=expression() <RPAREN_T> {s+=s1;}] { return s; }
+ }
 
 QCString attribute_specification():  {QCString s,s1,s2;}
 {
@@ -580,7 +590,6 @@ void block_configuration() : {}
 void block_declarative_item ():  {}
 {
   subprogram_declaration()
-//| subprogram_body()
 | type_declaration()
 | subtype_declaration()
 | constant_declaration()
@@ -616,7 +625,7 @@ void block_header() : {}
 
 void block_specification() :  {}
 {
-  name()[LOOKAHEAD(1) <LPAREN_T> index_specification() <RPAREN_T>]
+  name() [ <LPAREN_T> index_specification() <RPAREN_T> ]
 }
 
 void block_statement() :  {QCString s;}
@@ -640,7 +649,7 @@ void block_statement_part() :  {}
 
 void  case_statement() : {QCString s;}
 {
-[ identifier() <COLON_T> ]
+[ identifier() [<Q_T>] <COLON_T> ]
   <CASE_T> s=expression()
     {
      QCString ca="case "+s;
@@ -674,16 +683,19 @@ QCString character_literal() :  {Token *tok=0;}
 
 QCString choice() : {QCString s;}
 {
-  LOOKAHEAD(discrete_range())
-  s=discrete_range(){ return s; }
+   LOOKAHEAD(simple_expression() direction ())
+  s=range() { return s;}
   |
    LOOKAHEAD(simple_expression())
    s=simple_expression(){ return s; }
+   |
+   LOOKAHEAD(discrete_range())
+  s=discrete_range(){ return s; }
   |
-  LOOKAHEAD(identifier())
-  s=identifier(){ return s; }
+   s=identifier(){ return s; }
   | <OTHER_T> { return " others "; }
 }
+
 
 QCString choices() :  {QCString s,s1;}
 {
@@ -788,12 +800,7 @@ component_instantiation_statement()
 LOOKAHEAD(concurrent_procedure_call_statement())
 concurrent_procedure_call_statement()
 | <VHDL2008TOOLDIR>
- /*
-  catch( ParseException e )
-  {
-    outlineParser()->error_skipto(SEMI_T, "syntax error in declarative item");
-  }
- */
+ 
 }
 
 QCString condition() :  {QCString s;}
@@ -823,13 +830,7 @@ waveform()
     [ <WHEN_T> condition() ]
 }
 
-// ( waveform() < WHEN_T> condition() <ELSE_T> )*
-//   waveform() [ <WHEN_T> condition() ]
 
-//waveform()
- //   ( LOOKAHEAD( <WHEN> condition() <ELSE>)
-    //    <WHEN> condition() <ELSE> waveform() )*
-    //[ <WHEN> condition() ]
 
 void configuration_declaration() :  {QCString s,s1;}
 {
@@ -888,9 +889,10 @@ QCString constraint_array_definition (): {QCString s,s1;}
 <ARRAY_T> s=index_constraint() <OF_T> s1=subtype_indication(){ return s+" "+s1;}
 }
 
+
 void context_clause (): {}
 {
- (context_item())*
+  (LOOKAHEAD(3) context_item())*
 }
 
 QCString constraint () :{QCString s;}
@@ -906,6 +908,7 @@ void context_item() :  {}
 {
  library_clause()
 | use_clause()
+| context_ref() 
 }
 
 QCString decimal_literal() :  {Token *tok=0;}
@@ -1085,12 +1088,14 @@ void entity_header() : {}
  [ { m_sharedState->currP=VhdlDocGen::PORT; } port_clause()]
 }
 
-QCString entity_name_list() :  {QCString s,s1;}
+QCString entity_name_list() :  {QCString s,s1,s2;}
 {
-(s1=entity_designator() {s+=s1;})+ { return s;}
+(s1=entity_designator() ) (<COMMA_T> s=entity_designator() { s2+=s;  } )* { return s2;}
 | <OTHER_T> { return "other";}
 | <ALL_T> {return "all";}
 }
+
+
 
 QCString entity_specification() :  {QCString s,s1;}
 {
@@ -1172,6 +1177,9 @@ QCString factor():  {QCString s,s1;}
 s=primary() [LOOKAHEAD(1) <DOUBLEMULT_T> s1=primary(){ s+="**";s+=s1;} ] { return s;}
 | <ABS_T> s=primary(){ s1 = "abs "; return s1+s; }
 | <NOT_T>  s=primary(){s1="not ";return s1+s;}
+| <QQ_T>  s=primary(){s1="?? ";return s1;}
+| s=logop() s1=primary() { return s;}
+
 }
 
 QCString file_declaration() :  {QCString s,s1,s2,s3;}
@@ -1191,7 +1199,7 @@ QCString  file_logical_name():  {QCString s;}
 
 QCString file_open_information() :  {QCString s,s1,s2;}
 {
- [ <OPEN_T> s=expression() ] <IS_T> s1=file_logical_name() {s2="open "+s+" is "+s1;  return s2; }
+ [ <OPEN_T> s=expression() ] <IS_T> [inout_stat()] s1=file_logical_name() {s2="open "+s+" is "+s1;  return s2; }
 }
 
 QCString file_type_definition() :  {QCString s,s1;}
@@ -1278,7 +1286,7 @@ s=identifier() <COLON_T>
 void generate_scheme() : {}
 {
 <FOR_T> parameter_specification()
-| <IF_T> condition()
+| <IF_T> [LOOKAHEAD(2) identifier() <COLON_T> ] condition()
 }
 
 void generic_clause() : {QCString s;}
@@ -1336,7 +1344,7 @@ QCString identifier() : {Token *tok=0;}
 
 QCString identifier_list() : {QCString str,str1;}
 {
-   str=identifier() (<COMMA_T> str1=identifier() {str+=",";str+=str1;})* { return str; }
+   str=name() (<COMMA_T> str1=name() {str+=",";str+=str1;})* { return str; }
 }
 
 void if_statement() :  {QCString s,s1;}
@@ -1423,8 +1431,9 @@ QCString interface_declaration() :  {QCString s,s1;}
 
 LOOKAHEAD(5)
  s=interface_subprogram_declaration() { return s;}
-
-|interface_package_declaration() { return s;}
+|
+LOOKAHEAD(5)
+interface_package_declaration() { return s;}
 |
  LOOKAHEAD(5)
  s=interface_variable_declaration() { return s;}
@@ -1542,7 +1551,7 @@ QCString library_unit() :  {QCString s;}
 LOOKAHEAD(2)
 primary_unit() {  return s; }
 |  secondary_unit() {  return s; }
-|  context_declaration()
+
 
 }
 
@@ -1614,14 +1623,16 @@ tok=<MULT_T>      { return tok->image.c_str(); }
 }
 
 
- QCString name() :  {QCString s,s1;}
+QCString name() :  {QCString s,s1;}
 {
  (
-   s=operator_symbol()
-   | s=identifier()| s=external_name()
+   s=operator_symbol() [LOOKAHEAD(name_ext1()) s1=name_ext1(){ s+=s1;}] {  return s; }
+   |s=external_name() [LOOKAHEAD(name_ext1()) s1=name_ext1(){ s+=s1;}] {  return s; }
+   | s=identifier() [LOOKAHEAD(name_ext1()) s1=name_ext1(){ s+=s1;}] {  return s; }
   )
- [LOOKAHEAD(name_ext1()) s1=name_ext1(){ s+=s1;}] {  return s; }
+ 
 }
+
 
 QCString name_ext1() : {QCString s,s1,s2;}
  {
@@ -1633,22 +1644,22 @@ QCString name_ext1() : {QCString s,s1,s2;}
 
   (
  LOOKAHEAD(<APOSTROPHE_T><SUBTYPE_T>)
- <APOSTROPHE_T><SUBTYPE_T>{s+="'subtype";}
+ <APOSTROPHE_T><SUBTYPE_T>{s+="'subtype"; return s;}
 |
  LOOKAHEAD(<DOT_T> suffix())
- <DOT_T> s1=suffix(){s+=".";s+=s1;}
+ <DOT_T> s1=suffix(){s+=".";s+=s1; return s;}
 |
   LOOKAHEAD(test_att_name())
-   s1=test_att_name() { s+=s1;}
+   s1=test_att_name() { s+=s1;return s;}
  |
  LOOKAHEAD( <LPAREN_T> discrete_range() <RPAREN_T>)
-  <LPAREN_T> s1=discrete_range() <RPAREN_T> {s+="(";s+=s1;s+=")";}
+  <LPAREN_T> s1=discrete_range() <RPAREN_T> {s+="(";s+=s1;s+=")";return s;}
    |
   LOOKAHEAD( "(" expression() ("," expression() )* ")" )
-  <LPAREN_T> s1=expression() {s+="(";s+=s1;} (LOOKAHEAD(1) <COMMA_T>  s1=expression(){s+=",";s+=s1;})*  <RPAREN_T> { s+=")";}
+  <LPAREN_T> s1=expression() {s+="(";s+=s1;} (LOOKAHEAD(1) <COMMA_T>  s1=expression(){s+=",";s+=s1;})*  <RPAREN_T> { s+=")";return s;}
 
  )
- {return s;}
+ 
  }
 
  QCString test_att_name() : {QCString s,s1;}
@@ -1666,8 +1677,8 @@ QCString name_ext1() : {QCString s,s1,s2;}
 
 QCString next_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 {
-[LOOKAHEAD(1) s=identifier() t=<COLON_T> ] <NEXT_T> [ s1=identifier() ]
-[LOOKAHEAD(1)  t1=<WHEN_T> s2=condition() ] <SEMI_T>
+[ s=identifier() t=<COLON_T> ] <NEXT_T> [ s1=identifier() ]
+[ t1=<WHEN_T> s2=condition() ] <SEMI_T>
 {
   if(t) s+=":";
    FlowChart::addFlowChart(FlowChart::NEXT_NO,"next ",s2.data(),s1.data());
@@ -1726,7 +1737,7 @@ void package_body() :  {QCString s;}
 void package_body_declarative_item() :  {}
 {
 subprogram_declaration()
-//| subprogram_body()
+
 | type_declaration()
 | subtype_declaration()
 | constant_declaration()
@@ -1745,6 +1756,12 @@ void package_body_declarative_part() :  {}
 (package_body_declarative_item() )*
 }
 
+void package_header(): {QCString s;}
+{
+   [ generic_clause() [ generic_map_aspect() <SEMI_T> ] ]
+}
+
+
 void package_declaration():  {QCString s;}
 {
 
@@ -1761,6 +1778,7 @@ void package_declaration():  {QCString s;}
                           m_sharedState->current_root->moveToSubEntryAndKeep(clone);
                           outlineParser()->addVhdlType(s,outlineParser()->getLine(PACKAGE_T),Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
                           }
+    package_header()  
     package_declarative_part()
 <END_T> [ <PACKAGE_T>] [ name() ] <SEMI_T>
 { m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.resize(0); }
@@ -1773,8 +1791,7 @@ void geninter():{}
 
 void package_declarative_item() : {}
 {
-//LOOKAHEAD(3)
-//interface_subprogram_declaration()
+
 subprogram_declaration()
 | type_declaration()
 | subtype_declaration()
@@ -1863,6 +1880,7 @@ s=literal() { s.prepend(" ");return s;}
 LOOKAHEAD(name())
 s=name() { return s;}
 |
+LOOKAHEAD(allocator())
 allocator() { return "";}
 |
 s=aggregate() { return s; }
@@ -1880,6 +1898,7 @@ package_instantiation_declaration()
 LOOKAHEAD(4)
  interface_package_declaration()
 | package_declaration()
+|  context_declaration()
 
 }
 
@@ -2018,6 +2037,13 @@ QCString relation_operator() :  {}
  |<GREATERTHAN_T> {return ">=";}
  |<LESSTHAN_T> {return "<=";}
  |<NOTEQU_T> {return "/=";}
+ |<QGT_T> { return "?>=";}
+ |<QLT_T> { return "?<=";}
+ |<QG_T> { return "?>";}
+ |<QL_T> { return "?<";}
+ |<QEQU_T> { return "?=";}
+ |<QNEQU_T> {return  "?/="; }
+
 
 }
 
@@ -2042,7 +2068,7 @@ QCString return_statement() :  {QCString s,s1;}
 
 QCString scalar_type_definition() : {QCString s,s1;}
 {
-
+LOOKAHEAD(enumeration_type_definition())
 s=enumeration_type_definition(){ return s;}
 | s=range_constraint() [LOOKAHEAD( physical_type_definition()) s1=physical_type_definition()] { return s+" "+s1+"%";}
 }
@@ -2357,11 +2383,17 @@ QCString subtype_declaration() :  {QCString s,s1;}
 }
 }
 
+QCString reslution_indication(): {QCString s;}
+{ 
+  <LPAREN_T> s=expression() <RPAREN_T> { return "("+s+")"; }
+ // |s=name() { return s;}
+}
+//[LOOKAHEAD (reslution_indication()) s=reslution_indication()] 
+// [ resolution_indication ] type_mark [ constraint ]
 QCString subtype_indication() :  {QCString s,s1,s2;}
 {
- s=name()
- [LOOKAHEAD (name()) s1=name()] [LOOKAHEAD(constraint() ) s2=constraint()]
- { return s+" "+s1+" "+s2; }
+  [LOOKAHEAD(5) s=reslution_indication()]  (s1=name())+ [LOOKAHEAD(constraint() ) s2=constraint()]
+ {return s+" "+s1+" "+s2;}
 }
 
 QCString suffix() :  { QCString s; }
@@ -2581,7 +2613,7 @@ void protected_type_declarative_part() :    {}
 
 QCString context_ref() : {QCString s;}
 {
- <CONTEXT_T>  s=identifier_list() <SEMI_T>
+ <CONTEXT_T>  s=name() <SEMI_T>
  {
   return "context "+s ;
  }
@@ -2673,16 +2705,30 @@ void ttend(): {}
 
 void generate_statement_body() : {}
 {
-   <BEGIN_T> generate_statement_body()
+      [(LOOKAHEAD(block_declarative_item())block_declarative_item() )*  <BEGIN_T>] (concurrent_statement())*
 }
 
 void generate_statement_body1() : {}
 {
-  //   [LOOKAHEAD(block_declarative_item()<BEGIN_T> )(block_declarative_item() )*  <BEGIN_T>] (concurrent_statement())*
-
-   [(LOOKAHEAD(block_declarative_item())block_declarative_item() )*  <BEGIN_T>] (concurrent_statement())*
-  // | (concurrent_statement())*
+   generate_statement_body()   generate_scheme_1()  [generate_scheme_2()]
 }
+
+void generate_scheme_1() : {}
+{
+ ( generate_scheme_3())*
+}
+
+void generate_scheme_2() : {}
+{
+<ELSE_T> [LOOKAHEAD(2) identifier() <COLON_T> ] <GENERATE_T> generate_statement_body()
+}
+
+void generate_scheme_3() : {}
+{
+ <ELSIF_T>[LOOKAHEAD(2) identifier() <COLON_T> ] expression() <GENERATE_T> generate_statement_body()
+}
+
+
 
 QCString external_name(): {QCString s,s1,s2;}
 {
