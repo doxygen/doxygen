@@ -2379,6 +2379,8 @@ static int getNextId(const QCString &expr,int p,int *l)
   return -1;
 }
 
+#define MAX_EXPANSION_DEPTH 50
+
 /*! performs recursive macro expansion on the string \a expr
  *  starting at position \a pos.
  *  May read additional characters from the input while re-scanning!
@@ -2392,7 +2394,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
     //printf("<expandExpression: empty\n");
     return TRUE;
   }
-  if (state->expansionDict.find(expr)!=0) // check for recursive expansions
+  if (state->expansionDict.find(expr)!=0 && level>MAX_EXPANSION_DEPTH) // check for too deep recursive expansions
   {
     //printf("<expandExpression: already expanded expr='%s'\n",expr.data());
     return FALSE;
@@ -2405,6 +2407,8 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
   QCString expMacro;
   bool definedTest=FALSE;
   int i=pos,l,p,len;
+  int startPos = pos;
+  int samePosCount=0;
   while ((p=getNextId(expr,i,&l))!=-1) // search for an macro name
   {
     bool replaced=FALSE;
@@ -2491,6 +2495,20 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
 	//printf("macro already expanded, moving to the next macro expr=%s\n",expr.data());
 	i=p+l+2;
 	//i=p+l;
+      }
+      // check for too many inplace expansions without making progress
+      if (i==startPos)
+      {
+        samePosCount++;
+      }
+      else
+      {
+        startPos=i;
+        samePosCount=0;
+      }
+      if (samePosCount>MAX_EXPANSION_DEPTH)
+      {
+        break;
       }
     }
     else // no re-scan marker found, skip the macro name
