@@ -94,7 +94,8 @@ void VHDLOutlineParser::Private::parseVhdlfile(const char *fileName,
   vhdlParser=new VhdlParser(tokenManager);
   vhdlParser->setOutlineParser(thisParser);
   vhdlParser->setSharedState(&shared);
-  tokenManager->ReInit(stream,0,vhdlParser);
+  tokenManager->setLexParser(vhdlParser);
+  tokenManager->ReInit(stream,0);
   tokenManager->setErrorHandler(tokErrHandler);
   VhdlErrorHandler *parserErrHandler=new VhdlErrorHandler(fileName);
   vhdlParser->setErrorHandler(parserErrHandler);

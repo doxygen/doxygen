@@ -5,6 +5,26 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "VhdlParser.h"
+// super class for VhdlParserTokenManager 
+// is generated in vhdlparser.jj
+// -option TOKEN_MANAGER_SUPER_CLASS = "TokenParser"
+// sets the Vhdlparser in vhdljjparser.cpp
+// tokenManager->setLexParser(vhdlParser);
+
+namespace vhdl {
+  namespace parser {
+     class TokenParser {
+    public:
+      VhdlParser* parser = nullptr;
+      void   setLexParser(VhdlParser* p)
+      {
+        parser = p;
+      }
+    };
+  }
+}
+
 
 /** @brief Minimal string class with std::string like behaviour that fulfills the JavaCC
  *  string requirements.
