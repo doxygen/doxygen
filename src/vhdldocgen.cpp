@@ -58,7 +58,7 @@
 #include "plantuml.h"
 #include "vhdljjparser.h"
 #include "VhdlParser.h"
-#include "vhdlcode.h"
+//#include "vhdlcode.h"
 #include "plantuml.h"
 //#define DEBUGFLOW
 #define theTranslator_vhdlType theTranslator->trVhdlType

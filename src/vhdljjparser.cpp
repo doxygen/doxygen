@@ -14,7 +14,6 @@
 #include <qfileinfo.h>
 #include <qcstringlist.h>
 #include "vhdljjparser.h"
-#include "vhdlcode.h"
 #include "vhdldocgen.h"
 #include "message.h"
 #include "config.h"

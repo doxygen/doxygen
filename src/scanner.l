@@ -48,7 +48,6 @@
 #include "defargs.h"
 #include "language.h"
 #include "commentscan.h"
-#include "code.h"
 #include "arguments.h"
 
 #include "clangparser.h"

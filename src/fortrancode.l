@@ -55,6 +55,8 @@
 #include "tooltip.h"
 #include "fortrancode.h"
 
+const int fixedCommentAfter = 72;
+
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)

@@ -87,6 +87,7 @@
 #include "portable.h"
 #include "vhdljjparser.h"
 #include "vhdldocgen.h"
+#include "vhdlcode.h"
 #include "eclipsehelp.h"
 #include "cite.h"
 #include "markdown.h"

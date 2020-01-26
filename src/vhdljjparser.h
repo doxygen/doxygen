@@ -18,7 +18,6 @@
 #include "types.h"
 #include "entry.h"
 #include "vhdldocgen.h"
-#include "vhdlcode.h"
 #include "config.h"
 
 enum  { GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;

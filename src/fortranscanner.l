@@ -65,11 +65,12 @@
 #include "defargs.h"
 #include "language.h"
 #include "commentscan.h" 
-#include "fortrancode.h"
 #include "pre.h"
 #include "arguments.h"
 #include "debug.h"
 #include "markdown.h"
+
+const int fixedCommentAfter = 72;
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x

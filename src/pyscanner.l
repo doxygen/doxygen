@@ -51,7 +51,6 @@
 #include "defargs.h"
 #include "language.h"
 #include "commentscan.h"
-#include "pycode.h"
 #include "arguments.h"
 #include "markdown.h"
 

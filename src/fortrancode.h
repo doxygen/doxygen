@@ -28,7 +28,6 @@ class Definition;
 
 void codeFreeScanner();
 
-const int fixedCommentAfter = 72;
 
 class FortranCodeParser : public CodeParserInterface
 {
