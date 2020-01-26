@@ -27,7 +27,6 @@
 #include "membergroup.h"
 #include "dirdef.h"
 #include "memberlist.h"
-#include "docgroup.h"
 
 class RefList;
 class PageSList;
@@ -152,7 +151,6 @@ class Doxygen
     static bool                      generatingXmlOutput;
     static bool                      markdownSupport;
     static GenericsSDict            *genericsDict;
-    static DocGroup                  docGroup;
     static Preprocessor             *preprocessor;
 };
 

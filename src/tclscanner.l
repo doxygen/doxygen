@@ -419,7 +419,7 @@ typedef struct
 } tcl_scan;
 
 //* Structure containing all internal global variables.
-static struct
+struct tcl_struct
 {
   CodeOutputInterface * code; // if set then we are codifying the file
   int code_line; // current line of code
@@ -462,7 +462,9 @@ static struct
   Protection protection; // current protections state
   const MemberDef *memberdef; // contain current MemberDef when codifying
   bool collectXRefs;
-} tcl;
+};
+
+static tcl_struct tcl;
 
 // scanner functions
 static int yyread(char *buf,int max_size);
@@ -492,7 +494,7 @@ Entry* tcl_entry_new()
   myEntry->inbodyFile = tcl.file_name;
   myEntry->fileName   = tcl.file_name;
   myEntry->lang       = SrcLangExt_Tcl;
-  Doxygen::docGroup.initGroupInfo(myEntry);
+  tcl.commentScanner.initGroupInfo(myEntry);
   // collect entries
   if (!tcl.code)
   {
@@ -2983,7 +2985,7 @@ tcl_inf("%s\n",fileName);
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
 
   msg("Parsing %s...\n",fileName);
-  Doxygen::docGroup.enterFile(fileName,yylineno);
+  tcl.commentScanner.enterFile(fileName,yylineno);
 
   tcl_init();
   tcl.code = NULL;
@@ -2991,7 +2993,7 @@ tcl_inf("%s\n",fileName);
   tcl.this_parser = this;
   tcl.entry_main          = root.get(); /* toplevel entry */
   tcl_parse("","");
-  Doxygen::docGroup.leaveFile(tcl.file_name,yylineno);
+  tcl.commentScanner.leaveFile(tcl.file_name,yylineno);
   root->program.resize(0);
   myFile.close();
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);

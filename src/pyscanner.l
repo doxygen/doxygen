@@ -1465,7 +1465,7 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->virt       = yyextra->virt;
   yyextra->current->stat       = yyextra->stat;
   yyextra->current->lang       = SrcLangExt_Python; 
-  Doxygen::docGroup.initGroupInfo(yyextra->current.get());
+  yyextra->commentScanner.initGroupInfo(yyextra->current.get());
   yyextra->stat = FALSE;
 }
 
@@ -1766,13 +1766,13 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       initEntry(yyscanner);
 
       QCString name = ce->name;
-      Doxygen::docGroup.enterCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
+      yyextra->commentScanner.enterCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
 
       pyscannerYYlex(yyscanner) ;
       yyextra->lexInit=TRUE;
       ce->program.resize(0);
 
-      Doxygen::docGroup.leaveCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
+      yyextra->commentScanner.leaveCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
 
     }
     parseCompounds(yyscanner,ce);
@@ -1830,7 +1830,7 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
 
   initParser(yyscanner);
 
-  Doxygen::docGroup.enterFile(yyextra->yyFileName,yyextra->yyLineNr);
+  yyextra->commentScanner.enterFile(yyextra->yyFileName,yyextra->yyLineNr);
 
   yyextra->current->reset();
   initEntry(yyscanner);
@@ -1839,7 +1839,7 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
   pyscannerYYlex(yyscanner);
   yyextra->lexInit=TRUE;
 
-  Doxygen::docGroup.leaveFile(yyextra->yyFileName,yyextra->yyLineNr);
+  yyextra->commentScanner.leaveFile(yyextra->yyFileName,yyextra->yyLineNr);
 
   yyextra->current_root->program.resize(0);
 

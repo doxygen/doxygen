@@ -2484,12 +2484,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           if (yyextra->previous && yyextra->previous->section==Entry::GROUPDOC_SEC)
 					  {
 					    // link open command to the group defined in the yyextra->previous entry
-					    Doxygen::docGroup.open(yyextra->previous.get(),yyextra->yyFileName,yyextra->yyLineNr);
+					    yyextra->commentScanner.open(yyextra->previous.get(),yyextra->yyFileName,yyextra->yyLineNr);
 					  }
 					  else
 					  {
 					    // link open command to the yyextra->current entry
-					    Doxygen::docGroup.open(yyextra->current.get(),yyextra->yyFileName,yyextra->yyLineNr);
+					    yyextra->commentScanner.open(yyextra->current.get(),yyextra->yyFileName,yyextra->yyLineNr);
 					  }
 					  //yyextra->current = tmp;
 					  initEntry(yyscanner);
@@ -2533,7 +2533,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]){B}*{CMD}"}".*|"/*"([!*]){B}*{CMD}"}"[^*]*"*/"	{
                                           bool insideEnum = YY_START==FindFields || (YY_START==ReadInitializer && yyextra->lastInitializerContext==FindFields); // see bug746226
-  					  Doxygen::docGroup.close(yyextra->current.get(),yyextra->yyFileName,yyextra->yyLineNr,insideEnum);
+  					  yyextra->commentScanner.close(yyextra->current.get(),yyextra->yyFileName,yyextra->yyLineNr,insideEnum);
   					  lineCount(yyscanner);
   					}
 <FindMembers>"="			{ // in PHP code this could also be due to "<?="
@@ -6638,7 +6638,7 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->stat       = yyextra->stat;
   yyextra->current->lang       = yyextra->language;
   //printf("*** initEntry(yyscanner) yyextra->language=%d\n",yyextra->language);
-  Doxygen::docGroup.initGroupInfo(yyextra->current.get());
+  yyextra->commentScanner.initGroupInfo(yyextra->current.get());
   yyextra->isTypedef=FALSE;
 }
 
@@ -7150,13 +7150,13 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       //memberGroupRelates.resize(0);
       //memberGroupInside.resize(0);
       QCString name = ce->name;
-      Doxygen::docGroup.enterCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
+      yyextra->commentScanner.enterCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
       
       scannerYYlex(yyscanner);
       yyextra->lexInit=TRUE;
       //forceEndGroup();
 
-      Doxygen::docGroup.leaveCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
+      yyextra->commentScanner.leaveCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
       
       ce->program.resize(0);
 
@@ -7216,7 +7216,7 @@ static void parseMain(yyscan_t yyscanner,
 
   yyextra->current_root  = rt;
   initParser(yyscanner);
-  Doxygen::docGroup.enterFile(yyextra->yyFileName,yyextra->yyLineNr);
+  yyextra->commentScanner.enterFile(yyextra->yyFileName,yyextra->yyLineNr);
   yyextra->current = std::make_shared<Entry>();
   //printf("yyextra->current=%p yyextra->current_root=%p\n",yyextra->current,yyextra->current_root);
   int sec=guessSection(yyextra->yyFileName);
@@ -7246,7 +7246,7 @@ static void parseMain(yyscan_t yyscanner,
   }
 
   //forceEndGroup();
-  Doxygen::docGroup.leaveFile(yyextra->yyFileName,yyextra->yyLineNr);
+  yyextra->commentScanner.leaveFile(yyextra->yyFileName,yyextra->yyLineNr);
 
   rt->program.resize(0);
 

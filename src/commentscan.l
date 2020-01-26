@@ -52,6 +52,7 @@
 #include "markdown.h"
 #include "condparser.h"
 #include "formula.h"
+#include "docgroup.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -453,6 +454,7 @@ struct commentscanYY_state
   bool             insideParBlock = FALSE;
   bool             inInternalDocs = FALSE;
   int              prevPosition = 0;
+  DocGroup         docGroup;
 };
 
 //-----------------------------------------------------------------------------
@@ -786,12 +788,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					}
 <Comment>{B}*{CMD}"{"                   { // begin of a group
                                           //yyextra->langParser->handleGroupStartCommand(yyextra->memberGroupHeader);
-                                          Doxygen::docGroup.open(yyextra->current,yyextra->fileName,yyextra->lineNr);
+                                          yyextra->docGroup.open(yyextra->current,yyextra->fileName,yyextra->lineNr);
                                         }
 <Comment>{B}*{CMD}"}"                   { // end of a group
                                           //yyextra->langParser->handleGroupEndCommand();
-                                          Doxygen::docGroup.close(yyextra->current,yyextra->fileName,yyextra->lineNr,TRUE);
-					  Doxygen::docGroup.clearHeader();
+                                          yyextra->docGroup.close(yyextra->current,yyextra->fileName,yyextra->lineNr,TRUE);
+					  yyextra->docGroup.clearHeader();
 					  yyextra->parseMore=TRUE;
                                           yyextra->needNewEntry = TRUE;
 #if YY_FLEX_MAJOR_VERSION>=2 && (YY_FLEX_MINOR_VERSION>5 || (YY_FLEX_MINOR_VERSION==5 && YY_FLEX_SUBMINOR_VERSION>=33))
@@ -1700,10 +1702,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <NameParam>{LC}				{ // line continuation
                                           yyextra->lineNr++; 
 					  addOutput(yyscanner,'\n');
-					  Doxygen::docGroup.appendHeader(' ');
+					  yyextra->docGroup.appendHeader(' ');
   					}
 <NameParam>.				{ // ignore other stuff
-					  Doxygen::docGroup.appendHeader(*yytext);
+					  yyextra->docGroup.appendHeader(*yytext);
 					  yyextra->current->name+=*yytext;
   					}
 
@@ -2164,11 +2166,11 @@ static bool handleName(yyscan_t yyscanner,const QCString &, const QCStringList &
   bool stop=makeStructuralIndicator(yyscanner,Entry::MEMBERGRP_SEC);
   if (!stop)
   {
-    Doxygen::docGroup.clearHeader();
+    yyextra->docGroup.clearHeader();
     BEGIN( NameParam );
-    if (!Doxygen::docGroup.isEmpty()) // end of previous member group
+    if (!yyextra->docGroup.isEmpty()) // end of previous member group
     {
-      Doxygen::docGroup.close(yyextra->current,yyextra->fileName,yyextra->lineNr,TRUE,true);
+      yyextra->docGroup.close(yyextra->current,yyextra->fileName,yyextra->lineNr,TRUE,true);
     }
   }
   return stop;
@@ -2754,7 +2756,7 @@ static void initParser(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->sectionLabel.resize(0);
   yyextra->sectionTitle.resize(0);
-  Doxygen::docGroup.clearHeader();
+  yyextra->docGroup.clearHeader();
   yyextra->insideParBlock = FALSE;
 }
 
@@ -3322,9 +3324,9 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   }
 
   if (yyextra->current->section==Entry::MEMBERGRP_SEC &&
-      Doxygen::docGroup.isEmpty()) // @name section but no group started yet
+      yyextra->docGroup.isEmpty()) // @name section but no group started yet
   {
-    Doxygen::docGroup.open(yyextra->current,yyextra->fileName,yyextra->lineNr,true);
+    yyextra->docGroup.open(yyextra->current,yyextra->fileName,yyextra->lineNr,true);
   }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\noutput=[\n"
@@ -3338,7 +3340,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   checkFormula(yyscanner);
   prot = yyextra->protection;
   
-  Doxygen::docGroup.addDocs(curEntry);
+  yyextra->docGroup.addDocs(curEntry);
 
   newEntryNeeded = yyextra->needNewEntry;
 
@@ -3389,6 +3391,48 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
     yyextra->guards.push(new GuardedSection(FALSE,FALSE));
     BEGIN( SkipGuardedSection );
   }
+}
+
+void CommentScanner::initGroupInfo(Entry *entry)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->docGroup.initGroupInfo(entry);
+}
+
+void CommentScanner::enterFile(const char *fileName,int lineNr)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->docGroup.enterFile(fileName,lineNr);
+}
+
+void CommentScanner::leaveFile(const char *fileName,int lineNr)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->docGroup.leaveFile(fileName,lineNr);
+}
+
+void CommentScanner::enterCompound(const char *fileName,int lineNr,const char *name)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->docGroup.enterCompound(fileName,lineNr,name);
+}
+
+void CommentScanner::leaveCompound(const char *fileName,int lineNr,const char *name)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->docGroup.leaveCompound(fileName,lineNr,name);
+}
+
+void CommentScanner::open(Entry *e,const char *fileName,int lineNr,bool implicit)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->docGroup.open(e,fileName,lineNr,implicit);
+}
+
+void CommentScanner::close(Entry *e,const char *fileName,int lineNr,bool foundInline,bool implicit)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->docGroup.close(e,fileName,lineNr,foundInline,implicit);
 }
 
 #include "commentscan.l.h"

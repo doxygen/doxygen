@@ -78,6 +78,13 @@ class CommentScanner
                            int &position,
                            bool &newEntryNeeded
                           );
+    void initGroupInfo(Entry *entry);
+    void enterFile(const char *fileName,int lineNr);
+    void leaveFile(const char *fileName,int lineNr);
+    void enterCompound(const char *fileName,int line,const char *name);
+    void leaveCompound(const char *fileName,int line,const char *name);
+    void open(Entry *e,const char *fileName,int line,bool implicit=false);
+    void close(Entry *e,const char *fileName,int line,bool foundInline,bool implicit=false);
   private:
     struct Private;
     std::unique_ptr<Private> p;

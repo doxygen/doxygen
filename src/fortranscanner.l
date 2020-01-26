@@ -2346,7 +2346,7 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->virt       = Normal;
   yyextra->current->stat       = FALSE;
   yyextra->current->lang       = SrcLangExt_Fortran; 
-  Doxygen::docGroup.initGroupInfo(yyextra->current.get());
+  yyextra->commentScanner.initGroupInfo(yyextra->current.get());
 }
 
 /**
@@ -2725,7 +2725,7 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
   yyextra->global_scope = rt.get();
   startScope(yyscanner,rt.get()); // implies yyextra->current_root = rt
   initParser(yyscanner);
-  Doxygen::docGroup.enterFile(yyextra->fileName,yyextra->lineNr);
+  yyextra->commentScanner.enterFile(yyextra->fileName,yyextra->lineNr);
 
   // add entry for the file
   yyextra->current          = std::make_shared<Entry>();
@@ -2742,7 +2742,7 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
   }
 
   fortranscannerYYlex(yyscanner);
-  Doxygen::docGroup.leaveFile(yyextra->fileName,yyextra->lineNr);
+  yyextra->commentScanner.leaveFile(yyextra->fileName,yyextra->lineNr);
 
   if (yyextra->global_scope && yyextra->global_scope != INVALID_ENTRY)
   {
