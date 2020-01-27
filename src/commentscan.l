@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -25,6 +25,7 @@
  */
 
 #include <map>
+#include <stack>
 #include <string>
 
 #include <stdio.h>
@@ -32,34 +33,24 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qarray.h>
-#include <qstack.h>
-#include <qregexp.h>
-#include <qfile.h>
+#include <qcstring.h>
 #include <qcstringlist.h>
-#include "commentscan.h"
-#include "scanner.h"
-#include "entry.h"
-#include "doxygen.h"
-#include "message.h"
-#include "config.h"
-#include "util.h"
-#include "index.h"
-#include "defargs.h"
-#include "language.h"
-#include "outputlist.h"
-#include "membergroup.h"
-#include "reflist.h"
-#include "debug.h"
-#include "parserintf.h"
-#include "cite.h"
-#include "markdown.h"
-#include "condparser.h"
-#include "formula.h"
-#include "docgroup.h"
 
-#define YY_NO_INPUT 1
-#define YY_NO_UNISTD_H 1
+#include "cite.h"
+#include "commentscan.h"
+#include "condparser.h"
+#include "config.h"
+#include "debug.h"
+#include "docgroup.h"
+#include "doxygen.h"
+#include "entry.h"
+#include "formula.h"
+#include "language.h"
+#include "message.h"
+#include "parserintf.h"
+#include "reflist.h"
+#include "section.h"
+#include "util.h"
 
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const QCStringList &);
@@ -297,6 +288,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "xmlinclude",      { 0,                       FALSE }}
 };
 
+#define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 #define YY_NEVER_INTERACTIVE 1
 
 enum XRefKind
@@ -363,7 +356,7 @@ struct commentscanYY_state
   GuardType        guardType = Guard_If;     // kind of guards for conditional section
   bool             enabledSectionFound = FALSE;
   QCString         functionProto;          // function prototype
-  QStack<GuardedSection> guards;             // tracks nested conditional sections (if,ifnot,..)
+  std::stack<GuardedSection> guards;             // tracks nested conditional sections (if,ifnot,..)
   Entry           *current = 0;              // working entry
 
   bool             needNewEntry = FALSE;
@@ -1516,16 +1509,16 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  BEGIN( GuardParam );
   					}
 <SkipGuardedSection>{CMD}"endif"/{NW}	{
-  					  if (yyextra->guards.isEmpty())
+  					  if (yyextra->guards.empty())
 					  {
 					    warn(yyextra->fileName,yyextra->lineNr,
 						"found \\endif without matching start command");
 					  }
 					  else
 					  {
-					    GuardedSection *s = yyextra->guards.pop();
-                                            bool parentVisible = s->parentVisible();
-                                            delete s;
+					    GuardedSection s = yyextra->guards.top();
+                                            yyextra->guards.pop();
+                                            bool parentVisible = s.parentVisible();
                                             if (parentVisible)
                                             {
 					      yyextra->enabledSectionFound=TRUE;
@@ -1534,34 +1527,34 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
   					}
 <SkipGuardedSection>{CMD}"else"/{NW}	{
-  					  if (yyextra->guards.isEmpty())
+  					  if (yyextra->guards.empty())
 					  {
 					    warn(yyextra->fileName,yyextra->lineNr,
 						"found \\else without matching start command");
 					  }
 					  else
 					  {
-					    if (!yyextra->enabledSectionFound && yyextra->guards.top()->parentVisible())
+					    if (!yyextra->enabledSectionFound && yyextra->guards.top().parentVisible())
 					    {
-					      delete yyextra->guards.pop();
-					      yyextra->guards.push(new GuardedSection(TRUE,TRUE));
+					      yyextra->guards.pop();
+					      yyextra->guards.push(GuardedSection(TRUE,TRUE));
 					      yyextra->enabledSectionFound=TRUE;
 					      BEGIN( GuardParamEnd );
 					    }
 					  }
   					}
 <SkipGuardedSection>{CMD}"elseif"/{NW}  {
-  					  if (yyextra->guards.isEmpty())
+  					  if (yyextra->guards.empty())
 					  {
 					    warn(yyextra->fileName,yyextra->lineNr,
 						"found \\elseif without matching start command");
 					  }
 					  else
 					  {
-					    if (!yyextra->enabledSectionFound && yyextra->guards.top()->parentVisible())
+					    if (!yyextra->enabledSectionFound && yyextra->guards.top().parentVisible())
 					    {
                                               yyextra->guardType=Guard_If;
-					      delete yyextra->guards.pop();
+					      yyextra->guards.pop();
 					      BEGIN( GuardParam );
 					    }
 					  }
@@ -2344,7 +2337,7 @@ static bool handleIfNot(yyscan_t yyscanner,const QCString &, const QCStringList 
 static bool handleElseIf(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->guards.isEmpty())
+  if (yyextra->guards.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
 	"found \\else without matching start command");
@@ -2361,7 +2354,7 @@ static bool handleElseIf(yyscan_t yyscanner,const QCString &, const QCStringList
 static bool handleElse(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->guards.isEmpty())
+  if (yyextra->guards.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
 	"found \\else without matching start command");
@@ -2377,14 +2370,14 @@ static bool handleElse(yyscan_t yyscanner,const QCString &, const QCStringList &
 static bool handleEndIf(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->guards.isEmpty())
+  if (yyextra->guards.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
 	"found \\endif without matching start command");
   }
   else
   {
-    delete yyextra->guards.pop();
+    yyextra->guards.pop();
   }
   yyextra->enabledSectionFound=FALSE;
   if (!yyextra->spaceBeforeCmd.isEmpty()) 
@@ -3196,8 +3189,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   //    isBrief,isAutoBriefOn,lineNr);
 
   initParser(yyscanner);
-  yyextra->guards.setAutoDelete(TRUE);
-  yyextra->guards.clear();
+  yyextra->guards = {};
   yyextra->langParser     = parser;
   yyextra->current        = curEntry;
   if (comment.isEmpty()) return FALSE; // avoid empty strings
@@ -3245,7 +3237,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
     addOutput(yyscanner,getOverloadDocs());
   }
 
-  if (!yyextra->guards.isEmpty())
+  if (!yyextra->guards.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,"Documentation block ended in the middle of a conditional section!");
   }
@@ -3306,7 +3298,7 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
   CondParser prs;
   bool sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
   bool parentEnabled = TRUE;
-  if (!yyextra->guards.isEmpty()) parentEnabled = yyextra->guards.top()->isEnabled();
+  if (!yyextra->guards.empty()) parentEnabled = yyextra->guards.top().isEnabled();
   if (parentEnabled)
   {
     if (
@@ -3314,7 +3306,7 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
         (!sectionEnabled && yyextra->guardType==Guard_IfNot)
        ) // section is visible
     {
-      yyextra->guards.push(new GuardedSection(TRUE,TRUE));
+      yyextra->guards.push(GuardedSection(TRUE,TRUE));
       yyextra->enabledSectionFound=TRUE;
       BEGIN( GuardParamEnd );
     }
@@ -3322,14 +3314,14 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
     {
       if (yyextra->guardType!=Guard_Skip)
       {
-        yyextra->guards.push(new GuardedSection(FALSE,TRUE));
+        yyextra->guards.push(GuardedSection(FALSE,TRUE));
       }
       BEGIN( SkipGuardedSection );
     }
   }
   else // invisible because of parent
   {
-    yyextra->guards.push(new GuardedSection(FALSE,FALSE));
+    yyextra->guards.push(GuardedSection(FALSE,FALSE));
     BEGIN( SkipGuardedSection );
   }
 }
