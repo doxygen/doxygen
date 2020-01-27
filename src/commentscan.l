@@ -23,6 +23,10 @@
 /*
  *	includes
  */
+
+#include <map>
+#include <string>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -143,219 +147,156 @@ typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const QCStri
 
 struct DocCmdMap
 {
-  const char *cmdName;
+  DocCmdMap(DocCmdFunc h,bool b) : handler(h), endsBrief(b) {}
   DocCmdFunc handler;
   bool endsBrief;
 };
 
 // map of command to handler function
-static DocCmdMap docCmdMap[] =
+static const std::map< std::string, DocCmdMap > docCmdMap =
 {
   // command name      handler function         ends brief description
-  { "brief",           &handleBrief,            FALSE },
-  { "short",           &handleBrief,            FALSE },
-  { "fn",              &handleFn,               TRUE },
-  { "var",             &handleFn,               TRUE },
-  { "typedef",         &handleFn,               TRUE },
-  { "property",        &handleFn,               TRUE },
-  { "def",             &handleDef,              TRUE },
-  { "overload",        &handleOverload,         FALSE },
-  { "enum",            &handleEnum,             TRUE },
-  { "defgroup",        &handleDefGroup,         TRUE },
-  { "addtogroup",      &handleAddToGroup,       TRUE },
-  { "weakgroup",       &handleWeakGroup,        TRUE },
-  { "namespace",       &handleNamespace,        TRUE },
-  { "package",         &handlePackage,          TRUE },
-  { "class",           &handleClass,            TRUE },
-  { "headerfile",      &handleHeaderFile,       FALSE },
-  { "protocol",        &handleProtocol,         TRUE },
-  { "category",        &handleCategory,         TRUE },
-  { "union",           &handleUnion,            TRUE },
-  { "struct",          &handleStruct,           TRUE },
-  { "interface",       &handleInterface,        TRUE },
-  { "idlexcept",       &handleIdlException,     TRUE },
-  { "page",            &handlePage,             TRUE },
-  { "mainpage",        &handleMainpage,         TRUE },
-  { "file",            &handleFile,             TRUE },
-  { "dir",             &handleDir,              TRUE },
-  { "example",         &handleExample,          FALSE },
-  { "details",         &handleDetails,          TRUE  },
-  { "name",            &handleName,             FALSE },
-  { "todo",            &handleTodo,             FALSE }, // end brief will be done differently
-  { "test",            &handleTest,             FALSE }, // end brief will be done differently
-  { "bug",             &handleBug,              FALSE }, // end brief will be done differently
-  { "deprecated",      &handleDeprecated,       FALSE }, // end brief will be done differently
-  { "xrefitem",        &handleXRefItem,         FALSE }, // end brief will be done differently
-  { "related",         &handleRelated,          TRUE  },
-  { "relates",         &handleRelated,          TRUE  },
-  { "relatedalso",     &handleRelatedAlso,      TRUE  },
-  { "relatesalso",     &handleRelatedAlso,      TRUE  },
-  { "parblock",        &handleParBlock,         TRUE  },
-  { "endparblock",     &handleEndParBlock,      TRUE  },
-  { "refitem",         &handleRefItem,          TRUE  },
-  { "cite",            &handleCite,             FALSE },
-  { "subpage",         &handleSubpage,          TRUE  },
-  { "section",         &handleSection,          TRUE  },
-  { "subsection",      &handleSection,          TRUE  },
-  { "subsubsection",   &handleSection,          TRUE  },
-  { "paragraph",       &handleSection,          TRUE  },
-  { "anchor",          &handleAnchor,           TRUE  },
-  { "verbatim",        &handleFormatBlock,      TRUE  },
-  { "latexonly",       &handleFormatBlock,      FALSE },
-  { "htmlonly",        &handleFormatBlock,      FALSE },
-  { "xmlonly",         &handleFormatBlock,      FALSE },
-  { "docbookonly",     &handleFormatBlock,      FALSE },
-  { "rtfonly",         &handleFormatBlock,      FALSE },
-  { "manonly",         &handleFormatBlock,      FALSE },
-  { "dot",             &handleFormatBlock,      TRUE  },
-  { "msc",             &handleFormatBlock,      TRUE  },
-  { "startuml",        &handleFormatBlock,      TRUE  },
-  { "code",            &handleFormatBlock,      TRUE  },
-  { "addindex",        &handleAddIndex,         FALSE },
-  { "if",              &handleIf,               FALSE },
-  { "ifnot",           &handleIfNot,            FALSE },
-  { "elseif",          &handleElseIf,           FALSE },
-  { "else",            &handleElse,             FALSE },
-  { "endif",           &handleEndIf,            FALSE },
-  { "ingroup",         &handleIngroup,          TRUE },
-  { "nosubgrouping",   &handleNoSubGrouping,    FALSE },
-  { "showinitializer", &handleShowInitializer,  FALSE },
-  { "hideinitializer", &handleHideInitializer,  FALSE },
-  { "callgraph",       &handleCallgraph,        FALSE },
-  { "hidecallgraph",   &handleHideCallgraph,    FALSE },
-  { "callergraph",     &handleCallergraph,      FALSE },
-  { "hidecallergraph", &handleHideCallergraph,  FALSE },
-  { "showrefby",       &handleReferencedByRelation,     FALSE },
-  { "hiderefby",       &handleHideReferencedByRelation, FALSE },
-  { "showrefs",        &handleReferencesRelation,       FALSE },
-  { "hiderefs",        &handleHideReferencesRelation,   FALSE },
-  { "internal",        &handleInternal,         TRUE  },
-  { "_linebr",         &handleLineBr,           FALSE },
-  { "static",          &handleStatic,           FALSE },
-  { "pure",            &handlePure,             FALSE },
-  { "private",         &handlePrivate,          FALSE },
-  { "privatesection",  &handlePrivateSection,   FALSE },
-  { "protected",       &handleProtected,        FALSE },
-  { "protectedsection",&handleProtectedSection, FALSE },
-  { "public",          &handlePublic,           FALSE },
-  { "publicsection",   &handlePublicSection,    FALSE },
-  { "tableofcontents", &handleToc,              FALSE },
-  { "inherit",         &handleInherit,          TRUE  },
-  { "extends",         &handleExtends,          TRUE  },
-  { "implements",      &handleExtends,          TRUE  },
-  { "memberof",        &handleMemberOf,         TRUE  },
-  { "arg",             0,                       TRUE  },
-  { "attention",       0,                       TRUE  },
-  { "author",          0,                       TRUE  },
-  { "authors",         0,                       TRUE  },
-  { "copydoc",         &handleCopyDoc,          TRUE  },
-  { "copybrief",       &handleCopyBrief,        FALSE },
-  { "copydetails",     &handleCopyDetails,      TRUE  },
-  { "copyright",       0,                       TRUE  },
-  { "date",            0,                       TRUE  },
-  { "dotfile",         0,                       TRUE  },
-  { "htmlinclude",     0,                       FALSE },
-  { "image",           0,                       TRUE  },
-  { "include",         0,                       TRUE  },
-  { "includelineno",   0,                       TRUE  },
-  { "invariant",       0,                       TRUE  },
-  { "latexinclude",    0,                       FALSE },
-  { "li",              0,                       TRUE  },
-  { "line",            0,                       TRUE  },
-  { "note",            0,                       TRUE  },
-  { "par",             0,                       TRUE  },
-  { "param",           &handleParam,            TRUE  },
-  { "tparam",          0,                       TRUE  },
-  { "post",            0,                       TRUE  },
-  { "pre",             0,                       TRUE  },
-  { "remark",          0,                       TRUE  },
-  { "remarks",         0,                       TRUE  },
-  { "result",          0,                       TRUE  },
-  { "return",          0,                       TRUE  },
-  { "returns",         0,                       TRUE  },
-  { "exception",       0,                       TRUE  },
-  { "retval",          &handleRetval,           TRUE  },
-  { "sa",              0,                       TRUE  },
-  { "see",             0,                       TRUE  },
-  { "since",           0,                       TRUE  },
-  { "throw",           0,                       TRUE  },
-  { "throws",          0,                       TRUE  },
-  { "until",           0,                       TRUE  },
-  { "verbinclude",     0,                       FALSE },
-  { "version",         0,                       TRUE  },
-  { "warning",         0,                       TRUE  },
-  { "snippet",         0,                       TRUE  },
-  { "snippetlineno",   0,                       TRUE  },
-  { "noop",            &handleNoop,             TRUE },
-  { "rtfinclude",      0,                       FALSE },
-  { "docbookinclude",  0,                       FALSE },
-  { "maninclude",      0,                       FALSE },
-  { "xmlinclude",      0,                       FALSE },
-  { 0, 0, FALSE }
+  { "brief",           { &handleBrief,            FALSE }},
+  { "short",           { &handleBrief,            FALSE }},
+  { "fn",              { &handleFn,               TRUE }},
+  { "var",             { &handleFn,               TRUE }},
+  { "typedef",         { &handleFn,               TRUE }},
+  { "property",        { &handleFn,               TRUE }},
+  { "def",             { &handleDef,              TRUE }},
+  { "overload",        { &handleOverload,         FALSE }},
+  { "enum",            { &handleEnum,             TRUE }},
+  { "defgroup",        { &handleDefGroup,         TRUE }},
+  { "addtogroup",      { &handleAddToGroup,       TRUE }},
+  { "weakgroup",       { &handleWeakGroup,        TRUE }},
+  { "namespace",       { &handleNamespace,        TRUE }},
+  { "package",         { &handlePackage,          TRUE }},
+  { "class",           { &handleClass,            TRUE }},
+  { "headerfile",      { &handleHeaderFile,       FALSE }},
+  { "protocol",        { &handleProtocol,         TRUE }},
+  { "category",        { &handleCategory,         TRUE }},
+  { "union",           { &handleUnion,            TRUE }},
+  { "struct",          { &handleStruct,           TRUE }},
+  { "interface",       { &handleInterface,        TRUE }},
+  { "idlexcept",       { &handleIdlException,     TRUE }},
+  { "page",            { &handlePage,             TRUE }},
+  { "mainpage",        { &handleMainpage,         TRUE }},
+  { "file",            { &handleFile,             TRUE }},
+  { "dir",             { &handleDir,              TRUE }},
+  { "example",         { &handleExample,          FALSE }},
+  { "details",         { &handleDetails,          TRUE  }},
+  { "name",            { &handleName,             FALSE }},
+  { "todo",            { &handleTodo,             FALSE }}, // end brief will be done differently
+  { "test",            { &handleTest,             FALSE }}, // end brief will be done differently
+  { "bug",             { &handleBug,              FALSE }}, // end brief will be done differently
+  { "deprecated",      { &handleDeprecated,       FALSE }}, // end brief will be done differently
+  { "xrefitem",        { &handleXRefItem,         FALSE }}, // end brief will be done differently
+  { "related",         { &handleRelated,          TRUE  }},
+  { "relates",         { &handleRelated,          TRUE  }},
+  { "relatedalso",     { &handleRelatedAlso,      TRUE  }},
+  { "relatesalso",     { &handleRelatedAlso,      TRUE  }},
+  { "parblock",        { &handleParBlock,         TRUE  }},
+  { "endparblock",     { &handleEndParBlock,      TRUE  }},
+  { "refitem",         { &handleRefItem,          TRUE  }},
+  { "cite",            { &handleCite,             FALSE }},
+  { "subpage",         { &handleSubpage,          TRUE  }},
+  { "section",         { &handleSection,          TRUE  }},
+  { "subsection",      { &handleSection,          TRUE  }},
+  { "subsubsection",   { &handleSection,          TRUE  }},
+  { "paragraph",       { &handleSection,          TRUE  }},
+  { "anchor",          { &handleAnchor,           TRUE  }},
+  { "verbatim",        { &handleFormatBlock,      TRUE  }},
+  { "latexonly",       { &handleFormatBlock,      FALSE }},
+  { "htmlonly",        { &handleFormatBlock,      FALSE }},
+  { "xmlonly",         { &handleFormatBlock,      FALSE }},
+  { "docbookonly",     { &handleFormatBlock,      FALSE }},
+  { "rtfonly",         { &handleFormatBlock,      FALSE }},
+  { "manonly",         { &handleFormatBlock,      FALSE }},
+  { "dot",             { &handleFormatBlock,      TRUE  }},
+  { "msc",             { &handleFormatBlock,      TRUE  }},
+  { "startuml",        { &handleFormatBlock,      TRUE  }},
+  { "code",            { &handleFormatBlock,      TRUE  }},
+  { "addindex",        { &handleAddIndex,         FALSE }},
+  { "if",              { &handleIf,               FALSE }},
+  { "ifnot",           { &handleIfNot,            FALSE }},
+  { "elseif",          { &handleElseIf,           FALSE }},
+  { "else",            { &handleElse,             FALSE }},
+  { "endif",           { &handleEndIf,            FALSE }},
+  { "ingroup",         { &handleIngroup,          TRUE }},
+  { "nosubgrouping",   { &handleNoSubGrouping,    FALSE }},
+  { "showinitializer", { &handleShowInitializer,  FALSE }},
+  { "hideinitializer", { &handleHideInitializer,  FALSE }},
+  { "callgraph",       { &handleCallgraph,        FALSE }},
+  { "hidecallgraph",   { &handleHideCallgraph,    FALSE }},
+  { "callergraph",     { &handleCallergraph,      FALSE }},
+  { "hidecallergraph", { &handleHideCallergraph,  FALSE }},
+  { "showrefby",       { &handleReferencedByRelation,     FALSE }},
+  { "hiderefby",       { &handleHideReferencedByRelation, FALSE }},
+  { "showrefs",        { &handleReferencesRelation,       FALSE }},
+  { "hiderefs",        { &handleHideReferencesRelation,   FALSE }},
+  { "internal",        { &handleInternal,         TRUE  }},
+  { "_linebr",         { &handleLineBr,           FALSE }},
+  { "static",          { &handleStatic,           FALSE }},
+  { "pure",            { &handlePure,             FALSE }},
+  { "private",         { &handlePrivate,          FALSE }},
+  { "privatesection",  { &handlePrivateSection,   FALSE }},
+  { "protected",       { &handleProtected,        FALSE }},
+  { "protectedsection",{ &handleProtectedSection, FALSE }},
+  { "public",          { &handlePublic,           FALSE }},
+  { "publicsection",   { &handlePublicSection,    FALSE }},
+  { "tableofcontents", { &handleToc,              FALSE }},
+  { "inherit",         { &handleInherit,          TRUE  }},
+  { "extends",         { &handleExtends,          TRUE  }},
+  { "implements",      { &handleExtends,          TRUE  }},
+  { "memberof",        { &handleMemberOf,         TRUE  }},
+  { "arg",             { 0,                       TRUE  }},
+  { "attention",       { 0,                       TRUE  }},
+  { "author",          { 0,                       TRUE  }},
+  { "authors",         { 0,                       TRUE  }},
+  { "copydoc",         { &handleCopyDoc,          TRUE  }},
+  { "copybrief",       { &handleCopyBrief,        FALSE }},
+  { "copydetails",     { &handleCopyDetails,      TRUE  }},
+  { "copyright",       { 0,                       TRUE  }},
+  { "date",            { 0,                       TRUE  }},
+  { "dotfile",         { 0,                       TRUE  }},
+  { "htmlinclude",     { 0,                       FALSE }},
+  { "image",           { 0,                       TRUE  }},
+  { "include",         { 0,                       TRUE  }},
+  { "includelineno",   { 0,                       TRUE  }},
+  { "invariant",       { 0,                       TRUE  }},
+  { "latexinclude",    { 0,                       FALSE }},
+  { "li",              { 0,                       TRUE  }},
+  { "line",            { 0,                       TRUE  }},
+  { "note",            { 0,                       TRUE  }},
+  { "par",             { 0,                       TRUE  }},
+  { "param",           { &handleParam,            TRUE  }},
+  { "tparam",          { 0,                       TRUE  }},
+  { "post",            { 0,                       TRUE  }},
+  { "pre",             { 0,                       TRUE  }},
+  { "remark",          { 0,                       TRUE  }},
+  { "remarks",         { 0,                       TRUE  }},
+  { "result",          { 0,                       TRUE  }},
+  { "return",          { 0,                       TRUE  }},
+  { "returns",         { 0,                       TRUE  }},
+  { "exception",       { 0,                       TRUE  }},
+  { "retval",          { &handleRetval,           TRUE  }},
+  { "sa",              { 0,                       TRUE  }},
+  { "see",             { 0,                       TRUE  }},
+  { "since",           { 0,                       TRUE  }},
+  { "throw",           { 0,                       TRUE  }},
+  { "throws",          { 0,                       TRUE  }},
+  { "until",           { 0,                       TRUE  }},
+  { "verbinclude",     { 0,                       FALSE }},
+  { "version",         { 0,                       TRUE  }},
+  { "warning",         { 0,                       TRUE  }},
+  { "snippet",         { 0,                       TRUE  }},
+  { "snippetlineno",   { 0,                       TRUE  }},
+  { "noop",            { &handleNoop,             TRUE }},
+  { "rtfinclude",      { 0,                       FALSE }},
+  { "docbookinclude",  { 0,                       FALSE }},
+  { "maninclude",      { 0,                       FALSE }},
+  { "xmlinclude",      { 0,                       FALSE }}
 };
 
-/** @brief Command mapper.
- *
- *  Maps a command name (as found in a comment block) onto a
- *  specific handler function.
- */
-class DocCmdMapper
-{
-  public:
-    struct Cmd
-    {
-      DocCmdFunc func;
-      bool endsBrief;
-    };
-
-    /** maps a command name to a handler function */
-    static Cmd *map(const char *name)
-    {
-      return instance()->find(name);
-    }
-
-    /** release the singleton */
-    static void freeInstance()
-    {
-      delete s_instance; s_instance=0;
-    }
-
-  private:
-    static DocCmdMapper *instance()
-    {
-      if (s_instance==0) s_instance = new DocCmdMapper;
-      return s_instance;
-    }
-
-    DocCmdMapper() : m_map(113)
-    {
-      m_map.setAutoDelete(TRUE);
-      DocCmdMap *p = docCmdMap;
-      while (p->cmdName)
-      {
-        if (m_map.find(p->cmdName)!=0)
-        {
-          term("DocCmdMapper: command %s already added\n",p->cmdName);
-        }
-        Cmd *cmd = new Cmd;
-        cmd->func = p->handler;
-        cmd->endsBrief = p->endsBrief;
-        m_map.insert(p->cmdName,cmd);
-        p++;
-      }
-    }
-
-    Cmd *find(const char *name)
-    {
-      return m_map.find(name);
-    }
-    QDict<Cmd> m_map;
-    static DocCmdMapper *s_instance;
-};
-
-DocCmdMapper *DocCmdMapper::s_instance=0;
-  
-  
 #define YY_NEVER_INTERACTIVE 1
 
 enum XRefKind
@@ -708,20 +649,20 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
                                             optList = QCStringList::split(',',optStr);
                                           }
-					  DocCmdMapper::Cmd *cmdPtr = DocCmdMapper::map(cmdName);
-					  if (cmdPtr) // special action is required
+					  auto it = docCmdMap.find(cmdName.data());
+					  if (it!=docCmdMap.end()) // special action is required
 					  {
                                             int i=0;
                                             while (yytext[i]==' ' || yytext[i]=='\t') i++;
 					    yyextra->spaceBeforeCmd = QCString(yytext).left(i);
-					    if (cmdPtr->endsBrief && !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
+					    if (it->second.endsBrief && !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
 					    {
 					      yyextra->briefEndsAtDot=FALSE;
 					      // this command forces the end of brief description
 					      setOutput(yyscanner,OutputDoc);
 					    }
                                             //if (i>0) addOutput(yyscanner,QCString(yytext).left(i)); // removed for bug 689341
-					    if (cmdPtr->func && cmdPtr->func(yyscanner, cmdName, optList))
+					    if (it->second.handler && it->second.handler(yyscanner, cmdName, optList))
 					    {
 					      // implicit split of the comment block into two
 					      // entries. Restart the next block at the start
@@ -739,7 +680,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 #endif
 					      yyterminate();
 					    }
-					    else if (cmdPtr->func==0)
+					    else if (it->second.handler==0)
 					    {
 					      // command without handler, to be processed
 					      // later by parsedoc.cpp
