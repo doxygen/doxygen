@@ -229,7 +229,7 @@ TAB_SIZE               = 4
 # newlines.
 
 ALIASES                = "privilege=\par Privilege:\n" \
-                         "privlevel=\par Privilege Level:\n" \
+                         "privilegelevel=\par Privilege Level:\n" \
                          "feature=\par Feature:\n" \
                          "since_tizen=\par Since :\n" \
                          "since=\par Since (EFL) :\n" \
@@ -273,7 +273,10 @@ ALIASES                = "privilege=\par Privilege:\n" \
                          "PRIVILEGE_WINDOW_PRIORITY=\par Privilege:\n http://tizen.org/privilege/window.priority.set" \
                          "REMARK_INTERNET=@remarks %http://tizen.org/privilege/internet is needed if @a url is a http or https address." \
                          "REMARK_STORAGE=@remarks %http://tizen.org/privilege/mediastorage is needed if @a url is relevant to media storage. @remarks %http://tizen.org/privilege/externalstorage is needed if @a url is relevant to external storage." \
-                         "REMARK_RAWVIDEO=@remarks %http://tizen.org/feature/multimedia.raw_video is needed if UNDERLAY is false. If the feature isn't supported, UNDERLAY is always true."
+                         "REMARK_RAWVIDEO=@remarks %http://tizen.org/feature/multimedia.raw_video is needed if UNDERLAY is false. If the feature isn't supported, UNDERLAY is always true. " \
+                         "output=\verbatim" \
+                         "endoutput=\endverbatim" \
+                         "def_api_feature=\attention <b>Related Features:</b> \n"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
