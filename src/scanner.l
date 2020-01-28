@@ -1427,7 +1427,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->isTypedef=decl.find("typedef")!=-1;
                                           bool isConst=decl.find("const")!=-1;
                                           bool isVolatile=decl.find("volatile")!=-1;
-                                          uint64 spec = yyextra->current->spec;
   					  yyextra->current->section = Entry::CLASS_SEC ;
                                           // preserve UNO IDL & Inline attributes, Slice local
 					  yyextra->current->spec    = Entry::Struct |
@@ -3615,10 +3614,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                                 yyextra->current->name  = yyextra->current->name.left(split_point);
                                                 if (!yyextra->current_root->name.isEmpty()) yyextra->current->name.prepend(yyextra->current_root->name+"::");
 
-                                                std::shared_ptr<Entry> tmp = yyextra->current;
                                                 yyextra->current_root->moveToSubEntryAndKeep(yyextra->current);
-                                                yyextra->current_root = tmp;
-
+                                                yyextra->current_root = yyextra->current;
                                                 yyextra->current = new_current;
                                               }
                                               // restore documentation values
@@ -3662,7 +3659,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      else
 					      {
 					        yyextra->memspecEntry = yyextra->current;
-					        yyextra->current_root->copyToSubEntry( yyextra->current ) ;
+					        yyextra->current_root->moveToSubEntryAndKeep( yyextra->current ) ;
+					        yyextra->current = std::make_shared<Entry>(*yyextra->current);
 						if (yyextra->current->section==Entry::NAMESPACE_SEC ||
 						    (yyextra->current->spec==Entry::Interface) ||
 						    yyextra->insideJava || yyextra->insidePHP || yyextra->insideCS || yyextra->insideD || yyextra->insideJS ||
