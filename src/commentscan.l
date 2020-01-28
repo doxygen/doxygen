@@ -3189,7 +3189,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   //    isBrief,isAutoBriefOn,lineNr);
 
   initParser(yyscanner);
-  yyextra->guards = {};
+  yyextra->guards = std::stack<GuardedSection>();
   yyextra->langParser     = parser;
   yyextra->current        = curEntry;
   if (comment.isEmpty()) return FALSE; // avoid empty strings
