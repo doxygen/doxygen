@@ -733,10 +733,6 @@ void PerlModDocVisitor::visit(DocInclude *inc)
   case DocInclude::DontIncWithLines: return;
   case DocInclude::HtmlInclude:	type = "htmlonly"; break;
   case DocInclude::LatexInclude: type = "latexonly"; break;
-  case DocInclude::RtfInclude: type = "rtfonly"; break;
-  case DocInclude::ManInclude: type = "manonly"; break;
-  case DocInclude::XmlInclude: type = "xmlonly"; break;
-  case DocInclude::DocbookInclude: type = "docbookonly"; break;
   case DocInclude::VerbInclude:	type = "preformatted"; break;
   case DocInclude::Snippet: return;
   case DocInclude::SnipWithLines: return;
@@ -1538,6 +1534,7 @@ public:
   inline PerlModGenerator(bool pretty) : m_output(pretty) { }
 
   void generatePerlModForMember(const MemberDef *md, const Definition *);
+  void generatePerlUserDefinedSection(const Definition *d, const MemberGroupSDict *gsd);
   void generatePerlModSection(const Definition *d, MemberList *ml,
 			      const char *name, const char *header=0);
   void addListOfAllMembers(const ClassDef *cd);
@@ -1704,6 +1701,15 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     }
   }
 
+  /* DGA: fix #7495  Perlmod does not generate bitfield */
+  if (md->memberType() == MemberType_Variable && md->bitfieldString())
+  {
+	QCString bitfield = md->bitfieldString();
+	if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);
+	m_output.addFieldQuotedString("bitfield", bitfield);
+  }
+  /* DGA: end of fix #7495 */
+
   const MemberDef *rmd = md->reimplements();
   if (rmd)
     m_output.openHash("reimplements")
@@ -1780,6 +1786,38 @@ void PerlModGenerator::addListOfAllMembers(const ClassDef *cd)
   m_output.closeList();
 }
 
+/* DGA: fix #7490 Perlmod generation issue with multiple grouped functions (member groups) */
+void PerlModGenerator::generatePerlUserDefinedSection(const Definition *d, const MemberGroupSDict *gsd)
+{
+	if (gsd)
+	{
+		MemberGroupSDict::Iterator mgli(*gsd);
+		MemberGroup *mg;
+		m_output.openList("user_defined");
+		for (; (mg = mgli.current()); ++mgli)
+		{
+			m_output.openHash();
+			if (mg->header())
+				m_output.addFieldQuotedString("header", mg->header());
+
+			if (mg->members())
+			{
+				m_output.openList("members");
+				MemberListIterator mli(*mg->members());
+				const MemberDef *md;
+				for (mli.toFirst(); (md = mli.current()); ++mli)
+				{
+					generatePerlModForMember(md, d);
+				}
+				m_output.closeList();
+			}
+			m_output.closeHash();
+		}
+		m_output.closeList();
+	}
+}
+/* DGA: end of fix #7490 */
+
 void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
 {
   // + brief description
@@ -1804,7 +1842,9 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
 
   m_output.openHash()
     .addFieldQuotedString("name", cd->name());
-  
+  /* DGA: fix # #7547 Perlmod does not generate "kind" information to discriminate struct/union */
+  m_output.addFieldQuotedString("kind", cd->compoundTypeString());
+ 
   if (cd->baseClasses())
   {
     m_output.openList("base");
@@ -1866,13 +1906,7 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
 
   addTemplateList(cd,m_output);
   addListOfAllMembers(cd);
-  if (cd->getMemberGroupSDict())
-  {
-    MemberGroupSDict::Iterator mgli(*cd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-      generatePerlModSection(cd,mg->members(),"user_defined",mg->header());
-  }
+  generatePerlUserDefinedSection(cd, cd->getMemberGroupSDict());
 
   generatePerlModSection(cd,cd->getMemberList(MemberListType_pubTypes),"public_typedefs");
   generatePerlModSection(cd,cd->getMemberList(MemberListType_pubMethods),"public_methods");
@@ -1972,13 +2006,7 @@ void PerlModGenerator::generatePerlModForNamespace(const NamespaceDef *nd)
     m_output.closeList();
   }
 
-  if (nd->getMemberGroupSDict())
-  {
-    MemberGroupSDict::Iterator mgli(*nd->getMemberGroupSDict());
-    const MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-      generatePerlModSection(nd,mg->members(),"user-defined",mg->header());
-  }
+  generatePerlUserDefinedSection(nd, nd->getMemberGroupSDict());
 
   generatePerlModSection(nd,nd->getMemberList(MemberListType_decDefineMembers),"defines");
   generatePerlModSection(nd,nd->getMemberList(MemberListType_decProtoMembers),"prototypes");
@@ -2049,6 +2077,9 @@ void PerlModGenerator::generatePerlModForFile(const FileDef *fd)
   }
   m_output.closeList();
   
+  /* DGA: fix #7494 Perlmod does not generate grouped members from files */
+  generatePerlUserDefinedSection(fd, fd->getMemberGroupSDict());
+
   generatePerlModSection(fd,fd->getMemberList(MemberListType_decDefineMembers),"defines");
   generatePerlModSection(fd,fd->getMemberList(MemberListType_decProtoMembers),"prototypes");
   generatePerlModSection(fd,fd->getMemberList(MemberListType_decTypedefMembers),"typedefs");
@@ -2147,13 +2178,7 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
     m_output.closeList();
   }
 
-  if (gd->getMemberGroupSDict())
-  {
-    MemberGroupSDict::Iterator mgli(*gd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-      generatePerlModSection(gd,mg->members(),"user-defined",mg->header());
-  }
+  generatePerlUserDefinedSection(gd, gd->getMemberGroupSDict());
 
   generatePerlModSection(gd,gd->getMemberList(MemberListType_decDefineMembers),"defines");
   generatePerlModSection(gd,gd->getMemberList(MemberListType_decProtoMembers),"prototypes");
