@@ -1,22 +1,28 @@
+CLEAN_FILES := *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf
+
 {% if config.USE_PDFLATEX %}
+
+LATEX_CMD := pdflatex -interaction=batchmode -halt-on-error 
+
 all: refman.pdf
 
 pdf: refman.pdf
 
-refman.pdf: clean refman.tex
-	pdflatex refman
+refman.pdf: refman.tex
+	rm -f $(CLEAN_FILES)
+	$(LATEX_CMD) refman
 	{{ config.MAKEINDEX_CMD_NAME }} refman.idx
 {# TODO: generateBib #}
-	pdflatex refman
+	$(LATEX_CMD) refman
 	latex_count=8 ; \
 	while egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\
 	    do \
 	      echo "Rerunning latex...." ;\
-	      pdflatex refman ;\
+	      $(LATEX_CMD) refman ;\
 	      latex_count=`expr $$latex_count - 1` ;\
 	    done
 	{{ config.MAKEINDEX_CMD_NAME }} refman.idx
-	pdflatex refman
+	$(LATEX_CMD) refman
 {% else %}
 all: refman.dvi
 
@@ -60,5 +66,5 @@ refman_2on1.pdf: refman_2on1.ps
 {% endif %}
 
 clean:
-	rm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf
+	rm -f $(CLEAN_FILES)
 
