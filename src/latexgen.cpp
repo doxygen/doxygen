@@ -300,7 +300,7 @@ static void writeLatexMakefile()
    << endl;
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "LATEX_CMD=" << latex_command << endl
+    t << "LATEX_CMD:=" << latex_command << endl
       << endl
       << "all: refman.dvi" << endl
       << endl
@@ -317,7 +317,8 @@ static void writeLatexMakefile()
       << endl;
     t << "refman.pdf: refman.ps" << endl;
     t << "\tps2pdf refman.ps refman.pdf" << endl << endl;
-    t << "refman.dvi: clean refman.tex doxygen.sty" << endl
+    t << "refman.dvi: refman.tex doxygen.sty" << endl
+      << "\trm -f $(CLEAN_FILES)" << endl
       << "\techo \"Running latex...\"" << endl
       << "\t$(LATEX_CMD) refman.tex" << endl
       << "\techo \"Running makeindex...\"" << endl
@@ -348,7 +349,7 @@ static void writeLatexMakefile()
   }
   else // use pdflatex for higher quality output
   {
-    t << "LATEX_CMD:=" << latex_command << " -interaction=batchmode -halt-on-error" << endl
+    t << "LATEX_CMD:=" << latex_command << endl
       << endl;
     t << "all: refman.pdf" << endl << endl
       << "pdf: refman.pdf" << endl << endl;
@@ -483,10 +484,6 @@ void LatexGenerator::init()
 static void writeDefaultHeaderPart1(FTextStream &t)
 {
   // part 1
-
-  // Handle batch mode
-  if (Config_getBool(LATEX_BATCHMODE))
-    t << "\\batchmode\n";
 
   // to overcome problems with too many open files
   t << "\\let\\mypdfximage\\pdfximage"
