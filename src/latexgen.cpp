@@ -296,7 +296,8 @@ static void writeLatexMakefile()
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   FTextStream t(&file);
-  t << "CLEAN_FILES := *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf";
+  t << "CLEAN_FILES := *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf" << endl
+   << endl;
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
     t << "LATEX_CMD=" << latex_command << endl
