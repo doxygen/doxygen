@@ -87,7 +87,6 @@
 #include "portable.h"
 #include "vhdljjparser.h"
 #include "vhdldocgen.h"
-#include "vhdlcode.h"
 #include "eclipsehelp.h"
 #include "cite.h"
 #include "markdown.h"
@@ -174,6 +173,7 @@ QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
 bool             Doxygen::markdownSupport = TRUE;
 GenericsSDict   *Doxygen::genericsDict;
+DocGroup         Doxygen::docGroup;
 Preprocessor    *Doxygen::preprocessor = 0;
 
 // locally accessible globals
@@ -1389,7 +1389,8 @@ static void processTagLessClasses(ClassDef *rootCd,
             if (type.find(icd->name())!=-1) // matching tag less struct/union
             {
               QCString name = md->name();
-              if (md->isAnonymous()) name = "__unnamed__";
+			  /* DGA fix #7556 ANSI-C anonymous (unnamed) struct/unions have duplicated names (__unnamed__) */
+              if (md->isAnonymous()) name = "__unnamed__" + name.right(name.length()-1); /* DGA: ensure unique name */
               if (!prefix.isEmpty()) name.prepend(prefix+".");
               //printf("    found %s for class %s\n",name.data(),cd->name().data());
               ClassDef *ncd = createTagLessInstance(rootCd,icd,name);
@@ -2039,7 +2040,7 @@ static MemberDef *addVariableToClass(
       }
       else
       {
-        def=type+" "+name+args;
+        def=type+" "+name+root->args;
       }
     }
     else
@@ -2612,13 +2613,11 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
       type=name;
       static const QRegExp reName("[a-z_A-Z][a-z_A-Z0-9]*");
       int l=0;
-      int j=0;
       int i=args.isEmpty() ? -1 : reName.match(args,0,&l);
       if (i!=-1)
       {
         name=args.mid(i,l);
-        j=args.find(')',i+l)-i-l;
-        if (j >= 0) args=args.mid(i+l,j);
+        args=args.mid(i+l,args.find(')',i+l)-i-l);
       }
       //printf("new: type='%s' name='%s' args='%s'\n",
       //    type.data(),name.data(),args.data());
@@ -3726,7 +3725,7 @@ static void transferFunctionDocumentation()
         MemberNameIterator mni2(*mn);
         for (;(mdef=mni2.current());++mni2)
         {
-          if (mdec!=mdef && mdec->getNamespaceDef()==mdef->getNamespaceDef() && !mdec->isAlias() && !mdef->isAlias())
+          if (mdec!=mdef && !mdec->isAlias() && !mdef->isAlias())
           {
             combineDeclarationAndDefinition(mdec,mdef);
           }
@@ -11074,6 +11073,10 @@ void parseInput()
   g_s.begin("Parsing files\n");
   parseFiles(root);
   g_s.end();
+
+  // we are done with input scanning now, so free up the buffers used by flex
+  // (can be around 4MB)
+  pyscanFreeScanner();
 
   /**************************************************************************
    *             Gather information                                         *
