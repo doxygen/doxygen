@@ -376,8 +376,7 @@ static void writeLatexMakefile()
 
   t << endl
     << "clean:" << endl
-    << "\trm -f " 
-    << "rm -f $(CLEAN_FILES)" << endl;
+    << "\trm -f $(CLEAN_FILES)" << endl;
 }
 
 static void writeMakeBat()
