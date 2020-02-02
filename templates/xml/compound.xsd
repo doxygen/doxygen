@@ -572,7 +572,9 @@
     <xsd:attribute name="thead" type="DoxBool" />
     <xsd:attribute name="colspan" type="xsd:integer" />
     <xsd:attribute name="rowspan" type="xsd:integer" />
-    <!-- maybe other attributes can be listed as well -->
+    <xsd:attribute name="align" type="DoxAlign" />
+    <xsd:attribute name="class" type="xsd:string" />
+    <xsd:attribute name="htmlattrib" type="xsd:string" />
     <xsd:anyAttribute processContents="skip"/>
   </xsd:complexType>
 
@@ -937,6 +939,14 @@
       <xsd:enumeration value="weak"/>
       <xsd:enumeration value="strong"/>
       <xsd:enumeration value="unretained"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="DoxAlign">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="left"/>
+      <xsd:enumeration value="right"/>
+      <xsd:enumeration value="center"/>
     </xsd:restriction>
   </xsd:simpleType>
 

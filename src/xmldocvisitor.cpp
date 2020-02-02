@@ -811,44 +811,41 @@ void XmlDocVisitor::visitPre(DocHtmlCell *c)
   HtmlAttrib *opt;
   for (li.toFirst();(opt=li.current());++li)
   {
-    if (opt->name=="class")
+    if (opt->name=="colspan" || opt->name=="rowspan")
     {
-      if (opt->value == "markdownTableBodyRight")
+      m_t << " " << opt->name << "=\"" << opt->value.toInt() << "\"";
+    }
+    else if (opt->name=="align" &&
+             (opt->value=="right" || opt->value=="left" || opt->value=="center"))
+    {
+      m_t << " align=\"" << opt->value << "\"";
+    }
+    else if (opt->name=="class") // handle markdown generated attributes
+    {
+      if (opt->value.left(13)=="markdownTable") // handle markdown generated attributes
       {
-        m_t << " align=\"right\"";
-      }
-      else if (opt->value == "markdownTableBodyLeftt")
-      {
-        m_t << " align=\"left\"";
-      }
-      else if (opt->value == "markdownTableBodyCenter")
-      {
-        m_t << " align=\"center\"";
-      }
-      else if (opt->value == "markdownTableHeadRight")
-      {
-        m_t << " align=\"right\"";
-      }
-      else if (opt->value == "markdownTableHeadLeftt")
-      {
-        m_t << " align=\"left\"";
-      }
-      else if (opt->value == "markdownTableHeadCenter")
-      {
-        m_t << " align=\"center\"";
+        if (opt->value.right(5)=="Right")
+        {
+          m_t << " align='right'";
+        }
+        else if (opt->value.right(4)=="Left")
+        {
+          m_t << " align='left'";
+        }
+        else if (opt->value.right(6)=="Center")
+        {
+          m_t << " align='center'";
+        }
+        // skip 'markdownTable*' value ending with "None"
       }
       else if (!opt->value.isEmpty())
       {
-        m_t << " " << opt->name << "=\"" << opt->value << "\"";
+        m_t << " class=\"" << convertToXML(opt->value) << "\"";
       }
     }
-    else if (opt->name=="nowrap" && opt->value.isEmpty())
+    else if (!opt->name.isEmpty() && !opt->value.isEmpty()) // dump generic html attribute
     {
-      m_t << " " << opt->name << "=\"nowrap\"";
-    }
-    else if (!opt->value.isEmpty())
-    {
-      m_t << " " << opt->name << "=\"" << opt->value << "\"";
+      m_t << " htmlattrib=\"" << convertToXML(opt->name) << "=" << convertToXML(opt->value) << "\"";
     }
   }
   m_t << ">";

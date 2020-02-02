@@ -69,6 +69,21 @@ static QCString filterId(const char *s)
   return growBuf.get();
 }
 
+static bool supportedHtmlAttribute(const QCString &name)
+{
+  return (name=="align" ||
+          name=="bgcolor" ||
+          name=="border" ||
+          name=="cellpadding" ||
+          name=="cellspacing" ||
+          name=="class" ||
+          name=="frame" ||
+          name=="label" ||
+          name=="tabstyle" ||
+          name=="title");
+}
+
+
 void DocbookDocVisitor::visitCaption(const QList<DocNode> &children)
 {
   QListIterator<DocNode> cli(children);
@@ -1034,25 +1049,10 @@ DB_VIS_C
   HtmlAttrib *opt;
   for (li.toFirst();(opt=li.current());++li)
   {
-    if (opt->name=="class")
+    if (supportedHtmlAttribute(opt->name))
     {
-      // just skip it
-    }
-    else if (opt->name=="style")
-    {
-      // just skip it
-    }
-    else if (opt->name=="height")
-    {
-      // just skip it
-    }
-    else if (opt->name=="filter")
-    {
-      // just skip it
-    }
-    else
-    {
-      m_t << " " << opt->name << "='" << opt->value << "'";
+      // process supported attributes only
+      m_t << " " << opt->name << "='" << convertToDocBook(opt->value) << "'";
     }
   }
   m_t << ">\n";
@@ -1095,54 +1095,31 @@ DB_VIS_C
     }
     else if (opt->name=="class")
     {
-      if (opt->value == "markdownTableBodyRight")
+      if (opt->value.left(13)=="markdownTable") // handle markdown generated attributes
       {
-        m_t << " align='right'";
+        if (opt->value.right(5)=="Right")
+        {
+          m_t << " align='right'";
+        }
+        else if (opt->value.right(4)=="Left")
+        {
+          m_t << " align='left'";
+        }
+        else if (opt->value.right(6)=="Center")
+        {
+          m_t << " align='center'";
+        }
+        // skip 'markdownTable*' value ending with "None"
       }
-      else if (opt->value == "markdownTableBodyLeftt")
+      else
       {
-        m_t << " align='left'";
-      }
-      else if (opt->value == "markdownTableBodyCenter")
-      {
-        m_t << " align='center'";
-      }
-      else if (opt->value == "markdownTableHeadRight")
-      {
-        m_t << " align='right'";
-      }
-      else if (opt->value == "markdownTableHeadLeftt")
-      {
-        m_t << " align='left'";
-      }
-      else if (opt->value == "markdownTableHeadCenter")
-      {
-        m_t << " align='center'";
-      }
-      else if (!opt->value.isEmpty())
-      {
-        m_t << " " << opt->name << "='" << opt->value << "'";
+        m_t << " class='" << convertToDocBook(opt->value) << "'";
       }
     }
-    else if (opt->name=="style")
+    else if (supportedHtmlAttribute(opt->name))
     {
-      // just skip it
-    }
-    else if (opt->name=="width")
-    {
-      // just skip it
-    }
-    else if (opt->name=="height")
-    {
-      // just skip it
-    }
-    else if (opt->name=="nowrap" && opt->value.isEmpty())
-    {
-      m_t << " " << opt->name << "='nowrap'";
-    }
-    else
-    {
-      m_t << " " << opt->name << "='" << opt->value << "'";
+      // process supported attributes only
+      m_t << " " << opt->name << "='" << convertToDocBook(opt->value) << "'";
     }
   }
   m_t << ">";
