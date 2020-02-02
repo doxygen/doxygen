@@ -574,7 +574,6 @@
     <xsd:attribute name="rowspan" type="xsd:integer" />
     <xsd:attribute name="align" type="DoxAlign" />
     <xsd:attribute name="class" type="xsd:string" />
-    <xsd:attribute name="htmlattrib" type="xsd:string" />
     <xsd:anyAttribute processContents="skip"/>
   </xsd:complexType>
 

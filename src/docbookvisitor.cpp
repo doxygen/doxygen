@@ -79,6 +79,8 @@ static bool supportedHtmlAttribute(const QCString &name)
           name=="class" ||
           name=="frame" ||
           name=="label" ||
+          name=="style" ||
+          name=="width" ||
           name=="tabstyle" ||
           name=="title");
 }

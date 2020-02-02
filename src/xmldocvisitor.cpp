@@ -843,10 +843,6 @@ void XmlDocVisitor::visitPre(DocHtmlCell *c)
         m_t << " class=\"" << convertToXML(opt->value) << "\"";
       }
     }
-    else if (!opt->name.isEmpty() && !opt->value.isEmpty()) // dump generic html attribute
-    {
-      m_t << " htmlattrib=\"" << convertToXML(opt->name) << "=" << convertToXML(opt->value) << "\"";
-    }
   }
   m_t << ">";
 }
