@@ -1119,6 +1119,10 @@ DB_VIS_C
       {
         m_t << " align='center'";
       }
+      else if (!opt->value.isEmpty())
+      {
+        m_t << " " << opt->name << "='" << opt->value << "'";
+      }
     }
     else if (opt->name=="style")
     {

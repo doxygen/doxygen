@@ -806,7 +806,52 @@ void XmlDocVisitor::visitPost(DocHtmlRow *)
 void XmlDocVisitor::visitPre(DocHtmlCell *c)
 {
   if (m_hide) return;
-  if (c->isHeading()) m_t << "<entry thead=\"yes\">"; else m_t << "<entry thead=\"no\">";
+  if (c->isHeading()) m_t << "<entry thead=\"yes\""; else m_t << "<entry thead=\"no\"";
+  HtmlAttribListIterator li(c->attribs());
+  HtmlAttrib *opt;
+  for (li.toFirst();(opt=li.current());++li)
+  {
+    if (opt->name=="class")
+    {
+      if (opt->value == "markdownTableBodyRight")
+      {
+        m_t << " align=\"right\"";
+      }
+      else if (opt->value == "markdownTableBodyLeftt")
+      {
+        m_t << " align=\"left\"";
+      }
+      else if (opt->value == "markdownTableBodyCenter")
+      {
+        m_t << " align=\"center\"";
+      }
+      else if (opt->value == "markdownTableHeadRight")
+      {
+        m_t << " align=\"right\"";
+      }
+      else if (opt->value == "markdownTableHeadLeftt")
+      {
+        m_t << " align=\"left\"";
+      }
+      else if (opt->value == "markdownTableHeadCenter")
+      {
+        m_t << " align=\"center\"";
+      }
+      else if (!opt->value.isEmpty())
+      {
+        m_t << " " << opt->name << "=\"" << opt->value << "\"";
+      }
+    }
+    else if (opt->name=="nowrap" && opt->value.isEmpty())
+    {
+      m_t << " " << opt->name << "=\"nowrap\"";
+    }
+    else if (!opt->value.isEmpty())
+    {
+      m_t << " " << opt->name << "=\"" << opt->value << "\"";
+    }
+  }
+  m_t << ">";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlCell *) 
