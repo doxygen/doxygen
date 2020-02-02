@@ -1,4 +1,5 @@
 .sass-cache
 *-min.js
 doxmenu*.css
-jquery.js
+tabs.css
+bundle.js

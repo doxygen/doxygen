@@ -1,4 +1,12 @@
-@import 'compass';
+@mixin border-radius($pixel) {
+  border-radius: $pixel;
+}
+
+@mixin box-shadow($value) {
+  -webkit-box-shadow: $value;
+  -moz-box-shadow: $value;
+  box-shadow: $value;
+}
 
 // This file is best viewed with Tab size 4 code indentation
 

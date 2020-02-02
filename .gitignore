@@ -14,3 +14,4 @@
 /doxygen_docs
 /doxygen.tag
 /build*
+/node_modules

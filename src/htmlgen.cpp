@@ -953,7 +953,7 @@ void HtmlGenerator::init()
   {
     mgr.copyResourceAs("fixed_tabs.css",dname,"tabs.css");
   }
-  mgr.copyResource("jquery.js",dname);
+  mgr.copyResource("bundle.js",dname);
   if (Config_getBool(INTERACTIVE_SVG))
   {
     mgr.copyResource("svgpan.js",dname);
@@ -1253,7 +1253,7 @@ void HtmlGenerator::writeStyleInfo(int part)
       }
     }
 
-    Doxygen::indexList->addStyleSheetFile("jquery.js");
+    Doxygen::indexList->addStyleSheetFile("bundle.js");
     Doxygen::indexList->addStyleSheetFile("dynsections.js");
     if (Config_getBool(INTERACTIVE_SVG))
     {

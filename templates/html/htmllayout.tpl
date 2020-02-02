@@ -4,7 +4,7 @@
 
 {% resource 'doxygen.css' %}
 {% resource 'tabs.css' %}
-{% resource 'jquery.js' %}
+{% resource 'bundle.js' %}
 {% resource 'dynsections.js %}
 {% resource 'tab_a.lum' %}
 {% resource 'tab_b.lum' %}

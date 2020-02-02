@@ -1,38 +1,34 @@
-JQUERY_VERSION = 3.4.1
-JQUERY_UI_VERSION = 1.12.1
-SCROLL_VERSION = 2.1.2
-POWERTIP_VERSION = 1.3.1
-TOUCHPUNCH_VERSION = 0.2.3
-SMARTMENUS_VERSION = 1.1.0
-
-MINIFIER ?= /usr/local/bin/yuicompressor-2.4.7
-SCRIPTS = jquery-$(JQUERY_VERSION).min.js \
-          jquery.ui-$(JQUERY_UI_VERSION).min.js \
-          jquery.scrollTo-$(SCROLL_VERSION).min.js \
-	  jquery.powertip-$(POWERTIP_VERSION).mod.min.js \
-	  jquery.ui.touch-punch-$(TOUCHPUNCH_VERSION).min.js \
-	  jquery.smartmenus-$(SMARTMENUS_VERSION).min.js
-RESULTS = jquery.js doxmenu-min.css
+SCRIPTS = ../node_modules/jquery/dist/jquery.slim.min.js \
+          ../node_modules/jquery-ui-dist/jquery-ui.min.js \
+          ../node_modules/jquery.scrollto/jquery.scrollTo.min.js \
+          ../node_modules/tippy.js/dist/tippy-bundle.iife.js \
+          ../node_modules/popper.js/dist/umd/popper.min.js \
+          ../node_modules/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js \
+          ../node_modules/smartmenus/dist/jquery.smartmenus.min.js
+RESULTS = bundle.js tabs.css
 
 all: $(RESULTS)
 
 install: $(RESULTS)
-	cp jquery.js ../templates/html/jquery.js
-	cp doxmenu-min.css ../templates/html/tabs.css
+	cp bundle.js ../templates/html/.
+	cp tabs.css ../templates/html/.
 
-jquery.js: $(SCRIPTS)
-	cat $(SCRIPTS) > jquery.js
+../node_modules:
+	yarnpkg install
 
-doxmenu-min.css: sm-core-css.css \
+bundle.js: ../node_modules $(SCRIPTS)
+	cat $(SCRIPTS) > bundle.js
+
+
+
+tabs.css: sm-core-css.css \
                  sass/sm-dox.scss \
                  sass/_round-corners-last-item.scss \
                  sass/_sm-dox.scss \
                  sass/_sub-items-indentation.scss
-	compass compile --css-dir . --force sass/sm-dox.scss
-	cat sm-core-css.css sm-dox.css > doxmenu.css
-	java -jar $(MINIFIER).jar doxmenu.css > doxmenu-min.css
-	rm -f sm-dox.css doxmenu.css
+	sassc sass/sm-dox.scss > sm-dox.css
+	cat sm-core-css.css sm-dox.css > tabs.css
+	rm -f sm-dox.css
 
 clean:
-	rm -rf $(RESULTS) doxmenu.css .sass-cache
-
+	rm -rf $(RESULTS) .sass-cache ../node_modules
