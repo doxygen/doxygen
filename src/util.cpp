@@ -6340,7 +6340,7 @@ QCString substituteTemplateArgumentsInString(
   //    name.data(),argListToString(formalArgs).data(),argListToString(actualArgs).data());
   if (formalArgs.empty()) return name;
   QCString result;
-  static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9\\x80-\\xFF]*");
+  static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9:\\x80-\\xFF]*");
   int p=0,l,i;
   // for each identifier in the base class name (e.g. B<T> -> B and T)
   while ((i=re.match(name,p,&l))!=-1)
@@ -6378,8 +6378,8 @@ QCString substituteTemplateArgumentsInString(
       {
         //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s'\n",
         //  n.data(),formArg->type.data(),formArg->name.data(),formArg->defval.data());
-        //printf(">> formArg->name='%s' actArg->type='%s' actArg->name='%s'\n",
-        //    formArg->name.data(),actArg ? actArg->type.data() : "",actArg ? actArg->name.data() : ""
+        //printf(">> n='%s' formArg->name='%s' actArg->type='%s' actArg->name='%s'\n",
+        //    n.data(),formArg.name.data(),actIt!=actualArgs.end() ? actIt->type.data() : "",actIt!=actualArgs.end() ? actIt->name.data() : ""
         //    );
         if (formArg.name==n && actIt!=actualArgs.end() && !actArg.type.isEmpty()) // base class is a template argument
         {
@@ -6441,24 +6441,6 @@ QCString substituteTemplateArgumentsInString(
   return result.stripWhiteSpace();
 }
 
-#if 0
-/*! Makes a deep copy of the list of argument lists \a srcLists. 
- *  Will allocate memory, that is owned by the caller.
- */
-QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists)
-{
-  ASSERT(srcLists!=0);
-  QList<ArgumentList> *dstLists = new QList<ArgumentList>;
-  dstLists->setAutoDelete(TRUE);
-  QListIterator<ArgumentList> sli(*srcLists);
-  ArgumentList *sl;
-  for (;(sl=sli.current());++sli)
-  {
-    dstLists->append(sl->deepCopy());
-  }
-  return dstLists;
-}
-#endif
 
 /*! Strips template specifiers from scope \a fullName, except those 
  *  that make up specialized classes. The switch \a parentOnly 
