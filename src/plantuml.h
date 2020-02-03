@@ -24,6 +24,17 @@
 #define MIN_PLANTUML_COUNT      8
 
 class QCString;
+struct PlantumlContent
+{
+  QCString outDir;
+  QCString content;
+  PlantumlContent(const QCString Content, const QCString OutDir)
+  {
+    outDir = OutDir;
+    content = Content;
+  };
+  ~PlantumlContent(){};
+};
 
 /** Singleton that manages plantuml relation actions */
 class PlantumlManager
@@ -58,15 +69,16 @@ class PlantumlManager
     ~PlantumlManager();
     void insert(const QCString &key, 
                 const QCString &value,
+                const QCString &outDir,
                 OutputFormat format,
                 const QCString &puContent);
     static PlantumlManager     *m_theInstance;
     QDict< QList<QCString> >    m_pngPlantumlFiles;
     QDict< QList<QCString> >    m_svgPlantumlFiles;
     QDict< QList<QCString> >    m_epsPlantumlFiles;
-    QDict< QCString >           m_pngPlantumlContent;     // use circular queue for using multi-processor (multi threading)
-    QDict< QCString >           m_svgPlantumlContent;
-    QDict< QCString >           m_epsPlantumlContent;
+    QDict< PlantumlContent >    m_pngPlantumlContent;     // use circular queue for using multi-processor (multi threading)
+    QDict< PlantumlContent >    m_svgPlantumlContent;
+    QDict< PlantumlContent >    m_epsPlantumlContent;
     QCString                    m_cachedPlantumlAllContent;         // read from CACHE_FILENAME file
     QCString                    m_currentPlantumlAllContent;        // processing plantuml then write it into CACHE_FILENAME to reuse the next time as cache information
 };
