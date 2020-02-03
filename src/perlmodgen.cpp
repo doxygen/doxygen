@@ -1800,7 +1800,9 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
 
   m_output.openHash()
     .addFieldQuotedString("name", cd->name());
-  
+  /* DGA: fix # #7547 Perlmod does not generate "kind" information to discriminate struct/union */
+  m_output.addFieldQuotedString("kind", cd->compoundTypeString());
+ 
   if (cd->baseClasses())
   {
     m_output.openList("base");
