@@ -253,7 +253,7 @@ class VhdlDocGen
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
     static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
-    static void  writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef);
+    static void  writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol ,const MemberDef *mdef);
 };
 
 //-------------------------------------------------------------------------------------------------------------------

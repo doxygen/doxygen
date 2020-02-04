@@ -45,7 +45,7 @@ class VHDLOutlineParser : public OutlineParserInterface
 
 
     // interface for generated parser code
-
+   
     void setLineParsed(int tok);
     int getLine(int tok);
     int getLine();
@@ -71,11 +71,12 @@ class VHDLOutlineParser : public OutlineParserInterface
     void setMultCommentLine();
     bool checkMultiComment(QCString& qcs,int line);
     void insertEntryAtLine(std::shared_ptr<Entry> ce,int line);
-
+    QString getNameID();
   private:
     struct Private;
     std::unique_ptr<Private> p;
 };
+
 
 const EntryList &getVhdlInstList();
 

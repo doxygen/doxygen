@@ -233,6 +233,23 @@ void VHDLOutlineParser::newEntry()
   initEntry(s->current.get());
 }
 
+static int idCounter;
+
+/** returns a unique id for each record member.
+*
+*  type first_rec is record 
+*		RE: data_type;
+*	end;
+*	
+* type second_rec is record 
+*		RE: data_type;
+*	end;
+*/
+		
+QString VHDLOutlineParser::getNameID(){
+ return QString::number(idCounter++,10);
+}
+
 void VHDLOutlineParser::handleFlowComment(const char* doc)
 {
   lineCount(doc);
@@ -251,7 +268,6 @@ void VHDLOutlineParser::handleCommentBlock(const char* doc1,bool brief)
 {
   VhdlParser::SharedState *s = &p->shared;
   QCString doc = doc1;
- // fprintf(stderr,"\n %s",doc.data());
   if (doc.isEmpty()) return;
 
   if (checkMultiComment(doc,p->yyLineNr))
@@ -284,8 +300,7 @@ void VHDLOutlineParser::handleCommentBlock(const char* doc1,bool brief)
   {
     s->current->docLine = p->yyLineNr;
   }
-  //  printf("parseCommentBlock file<%s>\n [%s]\n at line [%d] \n ",yyFileName.data(),doc.data(),p->iDocLine);
-
+  
   int j=doc.find("[plant]");
   if (j>=0)
   {
@@ -296,7 +311,7 @@ void VHDLOutlineParser::handleCommentBlock(const char* doc1,bool brief)
   int position=0;
   bool needsEntry=FALSE;
   QCString processedDoc = processMarkdownForCommentBlock(doc,p->yyFileName,p->iDocLine);
-  while (p->commentScanner.parseCommentBlock(
+   while (p->commentScanner.parseCommentBlock(
         p->thisParser,
         s->current.get(),
         processedDoc, // text
@@ -311,7 +326,6 @@ void VHDLOutlineParser::handleCommentBlock(const char* doc1,bool brief)
         )
       )
   {
-    //printf("parseCommentBlock position=%d [%s]\n",position,doc.data()+position);
     if (needsEntry) newEntry();
   }
   if (needsEntry)

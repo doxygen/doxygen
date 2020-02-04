@@ -1956,9 +1956,10 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
   }
   // *** write type
   /*VHDL CHANGE */
-  bool bRec,bUnit;
+
   QCString ltype(mdef->typeString());
   QCString largs(mdef->argsString());
+ 
   ClassDef *kl=0;
   const ArgumentList &al = mdef->argumentList();
   QCString nn;
@@ -2014,7 +2015,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
       ol.insertMemberAlign();
       if (largs=="context")
       {
-        VhdlDocGen::writeRecorUnit(ltype,ol,mdef);
+        VhdlDocGen::writeRecordUnit(ltype,largs,ol,mdef);
       }
 
       break;
@@ -2079,7 +2080,6 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
 
       ol.insertMemberAlign();
       ol.docify("  ");
-
       ol.startBold();
       ol.docify(ltype);
       ol.endBold();
@@ -2128,6 +2128,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
     case VhdlDocGen::SHAREDVARIABLE:
     case VhdlDocGen::VFILE:
     case VhdlDocGen::GROUP:
+    case VhdlDocGen::TYPE:
       writeLink(mdef,ol);
       ol.docify(" ");
       ol.insertMemberAlign();
@@ -2135,34 +2136,9 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
       break;
     case VhdlDocGen::RECORD:
     case VhdlDocGen::UNITS:
-      writeLink(mdef,ol);
-      ol.docify(" ");
-      ol.startBold();
-      if (ltype.isEmpty()) {
-          ol.docify(" ");
-      }
-      ol.insertMemberAlign();
-      if (!ltype.isEmpty())
-        VhdlDocGen::formatString(ltype,ol,mdef);
-      ol.endBold();
+     writeRecordUnit(largs,ltype,ol,mdef);
       break;
-    case VhdlDocGen::TYPE:
-      bRec=largs.stripPrefix("record") ;
-      bUnit=largs.stripPrefix("units") ;
-      ol.startBold();
-      if (bRec)  ol.docify("record: ");
-      if (bUnit) ol.docify("units: ");
-      writeLink(mdef,ol);
-      ol.insertMemberAlign();
-      if (!bRec && !bUnit) VhdlDocGen::formatString(ltype,ol,mdef);
-      if (bUnit) ol.lineBreak();
-      if (bRec || bUnit)
-      {
-        writeRecorUnit(largs,ol,mdef);
-      }
-      ol.endBold();
-      break;
-
+    
     default: break;
   }
 
@@ -2930,8 +2906,6 @@ ferr:
   md->setDocumentation(cur->doc.data(),cur->docFile.data(),cur->docLine);
   FileDef *fd=ar->getFileDef();
   md->setBodyDef(fd);
-
-
   QCString info="Info: Elaborating entity "+n1;
   fd=ar->getFileDef();
   info+=" for hierarchy ";
@@ -2940,23 +2914,27 @@ ferr:
   label.replace(epr,":");
   info+=label;
   fprintf(stderr,"\n[%s:%d:%s]\n",fd->fileName().data(),cur->startLine,info.data());
-
-
   ar->insertMember(md);
 
 }
 
 
-void  VhdlDocGen::writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef)
+void  VhdlDocGen::writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol ,const MemberDef *mdef)
 {
-  QCStringList ql=QCStringList::split("#",largs,FALSE);
-  uint len=ql.count();
-  for(uint i=0;i<len;i++)
-  {
-    QCString n=ql[i];
-    VhdlDocGen::formatString(n,ol,mdef);
-    if ((len-i)>1) ol.lineBreak();
-  }
+	  int i=mdef->name().find('~');	  
+	  if(i>0){
+		 //sets the real record member name
+	    const_cast<MemberDef*>(mdef)->setName(mdef->name().left(i).data());
+       }
+   
+      writeLink(mdef,ol);
+      ol.startBold();
+      ol.insertMemberAlign();
+      if (!ltype.isEmpty()){
+        VhdlDocGen::formatString(ltype,ol,mdef);
+	} 
+      ol.endBold();
+ 
 }
 
 
