@@ -514,14 +514,14 @@ such label you can simple use the file name of the page, e.g.
 Markdown is quite strict in the way it processes block-level HTML:
 
 > block-level HTML elements — e.g. 
-> `<div>`, `<table>`, `<pre>`, `<p>`, etc. — 
+> `<div>`, `<table>`, \c \<pre\>, `<p>`, etc. — 
 > must be separated from surrounding content by blank lines, 
 > and the start and end tags of the block should not be indented 
 > with tabs or spaces.
 
 Doxygen does not have this requirement, and will also process 
 Markdown formatting inside such HTML blocks. The only exception is
-`<pre>` blocks, which are passed untouched (handy for ASCII art).
+\c \<pre\> blocks, which are passed untouched (handy for ASCII art).
 
 Doxygen will not process Markdown formatting inside verbatim or code blocks,
 and in other sections that need to be processed without changes

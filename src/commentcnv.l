@@ -121,6 +121,8 @@ static void replaceComment(yyscan_t yyscanner,int offset);
 %}
 
 MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+PRE       [pP][rR][eE]
+CODE      [cC][oO][dD][eE]
 
 %option noyywrap
 
@@ -363,6 +365,13 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
                                      }
                                      BEGIN(VerbatimCode);
   				   }
+<CComment,ReadLine>"<"{CODE}">"/[^a-z_A-Z0-9] { /* start of a verbatim block */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng); 
+				     yyextra->blockName=&yytext[1];
+				     yyextra->blockName=yyextra->blockName.lower();
+				     yyextra->lastCommentContext = YY_START;
+                                     BEGIN(VerbatimCode);
+                                   }
 <CComment,ReadLine>[\\@]("f$"|"f["|"f{") {
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->blockName=&yytext[1];
@@ -434,6 +443,13 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				       BEGIN(yyextra->lastCommentContext);
 				     }
                                    }
+<VerbatimCode>"</"{CODE}">" { /* end of verbatim block */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+				     if (QCString(&yytext[2]).lower()==yyextra->blockName)
+				     {
+				       BEGIN(yyextra->lastCommentContext);
+				     }
+				   }
 <VerbatimCode>^[ \t]*"//"[\!\/]?   { /* skip leading comments */
   				     if (!yyextra->inSpecialComment)
 				     {
@@ -457,7 +473,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
                                        }
                                      }
   				   }
-<Verbatim,VerbatimCode>[^@\/\\\n{}]* { /* any character not a backslash or new line or } */
+<Verbatim,VerbatimCode>[^<@\/\\\n{}]* { /* any character not a backslash or new line or } */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
@@ -737,13 +753,27 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 <ReadLine>"*"                      {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				   }
-<ReadLine>[^\\@\n\*/]*             {
+<ReadLine>[^<\\@\n\*/]*             {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				   }
-<ReadLine>[^\\@\n\*/]*/\n          {
+<ReadLine>[^<\\@\n\*/]*/\n          {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				     BEGIN(yyextra->readLineCtx);
 				   }
+<CComment,ReadLine>"<"{PRE}">"/[^a-z_A-Z0-9] { /* start of a verbatim block */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng); 
+				     yyextra->blockName=&yytext[1];
+				     yyextra->blockName=yyextra->blockName.lower();
+				     yyextra->lastCommentContext = YY_START;
+                                     BEGIN(Verbatim);
+                                   }
+<Verbatim>"</"{PRE}">" { /* end of verbatim block */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+				     if (QCString(&yytext[2]).lower()==yyextra->blockName)
+				     {
+				       BEGIN(yyextra->lastCommentContext);
+				     }
+                                   }
 <CComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
   				   }

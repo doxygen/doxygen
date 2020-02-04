@@ -6329,10 +6329,18 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    REJECT;
 					  }
-  					  else if (yyextra->docBlockName=="code")
-					  {
-					    REJECT;
-					  }
+                                          else if (yyextra->docBlockName=="<pre>")
+                                          {
+                                            REJECT;
+                                          }
+                                          else if (yyextra->docBlockName=="code")
+                                          {
+                                            REJECT;
+                                          }
+                                          else if (yyextra->docBlockName=="<code>")
+                                          {
+                                            REJECT;
+                                          }
                                           else
                                           {
                                             QCString indent;
