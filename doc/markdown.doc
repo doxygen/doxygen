@@ -401,11 +401,13 @@ more tilde (~) characters on a line. The end of the block should have the
 same number of tildes. Here is an example:
 
 
-    This is a paragraph introducing:
+@verbatim
+This is a paragraph introducing:
 
-    ~~~~~~~~~~~~~~~~~~~~~
-    a one-line code block
-    ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+a one-line code block
+~~~~~~~~~~~~~~~~~~~~~
+@endverbatim
 
 By default the output is the same as for a normal code block.
 
@@ -414,12 +416,13 @@ appear with syntax highlighting. To do so you need to
 indicate the typical file extension that corresponds to the 
 programming language after the opening fence. For highlighting according
 to the Python language for instance, you would need to write the following:
-
-    ~~~~~~~~~~~~~{.py}
-    # A class
-    class Dummy:
-        pass
-    ~~~~~~~~~~~~~
+@verbatim
+~~~~~~~~~~~~~{.py}
+# A class
+class Dummy:
+    pass
+~~~~~~~~~~~~~
+@endverbatim
 
 which will produce:
 ~~~~~~~~~~~~~{.py}
@@ -429,10 +432,11 @@ class Dummy:
 ~~~~~~~~~~~~~
 
 and for C you would write:
-
-    ~~~~~~~~~~~~~~~{.c}
-    int func(int a,int b) { return a*b; }
-    ~~~~~~~~~~~~~~~
+@verbatim
+~~~~~~~~~~~~~~~{.c}
+int func(int a,int b) { return a*b; }
+~~~~~~~~~~~~~~~
+@endverbatim
 
 which will produce:
 
@@ -443,10 +447,11 @@ int func(int a,int b) { return a*b; }
 The curly braces and dot are optional by the way.
 
 Another way to denote fenced code blocks is to use 3 or more backticks (```):
-
-    ```
-    also a fenced code block
-    ```
+@verbatim
+```
+also a fenced code block
+```
+@endverbatim
 
 \subsection md_header_id Header Id Attributes
 

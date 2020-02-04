@@ -70,6 +70,7 @@ struct commentcnvYY_state
   int      col = 0;
   int      blockHeadCol = 0;
   bool     mlBrief = FALSE;
+  bool     mdSupport = FALSE;
   int      readLineCtx = 0;
   bool     skip = FALSE;
   QCString fileName;
@@ -131,6 +132,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 %x CComment
 %x Verbatim
 %x VerbatimCode
+%x VerbatimSpaceCode
 %x ReadLine
 %x CondLine
 %x ReadAliasArgs
@@ -349,6 +351,28 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				     yyextra->blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
+<CComment,ReadLine>"```"[`]* {
+                               if (!yyextra->mdSupport) 
+                               {
+                                 REJECT;
+                               }
+                               copyToOutput(yyscanner,yytext,(int)yyleng); 
+			       yyextra->lastCommentContext = YY_START;
+			       yyextra->javaBlock=0;
+			       yyextra->blockName="```";
+                               BEGIN(VerbatimCode);
+                             }
+<CComment,ReadLine>"~~~"[~]* {
+                               if (!yyextra->mdSupport) 
+                               {
+                                 REJECT;
+                               }
+                               copyToOutput(yyscanner,yytext,(int)yyleng); 
+			       yyextra->lastCommentContext = YY_START;
+			       yyextra->javaBlock=0;
+			       yyextra->blockName="~~~";
+                               BEGIN(VerbatimCode);
+                             }
 <CComment,ReadLine>[\\@]("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->lastCommentContext = YY_START;
@@ -427,9 +451,19 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				       }
 				     }
   				   }
+<VerbatimCode>"```"[`]* |
+<VerbatimCode>"~~~"[~]* |
 <VerbatimCode>[\\@]("enddot"|"endcode"|"endmsc"|"enduml") { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
-				     if (&yytext[4]==yyextra->blockName)
+                                     if (yytext[0] == '`' && yyextra->blockName =="```")
+                                     {
+				       BEGIN(yyextra->lastCommentContext);
+				     }
+                                     else if (yytext[0] == '~' && yyextra->blockName =="~~~")
+                                     {
+				       BEGIN(yyextra->lastCommentContext);
+				     }
+				     else if (&yytext[4]==yyextra->blockName)
 				     {
 				       BEGIN(yyextra->lastCommentContext);
 				     }
@@ -1106,6 +1140,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   yyextra->inBufPos = 0;
   yyextra->col      = 0;
   yyextra->mlBrief = Config_getBool(MULTILINE_CPP_IS_BRIEF);
+  yyextra->mdSupport = Config_getBool(MARKDOWN_SUPPORT);
   yyextra->skip     = FALSE;
   yyextra->fileName = fileName;
   yyextra->lang = getLanguageFromFileName(fileName);
