@@ -132,7 +132,6 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 %x CComment
 %x Verbatim
 %x VerbatimCode
-%x VerbatimSpaceCode
 %x ReadLine
 %x CondLine
 %x ReadAliasArgs
