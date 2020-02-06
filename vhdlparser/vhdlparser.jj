@@ -9,7 +9,7 @@
  * See the GNU General Public License for more details.
  *
  */
-options {
+ options {
   JAVA_UNICODE_ESCAPE = true;
   OUTPUT_LANGUAGE = "c++";
   NAMESPACE = "vhdl::parser";
@@ -24,7 +24,7 @@ options {
  //DEBUG_LOOKAHEAD=true;
 
   }
-
+ 
 PARSER_BEGIN(VhdlParser)
 
 
