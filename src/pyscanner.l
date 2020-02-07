@@ -1670,7 +1670,7 @@ static void initTriDoubleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlockContext   = YY_START;
   yyextra->docBlockInBody    = FALSE;
   yyextra->docBlockJavaStyle = TRUE;
-  yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
+  yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!' || !Config_getBool(PYTHON_DOCSTRING);
   yyextra->docBlock.resize(0);
   yyextra->doubleQuote = TRUE;
   startCommentBlock(yyscanner,FALSE);
@@ -1682,7 +1682,7 @@ static void initTriSingleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlockContext   = YY_START;
   yyextra->docBlockInBody    = FALSE;
   yyextra->docBlockJavaStyle = TRUE;
-  yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
+  yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!' || !Config_getBool(PYTHON_DOCSTRING);
   yyextra->docBlock.resize(0);
   yyextra->doubleQuote = FALSE;
   startCommentBlock(yyscanner,FALSE);
