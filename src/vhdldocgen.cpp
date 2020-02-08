@@ -200,7 +200,7 @@ void VhdlDocGen::writeOverview()
 
   if (!f.open(IO_WriteOnly))
   {
-    fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
+    err("Warning: Cannot open file %s for writing\n",fileName.data());
     return;
   }
 
@@ -2906,14 +2906,14 @@ ferr:
   md->setDocumentation(cur->doc.data(),cur->docFile.data(),cur->docLine);
   FileDef *fd=ar->getFileDef();
   md->setBodyDef(fd);
-  QCString info="Info: Elaborating entity "+n1;
-  fd=ar->getFileDef();
-  info+=" for hierarchy ";
-  QRegExp epr("[|]");
-  QCString label=cur->type+":"+cur->write+":"+cur->name;
-  label.replace(epr,":");
-  info+=label;
-  fprintf(stderr,"\n[%s:%d:%s]\n",fd->fileName().data(),cur->startLine,info.data());
+  //QCString info="Info: Elaborating entity "+n1;
+  //fd=ar->getFileDef();
+  //info+=" for hierarchy ";
+  //QRegExp epr("[|]");
+  //QCString label=cur->type+":"+cur->write+":"+cur->name;
+  //label.replace(epr,":");
+  //info+=label;
+  //fprintf(stderr,"\n[%s:%d:%s]\n",fd->fileName().data(),cur->startLine,info.data());
   ar->insertMember(md);
 
 }
