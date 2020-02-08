@@ -546,7 +546,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				     }
   				   }
 <CComment>\n                       { /* new line in comment */
-                                     copyToOutput(yyscanner,yytext,(int)yyleng); 
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
                                      /* in case of Fortran always end of comment */
   				     if (yyextra->lang==SrcLangExt_Fortran)
 				     {
@@ -554,16 +554,20 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				     }
                                    }
 <CComment>"/"+"*"                  { /* nested C comment */
-                                     if ((yyextra->lang==SrcLangExt_Python) || (yyextra->lang==SrcLangExt_Tcl))
+                                     if (yyextra->lang==SrcLangExt_Python ||
+                                         yyextra->lang==SrcLangExt_Tcl    ||
+                                         yyextra->lang==SrcLangExt_Markdown)
 				     {
 				       REJECT;
                                      }
                                      yyextra->nestingCount++;
                                      yyextra->commentStack.push(new CommentCtx(yyextra->lineNr));
-                                     copyToOutput(yyscanner,yytext,(int)yyleng); 
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <CComment>"*"+"/"                  { /* end of C comment */
-                                     if ((yyextra->lang==SrcLangExt_Python) || (yyextra->lang==SrcLangExt_Tcl))
+                                     if (yyextra->lang==SrcLangExt_Python ||
+                                         yyextra->lang==SrcLangExt_Tcl    ||
+                                         yyextra->lang==SrcLangExt_Markdown)
 				     {
 				       REJECT;
 				     }
