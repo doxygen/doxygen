@@ -349,6 +349,17 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				     yyextra->blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
+<CComment,ReadLine>("```"[`]*|"~~~"[~]*) { /* start of markdown code block */
+                                     if (!Config_getBool(MARKDOWN_SUPPORT))
+                                     {
+                                       REJECT;
+                                     }
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                     yyextra->lastCommentContext = YY_START;
+                                     yyextra->javaBlock=0;
+                                     yyextra->blockName=QCString(yytext).left(3);
+                                     BEGIN(VerbatimCode);
+                                   }
 <CComment,ReadLine>[\\@]("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->lastCommentContext = YY_START;
@@ -427,6 +438,13 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				       }
 				     }
   				   }
+<VerbatimCode>("```"[`]*|"~~~"[~]*) { /* end of markdown code block */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                     if (yytext[0]==yyextra->blockName[0])
+                                     {
+                                       BEGIN(yyextra->lastCommentContext);
+                                     }
+                                   }
 <VerbatimCode>[\\@]("enddot"|"endcode"|"endmsc"|"enduml") { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
 				     if (&yytext[4]==yyextra->blockName)
@@ -526,7 +544,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 
-<CComment>[^ <\\!@*\n{\"\/]*       { /* anything that is not a '*' or command */ 
+<CComment>[^ `~<\\!@*\n{\"\/]*     { /* anything that is not a '*' or command */ 
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 <CComment>"*"+[^*/\\@\n{\"]*       { /* stars without slashes */
