@@ -7133,7 +7133,7 @@ void DocRoot::parse()
     {
       if (!g_token->sectionId.startsWith("autotoc_md"))
       {
-         warn_doc_error(g_fileName,doctokenizerYYlineno,"found paragraph command outside of subsubsection context!");
+         warn_doc_error(g_fileName,doctokenizerYYlineno,"found paragraph command (id: '%s') outside of subsubsection context!",qPrint(g_token->sectionId));
       }
       while (retval==RetVal_Paragraph)
       {
@@ -7163,7 +7163,7 @@ void DocRoot::parse()
     if (retval==RetVal_Subsubsection)
     {
       if (!(g_token->sectionId.startsWith("autotoc_md")))
-        warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsubsection command outside of subsection context!");
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsubsection command (id: '%s') outside of subsection context!",qPrint(g_token->sectionId));
       while (retval==RetVal_Subsubsection)
       {
         if (!g_token->sectionId.isEmpty())
@@ -7193,7 +7193,7 @@ void DocRoot::parse()
     {
       if (!g_token->sectionId.startsWith("autotoc_md"))
       {
-        warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsection command outside of section context!");
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"found subsection command (id: '%s') outside of section context!",qPrint(g_token->sectionId));
       }
       while (retval==RetVal_Subsection)
       {

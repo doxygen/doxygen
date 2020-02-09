@@ -1052,7 +1052,7 @@ void writeJavaScriptSearchIndex()
             QCString anchor = d->anchor();
 
             ti << "'" << externalRef("../",d->getReference(),TRUE)
-              << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+              << addHtmlExtensionIfMissing(d->getOutputFileBase());
             if (!anchor.isEmpty())
             {
               ti << "#" << anchor;
@@ -1109,7 +1109,7 @@ void writeJavaScriptSearchIndex()
                 ti << "],[";
               }
               ti << "'" << externalRef("../",d->getReference(),TRUE)
-                << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+                << addHtmlExtensionIfMissing(d->getOutputFileBase());
               if (!anchor.isEmpty())
               {
                 ti << "#" << anchor;
