@@ -4073,11 +4073,34 @@ void MemberDefImpl::warnIfUndocumented() const
   }
 }
 
+static QCString removeReturnTypeKeywords(const QCString &s)
+{
+  QCString result = s;
+  bool done;
+  do
+  {
+    done=true;
+    if (result.stripPrefix("constexp ")  ||
+        result.stripPrefix("consteval ") ||
+        result.stripPrefix("virtual ")   ||
+        result.stripPrefix("static ")    ||
+        result.stripPrefix("volatile "))
+    {
+      done=false;
+    }
+  }
+  while (!done);
+  return result;
+}
+
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
   if (!Config_getBool(WARN_NO_PARAMDOC)) return;
-  QCString returnType   = typeString();
+  QCString returnType = removeReturnTypeKeywords(typeString());
   bool isPython = getLanguage()==SrcLangExt_Python;
+  bool isFortran = getLanguage()==SrcLangExt_Fortran;
+  bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
+  bool isVoidReturn = returnType=="void";
 
   if (!m_impl->hasDocumentedParams && hasParamCommand)
   {
@@ -4139,8 +4162,8 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
   else if ( // see if return type is documented in a function w/o return type
             hasReturnCommand &&
             (
-              returnType=="void"   || // void return type
-              returnType.find("subroutine")!=-1 || // fortran subroutine
+              isVoidReturn         || // void return type
+              isFortranSubroutine  || // fortran subroutine
               isConstructor()      || // a constructor
               isDestructor()          // or destructor
             )
@@ -4151,10 +4174,10 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
   }
   else if ( // see if return needs to documented 
             m_impl->hasDocumentedReturnType ||
-           returnType=="void" || // void return type
-           returnType.find("subroutine")!=-1 || // fortran subroutine
-           isConstructor()    || // a constructor
-           isDestructor()        // or destructor
+           isVoidReturn        || // void return type
+           isFortranSubroutine || // fortran subroutine
+           isConstructor()     || // a constructor
+           isDestructor()         // or destructor
           )
   {
     m_impl->hasDocumentedReturnType = TRUE;
