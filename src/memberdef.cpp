@@ -4080,7 +4080,7 @@ static QCString removeReturnTypeKeywords(const QCString &s)
   do
   {
     done=true;
-    if (result.stripPrefix("constexp ")  ||
+    if (result.stripPrefix("constexpr ")  ||
         result.stripPrefix("consteval ") ||
         result.stripPrefix("virtual ")   ||
         result.stripPrefix("static ")    ||
