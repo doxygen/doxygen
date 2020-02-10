@@ -18,6 +18,9 @@
 %option prefix="commentcnvYY"
 %option reentrant
 %option extra-type="struct commentcnvYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 
@@ -349,7 +352,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 				     yyextra->blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
-<CComment,ReadLine>("```"[`]*|"~~~"[~]*) { /* start of markdown code block */
+<CComment,ReadLine>^[ \t]*("```"[`]*|"~~~"[~]*) { /* start of markdown code block */
                                      if (!Config_getBool(MARKDOWN_SUPPORT))
                                      {
                                        REJECT;
@@ -357,7 +360,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                      yyextra->lastCommentContext = YY_START;
                                      yyextra->javaBlock=0;
-                                     yyextra->blockName=QCString(yytext).left(3);
+                                     yyextra->blockName=QCString(yytext).stripWhiteSpace().left(3);
                                      BEGIN(VerbatimCode);
                                    }
 <CComment,ReadLine>[\\@]("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
@@ -475,7 +478,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
                                        }
                                      }
   				   }
-<Verbatim,VerbatimCode>[^@\/\\\n{}]* { /* any character not a backslash or new line or } */
+<Verbatim,VerbatimCode>[^`~@\/\\\n{}]* { /* any character not a backslash or new line or } */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
