@@ -30,6 +30,9 @@
 #include "doxygen.h"
 #include "ftextstream.h"
 
+// Remove the temporary files (true) or not (false)
+#define RM_TMP_FILES (true)
+
 Formula::Formula(const char *text)
 {
   static int count=0;
@@ -312,18 +315,18 @@ void FormulaList::generateBitmaps(const char *path)
         f.close();
       } 
       // remove intermediate image files
-      thisDir.remove(formBase+"_tmp.ps");
-      thisDir.remove(formBase+".eps");
-      thisDir.remove(formBase+".pnm");
-      thisDir.remove(formBase+".ps");
+      if (RM_TMP_FILES) thisDir.remove(formBase+"_tmp.ps");
+      if (RM_TMP_FILES) thisDir.remove(formBase+".eps");
+      if (RM_TMP_FILES) thisDir.remove(formBase+".pnm");
+      if (RM_TMP_FILES) thisDir.remove(formBase+".ps");
     }
     // remove intermediate files produced by latex
-    thisDir.remove("_formulas.dvi");
-    if (!formulaError) thisDir.remove("_formulas.log"); // keep file in case of errors
-    thisDir.remove("_formulas.aux");
+    if (RM_TMP_FILES) thisDir.remove("_formulas.dvi");
+    if (RM_TMP_FILES && !formulaError) thisDir.remove("_formulas.log"); // keep file in case of errors
+    if (RM_TMP_FILES) thisDir.remove("_formulas.aux");
   }
   // remove the latex file itself
-  if (!formulaError) thisDir.remove("_formulas.tex");
+  if (RM_TMP_FILES && !formulaError) thisDir.remove("_formulas.tex");
   // write/update the formula repository so we know what text the 
   // generated images represent (we use this next time to avoid regeneration
   // of the images, and to avoid forcing the user to delete all images in order
