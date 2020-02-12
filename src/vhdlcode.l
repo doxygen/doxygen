@@ -20,6 +20,9 @@
 %option never-interactive
 %option case-insensitive
 %option prefix="vhdlcodeYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 

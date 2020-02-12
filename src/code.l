@@ -18,6 +18,9 @@
 %option prefix="codeYY"
 %option reentrant
 %option extra-type="struct codeYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 

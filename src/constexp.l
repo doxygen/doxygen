@@ -20,6 +20,9 @@
 %option nounput
 %option reentrant bison-bridge
 %option extra-type="struct constexpYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 

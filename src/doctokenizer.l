@@ -18,6 +18,9 @@
 
 %option never-interactive
 %option prefix="doctokenizerYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 

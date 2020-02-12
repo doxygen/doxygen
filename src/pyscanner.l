@@ -25,6 +25,9 @@
 %option prefix="pyscannerYY"
 %option reentrant
 %option extra-type="struct pyscannerYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 

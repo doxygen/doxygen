@@ -29,7 +29,7 @@ class GrowBuf
     void addStr(const char *s) {
                         if (s)
                         {
-                          int l=strlen(s);
+                          int l=(int)strlen(s);
                           if (pos+l>=len) { len+=l+GROW_AMOUNT; str = (char*)realloc(str,len); }
                           strcpy(&str[pos],s);
                           pos+=l;
@@ -38,7 +38,7 @@ class GrowBuf
     void addStr(const char *s,int n) {
                         if (s)
                         {
-                          int l=strlen(s);
+                          int l=(int)strlen(s);
                           if (n<l) l=n;
                           if (pos+l>=len) { len+=l+GROW_AMOUNT; str = (char*)realloc(str,len); }
                           strncpy(&str[pos],s,n);

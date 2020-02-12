@@ -259,7 +259,7 @@ void term(const char *fmt, ...)
   va_end(args);
   if (warnFile != stderr)
   {
-    for (int i = 0; i < strlen(error_str); i++) fprintf(warnFile, " ");
+    for (int i = 0; i < (int)strlen(error_str); i++) fprintf(warnFile, " ");
     fprintf(warnFile, "%s\n", "Exiting...");
   }
   exit(1);

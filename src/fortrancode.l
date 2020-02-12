@@ -26,6 +26,9 @@
 %option never-interactive
 %option case-insensitive
 %option prefix="fortrancodeYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 

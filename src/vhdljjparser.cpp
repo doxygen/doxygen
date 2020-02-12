@@ -609,7 +609,7 @@ int VHDLOutlineParser::getLine()
 
 void VHDLOutlineParser::setLineParsed(int tok)
 {
-  if (p->lineParse.size()<=tok) p->lineParse.resize(tok+1);
+  if ((int)p->lineParse.size()<=tok) p->lineParse.resize(tok+1);
   p->lineParse[tok]=p->yyLineNr;
 }
 

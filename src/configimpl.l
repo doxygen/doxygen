@@ -11,6 +11,9 @@
  */
 %option never-interactive
 %option prefix="configimplYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 

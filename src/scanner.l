@@ -18,6 +18,9 @@
 %option prefix="scannerYY"
 %option reentrant
 %option extra-type="struct scannerYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 

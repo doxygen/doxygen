@@ -42,6 +42,9 @@
 %option prefix="fortranscannerYY"
 %option reentrant
 %option extra-type="struct fortranscannerYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 

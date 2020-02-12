@@ -20,6 +20,9 @@
 %option noyywrap
 %option reentrant
 %option extra-type="struct declinfoYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 

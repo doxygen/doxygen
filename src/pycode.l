@@ -23,6 +23,9 @@
 
 %option never-interactive
 %option prefix="pycodeYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 

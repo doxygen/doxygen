@@ -19,6 +19,9 @@
 
 %option never-interactive
 %option prefix="xmlcodeYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 

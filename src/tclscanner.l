@@ -17,6 +17,9 @@
 %option never-interactive
 %option case-insensitive
 %option prefix="tclscannerYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 #include <stdio.h> 

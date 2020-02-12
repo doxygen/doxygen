@@ -43,6 +43,9 @@
 %option prefix="defargsYY"
 %option reentrant
 %option extra-type="struct defargsYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 

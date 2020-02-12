@@ -18,6 +18,9 @@
 %option prefix="preYY"
 %option reentrant
 %option extra-type="struct preYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 

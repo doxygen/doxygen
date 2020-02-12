@@ -19,6 +19,9 @@
 %option nounput
 %option reentrant
 %option extra-type="struct sqlcodeYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 
