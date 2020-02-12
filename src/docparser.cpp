@@ -2223,15 +2223,13 @@ bool DocXRefItem::parse()
 DocFormula::DocFormula(DocNode *parent,int id) :
       m_relPath(g_relPath)
 {
-  m_parent = parent; 
-  QCString formCmd;
-  formCmd.sprintf("\\_form#%d",id);
-  Formula *formula=Doxygen::formulaNameDict->find(formCmd);
-  if (formula)
+  m_parent = parent;
+  QCString text = FormulaManager::instance().findFormula(id);
+  if (!text.isEmpty())
   {
-    m_id = formula->getId();
+    m_id = id;
     m_name.sprintf("form_%d",m_id);
-    m_text = formula->getFormulaText();
+    m_text = text;
   }
   else // wrong \_form#<n> command
   {

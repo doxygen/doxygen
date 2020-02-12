@@ -116,9 +116,6 @@ class Doxygen
     static StringDict                namespaceAliasDict;
     static GroupSDict               *groupSDict;
     static NamespaceSDict           *namespaceSDict;
-    static FormulaList              *formulaList;
-    static FormulaDict              *formulaDict;
-    static FormulaDict              *formulaNameDict;
     static StringDict                tagDestinationDict;
     static StringDict                aliasDict;
     static QIntDict<MemberGroupInfo> memGrpInfoDict;

@@ -18,45 +18,33 @@
 #ifndef FORMULA_H
 #define FORMULA_H
 
-#include <qlist.h>
-#include <qdict.h>
+#include <memory>
+#include <qcstring.h>
 
-/** Class representing a formula in the output. */
-class Formula
+/*! Manager class to handle formulas */
+class FormulaManager
 {
   public:
-    Formula(const char *text);
-   ~Formula();
-    int getId();
-    QCString getFormulaText() const { return form; }
-    
+    struct DisplaySize
+    {
+      DisplaySize(int w,int h) : width(w), height(h) {}
+      int width;
+      int height;
+    };
+    enum class Format { Bitmap, Vector };
+    enum class HighDPI { On, Off };
+    static FormulaManager &instance();
+    void readFormulas(const char *dir,bool doCompare=false);
+    void clear();
+    int addFormula(const char *formulaText);
+    void generateImages(const char *outputDir,Format format,HighDPI hd = HighDPI::Off) const;
+    QCString findFormula(int formulaId) const;
+    bool hasFormulas() const;
+    DisplaySize displaySize(int formulaId) const;
   private:
-    int number;
-    QCString form;
-};
-
-/** A list of Formula objects. */
-class FormulaList : public QList<Formula>
-{
-  public:
-    void generateBitmaps(const char *path);
-};
-
-/** Iterator for Formula objects in a FormulaList. */
-class FormulaListIterator : public QListIterator<Formula>
-{
-  public:
-    FormulaListIterator(const FormulaList &l) : 
-      QListIterator<Formula>(l) {}
-};
-
-/** Unsorted dictionary of Formula objects. */
-class FormulaDict : public QDict<Formula>
-{
-  public:
-    FormulaDict(uint size) : 
-      QDict<Formula>(size) {}
-   ~FormulaDict() {}
+    FormulaManager();
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 #endif

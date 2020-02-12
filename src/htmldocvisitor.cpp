@@ -36,6 +36,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "formula.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -888,10 +889,25 @@ void HtmlDocVisitor::visit(DocFormula *f)
     m_t << "\" alt=\"";
     filterQuotedCdataAttr(f->text());
     m_t << "\"";
-    // TODO: cache image dimensions on formula generation and give height/width
-    // for faster preloading and better rendering of the page
-    m_t << " src=\"" << f->relPath() << f->name() << ".png\"/>";
-
+    m_t << " src=\"" << f->relPath() << f->name();
+    if (Config_getEnum(HTML_FORMULA_FORMAT)=="SVG")
+    {
+      m_t << ".svg";
+    }
+    else
+    {
+      m_t << ".png";
+    }
+    FormulaManager::DisplaySize size = FormulaManager::instance().displaySize(f->id());
+    if (size.width!=-1)
+    {
+      m_t << "\" width=\"" << size.width;
+    }
+    if (size.height!=-1)
+    {
+      m_t << "\" height=\"" << size.height;
+    }
+    m_t << "\"/>";
   }
   if (bDisplay)
   {

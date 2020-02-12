@@ -17,6 +17,9 @@
 %option prefix="commentscanYY"
 %option reentrant
 %option extra-type="struct commentscanYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 
@@ -2862,21 +2865,9 @@ static QCString addFormula(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString formLabel;
   QCString fText=yyextra->formulaText.simplifyWhiteSpace();
-  Formula *f=0;
-  if ((f=Doxygen::formulaDict->find(fText))==0)
-  {
-    f = new Formula(fText);
-    Doxygen::formulaList->append(f);
-    Doxygen::formulaDict->insert(fText,f);
-    formLabel.sprintf("\\_form#%d",f->getId());
-    Doxygen::formulaNameDict->insert(formLabel,f);
-  }
-  else
-  {
-    formLabel.sprintf("\\_form#%d",f->getId());
-  }
-  int i;
-  for (i=0;i<yyextra->formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
+  int id = FormulaManager::instance().addFormula(fText);
+  formLabel.sprintf("\\_form#%d",id);
+  for (int i=0;i<yyextra->formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
                                                          // keep the warnings 
                                                          // correctly aligned.
   return formLabel;

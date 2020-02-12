@@ -567,3 +567,12 @@ const char *Portable::strnstr(const char *haystack, const char *needle, size_t h
   }
   return 0;
 }
+
+const char *Portable::devNull()
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  return "NUL";
+#else
+  return "/dev/null";
+#endif
+}

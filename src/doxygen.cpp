@@ -126,9 +126,6 @@ MemberNameSDict *Doxygen::functionNameSDict = 0;
 FileNameList    *Doxygen::inputNameList = 0;       // all input files
 FileNameDict    *Doxygen::inputNameDict = 0;
 GroupSDict      *Doxygen::groupSDict = 0;
-FormulaList     *Doxygen::formulaList = 0;       // all formulas
-FormulaDict     *Doxygen::formulaDict = 0;       // all formulas
-FormulaDict     *Doxygen::formulaNameDict = 0;   // the label name of all formulas
 PageSDict       *Doxygen::pageSDict = 0;
 PageSDict       *Doxygen::exampleSDict = 0;
 SectionDict     *Doxygen::sectionDict = 0;        // all page sections
@@ -197,7 +194,6 @@ void clearAll()
   Doxygen::pageSDict->clear();
   Doxygen::exampleSDict->clear();
   Doxygen::inputNameList->clear();
-  Doxygen::formulaList->clear();
   Doxygen::sectionDict->clear();
   Doxygen::inputNameDict->clear();
   Doxygen::includeNameDict->clear();
@@ -206,11 +202,10 @@ void clearAll()
   Doxygen::dotFileNameDict->clear();
   Doxygen::mscFileNameDict->clear();
   Doxygen::diaFileNameDict->clear();
-  Doxygen::formulaDict->clear();
-  Doxygen::formulaNameDict->clear();
   Doxygen::tagDestinationDict.clear();
   delete Doxygen::citeDict;
   delete Doxygen::mainPage; Doxygen::mainPage=0;
+  FormulaManager::instance().clear();
 }
 
 class Statistics
@@ -281,10 +276,6 @@ void statistics()
   fprintf(stderr,"--- typedefDict stats ----\n");
   fprintf(stderr,"--- namespaceAliasDict stats ----\n");
   Doxygen::namespaceAliasDict.statistics();
-  fprintf(stderr,"--- formulaDict stats ----\n");
-  Doxygen::formulaDict->statistics();
-  fprintf(stderr,"--- formulaNameDict stats ----\n");
-  Doxygen::formulaNameDict->statistics();
   fprintf(stderr,"--- tagDestinationDict stats ----\n");
   Doxygen::tagDestinationDict.statistics();
   fprintf(stderr,"--- g_compoundKeywordDict stats ----\n");
@@ -9576,66 +9567,6 @@ int readFileOrDirectory(const char *s,
 
 //----------------------------------------------------------------------------
 
-void readFormulaRepository(QCString dir, bool cmp)
-{
-  static int current_repository = 0; 
-  int new_repository = 0; 
-  QFile f(dir+"/formula.repository");
-  if (f.open(IO_ReadOnly)) // open repository
-  {
-    msg("Reading formula repository...\n");
-    QTextStream t(&f);
-    QCString line;
-    Formula *f;
-    while (!t.eof())
-    {
-      line=t.readLine().utf8();
-      int se=line.find(':'); // find name and text separator.
-      if (se==-1)
-      {
-        warn_uncond("formula.repository is corrupted!\n");
-        break;
-      }
-      else
-      {
-        QCString formName = line.left(se);
-        QCString formText = line.right(line.length()-se-1);
-        if (cmp)
-        {
-          if ((f=Doxygen::formulaDict->find(formText))==0)
-          {
-            term("discrepancy between formula repositories! Remove "
-                "formula.repository and from_* files from output directories.");
-          }
-          QCString formLabel;
-          formLabel.sprintf("\\_form#%d",f->getId());
-          if (formLabel != formName)
-          {
-            term("discrepancy between formula repositories! Remove "
-                "formula.repository and from_* files from output directories.");
-          }
-          new_repository++;
-        }
-        else
-        {
-          f=new Formula(formText);
-          Doxygen::formulaList->append(f);
-          Doxygen::formulaDict->insert(formText,f);
-          Doxygen::formulaNameDict->insert(formName,f);
-          current_repository++;
-        }
-      }
-    }
-  }
-  if (cmp && (current_repository != new_repository))
-  {
-    term("size discrepancy between formula repositories! Remove "
-        "formula.repository and from_* files from output directories.");
-  }
-}
-
-//----------------------------------------------------------------------------
-
 static void expandAliases()
 {
   QDictIterator<QCString> adi(Doxygen::aliasDict);
@@ -9935,10 +9866,6 @@ void initDoxygen()
   Doxygen::citeDict = new CiteDict(257);
   Doxygen::genericsDict = new GenericsSDict;
   Doxygen::indexList = new IndexList;
-  Doxygen::formulaList = new FormulaList;
-  Doxygen::formulaList->setAutoDelete(TRUE);
-  Doxygen::formulaDict = new FormulaDict(1009);
-  Doxygen::formulaNameDict = new FormulaDict(1009);
   Doxygen::sectionDict = new SectionDict(257);
   Doxygen::sectionDict->setAutoDelete(TRUE);
 
@@ -9968,10 +9895,9 @@ void initDoxygen()
 
 void cleanUpDoxygen()
 {
+  FormulaManager::instance().clear();
+
   delete Doxygen::sectionDict;
-  delete Doxygen::formulaNameDict;
-  delete Doxygen::formulaDict;
-  delete Doxygen::formulaList;
   delete Doxygen::indexList;
   delete Doxygen::genericsDict;
   delete Doxygen::inputNameDict;
@@ -11036,18 +10962,22 @@ void parseInput()
 
   if (Config_getBool(GENERATE_HTML) && !Config_getBool(USE_MATHJAX))
   {
-    readFormulaRepository(Config_getString(HTML_OUTPUT));
+    FormulaManager::instance().readFormulas(Config_getString(HTML_OUTPUT));
   }
   if (Config_getBool(GENERATE_RTF))
   {
     // in case GENERRATE_HTML is set we just have to compare, both repositories should be identical
-    readFormulaRepository(Config_getString(RTF_OUTPUT),Config_getBool(GENERATE_HTML) && !Config_getBool(USE_MATHJAX));
+    FormulaManager::instance().readFormulas(Config_getString(RTF_OUTPUT),
+                              Config_getBool(GENERATE_HTML) &&
+                              !Config_getBool(USE_MATHJAX));
   }
   if (Config_getBool(GENERATE_DOCBOOK))
   {
     // in case GENERRATE_HTML is set we just have to compare, both repositories should be identical
-    readFormulaRepository(Config_getString(DOCBOOK_OUTPUT),
-                         (Config_getBool(GENERATE_HTML) && !Config_getBool(USE_MATHJAX)) || Config_getBool(GENERATE_RTF));
+    FormulaManager::instance().readFormulas(Config_getString(DOCBOOK_OUTPUT),
+                         (Config_getBool(GENERATE_HTML) &&
+                         !Config_getBool(USE_MATHJAX)) ||
+                         Config_getBool(GENERATE_RTF));
   }
 
   /**************************************************************************
@@ -11477,6 +11407,29 @@ void generateOutput()
   }
   g_s.end();
 
+  const FormulaManager &fm = FormulaManager::instance();
+  if (fm.hasFormulas() && generateHtml
+      && !Config_getBool(USE_MATHJAX))
+  {
+    g_s.begin("Generating images for formulas in HTML...\n");
+    fm.generateImages(Config_getString(HTML_OUTPUT), Config_getEnum(HTML_FORMULA_FORMAT)=="SVG" ?
+        FormulaManager::Format::Vector : FormulaManager::Format::Bitmap, FormulaManager::HighDPI::On);
+    g_s.end();
+  }
+  if (fm.hasFormulas() && generateRtf)
+  {
+    g_s.begin("Generating images for formulas in RTF...\n");
+    fm.generateImages(Config_getString(RTF_OUTPUT),FormulaManager::Format::Bitmap);
+    g_s.end();
+  }
+
+  if (fm.hasFormulas() && generateDocbook)
+  {
+    g_s.begin("Generating images for formulas in Docbook...\n");
+    fm.generateImages(Config_getString(DOCBOOK_OUTPUT),FormulaManager::Format::Bitmap);
+    g_s.end();
+  }
+
   g_s.begin("Generating example documentation...\n");
   generateExampleDocs();
   g_s.end();
@@ -11515,27 +11468,6 @@ void generateOutput()
   g_s.begin("Generating directory documentation...\n");
   generateDirDocs(*g_outputList);
   g_s.end();
-
-  if (Doxygen::formulaList->count()>0 && generateHtml
-      && !Config_getBool(USE_MATHJAX))
-  {
-    g_s.begin("Generating bitmaps for formulas in HTML...\n");
-    Doxygen::formulaList->generateBitmaps(Config_getString(HTML_OUTPUT));
-    g_s.end();
-  }
-  if (Doxygen::formulaList->count()>0 && generateRtf)
-  {
-    g_s.begin("Generating bitmaps for formulas in RTF...\n");
-    Doxygen::formulaList->generateBitmaps(Config_getString(RTF_OUTPUT));
-    g_s.end();
-  }
-
-  if (Doxygen::formulaList->count()>0 && generateDocbook)
-  {
-    g_s.begin("Generating bitmaps for formulas in Docbook...\n");
-    Doxygen::formulaList->generateBitmaps(Config_getString(DOCBOOK_OUTPUT));
-    g_s.end();
-  }
 
   if (Config_getBool(SORT_GROUP_NAMES))
   {
