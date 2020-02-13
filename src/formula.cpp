@@ -38,6 +38,15 @@
 #define RM_TMP_FILES (true)
 //#define RM_TMP_FILES (false)
 
+// for SVG output choose which tool to use
+#define USE_PDF2SVG  1
+#define USE_INKSCAPE 0
+
+#if (USE_PDF2SVG+USE_INKSCAPE!=1)
+#error "Invalid configuration: either USE_PDF2SVG or USE_INKSCAPE should be 1"
+#endif
+
+
 struct FormulaManager::Private
 {
   void storeDisplaySize(int id,int w,int h)
@@ -294,6 +303,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         }
         Portable::sysTimerStop();
 
+#if USE_PDF2SVG
         sprintf(args,"%s_tmp.pdf form_%d.svg",formBase.data(),pageNum);
         Portable::sysTimerStart();
         if (Portable::system("pdf2svg",args)!=0)
@@ -304,7 +314,25 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
           return;
         }
         Portable::sysTimerStop();
-        if (RM_TMP_FILES) thisDir.remove(formBase+"_tmp.pdf");
+#endif
+
+#if USE_INKSCAPE // alternative using inkscape (does seem to work very well on my system)
+        sprintf(args,"-l -z %s_tmp.pdf -o form_%d.svg 2>%s",formBase.data(),pageNum,Portable::devNull());
+        Portable::sysTimerStart();
+        if (Portable::system("inkscape",args)!=0)
+        {
+          err("Problems running inkscape. Check your installation!\n");
+          Portable::sysTimerStop();
+          QDir::setCurrent(oldDir);
+          return;
+        }
+        Portable::sysTimerStop();
+#endif
+
+        if (RM_TMP_FILES)
+        {
+          thisDir.remove(formBase+"_tmp.pdf");
+        }
       }
       else // format==Format::Bitmap
       {
@@ -378,8 +406,11 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         }
         Portable::sysTimerStop();
 
-        thisDir.remove(formBase+"_tmp.eps");
-        thisDir.remove(formBase+"_tmp_corr.eps");
+        if (RM_TMP_FILES)
+        {
+          thisDir.remove(formBase+"_tmp.eps");
+          thisDir.remove(formBase+"_tmp_corr.eps");
+        }
       }
 
       // remove intermediate image files

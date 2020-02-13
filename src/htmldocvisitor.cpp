@@ -890,7 +890,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
     filterQuotedCdataAttr(f->text());
     m_t << "\"";
     m_t << " src=\"" << f->relPath() << f->name();
-    if (Config_getEnum(HTML_FORMULA_FORMAT)=="SVG")
+    if (Config_getEnum(HTML_FORMULA_FORMAT)=="svg")
     {
       m_t << ".svg";
     }

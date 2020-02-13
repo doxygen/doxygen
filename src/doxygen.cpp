@@ -11412,7 +11412,7 @@ void generateOutput()
       && !Config_getBool(USE_MATHJAX))
   {
     g_s.begin("Generating images for formulas in HTML...\n");
-    fm.generateImages(Config_getString(HTML_OUTPUT), Config_getEnum(HTML_FORMULA_FORMAT)=="SVG" ?
+    fm.generateImages(Config_getString(HTML_OUTPUT), Config_getEnum(HTML_FORMULA_FORMAT)=="svg" ?
         FormulaManager::Format::Vector : FormulaManager::Format::Bitmap, FormulaManager::HighDPI::On);
     g_s.end();
   }
