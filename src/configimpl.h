@@ -158,6 +158,7 @@ class ConfigEnum : public ConfigOption
     QCString *valueRef() { return &m_value; }
     void substEnvVars();
     void writeTemplate(FTextStream &t,bool sl,bool);
+    void convertStrToVal();
     void compareDoxyfile(FTextStream &t);
     void init() { m_value = m_defValue.copy(); }
 

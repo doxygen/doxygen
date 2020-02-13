@@ -221,6 +221,25 @@ void ConfigBool::convertStrToVal()
   }
 }
 
+void ConfigEnum::convertStrToVal()
+{
+  QCString val = m_value.stripWhiteSpace().lower();
+  const char *s=m_valueRange.first();
+  while (s)
+  {
+    if (QCString(s).lower() == val)
+    {
+       m_value = s;
+       return;
+    }
+    s = m_valueRange.next();
+  }
+
+  config_warn("argument '%s' for option %s is not a valid enum value\n"
+              "Using the default: %s!\n",m_value.data(),m_name.data(),m_defValue.data());
+  m_value = m_defValue;
+}
+
 QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
