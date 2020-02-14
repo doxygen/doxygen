@@ -1012,7 +1012,6 @@ QCString entity_class() :  {}
 | <TYPE_T> {return "type";}
 | <SUBTYPE_T> {return "subtype";}
 | <CONSTANT_T> {return "constant";}
-| <SIGNAL_T> {return "signal";}
 | <VARIABLE_T> {return "variable";}
 | <COMPONENT_T> {return "component";}
 | <LABEL_T> {return "label";}
@@ -1020,6 +1019,8 @@ QCString entity_class() :  {}
 | <UNITS_T> {return "units";}
 | <GROUP_T> {return "group";}
 | <FILE_T>  {return "file";}
+| <PROPRTY_T> { return "property"; }
+| <SEQUENCE_T> { return "sequence"; }
 }
 
 QCString entity_class_entry() :  {QCString s;}

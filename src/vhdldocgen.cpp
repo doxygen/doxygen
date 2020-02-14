@@ -85,6 +85,11 @@ static void writeTable(QList<MemberDef>* port,FTextStream & t);
 static void endTable(FTextStream &t);
 static void writeClassToDot(FTextStream &t,ClassDef* cd);
 static void writeVhdlDotLink(FTextStream &t,const QCString &a,const QCString &b,const QCString &style);
+
+static void mergeDoc(const MemberDef* mdef);
+static MemberDef* findMemberFunction(const MemberDef* md,const QCString& package);
+  
+
 //static void writeVhdlPortToolTip(FTextStream& t,QList<MemberDef>* port,ClassDef *cd);
 static const MemberDef *flowMember=0;
 
@@ -200,7 +205,7 @@ void VhdlDocGen::writeOverview()
 
   if (!f.open(IO_WriteOnly))
   {
-    err("Warning: Cannot open file %s for writing\n",fileName.data());
+    fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
     return;
   }
 
@@ -898,12 +903,11 @@ void VhdlDocGen::findAllPackages( ClassDef *cdef)
 }// findAllPackages
 
 /*!
- * returns the function with the matching argument list
- * is called in vhdlcode.l
+ * returns the function with  equal names is called in vhdlcode.l
  */
 
-MemberDef* VhdlDocGen::findFunction(const QCString& funcname, const QCString& package)
-{
+ MemberDef* VhdlDocGen::findFunction(const QCString& funcName, const QCString& package) {
+ {
   MemberDef* mdef=0;
   ClassDef *cdef=getClass(package.data());
   if (cdef==0) return 0;
@@ -915,14 +919,66 @@ MemberDef* VhdlDocGen::findFunction(const QCString& funcname, const QCString& pa
     MemberListIterator fmni(*mem);
     for (fmni.toFirst();(mdef=fmni.current());++fmni)
     {
+
       QCString mname=mdef->name();
-      if ((VhdlDocGen::isProcedure(mdef) || VhdlDocGen::isVhdlFunction(mdef)) && (compareString(funcname,mname)==0))
+      if ((VhdlDocGen::isProcedure(mdef) || VhdlDocGen::isVhdlFunction(mdef)) && (compareString(funcName,mname)==0))
       {
-        return mdef;
+        
+          return mdef;
+      
       }//if
     }//for
   }//if
-  return 0;
+  return NULL;
+} //findFunction
+ }
+
+/*!
+ * returns the member function with the matching argument list
+ */
+MemberDef* findMemberFunction(const MemberDef *md, const QCString& package)
+{
+  MemberDef* mdef=0;
+  QCString funcName = md->name();
+  ClassDef *cdef=getClass(package.data());
+  if (cdef==0) return 0;
+
+  MemberList *mem=cdef->getMemberList(MemberListType_pubMethods);
+
+  if (mem)
+  {
+    MemberListIterator fmni(*mem);
+    for (fmni.toFirst();(mdef=fmni.current());++fmni)
+    {
+      if (mdef == md) continue;
+      QCString mname=mdef->name();
+      if ((VhdlDocGen::isProcedure(mdef) || VhdlDocGen::isVhdlFunction(mdef)) && (compareString(funcName,mname)==0))
+      {
+        ArgumentList al = mdef->argumentList();
+        ArgumentList al1 = md->argumentList();
+        if (al.size() != al1.size())
+          continue;
+
+        int i = 0;
+        bool equ = true;
+        for (const Argument& arg : al) {
+           Argument arr = al1[i];
+      //     fprintf(stderr, "\n %s %s %s\n", arg.type.data(), arg.attrib.data(), arg.name.data());
+           if (compareString(arg.type, arr.type) != 0)
+           {
+             equ = false;
+             break;
+           }
+            i++;
+        }
+
+        if(equ)
+          return mdef;
+      
+      }//if
+    }//for
+  }//if
+  return NULL;
 } //findFunction
 
 
@@ -1771,7 +1827,8 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
 {
   const ClassDef *cd=dynamic_cast<const ClassDef*>(d);
   bool hasParams = FALSE;
-
+  mergeDoc(mdef);
+  
   if (cd==0) return hasParams;
 
   QCString ttype=mdef->typeString();
@@ -2906,14 +2963,14 @@ ferr:
   md->setDocumentation(cur->doc.data(),cur->docFile.data(),cur->docLine);
   FileDef *fd=ar->getFileDef();
   md->setBodyDef(fd);
-  //QCString info="Info: Elaborating entity "+n1;
-  //fd=ar->getFileDef();
-  //info+=" for hierarchy ";
-  //QRegExp epr("[|]");
-  //QCString label=cur->type+":"+cur->write+":"+cur->name;
-  //label.replace(epr,":");
-  //info+=label;
-  //fprintf(stderr,"\n[%s:%d:%s]\n",fd->fileName().data(),cur->startLine,info.data());
+  QCString info="Info: Elaborating entity "+n1;
+  fd=ar->getFileDef();
+  info+=" for hierarchy ";
+  QRegExp epr("[|]");
+  QCString label=cur->type+":"+cur->write+":"+cur->name;
+  label.replace(epr,":");
+  info+=label;
+  fprintf(stderr,"\n[%s:%d:%s]\n",fd->fileName().data(),cur->startLine,info.data());
   ar->insertMember(md);
 
 }
@@ -3151,6 +3208,38 @@ bool VhdlDocGen::isMisc(const MemberDef *mdef)
 { return mdef->getMemberSpecifiers()==VhdlDocGen::MISCELLANEOUS; }
 
 
+void mergeDoc(const MemberDef* mdef) {
+  
+  if (!(VhdlDocGen::isVhdlFunction(mdef) || VhdlDocGen::isProcedure(mdef) || VhdlDocGen::isConstant(mdef)))
+    return;
+
+    const ClassDef* cd = mdef->getClassDef();
+    QCString csn = cd->name();
+   
+    if ((VhdlDocGen::VhdlClasses)cd->protection() == VhdlDocGen::PACKBODYCLASS)
+       csn.stripPrefix("_");
+    else
+      return;
+
+    MemberDef* fn = NULL;
+    if (VhdlDocGen::isConstant(mdef))
+       fn= VhdlDocGen::findMember(csn,mdef->name());  
+    else 
+       fn = findMemberFunction(mdef, csn);
+     
+      if (fn == NULL) return;
+
+      QCString ca = const_cast<MemberDef*>(mdef)->briefDescription();
+      QCString cb = const_cast<MemberDef*>(mdef)->documentation();
+
+      const_cast<MemberDef*>(mdef)->setBriefDescription(fn->briefDescription().data(), fn->briefFile().data(), fn->briefLine());
+      const_cast<MemberDef*>(mdef)->setDocumentation(fn->documentation().data(), fn->docFile().data(), fn->docLine());
+
+      fn->setBriefDescription(ca.data(), const_cast<MemberDef*>(mdef)->briefFile().data(), const_cast<MemberDef*>(mdef)->briefLine());
+      fn->setDocumentation(cb.data(), const_cast<MemberDef*>(mdef)->docFile().data(), const_cast<MemberDef*>(mdef)->docLine());
+      
+   }
+    
 
 //############################## Flowcharts #################################################
 
