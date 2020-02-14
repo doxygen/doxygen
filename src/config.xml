@@ -1413,6 +1413,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <value name='*.f95'/>
       <value name='*.f03'/>
       <value name='*.f08'/>
+      <value name='*.f18'/>
       <value name='*.f'/>
       <value name='*.for'/>
       <value name='*.tcl'/>
