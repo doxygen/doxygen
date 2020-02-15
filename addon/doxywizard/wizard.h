@@ -31,11 +31,6 @@ class Wizard;
 class QImage;
 class QLabel;
 
-enum OptLang     { Lang_Cpp, Lang_C, Lang_Java, Lang_CS };
-enum HtmlStyle   { HS_Plain, HS_TreeView, HS_CHM };
-enum TexStyle    { TS_PDFHyper, TS_PDF, TS_PS };
-enum DiagramMode { DM_None, DM_Builtin, DM_Dot };
-
 class TuneColorDialog : public QDialog
 {
     Q_OBJECT
