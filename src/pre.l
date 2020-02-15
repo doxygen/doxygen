@@ -2801,7 +2801,6 @@ static void addDefine(yyscan_t yyscanner)
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   if (state->skip) return; // do not add this define as it is inside a 
                       // conditional section (cond command) that is disabled.
-  if (!Doxygen::gatherDefines) return;
 
   //printf("addDefine '%s' '%s'\n",state->defName.data(),state->defArgsStr.data());
   //ArgumentList *al = new ArgumentList;

@@ -163,7 +163,6 @@ bool             Doxygen::suppressDocWarnings = FALSE;
 QCString         Doxygen::objDBFileName;
 QCString         Doxygen::entryDBFileName;
 QCString         Doxygen::filterDBFileName;
-bool             Doxygen::gatherDefines = TRUE;
 IndexList       *Doxygen::indexList;
 int              Doxygen::subpageNestingLevel = 0;
 bool             Doxygen::userComments = FALSE;

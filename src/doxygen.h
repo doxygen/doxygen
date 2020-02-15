@@ -140,7 +140,6 @@ class Doxygen
     static QCString                  entryDBFileName;
     static QCString                  filterDBFileName;
     static CiteDict                 *citeDict;
-    static bool                      gatherDefines;
     static bool                      userComments;
     static IndexList                *indexList;
     static int                       subpageNestingLevel;
