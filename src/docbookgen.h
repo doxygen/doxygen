@@ -204,8 +204,8 @@ class DocbookGenerator : public OutputGenerator
     void startTitle(void){DB_GEN_NEW};
     void endTitle(void){DB_GEN_NEW};
     void writeAnchor(const char *,const char *){DB_GEN_EMPTY};
-    void startSection(const char *,const char *,SectionInfo::SectionType);
-    void endSection(const char *,SectionInfo::SectionType);
+    void startSection(const char *,const char *,SectionType);
+    void endSection(const char *,SectionType);
     void lineBreak(const char *);
     void addIndexItem(const char *,const char *);
     void writeNonBreakableSpace(int);

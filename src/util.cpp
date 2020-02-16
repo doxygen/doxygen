@@ -4752,7 +4752,7 @@ bool resolveLink(/* in */ const char *scName,
   const ClassDef *cd;
   const DirDef   *dir;
   const NamespaceDef *nd;
-  SectionInfo *si=0;
+  const SectionInfo *si=0;
   bool ambig;
   if (linkRef.isEmpty()) // no reference name!
   {
@@ -4763,9 +4763,9 @@ bool resolveLink(/* in */ const char *scName,
     const GroupDef *gd = pd->getGroupDef();
     if (gd)
     {
-      if (!pd->name().isEmpty()) si=Doxygen::sectionDict->find(pd->name());
+      if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
       *resContext=gd;
-      if (si) resAnchor = si->label;
+      if (si) resAnchor = si->label();
     }
     else
     {
@@ -4773,10 +4773,10 @@ bool resolveLink(/* in */ const char *scName,
     }
     return TRUE;
   }
-  else if ((si=Doxygen::sectionDict->find(linkRef)))
+  else if ((si=SectionManager::instance().find(linkRef)))
   {
-    *resContext=si->definition;
-    resAnchor = si->label;
+    *resContext=si->definition();
+    resAnchor = si->label();
     return TRUE;
   }
   else if ((pd=Doxygen::exampleSDict->find(linkRef))) // link to an example
@@ -6653,28 +6653,27 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       {
         file=pd->getOutputFileBase();
       }
-      SectionInfo *si = Doxygen::sectionDict->find(pd->name());
+      const SectionInfo *si = SectionManager::instance().find(pd->name());
       if (si)
       {
-        if (si->lineNr != -1)
+        if (si->lineNr() != -1)
         {
-          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s, line %d)",pd->name().data(),si->fileName.data(),si->lineNr);
+          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s, line %d)",pd->name().data(),si->fileName().data(),si->lineNr());
         }
         else
         {
-          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s)",pd->name().data(),si->fileName.data());
+          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s)",pd->name().data(),si->fileName().data());
         }
       }
       else
       {
-        si=new SectionInfo(
-            file,-1,pd->name(),pd->title(),SectionInfo::Page,0,pd->getReference());
+        SectionManager::instance().add(
+            file,-1,pd->name(),pd->title(),SectionType::Page,0,pd->getReference());
         //printf("si->label='%s' si->definition=%s si->fileName='%s'\n",
         //      si->label.data(),si->definition?si->definition->name().data():"<none>",
         //      si->fileName.data());
         //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
         //printf("Adding section key=%s si->fileName=%s\n",pageName.data(),si->fileName.data());
-        Doxygen::sectionDict->append(pd->name(),si);
       }
     }
   }

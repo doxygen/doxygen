@@ -213,7 +213,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     }
     ol.endQuickIndices();
   }
-  SectionInfo *si=Doxygen::sectionDict->find(name());
+  const SectionInfo *si=SectionManager::instance().find(name());
 
   // save old generator state and write title only to Man generator
   ol.pushGeneratorState();
@@ -228,10 +228,10 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     ol.writeString(" - ");
     ol.popGeneratorState();
 
-    if (si->title != manPageName)
+    if (si->title() != manPageName)
     {
-      ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
-      ol.endSection(si->label,si->type);
+      ol.generateDoc(docFile(),docLine(),this,0,si->title(),TRUE,FALSE,0,TRUE,FALSE);
+      ol.endSection(si->label(),si->type());
     }
   }
   ol.popGeneratorState();
@@ -246,10 +246,10 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   if (hasTitle() && !name().isEmpty() && si!=0)
   {
-    ol.startPageDoc(si->title);
+    ol.startPageDoc(si->title());
     //ol.startSection(si->label,si->title,si->type);
     startTitle(ol,getOutputFileBase(),this);
-    ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
+    ol.generateDoc(docFile(),docLine(),this,0,si->title(),TRUE,FALSE,0,TRUE,FALSE);
     //stringToSearchIndex(getOutputFileBase(),
     //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
     //                    si->title);
@@ -297,7 +297,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol)
 
   ol.startTextBlock();
   QCString docStr = documentation()+inbodyDocumentation();
-  if (hasBriefDescription() && !Doxygen::sectionDict->find(name()))
+  if (hasBriefDescription() && !SectionManager::instance().find(name()))
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Man);
@@ -331,14 +331,14 @@ void PageDefImpl::writePageDocumentation(OutputList &ol)
     PageDef *subPage=pdi.toFirst();
     for (pdi.toFirst();(subPage=pdi.current());++pdi)
     {
-      SectionInfo::SectionType sectionType = SectionInfo::Paragraph;
+      SectionType sectionType = SectionType::Paragraph;
       switch (m_nestingLevel)
       {
-        case  0: sectionType = SectionInfo::Page;          break;
-        case  1: sectionType = SectionInfo::Section;       break;
-        case  2: sectionType = SectionInfo::Subsection;    break;
-        case  3: sectionType = SectionInfo::Subsubsection; break;
-        default: sectionType = SectionInfo::Paragraph;     break;
+        case  0: sectionType = SectionType::Page;          break;
+        case  1: sectionType = SectionType::Section;       break;
+        case  2: sectionType = SectionType::Subsection;    break;
+        case  3: sectionType = SectionType::Subsubsection; break;
+        default: sectionType = SectionType::Paragraph;     break;
       }
       QCString title = subPage->title();
       if (title.isEmpty()) title = subPage->name();

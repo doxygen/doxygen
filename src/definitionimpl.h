@@ -76,7 +76,7 @@ class DefinitionImpl : virtual public Definition
     virtual bool hasSources() const;
     virtual bool hasBriefDescription() const;
     virtual QCString id() const;
-    virtual SectionDict * getSectionDict() const;
+    virtual const SectionRefs &getSectionRefs() const;
     virtual void setName(const char *name);
     virtual void setId(const char *name);
     virtual void setDefFile(const QCString& df,int defLine,int defColumn);
@@ -231,8 +231,8 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->hasBriefDescription(); }
     virtual QCString id() const
     { return m_def->id(); }
-    virtual SectionDict * getSectionDict() const
-    { return m_def->getSectionDict(); }
+    virtual const SectionRefs &getSectionRefs() const
+    { return m_def->getSectionRefs(); }
     virtual QCString navigationPathAsString() const 
     { return m_def->navigationPathAsString(); }
     virtual QCString pathFragment() const 

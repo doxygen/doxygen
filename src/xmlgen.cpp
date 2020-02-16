@@ -1823,32 +1823,30 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
   }
   else
   {
-    SectionInfo *si = Doxygen::sectionDict->find(pd->name());
+    const SectionInfo *si = SectionManager::instance().find(pd->name());
     if (si)
     {
-      t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(filterTitle(si->title))) 
+      t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(filterTitle(si->title())))
         << "</title>" << endl;
     }
   }
   writeInnerPages(pd->getSubPages(),t);
-  SectionDict *sectionDict = pd->getSectionDict();
-  if (pd->localToc().isXmlEnabled() && sectionDict)
+  const SectionRefs &sectionRefs = pd->getSectionRefs();
+  if (pd->localToc().isXmlEnabled() && !sectionRefs.empty())
   {
     t << "    <tableofcontents>" << endl;
-    SDict<SectionInfo>::Iterator li(*sectionDict);
-    SectionInfo *si;
+    //SDict<SectionInfo>::Iterator li(*sectionDict);
+    //SectionInfo *si;
     int level=1,l;
     bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     int maxLevel = pd->localToc().xmlLevel();
-    for (li.toFirst();(si=li.current());++li)
+    //for (li.toFirst();(si=li.current());++li)
+    for (const SectionInfo *si : sectionRefs)
     {
-      if (si->type==SectionInfo::Section       ||
-          si->type==SectionInfo::Subsection    ||
-          si->type==SectionInfo::Subsubsection ||
-          si->type==SectionInfo::Paragraph)
+      if (isSection(si->type()))
       {
         //printf("  level=%d title=%s\n",level,si->title.data());
-        int nextLevel = (int)si->type;
+        int nextLevel = (int)si->type();
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)
@@ -1868,10 +1866,10 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
         if (nextLevel <= maxLevel)
         {
           if (inLi[nextLevel]) t << "    </tocsect>" << endl;
-          QCString titleDoc = convertToXML(si->title);
+          QCString titleDoc = convertToXML(si->title());
           t << "      <tocsect>" << endl;
-          t << "        <name>" << (si->title.isEmpty()?si->label:titleDoc) << "</name>" << endl;
-          t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si -> label) << "</reference>" << endl;
+          t << "        <name>" << (si->title().isEmpty()?si->label():titleDoc) << "</name>" << endl;
+          t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si->label()) << "</reference>" << endl;
           inLi[nextLevel]=TRUE;
           level = nextLevel;
         }

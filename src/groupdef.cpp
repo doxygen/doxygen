@@ -1101,13 +1101,13 @@ void GroupDefImpl::writePageDocumentation(OutputList &ol)
   {
     if (!pd->isReference())
     {
-      SectionInfo *si=0;
+      const SectionInfo *si=0;
       if (pd->hasTitle() && !pd->name().isEmpty() &&
-          (si=Doxygen::sectionDict->find(pd->name()))!=0)
+          (si=SectionManager::instance().find(pd->name()))!=0)
       {
-        ol.startSection(si->label,si->title,SectionInfo::Subsection);
-        ol.docify(si->title);
-        ol.endSection(si->label,SectionInfo::Subsection);
+        ol.startSection(si->label(),si->title(),SectionType::Subsection);
+        ol.docify(si->title());
+        ol.endSection(si->label(),SectionType::Subsection);
       }
       ol.startTextBlock();
       ol.generateDoc(pd->docFile(),pd->docLine(),pd,0,pd->documentation()+pd->inbodyDocumentation(),TRUE,FALSE,0,TRUE,FALSE);

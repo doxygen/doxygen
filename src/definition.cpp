@@ -55,7 +55,7 @@ class DefinitionImpl::IMPL
     void init(const char *df, const char *n);
     void setDefFileName(const QCString &df);
 
-    SectionDict *sectionDict = 0;  // dictionary of all sections, not accessible
+    SectionRefs sectionRefs;
 
     MemberSDict *sourceRefByDict = 0;
     MemberSDict *sourceRefsDict = 0;
@@ -99,7 +99,6 @@ class DefinitionImpl::IMPL
 
 DefinitionImpl::IMPL::~IMPL()
 {
-  delete sectionDict;
   delete sourceRefByDict;
   delete sourceRefsDict;
   delete partOfGroups;
@@ -140,7 +139,6 @@ void DefinitionImpl::IMPL::init(const char *df, const char *n)
   inbodyDocs      = 0;
   sourceRefByDict = 0;
   sourceRefsDict  = 0;
-  sectionDict     = 0, 
   outerScope      = Doxygen::globalScope;
   partOfGroups    = 0;
   hidden          = FALSE;
@@ -315,7 +313,6 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
 {
   m_impl = new DefinitionImpl::IMPL;
   *m_impl = *d.m_impl;
-  m_impl->sectionDict = 0;
   m_impl->sourceRefByDict = 0;
   m_impl->sourceRefsDict = 0;
   m_impl->partOfGroups = 0;
@@ -323,16 +320,6 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
   m_impl->details = 0;
   m_impl->body = 0;
   m_impl->inbodyDocs = 0;
-  if (d.m_impl->sectionDict)
-  {
-    m_impl->sectionDict = new SectionDict(17);
-    SDict<SectionInfo>::Iterator it(*d.m_impl->sectionDict);
-    SectionInfo *si;
-    for (it.toFirst();(si=it.current());++it)
-    {
-      m_impl->sectionDict->append(si->label,si);
-    }
-  }
   if (d.m_impl->sourceRefByDict)
   {
     m_impl->sourceRefByDict = new MemberSDict;
@@ -426,22 +413,18 @@ void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo
   for (const SectionInfo *si : anchorList)
   {
     //printf("Add section '%s' to definition '%s'\n",
-    //    si->label.data(),name().data());
-    SectionInfo *gsi=Doxygen::sectionDict->find(si->label);
+    //    si->label().data(),name().data());
+    SectionManager &sm = SectionManager::instance();
+    SectionInfo *gsi=sm.find(si->label());
     //printf("===== label=%s gsi=%p\n",si->label.data(),gsi);
     if (gsi==0)
     {
-      gsi = new SectionInfo(*si);
-      Doxygen::sectionDict->append(si->label,gsi);
+      gsi = sm.add(*si);
     }
-    if (m_impl->sectionDict==0)
+    if (m_impl->sectionRefs.find(gsi->label())==0)
     {
-      m_impl->sectionDict = new SectionDict(17);
-    }
-    if (m_impl->sectionDict->find(gsi->label)==0)
-    {
-      m_impl->sectionDict->append(gsi->label,gsi);
-      gsi->definition = this;
+      m_impl->sectionRefs.add(gsi);
+      gsi->setDefinition(this);
     }
   }
 }
@@ -450,15 +433,10 @@ bool DefinitionImpl::hasSections() const
 {
   //printf("DefinitionImpl::hasSections(%s) #sections=%d\n",name().data(),
   //    m_impl->sectionDict ? m_impl->sectionDict->count() : 0);
-  if (m_impl->sectionDict==0) return FALSE;
-  SDict<SectionInfo>::Iterator li(*m_impl->sectionDict);
-  SectionInfo *si;
-  for (li.toFirst();(si=li.current());++li)
+  if (m_impl->sectionRefs.empty()) return FALSE;
+  for (const SectionInfo *si : m_impl->sectionRefs)
   {
-    if (si->type==SectionInfo::Section || 
-        si->type==SectionInfo::Subsection || 
-        si->type==SectionInfo::Subsubsection ||
-        si->type==SectionInfo::Paragraph)
+    if (isSection(si->type()))
     {
       return TRUE;
     }
@@ -468,20 +446,17 @@ bool DefinitionImpl::hasSections() const
 
 void DefinitionImpl::addSectionsToIndex()
 {
-  if (m_impl->sectionDict==0) return;
+  if (m_impl->sectionRefs.empty()) return;
   //printf("DefinitionImpl::addSectionsToIndex()\n");
-  SDict<SectionInfo>::Iterator li(*m_impl->sectionDict);
-  SectionInfo *si;
   int level=1;
-  for (li.toFirst();(si=li.current());++li)
+  for (auto it = m_impl->sectionRefs.begin(); it!=m_impl->sectionRefs.end(); ++it)
   {
-    if (si->type==SectionInfo::Section       || 
-        si->type==SectionInfo::Subsection    || 
-        si->type==SectionInfo::Subsubsection ||
-        si->type==SectionInfo::Paragraph)
+    const SectionInfo *si = *it;
+    SectionType type = si->type();
+    if (isSection(type))
     {
       //printf("  level=%d title=%s\n",level,si->title.data());
-      int nextLevel = (int)si->type;
+      int nextLevel = (int)type;
       int i;
       if (nextLevel>level)
       {
@@ -497,16 +472,16 @@ void DefinitionImpl::addSectionsToIndex()
           Doxygen::indexList->decContentsDepth();
         }
       }
-      QCString title = si->title;
-      if (title.isEmpty()) title = si->label;
+      QCString title = si->title();
+      if (title.isEmpty()) title = si->label();
       // determine if there is a next level inside this item
-      ++li;
-      bool isDir = ((li.current()) ? (int)(li.current()->type > nextLevel):FALSE);
-      --li;
+      auto it_next = std::next(it);
+      bool isDir = (it_next!=m_impl->sectionRefs.end()) ?
+                       ((int)((*it_next)->type()) > nextLevel) : FALSE;
       Doxygen::indexList->addContentsItem(isDir,title,
                                          getReference(),
                                          getOutputFileBase(),
-                                         si->label,
+                                         si->label(),
                                          FALSE,
                                          TRUE);
       level = nextLevel;
@@ -521,23 +496,21 @@ void DefinitionImpl::addSectionsToIndex()
 
 void DefinitionImpl::writeDocAnchorsToTagFile(FTextStream &tagFile) const
 {
-  if (m_impl->sectionDict)
+  if (!m_impl->sectionRefs.empty())
   {
-    //printf("%s: writeDocAnchorsToTagFile(%d)\n",name().data(),m_impl->sectionDict->count());
-    SDict<SectionInfo>::Iterator sdi(*m_impl->sectionDict);
-    SectionInfo *si;
-    for (;(si=sdi.current());++sdi)
+    //printf("%s: writeDocAnchorsToTagFile(%d)\n",name().data(),m_impl->sectionRef.size());
+    for (const SectionInfo *si : m_impl->sectionRefs)
     {
-      if (!si->generated && si->ref.isEmpty() && !si->label.startsWith("autotoc_md"))
+      if (!si->generated() && si->ref().isEmpty() && !si->label().startsWith("autotoc_md"))
       {
         //printf("write an entry!\n");
         if (definitionType()==TypeMember) tagFile << "  ";
-        tagFile << "    <docanchor file=\"" << addHtmlExtensionIfMissing(si->fileName) << "\"";
-        if (!si->title.isEmpty())
+        tagFile << "    <docanchor file=\"" << addHtmlExtensionIfMissing(si->fileName()) << "\"";
+        if (!si->title().isEmpty())
         {
-          tagFile << " title=\"" << convertToXML(si->title) << "\"";
+          tagFile << " title=\"" << convertToXML(si->title()) << "\"";
         }
-        tagFile << ">" << si->label << "</docanchor>" << endl;
+        tagFile << ">" << si->label() << "</docanchor>" << endl;
       }
     }
   }
@@ -1756,8 +1729,7 @@ void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 // TODO: move to htmlgen
 void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
 {
-  SectionDict *sectionDict = m_impl->sectionDict;
-  if (sectionDict==0) return;
+  if (m_impl->sectionRefs.empty()) return;
   if (localToc.isHtmlEnabled())
   {
     int maxLevel = localToc.htmlLevel();
@@ -1768,21 +1740,17 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
     ol.writeString(theTranslator->trRTFTableOfContents());
     ol.writeString("</h3>\n");
     ol.writeString("<ul>");
-    SDict<SectionInfo>::Iterator li(*sectionDict);
-    SectionInfo *si;
     int level=1,l;
     char cs[2];
     cs[1]='\0';
     bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
-    for (li.toFirst();(si=li.current());++li)
+    for (const SectionInfo *si : m_impl->sectionRefs)
     {
-      if (si->type==SectionInfo::Section       || 
-          si->type==SectionInfo::Subsection    || 
-          si->type==SectionInfo::Subsubsection ||
-          si->type==SectionInfo::Paragraph)
+      SectionType type = si->type();
+      if (isSection(type))
       {
         //printf("  level=%d title=%s\n",level,si->title.data());
-        int nextLevel = (int)si->type;
+        int nextLevel = (int)type;
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)
@@ -1800,9 +1768,17 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
           }
         }
         cs[0]='0'+nextLevel;
-        if (nextLevel <= maxLevel && inLi[nextLevel]) ol.writeString("</li>\n");
-        QCString titleDoc = convertToHtml(si->title);
-        if (nextLevel <= maxLevel) ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
+        if (nextLevel <= maxLevel && inLi[nextLevel])
+        {
+          ol.writeString("</li>\n");
+        }
+        QCString titleDoc = convertToHtml(si->title());
+        if (nextLevel <= maxLevel)
+        {
+          ol.writeString("<li class=\"level"+QCString(cs)+"\">"
+                         "<a href=\"#"+si->label()+"\">"+
+                         (si->title().isEmpty()?si->label():titleDoc)+"</a>");
+        }
         inLi[nextLevel]=TRUE;
         level = nextLevel;
       }
@@ -1810,7 +1786,10 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
     if (level > maxLevel) level = maxLevel;
     while (level>1 && level <= maxLevel)
     {
-      if (inLi[level]) ol.writeString("</li>\n");
+      if (inLi[level])
+      {
+        ol.writeString("</li>\n");
+      }
       inLi[level]=FALSE;
       ol.writeString("</ul>\n");
       level--;
@@ -1828,21 +1807,16 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
     ol.disableAllBut(OutputGenerator::Docbook);
     ol.writeString("    <toc>\n");
     ol.writeString("    <title>" + theTranslator->trRTFTableOfContents() + "</title>\n");
-    SectionDict *sectionDict = getSectionDict();
-    SDict<SectionInfo>::Iterator li(*sectionDict);
-    SectionInfo *si;
     int level=1,l;
     bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     int maxLevel = localToc.docbookLevel();
-    for (li.toFirst();(si=li.current());++li)
+    for (const SectionInfo *si : m_impl->sectionRefs)
     {
-      if (si->type==SectionInfo::Section       ||
-          si->type==SectionInfo::Subsection    ||
-          si->type==SectionInfo::Subsubsection ||
-          si->type==SectionInfo::Paragraph)
+      SectionType type = si->type();
+      if (isSection(type))
       {
         //printf("  level=%d title=%s\n",level,si->title.data());
-        int nextLevel = (int)si->type;
+        int nextLevel = (int)type;
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)
@@ -1860,8 +1834,10 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
         }
         if (nextLevel <= maxLevel)
         {
-          QCString titleDoc = convertToDocBook(si->title);
-          ol.writeString("      <tocentry>" + (si->title.isEmpty()?si->label:titleDoc) + "</tocentry>\n");
+          QCString titleDoc = convertToDocBook(si->title());
+          ol.writeString("      <tocentry>" +
+              (si->title().isEmpty()?si->label():titleDoc) +
+              "</tocentry>\n");
         }
         inLi[nextLevel]=TRUE;
         level = nextLevel;
@@ -1894,9 +1870,9 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
 
 //----------------------------------------------------------------------------------------
 
-SectionDict * DefinitionImpl::getSectionDict() const
+const SectionRefs &DefinitionImpl::getSectionRefs() const
 {
-  return m_impl->sectionDict;
+  return m_impl->sectionRefs;
 }
 
 QCString DefinitionImpl::symbolName() const 

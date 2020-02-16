@@ -241,8 +241,8 @@ class LatexGenerator : public OutputGenerator
     void endParamList();
     void startDescForItem()     { t << "\\par" << endl; }
     void endDescForItem()       {}
-    void startSection(const char *,const char *,SectionInfo::SectionType);
-    void endSection(const char *,SectionInfo::SectionType);
+    void startSection(const char *,const char *,SectionType);
+    void endSection(const char *,SectionType);
     void addIndexItem(const char *,const char *);
     void startIndent()       {}
     void endIndent()         {}

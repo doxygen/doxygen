@@ -1957,20 +1957,20 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
     QCString hTag;
     if (level<5 && !id.isEmpty())
     {
-      SectionInfo::SectionType type = SectionInfo::Anchor;
+      SectionType type = SectionType::Anchor;
       switch(level)
       {
-        case 1:  out.addStr("@section ");       
-                 type=SectionInfo::Section; 
+        case 1:  out.addStr("@section ");
+                 type=SectionType::Section;
                  break;
-        case 2:  out.addStr("@subsection ");    
-                 type=SectionInfo::Subsection; 
+        case 2:  out.addStr("@subsection ");
+                 type=SectionType::Subsection;
                  break;
-        case 3:  out.addStr("@subsubsection "); 
-                 type=SectionInfo::Subsubsection;
+        case 3:  out.addStr("@subsubsection ");
+                 type=SectionType::Subsubsection;
                  break;
-        default: out.addStr("@paragraph "); 
-                 type=SectionInfo::Paragraph;
+        default: out.addStr("@paragraph ");
+                 type=SectionType::Paragraph;
                  break;
       }
       out.addStr(id);

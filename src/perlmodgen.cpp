@@ -2179,9 +2179,9 @@ void PerlModGenerator::generatePerlModForPage(PageDef *pd)
   m_output.openHash()
     .addFieldQuotedString("name", pd->name());
     
-  SectionInfo *si = Doxygen::sectionDict->find(pd->name());
+  const SectionInfo *si = SectionManager::instance().find(pd->name());
   if (si)
-    m_output.addFieldQuotedString("title4", filterTitle(si->title));
+    m_output.addFieldQuotedString("title4", filterTitle(si->title()));
 
   addPerlModDocBlock(m_output,"detailed",pd->docFile(),pd->docLine(),0,0,pd->documentation());
   m_output.closeHash();

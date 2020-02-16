@@ -2847,9 +2847,9 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
           QCString cl = letterToString(ml->letter());
           QCString anchor=(QCString)"index_"+convertToId(cs);
           QCString title=(QCString)"- "+cl+" -";
-          ol.startSection(anchor,title,SectionInfo::Subsection);
+          ol.startSection(anchor,title,SectionType::Subsection);
           ol.docify(title);
-          ol.endSection(anchor,SectionInfo::Subsection);
+          ol.endSection(anchor,SectionType::Subsection);
           ol.startItemList();
           firstSection=FALSE;
           firstItem=TRUE;
@@ -4160,8 +4160,8 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
         PageDef *pd;
         for (;(pd=it.current());++it)
         {
-          SectionInfo *si=0;
-          if (!pd->name().isEmpty()) si=Doxygen::sectionDict->find(pd->name());
+          const SectionInfo *si=0;
+          if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
           bool hasSubPages = pd->hasSubPages();
           bool hasSections = pd->hasSections();
           Doxygen::indexList->addContentsItem(
@@ -4169,7 +4169,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
               convertToHtml(pd->title(),TRUE),
               gd->getReference(),
               gd->getOutputFileBase(),
-              si ? si->label.data() : 0,
+              si ? si->label().data() : 0,
               hasSubPages || hasSections,
               TRUE); // addToNavIndex
           if (hasSections || hasSubPages)

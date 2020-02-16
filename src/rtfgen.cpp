@@ -1686,7 +1686,7 @@ void RTFGenerator::endDescForItem()
 //}
 
 
-void RTFGenerator::startSection(const char *,const char *title,SectionInfo::SectionType type)
+void RTFGenerator::startSection(const char *,const char *title,SectionType type)
 {
   DBG_RTF(t << "{\\comment (startSection)}"    << endl)
   t << "{";
@@ -1694,11 +1694,11 @@ void RTFGenerator::startSection(const char *,const char *title,SectionInfo::Sect
   int num=4;
   switch(type)
   {
-    case SectionInfo::Page:          num=2; break;
-    case SectionInfo::Section:       num=3; break;
-    case SectionInfo::Subsection:    num=4; break;
-    case SectionInfo::Subsubsection: num=4; break;
-    case SectionInfo::Paragraph:     num=4; break;
+    case SectionType::Page:          num=2; break;
+    case SectionType::Section:       num=3; break;
+    case SectionType::Subsection:    num=4; break;
+    case SectionType::Subsubsection: num=4; break;
+    case SectionType::Paragraph:     num=4; break;
     default: ASSERT(0); break;
   }
   QCString heading;
@@ -1711,7 +1711,7 @@ void RTFGenerator::startSection(const char *,const char *title,SectionInfo::Sect
   t << "}" << endl;
 }
 
-void RTFGenerator::endSection(const char *lab,SectionInfo::SectionType)
+void RTFGenerator::endSection(const char *lab,SectionType)
 {
   DBG_RTF(t << "{\\comment (endSection)}"    << endl)
   // make bookmark
