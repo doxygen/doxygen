@@ -384,7 +384,7 @@ static void writeMakeBat()
   QCString latex_command = theTranslator->latexCommandName();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   QFile file(fileName);
-  bool generateBib = !Doxygen::citeDict->isEmpty();
+  bool generateBib = !CitationManager::instance().isEmpty();
   if (!file.open(IO_WriteOnly))
   {
     term("Could not open file %s for writing\n",fileName.data());
