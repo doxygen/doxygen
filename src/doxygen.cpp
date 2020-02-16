@@ -129,7 +129,6 @@ GroupSDict      *Doxygen::groupSDict = 0;
 PageSDict       *Doxygen::pageSDict = 0;
 PageSDict       *Doxygen::exampleSDict = 0;
 SectionDict     *Doxygen::sectionDict = 0;        // all page sections
-CiteDict        *Doxygen::citeDict=0;              // database of bibliographic references
 StringDict       Doxygen::aliasDict(257);          // aliases
 QDict<void>      Doxygen::inputPaths(1009);
 FileNameDict    *Doxygen::includeNameDict = 0;     // include names
@@ -202,7 +201,7 @@ void clearAll()
   Doxygen::mscFileNameDict->clear();
   Doxygen::diaFileNameDict->clear();
   Doxygen::tagDestinationDict.clear();
-  delete Doxygen::citeDict;
+  CitationManager::instance().clear();
   delete Doxygen::mainPage; Doxygen::mainPage=0;
   FormulaManager::instance().clear();
 }
@@ -9862,7 +9861,6 @@ void initDoxygen()
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
-  Doxygen::citeDict = new CiteDict(257);
   Doxygen::genericsDict = new GenericsSDict;
   Doxygen::indexList = new IndexList;
   Doxygen::sectionDict = new SectionDict(257);
@@ -11252,11 +11250,8 @@ void parseInput()
     g_s.end();
   }
 
-  //g_s.begin("Resolving citations...\n");
-  //Doxygen::citeDict->resolve();
-
   g_s.begin("Generating citations page...\n");
-  Doxygen::citeDict->generatePage();
+  CitationManager::instance().generatePage();
   g_s.end();
 
   g_s.begin("Counting members...\n");
