@@ -2923,7 +2923,7 @@ static void addCite(yyscan_t yyscanner)
     name=yytext+1;
     name=name.left(yyleng-2);
   }
-  Doxygen::citeDict->insert(name.data());
+  CitationManager::instance().insert(name.data());
 }
 
 //-----------------------------------------------------------------------------

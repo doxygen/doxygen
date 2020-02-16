@@ -1919,12 +1919,14 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
     return;
   }
 
-  if (id.left(CiteConsts::anchorPrefix.length()) == CiteConsts::anchorPrefix) 
+  const CitationManager &ct = CitationManager::instance();
+  QCString anchorPrefix = ct.anchorPrefix();
+  if (id.left(anchorPrefix.length()) == anchorPrefix)
   {
-    CiteInfo *cite = Doxygen::citeDict->find(id.mid(CiteConsts::anchorPrefix.length()));
-    if (cite) 
+    const CiteInfo *cite = ct.find(id.mid(anchorPrefix.length()));
+    if (cite)
     {
-      m_file = convertNameToFile(CiteConsts::fileName,FALSE,TRUE);
+      m_file = convertNameToFile(ct.fileName(),FALSE,TRUE);
       m_anchor = id;
     }
     else 
@@ -2585,14 +2587,15 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
   //printf("DocCite::DocCite(target=%s)\n",target.data());
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
-  CiteInfo *cite = Doxygen::citeDict->find(target);
+  const CitationManager &ct = CitationManager::instance();
+  const CiteInfo *cite = ct.find(target);
   //printf("cite=%p text='%s' numBibFiles=%d\n",cite,cite?cite->text.data():"<null>",numBibFiles);
-  if (numBibFiles>0 && cite && !cite->text.isEmpty()) // ref to citation
+  if (numBibFiles>0 && cite && !cite->text().isEmpty()) // ref to citation
   {
-    m_text         = cite->text;
-    m_ref          = cite->ref;
-    m_anchor       = CiteConsts::anchorPrefix+cite->label;
-    m_file         = convertNameToFile(CiteConsts::fileName,FALSE,TRUE);
+    m_text         = cite->text();
+    m_ref          = "";
+    m_anchor       = ct.anchorPrefix()+cite->label();
+    m_file         = convertNameToFile(ct.fileName(),FALSE,TRUE);
     //printf("CITE ==> m_text=%s,m_ref=%s,m_file=%s,m_anchor=%s\n",
     //    m_text.data(),m_ref.data(),m_file.data(),m_anchor.data());
     return;

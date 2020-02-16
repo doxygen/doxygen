@@ -283,7 +283,7 @@ LatexGenerator::~LatexGenerator()
 
 static void writeLatexMakefile()
 {
-  bool generateBib = !Doxygen::citeDict->isEmpty();
+  bool generateBib = !CitationManager::instance().isEmpty();
   QCString dir=Config_getString(LATEX_OUTPUT);
   QCString fileName=dir+"/Makefile";
   QFile file(fileName);
@@ -829,7 +829,7 @@ static void writeDefaultFooter(FTextStream &t)
        "\n";
 
   // Bibliography
-  Doxygen::citeDict->writeLatexBibliography(t);
+  CitationManager::instance().writeLatexBibliography(t);
 
   // Index
   t << "% Index\n";

@@ -657,7 +657,8 @@ void LatexDocVisitor::visit(DocCite *cite)
   {
     //startLink(cite->ref(),cite->file(),cite->anchor());
     QCString anchor = cite->anchor();
-    anchor = anchor.mid(CiteConsts::anchorPrefix.length()); // strip prefix
+    QCString anchorPrefix = CitationManager::instance().anchorPrefix();
+    anchor = anchor.mid(anchorPrefix.length()); // strip prefix
     m_t << "\\cite{" << anchor << "}";
   }
   else
