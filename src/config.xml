@@ -2362,7 +2362,8 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
  If the \c HTML_FORMULA_FORMAT option is set to \c svg, doxygen will use the pdf2svg
- tool (see https://github.com/dawbarton/pdf2svg) to generate formulas as SVG images instead of
+ tool (see https://github.com/dawbarton/pdf2svg) or inkscape (see https://inkscape.org)
+ to generate formulas as SVG images instead of
  PNGs for the HTML output. These images will generally look nicer at scaled resolutions.
 ]]>
       </docs>

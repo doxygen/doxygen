@@ -348,7 +348,6 @@ char  Portable::pathListSeparator(void)
 #endif
 }
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
 static const bool ExistsOnPath(const char *fileName)
 {
   QFileInfo fi1(fileName);
@@ -380,7 +379,20 @@ static const bool ExistsOnPath(const char *fileName)
   }
   return false;
 }
+
+const bool Portable::checkForExecutable(const char *fileName)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  char *extensions[] = {".bat",".com",".exe"};
+  for (int i = 0; i < sizeof(extensions) / sizeof(*extensions); i++)
+  {
+    if (ExistsOnPath(QCString(fileName) + extensions[i])) return true;
+  }
+  return false;
+#else
+  return ExistsOnPath(fileName);
 #endif
+}
 
 const char *Portable::ghostScriptCommand(void)
 {
