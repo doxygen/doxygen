@@ -4745,23 +4745,25 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyBegLineNr;
 					  yyextra->current->startColumn = yyextra->yyBegColNr;
 					  static QRegExp re("([^)]*[*&][^)]*)"); // (...*...)
+                                          int ts=yyextra->current->type.find('<');
+                                          int te=yyextra->current->type.findRev('>');
+                                          int ti=yyextra->current->type.find(re,0);
+
+                                          // bug677315: A<int(void *, char *)> get(); is not a function pointer
+                                          bool isFunction = ti==-1 || // not a (...*...) pattern
+                                                            (ts!=-1 && ts<te && ts<ti && ti<te); // (...*...) is part of a template argument list
+                                          bool isVariable = (!yyextra->current->type.isEmpty() &&
+						(!isFunction || yyextra->current->type.left(8)=="typedef "));
+
+                                          //printf("type=%s ts=%d te=%d ti=%d isFunction=%d\n",
+                                          //    yyextra->current->type.data(),ts,te,ti,isFunction);
+
 					  if (*yytext!=';' || (yyextra->current_root->section&Entry::COMPOUND_MASK) )
 					  {
 					    int tempArg=yyextra->current->name.find('<');
-                                            int ts=yyextra->current->type.find('<');
-                                            int te=yyextra->current->type.findRev('>');
-                                            int ti=yyextra->current->type.find(re,0);
-
-                                            // bug677315: A<int(void *, char *)> get(); is not a function pointer
-                                            bool isFunction = ti==-1 || // not a (...*...) pattern
-                                                              (ts!=-1 && ts<te && ts<ti && ti<te); // (...*...) is part of a template argument list
-                                                              
-                                            //printf("type=%s ts=%d te=%d ti=%d isFunction=%d\n",
-                                            //    yyextra->current->type.data(),ts,te,ti,isFunction);
 					    QCString tempName;
 					    if (tempArg==-1) tempName=yyextra->current->name; else tempName=yyextra->current->name.left(tempArg);
-					    if (!yyextra->current->type.isEmpty() &&
-						(!isFunction || yyextra->current->type.left(8)=="typedef "))
+					    if (isVariable)
 					    {
 					      //printf("Scanner.l: found in class variable: '%s' '%s' '%s'\n", yyextra->current->type.data(),yyextra->current->name.data(),yyextra->current->args.data());
 					      if (yyextra->isTypedef && yyextra->current->type.left(8)!="typedef ")
@@ -4770,7 +4772,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      }
 					      yyextra->current->section = Entry::VARIABLE_SEC ;
 					    }
-					    else	      
+					    else
 					    {
 					      //printf("Scanner.l: found in class function: '%s' '%s' '%s'\n", yyextra->current->type.data(),yyextra->current->name.data(),yyextra->current->args.data());
 					      yyextra->current->section = Entry::FUNCTION_SEC ;
@@ -4780,8 +4782,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else // a global function prototype or function variable
 					  {
 					    //printf("Scanner.l: prototype? type='%s' name='%s' args='%s'\n",yyextra->current->type.data(),yyextra->current->name.data(),yyextra->current->args.data());
-					    if (!yyextra->current->type.isEmpty() && 
-						(yyextra->current->type.find(re,0)!=-1 || yyextra->current->type.left(8)=="typedef "))
+					    if (isVariable)
 					    {
 					      if (yyextra->isTypedef && yyextra->current->type.left(8)!="typedef ")
 					      {
