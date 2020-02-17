@@ -38,15 +38,6 @@
 #define RM_TMP_FILES (true)
 //#define RM_TMP_FILES (false)
 
-// for SVG output choose which tool to use
-#define USE_PDF2SVG  1
-#define USE_INKSCAPE 0
-
-#if (USE_PDF2SVG+USE_INKSCAPE!=1)
-#error "Invalid configuration: either USE_PDF2SVG or USE_INKSCAPE should be 1"
-#endif
-
-
 struct FormulaManager::Private
 {
   void storeDisplaySize(int id,int w,int h)
@@ -303,31 +294,37 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         }
         Portable::sysTimerStop();
 
-#if USE_PDF2SVG
-        sprintf(args,"%s_tmp.pdf form_%d.svg",formBase.data(),pageNum);
-        Portable::sysTimerStart();
-        if (Portable::system("pdf2svg",args)!=0)
+        if (Portable::checkForExecutable("pdf2svg"))
         {
-          err("Problems running pdf2svg. Check your installation!\n");
+          sprintf(args,"%s_tmp.pdf form_%d.svg",formBase.data(),pageNum);
+          Portable::sysTimerStart();
+          if (Portable::system("pdf2svg",args)!=0)
+          {
+              err("Problems running pdf2svg. Check your installation!\n");
+            Portable::sysTimerStop();
+            QDir::setCurrent(oldDir);
+            return;
+          }
           Portable::sysTimerStop();
-          QDir::setCurrent(oldDir);
+        }
+        else if (Portable::checkForExecutable("inkscape"))
+        {
+          sprintf(args,"-l form_%d.svg -z %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+          Portable::sysTimerStart();
+          if (Portable::system("inkscape",args)!=0)
+          {
+            err("Problems running inkscape. Check your installation!\n");
+            Portable::sysTimerStop();
+            QDir::setCurrent(oldDir);
+            return;
+          }
+          Portable::sysTimerStop();
+        }
+        else
+        {
+          err("Neither 'pdf2svg' nor 'inkscape' present for conversion of formula to 'svg'\n");
           return;
         }
-        Portable::sysTimerStop();
-#endif
-
-#if USE_INKSCAPE // alternative using inkscape (does seem to work very well on my system)
-        sprintf(args,"-l -z %s_tmp.pdf -o form_%d.svg 2>%s",formBase.data(),pageNum,Portable::devNull());
-        Portable::sysTimerStart();
-        if (Portable::system("inkscape",args)!=0)
-        {
-          err("Problems running inkscape. Check your installation!\n");
-          Portable::sysTimerStop();
-          QDir::setCurrent(oldDir);
-          return;
-        }
-        Portable::sysTimerStop();
-#endif
 
         if (RM_TMP_FILES)
         {
