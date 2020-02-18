@@ -677,7 +677,7 @@ void RTFDocVisitor::visitPost(DocAutoList *)
   if (!m_lastIsPara) m_t << "\\par";
   m_t << "}" << endl;
   m_lastIsPara=TRUE;
-  if (!m_indentLevel) m_t << "\\par";
+  if (!m_indentLevel) m_t << "\\par" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocAutoListItem *)
