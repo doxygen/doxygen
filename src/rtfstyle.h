@@ -53,8 +53,17 @@ struct Rtf_Style_Default
   const char *definition;
 };
 
+struct Rtf_Table_Default
+{
+  int id;
+  int lvl;
+  const char *definition;
+  const char *place;
+};
+
 extern char rtf_Style_Reset[];
 extern Rtf_Style_Default rtf_Style_Default[];
+extern Rtf_Table_Default rtf_Table_Default[];
 
 struct StyleData
 {

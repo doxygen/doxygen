@@ -306,9 +306,40 @@ void RTFGenerator::beginRTFDocument()
   }
 
   t <<"}" << endl;
+
+  // place to write rtf_Table_Default
+  int i;
+  int id = -1;
+  t << "{\\*\\listtable" << endl;
+  for ( i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  {
+    if (id != rtf_Table_Default[i].id)
+    {
+      if (id != -1)
+      {
+        t << "\\listid" << id << "}" << endl;
+      }
+      id = rtf_Table_Default[i].id;
+      t << "{\\list\\listtemplateid" << rtf_Table_Default[i].id << endl;
+    }
+    t << "{ " << rtf_Table_Default[i].definition << " }" << endl;
+  }
+  t << "\\listid" << id << "}" << endl;
+  t << "}" <<endl;
+  t << "{\\listoverridetable" <<endl;
+  id = -1;
+  for ( i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  {
+    if (id != rtf_Table_Default[i].id)
+    {
+      id = rtf_Table_Default[i].id;
+      t << "{\\listoverride\\listid" << id << "\\listoverridecount0\\ls" << id << "}" << endl;
+    }
+  }
+  t << "}" <<endl;
+
   // this comment is needed for postprocessing!
   t <<"{\\comment begin body}" << endl;
-
 }
 
 void RTFGenerator::beginRTFChapter()

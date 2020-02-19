@@ -74,6 +74,19 @@ QCString RTFDocVisitor::getStyle(const char *name)
   return sd->reference;
 }
 
+QCString RTFDocVisitor::getListTable(const int id)
+{
+  for (int i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  {
+    if ((id == rtf_Table_Default[i].id) && (m_indentLevel == rtf_Table_Default[i].lvl))
+    {
+      return rtf_Table_Default[i].place;
+    }
+  }
+  ASSERT(0);
+  return NULL;
+}
+
 void RTFDocVisitor::incIndentLevel()
 {
   if (m_indentLevel<rtf_maxIndentLevels-1) m_indentLevel++;
@@ -680,7 +693,7 @@ void RTFDocVisitor::visitPost(DocAutoList *)
   if (!m_indentLevel) m_t << "\\par";
 }
 
-void RTFDocVisitor::visitPre(DocAutoListItem *)
+void RTFDocVisitor::visitPre(DocAutoListItem *li)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocAutoListItem)}\n");
@@ -694,7 +707,19 @@ void RTFDocVisitor::visitPre(DocAutoListItem *)
   }
   else
   {
-    m_t << getStyle("ListBullet") << endl;
+    switch (li-> itemNumber())
+    {
+      case DocAutoList::Unchecked: // unchecked
+        m_t << getListTable(2) << endl;
+        break;
+      case DocAutoList::Checked_x: // checked with x
+      case DocAutoList::Checked_X: // checked with X
+        m_t << getListTable(3) << endl;
+        break;
+      default:
+        m_t << getListTable(1) << endl;
+        break;
+    }
   }
   incIndentLevel();
   m_lastIsPara=FALSE;

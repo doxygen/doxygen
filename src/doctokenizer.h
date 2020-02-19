@@ -81,6 +81,7 @@ struct TokenInfo
   
   // list token info
   bool isEnumList = false;
+  bool isCheckedList = false;
   int indent = 0;
 
   // sections

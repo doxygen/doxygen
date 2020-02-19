@@ -985,7 +985,14 @@ void HtmlDocVisitor::visitPre(DocAutoList *l)
   }
   else
   {
-    m_t << "<ul";
+    if (l->isCheckedList())
+    {
+      m_t << "<ul class=\"check\"";
+    }
+    else
+    {
+      m_t << "<ul";
+    }
   }
   m_t << getDirHtmlClassOfNode(getTextDirByConfig(l)) << ">";
   if (!l->isPreformatted()) m_t << "\n";
@@ -1007,10 +1014,22 @@ void HtmlDocVisitor::visitPost(DocAutoList *l)
   forceStartParagraph(l);
 }
 
-void HtmlDocVisitor::visitPre(DocAutoListItem *)
+void HtmlDocVisitor::visitPre(DocAutoListItem *li)
 {
   if (m_hide) return;
-  m_t << "<li>";
+  switch (li-> itemNumber())
+  {
+    case DocAutoList::Unchecked: // unchecked
+      m_t << "<li class=\"unchecked\">";
+      break;
+    case DocAutoList::Checked_x: // checked with x
+    case DocAutoList::Checked_X: // checked with X
+      m_t << "<li class=\"checked\">";
+      break;
+    default:
+      m_t << "<li>";
+      break;
+  }
 }
 
 void HtmlDocVisitor::visitPost(DocAutoListItem *li) 

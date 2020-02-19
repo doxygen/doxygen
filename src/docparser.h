@@ -717,9 +717,14 @@ class DocIndexEntry : public DocNode
 class DocAutoList : public CompAccept<DocAutoList>
 {
   public:
-    DocAutoList(DocNode *parent,int indent,bool isEnumList,int depth);
+    enum ListType
+    {
+       Unnumbered=1, Unchecked=-2, Checked_x=-3, Checked_X=-4 // positive numbers give the label
+    };
+    DocAutoList(DocNode *parent,int indent,bool isEnumList,int depth, bool checkedList);
     Kind kind() const          { return Kind_AutoList; }
     bool isEnumList() const    { return m_isEnumList; }
+    bool isCheckedList() const { return m_isCheckedList; }
     int  indent() const        { return m_indent; }
     int depth() const          { return m_depth; }
     int parse();
@@ -727,6 +732,7 @@ class DocAutoList : public CompAccept<DocAutoList>
   private:
     int      m_indent = 0;
     bool     m_isEnumList = false;
+    bool     m_isCheckedList = false;
     int      m_depth = 0;
 };
 

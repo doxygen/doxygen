@@ -815,7 +815,7 @@ void PerlModDocVisitor::visit(DocCite *cite)
 void PerlModDocVisitor::visitPre(DocAutoList *l)
 {
   openItem("list");
-  m_output.addFieldQuotedString("style", l->isEnumList() ? "ordered" : "itemized");
+  m_output.addFieldQuotedString("style", l->isEnumList() ? "ordered" : (l->isCheckedList() ? "check" :"itemized"));
   openSubBlock("content");
 }
 
@@ -825,9 +825,21 @@ void PerlModDocVisitor::visitPost(DocAutoList *)
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocAutoListItem *)
+void PerlModDocVisitor::visitPre(DocAutoListItem *li)
 {
   openSubBlock();
+  switch (li-> itemNumber())
+  {
+    case DocAutoList::Unchecked: // unchecked
+      m_output.addFieldQuotedString("style", "Unchecked");
+      break;
+    case DocAutoList::Checked_x: // checked with x
+    case DocAutoList::Checked_X: // checked with X
+      m_output.addFieldQuotedString("style", "Checked");
+      break;
+    default:
+      break;
+  }
 }
 
 void PerlModDocVisitor::visitPost(DocAutoListItem *)

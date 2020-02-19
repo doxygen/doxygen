@@ -42,6 +42,7 @@
 #include "doxygen.h"
 #include "portable.h"
 #include "cite.h"
+#include "docparser.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -356,6 +357,7 @@ OPTSTARS  ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
 OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
+CLISTITEM {BLANK}*[-]{BLANK}*"\["[ xX]"\]"
 ENDLIST   {BLANK}*"."{BLANK}*\n
 ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
@@ -478,7 +480,19 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          QCString text=yytext;
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
+			 g_token->isCheckedList = false;
                          g_token->id         = -1;
+			 g_token->indent     = computeIndent(yytext,dashPos);
+                         return TK_LISTITEM;
+                       }
+<St_Para>^{CLISTITEM}   { /* checkbox item */
+                         QCString text=yytext;
+			 int dashPos = text.findRev('-');
+			 g_token->isEnumList = false;
+			 g_token->isCheckedList = true;
+			 if (text.find('x') != -1) g_token->id = DocAutoList::Checked_x;
+			 else if (text.find('X') != -1) g_token->id = DocAutoList::Checked_X;
+			 else g_token->id = DocAutoList::Unchecked;
 			 g_token->indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
@@ -493,6 +507,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            static QRegExp re("[*+]");
                            int listPos = text.findRev(re);
                            g_token->isEnumList = FALSE;
+			   g_token->isCheckedList = false;
                            g_token->id         = -1;
                            g_token->indent     = computeIndent(yytext,listPos);
                            return TK_LISTITEM;
@@ -510,6 +525,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            int digitPos = text.find(re);
                            int dotPos = text.find('.',digitPos);
                            g_token->isEnumList = TRUE;
+			   g_token->isCheckedList = false;
                            g_token->id         = atoi(QCString(yytext).mid(digitPos,dotPos-digitPos));
                            g_token->indent     = computeIndent(yytext,digitPos);
                            return TK_LISTITEM;
@@ -520,7 +536,20 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 text=text.right(text.length()-text.find('\n')-1);
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
+			 g_token->isCheckedList = false;
                          g_token->id         = -1;
+			 g_token->indent     = computeIndent(text,dashPos);
+                         return TK_LISTITEM;
+                       }
+<St_Para>{BLANK}*\n{CLISTITEM}   { /* checkbox item on next line */
+                         QCString text=yytext;
+			 text=text.right(text.length()-text.find('\n')-1);
+			 int dashPos = text.findRev('-');
+			 g_token->isEnumList = false;
+			 g_token->isCheckedList = true;
+			 if (text.find('x') != -1) g_token->id = DocAutoList::Checked_x;
+			 else if (text.find('X') != -1) g_token->id = DocAutoList::Checked_X;
+			 else g_token->id = DocAutoList::Unchecked;
 			 g_token->indent     = computeIndent(text,dashPos);
                          return TK_LISTITEM;
                        }
@@ -536,6 +565,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            text=text.right(text.length()-text.find('\n')-1);
                            int markPos = text.findRev(re);
                            g_token->isEnumList = FALSE;
+			   g_token->isCheckedList = false;
                            g_token->id         = -1;
                            g_token->indent     = computeIndent(text,markPos);
                            return TK_LISTITEM;
@@ -556,6 +586,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            int digitPos = text.find(re);
                            int dotPos = text.find('.',digitPos);
                            g_token->isEnumList = TRUE;
+			   g_token->isCheckedList = false;
                            g_token->id         = atoi(QCString(text).mid(digitPos,dotPos-digitPos));
                            g_token->indent     = computeIndent(text,digitPos);
                            return TK_LISTITEM;
@@ -758,6 +789,12 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          return TK_COMMAND_SEL();
   		       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
+                         if (g_insidePre || g_autoListLevel==0)
+                         {
+                           REJECT;
+                         }
+                       }
+<St_Para>({BLANK}*\n)+{BLANK}*\n/{CLISTITEM} { /* skip trailing paragraph followed by new checkbox item */
                          if (g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;

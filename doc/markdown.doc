@@ -656,6 +656,12 @@ lists by using `-#` markers:
     -# item1
     -# item2
 
+Lists with as indicator a checked or unchecked check box are by using
+`- [ ]` or `- [x]` or `- [X]` as markers:
+
+    - [ ] unchecked
+    - [x] checked
+
 \subsection mddox_stars Use of asterisks
 
 Special care has to be taken when using *'s in a comment block 

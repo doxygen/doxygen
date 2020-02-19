@@ -224,6 +224,67 @@ Rtf_Style_Default rtf_Style_Default[] =
   }
 };
 
+#define RTF_ListElement(id,lvl,pos,chr)   \
+  { id, lvl,                              \
+    "\\listlevel\\levelnfc23\\leveljc0\\levelstartat1\\levelfollow0{\\leveltext \\'01\\u"#chr" ?;}{\\levelnumbers;}\\f8\\dbch\\af3\\fi-360\\li"#pos, \
+    "{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\nowidctlpar\\cf0\\hich\\af0\\langfe2052\\dbch\\af0\\afs24\\lang1081\\loch\\f0\\fs24\\lang1033{\\listtext\\pard\\plain \\hich\\af3\\dbch\\af3\\loch\\f8 \\'01\\u"#chr"\\tab}\\ilvl"#lvl"\\ls"#id" \\li0\\ri0\\lin0\\rin0\\fi-360\\tx"#pos"\\li"#pos"\\ri0\\lin"#pos"\\rin0\\fi-360\\kerning1\\hich\\af4\\dbch\\af5\\rtlch \\ltrch\\loch\\fs20" \
+  }
+
+#define RTF_ListClose(id,pos)   \
+  { id, 0,                              \
+    "\\listlevel\\levelnfc0\\leveljc0\\levelstartat1\\levelfollow0{\\leveltext \\'00;}{\\levelnumbers;}\\fi-"#pos"\\li"#pos"", \
+   0 \
+  }
+
+Rtf_Table_Default rtf_Table_Default[] =
+{
+  RTF_ListElement( 1,0, 360, 8226),
+  RTF_ListElement( 1,1, 720, 9702),
+  RTF_ListElement( 1,2,1080, 9642),
+  RTF_ListElement( 1,3,1440, 8226),
+  RTF_ListElement( 1,4,1800, 9702),
+  RTF_ListElement( 1,5,2160, 9642),
+  RTF_ListElement( 1,6,2520, 8662),
+  RTF_ListElement( 1,7,2880, 9702),
+  RTF_ListElement( 1,8,3600, 9642),
+
+  RTF_ListElement( 2,0, 360, 9744),
+  RTF_ListElement( 2,1, 720, 9744),
+  RTF_ListElement( 2,2,1080, 9744),
+  RTF_ListElement( 2,3,1440, 9744),
+  RTF_ListElement( 2,4,1800, 9744),
+  RTF_ListElement( 2,5,2160, 9744),
+  RTF_ListElement( 2,6,2520, 9744),
+  RTF_ListElement( 2,7,2880, 9744),
+  RTF_ListElement( 2,8,3600, 9744),
+
+  RTF_ListElement( 3,0, 360, 9746),
+  RTF_ListElement( 3,1, 720, 9746),
+  RTF_ListElement( 3,2,1080, 9746),
+  RTF_ListElement( 3,3,1440, 9746),
+  RTF_ListElement( 3,4,1800, 9746),
+  RTF_ListElement( 3,5,2160, 9746),
+  RTF_ListElement( 3,6,2520, 9746),
+  RTF_ListElement( 3,7,2880, 9746),
+  RTF_ListElement( 3,8,3600, 9746),
+
+  RTF_ListClose( 4, 432),
+  RTF_ListClose( 4, 576),
+  RTF_ListClose( 4, 720),
+  RTF_ListClose( 4, 864),
+  RTF_ListClose( 4,1008),
+  RTF_ListClose( 4,1152),
+  RTF_ListClose( 4,1296),
+  RTF_ListClose( 4,1440),
+  RTF_ListClose( 4,1584),
+
+  { 0,
+    0,
+    0,
+    0
+  }
+};
+
 const QRegExp StyleData::s_clause("\\\\s[0-9]+\\s*");
 
 StyleData::StyleData(const char* reference, const char* definition)

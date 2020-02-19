@@ -4389,9 +4389,9 @@ int DocAutoListItem::parse()
 //--------------------------------------------------------------------------
 
 DocAutoList::DocAutoList(DocNode *parent,int indent,bool isEnumList,
-                         int depth) : 
+                         int depth, bool isCheckedList) :
       m_indent(indent), m_isEnumList(isEnumList),
-      m_depth(depth)
+      m_depth(depth), m_isCheckedList(isCheckedList)
 { 
   m_parent = parent; 
 }
@@ -4405,9 +4405,18 @@ int DocAutoList::parse()
 	  // first item or sub list => create new list
   do
   {
-    if (g_token->id!=-1) // explicitly numbered list
+    switch (g_token->id)
     {
-      num=g_token->id;  // override num with real number given
+      case -1:
+        break;
+      case DocAutoList::Unchecked: // unchecked
+      case DocAutoList::Checked_x: // checked with x
+      case DocAutoList::Checked_X: // checked with X
+        num = g_token->id;
+        break;
+      default: // explicitly numbered list
+        num=g_token->id;  // override num with real number given
+        break;
     }
     DocAutoListItem *li = new DocAutoListItem(this,m_indent,num++);
     m_children.append(li);
@@ -4421,7 +4430,8 @@ int DocAutoList::parse()
   while (retval==TK_LISTITEM &&                // new list item
          m_indent==g_token->indent &&          // at same indent level
 	 m_isEnumList==g_token->isEnumList &&  // of the same kind
-         (g_token->id==-1 || g_token->id>=num)  // increasing number (or no number)
+	 m_isCheckedList==g_token->isCheckedList &&  // of the same kind
+         (g_token->id<0 || g_token->id>=num)  // increasing number (or no number or checked list)
         );
 
   doctokenizerYYendAutoList();
@@ -6626,7 +6636,7 @@ reparsetoken:
           do
           {
             al = new DocAutoList(this,g_token->indent,
-                                 g_token->isEnumList,depth);
+                                 g_token->isEnumList,depth,g_token->isCheckedList);
             m_children.append(al);
             retval = al->parse();
           } while (retval==TK_LISTITEM &&         // new list
