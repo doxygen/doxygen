@@ -713,6 +713,7 @@ static void readIncludeFile(const char *incName)
 %x      GetString
 %x      GetBool
 %x      GetStrList
+%x      GetStrList1
 %x      GetQuotedString
 %x      GetEnvVar
 %x      Include
@@ -725,8 +726,8 @@ static void readIncludeFile(const char *incName)
               BEGIN(Start);
               unput(*yytext);
             }
-<Start,GetString,GetStrList,GetBool,SkipInvalid>"##".*"\n" { config->appendUserComment(yytext);yyLineNr++;}
-<Start,GetString,GetStrList,GetBool,SkipInvalid>"#"	   { BEGIN(SkipComment); }
+<Start,GetString,GetStrList,GetStrList1,GetBool,SkipInvalid>"##".*"\n" { config->appendUserComment(yytext);yyLineNr++;}
+<Start,GetString,GetStrList,GetStrList1,GetBool,SkipInvalid>"#"	   { BEGIN(SkipComment); }
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { QCString cmd=yytext;
                                            cmd=cmd.left(cmd.length()-1).stripWhiteSpace(); 
 					   ConfigOption *option = config->get(cmd);
@@ -750,7 +751,14 @@ static void readIncludeFile(const char *incName)
 						 l = ((ConfigList *)option)->valueRef();
 					         l->clear();
 						 elemStr="";
-					         BEGIN(GetStrList);
+						 if (cmd == "PREDEFINED")
+						 {
+					           BEGIN(GetStrList1);
+						 }
+						 else
+						 {
+					           BEGIN(GetStrList);
+						 }
 					         break;
 					       case ConfigOption::O_Enum:
 						 s = ((ConfigEnum *)option)->valueRef();
@@ -880,7 +888,7 @@ static void readIncludeFile(const char *incName)
 
 <Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,yyLineNr,yyFileName.data()); }
 <GetString,GetBool,SkipInvalid>\n	{ yyLineNr++; BEGIN(Start); }
-<GetStrList>\n				{ 
+<GetStrList,GetStrList1>\n				{
   					  yyLineNr++; 
 					  if (!elemStr.isEmpty())
 					  {
@@ -888,6 +896,14 @@ static void readIncludeFile(const char *incName)
 					    l->append(elemStr);
 					  }
 					  BEGIN(Start); 
+					}
+<GetStrList1>[ \t]+			{
+					  if (!elemStr.isEmpty())
+					  {
+					    //printf("elemStr2='%s'\n",elemStr.data());
+					    l->append(elemStr);
+					  }
+					  elemStr.resize(0);
 					}
 <GetStrList>[ \t,]+			{
   				          if (!elemStr.isEmpty())
@@ -900,7 +916,7 @@ static void readIncludeFile(const char *incName)
 <GetString>[^ \"\t\r\n]+		{ (*s)+=configStringRecode(yytext,encoding,"UTF-8"); 
                                           checkEncoding();
                                         }
-<GetString,GetStrList,SkipInvalid>"\""	{ lastState=YY_START;
+<GetString,GetStrList,GetStrList1,SkipInvalid>"\""	{ lastState=YY_START;
   					  BEGIN(GetQuotedString); 
                                           tmpString.resize(0); 
 					}
@@ -942,6 +958,9 @@ static void readIncludeFile(const char *incName)
 						 "boolean tag in line %d, file %s; use YES or NO\n",
 						 bs.data(),yyLineNr,yyFileName.data());
 					  }
+					}
+<GetStrList1>[^ \#\"\t\r\n]+		{
+					  elemStr+=configStringRecode(yytext,encoding,"UTF-8");
 					}
 <GetStrList>[^ \#\"\t\r\n,]+		{
   					  elemStr+=configStringRecode(yytext,encoding,"UTF-8");
