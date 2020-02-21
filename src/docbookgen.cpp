@@ -1025,13 +1025,13 @@ DB_GEN_C
   t << "</para>";
   t << "<para>";
 }
-void DocbookGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
+void DocbookGenerator::startSection(const char *lab,const char *,SectionType type)
 {
 DB_GEN_C
   t << "    <section xml:id=\"_" << stripPath(lab) << "\">";
   t << "<title>";
 }
-void DocbookGenerator::endSection(const char *lab,SectionInfo::SectionType)
+void DocbookGenerator::endSection(const char *lab,SectionType)
 {
 DB_GEN_C
   t << "</title>";

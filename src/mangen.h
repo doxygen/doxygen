@@ -176,8 +176,8 @@ class ManGenerator : public OutputGenerator
     //void writeDescItem();
     void startDescForItem();
     void endDescForItem();
-    void startSection(const char *,const char *,SectionInfo::SectionType);
-    void endSection(const char *,SectionInfo::SectionType);
+    void startSection(const char *,const char *,SectionType);
+    void endSection(const char *,SectionType);
     void addIndexItem(const char *,const char *) {}
     void startIndent()        {}
     void endIndent()          {}

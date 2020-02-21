@@ -593,33 +593,33 @@ void ManGenerator::endMemberGroup(bool)
   m_firstCol=FALSE;
 }
 
-void ManGenerator::startSection(const char *,const char *,SectionInfo::SectionType type)
+void ManGenerator::startSection(const char *,const char *,SectionType type)
 {
   if( !m_inHeader ) 
   {
     switch(type)
     {
-      case SectionInfo::Page:          startGroupHeader(FALSE); break;
-      case SectionInfo::Section:       startGroupHeader(FALSE); break;
-      case SectionInfo::Subsection:    startMemberHeader(0, -1); break;
-      case SectionInfo::Subsubsection: startMemberHeader(0, -1); break;
-      case SectionInfo::Paragraph:     startMemberHeader(0, -1); break;
+      case SectionType::Page:          startGroupHeader(FALSE); break;
+      case SectionType::Section:       startGroupHeader(FALSE); break;
+      case SectionType::Subsection:    startMemberHeader(0, -1); break;
+      case SectionType::Subsubsection: startMemberHeader(0, -1); break;
+      case SectionType::Paragraph:     startMemberHeader(0, -1); break;
       default: ASSERT(0); break;
     }
   }
 }
 
-void ManGenerator::endSection(const char *,SectionInfo::SectionType type)
+void ManGenerator::endSection(const char *,SectionType type)
 {
   if( !m_inHeader )
   {
     switch(type)
     {
-      case SectionInfo::Page:          endGroupHeader(0); break;
-      case SectionInfo::Section:       endGroupHeader(0); break;
-      case SectionInfo::Subsection:    endMemberHeader(); break;
-      case SectionInfo::Subsubsection: endMemberHeader(); break;
-      case SectionInfo::Paragraph:     endMemberHeader(); break;
+      case SectionType::Page:          endGroupHeader(0); break;
+      case SectionType::Section:       endGroupHeader(0); break;
+      case SectionType::Subsection:    endMemberHeader(); break;
+      case SectionType::Subsubsection: endMemberHeader(); break;
+      case SectionType::Paragraph:     endMemberHeader(); break;
       default: ASSERT(0); break;
     }
   }

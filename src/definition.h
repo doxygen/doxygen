@@ -32,7 +32,7 @@
 
 class FileDef;
 class OutputList;
-class SectionDict;
+class SectionRefs;
 class MemberSDict;
 class MemberDef;
 class GroupDef;
@@ -280,7 +280,7 @@ class Definition : public DefinitionIntf
     virtual QCString id() const = 0;
 
     /** returns the section dictionary, only of importance for pagedef */
-    virtual SectionDict * getSectionDict() const = 0;
+    virtual const SectionRefs &getSectionRefs() const = 0;
 
     virtual QCString navigationPathAsString() const = 0;
     virtual QCString pathFragment() const = 0;

@@ -63,7 +63,7 @@ static int g_sharpCount=0;
 static const Definition  *g_definition;
 static QCString     g_secLabel;
 static QCString     g_secTitle;
-static SectionInfo::SectionType g_secType;
+static SectionType  g_secType;
 static QCString     g_endMarker;
 static int          g_autoListLevel;
 
@@ -170,11 +170,11 @@ static void processSection()
   {
     warn(g_fileName,yylineno,"Found section/anchor %s without context\n",g_secLabel.data()); 
   }
-  SectionInfo *si=0;
-  if ((si=Doxygen::sectionDict->find(g_secLabel)))
+  SectionInfo *si = SectionManager::instance().find(g_secLabel);
+  if (si)
   {
-    si->fileName = file;
-    si->type     = g_secType;
+    si->setFileName(file);
+    si->setType(g_secType);
   }
 }
 
@@ -1248,7 +1248,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                           int e=tag.find(c,s+4);
                                           if (e!=-1) // found matching end
                                           {
-                                            g_secType = SectionInfo::Table;
+                                            g_secType = SectionType::Table;
                                             g_secLabel=tag.mid(s+4,e-s-4); // extract id
                                             processSection();
                                           }
@@ -1256,23 +1256,23 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                       }
                                     }
 <St_Sections>{CMD}"anchor"{BLANK}+  { 
-                                      g_secType = SectionInfo::Anchor; 
+                                      g_secType = SectionType::Anchor; 
 				      BEGIN(St_SecLabel1); 
                                     }
 <St_Sections>{CMD}"section"{BLANK}+ { 
-                                      g_secType = SectionInfo::Section; 
+                                      g_secType = SectionType::Section; 
                                       BEGIN(St_SecLabel2); 
                                     }
 <St_Sections>{CMD}"subsection"{BLANK}+ { 
-                                      g_secType = SectionInfo::Subsection; 
+                                      g_secType = SectionType::Subsection; 
                                       BEGIN(St_SecLabel2); 
                                     }
 <St_Sections>{CMD}"subsubsection"{BLANK}+ { 
-                                      g_secType = SectionInfo::Subsubsection; 
+                                      g_secType = SectionType::Subsubsection; 
                                       BEGIN(St_SecLabel2); 
                                     }
 <St_Sections>{CMD}"paragraph"{BLANK}+ { 
-                                      g_secType = SectionInfo::Paragraph; 
+                                      g_secType = SectionType::Paragraph; 
                                       BEGIN(St_SecLabel2); 
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {

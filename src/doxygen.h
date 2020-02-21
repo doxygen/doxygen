@@ -112,7 +112,6 @@ class Doxygen
     static QStrList                  tagfileList;
     static MemberNameSDict          *memberNameSDict;
     static MemberNameSDict          *functionNameSDict;
-    static SectionDict              *sectionDict;
     static StringDict                namespaceAliasDict;
     static GroupSDict               *groupSDict;
     static NamespaceSDict           *namespaceSDict;

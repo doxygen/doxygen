@@ -106,7 +106,6 @@ static QDict<void>            g_paramsFound;
 static const MemberDef *      g_memberDef;
 static bool                   g_isExample;
 static QCString               g_exampleName;
-static SectionDict *          g_sectionDict;
 static QCString               g_searchUrl;
 
 static QCString               g_includeFileName;
@@ -141,7 +140,6 @@ struct DocParserContext
   QDict<void>  paramsFound;
   bool         isExample;
   QCString     exampleName;
-  SectionDict *sectionDict;
   QCString     searchUrl;
 
   QCString  includeFileText;
@@ -191,7 +189,6 @@ static void docParserPushContext(bool saveParamInfo=TRUE)
   ctx->memberDef          = g_memberDef;
   ctx->isExample          = g_isExample;
   ctx->exampleName        = g_exampleName;
-  ctx->sectionDict        = g_sectionDict;
   ctx->searchUrl          = g_searchUrl;
 
   ctx->includeFileText    = g_includeFileText;
@@ -232,7 +229,6 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
   g_memberDef           = ctx->memberDef;
   g_isExample           = ctx->isExample;
   g_exampleName         = ctx->exampleName;
-  g_sectionDict         = ctx->sectionDict;
   g_searchUrl           = ctx->searchUrl;
 
   g_includeFileText     = ctx->includeFileText;
@@ -1942,17 +1938,12 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
   }
   else // found \anchor label
   {
-    SectionInfo *sec = Doxygen::sectionDict->find(id);
+    const SectionInfo *sec = SectionManager::instance().find(id);
     if (sec)
     {
       //printf("Found anchor %s\n",id.data());
-      m_file   = sec->fileName;
-      m_anchor = sec->label;
-      if (g_sectionDict && g_sectionDict->find(id)==0)
-      {
-        //printf("Inserting in dictionary!\n");
-        g_sectionDict->append(id,sec);
-      }
+      m_file   = sec->fileName();
+      m_anchor = sec->label();
     }
     else
     {
@@ -2286,30 +2277,26 @@ void DocSecRefItem::parse()
   doctokenizerYYsetStatePara();
   handlePendingStyleCommands(this,m_children);
 
-  SectionInfo *sec=0;
+  const SectionInfo *sec=0;
   if (!m_target.isEmpty())
   {
-    sec=Doxygen::sectionDict->find(m_target);
+    const SectionInfo *sec = SectionManager::instance().find(m_target);
     if (sec)
     {
-      m_file   = sec->fileName;
-      m_anchor = sec->label;
-      if (g_sectionDict && g_sectionDict->find(m_target)==0)
-      {
-        g_sectionDict->append(m_target,sec);
-      }
+      m_file   = sec->fileName();
+      m_anchor = sec->label();
     }
     else
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"reference to unknown section %s",
           qPrint(m_target));
     }
-  } 
+  }
   else
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"reference to empty target");
   }
-  
+
   DBG(("DocSecRefItem::parse() end\n"));
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
@@ -2431,28 +2418,28 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
   ASSERT(!target.isEmpty());
   SrcLangExt lang = getLanguageFromFileName(target);
   m_relPath = g_relPath;
-  SectionInfo *sec = Doxygen::sectionDict->find(target);
+  const SectionInfo *sec = SectionManager::instance().find(target);
   if (sec==0 && lang==SrcLangExt_Markdown) // lookup as markdown file
   {
-    sec = Doxygen::sectionDict->find(markdownFileNameToId(target));
+    sec = SectionManager::instance().find(markdownFileNameToId(target));
   }
   if (sec) // ref to section or anchor
   {
     PageDef *pd = 0;
-    if (sec->type==SectionInfo::Page)
+    if (sec->type()==SectionType::Page)
     {
       pd = Doxygen::pageSDict->find(target);
     }
-    m_text         = sec->title;
-    if (m_text.isEmpty()) m_text = sec->label;
+    m_text         = sec->title();
+    if (m_text.isEmpty()) m_text = sec->label();
 
-    m_ref          = sec->ref;
-    m_file         = stripKnownExtensions(sec->fileName);
-    if (sec->type==SectionInfo::Anchor)
+    m_ref          = sec->ref();
+    m_file         = stripKnownExtensions(sec->fileName());
+    if (sec->type()==SectionType::Anchor)
     {
       m_refType = Anchor;
     }
-    else if (sec->type==SectionInfo::Table)
+    else if (sec->type()==SectionType::Table)
     {
       m_refType = Table;
     }
@@ -2461,7 +2448,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
       m_refType = Section;
     }
     m_isSubPage    = pd && pd->hasParentPage();
-    if (sec->type!=SectionInfo::Page || m_isSubPage) m_anchor = sec->label;
+    if (sec->type()!=SectionType::Page || m_isSubPage) m_anchor = sec->label();
     //printf("m_text=%s,m_ref=%s,m_file=%s,m_refToAnchor=%d type=%d\n",
     //    m_text.data(),m_ref.data(),m_file.data(),m_refToAnchor,sec->type);
     return;
@@ -3249,18 +3236,13 @@ DocHtmlCaption::DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs)
   {
     if (opt->name=="id" && !opt->value.isEmpty()) // interpret id attribute as an anchor
     {
-      SectionInfo *sec = Doxygen::sectionDict->find(opt->value);
+      const SectionInfo *sec = SectionManager::instance().find(opt->value);
       if (sec)
       {
         //printf("Found anchor %s\n",id.data());
-        m_file   = sec->fileName;
-        m_anchor = sec->label;
+        m_file   = sec->fileName();
+        m_anchor = sec->label();
         m_hasCaptionId = TRUE;
-        if (g_sectionDict && g_sectionDict->find(opt->value)==0)
-        {
-          //printf("Inserting in dictionary!\n");
-          g_sectionDict->append(opt->value,sec);
-        }
       }
       else
       {
@@ -6868,20 +6850,15 @@ int DocSection::parse()
   int retval=RetVal_OK;
   g_nodeStack.push(this);
 
-  SectionInfo *sec;
   if (!m_id.isEmpty())
   {
-    sec=Doxygen::sectionDict->find(m_id);
+    const SectionInfo *sec = SectionManager::instance().find(m_id);
     if (sec)
     {
-      m_file   = sec->fileName;
-      m_anchor = sec->label;
-      m_title  = sec->title;
-      if (m_title.isEmpty()) m_title = sec->label;
-      if (g_sectionDict && g_sectionDict->find(m_id)==0)
-      {
-        g_sectionDict->append(m_id,sec);
-      }
+      m_file   = sec->fileName();
+      m_anchor = sec->label();
+      m_title  = sec->title();
+      if (m_title.isEmpty()) m_title = sec->label();
     }
   }
 
@@ -6935,7 +6912,6 @@ int DocSection::parse()
       // then parse any number of nested sections
       while (retval==RetVal_Subsection) // more sections follow
       {
-        //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
         DocSection *s=new DocSection(this,
             QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
         m_children.append(s);
@@ -6950,7 +6926,6 @@ int DocSection::parse()
       // then parse any number of nested sections
       while (retval==RetVal_Subsubsection) // more sections follow
       {
-        //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
         DocSection *s=new DocSection(this,
             QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
         m_children.append(s);
@@ -6965,7 +6940,6 @@ int DocSection::parse()
       // then parse any number of nested sections
       while (retval==RetVal_Paragraph) // more sections follow
       {
-        //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
         DocSection *s=new DocSection(this,
             QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
         m_children.append(s);
@@ -7140,7 +7114,7 @@ void DocRoot::parse()
       {
         if (!g_token->sectionId.isEmpty())
         {
-          SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+          const SectionInfo *sec=SectionManager::instance().find(g_token->sectionId);
           if (sec)
           {
             DocSection *s=new DocSection(this,
@@ -7169,7 +7143,7 @@ void DocRoot::parse()
       {
         if (!g_token->sectionId.isEmpty())
         {
-          SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+          const SectionInfo *sec=SectionManager::instance().find(g_token->sectionId);
           if (sec)
           {
             DocSection *s=new DocSection(this,
@@ -7200,7 +7174,7 @@ void DocRoot::parse()
       {
         if (!g_token->sectionId.isEmpty())
         {
-          SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+          const SectionInfo *sec=SectionManager::instance().find(g_token->sectionId);
           if (sec)
           {
             DocSection *s=new DocSection(this,
@@ -7240,7 +7214,7 @@ void DocRoot::parse()
   {
     if (!g_token->sectionId.isEmpty())
     {
-      SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
+      const SectionInfo *sec=SectionManager::instance().find(g_token->sectionId);
       if (sec)
       {
         DocSection *s=new DocSection(this,
@@ -7750,7 +7724,6 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   g_retvalsFound.clear();
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
-  g_sectionDict = 0; //sections;
   
   //printf("Starting comment block at %s:%d\n",g_fileName.data(),startLine);
   doctokenizerYYlineno=startLine;

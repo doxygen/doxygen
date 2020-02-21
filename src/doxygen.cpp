@@ -128,7 +128,6 @@ FileNameDict    *Doxygen::inputNameDict = 0;
 GroupSDict      *Doxygen::groupSDict = 0;
 PageSDict       *Doxygen::pageSDict = 0;
 PageSDict       *Doxygen::exampleSDict = 0;
-SectionDict     *Doxygen::sectionDict = 0;        // all page sections
 StringDict       Doxygen::aliasDict(257);          // aliases
 QDict<void>      Doxygen::inputPaths(1009);
 FileNameDict    *Doxygen::includeNameDict = 0;     // include names
@@ -192,7 +191,6 @@ void clearAll()
   Doxygen::pageSDict->clear();
   Doxygen::exampleSDict->clear();
   Doxygen::inputNameList->clear();
-  Doxygen::sectionDict->clear();
   Doxygen::inputNameDict->clear();
   Doxygen::includeNameDict->clear();
   Doxygen::exampleNameDict->clear();
@@ -201,6 +199,7 @@ void clearAll()
   Doxygen::mscFileNameDict->clear();
   Doxygen::diaFileNameDict->clear();
   Doxygen::tagDestinationDict.clear();
+  SectionManager::instance().clear();
   CitationManager::instance().clear();
   delete Doxygen::mainPage; Doxygen::mainPage=0;
   FormulaManager::instance().clear();
@@ -8509,30 +8508,31 @@ static void findMainPage(Entry *root)
       Doxygen::mainPage->setLocalToc(root->localToc);
       addPageToContext(Doxygen::mainPage,root);
 
-      SectionInfo *si = Doxygen::sectionDict->find(Doxygen::mainPage->name());
+      const SectionInfo *si = SectionManager::instance().find(Doxygen::mainPage->name());
       if (si)
       {
-        if (si->lineNr != -1)
+        if (si->lineNr() != -1)
         {
-          warn(root->fileName,root->startLine,"multiple use of section label '%s' for main page, (first occurrence: %s, line %d)",Doxygen::mainPage->name().data(),si->fileName.data(),si->lineNr);
+          warn(root->fileName,root->startLine,"multiple use of section label '%s' for main page, (first occurrence: %s, line %d)",
+               Doxygen::mainPage->name().data(),si->fileName().data(),si->lineNr());
         }
         else
         {
-          warn(root->fileName,root->startLine,"multiple use of section label '%s' for main page, (first occurrence: %s)",Doxygen::mainPage->name().data(),si->fileName.data());
+          warn(root->fileName,root->startLine,"multiple use of section label '%s' for main page, (first occurrence: %s)",
+               Doxygen::mainPage->name().data(),si->fileName().data());
         }
       }
       else
       {
         // a page name is a label as well! but should no be double either
-        si=new SectionInfo(
+        SectionManager::instance().add(
           indexName, root->startLine,
           Doxygen::mainPage->name(),
           Doxygen::mainPage->title(),
-          SectionInfo::Page,
+          SectionType::Page,
           0); // level 0
-        Doxygen::sectionDict->append(indexName,si);
-        Doxygen::mainPage->addSectionsToDefinition(root->anchors);
       }
+      Doxygen::mainPage->addSectionsToDefinition(root->anchors);
     }
     else if (root->tagInfo()==0)
     {
@@ -8615,9 +8615,7 @@ static void checkPageRelations()
 
 static void resolveUserReferences()
 {
-  SDict<SectionInfo>::Iterator sdi(*Doxygen::sectionDict);
-  SectionInfo *si;
-  for (;(si=sdi.current());++sdi)
+  for (auto &si : SectionManager::instance())
   {
     //printf("si->label='%s' si->definition=%s si->fileName='%s'\n",
     //        si->label.data(),si->definition?si->definition->name().data():"<none>",
@@ -8634,39 +8632,39 @@ static void resolveUserReferences()
     for (rli.toFirst();(rl=rli.current());++rli)
     {
       QCString label="_"+rl->listName(); // "_todo", "_test", ...
-      if (si->label.left(label.length())==label)
+      if (si->label().left(label.length())==label)
       {
-        si->fileName=rl->listName();
-        si->generated=TRUE;
+        si->setFileName(rl->listName());
+        si->setGenerated(TRUE);
         break;
       }
     }
 
     //printf("start: si->label=%s si->fileName=%s\n",si->label.data(),si->fileName.data());
-    if (!si->generated)
+    if (!si->generated())
     {
       // if this section is in a page and the page is in a group, then we
       // have to adjust the link file name to point to the group.
-      if (!si->fileName.isEmpty() &&
-          (pd=Doxygen::pageSDict->find(si->fileName)) &&
+      if (!si->fileName().isEmpty() &&
+          (pd=Doxygen::pageSDict->find(si->fileName())) &&
           pd->getGroupDef())
       {
-        si->fileName=pd->getGroupDef()->getOutputFileBase().copy();
+        si->setFileName(pd->getGroupDef()->getOutputFileBase());
       }
 
-      if (si->definition)
+      if (si->definition())
       {
         // TODO: there should be one function in Definition that returns
         // the file to link to, so we can avoid the following tests.
         const GroupDef *gd=0;
-        if (si->definition->definitionType()==Definition::TypeMember)
+        if (si->definition()->definitionType()==Definition::TypeMember)
         {
-          gd = (dynamic_cast<MemberDef *>(si->definition))->getGroupDef();
+          gd = (dynamic_cast<MemberDef *>(si->definition()))->getGroupDef();
         }
 
         if (gd)
         {
-          si->fileName=gd->getOutputFileBase().copy();
+          si->setFileName(gd->getOutputFileBase());
         }
         else
         {
@@ -9863,8 +9861,6 @@ void initDoxygen()
   Doxygen::dirRelations.setAutoDelete(TRUE);
   Doxygen::genericsDict = new GenericsSDict;
   Doxygen::indexList = new IndexList;
-  Doxygen::sectionDict = new SectionDict(257);
-  Doxygen::sectionDict->setAutoDelete(TRUE);
 
   // initialisation of these globals depends on
   // configuration switches so we need to postpone these
@@ -9893,8 +9889,8 @@ void initDoxygen()
 void cleanUpDoxygen()
 {
   FormulaManager::instance().clear();
+  SectionManager::instance().clear();
 
-  delete Doxygen::sectionDict;
   delete Doxygen::indexList;
   delete Doxygen::genericsDict;
   delete Doxygen::inputNameDict;

@@ -1435,29 +1435,29 @@ void HtmlGenerator::endGroupHeader(int extraIndentLevel)
   }
 }
 
-void HtmlGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
+void HtmlGenerator::startSection(const char *lab,const char *,SectionType type)
 {
   switch(type)
   {
-    case SectionInfo::Page:          t << "\n\n<h1>"; break;
-    case SectionInfo::Section:       t << "\n\n<h2>"; break;
-    case SectionInfo::Subsection:    t << "\n\n<h3>"; break;
-    case SectionInfo::Subsubsection: t << "\n\n<h4>"; break;
-    case SectionInfo::Paragraph:     t << "\n\n<h5>"; break;
+    case SectionType::Page:          t << "\n\n<h1>"; break;
+    case SectionType::Section:       t << "\n\n<h2>"; break;
+    case SectionType::Subsection:    t << "\n\n<h3>"; break;
+    case SectionType::Subsubsection: t << "\n\n<h4>"; break;
+    case SectionType::Paragraph:     t << "\n\n<h5>"; break;
     default: ASSERT(0); break;
   }
   t << "<a id=\"" << lab << "\"></a>";
 }
 
-void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
+void HtmlGenerator::endSection(const char *,SectionType type)
 {
   switch(type)
   {
-    case SectionInfo::Page:          t << "</h1>"; break;
-    case SectionInfo::Section:       t << "</h2>"; break;
-    case SectionInfo::Subsection:    t << "</h3>"; break;
-    case SectionInfo::Subsubsection: t << "</h4>"; break;
-    case SectionInfo::Paragraph:     t << "</h5>"; break;
+    case SectionType::Page:          t << "</h1>"; break;
+    case SectionType::Section:       t << "</h2>"; break;
+    case SectionType::Subsection:    t << "</h3>"; break;
+    case SectionType::Subsubsection: t << "</h4>"; break;
+    case SectionType::Paragraph:     t << "</h5>"; break;
     default: ASSERT(0); break;
   }
 }

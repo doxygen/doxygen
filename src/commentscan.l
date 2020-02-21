@@ -398,7 +398,7 @@ struct commentscanYY_state
 
 static QCString stripQuotes(const char *s);
 static bool getDocSectionName(int s);
-static SectionInfo::SectionType sectionLevelToType(int level);
+static SectionType sectionLevelToType(int level);
 static void stripTrailingWhiteSpace(QCString &s);
 
 static void initParser(yyscan_t yyscanner);
@@ -2832,24 +2832,24 @@ static void addXRefItem(yyscan_t yyscanner,
     {
       yyextra->current->doc += cmdString;
     }
-    SectionInfo *si = Doxygen::sectionDict->find(anchorLabel);
+    SectionManager &sm = SectionManager::instance();
+    const SectionInfo *si = sm.find(anchorLabel);
     if (si)
     {
-      if (si->lineNr != -1)
+      if (si->lineNr() != -1)
       {
-        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel,si->fileName.data(),si->lineNr);
+        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel,si->fileName().data(),si->lineNr());
       }
       else
       {
-        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel,si->fileName.data());
+        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel,si->fileName().data());
       }
     }
     else
     {
-      si=new SectionInfo(listName,yyextra->lineNr,anchorLabel,
-                         yyextra->sectionTitle,SectionInfo::Anchor,
-                         yyextra->sectionLevel);
-      Doxygen::sectionDict->append(anchorLabel,si);
+      si = sm.add(listName,yyextra->lineNr,anchorLabel,
+                   yyextra->sectionTitle,SectionType::Anchor,
+                   yyextra->sectionLevel);
       yyextra->current->anchors.push_back(si);
     }
   }
@@ -2875,25 +2875,26 @@ static QCString addFormula(yyscan_t yyscanner)
 
 //-----------------------------------------------------------------------------
 
-static SectionInfo::SectionType sectionLevelToType(int level)
+static SectionType sectionLevelToType(int level)
 {
-  if (level>=0 && level<5) return (SectionInfo::SectionType)level;
-  return SectionInfo::Anchor;
+  if (level>=0 && level<5) return (SectionType)level;
+  return SectionType::Anchor;
 }
 
 static void addSection(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  SectionInfo *si = Doxygen::sectionDict->find(yyextra->sectionLabel);
+  SectionManager &sm = SectionManager::instance();
+  const SectionInfo *si = sm.find(yyextra->sectionLabel);
   if (si)
   {
-    if (si->lineNr != -1)
+    if (si->lineNr() != -1)
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",yyextra->sectionLabel.data(),si->fileName.data(),si->lineNr);
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",yyextra->sectionLabel.data(),si->fileName().data(),si->lineNr());
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s)",yyextra->sectionLabel.data(),si->fileName.data());
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s)",yyextra->sectionLabel.data(),si->fileName().data());
     }
   }
   else
@@ -2901,14 +2902,12 @@ static void addSection(yyscan_t yyscanner)
     // create a new section element
     yyextra->sectionTitle+=yytext;
     yyextra->sectionTitle=yyextra->sectionTitle.stripWhiteSpace();
-    si = new SectionInfo(yyextra->fileName,yyextra->lineNr,yyextra->sectionLabel,
-                          yyextra->sectionTitle,sectionLevelToType(yyextra->sectionLevel),yyextra->sectionLevel);
+    si = sm.add(yyextra->fileName,yyextra->lineNr,yyextra->sectionLabel,
+                yyextra->sectionTitle,sectionLevelToType(yyextra->sectionLevel),
+                yyextra->sectionLevel);
 
     // add section to this entry
     yyextra->current->anchors.push_back(si);
-
-    // add section to the global dictionary
-    Doxygen::sectionDict->append(yyextra->sectionLabel,si);
   }
 }
 
@@ -3068,22 +3067,22 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
 static void addAnchor(yyscan_t yyscanner,const char *anchor)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  SectionInfo *si = Doxygen::sectionDict->find(anchor);
+  SectionManager &sm = SectionManager::instance();
+  const SectionInfo *si = sm.find(anchor);
   if (si)
   {
-    if (si->lineNr != -1)
+    if (si->lineNr() != -1)
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",anchor,si->fileName.data(),si->lineNr);
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",anchor,si->fileName().data(),si->lineNr());
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",anchor,si->fileName.data());
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",anchor,si->fileName().data());
     }
   }
   else
   {
-    si = new SectionInfo(yyextra->fileName,yyextra->lineNr,anchor,0,SectionInfo::Anchor,0);
-    Doxygen::sectionDict->append(anchor,si);
+    si = sm.add(yyextra->fileName,yyextra->lineNr,anchor,0,SectionType::Anchor,0);
     yyextra->current->anchors.push_back(si);
   }
 }

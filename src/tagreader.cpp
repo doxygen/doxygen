@@ -1162,13 +1162,13 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const TagAncho
   TagAnchorInfo *ta;
   for (tli.toFirst();(ta=tli.current());++tli)
   {
-    if (Doxygen::sectionDict->find(ta->label)==0)
+    if (SectionManager::instance().find(ta->label)==0)
     {
       //printf("New sectionInfo file=%s anchor=%s\n",
       //    ta->fileName.data(),ta->label.data());
-      SectionInfo *si=new SectionInfo(ta->fileName,-1,ta->label,ta->title,
-          SectionInfo::Anchor,0,m_tagName);
-      Doxygen::sectionDict->append(ta->label,si);
+      SectionInfo *si=SectionManager::instance().add(
+          ta->fileName,-1,ta->label,ta->title,
+          SectionType::Anchor,0,m_tagName);
       e->anchors.push_back(si);
     }
     else

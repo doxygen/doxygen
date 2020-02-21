@@ -1779,7 +1779,7 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 }
 
 
-void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
+void LatexGenerator::startSection(const char *lab,const char *,SectionType type)
 {
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
@@ -1792,11 +1792,11 @@ void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::Sect
   {
     switch(type)
     {
-      case SectionInfo::Page:          t << "doxysubsection"; break;
-      case SectionInfo::Section:       t << "doxysubsubsection"; break;
-      case SectionInfo::Subsection:    t << "doxyparagraph"; break;
-      case SectionInfo::Subsubsection: t << "doxysubparagraph"; break;
-      case SectionInfo::Paragraph:     t << "doxysubparagraph"; break;
+      case SectionType::Page:          t << "doxysubsection"; break;
+      case SectionType::Section:       t << "doxysubsubsection"; break;
+      case SectionType::Subsection:    t << "doxyparagraph"; break;
+      case SectionType::Subsubsection: t << "doxysubparagraph"; break;
+      case SectionType::Paragraph:     t << "doxysubparagraph"; break;
       default: ASSERT(0); break;
     }
     t << "{";
@@ -1805,18 +1805,18 @@ void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::Sect
   {
     switch(type)
     {
-      case SectionInfo::Page:          t << "doxysection"; break;
-      case SectionInfo::Section:       t << "doxysubsection"; break;
-      case SectionInfo::Subsection:    t << "doxysubsubsection"; break;
-      case SectionInfo::Subsubsection: t << "doxyparagraph"; break;
-      case SectionInfo::Paragraph:     t << "doxysubparagraph"; break;
+      case SectionType::Page:          t << "doxysection"; break;
+      case SectionType::Section:       t << "doxysubsection"; break;
+      case SectionType::Subsection:    t << "doxysubsubsection"; break;
+      case SectionType::Subsubsection: t << "doxyparagraph"; break;
+      case SectionType::Paragraph:     t << "doxysubparagraph"; break;
       default: ASSERT(0); break;
     }
     t << "{";
   }
 }
 
-void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
+void LatexGenerator::endSection(const char *lab,SectionType)
 {
   t << "}\\label{" << lab << "}" << endl;
 }

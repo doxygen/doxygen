@@ -329,9 +329,9 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startIndent); }
     void endIndent() 
     { forall(&OutputGenerator::endIndent); }
-    void startSection(const char *lab,const char *title,SectionInfo::SectionType t)
+    void startSection(const char *lab,const char *title,SectionType t)
     { forall(&OutputGenerator::startSection,lab,title,t); }
-    void endSection(const char *lab,SectionInfo::SectionType t)
+    void endSection(const char *lab,SectionType t)
     { forall(&OutputGenerator::endSection,lab,t); }
     void addIndexItem(const char *s1,const char *s2)
     { forall(&OutputGenerator::addIndexItem,s1,s2); }
