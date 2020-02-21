@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -28,6 +25,7 @@
 
 class Definition;
 
+//! enum representing the various types of sections and entities that can be referred to.
 enum class SectionType
 {
   Page          = 0,
@@ -39,6 +37,7 @@ enum class SectionType
   Table         = 6
 };
 
+//! return true if type is a section, and false if it is a page, anchor or table.
 inline constexpr bool isSection(SectionType type)
 {
   return (type==SectionType::Section       ||
@@ -47,7 +46,7 @@ inline constexpr bool isSection(SectionType type)
           type==SectionType::Paragraph);
 }
 
-
+//! class that provide information about a section.
 class SectionInfo
 {
   public:
@@ -63,7 +62,7 @@ class SectionInfo
       //printf("~SectionInfo(%p)\n",this);
     }
 
-
+    // getters
     QCString    label()      const { return m_label;      }
     QCString    title()      const { return m_title;      }
     SectionType type()       const { return m_type;       }
@@ -92,44 +91,38 @@ class SectionInfo
     Definition *m_definition = 0;
 };
 
+//! class that represents a list of constant references to sections.
 class SectionRefs
 {
     using SectionInfoVec = std::vector<const SectionInfo*>;
   public:
-    using iterator = SectionInfoVec::const_iterator;
+    using const_iterator = SectionInfoVec::const_iterator;
 
+    //! Returns a constant pointer to the section info given a section label or nullptr
+    //! if no section with the given label can be found.
     const SectionInfo *find(const char *label) const
     {
       auto it = m_lookup.find(label);
       return it!=m_lookup.end() ? it->second : nullptr;
     }
 
+    //! Adds a non-owning section reference.
     void add(const SectionInfo *si)
     {
       m_lookup.insert({std::string(si->label()),si});
       m_entries.push_back(si);
     }
 
-    iterator begin() const
-    {
-      return m_entries.cbegin();
-    }
-
-    iterator end() const
-    {
-      return m_entries.cend();
-    }
-
-    bool empty() const
-    {
-      return m_lookup.empty();
-    }
+    const_iterator begin() const { return m_entries.cbegin(); }
+    const_iterator end()   const { return m_entries.cend(); }
+    bool empty() const { return m_lookup.empty(); }
 
   private:
     SectionInfoVec m_entries;
     std::map< std::string, const SectionInfo* > m_lookup;
 };
 
+//! singleton class that owns the list of all sections
 class SectionManager
 {
     using SectionInfoPtr = std::unique_ptr<SectionInfo>;
@@ -138,18 +131,24 @@ class SectionManager
   public:
     using iterator = SectionInfoVec::iterator;
 
+    //! Return a pointer to the section info given a section label or nullptr if
+    //! no section with the given label can be found.
     SectionInfo *find(const char *label)
     {
       auto it = m_lookup.find(label);
       return it!=m_lookup.end() ? it->second : nullptr;
     }
 
+    //! Returns a constant pointers to the section info given a section label or nullptr
+    //! if no section with the given label can be found.
     const SectionInfo *find(const char *label) const
     {
       auto it = m_lookup.find(label);
       return it!=m_lookup.end() ? it->second : nullptr;
     }
 
+    //! Add a new section given the section data.
+    //! Returns a non-owning pointer to the newly added section.
     SectionInfo *add(const char *fileName,
                      int lineNr,
                      const char *label,
@@ -166,29 +165,26 @@ class SectionManager
       return result;
     }
 
+    //! Add a new section given the data of an existing section.
+    //! Returns a non-owning pointer to the newly added section.
     SectionInfo *add(const SectionInfo &si)
     {
       add(si.fileName(),si.lineNr(),si.label(),si.title(),si.type(),si.level(),si.ref());
       return find(si.label());
     }
-    iterator begin()
-    {
-      return m_entries.begin();
-    }
-    iterator end()
-    {
-      return m_entries.end();
-    }
-    bool empty() const
-    {
-      return m_entries.empty();
-    }
+
+    iterator begin() { return m_entries.begin(); }
+    iterator end()   { return m_entries.end(); }
+    bool empty() const { return m_entries.empty(); }
+
+    //! clears the sections
     void clear()
     {
       m_entries.clear();
       m_lookup.clear();
     }
 
+    //! returns a reference to the singleton
     static SectionManager &instance()
     {
       static SectionManager sm;
