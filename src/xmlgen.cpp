@@ -1835,12 +1835,9 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
   if (pd->localToc().isXmlEnabled() && !sectionRefs.empty())
   {
     t << "    <tableofcontents>" << endl;
-    //SDict<SectionInfo>::Iterator li(*sectionDict);
-    //SectionInfo *si;
     int level=1,l;
     bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     int maxLevel = pd->localToc().xmlLevel();
-    //for (li.toFirst();(si=li.current());++li)
     for (const SectionInfo *si : sectionRefs)
     {
       if (isSection(si->type()))

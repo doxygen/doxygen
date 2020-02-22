@@ -432,7 +432,7 @@ void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo
 bool DefinitionImpl::hasSections() const
 {
   //printf("DefinitionImpl::hasSections(%s) #sections=%d\n",name().data(),
-  //    m_impl->sectionDict ? m_impl->sectionDict->count() : 0);
+  //    m_impl->sectionRefs.size());
   if (m_impl->sectionRefs.empty()) return FALSE;
   for (const SectionInfo *si : m_impl->sectionRefs)
   {

@@ -4556,8 +4556,7 @@ static void writeIndex(OutputList &ol)
 
     ol.startTextBlock();
     ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,
-                Doxygen::mainPage->documentation(),TRUE,FALSE
-                /*,Doxygen::mainPage->sectionDict*/);
+                Doxygen::mainPage->documentation(),TRUE,FALSE);
     ol.endTextBlock();
     ol.endPageDoc();
 

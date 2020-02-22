@@ -115,7 +115,8 @@ class SectionRefs
 
     const_iterator begin() const { return m_entries.cbegin(); }
     const_iterator end()   const { return m_entries.cend(); }
-    bool empty() const { return m_lookup.empty(); }
+    bool empty() const { return m_entries.empty(); }
+    int size() const   { return m_entries.size();  }
 
   private:
     SectionInfoVec m_entries;
@@ -176,6 +177,7 @@ class SectionManager
     iterator begin() { return m_entries.begin(); }
     iterator end()   { return m_entries.end(); }
     bool empty() const { return m_entries.empty(); }
+    int size() const   { return m_entries.size();  }
 
     //! clears the sections
     void clear()
