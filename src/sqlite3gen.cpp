@@ -2486,10 +2486,10 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   }
   else
   {
-    SectionInfo *si = Doxygen::sectionDict->find(pd->name());
+    SectionInfo *si = SectionManager::instance().find(pd->name());
     if (si)
     {
-      title = si->title;
+      title = si->title();
     }
 
     if(!title){title = pd->title();}
