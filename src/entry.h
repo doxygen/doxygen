@@ -26,7 +26,7 @@
 #include "types.h"
 #include "arguments.h"
 
-struct SectionInfo;
+class SectionInfo;
 class QFile;
 class FileDef;
 struct ListItemInfo;
