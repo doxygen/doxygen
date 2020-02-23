@@ -3435,7 +3435,7 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
   {
     char *orgPos=output.data()+orgOffset;
     char *newPos=output.data()+output.curPos();
-    Debug::print(Debug::Preprocessor,0,"Preprocessor output (size: %d bytes):\n",newPos-orgPos);
+    Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %d bytes):\n",fileName,newPos-orgPos);
     int line=1;
     Debug::print(Debug::Preprocessor,0,"---------\n00001 ");
     while (orgPos<newPos) 
@@ -3447,7 +3447,7 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
     Debug::print(Debug::Preprocessor,0,"\n---------\n");
     if (state->defineManager.defineContext().count()>0)
     {
-      Debug::print(Debug::Preprocessor,0,"Macros accessible in this file:\n");
+      Debug::print(Debug::Preprocessor,0,"Macros accessible in this file (%s):\n", fileName);
       Debug::print(Debug::Preprocessor,0,"---------\n");
       QDictIterator<Define> di(state->defineManager.defineContext());
       Define *def;
@@ -3459,7 +3459,7 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
     }
     else
     {
-      Debug::print(Debug::Preprocessor,0,"No macros accessible in this file.\n");
+      Debug::print(Debug::Preprocessor,0,"No macros accessible in this file (%s).\n", fileName);
     }
   }
   state->defineManager.endContext();
