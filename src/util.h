@@ -51,7 +51,7 @@ struct TagInfo;
 class MemberNameInfoSDict;
 struct ListItemInfo;
 class PageDef;
-struct SectionInfo;
+class SectionInfo;
 class QDir;
 class Definition;
 class BufStr;

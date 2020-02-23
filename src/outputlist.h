@@ -45,7 +45,6 @@ class DotClassGraph;
 class DotDirDeps;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
-class SectionDict;
 class DotGroupCollaboration;
 class DocRoot;
 

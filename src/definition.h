@@ -38,7 +38,7 @@ class MemberDef;
 class GroupDef;
 class GroupList;
 struct ListItemInfo;
-struct SectionInfo;
+class SectionInfo;
 class Definition;
 class FTextStream;
   

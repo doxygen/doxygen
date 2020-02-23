@@ -58,7 +58,6 @@ class IndexList;
 class FormulaList;
 class FormulaDict;
 class FormulaNameDict;
-class SectionDict;
 class Preprocessor;
 struct MemberGroupInfo;
 

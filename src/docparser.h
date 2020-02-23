@@ -32,7 +32,6 @@ class DocNode;
 class MemberDef;
 class Definition;
 class MemberGroup;
-class SectionDict;
 
 //---------------------------------------------------------------------------
 QString::Direction getTextDirByConfig(const QString &text);
