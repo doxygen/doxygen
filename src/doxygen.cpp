@@ -5880,7 +5880,6 @@ static void findMember(const Entry *root,
 
               bool matching=
                 md->isVariable() || md->isTypedef() || // needed for function pointers
-                (mdAl.empty() && root->argList.empty()) ||
                 matchArguments2(
                     md->getClassDef(),md->getFileDef(),argList,
                     cd,fd,root->argList,
