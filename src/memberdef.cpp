@@ -1414,7 +1414,7 @@ class MemberDefImpl::IMPL
     QCString declFileName;
     int declLine = 0;
     int declColumn = 0;
-    int numberOfFlowKW = 0;
+    int numberOfFlowKW = 1;
 };
 
 MemberDefImpl::IMPL::IMPL() :
@@ -1426,7 +1426,7 @@ MemberDefImpl::IMPL::IMPL() :
     categoryRelation(0),
     declLine(-1),
     declColumn(-1),
-    numberOfFlowKW(0)
+    numberOfFlowKW(1)
 {
 }
 
