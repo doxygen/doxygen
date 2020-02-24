@@ -437,7 +437,7 @@ QCString filterTitle(const QCString &title);
 
 bool patternMatch(const QFileInfo &fi,const QStrList *patList);
 
-QCString externalLinkTarget();
+QCString externalLinkTarget(const bool parent = false);
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
 int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos);
 const char *writeUtf8Char(FTextStream &t,const char *s);
