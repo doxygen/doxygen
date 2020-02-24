@@ -4,7 +4,7 @@
     <compoundname>078_xml_namespace_members_in_file_scope.h</compoundname>
     <innernamespace refid="namespace_namespace">Namespace</innernamespace>
     <sectiondef kind="enum">
-      <memberdef kind="enum" id="078__xml__namespace__members__in__file__scope_8h_1add172b93283b1ab7612c3ca6cc5dcfea" prot="public" static="no" strong="yes">
+      <memberdef kind="enum" id="namespace_namespace_1add172b93283b1ab7612c3ca6cc5dcfea" prot="public" static="no" strong="yes">
         <type/>
         <name>Enum</name>
         <briefdescription>
@@ -14,11 +14,11 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="078_xml_namespace_members_in_file_scope.h" line="15" column="16" bodyfile="078_xml_namespace_members_in_file_scope.h" bodystart="15" bodyend="15"/>
+        <location file="078_xml_namespace_members_in_file_scope.h" line="19" column="16" bodyfile="078_xml_namespace_members_in_file_scope.h" bodystart="19" bodyend="19"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
-      <memberdef kind="function" id="078__xml__namespace__members__in__file__scope_8h_1a0f1fe1a972c7c4196988a1bdde63ec77" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespace_namespace_1a0f1fe1a972c7c4196988a1bdde63ec77" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void Namespace::foo</definition>
         <argsstring>()</argsstring>
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="078_xml_namespace_members_in_file_scope.h" line="12" column="6" declfile="078_xml_namespace_members_in_file_scope.h" declline="12" declcolumn="6"/>
+        <location file="078_xml_namespace_members_in_file_scope.h" line="16" column="6" declfile="078_xml_namespace_members_in_file_scope.h" declline="16" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

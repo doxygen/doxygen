@@ -4795,6 +4795,31 @@ static void computeClassRelations()
   }
 }
 
+static void warnUndocumentedNamespaces()
+{
+  NamespaceSDict::Iterator nsi(*Doxygen::namespaceSDict);
+  NamespaceDef *nd;
+  for (nsi.toFirst();nd=nsi.current();++nsi)
+  {
+    if (!nd->hasDocumentation())
+    {
+      if ((guessSection(nd->getDefFileName())==Entry::HEADER_SEC ||
+           nd->getLanguage() == SrcLangExt_Fortran) && // Fortran doesn't have header files.
+          !Config_getBool(HIDE_UNDOC_NAMESPACES) // undocumented class are visible
+         )
+      {
+        char *t = 0;
+        if (nd->getLanguage() == SrcLangExt_Fortran)
+          t="Module";
+        else
+          t="Namespace";
+        warn_undoc(nd->getDefFileName(),nd->getDefLine(), "%s %s is not documented.",t,
+                   nd->name().data());
+      }
+    }
+  }
+}
+
 static void computeTemplateClassRelations()
 {
   for (const auto &kv : g_classEntries)
@@ -11119,6 +11144,10 @@ void parseInput()
 
   g_s.begin("Flushing cached template relations that have become invalid...\n");
   flushCachedTemplateRelations();
+  g_s.end();
+
+  g_s.begin("Warn for undocumented namespacs...\n");
+  warnUndocumentedNamespaces();
   g_s.end();
 
   g_s.begin("Computing class relations...\n");
