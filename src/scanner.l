@@ -1029,9 +1029,16 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->explicitExternal = TRUE;
 					  lineCount(yyscanner);
   					}
-<FindMembers>{B}*"const"{BN}+    	{ yyextra->current->type += " const ";
-					  if (yyextra->insideCS) yyextra->current->stat = TRUE;
-					  lineCount(yyscanner);
+<FindMembers>{B}*"const"{BN}+    	{ if (yyextra->insideCS)
+					  {
+					    yyextra->current->type += " const ";
+					    if (yyextra->insideCS) yyextra->current->stat = TRUE;
+					    lineCount(yyscanner);
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
 					}
 <FindMembers>{B}*"virtual"{BN}+    	{ yyextra->current->type += " virtual ";
 					  yyextra->current->virt = Virtual;
