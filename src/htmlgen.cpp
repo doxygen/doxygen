@@ -114,20 +114,28 @@ static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlig
 }
 
 //------------------------------------------------------------------------
-/// Convert a set of LaTeX `\(re)newcommand` to a form readable by MathJax
+/// Convert a set of LaTeX  commands `\(re)newcommand`  to a form readable by MathJax
 /// LaTeX syntax:
+/// ```
 ///       \newcommand{\cmd}{replacement}
 ///         or
 ///       \renewcommand{\cmd}{replacement}
+/// ```
 /// MathJax syntax:
+/// ```
 ///        cmd: "{replacement}"
+/// ```
 ///
 /// LaTeX syntax:
+/// ```
 ///       \newcommand{\cmd}[nr]{replacement}
 ///         or
 ///       \renewcommand{\cmd}[nr]{replacement}
+/// ```
 /// MathJax syntax:
+/// ```
 ///        cmd: ["{replacement}",nr]
+/// ```
 static QCString getConvertLatexMacro()
 {
   QCString macrofile = Config_getString(FORMULA_MACROFILE);

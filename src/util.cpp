@@ -6445,9 +6445,9 @@ QCString substituteTemplateArgumentsInString(
 /*! Strips template specifiers from scope \a fullName, except those 
  *  that make up specialized classes. The switch \a parentOnly 
  *  determines whether or not a template "at the end" of a scope 
- *  should be considered, e.g. with \a parentOnly is \c TRUE, A<T>::B<S> will 
- *  try to strip \<T\> and not \<S\>, while \a parentOnly is \c FALSE will 
- *  strip both unless A<T> or B<S> are specialized template classes. 
+ *  should be considered, e.g. with \a parentOnly is \c TRUE, \c A<T>::B<S> will 
+ *  try to strip `<T>` and not `<S>`, while \a parentOnly is \c FALSE will 
+ *  strip both unless `A<T>` or `B<S>` are specialized template classes. 
  */
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
     bool parentOnly,
