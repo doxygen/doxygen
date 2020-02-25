@@ -154,6 +154,9 @@ static void printDefinition(std::string type, std::string signature, int line) {
 static void printProtection(std::string protection) {
   printf("          protection: %s\n", protection.c_str());
 }
+static void printPrototypeYes() {
+  printf("          prototype: yes\n");
+}
 static void printNumberOfLines(int lines) {
   printf("          lines_of_code: %d\n", lines);
 }
@@ -295,6 +298,12 @@ void functionInformation(MemberDef* md) {
   }
 }
 
+void prototypeInformation(MemberDef* md) {
+  printPrototypeYes();
+  const ArgumentList &argList = md->argumentList();
+  printNumberOfArguments(argList.size());
+}
+
 static void lookupSymbol(Definition *d) {
   if (d->definitionType() == Definition::TypeMember) {
     MemberDef *md = dynamic_cast<MemberDef*>(d);
@@ -304,7 +313,10 @@ static void lookupSymbol(Definition *d) {
     if (md->protection() == Public) {
       printProtection("public");
     }
-    if (md->isFunction()) {
+    if (md->isFunction() && md->isPrototype()) {
+      prototypeInformation(md);
+    }
+    else if (md->isFunction()) {
       functionInformation(md);
     }
   }
