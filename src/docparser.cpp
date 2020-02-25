@@ -572,6 +572,51 @@ static void checkUnOrMultipleDocumentedParams()
     }
   }
 }
+/*! Checks if members don't have commands like \\callgraph and \\hidecallgraph
+ *  at the same time
+ */
+static void checkInconsistentGraphCalls()
+{
+  static bool haveDot = Config_getBool(HAVE_DOT);
+  if (g_memberDef && Config_getBool(WARN_IF_DOC_ERROR))
+  {
+    if (haveDot)
+    {
+      if ((g_memberDef->getCallGraph() & Entry::CALL_SHOW) &&
+          (g_memberDef->getCallGraph() & Entry::CALL_HIDE))
+      {
+        warn_doc_error(g_memberDef->getDefFileName(),
+                       g_memberDef->getDefLine(),
+                       QCString(g_memberDef->qualifiedName()) +
+                       " has @callgraph as well as @hidecallgraph, using @callgraph");
+      }
+      if ((g_memberDef->getCallerGraph() & Entry::CALL_SHOW) &&
+          (g_memberDef->getCallerGraph() & Entry::CALL_HIDE))
+      {
+        warn_doc_error(g_memberDef->getDefFileName(),
+                       g_memberDef->getDefLine(),
+                       QCString(g_memberDef->qualifiedName()) +
+                       " has @callergraph as well as @hidecallergraph, using @callergraph");
+      }
+    }
+    if ((g_memberDef->getReferencesRelation() & Entry::CALL_SHOW) &&
+        (g_memberDef->getReferencesRelation() & Entry::CALL_HIDE))
+    {
+      warn_doc_error(g_memberDef->getDefFileName(),
+                     g_memberDef->getDefLine(),
+                     QCString(g_memberDef->qualifiedName()) +
+                     " has @showrefs as well as @hiderefs, using @showrefs");
+    }
+    if ((g_memberDef->getReferencedByRelation() & Entry::CALL_SHOW) &&
+        (g_memberDef->getReferencedByRelation() & Entry::CALL_HIDE))
+    {
+      warn_doc_error(g_memberDef->getDefFileName(),
+                     g_memberDef->getDefLine(),
+                     QCString(g_memberDef->qualifiedName()) +
+                     " has @showrefs as well as @hiderefs, using @showrefs");
+    }
+  }
+}
 
 //---------------------------------------------------------------------------
 
@@ -7751,6 +7796,7 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
 
   checkUnOrMultipleDocumentedParams();
   if (g_memberDef) g_memberDef->detectUndocumentedParams(g_hasParamCommand,g_hasReturnCommand);
+  checkInconsistentGraphCalls();
 
   // TODO: These should be called at the end of the program.
   //doctokenizerYYcleanup();
