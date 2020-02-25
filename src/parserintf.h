@@ -178,10 +178,12 @@ class ParserManager
     }
 
     /** Registers an additional parser.
-     *  @param[in] name      A symbolic name of the parser, i.e. "c",
-     *                       "python", "fortran", "vhdl", ...
-     *  @param[in] parser    The parser that is to be used for the
-     *                       given name.
+     *  @param[in] name          A symbolic name of the parser, i.e. "c",
+     *                           "python", "fortran", "vhdl", ...
+     *  @param[in] outlineParser The language parser (scanner) that is to be used for the
+     *                           given name.
+     *  @param[in] codeParser    The code parser that is to be used for the
+     *                           given name.
      */
     void registerParser(const char *name,std::unique_ptr<OutlineParserInterface> outlineParser,
                                          std::unique_ptr<CodeParserInterface> codeParser)
