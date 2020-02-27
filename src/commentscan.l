@@ -54,6 +54,7 @@
 #include "reflist.h"
 #include "section.h"
 #include "util.h"
+#include "reflist.h"
 
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const QCStringList &);
@@ -2781,49 +2782,37 @@ static void addXRefItem(yyscan_t yyscanner,
   if (listName==0) return;
   //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
 
-  const ListItemInfo *lii=0;
-  RefList *refList = Doxygen::xrefLists->find(listName);
-  if (refList==0) // new list
+  RefList *refList = RefListManager::instance().add(listName,listTitle,itemTitle);
+  RefItem *item = 0;
+  for (RefItem *i : yyextra->current->sli)
   {
-    refList = new RefList(listName,listTitle,itemTitle);
-    Doxygen::xrefLists->insert(listName,refList);
-    //printf("new list!\n");
-  }
-  for (const ListItemInfo &item : yyextra->current->sli)
-  {
-    if (qstrcmp(item.type,listName)==0) 
+    if (i && qstrcmp(i->list()->listName(),listName)==0) 
     {
       //printf("found %s lii->type=%s\n",listName,lii->type);
-      lii = &item;
+      item = i;
       break;
     }
   }
-  if (lii && append) // already found item of same type just before this one
+  if (item && append) // already found item of same type just before this one
   {
     //printf("listName=%s item id = %d existing\n",listName,lii->itemId);
-    RefItem *item = refList->getRefItem(lii->itemId);
-    ASSERT(item!=0);
-    item->text += " <p>";
-    item->text += yyextra->outputXRef;
+    item->setText(item->text() + " <p>" + yyextra->outputXRef);
     //printf("%s: text +=%s\n",listName,item->text.data());
   }
   else // new item
   {
-    int itemId  = refList->addRefItem();
     //printf("listName=%s item id = %d new yyextra->current=%p\n",listName,itemId,yyextra->current);
 
     // if we have already an item from the same list type (e.g. a second @todo)
     // in the same Entry (i.e. lii!=0) then we reuse its link anchor.
-    char anchorLabel[1024];
-    //sprintf(anchorLabel,"_%s%06d",listName,lii ? lii->itemId : itemId);
-    sprintf(anchorLabel,"_%s%06d",listName,itemId);
-    RefItem *item = refList->getRefItem(itemId);
-    ASSERT(item!=0);
-    item->text = yyextra->outputXRef;
-    item->listAnchor = anchorLabel;
-    yyextra->current->addSpecialListItem(listName,itemId);
+    item = refList->add();
+    QCString anchorLabel;
+    anchorLabel.sprintf("_%s%06d",listName,item->id());
+    item->setText(yyextra->outputXRef);
+    item->setAnchor(anchorLabel);
+    yyextra->current->sli.push_back(item);
     QCString cmdString;
-    cmdString.sprintf(" \\xrefitem %s %d.",listName,itemId);
+    cmdString.sprintf(" \\xrefitem %s %d.",listName,item->id());
     if (yyextra->inBody)
     {
       yyextra->current->inbodyDocs += cmdString;
@@ -2832,22 +2821,23 @@ static void addXRefItem(yyscan_t yyscanner,
     {
       yyextra->current->doc += cmdString;
     }
+
     SectionManager &sm = SectionManager::instance();
     const SectionInfo *si = sm.find(anchorLabel);
     if (si)
     {
       if (si->lineNr() != -1)
       {
-        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel,si->fileName().data(),si->lineNr());
+        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel.data(),si->fileName().data(),si->lineNr());
       }
       else
       {
-        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel,si->fileName().data());
+        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel.data(),si->fileName().data());
       }
     }
     else
     {
-      si = sm.add(listName,yyextra->lineNr,anchorLabel,
+      si = sm.add(anchorLabel,listName,yyextra->lineNr,
                    yyextra->sectionTitle,SectionType::Anchor,
                    yyextra->sectionLevel);
       yyextra->current->anchors.push_back(si);
@@ -2902,7 +2892,7 @@ static void addSection(yyscan_t yyscanner)
     // create a new section element
     yyextra->sectionTitle+=yytext;
     yyextra->sectionTitle=yyextra->sectionTitle.stripWhiteSpace();
-    si = sm.add(yyextra->fileName,yyextra->lineNr,yyextra->sectionLabel,
+    si = sm.add(yyextra->sectionLabel,yyextra->fileName,yyextra->lineNr,
                 yyextra->sectionTitle,sectionLevelToType(yyextra->sectionLevel),
                 yyextra->sectionLevel);
 
@@ -3082,7 +3072,7 @@ static void addAnchor(yyscan_t yyscanner,const char *anchor)
   }
   else
   {
-    si = sm.add(yyextra->fileName,yyextra->lineNr,anchor,0,SectionType::Anchor,0);
+    si = sm.add(anchor,yyextra->fileName,yyextra->lineNr,nullptr,SectionType::Anchor,0);
     yyextra->current->anchors.push_back(si);
   }
 }

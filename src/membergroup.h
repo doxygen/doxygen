@@ -35,7 +35,7 @@ class GroupDef;
 class OutputList;
 class Definition;
 class FTextStream;
-struct ListItemInfo;
+class RefItem;
 
 /** A class representing a group of members. */
 class MemberGroup 
@@ -81,7 +81,7 @@ class MemberGroup
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void setInGroup(bool b);
     void addListReferences(Definition *d);
-    void setRefItems(const std::vector<ListItemInfo> &sli);
+    void setRefItems(const std::vector<RefItem*> &sli);
     MemberList *members() const { return memberList; }
     QCString anchor() const;
 
@@ -101,7 +101,7 @@ class MemberGroup
     const Definition *m_parent = 0;
     QCString m_docFile;
     int m_docLine = 0;
-    std::vector<ListItemInfo> m_xrefListItems;
+    std::vector<RefItem*> m_xrefListItems;
 };
 
 /** A list of MemberGroup objects. */
@@ -133,13 +133,13 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
 /** Data collected for a member group */
 struct MemberGroupInfo
 {
-  void setRefItems(const std::vector<ListItemInfo> &sli);
+  void setRefItems(const std::vector<RefItem*> &sli);
   QCString header;
   QCString doc;
   QCString docFile;
   int docLine = -1;
   QCString compoundName;
-  std::vector<ListItemInfo> m_sli;
+  std::vector<RefItem*> m_sli;
 };
 
 #endif

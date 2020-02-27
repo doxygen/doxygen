@@ -2170,18 +2170,18 @@ DocXRefItem::DocXRefItem(DocNode *parent,int id,const char *key) :
 
 bool DocXRefItem::parse()
 {
-  RefList *refList = Doxygen::xrefLists->find(m_key); 
-  if (refList && 
+  RefList *refList = RefListManager::instance().find(m_key);
+  if (refList &&
       (
        // either not a built-in list or the list is enabled
-       (m_key!="todo"       || Config_getBool(GENERATE_TODOLIST)) && 
-       (m_key!="test"       || Config_getBool(GENERATE_TESTLIST)) && 
-       (m_key!="bug"        || Config_getBool(GENERATE_BUGLIST))  && 
+       (m_key!="todo"       || Config_getBool(GENERATE_TODOLIST)) &&
+       (m_key!="test"       || Config_getBool(GENERATE_TESTLIST)) &&
+       (m_key!="bug"        || Config_getBool(GENERATE_BUGLIST))  &&
        (m_key!="deprecated" || Config_getBool(GENERATE_DEPRECATEDLIST))
-      ) 
+      )
      )
   {
-    RefItem *item = refList->getRefItem(m_id);
+    RefItem *item = refList->find(m_id);
     ASSERT(item!=0);
     if (item)
     {
@@ -2193,16 +2193,16 @@ bool DocXRefItem::parse()
       else
       {
         m_file   = refList->fileName();
-        m_anchor = item->listAnchor;
+        m_anchor = item->anchor();
       }
       m_title  = refList->sectionTitle();
       //printf("DocXRefItem: file=%s anchor=%s title=%s\n",
       //    m_file.data(),m_anchor.data(),m_title.data());
 
-      if (!item->text.isEmpty())
+      if (!item->text().isEmpty())
       {
         docParserPushContext();
-        internalValidatingParseDoc(this,m_children,item->text);
+        internalValidatingParseDoc(this,m_children,item->text());
         docParserPopContext();
       }
     }

@@ -16,12 +16,11 @@
 #ifndef SECTION_H
 #define SECTION_H
 
-#include <memory>
-#include <vector>
-#include <map>
-#include <string>
+#include <unordered_map>
 
 #include <qcstring.h>
+
+#include "linkedmap.h"
 
 class Definition;
 
@@ -50,8 +49,8 @@ inline constexpr bool isSection(SectionType type)
 class SectionInfo
 {
   public:
-    SectionInfo(const char *fileName, int lineNr, const char *label,
-                const char *title, SectionType type, int level, const char *ref):
+    SectionInfo(const char *label, const char *fileName, int lineNr,
+                const char *title, SectionType type, int level,const char *ref) :
         m_label(label), m_title(title), m_type(type), m_ref(ref),
         m_lineNr(lineNr), m_fileName(fileName), m_level(level)
     {
@@ -120,70 +119,26 @@ class SectionRefs
 
   private:
     SectionInfoVec m_entries;
-    std::map< std::string, const SectionInfo* > m_lookup;
+    std::unordered_map< std::string, const SectionInfo* > m_lookup;
 };
 
 //! singleton class that owns the list of all sections
-class SectionManager
+class SectionManager : public LinkedMap<SectionInfo>
 {
-    using SectionInfoPtr = std::unique_ptr<SectionInfo>;
-    using SectionInfoVec = std::vector<SectionInfoPtr>;
-
   public:
-    using iterator = SectionInfoVec::iterator;
-
-    //! Return a pointer to the section info given a section label or nullptr if
-    //! no section with the given label can be found.
-    SectionInfo *find(const char *label)
-    {
-      auto it = m_lookup.find(label);
-      return it!=m_lookup.end() ? it->second : nullptr;
-    }
-
-    //! Returns a constant pointers to the section info given a section label or nullptr
-    //! if no section with the given label can be found.
-    const SectionInfo *find(const char *label) const
-    {
-      auto it = m_lookup.find(label);
-      return it!=m_lookup.end() ? it->second : nullptr;
-    }
-
-    //! Add a new section given the section data.
-    //! Returns a non-owning pointer to the newly added section.
-    SectionInfo *add(const char *fileName,
-                     int lineNr,
-                     const char *label,
-                     const char *title,
-                     SectionType type,
-                     int level,
-                     const char *ref=0)
-    {
-      SectionInfoPtr si = std::make_unique<SectionInfo>(
-          fileName,lineNr,label,title,type,level,ref);
-      SectionInfo *result = si.get();
-      m_lookup.insert({std::string(label),result});
-      m_entries.push_back(std::move(si));
-      return result;
-    }
-
     //! Add a new section given the data of an existing section.
     //! Returns a non-owning pointer to the newly added section.
     SectionInfo *add(const SectionInfo &si)
     {
-      add(si.fileName(),si.lineNr(),si.label(),si.title(),si.type(),si.level(),si.ref());
-      return find(si.label());
+      return LinkedMap<SectionInfo>::add(si.label(),si.fileName(),si.lineNr(),si.title(),si.type(),si.level(),si.ref());
     }
 
-    iterator begin() { return m_entries.begin(); }
-    iterator end()   { return m_entries.end(); }
-    bool empty() const { return m_entries.empty(); }
-    int size() const   { return m_entries.size();  }
-
-    //! clears the sections
-    void clear()
+    //! Add a new section
+    //! Return a non-owning pointer to the newly added section
+    SectionInfo *add(const char *label, const char *fileName, int lineNr,
+                     const char *title, SectionType type, int level,const char *ref=0)
     {
-      m_entries.clear();
-      m_lookup.clear();
+      return LinkedMap<SectionInfo>::add(label,fileName,lineNr,title,type,level,ref);
     }
 
     //! returns a reference to the singleton
@@ -197,9 +152,6 @@ class SectionManager
     SectionManager() {}
     SectionManager(const SectionManager &other) = delete;
     SectionManager &operator=(const SectionManager &other) = delete;
-
-    SectionInfoVec m_entries;
-    std::map< std::string, SectionInfo* > m_lookup;
 };
 
 

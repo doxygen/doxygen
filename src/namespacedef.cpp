@@ -1269,7 +1269,7 @@ void NamespaceDefImpl::addListReferences()
 {
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   {
-    const std::vector<ListItemInfo> &xrefItems = xrefListItems();
+    const std::vector<RefItem*> &xrefItems = xrefListItems();
     addRefItem(xrefItems,
         qualifiedName(),
         getLanguage()==SrcLangExt_Fortran ? 

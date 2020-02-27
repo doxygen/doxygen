@@ -143,7 +143,6 @@ QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the me
 PageDef         *Doxygen::mainPage = 0;
 bool             Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
 NamespaceDef    *Doxygen::globalScope = 0;
-QDict<RefList>  *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 bool             Doxygen::parseSourcesNeeded = FALSE;
 QTime            Doxygen::runningTime;
 SearchIndexIntf *Doxygen::searchIndex=0;
@@ -4955,7 +4954,7 @@ static void addListReferences()
       name = pd->getGroupDef()->getOutputFileBase();
     }
     {
-      const std::vector<ListItemInfo> &xrefItems = pd->xrefListItems();
+      const std::vector<RefItem*> &xrefItems = pd->xrefListItems();
       addRefItem(xrefItems,
           name,
           theTranslator->trPage(TRUE,TRUE),
@@ -4972,7 +4971,7 @@ static void addListReferences()
     //{
     //  name = dd->getGroupDef()->getOutputFileBase();
     //}
-    const std::vector<ListItemInfo> &xrefItems = dd->xrefListItems();
+    const std::vector<RefItem*> &xrefItems = dd->xrefListItems();
     addRefItem(xrefItems,
         name,
         theTranslator->trDir(TRUE,TRUE),
@@ -4984,9 +4983,7 @@ static void addListReferences()
 
 static void generateXRefPages()
 {
-  QDictIterator<RefList> di(*Doxygen::xrefLists);
-  RefList *rl;
-  for (di.toFirst();(rl=di.current());++di)
+  for (RefListManager::Ptr &rl : RefListManager::instance())
   {
     rl->generatePage();
   }
@@ -8525,8 +8522,9 @@ static void findMainPage(Entry *root)
       {
         // a page name is a label as well! but should no be double either
         SectionManager::instance().add(
-          indexName, root->startLine,
           Doxygen::mainPage->name(),
+          indexName,
+          root->startLine,
           Doxygen::mainPage->title(),
           SectionType::Page,
           0); // level 0
@@ -8626,9 +8624,7 @@ static void resolveUserReferences()
     // name (not from the todo/test/bug/deprecated list, but from the file in
     // which they are defined). We correct this here by looking at the
     // generated section labels!
-    QDictIterator<RefList> rli(*Doxygen::xrefLists);
-    RefList *rl;
-    for (rli.toFirst();(rl=rli.current());++rli)
+    for (const RefListManager::Ptr &rl : RefListManager::instance())
     {
       QCString label="_"+rl->listName(); // "_todo", "_test", ...
       if (si->label().left(label.length())==label)
@@ -9903,7 +9899,6 @@ void cleanUpDoxygen()
   delete Doxygen::pageSDict;
   delete Doxygen::exampleSDict;
   delete Doxygen::globalScope;
-  delete Doxygen::xrefLists;
   delete Doxygen::parserManager;
   delete Doxygen::preprocessor;
   delete theTranslator;
@@ -10391,8 +10386,6 @@ void adjustConfiguration()
   /* Set the global html file extension. */
   Doxygen::htmlFileExtension = Config_getString(HTML_FILE_EXTENSION);
 
-
-  Doxygen::xrefLists->setAutoDelete(TRUE);
 
   Doxygen::parseSourcesNeeded = Config_getBool(CALL_GRAPH) ||
                                 Config_getBool(CALLER_GRAPH) ||

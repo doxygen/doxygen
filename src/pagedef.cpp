@@ -148,9 +148,7 @@ bool PageDefImpl::hasParentPage() const
 void PageDefImpl::writeTagFile(FTextStream &tagFile)
 {
   bool found = name()=="citelist";
-  QDictIterator<RefList> rli(*Doxygen::xrefLists);
-  RefList *rl;
-  for (rli.toFirst();(rl=rli.current()) && !found;++rli)
+  for (RefListManager::Ptr &rl : RefListManager::instance())
   {
     if (rl->listName()==name())
     {

@@ -44,6 +44,7 @@
 #include "dirdef.h"
 #include "pagedef.h"
 #include "bufstr.h"
+#include "reflist.h"
 
 //-----------------------------------------------------------------------------------------
 
@@ -59,7 +60,7 @@ class DefinitionImpl::IMPL
 
     MemberSDict *sourceRefByDict = 0;
     MemberSDict *sourceRefsDict = 0;
-    std::vector<ListItemInfo> xrefListItems;
+    std::vector<RefItem*> xrefListItems;
     GroupList *partOfGroups = 0;
 
     DocInfo   *details = 0;    // not exported
@@ -1577,7 +1578,7 @@ void DefinitionImpl::makePartOfGroup(GroupDef *gd)
   m_impl->partOfGroups->append(gd);
 }
 
-void DefinitionImpl::setRefItems(const std::vector<ListItemInfo> &sli)
+void DefinitionImpl::setRefItems(const std::vector<RefItem*> &sli)
 {
   m_impl->xrefListItems.insert(m_impl->xrefListItems.end(), sli.cbegin(), sli.cend());
 }
@@ -1593,31 +1594,34 @@ void DefinitionImpl::mergeRefItems(Definition *d)
 
   // sort results on itemId
   std::sort(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
-            [](const ListItemInfo &left,const ListItemInfo &right)
-            { return left.itemId<right.itemId ||
-                     (left.itemId==right.itemId && qstrcmp(left.type,right.type)<0);
+            [](RefItem *left,RefItem *right)
+            { return  left->id() <right->id() ||
+                     (left->id()==right->id() &&
+                      qstrcmp(left->list()->listName(),right->list()->listName())<0);
             });
 
   // filter out duplicates
   auto last = std::unique(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
-            [](const ListItemInfo &left,const ListItemInfo &right)
-            { return left.itemId==right.itemId && left.type==right.type; });
+            [](const RefItem *left,const RefItem *right)
+            { return left->id()==right->id() &&
+                     left->list()->listName()==right->list()->listName();
+            });
   m_impl->xrefListItems.erase(last, m_impl->xrefListItems.end());
 }
 
 int DefinitionImpl::_getXRefListId(const char *listName) const
 {
-  for (const ListItemInfo &lii : m_impl->xrefListItems)
+  for (const RefItem *item : m_impl->xrefListItems)
   {
-    if (lii.type==listName)
+    if (item->list()->listName()==listName)
     {
-      return lii.itemId;
+      return item->id();
     }
   }
   return -1;
 }
 
-const std::vector<ListItemInfo> &DefinitionImpl::xrefListItems() const
+const std::vector<RefItem*> &DefinitionImpl::xrefListItems() const
 {
   return m_impl->xrefListItems;
 }

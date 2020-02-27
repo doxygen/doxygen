@@ -4424,7 +4424,7 @@ void ClassDefImpl::addListReferences()
   if (!isLinkableInProject()) return;
   //printf("ClassDef(%s)::addListReferences()\n",name().data());
   {
-    const std::vector<ListItemInfo> &xrefItems = xrefListItems();
+    const std::vector<RefItem*> &xrefItems = xrefListItems();
     addRefItem(xrefItems,
              qualifiedName(),
              lang==SrcLangExt_Fortran ? theTranslator->trType(TRUE,TRUE)

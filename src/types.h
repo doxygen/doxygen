@@ -97,12 +97,6 @@ struct Grouping
 
 };
 
-struct ListItemInfo
-{
-  QCString type;
-  int itemId;
-};
-
 enum MemberListType
 {
   MemberListType_privateLists       = 0x0800,

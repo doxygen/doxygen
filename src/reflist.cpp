@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -16,196 +13,76 @@
  *
  */
 
+#include <unordered_map>
+
 #include <stdio.h>
 #include "reflist.h"
-#include "util.h"
 #include "ftextstream.h"
 #include "definition.h"
-
-/*! Create a list of items that are cross referenced with documentation blocks
- *  @param listName String representing the name of the list.
- *  @param pageTitle String representing the title of the list page.
- *  @param secTitle String representing the title of the section.
- */
-RefList::RefList(const char *listName,
-                 const char *pageTitle,
-                 const char *secTitle
-                )
-{
-  m_itemList = 0;
-  m_dict = 0;
-  m_dictIterator = 0;
-  m_id = 0;
-  m_listName = listName;
-  m_fileName = convertNameToFile(listName,FALSE,TRUE);
-  m_pageTitle = pageTitle;
-  m_secTitle = secTitle;
-}
-
-/*! Destroy the todo list. Currently not called! */
-RefList::~RefList()
-{
-  delete m_dictIterator;
-  delete m_dict;
-  delete m_itemList;
-}
-
-/*! Adds a new item to the list.
- *  \returns A unique id for this item.
- */
-int RefList::addRefItem()
-{
-  if (m_dict==0)
-  {
-    m_dict = new QIntDict<RefItem>(1009);
-    m_dict->setAutoDelete(TRUE);
-    m_dictIterator = new QIntDictIterator<RefItem>(*m_dict);
-  }
-  RefItem *item = new RefItem;
-  m_id++;
-  m_dict->insert(m_id,item);
-  return m_id;
-}
-
-/*! Returns an item given it's id that is obtained with addRefItem()
- *  \param itemId item's identifier.
- *  \returns A pointer to the todo item's structure.
- */
-RefItem *RefList::getRefItem(int itemId)
-{
-  return m_dict ? m_dict->find(itemId) : 0;
-}
-
-/*! Returns the first item in the dictionary or 0 if
- *  non is available.
- *  Items are not sorted.
- */
-RefItem *RefList::getFirstRefItem()
-{
-  return m_dictIterator ? m_dictIterator->toFirst() : 0;
-}
-
-/*! Returns the next item in the dictionary or 0 if
- *  we are at the end of the list.
- *  Items are not sorted.
- */
-RefItem *RefList::getNextRefItem()
-{
-  return m_dictIterator ? m_dictIterator->operator++() : 0;
-}
-
-/*! Returns the name of the list as set in the constructor. */
-QCString RefList::listName() const
-{
-  return m_listName;
-}
-
-QCString RefList::fileName() const
-{
-  return m_fileName;
-}
-
-QCString RefList::pageTitle() const
-{
-  return m_pageTitle;
-}
-
-QCString RefList::sectionTitle() const
-{
-  return m_secTitle;
-}
-
-void RefList::insertIntoList(const char *key,RefItem *item)
-{
-  if (m_itemList==0)
-  {
-    m_itemList = new SortedRefItems(1009);
-  }
-  RefItem *ri = m_itemList->find(key);
-  if (ri==0)
-  {
-    m_itemList->append(key,item);
-  }
-  else // item already added to the list (i.e. multiple item for the same
-       // entity)
-  {
-    if (ri!=item)
-    {
-      // We also have to check if the item is not already in the "extra" list
-      QListIterator<RefItem> li(ri->extraItems);
-      RefItem *extraItem;
-      bool doubleItem = false;
-      for (li.toFirst();(extraItem=li.current());++li)
-      {
-        if (item == extraItem) doubleItem = true;
-      }
-      if (!doubleItem) ri->extraItems.append(item);
-    }
-  }
-}
-
+#include "sortdict.h"
 
 void RefList::generatePage()
 {
-  if (m_itemList==0) return;
-  m_itemList->sort();
-  SDict<RefItem>::Iterator it(*m_itemList);
-  RefItem *item;
+  std::sort(m_entries.begin(),m_entries.end(),
+            [](std::unique_ptr<RefItem> &left,std::unique_ptr<RefItem> &right) 
+            { return qstricmp(left->title(),left->title()); });
+  //RefItem *item;
   QCString doc;
   doc += "<dl class=\"reflist\">";
-  for (it.toFirst();(item=it.current());++it)
+  QCString lastGroup;
+  bool first=true;
+  for (const std::unique_ptr<RefItem> &item : m_entries)
   {
-    doc += " <dt>";
-    doc += "\n";
-    if (item->scope)
+    bool startNewGroup = item->group()!=lastGroup;
+    if (startNewGroup)
     {
-      if (item->scope->name() != "<globalScope>")
+      if (!first)
       {
-        doc += "\\_setscope ";
-        doc += item->scope->name();
-        doc += " ";
+        doc += "</dd>";
+        first=false;
       }
+      doc += " <dt>";
+      doc += "\n";
+      if (item->scope())
+      {
+        if (item->scope()->name() != "<globalScope>")
+        {
+          doc += "\\_setscope ";
+          doc += item->scope()->name();
+          doc += " ";
+        }
+      }
+      doc += item->prefix();
+      doc += " \\_internalref ";
+      doc += item->name();
+      // escape \'s in title, see issue #5901
+      QCString escapedTitle = substitute(item->title(),"\\","\\\\");
+      doc += " \""+escapedTitle+"\" ";
+      // write declaration in case a function with arguments
+      if (!item->args().isEmpty()) 
+      {
+        // escape @'s in argument list, needed for Java annotations (see issue #6208)
+        // escape \'s in argument list (see issue #6533)
+        doc += substitute(substitute(item->args(),"@","@@"),"\\","\\\\");
+      }
+      doc += "</dt><dd>";
     }
-    doc += item->prefix;
-    doc += " \\_internalref ";
-    doc += item->name;
-    // escape \'s in title, see issue #5901
-    QCString escapedTitle = substitute(item->title,"\\","\\\\");
-    if (item->scope &&
-        (item->scope->definitionType()==Definition::TypeClass ||
-         item->scope->definitionType()==Definition::TypeNamespace ||
-         item->scope->definitionType()==Definition::TypeMember ||
-         item->scope->definitionType()==Definition::TypePackage)
-       )
+    else
     {
-      // prevent Obj-C names in e.g. todo list are seen as emoji
-      escapedTitle = substitute(escapedTitle,":","&Colon;");
+      doc += "<p>";
     }
-    doc += " \""+escapedTitle+"\" ";
-    // write declaration in case a function with arguments
-    if (!item->args.isEmpty()) 
-    {
-      // escape @'s in argument list, needed for Java annotations (see issue #6208)
-      // escape \'s in argument list (see issue #6533)
-      doc += substitute(substitute(item->args,"@","@@"),"\\","\\\\");
-    }
-    doc += "</dt><dd> \\anchor ";
-    doc += item->listAnchor;
+    doc += " \\anchor ";
+    doc += item->anchor();
     doc += " ";
-    doc += item->text;
-    QListIterator<RefItem> li(item->extraItems);
-    RefItem *extraItem;
-    for (li.toFirst();(extraItem=li.current());++li)
-    {
-      doc += "<p> \\anchor ";
-      doc += extraItem->listAnchor;
-      doc += " ";
-      doc += extraItem->text;
-    }
+    doc += item->text();
+    lastGroup = item->group();
+  }
+  if (!first)
+  {
     doc += "</dd>";
   }
   doc += "</dl>\n";
   //printf("generatePage('%s')\n",doc.data());
-  addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,std::vector<ListItemInfo>(),0,0,TRUE);
+  addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,std::vector<RefItem*>(),0,0,TRUE);
 }
 
