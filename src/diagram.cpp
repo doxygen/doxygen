@@ -261,7 +261,7 @@ static void writeMapArea(FTextStream &t,const ClassDef *cd,QCString relPath,
     t << "<area ";
     if (!ref.isEmpty()) 
     {
-      t << externalLinkTarget();
+      t << externalLinkTarget(true);
     }
     t << "href=\"";
     t << externalRef(relPath,ref,TRUE);
