@@ -16,6 +16,10 @@
 #ifndef _REFLIST_H
 #define _REFLIST_H
 
+#include <vector>
+#include <unordered_map>
+#include <memory>
+
 #include <qintdict.h>
 #include <qlist.h>
 #include "util.h"
