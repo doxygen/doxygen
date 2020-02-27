@@ -8145,10 +8145,15 @@ void writeSummaryLink(OutputList &ol,const char *label,const char *title,
 }
 #endif
 
-QCString externalLinkTarget()
+QCString externalLinkTarget(const bool parent)
 {
   static bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
-  if (extLinksInWindow) return "target=\"_blank\" "; else return "";
+  if (extLinksInWindow)
+    return "target=\"_blank\" ";
+  else if (parent)
+    return "target=\"_parent\" ";
+  else
+    return "";
 }
 
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
