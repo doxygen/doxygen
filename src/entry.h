@@ -29,7 +29,7 @@
 class SectionInfo;
 class QFile;
 class FileDef;
-struct ListItemInfo;
+class RefItem;
 
 /** This class stores information about an inheritance relation
  */
@@ -194,8 +194,6 @@ class Entry
     Entry(const Entry &);
    ~Entry();
 
-    void addSpecialListItem(const char *listName,int index);
-
     /*! Returns the parent for this Entry or 0 if this entry has no parent. */
     Entry *parent() const { return m_parent; }
 
@@ -289,7 +287,7 @@ class Entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     int		startColumn;  //!< start column of entry in the source
-    std::vector<ListItemInfo> sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
+    std::vector<RefItem*> sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
     SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item

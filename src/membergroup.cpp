@@ -356,7 +356,7 @@ void MemberGroup::findSectionsInDocumentation(const Definition *d)
   memberList->findSectionsInDocumentation(d);
 }
 
-void MemberGroup::setRefItems(const std::vector<ListItemInfo> &sli)
+void MemberGroup::setRefItems(const std::vector<RefItem*> &sli)
 {
   m_xrefListItems.insert(m_xrefListItems.end(), sli.cbegin(), sli.cend());
 }
@@ -368,7 +368,7 @@ void MemberGroup::writeTagFile(FTextStream &tagFile)
 
 //--------------------------------------------------------------------------
 
-void MemberGroupInfo::setRefItems(const std::vector<ListItemInfo> &sli)
+void MemberGroupInfo::setRefItems(const std::vector<RefItem*> &sli)
 {
   m_sli.insert(m_sli.end(), sli.cbegin(), sli.cend());
 }

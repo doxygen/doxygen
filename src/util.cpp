@@ -6595,7 +6595,7 @@ found:
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const QCString &doc,
     const char *fileName,int startLine,
-    const std::vector<ListItemInfo> &sli,
+    const std::vector<RefItem*> &sli,
     GroupDef *gd,
     const TagInfo *tagInfo,
     bool xref,
@@ -6667,8 +6667,8 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       }
       else
       {
-        SectionManager::instance().add(
-            file,-1,pd->name(),pd->title(),SectionType::Page,0,pd->getReference());
+        SectionManager::instance().add(pd->name(),
+            file,-1,pd->title(),SectionType::Page,0,pd->getReference());
         //printf("si->label='%s' si->definition=%s si->fileName='%s'\n",
         //      si->label.data(),si->definition?si->definition->name().data():"<none>",
         //      si->fileName.data());
@@ -6682,39 +6682,21 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
 //----------------------------------------------------------------------------
 
-void addRefItem(const std::vector<ListItemInfo> &sli,
+void addRefItem(const std::vector<RefItem*> &sli,
     const char *key, 
-    const char *prefix, const char *name,const char *title,const char *args,Definition *scope)
+    const char *prefix, const char *name,const char *title,const char *args,const Definition *scope)
 {
-  //printf("addRefItem(sli=%p,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",sli,key,prefix,name,title,args);
+  //printf("addRefItem(sli=%d,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",(int)sli.size(),key,prefix,name,title,args);
   if (key && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
   {
-    for (const ListItemInfo &lii : sli)
+    for (RefItem *item : sli)
     {
-      RefList *refList = Doxygen::xrefLists->find(lii.type);
-      if (refList
-          &&
-          (
-           // either not a built-in list or the list is enabled
-           (lii.type!="todo"       || Config_getBool(GENERATE_TODOLIST)) &&
-           (lii.type!="test"       || Config_getBool(GENERATE_TESTLIST)) &&
-           (lii.type!="bug"        || Config_getBool(GENERATE_BUGLIST))  &&
-           (lii.type!="deprecated" || Config_getBool(GENERATE_DEPRECATEDLIST))
-          )
-         )
-      {
-        RefItem *item = refList->getRefItem(lii.itemId);
-        ASSERT(item!=0);
-
-        item->prefix = prefix;
-        item->scope  = scope;
-        item->name   = name;
-        item->title  = title;
-        item->args   = args;
-
-        refList->insertIntoList(key,item);
-
-      }
+        item->setPrefix(prefix);
+        item->setScope(scope);
+        item->setName(name);
+        item->setTitle(title);
+        item->setArgs(args);
+        item->setGroup(key);
     }
   }
 }

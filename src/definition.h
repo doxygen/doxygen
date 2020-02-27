@@ -37,10 +37,10 @@ class MemberSDict;
 class MemberDef;
 class GroupDef;
 class GroupList;
-struct ListItemInfo;
 class SectionInfo;
 class Definition;
 class FTextStream;
+class RefItem;
   
 /** Data associated with a detailed description. */
 struct DocInfo
@@ -263,7 +263,7 @@ class Definition : public DefinitionIntf
     virtual GroupList *partOfGroups() const = 0;
     virtual bool isLinkableViaGroup() const = 0;
 
-    virtual const std::vector<ListItemInfo> &xrefListItems() const = 0;
+    virtual const std::vector<RefItem*> &xrefListItems() const = 0;
 
     virtual Definition *findInnerCompound(const char *name) const = 0;
     virtual Definition *getOuterScope() const = 0;
@@ -319,7 +319,7 @@ class Definition : public DefinitionIntf
     virtual void setBodySegment(int bls,int ble) = 0;
     virtual void setBodyDef(FileDef *fd) = 0;
 
-    virtual void setRefItems(const std::vector<ListItemInfo> &sli) = 0;
+    virtual void setRefItems(const std::vector<RefItem*> &sli) = 0;
     virtual void setOuterScope(Definition *d) = 0;
 
     virtual void setHidden(bool b) = 0;

@@ -255,13 +255,4 @@ void Entry::setFileDef(FileDef *fd)
   }
 }
 
-void Entry::addSpecialListItem(const char *listName,int itemId)
-{
-  ListItemInfo ili;
-  ili.type = listName;
-  ili.itemId = itemId;
-  sli.push_back(ili);
-}
-
-
 //------------------------------------------------------------------

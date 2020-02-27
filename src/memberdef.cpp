@@ -4479,7 +4479,7 @@ void MemberDefImpl::addListReference(Definition *)
       memArgs = argsString();
     }
   }
-  const std::vector<ListItemInfo> &xrefItems = xrefListItems();
+  const std::vector<RefItem*> &xrefItems = xrefListItems();
   addRefItem(xrefItems,
         qualifiedName()+argsString(), // argsString is needed for overloaded functions (see bug 609624)
         memLabel,

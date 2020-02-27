@@ -1167,7 +1167,7 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const TagAncho
       //printf("New sectionInfo file=%s anchor=%s\n",
       //    ta->fileName.data(),ta->label.data());
       SectionInfo *si=SectionManager::instance().add(
-          ta->fileName,-1,ta->label,ta->title,
+          ta->label,ta->fileName,-1,ta->title,
           SectionType::Anchor,0,m_tagName);
       e->anchors.push_back(si);
     }
