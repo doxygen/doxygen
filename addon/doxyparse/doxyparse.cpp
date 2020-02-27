@@ -44,6 +44,7 @@
 #include <qcstring.h>
 #include <qregexp.h>
 #include "namespacedef.h"
+#include "portable.h"
 
 class Doxyparse : public CodeOutputInterface
 {
@@ -449,12 +450,14 @@ int main(int argc,char **argv) {
 
   // we need a place to put intermediate files
   std::ostringstream tmpdir;
-#if !defined(_WIN32) || defined(__CYGWIN__)
-  unsigned int pid = (uint)getpid();
-#else
-  unsigned int pid = (uint)GetCurrentProcessId();
-#endif
-  tmpdir << "/tmp/doxyparse-" << pid;
+  unsigned int pid = Portable::pid();
+  if (Portable::getenv("TMP"))
+    tmpdir << Portable::getenv("TMP") << "/doxyparse-" << pid;
+  else if (Portable::getenv("TEMP"))
+    tmpdir << Portable::getenv("TEMP") << "/doxyparse-" << pid;
+  else
+    tmpdir << "doxyparse-" << pid;
+
   Config_getString(OUTPUT_DIRECTORY)= tmpdir.str().c_str();
   // enable HTML (fake) output to omit warning about missing output format
   Config_getBool(GENERATE_HTML)=TRUE;
