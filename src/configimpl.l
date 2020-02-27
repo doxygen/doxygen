@@ -832,7 +832,14 @@ static void readIncludeFile(const char *incName)
 					      case ConfigOption::O_List:
 					        l = ((ConfigList *)option)->valueRef();
 						elemStr="";
-					        BEGIN(GetStrList);
+						if (cmd == "PREDEFINED")
+						{
+					          BEGIN(GetStrList1);
+						}
+						else
+						{
+					          BEGIN(GetStrList);
+						}
 					        break;
 					      case ConfigOption::O_Enum:
 					      case ConfigOption::O_String:
