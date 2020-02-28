@@ -391,7 +391,7 @@ public:
 
       // resizes LSData so it can hold size bytes (which includes the 0 terminator!)
       // Since this is for long strings only, size should be > SHORT_STR_CAPACITY
-      static LSData *resize(LSData *d,int size)
+      static LSData *resize(LSData *d,uint size)
       {
         if (d->len>0 && d->refCount==0) // non-const, non-empty
         {
