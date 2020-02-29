@@ -1006,12 +1006,19 @@ DB_VIS_C
   m_t << "</listitem></varlistentry>\n";
 }
 
+static int tabLevel = -1;
 static int colCnt = 0;
-static bool bodySet = FALSE; // it is possible to have tables without a header
+static bool *bodySet = NULL; // it is possible to have tables without a header, needs to be an array as we can have tables in tables
 void DocbookDocVisitor::visitPre(DocHtmlTable *t)
 {
 DB_VIS_C
-  bodySet = FALSE;
+  static int sizeBodySet = 0;
+  if (sizeBodySet <= ++tabLevel)
+  {
+    sizeBodySet += 10;
+    bodySet = (bool *)realloc((void *)bodySet,sizeBodySet);
+  }
+  bodySet[tabLevel] = FALSE;
   if (m_hide) return;
   m_t << "<informaltable frame=\"all\">" << endl;
   m_t << "    <tgroup cols=\"" << t->numColumns() << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
@@ -1026,8 +1033,8 @@ void DocbookDocVisitor::visitPost(DocHtmlTable *)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (bodySet) m_t << "    </tbody>" << endl;
-  bodySet = FALSE;
+  if (bodySet[tabLevel--]) m_t << "    </tbody>" << endl;
+  //bodySet = FALSE;
   m_t << "    </tgroup>" << endl;
   m_t << "</informaltable>" << endl;
 }
@@ -1038,10 +1045,15 @@ DB_VIS_C
   colCnt = 0;
   if (m_hide) return;
 
-  if (tr->isHeading()) m_t << "<thead>\n";
-  else if (!bodySet)
+  if (tr->isHeading())
   {
-    bodySet = TRUE;
+    if (bodySet[tabLevel]) m_t << "</tbody>\n";
+    bodySet[tabLevel] = FALSE;
+    m_t << "<thead>\n";
+  }
+  else if (!bodySet[tabLevel])
+  {
+    bodySet[tabLevel] = TRUE;
     m_t << "<tbody>\n";
   }
 
@@ -1067,7 +1079,7 @@ DB_VIS_C
   m_t << "</row>\n";
   if (tr->isHeading())
   {
-    bodySet = TRUE;
+    bodySet[tabLevel] = TRUE;
     m_t << "</thead><tbody>\n";
   }
 }
