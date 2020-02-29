@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -15,6 +12,7 @@
  * input used in their production; they are not affected by this license.
  *
  */
+
 
 #include <qfileinfo.h>
 
@@ -155,7 +153,7 @@ void DocbookDocVisitor::visitPostEnd(FTextStream &t, bool hasCaption, bool inlin
 }
 
 DocbookDocVisitor::DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci)
-  : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE)
+  : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci)
 {
 DB_VIS_C
   // m_t << "<section>" << endl;
@@ -1006,19 +1004,10 @@ DB_VIS_C
   m_t << "</listitem></varlistentry>\n";
 }
 
-static int tabLevel = -1;
-static int colCnt = 0;
-static bool *bodySet = NULL; // it is possible to have tables without a header, needs to be an array as we can have tables in tables
 void DocbookDocVisitor::visitPre(DocHtmlTable *t)
 {
 DB_VIS_C
-  static int sizeBodySet = 0;
-  if (sizeBodySet <= ++tabLevel)
-  {
-    sizeBodySet += 10;
-    bodySet = (bool *)realloc((void *)bodySet,sizeBodySet);
-  }
-  bodySet[tabLevel] = FALSE;
+  m_bodySet.push(false);
   if (m_hide) return;
   m_t << "<informaltable frame=\"all\">" << endl;
   m_t << "    <tgroup cols=\"" << t->numColumns() << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
@@ -1033,8 +1022,8 @@ void DocbookDocVisitor::visitPost(DocHtmlTable *)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (bodySet[tabLevel--]) m_t << "    </tbody>" << endl;
-  //bodySet = FALSE;
+  if (m_bodySet.top()) m_t << "    </tbody>" << endl;
+  m_bodySet.pop();
   m_t << "    </tgroup>" << endl;
   m_t << "</informaltable>" << endl;
 }
@@ -1042,18 +1031,18 @@ DB_VIS_C
 void DocbookDocVisitor::visitPre(DocHtmlRow *tr)
 {
 DB_VIS_C
-  colCnt = 0;
+  m_colCnt = 0;
   if (m_hide) return;
 
   if (tr->isHeading())
   {
-    if (bodySet[tabLevel]) m_t << "</tbody>\n";
-    bodySet[tabLevel] = FALSE;
+    if (m_bodySet.top()) m_t << "</tbody>\n";
+    m_bodySet.top() = false;
     m_t << "<thead>\n";
   }
-  else if (!bodySet[tabLevel])
+  else if (!m_bodySet.top())
   {
-    bodySet[tabLevel] = TRUE;
+    m_bodySet.top() = true;
     m_t << "<tbody>\n";
   }
 
@@ -1079,15 +1068,15 @@ DB_VIS_C
   m_t << "</row>\n";
   if (tr->isHeading())
   {
-    bodySet[tabLevel] = TRUE;
     m_t << "</thead><tbody>\n";
+    m_bodySet.top() = true;
   }
 }
 
 void DocbookDocVisitor::visitPre(DocHtmlCell *c)
 {
 DB_VIS_C
-  colCnt++;
+  m_colCnt++;
   if (m_hide) return;
   m_t << "<entry";
 
@@ -1097,10 +1086,10 @@ DB_VIS_C
   {
     if (opt->name=="colspan")
     {
-      m_t << " namest='c" << colCnt << "'";
+      m_t << " namest='c" << m_colCnt << "'";
       int cols = opt->value.toInt();
-      colCnt += (cols - 1);
-      m_t << " nameend='c" << colCnt << "'";
+      m_colCnt += (cols - 1);
+      m_t << " nameend='c" << m_colCnt << "'";
     }
     else if (opt->name=="rowspan")
     {
@@ -1633,16 +1622,14 @@ DB_VIS_C
 void DocbookDocVisitor::pushEnabled()
 {
 DB_VIS_C
-  m_enabled.push(new bool(m_hide));
+  m_enabled.push(m_hide);
 }
 
 void DocbookDocVisitor::popEnabled()
 {
 DB_VIS_C
-  bool *v=m_enabled.pop();
-  ASSERT(v!=0);
-  m_hide = *v;
-  delete v;
+  m_hide=m_enabled.top();
+  m_enabled.pop();
 }
 
 void DocbookDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)
