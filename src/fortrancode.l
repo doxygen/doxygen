@@ -78,7 +78,7 @@ const int fixedCommentAfter = 72;
 int yy_old_start = 0;
 int yy_my_start  = 0;
 int yy_end       = 1;
-#define YY_USER_ACTION {yy_old_start = yy_my_start; yy_my_start = yy_end; yy_end += yyleng;}
+#define YY_USER_ACTION {yy_old_start = yy_my_start; yy_my_start = yy_end; yy_end += static_cast<int>(yyleng);}
 #define YY_FTN_RESET   {yy_old_start = 0; yy_my_start = 0; yy_end = 1;}
 #define YY_FTN_REJECT  {yy_end = yy_my_start; yy_my_start = yy_old_start; REJECT;}
    
@@ -1120,7 +1120,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 					    g_contLineNr++;
                                             yy_old_start = 0;
                                             yy_my_start = 1;
-                                            yy_end = yyleng;
+                                            yy_end = static_cast<int>(yyleng);
                                           }
                                           // Actually we should see if ! on position 6, can be continuation
                                           // but the chance is very unlikely, so no effort to solve it here
@@ -1141,7 +1141,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 					  g_contLineNr++;
                                           yy_old_start = 0;
                                           yy_my_start = 1;
-                                          yy_end = yyleng;
+                                          yy_end = static_cast<int>(yyleng);
                                           // Actually we should see if ! on position 6, can be continuation
                                           // but the chance is very unlikely, so no effort to solve it here
 					  docBlock+=yytext; 

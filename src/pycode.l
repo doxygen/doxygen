@@ -1269,7 +1269,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                  // level that is about to be
                                  // used.
 				 codifyLines(yytext);
-				 g_indents.push(yyleng);
+				 g_indents.push(static_cast<int>(yyleng));
                                  // printf("Captured indent of %d [line %d]\n", yyleng, g_yyLineNr);
 				 BEGIN( Suite );
                                }
@@ -1283,7 +1283,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                  // should be improved.
 				 // (translate tabs to space, etc)
   		                 codifyLines(yytext);
-                                 adjustScopesAndSuites((int)yyleng);
+                                 adjustScopesAndSuites(static_cast<int>(yyleng));
                                }
 
     "\n"|({BB}"\n")            {

@@ -1421,7 +1421,7 @@ void VhdlDocGen::formatString(const QCString &s, OutputList& ol,const MemberDef*
 void VhdlDocGen::writeProcedureProto(OutputList& ol,const ArgumentList &al,const MemberDef* mdef)
 {
   bool sem=FALSE;
-  int len=al.size();
+  size_t len=al.size();
   ol.docify("( ");
   if (len > 2)
   {
@@ -1477,7 +1477,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList &al,const 
 {
   if (!al.hasParameters()) return;
   bool sem=FALSE;
-  int len=al.size();
+  size_t len=al.size();
   ol.startBold();
   ol.docify(" ( ");
   ol.endBold();
@@ -1586,7 +1586,7 @@ bool VhdlDocGen::writeFuncProcDocu(
   //bool sem=FALSE;
   ol.enableAll();
 
-  int index=al.size();
+  size_t index=al.size();
   if (index==0)
   {
     ol.docify(" ( ) ");
@@ -3959,7 +3959,7 @@ void FlowChart::writeEdge(FTextStream &t,int fl_from,int fl_to,int i,bool bFrom,
 
 void FlowChart::alignFuncProc( QCString & q,const ArgumentList &al,bool isFunc)
 {
-  int index=al.size();
+  size_t index=al.size();
   if (index==0) return;
 
   int len=q.length()+VhdlDocGen::getFlowMember()->name().length();

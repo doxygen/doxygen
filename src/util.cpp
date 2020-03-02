@@ -5157,7 +5157,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
     r+=dstLen;
   }
   qstrcpy(r,p);
-  result.resize(strlen(result.data())+1);
+  result.resize((int)strlen(result.data())+1);
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }

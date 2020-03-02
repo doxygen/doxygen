@@ -403,7 +403,7 @@ public:
         else // need to make a copy
         {
           LSData *newData = LSData::create(size);
-          int len = d->len;
+          uint len = d->len;
           if (len>=size) len=size-1;
           memcpy(newData->toStr(),d->toStr(),len);
           newData->toStr()[len]=0;

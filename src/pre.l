@@ -475,7 +475,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <*>"??"[=/'()!<>-]			{ // Trigraph
   					  unput(resolveTrigraph(yytext[2]));
   					}
-<Start>^{B}*"#"				{ BEGIN(Command); yyextra->yyColNr+=yyleng; yyextra->yyMLines=0;}
+<Start>^{B}*"#"				{ BEGIN(Command); yyextra->yyColNr+=(int)yyleng; yyextra->yyMLines=0;}
 <Start>^{B}*/[^#]			{
  					  outputArray(yyscanner,yytext,(int)yyleng);
   					  BEGIN(CopyLine); 
@@ -795,7 +795,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <Command>("cmake")?"define"{B}+		{ 
   			                  //printf("!!!DefName\n"); 
-					  yyextra->yyColNr+=yyleng;
+					  yyextra->yyColNr+=(int)yyleng;
   					  BEGIN(DefName); 
 					}
 <Command>"ifdef"/{B}*"("		{
@@ -879,7 +879,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  yyextra->yyLineNr++;
 					}
 <IgnoreLine>.
-<Command>. {yyextra->yyColNr+=yyleng;}
+<Command>. {yyextra->yyColNr+=(int)yyleng;}
 <UndefName>{ID}				{
   					  Define *def;
   					  if ((def=yyextra->defineManager.isDefined(yytext)) 
@@ -1239,7 +1239,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           else
                                           {
   					    outputArray(yyscanner,yytext,(int)yyleng);
-                                            yyextra->fenceSize=yyleng;
+                                            yyextra->fenceSize=(int)yyleng;
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
@@ -1252,7 +1252,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           else
                                           {
   					    outputArray(yyscanner,yytext,(int)yyleng);
-                                            yyextra->fenceSize=yyleng;
+                                            yyextra->fenceSize=(int)yyleng;
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
@@ -1890,7 +1890,7 @@ static FileState *findFile(yyscan_t yyscanner, const char *fileName,bool localIn
 static QCString extractTrailingComment(const char *s)
 {
   if (s==0) return "";
-  int i=strlen(s)-1;
+  int i=(int)strlen(s)-1;
   while (i>=0)
   {
     char c=s[i];

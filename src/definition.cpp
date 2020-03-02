@@ -695,7 +695,7 @@ void DefinitionImpl::setInbodyDocumentation(const char *d,const char *inbodyFile
 struct FilterCacheItem
 {
   portable_off_t filePos;
-  uint fileSize;
+  size_t fileSize;
 };
 
 /*! Cache for storing the result of filtering a file */
@@ -722,7 +722,7 @@ class FilterCache
         if (f)
         {
           bool success=TRUE;
-          str.resize(item->fileSize+1);
+          str.resize(static_cast<uint>(item->fileSize+1));
           if (Portable::fseek(f,item->filePos,SEEK_SET)==-1)
           {
             err("Failed to seek to position %d in filter database file %s\n",(int)item->filePos,qPrint(Doxygen::filterDBFileName));
@@ -730,7 +730,7 @@ class FilterCache
           }
           if (success)
           {
-            int numBytes = fread(str.data(),1,item->fileSize,f);
+            size_t numBytes = fread(str.data(),1,item->fileSize,f);
             if (numBytes!=item->fileSize)
             {
               err("Failed to read %d bytes from position %d in filter database file %s: got %d bytes\n",
@@ -768,16 +768,16 @@ class FilterCache
           return FALSE;
         }
         // append the filtered output to the database file
-        int size=0;
+        size_t size=0;
         while (!feof(f))
         {
-          int bytesRead = fread(buf,1,blockSize,f);
-          int bytesWritten = fwrite(buf,1,bytesRead,bf);
+          size_t bytesRead = fread(buf,1,blockSize,f);
+          size_t bytesWritten = fwrite(buf,1,bytesRead,bf);
           if (bytesRead!=bytesWritten)
           {
             // handle error
             err("Failed to write to filter database %s. Wrote %d out of %d bytes\n",
-                qPrint(Doxygen::filterDBFileName),bytesWritten,bytesRead);
+                qPrint(Doxygen::filterDBFileName),(int)bytesWritten,(int)bytesRead);
             str.addChar('\0');
             delete item;
             Portable::pclose(f);
@@ -785,7 +785,7 @@ class FilterCache
             return FALSE;
           }
           size+=bytesWritten;
-          str.addArray(buf,bytesWritten);
+          str.addArray(buf,static_cast<int>(bytesWritten));
         }
         str.addChar('\0');
         item->fileSize = size;
@@ -805,8 +805,8 @@ class FilterCache
         f = Portable::fopen(fileName,"r");
         while (!feof(f))
         {
-          int bytesRead = fread(buf,1,blockSize,f);
-          str.addArray(buf,bytesRead);
+          size_t bytesRead = fread(buf,1,blockSize,f);
+          str.addArray(buf,static_cast<int>(bytesRead));
         }
         str.addChar('\0');
         fclose(f);

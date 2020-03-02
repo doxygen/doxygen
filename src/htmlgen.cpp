@@ -166,8 +166,14 @@ static QCString getConvertLatexMacro()
       return "";
     }
     i++;
-    if (!qstrncmp(data + i, "newcommand", strlen("newcommand"))) i += strlen("newcommand");
-    else if (!qstrncmp(data + i, "renewcommand", strlen("renewcommand"))) i += strlen("renewcommand");
+    if (!qstrncmp(data + i, "newcommand", (uint)strlen("newcommand")))
+    {
+      i += (int)strlen("newcommand");
+    }
+    else if (!qstrncmp(data + i, "renewcommand", (uint)strlen("renewcommand")))
+    {
+      i += (int)strlen("renewcommand");
+    }
     else
     {
       warn(macrofile,line, "file contains non valid code, expected 'newcommand' or 'renewcommand'");

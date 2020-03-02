@@ -76,7 +76,7 @@ static std::string uriDecode(const std::string & sSrc)
   // (0-9, A-F) are reserved for future extension"
 
   const unsigned char * pSrc = (const unsigned char *)sSrc.c_str();
-  const int SRC_LEN = sSrc.length();
+  const size_t SRC_LEN = sSrc.length();
   const unsigned char * const SRC_END = pSrc + SRC_LEN;
   // last decodable '%'
   const unsigned char * const SRC_LAST_DEC = SRC_END - 2;
@@ -140,9 +140,9 @@ T fromString(const std::string& s)
 /** Class that holds the starting position of a word */
 struct WordPosition
 {
-  WordPosition(int s,int i) : start(s), index(i) {}
-  int start;
-  int index;
+  WordPosition(size_t s,size_t i) : start(s), index(i) {}
+  size_t start;
+  size_t index;
 };
 
 /** Class representing the '<' operator for WordPosition objects based on position. */
@@ -174,20 +174,20 @@ struct Fragment_greater
 /** Class representing a range within a string */
 struct Range
 {
-  Range(int s,int e) : start(s), end(e) {}
-  int start;
-  int end;
+  Range(size_t s,size_t e) : start(s), end(e) {}
+  size_t start;
+  size_t end;
 };
 
 /** Returns true if [start..start+len] is inside one of the \a ranges. */
-static bool insideRange(const std::vector<Range> &ranges,int start,int len)
+static bool insideRange(const std::vector<Range> &ranges,size_t start,size_t len)
 {
   for (std::vector<Range>::const_iterator it = ranges.begin();
        it!=ranges.end(); ++it
       )
   {
     Range r = *it;
-    if (start>=r.start && start+len<r.end) 
+    if (start>=r.start && start+len<r.end)
     {
       return true;
     }
@@ -206,18 +206,18 @@ static void highlighter(const std::string &s,
   const std::string spanStart="<span class=\"hl\">";
   const std::string spanEnd="</span>";
   const std::string dots="...";
-  const int fragLen = 60;
-  int sl=s.length();
+  const size_t fragLen = 60;
+  size_t sl=s.length();
 
   // find positions of words in s
-  size_t j=0;
+  int j=0;
   std::vector<WordPosition> positions;
   for (std::vector<std::string>::const_iterator it=words.begin();
        it!=words.end();
        ++it,++j
       )
   {
-    int pos=0;
+    size_t pos=0;
     size_t i;
     std::string word = *it;
     while ((i=s.find(word,pos))!=std::string::npos) 
@@ -236,8 +236,8 @@ static void highlighter(const std::string &s,
   {
     WordPosition wp = *it;
     std::string w = words[wp.index];
-    int i=wp.start;
-    int wl=w.length();
+    size_t i=wp.start;
+    size_t wl=w.length();
     if (!insideRange(ranges,i,wl))
     {
       if (wl>fragLen)
@@ -248,8 +248,8 @@ static void highlighter(const std::string &s,
       else
       {
         std::string startFragment,endFragment;
-        int bi=i-(fragLen-wl)/2;
-        int ei=i+wl+(fragLen-wl)/2;
+        size_t bi=i-(fragLen-wl)/2;
+        size_t ei=i+wl+(fragLen-wl)/2;
         int occ=0;
         if (bi<0)  { ei-=bi; bi=0; } else startFragment=dots;
         if (ei>sl) { ei=sl; }        else endFragment=dots;
@@ -257,14 +257,14 @@ static void highlighter(const std::string &s,
         while (ei<sl && !isspace(s[ei])) ei++; // round to end of the word
         // highlight any word in s between indexes bi and ei
         std::string fragment=startFragment;
-        int pos=bi;
+        size_t pos=bi;
         for (std::vector<WordPosition>::const_iterator it2=positions.begin();
             it2!=positions.end();
             ++it2)
         {
           WordPosition wp2 = *it2;
           std::string w2 = words[wp2.index];
-          int wl2 = w2.length();
+          size_t wl2 = w2.length();
           if (wp2.start>=bi && wp2.start+wl2<=ei) // word is inside the range!
           {
             fragment+=s.substr(pos,wp2.start-pos)+
@@ -288,10 +288,10 @@ static void highlighter(const std::string &s,
 static std::string escapeString(const std::string &s)
 {
   std::stringstream dst;
-  for (unsigned int i=0;i<s.length();i++)
+  for (size_t i=0;i<s.length();i++)
   {
     char ch = s[i];
-    switch (ch) 
+    switch (ch)
     {
       case '\"': dst << "\\\""; break;
       default: dst << ch; break;

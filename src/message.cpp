@@ -174,7 +174,7 @@ static void do_warn(bool enabled, const char *file, int line, const char *prefix
   int l=0;
   if (prefix)
   {
-    l=strlen(prefix);
+    l=(int)strlen(prefix);
   }
   // determine needed buffersize based on:
   // format + arguments

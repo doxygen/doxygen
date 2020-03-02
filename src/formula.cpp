@@ -468,7 +468,7 @@ int FormulaManager::addFormula(const char *formulaText)
     return it->second;
   }
   // store new formula
-  int id = p->formulas.size();
+  int id = (int)p->formulas.size();
   p->formulaMap.insert(std::pair<std::string,int>(key,id));
   p->formulas.push_back(key);
   return id;

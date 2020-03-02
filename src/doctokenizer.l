@@ -1033,7 +1033,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          if (yytext[0] =='"')
                          {
                            g_token->name=yytext+1;
-                           g_token->name=g_token->name.left(yyleng-2);
+                           g_token->name=g_token->name.left(static_cast<uint>(yyleng)-2);
                          }
                          else
                          {
@@ -1170,9 +1170,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   		       }
 <St_Param>[^ \t\n,@\\]+  {
   			 g_token->name = yytext;
-                         if (g_token->name.at(yyleng-1)==':')
+                         if (g_token->name.at(static_cast<uint>(yyleng)-1)==':')
                          {
-                           g_token->name=g_token->name.left(yyleng-1);
+                           g_token->name=g_token->name.left(static_cast<uint>(yyleng)-1);
                          }
 			 return TK_WORD;
                        }

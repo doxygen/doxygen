@@ -58,7 +58,7 @@ class VhdlString
     }
     VhdlString(const char *s)
     {
-      m_len = strlen(s);
+      m_len = (int)strlen(s);
       m_str=(char*)malloc(m_len+1);
       memcpy(m_str,s,m_len+1);
     }
@@ -87,7 +87,7 @@ class VhdlString
     }
     VhdlString& append(const char *s)
     {
-      return append(s,strlen(s));
+      return append(s,(int)strlen(s));
     }
     VhdlString& append(const VhdlString &other)
     {
