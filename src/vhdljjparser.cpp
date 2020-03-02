@@ -731,8 +731,8 @@ void VHDLOutlineParser::error_skipto(int kind)
   Token *op;
   do
   {
-    Token *t = p->vhdlParser->getNextToken();// step to next token
-    op=p->vhdlParser->getToken(1);           // get first token
+    p->vhdlParser->getNextToken();  // step to next token
+    op=p->vhdlParser->getToken(1);  // get first token
     if (op==0) break;
     //fprintf(stderr,"\n %s",t->image.data());
   } while (op->kind != kind);

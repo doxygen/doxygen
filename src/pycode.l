@@ -23,6 +23,7 @@
 
 %option never-interactive
 %option prefix="pycodeYY"
+%option noyy_top_state
 %top{
 #include <stdint.h>
 }
@@ -55,6 +56,8 @@
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
+
+#define USE_STATE2STRING 0
 
 static ClassSDict    g_codeClassSDict(17);
 static QCString      g_curClassName;
@@ -100,7 +103,10 @@ static bool          g_endComment;
 
 static void endFontClass();
 static void adjustScopesAndSuites(unsigned indentLength);
+
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 
 
 /*! Represents a stack of variable to class mappings as found in the
@@ -688,19 +694,19 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
       DBG_CTX((stderr,"scope=%s locName=%s mcd=%p\n",scope.data(),locName.data(),mcd));
       if (mcd)
       {
-	MemberDef *md = mcd->getMemberByName(locName);
-	if (md)
+	MemberDef *mmd = mcd->getMemberByName(locName);
+	if (mmd)
 	{
-          g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
-          writeMultiLineCodeLink(ol,md,clName);
+          g_theCallContext.setClass(stripClassName(mmd->typeString(),mmd->getOuterScope()));
+          writeMultiLineCodeLink(ol,mmd,clName);
           addToSearchIndex(className);
-	  const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-	                        md->getBodyDef() : md->getOuterScope();
-	  if (md->getGroupDef()) d = md->getGroupDef();
-	  if (d && d->isLinkable() && md->isLinkable() && 
+	  const Definition *d = mmd->getOuterScope()==Doxygen::globalScope ?
+	                        mmd->getBodyDef() : mmd->getOuterScope();
+	  if (mmd->getGroupDef()) d = mmd->getGroupDef();
+	  if (d && d->isLinkable() && mmd->isLinkable() && 
               g_currentMemberDef && g_collectXRefs)
 	  {
-	    addDocCrossReference(g_currentMemberDef,md);
+	    addDocCrossReference(g_currentMemberDef,mmd);
 	  }
 	  return;
 	}
@@ -710,20 +716,20 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
         const NamespaceDef *mnd = getResolvedNamespace(scope);
         if (mnd)
         {
-  	  MemberDef *md=mnd->getMemberByName(locName);
-	  if (md)
+  	  MemberDef *mmd=mnd->getMemberByName(locName);
+	  if (mmd)
           {
 	    //printf("name=%s scope=%s\n",locName.data(),scope.data());
-	    g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
-            writeMultiLineCodeLink(ol,md,clName);
+	    g_theCallContext.setClass(stripClassName(mmd->typeString(),mmd->getOuterScope()));
+            writeMultiLineCodeLink(ol,mmd,clName);
             addToSearchIndex(className);
-	    const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-	                          md->getBodyDef() : md->getOuterScope();
-	    if (md->getGroupDef()) d = md->getGroupDef();
-	    if (d && d->isLinkable() && md->isLinkable() && 
+	    const Definition *d = mmd->getOuterScope()==Doxygen::globalScope ?
+	                          mmd->getBodyDef() : mmd->getOuterScope();
+	    if (mmd->getGroupDef()) d = mmd->getGroupDef();
+	    if (d && d->isLinkable() && mmd->isLinkable() && 
                 g_currentMemberDef && g_collectXRefs)
 	    {
-	      addDocCrossReference(g_currentMemberDef,md);
+	      addDocCrossReference(g_currentMemberDef,mmd);
 	    }
 	    return;
           }
@@ -846,9 +852,9 @@ static void findMemberLink(CodeOutputInterface &ol,char *symName)
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
-static int yyread(char *buf,int max_size)
+static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
-  int c=0;
+  yy_size_t c=0;
   while( c < max_size && g_inputString[g_inputPosition] )
   {
     *buf = g_inputString[g_inputPosition++] ;
@@ -1269,7 +1275,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                  // level that is about to be
                                  // used.
 				 codifyLines(yytext);
-				 g_indents.push(yyleng);
+				 g_indents.push(static_cast<int>(yyleng));
                                  // printf("Captured indent of %d [line %d]\n", yyleng, g_yyLineNr);
 				 BEGIN( Suite );
                                }
@@ -1283,7 +1289,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                  // should be improved.
 				 // (translate tabs to space, etc)
   		                 codifyLines(yytext);
-                                 adjustScopesAndSuites((int)yyleng);
+                                 adjustScopesAndSuites(static_cast<int>(yyleng));
                                }
 
     "\n"|({BB}"\n")            {
@@ -1669,5 +1675,6 @@ void PythonCodeParser::resetCodeParserState()
   ::resetPythonCodeParserState();
 }
 
-
+#if USE_STATE2STRING
 #include "pycode.l.h"
+#endif

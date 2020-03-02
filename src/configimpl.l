@@ -47,7 +47,11 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 
 static const char *warning_str = "warning: ";
 static const char *error_str = "error: ";
@@ -96,20 +100,27 @@ static QCString convertToComment(const QCString &s, const QCString &u)
     QCString tmp=s.stripWhiteSpace();
     const char *p=tmp.data();
     char c;
-    result+="#";
-    if (*p && *p!='\n')
-      result+=" ";
-    while ((c=*p++))
+    if (p)
     {
-      if (c=='\n')
+      result+="#";
+      if (*p && *p!='\n')
       {
-        result+="\n#";
-        if (*p && *p!='\n')
-          result+=" ";
+        result+=" ";
       }
-      else result+=c;
+      while ((c=*p++))
+      {
+        if (c=='\n')
+        {
+          result+="\n#";
+          if (*p && *p!='\n')
+          {
+            result+=" ";
+          }
+        }
+        else result+=c;
+      }
+      result+='\n';
     }
-    result+='\n';
   }
   if (!u.isEmpty())
   {
@@ -134,7 +145,7 @@ void ConfigOption::writeStringValue(FTextStream &t,QCString &s)
 {
   char c;
   bool needsEscaping=FALSE;
-  // convert the string back to it original encoding
+  // convert the string back to it original g_encoding
   QCString se = configStringRecode(s,"UTF-8",m_encoding);
   const char *p=se.data();
   if (p)
@@ -530,47 +541,47 @@ struct ConfigFileState
   QCString fileName;
 };  
 
-static const char       *inputString;
-static int	         inputPosition;
-static int               yyLineNr;
-static QCString          yyFileName;
-static QCString          tmpString;
-static QCString         *s=0;
-static bool             *b=0;
-static QStrList         *l=0;
-static int               lastState;
-static QCString          elemStr;
-static QStrList          includePathList;
-static QStack<ConfigFileState> includeStack;  
-static int               includeDepth;
-static bool              config_upd = FALSE;
-static QCString          encoding;
-static ConfigImpl       *config;
+static const char       *g_inputString;
+static int	         g_inputPosition;
+static int               g_yyLineNr;
+static QCString          g_yyFileName;
+static QCString          g_tmpString;
+static QCString         *g_string=0;
+static bool             *g_bool=0;
+static QStrList         *g_list=0;
+static int               g_lastState;
+static QCString          g_elemStr;
+static QStrList          g_includePathList;
+static QStack<ConfigFileState> g_includeStack;  
+static int               g_includeDepth;
+static bool              g_configUpdate = FALSE;
+static QCString          g_encoding;
+static ConfigImpl       *g_config;
 
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
-static int yyread(char *buf,int max_size)
+static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
-    // no file included
-    if (includeStack.isEmpty()) 
+  // no file included
+  if (g_includeStack.isEmpty()) 
+  {
+    yy_size_t c=0;
+    if (g_inputString==0) return c;
+    while( c < max_size && g_inputString[g_inputPosition] )
     {
-        int c=0;
-	if (inputString==0) return c;
-	while( c < max_size && inputString[inputPosition] )
-	{
-	      *buf = inputString[inputPosition++] ;
-	      c++; buf++;
-  	}
-	return c;
-    } 
-    else 
-    {
-        //assert(includeStack.current()->newState==YY_CURRENT_BUFFER);
-	return (int)fread(buf,1,max_size,includeStack.current()->filePtr);
+      *buf = g_inputString[g_inputPosition++] ;
+      c++; buf++;
     }
+    return c;
+  }
+  else
+  {
+    //assert(g_includeStack.current()->newState==YY_CURRENT_BUFFER);
+    return (yy_size_t)fread(buf,1,max_size,g_includeStack.current()->filePtr);
+  }
 }
 
 
@@ -613,8 +624,8 @@ static QCString configStringRecode(
 
 static void checkEncoding()
 {
-  ConfigString *option = (ConfigString*)config->get("DOXYFILE_ENCODING");
-  encoding = *option->valueRef();
+  ConfigString *option = (ConfigString*)g_config->get("DOXYFILE_ENCODING");
+  g_encoding = *option->valueRef();
 }
 
 static FILE *tryPath(const char *path,const char *fileName)
@@ -643,21 +654,21 @@ static FILE *findFile(const char *fileName)
   {
     return tryPath(NULL, fileName);
   }
-  substEnvVarsInStrList(includePathList);
-  char *s=includePathList.first();
+  substEnvVarsInStrList(g_includePathList);
+  char *s=g_includePathList.first();
   while (s) // try each of the include paths
   {
     FILE *f = tryPath(s,fileName);
     if (f) return f;
-    s=includePathList.next();
+    s=g_includePathList.next();
   } 
-  // try cwd if includePathList fails
+  // try cwd if g_includePathList fails
   return tryPath(".",fileName);
 }
 
 static void readIncludeFile(const char *incName)
 {
-  if (includeDepth==MAX_INCLUDE_DEPTH) {
+  if (g_includeDepth==MAX_INCLUDE_DEPTH) {
     config_term("maximum include depth (%d) reached, %s is not included. Aborting...\n",
 	MAX_INCLUDE_DEPTH,incName);
   } 
@@ -677,23 +688,23 @@ static void readIncludeFile(const char *incName)
   {
     // For debugging
 #if SHOW_INCLUDES
-    for (i=0;i<includeStack.count();i++) msg("  ");
+    for (i=0;i<g_includeStack.count();i++) msg("  ");
     msg("@INCLUDE = %s: parsing...\n",inc.data());
 #endif
 
     // store the state of the old file 
     ConfigFileState *fs=new ConfigFileState;
     fs->oldState=YY_CURRENT_BUFFER;
-    fs->lineNr=yyLineNr;
-    fs->fileName=yyFileName;
+    fs->lineNr=g_yyLineNr;
+    fs->fileName=g_yyFileName;
     fs->filePtr=f;
     // push the state on the stack
-    includeStack.push(fs);
+    g_includeStack.push(fs);
     // set the scanner to the include file
     yy_switch_to_buffer(yy_create_buffer(f, YY_BUF_SIZE));
     fs->newState=YY_CURRENT_BUFFER;
-    yyFileName=inc;
-    includeDepth++;
+    g_yyFileName=inc;
+    g_includeDepth++;
   } 
   else
   {
@@ -721,26 +732,26 @@ static void readIncludeFile(const char *incName)
 %%
 
 <*>\0x0d
-<PreStart>"##".*"\n" { config->appendStartComment(yytext);yyLineNr++;}
+<PreStart>"##".*"\n" { g_config->appendStartComment(yytext);g_yyLineNr++;}
 <PreStart>. {
               BEGIN(Start);
               unput(*yytext);
             }
-<Start,GetString,GetStrList,GetStrList1,GetBool,SkipInvalid>"##".*"\n" { config->appendUserComment(yytext);yyLineNr++;}
+<Start,GetString,GetStrList,GetStrList1,GetBool,SkipInvalid>"##".*"\n" { g_config->appendUserComment(yytext);g_yyLineNr++;}
 <Start,GetString,GetStrList,GetStrList1,GetBool,SkipInvalid>"#"	   { BEGIN(SkipComment); }
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { QCString cmd=yytext;
                                            cmd=cmd.left(cmd.length()-1).stripWhiteSpace(); 
-					   ConfigOption *option = config->get(cmd);
+					   ConfigOption *option = g_config->get(cmd);
 					   if (option==0) // oops not known
 					   {
 					     config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-						 cmd.data(),yyLineNr,yyFileName.data()); 
+						 cmd.data(),g_yyLineNr,g_yyFileName.data()); 
 					     BEGIN(SkipInvalid);
 					   }
 					   else // known tag
 					   {
-                                             option->setUserComment(config->takeUserComment());
-					     option->setEncoding(encoding);
+                                             option->setUserComment(g_config->takeUserComment());
+					     option->setEncoding(g_encoding);
 					     switch(option->kind())
 					     {
 					       case ConfigOption::O_Info:
@@ -748,9 +759,9 @@ static void readIncludeFile(const char *incName)
 					         BEGIN(SkipInvalid);
 						 break;
 					       case ConfigOption::O_List:
-						 l = ((ConfigList *)option)->valueRef();
-					         l->clear();
-						 elemStr="";
+						 g_list = ((ConfigList *)option)->valueRef();
+					         g_list->clear();
+						 g_elemStr="";
 						 if (cmd == "PREDEFINED")
 						 {
 					           BEGIN(GetStrList1);
@@ -761,50 +772,50 @@ static void readIncludeFile(const char *incName)
 						 }
 					         break;
 					       case ConfigOption::O_Enum:
-						 s = ((ConfigEnum *)option)->valueRef();
-					         s->resize(0);
+						 g_string = ((ConfigEnum *)option)->valueRef();
+					         g_string->resize(0);
 					         BEGIN(GetString);
 					         break;
 					       case ConfigOption::O_String:
-						 s = ((ConfigString *)option)->valueRef();
-					         s->resize(0);
+						 g_string = ((ConfigString *)option)->valueRef();
+					         g_string->resize(0);
 					         BEGIN(GetString);
 					         break;
 					       case ConfigOption::O_Int:
-						 s = ((ConfigInt *)option)->valueStringRef();
-					         s->resize(0);
+						 g_string = ((ConfigInt *)option)->valueStringRef();
+					         g_string->resize(0);
 					         BEGIN(GetString);
 					         break;
 					       case ConfigOption::O_Bool:
-						 s = ((ConfigBool *)option)->valueStringRef();
-					         s->resize(0);
+						 g_string = ((ConfigBool *)option)->valueStringRef();
+					         g_string->resize(0);
 					         BEGIN(GetString);
 						 break;
 					       case ConfigOption::O_Obsolete:
-                                                 if (config_upd)
+                                                 if (g_configUpdate)
                                                  {
 					           config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
-						              "         This tag has been removed.\n", cmd.data(),yyLineNr,yyFileName.data());
+						              "         This tag has been removed.\n", cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
                                                  else
                                                  {
 					           config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
 						              "         To avoid this warning please remove this line from your configuration "
-							      "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+							      "file or upgrade it using \"doxygen -u\"\n", cmd.data(),g_yyLineNr,g_yyFileName.data()); 
                                                  }
 					         BEGIN(SkipInvalid);
 						 break;
 					       case ConfigOption::O_Disabled:
-                                                 if (config_upd)
+                                                 if (g_configUpdate)
                                                  {
 					           config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
-						              "         This tag has been removed.\n", cmd.data(),yyLineNr,yyFileName.data());
+						              "         This tag has been removed.\n", cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
                                                  else
                                                  {
 					           config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
 						              "         To avoid this warning please remove this line from your configuration "
-							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
+							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),g_yyLineNr,g_yyFileName.data()); 
                                                  }
 					         BEGIN(SkipInvalid);
 						 break;
@@ -813,16 +824,16 @@ static void readIncludeFile(const char *incName)
 					}
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{ QCString cmd=yytext;
                                           cmd=cmd.left(cmd.length()-2).stripWhiteSpace(); 
-					  ConfigOption *option = config->get(cmd);
+					  ConfigOption *option = g_config->get(cmd);
 					  if (option==0) // oops not known
 					  {
 					    config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-						cmd.data(),yyLineNr,yyFileName.data()); 
+						cmd.data(),g_yyLineNr,g_yyFileName.data()); 
 					    BEGIN(SkipInvalid);
 					  }
 					  else // known tag
 					  {
-                                            option->setUserComment(config->takeUserComment());
+                                            option->setUserComment(g_config->takeUserComment());
 					    switch(option->kind())
 					    {
 					      case ConfigOption::O_Info:
@@ -830,8 +841,8 @@ static void readIncludeFile(const char *incName)
 					        BEGIN(SkipInvalid);
 						break;
 					      case ConfigOption::O_List:
-					        l = ((ConfigList *)option)->valueRef();
-						elemStr="";
+					        g_list = ((ConfigList *)option)->valueRef();
+						g_elemStr="";
 						if (cmd == "PREDEFINED")
 						{
 					          BEGIN(GetStrList1);
@@ -846,137 +857,137 @@ static void readIncludeFile(const char *incName)
 					      case ConfigOption::O_Int:
 					      case ConfigOption::O_Bool:
 					        config_warn("operator += not supported for '%s'. Ignoring line at line %d, file %s\n",
-						    yytext,yyLineNr,yyFileName.data()); 
+						    yytext,g_yyLineNr,g_yyFileName.data()); 
 					        BEGIN(SkipInvalid);
 						break;
 					       case ConfigOption::O_Obsolete:
 					         config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please update your configuration "
-							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+							    "file using \"doxygen -u\"\n", cmd.data(),g_yyLineNr,g_yyFileName.data()); 
 					         BEGIN(SkipInvalid);
 						 break;
 					       case ConfigOption::O_Disabled:
 					         config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
 						            "To avoid this warning please remove this line from your configuration "
-							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
+							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),g_yyLineNr,g_yyFileName.data()); 
 					         BEGIN(SkipInvalid);
 						 break;
 					     }
 					   }
 					}
-<Start>"@INCLUDE_PATH"[ \t]*"=" 	{ BEGIN(GetStrList); l=&includePathList; l->clear(); elemStr=""; }
-  /* include a config file */
+<Start>"@INCLUDE_PATH"[ \t]*"=" 	{ BEGIN(GetStrList); g_list=&g_includePathList; g_list->clear(); g_elemStr=""; }
+  /* include a g_config file */
 <Start>"@INCLUDE"[ \t]*"="     		{ BEGIN(Include);}
 <Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") { 
-  					  readIncludeFile(configStringRecode(yytext,encoding,"UTF-8")); 
+  					  readIncludeFile(configStringRecode(yytext,g_encoding,"UTF-8")); 
   					  BEGIN(Start);
 					}
 <<EOF>>					{
                                           //printf("End of include file\n");
 					  //printf("Include stack depth=%d\n",g_includeStack.count());
-                                          if (includeStack.isEmpty())
+                                          if (g_includeStack.isEmpty())
 					  {
 					    //printf("Terminating scanner!\n");
 					    yyterminate();
 					  }
 					  else
 					  {
-					    ConfigFileState *fs=includeStack.pop();
+					    ConfigFileState *fs=g_includeStack.pop();
 					    fclose(fs->filePtr);
 					    YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
 					    yy_switch_to_buffer( fs->oldState );
 					    yy_delete_buffer( oldBuf );
-					    yyLineNr=fs->lineNr;
-					    yyFileName=fs->fileName;
+					    g_yyLineNr=fs->lineNr;
+					    g_yyFileName=fs->fileName;
 					    delete fs; fs=0;
-                                            includeDepth--;
+                                            g_includeDepth--;
 					  }
   					}
 
-<Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,yyLineNr,yyFileName.data()); }
-<GetString,GetBool,SkipInvalid>\n	{ yyLineNr++; BEGIN(Start); }
+<Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,g_yyFileName.data()); }
+<GetString,GetBool,SkipInvalid>\n	{ g_yyLineNr++; BEGIN(Start); }
 <GetStrList,GetStrList1>\n				{
-  					  yyLineNr++; 
-					  if (!elemStr.isEmpty())
+  					  g_yyLineNr++; 
+					  if (!g_elemStr.isEmpty())
 					  {
-					    //printf("elemStr1='%s'\n",elemStr.data());
-					    l->append(elemStr);
+					    //printf("elemStr1='%s'\n",g_elemStr.data());
+					    g_list->append(g_elemStr);
 					  }
 					  BEGIN(Start); 
 					}
 <GetStrList1>[ \t]+			{
-					  if (!elemStr.isEmpty())
+					  if (!g_elemStr.isEmpty())
 					  {
-					    //printf("elemStr2='%s'\n",elemStr.data());
-					    l->append(elemStr);
+					    //printf("elemStr2='%s'\n",g_elemStr.data());
+					    g_list->append(g_elemStr);
 					  }
-					  elemStr.resize(0);
+					  g_elemStr.resize(0);
 					}
 <GetStrList>[ \t,]+			{
-  				          if (!elemStr.isEmpty())
+  				          if (!g_elemStr.isEmpty())
 					  {
-					    //printf("elemStr2='%s'\n",elemStr.data());
-  					    l->append(elemStr);
+					    //printf("elemStr2='%s'\n",g_elemStr.data());
+  					    g_list->append(g_elemStr);
 					  }
-					  elemStr.resize(0);
+					  g_elemStr.resize(0);
   					}
-<GetString>[^ \"\t\r\n]+		{ (*s)+=configStringRecode(yytext,encoding,"UTF-8"); 
+<GetString>[^ \"\t\r\n]+		{ (*g_string)+=configStringRecode(yytext,g_encoding,"UTF-8"); 
                                           checkEncoding();
                                         }
-<GetString,GetStrList,GetStrList1,SkipInvalid>"\""	{ lastState=YY_START;
+<GetString,GetStrList,GetStrList1,SkipInvalid>"\""	{ g_lastState=YY_START;
   					  BEGIN(GetQuotedString); 
-                                          tmpString.resize(0); 
+                                          g_tmpString.resize(0); 
 					}
 <GetQuotedString>"\""|"\n" 		{ 
                                           // we add a bogus space to signal that the string was quoted. This space will be stripped later on.
-                                          tmpString+=" ";
-  					  //printf("Quoted String = '%s'\n",tmpString.data());
-  					  if (lastState==GetString)
+                                          g_tmpString+=" ";
+  					  //printf("Quoted String = '%s'\n",g_tmpString.data());
+  					  if (g_lastState==GetString)
 					  {
-					    (*s)+=configStringRecode(tmpString,encoding,"UTF-8");
+					    (*g_string)+=configStringRecode(g_tmpString,g_encoding,"UTF-8");
                                             checkEncoding();
 					  }
 					  else
 					  {
-					    elemStr+=configStringRecode(tmpString,encoding,"UTF-8");
+					    g_elemStr+=configStringRecode(g_tmpString,g_encoding,"UTF-8");
 					  }
 					  if (*yytext=='\n')
 					  {
-					    config_warn("Missing end quote (\") on line %d, file %s\n",yyLineNr,yyFileName.data());
-					    yyLineNr++;
+					    config_warn("Missing end quote (\") on line %d, file %s\n",g_yyLineNr,g_yyFileName.data());
+					    g_yyLineNr++;
 					  }
-					  BEGIN(lastState);
+					  BEGIN(g_lastState);
   					}
 <GetQuotedString>"\\\""			{
-  					  tmpString+='"';
+  					  g_tmpString+='"';
   					}
-<GetQuotedString>.			{ tmpString+=*yytext; }
+<GetQuotedString>.			{ g_tmpString+=*yytext; }
 <GetBool>[a-zA-Z]+			{ 
   					  QCString bs=yytext; 
   					  bs=bs.upper();
   					  if (bs=="YES" || bs=="1")
-					    *b=TRUE;
+					    *g_bool=TRUE;
 					  else if (bs=="NO" || bs=="0")
-					    *b=FALSE;
+					    *g_bool=FALSE;
 					  else 
 					  {
-					    *b=FALSE; 
+					    *g_bool=FALSE; 
 					    config_warn("Invalid value '%s' for "
 						 "boolean tag in line %d, file %s; use YES or NO\n",
-						 bs.data(),yyLineNr,yyFileName.data());
+						 bs.data(),g_yyLineNr,g_yyFileName.data());
 					  }
 					}
 <GetStrList1>[^ \#\"\t\r\n]+		{
-					  elemStr+=configStringRecode(yytext,encoding,"UTF-8");
+					  g_elemStr+=configStringRecode(yytext,g_encoding,"UTF-8");
 					}
 <GetStrList>[^ \#\"\t\r\n,]+		{
-  					  elemStr+=configStringRecode(yytext,encoding,"UTF-8");
+  					  g_elemStr+=configStringRecode(yytext,g_encoding,"UTF-8");
   					}
-<SkipComment>\n				{ yyLineNr++; BEGIN(Start); }
-<SkipComment>\\[ \r\t]*\n		{ yyLineNr++; BEGIN(Start); }
-<*>\\[ \r\t]*\n				{ yyLineNr++; }
+<SkipComment>\n				{ g_yyLineNr++; BEGIN(Start); }
+<SkipComment>\\[ \r\t]*\n		{ g_yyLineNr++; BEGIN(Start); }
+<*>\\[ \r\t]*\n				{ g_yyLineNr++; }
 <*>.					
-<*>\n					{ yyLineNr++ ; }
+<*>\n					{ g_yyLineNr++ ; }
 
 %%
 
@@ -1279,27 +1290,27 @@ static QCString configFileToString(const char *name)
 
 bool ConfigImpl::parseString(const char *fn,const char *str,bool update)
 {
-  config = ConfigImpl::instance();
-  inputString   = str;
-  inputPosition = 0;
-  yyFileName    = fn;
-  yyLineNr      = 1;
-  includeStack.setAutoDelete(TRUE);
-  includeStack.clear();
-  includeDepth  = 0;
+  g_config = ConfigImpl::instance();
+  g_inputString   = str;
+  g_inputPosition = 0;
+  g_yyFileName    = fn;
+  g_yyLineNr      = 1;
+  g_includeStack.setAutoDelete(TRUE);
+  g_includeStack.clear();
+  g_includeDepth  = 0;
   configimplYYrestart( configimplYYin );
   BEGIN( PreStart );
-  config_upd = update;
+  g_configUpdate = update;
   configimplYYlex();
-  config_upd = FALSE;
-  inputString = 0;
+  g_configUpdate = FALSE;
+  g_inputString = 0;
   return TRUE;
 }
 
 bool ConfigImpl::parse(const char *fn,bool update)
 {
   int retval;
-  encoding = "UTF-8";
+  g_encoding = "UTF-8";
   printlex(yy_flex_debug, TRUE, __FILE__, fn);
   retval =  parseString(fn,configFileToString(fn), update); 
   printlex(yy_flex_debug, FALSE, __FILE__, fn);
@@ -1332,13 +1343,13 @@ static void cleanUpPaths(QStrList &str)
       if (fi.exists() && fi.isDir())
       {
         int i = str.at();
-        QCString p = fi.absFilePath().utf8();
-        if (p[p.length()-1]!='/') p+='/';
+        QCString path_str = fi.absFilePath().utf8();
+        if (path_str[path_str.length()-1]!='/') path_str+='/';
         str.remove();
         if (str.at()==i) // did not remove last item
-          str.insert(i,p);
+          str.insert(i,path_str);
         else
-          str.append(p);
+          str.append(path_str);
       }
     }
     sfp = str.next();
@@ -2003,7 +2014,7 @@ void Config::postProcess(bool clearHeaderAndFooter, bool compare)
   if (!compare)ConfigImpl::instance()->emptyValueToDefault();
   ConfigImpl::instance()->convertStrToVal();
 
-  // avoid bootstrapping issues when the config file already
+  // avoid bootstrapping issues when the g_config file already
   // refers to the files that we are supposed to parse.
   if (clearHeaderAndFooter)
   {
@@ -2019,4 +2030,6 @@ void Config::deinit()
   ConfigImpl::instance()->deleteInstance();
 }
 
+#if USE_STATE2STRING
 #include "configimpl.l.h"
+#endif

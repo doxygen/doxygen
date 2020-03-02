@@ -64,6 +64,8 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
 /* ----------------------------------------------------------------- */
 
 struct pyscannerYY_state
@@ -72,7 +74,7 @@ struct pyscannerYY_state
   CommentScanner          commentScanner;
   OutlineParserInterface *thisParser = 0;
   const char *            inputString = 0;
-  int                     inputPosition = 0;
+  yy_size_t               inputPosition = 0;
   Protection              protection = Public;
   std::shared_ptr<Entry>  current_root;
   std::shared_ptr<Entry>  current;
@@ -113,7 +115,9 @@ struct pyscannerYY_state
 };
 
 //-----------------------------------------------------------------------------
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 
 static inline int computeIndent(const char *s);
 
@@ -136,7 +140,8 @@ static void initSpecialBlock(yyscan_t yyscanner);
 static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
 static QCString findPackageScope(yyscan_t yyscanner,const char *fileName);
-static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 //-----------------------------------------------------------------------------
 /* ----------------------------------------------------------------- */
@@ -1437,10 +1442,10 @@ STARTDOCSYMS      "##"
 
 //----------------------------------------------------------------------------
 
-static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int c=0;
+  yy_size_t c=0;
   const char *p = yyextra->inputString + yyextra->inputPosition;
   while ( c < max_size && *p ) { *buf++ = *p++; c++; }
   yyextra->inputPosition+=c;
@@ -1740,7 +1745,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("parseCompounds(%s)\n",rt->name.data());
-  for (int i=0; i<rt->children().size(); ++i)
+  for (size_t i=0; i<rt->children().size(); ++i)
   {
     std::shared_ptr<Entry> ce = rt->children()[i];
     if (!ce->program.isEmpty())
@@ -1865,7 +1870,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   yyextra->packageCommentAllowed = FALSE;
 
   const char *orgInputString;
-  int orgInputPosition;
+  yy_size_t orgInputPosition;
   YY_BUFFER_STATE orgState;
   
   // save scanner state
@@ -1951,4 +1956,6 @@ void PythonOutlineParser::parsePrototype(const char *text)
 
 //----------------------------------------------------------------------------
 
+#if USE_STATE2STRING
 #include "pyscanner.l.h"
+#endif

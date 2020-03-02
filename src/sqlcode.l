@@ -44,6 +44,8 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
 struct sqlcodeYY_state
 {
      CodeOutputInterface * code;
@@ -65,8 +67,10 @@ struct sqlcodeYY_state
      const char   *currentFontClass;
 };
 
-static void codify(const char* text);
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
+
 static void setCurrentDoc(const QCString &anchor,yyscan_t yyscanner);
 static void startCodeLine(yyscan_t yyscanner);
 static void endFontClass(yyscan_t yyscanner);
@@ -75,7 +79,7 @@ static void nextCodeLine(yyscan_t yyscanner);
 static void codifyLines(char *text,yyscan_t yyscanner);
 static void startFontClass(const char *s,yyscan_t yyscanner);
 static int countLines(yyscan_t yyscanner);
-static int yyread(char *buf,int max_size,yyscan_t yyscanner);
+static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner);
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
@@ -192,12 +196,6 @@ commentclose    "\*/"
 
 %%
 
-
-static void codify(const char* text, yyscan_t yyscanner)
-{ 
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->code->codify(text);
-}
 
 static void setCurrentDoc(const QCString &anchor, yyscan_t yyscanner)
 {
@@ -348,10 +346,10 @@ static int countLines(yyscan_t yyscanner)
   return count;
 }
 
-static int yyread(char *buf,int max_size,yyscan_t yyscanner)
+static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int c=0;
+  yy_size_t c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -487,4 +485,6 @@ void SQLCodeParser::resetCodeParserState()
 
 //---------------------------------------------------------------------------------
 
+#if USE_STATE2STRING
 #include "sqlcode.l.h"
+#endif

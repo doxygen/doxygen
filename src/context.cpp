@@ -180,14 +180,14 @@ class GenericNodeListContext : public TemplateListIntf
     }
 
     // TemplateListIntf methods
-    int count() const
+    uint count() const
     {
-      return (int)m_children.count();
+      return m_children.count();
     }
-    TemplateVariant at(int index) const
+    TemplateVariant at(uint index) const
     {
       TemplateVariant result;
-      if (index>=0 && index<count())
+      if (index<count())
       {
         result = *m_children.at(index);
       }
@@ -1397,6 +1397,7 @@ class DefinitionContext
     {
       assert(d!=0);
     }
+    virtual ~DefinitionContext() {}
     void addBaseProperties(PropertyMapper<T> &inst)
     {
       //%% string name: the name of the symbol
@@ -1794,12 +1795,12 @@ IncludeInfoListContext::~IncludeInfoListContext()
 }
 
 // TemplateListIntf
-int IncludeInfoListContext::count() const
+uint IncludeInfoListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant IncludeInfoListContext::at(int index) const
+TemplateVariant IncludeInfoListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -2007,7 +2008,6 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         {
           case ContextOutputFormat_Html:
             {
-              QGString result;
               FTextStream tt(&result);
 
               QCString name = convertToHtml(m_classDef->displayName());
@@ -2136,7 +2136,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       return cache.inheritedByList.get();
     }
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool detailed=FALSE) const
+                                  MemberListType type,const char *title,bool=FALSE) const
     {
       if (!list)
       {
@@ -2834,7 +2834,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       return cache.constantgroups.get();
     }
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool detailed=FALSE) const
+                                  MemberListType type,const char *title,bool=FALSE) const
     {
       if (!list)
       {
@@ -3293,7 +3293,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       return cache.constantgroups.get();
     }
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool detailed=FALSE) const
+                                  MemberListType type,const char *title,bool=FALSE) const
     {
       if (!list)
       {
@@ -5564,7 +5564,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     }
 
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool detailed=FALSE) const
+                                  MemberListType type,const char *title,bool=FALSE) const
     {
       if (!list)
       {
@@ -5852,12 +5852,12 @@ ClassListContext::~ClassListContext()
 }
 
 // TemplateListIntf
-int ClassListContext::count() const
+uint ClassListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ClassListContext::at(int index) const
+TemplateVariant ClassListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -6760,12 +6760,12 @@ NestingContext::~NestingContext()
 }
 
 // TemplateListIntf
-int NestingContext::count() const
+uint NestingContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant NestingContext::at(int index) const
+TemplateVariant NestingContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -6987,12 +6987,12 @@ NamespaceListContext::~NamespaceListContext()
 }
 
 // TemplateListIntf
-int NamespaceListContext::count() const
+uint NamespaceListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant NamespaceListContext::at(int index) const
+TemplateVariant NamespaceListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7166,12 +7166,12 @@ FileListContext::~FileListContext()
 }
 
 // TemplateListIntf
-int FileListContext::count() const
+uint FileListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant FileListContext::at(int index) const
+TemplateVariant FileListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7209,12 +7209,12 @@ DirListContext::~DirListContext()
 }
 
 // TemplateListIntf
-int DirListContext::count() const
+uint DirListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant DirListContext::at(int index) const
+TemplateVariant DirListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7257,12 +7257,12 @@ UsedFilesContext::~UsedFilesContext()
 }
 
 // TemplateListIntf
-int UsedFilesContext::count() const
+uint UsedFilesContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant UsedFilesContext::at(int index) const
+TemplateVariant UsedFilesContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7532,12 +7532,12 @@ PageListContext::~PageListContext()
 }
 
 // TemplateListIntf
-int PageListContext::count() const
+uint PageListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant PageListContext::at(int index) const
+TemplateVariant PageListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7581,12 +7581,12 @@ ExampleListContext::~ExampleListContext()
 }
 
 // TemplateListIntf
-int ExampleListContext::count() const
+uint ExampleListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ExampleListContext::at(int index) const
+TemplateVariant ExampleListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7628,12 +7628,12 @@ ModuleListContext::~ModuleListContext()
 }
 
 // TemplateListIntf
-int ModuleListContext::count() const
+uint ModuleListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ModuleListContext::at(int index) const
+TemplateVariant ModuleListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -8594,12 +8594,12 @@ InheritanceListContext::~InheritanceListContext()
 }
 
 // TemplateListIntf
-int InheritanceListContext::count() const
+uint InheritanceListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant InheritanceListContext::at(int index) const
+TemplateVariant InheritanceListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -8670,12 +8670,12 @@ MemberListContext::~MemberListContext()
 }
 
 // TemplateListIntf
-int MemberListContext::count() const
+uint MemberListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant MemberListContext::at(int index) const
+TemplateVariant MemberListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -8831,12 +8831,12 @@ AllMembersListContext::~AllMembersListContext()
 }
 
 // TemplateListIntf
-int AllMembersListContext::count() const
+uint AllMembersListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant AllMembersListContext::at(int index) const
+TemplateVariant AllMembersListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9013,12 +9013,12 @@ MemberGroupListContext::~MemberGroupListContext()
 }
 
 // TemplateListIntf
-int MemberGroupListContext::count() const
+uint MemberGroupListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant MemberGroupListContext::at(int index) const
+TemplateVariant MemberGroupListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9376,12 +9376,12 @@ InheritedMemberInfoListContext::~InheritedMemberInfoListContext()
 }
 
 // TemplateListIntf
-int InheritedMemberInfoListContext::count() const
+uint InheritedMemberInfoListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant InheritedMemberInfoListContext::at(int index) const
+TemplateVariant InheritedMemberInfoListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9458,7 +9458,7 @@ class ArgumentContext::Private
     TemplateVariant namePart() const
     {
       QCString result = m_argument.attrib;
-      int l = result.length();
+      uint l = result.length();
       if (l>2 && result.at(0)=='[' && result.at(l-1)==']')
       {
         result = result.mid(1,l-2);
@@ -9529,12 +9529,12 @@ ArgumentListContext::~ArgumentListContext()
 }
 
 // TemplateListIntf
-int ArgumentListContext::count() const
+uint ArgumentListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ArgumentListContext::at(int index) const
+TemplateVariant ArgumentListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9723,12 +9723,12 @@ SymbolListContext::~SymbolListContext()
 }
 
 // TemplateListIntf
-int SymbolListContext::count() const
+uint SymbolListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SymbolListContext::at(int index) const
+TemplateVariant SymbolListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9834,12 +9834,12 @@ SymbolGroupListContext::~SymbolGroupListContext()
 }
 
 // TemplateListIntf
-int SymbolGroupListContext::count() const
+uint SymbolGroupListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SymbolGroupListContext::at(int index) const
+TemplateVariant SymbolGroupListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9946,12 +9946,12 @@ SymbolIndicesContext::~SymbolIndicesContext()
 }
 
 // TemplateListIntf
-int SymbolIndicesContext::count() const
+uint SymbolIndicesContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SymbolIndicesContext::at(int index) const
+TemplateVariant SymbolIndicesContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -10055,12 +10055,12 @@ SearchIndicesContext::~SearchIndicesContext()
 }
 
 // TemplateListIntf
-int SearchIndicesContext::count() const
+uint SearchIndicesContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SearchIndicesContext::at(int index) const
+TemplateVariant SearchIndicesContext::at(uint index) const
 {
   return p->at(index);
 }

@@ -43,10 +43,6 @@
 #include "qdatastream.h"
 #endif // QT_H
 
-#if defined(_CC_MSVC_)
-#pragma warning(disable:4284) // "return type for operator -> is not a UDT"
-#endif
-
 template <class T>
 class Q_EXPORT QValueListNode
 {

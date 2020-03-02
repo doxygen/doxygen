@@ -232,7 +232,7 @@ class ClassDef : virtual public Definition
     virtual std::vector<ArgumentList> getTemplateParameterLists() const = 0;
 
     virtual QCString qualifiedNameWithTemplateParameters(
-        const std::vector<ArgumentList> *actualParams=0,int *actualParamIndex=0) const = 0;
+        const std::vector<ArgumentList> *actualParams=0,uint *actualParamIndex=0) const = 0;
 
     /** Returns TRUE if there is at least one pure virtual member in this
      *  class.
@@ -465,7 +465,7 @@ struct UsesClassDef
 class UsesClassDict : public QDict<UsesClassDef>
 {
   public:
-    UsesClassDict(int size) : QDict<UsesClassDef>(size) {}
+    UsesClassDict(uint size) : QDict<UsesClassDef>(size) {}
    ~UsesClassDict() {}
 };
 
@@ -575,7 +575,7 @@ struct ConstraintClassDef
 class ConstraintClassDict : public QDict<ConstraintClassDef>
 {
   public:
-    ConstraintClassDict(int size) : QDict<ConstraintClassDef>(size) {}
+    ConstraintClassDict(uint size) : QDict<ConstraintClassDef>(size) {}
    ~ConstraintClassDict() {}
 };
 

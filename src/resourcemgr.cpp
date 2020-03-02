@@ -97,14 +97,14 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
         {
           QCString n = name;
           n = n.left(n.length()-4)+".png"; // replace .lum by .png
-          uchar *p = (uchar*)res->data;
-          int width   = (p[0]<<8)+p[1];
-          int height  = (p[2]<<8)+p[3];
+          uchar *data = (uchar*)res->data;
+          ushort width   = (data[0]<<8)+data[1];
+          ushort height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];
           images[0].name    = n;
           images[0].width   = width;
           images[0].height  = height;
-          images[0].content = &p[4];
+          images[0].content = &data[4];
           images[0].alpha   = 0;
           images[1].name    = 0; // terminator
           writeColoredImgData(targetDir,images);
@@ -115,15 +115,15 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
         {
           QCString n = name;
           n = n.left(n.length()-5)+".png"; // replace .luma by .png
-          uchar *p = (uchar*)res->data;
-          int width   = (p[0]<<8)+p[1];
-          int height  = (p[2]<<8)+p[3];
+          uchar *data = (uchar*)res->data;
+          ushort width   = (data[0]<<8)+data[1];
+          ushort height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];
           images[0].name    = n;
           images[0].width   = width;
           images[0].height  = height;
-          images[0].content = &p[4];
-          images[0].alpha   = &p[4+width*height];
+          images[0].content = &data[4];
+          images[0].alpha   = &data[4+width*height];
           images[1].name    = 0; // terminator
           writeColoredImgData(targetDir,images);
           return TRUE;

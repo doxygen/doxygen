@@ -1628,34 +1628,6 @@ const ClassDef *getResolvedClass(const Definition *scope,
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 
-static bool findOperator(const QCString &s,int i)
-{
-  int b = s.findRev("operator",i);
-  if (b==-1) return FALSE; // not found
-  b+=8;
-  while (b<i) // check if there are only spaces in between 
-    // the operator and the >
-  {
-    if (!isspace((uchar)s.at(b))) return FALSE;
-    b++;
-  }
-  return TRUE;
-}
-
-static bool findOperator2(const QCString &s,int i)
-{
-  int b = s.findRev("operator",i);
-  if (b==-1) return FALSE; // not found
-  b+=8;
-  while (b<i) // check if there are only non-ascii
-              // characters in front of the operator
-  {
-    if (isId((uchar)s.at(b))) return FALSE;
-    b++;
-  }
-  return TRUE;
-}
-
 static const char constScope[]    = { 'c', 'o', 'n', 's', 't', ':' };
 static const char virtualScope[]  = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 static const char operatorScope[] = { 'o', 'p', 'e', 'r', 'a', 't', 'o', 'r', '?', '?', '?' };
@@ -1664,30 +1636,30 @@ struct CharAroundSpace
 {
   CharAroundSpace()
   {
-    charMap['('].before=FALSE;
-    charMap['='].before=FALSE;
-    charMap['&'].before=FALSE;
-    charMap['*'].before=FALSE;
-    charMap['['].before=FALSE;
-    charMap['|'].before=FALSE;
-    charMap['+'].before=FALSE;
-    charMap[';'].before=FALSE;
-    charMap[':'].before=FALSE;
-    charMap['/'].before=FALSE;
+    charMap[static_cast<int>('(')].before=FALSE;
+    charMap[static_cast<int>('=')].before=FALSE;
+    charMap[static_cast<int>('&')].before=FALSE;
+    charMap[static_cast<int>('*')].before=FALSE;
+    charMap[static_cast<int>('[')].before=FALSE;
+    charMap[static_cast<int>('|')].before=FALSE;
+    charMap[static_cast<int>('+')].before=FALSE;
+    charMap[static_cast<int>(';')].before=FALSE;
+    charMap[static_cast<int>(':')].before=FALSE;
+    charMap[static_cast<int>('/')].before=FALSE;
 
-    charMap['='].after=FALSE;
-    charMap[' '].after=FALSE;
-    charMap['['].after=FALSE;
-    charMap[']'].after=FALSE;
-    charMap['\t'].after=FALSE;
-    charMap['\n'].after=FALSE;
-    charMap[')'].after=FALSE;
-    charMap[','].after=FALSE;
-    charMap['<'].after=FALSE;
-    charMap['|'].after=FALSE;
-    charMap['+'].after=FALSE;
-    charMap['('].after=FALSE;
-    charMap['/'].after=FALSE;
+    charMap[static_cast<int>('=')].after=FALSE;
+    charMap[static_cast<int>(' ')].after=FALSE;
+    charMap[static_cast<int>('[')].after=FALSE;
+    charMap[static_cast<int>(']')].after=FALSE;
+    charMap[static_cast<int>('\t')].after=FALSE;
+    charMap[static_cast<int>('\n')].after=FALSE;
+    charMap[static_cast<int>(')')].after=FALSE;
+    charMap[static_cast<int>(',')].after=FALSE;
+    charMap[static_cast<int>('<')].after=FALSE;
+    charMap[static_cast<int>('|')].after=FALSE;
+    charMap[static_cast<int>('+')].after=FALSE;
+    charMap[static_cast<int>('(')].after=FALSE;
+    charMap[static_cast<int>('/')].after=FALSE;
   }
   struct CharElem
   {
@@ -2707,165 +2679,6 @@ exit:
   return prot;
 }
 
-#ifndef NEWMATCH
-// strip any template specifiers that follow className in string s
-static QCString trimTemplateSpecifiers(
-    const QCString &namespaceName,
-    const QCString &className,
-    const QCString &s
-    )
-{
-  //printf("trimTemplateSpecifiers(%s,%s,%s)\n",namespaceName.data(),className.data(),s.data());
-  QCString scopeName=mergeScopes(namespaceName,className);
-  ClassDef *cd=getClass(scopeName);
-  if (cd==0) return s; // should not happen, but guard anyway.
-
-  QCString result=s;
-
-  int i=className.length()-1;
-  if (i>=0 && className.at(i)=='>') // template specialization
-  {
-    // replace unspecialized occurrences in s, with their specialized versions.
-    int count=1;
-    int cl=i+1;
-    while (i>=0)
-    {
-      char c=className.at(i);
-      if (c=='>') count++,i--;
-      else if (c=='<') { count--; if (count==0) break; }
-      else i--;
-    }
-    QCString unspecClassName=className.left(i);
-    int l=i;
-    int p=0;
-    while ((i=result.find(unspecClassName,p))!=-1)
-    {
-      if (result.at(i+l)!='<') // unspecialized version
-      {
-        result=result.left(i)+className+result.right(result.length()-i-l);
-        l=cl;
-      }
-      p=i+l;
-    }
-  }
-
-  //printf("result after specialization: %s\n",result.data());
-
-  QCString qualName=cd->qualifiedNameWithTemplateParameters();
-  //printf("QualifiedName = %s\n",qualName.data());
-  // We strip the template arguments following className (if any)
-  if (!qualName.isEmpty()) // there is a class name
-  {
-    int is,ps=0;
-    int p=0,l,i;
-
-    while ((is=getScopeFragment(qualName,ps,&l))!=-1)
-    {
-      QCString qualNamePart = qualName.right(qualName.length()-is);
-      //printf("qualNamePart=%s\n",qualNamePart.data());
-      while ((i=result.find(qualNamePart,p))!=-1)
-      {
-        int ql=qualNamePart.length();
-        result=result.left(i)+cd->name()+result.right(result.length()-i-ql);
-        p=i+cd->name().length();
-      }
-      ps=is+l;
-    }
-  }
-  //printf("result=%s\n",result.data());
-
-  return result.stripWhiteSpace();
-}
-
-/*!
- * @param pattern pattern to look for
- * @param s string to search in
- * @param p position to start
- * @param len resulting pattern length
- * @returns position on which string is found, or -1 if not found
- */
-static int findScopePattern(const QCString &pattern,const QCString &s,
-    int p,int *len)
-{
-  int sl=s.length();
-  int pl=pattern.length();
-  int sp=0; 
-  *len=0;
-  while (p<sl)
-  {
-    sp=p; // start of match
-    int pp=0; // pattern position
-    while (p<sl && pp<pl)
-    {
-      if (s.at(p)=='<') // skip template arguments while matching
-      {
-        int bc=1;
-        //printf("skipping pos=%d c=%c\n",p,s.at(p));
-        p++;
-        while (p<sl)
-        {
-          if (s.at(p)=='<') bc++;
-          else if (s.at(p)=='>') 
-          {
-            bc--;
-            if (bc==0) 
-            {
-              p++;
-              break;
-            }
-          }
-          //printf("skipping pos=%d c=%c\n",p,s.at(p));
-          p++;
-        }
-      }
-      else if (s.at(p)==pattern.at(pp))
-      {
-        //printf("match at position p=%d pp=%d c=%c\n",p,pp,s.at(p));
-        p++;
-        pp++;
-      }
-      else // no match
-      {
-        //printf("restarting at %d c=%c pat=%s\n",p,s.at(p),pattern.data());
-        p=sp+1;
-        break;
-      }
-    }
-    if (pp==pl) // whole pattern matches
-    {
-      *len=p-sp;
-      return sp;
-    }
-  }
-  return -1;
-}
-
-static QCString trimScope(const QCString &name,const QCString &s)
-{
-  int scopeOffset=name.length();
-  QCString result=s;
-  do // for each scope
-  {
-    QCString tmp;
-    QCString scope=name.left(scopeOffset)+"::";
-    //printf("Trying with scope='%s'\n",scope.data());
-
-    int i,p=0,l;
-    while ((i=findScopePattern(scope,result,p,&l))!=-1) // for each occurrence
-    {
-      tmp+=result.mid(p,i-p); // add part before pattern
-      p=i+l;
-    }
-    tmp+=result.right(result.length()-p); // add trailing part
-
-    scopeOffset=name.findRev("::",scopeOffset-1);
-    result = tmp;
-  } while (scopeOffset>0);   
-  //printf("trimScope(name=%s,scope=%s)=%s\n",name.data(),s.data(),result.data());
-  return result;
-}
-#endif
-
 void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
 {
   //printf("trimBaseClassScope level=%d '%s'\n",level,s.data());
@@ -3031,276 +2844,6 @@ void stripIrrelevantConstVolatile(QCString &s)
 #define NOMATCH
 //#define MATCH printf("Match at line %d\n",__LINE__);
 //#define NOMATCH printf("Nomatch at line %d\n",__LINE__);
-
-#ifndef NEWMATCH
-static bool matchArgument(const Argument *srcA,const Argument *dstA,
-    const QCString &className,
-    const QCString &namespaceName,
-    NamespaceSDict *usingNamespaces,
-    SDict<Definition> *usingClasses)
-{
-  //printf("match argument start '%s|%s' <-> '%s|%s' using nsp=%p class=%p\n",
-  //    srcA->type.data(),srcA->name.data(),
-  //    dstA->type.data(),dstA->name.data(),
-  //    usingNamespaces,
-  //    usingClasses);
-
-  // TODO: resolve any typedefs names that are part of srcA->type
-  //       before matching. This should use className and namespaceName
-  //       and usingNamespaces and usingClass to determine which typedefs
-  //       are in-scope, so it will not be very efficient :-(
-
-  QCString srcAType=trimTemplateSpecifiers(namespaceName,className,srcA->type);
-  QCString dstAType=trimTemplateSpecifiers(namespaceName,className,dstA->type);
-  QCString srcAName=srcA->name.stripWhiteSpace();
-  QCString dstAName=dstA->name.stripWhiteSpace();
-  srcAType.stripPrefix("class ");
-  dstAType.stripPrefix("class ");
-
-  // allow distinguishing "const A" from "const B" even though 
-  // from a syntactic point of view they would be two names of the same 
-  // type "const". This is not fool prove of course, but should at least 
-  // catch the most common cases.
-  if ((srcAType=="const" || srcAType=="volatile") && !srcAName.isEmpty())
-  {
-    srcAType+=" ";
-    srcAType+=srcAName;
-  } 
-  if ((dstAType=="const" || dstAType=="volatile") && !dstAName.isEmpty())
-  {
-    dstAType+=" ";
-    dstAType+=dstAName;
-  }
-  if (srcAName=="const" || srcAName=="volatile")
-  {
-    srcAType+=srcAName;
-    srcAName.resize(0);
-  }
-  else if (dstA->name=="const" || dstA->name=="volatile")
-  {
-    dstAType+=dstA->name;
-    dstAName.resize(0);
-  }
-
-  stripIrrelevantConstVolatile(srcAType);
-  stripIrrelevantConstVolatile(dstAType);
-
-  // strip typename keyword
-  if (qstrncmp(srcAType,"typename ",9)==0)
-  {
-    srcAType = srcAType.right(srcAType.length()-9); 
-  }
-  if (qstrncmp(dstAType,"typename ",9)==0)
-  {
-    dstAType = dstAType.right(dstAType.length()-9); 
-  }
-
-  srcAType = removeRedundantWhiteSpace(srcAType);
-  dstAType = removeRedundantWhiteSpace(dstAType);
-
-  //srcAType=stripTemplateSpecifiersFromScope(srcAType,FALSE);
-  //dstAType=stripTemplateSpecifiersFromScope(dstAType,FALSE);
-
-  //printf("srcA='%s|%s' dstA='%s|%s'\n",srcAType.data(),srcAName.data(),
-  //      dstAType.data(),dstAName.data());
-
-  if (srcA->array!=dstA->array) // nomatch for char[] against char
-  {
-    NOMATCH
-      return FALSE;
-  }
-  if (srcAType!=dstAType) // check if the argument only differs on name 
-  {
-
-    // remove a namespace scope that is only in one type 
-    // (assuming a using statement was used)
-    //printf("Trimming %s<->%s: %s\n",srcAType.data(),dstAType.data(),namespaceName.data());
-    //trimNamespaceScope(srcAType,dstAType,namespaceName);
-    //printf("After Trimming %s<->%s\n",srcAType.data(),dstAType.data());
-
-    //QCString srcScope;
-    //QCString dstScope;
-
-    // strip redundant scope specifiers
-    if (!className.isEmpty())
-    {
-      srcAType=trimScope(className,srcAType);
-      dstAType=trimScope(className,dstAType);
-      //printf("trimScope: '%s' <=> '%s'\n",srcAType.data(),dstAType.data());
-      ClassDef *cd;
-      if (!namespaceName.isEmpty())
-        cd=getClass(namespaceName+"::"+className);
-      else
-        cd=getClass(className);
-      if (cd && cd->baseClasses())
-      {
-        trimBaseClassScope(cd->baseClasses(),srcAType); 
-        trimBaseClassScope(cd->baseClasses(),dstAType); 
-      }
-      //printf("trimBaseClassScope: '%s' <=> '%s'\n",srcAType.data(),dstAType.data());
-    }
-    if (!namespaceName.isEmpty())
-    {
-      srcAType=trimScope(namespaceName,srcAType);
-      dstAType=trimScope(namespaceName,dstAType);
-    }
-    //printf("#usingNamespace=%d\n",usingNamespaces->count());
-    if (usingNamespaces && usingNamespaces->count()>0)
-    {
-      NamespaceSDict::Iterator nli(*usingNamespaces);
-      NamespaceDef *nd;
-      for (;(nd=nli.current());++nli)
-      {
-        srcAType=trimScope(nd->name(),srcAType);
-        dstAType=trimScope(nd->name(),dstAType);
-      }
-    }
-    //printf("#usingClasses=%d\n",usingClasses->count());
-    if (usingClasses && usingClasses->count()>0)
-    {
-      SDict<Definition>::Iterator cli(*usingClasses);
-      Definition *cd;
-      for (;(cd=cli.current());++cli)
-      {
-        srcAType=trimScope(cd->name(),srcAType);
-        dstAType=trimScope(cd->name(),dstAType);
-      }
-    }
-
-    //printf("2. srcA=%s|%s dstA=%s|%s\n",srcAType.data(),srcAName.data(),
-    //    dstAType.data(),dstAName.data());
-
-    if (!srcAName.isEmpty() && !dstA->type.isEmpty() &&
-        (srcAType+" "+srcAName)==dstAType)
-    {
-      MATCH
-      return TRUE;
-    }
-    else if (!dstAName.isEmpty() && !srcA->type.isEmpty() &&
-        (dstAType+" "+dstAName)==srcAType)
-    {
-      MATCH
-      return TRUE;
-    }
-
-
-    uint srcPos=0,dstPos=0; 
-    bool equal=TRUE;
-    while (srcPos<srcAType.length() && dstPos<dstAType.length() && equal)
-    {
-      equal=srcAType.at(srcPos)==dstAType.at(dstPos);
-      if (equal) srcPos++,dstPos++; 
-    }
-    uint srcATypeLen=srcAType.length();
-    uint dstATypeLen=dstAType.length();
-    if (srcPos<srcATypeLen && dstPos<dstATypeLen)
-    {
-      // if nothing matches or the match ends in the middle or at the
-      // end of a string then there is no match
-      if (srcPos==0 || dstPos==0) 
-      {
-        NOMATCH
-        return FALSE;
-      }
-      if (isId(srcAType.at(srcPos)) && isId(dstAType.at(dstPos)))
-      {
-        //printf("partial match srcPos=%d dstPos=%d!\n",srcPos,dstPos);
-        // check if a name if already found -> if no then there is no match
-        if (!srcAName.isEmpty() || !dstAName.isEmpty()) 
-        {
-          NOMATCH
-          return FALSE;
-        }
-        // types only
-        while (srcPos<srcATypeLen && isId(srcAType.at(srcPos))) srcPos++;
-        while (dstPos<dstATypeLen && isId(dstAType.at(dstPos))) dstPos++;
-        if (srcPos<srcATypeLen || 
-            dstPos<dstATypeLen ||
-            (srcPos==srcATypeLen && dstPos==dstATypeLen)
-           ) 
-        {
-          NOMATCH
-          return FALSE;
-        }
-      }
-      else
-      {
-        // otherwise we assume that a name starts at the current position.
-        while (srcPos<srcATypeLen && isId(srcAType.at(srcPos))) srcPos++;
-        while (dstPos<dstATypeLen && isId(dstAType.at(dstPos))) dstPos++;
-
-        // if nothing more follows for both types then we assume we have
-        // found a match. Note that now 'signed int' and 'signed' match, but
-        // seeing that int is not a name can only be done by looking at the
-        // semantics.
-
-        if (srcPos!=srcATypeLen || dstPos!=dstATypeLen) 
-        { 
-          NOMATCH
-          return FALSE; 
-        }
-      }
-    }
-    else if (dstPos<dstAType.length())
-    {
-      if (!isspace((uchar)dstAType.at(dstPos))) // maybe the names differ
-      {
-        if (!dstAName.isEmpty()) // dst has its name separated from its type
-        {
-          NOMATCH
-          return FALSE;
-        }
-        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-        if (dstPos!=dstAType.length()) 
-        {
-          NOMATCH
-          return FALSE; // more than a difference in name -> no match
-        }
-      }
-      else  // maybe dst has a name while src has not
-      {
-        dstPos++;
-        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-        if (dstPos!=dstAType.length() || !srcAName.isEmpty()) 
-        {
-          NOMATCH
-          return FALSE; // nope not a name -> no match
-        }
-      }
-    }
-    else if (srcPos<srcAType.length())
-    {
-      if (!isspace((uchar)srcAType.at(srcPos))) // maybe the names differ
-      {
-        if (!srcAName.isEmpty()) // src has its name separated from its type
-        {
-          NOMATCH
-          return FALSE;
-        }
-        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-        if (srcPos!=srcAType.length()) 
-        {
-          NOMATCH
-          return FALSE; // more than a difference in name -> no match
-        }
-      }
-      else // maybe src has a name while dst has not
-      {
-        srcPos++;
-        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-        if (srcPos!=srcAType.length() || !dstAName.isEmpty()) 
-        {
-          NOMATCH
-          return FALSE; // nope not a name -> no match
-        }
-      }
-    }
-  }
-  MATCH
-  return TRUE;
-}
-
-#endif
 
 static QCString stripDeclKeywords(const QCString &s)
 {
@@ -3869,7 +3412,6 @@ static void findMembersWithSpecificName(MemberName *mn,
        ) 
     {
       bool match=TRUE;
-      ArgumentList *argList=0;
       if (args && !md->isDefine() && qstrcmp(args,"()")!=0)
       {
         const ArgumentList &mdAl = md->argumentList();
@@ -4760,7 +4302,7 @@ bool resolveLink(/* in */ const char *scName,
   }
   else if ((pd=Doxygen::pageSDict->find(linkRef))) // link to a page
   {
-    const GroupDef *gd = pd->getGroupDef();
+    gd = pd->getGroupDef();
     if (gd)
     {
       if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
@@ -4951,7 +4493,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
 
   const int maxAddrSize = 20;
   char addr[maxAddrSize];
-  qsnprintf(addr,maxAddrSize,"%p:",fnDict);
+  qsnprintf(addr,maxAddrSize,"%p:",(void*)fnDict);
   QCString key = addr;
   key+=n;
 
@@ -5157,7 +4699,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
     r+=dstLen;
   }
   qstrcpy(r,p);
-  result.resize(strlen(result.data())+1);
+  result.resize((int)strlen(result.data())+1);
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }
@@ -5402,7 +4944,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
                 else
                 {
                   growBuf.addChar('_');
-                  growBuf.addChar(tolower(c)); 
+                  growBuf.addChar((char)tolower(c)); 
                 }
                 break;
     }
@@ -5462,7 +5004,7 @@ QCString unescapeCharsInString(const char *s)
           default:
             if (!caseSenseNames && c>='a' && c<='z') // lower to upper case escape, _a -> 'A'
             {
-              result+=toupper(*p);
+              result+=(char)toupper(*p);
               p++;
             }
             else // unknown escape, pass underscore character as-is
@@ -6347,7 +5889,6 @@ QCString substituteTemplateArgumentsInString(
   {
     result += name.mid(p,i-p);
     QCString n = name.mid(i,l);
-    auto formIt = formalArgs.begin();
     auto actIt  = actualArgs.begin();
 
     // if n is a template argument, then we substitute it
@@ -6570,7 +6111,7 @@ int getScopeFragment(const QCString &s,int p,int *l)
         while (sp<sl && !done)
         {
           // TODO: deal with << and >> operators!
-          char c=s.at(sp++);
+          c=s.at(sp++);
           switch(c)
           {
             case '<': count++; break;
@@ -7480,7 +7021,7 @@ const char *writeUtf8Char(FTextStream &t,const char *s)
   return s;
 }
 
-int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos)
+int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos)
 {
   int bytes=1;
   if (startPos>=len) return len;
@@ -7604,7 +7145,7 @@ static int findEndOfCommand(const char *s)
       QCString args = extractAliasArgs(p,0);
       i+=args.length();
     }
-    i+=p-s;
+    i+=(int)(p-s);
   }
   return i;
 }

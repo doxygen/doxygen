@@ -217,7 +217,7 @@ class OutputNameList : public QList<FileList>
 class OutputNameDict : public QDict<FileList>
 {
   public:
-    OutputNameDict(int size) : QDict<FileList>(size) {}
+    OutputNameDict(uint size) : QDict<FileList>(size) {}
    ~OutputNameDict() {}
 };
 

@@ -1775,7 +1775,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 			const char* base, const char* plurSuffix)
     {
       QCString result(base);
-      if (first_capital) result.at(0) = toupper(result.at(0));
+      if (first_capital) result[0] = (char)toupper(result[0]);
       if (!singular)  result+=plurSuffix;
       return result;
     }

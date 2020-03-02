@@ -63,7 +63,11 @@
 
 #define MAX_INCLUDE_DEPTH 10
 
+#define USE_STATE2STRING 0
+
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 
 //! Application error.
 #define tcl_err \
@@ -470,7 +474,7 @@ struct tcl_struct
 static tcl_struct tcl;
 
 // scanner functions
-static int yyread(char *buf,int max_size);
+static yy_size_t yyread(char *buf,yy_size_t max_size);
 static tcl_scan *tcl_scan_start(char type, QCString content, QCString ns, Entry *entry_cls, Entry *entry_fn);
 static void tcl_scan_end();
 static void tcl_comment(int what,const char *text);
@@ -1952,25 +1956,25 @@ D
       // handle leading whitespace/opening brace/double quotes
       if (elem - token > 0)
       {
-        myScan = tcl_codify_token(myScan, "NULL", token.left(elem - token));
+        myScan = tcl_codify_token(myScan, "NULL", token.left((uint)(elem - token)));
       }
       // handle actual element without braces/double quotes
       if (nextIsPattern)
       {
-        myScan = tcl_codify_token(myScan, "NULL", token.mid(elem - token,size));
+        myScan = tcl_codify_token(myScan, "NULL", token.mid((uint)(elem - token),size));
         //printf("pattern=%s\n",(const char*) token.mid(elem - token, size));
       }
       else {
-        myScan = tcl_codify_token(myScan, "script", token.mid(elem - token, size));
+        myScan = tcl_codify_token(myScan, "script", token.mid((uint)(elem - token), size));
         //printf("script =%s\n", (const char*) token.mid(elem - token, size));
       }
       // handle trailing whitespace/closing brace/double quotes
       if (next - elem - size > 0)
       {
-        myScan = tcl_codify_token(myScan, "NULL", token.mid(elem - token + size, next - elem - size));
+        myScan = tcl_codify_token(myScan, "NULL", token.mid((uint)(elem - token + size), (uint)(next - elem - size)));
       }
       nextIsPattern = !nextIsPattern;
-      token = token.mid(next - token);
+      token = token.mid((int)(next - token));
     }
     if (inBraces)
     {
@@ -2783,7 +2787,7 @@ if expr1 ?then? body1 elseif expr2 ?then? body2 elseif ... ?else?  ?bodyN?
     char myState='x';// last word: e'x'pr 't'hen 'b'ody 'e'lse else'i'f..
     for (unsigned int i = 4; i < tcl.list_commandwords.count(); i = i + 2)
     {
-      QCString myStr=(*tcl.list_commandwords.at(i));
+      myStr=(*tcl.list_commandwords.at(i));
       if (myState=='x')
       {
         if (myStr=="then") 
@@ -3014,9 +3018,9 @@ void TclOutlineParser::parsePrototype(const char *text)
   (void)text;
 }
 
-static int yyread(char *buf,int max_size)
+static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
-  int c=0;
+  yy_size_t c=0;
 
   *buf = '\0';
   while ( c < max_size && tcl.input_string.at(tcl.input_position) )
@@ -3147,4 +3151,6 @@ void tclDummy()
   yy_top_state();
 }
 
+#if USE_STATE2STRING
 #include "tclscanner.l.h"
+#endif

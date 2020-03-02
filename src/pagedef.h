@@ -46,22 +46,22 @@ class PageDef : virtual public Definition
     virtual QCString title() const = 0;
     virtual GroupDef *  getGroupDef() const = 0;
     virtual PageSDict * getSubPages() const = 0;
-    virtual void addInnerCompound(Definition *d) = 0;
+    virtual void addInnerCompound(const Definition *) = 0;
     virtual bool visibleInIndex() const = 0;
     virtual bool documentedPage() const = 0;
     virtual bool hasSubPages() const = 0;
     virtual bool hasParentPage() const = 0;
     virtual bool hasTitle() const = 0;
     virtual LocalToc localToc() const = 0;
-    virtual void setPageScope(Definition *d) = 0;
+    virtual void setPageScope(Definition *) = 0;
     virtual Definition *getPageScope() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual bool showLineNo() const = 0;
 
-    virtual void writeDocumentation(OutputList &ol) = 0;
+    virtual void writeDocumentation(OutputList &) = 0;
     virtual void writeTagFile(FTextStream &) = 0;
-    virtual void setNestingLevel(int l) = 0;
-    virtual void writePageDocumentation(OutputList &ol) = 0;
+    virtual void setNestingLevel(int) = 0;
+    virtual void writePageDocumentation(OutputList &) = 0;
 
 };
 
@@ -70,7 +70,7 @@ PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const cha
 class PageSDict : public SDict<PageDef>
 {
   public:
-    PageSDict(int size) : SDict<PageDef>(size) {}
+    PageSDict(uint size) : SDict<PageDef>(size) {}
     virtual ~PageSDict() {}
   private:
     int compareValues(const PageDef *i1,const PageDef *i2) const

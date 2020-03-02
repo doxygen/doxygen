@@ -258,23 +258,12 @@ static QCString stripProtectionPrefix(const QCString &s)
 
 DotNode::DotNode(int n,const char *lab,const char *tip, const char *url,
   bool isRoot,const ClassDef *cd)
-  : m_subgraphId(-1)
-  , m_number(n)
+  : m_number(n)
   , m_label(lab)
   , m_tooltip(tip)
   , m_url(url)
-  , m_parents(0)
-  , m_children(0)
-  , m_edgeInfo(0)
-  , m_deleted(FALSE)
-  , m_written(FALSE)
-  , m_hasDoc(FALSE)
   , m_isRoot(isRoot)
   , m_classDef(cd)
-  , m_visible(FALSE)
-  , m_truncated(Unknown)
-  , m_distance(1000)
-  , m_renumbered(false)
 {
 }
 
@@ -408,14 +397,14 @@ void DotNode::writeBox(FTextStream &t,
       {
         if (!ei->label().isEmpty()) // labels joined by \n
         {
-          int li=ei->label().find('\n');
+          int i=ei->label().find('\n');
           int p=0;
           QCString lab;
-          while ((li=ei->label().find('\n',p))!=-1)
+          while ((i=ei->label().find('\n',p))!=-1)
           {
-            lab = stripProtectionPrefix(ei->label().mid(p,li-p));
+            lab = stripProtectionPrefix(ei->label().mid(p,i-p));
             arrowNames.insert(lab,(void*)0x8);
-            p=li+1;
+            p=i+1;
           }
           lab = stripProtectionPrefix(ei->label().right(ei->label().length()-p));
           arrowNames.insert(lab,(void*)0x8);

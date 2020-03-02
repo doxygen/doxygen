@@ -394,8 +394,6 @@ void SearchIndex::write(const char *fileName)
       }
     }
     // write urls
-    QIntDictIterator<URL> udi(m_urls);
-    URL *url;
     for (udi.toFirst();(url=udi.current());++udi)
     {
       writeString(f,url->name);
@@ -833,9 +831,9 @@ void createJavaScriptSearchIndex()
   }
 
   // index files
-  FileNameListIterator fnli(*Doxygen::inputNameList);
+  FileNameListIterator inli(*Doxygen::inputNameList);
   FileName *fn;
-  for (;(fn=fnli.current());++fnli)
+  for (;(fn=inli.current());++inli)
   {
     FileNameIterator fni(*fn);
     FileDef *fd;

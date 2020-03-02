@@ -46,6 +46,8 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
 #define TK_COMMAND_SEL() (yytext[0] == '@' ? TK_COMMAND_AT : TK_COMMAND_BS)
   
 //--------------------------------------------------------------------------
@@ -79,7 +81,9 @@ struct DocLexerContext
 
 static QStack<DocLexerContext> g_lexerStack;
 
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 //--------------------------------------------------------------------------
 
 void doctokenizerYYpushContext()
@@ -323,9 +327,9 @@ static QCString stripEmptyLines(const QCString &s)
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
-static int yyread(char *buf,int max_size)
+static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
-  int c=0;
+  yy_size_t c=0;
   const char *src=g_inputString+g_inputPos;
   while ( c < max_size && *src ) *buf++ = *src++, c++;
   g_inputPos+=c;
@@ -1033,7 +1037,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          if (yytext[0] =='"')
                          {
                            g_token->name=yytext+1;
-                           g_token->name=g_token->name.left(yyleng-2);
+                           g_token->name=g_token->name.left(static_cast<uint>(yyleng)-2);
                          }
                          else
                          {
@@ -1170,9 +1174,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   		       }
 <St_Param>[^ \t\n,@\\]+  {
   			 g_token->name = yytext;
-                         if (g_token->name.at(yyleng-1)==':')
+                         if (g_token->name.at(static_cast<uint>(yyleng)-1)==':')
                          {
-                           g_token->name=g_token->name.left(yyleng-1);
+                           g_token->name=g_token->name.left(static_cast<uint>(yyleng)-1);
                          }
 			 return TK_WORD;
                        }
@@ -1631,4 +1635,6 @@ void doctokenizerYYendAutoList()
 //  return retval;
 //}
 
+#if USE_STATE2STRING
 #include "doctokenizer.l.h"
+#endif

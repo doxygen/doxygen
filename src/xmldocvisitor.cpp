@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1084,10 +1081,10 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
   {
     if (pl->paramTypes().count()>0)
     {
-      QListIterator<DocNode> li(pl->paramTypes());
+      QListIterator<DocNode> li2(pl->paramTypes());
       DocNode *type;
       m_t << "<parametertype>";
-      for (li.toFirst();(type=li.current());++li)
+      for (li2.toFirst();(type=li2.current());++li2)
       {
         if (type->kind()==DocNode::Kind_Word)
         {

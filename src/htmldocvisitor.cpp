@@ -2461,7 +2461,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
         nodeIndex--;
     }
     if (nodeIndex<0) return; // first visible node in paragraph
-    DocNode *n = para->children().at(nodeIndex);
+    n = para->children().at(nodeIndex);
     if (mustBeOutsideParagraph(n)) return; // previous node already outside paragraph context
     nodeIndex--;
     bool styleOutsideParagraph=insideStyleChangeThatIsOutsideParagraph(para,nodeIndex);
@@ -2498,7 +2498,7 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     }
     if (nodeIndex<numNodes)
     {
-      DocNode *n = para->children().at(nodeIndex);
+      n = para->children().at(nodeIndex);
       if (mustBeOutsideParagraph(n)) return; // next element also outside paragraph
     }
     else

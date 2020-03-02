@@ -132,15 +132,13 @@ void writeDocbookLink(FTextStream &t,const char * /*extRef*/,const char *compoun
   t << "</link>";
 }
 
-DocbookCodeGenerator::DocbookCodeGenerator(FTextStream &t) : m_lineNumber(-1), m_col(0),
-  m_insideCodeLine(FALSE), m_insideSpecialHL(FALSE)
+DocbookCodeGenerator::DocbookCodeGenerator(FTextStream &t)
 {
   m_prettyCode=Config_getBool(DOCBOOK_PROGRAMLISTING);
   setTextStream(t);
 }
 
-DocbookCodeGenerator::DocbookCodeGenerator() : m_lineNumber(-1), m_col(0),
-  m_insideCodeLine(FALSE), m_insideSpecialHL(FALSE),  m_streamSet(FALSE)
+DocbookCodeGenerator::DocbookCodeGenerator()
 {
   m_prettyCode=Config_getBool(DOCBOOK_PROGRAMLISTING);
 }
@@ -160,9 +158,9 @@ void DocbookCodeGenerator::writeCodeLink(const char *ref,const char *file,
   writeDocbookLink(m_t,ref,file,anchor,name,tooltip);
   m_col+=(int)strlen(name);
 }
-void DocbookCodeGenerator::writeCodeLinkLine(const char *ref,const char *file,
-    const char *anchor,const char *name,
-    const char *tooltip)
+void DocbookCodeGenerator::writeCodeLinkLine(const char *,const char *file,
+    const char *,const char *name,
+    const char *)
 {
   Docbook_DB(("(writeCodeLinkLine)\n"));
   m_t << "<anchor xml:id=\"_" << stripExtensionGeneral(stripPath(file),".xml");
@@ -274,8 +272,8 @@ DB_GEN_C
   m_descTable = FALSE;
   m_inLevel = -1;
   m_firstMember = FALSE;
-  for (int i = 0 ; i < sizeof(m_inListItem) / sizeof(*m_inListItem) ; i++) m_inListItem[i] = FALSE;
-  for (int i = 0 ; i < sizeof(m_inSimpleSect) / sizeof(*m_inSimpleSect) ; i++) m_inSimpleSect[i] = FALSE;
+  for (size_t i = 0 ; i < sizeof(m_inListItem) / sizeof(*m_inListItem) ; i++) m_inListItem[i] = FALSE;
+  for (size_t i = 0 ; i < sizeof(m_inSimpleSect) / sizeof(*m_inSimpleSect) ; i++) m_inSimpleSect[i] = FALSE;
 }
 
 DocbookGenerator::~DocbookGenerator()
@@ -655,7 +653,8 @@ DB_GEN_C
     }
   }
 }
-void DocbookGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
+
+void DocbookGenerator::writeDoc(DocNode *n,const Definition *,const MemberDef *)
 {
 DB_GEN_C
   DocbookDocVisitor *visitor =
@@ -680,7 +679,7 @@ void DocbookGenerator::writeString(const char *text)
 DB_GEN_C
   t << text;
 }
-void DocbookGenerator::startMemberHeader(const char *name,int)
+void DocbookGenerator::startMemberHeader(const char *,int)
 {
 DB_GEN_C
   t << "<simplesect>" << endl;
@@ -698,7 +697,7 @@ void DocbookGenerator::docify(const char *str)
 DB_GEN_C
   t << convertToDocBook(str);
 }
-void DocbookGenerator::writeObjectLink(const char *ref, const char *f,
+void DocbookGenerator::writeObjectLink(const char *, const char *f,
                                      const char *anchor, const char *text)
 {
 DB_GEN_C
@@ -813,7 +812,7 @@ DB_GEN_C
     t << "<programlisting>";
   }
 }
-void DocbookGenerator::endTextBlock(bool dense)
+void DocbookGenerator::endTextBlock(bool)
 {
 DB_GEN_C
   if (m_denseText)
@@ -822,8 +821,8 @@ DB_GEN_C
     t << "</programlisting>";
   }
 }
-void DocbookGenerator::startMemberDoc(const char *clname, const char *memname, const char *anchor, const char *title,
-                                      int memCount, int memTotal, bool showInline)
+void DocbookGenerator::startMemberDoc(const char *clname, const char *memname, const char *, const char *title,
+                                      int memCount, int memTotal, bool)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
   t << "    <section>" << endl;
@@ -849,15 +848,15 @@ void DocbookGenerator::startTitleHead(const char *)
 DB_GEN_C
   t << "<title>";
 }
-void DocbookGenerator::endTitleHead(const char *fileName,const char *name)
+void DocbookGenerator::endTitleHead(const char *,const char *name)
 {
 DB_GEN_C
   t << "</title>" << endl;
   if (name) addIndexTerm(t, name);
 }
-void DocbookGenerator::startDoxyAnchor(const char *fName,const char *manName,
-                                 const char *anchor,const char *name,
-                                 const char *args)
+void DocbookGenerator::startDoxyAnchor(const char *fName,const char *,
+                                 const char *anchor,const char *,
+                                 const char *)
 {
 DB_GEN_C
   if (!m_inListItem[m_levelListItem] && !m_descTable)
@@ -870,7 +869,7 @@ DB_GEN_C
     t << "<anchor xml:id=\"_" << stripPath(fName) << "_1" << anchor << "\"/>";
   }
 }
-void DocbookGenerator::endDoxyAnchor(const char *fileName,const char *anchor)
+void DocbookGenerator::endDoxyAnchor(const char *,const char *)
 {
 DB_GEN_C
 }
@@ -883,7 +882,7 @@ void DocbookGenerator::endMemberDocName()
 {
 DB_GEN_C
 }
-void DocbookGenerator::startMemberGroupHeader(bool hasHeader)
+void DocbookGenerator::startMemberGroupHeader(bool)
 {
 DB_GEN_C
   t << "<simplesect><title>";
@@ -1025,13 +1024,13 @@ DB_GEN_C
   t << "</para>";
   t << "<para>";
 }
-void DocbookGenerator::startSection(const char *lab,const char *,SectionType type)
+void DocbookGenerator::startSection(const char *lab,const char *,SectionType)
 {
 DB_GEN_C
   t << "    <section xml:id=\"_" << stripPath(lab) << "\">";
   t << "<title>";
 }
-void DocbookGenerator::endSection(const char *lab,SectionType)
+void DocbookGenerator::endSection(const char *,SectionType)
 {
 DB_GEN_C
   t << "</title>";

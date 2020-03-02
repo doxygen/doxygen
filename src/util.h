@@ -442,7 +442,7 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList);
 
 QCString externalLinkTarget(const bool parent = false);
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
-int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos);
+int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos);
 const char *writeUtf8Char(FTextStream &t,const char *s);
 
 

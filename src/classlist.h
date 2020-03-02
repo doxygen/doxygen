@@ -48,7 +48,7 @@ class ClassListIterator : public QListIterator<ClassDef>
 class ClassDict : public QDict<ClassDef>
 {
   public:
-    ClassDict(int size) : QDict<ClassDef>(size) {}
+    ClassDict(uint size) : QDict<ClassDef>(size) {}
    ~ClassDict() {}
 };
 
@@ -56,7 +56,7 @@ class ClassDict : public QDict<ClassDef>
 class ClassSDict : public SDict<ClassDef>
 {
   public:
-    ClassSDict(int size=17) : SDict<ClassDef>(size) {}
+    ClassSDict(uint size=17) : SDict<ClassDef>(size) {}
    ~ClassSDict() {}
     void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter=0,
                          const char *header=0,bool localNames=FALSE) const;

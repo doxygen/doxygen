@@ -70,7 +70,6 @@ static QDict<QCString> g_vhdlKeyDict3(17,FALSE);
 
 static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCString & fileName,QCString & brief);
 static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
-static void assignBinding(VhdlConfNode* conf);
 static void addInstance(ClassDef* entity, ClassDef* arch, ClassDef *inst,
                         const std::shared_ptr<Entry> &cur);
 
@@ -768,22 +767,22 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
     Definition *d = cd->getOuterScope();
 
     QCString tt=d->name();
-    ClassDef *ecd =getClass(tt);
-    if (!ecd)
+    ClassDef *acd =getClass(tt);
+    if (!acd)
     {
       tt=tt.upper();
-      ecd =getClass(tt);
+      acd =getClass(tt);
     }
-    if (!ecd)
+    if (!acd)
     {
       tt=tt.lower();
-      ecd =getClass(tt);
+      acd =getClass(tt);
     }
-    if (ecd) //d && d->definitionType()==Definition::TypeClass)
+    if (acd) //d && d->definitionType()==Definition::TypeClass)
     {
-      if(!packages.contains(ecd))
+      if(!packages.contains(acd))
       {
-        VhdlDocGen::findAllPackages(ecd);
+        VhdlDocGen::findAllPackages(acd);
       }
     }
   }
@@ -1154,7 +1153,6 @@ void VhdlDocGen::parseFuncProto(const char* text,QCString& name,QCString& ret,bo
   }
   else
   {
-    QCString s1(text);
     s1=s1.stripWhiteSpace();
     int i=s1.find("(",0,FALSE);
     int s=s1.find(QRegExp("[ \\t]"));
@@ -1421,7 +1419,7 @@ void VhdlDocGen::formatString(const QCString &s, OutputList& ol,const MemberDef*
 void VhdlDocGen::writeProcedureProto(OutputList& ol,const ArgumentList &al,const MemberDef* mdef)
 {
   bool sem=FALSE;
-  int len=al.size();
+  size_t len=al.size();
   ol.docify("( ");
   if (len > 2)
   {
@@ -1477,7 +1475,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList &al,const 
 {
   if (!al.hasParameters()) return;
   bool sem=FALSE;
-  int len=al.size();
+  size_t len=al.size();
   ol.startBold();
   ol.docify(" ( ");
   ol.endBold();
@@ -1586,7 +1584,7 @@ bool VhdlDocGen::writeFuncProcDocu(
   //bool sem=FALSE;
   ol.enableAll();
 
-  int index=al.size();
+  size_t index=al.size();
   if (index==0)
   {
     ol.docify(" ( ) ");
@@ -2455,10 +2453,10 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
       {
         if (altera)
         {
-          int i=temp.find("-name");
-          if (i>0)
+          int in=temp.find("-name");
+          if (in>0)
           {
-            temp=temp.remove(0,i+5);
+            temp=temp.remove(0,in+5);
           }
 
           temp.stripPrefix("set_location_assignment");
@@ -2468,8 +2466,8 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
         else
         {
           QRegExp ee("[\\s=]");
-          int i=temp.find(ee);
-          QCString ff=temp.left(i);
+          int in=temp.find(ee);
+          QCString ff=temp.left(in);
           temp.stripPrefix(ff.data());
           ff.append("#");
           if (!temp.isEmpty())
@@ -2683,111 +2681,6 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
   return 0;
  }
 
-
-//@param arch bit0:flipflop
-//@param binding  e.g entity work.foo(bar)
-//@param label  |label0|label1
-//                          label0:architecture name
-//@param confVhdl of configuration file (identifier::entity_name) or
-//               the architecture if isInlineConf TRUE
-//@param isInlineConf
-//@param confN List of configurations
-
-void assignBinding(VhdlConfNode * conf)
-{
-  ClassDef *archClass=0,*entClass=0;
-  QCString archName;
-  QCString arcBind,entBind;
-
-  bool others,all;
-  entBind=conf->binding;
-  QCString conf2=VhdlDocGen::parseForBinding(entBind,arcBind);
-
-  if (conf2!="configuration")
-  {
-    QCString a,c,e;
-    if (conf->isInlineConf)
-    {
-      c=conf->confVhdl;
-      e=VhdlDocGen::getIndexWord(conf->confVhdl.data(),0);
-    }
-    else
-    {
-      a=VhdlDocGen::getIndexWord(conf->compSpec.data(),0);
-      e=VhdlDocGen::getIndexWord(conf->confVhdl.data(),1);
-      c=e+"::"+a;
-    }
-    archClass= VhdlDocGen::findVhdlClass(c.data());//Doxygen::classSDict->find(a.data());
-    entClass= VhdlDocGen::findVhdlClass(e.data()); //Doxygen::classSDict->find(e.data());
-  }
-
-  QCString label=conf->compSpec.lower();
-  //label.prepend("|");
-
-  if (!archClass)
-  {
- //   err("architecture %s not found ! ",conf->confVhdl.data());
-    return;
-  }
-
-  archName=archClass->name();
-  QCString allOt=VhdlDocGen::getIndexWord(conf->arch.data(),0);
-  all=allOt.lower()=="all" ;
-  others= allOt.lower()=="others";
-
-  for (const auto &cur : getVhdlInstList())
-  {
-    if (cur->exception.lower()==label || conf->isInlineConf)
-    {
-      QCString archy;
-
-      if (all || others)
-      {
-        archy=VhdlDocGen::getIndexWord(conf->arch.data(),1);
-      }
-      else
-      {
-        archy=conf->arch;
-      }
-
-      QCString	  inst1=VhdlDocGen::getIndexWord(archy.data(),0).lower();
-      QCString	  comp=VhdlDocGen::getIndexWord(archy.data(),1).lower();
-
-      QCStringList ql=QCStringList::split(",",inst1);
-
-      for (uint j=0;j<ql.count();j++)
-      {
-        QCString archy1,sign1;
-        if (all || others)
-        {
-          archy1=VhdlDocGen::getIndexWord(conf->arch.data(),1);
-          sign1=cur->type;
-        }
-        else
-        {
-          archy1=comp+":"+ql[j];
-          sign1=cur->type+":"+cur->name;
-        }
-
-        if (archy1==sign1.lower() && !cur->stat)
-        {
-          // fprintf(stderr," \n label [%s] [%s] [%s]",cur->exception.data(),cur->type.data(),cur->name.data());
-          ClassDef *ent= VhdlDocGen::findVhdlClass(entBind.data());//Doxygen::classSDict->find(entBind.data());
-
-          if (entClass==0 || ent==0)
-          {
-            continue;
-          }
-
-          addInstance(ent,archClass,entClass,cur);
-          cur->stat=TRUE;
-          break;
-        }
-      }// for
-    }
-  }//for each element in instList
-
-}//assignBinding
 
 /*
 
@@ -3880,7 +3773,7 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
   else
   {
     if (fl->text.isEmpty()) return;
-    bool var=(fl->type & FlowChart::VARIABLE_NO);
+    bool isVar=(fl->type & FlowChart::VARIABLE_NO);
     QCString q=fl->text;
 
     if (exit)
@@ -3896,7 +3789,7 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
     }
     t << "[shape=none margin=0.1, label=<\n";
     t << "<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"2\" >\n ";
-    if (var)
+    if (isVar)
     {
       t << "<TR><TD BGCOLOR=\"" << flowCol.varNode << "\" > ";
     }
@@ -3959,7 +3852,7 @@ void FlowChart::writeEdge(FTextStream &t,int fl_from,int fl_to,int i,bool bFrom,
 
 void FlowChart::alignFuncProc( QCString & q,const ArgumentList &al,bool isFunc)
 {
-  int index=al.size();
+  size_t index=al.size();
   if (index==0) return;
 
   int len=q.length()+VhdlDocGen::getFlowMember()->name().length();

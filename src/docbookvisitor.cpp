@@ -53,7 +53,7 @@ static QCString filterId(const char *s)
   static GrowBuf growBuf;
   growBuf.clear();
   if (s==0) return "";
-  const unsigned char *p=(const unsigned char *)s;
+  const char *p=s;
   char c;
   while ((c=*p++))
   {
@@ -396,7 +396,7 @@ DB_VIS_C
         int i;
         if ((i=shortName.findRev('/'))!=-1)
         {
-          shortName=shortName.right(shortName.length()-i-1);
+          shortName=shortName.right((int)shortName.length()-i-1);
         }
         m_t << "<para>" << endl;
         writePlantUMLFile(baseName,s);
@@ -1128,14 +1128,14 @@ DB_VIS_C
   m_t << ">";
 }
 
-void DocbookDocVisitor::visitPost(DocHtmlCell *c)
+void DocbookDocVisitor::visitPost(DocHtmlCell *)
 {
 DB_VIS_C
   if (m_hide) return;
   m_t << "</entry>";
 }
 
-void DocbookDocVisitor::visitPre(DocHtmlCaption *c)
+void DocbookDocVisitor::visitPre(DocHtmlCaption *)
 {
 DB_VIS_C
   if (m_hide) return;
@@ -1202,7 +1202,7 @@ DB_VIS_C
     int i;
     if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
     {
-      baseName=baseName.right(baseName.length()-i-1);
+      baseName=baseName.right((int)baseName.length()-i-1);
     }
     visitPreStart(m_t, img->children(), img->hasCaption(), img->relPath() + baseName, img->width(), img->height(), img->isInlineImage());
   }
@@ -1225,7 +1225,7 @@ DB_VIS_C
     int i;
     if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
     {
-      baseName=baseName.right(baseName.length()-i-1);
+      baseName=baseName.right((int)baseName.length()-i-1);
     }
     QCString m_file;
     bool ambig;
@@ -1332,7 +1332,7 @@ DB_VIS_C
   if (!ref->file().isEmpty()) endLink();
 }
 
-void DocbookDocVisitor::visitPre(DocSecRefItem *ref)
+void DocbookDocVisitor::visitPre(DocSecRefItem *)
 {
 DB_VIS_C
   if (m_hide) return;
@@ -1415,11 +1415,9 @@ DB_VIS_C
   if (m_hide) return;
   m_t << "                            <row>" << endl;
 
-  DocParamSect::Type parentType = DocParamSect::Unknown;
   DocParamSect *sect = 0;
   if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    parentType = ((DocParamSect*)pl->parent())->type();
     sect=(DocParamSect*)pl->parent();
   }
 
@@ -1639,7 +1637,7 @@ DB_VIS_C
   int i;
   if ((i=shortName.findRev('/'))!=-1)
   {
-    shortName=shortName.right(shortName.length()-i-1);
+    shortName=shortName.right((int)shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_BITMAP);
@@ -1655,7 +1653,7 @@ DB_VIS_C
   int i;
   if ((i=shortName.findRev('/'))!=-1)
   {
-    shortName=shortName.right(shortName.length()-i-1);
+    shortName=shortName.right((int)shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   PlantumlManager::instance()->generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
@@ -1676,7 +1674,7 @@ DB_VIS_C
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
-    baseName=baseName.right(baseName.length()-i-1);
+    baseName=baseName.right((int)baseName.length()-i-1);
   }
   if ((i=baseName.find('.'))!=-1)
   {
@@ -1704,7 +1702,7 @@ DB_VIS_C
   int i;
   if ((i=shortName.findRev('/'))!=-1)
   {
-    shortName=shortName.right(shortName.length()-i-1);
+    shortName=shortName.right((int)shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_BITMAP);
@@ -1725,7 +1723,7 @@ DB_VIS_C
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
-    baseName=baseName.right(baseName.length()-i-1);
+    baseName=baseName.right((int)baseName.length()-i-1);
   }
   if ((i=baseName.find('.'))!=-1)
   {
@@ -1753,7 +1751,7 @@ DB_VIS_C
   int i;
   if ((i=shortName.findRev('/'))!=-1)
   {
-    shortName=shortName.right(shortName.length()-i-1);
+    shortName=shortName.right((int)shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP);
@@ -1774,7 +1772,7 @@ DB_VIS_C
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
-    baseName=baseName.right(baseName.length()-i-1);
+    baseName=baseName.right((int)baseName.length()-i-1);
   }
   if ((i=baseName.find('.'))!=-1)
   {

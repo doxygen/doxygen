@@ -1967,7 +1967,7 @@ BGD_DECLARE(void) gdImageString (gdImagePtr im, gdFontPtr f,
 {
 	int i;
 	int l;
-	l = strlen ((char *) s);
+	l = (int)strlen((char *) s);
 	for (i = 0; (i < l); i++) {
 		gdImageChar (im, f, x, y, s[i], color);
 		x += f->w;
@@ -1982,7 +1982,7 @@ BGD_DECLARE(void) gdImageStringUp (gdImagePtr im, gdFontPtr f,
 {
 	int i;
 	int l;
-	l = strlen ((char *) s);
+	l = (int)strlen((char *) s);
 	for (i = 0; (i < l); i++) {
 		gdImageCharUp (im, f, x, y, s[i], color);
 		y -= f->w;

@@ -520,10 +520,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
       QFileInfo fi(fileName);
       if (fi.exists())
       {
-        if (checkExtension(fi.fileName().data(), latexStyleExtension))
+        if (checkExtension(fi.fileName().data(), LATEX_STYLE_EXTENSION))
         {
           // strip the extension, it will be added by the usepackage in the tex conversion process
-          t << "\\usepackage{" << stripExtensionGeneral(fi.fileName().data(), latexStyleExtension) << "}\n";
+          t << "\\usepackage{" << stripExtensionGeneral(fi.fileName().data(), LATEX_STYLE_EXTENSION) << "}\n";
         }
         else
         {

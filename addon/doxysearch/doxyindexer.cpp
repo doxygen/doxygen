@@ -52,7 +52,7 @@ static std::string trim(const std::string& str,
     return ""; // no content
 
   size_t strEnd = str.find_last_not_of(whitespace);
-  int strRange = strEnd - strBegin + 1;
+  size_t strRange = strEnd - strBegin + 1;
 
   return str.substr(strBegin, strRange);
 }
@@ -72,7 +72,7 @@ static std::string reduce(const std::string& str,
   while (beginSpace != std::string::npos)
   {
     size_t endSpace = result.find_first_not_of(whitespace, beginSpace);
-    int range = endSpace - beginSpace;
+    size_t range = endSpace - beginSpace;
 
     result.replace(beginSpace, range, fill);
 

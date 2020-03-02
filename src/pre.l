@@ -63,11 +63,15 @@
 
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
 
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 
 struct CondCtx
 {
@@ -86,7 +90,7 @@ struct FileState
   int curlyCount;
   BufStr fileBuf;
   BufStr *oldFileBuf;
-  int oldFileBufPos;
+  yy_size_t oldFileBufPos;
   YY_BUFFER_STATE bufState;
   QCString fileName;
 };  
@@ -350,9 +354,9 @@ struct preYY_state
   int                level;
   int                lastCContext;
   int                lastCPPContext;
-  QArray<int>        levelGuard;
+  QArray<bool>       levelGuard;
   BufStr            *inputBuf = 0;
-  int                inputBufPos;
+  yy_size_t          inputBufPos;
   BufStr            *outputBuf = 0;
   int                roundCount;
   bool               quoteArg;
@@ -378,7 +382,7 @@ struct preYY_state
   bool               insideCS; // C# has simpler preprocessor
   bool               isSource;
 
-  int                fenceSize = 0;
+  yy_size_t          fenceSize = 0;
   bool               ccomment;
   QCString           delimiter;
   QDict<void>        allIncludes;
@@ -407,7 +411,7 @@ static void     endCondSection(yyscan_t yyscanner);
 static void          addDefine(yyscan_t yyscanner);
 static Define *      newDefine(yyscan_t yyscanner);
 static void        setFileName(yyscan_t yyscanner,const char *name);
-static int              yyread(yyscan_t yyscanner,char *buf,int max_size);
+static yy_size_t        yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 /* ----------------------------------------------------------------- */
 
@@ -475,7 +479,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <*>"??"[=/'()!<>-]			{ // Trigraph
   					  unput(resolveTrigraph(yytext[2]));
   					}
-<Start>^{B}*"#"				{ BEGIN(Command); yyextra->yyColNr+=yyleng; yyextra->yyMLines=0;}
+<Start>^{B}*"#"				{ BEGIN(Command); yyextra->yyColNr+=(int)yyleng; yyextra->yyMLines=0;}
 <Start>^{B}*/[^#]			{
  					  outputArray(yyscanner,yytext,(int)yyleng);
   					  BEGIN(CopyLine); 
@@ -795,7 +799,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <Command>("cmake")?"define"{B}+		{ 
   			                  //printf("!!!DefName\n"); 
-					  yyextra->yyColNr+=yyleng;
+					  yyextra->yyColNr+=(int)yyleng;
   					  BEGIN(DefName); 
 					}
 <Command>"ifdef"/{B}*"("		{
@@ -879,7 +883,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  yyextra->yyLineNr++;
 					}
 <IgnoreLine>.
-<Command>. {yyextra->yyColNr+=yyleng;}
+<Command>. {yyextra->yyColNr+=(int)yyleng;}
 <UndefName>{ID}				{
   					  Define *def;
   					  if ((def=yyextra->defineManager.isDefined(yytext)) 
@@ -1392,14 +1396,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
   					  outputArray(yyscanner,yytext,(int)yyleng);
-                                          if (yyextra->fenceSize==yyleng)
+                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
                                           {
                                             BEGIN(SkipCComment);
                                           }
                                         }
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
   					  outputArray(yyscanner,yytext,(int)yyleng);
-                                          if (yyextra->fenceSize==yyleng)
+                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
                                           {
                                             BEGIN(SkipCComment);
                                           }
@@ -1631,7 +1635,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             //preYYin = fs->oldYYin;
                                             yyextra->inputBuf    = fs->oldFileBuf;
 					    yyextra->inputBufPos = fs->oldFileBufPos;
-                                            yyextra->curlyCount = fs->curlyCount;
+                                            yyextra->curlyCount  = fs->curlyCount;
 					    setFileName(yyscanner,fs->fileName);
 					    DBG_CTX((stderr,"######## FileName %s\n",yyextra->yyFileName.data()));
 					    
@@ -1685,11 +1689,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  int bytesInBuf = state->inputBuf->curPos()-state->inputBufPos;
-  int bytesToCopy = QMIN(max_size,bytesInBuf);
+  yy_size_t bytesInBuf = state->inputBuf->curPos()-state->inputBufPos;
+  yy_size_t bytesToCopy = QMIN(max_size,bytesInBuf);
   memcpy(buf,state->inputBuf->data()+state->inputBufPos,bytesToCopy);
   state->inputBufPos+=bytesToCopy;
   return bytesToCopy;
@@ -1890,7 +1894,7 @@ static FileState *findFile(yyscan_t yyscanner, const char *fileName,bool localIn
 static QCString extractTrailingComment(const char *s)
 {
   if (s==0) return "";
-  int i=strlen(s)-1;
+  int i=(int)strlen(s)-1;
   while (i>=0)
   {
     char c=s[i];
@@ -1992,7 +1996,7 @@ static QCString stringize(const QCString &s)
       pc=0;
       while (i<s.length() && inString)
       {
-	char c=s.at(i++);
+	c=s.at(i++);
 	if (c=='"') 
 	{
 	  result+="\\\"";
@@ -2085,7 +2089,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
   }
   if (cc!='(') 
   { 
-    unputChar(yyscanner,expr,rest,j,cc); 
+    unputChar(yyscanner,expr,rest,j,(char)cc); 
     return FALSE; 
   }
   getNextChar(yyscanner,expr,rest,j); // eat the '(' character
@@ -2114,12 +2118,12 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
       char c=(char)cc;
       if (c=='(') // argument is a function => search for matching )
       {
-	int level=1;
+	int lvl=1;
 	arg+=c;
 	//char term='\0';
 	while ((cc=getNextChar(yyscanner,expr,rest,j))!=EOF && cc!=0)
 	{
-	  char c=(char)cc;
+	  c=(char)cc;
 	  //printf("processing %c: term=%c (%d)\n",c,term,term);
 	  if (c=='\'' || c=='\"') // skip ('s and )'s inside strings
 	  {
@@ -2128,13 +2132,13 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
 	  }
 	  if (c==')')
 	  {
-	    level--;
+	    lvl--;
 	    arg+=c;
-	    if (level==0) break;
+	    if (lvl==0) break;
 	  }
 	  else if (c=='(')
 	  {
-	    level++;
+	    lvl++;
 	    arg+=c;
 	  }
 	  else
@@ -2671,7 +2675,7 @@ static QCString removeIdsAndMarkers(const char *s)
       {
 nextChar:
 	result+=c;
-	char lc=tolower(c);
+	char lc=(char)tolower(c);
 	if (!isId(lc) && lc!='.' /*&& lc!='-' && lc!='+'*/) inNum=FALSE;
 	p++;
       }
@@ -2924,23 +2928,23 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 	else if (searchIncludes) // search in INCLUDE_PATH as well
 	{
 	  QStrList &includePath = Config_getList(INCLUDE_PATH);
-	  char *s=includePath.first();
-	  while (s)
+	  char *incPath=includePath.first();
+	  while (incPath)
 	  {
-	    QFileInfo fi(s);
-	    if (fi.exists() && fi.isDir())
+	    QFileInfo fi3(incPath);
+	    if (fi3.exists() && fi3.isDir())
 	    {
-	      QCString absName = QCString(fi.absFilePath().utf8())+"/"+incFileName;
+	      absName = QCString(fi3.absFilePath().utf8())+"/"+incFileName;
 	      //printf("trying absName=%s\n",absName.data());
-	      QFileInfo fi2(absName);
-	      if (fi2.exists())
+	      QFileInfo fi4(absName);
+	      if (fi4.exists())
 	      {
-		absIncFileName=fi2.absFilePath().utf8();
+		absIncFileName=fi4.absFilePath().utf8();
 		break;
 	      }
 	      //printf( "absIncFileName = %s\n", absIncFileName.data() );
 	    }
-	    s=includePath.next();
+	    incPath=includePath.next();
 	  }
 	}
 	//printf( "absIncFileName = %s\n", absIncFileName.data() );
@@ -3170,8 +3174,7 @@ static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest
   else
   {
     int cc=yyinput(yyscanner);
-    returnCharToStream(yyscanner,cc);
-    //unput((char)cc);
+    returnCharToStream(yyscanner,(char)cc);
     //printf("%c=yyinput()\n",cc);
     return cc;
   }
@@ -3297,14 +3300,14 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
 	QRegExp reId("[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*"); // regexp matching an id
 	QDict<int> argDict(17);
 	argDict.setAutoDelete(TRUE);
-	int i=i_obrace+1,p,l,count=0;
+	int i=i_obrace+1,pi,l,count=0;
 	// gather the formal arguments in a dictionary 
-	while (i<i_cbrace && (p=reId.match(ds,i,&l)))
+	while (i<i_cbrace && (pi=reId.match(ds,i,&l)))
 	{
           if (l>0) // see bug375037
           {
-	    argDict.insert(ds.mid(p,l),new int(count++));
-	    i=p+l;
+	    argDict.insert(ds.mid(pi,l),new int(count++));
+	    i=pi+l;
           }
           else
           {
@@ -3317,11 +3320,11 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
 	i=0;
 	// substitute all occurrences of formal arguments by their 
 	// corresponding markers
-	while ((p=reId.match(tmp,i,&l))!=-1)
+	while ((pi=reId.match(tmp,i,&l))!=-1)
 	{
-	  if (p>i) definition+=tmp.mid(i,p-i);
+	  if (pi>i) definition+=tmp.mid(i,pi-i);
 	  int *argIndex;
-	  if ((argIndex=argDict[tmp.mid(p,l)])!=0)
+	  if ((argIndex=argDict[tmp.mid(pi,l)])!=0)
 	  {
 	    QCString marker;
 	    marker.sprintf(" @%d ",*argIndex);
@@ -3329,9 +3332,9 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
 	  }
 	  else
 	  {
-	    definition+=tmp.mid(p,l);
+	    definition+=tmp.mid(pi,l);
 	  }
-	  i=p+l;
+	  i=pi+l;
 	}
 	if (i<(int)tmp.length()) definition+=tmp.mid(i,tmp.length()-i);
 
@@ -3466,5 +3469,6 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
-
+#if USE_STATE2STRING
 #include "pre.l.h"
+#endif

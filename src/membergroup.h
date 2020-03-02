@@ -98,7 +98,6 @@ class MemberGroup
     bool inSameSection = 0;
     int  m_numDecMembers = 0;
     int  m_numDocMembers = 0;
-    const Definition *m_parent = 0;
     QCString m_docFile;
     int m_docLine = 0;
     std::vector<RefItem*> m_xrefListItems;

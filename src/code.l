@@ -60,6 +60,8 @@
 #define SCOPEBLOCK (int *)8
 #define INNERBLOCK (int *)12
 
+#define USE_STATE2STRING 0
+
 /* -----------------------------------------------------------------
  *	statics
  */
@@ -137,7 +139,7 @@ class VariableContext
     void addVariable(yyscan_t yyscanner,const QCString &type,const QCString &name);
     ClassDef *findVariable(const QCString &name);
 
-    int count() const { return m_scopes.count(); }
+    uint count() const { return m_scopes.count(); }
     
   private:
     Scope        m_globalScope;
@@ -224,7 +226,7 @@ struct codeYY_state
   QCString      parmName;
 
   const char *  inputString = 0;     //!< the code fragment as text
-  int	        inputPosition = 0;   //!< read offset during parsing 
+  yy_size_t     inputPosition = 0;   //!< read offset during parsing 
   int           inputLines = 0;      //!< number of line in the code fragment
   int	        yyLineNr = 0;        //!< current line number
   int	        yyColNr = 0;         //!< current column number
@@ -306,10 +308,12 @@ struct codeYY_state
 static bool isCastKeyword(const QCString &s);
 
 //-------------------------------------------------------------------
+#if USE_STATE2STRING
+static const char *stateToString(yyscan_t yyscanner,int state);
+#endif
 
 static void saveObjCContext(yyscan_t yyscanner);
 static void restoreObjCContext(yyscan_t yyscanner);
-static const char *stateToString(yyscan_t yyscanner,int state);
 static void addUsingDirective(yyscan_t yyscanner,const char *name);
 static void pushScope(yyscan_t yyscanner,const char *s);
 static void popScope(yyscan_t yyscanner);
@@ -359,7 +363,7 @@ static QCString escapeObject(yyscan_t yyscanner,const char *s);
 static QCString escapeWord(yyscan_t yyscanner,const char *s);
 static QCString escapeComment(yyscan_t yyscanner,const char *s);
 static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const QCString &kw);
-static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 
 /* -----------------------------------------------------------------
@@ -601,7 +605,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    yyextra->code->codify(yytext);
 					  }
-					  char c=yyinput(yyscanner);
+					  char c=(char)yyinput(yyscanner);
 					  QCString text;
 					  text+=c;
 					  yyextra->code->codify(text);
@@ -1197,8 +1201,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <Body>"("{B}*("*"{B}*)+{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func() but not "if (p) ..."
 					  yyextra->code->codify(yytext);
-					  int s=0;while (s<(int)yyleng && !isId(yytext[s])) s++;
-                                          int e=(int)yyleng-1;while (e>=0 && !isId(yytext[e])) e--;
+					  uint s=0;while (s<(uint)yyleng && !isId(yytext[s])) s++;
+                                          uint e=(uint)yyleng-1;while (!isId(yytext[e])) e--;
 					  QCString varname = ((QCString)yytext).mid(s,e-s+1); 
 					  addType(yyscanner);
   					  yyextra->name=varname; 
@@ -1218,7 +1222,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{RAWBEGIN}	{
                                           QCString text=yytext;
-                                          int i=text.find('R');
+                                          uint i=(uint)text.find('R');
                                           yyextra->code->codify(text.left(i+1));
 					  startFontClass(yyscanner,"stringliteral");
   					  yyextra->code->codify(yytext+i+1);
@@ -1767,7 +1771,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  DBG_CTX((stderr,"yyextra->name=%s\n",yyextra->name.data()));
 					  if (index!=-1) 
 					  {
-					    QCString scope = yyextra->name.left(index);
+					    QCString scope = yyextra->name.left((uint)index);
 					    if (!yyextra->classScope.isEmpty()) scope.prepend(yyextra->classScope+"::");
 					    const ClassDef *cd=getResolvedClass(Doxygen::globalScope,yyextra->sourceFileDef,scope);
 					    if (cd)
@@ -1894,8 +1898,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <FuncCall,MemberCall2>("("{B}*("*"{B}*)+{ID}*{B}*")"{B}*)/("."|"->") { 
   					  yyextra->code->codify(yytext);
-					  int s=0;while (!isId(yytext[s])) s++;
-                                          int e=(int)yyleng-1;while (!isId(yytext[e])) e--;
+					  uint s=0;while (!isId(yytext[s])) s++;
+                                          uint e=(uint)yyleng-1;while (!isId(yytext[e])) e--;
 					  yyextra->name=((QCString)yytext).mid(s,e-s+1); 
 					  BEGIN( MemberCall2 ); 
 					}
@@ -2107,8 +2111,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <*>"/*[tag:"[^\]\n]*"]*/"{B}*		{ // special pattern /*[tag:filename]*/ to force linking to a tag file
   					  yyextra->forceTagReference=yytext;
-					  int s=yyextra->forceTagReference.find(':');
-					  int e=yyextra->forceTagReference.findRev(']');
+					  uint s=(uint)yyextra->forceTagReference.find(':');
+					  uint e=(uint)yyextra->forceTagReference.findRev(']');
 					  yyextra->forceTagReference = yyextra->forceTagReference.mid(s+1,e-s-1);
   					}
 <*>\n{B}*"/*"[!*]/[^/*] 		{
@@ -3726,7 +3730,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
         }
 	else // illegal marker
 	{
-	  ASSERT(!"invalid escape sequence");
+	  ASSERT("invalid escape sequence"==0);
 	}
       }
     }
@@ -3800,12 +3804,12 @@ static bool isCastKeyword(const QCString &s)
   return kw=="const_cast" || kw=="static_cast" || kw=="dynamic_cast" || kw=="reinterpret_cast";
 }
 
-static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int inputPosition = yyextra->inputPosition;
-  const char *s = yyextra->inputString + yyextra->inputPosition;
-  int c=0;
+  yy_size_t inputPosition = yyextra->inputPosition;
+  const char *s = yyextra->inputString + inputPosition;
+  yy_size_t c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
@@ -4007,4 +4011,6 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const 
   return;
 }
 
+#if USE_STATE2STRING
 #include "code.l.h"
+#endif

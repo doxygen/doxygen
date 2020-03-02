@@ -157,6 +157,7 @@ if (win_static)
     endforeach()
 endif()
 
+include(cmake/CompilerWarnings.cmake)
 
 add_subdirectory(libmd5)
 add_subdirectory(liblodepng)

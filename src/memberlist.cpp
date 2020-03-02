@@ -419,7 +419,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                       ) const
 {
   //printf("----- writePlainDeclaration() ----\n");
-  static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
   if (numDecMembers()==-1)
   {
     err("MemberList::numDecMembers()==-1, so the members of this list have not been counted. Please report as a bug.\n");
@@ -558,8 +557,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   // no variables of the anonymous compound type exist.
   if (cd)
   {
-    MemberListIterator mli(*this);
-    for  ( ; (md=mli.current()) ; ++mli )
+    for  ( mli.toFirst(); (md=mli.current()) ; ++mli )
     {
       if (md->fromAnonymousScope() && !md->anonymousDeclShown())
       {

@@ -26,6 +26,7 @@
 %option never-interactive
 %option case-insensitive
 %option prefix="fortrancodeYY"
+%option noyy_top_state
 %top{
 #include <stdint.h>
 }
@@ -68,6 +69,8 @@ const int fixedCommentAfter = 72;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
 /*
  * For fixed formatted code position 6 is of importance (continuation character).
  * The following variables and macros keep track of the column number
@@ -78,7 +81,7 @@ const int fixedCommentAfter = 72;
 int yy_old_start = 0;
 int yy_my_start  = 0;
 int yy_end       = 1;
-#define YY_USER_ACTION {yy_old_start = yy_my_start; yy_my_start = yy_end; yy_end += yyleng;}
+#define YY_USER_ACTION {yy_old_start = yy_my_start; yy_my_start = yy_end; yy_end += static_cast<int>(yyleng);}
 #define YY_FTN_RESET   {yy_old_start = 0; yy_my_start = 0; yy_end = 1;}
 #define YY_FTN_REJECT  {yy_end = yy_my_start; yy_my_start = yy_old_start; REJECT;}
    
@@ -130,7 +133,7 @@ static UseEntry  *useEntry = 0;              //!< current use statement info
 static QList<Scope> scopeStack;
 static bool      g_isExternal = false;
 // static QCStringList *currentUseNames= new QCStringList; //! contains names of used modules of current program unit
-static QCString str="";         //!> contents of fortran string
+static QCString  g_str="";         //!> contents of fortran string
 
 static CodeOutputInterface * g_code;
 
@@ -171,7 +174,9 @@ static int           inTypeDecl = 0;
 
 static bool      g_endComment;
 
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 
 static void endFontClass()
 {
@@ -456,58 +461,58 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
 
   if (mn) // name is known
   {
-      MemberNameIterator mli(*mn);
-      for (mli.toFirst();(md=mli.current());++mli) // all found functions with given name
+    MemberNameIterator mli(*mn);
+    for (mli.toFirst();(md=mli.current());++mli) // all found functions with given name
+    {
+      const FileDef  *fd=md->getFileDef();
+      const GroupDef *gd=md->getGroupDef();
+      const ClassDef *cd=md->getClassDef();
+
+      //cout << "found link with same name: " << fd->fileName() << "  " <<  memberName;
+      //if (md->getNamespaceDef() != 0) cout << " in namespace " << md->getNamespaceDef()->name();cout << endl;
+
+      if ((gd && gd->isLinkable()) || (fd && fd->isLinkable()))
       {
-        const FileDef  *fd=md->getFileDef();
-        const GroupDef *gd=md->getGroupDef();
-        const ClassDef *cd=md->getClassDef();
+        const NamespaceDef *nspace= md->getNamespaceDef();
 
- //cout << "found link with same name: " << fd->fileName() << "  " <<  memberName;
- //if (md->getNamespaceDef() != 0) cout << " in namespace " << md->getNamespaceDef()->name();cout << endl;
-
-        if ((gd && gd->isLinkable()) || (fd && fd->isLinkable()))
-        {
-           const NamespaceDef *nspace= md->getNamespaceDef();
-
-           if (nspace == 0) 
-	   { // found function in global scope
-             if(cd == 0) { // Skip if bound to type
-                return TRUE;
+        if (nspace == 0) 
+        { // found function in global scope
+          if(cd == 0) { // Skip if bound to type
+            return TRUE;
+          }
+        }
+        else if (moduleName == nspace->name()) 
+        { // found in local scope
+          return TRUE;
+        }
+        else 
+        { // else search in used modules
+          QCString usedModuleName= nspace->name();
+          UseEntry *ue= usedict->find(usedModuleName);
+          if (ue) 
+          {
+            // check if only-list exists and if current entry exists is this list
+            QCStringList &only= ue->onlyNames;
+            if (only.isEmpty()) 
+            {
+              //cout << " found in module " << usedModuleName << " entry " << memberName <<  endl;
+              return TRUE; // whole module used
+            }
+            else
+            {
+              for ( QCStringList::Iterator lit = only.begin(); lit != only.end(); ++lit)
+              {
+                //cout << " search in only: " << usedModuleName << ":: " << memberName << "==" << (*it)<<  endl;
+                if (memberName == *lit)
+                {
+                  return TRUE; // found in ONLY-part of use list
+                }
               }
-           }
-           else if (moduleName == nspace->name()) 
-	   { // found in local scope
-             return TRUE;
-           }
-           else 
-	   { // else search in used modules
-	     QCString moduleName= nspace->name();
-	     UseEntry *ue= usedict->find(moduleName);
-	     if (ue) 
-	     {
-               // check if only-list exists and if current entry exists is this list
-	       QCStringList &only= ue->onlyNames;
-	       if (only.isEmpty()) 
-	       {
-               //cout << " found in module " << moduleName << " entry " << memberName <<  endl;
-                 return TRUE; // whole module used
-               }
-               else
-	       {
-	         for ( QCStringList::Iterator it = only.begin(); it != only.end(); ++it)
-                 {
-                   //cout << " search in only: " << moduleName << ":: " << memberName << "==" << (*it)<<  endl;
-		   if (memberName == *it)
-	           {
-                     return TRUE; // found in ONLY-part of use list
-	           }
-	         }
-	       }
-             }
-           }
-        } // if linkable
-      } // for
+            }
+          }
+        }
+      } // if linkable
+    } // for
   }
   return FALSE;
 }
@@ -669,15 +674,15 @@ static void addLocalVar(const QCString &varName)
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
-static int yyread(char *buf,int max_size)
+static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
-    int c=0;
-    while( c < max_size && g_inputString[g_inputPosition] )
-    {
-	*buf = g_inputString[g_inputPosition++] ;
-	c++; buf++;
-    }
-    return c;
+  yy_size_t c=0;
+  while( c < max_size && g_inputString[g_inputPosition] )
+  {
+    *buf = g_inputString[g_inputPosition++] ;
+    c++; buf++;
+  }
+  return c;
 }
 
 %}
@@ -1120,7 +1125,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 					    g_contLineNr++;
                                             yy_old_start = 0;
                                             yy_my_start = 1;
-                                            yy_end = yyleng;
+                                            yy_end = static_cast<int>(yyleng);
                                           }
                                           // Actually we should see if ! on position 6, can be continuation
                                           // but the chance is very unlikely, so no effort to solve it here
@@ -1141,7 +1146,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 					  g_contLineNr++;
                                           yy_old_start = 0;
                                           yy_my_start = 1;
-                                          yy_end = yyleng;
+                                          yy_end = static_cast<int>(yyleng);
                                           // Actually we should see if ! on position 6, can be continuation
                                           // but the chance is very unlikely, so no effort to solve it here
 					  docBlock+=yytext; 
@@ -1220,22 +1225,22 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
  /*------ strings --------------------------------------------------*/ 
 <String>\n                              { // string with \n inside
 					  g_contLineNr++;
-                                          str+=yytext;
+                                          g_str+=yytext;
   					  startFontClass("stringliteral");
-  					  codifyLines(str);
+  					  codifyLines(g_str);
 					  endFontClass();
-                                          str = "";
+                                          g_str = "";
                                           YY_FTN_RESET
                                         }           
 <String>\"|\'                           { // string ends with next quote without previous backspace 
                                           if(yytext[0]!=stringStartSymbol) YY_FTN_REJECT; // single vs double quote
-                                          str+=yytext;
+                                          g_str+=yytext;
   					  startFontClass("stringliteral");
-  					  codifyLines(str);
+  					  codifyLines(g_str);
 					  endFontClass();
                                           yy_pop_state();
                                         }           
-<String>.                               {str+=yytext;}
+<String>.                               {g_str+=yytext;}
 
 <*>\"|\'                                { /* string starts */
 					  /* if(YY_START == StrIgnore) YY_FTN_REJECT; // ignore in simple comments */
@@ -1243,7 +1248,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yy_push_state(YY_START);
                                           stringStartSymbol=yytext[0]; // single or double quote
                                           BEGIN(String);
-					  str=yytext;
+					  g_str=yytext;
                                         }
  /*-----------------------------------------------------------------------------*/
 
@@ -1306,7 +1311,6 @@ const char* prepassFixedForm(const char* contents, int *hasContLine); /* prototy
 static void checkContLines(const char *s)
 {
   int numLines = 0;
-  int curLine = 0;
   int i = 0;
   const char *p = s;
 
@@ -1430,4 +1434,6 @@ void FortranCodeParser::resetCodeParserState()
 
 //---------------------------------------------------------
 
+#if USE_STATE2STRING
 #include "fortrancode.l.h"
+#endif

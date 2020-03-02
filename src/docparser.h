@@ -196,20 +196,20 @@ template<class T> class CompAccept : public DocNode
     }
     const QList<DocNode> &children() const { return m_children; }
     QList<DocNode> &children() { return m_children; }
-    QString::Direction getTextDir(int nodeIndex) const
+    QString::Direction getTextDir(uint nodeIndex) const
     {
       unsigned char resultDir = QString::DirNeutral;
       for (uint i = nodeIndex; i < m_children.count(); i++)
       {
         DocNode* node = m_children.at(i);
         QString::Direction nodeDir = node->getTextDir();
-        resultDir |= nodeDir;
+        resultDir |= (unsigned char)nodeDir;
         if (resultDir == QString::DirMixed)
           return QString::DirMixed;
       }
       return static_cast<QString::Direction>(resultDir);
     }
-    QString::Direction getTextBasicDir(int nodeIndex) const
+    QString::Direction getTextBasicDir(uint nodeIndex) const
     {
       for (uint i = nodeIndex; i < m_children.count(); i++)
       {
@@ -529,7 +529,7 @@ class DocSeparator : public DocNode
       m_chars(chars) { m_parent = parent; }
     Kind kind() const          { return Kind_Sep; }
     QCString chars() const     { return m_chars; }
-    void accept(DocVisitor *v) { }
+    void accept(DocVisitor *) { }
   private:
     QCString  m_chars;
 };
@@ -586,17 +586,17 @@ class DocInclude : public DocNode
     DocInclude(DocNode *parent,const QCString &file,
                const QCString context, Type t,
                bool isExample,const QCString exampleFile,
-               const QCString blockId, bool isBlock) : 
+               const QCString blockId, bool isBlock) :
       m_file(file), m_context(context), m_type(t),
-      m_isExample(isExample), m_exampleFile(exampleFile),
-      m_blockId(blockId), m_isBlock(isBlock) { m_parent = parent; }
+      m_isExample(isExample), m_isBlock(isBlock),
+      m_exampleFile(exampleFile), m_blockId(blockId) { m_parent = parent; }
     Kind kind() const            { return Kind_Include; }
     QCString file() const        { return m_file; }
-    QCString extension() const   { int i=m_file.findRev('.'); 
-                                   if (i!=-1) 
-                                     return m_file.right(m_file.length()-i); 
-                                   else 
-                                     return ""; 
+    QCString extension() const   { int i=m_file.findRev('.');
+                                   if (i!=-1)
+                                     return m_file.right(m_file.length()-(uint)i);
+                                   else
+                                     return "";
                                  }
     Type type() const            { return m_type; }
     QCString text() const        { return m_text; }
@@ -612,9 +612,9 @@ class DocInclude : public DocNode
     QCString  m_file;
     QCString  m_context;
     QCString  m_text;
-    Type      m_type = Include;
-    bool      m_isExample = false;
-    bool      m_isBlock = false;
+    Type      m_type;
+    bool      m_isExample;
+    bool      m_isBlock;
     QCString  m_exampleFile;
     QCString  m_blockId;
 };
@@ -1336,9 +1336,7 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>
   public:
     enum Alignment { Left, Right, Center };
     DocHtmlCell(DocNode *parent,const HtmlAttribList &attribs,bool isHeading) : 
-       m_isHeading(isHeading), 
-       m_isFirst(FALSE), m_isLast(FALSE), m_attribs(attribs),
-       m_rowIdx(-1), m_colIdx(-1) { m_parent = parent; }
+       m_isHeading(isHeading), m_attribs(attribs) { m_parent = parent; }
     bool isHeading() const      { return m_isHeading; }
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
@@ -1348,21 +1346,21 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
     int parseXml();
-    int rowIndex() const        { return m_rowIdx; }
-    int columnIndex() const     { return m_colIdx; }
-    int rowSpan() const;
-    int colSpan() const;
+    uint rowIndex() const        { return m_rowIdx; }
+    uint columnIndex() const     { return m_colIdx; }
+    uint rowSpan() const;
+    uint colSpan() const;
     Alignment alignment() const;
 
   private:
-    void setRowIndex(int idx)    { m_rowIdx = idx; }
-    void setColumnIndex(int idx) { m_colIdx = idx; }
+    void setRowIndex(uint idx)    { m_rowIdx = idx; }
+    void setColumnIndex(uint idx) { m_colIdx = idx; }
     bool           m_isHeading = false;
     bool           m_isFirst = false;
     bool           m_isLast = false;
     HtmlAttribList m_attribs;
-    int            m_rowIdx = -1;
-    int            m_colIdx = -1;
+    uint           m_rowIdx = (uint)-1;
+    uint           m_colIdx = (uint)-1;
 };
 
 /** Node representing a HTML table caption */
@@ -1390,7 +1388,7 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>
     friend class DocHtmlTable;
   public:
     DocHtmlRow(DocNode *parent,const HtmlAttribList &attribs) : 
-      m_attribs(attribs), m_visibleCells(-1), m_rowIdx(-1) { m_parent = parent; }
+      m_attribs(attribs) { m_parent = parent; }
     Kind kind() const          { return Kind_HtmlRow; }
     uint numCells() const      { return m_children.count(); }
     const HtmlAttribList &attribs() const { return m_attribs; }
@@ -1409,15 +1407,15 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>
                                  }
                                  return m_children.count()>0 && heading;
                                }
-    void setVisibleCells(int n) { m_visibleCells = n; }
-    int visibleCells() const    { return m_visibleCells; }
-    int rowIndex() const        { return m_rowIdx; }
+    void setVisibleCells(uint n) { m_visibleCells = n; }
+    uint visibleCells() const    { return m_visibleCells; }
+    uint rowIndex() const        { return m_rowIdx; }
 
   private:
-    void setRowIndex(int idx)    { m_rowIdx = idx; }
+    void setRowIndex(uint idx)   { m_rowIdx = idx; }
     HtmlAttribList m_attribs;
-    int m_visibleCells = -1;
-    int m_rowIdx = -1;
+    uint m_visibleCells = 0;
+    uint m_rowIdx = (uint)-1;
 };
 
 /** Node representing a HTML table */
@@ -1446,7 +1444,7 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>
     void computeTableGrid();
     DocHtmlCaption    *m_caption = 0;
     HtmlAttribList     m_attribs;
-    int m_numCols = 0;
+    uint m_numCols = 0;
 };
 
 /** Node representing an HTML blockquote */

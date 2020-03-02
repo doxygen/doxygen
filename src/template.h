@@ -355,10 +355,10 @@ class TemplateListIntf
     virtual ~TemplateListIntf() {}
 
     /** Returns the number of elements in the list */
-    virtual int count() const = 0;
+    virtual uint count() const = 0;
 
     /** Returns the element at index position \a index. */
-    virtual TemplateVariant  at(int index) const = 0;
+    virtual TemplateVariant  at(uint index) const = 0;
 
     /** Creates a new iterator for this list.
      *  @note the user should call delete on the returned pointer.
@@ -377,8 +377,8 @@ class TemplateList : public TemplateListIntf
 {
   public:
     // TemplateListIntf methods
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
+    virtual uint count() const;
+    virtual TemplateVariant at(uint index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
     virtual int addRef();
     virtual int release();
@@ -457,6 +457,7 @@ class TemplateStruct : public TemplateStructIntf
 class TemplateEscapeIntf
 {
   public:
+    virtual ~TemplateEscapeIntf() {}
     /** Returns the \a input after escaping certain characters */
     virtual QCString escape(const QCString &input) = 0;
     /** Setting tabbing mode on or off (for LaTeX) */
@@ -469,6 +470,7 @@ class TemplateEscapeIntf
 class TemplateSpacelessIntf
 {
   public:
+    virtual ~TemplateSpacelessIntf() {}
     /** Returns the \a input after removing redundant whitespace */
     virtual QCString remove(const QCString &input) = 0;
     /** Reset filter state */

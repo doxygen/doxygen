@@ -299,12 +299,12 @@ static void runPlantumlContent(const QDict< QList <QCString> > &plantumlFiles,
         if (list)
         {
           QListIterator<QCString> li(*list);
-          QCString *nb;
-          for (li.toFirst();(nb=li.current());++li)
+          QCString *str_p;
+          for (li.toFirst();(str_p=li.current());++li)
           {
             const int maxCmdLine = 40960;
             QCString epstopdfArgs(maxCmdLine);
-            epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",qPrint(pumlOutDir),qPrint(*nb),qPrint(pumlOutDir),qPrint(*nb));
+            epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",qPrint(pumlOutDir),qPrint(*str_p),qPrint(pumlOutDir),qPrint(*str_p));
             Portable::sysTimerStart();
             if ((exitCode=Portable::system("epstopdf",epstopdfArgs))!=0)
             {
