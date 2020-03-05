@@ -9162,6 +9162,15 @@ static void parseFile(OutlineParserInterface &parser,
     BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",fn);
     readInputFile(fileName,inBuf);
+    if (inBuf.data() && inBuf.curPos()>0)
+    {
+      while (*(inBuf.data()+inBuf.curPos()-1)=='\0') inBuf.backupPos(1);
+      if (*(inBuf.data()+inBuf.curPos()-1)!='\n')
+      {
+        inBuf.addChar('\n'); // add extra newline to help preprocessor
+      }
+      inBuf.addChar('\0'); // add terminate character
+    }
     Doxygen::preprocessor->processFile(fileName,inBuf,preBuf);
   }
   else // no preprocessing
@@ -9169,9 +9178,14 @@ static void parseFile(OutlineParserInterface &parser,
     msg("Reading %s...\n",fn);
     readInputFile(fileName,preBuf);
   }
-  if (preBuf.data() && preBuf.curPos()>0 && *(preBuf.data()+preBuf.curPos()-1)!='\n')
+  if (preBuf.data() && preBuf.curPos()>0)
   {
-    preBuf.addChar('\n'); // add extra newline to help parser
+    while (*(preBuf.data()+preBuf.curPos()-1)=='\0') preBuf.backupPos(1);
+    if (*(preBuf.data()+preBuf.curPos()-1)!='\n')
+    {
+      preBuf.addChar('\n'); // add extra newline to help parser
+    }
+    preBuf.addChar('\0'); // add terminate character
   }
 
   BufStr convBuf(preBuf.curPos()+1024);
