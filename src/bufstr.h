@@ -30,7 +30,7 @@
 class BufStr 
 {
   public:
-    BufStr(int size) 
+    BufStr(uint size) 
       : m_size(size), m_writeOffset(0), m_spareRoom(10240), m_buf(0) 
     {
       m_buf = (char *)calloc(size,1);
@@ -44,7 +44,7 @@ class BufStr
       makeRoomFor(1);
       m_buf[m_writeOffset++]=c;
     }
-    void addArray(const char *a,int len)
+    void addArray(const char *a,uint len)
     {
       makeRoomFor(len);
       memcpy(m_buf+m_writeOffset,a,len);
@@ -74,7 +74,7 @@ class BufStr
         memset(m_buf+oldsize,0,m_size-oldsize);
       }
     }
-    int size() const
+    uint size() const
     {
       return m_size;
     }
@@ -115,7 +115,7 @@ class BufStr
     }
     uint m_size;
     uint m_writeOffset;
-    const int m_spareRoom; // 10Kb extra room to avoid frequent resizing
+    const uint m_spareRoom; // 10Kb extra room to avoid frequent resizing
     char *m_buf;
 };
 

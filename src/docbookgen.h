@@ -57,16 +57,16 @@ class DocbookCodeGenerator : public CodeOutputInterface
 
   private:
     FTextStream m_t;
-    bool m_streamSet;
+    bool m_streamSet = FALSE;
     QCString m_refId;
     QCString m_external;
-    int m_lineNumber;
-    int m_col;
-    bool m_insideCodeLine;
-    bool m_insideSpecialHL;
+    int m_lineNumber = -1;
+    int m_col = 0;
+    bool m_insideCodeLine = FALSE;
+    bool m_insideSpecialHL = FALSE;
     QCString m_relPath;
     QCString m_sourceFileName;
-    bool m_prettyCode;
+    bool m_prettyCode = FALSE;
 };
 
 
@@ -145,14 +145,14 @@ class DocbookGenerator : public OutputGenerator
     void startFile(const char *name,const char *manName,
                            const char *title);
     void writeSearchInfo(){DB_GEN_EMPTY};
-    void writeFooter(const char *navPath){DB_GEN_NEW};
+    void writeFooter(const char *){DB_GEN_NEW};
     void endFile();
     void startIndexSection(IndexSections);
     void endIndexSection(IndexSections);
     void writePageLink(const char *,bool);
     void startProjectNumber(){DB_GEN_NEW};
     void endProjectNumber(){DB_GEN_NEW};
-    void writeStyleInfo(int part){DB_GEN_EMPTY};
+    void writeStyleInfo(int){DB_GEN_EMPTY};
     void startTitleHead(const char *);
     void endTitleHead(const char *fileName,const char *name);
     void startIndexListItem(){DB_GEN_NEW};
@@ -166,8 +166,8 @@ class DocbookGenerator : public OutputGenerator
     void startItemList()  {DB_GEN_EMPTY};
     void endItemList()    {DB_GEN_EMPTY};
 
-    void startIndexItem(const char *ref,const char *file){DB_GEN_NEW};
-    void endIndexItem(const char *ref,const char *file){DB_GEN_NEW};
+    void startIndexItem(const char *,const char *){DB_GEN_NEW};
+    void endIndexItem(const char *,const char *){DB_GEN_NEW};
     void startItemListItem() {DB_GEN_EMPTY};
     void endItemListItem() {DB_GEN_EMPTY};
     void docify(const char *text);
@@ -258,23 +258,23 @@ class DocbookGenerator : public OutputGenerator
     void insertMemberAlign(bool){DB_GEN_EMPTY};
     void insertMemberAlignLeft(int,bool){DB_GEN_EMPTY};
     void startMemberDoc(const char *,const char *,
-                                const char *,const char *,int,int,bool);
+                        const char *,const char *,int,int,bool);
     void endMemberDoc(bool);
     void startDoxyAnchor(const char *fName,const char *manName,
-                                 const char *anchor,const char *name,
-                                 const char *args);
+                         const char *anchor,const char *name,
+                         const char *args);
     void endDoxyAnchor(const char *fileName,const char *anchor);
     void writeLatexSpacing(){DB_GEN_EMPTY}
-    void writeStartAnnoItem(const char *type,const char *file,
-                                    const char *path,const char *name){DB_GEN_NEW};
-    void writeEndAnnoItem(const char *name){DB_GEN_NEW};
-    void startMemberDescription(const char *anchor,const char *inheritId, bool typ){DB_GEN_EMPTY};
+    void writeStartAnnoItem(const char *,const char *,
+                            const char *,const char *){DB_GEN_NEW};
+    void writeEndAnnoItem(const char *){DB_GEN_NEW};
+    void startMemberDescription(const char *,const char *,bool){DB_GEN_EMPTY};
     void endMemberDescription(){DB_GEN_EMPTY};
     void startMemberDeclaration(){DB_GEN_EMPTY};
-    void endMemberDeclaration(const char *anchor,const char *inheritId){DB_GEN_EMPTY};
-    void writeInheritedSectionTitle(const char *id,const char *ref,
-                                            const char *file,const char *anchor,
-                                            const char *title,const char *name){DB_GEN_NEW};
+    void endMemberDeclaration(const char *,const char *){DB_GEN_EMPTY};
+    void writeInheritedSectionTitle(const char *,const char *,
+                                    const char *,const char *,
+                                    const char *,const char *){DB_GEN_NEW};
     void startIndent(){DB_GEN_EMPTY};
     void endIndent(){DB_GEN_EMPTY};
     void writeSynopsis(){DB_GEN_EMPTY};
@@ -290,17 +290,17 @@ class DocbookGenerator : public OutputGenerator
     void endCallGraph(DotCallGraph &g);
     void startDirDepGraph();
     void endDirDepGraph(DotDirDeps &g);
-    void writeGraphicalHierarchy(DotGfxHierarchyTable &g){DB_GEN_NEW};
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &){DB_GEN_NEW};
     void startQuickIndices(){DB_GEN_EMPTY};
     void endQuickIndices(){DB_GEN_EMPTY};
     void writeSplitBar(const char *){DB_GEN_EMPTY};
     void writeNavigationPath(const char *){DB_GEN_NEW};
     void writeLogo(){DB_GEN_NEW};
-    void writeQuickLinks(bool compact,HighlightedItem hli,const char *file){DB_GEN_EMPTY};
-    void writeSummaryLink(const char *file,const char *anchor,const char *title,bool first){DB_GEN_EMPTY};
+    void writeQuickLinks(bool,HighlightedItem,const char *){DB_GEN_EMPTY};
+    void writeSummaryLink(const char *,const char *,const char *,bool){DB_GEN_EMPTY};
     void startContents(){DB_GEN_EMPTY};
     void endContents(){DB_GEN_EMPTY};
-    void startPageDoc(const char *pageTitle){DB_GEN_EMPTY}
+    void startPageDoc(const char *){DB_GEN_EMPTY}
     void endPageDoc() {DB_GEN_EMPTY}
     void startTextBlock(bool);
     void endTextBlock(bool);
@@ -309,7 +309,7 @@ class DocbookGenerator : public OutputGenerator
     void endMemberDocPrefixItem();
     void startMemberDocName(bool);
     void endMemberDocName();
-    void startParameterType(bool,const char *key){DB_GEN_EMPTY};
+    void startParameterType(bool,const char *){DB_GEN_EMPTY};
     void endParameterType(){DB_GEN_EMPTY};
     void startParameterName(bool);
     void endParameterName(bool,bool,bool);

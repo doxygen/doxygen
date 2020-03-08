@@ -131,7 +131,7 @@ class MemberListIterator : public QListIterator<MemberDef>
 class MemberDict : public QDict<MemberDef>
 {
   public:
-    MemberDict(int size) : QDict<MemberDef>(size) {}
+    MemberDict(uint size) : QDict<MemberDef>(size) {}
     virtual ~MemberDict() {}
 };
 
@@ -139,7 +139,7 @@ class MemberDict : public QDict<MemberDef>
 class MemberSDict : public SDict<MemberDef>
 {
   public:
-    MemberSDict(int size=17) : SDict<MemberDef>(size) {}
+    MemberSDict(uint size=17) : SDict<MemberDef>(size) {}
     virtual ~MemberSDict() {}
   private:
     int compareValues(const MemberDef *item1,const MemberDef *item2) const;

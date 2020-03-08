@@ -228,17 +228,20 @@ const QRegExp StyleData::s_clause("\\\\s[0-9]+\\s*");
 
 StyleData::StyleData(const char* reference, const char* definition)
 {
-  int start = s_clause.match(reference); ASSERT(start >= 0);
-  reference += start;
-  index = (int)atol(reference + 2); ASSERT(index > 0);
+  const char *ref = reference;
+  const char *def = definition;
 
-  ASSERT(reference != 0);
-  size_t size = 1 + strlen(reference);
-  memcpy(this->reference = new char[size], reference, size);
+  int start = s_clause.match(ref); ASSERT(start >= 0);
+  ref += start;
+  index = (int)atol(ref + 2); ASSERT(index > 0);
 
-  ASSERT(definition != 0);
-  size = 1 + strlen(definition);
-  memcpy(this->definition = new char[size], definition, size);
+  ASSERT(ref != 0);
+  size_t size = 1 + strlen(ref);
+  memcpy(this->reference = new char[size], ref, size);
+
+  ASSERT(def != 0);
+  size = 1 + strlen(def);
+  memcpy(this->definition = new char[size], def, size);
 }
 
 StyleData::~StyleData()

@@ -13,6 +13,8 @@
 *
 */
 
+#include <vector>
+
 #include "dotclassgraph.h"
 #include "dotnode.h"
 
@@ -149,8 +151,8 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
 {
   QList<DotNode> childQueue;
   QList<DotNode> parentQueue;
-  QArray<int> childTreeWidth;
-  QArray<int> parentTreeWidth;
+  std::vector<int> childTreeWidth;
+  std::vector<int> parentTreeWidth;
   childQueue.append(rootNode);
   if (includeParents) parentQueue.append(rootNode);
   bool firstNode=TRUE; // flag to force reprocessing rootNode in the parent loop 

@@ -46,7 +46,7 @@ class MemberNameIterator : public QListIterator<MemberDef>
 class MemberNameSDict : public SDict<MemberName>
 {
   public:
-    MemberNameSDict(int size) : SDict<MemberName>(size) {}
+    MemberNameSDict(uint size) : SDict<MemberName>(size) {}
    ~MemberNameSDict() {}
 
   private:
@@ -92,7 +92,7 @@ class MemberNameInfoIterator : public QListIterator<MemberInfo>
 class MemberNameInfoSDict : public SDict<MemberNameInfo>
 {
   public:
-    MemberNameInfoSDict(int size) : SDict<MemberNameInfo>(size) {}
+    MemberNameInfoSDict(uint size) : SDict<MemberNameInfo>(size) {}
    ~MemberNameInfoSDict() {}
   private:
     int compareValues(const MemberNameInfo *item1,const MemberNameInfo *item2) const

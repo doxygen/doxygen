@@ -373,9 +373,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
     ol.parseText(theTranslator->trFile(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
-    QListIterator<FileDef> it(*m_fileList);
-    FileDef *fd;
-    for (;(fd=it.current());++it)
+    for (it.toFirst();(fd=it.current());++it)
     {
       if (fd->hasDocumentation())
       {
@@ -935,7 +933,7 @@ static void computeCommonDirPrefix()
     sdi.toFirst();
     dir=sdi.current();
     path=dir->name();
-    int i=path.findRev('/',path.length()-2);
+    int i=path.findRev('/',(int)path.length()-2);
     path=path.left(i+1);
     bool done=FALSE;
     if (i==-1) 
@@ -946,8 +944,8 @@ static void computeCommonDirPrefix()
     {
       while (!done)
       {
-        int l = path.length();
-        int count=0;
+        uint l = path.length();
+        uint count=0;
         for (sdi.toFirst();(dir=sdi.current());++sdi)
         {
           QCString dirName = dir->name();
@@ -955,7 +953,7 @@ static void computeCommonDirPrefix()
           {
             if (qstrncmp(dirName,path,l)!=0) // dirName does not start with path
             {
-              int i=path.findRev('/',l-2);
+              i=path.findRev('/',(int)l-2);
               if (i==-1) // no unique prefix -> stop
               {
                 path="";
@@ -972,7 +970,7 @@ static void computeCommonDirPrefix()
           {
             path=dir->name();
             l=path.length();
-            int i=path.findRev('/',l-2);
+            i=path.findRev('/',(int)l-2);
             if (i==-1) // no unique prefix -> stop
             {
               path="";
@@ -1037,7 +1035,7 @@ void buildDirectories()
   for (sdi.toFirst();(dir=sdi.current());++sdi)
   {
     QCString name = dir->name();
-    int i=name.findRev('/',name.length()-2);
+    int i=name.findRev('/',(int)name.length()-2);
     if (i>0)
     {
       DirDef *parent = Doxygen::directories->find(name.left(i+1));

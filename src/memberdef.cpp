@@ -1438,7 +1438,7 @@ MemberDefImpl::IMPL::~IMPL()
   delete classSectionSDict;
 }
 
-void MemberDefImpl::IMPL::init(Definition *def,
+void MemberDefImpl::IMPL::init(Definition *d,
                      const char *t,const char *a,const char *e,
                      Protection p,Specifier v,bool s,Relationship r,
                      MemberType mt,const ArgumentList &tal,
@@ -1473,7 +1473,7 @@ void MemberDefImpl::IMPL::init(Definition *def,
   type=removeRedundantWhiteSpace(type);
   args=a;
   args=removeRedundantWhiteSpace(args);
-  if (type.isEmpty()) decl=def->name()+args; else decl=type+" "+def->name()+args;
+  if (type.isEmpty()) decl=d->name()+args; else decl=type+" "+d->name()+args;
 
   memberGroup=0;
   virt=v;
@@ -1503,7 +1503,7 @@ void MemberDefImpl::IMPL::init(Definition *def,
   // convert function declaration arguments (if any)
   if (!args.isEmpty())
   {
-    stringToArgumentList(def->getLanguage(),args,declArgList,&extraTypeChars);
+    stringToArgumentList(d->getLanguage(),args,declArgList,&extraTypeChars);
     //printf("setDeclArgList %s to %s const=%d\n",args.data(),
     //    argListToString(declArgList).data(),declArgList->constSpecifier);
   }
@@ -1519,7 +1519,7 @@ void MemberDefImpl::IMPL::init(Definition *def,
   hasDocumentedParams = FALSE;
   hasDocumentedReturnType = FALSE;
   docProvider = 0;
-  isDMember = def->getDefFileName().right(2).lower()==".d";
+  isDMember = d->getDefFileName().right(2).lower()==".d";
 }
 
 
@@ -2640,7 +2640,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
       if (detailsVisible)
       {
-        static bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         //ol.endEmphasis();
@@ -3337,8 +3336,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 {
   // if this member is in a group find the real scope name.
   bool hasParameterList = FALSE;
-  bool inFile = container->definitionType()==Definition::TypeFile;
-  bool hasDocs = isDetailedSectionVisible(inGroup,inFile);
 
   //printf("MemberDefImpl::writeDocumentation(): name='%s' hasDocs='%d' containerType=%d inGroup=%d sectionLinkable=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup,isDetailedSectionLinkable());
@@ -3494,7 +3491,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     if (!Config_getBool(HIDE_SCOPE_NAMES))
     {
       bool first=TRUE;
-      SrcLangExt lang = getLanguage();
       if (!m_impl->defTmpArgLists.empty() && lang==SrcLangExt_Cpp)
         // definition has explicit template parameter declarations
       {
@@ -3567,9 +3563,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       {
         ldef=ldef.left(dp+1);
       }
-      int l=ldef.length();
+      int dl=ldef.length();
       //printf("start >%s<\n",ldef.data());
-      int i=l-1;
+      i=dl-1;
       while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
       while (i>=0 && isspace((uchar)ldef.at(i))) i--;
       if (i>0)
@@ -4490,7 +4486,7 @@ const MemberList *MemberDefImpl::getSectionList() const
 {
   const Definition *d= resolveAlias()->getOuterScope();
   char key[20];
-  sprintf(key,"%p",d);
+  sprintf(key,"%p",(void*)d);
   return (d!=0 && m_impl->classSectionSDict) ? m_impl->classSectionSDict->find(key) : 0;
 }
 
@@ -4499,7 +4495,7 @@ void MemberDefImpl::setSectionList(MemberList *sl)
   //printf("MemberDefImpl::setSectionList(%p,%p) name=%s\n",d,sl,name().data());
   const Definition *d= resolveAlias()->getOuterScope();
   char key[20];
-  sprintf(key,"%p",d);
+  sprintf(key,"%p",(void*)d);
   if (m_impl->classSectionSDict==0)
   {
     m_impl->classSectionSDict = new SDict<MemberList>(7);
@@ -4594,7 +4590,7 @@ void MemberDefImpl::writeTagFile(FTextStream &tagFile) const
         {
           tagFile << "      <enumvalue file=\"" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension);
           tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
-          QCString idStr = fmd->id();
+          idStr = fmd->id();
           if (!idStr.isEmpty())
           {
             tagFile << "\" clangid=\"" << convertToXML(idStr);

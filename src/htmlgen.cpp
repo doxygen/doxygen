@@ -408,7 +408,7 @@ static QCString removeEmptyLines(const QCString &s)
   return out.data();
 }
 
-static QCString substituteHtmlKeywords(const QCString &s,
+static QCString substituteHtmlKeywords(const QCString &str,
                                        const QCString &title,
                                        const QCString &relPath,
                                        const QCString &navPath=QCString())
@@ -576,7 +576,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
   }
 
   // first substitute generic keywords
-  QCString result = substituteKeywords(s,title,
+  QCString result = substituteKeywords(str,title,
     convertToHtml(Config_getString(PROJECT_NAME)),
     convertToHtml(Config_getString(PROJECT_NUMBER)),
         convertToHtml(Config_getString(PROJECT_BRIEF)));
@@ -2693,7 +2693,6 @@ void HtmlGenerator::writeSearchPage()
 void HtmlGenerator::writeExternalSearchPage()
 {
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
-  static bool disableIndex = Config_getBool(DISABLE_INDEX);
   QCString fileName = Config_getString(HTML_OUTPUT)+"/search"+Doxygen::htmlFileExtension;
   QFile f(fileName);
   if (f.open(IO_WriteOnly))

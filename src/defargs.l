@@ -67,6 +67,8 @@
   
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
+
+#define USE_STATE2STRING 0
   
 /* -----------------------------------------------------------------
  *	state variables
@@ -98,8 +100,11 @@ struct defargsYY_state
   QCString         delimiter;
 };
 
+#if USE_STATE2STRING
 static const char *stateToString(int state);
-static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+#endif
+
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static bool nameIsActuallyPartOfType(QCString &name);
 
 /* -----------------------------------------------------------------
@@ -420,7 +425,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      if (alen>2 && a.array.at(0)=='(' && 
 						            a.array.at(alen-1)==')') // fix-up for int *(a[10])
 					      {
-						int i=a.array.find('[')-1;
+						i=a.array.find('[')-1;
 						a.array = a.array.mid(1,alen-2);
 						if (i>0 && a.name.isEmpty())
 						{
@@ -572,10 +577,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 /* ----------------------------------------------------------------------------
  */
 
-static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int c=0;
+  yy_size_t c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
       *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -637,13 +642,13 @@ void
 class KeywordHash
 {
   private:
-    static inline unsigned int hash (const char *str, size_t len);
+    static inline unsigned int hash (const char *str, unsigned int len);
   public:
-    static const char *find (const char *str, size_t len);
+    static const char *find (const char *str, unsigned int len);
 };
 
 inline unsigned int
-KeywordHash::hash (const char *str, size_t len)
+KeywordHash::hash (const char *str, unsigned int len)
 {
   static const unsigned char asso_values[] =
   {
@@ -691,7 +696,7 @@ KeywordHash::hash (const char *str, size_t len)
 }
 
 const char *
-KeywordHash::find (const char *str, size_t len)
+KeywordHash::find (const char *str, unsigned int len)
 {
   static const char * const wordlist[] =
   {
@@ -789,4 +794,6 @@ void stringToArgumentList(SrcLangExt lang, const char *argsString,ArgumentList& 
   defargsYYlex_destroy(yyscanner);
 }
 
+#if USE_STATE2STRING
 #include "defargs.l.h"
+#endif

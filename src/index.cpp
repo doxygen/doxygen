@@ -2008,20 +2008,20 @@ class PrefixIgnoreClassList : public ClassList
 class AlphaIndexTableCell
 {
   public:
-    AlphaIndexTableCell(int row,int col,uint letter,ClassDef *cd) :
+    AlphaIndexTableCell(int row,int col,uint letter,const ClassDef *cd) :
       m_letter(letter), m_class(cd), m_row(row), m_col(col)
     { //printf("AlphaIndexTableCell(%d,%d,%c,%s)\n",row,col,letter!=0 ? letter: '-',
       //       cd!=(ClassDef*)0x8 ? cd->name().data() : "<null>");
     }
 
-    ClassDef *classDef() const { return m_class; }
+    const ClassDef *classDef() const { return m_class; }
     uint letter()        const { return m_letter; }
     int row()            const { return m_row; }
     int column()         const { return m_col; }
 
   private:
     uint m_letter;
-    ClassDef *m_class;
+    const ClassDef *m_class;
     int m_row;
     int m_col;
 };
@@ -2190,7 +2190,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
     row++;
     ClassListIterator cit(*cl);
     cit.toFirst();
-    ClassDef *cd = cit.current();
+    cd = cit.current();
     ++cit;
     tableRows->append(new AlphaIndexTableCell(row,col,0,cd));
     row++;
@@ -4059,7 +4059,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           for (mi.toFirst();(md=mi.current());++mi)
           {
             const MemberList *enumList = md->enumFieldList();
-            bool isDir = enumList!=0 && md->isEnumerate();
+            isDir = enumList!=0 && md->isEnumerate();
             if (md->isVisible() && !md->isAnonymous())
             {
               Doxygen::indexList->addContentsItem(isDir,
@@ -4162,7 +4162,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
         {
           const SectionInfo *si=0;
           if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
-          bool hasSubPages = pd->hasSubPages();
+          hasSubPages = pd->hasSubPages();
           bool hasSections = pd->hasSections();
           Doxygen::indexList->addContentsItem(
               hasSubPages || hasSections,
@@ -4638,7 +4638,7 @@ static void writeIndex(OutputList &ol)
           ol.pushGeneratorState();
           ol.disable(OutputGenerator::Latex);
         }
-        QCString title = pd->title();
+        title = pd->title();
         if (title.isEmpty()) title=pd->name();
 
         ol.disable(OutputGenerator::Docbook);

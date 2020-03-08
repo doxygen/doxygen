@@ -46,7 +46,7 @@
 template<class type> class Q_EXPORT QPtrDict : public QGDict
 {
 public:
-    QPtrDict(int size=17) : QGDict(size,PtrKey,0,0) {}
+    QPtrDict(uint size=17) : QGDict(size,PtrKey,0,0) {}
     QPtrDict( const QPtrDict<type> &d ) : QGDict(d) {}
    ~QPtrDict()				{ clear(); }
     QPtrDict<type> &operator=(const QPtrDict<type> &d)

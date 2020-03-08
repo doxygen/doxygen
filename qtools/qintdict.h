@@ -46,7 +46,7 @@
 template<class type> class Q_EXPORT QIntDict : public QGDict
 {
 public:
-    QIntDict(int size=17) : QGDict(size,IntKey,0,0) {}
+    QIntDict(uint size=17) : QGDict(size,IntKey,0,0) {}
     QIntDict( const QIntDict<type> &d ) : QGDict(d) {}
    ~QIntDict()				{ clear(); }
     QIntDict<type> &operator=(const QIntDict<type> &d)

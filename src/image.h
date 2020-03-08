@@ -24,37 +24,37 @@
 class Image
 {
   public:
-    Image(int w,int h);
+    Image(uint w,uint h);
    ~Image();
    
-    void setPixel(int x,int y,uchar val);
-    uchar getPixel(int x,int y) const;
-    void writeChar(int x,int y,char c,uchar fg);
-    void writeString(int x,int y,const char *s,uchar fg);
-    void drawHorzLine(int y,int xs,int xe,uchar colIndex,uint mask);
-    void drawHorzArrow(int y,int xs,int xe,uchar colIndex,uint mask);
-    void drawVertLine(int x,int ys,int ye,uchar colIndex,uint mask);
-    void drawVertArrow(int x,int ys,int ye,uchar colIndex,uint mask);
-    void drawRect(int x,int y,int width,int height,uchar colIndex,uint mask);
-    void fillRect(int x,int y,int width,int height,uchar colIndex,uint mask);
+    void setPixel(uint x,uint y,uchar val);
+    uchar getPixel(uint x,uint y) const;
+    void writeChar(uint x,uint y,char c,uchar fg);
+    void writeString(uint x,uint y,const char *s,uchar fg);
+    void drawHorzLine(uint y,uint xs,uint xe,uchar colIndex,uint mask);
+    void drawHorzArrow(uint y,uint xs,uint xe,uchar colIndex,uint mask);
+    void drawVertLine(uint x,uint ys,uint ye,uchar colIndex,uint mask);
+    void drawVertArrow(uint x,uint ys,uint ye,uchar colIndex,uint mask);
+    void drawRect(uint x,uint y,uint width,uint height,uchar colIndex,uint mask);
+    void fillRect(uint x,uint y,uint width,uint height,uchar colIndex,uint mask);
     bool save(const char *fileName,int mode=0);
     friend uint stringLength(const char *s);
-    uint getWidth() const { return width; }
-    uint getHeight() const { return height; }
-    uchar *getData() const { return data; }
+    uint width() const { return m_width; }
+    uint height() const { return m_height; }
+    uchar *data() const { return m_data; }
     static uint stringLength(const char *s);
  
   private:
-    int width;
-    int height;
-    uchar *data;
+    uint m_width;
+    uint m_height;
+    uchar *m_data;
 };
 
 /** Class representing a bitmap image colored based on hue/sat/gamma settings. */
 class ColoredImage
 {
   public:
-    ColoredImage(int width,int height,
+    ColoredImage(uint width,uint height,
            const uchar *greyLevels,const uchar *alphaLevels,
            int saturation,int hue,int gamma);
    ~ColoredImage();
@@ -62,8 +62,8 @@ class ColoredImage
     static void hsl2rgb(double h,double s,double l,
                         double *pRed,double *pGreen,double *pBlue);
   private:
-    int m_width;
-    int m_height;
+    uint m_width;
+    uint m_height;
     uchar *m_data;
     bool m_hasAlpha;
 };

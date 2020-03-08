@@ -97,7 +97,7 @@ class FilePair
 class FilePairDict : public SDict<FilePair>
 {
   public:
-    FilePairDict(int size) : SDict<FilePair>(size) {}
+    FilePairDict(uint size) : SDict<FilePair>(size) {}
   private:
     int compareValues(const FilePair *item1,const FilePair *item2) const;
 };
@@ -147,7 +147,7 @@ inline int DirList::compareValues(const DirDef *item1,const DirDef *item2) const
 class DirSDict : public SDict<DirDef>
 {
   public:
-    DirSDict(int size) : SDict<DirDef>(size) {}
+    DirSDict(uint size) : SDict<DirDef>(size) {}
     int compareValues(const DirDef *item1,const DirDef *item2) const
     {
       return qstricmp(item1->shortName(),item2->shortName());

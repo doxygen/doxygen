@@ -1007,7 +1007,6 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   if (mdict)
   {
     MemberSDict::Iterator mdi(*mdict);
-    const MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
       writeMemberReference(t,def,rmd,"references");
@@ -1017,7 +1016,6 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   if (mdict)
   {
     MemberSDict::Iterator mdi(*mdict);
-    const MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
       writeMemberReference(t,def,rmd,"referencedby");

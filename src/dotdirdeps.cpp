@@ -135,8 +135,6 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   QDictIterator<DirDef> di(dirsInGraph);
   for (di.toFirst();(dir=di.current());++di) // foreach dir in the graph
   {
-    QDictIterator<UsedDir> udi(*dir->usedDirs());
-    UsedDir *udir;
     for (udi.toFirst();(udir=udi.current());++udi) // foreach used dir
     {
       const DirDef *usedDir=udir->dir();

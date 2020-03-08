@@ -112,7 +112,7 @@ static QCString               g_includeFileName;
 static QCString               g_includeFileText;
 static uint                   g_includeFileOffset;
 static uint                   g_includeFileLength;
-static uint                   g_includeFileLine;
+static int                    g_includeFileLine;
 static bool                   g_includeFileShowLineNo;
 
 
@@ -145,7 +145,7 @@ struct DocParserContext
   QCString  includeFileText;
   uint     includeFileOffset;
   uint     includeFileLength;
-  uint     includeFileLine;
+  int      includeFileLine;
   bool     includeFileLineNo;
 
   TokenInfo *token;
@@ -302,7 +302,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       int i;
       if ((i=result.findRev('/'))!=-1 || (i=result.findRev('\\'))!=-1)
       {
-	result = result.right(result.length()-i-1);
+	result = result.right((int)result.length()-i-1);
       }
       //printf("fileName=%s result=%s\n",fileName,result.data());
       QCString outputDir;
@@ -679,7 +679,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   QCString cmdArg=substitute(commandName,"#","::");
   cmdArg = replaceScopeSeparator(cmdArg);
 
-  int l=cmdArg.length();
+  int l=(int)cmdArg.length();
   if (l==0) return FALSE;
 
   int funcStart=cmdArg.find('(');
@@ -726,7 +726,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   }
 
 
-  int scopeOffset=g_context.length();
+  int scopeOffset=(int)g_context.length();
   do // for each scope
   {
     QCString fullName=cmdArg;
@@ -961,7 +961,7 @@ static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttrib
 {
   HtmlAttribListIterator li(tagHtmlAttribs);
   HtmlAttrib *opt;
-  int index=0;
+  uint index=0;
   int retval = RetVal_OK;
   for (li.toFirst();(opt=li.current());++li,++index)
   {
@@ -1054,7 +1054,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
 
   const Definition *compound=0;
   const MemberDef  *member=0;
-  int len = g_token->name.length();
+  uint len = g_token->name.length();
   ClassDef *cd=0;
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::inputNameDict,g_fileName,ambig);
@@ -1730,7 +1730,7 @@ static void handleImg(DocNode *parent,QList<DocNode> &children,const HtmlAttribL
   HtmlAttribListIterator li(tagHtmlAttribs);
   HtmlAttrib *opt;
   bool found=FALSE;
-  int index=0;
+  uint index=0;
   for (li.toFirst();(opt=li.current());++li,++index)
   {
     //printf("option name=%s value=%s\n",opt->name.data(),opt->value.data());
@@ -1768,7 +1768,7 @@ DocEmoji::DocEmoji(DocNode *parent,const QCString &symName) :
 {
   m_parent = parent;
   QCString locSymName = symName;
-  int len=locSymName.length();
+  uint len=locSymName.length();
   if (len>0)
   {
     if (locSymName.at(len-1)!=':') locSymName.append(":");
@@ -2035,7 +2035,7 @@ void DocIncOperator::parse()
   const char *p = g_includeFileText;
   uint l = g_includeFileLength;
   uint o = g_includeFileOffset;
-  uint il = g_includeFileLine;
+  int il = g_includeFileLine;
   DBG(("DocIncOperator::parse() text=%s off=%d len=%d\n",qPrint(p),o,l));
   uint so = o,bo;
   bool nonEmpty = FALSE;
@@ -2280,7 +2280,7 @@ void DocSecRefItem::parse()
   const SectionInfo *sec=0;
   if (!m_target.isEmpty())
   {
-    const SectionInfo *sec = SectionManager::instance().find(m_target);
+    sec = SectionManager::instance().find(m_target);
     if (sec)
     {
       m_file   = sec->fileName();
@@ -2322,7 +2322,7 @@ void DocSecRefList::parse()
       {
         case CMD_SECREFITEM:
           {
-            int tok=doctokenizerYYlex();
+            tok=doctokenizerYYlex();
             if (tok!=TK_WHITESPACE)
             {
               warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\refitem command");
@@ -2377,7 +2377,7 @@ DocInternalRef::DocInternalRef(DocNode *parent,const QCString &ref)
   int i=ref.find('#');
   if (i!=-1)
   {
-    m_anchor = ref.right(ref.length()-i-1);
+    m_anchor = ref.right((int)ref.length()-i-1);
     m_file   = ref.left(i);
   }
   else
@@ -2701,7 +2701,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
               m_children.append(new DocWord(this,w.left(p)));
               if ((uint)p<l-1) // something left after the } (for instance a .)
               {
-                result=w.right(l-p-1);
+                result=w.right((int)l-p-1);
               }
               goto endlink;
             }
@@ -2897,7 +2897,7 @@ DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString 
 bool DocImage::isSVG() const
 {
   QCString  locName = m_url.isEmpty() ? m_name : m_url;
-  int len = locName.length();
+  int len = (int)locName.length();
   int fnd = locName.find('?'); // ignore part from ? until end
   if (fnd==-1) fnd=len;
   return fnd>=4 && locName.mid(fnd-4,4)==".svg";
@@ -3379,32 +3379,32 @@ int DocHtmlCell::parseXml()
   return retval;
 }
 
-int DocHtmlCell::rowSpan() const
+uint DocHtmlCell::rowSpan() const
 {
-  int retval = 0;
+  uint retval = 0;
   HtmlAttribList attrs = attribs();
   uint i;
   for (i=0; i<attrs.count(); ++i) 
   {
     if (attrs.at(i)->name.lower()=="rowspan")
     {
-      retval = attrs.at(i)->value.toInt();
+      retval = attrs.at(i)->value.toUInt();
       break;
     }
   }
   return retval;
 }
 
-int DocHtmlCell::colSpan() const
+uint DocHtmlCell::colSpan() const
 {
-  int retval = 1;
+  uint retval = 1;
   HtmlAttribList attrs = attribs();
   uint i;
   for (i=0; i<attrs.count(); ++i) 
   {
     if (attrs.at(i)->name.lower()=="colspan")
     {
-      retval = QMAX(1,attrs.at(i)->value.toInt());
+      retval = QMAX(1,attrs.at(i)->value.toUInt());
       break;
     }
   }
@@ -3700,9 +3700,9 @@ int DocHtmlTable::parseXml()
 /** Helper class to compute the grid for an HTML style table */
 struct ActiveRowSpan
 {
-  ActiveRowSpan(int rows,int col) : rowsLeft(rows), column(col) {}
-  int rowsLeft;
-  int column;  
+  ActiveRowSpan(uint rows,uint col) : rowsLeft(rows), column(col) {}
+  uint rowsLeft;
+  uint column;  
 };
 
 /** List of ActiveRowSpan classes. */
@@ -3717,14 +3717,14 @@ void DocHtmlTable::computeTableGrid()
   //printf("computeTableGrid()\n");
   RowSpanList rowSpans;
   rowSpans.setAutoDelete(TRUE);
-  int maxCols=0;
-  int rowIdx=1;
+  uint maxCols=0;
+  uint rowIdx=1;
   QListIterator<DocNode> li(children());
   DocNode *rowNode;
   for (li.toFirst();(rowNode=li.current());++li)
   {
-    int colIdx=1;
-    int cells=0;
+    uint colIdx=1;
+    uint cells=0;
     if (rowNode->kind()==DocNode::Kind_HtmlRow)
     {
       uint i;
@@ -3736,8 +3736,8 @@ void DocHtmlTable::computeTableGrid()
         if (cellNode->kind()==DocNode::Kind_HtmlCell)
         {
           DocHtmlCell *cell = (DocHtmlCell*)cellNode;
-          int rs = cell->rowSpan();
-          int cs = cell->colSpan();
+          uint rs = cell->rowSpan();
+          uint cs = cell->colSpan();
 
           for (i=0;i<rowSpans.count();i++)
           {
@@ -3811,7 +3811,7 @@ int DocHtmlDescTitle::parse()
             {
               case CMD_REF:
                 {
-                  int tok=doctokenizerYYlex();
+                  tok=doctokenizerYYlex();
                   if (tok!=TK_WHITESPACE)
                   {
                     warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",
@@ -3841,7 +3841,7 @@ int DocHtmlDescTitle::parse()
                 // fall through
               case CMD_LINK:
                 {
-                  int tok=doctokenizerYYlex();
+                  tok=doctokenizerYYlex();
                   if (tok!=TK_WHITESPACE)
                   {
                     warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after \\%s command",

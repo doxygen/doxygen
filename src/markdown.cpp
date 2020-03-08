@@ -868,13 +868,11 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   }
   if (isToc) // special case for [TOC]
   {
-    int level = Config_getInt(TOC_INCLUDE_HEADINGS);
-    if (level > 0 && level <=5)
+    int toc_level = Config_getInt(TOC_INCLUDE_HEADINGS);
+    if (toc_level > 0 && toc_level <=5)
     {
-      char levStr[10];
-      sprintf(levStr,"%d",level);
       out.addStr("@tableofcontents{html:");
-      out.addStr(levStr);
+      out.addStr(QCString().setNum(toc_level));
       out.addStr("}");
     }
   }
@@ -1802,7 +1800,7 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
   int rowNum = 1;
   while (i<size)
   {
-    int ret = findTableColumns(data+i,size-i,start,end,cc);
+    ret = findTableColumns(data+i,size-i,start,end,cc);
     if (cc!=columns) break; // end of table
 
     j=start+i;
@@ -1957,20 +1955,15 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
     QCString hTag;
     if (level<5 && !id.isEmpty())
     {
-      SectionType type = SectionType::Anchor;
       switch(level)
       {
         case 1:  out.addStr("@section ");
-                 type=SectionType::Section;
                  break;
         case 2:  out.addStr("@subsection ");
-                 type=SectionType::Subsection;
                  break;
         case 3:  out.addStr("@subsubsection ");
-                 type=SectionType::Subsubsection;
                  break;
         default: out.addStr("@paragraph ");
-                 type=SectionType::Paragraph;
                  break;
       }
       out.addStr(id);
@@ -2299,7 +2292,7 @@ static QCString processBlocks(const QCString &s,int indent)
       {
         //printf("Found header at %d-%d\n",i,end);
         while (pi<size && data[pi]==' ') pi++;
-        QCString header,id;
+        QCString header;
         convertStringFragment(header,data+pi,i-pi-1);
         id = extractTitleId(header, level);
         //printf("header='%s' is='%s'\n",header.data(),id.data());

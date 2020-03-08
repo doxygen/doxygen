@@ -48,6 +48,8 @@
 
 #define ADDCHAR(c)    yyextra->outBuf->addChar(c)
 #define ADDARRAY(a,s) yyextra->outBuf->addArray(a,s)
+
+#define USE_STATE2STRING 0
   
 struct CondCtx
 {
@@ -102,7 +104,9 @@ struct commentcnvYY_state
   bool       isFixedForm = FALSE; // For Fortran
 };
 
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 static inline int computeIndent(const char *s);
 
 static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len);
@@ -111,7 +115,7 @@ static void startCondSection(yyscan_t yyscanner,const char *sectId);
 static void endCondSection(yyscan_t yyscanner);
 static void handleCondSectionId(yyscan_t yyscanner,const char *expression);
 static void replaceAliases(yyscan_t yyscanner,const char *s);
-static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 
 
@@ -1036,11 +1040,11 @@ static void replaceAliases(yyscan_t yyscanner,const char *s)
 }
 
 
-static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int bytesInBuf = yyextra->inBuf->curPos()-yyextra->inBufPos;
-  int bytesToCopy = QMIN(max_size,bytesInBuf);
+  yy_size_t bytesInBuf = yyextra->inBuf->curPos()-yyextra->inBufPos;
+  yy_size_t bytesToCopy = QMIN(max_size,bytesInBuf);
   memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
   return bytesToCopy;
@@ -1064,7 +1068,7 @@ static void replaceComment(yyscan_t yyscanner,int offset)
     else
     {
       copyToOutput(yyscanner," */",3);
-      int i;for (i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
+      for (i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
       yyextra->inSpecialComment=FALSE;
       BEGIN(Scan);
     }
@@ -1200,4 +1204,6 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
 
 //----------------------------------------------------------------------------
 
+#if USE_STATE2STRING
 #include "commentcnv.l.h"
+#endif

@@ -92,7 +92,7 @@ void PerlModOutputStream::add(int n)
   if (m_t != 0)
     (*m_t) << n;
   else
-    m_s += n;
+    m_s += QCString().setNum(n);
 }
 
 void PerlModOutputStream::add(unsigned int n)
@@ -100,7 +100,7 @@ void PerlModOutputStream::add(unsigned int n)
   if (m_t != 0)
     (*m_t) << n;
   else
-    m_s += n;
+    m_s += QCString().setNum(n);
 }
 
 class PerlModOutput
@@ -779,7 +779,7 @@ void PerlModDocVisitor::visit(DocFormula *f)
 {
   openItem("formula");
   QCString id;
-  id += f->id();
+  id += QCString().setNum(f->id());
   m_output.addFieldQuotedString("id", id).addFieldQuotedString("content", f->text());
   closeItem();
 }
@@ -1761,9 +1761,9 @@ void PerlModGenerator::addListOfAllMembers(const ClassDef *cd)
       for (mii.toFirst();(mi=mii.current());++mii)
       {
         const MemberDef *md=mi->memberDef;
-        const ClassDef  *cd=md->getClassDef();
+        const ClassDef  *mcd=md->getClassDef();
         const Definition *d=md->getGroupDef();
-        if (d==0) d = cd;
+        if (d==0) d = mcd;
 
         m_output.openHash()
           .addFieldQuotedString("name", md->name())
@@ -1773,7 +1773,7 @@ void PerlModGenerator::addListOfAllMembers(const ClassDef *cd)
         if (!mi->ambiguityResolutionScope.isEmpty())
           m_output.addFieldQuotedString("ambiguity_scope", mi->ambiguityResolutionScope);
 
-        m_output.addFieldQuotedString("scope", cd->name())
+        m_output.addFieldQuotedString("scope", mcd->name())
           .closeHash();
       }
     }
@@ -1871,10 +1871,10 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
   {
     m_output.openList("inner");
     ClassSDict::Iterator cli(*cl);
-    const ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
+    const ClassDef *icd;
+    for (cli.toFirst();(icd=cli.current());++cli)
       m_output.openHash()
-	.addFieldQuotedString("name", cd->name())
+	.addFieldQuotedString("name", icd->name())
 	.closeHash();
     m_output.closeList();
   }
@@ -1991,10 +1991,10 @@ void PerlModGenerator::generatePerlModForNamespace(const NamespaceDef *nd)
   {
     m_output.openList("namespaces");
     NamespaceSDict::Iterator nli(*nl);
-    const NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
+    const NamespaceDef *ind;
+    for (nli.toFirst();(ind=nli.current());++nli)
       m_output.openHash()
-	.addFieldQuotedString("name", nd->name())
+	.addFieldQuotedString("name", ind->name())
 	.closeHash();
     m_output.closeList();
   }

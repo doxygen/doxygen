@@ -273,15 +273,14 @@ void RTFGenerator::beginRTFDocument()
 
   // sort styles ascending by \s-number via an intermediate QArray
   QDictIterator<StyleData> iter(rtf_Style);
-  const StyleData* style;
+  const StyleData* style = 0;
   unsigned maxIndex = 0;
   for(; (style = iter.current()); ++iter)
   {
     unsigned index = style->index;
     if (maxIndex < index) maxIndex = index;
   }
-  QArray<const StyleData*> array(maxIndex + 1);
-  array.fill(0);
+  std::vector<const StyleData*> array(maxIndex + 1, 0);
   ASSERT(maxIndex < array.size());
 
   iter.toFirst();
@@ -297,10 +296,10 @@ void RTFGenerator::beginRTFDocument()
   }
 
   // write array elements
-  unsigned size = array.size();
-  for(unsigned i = 0; i < size; i++)
+  size_t size = array.size();
+  for(size_t i = 0; i < size; i++)
   {
-    const StyleData* style = array.at(i);
+    style = array.at(i);
     if (style != 0)
       t <<"{" << style->reference << style->definition << ";}\n";
   }
@@ -2463,7 +2462,7 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
       {
         // null terminate at the last '}'
         //char *str = strrchr(buffer,'}');
-        int pos = lineBuf.findRev('}');
+        pos = lineBuf.findRev('}');
 
         if (pos != -1)
           lineBuf.at(pos) = '\0';

@@ -152,10 +152,10 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
     const MemberList *ml = md->getSectionList();
     if (ml && lt==ml->listType())
     {
-      MemberList ml(lt);
-      ml.append(md);
-      ml.countDecMembers();
-      ml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
+      MemberList mml(lt);
+      mml.append(md);
+      mml.countDecMembers();
+      mml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
     }
   }
 }

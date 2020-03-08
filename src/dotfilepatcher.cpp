@@ -506,8 +506,8 @@ bool DotFilePatcher::run() const
     fo.close();
     // keep original SVG file so we can refer to it, we do need to replace
     // dummy link by real ones
-    QFile fi(tmpName);
-    QFile fo(orgName);
+    fi.setName(tmpName);
+    fo.setName(orgName);
     if (!fi.open(IO_ReadOnly)) 
     {
       err("problem opening file %s for reading!\n",tmpName.data());
@@ -518,7 +518,7 @@ bool DotFilePatcher::run() const
       err("problem opening file %s for writing!\n",orgName.data());
       return FALSE;
     }
-    FTextStream t(&fo);
+    FTextStream to(&fo);
     while (!fi.atEnd()) // foreach line
     {
       QCString line(maxLineLen);
@@ -529,7 +529,7 @@ bool DotFilePatcher::run() const
       }
       line.resize(numBytes+1);
       Map *map = m_maps.at(0); // there is only one 'map' for a SVG file
-      t << replaceRef(line,map->relPath,map->urlOnly,map->context,"_top");
+      to << replaceRef(line,map->relPath,map->urlOnly,map->context,"_top");
     }
     fi.close();
     fo.close();

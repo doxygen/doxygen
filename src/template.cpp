@@ -336,7 +336,7 @@ int TemplateList::release()
   return count;
 }
 
-int TemplateList::count() const
+uint TemplateList::count() const
 {
   return p->elems.count();
 }
@@ -406,9 +406,9 @@ TemplateListIntf::ConstIterator *TemplateList::createIterator() const
   return new TemplateListConstIterator(*this);
 }
 
-TemplateVariant TemplateList::at(int index) const
+TemplateVariant TemplateList::at(uint index) const
 {
-  if (index>=0 && index<(int)p->elems.count())
+  if (index<p->elems.count())
   {
     return p->elems[index];
   }
@@ -780,7 +780,7 @@ class FilterLength
       }
       if (v.type()==TemplateVariant::List)
       {
-        return TemplateVariant(v.toList()->count());
+        return TemplateVariant((int)v.toList()->count());
       }
       else if (v.type()==TemplateVariant::String)
       {
@@ -1125,7 +1125,7 @@ class FilterAlphaIndex
       {
         int i=0;
         if (startLetter>='0' && startLetter<='9') s[i++] = 'x';
-        s[i++]=tolower((char)startLetter);
+        s[i++]=(char)tolower((char)startLetter);
         s[i++]=0;
       }
       else
@@ -2268,7 +2268,6 @@ class ExpressionParser
       if (p==q) // still no valid token found -> error
       {
         m_curToken.type = ExprToken::Unknown;
-        char s[2];
         s[0]=c;
         s[1]=0;
         warn(m_parser->templateName(),m_line,"Found unknown token '%s' (%d) while parsing %s",s,c,m_tokenStream);
@@ -2877,19 +2876,21 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       stopAt.append("else");
 
       // if 'nodes'
-      GuardedNodes *guardedNodes = new GuardedNodes;
-      ExpressionParser ex(parser,line);
-      guardedNodes->line = line;
-      guardedNodes->guardAst = ex.parse(data);
-      parser->parse(this,line,stopAt,guardedNodes->trueNodes);
-      m_ifGuardedNodes.append(guardedNodes);
+      {
+        GuardedNodes *guardedNodes = new GuardedNodes;
+        ExpressionParser ex(parser,line);
+        guardedNodes->line = line;
+        guardedNodes->guardAst = ex.parse(data);
+        parser->parse(this,line,stopAt,guardedNodes->trueNodes);
+        m_ifGuardedNodes.append(guardedNodes);
+      }
       TemplateToken *tok = parser->takeNextToken();
 
       // elif 'nodes'
       while (tok && tok->data.left(5)=="elif ")
       {
         ExpressionParser ex(parser,line);
-        guardedNodes = new GuardedNodes;
+        GuardedNodes *guardedNodes = new GuardedNodes;
         guardedNodes->line = tok->line;
         guardedNodes->guardAst = ex.parse(tok->data.mid(5));
         parser->parse(this,tok->line,stopAt,guardedNodes->trueNodes);
@@ -3119,15 +3120,15 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
             while (!done)
             {
               // set the forloop meta-data variable
-              TemplateAutoRef<TemplateStruct> s(TemplateStruct::alloc());
-              s->set("counter0",    (int)index);
-              s->set("counter",     (int)(index+1));
-              s->set("revcounter",  (int)(l-index));
-              s->set("revcounter0", (int)(l-index-1));
-              s->set("first",index==0);
-              s->set("last", (int)index==l-1);
-              s->set("parentloop",parentLoop ? *parentLoop : TemplateVariant());
-              c->set("forloop",s.get());
+              TemplateAutoRef<TemplateStruct> ls(TemplateStruct::alloc());
+              ls->set("counter0",    (int)index);
+              ls->set("counter",     (int)(index+1));
+              ls->set("revcounter",  (int)(l-index));
+              ls->set("revcounter0", (int)(l-index-1));
+              ls->set("first",index==0);
+              ls->set("last", (int)index==l-1);
+              ls->set("parentloop",parentLoop ? *parentLoop : TemplateVariant());
+              c->set("forloop",ls.get());
 
               // set the iterator variable
               c->set(m_var,i);
@@ -3278,7 +3279,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
           }
           c->push();
           //int index = m_reversed ? list.count() : 0;
-          TemplateVariant v;
+          //TemplateVariant v;
           const TemplateVariant *parentLoop = c->getRef("forloop");
           uint index = m_reversed ? listSize-1 : 0;
           TemplateListIntf::ConstIterator *it = list->createIterator();
@@ -3622,7 +3623,6 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       : TemplateNodeCreator<TemplateNodeCreate>(parser,parent,line), m_templateExpr(0), m_fileExpr(0)
     {
       TRACE(("TemplateNodeCreate(%s)\n",data.data()));
-      ExpressionParser ep(parser,line);
       if (data.isEmpty())
       {
         parser->warn(m_templateName,line,"create tag is missing arguments");
@@ -4979,7 +4979,7 @@ TemplateToken *TemplateParser::takeNextToken()
 const TemplateToken *TemplateParser::currentToken() const
 {
   return m_tokens.getFirst();
-};
+}
 
 void TemplateParser::removeNextToken()
 {

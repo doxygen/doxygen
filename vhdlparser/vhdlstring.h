@@ -123,9 +123,6 @@ class VhdlString
     int   m_len;
 };
 
-// declare it static otherwise we will get:
-//   multiple definition of `operator+(char const*, VhdlString)'
-// as we are in an include file
-static VhdlString   operator+ (const char *s, VhdlString v) { return VhdlString(s).append(v); }
+inline VhdlString   operator+ (const char *s, VhdlString v) { return VhdlString(s).append(v); }
 
 #endif

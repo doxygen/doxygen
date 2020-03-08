@@ -146,8 +146,10 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
 //---------------------------------------------------------------------------------
 
 DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
-  : m_file(absDotName), m_md5Hash(md5Hash), m_cleanUp(Config_getBool(DOT_CLEANUP)),
-    m_dotExe(Config_getString(DOT_PATH)+"dot")
+  : m_file(absDotName)
+  , m_md5Hash(md5Hash)
+  , m_dotExe(Config_getString(DOT_PATH)+"dot")
+  , m_cleanUp(Config_getBool(DOT_CLEANUP))
 {
   m_jobs.setAutoDelete(TRUE);
 }

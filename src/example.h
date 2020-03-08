@@ -36,7 +36,7 @@ struct Example
 class ExampleSDict : public SDict<Example>
 {
   public:
-    ExampleSDict(int size=17) : SDict<Example>(size) { setAutoDelete(TRUE); }
+    ExampleSDict(uint size=17) : SDict<Example>(size) { setAutoDelete(TRUE); }
    ~ExampleSDict() {}
   private:
     int compareValues(const Example *item1,const Example *item2) const

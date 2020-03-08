@@ -56,6 +56,8 @@
 #include "util.h"
 #include "reflist.h"
 
+#define USE_STATE2STRING 0
+
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const QCStringList &);
 static bool handleFn(yyscan_t yyscanner,const QCString &, const QCStringList &);
@@ -136,7 +138,9 @@ static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const QCStrin
 static bool handleParam(yyscan_t yyscanner,const QCString &, const QCStringList &);
 static bool handleRetval(yyscan_t yyscanner,const QCString &, const QCStringList &);
 
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 
 typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const QCStringList &optList);
 
@@ -296,6 +300,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
 #define YY_NO_UNISTD_H 1
 #define YY_NEVER_INTERACTIVE 1
 
+
 enum XRefKind
 {
   XRef_Item,
@@ -405,7 +410,6 @@ static void stripTrailingWhiteSpace(QCString &s);
 static void initParser(yyscan_t yyscanner);
 static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s);
 static void lineCount(yyscan_t yyscanner);
-static QCString stripQuotes(yyscan_t yyscanner,const char *s);
 static void addXRefItem(yyscan_t yyscanner,
                         const char *listName,const char *itemTitle,
                         const char *listTitle,bool append);
@@ -418,7 +422,7 @@ static inline void addOutput(yyscan_t yyscanner,const char *s);
 static inline void addOutput(yyscan_t yyscanner,char c);
 static void endBrief(yyscan_t yyscanner,bool addToOutput=TRUE);
 static void handleGuard(yyscan_t yyscanner,const QCString &expr);
-static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void addCite(yyscan_t yyscanner);
 
 //-----------------------------------------------------------------------------
@@ -818,8 +822,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  {
 					    // see bug 613024, we need to put the newlines after ending the XRef section.
 					    if (!yyextra->insideParBlock) setOutput(yyscanner,OutputDoc);
-                                            int i;
-                                            for (i=0;i<yyleng;)
+                                            yy_size_t i;
+                                            for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
                                               else if (strcmp(yytext+i,"\\_linebr")==0) addOutput(yyscanner,'\n'),i+=8;
@@ -828,8 +832,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
 					  else if (yyextra->inContext!=OutputBrief)
 					  {
-                                            int i;
-                                            for (i=0;i<yyleng;)
+                                            yy_size_t i;
+                                            for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
                                               else if (strcmp(yytext+i,"\\_linebr")==0) addOutput(yyscanner,'\n'),i+=8;
@@ -2503,7 +2507,6 @@ static bool handleInternal(yyscan_t yyscanner,const QCString &, const QCStringLi
 
 static bool handleLineBr(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,'\n');
   return FALSE;
 }
@@ -2910,7 +2913,7 @@ static void addCite(yyscan_t yyscanner)
   if (yytext[0] =='"')
   {
     name=yytext+1;
-    name=name.left(yyleng-2);
+    name=name.left((int)yyleng-2);
   }
   CitationManager::instance().insert(name.data());
 }
@@ -3104,18 +3107,18 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput)
   }
 }
 
-static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-    yyextra->prevPosition=yyextra->inputPosition;
-    int c=0;
-    while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
-    {
-	*buf = yyextra->inputString[yyextra->inputPosition++] ;
-	//printf("%d (%c)\n",*buf,*buf);
-	c++; buf++;
-    }
-    return c;
+  yyextra->prevPosition=yyextra->inputPosition;
+  yy_size_t c=0;
+  while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
+  {
+    *buf = yyextra->inputString[yyextra->inputPosition++] ;
+    //printf("%d (%c)\n",*buf,*buf);
+    c++; buf++;
+  }
+  return c;
 }
 
 //----------------------------------------------------------------------------
@@ -3348,4 +3351,6 @@ void CommentScanner::close(Entry *e,const char *fileName,int lineNr,bool foundIn
   yyextra->docGroup.close(e,fileName,lineNr,foundInline,implicit);
 }
 
+#if USE_STATE2STRING
 #include "commentscan.l.h"
+#endif

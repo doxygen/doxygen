@@ -22,7 +22,7 @@
 
 class QFile;
 
-static const char *latexStyleExtension = ".sty";
+#define LATEX_STYLE_EXTENSION ".sty"
 
 class LatexCodeGenerator : public CodeOutputInterface
 {

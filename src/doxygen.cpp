@@ -1511,7 +1511,7 @@ static void buildNamespaceList(const Entry *root)
           tagFileName = tagInfo->fileName;
         }
         //printf("++ new namespace %s lang=%s tagName=%s\n",fullName.data(),langToString(root->lang).data(),tagName.data());
-        NamespaceDef *nd=createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
+        nd=createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
                              root->startColumn,fullName,tagName,tagFileName,
                              root->type,root->spec&Entry::Published);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
@@ -1547,7 +1547,7 @@ static void buildNamespaceList(const Entry *root)
         if (d==0) // we didn't find anything, create the scope artificially
                   // anyway, so we can at least relate scopes properly.
         {
-          Definition *d = buildScopeFromQualifiedName(fullName,fullName.contains("::"),nd->getLanguage(),tagInfo);
+          d = buildScopeFromQualifiedName(fullName,fullName.contains("::"),nd->getLanguage(),tagInfo);
           d->addInnerCompound(nd);
           nd->setOuterScope(d);
           // TODO: Due to the order in which the tag file is written
@@ -1703,7 +1703,7 @@ static void findUsingDirectives(const Entry *root)
       else // unknown namespace, but add it anyway.
       {
         //printf("++ new unknown namespace %s lang=%s\n",name.data(),langToString(root->lang).data());
-        NamespaceDef *nd=createNamespaceDef(root->fileName,root->startLine,root->startColumn,name);
+        nd=createNamespaceDef(root->fileName,root->startLine,root->startColumn,name);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -3547,7 +3547,6 @@ static void buildFunctionList(const Entry *root)
 
           // add member to the list of file members
           //printf("Adding member=%s\n",md->name().data());
-          MemberName *mn;
           if ((mn=Doxygen::functionNameSDict->find(name)))
           {
             mn->append(md);
@@ -4010,7 +4009,6 @@ static void findUsedClassesForClass(const Entry *root,
             BaseInfo bi(usedName,Public,Normal);
             findClassRelation(root,context,instanceCd,&bi,templateNames,TemplateInstances,isArtificial);
 
-            int count=0;
             for (const Argument &arg : masterCd->templateArguments())
             {
               if (arg.name==usedName) // type is a template argument
@@ -4598,7 +4596,7 @@ static bool findClassRelation(
               Doxygen::classSDict->append(baseClassName,baseClass);
               if (isArtificial) baseClass->setArtificial(TRUE);
               baseClass->setLanguage(root->lang);
-              int si = baseClassName.findRev("::");
+              si = baseClassName.findRev("::");
               if (si!=-1) // class is nested
               {
                 Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,root->tagInfo());
@@ -5683,7 +5681,7 @@ static void findMember(const Entry *root,
   {
     if (funcSpec.isEmpty())
     {
-      int argListIndex=0;
+      uint argListIndex=0;
       tempScopeName=cd->qualifiedNameWithTemplateParameters(&root->tArgLists,&argListIndex);
     }
     else
@@ -5804,7 +5802,7 @@ static void findMember(const Entry *root,
           bool memFound=FALSE;
           for (mni.toFirst();!memFound && (md=mni.current());++mni)
           {
-            ClassDef *cd=md->getClassDef();
+            cd=md->getClassDef();
             Debug::print(Debug::FindMembers,0,
                 "3. member definition found, "
                 "scope needed='%s' scope='%s' args='%s' fileName=%s\n",
@@ -6056,7 +6054,7 @@ static void findMember(const Entry *root,
               warnMsg+="Possible candidates:\n";
               for (mni.toFirst();(md=mni.current());++mni)
               {
-                const ClassDef *cd=md->getClassDef();
+                cd=md->getClassDef();
                 if (cd!=0 && rightScopeMatch(cd->name(),className))
                 {
                   const ArgumentList &templAl = md->templateArguments();
@@ -6157,15 +6155,15 @@ static void findMember(const Entry *root,
         MemberNameIterator mni(*mn);
         MemberDef *md=mni.toFirst();
         ASSERT(md);
-        ClassDef *cd=md->getClassDef();
+        cd=md->getClassDef();
         ASSERT(cd);
-        QCString className=cd->name().copy();
+        className=cd->name();
         ++mni;
         bool unique=TRUE;
         for (;(md=mni.current());++mni)
         {
-          const ClassDef *cd=md->getClassDef();
-          if (className!=cd->name()) unique=FALSE;
+          const ClassDef *lcd=md->getClassDef();
+          if (className!=lcd->name()) unique=FALSE;
         }
         if (unique)
         {
@@ -6179,7 +6177,7 @@ static void findMember(const Entry *root,
           ArgumentList tArgList =
             getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
           //printf("new related member %s args='%s'\n",md->name().data(),funcArgs.data());
-          MemberDef *md=createMemberDef(
+          md=createMemberDef(
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,Related,
@@ -6232,7 +6230,6 @@ static void findMember(const Entry *root,
       Debug::print(Debug::FindMembers,0,"2. related function\n"
               "  scopeName=%s className=%s\n",qPrint(scopeName),qPrint(className));
       if (className.isEmpty()) className=relates;
-      ClassDef *cd;
       //printf("scopeName='%s' className='%s'\n",scopeName.data(),className.data());
       if ((cd=getClass(scopeName)))
       {
@@ -6241,7 +6238,7 @@ static void findMember(const Entry *root,
         MemberDef *mdDefine=0;
         bool isDefine=FALSE;
         {
-          MemberName *mn = Doxygen::functionNameSDict->find(funcName);
+          mn = Doxygen::functionNameSDict->find(funcName);
           if (mn)
           {
             MemberNameIterator mni(*mn);
@@ -6453,7 +6450,6 @@ static void findMember(const Entry *root,
     else if (root->parent() && root->parent()->section==Entry::OBJCIMPL_SEC)
     {
 localObjCMethod:
-      ClassDef *cd;
       //printf("scopeName='%s' className='%s'\n",scopeName.data(),className.data());
       if (Config_getBool(EXTRACT_LOCAL_METHODS) && (cd=getClass(scopeName)))
       {
@@ -7054,7 +7050,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   fmd->setAnchor();
                   md->insertEnumField(fmd);
                   fmd->setEnumScope(md,TRUE);
-                  MemberName *mn=mnsd->find(e->name);
+                  mn=mnsd->find(e->name);
                   if (mn)
                   {
                     mn->append(fmd);
@@ -7187,7 +7183,7 @@ static void findEnumDocumentation(const Entry *root)
           MemberDef *md;
           for (mni.toFirst();(md=mni.current()) && !found;++mni)
           {
-            const ClassDef *cd=md->getClassDef();
+            cd=md->getClassDef();
             if (cd && cd->name()==className && md->isEnumerate())
             {
               // documentation outside a compound overrides the documentation inside it
@@ -9016,9 +9012,9 @@ static void copyLatexStyleSheet()
       else
       {
         QCString destFileName = Config_getString(LATEX_OUTPUT)+"/"+fi.fileName().data();
-        if (!checkExtension(fi.fileName().data(), latexStyleExtension))
+        if (!checkExtension(fi.fileName().data(), LATEX_STYLE_EXTENSION))
         {
-          destFileName += latexStyleExtension;
+          destFileName += LATEX_STYLE_EXTENSION;
         }
         copyFile(fileName, destFileName);
       }

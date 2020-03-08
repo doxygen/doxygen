@@ -47,7 +47,7 @@ class PageDefImpl : public DefinitionImpl, public PageDef
     virtual QCString title() const { return m_title; }
     virtual GroupDef *  getGroupDef() const;
     virtual PageSDict * getSubPages() const { return m_subPageDict; }
-    virtual void addInnerCompound(Definition *d);
+    virtual void addInnerCompound(const Definition *d);
     virtual bool visibleInIndex() const;
     virtual bool documentedPage() const;
     virtual bool hasSubPages() const;
@@ -121,10 +121,11 @@ void PageDefImpl::setFileName(const char *name)
   m_fileName = name;
 }
 
-void PageDefImpl::addInnerCompound(Definition *def)
+void PageDefImpl::addInnerCompound(const Definition *const_def)
 {
-  if (def->definitionType()==Definition::TypePage)
+  if (const_def->definitionType()==Definition::TypePage)
   {
+    Definition *def = const_cast<Definition*>(const_def); // uck: fix me
     PageDef *pd = dynamic_cast<PageDef*>(def);
     m_subPageDict->append(pd->name(),pd);
     def->setOuterScope(this);

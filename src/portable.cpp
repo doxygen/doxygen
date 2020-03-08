@@ -207,11 +207,6 @@ unsigned int Portable::pid(void)
   return pid;
 }
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
-#else
-  static char **last_environ;
-#endif
-
 #if !defined(_WIN32) || defined(__CYGWIN__)
 void loadEnvironment()
 {
@@ -261,9 +256,6 @@ void Portable::unsetenv(const char *variable)
     SetEnvironmentVariable(variable,0);
 #else
     /* Some systems don't have unsetenv(), so we do it ourselves */
-    size_t len;
-    char **ep;
-
     if (variable == NULL || *variable == '\0' || strchr (variable, '=') != NULL)
     {
       return; // not properly formatted
@@ -348,7 +340,7 @@ char  Portable::pathListSeparator(void)
 #endif
 }
 
-static const bool ExistsOnPath(const char *fileName)
+static bool ExistsOnPath(const char *fileName)
 {
   QFileInfo fi1(fileName);
   if (fi1.exists()) return true;
@@ -380,7 +372,7 @@ static const bool ExistsOnPath(const char *fileName)
   return false;
 }
 
-const bool Portable::checkForExecutable(const char *fileName)
+bool Portable::checkForExecutable(const char *fileName)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   char *extensions[] = {".bat",".com",".exe"};

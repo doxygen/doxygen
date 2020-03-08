@@ -59,6 +59,8 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
 struct scannerYY_state
 {
   OutlineParserInterface *thisParser;
@@ -190,12 +192,14 @@ struct scannerYY_state
 
   int              column = 0;
 
-  int              fencedSize = 0;
+  uint             fencedSize = 0;
   bool             nestedComment = false;
   std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
 };
 
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 //-----------------------------------------------------------------------------
 
 // forward declarations for stateless functions
@@ -218,7 +222,7 @@ static bool checkForKnRstyleC(yyscan_t yyscanner);
 static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &oldStyleArgName);
 static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString &name,
                           const QCString &brief,const QCString &docs);
-static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 
 /* ----------------------------------------------------------------- */
@@ -6594,10 +6598,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %%
 
 //----------------------------------------------------------------------------
-static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int c=0;
+  yy_size_t c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -6830,7 +6834,6 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
     else // normal "int *var"
     {
       int l=si,i=l-1,j;
-      char c;
       // look for start of name in "type *name"
       while (i>=0 && isId(yyextra->current->args.at(i))) i--;
       j=i+1;
@@ -7405,4 +7408,6 @@ void COutlineParser::parsePrototype(const char *text)
 
 //----------------------------------------------------------------------------
 
+#if USE_STATE2STRING
 #include "scanner.l.h"
+#endif

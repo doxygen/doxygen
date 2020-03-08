@@ -689,7 +689,7 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
       tsidx << "{" << endl;
       QListIterator<NavIndexEntry> li(navIndex);
       NavIndexEntry *e;
-      bool first=TRUE;
+      first=TRUE;
       for (li.toFirst();(e=li.current());) // for each entry
       {
         if (elemCount==0)
@@ -781,8 +781,7 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
     t << "<div class=\"levels\">[";
     t << theTranslator->trDetailLevel();
     t << " ";
-    int i;
-    for (i=1;i<=depth;i++)
+    for (int i=1;i<=depth;i++)
     {
       t << "<span onclick=\"javascript:toggleLevel(" << i << ");\">" << i << "</span>";
     }
@@ -794,9 +793,7 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
       for (int i=1;i<=depth;i++)
       {
         int num=0;
-        QListIterator<FTVNode> li(m_indentNodes[0]);
-        FTVNode *n;
-        for (;(n=li.current());++li)
+        for (li.toFirst();(n=li.current());++li)
         {
           num+=n->numNodesAtLevel(0,i);
         }

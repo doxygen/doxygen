@@ -99,7 +99,7 @@ class SDict
   private:
     SList<T> *m_list;
     QDict<T> *m_dict;
-    int m_sizeIndex;
+    uint m_sizeIndex;
     
   public:
     /*! Create an ordered dictionary.
@@ -108,7 +108,7 @@ class SDict
      *  \param caseSensitive indicated whether the keys should be sorted
      *         in a case sensitive way.
      */
-    SDict(int size=17,bool caseSensitive=TRUE) : m_sizeIndex(0)
+    SDict(uint size=17,bool caseSensitive=TRUE) : m_sizeIndex(0)
     {
       m_list = new SList<T>(this);
 #if AUTORESIZE
@@ -277,7 +277,7 @@ class SDict
     
     /*! Returns the number of items stored in the dictionary
      */
-    int count() const
+    uint count() const
     {
       return m_list->count();
     }

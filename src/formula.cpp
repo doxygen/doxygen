@@ -73,7 +73,7 @@ void FormulaManager::readFormulas(const char *dir,bool doCompare)
   QFile f(QCString(dir)+"/formula.repository");
   if (f.open(IO_ReadOnly)) // open repository
   {
-    int formulaCount=0;
+    uint formulaCount=0;
     msg("Reading formula repository...\n");
     QTextStream t(&f);
     QCString line;
@@ -274,8 +274,8 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       if (zoomFactor<8 || zoomFactor>50) zoomFactor=10;
       scaleFactor *= zoomFactor/10.0;
 
-      int width  = (int)((x2-x1)*scaleFactor+0.5f);
-      int height = (int)((y2-y1)*scaleFactor+0.5f);
+      int width  = (int)((x2-x1)*scaleFactor+0.5);
+      int height = (int)((y2-y1)*scaleFactor+0.5);
       p->storeDisplaySize(pageNum,width,height);
 
       if (format==Format::Vector)

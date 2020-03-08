@@ -148,13 +148,6 @@ add_library(doxycfg STATIC
 )
 
 add_library(_doxygen STATIC
-    # custom generated files
-    ${GENERATED_SRC}/lang_cfg.h
-    ${GENERATED_SRC}/settings.h
-    ${GENERATED_SRC}/layout_default.xml.h
-    ${GENERATED_SRC}/ce_parse.h
-    ${GENERATED_SRC}/configvalues.h
-    ${GENERATED_SRC}/resources.cpp
     # generated for/by flex/bison
     #${LEX_FILES_H} #unfortunately doesn't work in older versions of CMake (like 3.6.2)
     #${LEX_FILES_CPP} #unfortunately doesn't work in older versions of CMake (like 3.6.2)
@@ -196,6 +189,13 @@ add_library(_doxygen STATIC
     ${GENERATED_SRC}/xmlcode.cpp
     #
     ${GENERATED_SRC}/ce_parse.cpp
+    # custom generated files
+    ${GENERATED_SRC}/lang_cfg.h
+    ${GENERATED_SRC}/settings.h
+    ${GENERATED_SRC}/layout_default.xml.h
+    ${GENERATED_SRC}/ce_parse.h
+    ${GENERATED_SRC}/configvalues.h
+    ${GENERATED_SRC}/resources.cpp
     #
     arguments.cpp
     cite.cpp
@@ -330,5 +330,8 @@ target_link_libraries(doxygen
     ${EXTRA_LIBS}
     ${CLANG_LIBS}
 )
+set_project_warnings(doxycfg)
+set_project_warnings(_doxygen)
+set_project_warnings(doxygen)
 
 install(TARGETS doxygen DESTINATION bin)

@@ -35,8 +35,13 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
+#if USE_STATE2STRING
 static const char *stateToString(int state);
-static int yyread(char *buf,int max_size,yyscan_t yyscanner);
+#endif
+
+static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner);
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
@@ -96,10 +101,10 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 %%
 
-static int yyread(char *buf,int max_size,yyscan_t yyscanner)
+static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int c=0;
+  yy_size_t c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -156,4 +161,7 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const QCString
 extern "C" {
   int constexpYYwrap(yyscan_t yyscanner) { return 1; }
 }
+
+#if USE_STATE2STRING
 #include "constexp.l.h"
+#endif

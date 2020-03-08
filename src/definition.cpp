@@ -122,8 +122,8 @@ void DefinitionImpl::IMPL::setDefFileName(const QCString &df)
 void DefinitionImpl::IMPL::init(const char *df, const char *n)
 {
   setDefFileName(df);
-  QCString name = n;
-  if (name!="<globalScope>") 
+  QCString lname = n;
+  if (lname!="<globalScope>")
   {
     //extractNamespaceName(m_name,m_localName,ns);
     localName=stripScope(n);
@@ -175,15 +175,16 @@ static bool matchExcludedSymbols(const char *name)
     if (pattern.find('*')!=-1) // wildcard mode
     {
       QRegExp re(substitute(pattern,"*",".*"),TRUE);
-      int i,pl;
-      i = re.match(symName,0,&pl);
+      int pl;
+      int i = re.match(symName,0,&pl);
       //printf("  %d = re.match(%s) pattern=%s\n",i,symName.data(),pattern.data());
       if (i!=-1) // wildcard match
       {
-        int sl=symName.length();
+        uint ui=(uint)i;
+        uint sl=symName.length();
         // check if it is a whole word match
-        if ((i==0     || pattern.at(0)=='*'    || (!isId(symName.at(i-1))  && !forceStart)) &&
-            (i+pl==sl || pattern.at(i+pl)=='*' || (!isId(symName.at(i+pl)) && !forceEnd))
+        if ((ui==0     || pattern.at(0)=='*'     || (!isId(symName.at(ui-1))  && !forceStart)) &&
+            (ui+pl==sl || pattern.at(ui+pl)=='*' || (!isId(symName.at(ui+pl)) && !forceEnd))
            )
         {
           //printf("--> name=%s pattern=%s match at %d\n",symName.data(),pattern.data(),i);
@@ -196,11 +197,12 @@ static bool matchExcludedSymbols(const char *name)
       int i = symName.find(pattern);
       if (i!=-1) // we have a match!
       {
-        int pl=pattern.length();
-        int sl=symName.length();
+        uint ui=(uint)i;
+        uint pl=pattern.length();
+        uint sl=symName.length();
         // check if it is a whole word match
-        if ((i==0     || (!isId(symName.at(i-1))  && !forceStart)) &&
-            (i+pl==sl || (!isId(symName.at(i+pl)) && !forceEnd))
+        if ((ui==0     || (!isId(symName.at(ui-1))  && !forceStart)) &&
+            (ui+pl==sl || (!isId(symName.at(ui+pl)) && !forceEnd))
            )
         {
           //printf("--> name=%s pattern=%s match at %d\n",symName.data(),pattern.data(),i);
@@ -597,10 +599,10 @@ void DefinitionImpl::setDocumentation(const char *d,const char *docFile,int docL
 // if that is a multibyte one.
 static bool lastCharIsMultibyte(const QCString &s)
 {
-  int l = s.length();
+  uint l = s.length();
   int p = 0;
   int pp = -1;
-  while ((p=nextUtf8CharPosition(s,l,p))<l) pp=p;
+  while ((p=nextUtf8CharPosition(s,l,(uint)p))<(int)l) pp=p;
   if (pp==-1 || ((uchar)s[pp])<0x80) return FALSE;
   return TRUE;
 }
@@ -614,7 +616,7 @@ void DefinitionImpl::_setBriefDescription(const char *b,const char *briefFile,in
   QCString brief = b;
   brief = brief.stripWhiteSpace();
   if (brief.isEmpty()) return;
-  int bl = brief.length();
+  uint bl = brief.length();
   if (bl>0 && needsDot) // add punctuation if needed
   {
     int c = brief.at(bl-1);
@@ -756,7 +758,7 @@ class FilterCache
         Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
         f = Portable::popen(cmd,"r");
         FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
-        FilterCacheItem *item = new FilterCacheItem;
+        item = new FilterCacheItem;
         item->filePos = m_endPos;
         if (bf==0)
         {
@@ -785,7 +787,7 @@ class FilterCache
             return FALSE;
           }
           size+=bytesWritten;
-          str.addArray(buf,static_cast<int>(bytesWritten));
+          str.addArray(buf,static_cast<uint>(bytesWritten));
         }
         str.addChar('\0');
         item->fileSize = size;
@@ -806,7 +808,7 @@ class FilterCache
         while (!feof(f))
         {
           size_t bytesRead = fread(buf,1,blockSize,f);
-          str.addArray(buf,static_cast<int>(bytesRead));
+          str.addArray(buf,static_cast<uint>(bytesRead));
         }
         str.addChar('\0');
         fclose(f);
@@ -855,7 +857,7 @@ bool readCodeFragment(const char *fileName,
   char *p=str.data();
   if (p)
   {
-    int c=0;
+    char c=0;
     int col=0;
     int lineNr=1;
     // skip until the startLine has reached
@@ -958,7 +960,7 @@ bool readCodeFragment(const char *fileName,
         int braceIndex   = result.findRev('}');
         if (braceIndex > newLineIndex)
         {
-          result.truncate(braceIndex+1);
+          result.truncate((uint)braceIndex+1);
         }
         endLine=lineNr-1;
       }
@@ -1102,10 +1104,9 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const char *) const
         // write normal text (Man, Latex optionally, RTF optionally)
         ol.docify(m_impl->body->fileDef->name());
         ol.popGeneratorState();
-        
+
         // write text right from file marker
-        ol.parseText(refText.right(
-              refText.length()-fileMarkerPos-2)); 
+        ol.parseText(refText.right(refText.length()-(uint)fileMarkerPos-2));
       }
       else // file marker before line marker
       {
@@ -1185,8 +1186,7 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const char *) const
         ol.popGeneratorState();
 
         // write text right from linePos marker
-        ol.parseText(refText.right(
-              refText.length()-lineMarkerPos-2)); 
+        ol.parseText(refText.right(refText.length()-(uint)lineMarkerPos-2));
       }
       ol.endParagraph();
     }
@@ -1282,15 +1282,17 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
     ol.parseText(text);
     ol.docify(" ");
 
-    QCString ldefLine=theTranslator->trWriteList(members->count());
+    QCString ldefLine=theTranslator->trWriteList((int)members->count());
 
     QRegExp marker("@[0-9]+");
-    int index=0,newIndex,matchLen;
+    uint index=0;
+    int matchLen;
+    int newIndex;
     // now replace all markers in inheritLine with links to the classes
     while ((newIndex=marker.match(ldefLine,index,&matchLen))!=-1)
     {
       bool ok;
-      ol.parseText(ldefLine.mid(index,newIndex-index));
+      ol.parseText(ldefLine.mid(index,(uint)newIndex-index));
       uint entryIndex = ldefLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
       MemberDef *md=members->at(entryIndex);
       if (ok && md)
@@ -1408,7 +1410,7 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
           ol.docify(name);
         }
       }
-      index=newIndex+matchLen;
+      index=(uint)newIndex+matchLen;
     } 
     ol.parseText(ldefLine.right(ldefLine.length()-index));
     ol.writeString(".");
@@ -1747,7 +1749,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
     int level=1,l;
     char cs[2];
     cs[1]='\0';
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
+    std::vector<bool> inLi(maxLevel+1,false);
     for (const SectionInfo *si : m_impl->sectionRefs)
     {
       SectionType type = si->type();
@@ -1767,11 +1769,11 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
           for (l=level;l>nextLevel;l--)
           {
             if (l <= maxLevel && inLi[l]) ol.writeString("</li>\n");
-            inLi[l]=FALSE;
+            inLi[l]=false;
             if (l <= maxLevel) ol.writeString("</ul>\n");
           }
         }
-        cs[0]='0'+nextLevel;
+        cs[0]=(char)('0'+nextLevel);
         if (nextLevel <= maxLevel && inLi[nextLevel])
         {
           ol.writeString("</li>\n");
@@ -1783,7 +1785,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
                          "<a href=\"#"+si->label()+"\">"+
                          (si->title().isEmpty()?si->label():titleDoc)+"</a>");
         }
-        inLi[nextLevel]=TRUE;
+        inLi[nextLevel]=true;
         level = nextLevel;
       }
     }
@@ -1799,7 +1801,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
       level--;
     }
     if (level <= maxLevel && inLi[level]) ol.writeString("</li>\n");
-    inLi[level]=FALSE;
+    inLi[level]=false;
     ol.writeString("</ul>\n");
     ol.writeString("</div>\n");
     ol.popGeneratorState();
@@ -1812,8 +1814,8 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
     ol.writeString("    <toc>\n");
     ol.writeString("    <title>" + theTranslator->trRTFTableOfContents() + "</title>\n");
     int level=1,l;
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     int maxLevel = localToc.docbookLevel();
+    std::vector<bool> inLi(maxLevel+1,false);
     for (const SectionInfo *si : m_impl->sectionRefs)
     {
       SectionType type = si->type();
@@ -1932,17 +1934,17 @@ QCString abbreviate(const char *s,const char *name)
   const char *p = briefDescAbbrev.first();
   while (p)
   {
-    QCString s = p;
-    s.replace(QRegExp("\\$name"), scopelessName);  // replace $name with entity name
-    s += " ";
-    stripWord(result,s);
+    QCString str = p;
+    str.replace(QRegExp("\\$name"), scopelessName);  // replace $name with entity name
+    str += " ";
+    stripWord(result,str);
     p = briefDescAbbrev.next();
   }
 
   // capitalize first word
   if (!result.isEmpty())
   {
-    int c=result[0];
+    char c=result[0];
     if (c>='a' && c<='z') c+='A'-'a';
     result[0]=c;
   }
@@ -2161,7 +2163,7 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
     if (dest)
     {
       QCString result = *dest;
-      int l = result.length();
+      uint l = result.length();
       if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
       { // relative path -> prepend relPath.
         result.prepend(relPath);
