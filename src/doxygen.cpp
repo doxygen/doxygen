@@ -83,7 +83,6 @@
 #include "sqlcode.h"
 #include "tclscanner.h"
 #include "code.h"
-#include "objcache.h"
 #include "portable.h"
 #include "vhdljjparser.h"
 #include "vhdldocgen.h"

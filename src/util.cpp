@@ -4849,8 +4849,8 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
   static GrowBuf growBuf;
   growBuf.clear();
   if (name==0) return "";
-  char c;
-  const char *p=name;
+  signed char c;
+  const signed char *p=(const signed char*)name;
   while ((c=*p++)!=0)
   {
     switch(c)
@@ -4890,7 +4890,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
                   bool doEscape = TRUE;
                   if (allowUnicodeNames && uc <= 0xf7)
                   {
-                    const char* pt = p;
+                    const signed char* pt = p;
                     ids[ 0 ] = c;
                     int l = 0;
                     if ((uc&0xE0)==0xC0)

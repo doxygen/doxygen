@@ -36,7 +36,6 @@
 #include "dotcallgraph.h"
 #include "searchindex.h"
 #include "parserintf.h"
-#include "objcache.h"
 
 #include "vhdldocgen.h"
 #include "arguments.h"

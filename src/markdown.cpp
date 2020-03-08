@@ -2465,7 +2465,7 @@ static QCString detab(const QCString &s,int &refIndent)
   int minIndent=maxIndent;
   while (i<size)
   {
-    char c = data[i++];
+    signed char c = (signed char)data[i++];
     switch(c)
     {
       case '\t': // expand tab

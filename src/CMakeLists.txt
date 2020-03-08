@@ -262,7 +262,6 @@ add_library(_doxygen STATIC
     message.cpp
     msc.cpp
     namespacedef.cpp
-    objcache.cpp
     outputgen.cpp
     outputlist.cpp
     pagedef.cpp

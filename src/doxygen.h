@@ -34,7 +34,6 @@ class PageSDict;
 class PageDef;
 class SearchIndexIntf;
 class ParserManager;
-class ObjCache;
 class Store;
 class QFileInfo;
 class BufStr;

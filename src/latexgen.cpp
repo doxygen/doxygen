@@ -80,12 +80,12 @@ void LatexCodeGenerator::codify(const char *str)
 {
   if (str)
   {
-    const char *p=str;
-    char c;
+    const signed char *p=(const signed char*)str;
+    signed char c;
     //char cs[5];
     int spacesToNextTabStop;
     static int tabSize = Config_getInt(TAB_SIZE);
-    static char *result = NULL;
+    static signed char *result = NULL;
     static int lresult = 0;
     int i;
     while ((c=*p))
@@ -119,7 +119,7 @@ void LatexCodeGenerator::codify(const char *str)
                      if (lresult < (i + 5))                       \
                      {                                            \
                        lresult += 512;                            \
-                       result = (char *)realloc(result, lresult); \
+                       result = (signed char *)realloc(result, lresult); \
                      }                                            \
                      result[i++]=c; p++;                          \
                      if (c<0) /* multibyte utf-8 character */     \
@@ -151,7 +151,7 @@ void LatexCodeGenerator::codify(const char *str)
                    result[i]=0; // add terminator
                    //if (m_prettyCode)
                    //{
-                     filterLatexString(m_t,result,FALSE,TRUE);
+                     filterLatexString(m_t,(const char *)result,FALSE,TRUE);
                    //}
                    //else
                    //{
