@@ -1199,10 +1199,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
   					  yyextra->name+=yytext; 
 					}
-<Body>"("{B}*("*"{B}*)+{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func() but not "if (p) ..."
+<Body>"("{B}*("*"{B}*)+{SCOPENAME}+{B}*")"/{B}*	{  // (*p)->func() but not "if (p) ..."
 					  yyextra->code->codify(yytext);
 					  uint s=0;while (s<(uint)yyleng && !isId(yytext[s])) s++;
-                                          uint e=(uint)yyleng-1;while (!isId(yytext[e])) e--;
+                                          uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
 					  QCString varname = ((QCString)yytext).mid(s,e-s+1); 
 					  addType(yyscanner);
   					  yyextra->name=varname; 
