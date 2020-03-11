@@ -6993,9 +6993,9 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const char 
 
 const char *writeUtf8Char(FTextStream &t,const char *s)
 {
-  char c=*s++;
-  t << c;
-  if (c<0) // multibyte character
+  uchar c=(uchar)*s++;
+  t << (char)c;
+  if (c>=0x80) // multibyte character
   {
     if (((uchar)c&0xE0)==0xC0)
     {
@@ -7025,8 +7025,8 @@ int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos)
 {
   int bytes=1;
   if (startPos>=len) return len;
-  char c = utf8Str[startPos];
-  if (c<0) // multibyte utf-8 character
+  uchar c = (uchar)utf8Str[startPos];
+  if (c>=0x80) // multibyte utf-8 character
   {
     if (((uchar)c&0xE0)==0xC0)
     {

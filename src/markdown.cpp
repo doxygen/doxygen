@@ -109,7 +109,7 @@ static Entry         *g_current;
 static QCString       g_fileName;
 static int            g_lineNr;
 static int            g_indentLevel=0;  // 0 is outside markdown, -1=page level
-static const char     g_utf8_nbsp[3] = {'\xc2', '\xa0', '\0'}; // UTF-8 nbsp
+static const uchar    g_utf8_nbsp[3] = { 0xc2, 0xa0, 0}; // UTF-8 nbsp
 static const char    *g_doxy_nsbp = "&_doxy_nbsp;";            // doxygen escape command for UTF-8 nbsp
 //----------
 
@@ -1036,7 +1036,7 @@ static void addStrEscapeUtf8Nbsp(GrowBuf &out,const char *s,int len)
   }
   else // escape needed -> slow
   {
-    out.addStr(substitute(QCString(s).left(len),g_doxy_nsbp,g_utf8_nbsp));
+    out.addStr(substitute(QCString(s).left(len),g_doxy_nsbp,(const char *)g_utf8_nbsp));
   }
 }
 
@@ -2487,8 +2487,8 @@ static QCString detab(const QCString &s,int &refIndent)
       default: // non-whitespace => update minIndent
         if (c<0 && i<size) // multibyte sequence
         {
-          // special handling of the UTF-8 nbsp character 0xc2 0xa0
-          if (c == '\xc2' && data[i] == '\xa0')
+          // special handling of the UTF-8 nbsp character 0xC2 0xA0
+          if ((uchar)c == 0xC2 && (uchar)(data[i]) == 0xA0)
           {
             out.addStr(g_doxy_nsbp);
             i++;
