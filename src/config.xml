@@ -923,6 +923,17 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='HIDE_UNDOC_NAMESPACES' defval='1'>
+      <docs>
+<![CDATA[
+ If the \c HIDE_UNDOC_NAMESPACES tag is set to \c YES, doxygen will hide all
+ undocumented namespaces that are normally visible in the namespace hierarchy.
+ If set to \c NO, these namespaces will be included in the
+ various overviews.
+ This option has no effect if \ref cfg_extract_all "EXTRACT_ALL" is enabled.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='HIDE_FRIEND_COMPOUNDS' defval='0'>
       <docs>
 <![CDATA[
