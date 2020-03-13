@@ -272,4 +272,10 @@ class LocalToc
     int m_level[numTocTypes];
 };
 
+enum objCMethod
+{
+   NoObjCMeth   = 0,
+   ObjCMethStat = 1,
+   ObjCMethInst = 2
+};
 #endif

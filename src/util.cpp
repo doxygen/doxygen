@@ -1838,7 +1838,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         {
           if (nc != '=')
           // avoid splitting operator&=
-	  {
+          {
             *dst++=' ';
           }
         }
@@ -3464,7 +3464,8 @@ bool getDefs(const QCString &scName,
              bool forceEmptyScope,
              const FileDef *currentFile,
              bool checkCV,
-             const char *forceTagFile
+             const char *forceTagFile,
+             const objCMethod objCMeth
             )
 {
   fd=0, md=0, cd=0, nd=0, gd=0;
@@ -3558,6 +3559,14 @@ bool getDefs(const QCString &scName,
               matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
                              fcd,                  fcd->getFileDef(),argList,
                              checkCV);
+            if (match)
+            {
+              if (mmd->isObjCMethod() && (objCMeth != NoObjCMeth))
+              {
+                 if (objCMeth == ObjCMethStat) { match = mmd->isStatic(); }
+                 else { match = !mmd->isStatic(); }
+              }
+            }
             //printf("match=%d\n",match);
             if (match)
             {

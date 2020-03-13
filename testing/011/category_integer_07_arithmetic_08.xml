@@ -3,7 +3,7 @@
   <compounddef id="category_integer_07_arithmetic_08" kind="category" language="Objective-C" prot="public">
     <compoundname>Integer(Arithmetic)</compoundname>
     <sectiondef kind="public-func">
-      <memberdef kind="function" id="category_integer_07_arithmetic_08_1a12f411c5872ba3bafb8ea7dd1826cf2a" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+      <memberdef kind="function" id="category_integer_07_arithmetic_08_1ab4f131468dbe9d450ea70efe116c771c" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>id</type>
         <definition>id Integer(Arithmetic)::add:</definition>
         <argsstring>(Integer *addend)</argsstring>
@@ -21,7 +21,7 @@
         </inbodydescription>
         <location file="011_category.m" line="8" column="6"/>
       </memberdef>
-      <memberdef kind="function" id="category_integer_07_arithmetic_08_1ae4ff0b0c62b6809e8f5bcee9baa6e521" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+      <memberdef kind="function" id="category_integer_07_arithmetic_08_1acbe7112676cc9a125bdc53e297228fcf" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>id</type>
         <definition>id Integer(Arithmetic)::sub:</definition>
         <argsstring>(Integer *subtrahend)</argsstring>
@@ -47,11 +47,11 @@
     </detaileddescription>
     <location file="011_category.m" line="17" column="19" bodyfile="011_category.m" bodystart="17" bodyend="-1"/>
     <listofallmembers>
-      <member refid="category_integer_07_arithmetic_08_1a12f411c5872ba3bafb8ea7dd1826cf2a" prot="public" virt="virtual">
+      <member refid="category_integer_07_arithmetic_08_1ab4f131468dbe9d450ea70efe116c771c" prot="public" virt="virtual">
         <scope>Integer(Arithmetic)</scope>
         <name>add:</name>
       </member>
-      <member refid="category_integer_07_arithmetic_08_1ae4ff0b0c62b6809e8f5bcee9baa6e521" prot="public" virt="virtual">
+      <member refid="category_integer_07_arithmetic_08_1acbe7112676cc9a125bdc53e297228fcf" prot="public" virt="virtual">
         <scope>Integer(Arithmetic)</scope>
         <name>sub:</name>
       </member>

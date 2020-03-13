@@ -4300,6 +4300,12 @@ void MemberDefImpl::setAnchor()
     memAnchor.prepend(buf);
   }
 
+  // an ObjectC method can exist in 2 versions, with a "+" and with a "-", but the
+  // names are the same, so the linking would result in the same anchor
+  if (isObjCMethod())
+  {
+    if (isStatic()) memAnchor.prepend("+ "); else memAnchor.prepend("- ");
+  }
   // convert to md5 hash
   uchar md5_sig[16];
   QCString sigStr(33);
