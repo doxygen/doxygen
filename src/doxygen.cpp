@@ -10772,6 +10772,18 @@ void parseInput()
 {
   atexit(exitDoxygen);
 
+  // we would like to show the versionString earlier, but we first have to handle the configuration file
+  // to know the value of the QUIET setting.
+  QCString versionString;
+  if (strlen(getGitVersion())>0)
+  {
+    versionString = QCString(getVersion())+" ("+getGitVersion()+")";
+  }
+  else
+  {
+    versionString = getVersion();
+  }
+  msg("Doxygen version used: %s\n",versionString.data());
 
   /**************************************************************************
    *            Make sure the output directory exists
