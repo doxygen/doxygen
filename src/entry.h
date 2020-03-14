@@ -278,7 +278,8 @@ class Entry
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
     ArgumentList typeConstr;  //!< where clause (C#) for type constraints
-    int          bodyLine;    //!< line number of the definition in the source
+    int          bodyLine;    //!< line number of the body in the source
+    int          bodyColumn;  //!< column of the body in the source
     int          endBodyLine; //!< line number where the definition ends
     int          mGrpId;      //!< member group id
     std::vector<BaseInfo> extends; //!< list of base classes

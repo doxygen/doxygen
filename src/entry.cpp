@@ -95,6 +95,7 @@ Entry::Entry(const Entry &e)
   exception   = e.exception;
   typeConstr  = e.typeConstr;
   bodyLine    = e.bodyLine;
+  bodyColumn  = e.bodyColumn;
   endBodyLine = e.endBodyLine;
   mGrpId      = e.mGrpId;
   anchors     = e.anchors;
@@ -213,6 +214,7 @@ void Entry::reset()
   startLine = 1;
   startColumn = 1;
   bodyLine = -1;
+  bodyColumn = 1;
   endBodyLine = -1;
   mGrpId = -1;
   callGraph   = entryCallGraph;

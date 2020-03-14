@@ -627,6 +627,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    lineCount(yyscanner) ;
   					    yyextra->current->mtype = yyextra->mtype = Event;
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    yyextra->curlyCount=0;
 					    BEGIN( CliPropertyType );
 					  }
@@ -635,6 +636,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    lineCount(yyscanner) ;
   					    yyextra->current->mtype = Event;
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					  }
 					  else
 					  {
@@ -648,6 +650,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					     lineCount(yyscanner) ;
   					     yyextra->current->mtype = yyextra->mtype = Property;
 					     yyextra->current->bodyLine = yyextra->yyLineNr;
+					     yyextra->current->bodyColumn = yyextra->yyColNr;
 					     yyextra->curlyCount=0;
 					     BEGIN( CliPropertyType );
 					   }
@@ -741,6 +744,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->current->startLine = yyextra->yyLineNr;
 					    yyextra->current->startColumn = yyextra->yyColNr;
 					    yyextra->current->bodyLine  = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    yyextra->current->section = Entry::FUNCTION_SEC;
 					    yyextra->current->protection = yyextra->protection = Public ;
 					    yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
@@ -877,6 +881,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
                                             lineCount(yyscanner);
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
                                             yyextra->current->fileName = yyextra->yyFileName ;
 					    yyextra->current->startLine = yyextra->yyLineNr ;
 					    yyextra->current->startColumn = yyextra->yyColNr;
@@ -893,6 +898,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
                                             lineCount(yyscanner);
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
                                             yyextra->current->fileName = yyextra->yyFileName ;
 					    yyextra->current->startLine = yyextra->yyLineNr ;
 					    yyextra->current->startColumn = yyextra->yyColNr;
@@ -1006,6 +1012,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner);
   					}
 <PackageName>";"			{
@@ -1124,6 +1131,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner);
 					  if (yyextra->insidePHP)
 					  {
@@ -1145,6 +1153,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->current->startLine = yyextra->yyLineNr;
 					    yyextra->current->startColumn = yyextra->yyColNr;
 					    yyextra->current->bodyLine  = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
   					    BEGIN( CompoundName ); 
 					  }
 					  else if (yyextra->insideD)
@@ -1169,6 +1178,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->current->startLine = yyextra->yyLineNr;
 					    yyextra->current->startColumn = yyextra->yyColNr;
 					    yyextra->current->bodyLine  = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
   					    BEGIN( CompoundName ); 
 					  }
 					  else
@@ -1188,6 +1198,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->current->startLine = yyextra->yyLineNr;
 					    yyextra->current->startColumn = yyextra->yyColNr;
 					    yyextra->current->bodyLine  = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    BEGIN( CompoundName );
 					  }
 					  else
@@ -1210,6 +1221,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->current->fileName  = yyextra->yyFileName;
 					    yyextra->current->startLine = yyextra->yyLineNr;
 					    yyextra->current->bodyLine  = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    BEGIN( CompoundName );
 					  }
 					  else // TODO is addType right? just copy/pasted
@@ -1231,6 +1243,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->current->fileName  = yyextra->yyFileName;
 					    yyextra->current->startLine = yyextra->yyLineNr;
 					    yyextra->current->bodyLine  = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    BEGIN( CompoundName );
 					  }
 					  else // TODO is addType right? just copy/pasted
@@ -1254,6 +1267,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->current->startLine = yyextra->yyLineNr;
 					    yyextra->current->startColumn = yyextra->yyColNr;
 					    yyextra->current->bodyLine  = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    BEGIN( CompoundName );
 					  }
 					  else
@@ -1274,6 +1288,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->fileName  = yyextra->yyFileName;
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  BEGIN( CompoundName );
   					}
 <FindMembers>{B}*"@interface"{BN}+	{ // Objective-C class interface, or Java attribute
@@ -1293,6 +1308,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  BEGIN( CompoundName );
   					}
 <FindMembers>{B}*"@protocol"{BN}+	{ // Objective-C protocol definition
@@ -1309,6 +1325,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  BEGIN( CompoundName );
   					}
 <FindMembers>{B}*"exception"{BN}+ 	{ // Corba IDL/Slice exception
@@ -1324,6 +1341,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner);
 					  BEGIN( CompoundName );
   					}
@@ -1359,6 +1377,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  if (yytext[0]=='@')
 					  {
 					    yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
@@ -1379,6 +1398,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner) ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1394,6 +1414,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner) ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1409,6 +1430,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner) ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1424,6 +1446,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->current->startLine = yyextra->yyLineNr;
 					    yyextra->current->startColumn = yyextra->yyColNr;
 					    yyextra->current->bodyLine  = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    lineCount(yyscanner) ;
 					    BEGIN( CompoundName ) ;
 					  }
@@ -1463,6 +1486,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner) ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1478,6 +1502,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner) ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1493,6 +1518,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner) ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1508,6 +1534,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner) ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1536,6 +1563,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner) ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1564,6 +1592,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->startLine = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  lineCount(yyscanner) ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1744,6 +1773,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->previous->args.resize(0);
 					  yyextra->previous->name=yyextra->previous->name.stripWhiteSpace();
 					  yyextra->previous->bodyLine = yyextra->yyLineNr;
+					  yyextra->previous->bodyColumn = yyextra->yyColNr;
                                           yyextra->previous->spec |= Entry::Alias;
                                           BEGIN(FindMembers); 
                                         }
@@ -1878,6 +1908,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  if (yyextra->roundCount==0 && --yyextra->sharpCount<=0)
 					  {
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    yyextra->current->args = "(";
 					    yyextra->currentArgumentContext = FuncQual;
 					    yyextra->fullArgString = yyextra->current->args.copy();
@@ -1917,6 +1948,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  if (yyextra->insidePHP)
 					  {
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    BEGIN( DefinePHP );
 					  }
 					  else
@@ -2251,6 +2283,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  if (yyextra->insidePHP)
 					    REJECT;
   					  yyextra->current->bodyLine = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->lastDefineContext = YY_START;
   					  BEGIN( Define );
   					}
@@ -2303,6 +2336,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->name = yyextra->current->name.left(yyextra->current->name.length()-1).stripWhiteSpace();
 					  yyextra->current->args = "(";
   					  yyextra->current->bodyLine = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  yyextra->currentArgumentContext = DefineEnd;
 					  yyextra->fullArgString=yyextra->current->args.copy();
 					  yyextra->copyArgString=&yyextra->current->args;
@@ -2325,6 +2359,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             yyextra->current->id = ClangParser::instance()->lookup(yyextra->yyLineNr,yytext);
                                           }
   					  yyextra->current->bodyLine = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
   					  yyextra->current->name = yytext;
 					  BEGIN(DefineEnd);
   					}
@@ -2381,6 +2416,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  yyextra->current->name = yyextra->current->name.left(yyextra->current->name.length()-1).stripWhiteSpace();
 					  yyextra->current->name = yyextra->current->name.left(yyextra->current->name.length()-1);
   					  yyextra->current->bodyLine = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
   					  yyextra->lastRoundContext = DefinePHPEnd;
   					  yyextra->pCopyRoundGString = &yyextra->current->initializer;
 					  yyextra->roundCount = 0;
@@ -2406,6 +2442,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  if (yyextra->current->bodyLine==-1)
 					  {
 					    yyextra->current->bodyLine=yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					  }
 					  yyextra->docBlockContext   = YY_START;
 					  yyextra->docBlockInBody    = FALSE;
@@ -2469,6 +2506,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  if (yyextra->current->bodyLine==-1)
 					  {
 					    yyextra->current->bodyLine=yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					  }
 					  yyextra->docBlockContext   = YY_START;
 					  yyextra->docBlockInBody    = FALSE;
@@ -2551,6 +2589,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <FindMembers>"="			{ // in PHP code this could also be due to "<?="
   					  yyextra->current->bodyLine = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->initializer = yytext;
 					  yyextra->lastInitializerContext = YY_START;
 					  yyextra->initBracketCount=0;
@@ -3122,6 +3161,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  if (yyextra->current->bodyLine==-1)
 					  {
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					  }
                                           if ( yyextra->insidePHP && yyextra->current->type.left(3) == "var" )
                                           {
@@ -3434,6 +3474,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             yyextra->current->id = ClangParser::instance()->lookup(yyextra->yyLineNr,yytext);
                                           }
   					  yyextra->current->bodyLine = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
   					  yyextra->current->name     = yytext;
 					}
 <FindFields>"("				{
@@ -3959,6 +4000,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else
 					  {
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    lineCount(yyscanner);
 					    addType(yyscanner);
 					    yyextra->funcPtrType=yytext;
@@ -4026,6 +4068,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  //yyextra->roundCount=0;
 					  //BEGIN( FuncFunc );
 					  yyextra->current->bodyLine = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  yyextra->currentArgumentContext = FuncFuncEnd;
 					  yyextra->fullArgString=yyextra->current->args.copy();
 					  yyextra->copyArgString=&yyextra->current->args;
@@ -4090,12 +4133,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    // the bodyLine check is to prevent this guard to be true more than once
 					  {
   					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    BEGIN( GetCallType );
 					  }
 					  else if (!yyextra->current->name.isEmpty()) // normal function
 					  {
 					    yyextra->current->args = yytext;
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    yyextra->currentArgumentContext = FuncQual;
 					    yyextra->fullArgString=yyextra->current->args.copy();
 					    yyextra->copyArgString=&yyextra->current->args;
@@ -4116,6 +4161,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    yyextra->current->args = yytext;
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    yyextra->currentArgumentContext = FuncQual;
 					    yyextra->fullArgString=yyextra->current->args.copy();
 					    yyextra->copyArgString=&yyextra->current->args;
@@ -5588,8 +5634,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <CompoundName,ClassVar>{B}*"{"{B}*	{ 
                                           yyextra->current->fileName = yyextra->yyFileName ;
-					  yyextra->current->startLine = yyextra->yyLineNr ;
-					  yyextra->current->startColumn = yyextra->yyColNr;
+					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
 					  if (yyextra->current->name.isEmpty() && !yyextra->isTypedef) // anonymous compound
 					  {
@@ -5839,8 +5885,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					}
 <Bases>{B}*"{"{B}*			{ yyextra->current->fileName = yyextra->yyFileName ;
-					  yyextra->current->startLine = yyextra->yyLineNr ;
-					  yyextra->current->startColumn = yyextra->yyColNr;
+					  yyextra->current->bodyLine  = yyextra->yyLineNr;
+					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
   					  if (!yyextra->baseName.isEmpty())
   					    yyextra->current->extends.push_back(
@@ -6039,6 +6085,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					      yyextra->current->mtype = yyextra->mtype = Property;
 					    }
 					    yyextra->current->bodyLine = yyextra->yyLineNr;
+					    yyextra->current->bodyColumn = yyextra->yyColNr;
 					    yyextra->curlyCount=0;
 					    BEGIN( CSAccessorDecl );
 					  }
@@ -6082,6 +6129,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
                                               // C++11 style initializer list
   					      yyextra->current->bodyLine = yyextra->yyLineNr;
+					      yyextra->current->bodyColumn = yyextra->yyColNr;
                                               yyextra->current->initializer = yytext;
 					      yyextra->lastInitializerContext = YY_START;
 					      yyextra->initBracketCount=1;
@@ -7095,8 +7143,8 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       yyextra->current_root = ce;
       yyextra->yyFileName = ce->fileName;
       //setContext();
-      yyextra->yyLineNr = ce->startLine ;
-      yyextra->yyColNr = ce->startColumn ;
+      yyextra->yyLineNr = ce->bodyLine;
+      yyextra->yyColNr = ce->bodyColumn;
       yyextra->insideObjC = ce->lang==SrcLangExt_ObjC;
       //printf("---> Inner block starts at line %d objC=%d\n",yyextra->yyLineNr,yyextra->insideObjC);
       yyextra->current = std::make_shared<Entry>();
