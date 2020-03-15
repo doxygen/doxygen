@@ -45,7 +45,7 @@
     <detaileddescription>
       <para>A category </para>
     </detaileddescription>
-    <location file="011_category.m" line="17" column="19" bodyfile="011_category.m" bodystart="17" bodyend="-1"/>
+    <location file="011_category.m" line="17" column="12" bodyfile="011_category.m" bodystart="17" bodyend="-1"/>
     <listofallmembers>
       <member refid="category_integer_07_arithmetic_08_1a12f411c5872ba3bafb8ea7dd1826cf2a" prot="public" virt="virtual">
         <scope>Integer(Arithmetic)</scope>

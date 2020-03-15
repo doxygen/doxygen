@@ -45,6 +45,6 @@
     <detaileddescription>
       <para>Namespace </para>
     </detaileddescription>
-    <location file="decl_def.h" line="2" column="1"/>
+    <location file="decl_def.h" line="1" column="1"/>
   </compounddef>
 </doxygen>

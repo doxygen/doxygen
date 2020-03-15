@@ -243,7 +243,7 @@
         </simplesect>
       </para>
     </detaileddescription>
-    <location file="074_ref.cpp" line="19" column="10" bodyfile="074_ref.cpp" bodystart="19" bodyend="54"/>
+    <location file="074_ref.cpp" line="19" column="1" bodyfile="074_ref.cpp" bodystart="19" bodyend="54"/>
     <listofallmembers>
       <member refid="struct_foo_1a5c036d1b3561a0e1beffe8c6799a4276" prot="public" virt="non-virtual">
         <scope>Foo</scope>

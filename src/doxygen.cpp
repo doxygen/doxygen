@@ -7722,9 +7722,9 @@ static void addSourceReferences()
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     FileDef *fd=cd->getBodyDef();
-    if (fd && cd->isLinkableInProject() && cd->getStartBodyLine()!=-1)
+    if (fd && cd->isLinkableInProject() && cd->getDefLine()!=-1)
     {
-      fd->addSourceRef(cd->getStartBodyLine(),cd,0);
+      fd->addSourceRef(cd->getDefLine(),cd,0);
     }
   }
   // add source references for namespace definitions
@@ -7733,9 +7733,9 @@ static void addSourceReferences()
   for (nli.toFirst();(nd=nli.current());++nli)
   {
     FileDef *fd=nd->getBodyDef();
-    if (fd && nd->isLinkableInProject() && nd->getStartBodyLine()!=-1)
+    if (fd && nd->isLinkableInProject() && nd->getDefLine()!=-1)
     {
-      fd->addSourceRef(nd->getStartBodyLine(),nd,0);
+      fd->addSourceRef(nd->getDefLine(),nd,0);
     }
   }
 
@@ -7754,14 +7754,14 @@ static void addSourceReferences()
       //    md->getStartBodyLine(),md->isLinkableInProject());
       FileDef *fd=md->getBodyDef();
       if (fd &&
-          md->getStartBodyLine()!=-1 &&
+          md->getDefLine()!=-1 &&
           md->isLinkableInProject() &&
           (fd->generateSourceFile() || Doxygen::parseSourcesNeeded)
          )
       {
         //printf("Found member '%s' in file '%s' at line '%d' def=%s\n",
         //    md->name().data(),fd->name().data(),md->getStartBodyLine(),md->getOuterScope()->name().data());
-        fd->addSourceRef(md->getStartBodyLine(),md->getOuterScope(),md);
+        fd->addSourceRef(md->getDefLine(),md->getOuterScope(),md);
       }
     }
   }
@@ -7779,14 +7779,14 @@ static void addSourceReferences()
       //    md->isLinkableInProject(),
       //    Doxygen::parseSourcesNeeded);
       if (fd &&
-          md->getStartBodyLine()!=-1 &&
+          md->getDefLine()!=-1 &&
           md->isLinkableInProject() &&
           (fd->generateSourceFile() || Doxygen::parseSourcesNeeded)
          )
       {
         //printf("Found member '%s' in file '%s' at line '%d' def=%s\n",
         //    md->name().data(),fd->name().data(),md->getStartBodyLine(),md->getOuterScope()->name().data());
-        fd->addSourceRef(md->getStartBodyLine(),md->getOuterScope(),md);
+        fd->addSourceRef(md->getDefLine(),md->getOuterScope(),md);
       }
     }
   }

@@ -12,7 +12,7 @@
             <term>Class <ref refid="class_deprecated" kindref="compound">Deprecated</ref>  </term>
           </varlistentry>
           <listitem>
-            <para><anchor id="deprecated_1_deprecated000001"/>This class is deprecated  </para>
+            <para><anchor id="deprecated_1_deprecated000001"/>This class is deprecated </para>
           </listitem>
           <varlistentry>
             <term>Member <ref refid="class_deprecated_1a1d5f6803e72c625727e7083d1722dbf9" kindref="member">Deprecated::deprecated</ref>  ()</term>

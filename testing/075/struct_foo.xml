@@ -117,7 +117,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="075_argmatch.cpp" line="4" column="10" bodyfile="075_argmatch.cpp" bodystart="4" bodyend="11"/>
+    <location file="075_argmatch.cpp" line="4" column="1" bodyfile="075_argmatch.cpp" bodystart="4" bodyend="11"/>
     <listofallmembers>
       <member refid="struct_foo_1a4f9767677227174b2a9684b92e36cba7" prot="public" virt="non-virtual">
         <scope>Foo</scope>

@@ -7,6 +7,6 @@
     <detaileddescription>
       <para>A namespace </para>
     </detaileddescription>
-    <location file="040_namespace.cpp" line="5" column="1"/>
+    <location file="040_namespace.cpp" line="4" column="1"/>
   </compounddef>
 </doxygen>

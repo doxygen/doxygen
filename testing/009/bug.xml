@@ -12,7 +12,7 @@
             <term>Class <ref refid="class_bug" kindref="compound">Bug</ref>  </term>
           </varlistentry>
           <listitem>
-            <para><anchor id="bug_1_bug000001"/>Class bug.  </para>
+            <para><anchor id="bug_1_bug000001"/>Class bug. </para>
           </listitem>
           <varlistentry>
             <term>Member <ref refid="class_bug_1a1f720954dd97cd1203e80501a6eae74c" kindref="member">Bug::foo</ref>  ()</term>

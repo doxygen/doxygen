@@ -41,7 +41,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" line="13" column="7" bodyfile="018_def.c" bodystart="13" bodyend="13"/>
+        <location file="018_def.c" line="13" column="1" bodyfile="018_def.c" bodystart="13" bodyend="13"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="typedef">
