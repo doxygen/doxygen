@@ -42,7 +42,6 @@ set(BASIC_EXAMPLES
                 page:doc
                 docstring:py
                 pyexample:py
-                tclexample:tcl
                 manual:c
                 mux:vhdl
 )

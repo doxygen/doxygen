@@ -6774,7 +6774,6 @@ g_lang2extMap[] =
   { "vhdl",        "vhdl",          SrcLangExt_VHDL     },
   { "xml",         "xml",           SrcLangExt_XML      },
   { "sql",         "sql",           SrcLangExt_SQL      },
-  { "tcl",         "tcl",           SrcLangExt_Tcl      },
   { "md",          "md",            SrcLangExt_Markdown },
   { 0,             0,              (SrcLangExt)0        }
 };
@@ -6868,7 +6867,6 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".f18",      "fortran");
   updateLanguageMapping(".vhd",      "vhdl");
   updateLanguageMapping(".vhdl",     "vhdl");
-  updateLanguageMapping(".tcl",      "tcl");
   updateLanguageMapping(".ucf",      "vhdl");
   updateLanguageMapping(".qsf",      "vhdl");
   updateLanguageMapping(".md",       "md");
@@ -7920,7 +7918,6 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_VHDL:     return "VHDL";
     case SrcLangExt_XML:      return "XML";
     case SrcLangExt_SQL:      return "SQL";
-    case SrcLangExt_Tcl:      return "Tcl";
     case SrcLangExt_Markdown: return "Markdown";
     case SrcLangExt_Slice:    return "Slice";
   }

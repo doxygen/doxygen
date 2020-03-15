@@ -585,16 +585,6 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='list' id='TCL_SUBST' format='string'>
-      <docs>
-<![CDATA[
- This tag can be used to specify a number of word-keyword mappings (TCL only).
- A mapping has the form <code>"name=value"</code>. For example adding
- <code>"class=itcl::class"</code> will allow you to use the command class in the
- <code>itcl::class</code> meaning.
-]]>
-      </docs>
-    </option>
     <option type='bool' id='OPTIMIZE_OUTPUT_FOR_C' defval='0'>
       <docs>
 <![CDATA[
@@ -649,10 +639,10 @@ Go to the <a href="commands.html">next</a> section or return to the
  Doxygen has a built-in mapping, but you can override or extend it using this tag.
  The format is <code>ext=language</code>, where \c ext is a file extension, and language is one of
  the parsers supported by doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, D, PHP,
- md (Markdown), Objective-C, Python, Slice, Fortran (fixed format Fortran: FortranFixed,
+ md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (fixed format Fortran: FortranFixed,
  free formatted Fortran: FortranFree, unknown formatted Fortran: Fortran. In
  the later case the parser tries to guess whether the code is fixed or free
- formatted code, this is the default for Fortran type files), VHDL, tcl.
+ formatted code, this is the default for Fortran type files).
 
  For instance to make doxygen treat
  <code>.inc</code> files as Fortran files (default is PHP), and <code>.f</code> files as C (default is Fortran),
@@ -1416,7 +1406,6 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <value name='*.f18'/>
       <value name='*.f'/>
       <value name='*.for'/>
-      <value name='*.tcl'/>
       <value name='*.vhd'/>
       <value name='*.vhdl'/>
       <value name='*.ucf'/>
@@ -3656,5 +3645,6 @@ remove the intermediate dot files that are used to generate the various graphs.
     <option type='obsolete' id='XML_DTD'/>
     <option type='obsolete' id='PERL_PATH'/>
     <option type='obsolete' id='MSCGEN_PATH'/>
+    <option type='obsolete' id='TCL_SUBST'/>
   </group>
 </doxygenconfig>

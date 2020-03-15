@@ -107,7 +107,6 @@ set(LEX_FILES scanner
     fortranscanner
     fortrancode
     vhdlcode
-    tclscanner
     pre
     declinfo
     defargs
@@ -166,7 +165,6 @@ add_library(_doxygen STATIC
     ${GENERATED_SRC}/pyscanner.l.h
     ${GENERATED_SRC}/scanner.l.h
     ${GENERATED_SRC}/sqlcode.l.h
-    ${GENERATED_SRC}/tclscanner.l.h
     ${GENERATED_SRC}/vhdlcode.l.h
     ${GENERATED_SRC}/xmlcode.l.h
     ${GENERATED_SRC}/code.cpp
@@ -184,7 +182,6 @@ add_library(_doxygen STATIC
     ${GENERATED_SRC}/pyscanner.cpp
     ${GENERATED_SRC}/scanner.cpp
     ${GENERATED_SRC}/sqlcode.cpp
-    ${GENERATED_SRC}/tclscanner.cpp
     ${GENERATED_SRC}/vhdlcode.cpp
     ${GENERATED_SRC}/xmlcode.cpp
     #

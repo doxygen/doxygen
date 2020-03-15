@@ -1618,9 +1618,6 @@ void Config::checkAndCorrect()
     checkList(Config_getList(EXTRA_SEARCH_MAPPINGS),"EXTRA_SEARCH_MAPPING",TRUE,TRUE);
   }
 
-  // check TCL_SUBST
-  checkList(Config_getList(TCL_SUBST),"TCL_SUBST",TRUE,TRUE);
-
   // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
   if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(GENERATE_HTMLHELP))
   {
