@@ -4730,7 +4730,7 @@ QCString substituteKeywords(const QCString &s,const char *title,
   result = substitute(result,"$datetime",dateToString(TRUE));
   result = substitute(result,"$date",dateToString(FALSE));
   result = substitute(result,"$year",yearToString());
-  result = substitute(result,"$doxygenversion",getVersion());
+  result = substitute(result,"$doxygenversion",getDoxygenVersion());
   result = substitute(result,"$projectname",projName);
   result = substitute(result,"$projectnumber",projNum);
   result = substitute(result,"$projectbrief",projBrief);
@@ -8524,6 +8524,20 @@ void writeLatexSpecialFormulaChars(FTextStream &t)
          "  \\newunicodechar{" << psup2  << "}{${}^{2}$}% Superscript two\n"
          "  \\newunicodechar{" << psup3  << "}{${}^{3}$}% Superscript three\n"
          "\n";
+}
+
+QCString getFullVersion()
+{
+  QCString versionString;
+  if (strlen(getGitVersion())>0)
+  {
+    versionString = QCString(getDoxygenVersion())+" ("+getGitVersion()+")";
+  }
+  else
+  {
+    versionString = getDoxygenVersion();
+  }
+  return versionString;
 }
 
 //------------------------------------------------------

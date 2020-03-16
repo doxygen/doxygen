@@ -144,7 +144,7 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
             }
             else
             {
-              t << substitute(buf,"$doxygenversion",getVersion());
+              t << substitute(buf,"$doxygenversion",getDoxygenVersion());
             }
             return TRUE;
           }

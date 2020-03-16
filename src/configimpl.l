@@ -1001,7 +1001,7 @@ void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
   {
     t << takeStartComment() << endl; 
   }
-  t << "# Doxyfile " << getVersion() << endl << endl;
+  t << "# Doxyfile " << getDoxygenVersion() << endl << endl;
   if (!sl)
   {
     t << convertToComment(m_header,"");
@@ -1022,11 +1022,7 @@ void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
 
 void ConfigImpl::compareDoxyfile(FTextStream &t)
 {
-  t << "# Difference with default Doxyfile " << getVersion();
-  if (strlen(getGitVersion()))
-  {
-    t << " (" << getGitVersion() << ")";
-  }
+  t << "# Difference with default Doxyfile " << getFullVersion();
   t << endl;
   QListIterator<ConfigOption> it = iterator();
   ConfigOption *option;
