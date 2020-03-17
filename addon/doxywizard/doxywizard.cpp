@@ -343,7 +343,10 @@ void MainWindow::clearRecent()
     m_recentFiles.clear();
     for (int i=0;i<MAX_RECENT_FILES;i++)
     {
-      m_settings.setValue(QString().sprintf("recent/config%d",i++),QString::fromLatin1(""));
+      QString res;
+      QTextStream out(&res);
+      out << "recent/config" << i++;
+      m_settings.setValue(res,QString::fromLatin1(""));
     }
     m_settings.sync();
   }
@@ -389,7 +392,10 @@ void MainWindow::loadSettings()
   /* due to prepend use list in reversed order */
   for (int i=MAX_RECENT_FILES;i>=0;i--)
   {
-    QString entry = m_settings.value(QString().sprintf("recent/config%d",i)).toString();
+    QString res;
+    QTextStream out(&res);
+    out << "recent/config" << i;
+    QString entry = m_settings.value(res).toString();
     if (!entry.isEmpty() && QFileInfo(entry).exists())
     {
       addRecentFileList(entry);
@@ -447,12 +453,18 @@ void MainWindow::updateRecentFile(void)
   int i=0;
   foreach( QString str, m_recentFiles ) 
   {
+    QString res;
+    QTextStream out(&res);
+    out << "recent/config" << i++;
     m_recentMenu->addAction(str);
-    m_settings.setValue(QString().sprintf("recent/config%d",i++),str);
+    m_settings.setValue(res,str);
   }
   for (;i<MAX_RECENT_FILES;i++)
   {
-    m_settings.setValue(QString().sprintf("recent/config%d",i++),QString::fromLatin1(""));
+    QString res;
+    QTextStream out(&res);
+    out << "recent/config" << i;
+    m_settings.setValue(res,QString::fromLatin1(""));
   }
 }
 
@@ -689,16 +701,22 @@ int main(int argc,char **argv)
   {
     if (!qstrcmp(argv[1],"--help"))
     {
+      QString res;
+      QTextStream out(&res);
+      out << "Usage: " << argv[0] << " [config file]";
       QMessageBox msgBox;
-      msgBox.setText(QString().sprintf("Usage: %s [config file]",argv[0]));
+      msgBox.setText(res);
       msgBox.exec();
       exit(0);
     }
   }
   if (argc > 2)
   {
+    QString res;
+    QTextStream out(&res);
+    out << "Too many arguments specified\n\nUsage: " << argv[0] << " [config file]";
     QMessageBox msgBox;
-    msgBox.setText(QString().sprintf("Too many arguments specified\n\nUsage: %s [config file]",argv[0]));
+    msgBox.setText(res);
     msgBox.exec();
     exit(1);
   }
