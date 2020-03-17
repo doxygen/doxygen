@@ -369,8 +369,8 @@ void ColorPicker::paintEvent(QPaintEvent*)
   p.drawPixmap(1, coff, *m_pix);
   const QPalette &g = palette();
   qDrawShadePanel(&p, r, g, true);
-  p.setPen(g.foreground().color());
-  p.setBrush(g.foreground());
+  p.setPen(g.windowText().color());
+  p.setBrush(g.windowText());
   QPolygon a;
   int y = m_mode==Hue ?        hue2y(m_hue) : 
           m_mode==Saturation ? sat2y(m_sat) :
