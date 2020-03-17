@@ -146,6 +146,7 @@ class RTFDocVisitor : public DocVisitor
                    const QCString &anchor);
     void endLink(const QCString &ref);
     QCString getStyle(const char *name);
+    QCString getListTable(const int id);
     void incIndentLevel();
     void decIndentLevel();
 

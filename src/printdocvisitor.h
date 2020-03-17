@@ -281,10 +281,22 @@ class PrintDocVisitor : public DocVisitor
         printf("</ul>\n");
       }
     }
-    void visitPre(DocAutoListItem *)
+    void visitPre(DocAutoListItem *li)
     {
       indent_pre();
-      printf("<li>\n");
+      switch (li-> itemNumber())
+      {
+        case DocAutoList::Unchecked: // unchecked
+          printf("<li class=\"unchecked\">\n");
+          break;
+        case DocAutoList::Checked_x: // checked with x
+        case DocAutoList::Checked_X: // checked with X
+          printf("<li class=\"checked\">\n");
+          break;
+        default:
+          printf("<li>\n");
+          break;
+      }
     }
     void visitPost(DocAutoListItem *) 
     {

@@ -49,6 +49,24 @@ dt {
 	font-weight: bold;
 }
 
+ul.check {
+  list-style:none;
+  text-indent: -16px;
+  padding-left: 38px;                                                                                                               }
+li.unchecked:before {
+  content: "\2610\A0";
+}
+li.checked:before {
+  content: "\2611\A0";
+}
+
+ol {
+  text-indent: 0px;                                                                                                                 }
+
+ul {
+  text-indent: 0px;
+}
+
 ul.multicol {
 	-moz-column-gap: 1em;
 	-webkit-column-gap: 1em;
