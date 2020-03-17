@@ -79,6 +79,16 @@ RTFGenerator::~RTFGenerator()
 {
 }
 
+void RTFGenerator::setRelativePath(const QCString &path)
+{
+  m_relPath = path;
+}
+
+void RTFGenerator::setSourceFileName(const QCString &name)
+{
+  m_sourceFileName = name;
+}
+
 void RTFGenerator::writeStyleSheetFile(QFile &file)
 {
   FTextStream t(&file);
@@ -358,6 +368,8 @@ void RTFGenerator::startFile(const char *name,const char *,const char *)
 
   if (fileName.right(4)!=".rtf" ) fileName+=".rtf";
   startPlainFile(fileName);
+  setRelativePath(m_relPath);
+  setSourceFileName(stripPath(fileName));
   beginRTFDocument();
 }
 
@@ -367,6 +379,7 @@ void RTFGenerator::endFile()
   t << "}";
 
   endPlainFile();
+  setSourceFileName("");
 }
 
 void RTFGenerator::startProjectNumber()
@@ -3024,12 +3037,33 @@ void RTFGenerator::endInlineMemberDoc()
   t << "\\cell }{\\row }" << endl;
 }
 
-void RTFGenerator::writeLineNumber(const char *,const char *,const char *,int l)
+void RTFGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
 {
+  static bool rtfHyperlinks = Config_getBool(RTF_HYPERLINKS);
+
   DoxyCodeLineOpen = TRUE;
   QCString lineNumber;
   lineNumber.sprintf("%05d",l);
-  t << lineNumber << " ";
+  if (m_prettyCode)
+  {
+    if (fileName && !m_sourceFileName.isEmpty() && rtfHyperlinks)
+    {
+      QCString lineAnchor;
+      lineAnchor.sprintf("_l%05d",l);
+      lineAnchor.prepend(stripExtensionGeneral(m_sourceFileName, ".rtf"));
+      t << "{\\bkmkstart ";
+      t << rtfFormatBmkStr(lineAnchor);
+      t << "}";
+      t << "{\\bkmkend ";
+      t << rtfFormatBmkStr(lineAnchor);
+      t << "}" << endl;
+    }
+    t << lineNumber << " ";
+  }
+  else
+  {
+    t << l << " ";
+  }
   m_col=0;
 }
 void RTFGenerator::startCodeLine(bool)
