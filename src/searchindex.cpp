@@ -982,7 +982,7 @@ void writeJavaScriptSearchIndex()
             " \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
           t << "<html><head><title></title>" << endl;
           t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
-          t << "<meta name=\"generator\" content=\"Doxygen " << getVersion() << "\"/>" << endl;
+          t << "<meta name=\"generator\" content=\"Doxygen " << getDoxygenVersion() << "\"/>" << endl;
           t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
           t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>" << endl;
           t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;

@@ -1070,7 +1070,7 @@ void HtmlGenerator::writeSearchData(const char *dir)
     {
       searchCss = mgr.getAsString("search.css");
     }
-    searchCss = substitute(replaceColorMarkers(searchCss),"$doxygenversion",getVersion());
+    searchCss = substitute(replaceColorMarkers(searchCss),"$doxygenversion",getDoxygenVersion());
     t << searchCss;
     Doxygen::indexList->addStyleSheetFile("search/search.css");
   }
@@ -1079,20 +1079,20 @@ void HtmlGenerator::writeSearchData(const char *dir)
 void HtmlGenerator::writeStyleSheetFile(QFile &file)
 {
   FTextStream t(&file);
-  t << replaceColorMarkers(substitute(ResourceMgr::instance().getAsString("doxygen.css"),"$doxygenversion",getVersion()));
+  t << replaceColorMarkers(substitute(ResourceMgr::instance().getAsString("doxygen.css"),"$doxygenversion",getDoxygenVersion()));
 }
 
 void HtmlGenerator::writeHeaderFile(QFile &file, const char * /*cssname*/)
 {
   FTextStream t(&file);
-  t << "<!-- HTML header for doxygen " << getVersion() << "-->" << endl;
+  t << "<!-- HTML header for doxygen " << getDoxygenVersion() << "-->" << endl;
   t << ResourceMgr::instance().getAsString("header.html");
 }
 
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
   FTextStream t(&file);
-  t << "<!-- HTML footer for doxygen " << getVersion() << "-->" <<  endl;
+  t << "<!-- HTML footer for doxygen " << getDoxygenVersion() << "-->" <<  endl;
   t << ResourceMgr::instance().getAsString("footer.html");
 }
 
@@ -1113,7 +1113,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title)),m_relPath);
 
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
-    << getVersion() << " -->" << endl;
+    << getDoxygenVersion() << " -->" << endl;
   //static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   static bool searchEngine = Config_getBool(SEARCHENGINE);
   if (searchEngine /*&& !generateTreeView*/)
@@ -1177,7 +1177,7 @@ QCString HtmlGenerator::writeLogoAsString(const char *path)
             "<img class=\"footer\" src=\"";
   result += path;
   result += "doxygen.png\" alt=\"doxygen\"/></a> ";
-  result += getVersion();
+  result += getDoxygenVersion();
   result += " ";
   return result;
 }
@@ -1230,7 +1230,7 @@ void HtmlGenerator::writeStyleInfo(int part)
       //t << "H1 { text-align: center; border-width: thin none thin none;" << endl;
       //t << "     border-style : double; border-color : blue; padding-left : 1em; padding-right : 1em }" << endl;
 
-      t << replaceColorMarkers(substitute(ResourceMgr::instance().getAsString("doxygen.css"),"$doxygenversion",getVersion()));
+      t << replaceColorMarkers(substitute(ResourceMgr::instance().getAsString("doxygen.css"),"$doxygenversion",getDoxygenVersion()));
       endPlainFile();
       Doxygen::indexList->addStyleSheetFile("doxygen.css");
     }
@@ -2648,7 +2648,7 @@ void HtmlGenerator::writeSearchPage()
     t << substituteHtmlKeywords(g_header,"Search","");
 
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
-      << getVersion() << " -->" << endl;
+      << getDoxygenVersion() << " -->" << endl;
     t << "<script type=\"text/javascript\">\n";
 		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
@@ -2701,7 +2701,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << substituteHtmlKeywords(g_header,"Search","");
 
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
-      << getVersion() << " -->" << endl;
+      << getDoxygenVersion() << " -->" << endl;
     t << "<script type=\"text/javascript\">\n";
 		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""

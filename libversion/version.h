@@ -17,6 +17,6 @@
 
 #ifndef VERSION_H
 #define VERSION_H
-char *getVersion(void);
+char *getDoxygenVersion(void);
 char *getGitVersion(void);
 #endif

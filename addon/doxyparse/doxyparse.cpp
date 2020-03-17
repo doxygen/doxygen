@@ -434,7 +434,7 @@ int main(int argc,char **argv) {
     exit(1);
   }
   if (qstrcmp(&argv[1][2], "version") == 0) {
-    QCString versionString = getVersion();
+    QCString versionString = getDoxygenVersion();
     printf("%s\n", versionString.data());
     exit(0);
   }

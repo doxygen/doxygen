@@ -9949,15 +9949,7 @@ static int computeIdealCacheParam(uint v)
 
 void readConfiguration(int argc, char **argv)
 {
-  QCString versionString;
-  if (strlen(getGitVersion())>0)
-  {
-    versionString = QCString(getVersion())+" ("+getGitVersion()+")";
-  }
-  else
-  {
-    versionString = getVersion();
-  }
+  QCString versionString = getFullVersion();
 
   /**************************************************************************
    *             Handle arguments                                           *
@@ -10774,15 +10766,7 @@ void parseInput()
 
   // we would like to show the versionString earlier, but we first have to handle the configuration file
   // to know the value of the QUIET setting.
-  QCString versionString;
-  if (strlen(getGitVersion())>0)
-  {
-    versionString = QCString(getVersion())+" ("+getGitVersion()+")";
-  }
-  else
-  {
-    versionString = getVersion();
-  }
+  QCString versionString = getFullVersion();
   msg("Doxygen version used: %s\n",versionString.data());
 
   /**************************************************************************

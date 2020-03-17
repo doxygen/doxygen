@@ -501,4 +501,5 @@ int usedTableLevels();
 void incUsedTableLevels();
 void decUsedTableLevels();
 
+QCString getFullVersion();
 #endif

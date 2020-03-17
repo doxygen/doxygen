@@ -380,7 +380,7 @@ class DoxygenContext::Private
   public:
     TemplateVariant version() const
     {
-      return getVersion();
+      return getDoxygenVersion();
     }
     TemplateVariant date() const
     {

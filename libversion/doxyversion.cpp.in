@@ -1,6 +1,6 @@
 #include "version.h"
 
-char *getVersion(void)
+char *getDoxygenVersion(void)
 {
   static char versionString[] = "@DOXYGEN_VERSION@";
   return versionString;
