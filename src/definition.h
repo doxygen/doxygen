@@ -62,8 +62,9 @@ struct BriefInfo
 /** Data associated with description found in the body. */
 struct BodyInfo
 {
-    int      startLine;   //!< line number of the start of the definition
-    int      endLine;     //!< line number of the end of the definition
+    int      defLine;     //!< line number of the start of the definition
+    int      startLine;   //!< line number of the start of the definition's body
+    int      endLine;     //!< line number of the end of the definition's body
     FileDef *fileDef;     //!< file definition containing the function body
 };
     
@@ -188,7 +189,7 @@ class Definition : public DefinitionIntf
     /*! returns the extension of the file in which this definition was found */
     virtual QCString getDefFileExtension() const = 0;
 
-    /*! returns the line number at which the definition was found */
+    /*! returns the line number at which the definition was found (can be the declaration) */
     virtual int getDefLine() const = 0;
 
     /*! returns the column number at which the definition was found */
@@ -241,6 +242,9 @@ class Definition : public DefinitionIntf
 
     /*! Convenience method to return a resolved external link */
     virtual QCString externalReference(const QCString &relPath) const = 0;
+
+    /*! Returns the first line of the implementation of this item. See also getDefLine() */
+    virtual int getStartDefLine() const = 0;
 
     /*! Returns the first line of the body of this item (applicable to classes and 
      *  functions).
@@ -316,7 +320,7 @@ class Definition : public DefinitionIntf
     virtual void setReference(const char *r) = 0;
 
     // source references
-    virtual void setBodySegment(int bls,int ble) = 0;
+    virtual void setBodySegment(int defLine, int bls,int ble) = 0;
     virtual void setBodyDef(FileDef *fd) = 0;
 
     virtual void setRefItems(const std::vector<RefItem*> &sli) = 0;

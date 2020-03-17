@@ -4387,7 +4387,7 @@ MemberDef *MemberDefImpl::createTemplateInstanceMember(
   imd->setArgumentList(actualArgList);
   imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def,formalArgs,actualArgs));
   imd->setBodyDef(getBodyDef());
-  imd->setBodySegment(getStartBodyLine(),getEndBodyLine());
+  imd->setBodySegment(getDefLine(),getStartBodyLine(),getEndBodyLine());
   //imd->setBodyMember(this);
 
   // TODO: init other member variables (if needed).
@@ -6050,14 +6050,14 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
       {
         //printf("body mdec->mdef %d-%d\n",mdec->getStartBodyLine(),mdef->getEndBodyLine());
-        mdef->setBodySegment(mdec->getStartBodyLine(),mdec->getEndBodyLine());
+        mdef->setBodySegment(mdec->getDefLine(),mdec->getStartBodyLine(),mdec->getEndBodyLine());
         mdef->setBodyDef(mdec->getBodyDef());
         //mdef->setBodyMember(mdec);
       }
       else if (mdef->getStartBodyLine()!=-1 && mdec->getStartBodyLine()==-1)
       {
         //printf("body mdef->mdec %d-%d\n",mdef->getStartBodyLine(),mdec->getEndBodyLine());
-        mdec->setBodySegment(mdef->getStartBodyLine(),mdef->getEndBodyLine());
+        mdec->setBodySegment(mdef->getDefLine(),mdef->getStartBodyLine(),mdef->getEndBodyLine());
         mdec->setBodyDef(mdef->getBodyDef());
         //mdec->setBodyMember(mdef);
       }

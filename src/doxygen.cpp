@@ -997,7 +997,7 @@ static void addClassToContext(const Entry *root)
 
     if (root->bodyLine!=-1 && cd->getStartBodyLine()==-1)
     {
-      cd->setBodySegment(root->bodyLine,root->endBodyLine);
+      cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
       cd->setBodyDef(fd);
     }
     //cd->setName(fullName); // change name to match docs
@@ -1074,7 +1074,7 @@ static void addClassToContext(const Entry *root)
     cd->setIsStatic(root->stat);
 
     // file definition containing the class cd
-    cd->setBodySegment(root->bodyLine,root->endBodyLine);
+    cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
     cd->setBodyDef(fd);
 
     cd->setMetaData(root->metaData);
@@ -1280,7 +1280,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
   cd->setDocumentation(templ->documentation(),templ->docFile(),templ->docLine()); // copy docs to definition
   cd->setBriefDescription(templ->briefDescription(),templ->briefFile(),templ->briefLine());
   cd->setLanguage(templ->getLanguage());
-  cd->setBodySegment(templ->getStartBodyLine(),templ->getEndBodyLine());
+  cd->setBodySegment(templ->getDefLine(),templ->getStartBodyLine(),templ->getEndBodyLine());
   cd->setBodyDef(templ->getBodyDef());
 
   cd->setOuterScope(rootCd->getOuterScope());
@@ -1535,7 +1535,7 @@ static void buildNamespaceList(const Entry *root)
         // the empty string test is needed for extract all case
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->insertUsedFile(fd);
-        nd->setBodySegment(root->bodyLine,root->endBodyLine);
+        nd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
         nd->setBodyDef(fd);
         // add class to the list
         Doxygen::namespaceSDict->inSort(fullName,nd);
@@ -1927,7 +1927,7 @@ static void findUsingDeclImports(const Entry *root)
                   newMd->enableReferencesRelation(root->referencesRelation);
                   newMd->setBitfields(md->bitfieldString());
                   newMd->addSectionsToDefinition(root->anchors);
-                  newMd->setBodySegment(md->getStartBodyLine(),md->getEndBodyLine());
+                  newMd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
                   newMd->setBodyDef(md->getBodyDef());
                   newMd->setInitializer(md->initializer());
                   newMd->setMaxInitLines(md->initializerLines());
@@ -2112,7 +2112,7 @@ static MemberDef *addVariableToClass(
   md->setFromAnonymousScope(fromAnnScope);
   md->setFromAnonymousMember(fromAnnMemb);
   //md->setIndentDepth(indentDepth);
-  md->setBodySegment(root->bodyLine,root->endBodyLine);
+  md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   md->setInitializer(root->initializer);
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
@@ -2381,7 +2381,7 @@ static MemberDef *addVariableToFile(
   //md->setOuterScope(fd);
   if (!root->explicitExternal)
   {
-    md->setBodySegment(root->bodyLine,root->endBodyLine);
+    md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
     md->setBodyDef(fd);
   }
   addMemberToGroups(root,md);
@@ -2898,7 +2898,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   md->setDocsForDefinition(false);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-  md->setBodySegment(root->bodyLine,root->endBodyLine);
+  md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   md->setMemberSpecifiers(root->spec);
   md->setMemberGroupId(root->mGrpId);
   md->setTypeConstraints(root->typeConstr);
@@ -3087,7 +3087,7 @@ static void addMethodToClass(const Entry *root,ClassDef *cd,
   md->setDocsForDefinition(!root->proto);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-  md->setBodySegment(root->bodyLine,root->endBodyLine);
+  md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   md->setMemberSpecifiers(spec);
   md->setMemberGroupId(root->mGrpId);
   md->setTypeConstraints(root->typeConstr);
@@ -3393,7 +3393,7 @@ static void buildFunctionList(const Entry *root)
                   md->setDocsForDefinition(!root->proto);
                   if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
                   {
-                    md->setBodySegment(root->bodyLine,root->endBodyLine);
+                    md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
                     md->setBodyDef(rfd);
                   }
 
@@ -3469,7 +3469,7 @@ static void buildFunctionList(const Entry *root)
           md->setDocsForDefinition(!root->proto);
           md->setTypeConstraints(root->typeConstr);
           //md->setBody(root->body);
-          md->setBodySegment(root->bodyLine,root->endBodyLine);
+          md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
           FileDef *fd=root->fileDef();
           md->setBodyDef(fd);
           md->addSectionsToDefinition(root->anchors);
@@ -3659,13 +3659,13 @@ static void findFriends()
             //printf("body mmd %d fmd %d\n",mmd->getStartBodyLine(),fmd->getStartBodyLine());
             if (mmd->getStartBodyLine()==-1 && fmd->getStartBodyLine()!=-1)
             {
-              mmd->setBodySegment(fmd->getStartBodyLine(),fmd->getEndBodyLine());
+              mmd->setBodySegment(fmd->getDefLine(),fmd->getStartBodyLine(),fmd->getEndBodyLine());
               mmd->setBodyDef(fmd->getBodyDef());
               //mmd->setBodyMember(fmd);
             }
             else if (mmd->getStartBodyLine()!=-1 && fmd->getStartBodyLine()==-1)
             {
-              fmd->setBodySegment(mmd->getStartBodyLine(),mmd->getEndBodyLine());
+              fmd->setBodySegment(mmd->getDefLine(),mmd->getStartBodyLine(),mmd->getEndBodyLine());
               fmd->setBodyDef(mmd->getBodyDef());
               //fmd->setBodyMember(mmd);
             }
@@ -5093,7 +5093,7 @@ static void addMemberDocs(const Entry *root,
        )
     {
       //printf("Setting new body segment [%d,%d]\n",root->bodyLine,root->endBodyLine);
-      md->setBodySegment(root->bodyLine,root->endBodyLine);
+      md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
       md->setBodyDef(rfd);
     }
 
@@ -6131,7 +6131,7 @@ static void findMember(const Entry *root,
           md->setDocsForDefinition(!root->proto);
           md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
           md->addSectionsToDefinition(root->anchors);
-          md->setBodySegment(root->bodyLine,root->endBodyLine);
+          md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
           FileDef *fd=root->fileDef();
           md->setBodyDef(fd);
           md->setMemberSpecifiers(spec);
@@ -6200,7 +6200,7 @@ static void findMember(const Entry *root,
           md->setDocsForDefinition(!root->proto);
           md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
           md->addSectionsToDefinition(root->anchors);
-          md->setBodySegment(root->bodyLine,root->endBodyLine);
+          md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
           FileDef *fd=root->fileDef();
           md->setBodyDef(fd);
           md->setMemberSpecifiers(spec);
@@ -6373,7 +6373,7 @@ static void findMember(const Entry *root,
               }
               if (rmd) // member found -> copy line number info
               {
-                md->setBodySegment(rmd->getStartBodyLine(),rmd->getEndBodyLine());
+                md->setBodySegment(rmd->getDefLine(),rmd->getStartBodyLine(),rmd->getEndBodyLine());
                 md->setBodyDef(rmd->getBodyDef());
                 //md->setBodyMember(rmd);
               }
@@ -6382,7 +6382,7 @@ static void findMember(const Entry *root,
           if (!found) // line number could not be found or is available in this
                       // entry
           {
-            md->setBodySegment(root->bodyLine,root->endBodyLine);
+            md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
             md->setBodyDef(fd);
           }
 
@@ -6476,7 +6476,7 @@ localObjCMethod:
         md->setDocsForDefinition(!root->proto);
         md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
         md->addSectionsToDefinition(root->anchors);
-        md->setBodySegment(root->bodyLine,root->endBodyLine);
+        md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
         FileDef *fd=root->fileDef();
         md->setBodyDef(fd);
         md->setMemberSpecifiers(spec);
@@ -6819,7 +6819,7 @@ static void findEnums(const Entry *root)
       md->setLanguage(root->lang);
       md->setId(root->id);
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
-      md->setBodySegment(root->bodyLine,root->endBodyLine);
+      md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
       md->setBodyDef(root->fileDef());
       md->setMemberSpecifiers(root->spec);
       md->setEnumBaseType(root->args);
@@ -7722,9 +7722,9 @@ static void addSourceReferences()
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     FileDef *fd=cd->getBodyDef();
-    if (fd && cd->isLinkableInProject() && cd->getDefLine()!=-1)
+    if (fd && cd->isLinkableInProject() && cd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(cd->getDefLine(),cd,0);
+      fd->addSourceRef(cd->getStartDefLine(),cd,0);
     }
   }
   // add source references for namespace definitions
@@ -7733,9 +7733,9 @@ static void addSourceReferences()
   for (nli.toFirst();(nd=nli.current());++nli)
   {
     FileDef *fd=nd->getBodyDef();
-    if (fd && nd->isLinkableInProject() && nd->getDefLine()!=-1)
+    if (fd && nd->isLinkableInProject() && nd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(nd->getDefLine(),nd,0);
+      fd->addSourceRef(nd->getStartDefLine(),nd,0);
     }
   }
 
@@ -7754,14 +7754,14 @@ static void addSourceReferences()
       //    md->getStartBodyLine(),md->isLinkableInProject());
       FileDef *fd=md->getBodyDef();
       if (fd &&
-          md->getDefLine()!=-1 &&
+          md->getStartDefLine()!=-1 &&
           md->isLinkableInProject() &&
           (fd->generateSourceFile() || Doxygen::parseSourcesNeeded)
          )
       {
         //printf("Found member '%s' in file '%s' at line '%d' def=%s\n",
         //    md->name().data(),fd->name().data(),md->getStartBodyLine(),md->getOuterScope()->name().data());
-        fd->addSourceRef(md->getDefLine(),md->getOuterScope(),md);
+        fd->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md);
       }
     }
   }
@@ -7779,14 +7779,14 @@ static void addSourceReferences()
       //    md->isLinkableInProject(),
       //    Doxygen::parseSourcesNeeded);
       if (fd &&
-          md->getDefLine()!=-1 &&
+          md->getStartDefLine()!=-1 &&
           md->isLinkableInProject() &&
           (fd->generateSourceFile() || Doxygen::parseSourcesNeeded)
          )
       {
         //printf("Found member '%s' in file '%s' at line '%d' def=%s\n",
         //    md->name().data(),fd->name().data(),md->getStartBodyLine(),md->getOuterScope()->name().data());
-        fd->addSourceRef(md->getDefLine(),md->getOuterScope(),md);
+        fd->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md);
       }
     }
   }
@@ -8306,7 +8306,7 @@ static void findDefineDocumentation(Entry *root)
             {
               md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
             }
-            md->setBodySegment(root->bodyLine,root->endBodyLine);
+            md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
             md->setBodyDef(root->fileDef());
             md->addSectionsToDefinition(root->anchors);
             md->setMaxInitLines(root->initLines);
@@ -8350,7 +8350,7 @@ static void findDefineDocumentation(Entry *root)
               {
                 md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
               }
-              md->setBodySegment(root->bodyLine,root->endBodyLine);
+              md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
               md->setBodyDef(root->fileDef());
               md->addSectionsToDefinition(root->anchors);
               md->setRefItems(root->sli);

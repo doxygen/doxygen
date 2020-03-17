@@ -61,6 +61,7 @@ class DefinitionImpl : virtual public Definition
     virtual QCString getReference() const;
     virtual bool isReference() const;
     virtual QCString externalReference(const QCString &relPath) const;
+    virtual int getStartDefLine() const;
     virtual int getStartBodyLine() const;
     virtual int getEndBodyLine() const;
     virtual FileDef *getBodyDef() const;
@@ -85,7 +86,7 @@ class DefinitionImpl : virtual public Definition
     virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine);
     virtual void setReference(const char *r);
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
-    virtual void setBodySegment(int bls,int ble);
+    virtual void setBodySegment(int defLine,int bls,int ble);
     virtual void setBodyDef(FileDef *fd);
     virtual void addSourceReferencedBy(const MemberDef *d);
     virtual void addSourceReferences(const MemberDef *d);
@@ -201,6 +202,8 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->isReference(); }
     virtual QCString externalReference(const QCString &relPath) const
     { return m_def->externalReference(relPath); }
+    virtual int getStartDefLine() const
+    { return m_def->getStartDefLine(); }
     virtual int getStartBodyLine() const
     { return m_def->getStartBodyLine(); }
     virtual int getEndBodyLine() const
@@ -245,7 +248,7 @@ class DefinitionAliasImpl : virtual public Definition
     virtual void setInbodyDocumentation(const char *,const char *,int) {}
     virtual void setReference(const char *) {}
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &) {}
-    virtual void setBodySegment(int,int) {}
+    virtual void setBodySegment(int,int,int) {}
     virtual void setBodyDef(FileDef *) {}
     virtual void addSourceReferencedBy(const MemberDef *) {}
     virtual void addSourceReferences(const MemberDef *) {}

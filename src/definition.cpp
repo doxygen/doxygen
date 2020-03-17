@@ -999,11 +999,11 @@ QCString DefinitionImpl::getSourceAnchor() const
   {
     if (Htags::useHtags)
     {
-      qsnprintf(anchorStr,maxAnchorStrLen,"L%d",m_impl->body->startLine);
+      qsnprintf(anchorStr,maxAnchorStrLen,"L%d",m_impl->body->defLine);
     }
     else
     {
-      qsnprintf(anchorStr,maxAnchorStrLen,"l%05d",m_impl->body->startLine);
+      qsnprintf(anchorStr,maxAnchorStrLen,"l%05d",m_impl->body->defLine);
     }
   }
   return anchorStr;
@@ -1026,7 +1026,7 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const char *) const
     if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
     {
       QCString lineStr;
-      lineStr.sprintf("%d",m_impl->body->startLine);
+      lineStr.sprintf("%d",m_impl->body->defLine);
       QCString anchorStr = getSourceAnchor();
       ol.startParagraph("definition");
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
@@ -1198,12 +1198,13 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const char *) const
   ol.popGeneratorState();
 }
 
-void DefinitionImpl::setBodySegment(int bls,int ble) 
+void DefinitionImpl::setBodySegment(int defLine, int bls,int ble)
 {
   //printf("setBodySegment(%d,%d) for %s\n",bls,ble,name().data());
   if (m_impl->body==0) m_impl->body = new BodyInfo;
-  m_impl->body->startLine=bls; 
-  m_impl->body->endLine=ble; 
+  m_impl->body->defLine   = defLine;
+  m_impl->body->startLine = bls;
+  m_impl->body->endLine   = ble;
 }
 
 void DefinitionImpl::setBodyDef(FileDef *fd)         
@@ -2055,6 +2056,11 @@ QCString DefinitionImpl::getReference() const
 bool DefinitionImpl::isReference() const 
 { 
   return !m_impl->ref.isEmpty(); 
+}
+
+int DefinitionImpl::getStartDefLine() const
+{
+  return m_impl->body ? m_impl->body->defLine : -1;
 }
 
 int DefinitionImpl::getStartBodyLine() const         

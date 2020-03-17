@@ -2795,7 +2795,7 @@ ferr:
   md->setLanguage(SrcLangExt_VHDL);
   md->setMemberSpecifiers(VhdlDocGen::INSTANTIATION);
   md->setBriefDescription(cur->brief,cur->briefFile,cur->briefLine);
-  md->setBodySegment(cur->startLine,-1) ;
+  md->setBodySegment(cur->startLine,cur->startLine,-1) ;
   md->setDocumentation(cur->doc.data(),cur->docFile.data(),cur->docLine);
   FileDef *fd=ar->getFileDef();
   md->setBodyDef(fd);
