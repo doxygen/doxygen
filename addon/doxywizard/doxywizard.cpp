@@ -343,7 +343,7 @@ void MainWindow::clearRecent()
     m_recentFiles.clear();
     for (int i=0;i<MAX_RECENT_FILES;i++)
     {
-      m_settings.setValue(QString().sprintf("recent/config%d",i++),QString::fromLatin1(""));
+      m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i++),QString::fromLatin1(""));
     }
     m_settings.sync();
   }
@@ -389,7 +389,7 @@ void MainWindow::loadSettings()
   /* due to prepend use list in reversed order */
   for (int i=MAX_RECENT_FILES;i>=0;i--)
   {
-    QString entry = m_settings.value(QString().sprintf("recent/config%d",i)).toString();
+    QString entry = m_settings.value(QString::fromLatin1("recent/config%1").arg(i)).toString();
     if (!entry.isEmpty() && QFileInfo(entry).exists())
     {
       addRecentFileList(entry);
@@ -448,11 +448,11 @@ void MainWindow::updateRecentFile(void)
   foreach( QString str, m_recentFiles ) 
   {
     m_recentMenu->addAction(str);
-    m_settings.setValue(QString().sprintf("recent/config%d",i++),str);
+    m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i++),str);
   }
   for (;i<MAX_RECENT_FILES;i++)
   {
-    m_settings.setValue(QString().sprintf("recent/config%d",i++),QString::fromLatin1(""));
+    m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i),QString::fromLatin1(""));
   }
 }
 
@@ -690,7 +690,7 @@ int main(int argc,char **argv)
     if (!qstrcmp(argv[1],"--help"))
     {
       QMessageBox msgBox;
-      msgBox.setText(QString().sprintf("Usage: %s [config file]",argv[0]));
+      msgBox.setText(QString::fromLatin1("Usage: %1 [config file]").arg(QString::fromLatin1(argv[0])));
       msgBox.exec();
       exit(0);
     }
@@ -698,7 +698,7 @@ int main(int argc,char **argv)
   if (argc > 2)
   {
     QMessageBox msgBox;
-    msgBox.setText(QString().sprintf("Too many arguments specified\n\nUsage: %s [config file]",argv[0]));
+    msgBox.setText(QString::fromLatin1("Too many arguments specified\n\nUsage: %1 [config file]").arg(QString::fromLatin1(argv[0])));
     msgBox.exec();
     exit(1);
   }
