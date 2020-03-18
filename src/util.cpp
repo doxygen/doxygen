@@ -6585,6 +6585,7 @@ QCString rtfFormatBmkStr(const char *name)
     }
   }
 
+  //printf("Name = %s RTF_tag = %s\n",name,(*tag).data());
   return *tag;
 }
 
