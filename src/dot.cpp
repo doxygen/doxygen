@@ -83,9 +83,8 @@ DotManager *DotManager::instance()
   return m_theInstance;
 }
 
-DotManager::DotManager() : m_runners(1009), m_filePatchers(1009)
+DotManager::DotManager() : m_runners(), m_filePatchers(1009)
 {
-  m_runners.setAutoDelete(TRUE);
   m_filePatchers.setAutoDelete(TRUE);
   m_queue = new DotRunnerQueue;
   int i;
@@ -114,23 +113,25 @@ DotManager::~DotManager()
   delete m_queue;
 }
 
-DotRunner* DotManager::createRunner(const QCString& absDotName, const QCString& md5Hash)
+DotRunner* DotManager::createRunner(const std::string &absDotName, const std::string& md5Hash)
 {
-  DotRunner * run = m_runners.find(absDotName);
-  if (run == 0)
+  DotRunner* rv = nullptr;
+  auto const runit = m_runners.find(absDotName);
+  if (runit == m_runners.end())
   {
-    run = new DotRunner(absDotName, md5Hash);
-    m_runners.insert(absDotName, run);
+    auto insobj = std::make_unique<DotRunner>(absDotName, md5Hash);
+    rv = insobj.get();
+    m_runners.emplace(absDotName, std::move(insobj));
   }
   else
   {
     // we have a match
-    if (md5Hash != QCString(run->getMd5Hash().data()))
+    if (md5Hash != runit->second->getMd5Hash())
     {
       err("md5 hash does not match for two different runs of %s !\n", absDotName.data());
     }
   }
-  return run;
+  return rv;
 }
 
 DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
@@ -146,7 +147,7 @@ DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 
 bool DotManager::run() const
 {
-  uint numDotRuns = m_runners.count();
+  uint numDotRuns = m_runners.size();
   uint numFilePatchers = m_filePatchers.count();
   if (numDotRuns+numFilePatchers>1)
   {
@@ -160,7 +161,6 @@ bool DotManager::run() const
     }
   }
   int i=1;
-  QDictIterator<DotRunner> li(m_runners);
 
   bool setPath=FALSE;
   if (Config_getBool(GENERATE_HTML))
@@ -185,22 +185,21 @@ bool DotManager::run() const
   }
   Portable::sysTimerStart();
   // fill work queue with dot operations
-  DotRunner *dr;
   int prev=1;
   if (m_workers.count()==0) // no threads to work with
   {
-    for (li.toFirst();(dr=li.current());++li)
+    for (auto & dr : m_runners)
     {
       msg("Running dot for graph %d/%d\n",prev,numDotRuns);
-      dr->run();
+      dr.second->run();
       prev++;
     }
   }
   else // use multiple threads to run instances of dot in parallel
   {
-    for (li.toFirst();(dr=li.current());++li)
+    for (auto & dr: m_runners)
     {
-      m_queue->enqueue(dr);
+      m_queue->enqueue(dr.second.get());
     }
     // wait for the queue to become empty
     while ((i=m_queue->count())>0)
@@ -280,7 +279,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   QCString absImgName = d.absPath().utf8()+"/"+imgName;
   QCString absOutFile = d.absPath().utf8()+"/"+outFile;
 
-  DotRunner dotRun(inFile, QCString());
+  DotRunner dotRun(inFile);
   if (format==GOF_BITMAP)
   {
     dotRun.addJob(Config_getEnum(DOT_IMAGE_FORMAT),absImgName);
@@ -333,7 +332,7 @@ void writeDotImageMapFromFile(FTextStream &t,
   QCString imgName = baseName+"."+imgExt;
   QCString absOutFile = d.absPath().utf8()+"/"+mapName;
 
-  DotRunner dotRun(inFile, QCString());
+  DotRunner dotRun(inFile.data());
   dotRun.addJob(MAP_CMD,absOutFile);
   dotRun.preventCleanUp();
   if (!dotRun.run())

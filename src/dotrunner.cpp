@@ -15,6 +15,7 @@
 
 #include "dotrunner.h"
 
+#include "qstring.h"
 #include "util.h"
 #include "portable.h"
 #include "dot.h"
@@ -145,7 +146,7 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
 
 //---------------------------------------------------------------------------------
 
-DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
+DotRunner::DotRunner(const std::string& absDotName, const std::string& md5Hash)
   : m_file(absDotName.data())
   , m_md5Hash(md5Hash.data())
   , m_dotExe(Config_getString(DOT_PATH)+"dot")
@@ -153,17 +154,18 @@ DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
 {
 }
 
-void DotRunner::addJob(const char *format,const char *output)
+
+void DotRunner::addJob(const char *format, const char *output)
 {
     
   for (auto& s: m_jobs)
   {
-    if (qstrcmp(s.format.data(), format) != 0) continue;
-    if (qstrcmp(s.output.data(), output) != 0) continue;
+    if (s.format != format) continue;
+    if (s.output != output) continue;
     // we have this job already
     return;
   }
-  QCString args = QCString("-T")+format+" -o \""+output+"\"";
+  auto args = std::string ("-T") + format + " -o \"" + output + "\"";
   m_jobs.emplace_back(format, output, args);
 }
 
@@ -204,7 +206,7 @@ bool DotRunner::run()
   // As there should be only one pdf file be generated, we don't need code for regenerating multiple pdf files in one call
   for (auto& s : m_jobs)
   {
-    if (qstrncmp(s.format.data(), "pdf", 3) == 0)
+    if (s.format.compare(0, 3, "pdf") == 0)
     {
       int width=0,height=0;
       if (!readBoundingBox(s.output.data(),&width,&height,FALSE)) goto error;
@@ -216,7 +218,7 @@ bool DotRunner::run()
       }
     }
 
-    if (qstrncmp(s.format.data(), "png", 3) == 0)
+    if (s.format.compare(0, 3, "png") == 0)
     {
       checkPngResult(s.output.data());
     }

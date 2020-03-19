@@ -186,14 +186,14 @@ bool DotGraph::prepareDotFile()
   if (m_graphFormat == GOF_BITMAP)
   {
     // run dot to create a bitmap image
-    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
+    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName().data(), sigStr.data());
     dotRun->addJob(Config_getEnum(DOT_IMAGE_FORMAT), absImgName());
     if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName());
   }
   else if (m_graphFormat == GOF_EPS)
   {
     // run dot to create a .eps image
-    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
+    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName().data(), sigStr.data());
     if (Config_getBool(USE_PDFLATEX))
     {
       dotRun->addJob("pdf",absImgName());

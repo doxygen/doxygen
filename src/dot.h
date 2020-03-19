@@ -17,8 +17,8 @@
 #define DOT_H
 
 #include <qlist.h>
-#include <qdict.h>
 #include <qcstring.h>
+#include <map>
 
 #include "sortdict.h"
 
@@ -35,7 +35,7 @@ class DotManager
 {
   public:
     static DotManager *instance();
-    DotRunner*      createRunner(const QCString& absDotName, const QCString& md5Hash);
+    DotRunner*      createRunner(const std::string& absDotName, const std::string& md5Hash);
     DotFilePatcher *createFilePatcher(const QCString &fileName);
     bool run() const;
 
@@ -43,7 +43,7 @@ class DotManager
     DotManager();
     virtual ~DotManager();
 
-    QDict<DotRunner>       m_runners;
+    std::map<std::string, std::unique_ptr<DotRunner>>       m_runners;
     SDict<DotFilePatcher>  m_filePatchers;
     static DotManager     *m_theInstance;
     DotRunnerQueue        *m_queue;

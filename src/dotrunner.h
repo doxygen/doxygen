@@ -16,7 +16,7 @@
 #ifndef DOTRUNNER_H
 #define DOTRUNNER_H
 
-#include <qstring.h>
+#include <qglobal.h> //uint
 #include <string>
 #include <thread>
 #include <list>
@@ -41,7 +41,7 @@ class DotRunner
     };
 
     /** Creates a runner for a dot \a file. */
-    DotRunner(const QCString& absDotName, const QCString& md5Hash);
+    DotRunner(const std::string& absDotName, const std::string& md5Hash = std::string());
 
     /** Adds an additional job to the run.
      *  Performing multiple jobs one file can be faster.
@@ -49,7 +49,7 @@ class DotRunner
     void addJob(const char *format,const char *output);
 
     /** Prevent cleanup of the dot file (for user provided dot files) */
-    void preventCleanUp() { m_cleanUp = FALSE; }
+    void preventCleanUp() { m_cleanUp = false; }
 
     /** Runs dot for all jobs added. */
     bool run();
