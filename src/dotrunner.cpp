@@ -257,26 +257,27 @@ error:
 void DotRunnerQueue::enqueue(DotRunner *runner)
 {
   QMutexLocker locker(&m_mutex);
-  m_queue.enqueue(runner);
+  m_queue.push(runner);
   m_bufferNotEmpty.wakeAll();
 }
 
 DotRunner *DotRunnerQueue::dequeue()
 {
   QMutexLocker locker(&m_mutex);
-  while (m_queue.isEmpty())
+  while (m_queue.empty())
   {
     // wait until something is added to the queue
     m_bufferNotEmpty.wait(&m_mutex);
   }
-  DotRunner *result = m_queue.dequeue();
+  DotRunner *result = m_queue.front();
+  m_queue.pop();
   return result;
 }
 
 uint DotRunnerQueue::count() const
 {
   QMutexLocker locker(&m_mutex);
-  return m_queue.count();
+  return m_queue.size();
 }
 
 //--------------------------------------------------------------------
