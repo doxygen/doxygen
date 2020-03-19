@@ -16,7 +16,8 @@
 #ifndef DOTRUNNER_H
 #define DOTRUNNER_H
 
-#include "qcstring.h"
+#include <qstring.h>
+#include <string>
 #include <thread>
 #include <list>
 #include <queue>
@@ -24,59 +25,19 @@
 #include <condition_variable>
 #include <memory>
 
-/** Minimal constant string class that is thread safe, once initialized. */
-class DotConstString
-{
-  public:
-    DotConstString()                                   { m_str=0;}
-   ~DotConstString()                                   { delete[] m_str;}
-    DotConstString(char const* s)           : m_str(0) { set(s); }
-    DotConstString(const QCString &s)       : m_str(0) { set(s); }
-    DotConstString(const DotConstString &s) : m_str(0) { set(s.data()); }
-    const char *data() const                           { return m_str; }
-    bool isEmpty() const                               { return m_str==0 || m_str[0]=='\0'; }
-
-  private:
-    void set(char const* s)
-    {
-      delete[] m_str;
-      m_str=0;
-      if (s)
-      {
-        m_str=new char[strlen(s) + 1];
-        qstrcpy(m_str,s);
-      }
-    }
-
-    void set(const QCString &s)
-    {
-      delete[] m_str;
-      m_str=0;
-      if (!s.isEmpty())
-      {
-        m_str=new char[s.length()+1];
-        qstrcpy(m_str,s.data());
-      }
-    }
-
-    DotConstString &operator=(const DotConstString &);
-
-    char *m_str;
-};
-
 /** Helper class to run dot from doxygen from multiple threads.  */
 class DotRunner
 {
   public:
     struct DotJob
     {
-      DotJob(const DotConstString & format,
-             const DotConstString & output,
-             const DotConstString & args)
-        : format(format), output(output), args(args) {}
-      DotConstString format;
-      DotConstString output;
-      DotConstString args;
+      DotJob(std::string format,
+        std::string output,
+        std::string args)
+        : format(std::move(format)), output(std::move(output)), args(std::move(args)) {}
+      std::string format;
+      std::string output;
+      std::string args;
     };
 
     /** Creates a runner for a dot \a file. */
@@ -94,15 +55,15 @@ class DotRunner
     bool run();
 
     //  DotConstString const& getFileName() { return m_file; }
-    DotConstString const& getMd5Hash() { return m_md5Hash; }
+    std::string const & getMd5Hash() { return m_md5Hash; }
 
     static bool readBoundingBox(const char* fileName, int* width, int* height, bool isEps);
 
   private:
-    DotConstString m_file;
-    DotConstString m_md5Hash;
-    DotConstString m_dotExe;
-    bool           m_cleanUp;
+    std::string m_file;
+    std::string m_md5Hash;
+    std::string m_dotExe;
+    bool        m_cleanUp;
     std::vector<DotJob>  m_jobs;
 };
 

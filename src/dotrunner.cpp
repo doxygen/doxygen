@@ -146,8 +146,8 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
 //---------------------------------------------------------------------------------
 
 DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
-  : m_file(absDotName)
-  , m_md5Hash(md5Hash)
+  : m_file(absDotName.data())
+  , m_md5Hash(md5Hash.data())
   , m_dotExe(Config_getString(DOT_PATH)+"dot")
   , m_cleanUp(Config_getBool(DOT_CLEANUP))
 {
@@ -230,7 +230,7 @@ bool DotRunner::run()
   }
 
   // create checksum file
-  if (!m_md5Hash.isEmpty()) 
+  if (!m_md5Hash.empty()) 
   {
     QCString md5Name = getBaseNameOfOutput(m_file.data()) + ".md5";
     FILE *f = Portable::fopen(md5Name,"w");
