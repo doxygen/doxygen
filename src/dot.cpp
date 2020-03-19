@@ -83,9 +83,8 @@ DotManager *DotManager::instance()
   return m_theInstance;
 }
 
-DotManager::DotManager() : m_runners(), m_filePatchers(1009)
+DotManager::DotManager() : m_runners(), m_filePatchers()
 {
-  m_filePatchers.setAutoDelete(TRUE);
   m_queue = new DotRunnerQueue;
   int i;
   int dotNumThreads = Config_getInt(DOT_NUM_THREADS);
@@ -130,25 +129,27 @@ DotRunner* DotManager::createRunner(const std::string &absDotName, const std::st
     {
       err("md5 hash does not match for two different runs of %s !\n", absDotName.data());
     }
+    rv = runit->second.get();
   }
+  assert(rv);
   return rv;
 }
 
-DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
+DotFilePatcher *DotManager::createFilePatcher(const std::string &fileName)
 {
-  DotFilePatcher *patcher = m_filePatchers.find(fileName);
-  if (patcher==0)
-  {
-    patcher = new DotFilePatcher(fileName);
-    m_filePatchers.append(fileName,patcher);
-  }
-  return patcher;
+  auto patcher = m_filePatchers.find(fileName);
+
+  if (patcher != m_filePatchers.end()) return &(patcher->second);
+  
+  auto rv = m_filePatchers.emplace(fileName, fileName.c_str());
+  assert(rv.second);
+  return &(rv.first->second);
 }
 
 bool DotManager::run() const
 {
   uint numDotRuns = m_runners.size();
-  uint numFilePatchers = m_filePatchers.count();
+  uint numFilePatchers = m_filePatchers.size();
   if (numDotRuns+numFilePatchers>1)
   {
     if (m_workers.count()==0)
@@ -236,27 +237,25 @@ bool DotManager::run() const
 
   // patch the output file and insert the maps and figures
   i=1;
-  SDict<DotFilePatcher>::Iterator di(m_filePatchers);
-  const DotFilePatcher *fp;
   // since patching the svg files may involve patching the header of the SVG
   // (for zoomable SVGs), and patching the .html files requires reading that
   // header after the SVG is patched, we first process the .svg files and 
   // then the other files. 
-  for (di.toFirst();(fp=di.current());++di)
+  for (auto & fp : m_filePatchers)
   {
-    if (fp->isSVGFile())
+    if (fp.second.isSVGFile())
     {
       msg("Patching output file %d/%d\n",i,numFilePatchers);
-      if (!fp->run()) return FALSE;
+      if (!fp.second.run()) return FALSE;
       i++;
     }
   }
-  for (di.toFirst();(fp=di.current());++di)
+  for (auto& fp : m_filePatchers)
   {
-    if (!fp->isSVGFile())
+    if (!fp.second.isSVGFile())
     {
       msg("Patching output file %d/%d\n",i,numFilePatchers);
-      if (!fp->run()) return FALSE;
+      if (!fp.second.run()) return FALSE;
       i++;
     }
   }

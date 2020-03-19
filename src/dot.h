@@ -36,7 +36,7 @@ class DotManager
   public:
     static DotManager *instance();
     DotRunner*      createRunner(const std::string& absDotName, const std::string& md5Hash);
-    DotFilePatcher *createFilePatcher(const QCString &fileName);
+    DotFilePatcher *createFilePatcher(const std::string &fileName);
     bool run() const;
 
   private:
@@ -44,7 +44,7 @@ class DotManager
     virtual ~DotManager();
 
     std::map<std::string, std::unique_ptr<DotRunner>>       m_runners;
-    SDict<DotFilePatcher>  m_filePatchers;
+    std::map<std::string, DotFilePatcher>  m_filePatchers;
     static DotManager     *m_theInstance;
     DotRunnerQueue        *m_queue;
     QList<DotWorkerThread> m_workers;
