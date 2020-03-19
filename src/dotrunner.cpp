@@ -290,3 +290,9 @@ void DotWorkerThread::run()
     runner->run();
   }
 }
+
+void DotWorkerThread::start()
+{
+  assert(!m_thread);
+  m_thread = std::make_unique<std::thread>(&DotWorkerThread::run, this);
+}

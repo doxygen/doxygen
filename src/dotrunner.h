@@ -17,10 +17,11 @@
 #define DOTRUNNER_H
 
 #include "qcstring.h"
-#include "qthread.h"
+#include <thread>
 #include <list>
 #include <queue>
 #include <mutex>
+#include <memory>
 
 /** Minimal constant string class that is thread safe, once initialized. */
 class DotConstString
@@ -119,12 +120,16 @@ class DotRunnerQueue
 };
 
 /** Worker thread to execute a dot run */
-class DotWorkerThread : public QThread
+class DotWorkerThread 
 {
   public:
     DotWorkerThread(DotRunnerQueue *queue);
     void run();
+    void start();
+    bool isRunning() { return m_thread && m_thread->joinable(); }
+    void wait() { m_thread->join(); }
   private:
+    std::unique_ptr<std::thread> m_thread;
     DotRunnerQueue *m_queue;
 };
 
