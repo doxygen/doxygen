@@ -18,10 +18,9 @@
 
 #include "qcstring.h"
 #include "qlist.h"
-#include "qwaitcondition.h"
 #include "qthread.h"
 #include <queue>
-#include "qmutex.h"
+#include <mutex>
 
 /** Minimal constant string class that is thread safe, once initialized. */
 class DotConstString
@@ -114,9 +113,9 @@ class DotRunnerQueue
     DotRunner *dequeue();
     uint count() const;
   private:
-    QWaitCondition    m_bufferNotEmpty;
+    std::condition_variable m_bufferNotEmpty;
     std::queue<DotRunner *> m_queue;
-    mutable QMutex    m_mutex;
+    mutable std::mutex    m_mutex;
 };
 
 /** Worker thread to execute a dot run */
