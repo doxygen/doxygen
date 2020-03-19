@@ -21,6 +21,7 @@
 #include <list>
 #include <queue>
 #include <mutex>
+#include <condition_variable>
 #include <memory>
 
 /** Minimal constant string class that is thread safe, once initialized. */
