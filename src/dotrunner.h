@@ -17,8 +17,8 @@
 #define DOTRUNNER_H
 
 #include "qcstring.h"
-#include "qlist.h"
 #include "qthread.h"
+#include <list>
 #include <queue>
 #include <mutex>
 
@@ -101,7 +101,7 @@ class DotRunner
     DotConstString m_md5Hash;
     DotConstString m_dotExe;
     bool           m_cleanUp;
-    QList<DotJob>  m_jobs;
+    std::vector<DotJob>  m_jobs;
 };
 
 /** Queue of dot jobs to run. */

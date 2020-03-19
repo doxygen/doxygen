@@ -151,22 +151,20 @@ DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
   , m_dotExe(Config_getString(DOT_PATH)+"dot")
   , m_cleanUp(Config_getBool(DOT_CLEANUP))
 {
-  m_jobs.setAutoDelete(TRUE);
 }
 
 void DotRunner::addJob(const char *format,const char *output)
 {
-  QListIterator<DotJob> li(m_jobs);
-  DotJob *s;
-  for (li.toFirst(); (s = li.current()); ++li)
+    
+  for (auto& s: m_jobs)
   {
-    if (qstrcmp(s->format.data(), format) != 0) continue;
-    if (qstrcmp(s->output.data(), output) != 0) continue;
+    if (qstrcmp(s.format.data(), format) != 0) continue;
+    if (qstrcmp(s.output.data(), output) != 0) continue;
     // we have this job already
     return;
   }
   QCString args = QCString("-T")+format+" -o \""+output+"\"";
-  m_jobs.append(new DotJob(format, output, args));
+  m_jobs.emplace_back(format, output, args);
 }
 
 QCString getBaseNameOfOutput(QCString const& output)
@@ -181,48 +179,46 @@ bool DotRunner::run()
   int exitCode=0;
 
   QCString dotArgs;
-  QListIterator<DotJob> li(m_jobs);
-  DotJob *s;
 
   // create output
   if (Config_getBool(DOT_MULTI_TARGETS))
   {
     dotArgs=QCString("\"")+m_file.data()+"\"";
-    for (li.toFirst();(s=li.current());++li)
+    for (auto& s: m_jobs)
     {
       dotArgs+=' ';
-      dotArgs+=s->args.data();
+      dotArgs+=s.args.data();
     }
     if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
   }
   else
   {
-    for (li.toFirst();(s=li.current());++li)
+    for (auto& s : m_jobs)
     {
-      dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
+      dotArgs=QCString("\"")+m_file.data()+"\" "+s.args.data();
       if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
     }
   }
 
   // check output
   // As there should be only one pdf file be generated, we don't need code for regenerating multiple pdf files in one call
-  for (li.toFirst();(s=li.current());++li)
+  for (auto& s : m_jobs)
   {
-    if (qstrncmp(s->format.data(), "pdf", 3) == 0)
+    if (qstrncmp(s.format.data(), "pdf", 3) == 0)
     {
       int width=0,height=0;
-      if (!readBoundingBox(s->output.data(),&width,&height,FALSE)) goto error;
+      if (!readBoundingBox(s.output.data(),&width,&height,FALSE)) goto error;
       if ((width > MAX_LATEX_GRAPH_SIZE) || (height > MAX_LATEX_GRAPH_SIZE))
       {
-        if (!resetPDFSize(width,height,getBaseNameOfOutput(s->output.data()))) goto error;
-        dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
+        if (!resetPDFSize(width,height,getBaseNameOfOutput(s.output.data()))) goto error;
+        dotArgs=QCString("\"")+m_file.data()+"\" "+s.args.data();
         if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
       }
     }
 
-    if (qstrncmp(s->format.data(), "png", 3) == 0)
+    if (qstrncmp(s.format.data(), "png", 3) == 0)
     {
-      checkPngResult(s->output.data());
+      checkPngResult(s.output.data());
     }
   }
 
