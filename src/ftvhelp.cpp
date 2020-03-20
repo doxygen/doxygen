@@ -451,6 +451,10 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
         char icon=compoundIcon(dynamic_cast<const ClassDef*>(n->def));
         t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
+      else if (n->def && n->def->definitionType()==Definition::TypeDir)
+      {
+        t << "<span class=\"iconfclosed\"></span>";
+      }
       else
       {
         t << "<span class=\"icondoc\"></span>";
