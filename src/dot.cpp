@@ -153,8 +153,8 @@ DotFilePatcher *DotManager::createFilePatcher(const std::string &fileName)
 
 bool DotManager::run() const
 {
-  size_t numDotRuns = m_runners.size();
-  size_t numFilePatchers = m_filePatchers.size();
+  auto numDotRuns = m_runners.size();
+  auto numFilePatchers = m_filePatchers.size();
   if (numDotRuns+numFilePatchers>1)
   {
     if (m_workers.size()==0)
@@ -166,7 +166,6 @@ bool DotManager::run() const
       msg("Generating dot graphs using %zu parallel threads...\n",QMIN(numDotRuns+numFilePatchers,m_workers.size()));
     }
   }
-  size_t i=1;
 
   bool setPath=FALSE;
   if (Config_getBool(GENERATE_HTML))
@@ -191,9 +190,10 @@ bool DotManager::run() const
   }
   Portable::sysTimerStart();
   // fill work queue with dot operations
-  size_t prev=1;
+
   if (m_workers.size()==0) // no threads to work with
   {
+    auto prev = 1;
     for (auto & dr : m_runners)
     {
       msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
@@ -208,28 +208,32 @@ bool DotManager::run() const
       m_queue->enqueue(dr.second.get());
     }
     // wait for the queue to become empty
-    while ((i=m_queue->size())>0)
-    {
-      i = numDotRuns - i;
-      while (i>=prev)
+    int prev = 1;
+    while(true) {
+      auto const left = m_queue->size();
+      auto const done = numDotRuns - left;
+      while (done >= prev)
       {
         msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
         prev++;
       }
+      if (left == 0) break;
       Portable::sleep(100);
     }
-    while (numDotRuns>=prev)
+
+    while (numDotRuns >= prev)
     {
       msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
       prev++;
     }
-    // signal the workers we are done
-    for (i=0;i<m_workers.size();i++)
+
+    // Add nullptrs to terminate the workers
+    for (int i = 0; i < m_workers.size(); i++)
     {
-      m_queue->enqueue(0); // add terminator for each worker
+      m_queue->enqueue(nullptr); // add terminator for each worker
     }
     // wait for the workers to finish
-    for (i=0;i<m_workers.size();i++)
+    for (int i=0;i<(int)m_workers.size();i++)
     {
       m_workers.at(i)->wait();
     }
@@ -241,7 +245,7 @@ bool DotManager::run() const
   }
 
   // patch the output file and insert the maps and figures
-  i=1;
+  auto i=1;
   // since patching the svg files may involve patching the header of the SVG
   // (for zoomable SVGs), and patching the .html files requires reading that
   // header after the SVG is patched, we first process the .svg files and
