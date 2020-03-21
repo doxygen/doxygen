@@ -736,7 +736,7 @@ class FilterCache
             if (numBytes!=item->fileSize)
             {
               err("Failed to read %d bytes from position %d in filter database file %s: got %d bytes\n",
-                 (int)item->fileSize,(int)item->filePos,qPrint(Doxygen::filterDBFileName),numBytes);
+                 (int)item->fileSize,(int)item->filePos,qPrint(Doxygen::filterDBFileName),(int)numBytes);
               success=FALSE;
             }
           }

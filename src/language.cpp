@@ -417,6 +417,6 @@ bool setTranslator(const char *langName)
   }
 
   QCString msg = theTranslator->updateNeededMessage();
-  if (!msg.isEmpty()) warn_uncond(msg);
+  if (!msg.isEmpty()) warn_uncond("%s", msg.data());
   return TRUE;
 }
