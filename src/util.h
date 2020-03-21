@@ -220,7 +220,7 @@ NamespaceDef *getResolvedNamespace(const char *key);
 FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
                 bool &ambig);
 
-QCString showFileDefMatches(const FileNameDict *fnDict,const char *n);
+QCString showFileDefMatches(const FileNameDict *fnDict,const char *n,bool &unique);
 
 int guessSection(const char *name);
 

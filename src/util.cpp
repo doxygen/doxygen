@@ -4581,11 +4581,18 @@ exit:
 
 //----------------------------------------------------------------------
 
-QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
+QCString showFileDefMatches(const FileNameDict *fnDict,const char *n,bool &unique)
 {
   QCString result;
   QCString name=n;
   QCString path;
+
+  unique = true;
+  uchar md5_sig[16];
+  QCString sigStr(33);
+  QCString tmpStr(33);
+  sigStr = "";
+
   int slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
@@ -4602,6 +4609,36 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
       if (path.isEmpty() || fd->getPath().right(path.length())==path)
       {
         result+="   "+fd->absFilePath()+"\n";
+        if (unique)
+        {
+          QFile f(fd->absFilePath());
+          if (!f.open(IO_ReadOnly))
+          {
+            err("could not open file %s\n",fd->absFilePath());
+            unique = false;
+          }
+          else
+          {
+            int size=f.size();
+            BufStr inBuf(size + 4096);
+            // read the file
+            inBuf.skip(size);
+            if (f.readBlock(inBuf.data()/*+oldPos*/,size)!=size)
+            {
+              err("problems while reading file %s\n",fd->absFilePath());
+              unique = false;
+            }
+            else
+            {
+              // calculate md5
+              MD5Buffer((const unsigned char*)inBuf.data(), size, md5_sig);
+              // convert result to a string
+              MD5SigToString(md5_sig, tmpStr.rawData(), 33);
+              if (sigStr.isEmpty()) sigStr = tmpStr.data();
+              else if (sigStr != tmpStr) unique = false;
+            }
+          }
+        }
       }
     }
   }

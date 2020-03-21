@@ -548,8 +548,14 @@ static void buildFileList(const Entry *root)
           qPrint(root->name));
       if (ambig) // name is ambiguous
       {
-        text+="matches the following input files:\n";
-        text+=showFileDefMatches(Doxygen::inputNameDict,root->name);
+        bool unique;
+
+        QCString text_1 = showFileDefMatches(Doxygen::inputNameDict,root->name,unique);
+        if (!unique)
+          text+="matches the following non-identical input files:\n";
+        else
+          text+="matches the following identical input files:\n";
+        text += text_1;
         text+="Please use a more specific name by "
           "including a (larger) part of the path!";
       }
@@ -602,10 +608,15 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,const Entry *root)
                  );
       if (ambig) // name is ambiguous
       {
-        text+="matches the following input files:\n";
-        text+=showFileDefMatches(Doxygen::inputNameDict,root->includeFile);
+        bool unique;
+        QCString text_1=showFileDefMatches(Doxygen::inputNameDict,root->includeFile,unique);
+        if (!unique)
+          text+="matches the following non-identical input files:\n";
+        else
+          text+="matches the following identical input files:\n";
+        text += text_1;
         text+="Please use a more specific name by "
-            "including a (larger) part of the path!";
+              "including a (larger) part of the path!";
       }
       else // name is not an input file
       {
