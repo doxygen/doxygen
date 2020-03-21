@@ -2384,7 +2384,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='string' id='FORMULA_MACROFILE' format='file' defval=''>
       <docs>
 <![CDATA[
- The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and 
+ The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and
  `\renewcommand` commands to create new \f$\mbox{\LaTeX}\f$ commands to be used
  in formulas as building blocks.
  See the section \ref formulas for details.
@@ -2815,7 +2815,7 @@ or
     <option type='string' id='LATEX_EMOJI_DIRECTORY' format='dir' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute) 
+ The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute)
  path from which the emoji images will be read.
  If a relative path is entered, it will be relative to the \ref cfg_latex_output "LATEX_OUTPUT"
  directory. If left blank the \ref cfg_latex_output "LATEX_OUTPUT" directory will be used.
