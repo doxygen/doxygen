@@ -3505,6 +3505,18 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='string' id='DOT_CACHEDIR' format='dir' defval='' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ The \c DOT_CACHEDIR tag can be used to specify the path where the generated dot images are cached. This can speed
+ up rebuilding the documentation, for example when running in a CI-Environment.
+ <br>Alternatively the DOXY_DOT_CACHEDIR environment variable can be set. The path in the configuration however
+ takes precidence.
+ <br>If the cachedir does not exist, it will not be created, but the caching-feature will be turned off.
+ Also there is no house-keeping. The cache-dir must therefore manually be cleaned up from time to time.
+]]>
+      </docs>
+    </option>
     <option type='list' id='DOTFILE_DIRS' format='dir' depends='HAVE_DOT'>
       <docs>
 <![CDATA[

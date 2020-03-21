@@ -19,6 +19,7 @@
 #include "md5.h"
 #include "message.h"
 #include "util.h"
+#include "portable.h"
 
 #include "dot.h"
 #include "dotrunner.h"
@@ -98,8 +99,12 @@ static bool insertMapFile(FTextStream &out,const QCString &mapFile,
 
 QCString DotGraph::imgName() const
 {
-  return m_baseName + ((m_graphFormat == GOF_BITMAP) ?
-                      ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
+  return m_baseName + imgSuffix();
+}
+
+QCString DotGraph::imgSuffix() const {
+  return (m_graphFormat == GOF_BITMAP) ?
+    ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps");
 }
 
 QCString DotGraph::writeGraph(
@@ -149,7 +154,13 @@ bool DotGraph::prepareDotFile()
   MD5SigToString(md5_sig, sigStr.rawData(), 33);
 
   // already queued files are processed again in case the output format has changed
+  auto const& cachepath = Config_getString(DOT_CACHEDIR);
 
+  QCString cachefilename("");
+  QCString cachemapfilename("");
+
+  //Cachepath handling is done later.
+  if (cachepath.isEmpty()) {
   if (!checkMd5Signature(absBaseName(), sigStr) &&
       checkDeliverables(absImgName(),
                         m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
@@ -159,10 +170,34 @@ bool DotGraph::prepareDotFile()
     // all needed files are there
     return FALSE;
   }
+  } else {
+    auto basename = QCString(cachepath.data()) + Portable::pathSeparator() + sigStr[0] + sigStr[1] + Portable::pathSeparator() + sigStr;
+    cachefilename = basename + imgSuffix();
+    cachemapfilename = basename + ".map";
+    if (QFile(cachefilename).exists()) {
+      if (!copyFile(cachefilename, absImgName())) {
+        term("Failed to copy %s to %s\n", cachefilename.data(), absImgName().data());
+      }
+      // If no map-file is needed were done....
+      // Currently the raw dot-image is cached. It still needs patching -> Return true
+      if (!((m_graphFormat == GOF_BITMAP) && m_generateImageMap)) {
+        return true;
+      }
+
+      if (QFile(cachemapfilename).exists()) {
+        if (!copyFile(cachemapfilename, absMapName())) {
+          term("Failed to copy %s to %s\n", cachemapfilename.data(), absMapName().data());
+        }
+        return true;
+      }
+    }
+  }
+
+
 
   // need to rebuild the image
-
   // write .dot file because image was new or has changed
+  // It might be a good idae to write the file in the dot-Runner or even pass it via stdout
   QFile f(absDotName());
   if (!f.open(IO_WriteOnly))
   {
@@ -173,12 +208,13 @@ bool DotGraph::prepareDotFile()
   t << m_theGraph;
   f.close();
 
+
   if (m_graphFormat == GOF_BITMAP)
   {
     // run dot to create a bitmap image
     DotRunner * dotRun = DotManager::instance()->createRunner(absDotName().data(), sigStr.data());
-    dotRun->addJob(Config_getEnum(DOT_IMAGE_FORMAT), absImgName());
-    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName());
+    dotRun->addJob(Config_getEnum(DOT_IMAGE_FORMAT), absImgName(), cachefilename.data());
+    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), cachemapfilename.data());
   }
   else if (m_graphFormat == GOF_EPS)
   {
@@ -186,11 +222,11 @@ bool DotGraph::prepareDotFile()
     DotRunner *dotRun = DotManager::instance()->createRunner(absDotName().data(), sigStr.data());
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun->addJob("pdf",absImgName());
+      dotRun->addJob("pdf",absImgName(), cachefilename);
     }
     else
     {
-      dotRun->addJob("ps",absImgName());
+      dotRun->addJob("ps",absImgName(), cachefilename);
     }
   }
   return TRUE;

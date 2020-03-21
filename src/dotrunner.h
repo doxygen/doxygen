@@ -27,28 +27,38 @@
 /** Helper class to run dot from doxygen from multiple threads.  */
 class DotRunner
 {
-    struct DotJob
+  public:
+    class DotJob
     {
-      DotJob(std::string f, std::string o, std::string a)
-        : format(f), output(o), args(a) {}
+    public:
+      DotJob(std::string format, std::string output)
+        : format(std::move(format)), output(std::move(output)) {}
+      DotJob(std::string format, std::string output, std::string cachefile)
+        : format(std::move(format)), output(std::move(output)), cachefile(std::move(cachefile)) {}
       std::string format;
       std::string output;
-      std::string args;
+      std::string cachefile;
+      std::string getarg() const {return std::string("-T") + format + " -o \"" + output + "\""; }
+      
     };
 
   public:
     /** Creates a runner for a dot \a file. */
-    DotRunner(const std::string& absDotName, const std::string& md5Hash = std::string());
+    DotRunner(std::string absDotName, std::string md5Hash = std::string());
 
     /** Adds an additional job to the run.
      *  Performing multiple jobs one file can be faster.
+     *  \param format The output format. This is forwarded to dot.
+     *  \param output The target file
      */
-    void addJob(const char *format,const char *output);
+    void addJob(const char *format,const char *output, const char * cachefile = "");
 
     /** Prevent cleanup of the dot file (for user provided dot files) */
     void preventCleanUp() { m_cleanUp = false; }
 
-    /** Runs dot for all jobs added. */
+    /** Runs dot for all jobs added.
+     * @return True if the execution was successful. False on an error.
+     */
     bool run();
 
     //  DotConstString const& getFileName() { return m_file; }

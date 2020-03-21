@@ -1713,6 +1713,30 @@ void Config::checkAndCorrect()
     dotPath="";
   }
 
+  // check dot path
+  auto & dotCachedir = Config_getString(DOT_CACHEDIR);
+  if (!dotCachedir.isEmpty())
+  {
+    QFileInfo fi(dotCachedir);
+    if (fi.exists() && fi.isDir())
+    {
+      dotCachedir += '/';
+    }
+    else
+    {
+        warn_uncond("The dot cache folder (DOT_CACHEDIR) %s could not be found (ignoring).\n",dotCachedir.data());
+        dotCachedir="";
+    }
+#if defined(_WIN32) // convert slashes
+    auto l=dotCachedir.length();
+    for (int i=0;i<l;i++) if (dotCachedir.at(i)=='/') dotCachedir.at(i)='\\';
+#endif
+  }
+  else // make sure the string is empty but not null!
+  {
+    dotCachedir="";
+  }
+
   // check plantuml path
   QCString &plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   if (!plantumlJarPath.isEmpty())
