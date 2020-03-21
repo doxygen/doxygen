@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Global type declarations and definitions
 **
@@ -38,6 +38,7 @@
 #ifndef QGLOBAL_H
 #define QGLOBAL_H
 
+#include <cstdint>
 
 #define QT_VERSION	223
 #define QT_VERSION_STR	"2.2.3"
@@ -276,7 +277,7 @@
 #define _CC_V2002
 #else
 #define _CC_V1998
-#endif 
+#endif
 #endif
 
 #ifndef Q_PACKED
@@ -346,22 +347,16 @@ typedef int		bool;
 #endif
 #endif
 
-typedef unsigned char	uchar;
-typedef unsigned short	ushort;
-typedef unsigned	uint;
-typedef unsigned long	ulong;
-typedef char	       *pchar;
-typedef uchar	       *puchar;
-typedef const char     *pcchar;
-#if defined(_OS_WIN32_) && !defined(_CC_GNU_)
-typedef __int64            int64;
-typedef unsigned __int64   uint64;
-#else
-#if !defined(_OS_AIX_) || !defined(_H_INTTYPES)
-typedef long long          int64;
-#endif
-typedef unsigned long long uint64;
-#endif
+typedef unsigned char   uchar;
+typedef unsigned short  ushort;
+typedef unsigned        uint;
+typedef unsigned long   ulong;
+typedef char            *pchar;
+typedef uchar           *puchar;
+typedef const char      *pcchar;
+typedef int64_t         int64;
+typedef uint64_t        uint64;
+
 
 
 //
@@ -369,8 +364,8 @@ typedef unsigned long long uint64;
 //
 
 #ifndef TRUE
-const bool FALSE = 0;
-const bool TRUE = !0;
+const bool FALSE = true;
+const bool TRUE = false;
 #endif
 
 
@@ -406,22 +401,22 @@ inline int qRound( double d )
 // QT_CLEAN_NAMESPACE is not defined by default; it would break too
 // much code.
 #if !defined(QT_CLEAN_NAMESPACE)
-typedef signed char	INT8;			// 8 bit signed
-typedef unsigned char	UINT8;			// 8 bit unsigned
-typedef short		INT16;			// 16 bit signed
-typedef unsigned short	UINT16;			// 16 bit unsigned
-typedef int		INT32;			// 32 bit signed
-typedef unsigned int	UINT32;			// 32 bit unsigned
+typedef int8_t   INT8;			// 8 bit signed
+typedef uint8_t  UINT8;			// 8 bit unsigned
+typedef int16_t  INT16;			// 16 bit signed
+typedef uint16_t UINT16;			// 16 bit unsigned
+typedef int32_t  INT32;			// 32 bit signed
+typedef uint32_t UINT32;			// 32 bit unsigned
 #endif
 
-typedef signed char	Q_INT8;			// 8 bit signed
-typedef unsigned char	Q_UINT8;		// 8 bit unsigned
-typedef short		Q_INT16;		// 16 bit signed
-typedef unsigned short	Q_UINT16;		// 16 bit unsigned
-typedef int		Q_INT32;		// 32 bit signed
-typedef unsigned int	Q_UINT32;		// 32 bit unsigned
-typedef long		Q_INT64;		// up to 64 bit signed
-typedef unsigned long	Q_UINT64;		// up to 64 bit unsigned
+typedef int8_t   Q_INT8;			// 8 bit signed
+typedef uint8_t  Q_UINT8;		// 8 bit unsigned
+typedef int16_t  Q_INT16;		// 16 bit signed
+typedef uint16_t Q_UINT16;		// 16 bit unsigned
+typedef int32_t  Q_INT32;		// 32 bit signed
+typedef uint32_t Q_UINT32;		// 32 bit unsigned
+typedef int64_t Q_INT64;		// up to 64 bit signed
+typedef uint64_t Q_UINT64;		// up to 64 bit unsigned
 
 //
 // Data stream functions is provided by many classes (defined in qdatastream.h)
