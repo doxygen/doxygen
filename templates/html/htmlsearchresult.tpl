@@ -24,6 +24,12 @@ document.getElementById("Loading").style.display="none";
 document.getElementById("NoMatches").style.display="none";
 var searchResults = new SearchResults("searchResults");
 searchResults.Search();
+window.addEventListener("message", function(event) {
+  if (event.data == "take_focus") {
+    var elem = searchResults.NavNext(0);
+    if (elem) elem.focus();
+  }
+});
 /* @license-end */
 --></script>
 </div>

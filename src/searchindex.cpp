@@ -1007,6 +1007,12 @@ void writeJavaScriptSearchIndex()
           t << "document.getElementById(\"NoMatches\").style.display=\"none\";" << endl;
           t << "var searchResults = new SearchResults(\"searchResults\");" << endl;
           t << "searchResults.Search();" << endl;
+          t << "window.addEventListener(\"message\", function(event) {" << endl;
+          t << "  if (event.data == \"take_focus\") {" << endl;
+          t << "    var elem = searchResults.NavNext(0);" << endl;
+          t << "    if (elem) elem.focus();" << endl;
+          t << "  }" << endl;
+          t << "});" << endl;
 					t << "/* @license-end */\n";
           t << "--></script>" << endl;
           t << "</div>" << endl; // SRIndex
