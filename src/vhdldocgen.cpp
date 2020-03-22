@@ -1957,7 +1957,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
 
   QCString ltype(mdef->typeString());
   QCString largs(mdef->argsString());
- 
+
   ClassDef *kl=0;
   const ArgumentList &al = mdef->argumentList();
   QCString nn;
@@ -2136,7 +2136,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
     case VhdlDocGen::UNITS:
      writeRecordUnit(largs,ltype,ol,mdef);
       break;
-    
+
     default: break;
   }
 
@@ -2814,20 +2814,20 @@ ferr:
 
 void  VhdlDocGen::writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol ,const MemberDef *mdef)
 {
-	  int i=mdef->name().find('~');	  
+	  int i=mdef->name().find('~');
 	  if(i>0){
 		 //sets the real record member name
 	    const_cast<MemberDef*>(mdef)->setName(mdef->name().left(i).data());
        }
-   
+
       writeLink(mdef,ol);
       ol.startBold();
       ol.insertMemberAlign();
       if (!ltype.isEmpty()){
         VhdlDocGen::formatString(ltype,ol,mdef);
-	} 
+	}
       ol.endBold();
- 
+
 }
 
 
@@ -3933,7 +3933,7 @@ int FlowChart::findLabel(int index,QCString &label)
       return j;
     }
   }
-  err("could not find label: ",label.data());
+  err("could not find label: %s",label.data());
   return 0;
 }
 
@@ -4148,5 +4148,3 @@ void FlowChart::writeFlowLinks(FTextStream &t)
     }
   } //for
 } //writeFlowLinks
-
-

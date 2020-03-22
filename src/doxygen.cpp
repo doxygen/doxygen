@@ -209,7 +209,7 @@ class Statistics
     Statistics() { stats.setAutoDelete(TRUE); }
     void begin(const char *name)
     {
-      msg(name);
+      msg("%s", name);
       stat *entry= new stat(name,0);
       stats.append(entry);
       time.restart();
@@ -557,7 +557,7 @@ static void buildFileList(const Entry *root)
       {
         text+="is not an input file";
       }
-      warn(fn,root->startLine,text);
+      warn(fn,root->startLine,"%s", text.data());
     }
   }
   for (const auto &e : root->children()) buildFileList(e.get());
@@ -611,7 +611,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,const Entry *root)
       {
         text+="is not an input file";
       }
-      warn(root->fileName,root->startLine,text);
+      warn(root->fileName,root->startLine, "%s", text.data());
     }
     else if (includeFile.isEmpty() && ifd &&
         // see if the file extension makes sense
@@ -5285,7 +5285,7 @@ static bool findGlobalMember(const Entry *root,
                    " of file "+md->getDefFileName()+"\n";
         }
       }
-      warn(root->fileName,root->startLine,warnMsg);
+      warn(root->fileName,root->startLine, "%s", warnMsg.data());
     }
   }
   else // got docs for an undefined member!
@@ -8379,7 +8379,7 @@ static void findDefineDocumentation(Entry *root)
       else
       {
         warn(root->fileName,root->startLine,
-             "found documented #define but ignoring it because "
+             "found documented #define %s but ignoring it because "
              "ENABLE_PREPROCESSING is NO.\n",
              root->name.data()
             );
@@ -11646,4 +11646,3 @@ void generateOutput()
 //  delete Doxygen::symbolStorage;
   g_successfulRun=TRUE;
 }
-

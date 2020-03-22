@@ -2581,8 +2581,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     else
     {
       // something different specified, give warning and leave error.
-      warn(yyextra->fileName,yyextra->lineNr, "Routine: " + yyextra->current->name + yyextra->current->args +
-           " inconsistency between intent attribute and documentation for parameter: " + yyextra->argName);
+      warn(yyextra->fileName,yyextra->lineNr, "%s", ("Routine: " + yyextra->current->name + yyextra->current->args +
+           " inconsistency between intent attribute and documentation for parameter: " + yyextra->argName).data());
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " + 
                          yyextra->argName + " " + loc_doc,brief);
     }
@@ -2605,8 +2605,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr, "Routine: " + yyextra->current->name + yyextra->current->args +
-           " inconsistency between intent attribute and documentation for parameter: " + yyextra->argName);
+      warn(yyextra->fileName,yyextra->lineNr, "%s", ("Routine: " + yyextra->current->name + yyextra->current->args +
+           " inconsistency between intent attribute and documentation for parameter: " + yyextra->argName).data());
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " + 
                          yyextra->argName + " " + loc_doc,brief);
     }
@@ -2627,8 +2627,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr, "Routine: " + yyextra->current->name + yyextra->current->args +
-           " inconsistency between intent attribute and documentation for parameter: " + yyextra->argName);
+      warn(yyextra->fileName,yyextra->lineNr, "%s", ("Routine: " + yyextra->current->name + yyextra->current->args +
+           " inconsistency between intent attribute and documentation for parameter: " + yyextra->argName).data());
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " + 
                          yyextra->argName + " " + loc_doc,brief);
     }
