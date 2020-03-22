@@ -223,7 +223,6 @@ Topics TODO
   - Python
   - Fortran
   - VHDL
-  - TCL
   - Tag files
 - Marshaling to/from disk
 - Portability functions

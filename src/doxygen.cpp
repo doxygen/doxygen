@@ -81,7 +81,6 @@
 #include "fortranscanner.h"
 #include "xmlcode.h"
 #include "sqlcode.h"
-#include "tclscanner.h"
 #include "code.h"
 #include "portable.h"
 #include "vhdljjparser.h"
@@ -9810,8 +9809,6 @@ void initDoxygen()
                                                          std::make_unique<XMLCodeParser>());
   Doxygen::parserManager->registerParser("sql",          std::make_unique<NullOutlineParser>(),
                                                          std::make_unique<SQLCodeParser>());
-  Doxygen::parserManager->registerParser("tcl",          std::make_unique<TclOutlineParser>(),
-                                                         std::make_unique<TclCodeParser>());
   Doxygen::parserManager->registerParser("md",           std::make_unique<MarkdownOutlineParser>(),
                                                          std::make_unique<FileCodeParser>());
 

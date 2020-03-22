@@ -943,30 +943,6 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     return FALSE; // member has no function like argument list
   }
 
-  // simple argument list for tcl
-  if (md->getLanguage()==SrcLangExt_Tcl)
-  {
-    if (defArgList.empty()) return FALSE;
-    ol.endMemberDocName();
-    ol.startParameterList(FALSE);
-    ol.startParameterType(TRUE,0);
-    ol.endParameterType();
-    ol.startParameterName(FALSE);
-    for (const Argument &a : defArgList)
-    {
-      if (a.defval.isEmpty())
-      {
-        ol.docify(a.name+" ");
-      }
-      else
-      {
-        ol.docify("?"+a.name+"? ");
-      }
-    }
-    ol.endParameterName(TRUE,FALSE,FALSE);
-    return TRUE;
-  }
-
   if (!md->isDefine()) ol.docify(" ");
 
   //printf("writeDefArgList(%d)\n",defArgList->count());
@@ -4624,11 +4600,6 @@ void MemberDefImpl::_computeIsConstructor()
       m_isConstructorCached = 2; // TRUE
       return;
     }
-    else if (getLanguage()==SrcLangExt_Tcl) // for Tcl
-    {
-      m_isConstructorCached = name()=="constructor" ? 2 : 1;
-      return;
-    }
     else // for other languages
     {
       QCString locName = getClassDef()->localName();
@@ -4668,10 +4639,6 @@ void MemberDefImpl::_computeIsDestructor()
   else if (getLanguage()==SrcLangExt_PHP) // for PHP
   {
     isDestructor = name()=="__destruct";
-  }
-  else if (getLanguage()==SrcLangExt_Tcl) // for Tcl
-  {
-    isDestructor = name()=="destructor";
   }
   else if (name()=="__del__" &&
            getLanguage()==SrcLangExt_Python) // for Python

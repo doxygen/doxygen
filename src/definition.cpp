@@ -850,10 +850,9 @@ bool readCodeFragment(const char *fileName,
   g_filterCache.getFileContents(fileName,str);
 
   bool found = lang==SrcLangExt_VHDL   ||
-               lang==SrcLangExt_Tcl    ||
                lang==SrcLangExt_Python ||
                lang==SrcLangExt_Fortran;
-               // for VHDL, TCL, Python, and Fortran no bracket search is possible
+               // for VHDL, Python, and Fortran no bracket search is possible
   char *p=str.data();
   if (p)
   {

@@ -119,7 +119,6 @@ Extension | Language | Extension | Language     | Extension | Language
 .ixx      |C / C++   | .php5     |PHP           | .vhdl     |VHDL
 .ipp      |C / C++   | .inc      |PHP           | .ucf      |VHDL
 .i++      |C / C++   | .phtml    |PHP           | .qsf      |VHDL
-.inl      |C / C++   | .m        |Objective-C   | .tcl      |TCL
 .h        |C / C++   | .M        |Objective-C   | .md       |Markdown
 .H        |C / C++   | .py       |Python        | .markdown |Markdown
 .hh       |C / C++   | .pyw      |Python        | .ice      |Slice

@@ -203,7 +203,7 @@ class Entry
     const std::vector< std::shared_ptr<Entry> > &children() const { return m_sublist; }
 
     /*! @name add entry as a child and pass ownership.
-     *  @note This makes the entry passed invalid! (TODO: tclscanner.l still has use after move!)
+     *  @note This makes the entry passed invalid!
      *  @{
      */
     void moveToSubEntryAndKeep(Entry* e);

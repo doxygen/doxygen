@@ -291,7 +291,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <Scan>"/*"[*!]?			   { /* start of a C comment */
-                                     if ((yyextra->lang==SrcLangExt_Python) || (yyextra->lang==SrcLangExt_Tcl))
+                                     if (yyextra->lang==SrcLangExt_Python)
 				     {
 				       REJECT;
                                      }
@@ -580,7 +580,6 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
                                    }
 <CComment>"/"+"*"                  { /* nested C comment */
                                      if (yyextra->lang==SrcLangExt_Python ||
-                                         yyextra->lang==SrcLangExt_Tcl    ||
                                          yyextra->lang==SrcLangExt_Markdown)
 				     {
 				       REJECT;
@@ -591,7 +590,6 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
                                    }
 <CComment>"*"+"/"                  { /* end of C comment */
                                      if (yyextra->lang==SrcLangExt_Python ||
-                                         yyextra->lang==SrcLangExt_Tcl    ||
                                          yyextra->lang==SrcLangExt_Markdown)
 				     {
 				       REJECT;
