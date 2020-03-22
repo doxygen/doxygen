@@ -186,14 +186,14 @@ bool DotGraph::prepareDotFile()
   if (m_graphFormat == GOF_BITMAP)
   {
     // run dot to create a bitmap image
-    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
+    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName().data(), sigStr.data());
     dotRun->addJob(Config_getEnum(DOT_IMAGE_FORMAT), absImgName());
     if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName());
   }
   else if (m_graphFormat == GOF_EPS)
   {
     // run dot to create a .eps image
-    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
+    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName().data(), sigStr.data());
     if (Config_getBool(USE_PDFLATEX))
     {
       dotRun->addJob("pdf",absImgName());
@@ -233,11 +233,11 @@ void DotGraph::generateCode(FTextStream &t)
         if (m_regenerate)
         {
           DotManager::instance()->
-               createFilePatcher(absImgName())->
+               createFilePatcher(absImgName().data())->
                addSVGConversion(m_relPath,FALSE,QCString(),m_zoomable,m_graphId);
         }
         int mapId = DotManager::instance()->
-               createFilePatcher(m_fileName)->
+               createFilePatcher(m_fileName.data())->
                addSVGObject(m_baseName,absImgName(),m_relPath);
         t << "<!-- SVG " << mapId << " -->" << endl;
       }
@@ -252,7 +252,7 @@ void DotGraph::generateCode(FTextStream &t)
       if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, getMapLabel()))
       {
         int mapId = DotManager::instance()->
-          createFilePatcher(m_fileName)->
+          createFilePatcher(m_fileName.data())->
           addMap(absMapName(), m_relPath, m_urlOnly, QCString(), getMapLabel());
         t << "<!-- MAP " << mapId << " -->" << endl;
       }
@@ -263,7 +263,7 @@ void DotGraph::generateCode(FTextStream &t)
     if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absBaseName()))
     {
       int figId = DotManager::instance()->
-                  createFilePatcher(m_fileName)->
+                  createFilePatcher(m_fileName.data())->
                   addFigure(m_baseName,absBaseName(),FALSE /*TRUE*/);
       t << endl << "% FIG " << figId << endl;
     }

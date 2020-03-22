@@ -29,7 +29,7 @@ void DotLegendGraph::writeGraph(const char *path)
   if (getDotImageExtension()=="svg")
   {
     DotManager::instance()->
-      createFilePatcher(absBaseName()+Config_getString(HTML_FILE_EXTENSION))->
+      createFilePatcher((absBaseName()+Config_getString(HTML_FILE_EXTENSION)).data())->
       addSVGObject("graph_legend", absImgName(),QCString());
   }
 }

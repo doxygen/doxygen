@@ -1173,6 +1173,7 @@ tcl_inf("line=%d type=%d '%s'\n",tcl.line_body0,type,content.data());
       myScan->type[0] = type;
       break;
     case '?':
+      if (content.isEmpty()) break;
       if (content[0]=='"' && content[content.length()-1]=='"') myScan->type[0]='"';
       if (content[0]=='{' && content[content.length()-1]=='}') myScan->type[0]='{';
       if (content[0]=='[' && content[content.length()-1]==']') myScan->type[0]='[';

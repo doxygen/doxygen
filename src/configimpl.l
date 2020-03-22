@@ -33,8 +33,8 @@
 #include <qregexp.h>
 #include <qstack.h>
 #include <qglobal.h>
-#include <qthread.h>
-  
+#include <thread>
+
 #include "configimpl.h"
 #include "version.h"
 #include "portable.h"
@@ -1681,7 +1681,7 @@ void Config::checkAndCorrect()
   }
   else if (dotNumThreads<=0)
   {
-    dotNumThreads=QMAX(2,QThread::idealThreadCount()+1);
+    dotNumThreads=QMAX(2,std::thread::hardware_concurrency()+1);
   }
 
   // check dot path
