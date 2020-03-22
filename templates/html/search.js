@@ -200,10 +200,9 @@ function SearchBox(name, resultsPath, inFrame, label)
         }
         return;
       }
-      else if (window.frames.MSearchResults.searchResults)
+      else
       {
-        var elem = window.frames.MSearchResults.searchResults.NavNext(0);
-        if (elem) elem.focus();
+        window.frames.MSearchResults.postMessage("take_focus", "*");
       }
     }
     else if (e.keyCode==27) // Escape out of the search field
