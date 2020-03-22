@@ -170,7 +170,7 @@ void DotRunner::addJob(const char *format, const char *output)
   m_jobs.emplace_back(format, output, args);
 }
 
-QCString getBaseNameOfOutput(QCString const& output)
+QCString getBaseNameOfOutput(const QCString &output)
 {
   int index = output.findRev('.');
   if (index < 0) return output;
@@ -263,10 +263,10 @@ void DotRunnerQueue::enqueue(DotRunner *runner)
 DotRunner *DotRunnerQueue::dequeue()
 {
   std::unique_lock<std::mutex> locker(m_mutex);
-  
-   // wait until something is added to the queue
-   m_bufferNotEmpty.wait(locker, [this]() {return !m_queue.empty(); });
-  
+
+  // wait until something is added to the queue
+  m_bufferNotEmpty.wait(locker, [this]() { return !m_queue.empty(); });
+
   DotRunner *result = m_queue.front();
   m_queue.pop();
   return result;

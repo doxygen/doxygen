@@ -28,18 +28,16 @@
 /** Helper class to run dot from doxygen from multiple threads.  */
 class DotRunner
 {
-  public:
     struct DotJob
     {
-      DotJob(std::string format,
-        std::string output,
-        std::string args)
-        : format(std::move(format)), output(std::move(output)), args(std::move(args)) {}
+      DotJob(std::string f, std::string o, std::string a)
+        : format(f), output(o), args(a) {}
       std::string format;
       std::string output;
       std::string args;
     };
 
+  public:
     /** Creates a runner for a dot \a file. */
     DotRunner(const std::string& absDotName, const std::string& md5Hash = std::string());
 
