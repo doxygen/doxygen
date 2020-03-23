@@ -5,7 +5,7 @@ Doxygen
 Doxygen is the de facto standard tool for generating documentation from
 annotated C++ sources, but it also supports other popular programming
 languages such as C, Objective-C, C#, PHP, Java, Python, IDL
-(Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, VHDL, Tcl,
+(Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, VHDL,
 and to some extent D.
 
 Doxygen can help you in three ways:
