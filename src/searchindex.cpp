@@ -1040,7 +1040,7 @@ void writeJavaScriptSearchIndex()
         int itemCount=0;
         for (li.toFirst();(dl=li.current());++li)
         {
-          Definition *d = dl->getFirst();
+          const Definition *d = dl->getFirst();
 
           if (!firstEntry)
           {
@@ -1052,7 +1052,7 @@ void writeJavaScriptSearchIndex()
 
           if (dl->count()==1) // item with a unique name
           {
-            MemberDef  *md = dynamic_cast<MemberDef*>(d);
+            const MemberDef  *md = dynamic_cast<const MemberDef*>(d);
             QCString anchor = d->anchor();
 
             ti << "'" << externalRef("../",d->getReference(),TRUE)
@@ -1096,15 +1096,15 @@ void writeJavaScriptSearchIndex()
           {
             QListIterator<Definition> di(*dl);
             bool overloadedFunction = FALSE;
-            Definition *prevScope = 0;
+            const Definition *prevScope = 0;
             int childCount=0;
             for (di.toFirst();(d=di.current());)
             {
               ++di;
-              Definition *scope     = d->getOuterScope();
-              Definition *next      = di.current();
-              Definition *nextScope = 0;
-              MemberDef  *md        = dynamic_cast<MemberDef*>(d);
+              const Definition *scope     = d->getOuterScope();
+              const Definition *next      = di.current();
+              const Definition *nextScope = 0;
+              const MemberDef  *md        = dynamic_cast<const MemberDef*>(d);
               if (next) nextScope = next->getOuterScope();
               QCString anchor = d->anchor();
 
@@ -1148,12 +1148,12 @@ void writeJavaScriptSearchIndex()
               QCString name;
               if (d->definitionType()==Definition::TypeClass)
               {
-                name = convertToXML((dynamic_cast<ClassDef*>(d))->displayName());
+                name = convertToXML((dynamic_cast<const ClassDef*>(d))->displayName());
                 found = TRUE;
               }
               else if (d->definitionType()==Definition::TypeNamespace)
               {
-                name = convertToXML((dynamic_cast<NamespaceDef*>(d))->displayName());
+                name = convertToXML((dynamic_cast<const NamespaceDef*>(d))->displayName());
                 found = TRUE;
               }
               else if (scope==0 || scope==Doxygen::globalScope) // in global scope
