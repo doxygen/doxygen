@@ -777,7 +777,6 @@
       <xsd:enumeration value="VHDL" />
       <xsd:enumeration value="XML" />
       <xsd:enumeration value="SQL" />
-      <xsd:enumeration value="Tcl" />
       <xsd:enumeration value="Markdown" />
     </xsd:restriction>
   </xsd:simpleType>
