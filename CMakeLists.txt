@@ -62,7 +62,8 @@ if (CMAKE_SYSTEM MATCHES "Darwin")
 endif()
 
 if (WIN32)
-    if (NOT CMAKE_GENERATOR MATCHES "MinGW Makefiles")
+    if ((NOT CMAKE_GENERATOR MATCHES "MinGW Makefiles") AND 
+        (NOT CMAKE_GENERATOR MATCHES "MSYS Makefiles"))
         if (NOT ICONV_DIR)
           set(ICONV_DIR "${CMAKE_SOURCE_DIR}/winbuild")
         endif()
