@@ -1496,7 +1496,6 @@ void truncatePrepass(yyscan_t yyscanner,int index)
 }
 
 // simplified way to know if this is fixed form
-// duplicate in fortrancode.l
 bool recognizeFixedForm(const char* contents, FortranFormat format)
 {
   int column=0;
@@ -1532,7 +1531,7 @@ bool recognizeFixedForm(const char* contents, FortranFormat format)
         break;
       default:
         if (skipLine) break;
-        if (column==7) return TRUE;
+        if (column>=7) return TRUE;
         return FALSE;
     }
   }
