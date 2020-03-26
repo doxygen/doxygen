@@ -203,7 +203,7 @@ public:
     tokenBegin(0), column(0), line(0), prevCharIsCR(false), prevCharIsLF(false),
     available(0), maxNextCharInd(0), inBuf(0), tabSize(1), trackLineColumn(true),
     inputStream(nullptr), deleteStream(false) {
-    ReInit(input_stream, startline, startcolumn, buffersize);
+    ReInit(input_stream, startline, startcolumn, INITIAL_BUFFER_SIZE);
   }
 
   CharStream(ReaderStream *input_stream, int startline, int startcolumn) :
@@ -268,4 +268,4 @@ protected:
 }
 
 #endif
-/* JavaCC - OriginalChecksum=c5b4b2e72393f865547f405cc9def169 (do not edit this line) */
+/* JavaCC - OriginalChecksum=c036d83020b072972d6b8ef26a294af9 (do not edit this line) */
