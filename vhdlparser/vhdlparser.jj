@@ -908,6 +908,7 @@ void context_item() :  {}
 {
  library_clause()
 | use_clause()
+| LOOKAHEAD(context_declaration()) context_declaration()
 | context_ref() 
 }
 
@@ -2610,9 +2611,9 @@ void protected_type_declarative_part() :    {}
 // VHDL 2008
 // -----------------------------------------------------------------
 
-QCString context_ref() : {QCString s;}
+QCString context_ref() : {QCString s, s1;}
 {
- <CONTEXT_T>  s=name() <SEMI_T>
+ <CONTEXT_T>  s=identifier() (<DOT_T> s1=identifier() {s+=".";s+=s1;} )*  <SEMI_T>
  {
   return "context "+s ;
  }
