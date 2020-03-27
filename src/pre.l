@@ -380,6 +380,7 @@ struct preYY_state
   bool               skip;
   QStack<CondCtx>    condStack;
   bool               insideCS; // C# has simpler preprocessor
+  bool               insideFtn;
   bool               isSource;
 
   yy_size_t          fenceSize = 0;
@@ -499,7 +500,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  name=name.left(name.find('(')).stripWhiteSpace();
 
 					  Define *def=0;
-					  if (skipFuncMacros && 
+					  if (skipFuncMacros && !yyextra->insideFtn &&
 					      name!="Q_PROPERTY" &&
 					      !(
 					         (yyextra->includeStack.isEmpty() || yyextra->curlyCount>0) &&
@@ -1715,6 +1716,7 @@ static void setFileName(yyscan_t yyscanner,const char *name)
   //    name,state->yyFileName.data(),state->yyFileDef);
   if (state->yyFileDef && state->yyFileDef->isReference()) state->yyFileDef=0;
   state->insideCS = getLanguageFromFileName(state->yyFileName)==SrcLangExt_CSharp;
+  state->insideFtn = getLanguageFromFileName(state->yyFileName)==SrcLangExt_Fortran;
   state->isSource = guessSection(state->yyFileName);
 }
 
