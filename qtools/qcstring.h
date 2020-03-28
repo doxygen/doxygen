@@ -21,6 +21,8 @@
 #include "qarray.h"
 #endif // QT_H
 
+#include <string>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -301,6 +303,11 @@ public:
     operator const char *() const
     {
       return (const char *)data();
+    }
+
+    operator std::string() const
+    {
+      return data();
     }
 
     /** Appends string \a str to this string and returns a reference to the result. */

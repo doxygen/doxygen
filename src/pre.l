@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -28,19 +26,24 @@
  *	includes
  */
 
+#include <stack>
+#include <deque>
+#include <algorithm>
+#include <set>
+#include <string>
+#include <map>
+
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 
-#include <qarray.h>
-#include <qstack.h>
 #include <qfile.h>
 #include <qstrlist.h>
 #include <qdict.h>
 #include <qregexp.h>
 #include <qfileinfo.h>
-  
+
 #include "pre.h"
 #include "constexp.h"
 #include "define.h"
@@ -74,7 +77,7 @@ static const char *stateToString(int state);
 
 struct CondCtx
 {
-  CondCtx(int line,QCString id,bool b) 
+  CondCtx(int line,QCString id,bool b)
     : lineNr(line),sectionId(id), skip(b) {}
   int lineNr;
   QCString sectionId;
@@ -83,16 +86,15 @@ struct CondCtx
 
 struct FileState
 {
-  FileState(int size) : lineNr(1), curlyCount(0),fileBuf(size),
-                        oldFileBuf(0), oldFileBufPos(0), bufState(0) {}
-  int lineNr;
-  int curlyCount;
+  FileState(int size) : fileBuf(size) {}
+  int lineNr = 1;
+  int curlyCount = 0;
   BufStr fileBuf;
-  BufStr *oldFileBuf;
-  yy_size_t oldFileBufPos;
-  YY_BUFFER_STATE bufState;
+  BufStr *oldFileBuf = 0;
+  yy_size_t oldFileBufPos = 0;
+  YY_BUFFER_STATE bufState = 0;
   QCString fileName;
-};  
+};
 
 /** @brief Singleton that manages the defines available while 
  *  preprocessing files. 
@@ -325,6 +327,14 @@ void DefineManager::DefinesPerFile::collectDefines(
   }
 }
 
+
+/* -----------------------------------------------------------------
+ *
+ *	global state
+ */
+static std::set<std::string> g_allIncludes;
+
+
 /* -----------------------------------------------------------------
  *
  *	scanner's state
@@ -332,63 +342,58 @@ void DefineManager::DefinesPerFile::collectDefines(
 
 struct preYY_state
 {
-  preYY_state() :    allIncludes(10009) {}
-  int                yyLineNr   = 1;
-  int                yyMLines   = 1;
-  int                yyColNr   = 1;
+  int                yyLineNr       = 1;
+  int                yyMLines       = 1;
+  int                yyColNr        = 1;
   QCString           yyFileName;
-  FileDef           *yyFileDef;
-  FileDef           *inputFileDef;
-  int                ifcount    = 0;
-  QStrList          *pathList = 0;
-  QStack<FileState>  includeStack;
-  QDict<int>        *argDict = 0;
-  int                defArgs = -1;
+  FileDef           *yyFileDef      = 0;
+  FileDef           *inputFileDef   = 0;
+  int                ifcount        = 0;
+  QStrList          *pathList       = 0;
+  std::deque< std::unique_ptr<FileState> > includeStack;
+  QDict<int>        *argDict        = 0;
+  int                defArgs        = -1;
   QCString           defName;
   QCString           defText;
   QCString           defLitText;
   QCString           defArgsStr;
   QCString           defExtraSpacing;
-  bool               defVarArgs;
-  int                lastCContext;
-  int                lastCPPContext;
-
-  int                level;
-  QArray<bool>       levelGuard;
-
-  BufStr            *inputBuf = 0;
-  yy_size_t          inputBufPos;
-  BufStr            *outputBuf = 0;
-  int                roundCount;
-  bool               quoteArg;
-  DefineDict        *expandedDict = 0;
-  int                findDefArgContext;
-  bool               expectGuard;
+  bool               defVarArgs     = false;
+  int                lastCContext   = 0;
+  int                lastCPPContext = 0;
+  std::stack<bool>   levelGuard;
+  BufStr            *inputBuf       = 0;
+  yy_size_t          inputBufPos    = 0;
+  BufStr            *outputBuf      = 0;
+  int                roundCount     = 0;
+  bool               quoteArg       = false;
+  int                findDefArgContext = 0;
+  bool               expectGuard    = false;
   QCString           guardName;
   QCString           lastGuardName;
   QCString           incName;
   QCString           guardExpr;
-  int                curlyCount;
-  bool               nospaces; // add extra spaces during macro expansion
+  int                curlyCount     = 0;
+  bool               nospaces       = false; // add extra spaces during macro expansion
 
-  bool               macroExpansion; // from the configuration
-  bool               expandOnlyPredef; // from the configuration
-  int                commentCount;
-  bool               insideComment;
-  bool               isImported;
+  bool               macroExpansion = false; // from the configuration
+  bool               expandOnlyPredef = false; // from the configuration
+  int                commentCount   = 0;
+  bool               insideComment  = false;
+  bool               isImported     = false;
   QCString           blockName;
-  int                condCtx;
-  bool               skip;
-  QStack<CondCtx>    condStack;
-  bool               insideCS; // C# has simpler preprocessor
-  bool               insideFtn;
-  bool               isSource;
+  int                condCtx        = 0;
+  bool               skip           = false;
+  std::stack< std::unique_ptr<CondCtx> > condStack;
+  bool               insideCS       = false; // C# has simpler preprocessor
+  bool               insideFtn      = false;
+  bool               isSource       = false;
 
-  yy_size_t          fenceSize = 0;
-  bool               ccomment;
+  yy_size_t          fenceSize      = 0;
+  bool               ccomment       = false;
   QCString           delimiter;
-  QDict<void>        allIncludes;
-  QDict<void>        expansionDict;
+  std::map<std::string,Define*> expandedDict;
+  std::set<std::string> expanded;
   DefineManager      defineManager;
   ConstExpressionParser constExpParser;
 };
@@ -504,7 +509,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (skipFuncMacros && !yyextra->insideFtn &&
 					      name!="Q_PROPERTY" &&
 					      !(
-					         (yyextra->includeStack.isEmpty() || yyextra->curlyCount>0) &&
+					         (yyextra->includeStack.empty() || yyextra->curlyCount>0) &&
 					         yyextra->macroExpansion &&
 					         (def=yyextra->defineManager.isDefined(name)) &&
 						 /*macroIsAccessible(def) &&*/
@@ -537,14 +542,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           BEGIN(CopyRawString);
                                         }
 <CopyLine>"{"				{ // count brackets inside the main file
-  					  if (yyextra->includeStack.isEmpty()) 
+  					  if (yyextra->includeStack.empty()) 
 					  {
 					    yyextra->curlyCount++;
 					  }
 					  outputChar(yyscanner,*yytext);
   					}
 <CopyLine>"}"				{ // count brackets inside the main file
-  					  if (yyextra->includeStack.isEmpty() && yyextra->curlyCount>0) 
+  					  if (yyextra->includeStack.empty() && yyextra->curlyCount>0) 
 					  {
 					    yyextra->curlyCount--;
 					  }
@@ -633,13 +638,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  Define *def=0;
 					  //def=yyextra->globalDefineDict->find(yytext);
 					  //def=yyextra->defineManager.isDefined(yytext);
-					  //printf("Search for define %s found=%d yyextra->includeStack.isEmpty()=%d "
+					  //printf("Search for define %s found=%d yyextra->includeStack.empty()=%d "
 					  //       "yyextra->curlyCount=%d yyextra->macroExpansion=%d yyextra->expandOnlyPredef=%d "
 					  //	 "isPreDefined=%d\n",yytext,def ? 1 : 0,
-					  //	 yyextra->includeStack.isEmpty(),yyextra->curlyCount,yyextra->macroExpansion,yyextra->expandOnlyPredef,
+					  //	 yyextra->includeStack.empty(),yyextra->curlyCount,yyextra->macroExpansion,yyextra->expandOnlyPredef,
 					  //	 def ? def->isPredefined : -1
 					  //	);
-					  if ((yyextra->includeStack.isEmpty() || yyextra->curlyCount>0) &&
+					  if ((yyextra->includeStack.empty() || yyextra->curlyCount>0) &&
 					      yyextra->macroExpansion &&
 					      (def=yyextra->defineManager.isDefined(yytext)) &&
 				              /*(def->isPredefined || macroIsAccessible(def)) && */
@@ -667,7 +672,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <CopyLine>{ID}				{
                                           Define *def=0;
-  					  if ((yyextra->includeStack.isEmpty() || yyextra->curlyCount>0) && 
+  					  if ((yyextra->includeStack.empty() || yyextra->curlyCount>0) && 
 					      yyextra->macroExpansion &&
 					      (def=yyextra->defineManager.isDefined(yytext)) &&
 					      def->nargs==-1 &&
@@ -843,7 +848,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
   					}
 <Command>"else"/[^a-z_A-Z0-9\x80-\xFF]		{
-					  //printf("else yyextra->levelGuard[%d]=%d\n",yyextra->level-1,yyextra->levelGuard[yyextra->level-1]);
   					  if (otherCaseDone(yyscanner))
 					  {
 					    yyextra->ifcount=0;
@@ -852,7 +856,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  else
 					  {
 					    setCaseDone(yyscanner,TRUE);
-					    //yyextra->levelGuard[yyextra->level-1]=TRUE;
 					  } 
   					}
 <Command>"undef"{B}+			{
@@ -918,7 +921,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  //    yyextra->guardExpr.data());
 					  bool guard=computeExpression(yyscanner,yyextra->guardExpr);
 					  setCaseDone(yyscanner,guard);
-					  //printf("if yyextra->levelGuard[%d]=%d\n",yyextra->level-1,yyextra->levelGuard[yyextra->level-1]);
 					  if (guard)
 					  {
 					    BEGIN(Start);
@@ -1541,7 +1543,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar(yyscanner,'\n');
   					  Define *def=0;
 					  //printf("Define name='%s' text='%s' litTexti='%s'\n",yyextra->defName.data(),yyextra->defText.data(),yyextra->defLitText.data());
-					  if (yyextra->includeStack.isEmpty() || yyextra->curlyCount>0) 
+					  if (yyextra->includeStack.empty() || yyextra->curlyCount>0) 
 					  {
 					    addDefine(yyscanner);
 					  }
@@ -1553,7 +1555,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    yyextra->defineManager.addDefine(yyextra->yyFileName,nd);
 
 					    // also add it to the local file list if it is a source file
-					    //if (yyextra->isSource && yyextra->includeStack.isEmpty())
+					    //if (yyextra->isSource && yyextra->includeStack.empty())
 					    //{
 					    //  yyextra->fileDefineDict->insert(yyextra->defName,nd);
 					    //}
@@ -1620,15 +1622,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefineText>.				{ yyextra->defText += *yytext; yyextra->defLitText+=yytext; }
 <<EOF>>					{
                                           DBG_CTX((stderr,"End of include file\n"));
-					  //printf("Include stack depth=%d\n",yyextra->includeStack.count());
-  					  if (yyextra->includeStack.isEmpty())
+					  //printf("Include stack depth=%d\n",yyextra->includeStack.size());
+  					  if (yyextra->includeStack.empty())
 					  {
 					    DBG_CTX((stderr,"Terminating scanner!\n"));
 					    yyterminate();
 					  }
 					  else
 					  {
-					    FileState *fs=yyextra->includeStack.pop();
+                                            const std::unique_ptr<FileState> &fs=yyextra->includeStack.back();
 					    //fileDefineCache->merge(yyextra->yyFileName,fs->fileName);
 					    YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
 					    yy_switch_to_buffer( fs->bufState, yyscanner );
@@ -1640,14 +1642,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             yyextra->curlyCount  = fs->curlyCount;
 					    setFileName(yyscanner,fs->fileName);
 					    DBG_CTX((stderr,"######## FileName %s\n",yyextra->yyFileName.data()));
-					    
+
                                             // Deal with file changes due to 
                                             // #include's within { .. } blocks
                                             QCString lineStr(15+yyextra->yyFileName.length());
                                             lineStr.sprintf("# %d \"%s\" 2",yyextra->yyLineNr,yyextra->yyFileName.data());
                                             outputArray(yyscanner,lineStr.data(),lineStr.length());
-					    
-					    delete fs; fs=0;
+
+					    yyextra->includeStack.pop_back();
 					  }
   					}
 <*>"/*"/"*/"				|
@@ -1724,20 +1726,17 @@ static void setFileName(yyscan_t yyscanner,const char *name)
 static void incrLevel(yyscan_t yyscanner)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  state->level++;
-  state->levelGuard.resize(state->level);
-  state->levelGuard[state->level-1]=FALSE;
-  //printf("%s line %d: incrLevel %d\n",yyextra->yyFileName.data(),yyextra->yyLineNr,yyextra->level);
+  state->levelGuard.push(false);
+  //printf("%s line %d: incrLevel %d\n",yyextra->yyFileName.data(),yyextra->yyLineNr,yyextra->levelGuard.size());
 }
 
 static void decrLevel(yyscan_t yyscanner)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  //printf("%s line %d: decrLevel %d\n",state->yyFileName.data(),state->yyLineNr,state->level);
-  if (state->level > 0)
+  //printf("%s line %d: decrLevel %d\n",state->yyFileName.data(),state->yyLineNr,state->levelGuard.size());
+  if (!state->levelGuard.empty())
   {
-    state->level--;
-    state->levelGuard.resize(state->level);
+    state->levelGuard.pop();
   }
   else
   {
@@ -1748,21 +1747,21 @@ static void decrLevel(yyscan_t yyscanner)
 static bool otherCaseDone(yyscan_t yyscanner)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->level==0)
+  if (state->levelGuard.empty())
   {
     warn(state->yyFileName,state->yyLineNr,"Found an #else without a preceding #if.\n");
     return TRUE;
   }
   else
   {
-    return state->levelGuard[state->level-1];
+    return state->levelGuard.top();
   }
 }
 
 static void setCaseDone(yyscan_t yyscanner,bool value)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  state->levelGuard[state->level-1]=value;
+  state->levelGuard.top()=value;
 }
 
 
@@ -1783,28 +1782,22 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     // global guard
     if (state->curlyCount==0) // not #include inside { ... }
     {
-      if (state->allIncludes.find(absName)!=0)
+      if (g_allIncludes.find(absName)!=g_allIncludes.end())
       {
         alreadyIncluded = TRUE;
         //printf("  already included 1\n");
         return 0; // already done
       }
-      state->allIncludes.insert(absName,(void *)0x8);
+      g_allIncludes.insert(absName);
     }
     // check include stack for absName
 
-    QStack<FileState> tmpStack;
-    state->includeStack.setAutoDelete(FALSE);
-    while ((fs=state->includeStack.pop()))
-    {
-      if (fs->fileName==absName) alreadyIncluded=TRUE;
-      tmpStack.push(fs);
-    }
-    while ((fs=tmpStack.pop()))
-    {
-      state->includeStack.push(fs);
-    }
-    state->includeStack.setAutoDelete(TRUE);
+    alreadyIncluded = std::any_of(
+      state->includeStack.begin(),
+      state->includeStack.end(),
+      [absName](const std::unique_ptr<FileState> &fs)
+        { return fs->fileName==absName; }
+    );
 
     if (alreadyIncluded)
     {
@@ -1814,7 +1807,6 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     //printf("#include %s\n",absName.data());
 
     fs = new FileState(fi.size()+4096);
-    alreadyIncluded = FALSE;
     if (!readInputFile(absName,fs->fileBuf))
     { // error
       //printf("  error reading\n");
@@ -2080,7 +2072,7 @@ static inline void addTillEndOfString(yyscan_t yyscanner,const QCString &expr,QC
 static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result,int level)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%d\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),state->level);
+  //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%d\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),state->levelGuard.size());
   uint j=pos;
   len=0;
   result.resize(0);
@@ -2323,10 +2315,10 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
     }
     len=j-pos;
     result=resExpr;
-    //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%d return=TRUE\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),result.data(),state->level);
+    //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%d return=TRUE\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),result.data(),state->levelGuard.size());
     return TRUE;
   }
-  //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%d return=FALSE\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),result.data(),state->level);
+  //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%d return=FALSE\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),result.data(),state->levelGuard.size());
   return FALSE;
 }
 
@@ -2404,14 +2396,15 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
     //printf("<expandExpression: empty\n");
     return TRUE;
   }
-  if (state->expansionDict.find(expr)!=0 && level>MAX_EXPANSION_DEPTH) // check for too deep recursive expansions
+  if (state->expanded.find(expr)!=state->expanded.end() &&
+      level>MAX_EXPANSION_DEPTH) // check for too deep recursive expansions
   {
     //printf("<expandExpression: already expanded expr='%s'\n",expr.data());
     return FALSE;
   }
   else
   {
-    state->expansionDict.insert(expr,(void*)0x8);
+    state->expanded.insert(expr);
   }
   QCString macroName;
   QCString expMacro;
@@ -2426,7 +2419,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
     //printf(" p=%d macroName=%s\n",p,macroName.data());
     if (p<2 || !(expr.at(p-2)=='@' && expr.at(p-1)=='-')) // no-rescan marker?
     {
-      if (state->expandedDict->find(macroName)==0) // expand macro
+      if (state->expandedDict.find(macroName)==state->expandedDict.end()) // expand macro
       {
 	Define *def=state->defineManager.isDefined(macroName);
         if (macroName=="defined")
@@ -2477,9 +2470,9 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
           bool expanded=false;
 	  if (def && !def->nonRecursive)
 	  {
-	    state->expandedDict->insert(macroName,def);
+	    state->expandedDict.emplace(macroName,def);
 	    expanded = expandExpression(yyscanner,resultExpr,&restExpr,0,level+1);
-	    state->expandedDict->remove(macroName);
+	    state->expandedDict.erase(macroName);
 	  }
           if (expanded)
           {
@@ -2757,7 +2750,7 @@ static bool computeExpression(yyscan_t yyscanner,const QCString &expr)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   QCString e=expr;
-  state->expansionDict.clear();
+  state->expanded.clear();
   expandExpression(yyscanner,e,0,0,0);
   //printf("after expansion '%s'\n",e.data());
   e = removeIdsAndMarkers(e);
@@ -2774,7 +2767,7 @@ static QCString expandMacro(yyscan_t yyscanner,const QCString &name)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   QCString n=name;
-  state->expansionDict.clear();
+  state->expanded.clear();
   expandExpression(yyscanner,n,0,0,0);
   n=removeMarkers(n);
   //printf("expandMacro '%s'->'%s'\n",name.data(),n.data());
@@ -2872,13 +2865,13 @@ static void addDefine(yyscan_t yyscanner)
 static inline void outputChar(yyscan_t yyscanner,char c)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.isEmpty() || state->curlyCount>0) state->outputBuf->addChar(c);
+  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addChar(c);
 }
 
 static inline void outputArray(yyscan_t yyscanner,const char *a,int len)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.isEmpty() || state->curlyCount>0) state->outputBuf->addArray(a,len);
+  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,len);
 }
 
 static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
@@ -2965,7 +2958,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       //printf("Found include file!\n");
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
-        for (i=0;i<state->includeStack.count();i++) 
+        for (i=0;i<state->includeStack.size();i++) 
         {
           Debug::print(Debug::Preprocessor,0,"  ");
         }
@@ -2996,7 +2989,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       fs->curlyCount = state->curlyCount;
       state->curlyCount = 0;
       // push the state on the stack
-      state->includeStack.push(fs);
+      state->includeStack.emplace_back(fs);
       // set the scanner to the include file
 
       // Deal with file changes due to 
@@ -3059,10 +3052,10 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 static void startCondSection(yyscan_t yyscanner,const char *sectId)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  //printf("startCondSection: skip=%d stack=%d\n",state->skip,state->condStack.count());
+  //printf("startCondSection: skip=%d stack=%d\n",state->skip,state->condStack.size());
   CondParser prs;
   bool expResult = prs.parse(state->yyFileName,state->yyLineNr,sectId);
-  state->condStack.push(new CondCtx(state->yyLineNr,sectId,state->skip));
+  state->condStack.emplace(std::make_unique<CondCtx>(state->yyLineNr,sectId,state->skip));
   if (!expResult)
   {
     state->skip=TRUE;
@@ -3073,15 +3066,15 @@ static void startCondSection(yyscan_t yyscanner,const char *sectId)
 static void endCondSection(yyscan_t yyscanner)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->condStack.isEmpty())
+  if (state->condStack.empty())
   {
     state->skip=FALSE;
   }
   else
   {
-    CondCtx *ctx = state->condStack.pop();
+    const std::unique_ptr<CondCtx> &ctx = state->condStack.top();
     state->skip=ctx->skip;
-    delete ctx;
+    state->condStack.pop();
   }
   //printf("endCondSection: skip=%d stack=%d\n",state->skip,state->condStack.count());
 }
@@ -3089,9 +3082,9 @@ static void endCondSection(yyscan_t yyscanner)
 static void forceEndCondSection(yyscan_t yyscanner)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  while (!state->condStack.isEmpty())
+  while (!state->condStack.empty())
   {
-    delete state->condStack.pop();
+    state->condStack.pop();
   }
   state->skip=FALSE;
 }
@@ -3220,14 +3213,11 @@ Preprocessor::Preprocessor() : p(std::make_unique<Private>())
   YY_EXTRA_TYPE state = preYYget_extra(p->yyscanner);
   state->pathList = new QStrList;
   addSearchDir(".");
-  state->expandedDict = new DefineDict(17);
 }
 
 Preprocessor::~Preprocessor()
 {
   YY_EXTRA_TYPE state = preYYget_extra(p->yyscanner);
-  delete state->expandedDict; 
-  state->expandedDict=0;
   delete state->pathList; 
   state->pathList=0;
   preYYlex_destroy(p->yyscanner);
@@ -3256,12 +3246,9 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
   state->inputBuf=&input;
   state->inputBufPos=0;
   state->outputBuf=&output;
-  state->includeStack.setAutoDelete(TRUE);
   state->includeStack.clear();
-  state->expandedDict->setAutoDelete(FALSE);
-  state->expandedDict->clear();
-  state->condStack.setAutoDelete(TRUE);
-  state->condStack.clear();
+  state->expandedDict.clear();
+  while (!state->condStack.empty()) state->condStack.pop();
   //state->fileDefineDict->clear();
 
   setFileName(yyscanner,fileName);
@@ -3395,7 +3382,6 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
  
   state->yyLineNr = 1;
   state->yyColNr  = 1;
-  state->level    = 0;
   state->ifcount  = 0;
 
   BEGIN( Start );
@@ -3407,14 +3393,14 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
   
   preYYlex(yyscanner);
 
-  while (!state->condStack.isEmpty())
+  while (!state->condStack.empty())
   {
-    CondCtx *ctx = state->condStack.pop();
+    const std::unique_ptr<CondCtx> &ctx = state->condStack.top();
     QCString sectionInfo = " ";
     if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx->sectionId.stripWhiteSpace().data());
     warn(fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
-    delete ctx;
+    state->condStack.pop();
   }
   // make sure we don't extend a \cond with missing \endcond over multiple files (see bug 624829)
   forceEndCondSection(yyscanner);

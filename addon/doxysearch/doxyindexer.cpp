@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -57,7 +57,7 @@ static std::string trim(const std::string& str,
   return str.substr(strBegin, strRange);
 }
 
-/** trims \a whitespace from start and end and replace occurrences of 
+/** trims \a whitespace from start and end and replace occurrences of
  *  \a whitespace with \a fill.
  */
 static std::string reduce(const std::string& str,
@@ -115,10 +115,10 @@ static void addIdentifiers(const std::string &s,Xapian::Document &doc,int wfd)
 }
 
 /** Replaces all occurrences of \a old with \a repl in string \a str */
-static void replace_all(std::string& str, const std::string& old, const std::string& repl) 
+static void replace_all(std::string& str, const std::string& old, const std::string& repl)
 {
   size_t pos = 0;
-  while ((pos = str.find(old, pos)) != std::string::npos) 
+  while ((pos = str.find(old, pos)) != std::string::npos)
   {
     str.replace(pos, old.length(), repl);
     pos += repl.length();
@@ -144,8 +144,8 @@ class XMLContentHandler : public QXmlDefaultHandler
 {
   public:
     /** Handler for parsing XML data */
-    XMLContentHandler(const QString &path) 
-      : m_db((path+"doxysearch.db").utf8().data(),Xapian::DB_CREATE_OR_OVERWRITE), 
+    XMLContentHandler(const QString &path)
+      : m_db((path+"doxysearch.db").utf8().data(),Xapian::DB_CREATE_OR_OVERWRITE),
         m_stemmer("english")
     {
       m_curFieldName = UnknownField;
@@ -204,8 +204,8 @@ class XMLContentHandler : public QXmlDefaultHandler
         {
           partTerm = term.substr(pos+2);
         }
-        if (m_doc.get_value(TypeField)=="class" || 
-            m_doc.get_value(TypeField)=="file" || 
+        if (m_doc.get_value(TypeField)=="class" ||
+            m_doc.get_value(TypeField)=="file" ||
             m_doc.get_value(TypeField)=="namespace") // containers get highest prio
         {
           safeAddTerm(term,m_doc,1000);
@@ -233,22 +233,22 @@ class XMLContentHandler : public QXmlDefaultHandler
         // replace XML entities
         m_data = unescapeXmlEntities(m_data);
         // add data to the document
-        m_doc.add_value(m_curFieldName,m_data); 
+        m_doc.add_value(m_curFieldName,m_data);
         switch (m_curFieldName)
         {
-          case TypeField:    
-          case NameField:    
-          case TagField:     
-          case UrlField:     
+          case TypeField:
+          case NameField:
+          case TagField:
+          case UrlField:
             // meta data that is not searchable
             break;
-          case KeywordField: 
+          case KeywordField:
             addWords(m_data,m_doc,50);
             break;
-          case ArgsField:    
+          case ArgsField:
             addIdentifiers(m_data,m_doc,10);
             break;
-          case TextField:    
+          case TextField:
             addWords(m_data,m_doc,2);
             break;
           default:
@@ -262,9 +262,9 @@ class XMLContentHandler : public QXmlDefaultHandler
     }
 
     /** Handler for inline text */
-    bool characters(const QString& ch) 
+    bool characters(const QString& ch)
     {
-      m_data += ch.utf8();
+      m_data += std::string(ch.utf8());
       return TRUE;
     }
 
@@ -292,7 +292,7 @@ class XMLErrorHandler : public QXmlErrorHandler
     }
     bool fatalError( const QXmlParseException &exception )
     {
-      std::cerr << "Fatal error at line " << exception.lineNumber() 
+      std::cerr << "Fatal error at line " << exception.lineNumber()
                 << " column " << exception.columnNumber() << ": "
                 << exception.message().utf8() << std::endl;
       return FALSE;
@@ -371,7 +371,7 @@ int main(int argc,const char **argv)
       }
     }
   }
-  catch(const Xapian::Error &e) 
+  catch(const Xapian::Error &e)
   {
     std::cerr << "Caught exception: " << e.get_description() << std::endl;
   }
