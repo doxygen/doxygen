@@ -40,7 +40,6 @@
 #include <qdict.h>
 #include <qregexp.h>
 #include <qfileinfo.h>
-#include <qdir.h>
   
 #include "pre.h"
 #include "constexp.h"
@@ -351,10 +350,12 @@ struct preYY_state
   QCString           defArgsStr;
   QCString           defExtraSpacing;
   bool               defVarArgs;
-  int                level;
   int                lastCContext;
   int                lastCPPContext;
+
+  int                level;
   QArray<bool>       levelGuard;
+
   BufStr            *inputBuf = 0;
   yy_size_t          inputBufPos;
   BufStr            *outputBuf = 0;
@@ -3014,12 +3015,6 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       if (oldFileDef)
       {
 	bool ambig;
-	//QCString absPath = incFileName;
-	//if (QDir::isRelativePath(incFileName))
-	//{
-	//  absPath = QDir::cleanDirPath(oldFileDef->getPath()+"/"+incFileName);
-	//  //printf("%s + %s -> resolved path %s\n",oldFileDef->getPath().data(),incFileName.data(),absPath.data());
-	//}
 
 	// change to absolute name for bug 641336 
 	FileDef *fd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
