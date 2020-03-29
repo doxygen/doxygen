@@ -2470,7 +2470,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
           bool expanded=false;
 	  if (def && !def->nonRecursive)
 	  {
-	    state->expandedDict.emplace(macroName,def);
+	    state->expandedDict.emplace(macroName.data(),def);
 	    expanded = expandExpression(yyscanner,resultExpr,&restExpr,0,level+1);
 	    state->expandedDict.erase(macroName.data());
 	  }
