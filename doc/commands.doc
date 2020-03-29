@@ -605,7 +605,8 @@ Structural indicators
 
   \par Important:
   The documentation of global functions, variables, typedefs, and enums will
-  only be included in the output if the file they are in is documented as well.
+  only be included in the output if the file they are in is documented as well
+  or if \ref cfg_javadoc_autobrief "EXTRACT_ALL" is set to \c YES.
 
   \par Example:
   \include file.h
