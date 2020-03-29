@@ -1750,7 +1750,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       src = correctURL(url,img->relPath());
     }
-    if (typeSVG)
+    if (typeSVG && !inlineImage)
     {
       m_t << "<object type=\"image/svg+xml\" data=\"" << convertToHtml(src)
         << "\"" << sizeAttribs << attrs;
@@ -1789,14 +1789,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     else if (inlineImage)
     {
-      if (typeSVG)
-      {
-        m_t << ">" << alt << "</object>";
-      }
-      else
-      {
-        m_t << "/>";
-      }
+      m_t << "/>";
     }
   }
   else // other format -> skip
@@ -1816,16 +1809,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
     {
       if (inlineImage)
       {
-        if (img->isSVG())
-        {
-          QCString alt;
-          QCString attrs = htmlAttribsToString(img->attribs(),&alt);
-          m_t << "\">" << alt << "</object>";
-        }
-        else
-        {
-          m_t << "\"/>";
-        }
+        m_t << "\"/>";
       }
       else // end <div class="caption">
       {
