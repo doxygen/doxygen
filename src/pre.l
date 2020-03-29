@@ -3215,7 +3215,8 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
       {
         if (l>0) // see bug375037
         {
-          argMap.emplace(ds.mid(pi,l),count++);
+          argMap.emplace(ds.mid(pi,l).data(),count);
+          count++;
           i=pi+l;
         }
         else
