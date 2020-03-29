@@ -652,7 +652,7 @@ static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
 
 static void writeMarkdownImage(GrowBuf &out, const char *fmt, bool explicitTitle, QCString title, QCString content, QCString link, FileDef *fd)
 {
-  out.addStr("@image ");
+  out.addStr("@image{inline} ");
   out.addStr(fmt);
   out.addStr(" ");
   out.addStr(link.mid(fd ? 0 : 5));
