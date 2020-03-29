@@ -236,6 +236,21 @@ static void referenceTo(MemberDef* md) {
   printReferenceTo(type, signature, defined_in);
 }
 
+void protectionInformation(Protection protection) {
+  if (protection == Public) {
+    printProtection("public");
+  }
+  else if (protection == Protected) {
+    printProtection("protected");
+  }
+  else if (protection == Private) {
+    printProtection("private");
+  }
+  else if (protection == Package) {
+    printProtection("package");
+  }
+}
+
 void cModule(ClassDef* cd) {
   MemberList* ml = cd->getMemberList(MemberListType_variableMembers);
   if (ml) {
@@ -249,9 +264,7 @@ void cModule(ClassDef* cd) {
     MemberDef* md;
     for (mli.toFirst(); (md=mli.current()); ++mli) {
       printDefinition("variable", cd->name().data() + std::string("::") + md->name().data(), md->getDefLine());
-      if (md->protection() == Public) {
-        printProtection("public");
-      }
+      protectionInformation(md->protection());
     }
   }
 }
@@ -311,9 +324,7 @@ static void lookupSymbol(Definition *d) {
     std::string type = md->memberTypeName().data();
     std::string signature = functionSignature(md);
     printDefinition(type, signature, md->getDefLine());
-    if (md->protection() == Public) {
-      printProtection("public");
-    }
+    protectionInformation(md->protection());
     if (md->isFunction() && md->isPrototype()) {
       prototypeInformation(md);
     }
