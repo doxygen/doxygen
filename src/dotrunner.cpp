@@ -73,7 +73,7 @@ static bool resetPDFSize(const int width,const int height, const char *base)
   }
   QFile fi(tmpName);
   QFile fo(patchFile);
-  if (!fi.open(IO_ReadOnly)) 
+  if (!fi.open(IO_ReadOnly))
   {
     err("problem opening file %s for patching!\n",tmpName.data());
     QDir::current().rename(tmpName,patchFile);
@@ -117,7 +117,7 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
   const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
   int bblen = (int)strlen(bb);
   FILE *f = Portable::fopen(fileName,"rb");
-  if (!f) 
+  if (!f)
   {
     //printf("readBoundingBox: could not open %s\n",fileName);
     return FALSE;
@@ -158,7 +158,7 @@ DotRunner::DotRunner(const std::string& absDotName, const std::string& md5Hash)
 
 void DotRunner::addJob(const char *format, const char *output)
 {
-    
+
   for (auto& s: m_jobs)
   {
     if (s.format != format) continue;
@@ -226,20 +226,20 @@ bool DotRunner::run()
   }
 
   // remove .dot files
-  if (m_cleanUp) 
+  if (m_cleanUp)
   {
     //printf("removing dot file %s\n",m_file.data());
     Portable::unlink(m_file.data());
   }
 
   // create checksum file
-  if (!m_md5Hash.empty()) 
+  if (!m_md5Hash.empty())
   {
     QCString md5Name = getBaseNameOfOutput(m_file.data()) + ".md5";
     FILE *f = Portable::fopen(md5Name,"w");
     if (f)
     {
-      fwrite(m_md5Hash.data(),1,32,f); 
+      fwrite(m_md5Hash.data(),1,32,f);
       fclose(f);
     }
   }

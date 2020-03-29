@@ -1782,13 +1782,13 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     // global guard
     if (state->curlyCount==0) // not #include inside { ... }
     {
-      if (g_allIncludes.find(absName)!=g_allIncludes.end())
+      if (g_allIncludes.find(absName.data())!=g_allIncludes.end())
       {
         alreadyIncluded = TRUE;
         //printf("  already included 1\n");
         return 0; // already done
       }
-      g_allIncludes.insert(absName);
+      g_allIncludes.insert(absName.data());
     }
     // check include stack for absName
 
@@ -2396,7 +2396,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
     //printf("<expandExpression: empty\n");
     return TRUE;
   }
-  if (state->expanded.find(expr)!=state->expanded.end() &&
+  if (state->expanded.find(expr.data())!=state->expanded.end() &&
       level>MAX_EXPANSION_DEPTH) // check for too deep recursive expansions
   {
     //printf("<expandExpression: already expanded expr='%s'\n",expr.data());
@@ -2404,7 +2404,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
   }
   else
   {
-    state->expanded.insert(expr);
+    state->expanded.insert(expr.data());
   }
   QCString macroName;
   QCString expMacro;
@@ -2419,7 +2419,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
     //printf(" p=%d macroName=%s\n",p,macroName.data());
     if (p<2 || !(expr.at(p-2)=='@' && expr.at(p-1)=='-')) // no-rescan marker?
     {
-      if (state->expandedDict.find(macroName)==state->expandedDict.end()) // expand macro
+      if (state->expandedDict.find(macroName.data())==state->expandedDict.end()) // expand macro
       {
 	Define *def=state->defineManager.isDefined(macroName);
         if (macroName=="defined")
@@ -2472,7 +2472,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
 	  {
 	    state->expandedDict.emplace(macroName,def);
 	    expanded = expandExpression(yyscanner,resultExpr,&restExpr,0,level+1);
-	    state->expandedDict.erase(macroName);
+	    state->expandedDict.erase(macroName.data());
 	  }
           if (expanded)
           {

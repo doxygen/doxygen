@@ -305,11 +305,6 @@ public:
       return (const char *)data();
     }
 
-    operator std::string() const
-    {
-      return data();
-    }
-
     /** Appends string \a str to this string and returns a reference to the result. */
     QCString &operator+=( const char *str )
     {
