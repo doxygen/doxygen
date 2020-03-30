@@ -124,7 +124,7 @@ class DefineManager
 	{
 	  m_defines.erase(it);
 	}
-	m_defines.insert(std::make_pair(std::string(def->name.data()),std::move(def)));
+	m_defines.insert(std::make_pair(toStdString(def->name),std::move(def)));
       }
       /** Adds an include file for this file 
        *  @param fileName The name of the include file
@@ -167,7 +167,7 @@ class DefineManager
       if (it==m_fileMap.end())
       {
 	//printf("New file!\n");
-	m_fileMap.emplace(std::string(fileName),std::make_unique<DefinesPerFile>(this));
+	m_fileMap.emplace(toStdString(fileName),std::make_unique<DefinesPerFile>(this));
       }
     }
     /** Ends the context started with startContext() freeing any
@@ -191,7 +191,7 @@ class DefineManager
       if (it==m_fileMap.end())
       {
 	//printf("New file!\n");
-	m_fileMap.emplace(std::string(fileName),std::make_unique<DefinesPerFile>(this));
+	m_fileMap.emplace(toStdString(fileName),std::make_unique<DefinesPerFile>(this));
       }
       else
       {
@@ -217,7 +217,7 @@ class DefineManager
       {
         auto ptr = std::make_unique<DefinesPerFile>(this);
         ptr->addDefine(std::move(def));
-	m_fileMap.emplace(std::string(fileName),std::move(ptr));
+	m_fileMap.emplace(toStdString(fileName),std::move(ptr));
       }
       else
       {
@@ -238,7 +238,7 @@ class DefineManager
       {
         auto ptr = std::make_unique<DefinesPerFile>(this);
         ptr->addInclude(toFileName);
-	m_fileMap.emplace(std::string(fromFileName),std::move(ptr));
+	m_fileMap.emplace(toStdString(fromFileName),std::move(ptr));
       }
       else
       {
@@ -1186,7 +1186,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  argName = argName.stripWhiteSpace();
                                           yyextra->defArgsStr+=yytext;
-					  yyextra->argMap.emplace(std::string(argName.data()),yyextra->defArgs);
+					  yyextra->argMap.emplace(toStdString(argName),yyextra->defArgs);
 					  yyextra->defArgs++;
   					}
   /*
@@ -2145,7 +2145,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
 	  argKey.sprintf("@%d",argCount++); // key name
 	  arg=arg.stripWhiteSpace();
 	  // add argument to the lookup table
-	  argTable.emplace(argKey.data(), arg.data());
+	  argTable.emplace(toStdString(argKey), toStdString(arg));
 	  arg.resize(0);
 	  if (c==')') // end of the argument list
 	  {
@@ -2462,9 +2462,9 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
           bool expanded=false;
 	  if (def && !def->nonRecursive)
 	  {
-	    state->expandedDict.emplace(macroName.data(),def);
+	    state->expandedDict.emplace(toStdString(macroName),def);
 	    expanded = expandExpression(yyscanner,resultExpr,&restExpr,0,level+1);
-	    state->expandedDict.erase(macroName.data());
+	    state->expandedDict.erase(toStdString(macroName));
 	  }
           if (expanded)
           {
@@ -3215,7 +3215,7 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
       {
         if (l>0) // see bug375037
         {
-          argMap.emplace(ds.mid(pi,l).data(),count);
+          argMap.emplace(toStdString(ds.mid(pi,l)),count);
           count++;
           i=pi+l;
         }

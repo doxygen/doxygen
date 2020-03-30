@@ -807,4 +807,9 @@ inline const char *qPrint(const QCString &s)
   if (!s.isEmpty()) return s.data(); else return "";
 }
 
+inline std::string toStdString(const QCString &s)
+{
+  if (!s.isEmpty()) return std::string(s.data()); else return std::string();
+}
+
 #endif // QCSTRING_H

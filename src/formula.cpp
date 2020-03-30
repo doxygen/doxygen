@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -181,7 +181,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       copyFile(macroFile,stripMacroFile);
       t << "\\input{" << stripMacroFile << "}" << endl;
     }
-    t << "\\pagestyle{empty}" << endl; 
+    t << "\\pagestyle{empty}" << endl;
     t << "\\begin{document}" << endl;
     for (int i=0; i<(int)p->formulas.size(); i++)
     {
@@ -429,7 +429,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   // remove the latex file itself
   if (RM_TMP_FILES && !formulaError) thisDir.remove("_formulas.tex");
 
-  // write/update the formula repository so we know what text the 
+  // write/update the formula repository so we know what text the
   // generated images represent (we use this next time to avoid regeneration
   // of the images, and to avoid forcing the user to delete all images in order
   // to let a browser refresh the images).
@@ -461,7 +461,7 @@ void FormulaManager::clear()
 
 int FormulaManager::addFormula(const char *formulaText)
 {
-  std::string key = std::string(formulaText);
+  std::string key = toStdString(formulaText);
   auto it = p->formulaMap.find(key);
   if (it!=p->formulaMap.end()) // already stored
   {
