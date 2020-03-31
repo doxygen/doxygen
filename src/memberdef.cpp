@@ -4544,7 +4544,7 @@ void MemberDefImpl::writeTagFile(FTextStream &tagFile) const
     tagFile << "      <type>" << convertToXML(typeString()) << "</type>" << endl;
   }
   tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
-  tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
+  tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>" << endl;
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
   QCString idStr = id();
   if (!idStr.isEmpty())
