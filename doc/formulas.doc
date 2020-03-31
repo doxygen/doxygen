@@ -106,13 +106,12 @@ get rid of an incorrect formula as well as the <code>form_*</code> files.
 To have the possibility to define your own \LaTeX commands, for e.g. formula building blocks
 or consistent writing of certain words, the configuration option \ref cfg_formula_macrofile "FORMULA_MACROFILE"
 can be used. to supply a file with \LaTeX commands.
-This file can contain \LaTeX `\newcommand` and \`renewcommand` commands and they are included
+This file can contain \LaTeX `\newcommand` and `\renewcommand` commands and they are included
 formulas (image version and MathJax version) as well as in the generated \LaTeX output (for PDF generation).<br>
 The `\newcommand` (and `\renewcommand`) are restricted to a version without optional
 parameters so only the following types are supported:
 ```
 \newcommand{\cmd}{replacement}
-    and
 \newcommand{\cmd}[nr]{replacement}
 ```
 e.g.
