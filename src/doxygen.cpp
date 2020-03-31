@@ -10535,6 +10535,7 @@ static void writeTagFile()
                      << "</title>" << endl
                      << "    <filename>"
                      << convertToXML(Doxygen::mainPage->getOutputFileBase())
+                     << Doxygen::htmlFileExtension
                      << "</filename>" << endl;
 
     mainPage->writeDocAnchorsToTagFile();
