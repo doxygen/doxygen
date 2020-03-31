@@ -259,7 +259,7 @@ static QCString node2URL(const FTVNode *n,bool overruleFile=FALSE,bool srcLink=F
         url = fd->getOutputFileBase();
       }
     }
-    url+=Doxygen::htmlFileExtension;
+    url = addHtmlExtensionIfMissing(url);
     if (!n->anchor.isEmpty()) url+="#"+n->anchor;
   }
   return url;
