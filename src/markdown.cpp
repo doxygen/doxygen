@@ -914,9 +914,16 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     {
       if (lp==-1) // link to markdown page
       {
-        out.addStr("@ref ");
-        if (!(Portable::isAbsolutePath(link) || isURL(link)))
+        if (Portable::isAbsolutePath(link) || isURL(link))
         {
+          out.addStr("@ref ");
+        }
+        else
+        {
+          // Relative file names in markdown usually a nested pages
+          // This helps to navigate same markdown file in browser renderer and
+          // in generated Doxygen treeview/html output
+          out.addStr("@subpage ");
           QFileInfo forg(link);
           if (!(forg.exists() && forg.isReadable()))
           {
@@ -925,7 +932,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
             QFileInfo fmd(mdFile);
             if (fmd.exists() && fmd.isReadable())
             {
-              link = fmd.absFilePath().data();
+              link = markdownFileNameToId(fmd.absFilePath().data());
             }
           }
         }
