@@ -1877,7 +1877,7 @@ void VhdlDocGen::writeTagFile(MemberDef *mdef,FTextStream &tagFile)
   tagFile << "\">" << endl;
   tagFile << "      <type>" << convertToXML(mdef->typeString()) << "</type>" << endl;
   tagFile << "      <name>" << convertToXML(mdef->name()) << "</name>" << endl;
-  tagFile << "      <anchorfile>" << convertToXML(mdef->getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
+  tagFile << "      <anchorfile>" << convertToXML(mdef->getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>" << endl;
   tagFile << "      <anchor>" << convertToXML(mdef->anchor()) << "</anchor>" << endl;
 
   if (VhdlDocGen::isVhdlFunction(mdef))

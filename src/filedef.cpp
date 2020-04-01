@@ -349,7 +349,7 @@ void FileDefImpl::writeTagFile(FTextStream &tagFile)
   tagFile << "  <compound kind=\"file\">" << endl;
   tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
   tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
-  tagFile << "    <filename>" << convertToXML(addHtmlExtensionIfMissing(getOutputFileBase())) << "</filename>" << endl;
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
   if (m_includeList && m_includeList->count()>0)
   {
     QListIterator<IncludeInfo> ili(*m_includeList);
