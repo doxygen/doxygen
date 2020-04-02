@@ -194,10 +194,11 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 // \xmlonly..\endxmlonly
 // \rtfonly..\endrtfonly
 // \manonly..\endmanonly
-static QCString isBlockCommand(const char *data,int offset,int size)
+static QCString isBlockCommand(const char *data,int offset,int size, QCString &startBlockName)
 {
   bool openBracket = offset>0 && data[-1]=='{';
   bool isEscaped = offset>0 && (data[-1]=='\\' || data[-1]=='@');
+  startBlockName = "";
   if (isEscaped) return QCString();
 
   int end=1;
@@ -209,10 +210,15 @@ static QCString isBlockCommand(const char *data,int offset,int size)
   {
     return "}";
   }
+  else if (blockName=="code"        || 
+           blockName=="verbatim"
+     )
+  {
+    startBlockName  = blockName;
+    return "end"+blockName;
+  }
   else if (blockName=="dot"         || 
-           blockName=="code"        || 
            blockName=="msc"         ||
-           blockName=="verbatim"    || 
            blockName=="latexonly"   || 
            blockName=="htmlonly"    ||
            blockName=="xmlonly"     ||
@@ -303,11 +309,15 @@ static int findEmphasisChar(const char *data, int size, char c, int c_size)
     }
     else if (data[i]=='@' || data[i]=='\\')
     { // skip over blocks that should not be processed
-      QCString endBlockName = isBlockCommand(data+i,i,size-i);
+      QCString startBlockName;
+      int cntBlockName = 0;
+      QCString endBlockName = isBlockCommand(data+i,i,size-i,startBlockName);
       if (!endBlockName.isEmpty())
       {
         i++;
         int l = endBlockName.length();
+        int ls = startBlockName.length();
+	cntBlockName++;
         while (i<size-l)
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
@@ -315,7 +325,12 @@ static int findEmphasisChar(const char *data, int size, char c, int c_size)
           {
             if (qstrncmp(&data[i+1],endBlockName,l)==0)
             {
-              break;
+              if (--cntBlockName == 0) break;
+              //break;
+            }
+            else if (ls && qstrncmp(&data[i+1],startBlockName,ls)==0)
+            {
+              cntBlockName++;
             }
           }
           i++;
@@ -1043,10 +1058,14 @@ static void addStrEscapeUtf8Nbsp(GrowBuf &out,const char *s,int len)
 static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int size)
 {
   int i=1;
-  QCString endBlockName = isBlockCommand(data,offset,size);
+  QCString startBlockName;
+  int cntBlockName = 0;
+  QCString endBlockName = isBlockCommand(data,offset,size,startBlockName);
   if (!endBlockName.isEmpty())
   {
     int l = endBlockName.length();
+    int ls = startBlockName.length();
+    cntBlockName++;
     while (i<size-l)
     {
       if ((data[i]=='\\' || data[i]=='@') && // command
@@ -1055,8 +1074,15 @@ static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int
         if (qstrncmp(&data[i+1],endBlockName,l)==0)
         {
           //printf("found end at %d\n",i);
-          addStrEscapeUtf8Nbsp(out,data,i+1+l);
-          return i+1+l;
+          if (--cntBlockName == 0)
+	  {
+            addStrEscapeUtf8Nbsp(out,data,i+1+l);
+            return i+1+l;
+          }
+        }
+        else if (ls && qstrncmp(&data[i+1],startBlockName,ls)==0)
+        {
+          cntBlockName++;
         }
       }
       i++;
@@ -2114,11 +2140,15 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
         (end<=1 || (data[end-2]!='\\' && data[end-2]!='@')) // not escaped
        )
     {
-      QCString endBlockName = isBlockCommand(data+end-1,end-1,size-(end-1));
+      QCString startBlockName;
+      int cntBlockName = 0;
+      QCString endBlockName = isBlockCommand(data+end-1,end-1,size-(end-1),startBlockName);
       end++;
       if (!endBlockName.isEmpty())
       {
         int l = endBlockName.length();
+        int ls = startBlockName.length();
+        cntBlockName++;
         for (;end<size-l-1;end++) // search for end of block marker
         {
           if ((data[end]=='\\' || data[end]=='@') &&
@@ -2130,7 +2160,12 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
               // found end marker, skip over this block
               //printf("feol.block out={%s}\n",QCString(data+i).left(end+l+1-i).data());
               end = end + l + 2;
-              break;
+              if (--cntBlockName == 0) break;
+              //break;
+            }
+            else if (ls && qstrncmp(&data[end+1],startBlockName,ls)==0)
+            {
+              cntBlockName++;
             }
           }
         }
