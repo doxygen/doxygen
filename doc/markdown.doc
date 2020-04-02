@@ -521,7 +521,7 @@ Markdown is quite strict in the way it processes block-level HTML:
 
 Doxygen does not have this requirement, and will also process 
 Markdown formatting inside such HTML blocks. The only exception is
-`<pre>` blocks, which are passed untouched (handy for ASCII art).
+`<&zwj;pre>` blocks, which are passed untouched (handy for ASCII art).
 
 Doxygen will not process Markdown formatting inside verbatim or code blocks,
 and in other sections that need to be processed without changes
