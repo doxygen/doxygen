@@ -1486,7 +1486,8 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
   for (pgit.toFirst();(tpi=pgit.current());++pgit)
   {
     std::shared_ptr<Entry> pe = std::make_shared<Entry>();
-    pe->section  = tpi->filename=="index" ? Entry::MAINPAGEDOC_SEC : Entry::PAGEDOC_SEC;
+    bool isIndex = (stripExtensionGeneral(tpi->filename,getFileNameExtension(tpi->filename))=="index");
+    pe->section  = isIndex ? Entry::MAINPAGEDOC_SEC : Entry::PAGEDOC_SEC;
     pe->name     = tpi->name;
     pe->args     = tpi->title;
     addDocAnchors(pe,tpi->docAnchors);
