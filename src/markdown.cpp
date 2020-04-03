@@ -950,11 +950,13 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
         {
           // Relative file names in markdown usually represent nested pages.
           // This helps to navigate same markdown file in browser renderer and
-          // in generated Doxygen treeview/html output
-          // One drawback so far, multiple subpage calls to same ID result in
-          // duplicated entries in file list tree. Check if subpage map should
-          // keep only unique entries
-          out.addStr("@subpage ");
+          // in generated Doxygen treeview/html output.
+          // Hijacked title string to give explicit command that relative link
+          // shall be created as a subpage to current page.
+          if (title == "@subpage")
+            out.addStr("@subpage ");
+          else
+            out.addStr("@ref ");
           link = markdownFileNameToId(getAbsoluteFilePath(link));
         }
       }
