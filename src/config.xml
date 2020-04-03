@@ -1260,6 +1260,13 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='list' id='SUPPRESS_WARNINGS_ON_PATTERNS'>
+      <docs>
+<![CDATA[
+Suppress all warnings (\c WARNINGS , \c WARN_IF_UNDOCUMENTED , \c WARN_IF_DOC_ERROR , \c WARN_NO_PARAMDOC) from files that match one of the given patterns.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='WARN_IF_UNDOCUMENTED' defval='1'>
       <docs>
 <![CDATA[

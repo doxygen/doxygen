@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <qdatetime.h>
+#include <qfileinfo.h>
 #include "config.h"
 #include "util.h"
 #include "debug.h"
@@ -196,18 +197,23 @@ void warn(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn(Config_getBool(WARNINGS), file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARNINGS)
+          && !patternMatch(QFileInfo(file), &Config_getList(SUPPRESS_WARNINGS_ON_PATTERNS)),
+          file, line, warning_str, fmt, args);
   va_end(args);
 }
 
 void va_warn(const char *file,int line,const char *fmt,va_list args)
 {
-  do_warn(Config_getBool(WARNINGS), file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARNINGS)
+          && !patternMatch(QFileInfo(file), &Config_getList(SUPPRESS_WARNINGS_ON_PATTERNS)),
+          file, line, warning_str, fmt, args);
 }
 
 void warn_simple(const char *file,int line,const char *text)
 {
-  if (!Config_getBool(WARNINGS)) return; // warning type disabled
+  if (!Config_getBool(WARNINGS)
+      || patternMatch(QFileInfo(file), &Config_getList(SUPPRESS_WARNINGS_ON_PATTERNS))) return; // warning type disabled
   format_warn(file,line,QCString(warning_str) + text);
 }
 
@@ -215,7 +221,9 @@ void warn_undoc(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn(Config_getBool(WARN_IF_UNDOCUMENTED), file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARN_IF_UNDOCUMENTED)
+          && !patternMatch(QFileInfo(file), &Config_getList(SUPPRESS_WARNINGS_ON_PATTERNS)),
+          file, line, warning_str, fmt, args);
   va_end(args);
 }
 
@@ -223,7 +231,9 @@ void warn_doc_error(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn(Config_getBool(WARN_IF_DOC_ERROR), file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARN_IF_DOC_ERROR)
+          && !patternMatch(QFileInfo(file), &Config_getList(SUPPRESS_WARNINGS_ON_PATTERNS)),
+          file, line, warning_str, fmt, args);
   va_end(args);
 }
 
