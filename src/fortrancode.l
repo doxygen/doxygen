@@ -77,6 +77,8 @@ const int fixedCommentAfter = 72;
  * YY_USER_ACTION is always called for each scan action
  * YY_FTN_RESET   is used to handle end of lines and reset the column counter
  * YY_FTN_REJECT  resets the column counters when a pattern is rejected and thus rescanned.
+ * YY_FTN_LESS(n) returns all but first n characters to the input stream
+ *                and modifies the column counter accordingly.
  */
 int yy_old_start = 0;
 int yy_my_start  = 0;
@@ -84,6 +86,7 @@ int yy_end       = 1;
 #define YY_USER_ACTION {yy_old_start = yy_my_start; yy_my_start = yy_end; yy_end += static_cast<int>(yyleng);}
 #define YY_FTN_RESET   {yy_old_start = 0; yy_my_start = 0; yy_end = 1;}
 #define YY_FTN_REJECT  {yy_end = yy_my_start; yy_my_start = yy_old_start; REJECT;}
+#define YY_FTN_LESS(n) {yy_end -= yyleng - n; yyless(n); }
    
 //--------------------------------------------------------------------------------
 
@@ -688,7 +691,7 @@ static yy_size_t yyread(char *buf,yy_size_t max_size)
 %}
 
 IDSYM	  [a-z_A-Z0-9]
-ID        [a-z_A-Z]+{IDSYM}*
+ID        [a-z_A-Z]{IDSYM}*
 SUBPROG   (subroutine|function)
 B         [ \t]
 BS        [ \t]*
@@ -711,7 +714,8 @@ ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC
 ACCESS_SPEC (PROTECTED|PRIVATE|PUBLIC)
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION
-FLOW      (DO|SELECT|CASE|SELECT{BS}(CASE|TYPE)|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT|GO{BS}TO)
+FLOW      (DO|SELECT|CASE|SELECT{BS}(CASE|TYPE)|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|CYCLE|EXIT|GO{BS}TO)
+ENDFLOW   (DO|SELECT|WHERE|IF|WHILE|FORALL)
 COMMANDS  (FORMAT|CONTAINS|MODULE{BS_}PROCEDURE|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|PRESENT|DEALLOCATE|NULLIFY|SIZE|INQUIRE|OPEN|CLOSE|FLUSH|DATA|COMMON)
 IGNORE    (CALL)
 PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON_)?RECURSIVE|IMPURE|PURE|ELEMENTAL)?0
@@ -725,6 +729,8 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 /*%option debug*/
 
 %x Start
+%x Variable
+%x Array
 %x SubCall
 %x FuncDef
 %x ClassName
@@ -776,7 +782,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           codifyLines(yytext);
                                           endFontClass();
                                         }
-<Start>{BS}"end"({BS}{FLOW})/[ \t\n]       { // list is a bit long as not all have possible end
+<Start>{BS}"end"({BS}{ENDFLOW})/{BS}(\n|!|;|{ID}{BS}[^=%(]) { // end FLOW keywords
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -813,14 +819,19 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           generateLink(*g_code, yytext);
 					  g_insideBody=FALSE;
 
-					  /* append module name to use dict */
-                                          useEntry = new UseEntry();
-					  //useEntry->module = yytext;
-                                          //useMembers->append(yytext, useEntry);
-					  //addUse(yytext);
-					  useEntry->module = tmp;
-                                          useMembers->append(tmp, useEntry);
-					  addUse(tmp);
+					  /* get module entry from use dict */
+					  /* else append module name to use dict */
+					  useEntry = useMembers->find(tmp);
+					  if (! useEntry) 
+					  {
+                                            useEntry = new UseEntry();
+					    //useEntry->module = yytext;
+                                            //useMembers->append(yytext, useEntry);
+					    //addUse(yytext);
+					    useEntry->module = tmp;
+                                            useMembers->append(tmp, useEntry);
+					    addUse(tmp);
+					  }
                                         }           
 <Use,UseOnly,Import>{BS},{BS}           { codifyLines(yytext); }
 <UseOnly,Import>{BS}&{BS}"\n"           { codifyLines(yytext);
@@ -950,21 +961,28 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yy_pop_state();
                                           YY_FTN_RESET
                                         }
-<Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface")?{BS}     {  // Fortran subroutine or function ends
-                                          //cout << "===> end function " << yytext << endl;
+<Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface"){BS} {
+                                          // Fortran subroutine or function ends, with optional name to follow.
+                                          // Keyword required between end and name.
+                                          //cout << "===> end function w/ name " << yytext << endl;
+                                          //printf("===> line number %d end function w/ name |%s|\n",g_yyLineNr,yytext);
                                           endScope();
    					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
                                           yy_push_state(YY_START);
+                                          // check for optional name
                                           BEGIN(Subprogend);
                                         }
 <Subprogend>{ID}/{BS}(\n|!|;)             {
 					  generateLink(*g_code,yytext);
                                           yy_pop_state();
                                         }
-<Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface"){BS}/(\n|!|;) {  // Fortran subroutine or function ends
-                                          //cout << "===> end function " << yytext << endl;
+<Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface")?{BS}/(\n|!|;) {
+                                          // Fortran subroutine or function ends, without name.
+                                          // Keyword after end is optional.
+                                          //cout << "===> end function w/o name " << yytext << endl;
+                                          //printf("===> line number %d end function w/o name |%s|\n",g_yyLineNr,yytext);
                                           endScope();
    					  startFontClass("keyword");
   					  codifyLines(yytext);
@@ -1113,7 +1131,19 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           else
                                           {
                                             g_insideBody=TRUE;
-                                            generateLink(*g_code, yytext);
+                                            // extract function name and process it
+                                            char *tmp= (char *) malloc(strlen(yytext)+1);
+                                            strcpy(tmp,yytext);
+                                            strtok(tmp," \t");
+                                            //printf("===> line number %d function call |%s|\n",g_yyLineNr,yytext);
+                                            generateLink(*g_code, tmp);
+                                            if ( strlen(tmp) != strlen(yytext) ) {
+                                              // everything else is thrown back into input stream
+                                              // to prevent {BS} from being gobbled
+                                              //printf("     reprocess |%s|\n",yytext+strlen(tmp));
+                                              YY_FTN_LESS(strlen(tmp));
+                                            }
+                                            free(tmp);
                                             g_insideBody=FALSE;
                                           }
                                         }
@@ -1212,16 +1242,118 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 					  endFontClass();
                                           YY_FTN_RESET
                                         }
- /*------ variable references?  -------------------------------------*/ 
+ /*------ variable references  -------------------------------------*/ 
+ /* Give preference to user variables and functions over keywords. */
+
+<Start>[=+*\-\/(]{BS}/{ID}              { // arithmetic operator or "(" preceeds.
+                                          //printf("===> line number %d preceeding operator |%s|\n",g_yyLineNr,yytext);
+					  g_code->codify(yytext);
+                                          yy_push_state(YY_START);
+                                          BEGIN(Variable);
+                                        }
+<Variable>{ID}                          { // Variable mode seeks a variable or function name.
+                                          //printf("===> line number %d expression variable |%s|\n",g_yyLineNr,yytext);
+  					  g_insideBody=TRUE;
+                                          generateLink(*g_code, yytext);
+					  g_insideBody=FALSE;
+                                          // Variable name found, end Variable mode.
+                                          yy_pop_state();
+                                        }
+
+<Start>{ID}{BS}/[=+*\-\/><\.%]          { // Scalar variable followed by assignment, arithmetic,
+                                          //   comparison or type structure element.
+                                          // Resolves conflicts with fortran keywords that
+                                          //   the simple variable reference below cannot.
+                                          // Does not work across line continuation.
+                                          //printf("===> line number %d lhs-variable |%s|\n",g_yyLineNr,yytext);
+					  g_insideBody=TRUE;
+                                          // extract variable name and process it
+                                          char *tmp= (char *) malloc(strlen(yytext)+1);
+                                          strcpy(tmp,yytext);
+                                          strtok(tmp," \t");
+                                          //printf("     generateLink |%s|\n",tmp);
+                                          generateLink(*g_code, tmp);
+                                          if ( strlen(tmp) != strlen(yytext) ) {
+                                            // everything else is thrown back into input stream
+                                            // to prevent {BS} from being gobbled
+                                            //printf("     reprocess |%s|\n",yytext+strlen(tmp));
+                                            YY_FTN_LESS(strlen(tmp));
+                                          }
+                                          free(tmp);
+                                          g_insideBody=FALSE;
+                                        }
+
+ /* array(.)= assignment is hard to catch.                                      */
+ /*   (.) could contain other variables, structures, function calls, etc.       */
+ /*   Difficult to match nested parentheses.                                    */
+ /* <Start>{ID}{BS}/"("                                                         */
+ /*   Too Simple.  Modern fortran keywords often conflict with legacy variable  */
+ /*   names.  ie, need to isolate "CASE(1)=" from keyword "CASE(1)".            */
+ /* <Start>{ID}{BS}/"("[a-z_A-Z0-9 \t,:\-+/*%()]+")"{BS}"="                     */
+ /*   Compiler Error:  Dangerous trailing context (due to varying length?).     */
+ /* Method below is the best fix so far, but might not be perfect.              */
+ /*   Keeps most assignments from being detected as keywords.                   */
+ /*   Does not work across line continuation.  What is missed, gets processed   */
+ /*     as a keyword or simple variable reference.                              */
+ /*   Must reject false positives:                                              */
+ /*     ARRAY1(ARRAY2(n))=VALUE         ! Sees "ARRAY2(n))=VALUE" on pass 2.    */
+ /*                                     ! Reject unbalanced ()s before =.       */
+ /*     IF ( A .EQ. B ) ARRAY(N)=VALUE  ! Sees "IF(...)=VALUE"                  */
+ /*                                     ! Reject pattern "){BS}[a-zA-Z]".       */
+ /*     REAL(KIND_R) :: ARRAY(N)=VALUE  ! Sees "REAL(...)=VALUE"                */
+ /*                                     ! Reject patern ":{BS}:".               */
+
+<Start>{ID}{BS}"("[a-z_A-Z0-9 \t\.,:+*\-/%()]+")"{BS}/[=+*\-\/><\.%] {
+                                          // Array(.) variable followed by assignment, arithmetic,
+                                          //   comparison or type structure element.
+                                          // Resolves conflicts with fortran keywords that
+                                          //   the simple variable reference below cannot.
+                                          // Does not work across line continuation.
+                                          //
+                                          // Reject false positives as described above.
+                                          int openpar = 0;      // number of open ()s.
+                                          char lastchar = ' ';  // last non-space char
+                                          for (int n=0; n<yyleng; n++) {
+                                            if ( isalpha(yytext[n]) && lastchar == ')' ) { YY_FTN_REJECT; }
+                                            if ( yytext[n] == ':' && lastchar == ':' ) { YY_FTN_REJECT; }
+                                            if ( yytext[n] != ' ' && yytext[n] != '\t' ) { lastchar = yytext[n]; }
+                                            if ( yytext[n] == '(' ) { openpar++; }
+                                            if ( yytext[n] == ')' ) { openpar--; }
+                                          }
+                                          if ( openpar != 0 ) YY_FTN_REJECT;
+                                          //
+                                          //printf("===> line number %d array |%s|\n",g_yyLineNr,yytext);
+                                          g_insideBody=TRUE;
+                                          // extract array name and process it
+                                          char *tmp= (char *) malloc(strlen(yytext)+1);
+                                          strcpy(tmp,yytext);
+                                          strtok(tmp," \t(");
+                                          generateLink(*g_code, tmp);
+                                          // throw everything after array name back into input stream
+                                          //printf("     reprocess |%s|\n",yytext+strlen(tmp));
+                                          YY_FTN_LESS(strlen(tmp));
+                                          free(tmp);
+                                          g_insideBody=FALSE;
+                                          // Trigger Array mode to prevent keywords in array arguments.
+                                          yy_push_state(YY_START);
+                                          BEGIN(Array);
+                                        }
+
+<Array>")"{BS}/[=><\/\.%]               { // end of array mode
+					  g_code->codify(yytext);
+                                          yy_pop_state();
+                                        }
 
 <Start>"%"{BS}{ID}	 		{ // ignore references to elements 
 					  g_code->codify(yytext);
 					}
-<Start>{ID}                             {   
-  					    g_insideBody=TRUE;
-                                            generateLink(*g_code, yytext);
-					    g_insideBody=FALSE;
+<Start,Array>{ID}                       { // Simple variable reference.
+                                          //printf("===> line number %d variable |%s|\n",g_yyLineNr,yytext);
+  					  g_insideBody=TRUE;
+                                          generateLink(*g_code, yytext);
+					  g_insideBody=FALSE;
                                         }
+
  /*------ strings --------------------------------------------------*/ 
 <String>\n                              { // string with \n inside
 					  g_contLineNr++;
