@@ -67,6 +67,8 @@ static QCString     g_secLabel;
 static QCString     g_secTitle;
 static SectionType  g_secType;
 static QCString     g_endMarker;
+static QCString     g_startMarker;
+static int          g_cntMarker = 0;
 static int          g_autoListLevel;
 
 struct DocLexerContext
@@ -802,10 +804,17 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_CodeOpt>\n         |
 <St_CodeOpt>.          {
                          unput(*yytext);
+  			 g_cntMarker=0;
                          BEGIN(St_Code);
                        }
+<St_Code>{WS}*{CMD}"code" {
+  			 g_cntMarker++;
+  			 g_token->verb+=yytext;
+                       }
 <St_Code>{WS}*{CMD}"endcode" {
-                         return RetVal_OK;
+                         if (!g_cntMarker) return RetVal_OK;
+  			 g_cntMarker--;
+  			 g_token->verb+=yytext;
                        }
 <St_XmlCode>{WS}*"</code>" {
                          return RetVal_OK;
@@ -871,9 +880,18 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_DbOnly>.          {
   			 g_token->verb+=yytext;
   		       }
+<St_Verbatim>{CMD}"verbatim" {
+  			 g_token->verb+=yytext;
+                         g_cntMarker++;
+                       }
 <St_Verbatim>{CMD}"endverbatim" {
-  			 g_token->verb=stripEmptyLines(g_token->verb);
-                         return RetVal_OK;
+                         if (!g_cntMarker)
+                         {
+  			   g_token->verb=stripEmptyLines(g_token->verb);
+                           return RetVal_OK;
+                         }
+  			 g_token->verb+=yytext;
+                         g_cntMarker--;
                        }
 <St_Verbatim>[^\\@\n]+ |
 <St_Verbatim>\n        |
@@ -1280,57 +1298,89 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                       BEGIN(St_SecLabel2); 
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
+                                      g_startMarker="verbatim";
                                       g_endMarker="endverbatim";
+                                      g_cntMarker=1;
 				      BEGIN(St_SecSkip);
   				    }
 <St_Sections>{CMD}"dot"/[^a-z_A-Z0-9] {
+                                      g_startMarker="";
                                       g_endMarker="enddot";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
   				    }
 <St_Sections>{CMD}"msc"/[^a-z_A-Z0-9] {
+                                      g_startMarker="";
                                       g_endMarker="endmsc";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
   				    }
 <St_Sections>{CMD}"startuml"/[^a-z_A-Z0-9] {
+                                      g_startMarker="";
                                       g_endMarker="enduml";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
   				    }
 <St_Sections>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
+                                      g_startMarker="";
                                       g_endMarker="endhtmlonly";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"latexonly"/[^a-z_A-Z0-9] {
+                                      g_startMarker="";
                                       g_endMarker="endlatexonly";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"manonly"/[^a-z_A-Z0-9] {
+                                      g_startMarker="";
                                       g_endMarker="endmanonly";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"rtfonly"/[^a-z_A-Z0-9] {
+                                      g_startMarker="";
                                       g_endMarker="endrtfonly";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"xmlonly"/[^a-z_A-Z0-9] {
+                                      g_startMarker="";
                                       g_endMarker="endxmlonly";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"docbookonly"/[^a-z_A-Z0-9] {
+                                      g_startMarker="";
                                       g_endMarker="enddocbookonly";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"code"/[^a-z_A-Z0-9] {
+                                      g_startMarker="code";
                                       g_endMarker="endcode";
+                                      g_cntMarker=1;
 				      BEGIN(St_SecSkip);
   				    }
 <St_Sections>"<!--"                 {
+                                      g_startMarker="";
                                       g_endMarker="-->";
+                                      g_cntMarker=0;
 				      BEGIN(St_SecSkip);
+                                    }
+<St_SecSkip>{CMD}"verbatim"	    {
+                                      if (g_startMarker == "verbatim") g_cntMarker++;
+                                    }
+<St_SecSkip>{CMD}"code"		    {
+                                      if (g_startMarker == "code") g_cntMarker++;
                                     }
 <St_SecSkip>{CMD}{ID}		    {
                                       if (qstrcmp(yytext+1,g_endMarker)==0)
 				      {
-					BEGIN(St_Sections);
+                                        if (g_endMarker == "endverbatim") g_cntMarker--;
+                                        if (g_endMarker == "endcode") g_cntMarker--;
+					if (!g_cntMarker) BEGIN(St_Sections);
 				      }
                                     }
 <St_SecSkip>"-->"		    {
@@ -1434,6 +1484,7 @@ void doctokenizerYYsetStateCode()
 {
   g_token->verb="";
   g_token->name="";
+  g_cntMarker=0;
   BEGIN(St_CodeOpt);
 }
 
@@ -1484,6 +1535,7 @@ void doctokenizerYYsetStateLatexOnly()
 void doctokenizerYYsetStateVerbatim()
 {
   g_token->verb="";
+  g_cntMarker=0;
   BEGIN(St_Verbatim);
 }
 

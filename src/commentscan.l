@@ -387,6 +387,7 @@ struct commentscanYY_state
   int              condCount = 0;
 
   int              commentCount = 0;
+  int              blockCount = 0;
   QCString         spaceBeforeCmd;
   QCString         spaceBeforeIf;
   QCString         copyDocArg;
@@ -1394,11 +1395,19 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
+<FormatBlock>{CMD}("verbatim"|"code")/{NW} { // possible nest
+  					     addOutput(yyscanner,yytext);
+					     if (&yytext[1]==yyextra->blockName) // found nestedblock
+					     {
+  					       yyextra->blockCount++;
+                                             }
+                                           }
 <FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc"|"endvhdlflow")/{NW} { // possible ends
   					  addOutput(yyscanner,yytext);
 					  if (&yytext[4]==yyextra->blockName) // found end of the block
 					  {
-  					    BEGIN(Comment);
+					    if (yyextra->blockName=="code" || yyextra->blockName=="verbatim") yyextra->blockCount--;
+  					    if (!yyextra->blockCount) BEGIN(Comment);
 					  }
   					}
 <FormatBlock>{CMD}"enduml"              {
@@ -2308,6 +2317,9 @@ static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const QCStri
     addOutput(yyscanner,"@"+s+"{"+optList.join(",")+"} ");
   }
   //printf("handleFormatBlock(%s) with option(%s)\n",s.data(),opt.data());
+  if (!yyextra->blockCount) yyextra->blockName = "";
+  if ((s=="code" || s=="verbatim") && (yyextra->blockName.isEmpty() || s == yyextra->blockName)) yyextra->blockCount++;
+  else  yyextra->blockCount=0;
   yyextra->blockName=s;
   yyextra->commentCount=0;
   BEGIN(FormatBlock);
