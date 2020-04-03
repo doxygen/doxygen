@@ -71,6 +71,10 @@ class Translator
       {
         if (latex_command == "latex") latex_command = "pdflatex";
       }
+      if (Config_getBool(LATEX_BATCHMODE))
+      {
+        latex_command +=  " -interaction=batchmode -halt-on-error";
+      }
       return latex_command;
     }
 

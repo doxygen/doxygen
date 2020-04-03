@@ -96,6 +96,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       {
         if (latex_command == "latex") latex_command = "xelatex";
       }
+      if (Config_getBool(LATEX_BATCHMODE))
+      {
+        latex_command +=  " -interaction=batchmode -halt-on-error";
+      }
       return latex_command;
     }
 

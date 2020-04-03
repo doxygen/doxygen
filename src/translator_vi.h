@@ -93,6 +93,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       {
         if (latex_command == "latex") latex_command = "xelatex";
       }
+      if (Config_getBool(LATEX_BATCHMODE))
+      {
+        latex_command +=  " -interaction=batchmode -halt-on-error";
+      }
       return latex_command;
     }
     // --- Language translation methods -------------------
