@@ -1496,7 +1496,7 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
 
 static bool isCodeBlock(const char *data,int offset,int size,int &indent)
 {
-  //printf("<isCodeBlock(offset=%d,size=%d,indent=%d)\n",offset,size,indent);
+  printf("<isCodeBlock(offset=%d,size=%d,indent=%d)\n",offset,size,indent);
   // determine the indent of this line
   int i=0;
   int indent0=0;
@@ -1504,12 +1504,12 @@ static bool isCodeBlock(const char *data,int offset,int size,int &indent)
 
   if (indent0<codeBlockIndent)
   {
-    //printf(">isCodeBlock: line is not indented enough %d<4\n",indent0);
+    printf(">isCodeBlock: line is not indented enough %d<4\n",indent0);
     return FALSE;
   }
   if (indent0>=size || data[indent0]=='\n') // empty line does not start a code block
   {
-    //printf("only spaces at the end of a comment block\n");
+    printf("only spaces at the end of a comment block\n");
     return FALSE;
   }
     
@@ -1529,10 +1529,10 @@ static bool isCodeBlock(const char *data,int offset,int size,int &indent)
 
   if (nl==3) // we have at least 2 preceding lines
   {
-    //printf("  positions: nl_pos=[%d,%d,%d] line[-2]='%s' line[-1]='%s'\n",
-    //    nl_pos[0],nl_pos[1],nl_pos[2],
-    //    QCString(data+nl_pos[1]).left(nl_pos[0]-nl_pos[1]-1).data(),
-    //    QCString(data+nl_pos[2]).left(nl_pos[1]-nl_pos[2]-1).data());
+    printf("  positions: nl_pos=[%d,%d,%d] line[-2]='%s' line[-1]='%s'\n",
+        nl_pos[0],nl_pos[1],nl_pos[2],
+        QCString(data+nl_pos[1]).left(nl_pos[0]-nl_pos[1]-1).data(),
+        QCString(data+nl_pos[2]).left(nl_pos[1]-nl_pos[2]-1).data());
 
     // check that line -1 is empty
     if (!isEmptyLine(data+nl_pos[1],nl_pos[0]-nl_pos[1]-1))
@@ -1543,8 +1543,8 @@ static bool isCodeBlock(const char *data,int offset,int size,int &indent)
     // determine the indent of line -2
     indent=computeIndentExcludingListMarkers(data+nl_pos[2],nl_pos[1]-nl_pos[2]);
     
-    //printf(">isCodeBlock local_indent %d>=%d+4=%d\n",
-    //    indent0,indent2,indent0>=indent2+4);
+    printf(">isCodeBlock local_indent %d>=%d+4=%d\n",
+        indent0,indent,indent0>=indent+4);
     // if the difference is >4 spaces -> code block
     return indent0>=indent+codeBlockIndent;
   }
@@ -1555,8 +1555,8 @@ static bool isCodeBlock(const char *data,int offset,int size,int &indent)
     {
       return FALSE;
     }
-    //printf(">isCodeBlock global indent %d>=%d+4=%d nl=%d\n",
-    //    indent0,indent,indent0>=indent+4,nl);
+    printf(">isCodeBlock global indent %d>=%d+4=%d nl=%d\n",
+        indent0,indent,indent0>=indent+4,nl);
     return indent0>=indent+codeBlockIndent;
   }
 }
@@ -2052,7 +2052,7 @@ static int writeBlockQuote(GrowBuf &out,const char *data,int size)
 static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
 {
   int i=0,end;
-  //printf("writeCodeBlock: data={%s}\n",QCString(data).left(size).data());
+  printf("writeCodeBlock: data={%s}\n",QCString(data).left(size).data());
   out.addStr("@verbatim\n");
   int emptyLines=0;
   while (i<size)
@@ -2063,8 +2063,8 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
     int j=i;
     int indent=0;
     while (j<end && data[j]==' ') j++,indent++;
-    //printf("j=%d end=%d indent=%d refIndent=%d tabSize=%d data={%s}\n",
-    //    j,end,indent,refIndent,Config_getInt(TAB_SIZE),QCString(data+i).left(end-i-1).data());
+    printf("writeCodeblock j=%d end=%d indent=%d refIndent=%d tabSize=%d data={%s}\n",
+        j,end,indent,refIndent,Config_getInt(TAB_SIZE),QCString(data+i).left(end-i-1).data());
     if (j==end-1) // empty line 
     {
       emptyLines++;
@@ -2095,6 +2095,7 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
     emptyLines--;
   }
   //printf("i=%d\n",i);
+  printf("out:[%s]\n",out.get());
   return i;
 }
 
@@ -2251,6 +2252,8 @@ static QCString processBlocks(const QCString &s,int indent)
   int i=0,end=0,pi=-1,ref,level;
   QCString id,link,title;
   int blockIndent = indent;
+
+	printf("____%s>>>\n",s.data());
 
   // get indent for the first line
   end = i+1;
