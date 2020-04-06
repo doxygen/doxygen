@@ -27,6 +27,10 @@
 /*
  *	includes
  */
+
+#include <memory>
+#include <algorithm>
+
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>

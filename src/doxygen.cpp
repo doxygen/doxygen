@@ -33,6 +33,7 @@
 #include <qptrdict.h>
 #include <qtextstream.h>
 
+#include <algorithm>
 #include <unordered_map>
 #include <memory>
 
