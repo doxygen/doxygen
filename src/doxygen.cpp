@@ -9061,7 +9061,7 @@ static void generateDiskNames()
       std::sort(fileEntries.begin(),
                 fileEntries.end(),
                 [](const FileEntry &fe1,const FileEntry &fe2)
-                { return qstrcmp(fe1.path.data(),fe2.path.data()); }
+                { return qstrcmp(fe1.path.data(),fe2.path.data())<0; }
                );
 
       // since the entries are sorted, the common prefix of the whole array is same
@@ -10715,12 +10715,13 @@ void searchInputFiles()
     }
     s=inputList.next();
   }
-  std::sort(Doxygen::inputNameLinkedMap->begin(),Doxygen::inputNameLinkedMap->end(),
-            [](FileNameLinkedMap::Ptr &f1,FileNameLinkedMap::Ptr &f2)
+  std::sort(Doxygen::inputNameLinkedMap->begin(),
+            Doxygen::inputNameLinkedMap->end(),
+            [](const auto &f1,const auto &f2)
             {
               return Config_getBool(FULL_PATH_NAMES) ?
-              qstricmp(f1->fullName(),f2->fullName()) :
-              qstricmp(f1->fileName(),f2->fileName());
+                     qstricmp(f1->fullName(),f2->fullName())<0 :
+                     qstricmp(f1->fileName(),f2->fileName())<0;
             });
   g_s.end();
 
