@@ -1388,21 +1388,18 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     QCString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
     fe->fileName = fullName;
     //printf("createFileDef() filename=%s\n",tfi->filename.data());
-    FileDef *fd = createFileDef(m_tagName+":"+tfi->path,
+    std::unique_ptr<FileDef> fd { createFileDef(m_tagName+":"+tfi->path,
                               tfi->name,m_tagName,
-                              tfi->filename
-                             );
+                              tfi->filename) };
     FileName *mn;
-    if ((mn=Doxygen::inputNameDict->find(tfi->name)))
+    if ((mn=Doxygen::inputNameLinkedMap->find(tfi->name)))
     {
-      mn->append(fd);
+      mn->push_back(std::move(fd));
     }
     else
     {
-      mn = new FileName(fullName,tfi->name);
-      mn->append(fd);
-      Doxygen::inputNameList->inSort(mn);
-      Doxygen::inputNameDict->insert(tfi->name,mn);
+      mn = Doxygen::inputNameLinkedMap->add(tfi->name,fullName);
+      mn->push_back(std::move(fd));
     }
     buildMemberList(fe,tfi->members);
     root->moveToSubEntryAndKeep(fe);
@@ -1504,13 +1501,10 @@ void TagFileParser::addIncludes()
   for (fit.toFirst();(tfi=fit.current());++fit)
   {
     //printf("tag file tagName=%s path=%s name=%s\n",m_tagName.data(),tfi->path.data(),tfi->name.data());
-    FileName *fn = Doxygen::inputNameDict->find(tfi->name);
+    FileName *fn = Doxygen::inputNameLinkedMap->find(tfi->name);
     if (fn)
     {
-      //printf("found\n");
-      FileNameIterator fni(*fn);
-      FileDef *fd;
-      for (;(fd=fni.current());++fni)
+      for (const auto &fd : *fn)
       {
         //printf("input file path=%s name=%s\n",fd->getPath().data(),fd->name().data());
         if (fd->getPath()==QCString(m_tagName+":"+tfi->path))
@@ -1521,19 +1515,17 @@ void TagFileParser::addIncludes()
           for (;(ii=mii.current());++mii)
           {
             //printf("ii->name='%s'\n",ii->name.data());
-            FileName *ifn = Doxygen::inputNameDict->find(ii->name);
+            FileName *ifn = Doxygen::inputNameLinkedMap->find(ii->name);
             ASSERT(ifn!=0);
             if (ifn)
             {
-              FileNameIterator ifni(*ifn);
-              FileDef *ifd;
-              for (;(ifd=ifni.current());++ifni)
+              for (const auto &ifd : *ifn)
               {
                 //printf("ifd->getOutputFileBase()=%s ii->id=%s\n",
                 //        ifd->getOutputFileBase().data(),ii->id.data());
                 if (ifd->getOutputFileBase()==QCString(ii->id))
                 {
-                  fd->addIncludeDependency(ifd,ii->text,ii->isLocal,ii->isImported,FALSE);
+                  fd->addIncludeDependency(ifd.get(),ii->text,ii->isLocal,ii->isImported,FALSE);
                 }
               }
             }

@@ -567,7 +567,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  //  absPath = QDir::cleanDirPath(yyextra->sourceFileDef->getPath()+"/"+absPath);
 					  //}
 
-                                          FileDef *fd=findFileDef(Doxygen::inputNameDict,yytext,ambig);
+                                          FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,yytext,ambig);
 					  //printf("looking for include %s -> %s fd=%p\n",yytext,absPath.data(),fd);
 					  if (fd && fd->isLinkable())
 					  {
@@ -577,17 +577,16 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      QCString name = QDir::cleanDirPath(yytext).utf8();
 					      if (!name.isEmpty() && yyextra->sourceFileDef)
 					      {
-					        FileName *fn = Doxygen::inputNameDict->find(name);
+					        FileName *fn = Doxygen::inputNameLinkedMap->find(name);
 						if (fn)
 						{
-						  FileNameIterator fni(*fn);
-						  // for each include name
-						  for (fni.toFirst();!found && (fd=fni.current());++fni)
-						  {
-						    // see if this source file actually includes the file
-						    found = yyextra->sourceFileDef->isIncluded(fd->absFilePath());
-						    //printf("      include file %s found=%d\n",fd->absFilePath().data(),found);
-						  }
+						  // see if this source file actually includes the file
+                                                  auto it = std::find_if(fn->begin(),
+                                                                         fn->end(),
+                                                                         [&sfd=yyextra->sourceFileDef]
+                                                                         (const auto &fd)
+                                                                         { return sfd->isIncluded(fd->absFilePath()); });
+                                                  found = it!=fn->end();
 						}
 					      }
 					    }

@@ -776,19 +776,15 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
   }
   if (ftv)
   {
-    FileNameListIterator fnli(*Doxygen::inputNameList);
-    FileName *fn;
-    for (fnli.toFirst();(fn=fnli.current());++fnli)
+    for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
-      FileNameIterator fni(*fn);
-      FileDef *fd;
-      for (;(fd=fni.current());++fni)
+      for (const auto &fd : *fn)
       {
         static bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
         if (!fullPathNames || fd->getDirDef()==0) // top level file
         {
           bool doc,src;
-          doc = fileVisibleInIndex(fd,src);
+          doc = fileVisibleInIndex(fd.get(),src);
           QCString reference, outputBase;
           if (doc)
           {
@@ -799,19 +795,19 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
           {
             ftv->addContentsItem(FALSE,fd->displayName(),
                                  reference, outputBase, 0,
-                                 FALSE,FALSE,fd);
+                                 FALSE,FALSE,fd.get());
           }
           if (addToIndex)
           {
             if (doc)
             {
-              addMembersToIndex(fd,LayoutDocManager::File,fd->displayName(),QCString(),TRUE);
+              addMembersToIndex(fd.get(),LayoutDocManager::File,fd->displayName(),QCString(),TRUE);
             }
             else if (src)
             {
               Doxygen::indexList->addContentsItem(
                   FALSE, convertToHtml(fd->name(),TRUE), 0,
-                  fd->getSourceFileBase(), 0, FALSE, TRUE, fd);
+                  fd->getSourceFileBase(), 0, FALSE, TRUE, fd.get());
             }
           }
         }
@@ -1321,16 +1317,12 @@ static void countFiles(int &htmlFiles,int &files)
 {
   htmlFiles=0;
   files=0;
-  FileNameListIterator fnli(*Doxygen::inputNameList);
-  FileName *fn;
-  for (;(fn=fnli.current());++fnli)
+  for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {
-    FileNameIterator fni(*fn);
-    FileDef *fd;
-    for (;(fd=fni.current());++fni)
+    for (const auto &fd: *fn)
     {
       bool doc,src;
-      doc = fileVisibleInIndex(fd,src);
+      doc = fileVisibleInIndex(fd.get(),src);
       if (doc || src)
       {
         htmlFiles++;
@@ -1470,27 +1462,23 @@ static void writeFileIndex(OutputList &ol)
   if (Config_getBool(FULL_PATH_NAMES))
   {
     // re-sort input files in (dir,file) output order instead of (file,dir) input order
-    FileNameListIterator fnli(*Doxygen::inputNameList);
-    FileName *fn;
-    for (fnli.toFirst();(fn=fnli.current());++fnli)
+    for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
-      FileNameIterator fni(*fn);
-      FileDef *fd;
-      for (;(fd=fni.current());++fni)
+      for (const auto &fd : *fn)
       {
         QCString path=fd->getPath();
         if (path.isEmpty()) path="[external]";
         FileList *fl = outputNameDict.find(path);
         if (fl)
         {
-          fl->append(fd);
+          fl->append(fd.get());
           //printf("+ inserting %s---%s\n",fd->getPath().data(),fd->name().data());
         }
         else
         {
           //printf("o inserting %s---%s\n",fd->getPath().data(),fd->name().data());
           fl = new FileList(path);
-          fl->append(fd);
+          fl->append(fd.get());
           outputNameList.append(fl);
           outputNameDict.insert(path,fl);
         }
@@ -1517,15 +1505,11 @@ static void writeFileIndex(OutputList &ol)
   }
   else
   {
-    FileNameListIterator fnli(*Doxygen::inputNameList);
-    FileName *fn;
-    for (fnli.toFirst();(fn=fnli.current());++fnli)
+    for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
-      FileNameIterator fni(*fn);
-      FileDef *fd;
-      for (;(fd=fni.current());++fni)
+      for (const auto &fd : *fn)
       {
-        writeSingleFileIndex(ol,fd);
+        writeSingleFileIndex(ol,fd.get());
       }
     }
   }

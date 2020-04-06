@@ -501,9 +501,9 @@ const char * table_schema[][2] = {
 
 //////////////////////////////////////////////////////
 struct SqlStmt {
-  const char   *query;
-  sqlite3_stmt *stmt;
-  sqlite3 *db;
+  const char   *query = 0;
+  sqlite3_stmt *stmt = 0;
+  sqlite3 *db = 0;
 };
 //////////////////////////////////////////////////////
 /* If you add a new statement below, make sure to add it to
@@ -924,7 +924,7 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
 
 static void recordMetadata()
 {
-  bindTextParameter(meta_insert,":doxygen_version",getVersion());
+  bindTextParameter(meta_insert,":doxygen_version",getFullVersion());
   bindTextParameter(meta_insert,":schema_version","0.2.0"); //TODO: this should be a constant somewhere; not sure where
   bindTextParameter(meta_insert,":generated_at",dateToString(TRUE), FALSE);
   bindTextParameter(meta_insert,":generated_on",dateToString(FALSE), FALSE);
@@ -1218,8 +1218,6 @@ static void pragmaTuning(sqlite3 *db)
 static int initializeTables(sqlite3* db)
 {
   int rc;
-  sqlite3_stmt *stmt = 0;
-
   msg("Initializing DB schema (tables)...\n");
   for (unsigned int k = 0; k < sizeof(table_schema) / sizeof(table_schema[0]); k++)
   {
@@ -1238,8 +1236,6 @@ static int initializeTables(sqlite3* db)
 static int initializeViews(sqlite3* db)
 {
   int rc;
-  sqlite3_stmt *stmt = 0;
-
   msg("Initializing DB schema (views)...\n");
   for (unsigned int k = 0; k < sizeof(view_schema) / sizeof(view_schema[0]); k++)
   {
@@ -2612,16 +2608,12 @@ void generateSqlite3()
   }
 
   // + files
-  FileNameListIterator fnli(*Doxygen::inputNameList);
-  FileName *fn;
-  for (;(fn=fnli.current());++fnli)
+  for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {
-    FileNameIterator fni(*fn);
-    const FileDef *fd;
-    for (;(fd=fni.current());++fni)
+    for (const auto &fd : *fn)
     {
       msg("Generating Sqlite3 output for file %s\n",fd->name().data());
-      generateSqlite3ForFile(fd);
+      generateSqlite3ForFile(fd.get());
     }
   }
 

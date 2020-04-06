@@ -291,7 +291,7 @@ void functionInformation(MemberDef* md) {
   if (!argList.empty())
   {
     temp = argumentData(argList.front());
-// TODO: This is a workaround; better not include "void" in argList, in the first place. 
+// TODO: This is a workaround; better not include "void" in argList, in the first place.
     if (temp!="void")
     {
       printNumberOfArguments(argList.size());
@@ -385,9 +385,8 @@ static bool checkLanguage(std::string& filename, std::string extension) {
 
 /* Detects the programming language of the project. Actually, we only care
  * about whether it is a C project or not. */
-static void detectProgrammingLanguage(FileNameListIterator& fnli) {
-  FileName* fn;
-  for (fnli.toFirst(); (fn=fnli.current()); ++fnli) {
+static void detectProgrammingLanguage(FileNameLinkedMap &fnli) {
+  for (const auto &fn : fnli) {
     std::string filename = fn->fileName();
     if (
         checkLanguage(filename, ".cc") ||
@@ -404,17 +403,11 @@ static void detectProgrammingLanguage(FileNameListIterator& fnli) {
 }
 
 static void listSymbols() {
+  detectProgrammingLanguage(*Doxygen::inputNameLinkedMap);
+
   // iterate over the input files
-  FileNameListIterator fnli(*Doxygen::inputNameList);
-  FileName *fn;
-
-  detectProgrammingLanguage(fnli);
-
-  // for each file
-  for (fnli.toFirst(); (fn=fnli.current()); ++fnli) {
-    FileNameIterator fni(*fn);
-    FileDef *fd;
-    for (; (fd=fni.current()); ++fni) {
+  for (const auto &fn : *Doxygen::inputNameLinkedMap) {
+    for (const auto &fd : *fn) {
       printFile(fd->absFilePath().data());
       MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
       if (ml && ml->count() > 0) {
@@ -529,16 +522,10 @@ int main(int argc,char **argv) {
   parseInput();
 
   // iterate over the input files
-  FileNameListIterator fnli(*Doxygen::inputNameList);
-  FileName *fn;
-  // for each file with a certain name
-  for (fnli.toFirst();(fn=fnli.current());++fnli) {
-    FileNameIterator fni(*fn);
-    FileDef *fd;
-    // for each file definition
-    for (;(fd=fni.current());++fni) {
+  for (const auto &fn : *Doxygen::inputNameLinkedMap) {
+    for (const auto &fd : *fn) {
       // get the references (linked and unlinked) found in this file
-      findXRefSymbols(fd);
+      findXRefSymbols(fd.get());
     }
   }
 

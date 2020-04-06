@@ -128,7 +128,7 @@ static void format_warn(const char *file,int line,const char *text)
   if (file) // get version from file name
   {
     bool ambig;
-    FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
+    FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,file,ambig);
     if (fd)
     {
       versionSubst = fd->getVersion();

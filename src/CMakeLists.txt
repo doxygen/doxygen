@@ -232,7 +232,6 @@ add_library(_doxygen STATIC
     emoji.cpp
     entry.cpp
     filedef.cpp
-    filename.cpp
     fileparser.cpp
     formula.cpp
     ftextstream.cpp

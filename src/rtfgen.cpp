@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Parker Waechter & Dimitri van Heesch.
  *
@@ -61,7 +61,7 @@ static QCString dateToRTFDateString()
       d.date().year(), d.date().month(), d.date().day(),
       d.time().hour(),d.time().minute(),d.time().second());
   return result;
-} 
+}
 
 RTFGenerator::RTFGenerator() : OutputGenerator()
 {
@@ -512,7 +512,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
-          if (cd->isLinkableInProject() && 
+          if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
              !cd->isEmbeddedInOuterScope()
              )
@@ -527,13 +527,9 @@ void RTFGenerator::startIndexSection(IndexSections is)
       {
         //File Documentation
         bool isFirst=TRUE;
-        FileNameListIterator fnli(*Doxygen::inputNameList); 
-        FileName *fn;
-        for (fnli.toFirst();(fn=fnli.current());++fnli)
+        for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
-          FileNameIterator fni(*fn);
-          FileDef *fd;
-          for (;(fd=fni.current());++fni)
+          for (const auto &fd : *fn)
           {
             if (fd->isLinkableInProject())
             {
@@ -573,7 +569,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
 void RTFGenerator::endIndexSection(IndexSections is)
 {
   bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-  bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);  
+  bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   static QCString projectName = Config_getString(PROJECT_NAME);
 
@@ -622,7 +618,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
           t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
           writeDoc(root,0,0);
           t << "}}\\par" << endl;
-          
+
         }
 
         t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to title style
@@ -700,7 +696,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       {
           t << "{\\tc \\v " << theTranslator->trNamespaceIndex() << "}" << endl;
       }
-      
+
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"namespaces.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isClassHierarchyIndex:
@@ -813,7 +809,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
-          if (cd->isLinkableInProject() && 
+          if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
              !cd->isEmbeddedInOuterScope()
              )
@@ -827,7 +823,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         for (;(cd=cli.current());++cli)
         {
-          if (cd->isLinkableInProject() && 
+          if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
              !cd->isEmbeddedInOuterScope()
              )
@@ -846,13 +842,9 @@ void RTFGenerator::endIndexSection(IndexSections is)
         bool isFirst=TRUE;
 
         t << "{\\tc \\v " << theTranslator->trFileDocumentation() << "}"<< endl;
-        FileNameListIterator fnli(*Doxygen::inputNameList);
-        FileName *fn;
-        for (fnli.toFirst();(fn=fnli.current());++fnli)
+        for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
-          FileNameIterator fni(*fn);
-          FileDef *fd;
-          for (;(fd=fni.current());++fni)
+          for (const auto &fd : *fn)
           {
             if (fd->isLinkableInProject())
             {
@@ -1257,22 +1249,22 @@ void RTFGenerator::endSubsubsection()
 //  t << "}";
 //}
 
-//void RTFGenerator::startTable(bool,int colNumbers) 
+//void RTFGenerator::startTable(bool,int colNumbers)
 //{
 //  DBG_RTF(t << "{\\comment startTable}\n";)
 //  m_numCols=colNumbers;
 //  t << "\\par\n";
 //}
 //
-//void RTFGenerator::endTable(bool hasCaption) 
-//{ 
+//void RTFGenerator::endTable(bool hasCaption)
+//{
 //  DBG_RTF(t << "{\\comment endTable}\n";)
-//  if (!hasCaption) 
-//    t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n"; 
-//  t << "\\pard\n" << endl; 
+//  if (!hasCaption)
+//    t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n";
+//  t << "\\pard\n" << endl;
 //}
 //
-//void  RTFGenerator::startCaption() 
+//void  RTFGenerator::startCaption()
 //{
 //  DBG_RTF(t << "{\\comment startCaption}\n";)
 //  endTableRow();
@@ -1281,15 +1273,15 @@ void RTFGenerator::endSubsubsection()
 //  nextTableColumn();
 //}
 //
-//void  RTFGenerator::endCaption() 
+//void  RTFGenerator::endCaption()
 //{
 //  DBG_RTF(t << "{\\comment endCaption}\n";)
 //  endTableColumn();
 //  endTableRow();
 //}
 //
-//void RTFGenerator::nextTableRow() 
-//{  
+//void RTFGenerator::nextTableRow()
+//{
 //  DBG_RTF(t << "{\\comment nextTableRow}\n";)
 //  ASSERT(m_numCols>0 && m_numCols<25);
 //  uint columnWidth=rtf_pageWidth/m_numCols;
@@ -1297,7 +1289,7 @@ void RTFGenerator::endSubsubsection()
 //       "\\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 "
 //       "\\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 "
 //       "\\trbrdrv\\brdrs\\brdrw10 "<<endl;
-//  for (int i=0;i<m_numCols;i++) 
+//  for (int i=0;i<m_numCols;i++)
 //  {
 //    t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 "
 //         "\\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb "
@@ -1305,21 +1297,21 @@ void RTFGenerator::endSubsubsection()
 //  }
 //  t << "\\pard \\widctlpar\\intbl\\adjustright\n{";
 //}
-// 
-//void RTFGenerator::endTableRow() 
-//{ 
+//
+//void RTFGenerator::endTableRow()
+//{
 //  DBG_RTF(t << "{\\comment endTableRow}\n";)
 //  t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n";
 //}
-// 
-//void RTFGenerator::nextTableColumn() 
+//
+//void RTFGenerator::nextTableColumn()
 //{
 //  DBG_RTF(t << "{\\comment nextTableColumn}\n";)
 //  t << "{ ";
 //}
 //
-//void RTFGenerator::endTableColumn() 
-//{ 
+//void RTFGenerator::endTableColumn()
+//{
 //  DBG_RTF(t << "{\\comment endTableColumn}\n";)
 //  t << " \\cell }";
 //}
@@ -2807,32 +2799,32 @@ void RTFGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
 {
   RTFDocVisitor *visitor = new RTFDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""));
   n->accept(visitor);
-  delete visitor; 
+  delete visitor;
   m_omitParagraph = TRUE;
 }
 
-void RTFGenerator::rtfwriteRuler_doubleline() 
-{ 
+void RTFGenerator::rtfwriteRuler_doubleline()
+{
   DBG_RTF(t << "{\\comment (rtfwriteRuler_doubleline)}"    << endl)
-  t << "{\\pard\\widctlpar\\brdrb\\brdrdb\\brdrw15\\brsp20 \\adjustright \\par}" << endl; 
+  t << "{\\pard\\widctlpar\\brdrb\\brdrdb\\brdrw15\\brsp20 \\adjustright \\par}" << endl;
 }
 
-void RTFGenerator::rtfwriteRuler_emboss() 
-{ 
+void RTFGenerator::rtfwriteRuler_emboss()
+{
   DBG_RTF(t << "{\\comment (rtfwriteRuler_emboss)}"    << endl)
-  t << "{\\pard\\widctlpar\\brdrb\\brdremboss\\brdrw15\\brsp20 \\adjustright \\par}" << endl; 
+  t << "{\\pard\\widctlpar\\brdrb\\brdremboss\\brdrw15\\brsp20 \\adjustright \\par}" << endl;
 }
 
-void RTFGenerator::rtfwriteRuler_thick() 
-{ 
+void RTFGenerator::rtfwriteRuler_thick()
+{
   DBG_RTF(t << "{\\comment (rtfwriteRuler_thick)}"    << endl)
-  t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl; 
+  t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl;
 }
 
-void RTFGenerator::rtfwriteRuler_thin() 
-{ 
+void RTFGenerator::rtfwriteRuler_thin()
+{
   DBG_RTF(t << "{\\comment (rtfwriteRuler_thin)}"    << endl)
-  t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; 
+  t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl;
 }
 
 #if 0
@@ -2845,9 +2837,9 @@ void RTFGenerator::postProcess(QByteArray &a)
   for (i=0;i<a.size();i++)
   {
     unsigned char c = (unsigned char)a.at(i);
-    
+
     // treat characters > 0x80 as multibyte characters, except when they
-    // are control characters 
+    // are control characters
     if (c>0x80 || (mbFlag && c!='\\' && c!='{' && c!='}'))
     {
       char s[10];
@@ -2870,7 +2862,7 @@ void RTFGenerator::startConstraintList(const char *header)
 {
   DBG_RTF(t << "{\\comment (startConstraintList)}"    << endl)
   t << "{"; // ends at endConstraintList
-  t << "{"; 
+  t << "{";
   startBold();
   newParagraph();
   docify(header);
@@ -2938,7 +2930,7 @@ void RTFGenerator::endIndexListItem()
   t << "\\par" << endl;
 }
 
-void RTFGenerator::startInlineHeader() 
+void RTFGenerator::startInlineHeader()
 {
   DBG_RTF(t << "{\\comment (startInlineHeader)}" << endl)
   t << "{" << endl;
@@ -2946,7 +2938,7 @@ void RTFGenerator::startInlineHeader()
   startBold();
 }
 
-void RTFGenerator::endInlineHeader() 
+void RTFGenerator::endInlineHeader()
 {
   DBG_RTF(t << "{\\comment (endInlineHeader)}" << endl)
   endBold();

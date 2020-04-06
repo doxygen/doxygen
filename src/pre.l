@@ -1705,11 +1705,11 @@ static void setFileName(yyscan_t yyscanner,const char *name)
   bool ambig;
   QFileInfo fi(name);
   state->yyFileName=fi.absFilePath().utf8();
-  state->yyFileDef=findFileDef(Doxygen::inputNameDict,state->yyFileName,ambig);
+  state->yyFileDef=findFileDef(Doxygen::inputNameLinkedMap,state->yyFileName,ambig);
   if (state->yyFileDef==0) // if this is not an input file check if it is an
                       // include file
   {
-    state->yyFileDef=findFileDef(Doxygen::includeNameDict,state->yyFileName,ambig);
+    state->yyFileDef=findFileDef(Doxygen::includeNameLinkedMap,state->yyFileName,ambig);
   }
   //printf("setFileName(%s) state->yyFileName=%s state->yyFileDef=%p\n",
   //    name,state->yyFileName.data(),state->yyFileDef);
@@ -2958,7 +2958,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
         // add include dependency to the file in which the #include was found
 	bool ambig;
 	// change to absolute name for bug 641336 
-        FileDef *incFd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
+        FileDef *incFd = findFileDef(Doxygen::inputNameLinkedMap,absIncFileName,ambig);
         oldFileDef->addIncludeDependency(ambig ? 0 : incFd,incFileName,localInclude,state->isImported,FALSE);
         // add included by dependency
         if (state->yyFileDef)
@@ -3001,7 +3001,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 	bool ambig;
 
 	// change to absolute name for bug 641336 
-	FileDef *fd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
+	FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,absIncFileName,ambig);
 	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(ambig ? 0 : fd,incFileName,localInclude,state->isImported,FALSE);

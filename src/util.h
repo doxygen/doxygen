@@ -35,7 +35,7 @@ class ClassDef;
 class FileDef;
 class MemberList;
 class NamespaceDef;
-class FileNameDict;
+class FileNameLinkedMap;
 class ArgumentList;
 class OutputList;
 class OutputDocInterface;
@@ -217,10 +217,10 @@ const ClassDef *getResolvedClass(const Definition *scope,
 
 NamespaceDef *getResolvedNamespace(const char *key);
 
-FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
+FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,
                 bool &ambig);
 
-QCString showFileDefMatches(const FileNameDict *fnDict,const char *n);
+QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const char *n);
 
 int guessSection(const char *name);
 

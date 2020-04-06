@@ -281,7 +281,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
 {
   QCString result;
   bool ambig;
-  FileDef *fd = findFileDef(Doxygen::imageNameDict,fileName,ambig);
+  FileDef *fd = findFileDef(Doxygen::imageNameLinkedMap,fileName,ambig);
   //printf("Search for %s\n",fileName);
   if (fd)
   {
@@ -290,7 +290,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       QCString text;
       text.sprintf("image file name %s is ambiguous.\n",qPrint(fileName));
       text+="Possible candidates:\n";
-      text+=showFileDefMatches(Doxygen::imageNameDict,fileName);
+      text+=showFileDefMatches(Doxygen::imageNameLinkedMap,fileName);
       warn_doc_error(g_fileName,doctokenizerYYlineno,"%s", text.data());
     }
 
@@ -773,7 +773,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
       return TRUE;
     }
     bool ambig;
-    fd = findFileDef(Doxygen::inputNameDict,cmdArg,ambig);
+    fd = findFileDef(Doxygen::inputNameLinkedMap,cmdArg,ambig);
     if (fd && !ambig) // file
     {
       *pDoc=fd->documentation();
@@ -1060,7 +1060,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
   uint len = g_token->name.length();
   ClassDef *cd=0;
   bool ambig;
-  FileDef *fd = findFileDef(Doxygen::inputNameDict,g_fileName,ambig);
+  FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,g_fileName,ambig);
   //printf("handleLinkedWord(%s) g_context=%s\n",g_token->name.data(),g_context.data());
   if (!g_insideHtmlLink &&
       (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member,TRUE,fd,TRUE)
@@ -1857,7 +1857,7 @@ static void readTextFileByName(const QCString &file,QCString &text)
 
   // as a fallback we also look in the exampleNameDict
   bool ambig;
-  FileDef *fd = findFileDef(Doxygen::exampleNameDict,file,ambig);
+  FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap,file,ambig);
   if (fd)
   {
     text = fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
@@ -1865,7 +1865,7 @@ static void readTextFileByName(const QCString &file,QCString &text)
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"included file name %s is ambiguous"
            "Possible candidates:\n%s",qPrint(file),
-           qPrint(showFileDefMatches(Doxygen::exampleNameDict,file))
+           qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,file))
           );
     }
   }
@@ -2752,10 +2752,10 @@ bool DocDotFile::parse()
   defaultHandleTitleAndSize(CMD_DOTFILE,this,m_children,m_width,m_height);
 
   bool ambig;
-  FileDef *fd = findFileDef(Doxygen::dotFileNameDict,m_name,ambig);
+  FileDef *fd = findFileDef(Doxygen::dotFileNameLinkedMap,m_name,ambig);
   if (fd==0 && m_name.right(4)!=".dot") // try with .dot extension as well
   {
-    fd = findFileDef(Doxygen::dotFileNameDict,m_name+".dot",ambig);
+    fd = findFileDef(Doxygen::dotFileNameLinkedMap,m_name+".dot",ambig);
   }
   if (fd)
   {
@@ -2765,7 +2765,7 @@ bool DocDotFile::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"included dot file name %s is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(m_name),
-           qPrint(showFileDefMatches(Doxygen::dotFileNameDict,m_name))
+           qPrint(showFileDefMatches(Doxygen::dotFileNameLinkedMap,m_name))
           );
     }
   }
@@ -2789,10 +2789,10 @@ bool DocMscFile::parse()
   defaultHandleTitleAndSize(CMD_MSCFILE,this,m_children,m_width,m_height);
 
   bool ambig;
-  FileDef *fd = findFileDef(Doxygen::mscFileNameDict,m_name,ambig);
+  FileDef *fd = findFileDef(Doxygen::mscFileNameLinkedMap,m_name,ambig);
   if (fd==0 && m_name.right(4)!=".msc") // try with .msc extension as well
   {
-    fd = findFileDef(Doxygen::mscFileNameDict,m_name+".msc",ambig);
+    fd = findFileDef(Doxygen::mscFileNameLinkedMap,m_name+".msc",ambig);
   }
   if (fd)
   {
@@ -2802,7 +2802,7 @@ bool DocMscFile::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"included msc file name %s is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(m_name),
-           qPrint(showFileDefMatches(Doxygen::mscFileNameDict,m_name))
+           qPrint(showFileDefMatches(Doxygen::mscFileNameLinkedMap,m_name))
           );
     }
   }
@@ -2828,10 +2828,10 @@ bool DocDiaFile::parse()
   defaultHandleTitleAndSize(CMD_DIAFILE,this,m_children,m_width,m_height);
 
   bool ambig;
-  FileDef *fd = findFileDef(Doxygen::diaFileNameDict,m_name,ambig);
+  FileDef *fd = findFileDef(Doxygen::diaFileNameLinkedMap,m_name,ambig);
   if (fd==0 && m_name.right(4)!=".dia") // try with .dia extension as well
   {
-    fd = findFileDef(Doxygen::diaFileNameDict,m_name+".dia",ambig);
+    fd = findFileDef(Doxygen::diaFileNameLinkedMap,m_name+".dia",ambig);
   }
   if (fd)
   {
@@ -2841,7 +2841,7 @@ bool DocDiaFile::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"included dia file name %s is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(m_name),
-           qPrint(showFileDefMatches(Doxygen::diaFileNameDict,m_name))
+           qPrint(showFileDefMatches(Doxygen::diaFileNameLinkedMap,m_name))
           );
     }
   }

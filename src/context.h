@@ -32,7 +32,7 @@ class BaseClassList;
 class NamespaceSDict;
 class FileDef;
 class FileList;
-class FileNameList;
+class FileNameLinkedMap;
 class DirSDict;
 class DirList;
 class DirDef;
@@ -547,7 +547,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addClasses(const ClassSDict &clDict,bool rootOnly);
     void addDirs(const DirSDict &);
     void addDirs(const DirList &);
-    void addFiles(const FileNameList &);
+    void addFiles(const FileNameLinkedMap &);
     void addFiles(const FileList &);
     void addPages(const PageSDict &pages,bool rootOnly);
     void addModules(const GroupSDict &modules);
