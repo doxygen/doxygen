@@ -2567,44 +2567,8 @@ static void writeUCFLink(const MemberDef* mdef,OutputList &ol)
   VhdlDocGen::formatString(largs,ol,mdef);
 }
 
-bool VhdlDocGen::findConstraintFile(LayoutNavEntry *lne)
-{
-  FileName *fn=Doxygen::inputNameList->getFirst();
-  //LayoutNavEntry *cc = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Files);
-  uint count=Doxygen::inputNameList->count();
-  LayoutNavEntry *kk = lne->parent();//   find(LayoutNavEntry::Files);
-  // LayoutNavEntry *kks = kk->parent();//   find(LayoutNavEntry::Files);
-  QCString file;
-  QCString co("Constraints");
-
-  QCString imgExt = getDotImageExtension();
-  if (Config_getBool(HAVE_DOT) && imgExt=="svg")
-  {
-    QCString ov = theTranslator->trDesignOverview();
-    QCString ofile("vhdl_design_overview");
-    LayoutNavEntry *oo=new LayoutNavEntry( lne,LayoutNavEntry::MainPage,TRUE,ofile,ov,"");
-    kk->addChild(oo);
-  }
-
-  uint i=0;
-  while (i<count)
-  {
-	FileDef *fd=fn->at(i);
-    if (fd->name().contains(".ucf") || fd->name().contains(".qsf"))
-    {
-      file = convertNameToFile(fd->name().data(),FALSE,FALSE);
-      LayoutNavEntry *ucf=new LayoutNavEntry(lne,LayoutNavEntry::MainPage,TRUE,file,co,"");
-      kk->addChild(ucf);
-      break;
-    }
-   i++;
-  }
-  return  FALSE;
-}
-
-
 //        for cell_inst : [entity] work.proto [ (label|expr) ]
-QCString  VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
+QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 {
   int index;
   QCString label;

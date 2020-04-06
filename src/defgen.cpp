@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -71,14 +71,14 @@ void generateDEFForMember(MemberDef *md,
   // + source definition
   // - source references
   // - source referenced by
-  // - include code 
+  // - include code
 
   if (md->memberType()==MemberType_EnumValue) return;
 
   QCString scopeName;
-  if (md->getClassDef()) 
+  if (md->getClassDef())
     scopeName=md->getClassDef()->name();
-  else if (md->getNamespaceDef()) 
+  else if (md->getNamespaceDef())
     scopeName=md->getNamespaceDef()->name();
 
   t << "    " << Prefix << "-member = {" << endl;
@@ -185,7 +185,7 @@ void generateDEFForMember(MemberDef *md,
       if (!a.array.isEmpty())
       {
         t << fcnPrefix << "array = ";
-        writeDEFString(t,a.array); 
+        writeDEFString(t,a.array);
         t << ';' << endl;
       }
       if (!a.defval.isEmpty())
@@ -612,7 +612,7 @@ void generateDEF()
   FTextStream t(&f);
   t << "AutoGen Definitions dummy;" << endl;
 
-  if (Doxygen::classSDict->count()+Doxygen::inputNameList->count()>0)
+  if (Doxygen::classSDict->count()+Doxygen::inputNameLinkedMap->size()>0)
   {
     ClassSDict::Iterator cli(*Doxygen::classSDict);
     ClassDef *cd;
@@ -620,15 +620,11 @@ void generateDEF()
     {
       generateDEFForClass(cd,t);
     }
-    FileNameListIterator fnli(*Doxygen::inputNameList);
-    FileName *fn;
-    for (;(fn=fnli.current());++fnli)
+    for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
-      FileNameIterator fni(*fn);
-      FileDef *fd;
-      for (;(fd=fni.current());++fni)
+      for (const auto &fd : *fn)
       {
-        generateDEFForFile(fd,t);
+        generateDEFForFile(fd.get(),t);
       }
     }
   }

@@ -32,6 +32,7 @@ class LinkedMap
     using Vec = std::vector<Ptr>;
     using Map = std::unordered_map<std::string,T*>;
     using iterator = typename Vec::iterator;
+    using const_iterator = typename Vec::const_iterator;
 
     //! find an element given the key.
     //! Returns a pointer to the element if found or nullptr if it is not found.
@@ -66,6 +67,8 @@ class LinkedMap
 
     iterator begin()    { return m_entries.begin(); }
     iterator end()      { return m_entries.end();   }
+    const_iterator begin() const    { return m_entries.cbegin(); }
+    const_iterator end() const     { return m_entries.cend();   }
     bool empty() const  { return m_entries.empty(); }
     int size() const    { return m_entries.size();  }
 

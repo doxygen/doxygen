@@ -4159,7 +4159,7 @@ bool resolveRef(/* in */  const char *scName,
   else if (tsName.find('.')!=-1) // maybe a link to a file
   {
     bool ambig;
-    fd=findFileDef(Doxygen::inputNameDict,tsName,ambig);
+    fd=findFileDef(Doxygen::inputNameLinkedMap,tsName,ambig);
     if (fd && !ambig)
     {
       *resContext=fd;
@@ -4333,7 +4333,7 @@ bool resolveLink(/* in */ const char *scName,
     *resContext=gd;
     return TRUE;
   }
-  else if ((fd=findFileDef(Doxygen::inputNameDict,linkRef,ambig)) // file link
+  else if ((fd=findFileDef(Doxygen::inputNameLinkedMap,linkRef,ambig)) // file link
       && fd->isLinkable())
   {
     *resContext=fd;
@@ -4440,7 +4440,7 @@ void generateFileRef(OutputDocInterface &od,const char *name,const char *text)
   //FileInfo *fi;
   FileDef *fd;
   bool ambig;
-  if ((fd=findFileDef(Doxygen::inputNameDict,name,ambig)) &&
+  if ((fd=findFileDef(Doxygen::inputNameLinkedMap,name,ambig)) &&
       fd->isLinkable())
     // link to documented input file
     od.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,linkText);
@@ -4488,14 +4488,14 @@ struct FindFileCacheElem
 
 static QCache<FindFileCacheElem> g_findFileDefCache(5000);
 
-FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
+FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
 {
   ambig=FALSE;
   if (n==0) return 0;
 
   const int maxAddrSize = 20;
   char addr[maxAddrSize];
-  qsnprintf(addr,maxAddrSize,"%p:",(void*)fnDict);
+  qsnprintf(addr,maxAddrSize,"%p:",(void*)fnMap);
   QCString key = addr;
   key+=n;
 
@@ -4516,7 +4516,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
   QCString name=QDir::cleanDirPath(n).utf8();
   QCString path;
   int slashPos;
-  FileName *fn;
+  const FileName *fn;
   if (name.isEmpty()) goto exit;
   slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
@@ -4526,12 +4526,12 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
     //printf("path=%s name=%s\n",path.data(),name.data());
   }
   if (name.isEmpty()) goto exit;
-  if ((fn=(*fnDict)[name]))
+  if ((fn=fnMap->find(name)))
   {
     //printf("fn->count()=%d\n",fn->count());
-    if (fn->count()==1)
+    if (fn->size()==1)
     {
-      FileDef *fd = fn->getFirst();
+      const std::unique_ptr<FileDef> &fd = fn->front();
 #if defined(_WIN32) || defined(__MACOSX__) || defined(__CYGWIN__) // Windows or MacOSX
       bool isSamePath = fd->getPath().right(path.length()).lower()==path.lower();
 #else // Unix
@@ -4539,26 +4539,24 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
 #endif
       if (path.isEmpty() || isSamePath)
       {
-        cachedResult->fileDef = fd;
+        cachedResult->fileDef = fd.get();
         g_findFileDefCache.insert(key,cachedResult);
         //printf("=1 ===> add to cache %p\n",fd);
-        return fd;
+        return fd.get();
       }
     }
     else // file name alone is ambiguous
     {
       int count=0;
-      FileNameIterator fni(*fn);
-      FileDef *fd;
       FileDef *lastMatch=0;
       QCString pathStripped = stripFromIncludePath(path);
-      for (fni.toFirst();(fd=fni.current());++fni)
+      for (const auto &fd : *fn)
       {
         QCString fdStripPath = stripFromIncludePath(fd->getPath());
         if (path.isEmpty() || fdStripPath.right(pathStripped.length())==pathStripped)
         {
           count++;
-          lastMatch=fd;
+          lastMatch=fd.get();
         }
       }
       //printf(">1 ===> add to cache %p\n",fd);
@@ -4583,7 +4581,7 @@ exit:
 
 //----------------------------------------------------------------------
 
-QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
+QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const char *n)
 {
   QCString result;
   QCString name=n;
@@ -4594,12 +4592,10 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
     path=name.left(slashPos+1);
     name=name.right(name.length()-slashPos-1);
   }
-  FileName *fn;
-  if ((fn=(*fnDict)[name]))
+  const FileName *fn;
+  if ((fn=fnMap->find(name)))
   {
-    FileNameIterator fni(*fn);
-    FileDef *fd;
-    for (fni.toFirst();(fd=fni.current());++fni)
+    for (const auto &fd : *fn)
     {
       if (path.isEmpty() || fd->getPath().right(path.length())==path)
       {

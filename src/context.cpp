@@ -6607,19 +6607,15 @@ class NestingContext::Private : public GenericNodeListContext
         m_index++;
       }
     }
-    void addFiles(const FileNameList &fnList)
+    void addFiles(const FileNameLinkedMap &fnList)
     {
-      FileNameListIterator fnli(fnList);
-      FileName *fn;
-      for (fnli.toFirst();(fn=fnli.current());++fnli)
+      for (const FileNameLinkedMap::Ptr &fn : fnList)
       {
-        FileNameIterator fni(*fn);
-        const FileDef *fd;
-        for (;(fd=fni.current());++fni)
+        for (const auto &fd : *fn)
         {
           if (fd->getDirDef()==0) // top level file
           {
-            append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE));
+            append(NestingNodeContext::alloc(m_parent,fd.get(),m_index,m_level,FALSE,FALSE,FALSE));
             m_index++;
           }
         }
@@ -6794,7 +6790,7 @@ void NestingContext::addDirs(const DirList &dirs)
   p->addDirs(dirs);
 }
 
-void NestingContext::addFiles(const FileNameList &files)
+void NestingContext::addFiles(const FileNameLinkedMap &files)
 {
   p->addFiles(files);
 }
@@ -7130,23 +7126,19 @@ TemplateVariant NamespaceTreeContext::get(const char *name) const
 class FileListContext::Private : public GenericNodeListContext
 {
   public:
-    void addFiles(const FileNameList &fnList)
+    void addFiles(const FileNameLinkedMap &fnMap)
     {
       // TODO: if FULL_PATH_NAMES is enabled, the ordering should be dir+file
-      FileNameListIterator fnli(fnList);
-      FileName *fn;
-      for (fnli.toFirst();(fn=fnli.current());++fnli)
+      for (const auto &fn : fnMap)
       {
-        FileNameIterator fni(*fn);
-        const FileDef *fd;
-        for (fni.toFirst();(fd=fni.current());++fni)
+        for (const auto &fd : *fn)
         {
           bool doc = fd->isLinkableInProject();
           bool src = fd->generateSourceFile();
           bool nameOk = !fd->isDocumentationFile();
           if (nameOk && (doc || src) && !fd->isReference())
           {
-            append(FileContext::alloc(fd));
+            append(FileContext::alloc(fd.get()));
           }
         }
       }
@@ -7156,7 +7148,7 @@ class FileListContext::Private : public GenericNodeListContext
 FileListContext::FileListContext() : RefCountedContext("FileListContext")
 {
   p = new Private;
-  if (Doxygen::inputNameList) p->addFiles(*Doxygen::inputNameList);
+  if (Doxygen::inputNameLinkedMap) p->addFiles(*Doxygen::inputNameLinkedMap);
 }
 
 FileListContext::~FileListContext()
@@ -7291,9 +7283,9 @@ class FileTreeContext::Private
       {
         m_dirFileTree->addDirs(*Doxygen::directories);
       }
-      if (Doxygen::inputNameList)
+      if (Doxygen::inputNameLinkedMap)
       {
-        m_dirFileTree->addFiles(*Doxygen::inputNameList);
+        m_dirFileTree->addFiles(*Doxygen::inputNameLinkedMap);
       }
       //%% DirFile tree:
       static bool init=FALSE;
@@ -9821,7 +9813,7 @@ class SymbolGroupListContext::Private : public GenericNodeListContext
     }
 };
 
-SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList *sil) 
+SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList *sil)
     : RefCountedContext("SymbolGroupListContext")
 {
   p = new Private(sil);

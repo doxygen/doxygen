@@ -572,13 +572,9 @@ DB_GEN_C2("IndexSections " << is)
       {
         t << "</title>" << endl;
         bool isFirst=TRUE;
-        FileNameListIterator fnli(*Doxygen::inputNameList);
-        FileName *fn;
-        for (fnli.toFirst();(fn=fnli.current());++fnli)
+        for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
-          FileNameIterator fni(*fn);
-          const FileDef *fd;
-          for (;(fd=fni.current());++fni)
+          for (const auto &fd : *fn)
           {
             if (fd->isLinkableInProject())
             {
@@ -913,7 +909,7 @@ DB_GEN_C
   t << "    <informalfigure>" << endl;
   t << "        <mediaobject>" << endl;
   t << "            <imageobject>" << endl;
-  t << "                <imagedata width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" 
+  t << "                <imagedata width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\""
                          << relPath << fileName << ".png\">" << "</imagedata>" << endl;
   t << "            </imageobject>" << endl;
   d.writeImage(t,m_dir,relPath,fileName,FALSE);

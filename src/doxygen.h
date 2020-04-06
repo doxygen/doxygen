@@ -46,8 +46,7 @@ class ClassDef;
 class ClassSDict;
 class GenericsSDict;
 class MemberNameSDict;
-class FileNameDict;
-class FileNameList;
+class FileNameLinkedMap;
 class NamespaceSDict;
 class NamespaceDef;
 class DefinitionIntf;
@@ -98,15 +97,14 @@ class Doxygen
     static PageSDict                *pageSDict;
     static PageDef                  *mainPage;
     static bool                      insideMainPage;
-    static FileNameDict             *includeNameDict;
-    static FileNameDict             *exampleNameDict;
+    static FileNameLinkedMap        *includeNameLinkedMap;
+    static FileNameLinkedMap        *exampleNameLinkedMap;
     static QDict<void>               inputPaths;
-    static FileNameDict             *inputNameDict;
-    static FileNameList             *inputNameList;
-    static FileNameDict             *imageNameDict;
-    static FileNameDict             *dotFileNameDict;
-    static FileNameDict             *mscFileNameDict;
-    static FileNameDict             *diaFileNameDict;
+    static FileNameLinkedMap        *inputNameLinkedMap;
+    static FileNameLinkedMap        *imageNameLinkedMap;
+    static FileNameLinkedMap        *dotFileNameLinkedMap;
+    static FileNameLinkedMap        *mscFileNameLinkedMap;
+    static FileNameLinkedMap        *diaFileNameLinkedMap;
     static QStrList                  tagfileList;
     static MemberNameSDict          *memberNameSDict;
     static MemberNameSDict          *functionNameSDict;
@@ -156,8 +154,7 @@ void readAliases();
 void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
 int readFileOrDirectory(const char *s,
-                        FileNameList *fnList,
-                        FileNameDict *fnDict,
+                        FileNameLinkedMap *fnDict,
                         StringDict *exclDict,
                         QStrList *patList,
                         QStrList *exclPatList,
@@ -169,8 +166,7 @@ int readFileOrDirectory(const char *s,
                         QDict<void> *paths = 0
                        );
 int readDir(QFileInfo *fi,
-            FileNameList *fnList,
-            FileNameDict *fnDict,
+            FileNameLinkedMap *fnDict,
             StringDict  *exclDict,
             QStrList *patList,
             QStrList *exclPatList,

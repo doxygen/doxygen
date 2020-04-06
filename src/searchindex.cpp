@@ -831,19 +831,15 @@ void createJavaScriptSearchIndex()
   }
 
   // index files
-  FileNameListIterator inli(*Doxygen::inputNameList);
-  FileName *fn;
-  for (;(fn=inli.current());++inli)
+  for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {
-    FileNameIterator fni(*fn);
-    FileDef *fd;
-    for (;(fd=fni.current());++fni)
+    for (const auto &fd : *fn)
     {
       uint letter = getUtf8CodeToLower(fd->name(),0);
       if (fd->isLinkable() && isId(letter))
       {
-        g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,fd);
-        g_searchIndexInfo[SEARCH_INDEX_FILES].symbolList.append(letter,fd);
+        g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,fd.get());
+        g_searchIndexInfo[SEARCH_INDEX_FILES].symbolList.append(letter,fd.get());
       }
     }
   }
