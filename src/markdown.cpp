@@ -915,7 +915,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       if (lp==-1) // link to markdown page
       {
         out.addStr("@ref ");
-        if (!(portable_isAbsolutePath(link) || isURL(link)))
+        if (!(Portable::isAbsolutePath(link) || isURL(link)))
         {
           QFileInfo forg(link);
           if (!(forg.exists() && forg.isReadable()))
