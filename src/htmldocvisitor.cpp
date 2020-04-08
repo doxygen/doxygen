@@ -1765,7 +1765,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     else
     {
-      m_t << "<img src=\"" << convertToHtml(src) << "\" alt=\"" << alt << "\"" << sizeAttribs << attrs;
+      m_t << "<img src=\"" << convertToHtml(src,TRUE,FALSE) << "\" alt=\"" << alt << "\"" << sizeAttribs << attrs;
       if (inlineImage)
       {
         m_t << " class=\"inline\"";

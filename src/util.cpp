@@ -5501,12 +5501,12 @@ QCString convertToDocBook(const char *s)
 }
 
 /*! Converts a string to a HTML-encoded string */
-QCString convertToHtml(const char *s,bool keepEntities)
+QCString convertToHtml(const char *s,bool keepEntities,bool applyTextDir)
 {
   static GrowBuf growBuf;
   growBuf.clear();
   if (s==0) return "";
-  growBuf.addStr(getHtmlDirEmbeddingChar(getTextDirByConfig(s)));
+  if (applyTextDir) growBuf.addStr(getHtmlDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
   while ((c=*p++))

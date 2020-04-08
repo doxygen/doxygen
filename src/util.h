@@ -280,7 +280,7 @@ QCString stripScope(const char *name);
 
 QCString convertToId(const char *s);
 
-QCString convertToHtml(const char *s,bool keepEntities=TRUE);
+QCString convertToHtml(const char *s,bool keepEntities=TRUE,bool applyTextDir=TRUE);
 
 QCString convertToLaTeX(const QCString &s,bool insideTabbing=FALSE,bool keepSpaces=FALSE);
 
