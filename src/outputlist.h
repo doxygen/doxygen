@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,27 +17,12 @@
 #define OUTPUTLIST_H
 
 #include <utility>
-#include <qlist.h>
+#include <vector>
+#include <memory>
+
 #include "index.h" // for IndexSections
 #include "outputgen.h"
 
-#define FORALLPROTO1(arg1) \
-  void forall(void (OutputGenerator::*func)(arg1),arg1)
-#define FORALLPROTO2(arg1,arg2) \
-  void forall(void (OutputGenerator::*func)(arg1,arg2),arg1,arg2)
-#define FORALLPROTO3(arg1,arg2,arg3) \
-  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3),arg1,arg2,arg3)
-#define FORALLPROTO4(arg1,arg2,arg3,arg4) \
-  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4),arg1,arg2,arg3,arg4)
-#define FORALLPROTO5(arg1,arg2,arg3,arg4,arg5) \
-  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5),arg1,arg2,arg3,arg4,arg5)
-#define FORALLPROTO6(arg1,arg2,arg3,arg4,arg5,arg6) \
-  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6),arg1,arg2,arg3,arg4,arg5,arg6)
-#define FORALLPROTO7(arg1,arg2,arg3,arg4,arg5,arg6,arg7) \
-  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6,arg7),arg1,arg2,arg3,arg4,arg5,arg6,arg7)
-#define FORALLPROTO8(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8) \
-  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8),arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8)
-  
 class ClassDiagram;
 class DotClassGraph;
 class DotDirDeps;
@@ -49,7 +32,7 @@ class DotGroupCollaboration;
 class DocRoot;
 
 /** Class representing a list of output generators that are written to
- *  in parallel. 
+ *  in parallel.
  */
 class OutputList : public OutputDocInterface
 {
@@ -57,9 +40,9 @@ class OutputList : public OutputDocInterface
     OutputList(bool);
     virtual ~OutputList();
 
-    void add(const OutputGenerator *);
-    uint count() const { return m_outputs.count(); }
-    
+    void add(OutputGenerator *);
+    uint count() const { return static_cast<uint>(m_outputs.size()); }
+
     void disableAllBut(OutputGenerator::OutputType o);
     void enableAll();
     void disableAll();
@@ -91,7 +74,7 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startProjectNumber); }
     void endProjectNumber()
     { forall(&OutputGenerator::endProjectNumber); }
-    void writeStyleInfo(int part) 
+    void writeStyleInfo(int part)
     { forall(&OutputGenerator::writeStyleInfo,part); }
     void startFile(const char *name,const char *manName,const char *title)
     { forall(&OutputGenerator::startFile,name,manName,title); }
@@ -99,29 +82,29 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::writeSearchInfo); }
     void writeFooter(const char *navPath)
     { forall(&OutputGenerator::writeFooter,navPath); }
-    void endFile() 
+    void endFile()
     { forall(&OutputGenerator::endFile); }
-    void startTitleHead(const char *fileName) 
+    void startTitleHead(const char *fileName)
     { forall(&OutputGenerator::startTitleHead,fileName); }
     void endTitleHead(const char *fileName,const char *name)
     { forall(&OutputGenerator::endTitleHead,fileName,name); }
-    void startTitle() 
+    void startTitle()
     { forall(&OutputGenerator::startTitle); }
-    void endTitle() 
+    void endTitle()
     { forall(&OutputGenerator::endTitle); }
     void startParagraph(const char *classDef=0)
     { forall(&OutputGenerator::startParagraph,classDef); }
-    void endParagraph() 
+    void endParagraph()
     { forall(&OutputGenerator::endParagraph); }
-    void writeString(const char *text) 
+    void writeString(const char *text)
     { forall(&OutputGenerator::writeString,text); }
-    void startIndexListItem() 
+    void startIndexListItem()
     { forall(&OutputGenerator::startIndexListItem); }
-    void endIndexListItem() 
+    void endIndexListItem()
     { forall(&OutputGenerator::endIndexListItem); }
-    void startIndexList() 
+    void startIndexList()
     { forall(&OutputGenerator::startIndexList); }
-    void endIndexList() 
+    void endIndexList()
     { forall(&OutputGenerator::endIndexList); }
     void startIndexKey()
     { forall(&OutputGenerator::startIndexKey); }
@@ -131,9 +114,9 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startIndexValue,b); }
     void endIndexValue(const char *name,bool b)
     { forall(&OutputGenerator::endIndexValue,name,b); }
-    void startItemList() 
+    void startItemList()
     { forall(&OutputGenerator::startItemList); }
-    void endItemList() 
+    void endItemList()
     { forall(&OutputGenerator::endItemList); }
     void startIndexItem(const char *ref,const char *file)
     { forall(&OutputGenerator::startIndexItem,ref,file); }
@@ -161,22 +144,22 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startHtmlLink,url); }
     void endHtmlLink()
     { forall(&OutputGenerator::endHtmlLink); }
-    void writeStartAnnoItem(const char *type,const char *file, 
+    void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name)
     { forall(&OutputGenerator::writeStartAnnoItem,type,file,path,name); }
     void writeEndAnnoItem(const char *name)
     { forall(&OutputGenerator::writeEndAnnoItem,name); }
-    void startTypewriter() 
+    void startTypewriter()
     { forall(&OutputGenerator::startTypewriter); }
-    void endTypewriter() 
+    void endTypewriter()
     { forall(&OutputGenerator::endTypewriter); }
     void startGroupHeader(int extraLevels=0)
     { forall(&OutputGenerator::startGroupHeader,extraLevels); }
     void endGroupHeader(int extraLevels=0)
     { forall(&OutputGenerator::endGroupHeader,extraLevels); }
-    void startItemListItem() 
+    void startItemListItem()
     { forall(&OutputGenerator::startItemListItem); }
-    void endItemListItem() 
+    void endItemListItem()
     { forall(&OutputGenerator::endItemListItem); }
     void startMemberSections()
     { forall(&OutputGenerator::startMemberSections); }
@@ -194,31 +177,31 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberSubtitle); }
     void endMemberSubtitle()
     { forall(&OutputGenerator::endMemberSubtitle); }
-    void startMemberDocList() 
+    void startMemberDocList()
     { forall(&OutputGenerator::startMemberDocList); }
-    void endMemberDocList() 
+    void endMemberDocList()
     { forall(&OutputGenerator::endMemberDocList); }
-    void startMemberList() 
+    void startMemberList()
     { forall(&OutputGenerator::startMemberList); }
-    void endMemberList() 
+    void endMemberList()
     { forall(&OutputGenerator::endMemberList); }
     void startInlineHeader()
     { forall(&OutputGenerator::startInlineHeader); }
     void endInlineHeader()
     { forall(&OutputGenerator::endInlineHeader); }
-    void startAnonTypeScope(int i1) 
+    void startAnonTypeScope(int i1)
     { forall(&OutputGenerator::startAnonTypeScope,i1); }
-    void endAnonTypeScope(int i1) 
+    void endAnonTypeScope(int i1)
     { forall(&OutputGenerator::endAnonTypeScope,i1); }
-    void startMemberItem(const char *anchor,int i1,const char *id=0) 
+    void startMemberItem(const char *anchor,int i1,const char *id=0)
     { forall(&OutputGenerator::startMemberItem,anchor,i1,id); }
-    void endMemberItem() 
+    void endMemberItem()
     { forall(&OutputGenerator::endMemberItem); }
-    void startMemberTemplateParams() 
+    void startMemberTemplateParams()
     { forall(&OutputGenerator::startMemberTemplateParams); }
-    void endMemberTemplateParams(const char *anchor,const char *inheritId) 
+    void endMemberTemplateParams(const char *anchor,const char *inheritId)
     { forall(&OutputGenerator::endMemberTemplateParams,anchor,inheritId); }
-    void startMemberGroupHeader(bool b) 
+    void startMemberGroupHeader(bool b)
     { forall(&OutputGenerator::startMemberGroupHeader,b); }
     void endMemberGroupHeader()
     { forall(&OutputGenerator::endMemberGroupHeader); }
@@ -230,28 +213,28 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberGroup); }
     void endMemberGroup(bool last)
     { forall(&OutputGenerator::endMemberGroup,last); }
-    void insertMemberAlign(bool templ=FALSE) 
+    void insertMemberAlign(bool templ=FALSE)
     { forall(&OutputGenerator::insertMemberAlign,templ); }
-    void insertMemberAlignLeft(int typ=0, bool templ=FALSE) 
+    void insertMemberAlignLeft(int typ=0, bool templ=FALSE)
     { forall(&OutputGenerator::insertMemberAlignLeft,typ,templ); }
-    void writeRuler() 
+    void writeRuler()
     { forall(&OutputGenerator::writeRuler); }
     void writeAnchor(const char *fileName,const char *name)
     { forall(&OutputGenerator::writeAnchor,fileName,name); }
-    void startCodeFragment() 
+    void startCodeFragment()
     { forall(&OutputGenerator::startCodeFragment); }
-    void endCodeFragment() 
+    void endCodeFragment()
     { forall(&OutputGenerator::endCodeFragment); }
-    void startCodeLine(bool hasLineNumbers) 
+    void startCodeLine(bool hasLineNumbers)
     { forall(&OutputGenerator::startCodeLine,hasLineNumbers); }
-    void endCodeLine() 
+    void endCodeLine()
     { forall(&OutputGenerator::endCodeLine); }
     void writeLineNumber(const char *ref,const char *file,const char *anchor,
-                         int lineNumber) 
+                         int lineNumber)
     { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber); }
-    void startEmphasis() 
+    void startEmphasis()
     { forall(&OutputGenerator::startEmphasis); }
-    void endEmphasis() 
+    void endEmphasis()
     { forall(&OutputGenerator::endEmphasis); }
     void writeChar(char c)
     { forall(&OutputGenerator::writeChar,c); }
@@ -259,7 +242,7 @@ class OutputList : public OutputDocInterface
                         const char *anchor,const char *title,
                         int memCount,int memTotal,bool showInline)
     { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor,title,memCount,memTotal,showInline); }
-    void endMemberDoc(bool hasArgs) 
+    void endMemberDoc(bool hasArgs)
     { forall(&OutputGenerator::endMemberDoc,hasArgs); }
     void startDoxyAnchor(const char *fName,const char *manName,
                          const char *anchor, const char *name,
@@ -267,45 +250,45 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDoxyAnchor,fName,manName,anchor,name,args); }
     void endDoxyAnchor(const char *fn,const char *anchor)
     { forall(&OutputGenerator::endDoxyAnchor,fn,anchor); }
-    void writeLatexSpacing() 
+    void writeLatexSpacing()
     { forall(&OutputGenerator::writeLatexSpacing); }
-    void startDescription() 
+    void startDescription()
     { forall(&OutputGenerator::startDescription); }
-    void endDescription() 
+    void endDescription()
     { forall(&OutputGenerator::endDescription); }
-    void startDescItem() 
+    void startDescItem()
     { forall(&OutputGenerator::startDescItem); }
-    void endDescItem() 
+    void endDescItem()
     { forall(&OutputGenerator::endDescItem); }
-    void startDescForItem() 
+    void startDescForItem()
     { forall(&OutputGenerator::startDescForItem); }
-    void endDescForItem() 
+    void endDescForItem()
     { forall(&OutputGenerator::endDescForItem); }
-    void startSubsection() 
+    void startSubsection()
     { forall(&OutputGenerator::startSubsection); }
-    void endSubsection() 
+    void endSubsection()
     { forall(&OutputGenerator::endSubsection); }
-    void startSubsubsection() 
+    void startSubsubsection()
     { forall(&OutputGenerator::startSubsubsection); }
-    void endSubsubsection() 
+    void endSubsubsection()
     { forall(&OutputGenerator::endSubsubsection); }
-    void startCenter() 
+    void startCenter()
     { forall(&OutputGenerator::startCenter); }
-    void endCenter() 
+    void endCenter()
     { forall(&OutputGenerator::endCenter); }
-    void startSmall() 
+    void startSmall()
     { forall(&OutputGenerator::startSmall); }
-    void endSmall() 
+    void endSmall()
     { forall(&OutputGenerator::endSmall); }
-    void lineBreak(const char *style=0) 
+    void lineBreak(const char *style=0)
     { forall(&OutputGenerator::lineBreak,style); }
-    void startBold() 
+    void startBold()
     { forall(&OutputGenerator::startBold); }
-    void endBold() 
+    void endBold()
     { forall(&OutputGenerator::endBold); }
-    void startMemberDescription(const char *anchor,const char *inheritId=0, bool typ = false) 
+    void startMemberDescription(const char *anchor,const char *inheritId=0, bool typ = false)
     { forall(&OutputGenerator::startMemberDescription,anchor,inheritId, typ); }
-    void endMemberDescription() 
+    void endMemberDescription()
     { forall(&OutputGenerator::endMemberDescription); }
     void startMemberDeclaration()
     { forall(&OutputGenerator::startMemberDeclaration); }
@@ -320,13 +303,13 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startExamples); }
     void endExamples()
     { forall(&OutputGenerator::endExamples); }
-    void startParamList(ParamListTypes t,const char *title) 
+    void startParamList(ParamListTypes t,const char *title)
     { forall(&OutputGenerator::startParamList,t,title); }
-    void endParamList() 
+    void endParamList()
     { forall(&OutputGenerator::endParamList); }
-    void startIndent() 
+    void startIndent()
     { forall(&OutputGenerator::startIndent); }
-    void endIndent() 
+    void endIndent()
     { forall(&OutputGenerator::endIndent); }
     void startSection(const char *lab,const char *title,SectionType t)
     { forall(&OutputGenerator::startSection,lab,title,t); }
@@ -334,7 +317,7 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endSection,lab,t); }
     void addIndexItem(const char *s1,const char *s2)
     { forall(&OutputGenerator::addIndexItem,s1,s2); }
-    void writeSynopsis() 
+    void writeSynopsis()
     { forall(&OutputGenerator::writeSynopsis); }
     void startClassDiagram()
     { forall(&OutputGenerator::startClassDiagram); }
@@ -435,11 +418,11 @@ class OutputList : public OutputDocInterface
     void exceptionEntry(const char* prefix,bool closeBracket)
     { forall(&OutputGenerator::exceptionEntry,prefix,closeBracket); }
 
-    void startConstraintList(const char *header) 
+    void startConstraintList(const char *header)
     { forall(&OutputGenerator::startConstraintList,header); }
-    void startConstraintParam() 
+    void startConstraintParam()
     { forall(&OutputGenerator::startConstraintParam); }
-    void endConstraintParam() 
+    void endConstraintParam()
     { forall(&OutputGenerator::endConstraintParam); }
     void startConstraintType()
     { forall(&OutputGenerator::startConstraintType); }
@@ -469,7 +452,7 @@ class OutputList : public OutputDocInterface
     void endInlineMemberDoc()
     { forall(&OutputGenerator::endInlineMemberDoc); }
 
-    void startLabels() 
+    void startLabels()
     { forall(&OutputGenerator::startLabels); }
     void writeLabel(const char *l,bool isLast)
     { forall(&OutputGenerator::writeLabel,l,isLast); }
@@ -503,16 +486,14 @@ class OutputList : public OutputDocInterface
     template<typename T,class... Ts,class... As>
     void forall(void (T::*methodPtr)(Ts...),As&&... args)
     {
-      QListIterator<OutputGenerator> li(m_outputs);
-      OutputGenerator *og;
-      for (li.toFirst();(og=li.current());++li)
+      for (const auto &og : m_outputs)
       {
-        if (og->isEnabled()) (og->*methodPtr)(std::forward<As>(args)...);
+        if (og->isEnabled()) (og.get()->*methodPtr)(std::forward<As>(args)...);
       }
     }
 
     OutputList(const OutputList &ol);
-    QList<OutputGenerator> m_outputs;
+    std::vector< std::unique_ptr<OutputGenerator> > m_outputs;
 };
 
 #endif
