@@ -7988,21 +7988,17 @@ class GlobalsIndexContext::Private
       if (!listRef)
       {
         TemplateList *list = TemplateList::alloc();
-        MemberName *mn;
-        MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
-        for (fnli.toFirst();(mn=fnli.current());++fnli)
+        for (const auto &mn : *Doxygen::functionNameLinkedMap)
         {
-          MemberDef *md;
-          MemberNameIterator mni(*mn);
-          for (mni.toFirst();(md=mni.current());++mni)
+          for (const auto &md : *mn)
           {
             const FileDef *fd=md->getFileDef();
             if (fd && fd->isLinkableInProject() &&
                 !md->name().isEmpty() && !md->getNamespaceDef() && md->isLinkableInProject())
             {
-              if (filter==0 || (md->*filter)())
+              if (filter==0 || (md.get()->*filter)())
               {
-                list->append(MemberContext::alloc(md));
+                list->append(MemberContext::alloc(md.get()));
               }
             }
           }
@@ -8145,21 +8141,17 @@ class ClassMembersIndexContext::Private
       if (!listRef)
       {
         TemplateList *list = TemplateList::alloc();
-        MemberName *mn;
-        MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
-        for (mnli.toFirst();(mn=mnli.current());++mnli)
+        for (const auto &mn : *Doxygen::memberNameLinkedMap)
         {
-          MemberDef *md;
-          MemberNameIterator mni(*mn);
-          for (mni.toFirst();(md=mni.current());++mni)
+          for (const auto &md : *mn)
           {
             const ClassDef *cd = md->getClassDef();
             if (cd && cd->isLinkableInProject() && cd->templateMaster()==0 &&
                 md->isLinkableInProject() && !md->name().isEmpty())
             {
-              if (filter==0 || (md->*filter)())
+              if (filter==0 || (md.get()->*filter)())
               {
-                list->append(MemberContext::alloc(md));
+                list->append(MemberContext::alloc(md.get()));
               }
             }
           }
@@ -8304,21 +8296,17 @@ class NamespaceMembersIndexContext::Private
       if (!listRef)
       {
         TemplateList *list = TemplateList::alloc();
-        MemberName *mn;
-        MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
-        for (fnli.toFirst();(mn=fnli.current());++fnli)
+        for (const auto &mn : *Doxygen::functionNameLinkedMap)
         {
-          MemberDef *md;
-          MemberNameIterator mni(*mn);
-          for (mni.toFirst();(md=mni.current());++mni)
+          for (const auto &md : *mn)
           {
             const NamespaceDef *nd=md->getNamespaceDef();
             if (nd && nd->isLinkableInProject() &&
                 !md->name().isEmpty() && md->isLinkableInProject())
             {
-              if (filter==0 || (md->*filter)())
+              if (filter==0 || (md.get()->*filter)())
               {
-                list->append(MemberContext::alloc(md));
+                list->append(MemberContext::alloc(md.get()));
               }
             }
           }

@@ -408,32 +408,30 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     {
       //printf("scope found: %s, look for typedef %s\n",
       //     resScope->qualifiedName().data(),resName.data());
-      MemberNameSDict *mnd=0;
+      MemberNameLinkedMap *mnd=0;
       if (resScope->definitionType()==Definition::TypeClass)
       {
-        mnd=Doxygen::memberNameSDict;
+        mnd=Doxygen::memberNameLinkedMap;
       }
       else
       {
-        mnd=Doxygen::functionNameSDict;
+        mnd=Doxygen::functionNameLinkedMap;
       }
       MemberName *mn=mnd->find(resName);
       if (mn)
       {
-        MemberNameIterator mni(*mn);
-        MemberDef *tmd=0;
         int minDist=-1;
-        for (;(tmd=mni.current());++mni)
+        for (const auto &tmd : *mn)
         {
           //printf("Found member %s resScope=%s outerScope=%s mContext=%p\n",
           //    tmd->name().data(), resScope->name().data(),
           //    tmd->getOuterScope()->name().data(), mContext);
           if (tmd->isTypedef() /*&& tmd->getOuterScope()==resScope*/)
           {
-            int dist=isAccessibleFrom(resScope,0,tmd);
+            int dist=isAccessibleFrom(resScope,0,tmd.get());
             if (dist!=-1 && (md==0 || dist<minDist))
             {
-              md = tmd;
+              md = tmd.get();
               minDist = dist;
             }
           }
@@ -3398,9 +3396,7 @@ static void findMembersWithSpecificName(MemberName *mn,
 {
   //printf("  Function with global scope name '%s' args='%s'\n",
   //       mn->memberName(),args);
-  MemberNameIterator mli(*mn);
-  const MemberDef *md = 0;
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto &md : *mn)
   {
     const FileDef  *fd=md->getFileDef();
     const GroupDef *gd=md->getGroupDef();
@@ -3427,7 +3423,7 @@ static void findMembersWithSpecificName(MemberName *mn,
       if (match && (forceTagFile==0 || md->getReference()==forceTagFile))
       {
         //printf("Found match!\n");
-        members.append(md);
+        members.append(md.get());
       }
     }
   }
@@ -3509,7 +3505,7 @@ bool getDefs(const QCString &scName,
 
   //printf("mScope='%s' mName='%s'\n",mScope.data(),mName.data());
 
-  MemberName *mn = Doxygen::memberNameSDict->find(mName);
+  MemberName *mn = Doxygen::memberNameLinkedMap->find(mName);
   //printf("mName=%s mn=%p\n",mName.data(),mn);
 
   if ((!forceEmptyScope || scopeName.isEmpty()) && // this was changed for bug638856, forceEmptyScope => empty scopeName
@@ -3543,15 +3539,13 @@ bool getDefs(const QCString &scName,
          )
       {
         //printf("  Found fcd=%p\n",fcd);
-        MemberNameIterator mmli(*mn);
-        MemberDef *mmd;
         int mdist=maxInheritanceDepth;
         ArgumentList argList;
         if (args)
         {
           stringToArgumentList(fcd->getLanguage(),args,argList);
         }
-        for (mmli.toFirst();(mmd=mmli.current());++mmli)
+        for (const auto &mmd : *mn)
         {
           if (!mmd->isStrongEnumValue())
           {
@@ -3571,7 +3565,7 @@ bool getDefs(const QCString &scName,
                 {
                   mdist=m;
                   cd=mcd;
-                  md=mmd;
+                  md=mmd.get();
                 }
               }
             }
@@ -3581,7 +3575,7 @@ bool getDefs(const QCString &scName,
           // no exact match found, but if args="()" an arbitrary member will do
         {
           //printf("  >Searching for arbitrary member\n");
-          for (mmli.toFirst();(mmd=mmli.current());++mmli)
+          for (const auto &mmd : *mn)
           {
             //if (mmd->isLinkable())
             //{
@@ -3595,7 +3589,7 @@ bool getDefs(const QCString &scName,
                 //printf("Class distance %d\n",m);
                 mdist=m;
                 cd=mcd;
-                md=mmd;
+                md=mmd.get();
               }
             }
             //}
@@ -3661,8 +3655,7 @@ bool getDefs(const QCString &scName,
   if (mn && scopeName.isEmpty() && mScope.isEmpty()) // Maybe a related function?
   {
     //printf("Global symbol\n");
-    MemberNameIterator mmli(*mn);
-    MemberDef *mmd, *fuzzy_mmd = 0;
+    MemberDef *fuzzy_mmd = 0;
     ArgumentList argList;
     bool hasEmptyArgs = args && qstrcmp(args, "()") == 0;
 
@@ -3671,7 +3664,7 @@ bool getDefs(const QCString &scName,
       stringToArgumentList(SrcLangExt_Cpp, args, argList);
     }
 
-    for (mmli.toFirst(); (mmd = mmli.current()); ++mmli)
+    for (const auto &mmd : *mn)
     {
       if (!mmd->isLinkable() || (!mmd->isRelated() && !mmd->isForeign()) ||
            !mmd->getClassDef())
@@ -3681,6 +3674,7 @@ bool getDefs(const QCString &scName,
 
       if (!args)
       {
+        fuzzy_mmd = mmd.get();
         break;
       }
 
@@ -3691,21 +3685,20 @@ bool getDefs(const QCString &scName,
             )
          )
       {
+        fuzzy_mmd = mmd.get();
         break;
       }
 
       if (!fuzzy_mmd && hasEmptyArgs)
       {
-        fuzzy_mmd = mmd;
+        fuzzy_mmd = mmd.get();
       }
     }
 
-    mmd = mmd ? mmd : fuzzy_mmd;
-
-    if (mmd && !mmd->isStrongEnumValue())
+    if (fuzzy_mmd && !fuzzy_mmd->isStrongEnumValue())
     {
-      md = mmd;
-      cd = mmd->getClassDef();
+      md = fuzzy_mmd;
+      cd = fuzzy_mmd->getClassDef();
       return TRUE;
     }
   }
@@ -3714,7 +3707,7 @@ bool getDefs(const QCString &scName,
   // maybe an namespace, file or group member ?
   //printf("Testing for global symbol scopeName='%s' mScope='%s' :: mName='%s'\n",
   //              scopeName.data(),mScope.data(),mName.data());
-  if ((mn=Doxygen::functionNameSDict->find(mName))) // name is known
+  if ((mn=Doxygen::functionNameLinkedMap->find(mName))) // name is known
   {
     //printf("  >symbol name found\n");
     NamespaceDef *fnd=0;
@@ -3739,9 +3732,7 @@ bool getDefs(const QCString &scName,
         //printf("Symbol inside existing namespace '%s' count=%d\n",
         //    namespaceName.data(),mn->count());
         bool found=FALSE;
-        MemberNameIterator mmli(*mn);
-        const MemberDef *mmd;
-        for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
+        for (const auto &mmd : *mn)
         {
           //printf("mmd->getNamespaceDef()=%p fnd=%p\n",
           //    mmd->getNamespaceDef(),fnd);
@@ -3754,8 +3745,9 @@ bool getDefs(const QCString &scName,
             {
               //printf("found it!\n");
               nd=fnd;
-              md=mmd;
+              md=mmd.get();
               found=TRUE;
+              break;
             }
             else
             {
@@ -3780,8 +3772,9 @@ bool getDefs(const QCString &scName,
             if (match)
             {
               nd=fnd;
-              md=mmd;
+              md=mmd.get();
               found=TRUE;
+              break;
             }
           }
         }
@@ -3789,13 +3782,14 @@ bool getDefs(const QCString &scName,
           // no exact match found, but if args="()" an arbitrary
           // member will do
         {
-          for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
+          for (const auto &mmd : *mn)
           {
             if (mmd->getNamespaceDef()==fnd /*&& mmd->isLinkable() */ )
             {
               nd=fnd;
-              md=mmd;
+              md=mmd.get();
               found=TRUE;
+              break;
             }
           }
         }
@@ -3818,9 +3812,7 @@ bool getDefs(const QCString &scName,
       else
       {
         //printf("not a namespace\n");
-        MemberNameIterator mmli(*mn);
-        MemberDef *mmd;
-        for (mmli.toFirst();(mmd=mmli.current());++mmli)
+        for (const auto &mmd : *mn)
         {
           const MemberDef *tmd = mmd->getEnumScope();
           //printf("try member %s tmd=%s\n",mmd->name().data(),tmd?tmd->name().data():"<none>");
@@ -3834,7 +3826,7 @@ bool getDefs(const QCString &scName,
               namespaceName.length()>0  // enum is part of namespace so this should not be empty
              )
           {
-            md=mmd;
+            md=mmd.get();
             fd=mmd->getFileDef();
             gd=mmd->getGroupDef();
             if (gd && gd->isLinkable()) fd=0; else gd=0;
@@ -3869,9 +3861,11 @@ bool getDefs(const QCString &scName,
       {
         // no exact match found, but if args="()" an arbitrary
         // member will do
-        MemberNameIterator mni(*mn);
-        for (mni.toLast();(md=mni.current());--mni)
+        //MemberNameIterator mni(*mn);
+        //for (mni.toLast();(md=mni.current());--mni)
+        for (auto it = mn->rbegin(); it!=mn->rend(); ++it)
         {
+          const auto &md = *it;
           //printf("Found member '%s'\n",md->name().data());
           //printf("member is linkable md->name()='%s'\n",md->name().data());
           fd=md->getFileDef();
@@ -3882,7 +3876,7 @@ bool getDefs(const QCString &scName,
               (tmd && tmd->isStrong())
              )
           {
-            members.append(md);
+            members.append(md.get());
           }
         }
       }

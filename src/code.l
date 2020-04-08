@@ -2759,24 +2759,22 @@ static MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &name)
   }
 
   // look for a global member
-  if ((mn=Doxygen::functionNameSDict->find(name)))
+  if ((mn=Doxygen::functionNameLinkedMap->find(name)))
   {
     //printf("global var '%s'\n",name.data());
-    if (mn->count()==1) // global defined only once
+    if (mn->size()==1) // global defined only once
     {
-      MemberDef *md=mn->getFirst();
+      const std::unique_ptr<MemberDef> &md=mn->front();
       if (!md->isStatic() || md->getBodyDef()==yyextra->sourceFileDef)
       {
         yyextra->theCallContext.setScope(stripClassName(yyscanner,md->typeString(),md->getOuterScope()));
-        return md;
+        return md.get();
       }
       return 0;
     }
-    else if (mn->count()>1) // global defined more than once
+    else if (mn->size()>1) // global defined more than once
     {
-      MemberNameIterator it(*mn);
-      MemberDef *md;
-      for (;(md=it.current());++it)
+      for (const auto &md : *mn)
       {
 	//printf("mn=%p md=%p md->getBodyDef()=%p yyextra->sourceFileDef=%p\n",
 	//    mn,md,
@@ -2791,7 +2789,7 @@ static MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &name)
         {
           yyextra->theCallContext.setScope(stripClassName(yyscanner,md->typeString(),md->getOuterScope()));
 	  //printf("returning member %s in source file %s\n",md->name().data(),yyextra->sourceFileDef->name().data());
-          return md;
+          return md.get();
         }
       }
       return 0;
@@ -3235,7 +3233,7 @@ static void generateMemberLink(yyscan_t yyscanner,
     if (vcd && vcd->isLinkable())
     {
       //printf("Found class %s for variable '%s'\n",yyextra->classScope.data(),varName.data());
-      MemberName *vmn=Doxygen::memberNameSDict->find(varName);
+      MemberName *vmn=Doxygen::memberNameLinkedMap->find(varName);
       if (vmn==0)
       {
 	int vi;
@@ -3244,16 +3242,13 @@ static void generateMemberLink(yyscan_t yyscanner,
 	{
 	  ClassDef *jcd = getClass(vn.left(vi));
 	  vn=vn.right(vn.length()-vi-2);
-	  vmn=Doxygen::memberNameSDict->find(vn);
+	  vmn=Doxygen::memberNameLinkedMap->find(vn);
 	  //printf("Trying name '%s' scope=%s\n",vn.data(),scope.data());
 	  if (vmn)
 	  {
-	    MemberNameIterator vmni(*vmn);
-	    const MemberDef *vmd;
-	    for (;(vmd=vmni.current());++vmni)
+            for (const auto &vmd : *vmn)
 	    {
-	      if (/*(vmd->isVariable() || vmd->isFunction()) && */
-		  vmd->getClassDef()==jcd)
+	      if (vmd->getClassDef()==jcd)
 	      {
 		//printf("Found variable type=%s\n",vmd->typeString());
 		const ClassDef *mcd=stripClassName(yyscanner,vmd->typeString(),vmd->getOuterScope());
@@ -3269,12 +3264,9 @@ static void generateMemberLink(yyscan_t yyscanner,
       if (vmn)
       {
 	//printf("There is a variable with name '%s'\n",varName);
-	MemberNameIterator vmni(*vmn);
-	const MemberDef *vmd;
-	for (;(vmd=vmni.current());++vmni)
+        for (const auto &vmd : *vmn)
 	{
-	  if (/*(vmd->isVariable() || vmd->isFunction()) && */
-	      vmd->getClassDef()==vcd)
+	  if (vmd->getClassDef()==vcd)
 	  {
 	    //printf("Found variable type=%s\n",vmd->typeString());
 	    const ClassDef *mcd=stripClassName(yyscanner,vmd->typeString(),vmd->getOuterScope());
@@ -3677,14 +3669,14 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
 	      if (QCString(ictx->method->typeString())=="id")
 	      {
 		// see if the method name is unique, if so we link to it
-		MemberName *mn=Doxygen::memberNameSDict->find(ctx->methodName);
+		MemberName *mn=Doxygen::memberNameLinkedMap->find(ctx->methodName);
 		//printf("mn->count=%d ictx->method=%s ctx->methodName=%s\n",
 		//    mn==0?-1:(int)mn->count(),
 		//    ictx->method->name().data(),
 		//    ctx->methodName.data());
-		if (mn && mn->count()==1) // member name unique
+		if (mn && mn->size()==1) // member name unique
 		{
-		  ctx->method = mn->getFirst();
+		  ctx->method = mn->front().get();
 		}
 	      } 
 	      else

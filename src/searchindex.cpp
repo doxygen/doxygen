@@ -846,34 +846,26 @@ void createJavaScriptSearchIndex()
 
   // index class members
   {
-    MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
-    MemberName *mn;
     // for each member name
-    for (mnli.toFirst();(mn=mnli.current());++mnli)
+    for (const auto &mn : *Doxygen::memberNameLinkedMap)
     {
-      MemberDef *md;
-      MemberNameIterator mni(*mn);
       // for each member definition
-      for (mni.toFirst();(md=mni.current());++mni)
+      for (const auto &md : *mn)
       {
-        addMemberToSearchIndex(md);
+        addMemberToSearchIndex(md.get());
       }
     }
   }
 
   // index file/namespace members
   {
-    MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
-    MemberName *mn;
     // for each member name
-    for (fnli.toFirst();(mn=fnli.current());++fnli)
+    for (const auto &mn : *Doxygen::functionNameLinkedMap)
     {
-      MemberDef *md;
-      MemberNameIterator mni(*mn);
       // for each member definition
-      for (mni.toFirst();(md=mni.current());++mni)
+      for (const auto &md : *mn)
       {
-        addMemberToSearchIndex(md);
+        addMemberToSearchIndex(md.get());
       }
     }
   }

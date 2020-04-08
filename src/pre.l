@@ -2797,10 +2797,10 @@ static void addDefine(yyscan_t yyscanner)
   //printf("addDefine '%s' '%s'\n",state->defName.data(),state->defArgsStr.data());
   //ArgumentList *al = new ArgumentList;
   //stringToArgumentList(state->defArgsStr,al);
-  MemberDef *md=createMemberDef(
+  std::unique_ptr<MemberDef> md { createMemberDef(
       state->yyFileName,state->yyLineNr-state->yyMLines,state->yyColNr,
       "#define",state->defName,state->defArgsStr,0,
-      Public,Normal,FALSE,Member,MemberType_Define,ArgumentList(),ArgumentList(),"");
+      Public,Normal,FALSE,Member,MemberType_Define,ArgumentList(),ArgumentList(),"") };
   if (!state->defArgsStr.isEmpty())
   {
     ArgumentList argList;
@@ -2838,17 +2838,12 @@ static void addDefine(yyscan_t yyscanner)
   md->setFileDef(state->inputFileDef);
   md->setDefinition("#define "+state->defName);
 
-  MemberName *mn=Doxygen::functionNameSDict->find(state->defName);
-  if (mn==0)
-  {
-    mn = new MemberName(state->defName);
-    Doxygen::functionNameSDict->append(state->defName,mn);
-  }
-  mn->append(md);
+  MemberName *mn=Doxygen::functionNameLinkedMap->add(state->defName);
   if (state->yyFileDef) 
   {
-    state->yyFileDef->insertMember(md);
+    state->yyFileDef->insertMember(md.get());
   }
+  mn->push_back(std::move(md));
 }
 
 static inline void outputChar(yyscan_t yyscanner,char c)

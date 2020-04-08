@@ -66,8 +66,8 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual ClassDef *resolveAlias() { return this; }
     virtual DefType definitionType() const { return TypeClass; }
     virtual QCString getOutputFileBase() const;
-    virtual QCString getInstanceOutputFileBase() const; 
-    virtual QCString getSourceFileBase() const; 
+    virtual QCString getInstanceOutputFileBase() const;
+    virtual QCString getSourceFileBase() const;
     virtual QCString getReference() const;
     virtual bool isReference() const;
     virtual bool isLocal() const;
@@ -149,7 +149,7 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
 
     virtual void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0);
     virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0);
-    virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force); 
+    virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force);
     virtual void insertMember(MemberDef *);
     virtual void insertUsedFile(FileDef *);
     virtual bool addExample(const char *anchor,const char *name, const char *file);
@@ -2233,7 +2233,7 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
 {
   if (!isLinkableInProject()) return;
   tagFile << "  <compound kind=\"";
-  if (isFortran() && (compoundTypeString() == "type")) 
+  if (isFortran() && (compoundTypeString() == "type"))
     tagFile << "struct";
   else
     tagFile << compoundTypeString();
@@ -3908,16 +3908,6 @@ void ClassDefImpl::mergeCategory(ClassDef *category)
         //printf("Existing member %s\n",srcMni->memberName());
         MemberInfo *dstMi = dstMni->getFirst();
         MemberInfo *srcMi = srcMni->getFirst();
-        //if (dstMi)
-        //{
-        //  Protection prot = dstMi->prot;
-        //  if (makePrivate || isExtension)
-        //  {
-        //    prot = Private;
-        //    removeMemberFromLists(dstMi->memberDef);
-        //    internalInsertMember(dstMi->memberDef,prot,FALSE);
-        //  }
-        //}
         if (srcMi && dstMi)
         {
           combineDeclarationAndDefinition(srcMi->memberDef,dstMi->memberDef);
@@ -3941,13 +3931,13 @@ void ClassDefImpl::mergeCategory(ClassDef *category)
           //printf("Adding '%s'\n",mi->memberDef->name().data());
           Protection prot = mi->prot;
           //if (makePrivate) prot = Private;
-          MemberDef *newMd = mi->memberDef->deepCopy();
+          std::unique_ptr<MemberDef> newMd { mi->memberDef->deepCopy() };
           if (newMd)
           {
             //printf("Copying member %s\n",mi->memberDef->name().data());
             newMd->moveTo(this);
 
-            MemberInfo *newMi=new MemberInfo(newMd,prot,mi->virt,mi->inherited);
+            MemberInfo *newMi=new MemberInfo(newMd.get(),prot,mi->virt,mi->inherited);
             newMi->scopePath=mi->scopePath;
             newMi->ambigClass=mi->ambigClass;
             newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope;
@@ -3955,29 +3945,20 @@ void ClassDefImpl::mergeCategory(ClassDef *category)
 
             // also add the newly created member to the global members list
 
-            MemberName *mn;
             QCString name = newMd->name();
-            if ((mn=Doxygen::memberNameSDict->find(name)))
-            {
-              mn->append(newMd);
-            }
-            else
-            {
-              mn = new MemberName(newMd->name());
-              mn->append(newMd);
-              Doxygen::memberNameSDict->append(name,mn);
-            }
-          
+            MemberName *mn = Doxygen::memberNameLinkedMap->add(name);
+
             newMd->setCategory(category);
             newMd->setCategoryRelation(mi->memberDef);
-            mi->memberDef->setCategoryRelation(newMd);
+            mi->memberDef->setCategoryRelation(newMd.get());
             if (makePrivate || isExtension)
             {
-             newMd->makeImplementationDetail();
+              newMd->makeImplementationDetail();
             }
-            internalInsertMember(newMd,prot,FALSE);
+            internalInsertMember(newMd.get(),prot,FALSE);
+            mn->push_back(std::move(newMd));
           }
-		}
+        }
 
         // add it to the dictionary
         dstMnd->append(newMni->memberName(),newMni);
@@ -4276,8 +4257,8 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const char *t
       ArgumentList actualArguments;
       stringToArgumentList(getLanguage(),templSpec,actualArguments);
       MemberDef *md = mi->memberDef;
-      MemberDef *imd = md->createTemplateInstanceMember(
-                          cd->templateArguments(),actualArguments);
+      std::unique_ptr<MemberDef> imd { md->createTemplateInstanceMember(
+                          cd->templateArguments(),actualArguments) };
       //printf("%s->setMemberClass(%p)\n",imd->name().data(),this);
       imd->setMemberClass(this);
       imd->setTemplateMaster(md);
@@ -4286,19 +4267,14 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const char *t
       imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
       imd->setMemberSpecifiers(md->getMemberSpecifiers());
       imd->setMemberGroupId(md->getMemberGroupId());
-      insertMember(imd);
+      insertMember(imd.get());
       //printf("Adding member=%s %s%s to class %s templSpec %s\n",
       //    imd->typeString(),imd->name().data(),imd->argsString(),
       //    imd->getClassDef()->name().data(),templSpec);
       // insert imd in the list of all members
       //printf("Adding member=%s class=%s\n",imd->name().data(),name().data());
-      MemberName *mn = Doxygen::memberNameSDict->find(imd->name());
-      if (mn==0)
-      {
-        mn = new MemberName(imd->name());
-        Doxygen::memberNameSDict->append(imd->name(),mn);
-      }
-      mn->append(imd);
+      MemberName *mn = Doxygen::memberNameLinkedMap->add(imd->name());
+      mn->push_back(std::move(imd));
     }
   }
 }
@@ -4836,7 +4812,7 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,cons
   MemberList * ml = getMemberList(lt);
   MemberList * ml2 = getMemberList((MemberListType)lt2);
   if (getLanguage()==SrcLangExt_VHDL) // use specific declarations function
-  { 
+  {
     static const ClassDef *cdef;
     if (cdef!=this)
     { // only one inline link

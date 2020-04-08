@@ -731,16 +731,14 @@ void ClangParser::linkInclude(CodeOutputInterface &ol,FileDef *fd,
 void ClangParser::linkMacro(CodeOutputInterface &ol,FileDef *fd,
     uint &line,uint &column,const char *text)
 {
-  MemberName *mn=Doxygen::functionNameSDict->find(text);
+  MemberName *mn=Doxygen::functionNameLinkedMap->find(text);
   if (mn)
   {
-    MemberNameIterator mni(*mn);
-    MemberDef *md;
-    for (mni.toFirst();(md=mni.current());++mni)
+    for (const auto &md : *mn)
     {
       if (md->isDefine())
       {
-        writeMultiLineCodeLink(ol,fd,line,column,md,text);
+        writeMultiLineCodeLink(ol,fd,line,column,md.get(),text);
         return;
       }
     }

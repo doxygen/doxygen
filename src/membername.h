@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -21,36 +21,20 @@
 #include <qlist.h>
 #include "memberdef.h"
 #include "sortdict.h"
+#include "linkedmap.h"
 
-/** Class representing all MemberDef objects with the same name */
-class MemberName : public QList<MemberDef>
+class MemberName : public std::vector< std::unique_ptr<MemberDef> >
 {
   public:
-    MemberName(const char *name);
-   ~MemberName();
-    const char *memberName() const { return name; }
-
+    MemberName(const char *name) : m_name(name) {}
+    const char *memberName() const { return m_name; }
   private:
-    int compareValues(const MemberDef *item1,const MemberDef *item2) const;
-    QCString name;
+    QCString m_name;
 };
 
-/** Iterator for MemberDef objects in a MemberName list. */
-class MemberNameIterator : public QListIterator<MemberDef>
+/** Ordered dictionary of MemberName objects. */
+class MemberNameLinkedMap : public LinkedMap<MemberName>
 {
-  public:
-    MemberNameIterator( const MemberName &list);
-};
-
-/** Sorted dictionary of MemberName objects. */
-class MemberNameSDict : public SDict<MemberName>
-{
-  public:
-    MemberNameSDict(uint size) : SDict<MemberName>(size) {}
-   ~MemberNameSDict() {}
-
-  private:
-   int compareValues(const MemberName *item1,const MemberName *item2) const;
 };
 
 /** Data associated with a MemberDef in an inheritance relation. */
@@ -64,7 +48,7 @@ struct MemberInfo
   Specifier  virt;
   bool       inherited;
   QCString   scopePath;
-  QCString   ambiguityResolutionScope; 
+  QCString   ambiguityResolutionScope;
   ClassDef  *ambigClass;
 };
 
@@ -72,7 +56,7 @@ struct MemberInfo
 class MemberNameInfo : public QList<MemberInfo>
 {
   public:
-    MemberNameInfo(const char *name);  
+    MemberNameInfo(const char *name);
    ~MemberNameInfo() {}
     const char *memberName() const { return name; }
   private:
@@ -84,7 +68,7 @@ class MemberNameInfo : public QList<MemberInfo>
 class MemberNameInfoIterator : public QListIterator<MemberInfo>
 {
   public:
-    MemberNameInfoIterator(const MemberNameInfo &mnii) 
+    MemberNameInfoIterator(const MemberNameInfo &mnii)
       : QListIterator<MemberInfo>(mnii) {}
 };
 
