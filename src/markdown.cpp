@@ -904,7 +904,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       // Current working directory is not the same where markdown is located.
       // Convert to full path and add to image cache
       QCString imagePath = getAbsoluteFilePath(link);
-      readFileOrDirectory(imagePath,0,Doxygen::imageNameDict,0,0,
+      readFileOrDirectory(imagePath,Doxygen::imageNameLinkedMap,0,0,
                           0,0,0,FALSE,FALSE);
     }
 
