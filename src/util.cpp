@@ -7933,11 +7933,6 @@ QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope)
     return "::";
   }
 }
-QCString replaceScopeSeparator(QCString str)
-{
-  // we don't know about the language so we have to go for the worse
-  return substitute(substitute(str,"\\","::"),".","::");  // PHP and Java, CSharp, VHDL, Python
-}
 /** Checks whether the given url starts with a supported protocol */
 bool isURL(const QCString &url)
 {
