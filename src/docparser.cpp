@@ -662,7 +662,6 @@ static bool insideTable(DocNode *n)
 }
 
 //---------------------------------------------------------------------------
-
 /*! Looks for a documentation block with name commandName in the current
  *  context (g_context). The resulting documentation string is
  *  put in pDoc, the definition in which the documentation was found is
@@ -670,7 +669,7 @@ static bool insideTable(DocNode *n)
  *  @retval TRUE if name was found.
  *  @retval FALSE if name was not found.
  */
-static bool findDocsForMemberOrCompound(const char *commandName,
+static bool findDocsForMemberOrCompoundLow(const char *commandName,
                                  QCString *pDoc,
                                  QCString *pBrief,
                                  const Definition **pDef)
@@ -679,8 +678,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   *pDoc="";
   *pBrief="";
   *pDef=0;
-  QCString cmdArg=substitute(commandName,"#","::");
-  cmdArg = replaceScopeSeparator(cmdArg);
+  QCString cmdArg=commandName;
 
   int l=(int)cmdArg.length();
   if (l==0) return FALSE;
@@ -796,6 +794,19 @@ static bool findDocsForMemberOrCompound(const char *commandName,
 
   return FALSE;
 }
+static bool findDocsForMemberOrCompound(const char *commandName,
+                                 QCString *pDoc,
+                                 QCString *pBrief,
+                                 const Definition **pDef)
+{
+  QCString cmdArg=substitute(commandName,"#","::");
+  if (findDocsForMemberOrCompoundLow(cmdArg.data(), pDoc, pBrief, pDef)) return true;
+  QCString cmdArg1=substitute(commandName,"#","::");
+  cmdArg1 = replaceScopeSeparator(cmdArg);
+  if (cmdArg == cmdArg1) return false;
+  return findDocsForMemberOrCompoundLow(cmdArg1.data(), pDoc, pBrief, pDef);
+}
+
 //---------------------------------------------------------------------------
 inline void errorHandleDefaultToken(DocNode *parent,int tok,
                                QList<DocNode> &children,const char *txt)
