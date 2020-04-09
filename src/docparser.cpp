@@ -669,7 +669,7 @@ static bool insideTable(DocNode *n)
  *  @retval TRUE if name was found.
  *  @retval FALSE if name was not found.
  */
-static bool findDocsForMemberOrCompoundLow(const char *commandName,
+static bool findDocsForMemberOrCompound(const char *commandName,
                                  QCString *pDoc,
                                  QCString *pBrief,
                                  const Definition **pDef)
@@ -679,9 +679,43 @@ static bool findDocsForMemberOrCompoundLow(const char *commandName,
   *pBrief="";
   *pDef=0;
   QCString cmdArg=commandName;
+  if (cmdArg.isEmpty()) return FALSE;
+
+  const FileDef      *fd=0;
+  const GroupDef     *gd=0;
+  const PageDef      *pd=0;
+  gd = Doxygen::groupSDict->find(cmdArg);
+  if (gd) // group
+  {
+    *pDoc=gd->documentation();
+    *pBrief=gd->briefDescription();
+    *pDef=gd;
+    return TRUE;
+  }
+  pd = Doxygen::pageSDict->find(cmdArg);
+  if (pd) // page
+  {
+    *pDoc=pd->documentation();
+    *pBrief=pd->briefDescription();
+    *pDef=pd;
+    return TRUE;
+  }
+  bool ambig;
+  fd = findFileDef(Doxygen::inputNameLinkedMap,cmdArg,ambig);
+  if (fd && !ambig) // file
+  {
+    *pDoc=fd->documentation();
+    *pBrief=fd->briefDescription();
+    *pDef=fd;
+    return TRUE;
+  }
+
+  // for symbols we need to normalize the separator, so A#B, or A\B, or A.B becomes A::B
+  cmdArg = substitute(cmdArg,"#","::");
+  cmdArg = substitute(cmdArg,"\\","::");
+  cmdArg = substitute(cmdArg,".","::");
 
   int l=(int)cmdArg.length();
-  if (l==0) return FALSE;
 
   int funcStart=cmdArg.find('(');
   if (funcStart==-1)
@@ -708,10 +742,7 @@ static bool findDocsForMemberOrCompoundLow(const char *commandName,
   // try if the link is to a member
   const MemberDef    *md=0;
   const ClassDef     *cd=0;
-  const FileDef      *fd=0;
   const NamespaceDef *nd=0;
-  const GroupDef     *gd=0;
-  const PageDef      *pd=0;
   bool found = getDefs(
       g_context.find('.')==-1?g_context.data():"", // find('.') is a hack to detect files
       name,
@@ -754,32 +785,6 @@ static bool findDocsForMemberOrCompoundLow(const char *commandName,
       *pDef=nd;
       return TRUE;
     }
-    gd = Doxygen::groupSDict->find(cmdArg);
-    if (gd) // group
-    {
-      *pDoc=gd->documentation();
-      *pBrief=gd->briefDescription();
-      *pDef=gd;
-      return TRUE;
-    }
-    pd = Doxygen::pageSDict->find(cmdArg);
-    if (pd) // page
-    {
-      *pDoc=pd->documentation();
-      *pBrief=pd->briefDescription();
-      *pDef=pd;
-      return TRUE;
-    }
-    bool ambig;
-    fd = findFileDef(Doxygen::inputNameLinkedMap,cmdArg,ambig);
-    if (fd && !ambig) // file
-    {
-      *pDoc=fd->documentation();
-      *pBrief=fd->briefDescription();
-      *pDef=fd;
-      return TRUE;
-    }
-
     if (scopeOffset==0)
     {
       scopeOffset=-1;
@@ -793,18 +798,6 @@ static bool findDocsForMemberOrCompoundLow(const char *commandName,
 
 
   return FALSE;
-}
-static bool findDocsForMemberOrCompound(const char *commandName,
-                                 QCString *pDoc,
-                                 QCString *pBrief,
-                                 const Definition **pDef)
-{
-  QCString cmdArg=substitute(commandName,"#","::");
-  if (findDocsForMemberOrCompoundLow(cmdArg.data(), pDoc, pBrief, pDef)) return true;
-  QCString cmdArg1=substitute(commandName,"#","::");
-  cmdArg1 = replaceScopeSeparator(cmdArg);
-  if (cmdArg == cmdArg1) return false;
-  return findDocsForMemberOrCompoundLow(cmdArg1.data(), pDoc, pBrief, pDef);
 }
 
 //---------------------------------------------------------------------------
