@@ -434,14 +434,13 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
   searches for definition of function memberName
   @param memberName the name of the function/variable
   @param moduleName name of enclosing module or null, if global entry
-  @param md the entry, if found or null
   @param usedict array of data of USE-statement
-  @returns true, if found
+  @returns MemberDef pointer, if found, or nullptr otherwise
 */
-static bool getFortranDefs(const QCString &memberName, const QCString &moduleName,
-                           MemberDef *&md, UseSDict *usedict=0)
+static MemberDef *getFortranDefs(const QCString &memberName, const QCString &moduleName,
+                                 UseSDict *usedict=0)
 {
-  if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
+  if (memberName.isEmpty()) return nullptr; /* empty name => nothing to link */
 
   // look in local variables
   QListIterator<Scope> it(scopeStack);
@@ -449,7 +448,9 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
   for (it.toLast();(scope=it.current());--it)
   {
     if (scope->localVars.find(memberName) && (!scope->externalVars.find(memberName)))
-      return FALSE;
+    {
+      return nullptr;
+    }
   }
 
   // search for function
@@ -479,12 +480,12 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
         { // found function in global scope
           if(cd == 0)
           { // Skip if bound to type
-            return TRUE;
+            return md.get();
           }
         }
         else if (moduleName == nspace->name())
         { // found in local scope
-          return TRUE;
+          return md.get();
         }
         else
         { // else search in used modules
@@ -497,7 +498,7 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
             if (only.isEmpty())
             {
               //cout << " found in module " << usedModuleName << " entry " << memberName <<  endl;
-              return TRUE; // whole module used
+              return md.get(); // whole module used
             }
             else
             {
@@ -506,7 +507,7 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
                 //cout << " search in only: " << usedModuleName << ":: " << memberName << "==" << (*it)<<  endl;
                 if (memberName == *lit)
                 {
-                  return TRUE; // found in ONLY-part of use list
+                  return md.get(); // found in ONLY-part of use list
                 }
               }
             }
@@ -515,7 +516,7 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
       } // if linkable
     } // for
   }
-  return FALSE;
+  return nullptr;
 }
 
 /**
@@ -540,7 +541,7 @@ static bool getLink(UseSDict *usedict, // dictionary with used modules
   MemberDef *md=0;
   QCString memberName= removeRedundantWhiteSpace(memberText);
 
-  if (getFortranDefs(memberName, currentModule, md, usedict) && md->isLinkable())
+  if ((md=getFortranDefs(memberName, currentModule, usedict)) && md->isLinkable())
   {
     if (md->isVariable() && (md->getLanguage()!=SrcLangExt_Fortran)) return FALSE; // Non Fortran variables aren't handled yet,
                                                                                    // see also linkifyText in util.cpp

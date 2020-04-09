@@ -276,7 +276,7 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   //printf("source %s ----------\n%s\n-------------\n\n",
   //    fileName,p->source.data());
-  uint numUnsavedFiles = filesInTranslationUnit.count()+1;
+  int numUnsavedFiles = filesInTranslationUnit.count()+1;
   p->numFiles = numUnsavedFiles;
   p->sources = new QCString[numUnsavedFiles];
   p->ufs     = new CXUnsavedFile[numUnsavedFiles];
@@ -285,7 +285,7 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   p->ufs[0].Contents = p->sources[0].data();
   p->ufs[0].Length   = p->sources[0].length();
   QStrListIterator it(filesInTranslationUnit);
-  uint i=1;
+  int i=1;
   for (it.toFirst();it.current() && i<numUnsavedFiles;++it,i++)
   {
     p->fileMapping.insert(it.current(),new uint(i));
@@ -300,7 +300,7 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
                                      argv, argc, p->ufs, numUnsavedFiles,
                                      CXTranslationUnit_DetailedPreprocessingRecord);
   // free arguments
-  for (int i=0;i<argc;++i)
+  for (i=0;i<argc;++i)
   {
     free(argv[i]);
   }
@@ -312,7 +312,8 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
     determineInputFilesInSameTu(filesInTranslationUnit);
 
     // show any warnings that the compiler produced
-    for (uint i=0, n=clang_getNumDiagnostics(p->tu); i!=n; ++i)
+    int n=clang_getNumDiagnostics(p->tu);
+    for (i=0; i!=n; ++i)
     {
       CXDiagnostic diag = clang_getDiagnostic(p->tu, i);
       CXString string = clang_formatDiagnostic(diag,

@@ -287,7 +287,7 @@ void RTFGenerator::beginRTFDocument()
   unsigned maxIndex = 0;
   for(; (style = iter.current()); ++iter)
   {
-    unsigned index = style->index;
+    uint index = style->index();
     if (maxIndex < index) maxIndex = index;
   }
   std::vector<const StyleData*> array(maxIndex + 1, 0);
@@ -296,7 +296,7 @@ void RTFGenerator::beginRTFDocument()
   iter.toFirst();
   for(; (style = iter.current()); ++iter)
   {
-    unsigned index = style->index;
+    uint index = style->index();
     if (array.at(index) != 0)
     {
       QCString key(iter.currentKey());
@@ -311,7 +311,9 @@ void RTFGenerator::beginRTFDocument()
   {
     style = array.at(i);
     if (style != 0)
-      t <<"{" << style->reference << style->definition << ";}\n";
+    {
+      t <<"{" << style->reference() << style->definition() << ";}\n";
+    }
   }
 
   t <<"}" << endl;
@@ -337,7 +339,7 @@ void RTFGenerator::beginRTFChapter()
     t <<"\\sect\\sbkpage\n";
   //t <<"\\sect\\sectd\\sbkpage\n";
 
-  t << rtf_Style["Heading1"]->reference << "\n";
+  t << rtf_Style["Heading1"]->reference() << "\n";
 }
 
 void RTFGenerator::beginRTFSection()
@@ -349,15 +351,15 @@ void RTFGenerator::beginRTFSection()
   // if we are compact, no extra page breaks...
   if (Config_getBool(COMPACT_RTF))
   {
-    //      t <<"\\sect\\sectd\\sbknone\n";
     t <<"\\sect\\sbknone\n";
     rtfwriteRuler_emboss();
   }
   else
+  {
     t <<"\\sect\\sbkpage\n";
-  //t <<"\\sect\\sectd\\sbkpage\n";
+  }
 
-  t << rtf_Style["Heading2"]->reference << "\n";
+  t << rtf_Style["Heading2"]->reference() << "\n";
 }
 
 void RTFGenerator::startFile(const char *name,const char *,const char *)
@@ -590,12 +592,12 @@ void RTFGenerator::endIndexSection(IndexSections is)
         // setup for this section
         t << rtf_Style_Reset <<"\n";
         t <<"\\sectd\\pgnlcrm\n";
-        t <<"{\\footer "<<rtf_Style["Footer"]->reference << "{\\chpgn}}\n";
+        t <<"{\\footer "<<rtf_Style["Footer"]->reference() << "{\\chpgn}}\n";
         // the title entry
         DBG_RTF(t << "{\\comment begin title page}\n")
 
 
-        t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to title style
+        t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference() << endl; // set to title style
 
         t << "\\vertalc\\qc\\par\\par\\par\\par\\par\\par\\par\n";
         if (rtf_logoFilename)
@@ -608,7 +610,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
           t << rtf_company << "\\par\\par\n";
         }
 
-        t << rtf_Style_Reset << rtf_Style["Title"]->reference << endl; // set to title style
+        t << rtf_Style_Reset << rtf_Style["Title"]->reference() << endl; // set to title style
         if (rtf_title)
           // User has overridden document title in extensions file
           t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par" << endl;
@@ -621,7 +623,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
         }
 
-        t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to title style
+        t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference() << endl; // set to title style
         t << "\\par\n";
         if (rtf_documentType)
         {
@@ -633,7 +635,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         t << "\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\n";
 
-        t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to subtitle style
+        t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference() << endl; // set to subtitle style
         if (rtf_author)
           t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt "<< rtf_author << " }}\\par" << endl;
         else
@@ -649,7 +651,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         DBG_RTF(t << "{\\comment Table of contents}\n")
         t << "\\vertalt\n";
         t << rtf_Style_Reset << endl;
-        t << rtf_Style["Heading1"]->reference;
+        t << rtf_Style["Heading1"]->reference();
         t << theTranslator->trRTFTableOfContents() << "\\par"<< endl;
         t << rtf_Style_Reset << "\\par" << endl;
         t << "{\\field\\fldedit {\\*\\fldinst TOC \\\\f \\\\*MERGEFORMAT}{\\fldrslt Table of contents}}\\par\n";
@@ -931,7 +933,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isEndIndex:
       beginRTFChapter();
-      t << rtf_Style["Heading1"]->reference;
+      t << rtf_Style["Heading1"]->reference();
       t << theTranslator->trRTFGeneralIndex() << "\\par "<< endl;
       t << rtf_Style_Reset << endl;
       t << "{\\tc \\v " << theTranslator->trRTFGeneralIndex() << "}" << endl;
@@ -957,8 +959,7 @@ void RTFGenerator::lastIndexPage()
   t <<"\\sect \\sectd \\sbknone\n";
 
   // set new footer with arabic numbers
-  t <<"{\\footer "<< rtf_Style["Footer"]->reference << "{\\chpgn}}\n";
-  //t << rtf_Style["Heading1"]->reference << "\n";
+  t <<"{\\footer "<< rtf_Style["Footer"]->reference() << "{\\chpgn}}\n";
 
 }
 
@@ -1216,7 +1217,7 @@ void RTFGenerator::startSubsection()
   t <<"\n";
   DBG_RTF(t << "{\\comment Begin SubSection}\n")
   t << rtf_Style_Reset;
-  t << rtf_Style["Heading3"]->reference << "\n";
+  t << rtf_Style["Heading3"]->reference() << "\n";
 }
 
 void RTFGenerator::endSubsection()
@@ -1231,7 +1232,7 @@ void RTFGenerator::startSubsubsection()
   t << "\n";
   DBG_RTF(t << "{\\comment Begin SubSubSection}\n")
   t << "{" << endl;
-  t << rtf_Style_Reset << rtf_Style["Heading4"]->reference << "\n";
+  t << rtf_Style_Reset << rtf_Style["Heading4"]->reference() << "\n";
 }
 
 void RTFGenerator::endSubsubsection()
@@ -1439,7 +1440,7 @@ void RTFGenerator::startTitleHead(const char *)
   DBG_RTF(t <<"{\\comment startTitleHead}" << endl)
 
   //    beginRTFSection();
-  t << rtf_Style_Reset << rtf_Style["Heading2"]->reference << endl;
+  t << rtf_Style_Reset << rtf_Style["Heading2"]->reference() << endl;
 }
 
 void RTFGenerator::endTitleHead(const char *fileName,const char *name)
@@ -1484,15 +1485,15 @@ void RTFGenerator::startGroupHeader(int extraIndent)
   t << rtf_Style_Reset;
   if (extraIndent==2)
   {
-    t << rtf_Style["Heading5"]->reference;
+    t << rtf_Style["Heading5"]->reference();
   }
   else if (extraIndent==1)
   {
-    t << rtf_Style["Heading4"]->reference;
+    t << rtf_Style["Heading4"]->reference();
   }
   else // extraIndent==0
   {
-    t << rtf_Style["Heading3"]->reference;
+    t << rtf_Style["Heading3"]->reference();
   }
   t << endl;
 }
@@ -1518,10 +1519,10 @@ void RTFGenerator::startMemberDoc(const char *clname,
     addIndexItem(memname,clname);
     addIndexItem(clname,memname);
   }
-  t << rtf_Style_Reset << rtf_Style[showInline ? "Heading5" : "Heading4"]->reference;
+  t << rtf_Style_Reset << rtf_Style[showInline ? "Heading5" : "Heading4"]->reference();
   //styleStack.push(rtf_Style_Heading4);
   t << "{" << endl;
-  //printf("RTFGenerator::startMemberDoc() '%s'\n",rtf_Style["Heading4"]->reference);
+  //printf("RTFGenerator::startMemberDoc() '%s'\n",rtf_Style["Heading4"]->reference());
   startBold();
   t << endl;
 }
@@ -1531,7 +1532,7 @@ void RTFGenerator::endMemberDoc(bool)
   DBG_RTF(t << "{\\comment endMemberDoc}" << endl)
   //const char *style = styleStack.pop();
   //printf("RTFGenerator::endMemberDoc() '%s'\n",style);
-  //ASSERT(style==rtf_Style["Heading4"]->reference);
+  //ASSERT(style==rtf_Style["Heading4"]->reference());
   endBold();
   t << "}" << endl;
   newParagraph();
@@ -1708,7 +1709,7 @@ void RTFGenerator::startSection(const char *,const char *title,SectionType type)
   QCString heading;
   heading.sprintf("Heading%d",num);
   // set style
-  t << rtf_Style[heading]->reference;
+  t << rtf_Style[heading]->reference();
   // make table of contents entry
   t << "{\\tc\\tcl" << num << " \\v ";
   docify(title);
@@ -2016,7 +2017,7 @@ void RTFGenerator::startDescTable(const char *title)
 {
   DBG_RTF(t << "{\\comment (startDescTable) }"    << endl)
   t << "{\\par" << endl;
-  t << "{" << rtf_Style["Heading5"]->reference << endl;
+  t << "{" << rtf_Style["Heading5"]->reference() << endl;
   docify(title);
   t << ":\\par}" << endl;
   t << rtf_Style_Reset << rtf_DList_DepthStyle();
@@ -2104,40 +2105,40 @@ void RTFGenerator::decrementIndentLevel()
 const char * RTFGenerator::rtf_CList_DepthStyle()
 {
   QCString n=makeIndexName("ListContinue",m_listLevel);
-  return rtf_Style[n]->reference;
+  return rtf_Style[n]->reference();
 }
 
 // a style for list formatted as a "latext style" table of contents
 const char * RTFGenerator::rtf_LCList_DepthStyle()
 {
   QCString n=makeIndexName("LatexTOC",m_listLevel);
-  return rtf_Style[n]->reference;
+  return rtf_Style[n]->reference();
 }
 
 // a style for list formatted as a "bullet" style
 const char * RTFGenerator::rtf_BList_DepthStyle()
 {
   QCString n=makeIndexName("ListBullet",m_listLevel);
-  return rtf_Style[n]->reference;
+  return rtf_Style[n]->reference();
 }
 
 // a style for list formatted as a "enumeration" style
 const char * RTFGenerator::rtf_EList_DepthStyle()
 {
   QCString n=makeIndexName("ListEnum",m_listLevel);
-  return rtf_Style[n]->reference;
+  return rtf_Style[n]->reference();
 }
 
 const char * RTFGenerator::rtf_DList_DepthStyle()
 {
   QCString n=makeIndexName("DescContinue",m_listLevel);
-  return rtf_Style[n]->reference;
+  return rtf_Style[n]->reference();
 }
 
 const char * RTFGenerator::rtf_Code_DepthStyle()
 {
   QCString n=makeIndexName("CodeExample",m_listLevel);
-  return rtf_Style[n]->reference;
+  return rtf_Style[n]->reference();
 }
 
 void RTFGenerator::startTextBlock(bool dense)
@@ -2147,11 +2148,11 @@ void RTFGenerator::startTextBlock(bool dense)
   t << rtf_Style_Reset;
   if (dense) // no spacing between "paragraphs"
   {
-    t << rtf_Style["DenseText"]->reference;
+    t << rtf_Style["DenseText"]->reference();
   }
   else // some spacing
   {
-    t << rtf_Style["BodyText"]->reference;
+    t << rtf_Style["BodyText"]->reference();
   }
 }
 
@@ -2685,7 +2686,7 @@ void RTFGenerator::startMemberGroupHeader(bool hasHeader)
   DBG_RTF(t << "{\\comment startMemberGroupHeader}" << endl)
   t << "{" << endl;
   if (hasHeader) incrementIndentLevel();
-  t << rtf_Style_Reset << rtf_Style["GroupHeader"]->reference;
+  t << rtf_Style_Reset << rtf_Style["GroupHeader"]->reference();
 }
 
 void RTFGenerator::endMemberGroupHeader()
@@ -2934,7 +2935,7 @@ void RTFGenerator::startInlineHeader()
 {
   DBG_RTF(t << "{\\comment (startInlineHeader)}" << endl)
   t << "{" << endl;
-  t << rtf_Style_Reset << rtf_Style["Heading5"]->reference;
+  t << rtf_Style_Reset << rtf_Style["Heading5"]->reference();
   startBold();
 }
 
@@ -2950,7 +2951,7 @@ void RTFGenerator::startMemberDocSimple(bool isEnum)
 {
   DBG_RTF(t << "{\\comment (startMemberDocSimple)}" << endl)
   t << "{\\par" << endl;
-  t << "{" << rtf_Style["Heading5"]->reference << endl;
+  t << "{" << rtf_Style["Heading5"]->reference() << endl;
   if (isEnum)
   {
     t << theTranslator->trEnumerationValues();

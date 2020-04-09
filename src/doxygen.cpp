@@ -5825,7 +5825,7 @@ static void addMemberSpecialization(const Entry *root,
 
 //-------------------------------------------------------------------------------------------
 
-static void addOverloaded(const Entry *root,MemberName *mn,ClassDef *cd,
+static void addOverloaded(const Entry *root,MemberName *mn,
                           const QCString &funcType,const QCString &funcName,const QCString &funcArgs,
                           const QCString &funcDecl,const QCString &exceptions,uint64 spec)
 {
@@ -6249,7 +6249,7 @@ static void findMember(const Entry *root,
       }
       else if (overloaded) // check if the function belongs to only one class
       {
-        addOverloaded(root,mn,cd,funcType,funcName,funcArgs,funcDecl,exceptions,spec);
+        addOverloaded(root,mn,funcType,funcName,funcArgs,funcDecl,exceptions,spec);
       }
       else // unrelated function with the same name as a member
       {

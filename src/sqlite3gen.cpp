@@ -1736,7 +1736,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   }
 
   const MemberDef *rmd = md->reimplements();
-  if(rmd)
+  if (rmd)
   {
     QCString qreimplemented_refid = rmd->getOutputFileBase() + "_1" + rmd->anchor();
 
@@ -1862,7 +1862,6 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   if (mdict!=0)
   {
     MemberSDict::IteratorDict mdi(*mdict);
-    const MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
       insertMemberReference(md,rmd, "inline");
@@ -1873,7 +1872,6 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   if (mdict!=0)
   {
     MemberSDict::IteratorDict mdi(*mdict);
-    const  MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
       insertMemberReference(rmd,md, "inline");

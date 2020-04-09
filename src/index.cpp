@@ -760,7 +760,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Html);
   }
-  static bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
+  bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
   startIndexHierarchy(ol,0);
   if (fullPathNames)
   {
@@ -780,11 +780,10 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
     {
       for (const auto &fd : *fn)
       {
-        static bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
         if (!fullPathNames || fd->getDirDef()==0) // top level file
         {
-          bool doc,src;
-          doc = fileVisibleInIndex(fd.get(),src);
+          bool src;
+          bool doc = fileVisibleInIndex(fd.get(),src);
           QCString reference, outputBase;
           if (doc)
           {
@@ -2021,8 +2020,8 @@ class AlphaIndexTableRows : public QList<AlphaIndexTableCell>
 class AlphaIndexTableRowsIterator : public QListIterator<AlphaIndexTableCell>
 {
   public:
-    AlphaIndexTableRowsIterator(const AlphaIndexTableRows &list) :
-      QListIterator<AlphaIndexTableCell>(list) {}
+    AlphaIndexTableRowsIterator(const AlphaIndexTableRows &list_) :
+      QListIterator<AlphaIndexTableCell>(list_) {}
 };
 
 /** Class representing the columns in the alphabetical class index. */

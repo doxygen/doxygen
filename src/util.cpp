@@ -3865,18 +3865,18 @@ bool getDefs(const QCString &scName,
         //for (mni.toLast();(md=mni.current());--mni)
         for (auto it = mn->rbegin(); it!=mn->rend(); ++it)
         {
-          const auto &md = *it;
-          //printf("Found member '%s'\n",md->name().data());
-          //printf("member is linkable md->name()='%s'\n",md->name().data());
-          fd=md->getFileDef();
-          gd=md->getGroupDef();
-          const MemberDef *tmd = md->getEnumScope();
+          const auto &mmd = *it;
+          //printf("Found member '%s'\n",mmd->name().data());
+          //printf("member is linkable mmd->name()='%s'\n",mmd->name().data());
+          fd=mmd->getFileDef();
+          gd=mmd->getGroupDef();
+          const MemberDef *tmd = mmd->getEnumScope();
           if (
               (gd && gd->isLinkable()) || (fd && fd->isLinkable()) ||
               (tmd && tmd->isStrong())
              )
           {
-            members.append(md.get());
+            members.append(mmd.get());
           }
         }
       }

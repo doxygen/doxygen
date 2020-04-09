@@ -588,8 +588,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                                   auto it = std::find_if(fn->begin(),
                                                                          fn->end(),
                                                                          [&sfd=yyextra->sourceFileDef]
-                                                                         (const auto &fd)
-                                                                         { return sfd->isIncluded(fd->absFilePath()); });
+                                                                         (const auto &lfd)
+                                                                         { return sfd->isIncluded(lfd->absFilePath()); });
                                                   found = it!=fn->end();
 						}
 					      }

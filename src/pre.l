@@ -1791,8 +1791,8 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     alreadyIncluded = std::any_of(
       state->includeStack.begin(),
       state->includeStack.end(),
-      [absName](const std::unique_ptr<FileState> &fs)
-        { return fs->fileName==absName; }
+      [absName](const std::unique_ptr<FileState> &lfs)
+        { return lfs->fileName==absName; }
     );
 
     if (alreadyIncluded)
