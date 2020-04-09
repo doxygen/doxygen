@@ -637,12 +637,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 }
 			 return TK_COMMAND_SEL();
   		       }
-<St_Para>{URLPROTOCOL}{URLMASK}/, { // URL,
-                         g_token->name=yytext;
-			 g_token->isEMailAddr=FALSE;
-			 return TK_URL;
-                       }
-<St_Para>{URLPROTOCOL}{URLMASK}/\. { // URL.
+<St_Para>{URLPROTOCOL}{URLMASK}/[,\.] { // URL, or URL.
                          g_token->name=yytext;
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
