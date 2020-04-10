@@ -6274,7 +6274,6 @@ static void findMember(const Entry *root,
       {
         bool newMember=TRUE; // assume we have a new member
         MemberDef *mdDefine=0;
-        bool isDefine=FALSE;
         {
           mn = Doxygen::functionNameLinkedMap->find(funcName);
           if (mn)
@@ -6325,7 +6324,7 @@ static void findMember(const Entry *root,
         if (newMember) // need to create a new member
         {
           MemberType mtype;
-          if (isDefine)
+          if (mdDefine)
             mtype=MemberType_Define;
           else if (root->mtype==Signal)
             mtype=MemberType_Signal;
@@ -6336,7 +6335,7 @@ static void findMember(const Entry *root,
           else
             mtype=MemberType_Function;
 
-          if (isDefine && mdDefine)
+          if (mdDefine)
           {
             mdDefine->setHidden(TRUE);
             funcType="#define";
@@ -6364,7 +6363,7 @@ static void findMember(const Entry *root,
               funcArgs.isEmpty() ? ArgumentList() : root->argList,
               root->metaData) };
 
-          if (isDefine && mdDefine)
+          if (mdDefine)
           {
             md->setInitializer(mdDefine->initializer());
           }
@@ -6451,7 +6450,7 @@ static void findMember(const Entry *root,
           cd->insertUsedFile(fd);
           md->setRefItems(root->sli);
           if (root->relatesType == Duplicate) md->setRelatedAlso(cd);
-          if (!isDefine)
+          if (!mdDefine)
           {
             addMemberToGroups(root,md.get());
           }

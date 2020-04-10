@@ -36,8 +36,9 @@ class LinkedMap
 
     //! find an element given the key.
     //! Returns a pointer to the element if found or nullptr if it is not found.
-    const T *find(const char *key) const
+    const T *find(const char *k) const
     {
+      std::string key = k ? std::string(k) : std::string();
       auto it = m_lookup.find(key);
       return it!=m_lookup.end() ? it->second : nullptr;
     }
@@ -52,14 +53,15 @@ class LinkedMap
     //! Return a non-owning pointer to the newly added item, or to the existing item if it was
     //! already inserted before.
     template<class...Args>
-    T *add(const char *key, Args&&... args)
+    T *add(const char *k, Args&&... args)
     {
-      T *result = find(key);
+      T *result = find(k);
       if (result==nullptr)
       {
-        Ptr ptr = std::make_unique<T>(key,std::forward<Args>(args)...);
+        std::string key = k ? std::string(k) : std::string();
+        Ptr ptr = std::make_unique<T>(k,std::forward<Args>(args)...);
         result = ptr.get();
-        m_lookup.insert({key ? std::string(key) : std::string(),result});
+        m_lookup.insert({key,result});
         m_entries.push_back(std::move(ptr));
       }
       return result;

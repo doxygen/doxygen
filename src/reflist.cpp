@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -24,7 +24,7 @@
 void RefList::generatePage()
 {
   std::sort(m_entries.begin(),m_entries.end(),
-            [](std::unique_ptr<RefItem> &left,std::unique_ptr<RefItem> &right) 
+            [](std::unique_ptr<RefItem> &left,std::unique_ptr<RefItem> &right)
             { return qstricmp(left->title(),left->title()); });
   //RefItem *item;
   QCString doc;
@@ -59,7 +59,7 @@ void RefList::generatePage()
       QCString escapedTitle = substitute(item->title(),"\\","\\\\");
       doc += " \""+escapedTitle+"\" ";
       // write declaration in case a function with arguments
-      if (!item->args().isEmpty()) 
+      if (!item->args().isEmpty())
       {
         // escape @'s in argument list, needed for Java annotations (see issue #6208)
         // escape \'s in argument list (see issue #6533)
@@ -76,6 +76,7 @@ void RefList::generatePage()
     doc += " ";
     doc += item->text();
     lastGroup = item->group();
+    first = false;
   }
   if (!first)
   {

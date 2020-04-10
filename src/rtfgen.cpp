@@ -174,9 +174,14 @@ void RTFGenerator::init()
   while(def->reference != 0)
   {
     if (def->definition == 0)
+    {
       err("Internal: rtf_Style_Default[%s] has no definition.\n", def->name);
-    StyleData* styleData = new StyleData(def->reference, def->definition);
-    rtf_Style.insert(def->name, styleData);
+    }
+    else
+    {
+      StyleData* styleData = new StyleData(def->reference, def->definition);
+      rtf_Style.insert(def->name, styleData);
+    }
     def++;
   }
 
