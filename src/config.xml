@@ -2417,7 +2417,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <value name="NativeMML" desc="(i.e. MathML)"/>
       <value name="SVG"/>
     </option>
-    <option type='string' id='MATHJAX_RELPATH' format='string' defval='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/' depends='USE_MATHJAX'>
+    <option type='string' id='MATHJAX_RELPATH' format='string' defval='https://cdn.jsdelivr.net/npm/mathjax@2' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
  When MathJax is enabled you need to specify the location relative to the
