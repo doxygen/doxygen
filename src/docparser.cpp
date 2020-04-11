@@ -1566,6 +1566,7 @@ reparsetoken:
             {
               handleStyleLeave(parent,children,DocStyleChange::S,tokenName);
             }
+            break;
           case HTML_STRIKE:
             if (!g_token->endTag)
             {
