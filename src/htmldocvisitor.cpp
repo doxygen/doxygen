@@ -2226,6 +2226,11 @@ void HtmlDocVisitor::filter(const char *str)
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
       case '&':  m_t << "&amp;"; break;
+      case '\\': if ((*p == '(') || (*p == ')'))
+                   m_t << "\\&zwj;" << *p++;
+                 else
+                   m_t << c;
+                 break;
       default:   m_t << c;
     }
   }
@@ -2247,6 +2252,11 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
       case '"':  m_t << "&quot;"; break;
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
+      case '\\': if ((*p == '(') || (*p == ')'))
+                   m_t << "\\&zwj;" << *p++;
+                 else
+                   m_t << c;
+                 break;
       default:   m_t << c;
     }
   }

@@ -668,6 +668,10 @@ void HtmlCodeGenerator::codify(const char *str)
                      { m_t << "&lt;"; p++; }
                    else if (*p=='>')
                      { m_t << "&gt;"; p++; }
+		   else if (*p=='(')
+                     { m_t << "\\&zwj;("; m_col++;p++; }
+                   else if (*p==')')
+                     { m_t << "\\&zwj;)"; m_col++;p++; }
                    else
                      m_t << "\\";
                    m_col++;
@@ -702,6 +706,10 @@ void HtmlCodeGenerator::docify(const char *str)
                      { m_t << "&lt;"; p++; }
                    else if (*p=='>')
                      { m_t << "&gt;"; p++; }
+		   else if (*p=='(')
+                     { m_t << "\\&zwj;("; p++; }
+                   else if (*p==')')
+                     { m_t << "\\&zwj;)"; p++; }
                    else
                      m_t << "\\";
                    break;
@@ -1502,6 +1510,10 @@ void HtmlGenerator::docify(const char *str,bool inHtmlComment)
                      { t << "&lt;"; p++; }
                    else if (*p=='>')
                      { t << "&gt;"; p++; }
+		   else if (*p=='(')
+                     { t << "\\&zwj;("; p++; }
+                   else if (*p==')')
+                     { t << "\\&zwj;)"; p++; }
                    else
                      t << "\\";
                    break;
