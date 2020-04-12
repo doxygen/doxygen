@@ -290,6 +290,7 @@ add_library(_doxygen STATIC
 
 add_executable(doxygen main.cpp)
 
+
 if (use_libclang)
     find_package(LLVM REQUIRED CONFIG)
     find_package(Clang REQUIRED CONFIG)
@@ -324,9 +325,12 @@ target_link_libraries(doxygen
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
     ${CLANG_LIBS}
+    ${DOXYGEN_EXTRA_LINK_OPTIONS}
 )
+
 set_project_warnings(doxycfg)
 set_project_warnings(_doxygen)
 set_project_warnings(doxygen)
 
 install(TARGETS doxygen DESTINATION bin)
+
