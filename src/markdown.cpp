@@ -517,6 +517,52 @@ static int processQuoted(GrowBuf &out,const char *data,int,int size)
   return 0;
 }
 
+/** Process KaTeX formula in between `$...$` or `$$...$$` and translate them to
+ *  Doxygen formula command
+ */
+static int processKaTeX(GrowBuf &out,const char *data,int offset,int size)
+{
+  // skip escaped \$
+  if (offset>0 && data[-1]=='\\')
+  {
+    return 0;
+  }
+
+  int i=1;
+  if (size>2 && data[1]!='$') // $...$
+  {
+    while (i<size && data[i]!='$')
+    {
+      i++;
+    }
+    if (i > 2 && i<size && data[i]=='$')
+    {
+      out.addStr("@f$",3);
+      out.addStr(&data[1],i-1);
+      out.addStr("@f$",3);
+      return i+1;
+    }
+  }
+  else if (size>3 && data[1]=='$' && data[2]!='$') // $$...$$
+  {
+    i = 2;
+    while (i<size && data[i]!='$')
+    {
+      i++;
+    }
+    if (i > 4 && i+1<size && data[i]=='$' && data[i+1]=='$')
+    {
+      out.addStr("@f[",3);
+      out.addStr(&data[2],i-2);
+      out.addStr("@f]",3);
+      return i+2;
+    }
+  }
+
+  // not a formula
+  return 0;
+}
+
 /** Process a HTML tag. Note that <pre>..</pre> are treated specially, in
  *  the sense that all code inside is written unprocessed
  */
@@ -2554,6 +2600,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
     g_actions[(unsigned int)'<']=processHtmlTag;
     g_actions[(unsigned int)'-']=processNmdash;
     g_actions[(unsigned int)'"']=processQuoted;
+    g_actions[(unsigned int)'$']=processKaTeX;
     init=TRUE;
   }
 
