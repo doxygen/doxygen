@@ -111,6 +111,7 @@ static int            g_lineNr;
 static int            g_indentLevel=0;  // 0 is outside markdown, -1=page level
 static const uchar    g_utf8_nbsp[3] = { 0xc2, 0xa0, 0}; // UTF-8 nbsp
 static const char    *g_doxy_nbsp = "&_doxy_nbsp;"; // doxygen escape command for UTF-8 nbsp
+static bool           g_inside_code_tag = false;
 //----------
 
 const int codeBlockIndent = 4;
@@ -523,7 +524,7 @@ static int processQuoted(GrowBuf &out,const char *data,int,int size)
 static int processKaTeX(GrowBuf &out,const char *data,int offset,int size)
 {
   // skip escaped \$
-  if (offset>0 && data[-1]=='\\')
+  if (g_inside_code_tag || (offset>0 && data[-1]=='\\'))
   {
     return 0;
   }
@@ -577,6 +578,12 @@ static int processHtmlTagWrite(GrowBuf &out,const char *data,int offset,int size
   while (i<size && isIdChar(i)) i++,l++;
   QCString tagName;
   convertStringFragment(tagName,data+1,i-1);
+  if (tagName.isNull() && strncasecmp(data, "</code>", 7)==0)
+  {
+    //printf("Found </code> tag");
+    g_inside_code_tag = false;
+    return 0;
+  }
   if (tagName.lower()=="pre") // found <pre> tag
   {
     bool insideStr=FALSE;
@@ -619,6 +626,11 @@ static int processHtmlTagWrite(GrowBuf &out,const char *data,int offset,int size
       {
         //printf("Found htmlTag={%s}\n",QCString(data).left(i+1).data());
         if (doWrite) out.addStr(data,i+1);
+        if (tagName.lower()=="code")
+        {
+          //printf("Found <code> tag");
+          g_inside_code_tag = true;
+        }
         return i+1;
       }
       else if (data[i]==' ') // <bla attr=...
@@ -639,6 +651,11 @@ static int processHtmlTagWrite(GrowBuf &out,const char *data,int offset,int size
           {
             //printf("Found htmlTag={%s}\n",QCString(data).left(i+1).data());
             if (doWrite) out.addStr(data,i+1);
+            if (tagName.lower()=="code")
+            {
+              //printf("Found <code attr=...> tag");
+              g_inside_code_tag = true;
+            }
             return i+1;
           }
           i++;
