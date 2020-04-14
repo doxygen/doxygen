@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -67,11 +67,11 @@ class RefItem
     const Definition *m_scope = 0;   //!< scope to use for references.
 };
 
-/** List of cross-referenced items 
- * 
+/** List of cross-referenced items
+ *
  *  This class represents a list of items that are put
- *  at a certain point in the documentation by some special command 
- *  and are collected in a list. The items cross-reference the 
+ *  at a certain point in the documentation by some special command
+ *  and are collected in a list. The items cross-reference the
  *  documentation and the list.
  *
  *  Examples are the todo list, the test list and the bug list,
@@ -88,6 +88,8 @@ class RefList
     RefList(const char *listName, const char *pageTitle, const char *secTitle) :
        m_listName(listName), m_fileName(convertNameToFile(listName,FALSE,TRUE)),
        m_pageTitle(pageTitle), m_secTitle(secTitle) {}
+
+    bool isEnabled() const;
 
     /*! Adds a new item to the list.
      *  @returns A unique id for this item.
@@ -111,7 +113,7 @@ class RefList
       auto it = m_lookup.find(itemId);
       return it!=m_lookup.end() ? it->second : nullptr;
     }
-    
+
     QCString listName() const      { return m_listName;  }
     QCString fileName() const      { return m_fileName;  }
     QCString pageTitle() const     { return m_pageTitle; }

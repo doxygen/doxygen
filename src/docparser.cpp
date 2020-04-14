@@ -2179,15 +2179,7 @@ DocXRefItem::DocXRefItem(DocNode *parent,int id,const char *key) :
 bool DocXRefItem::parse()
 {
   RefList *refList = RefListManager::instance().find(m_key);
-  if (refList &&
-      (
-       // either not a built-in list or the list is enabled
-       (m_key!="todo"       || Config_getBool(GENERATE_TODOLIST)) &&
-       (m_key!="test"       || Config_getBool(GENERATE_TESTLIST)) &&
-       (m_key!="bug"        || Config_getBool(GENERATE_BUGLIST))  &&
-       (m_key!="deprecated" || Config_getBool(GENERATE_DEPRECATEDLIST))
-      )
-     )
+  if (refList && refList->isEnabled())
   {
     RefItem *item = refList->find(m_id);
     ASSERT(item!=0);

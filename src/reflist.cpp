@@ -20,9 +20,21 @@
 #include "ftextstream.h"
 #include "definition.h"
 #include "sortdict.h"
+#include "config.h"
+
+bool RefList::isEnabled() const
+{
+  if      (m_listName=="todo"       && !Config_getBool(GENERATE_TODOLIST))       return false;
+  else if (m_listName=="test"       && !Config_getBool(GENERATE_TESTLIST))       return false;
+  else if (m_listName=="bug"        && !Config_getBool(GENERATE_BUGLIST))        return false;
+  else if (m_listName=="deprecated" && !Config_getBool(GENERATE_DEPRECATEDLIST)) return false;
+  return true;
+}
 
 void RefList::generatePage()
 {
+  if (!isEnabled()) return;
+
   std::sort(m_entries.begin(),m_entries.end(),
             [](std::unique_ptr<RefItem> &left,std::unique_ptr<RefItem> &right)
             { return qstricmp(left->title(),left->title()); });
