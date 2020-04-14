@@ -6962,8 +6962,10 @@ static void addEnumValuesToEnums(const Entry *root)
       if (mn)
       {
         // for each enum in this list
-        for (const auto &md : *mn)
+        for (const auto &mdp : *mn)
         {
+          // use raw pointer in this loop, since we modify mn and can then invalidate mdp.
+          MemberDef *md = mdp.get();
           if (!md->isAlias() && md->isEnumerate() && !root->children().empty())
           {
             //printf("   enum with %d children\n",root->children()->count());
@@ -7018,14 +7020,14 @@ static void addEnumValuesToEnums(const Entry *root)
                   fmd->setRefItems(e->sli);
                   fmd->setAnchor();
                   md->insertEnumField(fmd.get());
-                  fmd->setEnumScope(md.get(),TRUE);
+                  fmd->setEnumScope(md,TRUE);
                   mn=mnsd->add(e->name);
                   mn->push_back(std::move(fmd));
                 }
               }
               else
               {
-                //printf("e->name=%s isRelated=%d\n",e->name().data(),isRelated);
+                //printf("e->name=%s isRelated=%d\n",e->name.data(),isRelated);
                 MemberName *fmn=0;
                 MemberNameLinkedMap *emnsd = isRelated ? Doxygen::functionNameLinkedMap : mnsd;
                 if (!e->name.isEmpty() && (fmn=emnsd->find(e->name)))
@@ -7043,7 +7045,7 @@ static void addEnumValuesToEnums(const Entry *root)
                         if (fnd==nd) // enum value is inside a namespace
                         {
                           md->insertEnumField(fmd.get());
-                          fmd->setEnumScope(md.get());
+                          fmd->setEnumScope(md);
                         }
                       }
                       else if (isGlobal)
@@ -7052,14 +7054,14 @@ static void addEnumValuesToEnums(const Entry *root)
                         if (ffd==fd) // enum value has file scope
                         {
                           md->insertEnumField(fmd.get());
-                          fmd->setEnumScope(md.get());
+                          fmd->setEnumScope(md);
                         }
                       }
                       else if (isRelated && cd) // reparent enum value to
                                                 // match the enum's scope
                       {
                         md->insertEnumField(fmd.get());   // add field def to list
-                        fmd->setEnumScope(md.get());      // cross ref with enum name
+                        fmd->setEnumScope(md);      // cross ref with enum name
                         fmd->setEnumClassScope(cd); // cross ref with enum name
                         fmd->setOuterScope(cd);
                         fmd->makeRelated();
@@ -7073,7 +7075,7 @@ static void addEnumValuesToEnums(const Entry *root)
                           //printf("Inserting enum field %s in enum scope %s\n",
                           //    fmd->name().data(),md->name().data());
                           md->insertEnumField(fmd.get()); // add field def to list
-                          fmd->setEnumScope(md.get());    // cross ref with enum name
+                          fmd->setEnumScope(md);    // cross ref with enum name
                         }
                       }
                     }
