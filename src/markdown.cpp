@@ -110,7 +110,7 @@ static QCString       g_fileName;
 static int            g_lineNr;
 static int            g_indentLevel=0;  // 0 is outside markdown, -1=page level
 static const uchar    g_utf8_nbsp[3] = { 0xc2, 0xa0, 0}; // UTF-8 nbsp
-static const char    *g_doxy_nsbp = "&_doxy_nbsp;";            // doxygen escape command for UTF-8 nbsp
+static const char    *g_doxy_nbsp = "&_doxy_nbsp;"; // doxygen escape command for UTF-8 nbsp
 //----------
 
 const int codeBlockIndent = 4;
@@ -1090,13 +1090,13 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
 
 static void addStrEscapeUtf8Nbsp(GrowBuf &out,const char *s,int len)
 {
-  if (Portable::strnstr(s,g_doxy_nsbp,len)==0) // no escape needed -> fast
+  if (Portable::strnstr(s,g_doxy_nbsp,len)==0) // no escape needed -> fast
   {
     out.addStr(s,len);
   }
   else // escape needed -> slow
   {
-    out.addStr(substitute(QCString(s).left(len),g_doxy_nsbp,(const char *)g_utf8_nbsp));
+    out.addStr(substitute(QCString(s).left(len),g_doxy_nbsp,(const char *)g_utf8_nbsp));
   }
 }
 
@@ -2550,7 +2550,7 @@ static QCString detab(const QCString &s,int &refIndent)
           // special handling of the UTF-8 nbsp character 0xC2 0xA0
           if ((uchar)c == 0xC2 && (uchar)(data[i]) == 0xA0)
           {
-            out.addStr(g_doxy_nsbp);
+            out.addStr(g_doxy_nbsp);
             i++;
           }
           else
@@ -2628,7 +2628,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
   processInline(out,s,s.length());
   out.addChar(0);
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(out.get()));
-  return substitute(out.get(),g_doxy_nsbp,"&nbsp;");
+  return substitute(out.get(),g_doxy_nbsp,"&nbsp;");
 }
 
 //---------------------------------------------------------------------------
