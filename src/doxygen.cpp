@@ -3445,7 +3445,7 @@ static void buildFunctionList(const Entry *root)
                 {
                   // merge argument lists
                   ArgumentList mergedArgList = root->argList;
-                  mergeArguments(mdAl,mergedArgList,!root->doc.isEmpty());
+                  mergeArguments(mdAl,mergedArgList,!root->proto);
                   // merge documentation
                   if (md->documentation().isEmpty() && !root->doc.isEmpty())
                   {
@@ -4969,7 +4969,7 @@ static void addMemberDocs(const Entry *root,
   {
     ArgumentList mergedAl = *al;
     //printf("merging arguments (1) docs=%d\n",root->doc.isEmpty());
-    mergeArguments(mdAl,mergedAl,!root->doc.isEmpty());
+    mergeArguments(mdAl,mergedAl,!root->proto);
   }
   else
   {
@@ -4982,7 +4982,7 @@ static void addMemberDocs(const Entry *root,
     {
       //printf("merging arguments (2)\n");
       ArgumentList mergedArgList = root->argList;
-      mergeArguments(mdAl,mergedArgList,!root->doc.isEmpty());
+      mergeArguments(mdAl,mergedArgList,!root->proto);
     }
   }
   if (over_load)  // the \overload keyword was used
