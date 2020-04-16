@@ -995,12 +995,15 @@ static void addClassToContext(const Entry *root)
     cd->setDocumentation(root->doc,root->docFile,root->docLine);
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
 
-    if (root->bodyLine!=-1 && cd->getStartBodyLine()==-1)
+    if ((root->spec&Entry::ForwardDecl)==0 && cd->isForwardDeclared())
     {
-      cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-      cd->setBodyDef(fd);
+      cd->setDefFile(root->fileName,root->startLine,root->startColumn);
+      if (root->bodyLine!=-1)
+      {
+        cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+        cd->setBodyDef(fd);
+      }
     }
-    //cd->setName(fullName); // change name to match docs
 
     if (cd->templateArguments().empty() || (cd->isForwardDeclared() && (root->spec&Entry::ForwardDecl)==0))
     {
@@ -1097,19 +1100,22 @@ static void addClassToContext(const Entry *root)
 
   cd->addSectionsToDefinition(root->anchors);
   if (!root->subGrouping) cd->setSubGrouping(FALSE);
-  if (cd->hasDocumentation())
+  if ((root->spec&Entry::ForwardDecl)==0)
   {
-    addIncludeFile(cd,fd,root);
-  }
-  if (fd && (root->section & Entry::COMPOUND_MASK))
-  {
-    //printf(">> Inserting class '%s' in file '%s' (root->fileName='%s')\n",
-    //    cd->name().data(),
-    //    fd->name().data(),
-    //    root->fileName.data()
-    //   );
-    cd->setFileDef(fd);
-    fd->insertClass(cd);
+    if (cd->hasDocumentation())
+    {
+      addIncludeFile(cd,fd,root);
+    }
+    if (fd && (root->section & Entry::COMPOUND_MASK))
+    {
+      //printf(">> Inserting class '%s' in file '%s' (root->fileName='%s')\n",
+      //    cd->name().data(),
+      //    fd->name().data(),
+      //    root->fileName.data()
+      //   );
+      cd->setFileDef(fd);
+      fd->insertClass(cd);
+    }
   }
   addClassToGroups(root,cd);
   cd->setRefItems(root->sli);
@@ -2093,8 +2099,6 @@ static MemberDef *addVariableToClass(
       ArgumentList(), root->metaData) };
   md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd); // also sets outer scope (i.e. getOuterScope())
-  //md->setDefFile(root->fileName);
-  //md->setDefLine(root->startLine);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -3153,8 +3157,6 @@ void addGlobalFunction(const Entry *root,const QCString &rname,const QCString &s
   md->setTagInfo(root->tagInfo());
   md->setLanguage(root->lang);
   md->setId(root->id);
-  //md->setDefFile(root->fileName);
-  //md->setDefLine(root->startLine);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
