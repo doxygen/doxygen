@@ -22,6 +22,8 @@
 #include <qdict.h>
 #include <qintdict.h>
 
+#include <unordered_set>
+
 #include "ftextstream.h"
 #include "sortdict.h"
 #include "membergroup.h"
@@ -114,7 +116,7 @@ class Doxygen
     static StringDict                tagDestinationDict;
     static StringDict                aliasDict;
     static QIntDict<MemberGroupInfo> memGrpInfoDict;
-    static QDict<void>               expandAsDefinedDict;
+    static std::unordered_set<std::string> expandAsDefinedSet;
     static NamespaceDef             *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;

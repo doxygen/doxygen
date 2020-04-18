@@ -136,7 +136,7 @@ FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = 0;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = 0;     // dia files
 StringDict       Doxygen::namespaceAliasDict(257); // all namespace aliases
 StringDict       Doxygen::tagDestinationDict(257); // all tag locations
-QDict<void>      Doxygen::expandAsDefinedDict(257); // all macros that should be expanded
+std::unordered_set<std::string> Doxygen::expandAsDefinedSet; // all macros that should be expanded
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
 PageDef         *Doxygen::mainPage = 0;
 bool             Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
@@ -275,8 +275,6 @@ void statistics()
   Doxygen::tagDestinationDict.statistics();
   fprintf(stderr,"--- g_compoundKeywordDict stats ----\n");
   g_compoundKeywordDict.statistics();
-  fprintf(stderr,"--- expandAsDefinedDict stats ----\n");
-  Doxygen::expandAsDefinedDict.statistics();
   fprintf(stderr,"--- memGrpInfoDict stats ----\n");
   Doxygen::memGrpInfoDict.statistics();
 }
@@ -10311,10 +10309,7 @@ void adjustConfiguration()
   s=expandAsDefinedList.first();
   while (s)
   {
-    if (Doxygen::expandAsDefinedDict[s]==0)
-    {
-      Doxygen::expandAsDefinedDict.insert(s,(void *)666);
-    }
+    Doxygen::expandAsDefinedSet.insert(s);
     s=expandAsDefinedList.next();
   }
 

@@ -30,6 +30,7 @@
 #include <deque>
 #include <algorithm>
 #include <set>
+#include <unordered_set>
 #include <string>
 #include <map>
 #include <utility>
@@ -334,7 +335,7 @@ void DefineManager::DefinesPerFile::collectDefines(
  *
  *	global state
  */
-static std::set<std::string> g_allIncludes;
+static std::unordered_set<std::string> g_allIncludes;
 static DefineManager         g_defineManager;
 
 
@@ -396,7 +397,7 @@ struct preYY_state
   std::stack< std::unique_ptr<CondCtx> >   condStack;
   std::deque< std::unique_ptr<FileState> > includeStack;
   std::map<std::string,Define*>            expandedDict;
-  std::set<std::string>                    expanded;
+  std::unordered_set<std::string>          expanded;
   ConstExpressionParser                    constExpParser;
 };
 
@@ -2781,7 +2782,8 @@ static std::unique_ptr<Define> newDefine(yyscan_t yyscanner)
   //printf("newDefine: %s %s file: %s\n",def->name.data(),def->definition.data(),
   //    def->fileDef ? def->fileDef->name().data() : def->fileName.data());
   //printf("newDefine: '%s'->'%s'\n",def->name.data(),def->definition.data());
-  if (!def->name.isEmpty() && Doxygen::expandAsDefinedDict[def->name])
+  if (!def->name.isEmpty() && 
+      Doxygen::expandAsDefinedSet.find(def->name.data())!=Doxygen::expandAsDefinedSet.end())
   {
     def->isPredefined=TRUE;
   }
