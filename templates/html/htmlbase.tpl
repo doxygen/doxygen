@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>{{ config.PROJECT_NAME }}: {{ page.title }}</title>
 <link href="{{ page.relPath }}tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="{{ page.relPath }}jquery.js"></script>
+<script type="text/javascript" src="{{ page.relPath }}bundle.js"></script>
 <script type="text/javascript" src="{{ page.relPath }}dynsections.js"></script>
 {% if config.GENERATE_TREEVIEW %}
 <link href="{{ page.relPath }}navtree.css" rel="stylesheet" type="text/css"/>

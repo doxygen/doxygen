@@ -1,0 +1,17 @@
+{
+  "name": "doxygen",
+  "version": "1.8.17",
+  "description": "Documentation system for C, C++, Java, Python and other languages",
+  "main": "index.js",
+  "repository": "https://github.com/doxygen/doxygen",
+  "author": "Dimitri van Heesch (doxygen at gmail.com)",
+  "license": "GPL-2.0",
+  "dependencies": {
+    "jquery": "^3.4.1",
+    "tippy.js": "^5.2.0",
+    "jquery-ui-dist": "^1.12.1",
+    "jquery-ui-touch-punch": "^0.2.3",
+    "jquery.scrollto": "^2.1.2",
+    "smartmenus": "^1.1.0"
+  }
+}
