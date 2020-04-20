@@ -860,6 +860,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_startElementHandlers.insert("tagfile",     new StartElementHandler(this,&TagFileParser::startIgnoreElement));
       m_startElementHandlers.insert("templarg",    new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("type",        new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("doxygen",     new StartElementHandler(this,&TagFileParser::startIgnoreElement));
 
       m_endElementHandlers.insert("compound",    new EndElementHandler(this,&TagFileParser::endCompound));
       m_endElementHandlers.insert("member",      new EndElementHandler(this,&TagFileParser::endMember));
@@ -884,6 +885,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_endElementHandlers.insert("tagfile",     new EndElementHandler(this,&TagFileParser::endIgnoreElement));
       m_endElementHandlers.insert("templarg",    new EndElementHandler(this,&TagFileParser::endTemplateArg));
       m_endElementHandlers.insert("type",        new EndElementHandler(this,&TagFileParser::endType));
+      m_endElementHandlers.insert("doxygen",     new EndElementHandler(this,&TagFileParser::endIgnoreElement));
 
       return TRUE;
     }
