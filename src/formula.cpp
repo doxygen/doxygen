@@ -220,7 +220,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
     int pageIndex=1;
     for (int pageNum : formulasToGenerate)
     {
-      msg("Generating image form_%d.png for formula\n",pageNum);
+      msg("Generating image form_%d.%s for formula\n",pageNum,(format==Format::Vector) ? "svg" : "png");
       QCString formBase;
       formBase.sprintf("_form%d",pageNum);
       // run dvips to convert the page with number pageIndex to an
