@@ -75,10 +75,10 @@
  */
 struct defargsYY_state
 {
-  defargsYY_state(const char *inStr,ArgumentList &al,SrcLangExt l)
+  defargsYY_state(const char *inStr,std::unique_ptr<ArgumentList> &al,SrcLangExt l)
     : inputString(inStr), argList(al), lang(l) {}
   const char      *inputString;
-  ArgumentList    &argList;
+  std::unique_ptr<ArgumentList> &argList;
   SrcLangExt       lang;
   int              inputPosition = 0;
   QCString        *copyArgValue = 0;
@@ -437,7 +437,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      //printf("a->type=%s a->name=%s a->defval=\"%s\"\n",a->type.data(),a->name.data(),a->defval.data());
 					      a.docs   = yyextra->curArgDocs.stripWhiteSpace();
 					      //printf("Argument '%s' '%s' adding docs='%s'\n",a->type.data(),a->name.data(),a->docs.data());
-					      yyextra->argList.push_back(a);
+					      yyextra->argList->push_back(a);
 					    }
 					    yyextra->curArgAttrib.resize(0);
 					    yyextra->curArgTypeName.resize(0);
@@ -506,23 +506,23 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           yyextra->curTypeConstraint+=' ';
                                         }
 <FuncQual>"const"		       	{
-					  yyextra->argList.constSpecifier=TRUE;
+					  yyextra->argList->constSpecifier=TRUE;
 					}
 <FuncQual>"volatile"		    	{
-					  yyextra->argList.volatileSpecifier=TRUE;
+					  yyextra->argList->volatileSpecifier=TRUE;
 					}
 <FuncQual>"&"		    	        {
-                                          yyextra->argList.refQualifier=RefQualifierLValue;
+                                          yyextra->argList->refQualifier=RefQualifierLValue;
 					}
 <FuncQual>"&&"		    	        {
-                                          yyextra->argList.refQualifier=RefQualifierRValue;
+                                          yyextra->argList->refQualifier=RefQualifierRValue;
 					}
 <FuncQual,TrailingReturn>"="{B}*"0"  	{
-					  yyextra->argList.pureSpecifier=TRUE;
+					  yyextra->argList->pureSpecifier=TRUE;
                                           BEGIN(FuncQual);
 					}
 <FuncQual>"->"                          { // C++11 trailing return type
-                                          yyextra->argList.trailingReturnType=" -> ";
+                                          yyextra->argList->trailingReturnType=" -> ";
                                           BEGIN(TrailingReturn);
                                         }
 <TrailingReturn>{B}/("final"|"override"){B}*  {
@@ -530,10 +530,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>.                       {
-                                          yyextra->argList.trailingReturnType+=yytext;
+                                          yyextra->argList->trailingReturnType+=yytext;
                                         }
 <TrailingReturn>\n                      {
-                                          yyextra->argList.trailingReturnType+=yytext;
+                                          yyextra->argList->trailingReturnType+=yytext;
                                         }
 <FuncQual>")"{B}*"["[^]]*"]"		{ // for functions returning a pointer to an array, 
                                           // i.e. ")[]" in "int (*f(int))[4]" with argsString="(int))[4]"
@@ -768,9 +768,10 @@ static bool nameIsActuallyPartOfType(QCString &name)
  *              for complex types are written to
  */
  
-void stringToArgumentList(SrcLangExt lang, const char *argsString,ArgumentList& al,QCString *extraTypeChars)
+std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const char *argsString,QCString *extraTypeChars)
 {
-  if (argsString==0) return;
+  std::unique_ptr<ArgumentList> al = std::make_unique<ArgumentList>();
+  if (argsString==0) return al;
 
   yyscan_t yyscanner;
   defargsYY_state extra(argsString,al,lang);
@@ -784,14 +785,15 @@ void stringToArgumentList(SrcLangExt lang, const char *argsString,ArgumentList& 
   defargsYYrestart( 0, yyscanner );
   BEGIN( Start );
   defargsYYlex(yyscanner);
-  if (yyextra->argList.empty())
+  if (yyextra->argList->empty())
   {
-    yyextra->argList.noParameters = TRUE;
+    yyextra->argList->noParameters = TRUE;
   }
   if (extraTypeChars) *extraTypeChars=yyextra->extraTypeChars;
   //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
   printlex(yy_flex_debug, FALSE, __FILE__, NULL);
   defargsYYlex_destroy(yyscanner);
+  return al;
 }
 
 #if USE_STATE2STRING

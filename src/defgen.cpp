@@ -145,8 +145,7 @@ void generateDEFForMember(MemberDef *md,
   if (isFunc) //function
   {
     const ArgumentList &defAl = md->argumentList();
-    ArgumentList declAl;
-    stringToArgumentList(md->getLanguage(),md->argsString(),declAl);
+    ArgumentList declAl = *stringToArgumentList(md->getLanguage(),md->argsString());
     QCString fcnPrefix = "  " + memPrefix + "param-";
 
     auto defIt = defAl.begin();

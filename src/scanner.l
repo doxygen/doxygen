@@ -4219,7 +4219,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <ReadFuncArgType>")"			{ 
   					  *yyextra->copyArgString+=*yytext;
   					  yyextra->fullArgString+=*yytext;
-					  stringToArgumentList(yyextra->language, yyextra->fullArgString,yyextra->current->argList);
+                                          yyextra->current->argList = *stringToArgumentList(yyextra->language, yyextra->fullArgString);
 					  if (yyextra->insideJS)
 					  {
 					    fixArgumentListForJavaScript(yyextra->current->argList);
@@ -4246,7 +4246,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    {
 					      unput(yytext[i]);
 					    }
-					    stringToArgumentList(yyextra->language, yyextra->fullArgString,yyextra->current->argList);
+                                            yyextra->current->argList = *stringToArgumentList(yyextra->language, yyextra->fullArgString);
                                             handleParametersCommentBlocks(yyscanner,yyextra->current->argList);
 					    BEGIN( yyextra->currentArgumentContext );
 					  }
@@ -4299,7 +4299,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    }
 					    *yyextra->copyArgString+=*yytext;
 					    yyextra->fullArgString+=*yytext;
-					    stringToArgumentList(yyextra->language, yyextra->fullArgString,yyextra->current->argList);
+                                            yyextra->current->argList = *stringToArgumentList(yyextra->language, yyextra->fullArgString);
                                             handleParametersCommentBlocks(yyscanner,yyextra->current->argList);
 					    BEGIN( yyextra->currentArgumentContext );
 					  }
@@ -4380,7 +4380,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  *yyextra->copyArgString+=*yytext;
 					  yyextra->fullArgString+=*yytext;
 					  //printf("end template list '%s'\n",yyextra->copyArgString->data());
-					  stringToArgumentList(yyextra->language, yyextra->fullArgString,*yyextra->currentArgumentList);
+                                          *yyextra->currentArgumentList = *stringToArgumentList(yyextra->language, yyextra->fullArgString);
 					  BEGIN( yyextra->currentArgumentContext );
 					}
 <CopyArgRound>"("			{

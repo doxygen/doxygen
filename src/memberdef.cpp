@@ -93,7 +93,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual int getGroupStartLine() const;
     virtual bool getGroupHasDocs() const;
     virtual QCString qualifiedName() const;
-    virtual QCString objCMethodName(bool localLink,bool showStatic) const; 
+    virtual QCString objCMethodName(bool localLink,bool showStatic) const;
     virtual Protection protection() const;
     virtual Specifier virtualness(int count=0) const;
     virtual MemberType memberType() const;
@@ -275,8 +275,8 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setPrototype(bool p,const QCString &df,int line, int column);
     virtual void setExplicitExternal(bool b,const QCString &df,int line,int column);
     virtual void setDeclFile(const QCString &df,int line,int column);
-    virtual void setArgumentList(const ArgumentList &al);
-    virtual void setDeclArgumentList(const ArgumentList &al);
+    virtual void moveArgumentList(std::unique_ptr<ArgumentList> al);
+    virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al);
     virtual void setDefinitionTemplateParameterLists(const std::vector<ArgumentList> &lists);
     virtual void setTypeConstraints(const ArgumentList &al);
     virtual void setType(const char *t);
@@ -324,7 +324,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void warnIfUndocumentedParams() const;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const;
     virtual MemberDef *createTemplateInstanceMember(const ArgumentList &formalArgs,
-               const ArgumentList &actualArgs) const;
+               const std::unique_ptr<ArgumentList> &actualArgs) const;
     virtual void findSectionsInDocumentation();
     virtual void writeLink(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
@@ -378,7 +378,7 @@ MemberDef *createMemberDef(const char *defFileName,int defLine,int defColumn,
 class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
 {
   public:
-    MemberDefAliasImpl(const Definition *newScope,const MemberDef *md) 
+    MemberDefAliasImpl(const Definition *newScope,const MemberDef *md)
     : DefinitionAliasImpl(newScope,md), m_memberGroup(0) {}
     virtual ~MemberDefAliasImpl() {}
     virtual DefType definitionType() const { return TypeMember; }
@@ -787,8 +787,8 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void setPrototype(bool p,const QCString &df,int line, int column) {}
     virtual void setExplicitExternal(bool b,const QCString &df,int line,int column) {}
     virtual void setDeclFile(const QCString &df,int line,int column) {}
-    virtual void setArgumentList(const ArgumentList &al) {}
-    virtual void setDeclArgumentList(const ArgumentList &al) {}
+    virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) {}
+    virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) {}
     virtual void setDefinitionTemplateParameterLists(const std::vector<ArgumentList> &lists) {}
     virtual void setTypeConstraints(const ArgumentList &al) {}
     virtual void setType(const char *t) {}
@@ -823,7 +823,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void addToSearchIndex() const {}
     virtual void findSectionsInDocumentation() {}
     virtual MemberDef *createTemplateInstanceMember(const ArgumentList &formalArgs,
-               const ArgumentList &actualArgs) const
+               const std::unique_ptr<ArgumentList> &actualArgs) const
     { return getMdAlias()->createTemplateInstanceMember(formalArgs,actualArgs); }
     virtual void incrementFlowKeyWordCount() {}
 
@@ -1478,7 +1478,7 @@ void MemberDefImpl::IMPL::init(Definition *d,
   // convert function declaration arguments (if any)
   if (!args.isEmpty())
   {
-    stringToArgumentList(d->getLanguage(),args,declArgList,&extraTypeChars);
+    declArgList = *stringToArgumentList(d->getLanguage(),args,&extraTypeChars);
     //printf("setDeclArgList %s to %s const=%d\n",args.data(),
     //    argListToString(declArgList).data(),declArgList->constSpecifier);
   }
@@ -2534,7 +2534,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     ol.docify(" [implementation]");
     ol.endTypewriter();
   }
-  
+
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
 
   if (isProperty() && (isSettable() || isGettable() ||
@@ -2545,7 +2545,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.startTypewriter();
       ol.docify(" [");
       QStrList sl;
-      
+
       if (isGettable())             sl.append("get");
       if (isProtectedGettable())    sl.append("protected get");
       if (isSettable())             sl.append("set");
@@ -4143,7 +4143,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
     warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of %s",
                           qualifiedName().data());
   }
-  else if ( // see if return needs to documented 
+  else if ( // see if return needs to documented
             m_impl->hasDocumentedReturnType ||
            isVoidReturn        || // void return type
            isFortranSubroutine || // fortran subroutine
@@ -4328,21 +4328,25 @@ void MemberDefImpl::setNamespace(NamespaceDef *nd)
 }
 
 MemberDef *MemberDefImpl::createTemplateInstanceMember(
-        const ArgumentList &formalArgs,const ArgumentList &actualArgs) const
+        const ArgumentList &formalArgs,const std::unique_ptr<ArgumentList> &actualArgs) const
 {
   //printf("  Member %s %s %s\n",typeString(),name().data(),argsString());
-  ArgumentList actualArgList;
+  std::unique_ptr<ArgumentList> actualArgList;
   if (!m_impl->defArgList.empty())
   {
-    actualArgList = m_impl->defArgList;
+    actualArgList = std::make_unique<ArgumentList>(m_impl->defArgList);
 
     // replace formal arguments with actuals
-    for (Argument &arg : actualArgList)
+    for (Argument &arg : *actualArgList)
     {
       arg.type = substituteTemplateArgumentsInString(arg.type,formalArgs,actualArgs);
     }
-    actualArgList.trailingReturnType =
-       substituteTemplateArgumentsInString(actualArgList.trailingReturnType,formalArgs,actualArgs);
+    actualArgList->trailingReturnType =
+       substituteTemplateArgumentsInString(actualArgList->trailingReturnType,formalArgs,actualArgs);
+  }
+  else
+  {
+    actualArgList = std::make_unique<ArgumentList>();
   }
 
   QCString methodName=name();
@@ -4357,10 +4361,10 @@ MemberDef *MemberDefImpl::createTemplateInstanceMember(
                        methodName,
                        substituteTemplateArgumentsInString(m_impl->args,formalArgs,actualArgs),
                        m_impl->exception, m_impl->prot,
-                       m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype, 
+                       m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype,
                        ArgumentList(), ArgumentList(), ""
                    );
-  imd->setArgumentList(actualArgList);
+  imd->moveArgumentList(std::move(actualArgList));
   imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def,formalArgs,actualArgs));
   imd->setBodyDef(getBodyDef());
   imd->setBodySegment(getDefLine(),getStartBodyLine(),getEndBodyLine());
@@ -4789,14 +4793,14 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
   }
 }
 
-void MemberDefImpl::setArgumentList(const ArgumentList &al)
+void MemberDefImpl::moveArgumentList(std::unique_ptr<ArgumentList> al)
 {
-  m_impl->defArgList = al;
+  m_impl->defArgList = *al;
 }
 
-void MemberDefImpl::setDeclArgumentList(const ArgumentList &al)
+void MemberDefImpl::moveDeclArgumentList(std::unique_ptr<ArgumentList> al)
 {
-  m_impl->declArgList = al;
+  m_impl->declArgList = *al;
 }
 
 void MemberDefImpl::setTypeConstraints(const ArgumentList &al)
@@ -5956,8 +5960,8 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
     const MemberDef *cmdef = const_cast<const MemberDef*>(mdef);
     ArgumentList &mdefAl = mdef->argumentList();
     ArgumentList &mdecAl = mdec->argumentList();
-    if (matchArguments2(cmdef->getOuterScope(),cmdef->getFileDef(),mdefAl,
-                        cmdec->getOuterScope(),cmdec->getFileDef(),mdecAl,
+    if (matchArguments2(cmdef->getOuterScope(),cmdef->getFileDef(),&mdefAl,
+                        cmdec->getOuterScope(),cmdec->getFileDef(),&mdecAl,
                         TRUE
                        )
        ) /* match found */
@@ -5987,10 +5991,9 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
         mdec->setDocsForDefinition(mdef->isDocsForDefinition());
         if (mdefAl.hasParameters())
         {
-          ArgumentList mdefAlComb;
-          stringToArgumentList(mdef->getLanguage(),mdef->argsString(),mdefAlComb);
-          transferArgumentDocumentation(mdefAl,mdefAlComb);
-          mdec->setArgumentList(mdefAlComb);
+          auto mdefAlComb = stringToArgumentList(mdef->getLanguage(),mdef->argsString());
+          transferArgumentDocumentation(mdefAl,*mdefAlComb);
+          mdec->moveArgumentList(std::move(mdefAlComb));
         }
       }
       else if (!mdec->documentation().isEmpty())
@@ -6000,10 +6003,9 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
         mdef->setDocsForDefinition(mdec->isDocsForDefinition());
         if (mdecAl.hasParameters())
         {
-          ArgumentList mdecAlComb;
-          stringToArgumentList(mdec->getLanguage(),mdec->argsString(),mdecAlComb);
-          transferArgumentDocumentation(mdecAl,mdecAlComb);
-          mdef->setDeclArgumentList(mdecAlComb);
+          auto mdecAlComb = stringToArgumentList(mdec->getLanguage(),mdec->argsString());
+          transferArgumentDocumentation(mdecAl,*mdecAlComb);
+          mdef->moveDeclArgumentList(std::move(mdecAlComb));
         }
       }
       if (!mdef->inbodyDocumentation().isEmpty())

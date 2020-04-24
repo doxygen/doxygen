@@ -3665,8 +3665,8 @@ void ClassDefImpl::mergeMembers()
                     ArgumentList &srcAl = srcMd->argumentList();
                     ArgumentList &dstAl = dstMd->argumentList();
                     found=matchArguments2(
-                        srcMd->getOuterScope(),srcMd->getFileDef(),srcAl,
-                        dstMd->getOuterScope(),dstMd->getFileDef(),dstAl,
+                        srcMd->getOuterScope(),srcMd->getFileDef(),&srcAl,
+                        dstMd->getOuterScope(),dstMd->getFileDef(),&dstAl,
                         TRUE
                         );
                     //printf("  Yes, matching (%s<->%s): %d\n",
@@ -4254,11 +4254,10 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const char *t
     MemberInfo *mi;
     for (mnii.toFirst();(mi=mnii.current());++mnii)
     {
-      ArgumentList actualArguments;
-      stringToArgumentList(getLanguage(),templSpec,actualArguments);
+      auto actualArguments_p = stringToArgumentList(getLanguage(),templSpec);
       MemberDef *md = mi->memberDef;
       std::unique_ptr<MemberDef> imd { md->createTemplateInstanceMember(
-                          cd->templateArguments(),actualArguments) };
+                          cd->templateArguments(),actualArguments_p) };
       //printf("%s->setMemberClass(%p)\n",imd->name().data(),this);
       imd->setMemberClass(this);
       imd->setTemplateMaster(md);

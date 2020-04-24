@@ -22,6 +22,8 @@
  *  \brief A bunch of utility functions.
  */
 
+#include <memory>
+
 #include <qlist.h>
 #include <ctype.h>
 #include "types.h"
@@ -184,8 +186,8 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
 
 QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
 
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList &srcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList &dstAl,
+bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
+                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
                      bool checkCV
                     );
 
@@ -308,7 +310,7 @@ QCString normalizeNonTemplateArgumentsInString(
 QCString substituteTemplateArgumentsInString(
        const QCString &name,
        const ArgumentList &formalArgs,
-       const ArgumentList &actualArgs);
+       const std::unique_ptr<ArgumentList> &actualArgs);
 
 //QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);
 
@@ -410,7 +412,7 @@ const ClassDef *newResolveTypedef(const FileDef *fileScope,
                                   const MemberDef **pMemType=0,
                                   QCString *pTemplSpec=0,
                                   QCString *pResolvedType=0,
-                                  const ArgumentList *actTemplParams=0);
+                                  const std::unique_ptr<ArgumentList> &actTemplParams=std::unique_ptr<ArgumentList>());
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 

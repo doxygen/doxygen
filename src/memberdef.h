@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,6 +19,7 @@
 #define MEMBERDEF_H
 
 #include <vector>
+#include <memory>
 
 #include <qlist.h>
 #include <sys/types.h>
@@ -93,16 +94,16 @@ class MemberDef : virtual public Definition
     // grabbing the property read/write accessor names
     virtual const char *getReadAccessor() const = 0;
     virtual const char *getWriteAccessor() const = 0;
-    
+
     // querying the grouping definition
     virtual Grouping::GroupPri_t getGroupPri() const = 0;
     virtual const char *getGroupFileName() const = 0;
     virtual int getGroupStartLine() const = 0;
     virtual bool getGroupHasDocs() const = 0;
     virtual QCString qualifiedName() const = 0;
-    virtual QCString objCMethodName(bool localLink,bool showStatic) const = 0; 
+    virtual QCString objCMethodName(bool localLink,bool showStatic) const = 0;
 
-    // direct kind info 
+    // direct kind info
     virtual Protection protection() const = 0;
     virtual Specifier virtualness(int count=0) const = 0;
     virtual MemberType memberType() const = 0;
@@ -326,15 +327,15 @@ class MemberDef : virtual public Definition
 
     // example related members
     virtual bool addExample(const char *anchor,const char *name,const char *file) = 0;
-    
+
     // prototype related members
     virtual void setPrototype(bool p,const QCString &df,int line, int column) = 0;
     virtual void setExplicitExternal(bool b,const QCString &df,int line,int column) = 0;
     virtual void setDeclFile(const QCString &df,int line,int column) = 0;
 
     // argument related members
-    virtual void setArgumentList(const ArgumentList &al) = 0;
-    virtual void setDeclArgumentList(const ArgumentList &al) = 0;
+    virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) = 0;
+    virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) = 0;
     virtual void setDefinitionTemplateParameterLists(const std::vector<ArgumentList> &lists) = 0;
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setType(const char *t) = 0;
@@ -387,7 +388,7 @@ class MemberDef : virtual public Definition
     //-----------------------------------------------------------------------------------
 
     virtual MemberDef *createTemplateInstanceMember(const ArgumentList &formalArgs,
-               const ArgumentList &actualArgs) const = 0;
+               const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual void addToSearchIndex() const = 0;
 

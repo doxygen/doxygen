@@ -2805,10 +2805,8 @@ static void addDefine(yyscan_t yyscanner)
       Public,Normal,FALSE,Member,MemberType_Define,ArgumentList(),ArgumentList(),"") };
   if (!state->defArgsStr.isEmpty())
   {
-    ArgumentList argList;
     //printf("addDefine() state->defName='%s' state->defArgsStr='%s'\n",state->defName.data(),state->defArgsStr.data());
-    stringToArgumentList(SrcLangExt_Cpp, state->defArgsStr,argList);
-    md->setArgumentList(argList);
+    md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, state->defArgsStr));
   }
   //printf("Setting initializer for '%s' to '%s'\n",state->defName.data(),state->defText.data());
   int l=state->defLitText.find('\n');

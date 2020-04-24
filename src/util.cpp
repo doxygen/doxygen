@@ -20,6 +20,7 @@
 #include <math.h>
 #include <limits.h>
 #include <cinttypes>
+#include <string.h>
 
 
 #include "md5.h"
@@ -475,18 +476,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
 ClassDef *getClass(const char *n)
 {
   if (n==0 || n[0]=='\0') return 0;
-  QCString name=n;
-  ClassDef *result = Doxygen::classSDict->find(name);
-  //if (result==0 && !exact) // also try generic and protocol versions
-  //{
-  //  result = Doxygen::classSDict->find(name+"-g");
-  //  if (result==0)
-  //  {
-  //    result = Doxygen::classSDict->find(name+"-p");
-  //  }
-  //}
-  //printf("getClass(%s)=%s\n",n,result?result->name().data():"<none>");
-  return result;
+  return Doxygen::classSDict->find(n);
 }
 
 NamespaceDef *getResolvedNamespace(const char *name)
@@ -540,7 +530,7 @@ const ClassDef *newResolveTypedef(const FileDef *fileScope,
                                   const MemberDef **pMemType,
                                   QCString *pTemplSpec,
                                   QCString *pResolvedType,
-                                  const ArgumentList *actTemplParams)
+                                  const std::unique_ptr<ArgumentList> &actTemplParams)
 {
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
@@ -567,7 +557,7 @@ const ClassDef *newResolveTypedef(const FileDef *fileScope,
       actTemplParams && !actTemplParams->empty())
   {
     type = substituteTemplateArgumentsInString(type,
-            typeClass->templateArguments(),*actTemplParams);
+            typeClass->templateArguments(),actTemplParams);
   }
   QCString typedefValue = type;
   int tl=type.length();
@@ -1218,7 +1208,7 @@ static void getResolvedSymbol(const Definition *scope,
                        const FileDef *fileScope,
                        Definition *d,
                        const QCString &explicitScopePart,
-                       ArgumentList *actTemplParams,
+                       const std::unique_ptr<ArgumentList> &actTemplParams,
                        int &minDistance,
                        const ClassDef *&bestMatch,
                        const MemberDef *&bestTypedef,
@@ -1388,16 +1378,17 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
     )
 {
   //printf("[getResolvedClassRec(%s,%s)\n",scope?scope->name().data():"<global>",n);
+  if (n==0 || *n=='\0') return 0;
   QCString name;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
   name=stripTemplateSpecifiersFromScope
                      (removeRedundantWhiteSpace(n),TRUE,
                       &strippedTemplateParams);
-  ArgumentList actTemplParams;
+  std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
-    stringToArgumentList(scope->getLanguage(),strippedTemplateParams,actTemplParams);
+    actTemplParams = stringToArgumentList(scope->getLanguage(),strippedTemplateParams);
   }
 
   int qualifierIndex = computeQualifiedIndex(name);
@@ -1423,16 +1414,12 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   // stripped from the key used in the symbolMap, so that is not needed here.
   if (di==0)
   {
-    //di = Doxygen::symbolMap->find(name+"-g");
-    //if (di==0)
-    //{
-      di = Doxygen::symbolMap->find(name+"-p");
-      if (di==0)
-      {
-        //printf("no such symbol!\n");
-        return 0;
-      }
-    //}
+    di = Doxygen::symbolMap->find(name+"-p");
+    if (di==0)
+    {
+      //printf("no such symbol!\n");
+      return 0;
+    }
   }
   //printf("found symbol!\n");
 
@@ -1515,7 +1502,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
     int count=0;
     for (dli.toFirst();(d=dli.current());++dli,++count) // foreach definition
     {
-      getResolvedSymbol(scope,fileScope,d,explicitScopePart,&actTemplParams,
+      getResolvedSymbol(scope,fileScope,d,explicitScopePart,actTemplParams,
                         minDistance,bestMatch,bestTypedef,bestTemplSpec,
                         bestResolvedType);
     }
@@ -1524,7 +1511,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   {
     //printf("  name is unique\n");
     Definition *d = (Definition *)di;
-    getResolvedSymbol(scope,fileScope,d,explicitScopePart,&actTemplParams,
+    getResolvedSymbol(scope,fileScope,d,explicitScopePart,actTemplParams,
                       minDistance,bestMatch,bestTypedef,bestTemplSpec,
                       bestResolvedType);
   }
@@ -3173,34 +3160,46 @@ static bool matchArgument2(
 
 
 // new algorithm for argument matching
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList &inSrcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList &inDstAl,
+bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
+                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
                      bool checkCV)
 {
   ASSERT(srcScope!=0 && dstScope!=0);
 
-  ArgumentList srcAl = inSrcAl;
-  ArgumentList dstAl = inDstAl;
+  if (srcAl==0 || dstAl==0)
+  {
+    bool match = srcAl==dstAl;
+    if (match)
+    {
+      MATCH
+      return TRUE;
+    }
+    else
+    {
+      NOMATCH
+      return FALSE;
+    }
+  }
 
   // handle special case with void argument
-  if ( srcAl.empty() && dstAl.size()==1 && dstAl.front().type=="void" )
+  if ( srcAl->empty() && dstAl->size()==1 && dstAl->front().type=="void" )
   { // special case for finding match between func() and func(void)
     Argument a;
     a.type = "void";
-    srcAl.push_back(a);
+    const_cast<ArgumentList*>(srcAl)->push_back(a);
     MATCH
     return TRUE;
   }
-  if ( dstAl.empty() && srcAl.size()==1 && srcAl.front().type=="void" )
+  if ( dstAl->empty() && srcAl->size()==1 && srcAl->front().type=="void" )
   { // special case for finding match between func(void) and func()
     Argument a;
     a.type = "void";
-    dstAl.push_back(a);
+    const_cast<ArgumentList*>(dstAl)->push_back(a);
     MATCH
     return TRUE;
   }
 
-  if (srcAl.size() != dstAl.size())
+  if (srcAl->size() != dstAl->size())
   {
     NOMATCH
     return FALSE; // different number of arguments -> no match
@@ -3208,19 +3207,19 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 
   if (checkCV)
   {
-    if (srcAl.constSpecifier != dstAl.constSpecifier)
+    if (srcAl->constSpecifier != dstAl->constSpecifier)
     {
       NOMATCH
       return FALSE; // one member is const, the other not -> no match
     }
-    if (srcAl.volatileSpecifier != dstAl.volatileSpecifier)
+    if (srcAl->volatileSpecifier != dstAl->volatileSpecifier)
     {
       NOMATCH
       return FALSE; // one member is volatile, the other not -> no match
     }
   }
 
-  if (srcAl.refQualifier != dstAl.refQualifier)
+  if (srcAl->refQualifier != dstAl->refQualifier)
   {
     NOMATCH
     return FALSE; // one member is has a different ref-qualifier than the other
@@ -3228,12 +3227,12 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 
   // so far the argument list could match, so we need to compare the types of
   // all arguments.
-  auto srcIt = srcAl.begin();
-  auto dstIt = dstAl.begin();
-  for (;srcIt!=srcAl.end() && dstIt!=dstAl.end();++srcIt,++dstIt)
+  auto srcIt = srcAl->begin();
+  auto dstIt = dstAl->begin();
+  for (;srcIt!=srcAl->end() && dstIt!=dstAl->end();++srcIt,++dstIt)
   {
-    Argument &srcA = *srcIt;
-    Argument &dstA = *dstIt;
+    Argument &srcA = const_cast<Argument&>(*srcIt);
+    Argument &dstA = const_cast<Argument&>(*dstIt);
     if (!matchArgument2(srcScope,srcFileScope,srcA,
           dstScope,dstFileScope,dstA)
        )
@@ -3413,11 +3412,10 @@ static void findMembersWithSpecificName(MemberName *mn,
       if (args && !md->isDefine() && qstrcmp(args,"()")!=0)
       {
         const ArgumentList &mdAl = md->argumentList();
-        ArgumentList argList;
-        stringToArgumentList(md->getLanguage(),args,argList);
+        auto argList_p = stringToArgumentList(md->getLanguage(),args);
         match=matchArguments2(
-            md->getOuterScope(),fd,mdAl,
-            Doxygen::globalScope,fd,argList,
+            md->getOuterScope(),fd,&mdAl,
+            Doxygen::globalScope,fd,argList_p.get(),
             checkCV);
       }
       if (match && (forceTagFile==0 || md->getReference()==forceTagFile))
@@ -3540,10 +3538,10 @@ bool getDefs(const QCString &scName,
       {
         //printf("  Found fcd=%p\n",fcd);
         int mdist=maxInheritanceDepth;
-        ArgumentList argList;
+        std::unique_ptr<ArgumentList> argList;
         if (args)
         {
-          stringToArgumentList(fcd->getLanguage(),args,argList);
+          argList = stringToArgumentList(fcd->getLanguage(),args);
         }
         for (const auto &mmd : *mn)
         {
@@ -3551,8 +3549,8 @@ bool getDefs(const QCString &scName,
           {
             const ArgumentList &mmdAl = mmd->argumentList();
             bool match=args==0 ||
-              matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
-                             fcd,                  fcd->getFileDef(),argList,
+              matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),&mmdAl,
+                             fcd,                  fcd->getFileDef(),argList.get(),
                              checkCV);
             //printf("match=%d\n",match);
             if (match)
@@ -3656,12 +3654,12 @@ bool getDefs(const QCString &scName,
   {
     //printf("Global symbol\n");
     MemberDef *fuzzy_mmd = 0;
-    ArgumentList argList;
+    std::unique_ptr<ArgumentList> argList;
     bool hasEmptyArgs = args && qstrcmp(args, "()") == 0;
 
     if (args)
     {
-      stringToArgumentList(SrcLangExt_Cpp, args, argList);
+      argList = stringToArgumentList(SrcLangExt_Cpp, args);
     }
 
     for (const auto &mmd : *mn)
@@ -3679,8 +3677,8 @@ bool getDefs(const QCString &scName,
       }
 
       ArgumentList &mmdAl = mmd->argumentList();
-      if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
-            Doxygen::globalScope,mmd->getFileDef(),argList,
+      if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),&mmdAl,
+            Doxygen::globalScope,mmd->getFileDef(),argList.get(),
             checkCV
             )
          )
@@ -3759,14 +3757,13 @@ bool getDefs(const QCString &scName,
           else if (mmd->getOuterScope()==fnd /* && mmd->isLinkable() */ )
           { // namespace is found
             bool match=TRUE;
-            ArgumentList argList;
             if (args && qstrcmp(args,"()")!=0)
             {
               const ArgumentList &mmdAl = mmd->argumentList();
-              stringToArgumentList(mmd->getLanguage(),args,argList);
+              auto argList_p = stringToArgumentList(mmd->getLanguage(),args);
               match=matchArguments2(
-                  mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
-                  fnd,mmd->getFileDef(),argList,
+                  mmd->getOuterScope(),mmd->getFileDef(),&mmdAl,
+                  fnd,mmd->getFileDef(),argList_p.get(),
                   checkCV);
             }
             if (match)
@@ -5868,7 +5865,7 @@ QCString normalizeNonTemplateArgumentsInString(
 QCString substituteTemplateArgumentsInString(
     const QCString &name,
     const ArgumentList &formalArgs,
-    const ArgumentList &actualArgs)
+    const std::unique_ptr<ArgumentList> &actualArgs)
 {
   //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
   //    name.data(),argListToString(formalArgs).data(),argListToString(actualArgs).data());
@@ -5881,7 +5878,11 @@ QCString substituteTemplateArgumentsInString(
   {
     result += name.mid(p,i-p);
     QCString n = name.mid(i,l);
-    auto actIt  = actualArgs.begin();
+    ArgumentList::iterator actIt;
+    if (actualArgs)
+    {
+      actIt = actualArgs->begin();
+    }
 
     // if n is a template argument, then we substitute it
     // for its template instance argument.
@@ -5893,7 +5894,7 @@ QCString substituteTemplateArgumentsInString(
     {
       Argument formArg = *formIt;
       Argument actArg;
-      if (actIt!=actualArgs.end())
+      if (actualArgs && actIt!=actualArgs->end())
       {
         actArg = *actIt;
       }
@@ -5914,7 +5915,7 @@ QCString substituteTemplateArgumentsInString(
         //printf(">> n='%s' formArg->name='%s' actArg->type='%s' actArg->name='%s'\n",
         //    n.data(),formArg.name.data(),actIt!=actualArgs.end() ? actIt->type.data() : "",actIt!=actualArgs.end() ? actIt->name.data() : ""
         //    );
-        if (formArg.name==n && actIt!=actualArgs.end() && !actArg.type.isEmpty()) // base class is a template argument
+        if (formArg.name==n && actualArgs && actIt!=actualArgs->end() && !actArg.type.isEmpty()) // base class is a template argument
         {
           // replace formal argument with the actual argument of the instance
           if (!leftScopeMatch(actArg.type,n))
@@ -5939,7 +5940,7 @@ QCString substituteTemplateArgumentsInString(
           }
         }
         else if (formArg.name==n &&
-                 actIt==actualArgs.end() &&
+                 (actualArgs==nullptr || actIt==actualArgs->end()) &&
                  !formArg.defval.isEmpty() &&
                  formArg.defval!=name /* to prevent recursion */
             )
@@ -5949,7 +5950,7 @@ QCString substituteTemplateArgumentsInString(
         }
       }
       else if (formArg.name==n &&
-               actIt==actualArgs.end() &&
+               (actualArgs==nullptr || actIt==actualArgs->end()) &&
                !formArg.defval.isEmpty() &&
                formArg.defval!=name /* to prevent recursion */
               )
@@ -5957,7 +5958,7 @@ QCString substituteTemplateArgumentsInString(
         result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs)+" ";
         found=TRUE;
       }
-      if (actIt!=actualArgs.end())
+      if (actualArgs && actIt!=actualArgs->end())
       {
         actIt++;
       }
@@ -5986,10 +5987,11 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
     bool parentOnly,
     QCString *pLastScopeStripped)
 {
+  int i=fullName.find('<');
+  if (i==-1) return fullName;
   QCString result;
   int p=0;
   int l=fullName.length();
-  int i=fullName.find('<');
   while (i!=-1)
   {
     //printf("1:result+=%s\n",fullName.mid(p,i-p).data());
@@ -6588,7 +6590,9 @@ bool checkExtension(const char *fName, const char *ext)
 
 QCString addHtmlExtensionIfMissing(const char *fName)
 {
-  if (QFileInfo(fName).extension(FALSE).isEmpty())
+  if (fName==0) return fName;
+  const char *p = strchr(fName,'.');
+  if (p)
   {
     return QCString(fName)+Doxygen::htmlFileExtension;
   }
