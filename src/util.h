@@ -30,6 +30,7 @@
 #include "sortdict.h"
 #include "docparser.h"
 #include "classdef.h"
+#include "arguments.h"
 
 //--------------------------------------------------------------------
 

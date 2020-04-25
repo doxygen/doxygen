@@ -6592,7 +6592,7 @@ QCString addHtmlExtensionIfMissing(const char *fName)
 {
   if (fName==0) return fName;
   const char *p = strchr(fName,'.');
-  if (p)
+  if (p==nullptr) // no extension
   {
     return QCString(fName)+Doxygen::htmlFileExtension;
   }
