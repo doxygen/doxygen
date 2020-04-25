@@ -154,7 +154,6 @@ SDict<DirRelation> Doxygen::dirRelations(257);
 ParserManager   *Doxygen::parserManager = 0;
 QCString Doxygen::htmlFileExtension;
 bool             Doxygen::suppressDocWarnings = FALSE;
-//Store           *Doxygen::symbolStorage;
 QCString         Doxygen::objDBFileName;
 QCString         Doxygen::entryDBFileName;
 QCString         Doxygen::filterDBFileName;
@@ -10695,8 +10694,6 @@ void parseInput()
    *            Initialize global lists and dictionaries
    **************************************************************************/
 
-  //Doxygen::symbolStorage = new Store;
-
   // also scale lookup cache with SYMBOL_CACHE_SIZE
   int cacheSize = Config_getInt(LOOKUP_CACHE_SIZE);
   if (cacheSize<0) cacheSize=0;
@@ -10716,14 +10713,6 @@ void parseInput()
   Doxygen::entryDBFileName.prepend(outputDirectory+"/");
   Doxygen::filterDBFileName.sprintf("doxygen_filterdb_%d.tmp",pid);
   Doxygen::filterDBFileName.prepend(outputDirectory+"/");
-
-//  if (Doxygen::symbolStorage->open(Doxygen::objDBFileName)==-1)
-//  {
-//    err("Failed to open temporary file %s\n",Doxygen::objDBFileName.data());
-//    exit(1);
-//  }
-
-
 
   /**************************************************************************
    *            Check/create output directories                             *
@@ -11537,7 +11526,6 @@ void generateOutput()
   cleanUpDoxygen();
 
   finalizeSearchIndexer();
-//  Doxygen::symbolStorage->close();
   QDir thisDir;
   thisDir.remove(Doxygen::objDBFileName);
   thisDir.remove(Doxygen::filterDBFileName);
@@ -11545,6 +11533,5 @@ void generateOutput()
   QTextCodec::deleteAllCodecs();
   delete Doxygen::symbolMap;
   delete Doxygen::clangUsrMap;
-//  delete Doxygen::symbolStorage;
   g_successfulRun=TRUE;
 }
