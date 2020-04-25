@@ -87,6 +87,8 @@ class ArgumentList
     iterator end()                        { return m_args.end();   }
     const_iterator begin() const          { return m_args.cbegin(); }
     const_iterator end() const            { return m_args.cend();   }
+    const_iterator cbegin() const         { return m_args.cbegin(); }
+    const_iterator cend() const           { return m_args.cend();   }
     bool empty() const                    { return m_args.empty(); }
     int size() const                      { return m_args.size();  }
     void clear()                          { m_args.clear(); }

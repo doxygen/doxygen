@@ -23,13 +23,38 @@
 #include "sortdict.h"
 #include "linkedmap.h"
 
-class MemberName : public std::vector< std::unique_ptr<MemberDef> >
+class MemberName
 {
   public:
+    using Ptr = std::unique_ptr<MemberDef>;
+    using Vec = std::vector<Ptr>;
+    using iterator = typename Vec::iterator;
+    using const_iterator = typename Vec::const_iterator;
+    using reverse_iterator = typename Vec::reverse_iterator;
+    using const_reverse_iterator = typename Vec::const_reverse_iterator;
+
     MemberName(const char *name) : m_name(name) {}
     const char *memberName() const { return m_name; }
+
+    iterator begin()                       { return m_members.begin();   }
+    iterator end()                         { return m_members.end();     }
+    const_iterator cbegin() const          { return m_members.cbegin();  }
+    const_iterator cend() const            { return m_members.cend();    }
+    reverse_iterator rbegin()              { return m_members.rbegin();  }
+    reverse_iterator rend()                { return m_members.rend();    }
+    const_reverse_iterator crbegin() const { return m_members.crbegin(); }
+    const_reverse_iterator crend() const   { return m_members.crend();   }
+    bool empty() const                     { return m_members.empty();   }
+    int size() const                       { return m_members.size();    }
+    Ptr &back()                            { return m_members.back();    }
+    const Ptr &back() const                { return m_members.back();    }
+    Ptr &front()                           { return m_members.front();   }
+    const Ptr &front() const               { return m_members.front();   }
+    void push_back(Ptr &&p)                { m_members.push_back(std::move(p)); }
+
   private:
     QCString m_name;
+    Vec m_members;
 };
 
 /** Ordered dictionary of MemberName objects. */
