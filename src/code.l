@@ -1090,6 +1090,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           yyextra->parmType = yyextra->name;
 					  BEGIN(FuncCall);
                                         }
+<Body>"\\)"|"\\("                       {
+                                          yyextra->code->codify(yytext);
+                                        }
 <Body>[\\|\)\+\-\/\%\~\!]		{
   					  yyextra->code->codify(yytext);
   				          yyextra->name.resize(0);yyextra->type.resize(0);
