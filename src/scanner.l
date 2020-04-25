@@ -38,7 +38,6 @@
 #include <ctype.h>
 
 #include <qarray.h>
-#include <qstack.h>
 #include <qregexp.h>
 #include <qfile.h>
 
@@ -161,7 +160,6 @@ struct scannerYY_state
   QGString        *pCopyHereDocGString = 0;
   QGString        *pCopyRawGString = 0;
   QGString        *pSkipVerbString = 0;
-  QStack<Grouping> autoGroupStack;
 
   bool             insideFormula = false;
   bool             insideTryBlock = false;
@@ -852,7 +850,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
                                           if (yyextra->current->argList.empty()) // method without parameters
                                           {
-                                            yyextra->current->argList.noParameters = TRUE;
+                                            yyextra->current->argList.setNoParameters(TRUE);
                                           }
   					  yyextra->current->args = argListToString(yyextra->current->argList);
 					  //printf("argList=%s\n",yyextra->current->args.data());
@@ -870,7 +868,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
                                           if (yyextra->current->argList.empty()) // method without parameters
                                           {
-                                            yyextra->current->argList.noParameters = TRUE;
+                                            yyextra->current->argList.setNoParameters(TRUE);
                                           }
   					  yyextra->current->args = argListToString(yyextra->current->argList);
                                           unput('{');
@@ -4532,12 +4530,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FuncQual>{BN}*"const"{BN}*       	{ // const member function
   					  lineCount(yyscanner) ; 
   					  yyextra->current->args += " const "; 
-					  yyextra->current->argList.constSpecifier=TRUE;
+					  yyextra->current->argList.setConstSpecifier(TRUE);
 					}
 <FuncQual>{BN}*"volatile"{BN}*    	{ // volatile member function
   					  lineCount(yyscanner) ; 
   					  yyextra->current->args += " volatile "; 
-					  yyextra->current->argList.volatileSpecifier=TRUE;
+					  yyextra->current->argList.setVolatileSpecifier(TRUE);
 					}
 <FuncQual>{BN}*"noexcept"{BN}*    	{ // noexcept qualifier
   					  lineCount(yyscanner) ; 
@@ -4555,25 +4553,25 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
 <FuncQual>{BN}*"&"                      {
                                           yyextra->current->args += " &";
-                                          yyextra->current->argList.refQualifier=RefQualifierLValue;
+                                          yyextra->current->argList.setRefQualifier(RefQualifierLValue);
                                         }
 <FuncQual>{BN}*"&&"                     {
                                           yyextra->current->args += " &&";
-                                          yyextra->current->argList.refQualifier=RefQualifierRValue;
+                                          yyextra->current->argList.setRefQualifier(RefQualifierRValue);
                                         }
 
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"0"{BN}*  	{ // pure virtual member function
   					  lineCount(yyscanner) ; 
 					  yyextra->current->args += " = 0"; 
 					  yyextra->current->virt = Pure; 
-					  yyextra->current->argList.pureSpecifier=TRUE;
+					  yyextra->current->argList.setPureSpecifier(TRUE);
                                           BEGIN(FuncQual);
 					}
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"delete"{BN}*     { // C++11 explicitly delete member
                                           lineCount(yyscanner);
                                           yyextra->current->args += " = delete";
 					  yyextra->current->spec |= Entry::Delete;
-					  yyextra->current->argList.isDeleted=TRUE;
+					  yyextra->current->argList.setIsDeleted(TRUE);
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"default"{BN}*     { // C++11 explicitly defaulted constructor/assignment operator
@@ -4584,7 +4582,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
 <FuncQual>{BN}*"->"{BN}*                {
                                           lineCount(yyscanner);
-                                          yyextra->current->argList.trailingReturnType = " -> ";
+                                          yyextra->current->argList.setTrailingReturnType(" -> ");
                                           yyextra->current->args += " -> ";
                                           BEGIN(TrailingReturn);
                                         }
@@ -4593,12 +4591,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>.                       {
-                                          yyextra->current->argList.trailingReturnType+=yytext;
+                                          yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
                                           yyextra->current->args+=yytext;
                                         }
 <TrailingReturn>\n                      {
                                           lineCount(yyscanner);
-                                          yyextra->current->argList.trailingReturnType+=yytext;
+                                          yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
                                           yyextra->current->args+=' ';
                                         }
 <FuncRound,FuncFunc>{BN}*","{BN}*	{ 
@@ -4724,7 +4722,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <OldStyleArgs>"{"			{
                                           if (yyextra->current->argList.empty())
                                           {
-                                            yyextra->current->argList.noParameters=TRUE;
+                                            yyextra->current->argList.setNoParameters(TRUE);
                                           }
   					  yyextra->current->args = argListToString(yyextra->current->argList);
   					  unput('{');
@@ -6532,16 +6530,16 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <PrototypeQual>{B}*"const"{B}*    	{ 
   					  yyextra->current->args += " const "; 
-					  yyextra->current->argList.constSpecifier=TRUE;
+					  yyextra->current->argList.setConstSpecifier(TRUE);
 					}
 <PrototypeQual>{B}*"volatile"{B}* 	{ 
   					  yyextra->current->args += " volatile "; 
-					  yyextra->current->argList.volatileSpecifier=TRUE;
+					  yyextra->current->argList.setVolatileSpecifier(TRUE);
 					}
 <PrototypeQual>{B}*"="{B}*"0"{B}*	{ 
 					  yyextra->current->args += " = 0"; 
 					  yyextra->current->virt = Pure; 
-					  yyextra->current->argList.pureSpecifier=TRUE;
+					  yyextra->current->argList.setPureSpecifier(TRUE);
 					}
 <PrototypeQual>"throw"{B}*"("	        {
   					  yyextra->current->exception = "throw(";
@@ -6675,9 +6673,7 @@ static void initParser(yyscan_t yyscanner)
   yyextra->virt = Normal;
   yyextra->baseVirt = Normal;
   yyextra->isTypedef = FALSE;
-  yyextra->autoGroupStack.clear();
   yyextra->insideTryBlock = FALSE;
-  yyextra->autoGroupStack.setAutoDelete(TRUE);
   yyextra->insideFormula = FALSE;
   yyextra->insideCode=FALSE;
   yyextra->insideCli=Config_getBool(CPP_CLI_SUPPORT);

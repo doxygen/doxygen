@@ -586,7 +586,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   {
     const ArgumentList &al = md->argumentList();
     t << " const=\"";
-    if (al.constSpecifier)    t << "yes"; else t << "no";
+    if (al.constSpecifier())    t << "yes"; else t << "no";
     t << "\"";
 
     t << " explicit=\"";
@@ -597,10 +597,10 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
     if (md->isInline()) t << "yes"; else t << "no";
     t << "\"";
 
-    if (al.refQualifier!=RefQualifierNone)
+    if (al.refQualifier()!=RefQualifierNone)
     {
       t << " refqual=\"";
-      if (al.refQualifier==RefQualifierLValue) t << "lvalue"; else t << "rvalue";
+      if (al.refQualifier()==RefQualifierLValue) t << "lvalue"; else t << "rvalue";
       t << "\"";
     }
 
@@ -634,7 +634,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
       t << " noexcept=\"yes\"";
     }
 
-    if (al.volatileSpecifier)
+    if (al.volatileSpecifier())
     {
       t << " volatile=\"yes\"";
     }

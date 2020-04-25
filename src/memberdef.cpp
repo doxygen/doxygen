@@ -1148,29 +1148,29 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   {
     ol.docify(md->extraTypeChars());
   }
-  if (defArgList.constSpecifier)
+  if (defArgList.constSpecifier())
   {
     ol.docify(" const");
   }
-  if (defArgList.volatileSpecifier)
+  if (defArgList.volatileSpecifier())
   {
     ol.docify(" volatile");
   }
-  if (defArgList.refQualifier==RefQualifierLValue)
+  if (defArgList.refQualifier()==RefQualifierLValue)
   {
     ol.docify(" &");
   }
-  else if (defArgList.refQualifier==RefQualifierRValue)
+  else if (defArgList.refQualifier()==RefQualifierRValue)
   {
     ol.docify(" &&");
   }
-  if (!defArgList.trailingReturnType.isEmpty())
+  if (!defArgList.trailingReturnType().isEmpty())
   {
     linkifyText(TextGeneratorOLImpl(ol), // out
                 scope,                   // scope
                 md->getBodyDef(),        // fileScope
                 md,                      // self
-                defArgList.trailingReturnType, // text
+                defArgList.trailingReturnType(), // text
                 FALSE                    // autoBreak
                );
 
@@ -4193,7 +4193,7 @@ bool MemberDefImpl::isDocumentedFriendClass() const
 
 bool MemberDefImpl::isDeleted() const
 {
-  return m_impl->defArgList.isDeleted;
+  return m_impl->defArgList.isDeleted();
 }
 
 bool MemberDefImpl::hasDocumentation() const
@@ -4341,8 +4341,8 @@ MemberDef *MemberDefImpl::createTemplateInstanceMember(
     {
       arg.type = substituteTemplateArgumentsInString(arg.type,formalArgs,actualArgs);
     }
-    actualArgList->trailingReturnType =
-       substituteTemplateArgumentsInString(actualArgList->trailingReturnType,formalArgs,actualArgs);
+    actualArgList->setTrailingReturnType(
+       substituteTemplateArgumentsInString(actualArgList->trailingReturnType(),formalArgs,actualArgs));
   }
   else
   {

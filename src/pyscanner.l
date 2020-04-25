@@ -666,7 +666,7 @@ STARTDOCSYMS      "##"
     ")"                     { // end of parameter list
                               if (yyextra->current->argList.empty())
                               {
-                                yyextra->current->argList.noParameters=TRUE;
+                                yyextra->current->argList.setNoParameters(TRUE);
                               }
         		      yyextra->current->args = argListToString(yyextra->current->argList);
         		      yyextra->funcParamsEnd = TRUE;

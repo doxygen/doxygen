@@ -5383,12 +5383,12 @@ static void substituteTemplatesInArgList(
       ++dstIt;
     }
   }
-  dst.constSpecifier     = src.constSpecifier;
-  dst.volatileSpecifier  = src.volatileSpecifier;
-  dst.pureSpecifier      = src.pureSpecifier;
-  dst.trailingReturnType = substituteTemplatesInString(
+  dst.setConstSpecifier(src.constSpecifier());
+  dst.setVolatileSpecifier(src.volatileSpecifier());
+  dst.setPureSpecifier(src.pureSpecifier());
+  dst.setTrailingReturnType(substituteTemplatesInString(
                              srcTempArgLists,dstTempArgLists,
-                             src.trailingReturnType);
+                             src.trailingReturnType()));
   //printf("substituteTemplatesInArgList: replacing %s with %s\n",
   //    argListToString(src).data(),argListToString(dst).data()
   //    );

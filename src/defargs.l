@@ -506,23 +506,23 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           yyextra->curTypeConstraint+=' ';
                                         }
 <FuncQual>"const"		       	{
-					  yyextra->argList->constSpecifier=TRUE;
+					  yyextra->argList->setConstSpecifier(TRUE);
 					}
 <FuncQual>"volatile"		    	{
-					  yyextra->argList->volatileSpecifier=TRUE;
+					  yyextra->argList->setVolatileSpecifier(TRUE);
 					}
 <FuncQual>"&"		    	        {
-                                          yyextra->argList->refQualifier=RefQualifierLValue;
+                                          yyextra->argList->setRefQualifier(RefQualifierLValue);
 					}
 <FuncQual>"&&"		    	        {
-                                          yyextra->argList->refQualifier=RefQualifierRValue;
+                                          yyextra->argList->setRefQualifier(RefQualifierRValue);
 					}
 <FuncQual,TrailingReturn>"="{B}*"0"  	{
-					  yyextra->argList->pureSpecifier=TRUE;
+					  yyextra->argList->setPureSpecifier(TRUE);
                                           BEGIN(FuncQual);
 					}
 <FuncQual>"->"                          { // C++11 trailing return type
-                                          yyextra->argList->trailingReturnType=" -> ";
+                                          yyextra->argList->setTrailingReturnType(" -> ");
                                           BEGIN(TrailingReturn);
                                         }
 <TrailingReturn>{B}/("final"|"override"){B}*  {
@@ -530,10 +530,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>.                       {
-                                          yyextra->argList->trailingReturnType+=yytext;
+                                          yyextra->argList->setTrailingReturnType(yyextra->argList->trailingReturnType()+yytext);
                                         }
 <TrailingReturn>\n                      {
-                                          yyextra->argList->trailingReturnType+=yytext;
+                                          yyextra->argList->setTrailingReturnType(yyextra->argList->trailingReturnType()+yytext);
                                         }
 <FuncQual>")"{B}*"["[^]]*"]"		{ // for functions returning a pointer to an array, 
                                           // i.e. ")[]" in "int (*f(int))[4]" with argsString="(int))[4]"
@@ -787,7 +787,7 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const char *
   defargsYYlex(yyscanner);
   if (yyextra->argList->empty())
   {
-    yyextra->argList->noParameters = TRUE;
+    yyextra->argList->setNoParameters(TRUE);
   }
   if (extraTypeChars) *extraTypeChars=yyextra->extraTypeChars;
   //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());

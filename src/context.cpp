@@ -4670,27 +4670,27 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasConstQualifier() const
     {
-      return getDefArgList().constSpecifier;
+      return getDefArgList().constSpecifier();
     }
     TemplateVariant hasVolatileQualifier() const
     {
-      return getDefArgList().volatileSpecifier;
+      return getDefArgList().volatileSpecifier();
     }
     TemplateVariant hasRefQualifierLValue() const
     {
-      return getDefArgList().refQualifier==RefQualifierLValue;
+      return getDefArgList().refQualifier()==RefQualifierLValue;
     }
     TemplateVariant hasRefQualifierRValue() const
     {
-      return getDefArgList().refQualifier==RefQualifierRValue;
+      return getDefArgList().refQualifier()==RefQualifierRValue;
     }
     TemplateVariant trailingReturnType() const
     {
       const ArgumentList &al = getDefArgList();
-      if (!al.trailingReturnType.isEmpty())
+      if (!al.trailingReturnType().isEmpty())
       {
         return createLinkedText(m_memberDef,relPathAsString(),
-                                al.trailingReturnType);
+                                al.trailingReturnType());
       }
       else
       {

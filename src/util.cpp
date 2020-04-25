@@ -2255,12 +2255,12 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
     if (it!=al.end()) result+=", ";
   }
   result+=")";
-  if (al.constSpecifier) result+=" const";
-  if (al.volatileSpecifier) result+=" volatile";
-  if (al.refQualifier==RefQualifierLValue) result+=" &";
-  else if (al.refQualifier==RefQualifierRValue) result+=" &&";
-  if (!al.trailingReturnType.isEmpty()) result+=" -> "+al.trailingReturnType;
-  if (al.pureSpecifier) result+=" =0";
+  if (al.constSpecifier()) result+=" const";
+  if (al.volatileSpecifier()) result+=" volatile";
+  if (al.refQualifier()==RefQualifierLValue) result+=" &";
+  else if (al.refQualifier()==RefQualifierRValue) result+=" &&";
+  if (!al.trailingReturnType().isEmpty()) result+=" -> "+al.trailingReturnType();
+  if (al.pureSpecifier()) result+=" =0";
   return removeRedundantWhiteSpace(result);
 }
 
@@ -3207,19 +3207,19 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 
   if (checkCV)
   {
-    if (srcAl->constSpecifier != dstAl->constSpecifier)
+    if (srcAl->constSpecifier() != dstAl->constSpecifier())
     {
       NOMATCH
       return FALSE; // one member is const, the other not -> no match
     }
-    if (srcAl->volatileSpecifier != dstAl->volatileSpecifier)
+    if (srcAl->volatileSpecifier() != dstAl->volatileSpecifier())
     {
       NOMATCH
       return FALSE; // one member is volatile, the other not -> no match
     }
   }
 
-  if (srcAl->refQualifier != dstAl->refQualifier)
+  if (srcAl->refQualifier() != dstAl->refQualifier())
   {
     NOMATCH
     return FALSE; // one member is has a different ref-qualifier than the other

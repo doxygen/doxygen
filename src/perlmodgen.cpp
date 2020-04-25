@@ -1615,8 +1615,8 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   const ArgumentList &al = md->argumentList();
   if (isFunc) //function
   {
-    m_output.addFieldBoolean("const",    al.constSpecifier)
-            .addFieldBoolean("volatile", al.volatileSpecifier);
+    m_output.addFieldBoolean("const",    al.constSpecifier())
+            .addFieldBoolean("volatile", al.volatileSpecifier());
 
     m_output.openList("parameters");
     const ArgumentList &declAl = md->declArgumentList();
