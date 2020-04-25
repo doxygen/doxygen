@@ -10364,6 +10364,13 @@ static void writeTagFile()
   FTextStream tagFile(&tag);
   tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>" << endl;
   tagFile << "<tagfile>" << endl;
+  tagFile << "  <doxygen";
+  tagFile << "  version=\"" << getDoxygenVersion() << "\"";
+  if (strlen(getGitVersion())>0)
+  {
+    tagFile << "  gitid=\"" << getGitVersion() << "\"";
+  }
+  tagFile << "></doxygen>" << endl;
 
   // for each file
   for (const auto &fn : *Doxygen::inputNameLinkedMap)
