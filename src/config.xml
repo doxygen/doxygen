@@ -2356,8 +2356,8 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  PNGs for the HTML output. These images will generally look nicer at scaled resolutions.
 ]]>
       </docs>
-      <value name="png" desc="The default"/>
-      <value name="svg" desc="Looks nicer but requires the pdf2svg tool"/>
+      <value name="png" desc="(the default)"/>
+      <value name="svg" desc="(looks nicer but requires the pdf2svg or inkscape tool)"/>
     </option>
     <option type='int' id='FORMULA_FONTSIZE' minval='8' maxval='50' defval='10' depends='GENERATE_HTML'>
       <docs>
