@@ -1900,25 +1900,22 @@ static void findUsingDeclImports(const Entry *root)
                 if (md && md->protection()!=Private)
                 {
                   //printf("found member %s\n",mni->memberName());
-                  MemberDef *newMd = 0;
+                  QCString fileName = root->fileName;
+                  if (fileName.isEmpty() && root->tagInfo())
                   {
-                    QCString fileName = root->fileName;
-                    if (fileName.isEmpty() && root->tagInfo())
-                    {
-                      fileName = root->tagInfo()->tagName;
-                    }
-                    const ArgumentList &templAl = md->templateArguments();
-                    const ArgumentList &al = md->templateArguments();
-                    newMd = createMemberDef(
-                      fileName,root->startLine,root->startColumn,
-                      md->typeString(),memName,md->argsString(),
-                      md->excpString(),root->protection,root->virt,
-                      md->isStatic(),Member,md->memberType(),
-                      templAl,al,root->metaData
-                      );
+                    fileName = root->tagInfo()->tagName;
                   }
+                  const ArgumentList &templAl = md->templateArguments();
+                  const ArgumentList &al = md->templateArguments();
+                  std::unique_ptr<MemberDef> newMd { createMemberDef(
+                    fileName,root->startLine,root->startColumn,
+                    md->typeString(),memName,md->argsString(),
+                    md->excpString(),root->protection,root->virt,
+                    md->isStatic(),Member,md->memberType(),
+                    templAl,al,root->metaData
+                    ) };
                   newMd->setMemberClass(cd);
-                  cd->insertMember(newMd);
+                  cd->insertMember(newMd.get());
                   if (!root->doc.isEmpty() || !root->brief.isEmpty())
                   {
                     newMd->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -1946,6 +1943,8 @@ static void findUsingDeclImports(const Entry *root)
                   newMd->setMemberSpecifiers(md->getMemberSpecifiers());
                   newMd->setLanguage(root->lang);
                   newMd->setId(root->id);
+                  MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
+                  mn->push_back(std::move(newMd));
                 }
               }
             }
@@ -9739,6 +9738,7 @@ void initDoxygen()
   Doxygen::exampleSDict->setAutoDelete(TRUE);
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
+  Doxygen::namespaceAliasDict.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
   Doxygen::genericsDict = new GenericsSDict;
   Doxygen::indexList = new IndexList;
