@@ -64,7 +64,7 @@ class GroupDefImpl : public DefinitionImpl, public GroupDef
     virtual void addGroup(const GroupDef *def);
     virtual void addPage(PageDef *def);
     virtual void addExample(const PageDef *def);
-    virtual void addDir(const DirDef *dd);
+    virtual void addDir(DirDef *const dd);
     virtual bool insertMember(MemberDef *def,bool docOnly=FALSE);
     virtual void removeMember(MemberDef *md);
     virtual bool findGroup(const GroupDef *def) const; // true if def is a subgroup of this group
@@ -327,7 +327,7 @@ bool GroupDefImpl::addNamespace(const NamespaceDef *def)
   return FALSE;
 }
 
-void GroupDefImpl::addDir(const DirDef *def)
+void GroupDefImpl::addDir(DirDef *const def)
 {
   if (def->isHidden()) return;
   if (Config_getBool(SORT_BRIEF_DOCS))
