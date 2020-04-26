@@ -165,9 +165,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Add directories
   if ( gd->getDirs() && gd->getDirs()->count() )
   {
-    QListIterator<DirDef> defli(*gd->getDirs());
-    const DirDef *def;
-    for (;(def=defli.current());++defli)
+    for(const auto def : *(gd->getDirs()))
     {
       tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
       addCollaborationMember( def, tmp_url, DotGroupCollaboration::tdir );          

@@ -307,9 +307,7 @@ void DirDefImpl::writeDirectoryGraph(OutputList &ol)
 void DirDefImpl::writeSubDirList(OutputList &ol)
 {
   int numSubdirs = 0;
-  QListIterator<DirDef> it(m_subdirs);
-  DirDef *dd;
-  for (it.toFirst();(dd=it.current());++it)
+  for(const auto dd : m_subdirs)
   {
     if (dd->hasDocumentation() || dd->getFiles()->count()>0)
     {
@@ -324,7 +322,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
     ol.parseText(theTranslator->trDir(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
-    for (it.toFirst();(dd=it.current());++it)
+    for(const auto dd : m_subdirs)
     {
       if (dd->hasDocumentation() || dd->getFiles()->count()==0)
       {
@@ -462,9 +460,7 @@ void DirDefImpl::writeTagFile(FTextStream &tagFile)
         {
           if (m_subdirs.count()>0)
           {
-            DirDef *dd;
-            QListIterator<DirDef> it(m_subdirs);
-            for (;(dd=it.current());++it)
+            for(const auto dd : m_subdirs)
             {
               tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
             }

@@ -782,9 +782,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         {
           if (m_dirList)
           {
-            QListIterator<DirDef> it(*m_dirList);
-            DirDef *dd;
-            for (;(dd=it.current());++it)
+            for(const auto dd : *m_dirList)
             {
               if (dd->isLinkableInProject())
               {
@@ -1055,9 +1053,7 @@ void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
-    QListIterator<DirDef> it(*m_dirList);
-    DirDef *dd;
-    for (;(dd=it.current());++it)
+    for(const auto dd : *m_dirList)
     {
       if (!dd->hasDocumentation()) continue;
       ol.startMemberDeclaration();

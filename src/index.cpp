@@ -587,9 +587,7 @@ static bool dirHasVisibleChildren(DirDef *dd)
     }
   }
 
-  QListIterator<DirDef> dli(dd->subDirs());
-  DirDef *subdd;
-  for (dli.toFirst();(subdd=dli.current());++dli)
+  for(const auto subdd : dd->subDirs())
   {
     if (dirHasVisibleChildren(subdd))
     {
@@ -649,9 +647,7 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
   if (dd->subDirs().count()>0)
   {
     startIndexHierarchy(ol,level+1);
-    QListIterator<DirDef> dli(dd->subDirs());
-    DirDef *subdd = 0;
-    for (dli.toFirst();(subdd=dli.current());++dli)
+    for(const auto subdd : dd->subDirs())
     {
       writeDirTreeNode(ol,subdd,level+1,ftv,addToIndex);
     }
@@ -4125,9 +4121,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       }
       else if (lde->kind()==LayoutDocEntry::GroupDirs && addToIndex)
       {
-        QListIterator<DirDef> it(*gd->getDirs());
-        DirDef *dd;
-        for (;(dd=it.current());++it)
+        for(const auto dd : *(gd->getDirs()))
         {
           if (dd->isVisible())
           {
