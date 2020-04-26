@@ -163,7 +163,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   }
 
   // Add directories
-  if ( gd->getDirs() && gd->getDirs()->count() )
+  if ( gd->getDirs() && gd->getDirs()->size() )
   {
     for(const auto def : *(gd->getDirs()))
     {

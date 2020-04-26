@@ -615,7 +615,7 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
   }
 
   static bool tocExpand = TRUE; //Config_getBool(TOC_EXPAND);
-  bool isDir = dd->subDirs().count()>0 || // there are subdirs
+  bool isDir = dd->subDirs().size()>0 || // there are subdirs
                (tocExpand &&              // or toc expand and
                 dd->getFiles() && dd->getFiles()->count()>0 // there are files
                );
@@ -644,7 +644,7 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
   }
 
   // write sub directories
-  if (dd->subDirs().count()>0)
+  if (dd->subDirs().size()>0)
   {
     startIndexHierarchy(ol,level+1);
     for(const auto subdd : dd->subDirs())
@@ -3988,7 +3988,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       numSubItems += gd->getNamespaces()->count();
       numSubItems += gd->getClasses()->count();
       numSubItems += gd->getFiles()->count();
-      numSubItems += gd->getDirs()->count();
+      numSubItems += gd->getDirs()->size();
       numSubItems += gd->getPages()->count();
     }
 

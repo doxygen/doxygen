@@ -35,7 +35,7 @@ class DirDefImpl : public DefinitionImpl, public DirDef
     virtual FileList *   getFiles() const        { return m_fileList; }
     virtual void addFile(FileDef *fd);
     virtual const DirList &subDirs() const { return m_subdirs; }
-    virtual bool isCluster() const { return m_subdirs.count()>0; }
+    virtual bool isCluster() const { return m_subdirs.size()>0; }
     virtual int level() const { return m_level; }
     virtual DirDef *parent() const { return m_parent; }
     virtual int dirCount() const { return m_dirCount; }
@@ -458,7 +458,7 @@ void DirDefImpl::writeTagFile(FTextStream &tagFile)
     {
       case LayoutDocEntry::DirSubDirs:
         {
-          if (m_subdirs.count()>0)
+          if (m_subdirs.size()>0)
           {
             for(const auto dd : m_subdirs)
             {

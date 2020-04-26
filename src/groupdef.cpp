@@ -1047,7 +1047,7 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
 void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
 {
   // write list of directories
-  if (m_dirList->count()>0)
+  if (m_dirList->size()>0)
   {
     ol.startMemberHeader("dirs");
     ol.parseText(title);
@@ -1183,7 +1183,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
         (lde->kind()==LayoutDocEntry::GroupNamespaces && m_namespaceSDict->declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupFiles && m_fileList->count()>0) ||
         (lde->kind()==LayoutDocEntry::GroupNestedGroups && m_groupList->count()>0) ||
-        (lde->kind()==LayoutDocEntry::GroupDirs && m_dirList->count()>0)
+        (lde->kind()==LayoutDocEntry::GroupDirs && m_dirList->size()>0)
        )
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
