@@ -488,7 +488,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
-<Verbatim>^[ \t]*"///"             {
+<Verbatim>^[ \t]*"//"[/!]          {
   				     if (yyextra->blockName=="dot" || yyextra->blockName=="msc" || yyextra->blockName=="uml" || yyextra->blockName.at(0)=='f')
 				     {
 				       // see bug 487871, strip /// from dot images and formulas.
