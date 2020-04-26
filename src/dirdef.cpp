@@ -142,7 +142,7 @@ bool DirDefImpl::isLinkable() const
 
 void DirDefImpl::addSubDir(DirDef *subdir)
 {
-  m_subdirs.append(subdir);
+  m_subdirs.push_back(subdir);
   subdir->setOuterScope(this);
   subdir->setParent(this);
 }

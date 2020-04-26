@@ -331,9 +331,12 @@ void GroupDefImpl::addDir(const DirDef *def)
 {
   if (def->isHidden()) return;
   if (Config_getBool(SORT_BRIEF_DOCS))
-    m_dirList->inSort(def);
+  {
+    m_dirList->push_back(def);
+    m_dirList->sort();
+  }
   else
-    m_dirList->append(def);
+    m_dirList->push_back(def);
 }
 
 void GroupDefImpl::addPage(PageDef *def)
