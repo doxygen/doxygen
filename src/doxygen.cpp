@@ -9257,7 +9257,7 @@ int readDir(QFileInfo *fi,
             StringDict *resultDict,
             bool errorIfNotExist,
             bool recursive,
-            QDict<void> *killDict,
+            std::unordered_set<std::string> *killSet,
             QDict<void> *paths
            )
 {
@@ -9277,7 +9277,7 @@ int readDir(QFileInfo *fi,
   dir.setFilter( QDir::Files | QDir::Dirs | QDir::Hidden );
   int totalSize=0;
   msg("Searching for files in directory %s\n", fi->absFilePath().data());
-  //printf("killDict=%p count=%d\n",killDict,killDict->count());
+  //printf("killSet=%p count=%d\n",killSet,killSet ? (int)killSet->count() : -1);
 
   const QFileInfoList *list = dir.entryInfoList();
   if (list)
@@ -9289,7 +9289,7 @@ int readDir(QFileInfo *fi,
     {
       if (exclDict==0 || exclDict->find(cfi->absFilePath().utf8())==0)
       { // file should not be excluded
-        //printf("killDict->find(%s)\n",cfi->absFilePath().data());
+        //printf("killSet->find(%s)\n",cfi->absFilePath().data());
         if (!cfi->exists() || !cfi->isReadable())
         {
           if (errorIfNotExist)
@@ -9301,7 +9301,7 @@ int readDir(QFileInfo *fi,
             (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
             (patList==0 || patternMatch(*cfi,patList)) &&
             !patternMatch(*cfi,exclPatList) &&
-            (killDict==0 || killDict->find(cfi->absFilePath().utf8())==0)
+            (killSet==0 || killSet->find(cfi->absFilePath().utf8().data())==killSet->end())
             )
         {
           totalSize+=cfi->size()+cfi->absFilePath().length()+4;
@@ -9324,7 +9324,7 @@ int readDir(QFileInfo *fi,
           }
           if (resultList) resultList->append(rs);
           if (resultDict) resultDict->insert(cfi->absFilePath().utf8(),rs);
-          if (killDict) killDict->insert(cfi->absFilePath().utf8(),(void *)0x8);
+          if (killSet) killSet->insert(cfi->absFilePath().utf8().data());
         }
         else if (recursive &&
             (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
@@ -9335,7 +9335,7 @@ int readDir(QFileInfo *fi,
           cfi->setFile(cfi->absFilePath());
           totalSize+=readDir(cfi,fnMap,exclDict,
               patList,exclPatList,resultList,resultDict,errorIfNotExist,
-              recursive,killDict,paths);
+              recursive,killSet,paths);
         }
       }
       ++it;
@@ -9358,11 +9358,11 @@ int readFileOrDirectory(const char *s,
                         StringDict *resultDict,
                         bool recursive,
                         bool errorIfNotExist,
-                        QDict<void> *killDict,
+                        std::unordered_set<std::string> *killSet,
                         QDict<void> *paths
                        )
 {
-  //printf("killDict=%p count=%d\n",killDict,killDict->count());
+  //printf("killSet count=%d\n",killSet ? (int)killSet->size() : -1);
   // strip trailing slashes
   if (s==0) return 0;
   QCString fs = s;
@@ -9392,8 +9392,8 @@ int readFileOrDirectory(const char *s,
           {
             paths->insert(dirPath,(void*)0x8);
           }
-          //printf("killDict->find(%s)\n",fi.absFilePath().data());
-          if (killDict==0 || killDict->find(filePath)==0)
+          //printf("killSet.find(%s)=%d\n",fi.absFilePath().data(),killSet.find(fi.absFilePath())!=killSet.end());
+          if (killSet==0 || killSet->find(filePath.data())==killSet->end())
           {
             totalSize+=fi.size()+fi.absFilePath().length()+4; //readFile(&fi,fiList,input);
             //fiList->inSort(new FileInfo(fi));
@@ -9416,14 +9416,14 @@ int readFileOrDirectory(const char *s,
               if (resultDict) resultDict->insert(filePath,rs);
             }
 
-            if (killDict) killDict->insert(fi.absFilePath().utf8(),(void *)0x8);
+            if (killSet) killSet->insert(fi.absFilePath().utf8().data());
           }
         }
         else if (fi.isDir()) // readable dir
         {
           totalSize+=readDir(&fi,fnMap,exclDict,patList,
               exclPatList,resultList,resultDict,errorIfNotExist,
-              recursive,killDict,paths);
+              recursive,killSet,paths);
         }
       }
     }
@@ -10477,7 +10477,7 @@ static QCString getQchFileName()
 
 void searchInputFiles()
 {
-  QDict<void> *killDict = new QDict<void>(10007);
+  std::unordered_set<std::string> killSet;
 
   QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
   bool alwaysRecursive = Config_getBool(RECURSIVE);
@@ -10486,7 +10486,7 @@ void searchInputFiles()
 
   // gather names of all files in the include path
   g_s.begin("Searching for include files...\n");
-  killDict->clear();
+  killSet.clear();
   QStrList &includePathList = Config_getList(INCLUDE_PATH);
   char *s=includePathList.first();
   while (s)
@@ -10499,13 +10499,13 @@ void searchInputFiles()
     readFileOrDirectory(s,Doxygen::includeNameLinkedMap,0,&pl,
                         &exclPatterns,0,0,
                         alwaysRecursive,
-                        TRUE,killDict);
+                        TRUE,&killSet);
     s=includePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for example files...\n");
-  killDict->clear();
+  killSet.clear();
   QStrList &examplePathList = Config_getList(EXAMPLE_PATH);
   s=examplePathList.first();
   while (s)
@@ -10514,13 +10514,13 @@ void searchInputFiles()
                         &Config_getList(EXAMPLE_PATTERNS),
                         0,0,0,
                         (alwaysRecursive || Config_getBool(EXAMPLE_RECURSIVE)),
-                        TRUE,killDict);
+                        TRUE,&killSet);
     s=examplePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for images...\n");
-  killDict->clear();
+  killSet.clear();
   QStrList &imagePathList=Config_getList(IMAGE_PATH);
   s=imagePathList.first();
   while (s)
@@ -10528,13 +10528,13 @@ void searchInputFiles()
     readFileOrDirectory(s,Doxygen::imageNameLinkedMap,0,0,
                         0,0,0,
                         alwaysRecursive,
-                        TRUE,killDict);
+                        TRUE,&killSet);
     s=imagePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for dot files...\n");
-  killDict->clear();
+  killSet.clear();
   QStrList &dotFileList=Config_getList(DOTFILE_DIRS);
   s=dotFileList.first();
   while (s)
@@ -10542,13 +10542,13 @@ void searchInputFiles()
     readFileOrDirectory(s,Doxygen::dotFileNameLinkedMap,0,0,
                         0,0,0,
                         alwaysRecursive,
-                        TRUE,killDict);
+                        TRUE,&killSet);
     s=dotFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for msc files...\n");
-  killDict->clear();
+  killSet.clear();
   QStrList &mscFileList=Config_getList(MSCFILE_DIRS);
   s=mscFileList.first();
   while (s)
@@ -10556,13 +10556,13 @@ void searchInputFiles()
     readFileOrDirectory(s,Doxygen::mscFileNameLinkedMap,0,0,
                         0,0,0,
                         alwaysRecursive,
-                        TRUE,killDict);
+                        TRUE,&killSet);
     s=mscFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for dia files...\n");
-  killDict->clear();
+  killSet.clear();
   QStrList &diaFileList=Config_getList(DIAFILE_DIRS);
   s=diaFileList.first();
   while (s)
@@ -10570,7 +10570,7 @@ void searchInputFiles()
     readFileOrDirectory(s,Doxygen::diaFileNameLinkedMap,0,0,
                         0,0,0,
                         alwaysRecursive,
-                        TRUE,killDict);
+                        TRUE,&killSet);
     s=diaFileList.next();
   }
   g_s.end();
@@ -10593,7 +10593,7 @@ void searchInputFiles()
    **************************************************************************/
 
   g_s.begin("Searching INPUT for files to process...\n");
-  killDict->clear();
+  killSet.clear();
   QStrList &inputList=Config_getList(INPUT);
   g_inputFiles.setAutoDelete(TRUE);
   s=inputList.first();
@@ -10615,7 +10615,7 @@ void searchInputFiles()
           &g_inputFiles,0,
           alwaysRecursive,
           TRUE,
-          killDict,
+          &killSet,
           &Doxygen::inputPaths);
     }
     s=inputList.next();
@@ -10629,8 +10629,6 @@ void searchInputFiles()
                      qstricmp(f1->fileName(),f2->fileName())<0;
             });
   g_s.end();
-
-  delete killDict;
 }
 
 

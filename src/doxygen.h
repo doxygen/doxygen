@@ -162,7 +162,7 @@ int readFileOrDirectory(const char *s,
                         StringDict *resultDict,
                         bool recursive,
                         bool errorIfNotExist=TRUE,
-                        QDict<void> *killDict = 0,
+                        std::unordered_set<std::string> *killSet = 0,
                         QDict<void> *paths = 0
                        );
 int readDir(QFileInfo *fi,
@@ -174,7 +174,7 @@ int readDir(QFileInfo *fi,
             StringDict *resultDict,
             bool errorIfNotExist,
             bool recursive,
-            QDict<void> *killDict
+            std::unordered_set<std::string> *killSet
            );
 void copyAndFilterFile(const char *fileName,BufStr &dest);
 
