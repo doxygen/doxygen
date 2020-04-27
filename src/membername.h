@@ -38,6 +38,8 @@ class MemberName
 
     iterator begin()                       { return m_members.begin();   }
     iterator end()                         { return m_members.end();     }
+    const_iterator begin() const           { return m_members.begin();   }
+    const_iterator end() const             { return m_members.end();     }
     const_iterator cbegin() const          { return m_members.cbegin();  }
     const_iterator cend() const            { return m_members.cend();    }
     reverse_iterator rbegin()              { return m_members.rbegin();  }
@@ -95,37 +97,36 @@ class MemberInfo
     const ClassDef *m_ambigClass = 0;
 };
 
-/** Class representing all MemberInfo objects with the same name */
-class MemberNameInfo : public QList<MemberInfo>
+class MemberNameInfo
 {
   public:
-    MemberNameInfo(const char *name);
-   ~MemberNameInfo() {}
-    const char *memberName() const { return name; }
+    using Ptr = std::unique_ptr<MemberInfo>;
+    using Vec = std::vector<Ptr>;
+    using iterator = typename Vec::iterator;
+    using const_iterator = typename Vec::const_iterator;
+
+    MemberNameInfo(const char *name) : m_name(name) {}
+    const char *memberName() const { return m_name; }
+
+    iterator begin()                       { return m_members.begin();   }
+    iterator end()                         { return m_members.end();     }
+    const_iterator begin() const           { return m_members.begin();   }
+    const_iterator end() const             { return m_members.end();     }
+    bool empty() const                     { return m_members.empty();   }
+    int size() const                       { return m_members.size();    }
+    Ptr &back()                            { return m_members.back();    }
+    const Ptr &back() const                { return m_members.back();    }
+    Ptr &front()                           { return m_members.front();   }
+    const Ptr &front() const               { return m_members.front();   }
+    void push_back(Ptr &&p)                { m_members.push_back(std::move(p)); }
+
   private:
-    int compareValues(const MemberInfo *item1,const MemberInfo *item2) const;
-    QCString name;
+    QCString m_name;
+    Vec m_members;
 };
 
-/** Iterator for MemberInfo objects in a MemberNameInfo list. */
-class MemberNameInfoIterator : public QListIterator<MemberInfo>
+class MemberNameInfoLinkedMap : public LinkedMap<MemberNameInfo>
 {
-  public:
-    MemberNameInfoIterator(const MemberNameInfo &mnii)
-      : QListIterator<MemberInfo>(mnii) {}
-};
-
-/** Sorted dictionary of MemberNameInfo objects. */
-class MemberNameInfoSDict : public SDict<MemberNameInfo>
-{
-  public:
-    MemberNameInfoSDict(uint size) : SDict<MemberNameInfo>(size) {}
-   ~MemberNameInfoSDict() {}
-  private:
-    int compareValues(const MemberNameInfo *item1,const MemberNameInfo *item2) const
-    {
-      return qstricmp(item1->memberName(), item2->memberName());
-    }
 };
 
 #endif

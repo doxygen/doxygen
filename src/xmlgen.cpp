@@ -1076,45 +1076,38 @@ static void generateXMLSection(const Definition *d,FTextStream &ti,FTextStream &
 static void writeListOfAllMembers(const ClassDef *cd,FTextStream &t)
 {
   t << "    <listofallmembers>" << endl;
-  if (cd->memberNameInfoSDict())
+  for (auto &mni : cd->memberNameInfoLinkedMap())
   {
-    MemberNameInfoSDict::Iterator mnii(*cd->memberNameInfoSDict());
-    MemberNameInfo *mni;
-    for (mnii.toFirst();(mni=mnii.current());++mnii)
+    for (auto &mi : *mni)
     {
-      MemberNameInfoIterator mii(*mni);
-      MemberInfo *mi;
-      for (mii.toFirst();(mi=mii.current());++mii)
+      const MemberDef *md=mi->memberDef();
+      if (!md->isAnonymous())
       {
-        const MemberDef *md=mi->memberDef();
-        if (!md->isAnonymous())
+        Protection prot = mi->prot();
+        Specifier virt=md->virtualness();
+        t << "      <member refid=\"" << memberOutputFileBase(md) << "_1" <<
+          md->anchor() << "\" prot=\"";
+        switch (prot)
         {
-          Protection prot = mi->prot();
-          Specifier virt=md->virtualness();
-          t << "      <member refid=\"" << memberOutputFileBase(md) << "_1" <<
-            md->anchor() << "\" prot=\"";
-          switch (prot)
-          {
-            case Public:    t << "public";    break;
-            case Protected: t << "protected"; break;
-            case Private:   t << "private";   break;
-            case Package:   t << "package";   break;
-          }
-          t << "\" virt=\"";
-          switch(virt)
-          {
-            case Normal:  t << "non-virtual";  break;
-            case Virtual: t << "virtual";      break;
-            case Pure:    t << "pure-virtual"; break;
-          }
-          t << "\"";
-          if (!mi->ambiguityResolutionScope().isEmpty())
-          {
-            t << " ambiguityscope=\"" << convertToXML(mi->ambiguityResolutionScope()) << "\"";
-          }
-          t << "><scope>" << convertToXML(cd->name()) << "</scope><name>" <<
-            convertToXML(md->name()) << "</name></member>" << endl;
+          case Public:    t << "public";    break;
+          case Protected: t << "protected"; break;
+          case Private:   t << "private";   break;
+          case Package:   t << "package";   break;
         }
+        t << "\" virt=\"";
+        switch(virt)
+        {
+          case Normal:  t << "non-virtual";  break;
+          case Virtual: t << "virtual";      break;
+          case Pure:    t << "pure-virtual"; break;
+        }
+        t << "\"";
+        if (!mi->ambiguityResolutionScope().isEmpty())
+        {
+          t << " ambiguityscope=\"" << convertToXML(mi->ambiguityResolutionScope()) << "\"";
+        }
+        t << "><scope>" << convertToXML(cd->name()) << "</scope><name>" <<
+          convertToXML(md->name()) << "</name></member>" << endl;
       }
     }
   }

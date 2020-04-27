@@ -1904,20 +1904,13 @@ static void generateSqlite3Section( const Definition *d,
 
 static void associateAllClassMembers(const ClassDef *cd, struct Refid scope_refid)
 {
-  if (cd->memberNameInfoSDict())
+  for (auto &mni : cd->memberNameInfoLinkedMap())
   {
-    MemberNameInfoSDict::Iterator mnii(*cd->memberNameInfoSDict());
-    MemberNameInfo *mni;
-    for (mnii.toFirst();(mni=mnii.current());++mnii)
+    for (auto &mi : *mni)
     {
-      MemberNameInfoIterator mii(*mni);
-      MemberInfo *mi;
-      for (mii.toFirst();(mi=mii.current());++mii)
-      {
-        MemberDef *md = mi->memberDef();
-        QCString qrefid = md->getOutputFileBase() + "_1" + md->anchor();
-        associateMember(md, insertRefid(qrefid), scope_refid);
-      }
+      MemberDef *md = mi->memberDef();
+      QCString qrefid = md->getOutputFileBase() + "_1" + md->anchor();
+      associateMember(md, insertRefid(qrefid), scope_refid);
     }
   }
 }

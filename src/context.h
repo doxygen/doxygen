@@ -46,7 +46,7 @@ class MemberSDict;
 class MemberDef;
 struct Argument;
 class ArgumentList;
-class MemberNameInfoSDict;
+class MemberNameInfoLinkedMap;
 class MemberInfo;
 class MemberGroup;
 class MemberGroupSDict;
@@ -1113,9 +1113,7 @@ class InheritedMemberInfoListContext : public RefCountedContext, public Template
 class AllMembersListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static AllMembersListContext *alloc()
-    { return new AllMembersListContext; }
-    static AllMembersListContext *alloc(const MemberNameInfoSDict *ml)
+    static AllMembersListContext *alloc(const MemberNameInfoLinkedMap &ml)
     { return new AllMembersListContext(ml); }
 
     // TemplateListIntf
@@ -1126,8 +1124,7 @@ class AllMembersListContext : public RefCountedContext, public TemplateListIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    AllMembersListContext();
-    AllMembersListContext(const MemberNameInfoSDict *ml);
+    AllMembersListContext(const MemberNameInfoLinkedMap &ml);
    ~AllMembersListContext();
     class Private;
     Private *p;

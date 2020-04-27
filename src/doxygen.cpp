@@ -1886,66 +1886,61 @@ static void findUsingDeclImports(const Entry *root)
         if (bcd && bcd!=cd)
         {
           //printf("found class %s memName=%s\n",bcd->name().data(),memName.data());
-          MemberNameInfoSDict *mndict=bcd->memberNameInfoSDict();
-          if (mndict)
+          const MemberNameInfoLinkedMap &mnlm=bcd->memberNameInfoLinkedMap();
+          const MemberNameInfo *mni = mnlm.find(memName);
+          if (mni)
           {
-            MemberNameInfo *mni = mndict->find(memName);
-            if (mni)
+            for (auto &mi : *mni)
             {
-              MemberNameInfoIterator mnii(*mni);
-              MemberInfo *mi;
-              for ( ; (mi=mnii.current()) ; ++mnii )
+              MemberDef *md = mi->memberDef();
+              if (md && md->protection()!=Private)
               {
-                MemberDef *md = mi->memberDef();
-                if (md && md->protection()!=Private)
+                //printf("found member %s\n",mni->memberName());
+                QCString fileName = root->fileName;
+                if (fileName.isEmpty() && root->tagInfo())
                 {
-                  //printf("found member %s\n",mni->memberName());
-                  QCString fileName = root->fileName;
-                  if (fileName.isEmpty() && root->tagInfo())
-                  {
-                    fileName = root->tagInfo()->tagName;
-                  }
-                  const ArgumentList &templAl = md->templateArguments();
-                  const ArgumentList &al = md->templateArguments();
-                  std::unique_ptr<MemberDef> newMd { createMemberDef(
+                  fileName = root->tagInfo()->tagName;
+                }
+                const ArgumentList &templAl = md->templateArguments();
+                const ArgumentList &al = md->templateArguments();
+                std::unique_ptr<MemberDef> newMd { createMemberDef(
                     fileName,root->startLine,root->startColumn,
                     md->typeString(),memName,md->argsString(),
                     md->excpString(),root->protection,root->virt,
                     md->isStatic(),Member,md->memberType(),
                     templAl,al,root->metaData
                     ) };
-                  newMd->setMemberClass(cd);
-                  cd->insertMember(newMd.get());
-                  if (!root->doc.isEmpty() || !root->brief.isEmpty())
-                  {
-                    newMd->setDocumentation(root->doc,root->docFile,root->docLine);
-                    newMd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-                    newMd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-                  }
-                  else
-                  {
-                    newMd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
-                    newMd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
-                    newMd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
-                  }
-                  newMd->setDefinition(md->definition());
-                  newMd->enableCallGraph(root->callGraph);
-                  newMd->enableCallerGraph(root->callerGraph);
-                  newMd->enableReferencedByRelation(root->referencedByRelation);
-                  newMd->enableReferencesRelation(root->referencesRelation);
-                  newMd->setBitfields(md->bitfieldString());
-                  newMd->addSectionsToDefinition(root->anchors);
-                  newMd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
-                  newMd->setBodyDef(md->getBodyDef());
-                  newMd->setInitializer(md->initializer());
-                  newMd->setMaxInitLines(md->initializerLines());
-                  newMd->setMemberGroupId(root->mGrpId);
-                  newMd->setMemberSpecifiers(md->getMemberSpecifiers());
-                  newMd->setLanguage(root->lang);
-                  newMd->setId(root->id);
-                  MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
-                  mn->push_back(std::move(newMd));
+                newMd->setMemberClass(cd);
+                cd->insertMember(newMd.get());
+                if (!root->doc.isEmpty() || !root->brief.isEmpty())
+                {
+                  newMd->setDocumentation(root->doc,root->docFile,root->docLine);
+                  newMd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                  newMd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
                 }
+                else
+                {
+                  newMd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+                  newMd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+                  newMd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
+                }
+                newMd->setDefinition(md->definition());
+                newMd->enableCallGraph(root->callGraph);
+                newMd->enableCallerGraph(root->callerGraph);
+                newMd->enableReferencedByRelation(root->referencedByRelation);
+                newMd->enableReferencesRelation(root->referencesRelation);
+                newMd->setBitfields(md->bitfieldString());
+                newMd->addSectionsToDefinition(root->anchors);
+                newMd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
+                newMd->setBodyDef(md->getBodyDef());
+                newMd->setInitializer(md->initializer());
+                newMd->setMaxInitLines(md->initializerLines());
+                newMd->setMemberGroupId(root->mGrpId);
+                newMd->setMemberSpecifiers(md->getMemberSpecifiers());
+                newMd->setLanguage(root->lang);
+                newMd->setId(root->id);
+                MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
+                mn->push_back(std::move(newMd));
               }
             }
           }
@@ -3895,152 +3890,141 @@ static void findUsedClassesForClass(const Entry *root,
 {
   masterCd->setVisited(TRUE);
   const ArgumentList &formalArgs = masterCd->templateArguments();
-  if (masterCd->memberNameInfoSDict())
+  for (auto &mni : masterCd->memberNameInfoLinkedMap())
   {
-    MemberNameInfoSDict::Iterator mnili(*masterCd->memberNameInfoSDict());
-    MemberNameInfo *mni;
-    for (;(mni=mnili.current());++mnili)
+    for (auto &mi : *mni)
     {
-      MemberNameInfoIterator mnii(*mni);
-      MemberInfo *mi;
-      for (mnii.toFirst();(mi=mnii.current());++mnii)
+      MemberDef *md=mi->memberDef();
+      if (md->isVariable() || md->isObjCProperty()) // for each member variable in this class
       {
-        MemberDef *md=mi->memberDef();
-        if (md->isVariable() || md->isObjCProperty()) // for each member variable in this class
+        //printf("    Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
+        QCString type = normalizeNonTemplateArgumentsInString(md->typeString(),masterCd,formalArgs);
+        QCString typedefValue = resolveTypeDef(masterCd,type);
+        if (!typedefValue.isEmpty())
         {
-          //printf("    Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
-          QCString type = normalizeNonTemplateArgumentsInString(md->typeString(),masterCd,formalArgs);
-          QCString typedefValue = resolveTypeDef(masterCd,type);
-          if (!typedefValue.isEmpty())
+          type = typedefValue;
+        }
+        int pos=0;
+        QCString usedClassName;
+        QCString templSpec;
+        bool found=FALSE;
+        // the type can contain template variables, replace them if present
+        type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
+
+        //printf("      template substitution gives=%s\n",type.data());
+        while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec,root->lang)!=-1)
+        {
+          // find the type (if any) that matches usedClassName
+          const ClassDef *typeCd = getResolvedClass(masterCd,
+              masterCd->getFileDef(),
+              usedClassName,
+              0,0,
+              FALSE,TRUE
+              );
+          //printf("====>  usedClassName=%s -> typeCd=%s\n",
+          //     usedClassName.data(),typeCd?typeCd->name().data():"<none>");
+          if (typeCd)
           {
-            type = typedefValue;
+            usedClassName = typeCd->name();
           }
-          int pos=0;
-          QCString usedClassName;
-          QCString templSpec;
-          bool found=FALSE;
-          // the type can contain template variables, replace them if present
-          type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
 
-          //printf("      template substitution gives=%s\n",type.data());
-          while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec,root->lang)!=-1)
+          int sp=usedClassName.find('<');
+          if (sp==-1) sp=0;
+          int si=usedClassName.findRev("::",sp);
+          if (si!=-1)
           {
-            // find the type (if any) that matches usedClassName
-            const ClassDef *typeCd = getResolvedClass(masterCd,
-                masterCd->getFileDef(),
-                usedClassName,
-                0,0,
-                FALSE,TRUE
-                );
-            //printf("====>  usedClassName=%s -> typeCd=%s\n",
-            //     usedClassName.data(),typeCd?typeCd->name().data():"<none>");
-            if (typeCd)
-            {
-              usedClassName = typeCd->name();
-            }
-
-            int sp=usedClassName.find('<');
-            if (sp==-1) sp=0;
-            int si=usedClassName.findRev("::",sp);
-            if (si!=-1)
-            {
-              // replace any namespace aliases
-              replaceNamespaceAliases(usedClassName,si);
-            }
-            // add any template arguments to the class
-            QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
-            //printf("    usedName=%s\n",usedName.data());
-
-            bool delTempNames=FALSE;
-            if (templateNames==0)
-            {
-              templateNames = getTemplateArgumentsInName(formalArgs,usedName);
-              delTempNames=TRUE;
-            }
-            BaseInfo bi(usedName,Public,Normal);
-            findClassRelation(root,context,instanceCd,&bi,templateNames,TemplateInstances,isArtificial);
-
-            for (const Argument &arg : masterCd->templateArguments())
-            {
-              if (arg.name==usedName) // type is a template argument
-              {
-                found=TRUE;
-                Debug::print(Debug::Classes,0,"    New used class '%s'\n", qPrint(usedName));
-
-                ClassDef *usedCd = Doxygen::hiddenClasses->find(usedName);
-                if (usedCd==0)
-                {
-                  usedCd = createClassDef(
-                      masterCd->getDefFileName(),masterCd->getDefLine(),
-                      masterCd->getDefColumn(),
-                      usedName,
-                      ClassDef::Class);
-                  //printf("making %s a template argument!!!\n",usedCd->name().data());
-                  usedCd->makeTemplateArgument();
-                  usedCd->setUsedOnly(TRUE);
-                  usedCd->setLanguage(masterCd->getLanguage());
-                  Doxygen::hiddenClasses->append(usedName,usedCd);
-                }
-                if (isArtificial) usedCd->setArtificial(TRUE);
-                Debug::print(Debug::Classes,0,"      Adding used class '%s' (1)\n", qPrint(usedCd->name()));
-                instanceCd->addUsedClass(usedCd,md->name(),md->protection());
-                usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
-              }
-            }
-
-            if (!found)
-            {
-              ClassDef *usedCd=findClassWithinClassContext(context,masterCd,usedName);
-              //printf("Looking for used class %s: result=%s master=%s\n",
-              //    usedName.data(),usedCd?usedCd->name().data():"<none>",masterCd?masterCd->name().data():"<none>");
-
-              if (usedCd)
-              {
-                found=TRUE;
-                Debug::print(Debug::Classes,0,"    Adding used class '%s' (2)\n", qPrint(usedCd->name()));
-                instanceCd->addUsedClass(usedCd,md->name(),md->protection()); // class exists
-                usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
-              }
-            }
-            if (delTempNames)
-            {
-              delete templateNames;
-              templateNames=0;
-            }
+            // replace any namespace aliases
+            replaceNamespaceAliases(usedClassName,si);
           }
-          if (!found && !type.isEmpty()) // used class is not documented in any scope
+          // add any template arguments to the class
+          QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
+          //printf("    usedName=%s\n",usedName.data());
+
+          bool delTempNames=FALSE;
+          if (templateNames==0)
           {
-            ClassDef *usedCd = Doxygen::hiddenClasses->find(type);
-            if (usedCd==0 && !Config_getBool(HIDE_UNDOC_RELATIONS))
+            templateNames = getTemplateArgumentsInName(formalArgs,usedName);
+            delTempNames=TRUE;
+          }
+          BaseInfo bi(usedName,Public,Normal);
+          findClassRelation(root,context,instanceCd,&bi,templateNames,TemplateInstances,isArtificial);
+
+          for (const Argument &arg : masterCd->templateArguments())
+          {
+            if (arg.name==usedName) // type is a template argument
             {
-              if (type.right(2)=="(*" || type.right(2)=="(^") // type is a function pointer
+              found=TRUE;
+              Debug::print(Debug::Classes,0,"    New used class '%s'\n", qPrint(usedName));
+
+              ClassDef *usedCd = Doxygen::hiddenClasses->find(usedName);
+              if (usedCd==0)
               {
-                type+=md->argsString();
+                usedCd = createClassDef(
+                    masterCd->getDefFileName(),masterCd->getDefLine(),
+                    masterCd->getDefColumn(),
+                    usedName,
+                    ClassDef::Class);
+                //printf("making %s a template argument!!!\n",usedCd->name().data());
+                usedCd->makeTemplateArgument();
+                usedCd->setUsedOnly(TRUE);
+                usedCd->setLanguage(masterCd->getLanguage());
+                Doxygen::hiddenClasses->append(usedName,usedCd);
               }
-              Debug::print(Debug::Classes,0,"  New undocumented used class '%s'\n", qPrint(type));
-              usedCd = createClassDef(
-                  masterCd->getDefFileName(),masterCd->getDefLine(),
-                  masterCd->getDefColumn(),
-                  type,ClassDef::Class);
-              usedCd->setUsedOnly(TRUE);
-              usedCd->setLanguage(masterCd->getLanguage());
-              Doxygen::hiddenClasses->append(type,usedCd);
-            }
-            if (usedCd)
-            {
               if (isArtificial) usedCd->setArtificial(TRUE);
-              Debug::print(Debug::Classes,0,"    Adding used class '%s' (3)\n", qPrint(usedCd->name()));
+              Debug::print(Debug::Classes,0,"      Adding used class '%s' (1)\n", qPrint(usedCd->name()));
               instanceCd->addUsedClass(usedCd,md->name(),md->protection());
               usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
             }
           }
+
+          if (!found)
+          {
+            ClassDef *usedCd=findClassWithinClassContext(context,masterCd,usedName);
+            //printf("Looking for used class %s: result=%s master=%s\n",
+            //    usedName.data(),usedCd?usedCd->name().data():"<none>",masterCd?masterCd->name().data():"<none>");
+
+            if (usedCd)
+            {
+              found=TRUE;
+              Debug::print(Debug::Classes,0,"    Adding used class '%s' (2)\n", qPrint(usedCd->name()));
+              instanceCd->addUsedClass(usedCd,md->name(),md->protection()); // class exists
+              usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
+            }
+          }
+          if (delTempNames)
+          {
+            delete templateNames;
+            templateNames=0;
+          }
+        }
+        if (!found && !type.isEmpty()) // used class is not documented in any scope
+        {
+          ClassDef *usedCd = Doxygen::hiddenClasses->find(type);
+          if (usedCd==0 && !Config_getBool(HIDE_UNDOC_RELATIONS))
+          {
+            if (type.right(2)=="(*" || type.right(2)=="(^") // type is a function pointer
+            {
+              type+=md->argsString();
+            }
+            Debug::print(Debug::Classes,0,"  New undocumented used class '%s'\n", qPrint(type));
+            usedCd = createClassDef(
+                masterCd->getDefFileName(),masterCd->getDefLine(),
+                masterCd->getDefColumn(),
+                type,ClassDef::Class);
+            usedCd->setUsedOnly(TRUE);
+            usedCd->setLanguage(masterCd->getLanguage());
+            Doxygen::hiddenClasses->append(type,usedCd);
+          }
+          if (usedCd)
+          {
+            if (isArtificial) usedCd->setArtificial(TRUE);
+            Debug::print(Debug::Classes,0,"    Adding used class '%s' (3)\n", qPrint(usedCd->name()));
+            instanceCd->addUsedClass(usedCd,md->name(),md->protection());
+            usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
+          }
         }
       }
     }
-  }
-  else
-  {
-    //printf("no members for class %s (%p)\n",masterCd->name().data(),masterCd);
   }
 }
 
@@ -4723,7 +4707,7 @@ static void computeClassRelations()
     {
       findBaseClassesForClass(root,cd,cd,cd,DocumentedOnly,FALSE);
     }
-    int numMembers = cd && cd->memberNameInfoSDict() ? cd->memberNameInfoSDict()->count() : 0;
+    int numMembers = cd ? cd->memberNameInfoLinkedMap().size() : 0;
     if ((cd==0 || (!cd->hasDocumentation() && !cd->isReference())) && numMembers>0 &&
         bName.right(2)!="::")
     {
@@ -7482,10 +7466,10 @@ static void buildCompleteMemberLists()
       cd->mergeMembers();
     }
   }
-  // now sort the member list of all classes.
+  // now sort the member list of all members for all classes.
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (cd->memberNameInfoSDict()) cd->memberNameInfoSDict()->sort();
+    cd->sortAllMembersList();
   }
 }
 

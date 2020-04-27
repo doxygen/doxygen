@@ -143,7 +143,7 @@ class GroupDefImpl : public DefinitionImpl, public GroupDef
     PageSDict *          m_exampleDict;         // list of examples in the group
     DirList *            m_dirList;             // list of directories in the group
     MemberList *         m_allMemberList;
-    MemberNameInfoSDict *m_allMemberNameInfoSDict;
+    MemberNameInfoLinkedMap m_allMemberNameInfoLinkedMap;
     Definition *         m_groupScope;
     QList<MemberList>    m_memberLists;
     MemberGroupSDict *   m_memberGroupSDict;
@@ -170,8 +170,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
   m_pageDict = new PageSDict(17);
   m_exampleDict = new PageSDict(17);
   m_dirList = new DirList;
-  m_allMemberNameInfoSDict = new MemberNameInfoSDict(17);
-  m_allMemberNameInfoSDict->setAutoDelete(TRUE);
   if (refFileName)
   {
     m_fileName=stripExtension(refFileName);
@@ -200,7 +198,6 @@ GroupDefImpl::~GroupDefImpl()
   delete m_pageDict;
   delete m_exampleDict;
   delete m_allMemberList;
-  delete m_allMemberNameInfoSDict;
   delete m_memberGroupSDict;
   delete m_dirList;
 }
@@ -378,54 +375,43 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
   if (md->isHidden()) return FALSE;
   updateLanguage(md);
   //printf("GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
-  MemberNameInfo *mni=0;
-  if ((mni=(*m_allMemberNameInfoSDict)[md->name()]))
-  { // member with this name already found
-    MemberNameInfoIterator srcMnii(*mni);
-    const MemberInfo *srcMi;
-    for ( ; (srcMi=srcMnii.current()) ; ++srcMnii )
-    {
-      const MemberDef *srcMd = srcMi->memberDef();
-      if (srcMd==md) return FALSE; // already added before!
-
-      bool sameScope = srcMd->getOuterScope()==md->getOuterScope() || // same class or namespace
-          // both inside a file => definition and declaration do not have to be in the same file
-           (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
-               md->getOuterScope()->definitionType()==Definition::TypeFile);
-
-      const ArgumentList &srcMdAl  = srcMd->argumentList();
-      const ArgumentList &mdAl     = md->argumentList();
-      const ArgumentList &tSrcMdAl = srcMd->templateArguments();
-      const ArgumentList &tMdAl    = md->templateArguments();
-
-      if (srcMd->isFunction() && md->isFunction() && // both are a function
-          (tSrcMdAl.size()==tMdAl.size()) &&       // same number of template arguments
-          matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),&srcMdAl,
-                          md->getOuterScope(),md->getFileDef(),&mdAl,
-                          TRUE
-                         ) && // matching parameters
-          sameScope // both are found in the same scope
-         )
-      {
-        if (srcMd->getGroupAlias()==0)
-        {
-          md->setGroupAlias(srcMd);
-        }
-        else if (md!=srcMd->getGroupAlias())
-        {
-          md->setGroupAlias(srcMd->getGroupAlias());
-        }
-        return FALSE; // member is the same as one that is already added
-      }
-    }
-    mni->append(new MemberInfo(md,md->protection(),md->virtualness(),FALSE));
-  }
-  else
+  MemberNameInfo *mni = m_allMemberNameInfoLinkedMap.add(md->name());
+  for (auto &srcMi : *mni)
   {
-    mni = new MemberNameInfo(md->name());
-    mni->append(new MemberInfo(md,md->protection(),md->virtualness(),FALSE));
-    m_allMemberNameInfoSDict->append(mni->memberName(),mni);
+    const MemberDef *srcMd = srcMi->memberDef();
+    if (srcMd==md) return FALSE; // already added before!
+
+    bool sameScope = srcMd->getOuterScope()==md->getOuterScope() || // same class or namespace
+        // both inside a file => definition and declaration do not have to be in the same file
+         (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
+             md->getOuterScope()->definitionType()==Definition::TypeFile);
+
+    const ArgumentList &srcMdAl  = srcMd->argumentList();
+    const ArgumentList &mdAl     = md->argumentList();
+    const ArgumentList &tSrcMdAl = srcMd->templateArguments();
+    const ArgumentList &tMdAl    = md->templateArguments();
+
+    if (srcMd->isFunction() && md->isFunction() && // both are a function
+        (tSrcMdAl.size()==tMdAl.size()) &&       // same number of template arguments
+        matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),&srcMdAl,
+                        md->getOuterScope(),md->getFileDef(),&mdAl,
+                        TRUE
+                       ) && // matching parameters
+        sameScope // both are found in the same scope
+       )
+    {
+      if (srcMd->getGroupAlias()==0)
+      {
+        md->setGroupAlias(srcMd);
+      }
+      else if (md!=srcMd->getGroupAlias())
+      {
+        md->setGroupAlias(srcMd->getGroupAlias());
+      }
+      return FALSE; // member is the same as one that is already added
+    }
   }
+  mni->push_back(std::make_unique<MemberInfo>(md,md->protection(),md->virtualness(),FALSE));
   //printf("Added member!\n");
   m_allMemberList->append(md);
   switch(md->memberType())
@@ -539,23 +525,10 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
 void GroupDefImpl::removeMember(MemberDef *md)
 {
   // fprintf(stderr, "GroupDef(%s)::removeMember( %s )\n", title.data(), md->name().data());
-  MemberNameInfo *mni = m_allMemberNameInfoSDict->find(md->name());
+  MemberNameInfo *mni = m_allMemberNameInfoLinkedMap.find(md->name());
   if (mni)
   {
-    MemberNameInfoIterator mnii(*mni);
-    while( mnii.current() )
-    {
-      if( mnii.current()->memberDef() == md )
-      {
-	mni->remove(mnii.current());
-        break;
-      }
-      ++mnii;
-    }
-    if( mni->isEmpty() )
-    {
-      m_allMemberNameInfoSDict->remove(md->name());
-    }
+    m_allMemberNameInfoLinkedMap.del(md->name());
 
     removeMemberFromList(MemberListType_allMembersList,md);
     switch(md->memberType())

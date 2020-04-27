@@ -2503,15 +2503,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.allMembersList)
       {
-        if (m_classDef->memberNameInfoSDict())
-        {
-          AllMembersListContext *ml = AllMembersListContext::alloc(m_classDef->memberNameInfoSDict());
-          cache.allMembersList.reset(ml);
-        }
-        else
-        {
-          cache.allMembersList.reset(AllMembersListContext::alloc());
-        }
+        AllMembersListContext *ml = AllMembersListContext::alloc(m_classDef->memberNameInfoLinkedMap());
+        cache.allMembersList.reset(ml);
       }
       return cache.allMembersList.get();
     }
@@ -8766,31 +8759,24 @@ TemplateVariant MemberInfoContext::get(const char *name) const
 class AllMembersListContext::Private : public GenericNodeListContext
 {
   public:
-    Private(const MemberNameInfoSDict *ml)
+    Private(const MemberNameInfoLinkedMap &ml)
     {
-      if (ml)
+      static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
+      for (auto &mni : ml)
       {
-        static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
-        MemberNameInfoSDict::Iterator mnii(*ml);
-        MemberNameInfo *mni;
-        for (mnii.toFirst();(mni=mnii.current());++mnii)
+        for (auto &mi : *mni)
         {
-          MemberNameInfoIterator mnii2(*mni);
-          MemberInfo *mi;
-          for (mnii2.toFirst();(mi=mnii2.current());++mnii2)
+          const MemberDef *md=mi->memberDef();
+          const ClassDef  *cd=md->getClassDef();
+          if (cd && !md->isAnonymous())
           {
-            const MemberDef *md=mi->memberDef();
-            const ClassDef  *cd=md->getClassDef();
-            if (cd && !md->isAnonymous())
+            if ((cd->isLinkable() && md->isLinkable()) ||
+                (!cd->isArtificial() && !hideUndocMembers &&
+                 (protectionLevelVisible(md->protection()) || md->isFriend())
+                )
+               )
             {
-              if ((cd->isLinkable() && md->isLinkable()) ||
-                  (!cd->isArtificial() && !hideUndocMembers &&
-                   (protectionLevelVisible(md->protection()) || md->isFriend())
-                  )
-                 )
-              {
-                append(MemberInfoContext::alloc(mi));
-              }
+              append(MemberInfoContext::alloc(mi.get()));
             }
           }
         }
@@ -8798,12 +8784,8 @@ class AllMembersListContext::Private : public GenericNodeListContext
     }
 };
 
-AllMembersListContext::AllMembersListContext() : RefCountedContext("AllMembersListContext")
-{
-  p = new Private(0);
-}
-
-AllMembersListContext::AllMembersListContext(const MemberNameInfoSDict *ml) : RefCountedContext("AllMembersListContext")
+AllMembersListContext::AllMembersListContext(const MemberNameInfoLinkedMap &ml)
+  : RefCountedContext("AllMembersListContext")
 {
   p = new Private(ml);
 }

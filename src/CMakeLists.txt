@@ -254,7 +254,6 @@ add_library(_doxygen STATIC
     memberdef.cpp
     membergroup.cpp
     memberlist.cpp
-    membername.cpp
     message.cpp
     msc.cpp
     namespacedef.cpp

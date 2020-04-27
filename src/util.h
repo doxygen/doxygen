@@ -51,7 +51,6 @@ class NamespaceSDict;
 class ClassList;
 class MemberGroupSDict;
 struct TagInfo;
-class MemberNameInfoSDict;
 class PageDef;
 class SectionInfo;
 class QDir;

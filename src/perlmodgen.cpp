@@ -1750,32 +1750,25 @@ void PerlModGenerator::generatePerlModSection(const Definition *d,
 void PerlModGenerator::addListOfAllMembers(const ClassDef *cd)
 {
   m_output.openList("all_members");
-  if (cd->memberNameInfoSDict())
+  for (auto &mni : cd->memberNameInfoLinkedMap())
   {
-    MemberNameInfoSDict::Iterator mnii(*cd->memberNameInfoSDict());
-    MemberNameInfo *mni;
-    for (mnii.toFirst();(mni=mnii.current());++mnii)
+    for (auto &mi : *mni)
     {
-      MemberNameInfoIterator mii(*mni);
-      MemberInfo *mi;
-      for (mii.toFirst();(mi=mii.current());++mii)
-      {
-        const MemberDef *md=mi->memberDef();
-        const ClassDef  *mcd=md->getClassDef();
-        const Definition *d=md->getGroupDef();
-        if (d==0) d = mcd;
+      const MemberDef *md=mi->memberDef();
+      const ClassDef  *mcd=md->getClassDef();
+      const Definition *d=md->getGroupDef();
+      if (d==0) d = mcd;
 
-        m_output.openHash()
-          .addFieldQuotedString("name", md->name())
-          .addFieldQuotedString("virtualness", getVirtualnessName(md->virtualness()))
-          .addFieldQuotedString("protection", getProtectionName(mi->prot()));
+      m_output.openHash()
+        .addFieldQuotedString("name", md->name())
+        .addFieldQuotedString("virtualness", getVirtualnessName(md->virtualness()))
+        .addFieldQuotedString("protection", getProtectionName(mi->prot()));
 
-        if (!mi->ambiguityResolutionScope().isEmpty())
-          m_output.addFieldQuotedString("ambiguity_scope", mi->ambiguityResolutionScope());
+      if (!mi->ambiguityResolutionScope().isEmpty())
+        m_output.addFieldQuotedString("ambiguity_scope", mi->ambiguityResolutionScope());
 
-        m_output.addFieldQuotedString("scope", mcd->name())
-          .closeHash();
-      }
+      m_output.addFieldQuotedString("scope", mcd->name())
+        .closeHash();
     }
   }
   m_output.closeList();
