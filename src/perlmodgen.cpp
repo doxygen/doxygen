@@ -1760,7 +1760,7 @@ void PerlModGenerator::addListOfAllMembers(const ClassDef *cd)
       MemberInfo *mi;
       for (mii.toFirst();(mi=mii.current());++mii)
       {
-        const MemberDef *md=mi->memberDef;
+        const MemberDef *md=mi->memberDef();
         const ClassDef  *mcd=md->getClassDef();
         const Definition *d=md->getGroupDef();
         if (d==0) d = mcd;
@@ -1768,10 +1768,10 @@ void PerlModGenerator::addListOfAllMembers(const ClassDef *cd)
         m_output.openHash()
           .addFieldQuotedString("name", md->name())
           .addFieldQuotedString("virtualness", getVirtualnessName(md->virtualness()))
-          .addFieldQuotedString("protection", getProtectionName(mi->prot));
+          .addFieldQuotedString("protection", getProtectionName(mi->prot()));
 
-        if (!mi->ambiguityResolutionScope.isEmpty())
-          m_output.addFieldQuotedString("ambiguity_scope", mi->ambiguityResolutionScope);
+        if (!mi->ambiguityResolutionScope().isEmpty())
+          m_output.addFieldQuotedString("ambiguity_scope", mi->ambiguityResolutionScope());
 
         m_output.addFieldQuotedString("scope", mcd->name())
           .closeHash();

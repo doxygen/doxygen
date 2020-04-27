@@ -3976,7 +3976,7 @@ TemplateVariant createLinkedText(const Definition *def,const QCString &relPath,c
 class MemberContext::Private : public DefinitionContext<MemberContext::Private>
 {
   public:
-    Private(MemberDef *md) : DefinitionContext<MemberContext::Private>(md) , m_memberDef(md)
+    Private(const MemberDef *md) : DefinitionContext<MemberContext::Private>(md) , m_memberDef(md)
     {
       static bool init=FALSE;
       if (!init)
@@ -4437,8 +4437,9 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         {
           scopeName = m_memberDef->getNamespaceDef()->name();
         }
-        cache.initializer = parseCode(m_memberDef,scopeName,relPathAsString(),
-                                        m_memberDef->initializer());
+        cache.initializer = parseCode(const_cast<MemberDef*>(m_memberDef),
+                                      scopeName,relPathAsString(),
+                                      m_memberDef->initializer());
         cache.initializerParsed = TRUE;
       }
       return cache.initializer;
@@ -4775,12 +4776,13 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         if (m_memberDef->argumentList().hasDocumentation())
         {
           QCString paramDocs;
-          for (Argument &a : m_memberDef->argumentList())
+          for (const Argument &a : m_memberDef->argumentList())
           {
             if (a.hasDocumentation())
             {
-              QCString direction = extractDirection(a.docs);
-              paramDocs+="@param"+direction+" "+a.name+" "+a.docs;
+              QCString docs = a.docs;
+              QCString direction = extractDirection(docs);
+              paramDocs+="@param"+direction+" "+a.name+" "+docs;
             }
           }
           cache.paramDocs.reset(new TemplateVariant(parseDoc(m_memberDef,
@@ -4982,7 +4984,9 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
           {
             scopeName = m_memberDef->getNamespaceDef()->name();
           }
-          cache.sourceCode = parseCode(m_memberDef,scopeName,relPathAsString(),codeFragment,startLine,endLine,TRUE);
+          cache.sourceCode = parseCode(const_cast<MemberDef*>(m_memberDef),
+                                       scopeName,relPathAsString(),
+                                       codeFragment,startLine,endLine,TRUE);
           cache.sourceCodeParsed = TRUE;
         }
       }
@@ -5185,10 +5189,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       return TemplateVariant::Delegate::fromMethod<Private,&Private::handleNameWithContextFor>(this);
     }
   private:
-    MemberDef *m_memberDef;
+    const MemberDef *m_memberDef;
     struct Cachable : public DefinitionContext<MemberContext::Private>::Cachable
     {
-      Cachable(MemberDef *md) : DefinitionContext<MemberContext::Private>::Cachable(md),
+      Cachable(const MemberDef *md) : DefinitionContext<MemberContext::Private>::Cachable(md),
                                 initializerParsed(FALSE), sourceCodeParsed(FALSE),
                                 declArgsParsed(FALSE), declTypeParsed(FALSE) { }
       SharedPtr<ArgumentListContext> templateArgs;
@@ -5238,7 +5242,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
 
 PropertyMapper<MemberContext::Private> MemberContext::Private::s_inst;
 
-MemberContext::MemberContext(MemberDef *md) : RefCountedContext("MemberContext")
+MemberContext::MemberContext(const MemberDef *md) : RefCountedContext("MemberContext")
 {
   p = new Private(md);
 }
@@ -8693,7 +8697,7 @@ class MemberInfoContext::Private
     }
     TemplateVariant protection() const
     {
-      switch (m_memberInfo->prot)
+      switch (m_memberInfo->prot())
       {
         case ::Public:    return "public";
         case ::Protected: return "protected";
@@ -8704,7 +8708,7 @@ class MemberInfoContext::Private
     }
     TemplateVariant virtualness() const
     {
-      switch (m_memberInfo->virt)
+      switch (m_memberInfo->virt())
       {
         case ::Normal:   return "normal";
         case ::Virtual:  return "virtual";
@@ -8714,13 +8718,13 @@ class MemberInfoContext::Private
     }
     TemplateVariant ambiguityScope() const
     {
-      return m_memberInfo->ambiguityResolutionScope;
+      return m_memberInfo->ambiguityResolutionScope();
     }
     TemplateVariant member() const
     {
-      if (!m_member && m_memberInfo->memberDef)
+      if (!m_member && m_memberInfo->memberDef())
       {
-        m_member.reset(MemberContext::alloc(m_memberInfo->memberDef));
+        m_member.reset(MemberContext::alloc(m_memberInfo->memberDef()));
       }
       if (m_member)
       {
@@ -8775,7 +8779,7 @@ class AllMembersListContext::Private : public GenericNodeListContext
           MemberInfo *mi;
           for (mnii2.toFirst();(mi=mnii2.current());++mnii2)
           {
-            MemberDef *md=mi->memberDef;
+            const MemberDef *md=mi->memberDef();
             const ClassDef  *cd=md->getClassDef();
             if (cd && !md->isAnonymous())
             {

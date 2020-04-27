@@ -63,18 +63,36 @@ class MemberNameLinkedMap : public LinkedMap<MemberName>
 };
 
 /** Data associated with a MemberDef in an inheritance relation. */
-struct MemberInfo
+class MemberInfo
 {
-  MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh) :
-        memberDef(md), prot(p), virt(v), inherited(inh), ambigClass(0) {}
- ~MemberInfo() {}
-  MemberDef *memberDef;
-  Protection prot;
-  Specifier  virt;
-  bool       inherited;
-  QCString   scopePath;
-  QCString   ambiguityResolutionScope;
-  ClassDef  *ambigClass;
+  public:
+    MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh) :
+          m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh) {}
+   ~MemberInfo() {}
+
+    // getters
+    MemberDef *memberDef()                      { return m_memberDef; }
+    const MemberDef *memberDef() const          { return m_memberDef; }
+    Protection prot() const                     { return m_prot;      }
+    Specifier  virt() const                     { return m_virt;      }
+    bool       inherited() const                { return m_inherited; }
+    QCString   scopePath() const                { return m_scopePath; }
+    QCString   ambiguityResolutionScope() const { return m_ambiguityResolutionScope; }
+    const ClassDef  *ambigClass() const         { return m_ambigClass; }
+
+    // setters
+    void setAmbiguityResolutionScope(const QCString &s) { m_ambiguityResolutionScope = s; }
+    void setScopePath(const QCString &s)                { m_scopePath = s; }
+    void setAmbigClass(const ClassDef *cd)              { m_ambigClass = cd; }
+
+  private:
+    MemberDef     *m_memberDef;
+    Protection     m_prot;
+    Specifier      m_virt;
+    bool           m_inherited;
+    QCString       m_scopePath;
+    QCString       m_ambiguityResolutionScope;
+    const ClassDef *m_ambigClass = 0;
 };
 
 /** Class representing all MemberInfo objects with the same name */

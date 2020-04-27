@@ -1086,10 +1086,10 @@ static void writeListOfAllMembers(const ClassDef *cd,FTextStream &t)
       MemberInfo *mi;
       for (mii.toFirst();(mi=mii.current());++mii)
       {
-        const MemberDef *md=mi->memberDef;
+        const MemberDef *md=mi->memberDef();
         if (!md->isAnonymous())
         {
-          Protection prot = mi->prot;
+          Protection prot = mi->prot();
           Specifier virt=md->virtualness();
           t << "      <member refid=\"" << memberOutputFileBase(md) << "_1" <<
             md->anchor() << "\" prot=\"";
@@ -1108,9 +1108,9 @@ static void writeListOfAllMembers(const ClassDef *cd,FTextStream &t)
             case Pure:    t << "pure-virtual"; break;
           }
           t << "\"";
-          if (!mi->ambiguityResolutionScope.isEmpty())
+          if (!mi->ambiguityResolutionScope().isEmpty())
           {
-            t << " ambiguityscope=\"" << convertToXML(mi->ambiguityResolutionScope) << "\"";
+            t << " ambiguityscope=\"" << convertToXML(mi->ambiguityResolutionScope()) << "\"";
           }
           t << "><scope>" << convertToXML(cd->name()) << "</scope><name>" <<
             convertToXML(md->name()) << "</name></member>" << endl;

@@ -47,7 +47,7 @@ class MemberDef;
 struct Argument;
 class ArgumentList;
 class MemberNameInfoSDict;
-struct MemberInfo;
+class MemberInfo;
 class MemberGroup;
 class MemberGroupSDict;
 class MemberGroupList;
@@ -348,7 +348,7 @@ class PageContext : public RefCountedContext, public TemplateStructIntf
 class MemberContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static MemberContext *alloc(MemberDef *md) { return new MemberContext(md); }
+    static MemberContext *alloc(const MemberDef *md) { return new MemberContext(md); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -356,7 +356,7 @@ class MemberContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    MemberContext(MemberDef *);
+    MemberContext(const MemberDef *);
    ~MemberContext();
     class Private;
     Private *p;

@@ -1668,8 +1668,8 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   if (isFunc)
   {
     const ArgumentList &al = md->argumentList();
-    bindIntParameter(memberdef_insert,":const",al.constSpecifier);
-    bindIntParameter(memberdef_insert,":volatile",al.volatileSpecifier);
+    bindIntParameter(memberdef_insert,":const",al.constSpecifier());
+    bindIntParameter(memberdef_insert,":volatile",al.volatileSpecifier());
     bindIntParameter(memberdef_insert,":explicit",md->isExplicit());
     bindIntParameter(memberdef_insert,":inline",md->isInline());
     bindIntParameter(memberdef_insert,":final",md->isFinal());
@@ -1914,7 +1914,7 @@ static void associateAllClassMembers(const ClassDef *cd, struct Refid scope_refi
       MemberInfo *mi;
       for (mii.toFirst();(mi=mii.current());++mii)
       {
-        MemberDef *md = mi->memberDef;
+        MemberDef *md = mi->memberDef();
         QCString qrefid = md->getOutputFileBase() + "_1" + md->anchor();
         associateMember(md, insertRefid(qrefid), scope_refid);
       }

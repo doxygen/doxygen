@@ -28,10 +28,10 @@ MemberNameInfo::MemberNameInfo(const char *n) : QList<MemberInfo>()
 
 int MemberNameInfo::compareValues(const MemberInfo *m1,const MemberInfo *m2) const
 {
-  const ClassDef *c1=m1->memberDef->getClassDef();
-  const ClassDef *c2=m2->memberDef->getClassDef();
-  const FileDef  *f1=m1->memberDef->getFileDef();
-  const FileDef  *f2=m2->memberDef->getFileDef();
+  const ClassDef *c1=m1->memberDef()->getClassDef();
+  const ClassDef *c2=m2->memberDef()->getClassDef();
+  const FileDef  *f1=m1->memberDef()->getFileDef();
+  const FileDef  *f2=m2->memberDef()->getFileDef();
   if (c1 && c2)
     return qstrcmp(c1->name(),c2->name());
   else if (f1 && f2)

@@ -385,7 +385,7 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
     const MemberInfo *srcMi;
     for ( ; (srcMi=srcMnii.current()) ; ++srcMnii )
     {
-      const MemberDef *srcMd = srcMi->memberDef;
+      const MemberDef *srcMd = srcMi->memberDef();
       if (srcMd==md) return FALSE; // already added before!
 
       bool sameScope = srcMd->getOuterScope()==md->getOuterScope() || // same class or namespace
@@ -545,7 +545,7 @@ void GroupDefImpl::removeMember(MemberDef *md)
     MemberNameInfoIterator mnii(*mni);
     while( mnii.current() )
     {
-      if( mnii.current()->memberDef == md )
+      if( mnii.current()->memberDef() == md )
       {
 	mni->remove(mnii.current());
         break;

@@ -1896,7 +1896,7 @@ static void findUsingDeclImports(const Entry *root)
               MemberInfo *mi;
               for ( ; (mi=mnii.current()) ; ++mnii )
               {
-                MemberDef *md = mi->memberDef;
+                MemberDef *md = mi->memberDef();
                 if (md && md->protection()!=Private)
                 {
                   //printf("found member %s\n",mni->memberName());
@@ -3905,7 +3905,7 @@ static void findUsedClassesForClass(const Entry *root,
       MemberInfo *mi;
       for (mnii.toFirst();(mi=mnii.current());++mnii)
       {
-        MemberDef *md=mi->memberDef;
+        MemberDef *md=mi->memberDef();
         if (md->isVariable() || md->isObjCProperty()) // for each member variable in this class
         {
           //printf("    Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
