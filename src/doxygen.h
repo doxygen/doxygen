@@ -24,6 +24,7 @@
 
 #include <set>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "ftextstream.h"
 #include "sortdict.h"
@@ -84,6 +85,8 @@ struct LookupInfo
   QCString   resolvedType;
 };
 
+using StringMap = std::unordered_map<std::string,std::string>;
+
 extern QCString g_spaces;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
@@ -110,7 +113,7 @@ class Doxygen
     static MemberNameLinkedMap      *memberNameLinkedMap;
     static MemberNameLinkedMap      *functionNameLinkedMap;
     static QStrList                  tagfileList;
-    static StringDict                namespaceAliasDict;
+    static StringMap                 namespaceAliasMap;
     static GroupSDict               *groupSDict;
     static NamespaceSDict           *namespaceSDict;
     static StringDict                tagDestinationDict;

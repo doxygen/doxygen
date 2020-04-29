@@ -134,7 +134,7 @@ FileNameLinkedMap    *Doxygen::imageNameLinkedMap = 0;       // images
 FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = 0;     // dot files
 FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = 0;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = 0;     // dia files
-StringDict       Doxygen::namespaceAliasDict(257); // all namespace aliases
+StringMap        Doxygen::namespaceAliasMap;      // all namespace aliases
 StringDict       Doxygen::tagDestinationDict(257); // all tag locations
 std::unordered_set<std::string> Doxygen::expandAsDefinedSet; // all macros that should be expanded
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
@@ -267,9 +267,6 @@ void statistics()
   //g_excludeNameDict.statistics();
   fprintf(stderr,"--- aliasDict stats ----\n");
   Doxygen::aliasDict.statistics();
-  fprintf(stderr,"--- typedefDict stats ----\n");
-  fprintf(stderr,"--- namespaceAliasDict stats ----\n");
-  Doxygen::namespaceAliasDict.statistics();
   fprintf(stderr,"--- tagDestinationDict stats ----\n");
   Doxygen::tagDestinationDict.statistics();
   fprintf(stderr,"--- g_compoundKeywordDict stats ----\n");
@@ -4430,10 +4427,10 @@ static bool findClassRelation(
         {
           // for PHP the "use A\B as C" construct map class C to A::B, so we lookup
           // the class name also in the alias mapping.
-          QCString *aliasName = Doxygen::namespaceAliasDict[baseClassName];
-          if (aliasName) // see if it is indeed a class.
+          auto it = Doxygen::namespaceAliasMap.find(baseClassName.data());
+          if (it!=Doxygen::namespaceAliasMap.end()) // see if it is indeed a class.
           {
-            baseClass=getClass(*aliasName);
+            baseClass=getClass(it->second.c_str());
             found = baseClass!=0 && baseClass!=cd;
           }
         }
@@ -9722,7 +9719,6 @@ void initDoxygen()
   Doxygen::exampleSDict->setAutoDelete(TRUE);
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
-  Doxygen::namespaceAliasDict.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
   Doxygen::genericsDict = new GenericsSDict;
   Doxygen::indexList = new IndexList;

@@ -482,21 +482,22 @@ ClassDef *getClass(const char *n)
 NamespaceDef *getResolvedNamespace(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-  QCString *subst = Doxygen::namespaceAliasDict[name];
-  if (subst)
+  auto it = Doxygen::namespaceAliasMap.find(name);
+  if (it!=Doxygen::namespaceAliasMap.end())
   {
     int count=0; // recursion detection guard
-    QCString *newSubst;
-    while ((newSubst=Doxygen::namespaceAliasDict[*subst]) && count<10)
+    StringMap::iterator it2;
+    while ((it2=Doxygen::namespaceAliasMap.find(it->second))!=Doxygen::namespaceAliasMap.end() &&
+           count<10)
     {
-      subst=newSubst;
+      it=it2;
       count++;
     }
     if (count==10)
     {
       warn_uncond("possible recursive namespace alias detected for %s!\n",name);
     }
-    return Doxygen::namespaceSDict->find(subst->data());
+    return Doxygen::namespaceSDict->find(it->second.data());
   }
   else
   {
@@ -6619,11 +6620,14 @@ void replaceNamespaceAliases(QCString &scope,int i)
   while (i>0)
   {
     QCString ns = scope.left(i);
-    QCString *s = Doxygen::namespaceAliasDict[ns];
-    if (s)
+    if (!ns.isEmpty())
     {
-      scope=*s+scope.right(scope.length()-i);
-      i=s->length();
+      auto it = Doxygen::namespaceAliasMap.find(ns.data());
+      if (it!=Doxygen::namespaceAliasMap.end())
+      {
+        scope=it->second.data()+scope.right(scope.length()-i);
+        i=it->second.length();
+      }
     }
     if (i>0 && ns==scope.left(i)) break;
   }

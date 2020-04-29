@@ -1642,17 +1642,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <NSAliasArg>({ID}"::")*{ID}		{
   					  //printf("Inserting namespace alias %s::%s->%s\n",yyextra->current_root->name.data(),yyextra->aliasName.data(),yytext);
-					  //if (yyextra->current_root->name.isEmpty())
-					  //{
                                           // TODO: namespace aliases are now treated as global entities
                                           // while they should be aware of the scope they are in
-                                            Doxygen::namespaceAliasDict.insert(yyextra->aliasName,new QCString(yytext));
-					  //}
-					  //else
-					  //{
-                                          //  Doxygen::namespaceAliasDict.insert(yyextra->current_root->name+"::"+yyextra->aliasName,
-					  //	new QCString(yyextra->current_root->name+"::"+yytext));
-					  //}
+                                          Doxygen::namespaceAliasMap.insert({yyextra->aliasName.data(),std::string(yytext)});
   					}
 <NSAliasArg>";"				{
   					  BEGIN( FindMembers );
@@ -1685,9 +1677,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  //printf("PHP: adding use as relation: %s->%s\n",yytext,yyextra->aliasName.data());
                                           if (!yyextra->aliasName.isEmpty())
                                           {
-                                            Doxygen::namespaceAliasDict.insert(yytext,
-					         new QCString(removeRedundantWhiteSpace(
-					  	   substitute(yyextra->aliasName,"\\","::"))));
+                                            Doxygen::namespaceAliasMap.insert({yytext,
+					         std::string(removeRedundantWhiteSpace(
+					  	   substitute(yyextra->aliasName,"\\","::")).data())});
                                           }
 					  yyextra->aliasName.resize(0);
   					}
