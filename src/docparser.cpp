@@ -535,7 +535,7 @@ static void checkUnOrMultipleDocumentedParams()
                          " has multiple @param documentation sections").data());
         }
       }
-      if (notArgCnt>0)
+      if (notArgCnt > 0 && !Config_getBool(IGNORE_MISSING_PARAMDOC))
       {
         bool first=TRUE;
         QCString errMsg=
