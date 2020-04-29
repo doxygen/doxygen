@@ -22,6 +22,7 @@
 #include <qdict.h>
 #include <qintdict.h>
 
+#include <set>
 #include <unordered_set>
 
 #include "ftextstream.h"
@@ -100,7 +101,7 @@ class Doxygen
     static bool                      insideMainPage;
     static FileNameLinkedMap        *includeNameLinkedMap;
     static FileNameLinkedMap        *exampleNameLinkedMap;
-    static QDict<void>               inputPaths;
+    static std::set<std::string>     inputPaths;
     static FileNameLinkedMap        *inputNameLinkedMap;
     static FileNameLinkedMap        *imageNameLinkedMap;
     static FileNameLinkedMap        *dotFileNameLinkedMap;
@@ -163,19 +164,8 @@ int readFileOrDirectory(const char *s,
                         bool recursive,
                         bool errorIfNotExist=TRUE,
                         std::unordered_set<std::string> *killSet = 0,
-                        QDict<void> *paths = 0
+                        std::set<std::string> *paths = 0
                        );
-int readDir(QFileInfo *fi,
-            FileNameLinkedMap *fnDict,
-            StringDict  *exclDict,
-            QStrList *patList,
-            QStrList *exclPatList,
-            StringList *resultList,
-            StringDict *resultDict,
-            bool errorIfNotExist,
-            bool recursive,
-            std::unordered_set<std::string> *killSet
-           );
 void copyAndFilterFile(const char *fileName,BufStr &dest);
 
 #endif

@@ -169,7 +169,6 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   p->index    = clang_createIndex(0, 0);
   p->curLine  = 1;
   p->curToken = 0;
-  QDictIterator<void> di(Doxygen::inputPaths);
   int argc=0;
   std::string error;
   // load a clang compilation database (https://clang.llvm.org/docs/JSONCompilationDatabase.html)
@@ -197,7 +196,11 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
           }
       }
   }
-  char **argv = (char**)malloc(sizeof(char*)*(4+Doxygen::inputPaths.count()+includePath.count()+clangOptions.count()+clang_option_len));
+  char **argv = (char**)malloc(sizeof(char*)*
+                               (4+Doxygen::inputPaths.size()+
+                                includePath.count()+
+                                clangOptions.count()+
+                                clang_option_len));
   if (!command.empty() )
   {
       std::vector<std::string> options = command[command.size()-1].CommandLine;
@@ -212,9 +215,9 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   else
   {
     // add include paths for input files
-    for (di.toFirst();di.current();++di,++argc)
+    for (const std::string &path : Doxygen::inputPaths)
     {
-      QCString inc = QCString("-I")+di.currentKey();
+      QCString inc = QCString("-I")+path.data();
       argv[argc]=qstrdup(inc.data());
       //printf("argv[%d]=%s\n",argc,argv[argc]);
     }

@@ -127,7 +127,7 @@ GroupSDict      *Doxygen::groupSDict = 0;
 PageSDict       *Doxygen::pageSDict = 0;
 PageSDict       *Doxygen::exampleSDict = 0;
 StringDict       Doxygen::aliasDict(257);          // aliases
-QDict<void>      Doxygen::inputPaths(1009);
+std::set<std::string> Doxygen::inputPaths;
 FileNameLinkedMap    *Doxygen::includeNameLinkedMap = 0;     // include names
 FileNameLinkedMap    *Doxygen::exampleNameLinkedMap = 0;     // examples
 FileNameLinkedMap    *Doxygen::imageNameLinkedMap = 0;       // images
@@ -9248,7 +9248,7 @@ static QDict<void> g_pathsVisited(1009);
 // The directory is read iff the recursiveFlag is set.
 // The contents of all files is append to the input string
 
-int readDir(QFileInfo *fi,
+static int readDir(QFileInfo *fi,
             FileNameLinkedMap *fnMap,
             StringDict  *exclDict,
             QStrList *patList,
@@ -9258,13 +9258,13 @@ int readDir(QFileInfo *fi,
             bool errorIfNotExist,
             bool recursive,
             std::unordered_set<std::string> *killSet,
-            QDict<void> *paths
+            std::set<std::string> *paths
            )
 {
   QCString dirName = fi->absFilePath().utf8();
-  if (paths && paths->find(dirName)==0)
+  if (paths && !dirName.isEmpty())
   {
-    paths->insert(dirName,(void*)0x8);
+    paths->insert(dirName.data());
   }
   if (fi->isSymLink())
   {
@@ -9359,7 +9359,7 @@ int readFileOrDirectory(const char *s,
                         bool recursive,
                         bool errorIfNotExist,
                         std::unordered_set<std::string> *killSet,
-                        QDict<void> *paths
+                        std::set<std::string> *paths
                        )
 {
   //printf("killSet count=%d\n",killSet ? (int)killSet->size() : -1);
@@ -9388,9 +9388,9 @@ int readFileOrDirectory(const char *s,
         {
           QCString dirPath = fi.dirPath(TRUE).utf8();
           QCString filePath = fi.absFilePath().utf8();
-          if (paths && paths->find(dirPath))
+          if (paths && !dirPath.isEmpty())
           {
-            paths->insert(dirPath,(void*)0x8);
+            paths->insert(dirPath.data());
           }
           //printf("killSet.find(%s)=%d\n",fi.absFilePath().data(),killSet.find(fi.absFilePath())!=killSet.end());
           if (killSet==0 || killSet->find(filePath.data())==killSet->end())
@@ -10594,6 +10594,7 @@ void searchInputFiles()
 
   g_s.begin("Searching INPUT for files to process...\n");
   killSet.clear();
+  Doxygen::inputPaths.clear();
   QStrList &inputList=Config_getList(INPUT);
   g_inputFiles.setAutoDelete(TRUE);
   s=inputList.first();
