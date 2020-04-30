@@ -486,7 +486,7 @@ NamespaceDef *getResolvedNamespace(const char *name)
   if (it!=Doxygen::namespaceAliasMap.end())
   {
     int count=0; // recursion detection guard
-    StringMap::iterator it2;
+    StringUnorderedMap::iterator it2;
     while ((it2=Doxygen::namespaceAliasMap.find(it->second))!=Doxygen::namespaceAliasMap.end() &&
            count<10)
     {
