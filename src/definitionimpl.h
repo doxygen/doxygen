@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -68,7 +68,7 @@ class DefinitionImpl : virtual public Definition
     virtual SrcLangExt getLanguage() const;
     virtual GroupList *partOfGroups() const;
     virtual bool isLinkableViaGroup() const;
-    virtual const std::vector<RefItem*> &xrefListItems() const;
+    virtual const RefItemVector &xrefListItems() const;
     virtual Definition *findInnerCompound(const char *name) const;
     virtual Definition *getOuterScope() const;
     virtual MemberSDict *getReferencesMembers() const;
@@ -90,7 +90,7 @@ class DefinitionImpl : virtual public Definition
     virtual void setBodyDef(FileDef *fd);
     virtual void addSourceReferencedBy(const MemberDef *d);
     virtual void addSourceReferences(const MemberDef *d);
-    virtual void setRefItems(const std::vector<RefItem*> &sli);
+    virtual void setRefItems(const RefItemVector &sli);
     virtual void mergeRefItems(Definition *d);
     virtual void addInnerCompound(const Definition *d);
     virtual void setOuterScope(Definition *d);
@@ -118,7 +118,7 @@ class DefinitionImpl : virtual public Definition
 
     DefinitionImpl(const DefinitionImpl &d);
 
-  private: 
+  private:
     virtual void _setSymbolName(const QCString &name);
     virtual QCString _symbolName() const ;
 
@@ -216,7 +216,7 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->partOfGroups(); }
     virtual bool isLinkableViaGroup() const
     { return m_def->isLinkableViaGroup(); }
-    virtual const std::vector<RefItem*> &xrefListItems() const
+    virtual const RefItemVector &xrefListItems() const
     { return m_def->xrefListItems(); }
     virtual Definition *findInnerCompound(const char *name) const
     { return m_def->findInnerCompound(name); }
@@ -236,9 +236,9 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->id(); }
     virtual const SectionRefs &getSectionRefs() const
     { return m_def->getSectionRefs(); }
-    virtual QCString navigationPathAsString() const 
+    virtual QCString navigationPathAsString() const
     { return m_def->navigationPathAsString(); }
-    virtual QCString pathFragment() const 
+    virtual QCString pathFragment() const
     { return m_def->pathFragment(); }
     virtual void setName(const char *) { }
     virtual void setId(const char *) { }
@@ -252,7 +252,7 @@ class DefinitionAliasImpl : virtual public Definition
     virtual void setBodyDef(FileDef *) {}
     virtual void addSourceReferencedBy(const MemberDef *) {}
     virtual void addSourceReferences(const MemberDef *) {}
-    virtual void setRefItems(const std::vector<RefItem*> &) {}
+    virtual void setRefItems(const RefItemVector &) {}
     virtual void mergeRefItems(Definition *) {}
     virtual void addInnerCompound(const Definition *) {}
     virtual void setOuterScope(Definition *) {}

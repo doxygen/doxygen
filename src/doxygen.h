@@ -22,10 +22,7 @@
 #include <qdict.h>
 #include <qintdict.h>
 
-#include <set>
-#include <unordered_set>
-#include <unordered_map>
-
+#include "containers.h"
 #include "ftextstream.h"
 #include "sortdict.h"
 #include "membergroup.h"
@@ -85,11 +82,6 @@ struct LookupInfo
   QCString   resolvedType;
 };
 
-using StringUnorderedMap = std::unordered_map<std::string,std::string>;
-using StringUnorderedSet = std::unordered_set<std::string>;
-using StringSet          = std::set<std::string>;
-using StringVector       = std::vector<std::string>;
-
 extern QCString g_spaces;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
@@ -107,7 +99,7 @@ class Doxygen
     static bool                      insideMainPage;
     static FileNameLinkedMap        *includeNameLinkedMap;
     static FileNameLinkedMap        *exampleNameLinkedMap;
-    static std::set<std::string>     inputPaths;
+    static StringSet                 inputPaths;
     static FileNameLinkedMap        *inputNameLinkedMap;
     static FileNameLinkedMap        *imageNameLinkedMap;
     static FileNameLinkedMap        *dotFileNameLinkedMap;

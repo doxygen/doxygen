@@ -6131,7 +6131,7 @@ found:
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const QCString &doc,
     const char *fileName,int startLine,
-    const std::vector<RefItem*> &sli,
+    const RefItemVector &sli,
     GroupDef *gd,
     const TagInfo *tagInfo,
     bool xref,
@@ -6218,7 +6218,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
 //----------------------------------------------------------------------------
 
-void addRefItem(const std::vector<RefItem*> &sli,
+void addRefItem(const RefItemVector &sli,
     const char *key,
     const char *prefix, const char *name,const char *title,const char *args,const Definition *scope)
 {

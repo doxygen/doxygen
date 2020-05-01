@@ -106,9 +106,9 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual ConstraintClassDict *templateTypeConstraints() const;
     virtual bool isTemplateArgument() const;
     virtual Definition *findInnerCompound(const char *name) const;
-    virtual std::vector<ArgumentList> getTemplateParameterLists() const;
+    virtual ArgumentLists getTemplateParameterLists() const;
     virtual QCString qualifiedNameWithTemplateParameters(
-        const std::vector<ArgumentList> *actualParams=0,uint *actualParamIndex=0) const;
+        const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const;
     virtual bool isAbstract() const;
     virtual bool isObjectiveC() const;
     virtual bool isFortran() const;
@@ -368,10 +368,10 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
     { return getCdAlias()->isTemplateArgument(); }
     virtual Definition *findInnerCompound(const char *name) const
     { return getCdAlias()->findInnerCompound(name); }
-    virtual std::vector<ArgumentList> getTemplateParameterLists() const
+    virtual ArgumentLists getTemplateParameterLists() const
     { return getCdAlias()->getTemplateParameterLists(); }
     virtual QCString qualifiedNameWithTemplateParameters(
-        const std::vector<ArgumentList> *actualParams=0,uint *actualParamIndex=0) const
+        const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const
     { return getCdAlias()->qualifiedNameWithTemplateParameters(actualParams,actualParamIndex); }
     virtual bool isAbstract() const
     { return getCdAlias()->isAbstract(); }
@@ -1348,7 +1348,7 @@ void ClassDefImpl::setIncludeFile(FileDef *fd,
 //}
 
 static void searchTemplateSpecs(/*in*/  const Definition *d,
-                                /*out*/ std::vector<ArgumentList> &result,
+                                /*out*/ ArgumentLists &result,
                                 /*out*/ QCString &name,
                                 /*in*/  SrcLangExt lang)
 {
@@ -1385,7 +1385,7 @@ static void searchTemplateSpecs(/*in*/  const Definition *d,
 static void writeTemplateSpec(OutputList &ol,const Definition *d,
             const QCString &type,SrcLangExt lang)
 {
-  std::vector<ArgumentList> specs;
+  ArgumentLists specs;
   QCString name;
   searchTemplateSpecs(d,specs,name,lang);
   if (!specs.empty()) // class has template scope specifiers
@@ -4215,9 +4215,9 @@ bool ClassDefImpl::isReference() const
   }
 }
 
-std::vector<ArgumentList> ClassDefImpl::getTemplateParameterLists() const
+ArgumentLists ClassDefImpl::getTemplateParameterLists() const
 {
-  std::vector<ArgumentList> result;
+  ArgumentLists result;
   Definition *d=getOuterScope();
   while (d && d->definitionType()==Definition::TypeClass)
   {
@@ -4232,7 +4232,7 @@ std::vector<ArgumentList> ClassDefImpl::getTemplateParameterLists() const
 }
 
 QCString ClassDefImpl::qualifiedNameWithTemplateParameters(
-    const std::vector<ArgumentList> *actualParams,uint *actualParamIndex) const
+    const ArgumentLists *actualParams,uint *actualParamIndex) const
 {
   //static bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
   static bool hideScopeNames = Config_getBool(HIDE_SCOPE_NAMES);
@@ -4312,7 +4312,7 @@ void ClassDefImpl::addListReferences()
   if (!isLinkableInProject()) return;
   //printf("ClassDef(%s)::addListReferences()\n",name().data());
   {
-    const std::vector<RefItem*> &xrefItems = xrefListItems();
+    const RefItemVector &xrefItems = xrefListItems();
     addRefItem(xrefItems,
              qualifiedName(),
              lang==SrcLangExt_Fortran ? theTranslator->trType(TRUE,TRUE)

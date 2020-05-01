@@ -53,8 +53,8 @@ struct FormulaManager::Private
     }
     return DisplaySize(-1,-1);
   }
-  std::vector<std::string>  formulas;
-  std::map<std::string,int> formulaMap;
+  StringVector  formulas;
+  IntMap formulaMap;
   std::map<int,DisplaySize> displaySizeMap;
 };
 
@@ -163,7 +163,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   QDir thisDir;
   // generate a latex file containing one formula per page.
   QCString texName="_formulas.tex";
-  std::vector<int> formulasToGenerate;
+  IntVector formulasToGenerate;
   QFile f(texName);
   bool formulaError=FALSE;
   if (f.open(IO_WriteOnly))

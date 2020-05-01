@@ -133,7 +133,8 @@ class ArgumentList
     RefQualifierType m_refQualifier = RefQualifierNone;
     /*! is it an explicit empty list */
     bool m_noParameters = FALSE;
-
 };
+
+using ArgumentLists = std::vector<ArgumentList>;
 
 #endif

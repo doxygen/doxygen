@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -23,6 +23,7 @@
 #include <qdict.h>
 
 #include "types.h"
+#include "reflist.h"
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 // To disable 'inherits via dominance' warnings.
@@ -40,12 +41,11 @@ class GroupList;
 class SectionInfo;
 class Definition;
 class FTextStream;
-class RefItem;
-  
+
 /** Data associated with a detailed description. */
 struct DocInfo
 {
-    QCString doc;  
+    QCString doc;
     int      line;
     QCString file;
 };
@@ -53,8 +53,8 @@ struct DocInfo
 /** Data associated with a brief description. */
 struct BriefInfo
 {
-    QCString doc;  
-    QCString tooltip;  
+    QCString doc;
+    QCString tooltip;
     int      line;
     QCString file;
 };
@@ -67,7 +67,7 @@ struct BodyInfo
     int      endLine;     //!< line number of the end of the definition's body
     FileDef *fileDef;     //!< file definition containing the function body
 };
-    
+
 /** Abstract interface for a Definition or DefinitionList */
 class DefinitionIntf
 {
@@ -75,23 +75,23 @@ class DefinitionIntf
     DefinitionIntf() {}
     virtual ~DefinitionIntf() {}
     /*! Types of derived classes */
-    enum DefType 
-    { 
-      TypeClass      = 0, 
-      TypeFile       = 1, 
-      TypeNamespace  = 2, 
-      TypeMember     = 3, 
-      TypeGroup      = 4, 
-      TypePackage    = 5, 
-      TypePage       = 6, 
-      TypeDir        = 7, 
+    enum DefType
+    {
+      TypeClass      = 0,
+      TypeFile       = 1,
+      TypeNamespace  = 2,
+      TypeMember     = 3,
+      TypeGroup      = 4,
+      TypePackage    = 5,
+      TypePage       = 6,
+      TypeDir        = 7,
       TypeSymbolList = 8
     };
     /*! Use this for dynamic inspection of the type of the derived class */
     virtual DefType definitionType() const = 0;
 };
 
-/** The common base class of all entity definitions found in the sources. 
+/** The common base class of all entity definitions found in the sources.
  *
  *  This can be a class or a member function, or a file, or a namespace, etc.
  *  Use definitionType() to find which type of definition this is.
@@ -161,7 +161,7 @@ class Definition : public DefinitionIntf
     virtual QCString briefDescription(bool abbreviate=FALSE) const = 0;
 
     /*! Returns a plain text version of the brief description suitable for use
-     *  as a tool tip. 
+     *  as a tool tip.
      */
     virtual QCString briefDescriptionAsTooltip() const = 0;
 
@@ -174,11 +174,11 @@ class Definition : public DefinitionIntf
     /*! Returns the file in which the in body documentation was found */
     virtual QCString inbodyFile() const = 0;
 
-    /*! Returns the line at which the first in body documentation 
+    /*! Returns the line at which the first in body documentation
         part was found */
     virtual int inbodyLine() const = 0;
 
-    /*! Returns the file in which the brief description was found. 
+    /*! Returns the file in which the brief description was found.
      *  This can differ from getDefFileName().
      */
     virtual QCString briefFile() const = 0;
@@ -195,8 +195,8 @@ class Definition : public DefinitionIntf
     /*! returns the column number at which the definition was found */
     virtual int getDefColumn() const = 0;
 
-    /*! Returns TRUE iff the definition is documented 
-     *  (which could be generated documentation) 
+    /*! Returns TRUE iff the definition is documented
+     *  (which could be generated documentation)
      *  @see hasUserDocumentation()
      */
     virtual bool hasDocumentation() const = 0;
@@ -205,17 +205,17 @@ class Definition : public DefinitionIntf
     virtual bool hasUserDocumentation() const = 0;
 
     /*! Returns TRUE iff it is possible to link to this item within this
-     *  project. 
+     *  project.
      */
     virtual bool isLinkableInProject() const = 0;
 
     /*! Returns TRUE iff it is possible to link to this item. This can
-     *  be a link to another project imported via a tag file. 
+     *  be a link to another project imported via a tag file.
      */
     virtual bool isLinkable() const = 0;
 
-    /*! Returns TRUE iff the name is part of this project and 
-     *  may appear in the output 
+    /*! Returns TRUE iff the name is part of this project and
+     *  may appear in the output
      */
     virtual bool isVisibleInProject() const = 0;
 
@@ -225,14 +225,14 @@ class Definition : public DefinitionIntf
     /*! Returns TRUE iff this item is supposed to be hidden from the output. */
     virtual bool isHidden() const = 0;
 
-    /*! returns TRUE if this entity was artificially introduced, for 
-     *  instance because it is used to show a template instantiation relation. 
+    /*! returns TRUE if this entity was artificially introduced, for
+     *  instance because it is used to show a template instantiation relation.
      */
     virtual bool isArtificial() const = 0;
 
     /*! If this definition was imported via a tag file, this function
      *  returns the tagfile for the external project. This can be
-     *  translated into an external link target via 
+     *  translated into an external link target via
      *  Doxygen::tagDestinationDict
      */
     virtual QCString getReference() const = 0;
@@ -246,12 +246,12 @@ class Definition : public DefinitionIntf
     /*! Returns the first line of the implementation of this item. See also getDefLine() */
     virtual int getStartDefLine() const = 0;
 
-    /*! Returns the first line of the body of this item (applicable to classes and 
+    /*! Returns the first line of the body of this item (applicable to classes and
      *  functions).
      */
     virtual int getStartBodyLine() const = 0;
 
-    /*! Returns the last line of the body of this item (applicable to classes and 
+    /*! Returns the last line of the body of this item (applicable to classes and
      *  functions).
      */
     virtual int getEndBodyLine() const = 0;
@@ -267,7 +267,7 @@ class Definition : public DefinitionIntf
     virtual GroupList *partOfGroups() const = 0;
     virtual bool isLinkableViaGroup() const = 0;
 
-    virtual const std::vector<RefItem*> &xrefListItems() const = 0;
+    virtual const RefItemVector &xrefListItems() const = 0;
 
     virtual Definition *findInnerCompound(const char *name) const = 0;
     virtual Definition *getOuterScope() const = 0;
@@ -323,7 +323,7 @@ class Definition : public DefinitionIntf
     virtual void setBodySegment(int defLine, int bls,int ble) = 0;
     virtual void setBodyDef(FileDef *fd) = 0;
 
-    virtual void setRefItems(const std::vector<RefItem*> &sli) = 0;
+    virtual void setRefItems(const RefItemVector &sli) = 0;
     virtual void setOuterScope(Definition *d) = 0;
 
     virtual void setHidden(bool b) = 0;
@@ -338,7 +338,7 @@ class Definition : public DefinitionIntf
 
     virtual void makePartOfGroup(GroupDef *gd) = 0;
 
-    /*! Add the list of anchors that mark the sections that are found in the 
+    /*! Add the list of anchors that mark the sections that are found in the
      * documentation.
      */
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) = 0;
@@ -397,11 +397,11 @@ class DefinitionListIterator : public QListIterator<Definition>
 };
 
 /** Reads a fragment from file \a fileName starting with line \a startLine
- *  and ending with line \a endLine. The result is returned as a string 
- *  via \a result. The function returns TRUE if successful and FALSE 
+ *  and ending with line \a endLine. The result is returned as a string
+ *  via \a result. The function returns TRUE if successful and FALSE
  *  in case of an error.
  */
-bool readCodeFragment(const char *fileName, 
+bool readCodeFragment(const char *fileName,
                       int &startLine,int &endLine,
                       QCString &result);
 #endif

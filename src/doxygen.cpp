@@ -865,7 +865,7 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
 
 std::unique_ptr<ArgumentList> getTemplateArgumentsFromName(
                   const QCString &name,
-                  const std::vector<ArgumentList> &tArgLists)
+                  const ArgumentLists &tArgLists)
 {
   // for each scope fragment, check if it is a template and advance through
   // the list if so.
@@ -4874,7 +4874,7 @@ static void addListReferences()
       name = pd->getGroupDef()->getOutputFileBase();
     }
     {
-      const std::vector<RefItem*> &xrefItems = pd->xrefListItems();
+      const RefItemVector &xrefItems = pd->xrefListItems();
       addRefItem(xrefItems,
           name,
           theTranslator->trPage(TRUE,TRUE),
@@ -4891,7 +4891,7 @@ static void addListReferences()
     //{
     //  name = dd->getGroupDef()->getOutputFileBase();
     //}
-    const std::vector<RefItem*> &xrefItems = dd->xrefListItems();
+    const RefItemVector &xrefItems = dd->xrefListItems();
     addRefItem(xrefItems,
         name,
         theTranslator->trDir(TRUE,TRUE),
@@ -5229,8 +5229,8 @@ static bool findGlobalMember(const Entry *root,
 }
 
 static bool isSpecialization(
-                  const std::vector<ArgumentList> &srcTempArgLists,
-                  const std::vector<ArgumentList> &dstTempArgLists
+                  const ArgumentLists &srcTempArgLists,
+                  const ArgumentLists &dstTempArgLists
     )
 {
     auto srcIt = srcTempArgLists.begin();
@@ -5256,8 +5256,8 @@ static bool scopeIsTemplate(const Definition *d)
 }
 
 static QCString substituteTemplatesInString(
-    const std::vector<ArgumentList> &srcTempArgLists,
-    const std::vector<ArgumentList> &dstTempArgLists,
+    const ArgumentLists &srcTempArgLists,
+    const ArgumentLists &dstTempArgLists,
     const QCString &src
     )
 {
@@ -5335,8 +5335,8 @@ static QCString substituteTemplatesInString(
 }
 
 static void substituteTemplatesInArgList(
-                  const std::vector<ArgumentList> &srcTempArgLists,
-                  const std::vector<ArgumentList> &dstTempArgLists,
+                  const ArgumentLists &srcTempArgLists,
+                  const ArgumentLists &dstTempArgLists,
                   const ArgumentList &src,
                   ArgumentList &dst
                  )
@@ -5484,7 +5484,7 @@ static void addMemberFunction(const Entry *root,
           "4. class definition %s found\n",cd->name().data());
 
       // get the template parameter lists found at the member declaration
-      std::vector<ArgumentList> declTemplArgs = cd->getTemplateParameterLists();
+      ArgumentLists declTemplArgs = cd->getTemplateParameterLists();
       const ArgumentList &templAl = md->templateArguments();
       if (!templAl.empty())
       {
@@ -5492,7 +5492,7 @@ static void addMemberFunction(const Entry *root,
       }
 
       // get the template parameter lists found at the member definition
-      const std::vector<ArgumentList> &defTemplArgs = root->tArgLists;
+      const ArgumentLists &defTemplArgs = root->tArgLists;
       //printf("defTemplArgs=%p\n",defTemplArgs);
 
       // do we replace the decl argument lists with the def argument lists?
