@@ -332,8 +332,7 @@ void GroupDefImpl::addDir(const DirDef *def)
   if (def->isHidden()) return;
   if (Config_getBool(SORT_BRIEF_DOCS))
   {
-    m_dirList->push_back(def);
-    m_dirList->sort();
+    sortInDirList(*m_dirList, def);
   }
   else
     m_dirList->push_back(def);

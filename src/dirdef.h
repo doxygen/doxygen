@@ -41,6 +41,13 @@ typedef std::deque<DirDef*> DirList;
 /** Compare referenced objects. */
 bool compareDirDefs(const DirDef *item1,const DirDef *item2);
 
+/**
+ * Sorts the list by the result of the compareDirDefs() function.
+ * @param list in which item to be inserted
+ * @param newItem to be inserted
+ */
+void sortInDirList(DirList &list, DirDef *const newItem);
+
 /** A model of a directory symbol. */
 class DirDef : virtual public Definition
 {
