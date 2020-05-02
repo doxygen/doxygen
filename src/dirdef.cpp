@@ -15,6 +15,7 @@
 #include "docparser.h"
 #include "definitionimpl.h"
 #include "filedef.h"
+#include <algorithm>
 
 //----------------------------------------------------------------------
 
@@ -159,7 +160,7 @@ void DirDefImpl::addFile(FileDef *fd)
 
 void DirDefImpl::sort()
 {
-  m_subdirs.sort();
+  std::sort(m_subdirs.begin(), m_subdirs.end(), &compareDirDefs);
   m_fileList->sort();
 }
 
@@ -1092,3 +1093,7 @@ void generateDirDocs(OutputList &ol)
   }
 }
 
+bool compareDirDefs(const DirDef *item1, const DirDef *item2)
+{
+  return qstricmp(item1->shortName(),item2->shortName()) < 0;
+}

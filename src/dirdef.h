@@ -38,6 +38,9 @@ class DirDef;
 /** A list of directories. */
 typedef std::deque<DirDef*> DirList;
 
+/** Compare referenced objects. */
+bool compareDirDefs(const DirDef *item1,const DirDef *item2);
+
 /** A model of a directory symbol. */
 class DirDef : virtual public Definition
 {
@@ -135,11 +138,6 @@ class DirRelation
     const DirDef  *m_src;
     UsedDir *m_dst;
 };
-
-inline int DirList::compareValues(const DirDef *item1,const DirDef *item2) const
-{
-  return qstricmp(item1->shortName(),item2->shortName());
-}
 
 /** A sorted dictionary of DirDef objects. */
 class DirSDict : public SDict<DirDef>
