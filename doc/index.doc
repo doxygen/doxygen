@@ -153,9 +153,8 @@ know and I'll add them.
 Although doxygen is successfully used by large number of companies and 
 open source projects already, there is always room for improvement. 
 <p>
-You can submit enhancement requests in
+You can also submit enhancement requests in
 <a href="https://github.com/doxygen/doxygen/issues">the bug tracker</a>.
-Make sure the severity of the bug report is set to "enhancement".
 
 <h2>Acknowledgments</h2>
 \addindex acknowledgments
