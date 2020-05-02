@@ -90,7 +90,7 @@ class ArgumentList
     const_iterator cbegin() const         { return m_args.cbegin(); }
     const_iterator cend() const           { return m_args.cend();   }
     bool empty() const                    { return m_args.empty(); }
-    int size() const                      { return m_args.size();  }
+    size_t size() const                   { return m_args.size();  }
     void clear()                          { m_args.clear(); }
     void push_back(const Argument &a)     { m_args.push_back(a); }
     Argument &back()                      { return m_args.back(); }

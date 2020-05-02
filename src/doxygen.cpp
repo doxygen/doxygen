@@ -4704,7 +4704,7 @@ static void computeClassRelations()
     {
       findBaseClassesForClass(root,cd,cd,cd,DocumentedOnly,FALSE);
     }
-    int numMembers = cd ? cd->memberNameInfoLinkedMap().size() : 0;
+    size_t numMembers = cd ? cd->memberNameInfoLinkedMap().size() : 0;
     if ((cd==0 || (!cd->hasDocumentation() && !cd->isReference())) && numMembers>0 &&
         bName.right(2)!="::")
     {
@@ -8978,8 +8978,10 @@ static void generateDiskNames()
       // as the common prefix between the first and last entry
       const FileEntry &first = fileEntries[0];
       const FileEntry &last =  fileEntries[size-1];
+      int first_path_size = static_cast<int>(first.path.size());
+      int last_path_size  = static_cast<int>(last.path.size());
       int j=0;
-      for (size_t i=0;i<first.path.size() && i<last.path.size();i++)
+      for (int i=0;i<first_path_size && i<last_path_size;i++)
       {
         if (first.path[i]=='/') j=i;
         if (first.path[i]!=last.path[i]) break;
@@ -9787,6 +9789,8 @@ void cleanUpDoxygen()
   delete Doxygen::hiddenClasses;
   delete Doxygen::namespaceSDict;
   delete Doxygen::directories;
+
+  DotManager::deleteInstance();
 
   //delete Doxygen::symbolMap; <- we cannot do this unless all static lists
   //                              (such as Doxygen::namespaceSDict)

@@ -55,7 +55,7 @@
 // context for tokenizer phase
 static int g_commentState;
 TokenInfo *g_token = 0;
-static int g_inputPos = 0;
+static yy_size_t g_inputPos = 0;
 static const char *g_inputString;
 static QCString g_fileName;
 static bool g_insidePre;

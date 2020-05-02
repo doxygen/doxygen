@@ -16,7 +16,6 @@
 #ifndef DOT_H
 #define DOT_H
 
-#include <qlist.h>
 #include <qcstring.h>
 #include <map>
 
@@ -35,6 +34,7 @@ class DotManager
 {
   public:
     static DotManager *instance();
+    static void deleteInstance();
     DotRunner*      createRunner(const std::string& absDotName, const std::string& md5Hash);
     DotFilePatcher *createFilePatcher(const std::string &fileName);
     bool run() const;
@@ -47,7 +47,7 @@ class DotManager
     std::map<std::string, DotFilePatcher>  m_filePatchers;
     static DotManager     *m_theInstance;
     DotRunnerQueue        *m_queue;
-    QList<DotWorkerThread> m_workers;
+    std::vector< std::unique_ptr<DotWorkerThread> > m_workers;
 };
 
 void writeDotGraphFromFile(const char *inFile,const char *outDir,

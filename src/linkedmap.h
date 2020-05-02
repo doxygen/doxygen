@@ -93,7 +93,7 @@ class LinkedMap
     const_iterator begin() const { return m_entries.cbegin(); }
     const_iterator end() const   { return m_entries.cend();   }
     bool empty() const           { return m_entries.empty();  }
-    int size() const             { return m_entries.size();   }
+    size_t size() const          { return m_entries.size();   }
 
     void clear()
     {
@@ -159,7 +159,7 @@ class LinkedRefMap
     const_iterator begin() const   { return m_entries.cbegin(); }
     const_iterator end() const     { return m_entries.cend();   }
     bool empty() const             { return m_entries.empty();  }
-    int size() const               { return m_entries.size();   }
+    size_t size() const            { return m_entries.size();   }
 
     void clear()
     {

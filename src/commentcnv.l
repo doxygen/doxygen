@@ -71,7 +71,7 @@ struct commentcnvYY_state
 {
   BufStr * inBuf = 0;
   BufStr * outBuf = 0;
-  int      inBufPos = 0;
+  yy_size_t inBufPos = 0;
   int      col = 0;
   int      blockHeadCol = 0;
   bool     mlBrief = FALSE;

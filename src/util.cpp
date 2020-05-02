@@ -6626,7 +6626,7 @@ void replaceNamespaceAliases(QCString &scope,int i)
       if (it!=Doxygen::namespaceAliasMap.end())
       {
         scope=it->second.data()+scope.right(scope.length()-i);
-        i=it->second.length();
+        i=static_cast<int>(it->second.length());
       }
     }
     if (i>0 && ns==scope.left(i)) break;
