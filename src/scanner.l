@@ -2898,7 +2898,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             *yyextra->pCopyRoundString+=yytext; 
 					  }
                                         }
-<CopyRound>[^"'()\n]+			{
+<CopyRound>[^"'()\n,]+			{
   					  *yyextra->pCopyRoundString+=yytext;
   					}
 <CopyRound>.				{
@@ -2948,7 +2948,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             *yyextra->pCopyRoundGString+=yytext; 
 					  }
                                         }
-<GCopyRound>[^"'()\n/]+			{
+<GCopyRound>[^"'()\n\/,]+		{
   					  *yyextra->pCopyRoundGString+=yytext;
   					}
 <GCopyRound>.				{
@@ -2998,7 +2998,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             *yyextra->pCopySquareGString+=yytext; 
                                           }
                                         }
-<GCopySquare>[^"\[\]\n/]+               {
+<GCopySquare>[^"\[\]\n\/,]+              {
                                           *yyextra->pCopySquareGString+=yytext;
                                         }
 <GCopySquare>.                          {
@@ -3039,7 +3039,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    *yyextra->pCopyCurlyString+=yytext; 
 					  }
                                         }
-<CopyCurly>[^"'{}\/\n]+			{
+<CopyCurly>[^"'{}\/\n,]+		{
   					  *yyextra->pCopyCurlyString+=yytext;
   					}
 <CopyCurly>"/"				{ *yyextra->pCopyCurlyString+=yytext; }
