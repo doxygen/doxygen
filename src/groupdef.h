@@ -22,6 +22,7 @@
 
 #include "sortdict.h"
 #include "definition.h"
+#include "dirdef.h"
 
 class MemberList;
 class FileList;
@@ -37,7 +38,6 @@ class MemberNameInfoSDict;
 class PageSDict;
 class PageDef;
 class DirDef;
-class DirList;
 class FTVHelp;
 class Entry;
 class MemberDef;

@@ -20,6 +20,7 @@
 #include "template.h"
 #include <qlist.h>
 #include <stdio.h>
+#include "dirdef.h"
 
 class Definition;
 class ClassDef;
@@ -34,7 +35,6 @@ class FileDef;
 class FileList;
 class FileNameLinkedMap;
 class DirSDict;
-class DirList;
 class DirDef;
 class PageSDict;
 class GroupSDict;
