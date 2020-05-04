@@ -924,13 +924,13 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
 
 static void recordMetadata()
 {
-  bindTextParameter(meta_insert,":doxygen_version",getFullVersion());
+  bindTextParameter(meta_insert,":doxygen_version",getFullVersion(),FALSE);
   bindTextParameter(meta_insert,":schema_version","0.2.0"); //TODO: this should be a constant somewhere; not sure where
   bindTextParameter(meta_insert,":generated_at",dateToString(TRUE), FALSE);
   bindTextParameter(meta_insert,":generated_on",dateToString(FALSE), FALSE);
-  bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME));
-  bindTextParameter(meta_insert,":project_number",Config_getString(PROJECT_NUMBER));
-  bindTextParameter(meta_insert,":project_brief",Config_getString(PROJECT_BRIEF));
+  bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME),FALSE);
+  bindTextParameter(meta_insert,":project_number",Config_getString(PROJECT_NUMBER),FALSE);
+  bindTextParameter(meta_insert,":project_brief",Config_getString(PROJECT_BRIEF),FALSE);
   step(meta_insert);
 }
 
@@ -948,11 +948,11 @@ struct Refid insertRefid(const char *refid)
   ret.created = FALSE;
   if (refid==0) return ret;
 
-  bindTextParameter(refid_select,":refid",refid);
+  bindTextParameter(refid_select,":refid",refid,FALSE);
   ret.rowid=step(refid_select,TRUE,TRUE);
   if (ret.rowid==0)
   {
-    bindTextParameter(refid_insert,":refid",refid);
+    bindTextParameter(refid_insert,":refid",refid,FALSE);
     ret.rowid=step(refid_insert,TRUE);
     ret.created = TRUE;
   }
@@ -996,7 +996,7 @@ static bool insertMemberReference(struct Refid src_refid, struct Refid dst_refid
   }
   else
   {
-    bindTextParameter(xrefs_insert,":context",context);
+    bindTextParameter(xrefs_insert,":context",context,FALSE);
   }
 
   step(xrefs_insert);
@@ -1036,8 +1036,8 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
 
       if (!a.attrib.isEmpty())
       {
-        bindTextParameter(param_select,":attributes",a.attrib);
-        bindTextParameter(param_insert,":attributes",a.attrib);
+        bindTextParameter(param_select,":attributes",a.attrib,FALSE);
+        bindTextParameter(param_insert,":attributes",a.attrib,FALSE);
       }
       if (!a.type.isEmpty())
       {
@@ -1054,30 +1054,30 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
           insertMemberReference(src_refid,dst_refid, "argument");
           ++li;
         }
-        bindTextParameter(param_select,":type",a.type);
-        bindTextParameter(param_insert,":type",a.type);
+        bindTextParameter(param_select,":type",a.type,FALSE);
+        bindTextParameter(param_insert,":type",a.type,FALSE);
       }
       if (!a.name.isEmpty())
       {
-        bindTextParameter(param_select,":declname",a.name);
-        bindTextParameter(param_insert,":declname",a.name);
+        bindTextParameter(param_select,":declname",a.name,FALSE);
+        bindTextParameter(param_insert,":declname",a.name,FALSE);
       }
       if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
       {
-        bindTextParameter(param_select,":defname",defArg->name);
-        bindTextParameter(param_insert,":defname",defArg->name);
+        bindTextParameter(param_select,":defname",defArg->name,FALSE);
+        bindTextParameter(param_insert,":defname",defArg->name,FALSE);
       }
       if (!a.array.isEmpty())
       {
-        bindTextParameter(param_select,":array",a.array);
-        bindTextParameter(param_insert,":array",a.array);
+        bindTextParameter(param_select,":array",a.array,FALSE);
+        bindTextParameter(param_insert,":array",a.array,FALSE);
       }
       if (!a.defval.isEmpty())
       {
         StringList l;
         linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a.defval);
-        bindTextParameter(param_select,":defval",a.defval);
-        bindTextParameter(param_insert,":defval",a.defval);
+        bindTextParameter(param_select,":defval",a.defval,FALSE);
+        bindTextParameter(param_insert,":defval",a.defval,FALSE);
       }
 
       int param_id=step(param_select,TRUE,TRUE);
@@ -1107,7 +1107,7 @@ static void insertMemberDefineParams(int memberdef_id,const MemberDef *md, const
     {
       for (const Argument &a : md->argumentList())
       {
-        bindTextParameter(param_insert,":defname",a.type);
+        bindTextParameter(param_insert,":defname",a.type,FALSE);
         int param_id=step(param_insert,TRUE);
         if (param_id==-1) {
           continue;
@@ -1383,21 +1383,21 @@ static void writeTemplateArgumentList(const ArgumentList &al,
     if (!a.type.isEmpty())
     {
 //#warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.type);
-      bindTextParameter(param_select,":type",a.type);
-      bindTextParameter(param_insert,":type",a.type);
+      bindTextParameter(param_select,":type",a.type,FALSE);
+      bindTextParameter(param_insert,":type",a.type,FALSE);
     }
     if (!a.name.isEmpty())
     {
-      bindTextParameter(param_select,":declname",a.name);
-      bindTextParameter(param_insert,":declname",a.name);
-      bindTextParameter(param_select,":defname",a.name);
-      bindTextParameter(param_insert,":defname",a.name);
+      bindTextParameter(param_select,":declname",a.name,FALSE);
+      bindTextParameter(param_insert,":declname",a.name,FALSE);
+      bindTextParameter(param_select,":defname",a.name,FALSE);
+      bindTextParameter(param_insert,":defname",a.name,FALSE);
     }
     if (!a.defval.isEmpty())
     {
 //#warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.defval);
-      bindTextParameter(param_select,":defval",a.defval);
-      bindTextParameter(param_insert,":defval",a.defval);
+      bindTextParameter(param_select,":defval",a.defval,FALSE);
+      bindTextParameter(param_insert,":defval",a.defval,FALSE);
     }
     if (!step(param_select,TRUE,TRUE))
       step(param_insert);
@@ -1446,15 +1446,15 @@ static void getSQLDesc(SqlStmt &s,const char *col,const char *value,const Defini
   bindTextParameter(
     s,
     col,
-      getSQLDocBlock(
-        def->getOuterScope(),
-        def,
-        value,
-        def->docFile(),
-        def->docLine()
-      ),
-      FALSE
-    );
+    getSQLDocBlock(
+      def->getOuterScope(),
+      def,
+      value,
+      def->docFile(),
+      def->docLine()
+    ),
+    FALSE
+  );
 }
 ////////////////////////////////////////////
 
@@ -1699,7 +1699,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     {
       QCString bitfield = md->bitfieldString();
       if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
-      bindTextParameter(memberdef_insert,":bitfield",bitfield.stripWhiteSpace());
+      bindTextParameter(memberdef_insert,":bitfield",bitfield.stripWhiteSpace(),FALSE);
     }
   }
   else if (md->memberType() == MemberType_Property)
@@ -1725,8 +1725,8 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
 
       bindIntParameter(memberdef_insert,":accessor",accessor);
     }
-    bindTextParameter(memberdef_insert,":read",md->getReadAccessor());
-    bindTextParameter(memberdef_insert,":write",md->getWriteAccessor());
+    bindTextParameter(memberdef_insert,":read",md->getReadAccessor(),FALSE);
+    bindTextParameter(memberdef_insert,":write",md->getWriteAccessor(),FALSE);
   }
   else if (md->memberType() == MemberType_Event)
   {
@@ -1767,21 +1767,21 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
 
     if (md->definition())
     {
-      bindTextParameter(memberdef_insert,":definition",md->definition());
+      bindTextParameter(memberdef_insert,":definition",md->definition(),FALSE);
     }
 
     if (md->argsString())
     {
-      bindTextParameter(memberdef_insert,":argsstring",md->argsString());
+      bindTextParameter(memberdef_insert,":argsstring",md->argsString(),FALSE);
     }
   }
 
-  bindTextParameter(memberdef_insert,":name",md->name());
+  bindTextParameter(memberdef_insert,":name",md->name(),FALSE);
 
   // Extract references from initializer
   if (md->hasMultiLineInitializer() || md->hasOneLineInitializer())
   {
-    bindTextParameter(memberdef_insert,":initializer",md->initializer());
+    bindTextParameter(memberdef_insert,":initializer",md->initializer(),FALSE);
 
     StringList l;
     linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,md->initializer());
@@ -1951,7 +1951,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
 
   bindIntParameter(compounddef_insert,":rowid", refid.rowid);
 
-  bindTextParameter(compounddef_insert,":name",cd->name());
+  bindTextParameter(compounddef_insert,":name",cd->name(),FALSE);
   bindTextParameter(compounddef_insert,":title",cd->title(), FALSE);
   bindTextParameter(compounddef_insert,":kind",cd->compoundTypeString(),FALSE);
   bindIntParameter(compounddef_insert,":prot",cd->protection());
@@ -2098,7 +2098,7 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   if(!refid.created && compounddefExists(refid)){return;}
   bindIntParameter(compounddef_insert,":rowid", refid.rowid);
 
-  bindTextParameter(compounddef_insert,":name",nd->name());
+  bindTextParameter(compounddef_insert,":name",nd->name(),FALSE);
   bindTextParameter(compounddef_insert,":title",nd->title(), FALSE);
   bindTextParameter(compounddef_insert,":kind","namespace",FALSE);
 
@@ -2332,7 +2332,7 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
   if(!refid.created && compounddefExists(refid)){return;}
   bindIntParameter(compounddef_insert,":rowid", refid.rowid);
 
-  bindTextParameter(compounddef_insert,":name",gd->name());
+  bindTextParameter(compounddef_insert,":name",gd->name(),FALSE);
   bindTextParameter(compounddef_insert,":title",gd->groupTitle(), FALSE);
   bindTextParameter(compounddef_insert,":kind","group",FALSE);
 
@@ -2399,7 +2399,7 @@ static void generateSqlite3ForDir(const DirDef *dd)
   if(!refid.created && compounddefExists(refid)){return;}
   bindIntParameter(compounddef_insert,":rowid", refid.rowid);
 
-  bindTextParameter(compounddef_insert,":name",dd->displayName());
+  bindTextParameter(compounddef_insert,":name",dd->displayName(),FALSE);
   bindTextParameter(compounddef_insert,":kind","dir",FALSE);
 
   int file_id = insertPath(dd->getDefFileName(),TRUE,TRUE,2);
@@ -2457,7 +2457,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
 
   bindIntParameter(compounddef_insert,":rowid",refid.rowid);
   // + name
-  bindTextParameter(compounddef_insert,":name",pd->name());
+  bindTextParameter(compounddef_insert,":name",pd->name(),FALSE);
 
   QCString title;
   if (pd==Doxygen::mainPage) // main page is special
