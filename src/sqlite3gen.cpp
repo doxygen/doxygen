@@ -2516,16 +2516,13 @@ static sqlite3* openDbConnection()
   rc = sqlite3_initialize();
   if (rc != SQLITE_OK)
   {
-    msg("sqlite3_initialize failed\n");
-    return NULL;
+    term("sqlite3_initialize failed\n");
   }
 
 
   if (stat (outputDirectory+"/doxygen_sqlite3.db", &buf) == 0)
   {
-    msg("doxygen_sqlite3.db already exists! aborting sqlite3 output generation!\n");
-    msg("If you wish to re-generate the database, remove or archive the existing copy first.\n");
-    return NULL;
+    term("doxygen_sqlite3.db already exists! Rename, remove, or archive it to regenerate. Aborting!\n");
   }
 
   rc = sqlite3_open_v2(
@@ -2537,8 +2534,7 @@ static sqlite3* openDbConnection()
   if (rc != SQLITE_OK)
   {
     sqlite3_close(db);
-    msg("database open failed: %s\n", "doxygen_sqlite3.db");
-    return NULL;
+    term("Database open failed: %s\n", "doxygen_sqlite3.db");
   }
   return db;
 }
