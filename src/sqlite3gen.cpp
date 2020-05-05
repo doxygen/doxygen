@@ -858,12 +858,12 @@ static bool bindTextParameter(SqlStmt &s,const char *name,const char *value, boo
 {
   int idx = sqlite3_bind_parameter_index(s.stmt, name);
   if (idx==0) {
-    msg("sqlite3_bind_parameter_index(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_parameter_index(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   int rv = sqlite3_bind_text(s.stmt, idx, value, -1, _static==TRUE?SQLITE_STATIC:SQLITE_TRANSIENT);
   if (rv!=SQLITE_OK) {
-    msg("sqlite3_bind_text(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_text(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   return true;
@@ -873,12 +873,12 @@ static bool bindIntParameter(SqlStmt &s,const char *name,int value)
 {
   int idx = sqlite3_bind_parameter_index(s.stmt, name);
   if (idx==0) {
-    msg("sqlite3_bind_parameter_index(%s)[%s] failed to find column: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_parameter_index(%s)[%s] failed to find column: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   int rv = sqlite3_bind_int(s.stmt, idx, value);
   if (rv!=SQLITE_OK) {
-    msg("sqlite3_bind_int(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_int(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   return true;
@@ -1155,7 +1155,7 @@ static int prepareStatement(sqlite3 *db, SqlStmt &s)
   rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,0);
   if (rc!=SQLITE_OK)
   {
-    msg("prepare failed for %s\n%s\n", s.query, sqlite3_errmsg(db));
+    err("prepare failed for %s\n%s\n", s.query, sqlite3_errmsg(db));
     s.db = NULL;
     return -1;
   }
@@ -1226,7 +1226,7 @@ static int initializeTables(sqlite3* db)
     rc = sqlite3_exec(db, q, NULL, NULL, &errmsg);
     if (rc != SQLITE_OK)
     {
-      msg("failed to execute query: %s\n\t%s\n", q, errmsg);
+      err("failed to execute query: %s\n\t%s\n", q, errmsg);
       return -1;
     }
   }
@@ -1244,7 +1244,7 @@ static int initializeViews(sqlite3* db)
     rc = sqlite3_exec(db, q, NULL, NULL, &errmsg);
     if (rc != SQLITE_OK)
     {
-      msg("failed to execute query: %s\n\t%s\n", q, errmsg);
+      err("failed to execute query: %s\n\t%s\n", q, errmsg);
       return -1;
     }
   }
@@ -2515,13 +2515,13 @@ static sqlite3* openDbConnection()
   rc = sqlite3_initialize();
   if (rc != SQLITE_OK)
   {
-    term("sqlite3_initialize failed\n");
+    err("sqlite3_initialize failed\n");
   }
 
 
   if (stat (outputDirectory+"/doxygen_sqlite3.db", &buf) == 0)
   {
-    term("doxygen_sqlite3.db already exists! Rename, remove, or archive it to regenerate. Aborting!\n");
+    err("doxygen_sqlite3.db already exists! Rename, remove, or archive it to regenerate. Aborting!\n");
   }
 
   rc = sqlite3_open_v2(
@@ -2533,7 +2533,7 @@ static sqlite3* openDbConnection()
   if (rc != SQLITE_OK)
   {
     sqlite3_close(db);
-    term("Database open failed: %s\n", "doxygen_sqlite3.db");
+    err("Database open failed: %s\n", "doxygen_sqlite3.db");
   }
   return db;
 }
