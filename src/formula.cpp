@@ -98,10 +98,10 @@ void FormulaManager::readFormulas(const char *dir,bool doCompare)
         int w=-1,h=-1;
         if (ei!=-1 && ei>hi && ei<se) // new format
         {
-          int xi=formName.find('x',hi);
+          int xi=formName.find('x',ei);
           if (xi!=-1)
           {
-            w=formName.mid(hi+1,xi-hi-1).toInt();
+            w=formName.mid(ei+1,xi-ei-1).toInt();
             h=formName.mid(xi+1).toInt();
           }
           formName = formName.left(ei);
