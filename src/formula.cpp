@@ -309,7 +309,84 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         }
         else if (Portable::checkForExecutable("inkscape"))
         {
-          sprintf(args,"-l form_%d.svg -z %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+          // The command line interface (CLI) of Inkscape 1.0 has changed in comparison to
+          // previous versions. In order to invokine Inkscape, the used version is detected
+          // and based on the version the right syntax of the CLI is chosen.
+          static int inkscapeVersion = -2;
+          if (inkscapeVersion == -2)
+          {
+            QCString inkscapeVersionFile = "inkscape_version" ;
+            inkscapeVersion = -1;
+            sprintf(args,"-z --version >%s 2>%s",inkscapeVersionFile.data(),Portable::devNull());
+            Portable::sysTimerStart();
+            if (Portable::system("inkscape",args)!=0)
+            {
+              // looks like the old syntax gave problems, lets try the new syntax
+              sprintf(args," --version >%s 2>%s",inkscapeVersionFile.data(),Portable::devNull());
+              if (Portable::system("inkscape",args)!=0)
+              {
+                // looks like theer is realy a problem
+                err("Problems running inkscape. Check your installation!\n");
+                Portable::sysTimerStop();
+                QDir::setCurrent(oldDir);
+                return;
+              }
+            }
+            // read version file and determine major version
+            QFile IncscapeVersionIn(inkscapeVersionFile);
+            if (IncscapeVersionIn.open(IO_ReadOnly))
+            {
+              int maxLineLen=1024;
+              while (!IncscapeVersionIn.atEnd())
+              {
+                QCString buf(maxLineLen);
+                int numBytes = IncscapeVersionIn.readLine(buf.rawData(),maxLineLen);
+                if (numBytes>0)
+                {
+                  buf.resize(numBytes+1);
+                  if (buf.startsWith("Inkscape"))
+                  {
+                    // get major version
+                    bool ok;
+                    int tmp = buf.mid(9,1).toInt(&ok);
+                    if (!ok)
+                    {
+                      err("Problems determining inkscape version\n");
+                      QDir::setCurrent(oldDir);
+                      return;
+                    }
+                    inkscapeVersion = tmp;
+                    break;
+                  }
+                }
+                else
+                {
+                  err("Problems determining inkscape version\n");
+                  QDir::setCurrent(oldDir);
+                  return;
+                }
+              }
+              IncscapeVersionIn.close();
+            }
+            if (!(inkscapeVersion == 0  || inkscapeVersion == 1))
+            {
+               err("Problems determining inkscape version\n");
+               QDir::setCurrent(oldDir);
+               return;
+            }
+            if (RM_TMP_FILES)
+            {
+              thisDir.remove(inkscapeVersionFile);
+            }
+          }
+          if (inkscapeVersion == 0)
+          {
+            sprintf(args,"-l form_%d.svg -z %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+          }
+          else
+          {
+            sprintf(args,"--export-type=svg --export-filename=form_%d.svg %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+          }
           Portable::sysTimerStart();
           if (Portable::system("inkscape",args)!=0)
           {
