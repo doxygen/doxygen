@@ -854,16 +854,16 @@ class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 };
 
 
-static bool bindTextParameter(SqlStmt &s,const char *name,const char *value, bool _static=TRUE)
+static bool bindTextParameter(SqlStmt &s,const char *name,const char *value, bool _static=FALSE)
 {
   int idx = sqlite3_bind_parameter_index(s.stmt, name);
   if (idx==0) {
-    msg("sqlite3_bind_parameter_index(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_parameter_index(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   int rv = sqlite3_bind_text(s.stmt, idx, value, -1, _static==TRUE?SQLITE_STATIC:SQLITE_TRANSIENT);
   if (rv!=SQLITE_OK) {
-    msg("sqlite3_bind_text(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_text(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   return true;
@@ -873,12 +873,12 @@ static bool bindIntParameter(SqlStmt &s,const char *name,int value)
 {
   int idx = sqlite3_bind_parameter_index(s.stmt, name);
   if (idx==0) {
-    msg("sqlite3_bind_parameter_index(%s)[%s] failed to find column: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_parameter_index(%s)[%s] failed to find column: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   int rv = sqlite3_bind_int(s.stmt, idx, value);
   if (rv!=SQLITE_OK) {
-    msg("sqlite3_bind_int(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_int(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   return true;
@@ -909,11 +909,11 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
 
   name = stripFromPath(name);
 
-  bindTextParameter(path_select,":name",name.data(),FALSE);
+  bindTextParameter(path_select,":name",name.data());
   rowid=step(path_select,TRUE,TRUE);
   if (rowid==0)
   {
-    bindTextParameter(path_insert,":name",name.data(),FALSE);
+    bindTextParameter(path_insert,":name",name.data());
     bindIntParameter(path_insert,":type",type);
     bindIntParameter(path_insert,":local",local?1:0);
     bindIntParameter(path_insert,":found",found?1:0);
@@ -925,9 +925,9 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
 static void recordMetadata()
 {
   bindTextParameter(meta_insert,":doxygen_version",getFullVersion());
-  bindTextParameter(meta_insert,":schema_version","0.2.0"); //TODO: this should be a constant somewhere; not sure where
-  bindTextParameter(meta_insert,":generated_at",dateToString(TRUE), FALSE);
-  bindTextParameter(meta_insert,":generated_on",dateToString(FALSE), FALSE);
+  bindTextParameter(meta_insert,":schema_version","0.2.0",TRUE); //TODO: this should be a constant somewhere; not sure where
+  bindTextParameter(meta_insert,":generated_at",dateToString(TRUE));
+  bindTextParameter(meta_insert,":generated_on",dateToString(FALSE));
   bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME));
   bindTextParameter(meta_insert,":project_number",Config_getString(PROJECT_NUMBER));
   bindTextParameter(meta_insert,":project_brief",Config_getString(PROJECT_BRIEF));
@@ -1155,7 +1155,7 @@ static int prepareStatement(sqlite3 *db, SqlStmt &s)
   rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,0);
   if (rc!=SQLITE_OK)
   {
-    msg("prepare failed for %s\n%s\n", s.query, sqlite3_errmsg(db));
+    err("prepare failed for %s\n%s\n", s.query, sqlite3_errmsg(db));
     s.db = NULL;
     return -1;
   }
@@ -1226,7 +1226,7 @@ static int initializeTables(sqlite3* db)
     rc = sqlite3_exec(db, q, NULL, NULL, &errmsg);
     if (rc != SQLITE_OK)
     {
-      msg("failed to execute query: %s\n\t%s\n", q, errmsg);
+      err("failed to execute query: %s\n\t%s\n", q, errmsg);
       return -1;
     }
   }
@@ -1244,7 +1244,7 @@ static int initializeViews(sqlite3* db)
     rc = sqlite3_exec(db, q, NULL, NULL, &errmsg);
     if (rc != SQLITE_OK)
     {
-      msg("failed to execute query: %s\n\t%s\n", q, errmsg);
+      err("failed to execute query: %s\n\t%s\n", q, errmsg);
       return -1;
     }
   }
@@ -1446,15 +1446,14 @@ static void getSQLDesc(SqlStmt &s,const char *col,const char *value,const Defini
   bindTextParameter(
     s,
     col,
-      getSQLDocBlock(
-        def->getOuterScope(),
-        def,
-        value,
-        def->docFile(),
-        def->docLine()
-      ),
-      FALSE
-    );
+    getSQLDocBlock(
+      def->getOuterScope(),
+      def,
+      value,
+      def->docFile(),
+      def->docLine()
+    )
+  );
 }
 ////////////////////////////////////////////
 
@@ -1646,7 +1645,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   }
 
   bindIntParameter(memberdef_insert,":rowid", refid.rowid);
-  bindTextParameter(memberdef_insert,":kind",md->memberTypeName(),FALSE);
+  bindTextParameter(memberdef_insert,":kind",md->memberTypeName());
   bindIntParameter(memberdef_insert,":prot",md->protection());
 
   bindIntParameter(memberdef_insert,":static",md->isStatic());
@@ -1762,7 +1761,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     linkifyText(TextGeneratorSqlite3Impl(l), def, md->getBodyDef(),md,typeStr);
     if (typeStr)
     {
-      bindTextParameter(memberdef_insert,":type",typeStr,FALSE);
+      bindTextParameter(memberdef_insert,":type",typeStr);
     }
 
     if (md->definition())
@@ -1807,7 +1806,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
 
   if ( md->getScopeString() )
   {
-    bindTextParameter(memberdef_insert,":scope",md->getScopeString(),FALSE);
+    bindTextParameter(memberdef_insert,":scope",md->getScopeString());
   }
 
   // +Brief, detailed and inbody description
@@ -1952,8 +1951,8 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   bindIntParameter(compounddef_insert,":rowid", refid.rowid);
 
   bindTextParameter(compounddef_insert,":name",cd->name());
-  bindTextParameter(compounddef_insert,":title",cd->title(), FALSE);
-  bindTextParameter(compounddef_insert,":kind",cd->compoundTypeString(),FALSE);
+  bindTextParameter(compounddef_insert,":title",cd->title());
+  bindTextParameter(compounddef_insert,":kind",cd->compoundTypeString());
   bindIntParameter(compounddef_insert,":prot",cd->protection());
 
   int file_id = insertPath(cd->getDefFileName());
@@ -2099,8 +2098,8 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   bindIntParameter(compounddef_insert,":rowid", refid.rowid);
 
   bindTextParameter(compounddef_insert,":name",nd->name());
-  bindTextParameter(compounddef_insert,":title",nd->title(), FALSE);
-  bindTextParameter(compounddef_insert,":kind","namespace",FALSE);
+  bindTextParameter(compounddef_insert,":title",nd->title());
+  bindTextParameter(compounddef_insert,":kind","namespace");
 
   int file_id = insertPath(nd->getDefFileName());
   bindIntParameter(compounddef_insert,":file_id",file_id);
@@ -2165,9 +2164,9 @@ static void generateSqlite3ForFile(const FileDef *fd)
   if(!refid.created && compounddefExists(refid)){return;}
   bindIntParameter(compounddef_insert,":rowid", refid.rowid);
 
-  bindTextParameter(compounddef_insert,":name",fd->name(),FALSE);
-  bindTextParameter(compounddef_insert,":title",fd->title(),FALSE);
-  bindTextParameter(compounddef_insert,":kind","file",FALSE);
+  bindTextParameter(compounddef_insert,":name",fd->name());
+  bindTextParameter(compounddef_insert,":title",fd->title());
+  bindTextParameter(compounddef_insert,":kind","file");
 
   int file_id = insertPath(fd->getDefFileName());
   bindIntParameter(compounddef_insert,":file_id",file_id);
@@ -2333,8 +2332,8 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
   bindIntParameter(compounddef_insert,":rowid", refid.rowid);
 
   bindTextParameter(compounddef_insert,":name",gd->name());
-  bindTextParameter(compounddef_insert,":title",gd->groupTitle(), FALSE);
-  bindTextParameter(compounddef_insert,":kind","group",FALSE);
+  bindTextParameter(compounddef_insert,":title",gd->groupTitle());
+  bindTextParameter(compounddef_insert,":kind","group");
 
   int file_id = insertPath(gd->getDefFileName());
   bindIntParameter(compounddef_insert,":file_id",file_id);
@@ -2400,7 +2399,7 @@ static void generateSqlite3ForDir(const DirDef *dd)
   bindIntParameter(compounddef_insert,":rowid", refid.rowid);
 
   bindTextParameter(compounddef_insert,":name",dd->displayName());
-  bindTextParameter(compounddef_insert,":kind","dir",FALSE);
+  bindTextParameter(compounddef_insert,":kind","dir");
 
   int file_id = insertPath(dd->getDefFileName(),TRUE,TRUE,2);
   bindIntParameter(compounddef_insert,":file_id",file_id);
@@ -2483,9 +2482,9 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   }
 
   // + title
-  bindTextParameter(compounddef_insert,":title",title,FALSE);
+  bindTextParameter(compounddef_insert,":title",title);
 
-  bindTextParameter(compounddef_insert,":kind", isExample ? "example" : "page");
+  bindTextParameter(compounddef_insert,":kind", isExample ? "example" : "page",TRUE);
 
   int file_id = insertPath(pd->getDefFileName());
 
@@ -2516,16 +2515,13 @@ static sqlite3* openDbConnection()
   rc = sqlite3_initialize();
   if (rc != SQLITE_OK)
   {
-    msg("sqlite3_initialize failed\n");
-    return NULL;
+    err("sqlite3_initialize failed\n");
   }
 
 
   if (stat (outputDirectory+"/doxygen_sqlite3.db", &buf) == 0)
   {
-    msg("doxygen_sqlite3.db already exists! aborting sqlite3 output generation!\n");
-    msg("If you wish to re-generate the database, remove or archive the existing copy first.\n");
-    return NULL;
+    err("doxygen_sqlite3.db already exists! Rename, remove, or archive it to regenerate. Aborting!\n");
   }
 
   rc = sqlite3_open_v2(
@@ -2537,8 +2533,7 @@ static sqlite3* openDbConnection()
   if (rc != SQLITE_OK)
   {
     sqlite3_close(db);
-    msg("database open failed: %s\n", "doxygen_sqlite3.db");
-    return NULL;
+    err("Database open failed: %s\n", "doxygen_sqlite3.db");
   }
   return db;
 }
