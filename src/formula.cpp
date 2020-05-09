@@ -383,9 +383,17 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
           {
             sprintf(args,"-l form_%d.svg -z %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
           }
-          else
+          else if (inkscapeVersion == 1)
           {
             sprintf(args,"--export-type=svg --export-filename=form_%d.svg %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+          }
+          else
+          {
+            // on subsequent calls we should know which inkscape version we have
+            // when this is not the case we already tried to determine it, but it failed 
+            // so we should bail out here without error as an error has already been given.
+            QDir::setCurrent(oldDir);
+            return;
           }
           Portable::sysTimerStart();
           if (Portable::system("inkscape",args)!=0)
