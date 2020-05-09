@@ -16,8 +16,7 @@
 #ifndef _DOCBOOKDOCVISITOR_H
 #define _DOCBOOKDOCVISITOR_H
 
-#include <stack>
-
+#include "containers.h"
 #include "docvisitor.h"
 #include <qstack.h>
 #include <qlist.h>
@@ -175,10 +174,10 @@ class DocbookDocVisitor : public DocVisitor
     CodeOutputInterface &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;
-    std::stack<bool> m_enabled;
+    BoolStack m_enabled;
     QCString m_langExt;
     int m_colCnt = 0;
-    std::stack<bool> m_bodySet; // it is possible to have tables without a header, needs to be an array as we can have tables in tables
+    BoolStack m_bodySet; // it is possible to have tables without a header, needs to be an array as we can have tables in tables
 };
 
 #endif

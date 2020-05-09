@@ -205,7 +205,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual ArgumentList &argumentList();
     virtual const ArgumentList &declArgumentList() const;
     virtual const ArgumentList &templateArguments() const;
-    virtual const std::vector<ArgumentList> &definitionTemplateParameterLists() const;
+    virtual const ArgumentLists &definitionTemplateParameterLists() const;
     virtual int getMemberGroupId() const;
     virtual MemberGroup *getMemberGroup() const;
     virtual bool fromAnonymousScope() const;
@@ -277,7 +277,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setDeclFile(const QCString &df,int line,int column);
     virtual void moveArgumentList(std::unique_ptr<ArgumentList> al);
     virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al);
-    virtual void setDefinitionTemplateParameterLists(const std::vector<ArgumentList> &lists);
+    virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists);
     virtual void setTypeConstraints(const ArgumentList &al);
     virtual void setType(const char *t);
     virtual void setAccessorType(ClassDef *cd,const char *t);
@@ -666,7 +666,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { return getMdAlias()->declArgumentList(); }
     virtual const ArgumentList &templateArguments() const
     { return getMdAlias()->templateArguments(); }
-    virtual const std::vector<ArgumentList> &definitionTemplateParameterLists() const
+    virtual const ArgumentLists &definitionTemplateParameterLists() const
     { return getMdAlias()->definitionTemplateParameterLists(); }
     virtual int getMemberGroupId() const
     { return getMdAlias()->getMemberGroupId(); }
@@ -789,7 +789,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void setDeclFile(const QCString &df,int line,int column) {}
     virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) {}
     virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) {}
-    virtual void setDefinitionTemplateParameterLists(const std::vector<ArgumentList> &lists) {}
+    virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists) {}
     virtual void setTypeConstraints(const ArgumentList &al) {}
     virtual void setType(const char *t) {}
     virtual void setAccessorType(ClassDef *cd,const char *t) {}
@@ -1324,7 +1324,7 @@ class MemberDefImpl::IMPL
     ArgumentList tArgList;      // template argument list of function template
     ArgumentList typeConstraints; // type constraints for template parameters
     MemberDef *templateMaster;
-    std::vector<ArgumentList> defTmpArgLists; // lists of template argument lists
+    ArgumentLists defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
 
     QCString metaData;        // Slice metadata.
@@ -1960,7 +1960,7 @@ bool MemberDefImpl::isLinkable() const
 }
 
 
-void MemberDefImpl::setDefinitionTemplateParameterLists(const std::vector<ArgumentList> &lists)
+void MemberDefImpl::setDefinitionTemplateParameterLists(const ArgumentLists &lists)
 {
   m_impl->defTmpArgLists = lists;
 }
@@ -4454,7 +4454,7 @@ void MemberDefImpl::addListReference(Definition *)
       memArgs = argsString();
     }
   }
-  const std::vector<RefItem*> &xrefItems = xrefListItems();
+  const RefItemVector &xrefItems = xrefListItems();
   addRefItem(xrefItems,
         qualifiedName()+argsString(), // argsString is needed for overloaded functions (see bug 609624)
         memLabel,
@@ -5480,7 +5480,7 @@ const ArgumentList &MemberDefImpl::templateArguments() const
   return m_impl->tArgList;
 }
 
-const std::vector<ArgumentList> &MemberDefImpl::definitionTemplateParameterLists() const
+const ArgumentLists &MemberDefImpl::definitionTemplateParameterLists() const
 {
   return m_impl->defTmpArgLists;
 }

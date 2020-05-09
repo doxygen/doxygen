@@ -13,8 +13,7 @@
 *
 */
 
-#include <vector>
-
+#include "containers.h"
 #include "dotclassgraph.h"
 #include "dotnode.h"
 
@@ -74,7 +73,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
     QCString displayName=className;
     if (HIDE_SCOPE_NAMES) displayName=stripScope(displayName);
     QCString tmp_url;
-    if (cd->isLinkable() && !cd->isHidden()) 
+    if (cd->isLinkable() && !cd->isHidden())
     {
       tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
       if (!cd->anchor().isEmpty())
@@ -123,9 +122,9 @@ void DotClassGraph::determineTruncatedNodes(QList<DotNode> &queue,bool includePa
         const DotNode *dn;
         for (li.toFirst();(dn=li.current());++li)
         {
-          if (!dn->isVisible()) 
+          if (!dn->isVisible())
             truncated = TRUE;
-          else 
+          else
             queue.append(dn);
         }
       }
@@ -135,9 +134,9 @@ void DotClassGraph::determineTruncatedNodes(QList<DotNode> &queue,bool includePa
         const DotNode *dn;
         for (li.toFirst();(dn=li.current());++li)
         {
-          if (!dn->isVisible()) 
+          if (!dn->isVisible())
             truncated = TRUE;
-          else 
+          else
             queue.append(dn);
         }
       }
@@ -151,11 +150,11 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
 {
   QList<DotNode> childQueue;
   QList<DotNode> parentQueue;
-  std::vector<int> childTreeWidth;
-  std::vector<int> parentTreeWidth;
+  IntVector childTreeWidth;
+  IntVector parentTreeWidth;
   childQueue.append(rootNode);
   if (includeParents) parentQueue.append(rootNode);
-  bool firstNode=TRUE; // flag to force reprocessing rootNode in the parent loop 
+  bool firstNode=TRUE; // flag to force reprocessing rootNode in the parent loop
                        // despite being marked visible in the child loop
   while ((childQueue.count()>0 || parentQueue.count()>0) && maxNodes>0)
   {
@@ -258,7 +257,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
         //printf("-------- inheritance relation %s->%s templ='%s'\n",
         //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
         addClass(bcd->classDef,n,bcd->prot,0,bcd->usedName,
-          bcd->templSpecifiers,base,distance); 
+          bcd->templSpecifiers,base,distance);
       }
     }
   }
@@ -284,7 +283,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
         int maxLabels=10;
         for (;(s=dvi.currentKey()) && count<maxLabels;++dvi,++count)
         {
-          if (first) 
+          if (first)
           {
             label=s;
             first=FALSE;
@@ -379,7 +378,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
   //printf("--------------- DotClassGraph::DotClassGraph '%s'\n",cd->displayName().data());
   m_graphType = t;
   QCString tmp_url="";
-  if (cd->isLinkable() && !cd->isHidden()) 
+  if (cd->isLinkable() && !cd->isHidden())
   {
     tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
     if (!cd->anchor().isEmpty())
@@ -492,7 +491,7 @@ QCString DotClassGraph::getMapLabel() const
   return escapeCharsInString(m_startNode->label(),FALSE)+"_"+escapeCharsInString(mapName,FALSE);
 }
 
-QCString DotClassGraph::getImgAltText() const 
+QCString DotClassGraph::getImgAltText() const
 {
   switch (m_graphType)
   {
@@ -506,7 +505,7 @@ QCString DotClassGraph::getImgAltText() const
     ASSERT(0);
     break;
   }
-  return ""; 
+  return "";
 }
 
 QCString DotClassGraph::writeGraph(FTextStream &out,

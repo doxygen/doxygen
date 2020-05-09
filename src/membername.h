@@ -47,7 +47,7 @@ class MemberName
     const_reverse_iterator crbegin() const { return m_members.crbegin(); }
     const_reverse_iterator crend() const   { return m_members.crend();   }
     bool empty() const                     { return m_members.empty();   }
-    int size() const                       { return m_members.size();    }
+    size_t size() const                    { return m_members.size();    }
     Ptr &back()                            { return m_members.back();    }
     const Ptr &back() const                { return m_members.back();    }
     Ptr &front()                           { return m_members.front();   }
@@ -113,7 +113,7 @@ class MemberNameInfo
     const_iterator begin() const           { return m_members.begin();   }
     const_iterator end() const             { return m_members.end();     }
     bool empty() const                     { return m_members.empty();   }
-    int size() const                       { return m_members.size();    }
+    size_t size() const                    { return m_members.size();    }
     Ptr &back()                            { return m_members.back();    }
     const Ptr &back() const                { return m_members.back();    }
     Ptr &front()                           { return m_members.front();   }

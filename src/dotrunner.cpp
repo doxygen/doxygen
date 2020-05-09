@@ -272,7 +272,7 @@ DotRunner *DotRunnerQueue::dequeue()
   return result;
 }
 
-uint DotRunnerQueue::count() const
+size_t DotRunnerQueue::size() const
 {
   std::lock_guard<std::mutex> locker(m_mutex);
   return m_queue.size();
@@ -283,6 +283,14 @@ uint DotRunnerQueue::count() const
 DotWorkerThread::DotWorkerThread(DotRunnerQueue *queue)
   : m_queue(queue)
 {
+}
+
+DotWorkerThread::~DotWorkerThread()
+{
+  if (isRunning())
+  {
+    wait();
+  }
 }
 
 void DotWorkerThread::run()

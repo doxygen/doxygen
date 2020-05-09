@@ -486,7 +486,7 @@ NamespaceDef *getResolvedNamespace(const char *name)
   if (it!=Doxygen::namespaceAliasMap.end())
   {
     int count=0; // recursion detection guard
-    StringMap::iterator it2;
+    StringUnorderedMap::iterator it2;
     while ((it2=Doxygen::namespaceAliasMap.find(it->second))!=Doxygen::namespaceAliasMap.end() &&
            count<10)
     {
@@ -4872,6 +4872,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
       case '@': growBuf.addStr("_0d"); break;
       case ']': growBuf.addStr("_0e"); break;
       case '[': growBuf.addStr("_0f"); break;
+      case '#': growBuf.addStr("_0g"); break;
       default:
                 if (c<0)
                 {
@@ -4986,6 +4987,7 @@ QCString unescapeCharsInString(const char *s)
                case 'd': result+='@'; p+=2; break; // _0d -> '@'
                case 'e': result+=']'; p+=2; break; // _0e -> ']'
                case 'f': result+='['; p+=2; break; // _0f -> '['
+               case 'g': result+='#'; p+=2; break; // _0g -> '#'
                default: // unknown escape, just pass underscore character as-is
                  result+=c;
                  break;
@@ -6131,7 +6133,7 @@ found:
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const QCString &doc,
     const char *fileName,int startLine,
-    const std::vector<RefItem*> &sli,
+    const RefItemVector &sli,
     GroupDef *gd,
     const TagInfo *tagInfo,
     bool xref,
@@ -6218,7 +6220,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
 //----------------------------------------------------------------------------
 
-void addRefItem(const std::vector<RefItem*> &sli,
+void addRefItem(const RefItemVector &sli,
     const char *key,
     const char *prefix, const char *name,const char *title,const char *args,const Definition *scope)
 {
@@ -6626,7 +6628,7 @@ void replaceNamespaceAliases(QCString &scope,int i)
       if (it!=Doxygen::namespaceAliasMap.end())
       {
         scope=it->second.data()+scope.right(scope.length()-i);
-        i=it->second.length();
+        i=static_cast<int>(it->second.length());
       }
     }
     if (i>0 && ns==scope.left(i)) break;

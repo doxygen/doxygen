@@ -327,7 +327,7 @@ int getScopeFragment(const QCString &s,int p,int *l);
 
 int filterCRLF(char *buf,int len);
 
-void addRefItem(const std::vector<RefItem*> &sli,
+void addRefItem(const RefItemVector &sli,
                 const char *key,
                 const char *prefix,
                 const char *name,
@@ -339,7 +339,7 @@ PageDef *addRelatedPage(const char *name,
                         const QCString &ptitle,
                         const QCString &doc,
                         const char *fileName,int startLine,
-                        const std::vector<RefItem*> &sli = std::vector<RefItem*>(),
+                        const RefItemVector &sli = RefItemVector(),
                         GroupDef *gd=0,
                         const TagInfo *tagInfo=0,
                         bool xref=FALSE,

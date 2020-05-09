@@ -249,7 +249,7 @@ RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 ARITHOP   "+"|"-"|"/"|"*"|"%"|"--"|"++"
 ASSIGNOP  "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
-LOGICOP   "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"
+LOGICOP   "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"|"<=>"
 BITOP     "&"|"|"|"^"|"<<"|">>"|"~"
 OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
@@ -2000,33 +2000,37 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  unput(';');
 					  BEGIN(FindMembers);
   					}
-<QtPropType>"const"|"volatile"|"unsigned"|"signed"|"long"|"short" {
-  				          yyextra->current->type+=yytext;
-  					}
 <QtPropType>{B}+			{
-  				          yyextra->current->type+=yytext;
+  				          yyextra->current->name+=yytext;
+  					}
+<QtPropType>"*"				{
+  					  yyextra->current->type+= yyextra->current->name;
+  					  yyextra->current->type+= yytext;
+  				          yyextra->current->name="";
   					}
 <QtPropType>({TSCOPE}"::")*{TSCOPE}	{
-  					  yyextra->current->type+=yytext;
-                                          BEGIN(QtPropName);
-  					}
-<QtPropName>{ID}			{
+  					  yyextra->current->type+= yyextra->current->name;
   					  yyextra->current->name=yytext;
-  					  BEGIN(QtPropAttr);
   					}
-<QtPropAttr>"READ"			{
+<QtPropType,QtPropAttr>{B}+"READ"{B}+	{
   					  yyextra->current->spec |= Entry::Readable;
 					  BEGIN(QtPropRead);
   					}
-<QtPropAttr>"WRITE"			{
+<QtPropType,QtPropAttr>{B}+"WRITE"{B}+	{
   					  yyextra->current->spec |= Entry::Writable;
 					  BEGIN(QtPropWrite);
   					}
-<QtPropAttr>"RESET"{B}+{ID}		{ // reset method => not supported yet
-  					}
-<QtPropAttr>"SCRIPTABLE"{B}+{ID}	{ // scriptable property => not supported yet
-  					}
-<QtPropAttr>"DESIGNABLE"{B}+{ID}	{ // designable property => not supported yet
+<QtPropType,QtPropAttr>{B}+"MEMBER"{B}+{ID}	| // member property => not supported yet
+<QtPropType,QtPropAttr>{B}+"RESET"{B}+{ID}	| // reset method => not supported yet
+<QtPropType,QtPropAttr>{B}+"SCRIPTABLE"{B}+{ID}	| // scriptable property => not supported yet
+<QtPropType,QtPropAttr>{B}+"DESIGNABLE"{B}+{ID}	| // designable property => not supported yet
+<QtPropType,QtPropAttr>{B}+"NOTIFY"{B}+{ID}	| // notify property => not supported yet
+<QtPropType,QtPropAttr>{B}+"REVISION"{B}+{ID}	| // revision property => not supported yet
+<QtPropType,QtPropAttr>{B}+"STORED"{B}+{ID}	| // stored property => not supported yet
+<QtPropType,QtPropAttr>{B}+"USER"{B}+{ID}	| // user property => not supported yet
+<QtPropType,QtPropAttr>{B}+"CONSTANT"{B}	| // constant property => not supported yet
+<QtPropType,QtPropAttr>{B}+"FINAL"{B}		{ // final property => not supported yet
+  					  BEGIN(QtPropAttr);
   					}
 <QtPropRead>{ID}			{
   					  yyextra->current->read = yytext;
@@ -2898,7 +2902,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             *yyextra->pCopyRoundString+=yytext; 
 					  }
                                         }
-<CopyRound>[^"'()\n]+			{
+<CopyRound>[^"'()\n,]+			{
   					  *yyextra->pCopyRoundString+=yytext;
   					}
 <CopyRound>.				{
@@ -2948,7 +2952,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             *yyextra->pCopyRoundGString+=yytext; 
 					  }
                                         }
-<GCopyRound>[^"'()\n/]+			{
+<GCopyRound>[^"'()\n\/,]+		{
   					  *yyextra->pCopyRoundGString+=yytext;
   					}
 <GCopyRound>.				{
@@ -2998,7 +3002,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             *yyextra->pCopySquareGString+=yytext; 
                                           }
                                         }
-<GCopySquare>[^"\[\]\n/]+               {
+<GCopySquare>[^"\[\]\n\/,]+              {
                                           *yyextra->pCopySquareGString+=yytext;
                                         }
 <GCopySquare>.                          {
@@ -3039,7 +3043,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    *yyextra->pCopyCurlyString+=yytext; 
 					  }
                                         }
-<CopyCurly>[^"'{}\/\n]+			{
+<CopyCurly>[^"'{}\/\n,]+		{
   					  *yyextra->pCopyCurlyString+=yytext;
   					}
 <CopyCurly>"/"				{ *yyextra->pCopyCurlyString+=yytext; }

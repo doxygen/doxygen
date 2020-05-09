@@ -22,7 +22,6 @@
 
 #include <qintdict.h>
 #include <qlist.h>
-#include "util.h"
 #include "linkedmap.h"
 
 class Definition;
@@ -85,34 +84,19 @@ class RefList
      *  @param pageTitle String representing the title of the list page.
      *  @param secTitle String representing the title of the section.
      */
-    RefList(const char *listName, const char *pageTitle, const char *secTitle) :
-       m_listName(listName), m_fileName(convertNameToFile(listName,FALSE,TRUE)),
-       m_pageTitle(pageTitle), m_secTitle(secTitle) {}
-
+    RefList(const char *listName, const char *pageTitle, const char *secTitle);
     bool isEnabled() const;
 
     /*! Adds a new item to the list.
      *  @returns A unique id for this item.
      */
-    RefItem *add()
-    {
-      m_id++;
-      std::unique_ptr<RefItem> item = std::make_unique<RefItem>(m_id,this);
-      RefItem *result = item.get();
-      m_entries.push_back(std::move(item));
-      m_lookup.insert({m_id,result});
-      return result;
-    }
+    RefItem *add();
 
     /*! Returns an item given it's id that is obtained with addRefItem()
      *  @param itemId item's identifier.
      *  @returns A pointer to the todo item's structure.
      */
-    RefItem *find(int itemId)
-    {
-      auto it = m_lookup.find(itemId);
-      return it!=m_lookup.end() ? it->second : nullptr;
-    }
+    RefItem *find(int itemId);
 
     QCString listName() const      { return m_listName;  }
     QCString fileName() const      { return m_fileName;  }
@@ -145,5 +129,7 @@ class RefListManager : public LinkedMap<RefList>
     RefListManager(const RefListManager &other) = delete;
     RefListManager &operator=(const RefListManager &other) = delete;
 };
+
+using RefItemVector = std::vector<RefItem*>;
 
 #endif

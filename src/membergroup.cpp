@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -253,49 +253,49 @@ int MemberGroup::varCount() const
   return memberList->varCount();
 }
 
-int MemberGroup::funcCount() const      
-{ 
-  return memberList->funcCount(); 
+int MemberGroup::funcCount() const
+{
+  return memberList->funcCount();
 }
 
-int MemberGroup::enumCount() const      
-{ 
-  return memberList->enumCount(); 
+int MemberGroup::enumCount() const
+{
+  return memberList->enumCount();
 }
 
-int MemberGroup::enumValueCount() const 
-{ 
-  return memberList->enumValueCount(); 
+int MemberGroup::enumValueCount() const
+{
+  return memberList->enumValueCount();
 }
 
-int MemberGroup::typedefCount() const   
-{ 
-  return memberList->typedefCount(); 
+int MemberGroup::typedefCount() const
+{
+  return memberList->typedefCount();
 }
 
-int MemberGroup::sequenceCount() const   
-{ 
-  return memberList->sequenceCount(); 
+int MemberGroup::sequenceCount() const
+{
+  return memberList->sequenceCount();
 }
 
-int MemberGroup::dictionaryCount() const   
-{ 
-  return memberList->dictionaryCount(); 
+int MemberGroup::dictionaryCount() const
+{
+  return memberList->dictionaryCount();
 }
 
-int MemberGroup::protoCount() const     
-{ 
-  return memberList->protoCount(); 
+int MemberGroup::protoCount() const
+{
+  return memberList->protoCount();
 }
 
-int MemberGroup::defineCount() const    
-{ 
-  return memberList->defineCount(); 
+int MemberGroup::defineCount() const
+{
+  return memberList->defineCount();
 }
 
-int MemberGroup::friendCount() const    
-{ 
-  return memberList->friendCount(); 
+int MemberGroup::friendCount() const
+{
+  return memberList->friendCount();
 }
 #endif
 
@@ -356,7 +356,7 @@ void MemberGroup::findSectionsInDocumentation(const Definition *d)
   memberList->findSectionsInDocumentation(d);
 }
 
-void MemberGroup::setRefItems(const std::vector<RefItem*> &sli)
+void MemberGroup::setRefItems(const RefItemVector &sli)
 {
   m_xrefListItems.insert(m_xrefListItems.end(), sli.cbegin(), sli.cend());
 }
@@ -368,7 +368,7 @@ void MemberGroup::writeTagFile(FTextStream &tagFile)
 
 //--------------------------------------------------------------------------
 
-void MemberGroupInfo::setRefItems(const std::vector<RefItem*> &sli)
+void MemberGroupInfo::setRefItems(const RefItemVector &sli)
 {
   m_sli.insert(m_sli.end(), sli.cbegin(), sli.cend());
 }

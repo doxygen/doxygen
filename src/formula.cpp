@@ -34,6 +34,8 @@
 #include "doxygen.h" // for Doxygen::indexList
 #include "index.h"   // for Doxygen::indexList
 
+static int determineInkscapeVersion(QDir &thisDir);
+
 // Remove the temporary files
 #define RM_TMP_FILES (true)
 //#define RM_TMP_FILES (false)
@@ -53,8 +55,8 @@ struct FormulaManager::Private
     }
     return DisplaySize(-1,-1);
   }
-  std::vector<std::string>  formulas;
-  std::map<std::string,int> formulaMap;
+  StringVector  formulas;
+  IntMap formulaMap;
   std::map<int,DisplaySize> displaySizeMap;
 };
 
@@ -98,10 +100,10 @@ void FormulaManager::readFormulas(const char *dir,bool doCompare)
         int w=-1,h=-1;
         if (ei!=-1 && ei>hi && ei<se) // new format
         {
-          int xi=formName.find('x',hi);
+          int xi=formName.find('x',ei);
           if (xi!=-1)
           {
-            w=formName.mid(hi+1,xi-hi-1).toInt();
+            w=formName.mid(ei+1,xi-ei-1).toInt();
             h=formName.mid(xi+1).toInt();
           }
           formName = formName.left(ei);
@@ -163,7 +165,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   QDir thisDir;
   // generate a latex file containing one formula per page.
   QCString texName="_formulas.tex";
-  std::vector<int> formulasToGenerate;
+  IntVector formulasToGenerate;
   QFile f(texName);
   bool formulaError=FALSE;
   if (f.open(IO_WriteOnly))
@@ -294,22 +296,37 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         }
         Portable::sysTimerStop();
 
+        // if we have pdf2svg available use it to create a SVG image
         if (Portable::checkForExecutable("pdf2svg"))
         {
           sprintf(args,"%s_tmp.pdf form_%d.svg",formBase.data(),pageNum);
           Portable::sysTimerStart();
           if (Portable::system("pdf2svg",args)!=0)
           {
-              err("Problems running pdf2svg. Check your installation!\n");
+            err("Problems running pdf2svg. Check your installation!\n");
             Portable::sysTimerStop();
             QDir::setCurrent(oldDir);
             return;
           }
           Portable::sysTimerStop();
         }
-        else if (Portable::checkForExecutable("inkscape"))
+        else if (Portable::checkForExecutable("inkscape")) // alternative is to use inkscape
         {
-          sprintf(args,"-l form_%d.svg -z %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+          int inkscapeVersion = determineInkscapeVersion(thisDir);
+          if (inkscapeVersion == -1)
+          {
+            err("Problems determining the version of inkscape. Check your installation!\n");
+            QDir::setCurrent(oldDir);
+            return;
+          }
+          else if (inkscapeVersion == 0)
+          {
+            sprintf(args,"-l form_%d.svg -z %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+          }
+          else // inkscapeVersion >= 1
+          {
+            sprintf(args,"--export-type=svg --export-filename=form_%d.svg %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+          }
           Portable::sysTimerStart();
           if (Portable::system("inkscape",args)!=0)
           {
@@ -493,3 +510,75 @@ FormulaManager::DisplaySize FormulaManager::displaySize(int formulaId) const
   return p->getDisplaySize(formulaId);
 }
 
+// helper function to detect and return the major version of inkscape.
+// return -1 if the version cannot be determined.
+static int determineInkscapeVersion(QDir &thisDir)
+{
+  // The command line interface (CLI) of Inkscape 1.0 has changed in comparison to
+  // previous versions. In order to invokine Inkscape, the used version is detected
+  // and based on the version the right syntax of the CLI is chosen.
+  static int inkscapeVersion = -2;
+  if (inkscapeVersion == -2) // initial one time version check
+  {
+    QCString inkscapeVersionFile = "inkscape_version" ;
+    inkscapeVersion = -1;
+    QCString args = "-z --version >"+inkscapeVersionFile+" 2>"+Portable::devNull();
+    Portable::sysTimerStart();
+    if (Portable::system("inkscape",args)!=0)
+    {
+      // looks like the old syntax gave problems, lets try the new syntax
+      args = " --version >"+inkscapeVersionFile+" 2>"+Portable::devNull();
+      if (Portable::system("inkscape",args)!=0)
+      {
+        Portable::sysTimerStop();
+        return -1;
+      }
+    }
+    // read version file and determine major version
+    QFile inkscapeVersionIn(inkscapeVersionFile);
+    if (inkscapeVersionIn.open(IO_ReadOnly))
+    {
+      int maxLineLen=1024;
+      while (!inkscapeVersionIn.atEnd())
+      {
+        QCString buf(maxLineLen);
+        int numBytes = inkscapeVersionIn.readLine(buf.rawData(),maxLineLen);
+        if (numBytes>0)
+        {
+          buf.resize(numBytes+1);
+          int dotPos = buf.find('.');
+          if (buf.startsWith("Inkscape ") && dotPos>0)
+          {
+            // get major version
+            bool ok;
+            int version = buf.mid(9,dotPos-9).toInt(&ok);
+            if (!ok)
+            {
+              Portable::sysTimerStop();
+              return -1;
+            }
+            inkscapeVersion = version;
+            break;
+          }
+        }
+        else
+        {
+          Portable::sysTimerStop();
+          return -1;
+        }
+      }
+      inkscapeVersionIn.close();
+    }
+    else // failed to open version file
+    {
+      Portable::sysTimerStop();
+      return -1;
+    }
+    if (RM_TMP_FILES)
+    {
+      thisDir.remove(inkscapeVersionFile);
+    }
+    Portable::sysTimerStop();
+  }
+  return inkscapeVersion;
+}

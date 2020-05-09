@@ -26,6 +26,7 @@
 
 #include "types.h"
 #include "definition.h"
+#include "arguments.h"
 
 class ClassDef;
 class NamespaceDef;
@@ -37,7 +38,6 @@ class ExampleSDict;
 class OutputList;
 class GroupDef;
 class QTextStream;
-class ArgumentList;
 class QStrList;
 struct TagInfo;
 
@@ -228,7 +228,7 @@ class MemberDef : virtual public Definition
     virtual ArgumentList &argumentList() = 0;
     virtual const ArgumentList &declArgumentList() const = 0;
     virtual const ArgumentList &templateArguments() const = 0;
-    virtual const std::vector<ArgumentList> &definitionTemplateParameterLists() const = 0;
+    virtual const ArgumentLists &definitionTemplateParameterLists() const = 0;
 
     // member group related members
     virtual int getMemberGroupId() const = 0;
@@ -336,7 +336,7 @@ class MemberDef : virtual public Definition
     // argument related members
     virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) = 0;
     virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) = 0;
-    virtual void setDefinitionTemplateParameterLists(const std::vector<ArgumentList> &lists) = 0;
+    virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists) = 0;
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setType(const char *t) = 0;
     virtual void setAccessorType(ClassDef *cd,const char *t) = 0;

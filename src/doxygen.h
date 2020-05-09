@@ -22,10 +22,7 @@
 #include <qdict.h>
 #include <qintdict.h>
 
-#include <set>
-#include <unordered_set>
-#include <unordered_map>
-
+#include "containers.h"
 #include "ftextstream.h"
 #include "sortdict.h"
 #include "membergroup.h"
@@ -85,8 +82,6 @@ struct LookupInfo
   QCString   resolvedType;
 };
 
-using StringMap = std::unordered_map<std::string,std::string>;
-
 extern QCString g_spaces;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
@@ -104,7 +99,7 @@ class Doxygen
     static bool                      insideMainPage;
     static FileNameLinkedMap        *includeNameLinkedMap;
     static FileNameLinkedMap        *exampleNameLinkedMap;
-    static std::set<std::string>     inputPaths;
+    static StringSet                 inputPaths;
     static FileNameLinkedMap        *inputNameLinkedMap;
     static FileNameLinkedMap        *imageNameLinkedMap;
     static FileNameLinkedMap        *dotFileNameLinkedMap;
@@ -113,13 +108,13 @@ class Doxygen
     static MemberNameLinkedMap      *memberNameLinkedMap;
     static MemberNameLinkedMap      *functionNameLinkedMap;
     static QStrList                  tagfileList;
-    static StringMap                 namespaceAliasMap;
+    static StringUnorderedMap        namespaceAliasMap;
     static GroupSDict               *groupSDict;
     static NamespaceSDict           *namespaceSDict;
     static StringDict                tagDestinationDict;
     static StringDict                aliasDict;
     static QIntDict<MemberGroupInfo> memGrpInfoDict;
-    static std::unordered_set<std::string> expandAsDefinedSet;
+    static StringUnorderedSet        expandAsDefinedSet;
     static NamespaceDef             *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
@@ -151,7 +146,6 @@ void initDoxygen();
 void readConfiguration(int argc, char **argv);
 void checkConfiguration();
 void adjustConfiguration();
-void searchInputFiles(StringList &inputFiles);
 void parseInput();
 void generateOutput();
 void readAliases();
@@ -159,15 +153,15 @@ void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
 int readFileOrDirectory(const char *s,
                         FileNameLinkedMap *fnDict,
-                        StringDict *exclDict,
+                        StringUnorderedSet *exclSet,
                         QStrList *patList,
                         QStrList *exclPatList,
-                        StringList *resultList,
-                        StringDict *resultDict,
+                        StringVector *resultList,
+                        StringUnorderedSet *resultSet,
                         bool recursive,
                         bool errorIfNotExist=TRUE,
-                        std::unordered_set<std::string> *killSet = 0,
-                        std::set<std::string> *paths = 0
+                        StringUnorderedSet *killSet = 0,
+                        StringSet *paths = 0
                        );
 void copyAndFilterFile(const char *fileName,BufStr &dest);
 

@@ -16,7 +16,6 @@
 #ifndef DOTRUNNER_H
 #define DOTRUNNER_H
 
-#include <qglobal.h> //uint
 #include <string>
 #include <thread>
 #include <list>
@@ -72,7 +71,7 @@ class DotRunnerQueue
   public:
     void enqueue(DotRunner *runner);
     DotRunner *dequeue();
-    uint count() const;
+    size_t size() const;
   private:
     std::condition_variable m_bufferNotEmpty;
     std::queue<DotRunner *> m_queue;
@@ -80,10 +79,11 @@ class DotRunnerQueue
 };
 
 /** Worker thread to execute a dot run */
-class DotWorkerThread 
+class DotWorkerThread
 {
   public:
     DotWorkerThread(DotRunnerQueue *queue);
+   ~DotWorkerThread();
     void run();
     void start();
     bool isRunning() { return m_thread && m_thread->joinable(); }

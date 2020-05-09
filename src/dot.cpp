@@ -83,6 +83,12 @@ DotManager *DotManager::instance()
   return m_theInstance;
 }
 
+void DotManager::deleteInstance()
+{
+  delete m_theInstance;
+  m_theInstance=0;
+}
+
 DotManager::DotManager() : m_runners(), m_filePatchers()
 {
   m_queue = new DotRunnerQueue;
@@ -92,18 +98,17 @@ DotManager::DotManager() : m_runners(), m_filePatchers()
   {
     for (i=0;i<dotNumThreads;i++)
     {
-      DotWorkerThread *thread = new DotWorkerThread(m_queue);
+      std::unique_ptr<DotWorkerThread> thread = std::make_unique<DotWorkerThread>(m_queue);
       thread->start();
       if (thread->isRunning())
       {
-        m_workers.append(thread);
+        m_workers.push_back(std::move(thread));
       }
       else // no more threads available!
       {
-        delete thread;
       }
     }
-    ASSERT(m_workers.count()>0);
+    ASSERT(m_workers.size()>0);
   }
 }
 
@@ -140,7 +145,7 @@ DotFilePatcher *DotManager::createFilePatcher(const std::string &fileName)
   auto patcher = m_filePatchers.find(fileName);
 
   if (patcher != m_filePatchers.end()) return &(patcher->second);
-  
+
   auto rv = m_filePatchers.emplace(fileName, fileName.c_str());
   assert(rv.second);
   return &(rv.first->second);
@@ -148,20 +153,20 @@ DotFilePatcher *DotManager::createFilePatcher(const std::string &fileName)
 
 bool DotManager::run() const
 {
-  uint numDotRuns = m_runners.size();
-  uint numFilePatchers = m_filePatchers.size();
+  size_t numDotRuns = m_runners.size();
+  size_t numFilePatchers = m_filePatchers.size();
   if (numDotRuns+numFilePatchers>1)
   {
-    if (m_workers.count()==0)
+    if (m_workers.size()==0)
     {
       msg("Generating dot graphs in single threaded mode...\n");
     }
     else
     {
-      msg("Generating dot graphs using %d parallel threads...\n",QMIN(numDotRuns+numFilePatchers,m_workers.count()));
+      msg("Generating dot graphs using %zu parallel threads...\n",QMIN(numDotRuns+numFilePatchers,m_workers.size()));
     }
   }
-  int i=1;
+  size_t i=1;
 
   bool setPath=FALSE;
   if (Config_getBool(GENERATE_HTML))
@@ -186,12 +191,12 @@ bool DotManager::run() const
   }
   Portable::sysTimerStart();
   // fill work queue with dot operations
-  int prev=1;
-  if (m_workers.count()==0) // no threads to work with
+  size_t prev=1;
+  if (m_workers.size()==0) // no threads to work with
   {
     for (auto & dr : m_runners)
     {
-      msg("Running dot for graph %d/%d\n",prev,numDotRuns);
+      msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
       dr.second->run();
       prev++;
     }
@@ -203,28 +208,28 @@ bool DotManager::run() const
       m_queue->enqueue(dr.second.get());
     }
     // wait for the queue to become empty
-    while ((i=m_queue->count())>0)
+    while ((i=m_queue->size())>0)
     {
       i = numDotRuns - i;
       while (i>=prev)
       {
-        msg("Running dot for graph %d/%d\n",prev,numDotRuns);
+        msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
         prev++;
       }
       Portable::sleep(100);
     }
-    while ((int)numDotRuns>=prev)
+    while (numDotRuns>=prev)
     {
-      msg("Running dot for graph %d/%d\n",prev,numDotRuns);
+      msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
       prev++;
     }
     // signal the workers we are done
-    for (i=0;i<(int)m_workers.count();i++)
+    for (i=0;i<m_workers.size();i++)
     {
       m_queue->enqueue(0); // add terminator for each worker
     }
     // wait for the workers to finish
-    for (i=0;i<(int)m_workers.count();i++)
+    for (i=0;i<m_workers.size();i++)
     {
       m_workers.at(i)->wait();
     }
@@ -239,13 +244,13 @@ bool DotManager::run() const
   i=1;
   // since patching the svg files may involve patching the header of the SVG
   // (for zoomable SVGs), and patching the .html files requires reading that
-  // header after the SVG is patched, we first process the .svg files and 
-  // then the other files. 
+  // header after the SVG is patched, we first process the .svg files and
+  // then the other files.
   for (auto & fp : m_filePatchers)
   {
     if (fp.second.isSVGFile())
     {
-      msg("Patching output file %d/%d\n",i,numFilePatchers);
+      msg("Patching output file %zu/%zu\n",i,numFilePatchers);
       if (!fp.second.run()) return FALSE;
       i++;
     }
@@ -254,7 +259,7 @@ bool DotManager::run() const
   {
     if (!fp.second.isSVGFile())
     {
-      msg("Patching output file %d/%d\n",i,numFilePatchers);
+      msg("Patching output file %zu/%zu\n",i,numFilePatchers);
       if (!fp.second.run()) return FALSE;
       i++;
     }

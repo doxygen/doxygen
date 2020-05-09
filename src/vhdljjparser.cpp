@@ -13,6 +13,7 @@
 #include <qcstring.h>
 #include <qfileinfo.h>
 #include <qcstringlist.h>
+#include "containers.h"
 #include "vhdljjparser.h"
 #include "vhdldocgen.h"
 #include "message.h"
@@ -63,7 +64,7 @@ struct VHDLOutlineParser::Private
 
   QCString                yyFileName;
   int                     yyLineNr      = 1;
-  std::vector<int>        lineParse;
+  IntVector               lineParse;
   int                     iDocLine      = -1;
   QCString                inputString;
   Entry*                  gBlock        = 0;
@@ -84,7 +85,7 @@ struct VHDLOutlineParser::Private
 };
 
 void VHDLOutlineParser::Private::parseVhdlfile(const char *fileName,
-                                               const char* inputBuffer,bool inLine) 
+                                               const char* inputBuffer,bool inLine)
 {
   JAVACC_STRING_TYPE s =inputBuffer;
   CharStream *stream = new CharStream(s.c_str(), (int)s.size(), 1, 1);
@@ -237,15 +238,15 @@ static int idCounter;
 
 /** returns a unique id for each record member.
 *
-*  type first_rec is record 
+*  type first_rec is record
 *		RE: data_type;
 *	end;
-*	
-* type second_rec is record 
+*
+* type second_rec is record
 *		RE: data_type;
 *	end;
 */
-		
+
 QString VHDLOutlineParser::getNameID(){
  return QString::number(idCounter++,10);
 }
@@ -300,7 +301,7 @@ void VHDLOutlineParser::handleCommentBlock(const char* doc1,bool brief)
   {
     s->current->docLine = p->yyLineNr;
   }
-  
+
   int j=doc.find("[plant]");
   if (j>=0)
   {

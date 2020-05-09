@@ -25,6 +25,7 @@
 #include <qptrdict.h>
 
 #include "definition.h"
+#include "arguments.h"
 
 struct Argument;
 class MemberDef;
@@ -49,7 +50,6 @@ class GroupDef;
 class StringDict;
 struct IncludeInfo;
 class ClassDefImpl;
-class ArgumentList;
 class FTextStream;
 
 /** A abstract class representing of a compound symbol.
@@ -229,10 +229,10 @@ class ClassDef : virtual public Definition
      *  will return a list with one ArgumentList containing one argument
      *  with type="class" and name="T".
      */
-    virtual std::vector<ArgumentList> getTemplateParameterLists() const = 0;
+    virtual ArgumentLists getTemplateParameterLists() const = 0;
 
     virtual QCString qualifiedNameWithTemplateParameters(
-        const std::vector<ArgumentList> *actualParams=0,uint *actualParamIndex=0) const = 0;
+        const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const = 0;
 
     /** Returns TRUE if there is at least one pure virtual member in this
      *  class.

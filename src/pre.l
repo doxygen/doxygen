@@ -29,10 +29,6 @@
 #include <stack>
 #include <deque>
 #include <algorithm>
-#include <set>
-#include <unordered_set>
-#include <string>
-#include <map>
 #include <utility>
 
 #include <stdio.h>
@@ -44,6 +40,7 @@
 #include <qregexp.h>
 #include <qfileinfo.h>
 
+#include "containers.h"
 #include "pre.h"
 #include "constexp.h"
 #include "define.h"
@@ -134,11 +131,11 @@ class DefineManager
       {
 	m_includedFiles.insert(fileName);
       }
-      void collectDefines(DefineMapRef &map,std::set<std::string> &includeStack);
+      void collectDefines(DefineMapRef &map,StringSet &includeStack);
     private:
       DefineManager *m_parent;
       DefineMapOwning m_defines;
-      std::set<std::string> m_includedFiles;
+      StringSet m_includedFiles;
   };
 
   public:
@@ -197,7 +194,7 @@ class DefineManager
       else
       {
 	//printf("existing file!\n");
-        std::set<std::string> includeStack;
+        StringSet includeStack;
 	it->second->collectDefines(m_contextDefines,includeStack);
       }
     }
@@ -279,7 +276,7 @@ class DefineManager
       auto it = m_fileMap.find(fileName);
       if (it!=m_fileMap.end())
       {
-        std::set<std::string> includeStack;
+        StringSet includeStack;
 	it->second->collectDefines(map,includeStack);
       }
     }
@@ -305,7 +302,7 @@ class DefineManager
  *         case there is a cyclic include dependency.
  */
 void DefineManager::DefinesPerFile::collectDefines(
-                     DefineMapRef &map,std::set<std::string> &includeStack)
+                     DefineMapRef &map,StringSet &includeStack)
 {
   //printf("DefinesPerFile::collectDefines #defines=%d\n",m_defines.count());
   {
@@ -335,7 +332,7 @@ void DefineManager::DefinesPerFile::collectDefines(
  *
  *	global state
  */
-static std::unordered_set<std::string> g_allIncludes;
+static StringUnorderedSet    g_allIncludes;
 static DefineManager         g_defineManager;
 
 
@@ -391,13 +388,13 @@ struct preYY_state
   yy_size_t          fenceSize      = 0;
   bool               ccomment       = false;
   QCString           delimiter;
-  std::vector<std::string>                 pathList;
-  std::map<std::string,int>                argMap;
-  std::stack<bool>                         levelGuard;
+  StringVector                             pathList;
+  IntMap                                   argMap;
+  BoolStack                                levelGuard;
   std::stack< std::unique_ptr<CondCtx> >   condStack;
   std::deque< std::unique_ptr<FileState> > includeStack;
-  std::map<std::string,Define*>            expandedDict;
-  std::unordered_set<std::string>          expanded;
+  std::unordered_map<std::string,Define*>  expandedDict;
+  StringUnorderedSet                       expanded;
   ConstExpressionParser                    constExpParser;
 };
 
