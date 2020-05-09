@@ -3020,10 +3020,13 @@ static void addMethodToClass(const Entry *root,ClassDef *cd,
   // strip redundant template specifier for constructors
   int j = -1;
   if ((fd==0 || fd->getLanguage()==SrcLangExt_Cpp) &&
-     name.left(9)!="operator " && (i=name.find('<'))!=-1 && (j=name.find('>'))!=-1)
+      name.left(9)!="operator " &&   // not operator
+      (i=name.find('<'))!=-1    &&   // containing <
+      (j=name.find('>'))!=-1    &&   // or >
+      (j!=i+2 || name.at(i+1)!='=')  // but not the C++20 spaceship operator <=>
+     )
   {
-    // only remove incase not three way comparison operator / spaceship operator: <=>
-    if (!((j == i+2) && (name.at(i+1) == '='))) name=name.left(i);
+    name=name.left(i);
   }
 
   QCString fileName = root->fileName;
