@@ -34,6 +34,8 @@
 #include "doxygen.h" // for Doxygen::indexList
 #include "index.h"   // for Doxygen::indexList
 
+static int determineInkscapeVersion(QDir &thisDir);
+
 // Remove the temporary files
 #define RM_TMP_FILES (true)
 //#define RM_TMP_FILES (false)
@@ -294,106 +296,36 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         }
         Portable::sysTimerStop();
 
+        // if we have pdf2svg available use it to create a SVG image
         if (Portable::checkForExecutable("pdf2svg"))
         {
           sprintf(args,"%s_tmp.pdf form_%d.svg",formBase.data(),pageNum);
           Portable::sysTimerStart();
           if (Portable::system("pdf2svg",args)!=0)
           {
-              err("Problems running pdf2svg. Check your installation!\n");
+            err("Problems running pdf2svg. Check your installation!\n");
             Portable::sysTimerStop();
             QDir::setCurrent(oldDir);
             return;
           }
           Portable::sysTimerStop();
         }
-        else if (Portable::checkForExecutable("inkscape"))
+        else if (Portable::checkForExecutable("inkscape")) // alternative is to use inkscape
         {
-          // The command line interface (CLI) of Inkscape 1.0 has changed in comparison to
-          // previous versions. In order to invokine Inkscape, the used version is detected
-          // and based on the version the right syntax of the CLI is chosen.
-          static int inkscapeVersion = -2;
-          if (inkscapeVersion == -2)
+          int inkscapeVersion = determineInkscapeVersion(thisDir);
+          if (inkscapeVersion == -1)
           {
-            QCString inkscapeVersionFile = "inkscape_version" ;
-            inkscapeVersion = -1;
-            sprintf(args,"-z --version >%s 2>%s",inkscapeVersionFile.data(),Portable::devNull());
-            Portable::sysTimerStart();
-            if (Portable::system("inkscape",args)!=0)
-            {
-              // looks like the old syntax gave problems, lets try the new syntax
-              sprintf(args," --version >%s 2>%s",inkscapeVersionFile.data(),Portable::devNull());
-              if (Portable::system("inkscape",args)!=0)
-              {
-                // looks like theer is realy a problem
-                err("Problems running inkscape. Check your installation!\n");
-                Portable::sysTimerStop();
-                QDir::setCurrent(oldDir);
-                return;
-              }
-            }
-            // read version file and determine major version
-            QFile IncscapeVersionIn(inkscapeVersionFile);
-            if (IncscapeVersionIn.open(IO_ReadOnly))
-            {
-              int maxLineLen=1024;
-              while (!IncscapeVersionIn.atEnd())
-              {
-                QCString buf(maxLineLen);
-                int numBytes = IncscapeVersionIn.readLine(buf.rawData(),maxLineLen);
-                if (numBytes>0)
-                {
-                  buf.resize(numBytes+1);
-                  if (buf.startsWith("Inkscape"))
-                  {
-                    // get major version
-                    bool ok;
-                    int tmp = buf.mid(9,1).toInt(&ok);
-                    if (!ok)
-                    {
-                      err("Problems determining inkscape version\n");
-                      QDir::setCurrent(oldDir);
-                      return;
-                    }
-                    inkscapeVersion = tmp;
-                    break;
-                  }
-                }
-                else
-                {
-                  err("Problems determining inkscape version\n");
-                  QDir::setCurrent(oldDir);
-                  return;
-                }
-              }
-              IncscapeVersionIn.close();
-            }
-            if (!(inkscapeVersion == 0  || inkscapeVersion == 1))
-            {
-               err("Problems determining inkscape version\n");
-               QDir::setCurrent(oldDir);
-               return;
-            }
-            if (RM_TMP_FILES)
-            {
-              thisDir.remove(inkscapeVersionFile);
-            }
+            err("Problems determining the version of inkscape. Check your installation!\n");
+            QDir::setCurrent(oldDir);
+            return;
           }
-          if (inkscapeVersion == 0)
+          else if (inkscapeVersion == 0)
           {
             sprintf(args,"-l form_%d.svg -z %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
           }
-          else if (inkscapeVersion == 1)
+          else // inkscapeVersion >= 1
           {
             sprintf(args,"--export-type=svg --export-filename=form_%d.svg %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
-          }
-          else
-          {
-            // on subsequent calls we should know which inkscape version we have
-            // when this is not the case we already tried to determine it, but it failed 
-            // so we should bail out here without error as an error has already been given.
-            QDir::setCurrent(oldDir);
-            return;
           }
           Portable::sysTimerStart();
           if (Portable::system("inkscape",args)!=0)
@@ -578,3 +510,75 @@ FormulaManager::DisplaySize FormulaManager::displaySize(int formulaId) const
   return p->getDisplaySize(formulaId);
 }
 
+// helper function to detect and return the major version of inkscape.
+// return -1 if the version cannot be determined.
+static int determineInkscapeVersion(QDir &thisDir)
+{
+  // The command line interface (CLI) of Inkscape 1.0 has changed in comparison to
+  // previous versions. In order to invokine Inkscape, the used version is detected
+  // and based on the version the right syntax of the CLI is chosen.
+  static int inkscapeVersion = -2;
+  if (inkscapeVersion == -2) // initial one time version check
+  {
+    QCString inkscapeVersionFile = "inkscape_version" ;
+    inkscapeVersion = -1;
+    QCString args = "-z --version >"+inkscapeVersionFile+" 2>"+Portable::devNull();
+    Portable::sysTimerStart();
+    if (Portable::system("inkscape",args)!=0)
+    {
+      // looks like the old syntax gave problems, lets try the new syntax
+      args = " --version >"+inkscapeVersionFile+" 2>"+Portable::devNull();
+      if (Portable::system("inkscape",args)!=0)
+      {
+        Portable::sysTimerStop();
+        return -1;
+      }
+    }
+    // read version file and determine major version
+    QFile inkscapeVersionIn(inkscapeVersionFile);
+    if (inkscapeVersionIn.open(IO_ReadOnly))
+    {
+      int maxLineLen=1024;
+      while (!inkscapeVersionIn.atEnd())
+      {
+        QCString buf(maxLineLen);
+        int numBytes = inkscapeVersionIn.readLine(buf.rawData(),maxLineLen);
+        if (numBytes>0)
+        {
+          buf.resize(numBytes+1);
+          int dotPos = buf.find('.');
+          if (buf.startsWith("Inkscape ") && dotPos>0)
+          {
+            // get major version
+            bool ok;
+            int version = buf.mid(9,dotPos-9).toInt(&ok);
+            if (!ok)
+            {
+              Portable::sysTimerStop();
+              return -1;
+            }
+            inkscapeVersion = version;
+            break;
+          }
+        }
+        else
+        {
+          Portable::sysTimerStop();
+          return -1;
+        }
+      }
+      inkscapeVersionIn.close();
+    }
+    else // failed to open version file
+    {
+      Portable::sysTimerStop();
+      return -1;
+    }
+    if (RM_TMP_FILES)
+    {
+      thisDir.remove(inkscapeVersionFile);
+    }
+    Portable::sysTimerStop();
+  }
+  return inkscapeVersion;
+}
