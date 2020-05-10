@@ -160,7 +160,7 @@ void DirDefImpl::addFile(FileDef *fd)
 
 void DirDefImpl::sort()
 {
-  std::sort(m_subdirs.begin(), m_subdirs.end(), &compareDirDefs);
+  std::sort(m_subdirs.begin(), m_subdirs.end(), compareDirDefs);
   m_fileList->sort();
 }
 
@@ -1098,12 +1098,3 @@ bool compareDirDefs(const DirDef *item1, const DirDef *item2)
   return qstricmp(item1->shortName(),item2->shortName()) < 0;
 }
 
-void sortInDirList(DirList& list, DirDef *const newItem)
-{
-  auto potentialSuccessor = list.begin();
-  while (potentialSuccessor != list.cend() && compareDirDefs(*potentialSuccessor, newItem))
-  {
-    potentialSuccessor++;
-  }
-  list.insert(potentialSuccessor, newItem);
-}

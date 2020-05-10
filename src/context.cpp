@@ -5457,12 +5457,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.dirs)
       {
         TemplateList *dirList = TemplateList::alloc();
-        if (m_groupDef->getDirs())
+        for(const auto dd : m_groupDef->getDirs())
         {
-          for(const auto dd : *(m_groupDef->getDirs()))
-          {
-            dirList->append(DirContext::alloc(dd));
-          }
+          dirList->append(DirContext::alloc(dd));
         }
         cache.dirs.reset(dirList);
       }

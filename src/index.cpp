@@ -3988,7 +3988,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       numSubItems += gd->getNamespaces()->count();
       numSubItems += gd->getClasses()->count();
       numSubItems += gd->getFiles()->count();
-      numSubItems += gd->getDirs()->size();
+      numSubItems += gd->getDirs().size();
       numSubItems += gd->getPages()->count();
     }
 
@@ -4121,7 +4121,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       }
       else if (lde->kind()==LayoutDocEntry::GroupDirs && addToIndex)
       {
-        for(const auto dd : *(gd->getDirs()))
+        for (const auto dd : gd->getDirs())
         {
           if (dd->isVisible())
           {

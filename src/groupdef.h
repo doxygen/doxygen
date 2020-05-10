@@ -61,7 +61,7 @@ class GroupDef : virtual public Definition
     virtual void addGroup(const GroupDef *def) = 0;
     virtual void addPage(PageDef *def) = 0;
     virtual void addExample(const PageDef *def) = 0;
-    virtual void addDir(DirDef *const dd) = 0;
+    virtual void addDir(DirDef *dd) = 0;
     virtual bool insertMember(MemberDef *def,bool docOnly=FALSE) = 0;
     virtual void removeMember(MemberDef *md) = 0;
     virtual bool findGroup(const GroupDef *def) const = 0;
@@ -98,7 +98,7 @@ class GroupDef : virtual public Definition
     virtual NamespaceSDict * getNamespaces() const = 0;
     virtual GroupList *     getSubGroups() const = 0;
     virtual PageSDict *     getPages() const = 0;
-    virtual DirList *       getDirs() const = 0;
+    virtual const DirList & getDirs() const = 0;
     virtual PageSDict *     getExamples() const = 0;
     virtual bool hasDetailedDescription() const = 0;
     virtual void sortSubGroups() = 0;

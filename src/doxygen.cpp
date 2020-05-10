@@ -11172,6 +11172,17 @@ void parseInput()
   vhdlCorrectMemberProperties();
   g_s.end();
 
+  if (Config_getBool(SORT_GROUP_NAMES))
+  {
+    Doxygen::groupSDict->sort();
+    GroupSDict::Iterator gli(*Doxygen::groupSDict);
+    GroupDef *gd;
+    for (gli.toFirst();(gd=gli.current());++gli)
+    {
+      gd->sortSubGroups();
+    }
+  }
+
 }
 
 void generateOutput()
@@ -11348,17 +11359,6 @@ void generateOutput()
   g_s.begin("Generating directory documentation...\n");
   generateDirDocs(*g_outputList);
   g_s.end();
-
-  if (Config_getBool(SORT_GROUP_NAMES))
-  {
-    Doxygen::groupSDict->sort();
-    GroupSDict::Iterator gli(*Doxygen::groupSDict);
-    GroupDef *gd;
-    for (gli.toFirst();(gd=gli.current());++gli)
-    {
-      gd->sortSubGroups();
-    }
-  }
 
   if (g_outputList->count()>0)
   {

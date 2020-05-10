@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of QValueList class
 **
@@ -50,7 +50,7 @@ public:
     QValueListNode( const T& t ) : data( t ) { }
     QValueListNode() { }
 #if defined(Q_TEMPLATEDLL)
-    // Workaround MS bug in memory de/allocation in DLL vs. EXE 
+    // Workaround MS bug in memory de/allocation in DLL vs. EXE
     virtual ~QValueListNode() { }
 #endif
 
@@ -79,6 +79,11 @@ class Q_EXPORT QValueListIterator
     QValueListIterator() : node( 0 ) {}
     QValueListIterator( NodePtr p ) : node( p ) {}
     QValueListIterator( const QValueListIterator<T>& it ) : node( it.node ) {}
+    QValueListIterator &operator=(const QValueListIterator &it)
+    {
+      node = it.node;
+      return *this;
+    }
 
     bool operator==( const QValueListIterator<T>& it ) const { return node == it.node; }
     bool operator!=( const QValueListIterator<T>& it ) const { return node != it.node; }
@@ -132,6 +137,11 @@ class Q_EXPORT QValueListConstIterator
     QValueListConstIterator( NodePtr p ) : node( p ) {}
     QValueListConstIterator( const QValueListConstIterator<T>& it ) : node( it.node ) {}
     QValueListConstIterator( const QValueListIterator<T>& it ) : node( it.node ) {}
+    QValueListConstIterator &operator=(const QValueListConstIterator &it)
+    {
+      node = it.node;
+      return *this;
+    }
 
     bool operator==( const QValueListConstIterator<T>& it ) const { return node == it.node; }
     bool operator!=( const QValueListConstIterator<T>& it ) const { return node != it.node; }
@@ -195,7 +205,7 @@ public:
     }
 
 #if defined(Q_TEMPLATEDLL)
-    // Workaround MS bug in memory de/allocation in DLL vs. EXE 
+    // Workaround MS bug in memory de/allocation in DLL vs. EXE
     virtual
 #endif
     ~QValueListPrivate() {

@@ -64,7 +64,7 @@ class GroupDefImpl : public DefinitionImpl, public GroupDef
     virtual void addGroup(const GroupDef *def);
     virtual void addPage(PageDef *def);
     virtual void addExample(const PageDef *def);
-    virtual void addDir(DirDef *const dd);
+    virtual void addDir(DirDef *dd);
     virtual bool insertMember(MemberDef *def,bool docOnly=FALSE);
     virtual void removeMember(MemberDef *md);
     virtual bool findGroup(const GroupDef *def) const; // true if def is a subgroup of this group
@@ -101,7 +101,7 @@ class GroupDefImpl : public DefinitionImpl, public GroupDef
     virtual NamespaceSDict * getNamespaces() const  { return m_namespaceSDict; }
     virtual GroupList *     getSubGroups() const    { return m_groupList; }
     virtual PageSDict *     getPages() const        { return m_pageDict; }
-    virtual DirList *       getDirs() const         { return m_dirList; }
+    virtual const DirList & getDirs() const         { return m_dirList; }
     virtual PageSDict *     getExamples() const     { return m_exampleDict; }
     virtual bool hasDetailedDescription() const;
     virtual void sortSubGroups();
@@ -141,7 +141,7 @@ class GroupDefImpl : public DefinitionImpl, public GroupDef
     GroupList *          m_groupList;           // list of sub groups.
     PageSDict *          m_pageDict;            // list of pages in the group
     PageSDict *          m_exampleDict;         // list of examples in the group
-    DirList *            m_dirList;             // list of directories in the group
+    DirList              m_dirList;             // list of directories in the group
     MemberList *         m_allMemberList;
     MemberNameInfoLinkedMap m_allMemberNameInfoLinkedMap;
     Definition *         m_groupScope;
@@ -169,7 +169,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
   m_namespaceSDict = new NamespaceSDict(17);
   m_pageDict = new PageSDict(17);
   m_exampleDict = new PageSDict(17);
-  m_dirList = new DirList;
   if (refFileName)
   {
     m_fileName=stripExtension(refFileName);
@@ -199,7 +198,6 @@ GroupDefImpl::~GroupDefImpl()
   delete m_exampleDict;
   delete m_allMemberList;
   delete m_memberGroupSDict;
-  delete m_dirList;
 }
 
 void GroupDefImpl::setGroupTitle( const char *t )
@@ -324,15 +322,10 @@ bool GroupDefImpl::addNamespace(const NamespaceDef *def)
   return FALSE;
 }
 
-void GroupDefImpl::addDir(DirDef *const def)
+void GroupDefImpl::addDir(DirDef *def)
 {
   if (def->isHidden()) return;
-  if (Config_getBool(SORT_BRIEF_DOCS))
-  {
-    sortInDirList(*m_dirList, def);
-  }
-  else
-    m_dirList->push_back(def);
+  m_dirList.push_back(def);
 }
 
 void GroupDefImpl::addPage(PageDef *def)
@@ -755,14 +748,11 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::GroupDirs:
         {
-          if (m_dirList)
+          for(const auto dd : m_dirList)
           {
-            for(const auto dd : *m_dirList)
+            if (dd->isLinkableInProject())
             {
-              if (dd->isLinkableInProject())
-              {
-                tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
-              }
+              tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
             }
           }
         }
@@ -1022,13 +1012,13 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
 void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
 {
   // write list of directories
-  if (m_dirList->size()>0)
+  if (!m_dirList.empty())
   {
     ol.startMemberHeader("dirs");
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
-    for(const auto dd : *m_dirList)
+    for(const auto dd : m_dirList)
     {
       if (!dd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
@@ -1158,7 +1148,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
         (lde->kind()==LayoutDocEntry::GroupNamespaces && m_namespaceSDict->declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupFiles && m_fileList->count()>0) ||
         (lde->kind()==LayoutDocEntry::GroupNestedGroups && m_groupList->count()>0) ||
-        (lde->kind()==LayoutDocEntry::GroupDirs && m_dirList->size()>0)
+        (lde->kind()==LayoutDocEntry::GroupDirs && !m_dirList.empty())
        )
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
@@ -1690,6 +1680,10 @@ void GroupDefImpl::sortMemberLists()
   for (;(ml=mli.current());++mli)
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
+  }
+  if (Config_getBool(SORT_BRIEF_DOCS))
+  {
+    std::sort(m_dirList.begin(), m_dirList.end(), compareDirDefs);
   }
 }
 
