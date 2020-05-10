@@ -64,7 +64,7 @@ class GroupDefImpl : public DefinitionImpl, public GroupDef
     virtual void addGroup(const GroupDef *def);
     virtual void addPage(PageDef *def);
     virtual void addExample(const PageDef *def);
-    virtual void addDir(const DirDef *dd);
+    virtual void addDir(DirDef *const dd);
     virtual bool insertMember(MemberDef *def,bool docOnly=FALSE);
     virtual void removeMember(MemberDef *md);
     virtual bool findGroup(const GroupDef *def) const; // true if def is a subgroup of this group
@@ -324,13 +324,15 @@ bool GroupDefImpl::addNamespace(const NamespaceDef *def)
   return FALSE;
 }
 
-void GroupDefImpl::addDir(const DirDef *def)
+void GroupDefImpl::addDir(DirDef *const def)
 {
   if (def->isHidden()) return;
   if (Config_getBool(SORT_BRIEF_DOCS))
-    m_dirList->inSort(def);
+  {
+    sortInDirList(*m_dirList, def);
+  }
   else
-    m_dirList->append(def);
+    m_dirList->push_back(def);
 }
 
 void GroupDefImpl::addPage(PageDef *def)
@@ -755,9 +757,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         {
           if (m_dirList)
           {
-            QListIterator<DirDef> it(*m_dirList);
-            DirDef *dd;
-            for (;(dd=it.current());++it)
+            for(const auto dd : *m_dirList)
             {
               if (dd->isLinkableInProject())
               {
@@ -1022,15 +1022,13 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
 void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
 {
   // write list of directories
-  if (m_dirList->count()>0)
+  if (m_dirList->size()>0)
   {
     ol.startMemberHeader("dirs");
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
-    QListIterator<DirDef> it(*m_dirList);
-    DirDef *dd;
-    for (;(dd=it.current());++it)
+    for(const auto dd : *m_dirList)
     {
       if (!dd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
@@ -1160,7 +1158,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
         (lde->kind()==LayoutDocEntry::GroupNamespaces && m_namespaceSDict->declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupFiles && m_fileList->count()>0) ||
         (lde->kind()==LayoutDocEntry::GroupNestedGroups && m_groupList->count()>0) ||
-        (lde->kind()==LayoutDocEntry::GroupDirs && m_dirList->count()>0)
+        (lde->kind()==LayoutDocEntry::GroupDirs && m_dirList->size()>0)
        )
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;

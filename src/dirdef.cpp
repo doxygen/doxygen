@@ -15,6 +15,7 @@
 #include "docparser.h"
 #include "definitionimpl.h"
 #include "filedef.h"
+#include <algorithm>
 
 //----------------------------------------------------------------------
 
@@ -35,7 +36,7 @@ class DirDefImpl : public DefinitionImpl, public DirDef
     virtual FileList *   getFiles() const        { return m_fileList; }
     virtual void addFile(FileDef *fd);
     virtual const DirList &subDirs() const { return m_subdirs; }
-    virtual bool isCluster() const { return m_subdirs.count()>0; }
+    virtual bool isCluster() const { return m_subdirs.size()>0; }
     virtual int level() const { return m_level; }
     virtual DirDef *parent() const { return m_parent; }
     virtual int dirCount() const { return m_dirCount; }
@@ -141,7 +142,7 @@ bool DirDefImpl::isLinkable() const
 
 void DirDefImpl::addSubDir(DirDef *subdir)
 {
-  m_subdirs.append(subdir);
+  m_subdirs.push_back(subdir);
   subdir->setOuterScope(this);
   subdir->setParent(this);
 }
@@ -159,7 +160,7 @@ void DirDefImpl::addFile(FileDef *fd)
 
 void DirDefImpl::sort()
 {
-  m_subdirs.sort();
+  std::sort(m_subdirs.begin(), m_subdirs.end(), &compareDirDefs);
   m_fileList->sort();
 }
 
@@ -307,9 +308,7 @@ void DirDefImpl::writeDirectoryGraph(OutputList &ol)
 void DirDefImpl::writeSubDirList(OutputList &ol)
 {
   int numSubdirs = 0;
-  QListIterator<DirDef> it(m_subdirs);
-  DirDef *dd;
-  for (it.toFirst();(dd=it.current());++it)
+  for(const auto dd : m_subdirs)
   {
     if (dd->hasDocumentation() || dd->getFiles()->count()>0)
     {
@@ -324,7 +323,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
     ol.parseText(theTranslator->trDir(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
-    for (it.toFirst();(dd=it.current());++it)
+    for(const auto dd : m_subdirs)
     {
       if (dd->hasDocumentation() || dd->getFiles()->count()==0)
       {
@@ -460,11 +459,9 @@ void DirDefImpl::writeTagFile(FTextStream &tagFile)
     {
       case LayoutDocEntry::DirSubDirs:
         {
-          if (m_subdirs.count()>0)
+          if (m_subdirs.size()>0)
           {
-            DirDef *dd;
-            QListIterator<DirDef> it(m_subdirs);
-            for (;(dd=it.current());++it)
+            for(const auto dd : m_subdirs)
             {
               tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
             }
@@ -1096,3 +1093,17 @@ void generateDirDocs(OutputList &ol)
   }
 }
 
+bool compareDirDefs(const DirDef *item1, const DirDef *item2)
+{
+  return qstricmp(item1->shortName(),item2->shortName()) < 0;
+}
+
+void sortInDirList(DirList& list, DirDef *const newItem)
+{
+  auto potentialSuccessor = list.begin();
+  while (potentialSuccessor != list.cend() && compareDirDefs(*potentialSuccessor, newItem))
+  {
+    potentialSuccessor++;
+  }
+  list.insert(potentialSuccessor, newItem);
+}

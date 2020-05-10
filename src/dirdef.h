@@ -21,7 +21,9 @@
 #include "sortdict.h"
 #include "definition.h"
 
-#include <qlist.h>
+#include <deque>
+#include <qglobal.h>
+#include <qcstring.h>
 
 class FileList;
 class ClassSDict;
@@ -34,11 +36,17 @@ class FTextStream;
 class DirDef;
 
 /** A list of directories. */
-class DirList : public QList<DirDef>
-{
-  public:
-   int compareValues(const DirDef *item1,const DirDef *item2) const;
-};
+typedef std::deque<DirDef*> DirList;
+
+/** Compare referenced objects. */
+bool compareDirDefs(const DirDef *item1,const DirDef *item2);
+
+/**
+ * Sorts the list by the result of the compareDirDefs() function.
+ * @param list in which item to be inserted
+ * @param newItem to be inserted
+ */
+void sortInDirList(DirList &list, DirDef *const newItem);
 
 /** A model of a directory symbol. */
 class DirDef : virtual public Definition
@@ -137,11 +145,6 @@ class DirRelation
     const DirDef  *m_src;
     UsedDir *m_dst;
 };
-
-inline int DirList::compareValues(const DirDef *item1,const DirDef *item2) const
-{
-  return qstricmp(item1->shortName(),item2->shortName());
-}
 
 /** A sorted dictionary of DirDef objects. */
 class DirSDict : public SDict<DirDef>

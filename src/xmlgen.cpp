@@ -1207,9 +1207,7 @@ static void writeInnerDirs(const DirList *dl,FTextStream &t)
 {
   if (dl)
   {
-    QListIterator<DirDef> subdirs(*dl);
-    DirDef *subdir;
-    for (subdirs.toFirst();(subdir=subdirs.current());++subdirs)
+    for(const auto subdir : *dl)
     {
       t << "    <innerdir refid=\"" << subdir->getOutputFileBase()
         << "\">" << convertToXML(subdir->displayName()) << "</innerdir>" << endl;
