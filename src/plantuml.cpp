@@ -27,15 +27,21 @@
 #include <qlist.h>
 
 
-QCString PlantumlManager::writePlantUMLSource(const QCString &outDir,const QCString &fileName,const QCString &content,OutputFormat format)
+QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,const QCString &content,OutputFormat format)
 {
   QCString baseName;
   QCString puName;
   QCString imgName;
+  QCString outDir(outDirArg);
   static int umlindex=1;
 
   Debug::print(Debug::Plantuml,0,"*** %s fileName: %s\n","writePlantUMLSource",qPrint(fileName));
   Debug::print(Debug::Plantuml,0,"*** %s outDir: %s\n","writePlantUMLSource",qPrint(outDir));
+
+  while ((outDir.findRev('/') == outDir.length()-1) || (outDir.findRev('\\') == outDir.length()-1))
+  {
+    outDir = outDir.left(outDir.length()-1);
+  }
 
   if (fileName.isEmpty()) // generate name
   {
