@@ -63,11 +63,14 @@ void RefList::generatePage()
             { return qstricmp(left->title(),left->title()); });
   //RefItem *item;
   QCString doc;
+  int cnt = 0;
   doc += "<dl class=\"reflist\">";
   QCString lastGroup;
   bool first=true;
   for (const std::unique_ptr<RefItem> &item : m_entries)
   {
+    if (!item->name()) continue;
+    cnt++;
     bool startNewGroup = item->group()!=lastGroup;
     if (startNewGroup)
     {
@@ -119,6 +122,8 @@ void RefList::generatePage()
   }
   doc += "</dl>\n";
   //printf("generatePage('%s')\n",doc.data());
-  addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,RefItemVector(),0,0,TRUE);
+  if (cnt>0) 
+  {
+    addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,RefItemVector(),0,0,TRUE);
+  }
 }
-
