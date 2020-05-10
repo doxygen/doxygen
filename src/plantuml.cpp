@@ -38,9 +38,11 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   Debug::print(Debug::Plantuml,0,"*** %s fileName: %s\n","writePlantUMLSource",qPrint(fileName));
   Debug::print(Debug::Plantuml,0,"*** %s outDir: %s\n","writePlantUMLSource",qPrint(outDir));
 
-  while ((outDir.findRev('/') == outDir.length()-1) || (outDir.findRev('\\') == outDir.length()-1))
+  // strip any trailing slashes and backslashes
+  uint l;
+  while ((l=outDir.length())>0 && (outDir.at(l-1)=='/' || outDir.at(l-1)=='\\'))
   {
-    outDir = outDir.left(outDir.length()-1);
+    outDir = outDir.left(l-1);
   }
 
   if (fileName.isEmpty()) // generate name
@@ -184,16 +186,16 @@ PlantumlManager::~PlantumlManager()
 }
 
 static void runPlantumlContent(const QDict< QList <QCString> > &plantumlFiles,
-                               const QDict< PlantumlContent > &plantumlContent, 
+                               const QDict< PlantumlContent > &plantumlContent,
                                PlantumlManager::OutputFormat format)
 {
-  /* example : running: java -Djava.awt.headless=true 
-               -jar "/usr/local/bin/plantuml.jar" 
-               -o "test_doxygen/DOXYGEN_OUTPUT/html" 
-               -tpng 
-               "test_doxygen/DOXYGEN_OUTPUT/html/A.pu" 
-               -charset UTF-8  
-               outDir:test_doxygen/DOXYGEN_OUTPUT/html 
+  /* example : running: java -Djava.awt.headless=true
+               -jar "/usr/local/bin/plantuml.jar"
+               -o "test_doxygen/DOXYGEN_OUTPUT/html"
+               -tpng
+               "test_doxygen/DOXYGEN_OUTPUT/html/A.pu"
+               -charset UTF-8
+               outDir:test_doxygen/DOXYGEN_OUTPUT/html
                test_doxygen/DOXYGEN_OUTPUT/html/A
    */
   int exitCode;
@@ -212,13 +214,13 @@ static void runPlantumlContent(const QDict< QList <QCString> > &plantumlFiles,
   {
     pumlArgs += "-Dplantuml.include.path=\"";
     pumlArgs += s;
-    s = pumlIncludePathList.next(); 
+    s = pumlIncludePathList.next();
   }
   while (s)
   {
     pumlArgs += Portable::pathListSeparator();
     pumlArgs += s;
-    s = pumlIncludePathList.next(); 
+    s = pumlIncludePathList.next();
   }
   if (pumlIncludePathList.first()) pumlArgs += "\" ";
   pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"plantuml.jar\" ";
@@ -386,7 +388,7 @@ static void addPlantumlFiles(QDict< QList<QCString> > &plantumlFiles,
   list->append(new QCString(value));
 }
 
-static void addPlantumlContent(QDict< PlantumlContent > &plantumlContent, 
+static void addPlantumlContent(QDict< PlantumlContent > &plantumlContent,
                                const QCString &key, const QCString &outDir, const QCString &puContent)
 {
   PlantumlContent* content = plantumlContent.find(key);
