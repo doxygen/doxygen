@@ -1336,20 +1336,15 @@ static void writeInnerFiles(const FileList *fl, struct Refid outer_refid)
   }
 }
 
-static void writeInnerDirs(const DirList *dl, struct Refid outer_refid)
+static void writeInnerDirs(const DirList &dl, struct Refid outer_refid)
 {
-  if (dl)
+  for (const auto subdir : dl)
   {
-    QListIterator<DirDef> subdirs(*dl);
-    const DirDef *subdir;
-    for (subdirs.toFirst();(subdir=subdirs.current());++subdirs)
-    {
-      struct Refid inner_refid = insertRefid(subdir->getOutputFileBase());
+    struct Refid inner_refid = insertRefid(subdir->getOutputFileBase());
 
-      bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
-      bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
-      step(contains_insert);
-    }
+    bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
+    bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
+    step(contains_insert);
   }
 }
 
@@ -2423,7 +2418,7 @@ static void generateSqlite3ForDir(const DirDef *dd)
   step(compounddef_insert);
 
   // + files
-  writeInnerDirs(&dd->subDirs(),refid);
+  writeInnerDirs(dd->subDirs(),refid);
 
   // + files
   writeInnerFiles(dd->getFiles(),refid);
@@ -2516,12 +2511,14 @@ static sqlite3* openDbConnection()
   if (rc != SQLITE_OK)
   {
     err("sqlite3_initialize failed\n");
+    return NULL;
   }
 
 
   if (stat (outputDirectory+"/doxygen_sqlite3.db", &buf) == 0)
   {
-    err("doxygen_sqlite3.db already exists! Rename, remove, or archive it to regenerate. Aborting!\n");
+    err("doxygen_sqlite3.db already exists! Rename, remove, or archive it to regenerate\n");
+    return NULL;
   }
 
   rc = sqlite3_open_v2(

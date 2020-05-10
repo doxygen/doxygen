@@ -587,9 +587,7 @@ static bool dirHasVisibleChildren(DirDef *dd)
     }
   }
 
-  QListIterator<DirDef> dli(dd->subDirs());
-  DirDef *subdd;
-  for (dli.toFirst();(subdd=dli.current());++dli)
+  for(const auto subdd : dd->subDirs())
   {
     if (dirHasVisibleChildren(subdd))
     {
@@ -617,7 +615,7 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
   }
 
   static bool tocExpand = TRUE; //Config_getBool(TOC_EXPAND);
-  bool isDir = dd->subDirs().count()>0 || // there are subdirs
+  bool isDir = dd->subDirs().size()>0 || // there are subdirs
                (tocExpand &&              // or toc expand and
                 dd->getFiles() && dd->getFiles()->count()>0 // there are files
                );
@@ -646,12 +644,10 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
   }
 
   // write sub directories
-  if (dd->subDirs().count()>0)
+  if (dd->subDirs().size()>0)
   {
     startIndexHierarchy(ol,level+1);
-    QListIterator<DirDef> dli(dd->subDirs());
-    DirDef *subdd = 0;
-    for (dli.toFirst();(subdd=dli.current());++dli)
+    for(const auto subdd : dd->subDirs())
     {
       writeDirTreeNode(ol,subdd,level+1,ftv,addToIndex);
     }
@@ -3992,7 +3988,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       numSubItems += gd->getNamespaces()->count();
       numSubItems += gd->getClasses()->count();
       numSubItems += gd->getFiles()->count();
-      numSubItems += gd->getDirs()->count();
+      numSubItems += gd->getDirs().size();
       numSubItems += gd->getPages()->count();
     }
 
@@ -4125,9 +4121,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       }
       else if (lde->kind()==LayoutDocEntry::GroupDirs && addToIndex)
       {
-        QListIterator<DirDef> it(*gd->getDirs());
-        DirDef *dd;
-        for (;(dd=it.current());++it)
+        for (const auto dd : gd->getDirs())
         {
           if (dd->isVisible())
           {

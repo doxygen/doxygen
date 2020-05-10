@@ -3525,10 +3525,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       if (!cache.dirs)
       {
         cache.dirs.reset(TemplateList::alloc());
-        const DirList &subDirs = m_dirDef->subDirs();
-        QListIterator<DirDef> it(subDirs);
-        const DirDef *dd;
-        for (it.toFirst();(dd=it.current());++it)
+        for(const auto dd : m_dirDef->subDirs())
         {
           DirContext *dc = new DirContext(dd);
           cache.dirs->append(dc);
@@ -5460,14 +5457,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.dirs)
       {
         TemplateList *dirList = TemplateList::alloc();
-        if (m_groupDef->getDirs())
+        for(const auto dd : m_groupDef->getDirs())
         {
-          QListIterator<DirDef> it(*m_groupDef->getDirs());
-          const DirDef *dd;
-          for (it.toFirst();(dd=it.current());++it)
-          {
-            dirList->append(DirContext::alloc(dd));
-          }
+          dirList->append(DirContext::alloc(dd));
         }
         cache.dirs.reset(dirList);
       }
@@ -6596,9 +6588,7 @@ class NestingContext::Private : public GenericNodeListContext
     }
     void addDirs(const DirList &dirList)
     {
-      QListIterator<DirDef> li(dirList);
-      const DirDef *dd;
-      for (li.toFirst();(dd=li.current());++li)
+      for(const auto dd : dirList)
       {
         append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE));
         m_index++;

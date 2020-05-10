@@ -55,11 +55,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
       << dd->shortName() << "\"];\n";
 
     // add nodes for sub directories
-    QListIterator<DirDef> sdi(dd->subDirs());
-    const DirDef *sdir;
-    for (sdi.toFirst();(sdir=sdi.current());++sdi)
+    for(const auto sdir : dd->subDirs())
     {
-      t << "    " << sdir->getOutputFileBase() << " [shape=box label=\"" 
+      t << "    " << sdir->getOutputFileBase() << " [shape=box label=\""
         << sdir->shortName() << "\"";
       if (sdir->isCluster())
       {
@@ -70,7 +68,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
         t << " color=\"black\"";
       }
       t << " fillcolor=\"white\" style=\"filled\"";
-      t << " URL=\"" << sdir->getOutputFileBase() 
+      t << " URL=\"" << sdir->getOutputFileBase()
         << Doxygen::htmlFileExtension << "\"";
       t << "];\n";
       dirsInGraph.insert(sdir->getOutputFileBase(),sdir);

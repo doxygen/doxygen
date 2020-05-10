@@ -122,7 +122,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
       {
         tmp_url+="#"+def->anchor();
       }
-      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tclass );          
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tclass );
     }
   }
 
@@ -134,7 +134,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
     for (;(def=defli.current());++defli)
     {
       tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
-      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tnamespace );          
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tnamespace );
     }
   }
 
@@ -146,7 +146,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
     for (;(def=defli.current());++defli)
     {
       tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
-      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tfile );          
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tfile );
     }
   }
 
@@ -158,19 +158,17 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
     for (;(def=defli.current());++defli)
     {
       tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
-      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tpages );          
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tpages );
     }
   }
 
   // Add directories
-  if ( gd->getDirs() && gd->getDirs()->count() )
+  if ( !gd->getDirs().empty() )
   {
-    QListIterator<DirDef> defli(*gd->getDirs());
-    const DirDef *def;
-    for (;(def=defli.current());++defli)
+    for(const auto def : gd->getDirs())
     {
       tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
-      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tdir );          
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tdir );
     }
   }
 }
@@ -188,7 +186,7 @@ void DotGroupCollaboration::addMemberList( MemberList* ml )
   }
 }
 
-DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge( 
+DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge(
   DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,
   const QCString& _label, const QCString& _url )
 {
@@ -197,9 +195,9 @@ DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge(
   Edge* newEdge = 0;
   for ( lli.toFirst(); (newEdge=lli.current()); ++lli)
   {
-    if ( newEdge->pNStart==_pNStart && 
+    if ( newEdge->pNStart==_pNStart &&
       newEdge->pNEnd==_pNEnd &&
-      newEdge->eType==_eType 
+      newEdge->eType==_eType
       )
     { // edge already found
       break;
@@ -209,7 +207,7 @@ DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge(
   {
     newEdge = new Edge(_pNStart,_pNEnd,_eType);
     m_edges.append( newEdge );
-  } 
+  }
 
   if (!_label.isEmpty())
   {
@@ -219,7 +217,7 @@ DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge(
   return newEdge;
 }
 
-void DotGroupCollaboration::addCollaborationMember( 
+void DotGroupCollaboration::addCollaborationMember(
   const Definition* def, QCString& url, EdgeType eType )
 {
   // Create group nodes
@@ -304,8 +302,8 @@ void DotGroupCollaboration::Edge::write( FTextStream &t ) const
     "darkorchid3"
     ,"orange"
     ,"blueviolet"
-    ,"darkgreen"   
-    ,"firebrick4"  
+    ,"darkgreen"
+    ,"firebrick4"
     ,"grey75"
     ,"midnightblue"
   };
@@ -341,7 +339,7 @@ void DotGroupCollaboration::Edge::write( FTextStream &t ) const
     const int maxLabels = 10;
     for( lli.toFirst(); (link=lli.current()) && count<maxLabels; ++lli,++count)
     {
-      if (first) first=FALSE; else t << "\\n"; 
+      if (first) first=FALSE; else t << "\\n";
       t << DotNode::convertLabel(link->label);
     }
     if (count==maxLabels) t << "\\n...";
