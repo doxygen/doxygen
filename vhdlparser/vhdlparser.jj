@@ -1944,37 +1944,35 @@ QCString process_declarative_part() :{QCString s,s1;}
  ( s1=process_declarative_item(){s+=s1;} )* { return s;}
 }
 
-void process_statement() : {QCString s,s1,s2;Token *tok=0;}
+void process_statement() : {QCString s,s1,s2;Token *tok=0;Token *tok1=0;}
 {
 [ s=identifier() <COLON_T> ]
-[ <POSTPONED_T> ]
+[ <POSTPONED_T> ] tok1=<PROCESS_T>
  {
-               m_sharedState->currP=VhdlDocGen::PROCESS;
-               m_sharedState->current->startLine=outlineParser()->getLine();
-               m_sharedState->current->bodyLine=outlineParser()->getLine();
-  }
- <PROCESS_T>
- //try{
- [ <LPAREN_T> (tok=<ALL_T> | s1=sensitivity_list()) <RPAREN_T> ] [ <IS_T> ]
+	m_sharedState->currP=VhdlDocGen::PROCESS;
+    m_sharedState->current->startLine=tok1->beginLine;
+    m_sharedState->current->bodyLine=tok1->beginLine;
+ }
+
+ [ <LPAREN_T>  (s1=sensitivity_list() ) <RPAREN_T>] [ <IS_T> ]
         s2=process_declarative_part()
              {
               if (s2.data())
-                  FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s2.data(),0);
+                FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s2.data(),0);
                 FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",0);
-               }
+              }
         <BEGIN_T>
         process_statement_part()
         <END_T> [ <POSTPONED_T> ]
-         // }catch(...){outlineParser()->error_skipto(PROCESS_T);}
-        <PROCESS_T> [ identifier() ] <SEMI_T>
+         <PROCESS_T> [ identifier() ] <SEMI_T>
         {
           if(s.isEmpty())
             m_sharedState->currName=VhdlDocGen::getProcessNumber();
           else
             m_sharedState->currName=s;
-
           m_sharedState->current->name=m_sharedState->currName;
           m_sharedState->tempEntry=m_sharedState->current;
+		  m_sharedState->tempEntry->type="";
           m_sharedState->current->endBodyLine=outlineParser()->getLine();
           m_sharedState->currP=0;
           if(tok)
@@ -2115,8 +2113,10 @@ QCString sensitivity_clause() :  {QCString s;}
   }
 }
 
-QCString sensitivity_list() :  {QCString s,s1;}
+QCString sensitivity_list() :  {QCString s,s1;Token* tok=0;}
 {
+  tok=<ALL_T> { if(tok) return "all" ;}
+  | 
  s=name() (<COMMA_T> s1=name(){s+=",";s+=s1;} )* { return s;}
 }
 
