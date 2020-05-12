@@ -93,7 +93,6 @@ function(set_project_warnings project_name)
       -Wno-unused-parameter
       -Wno-sign-conversion
       -Wno-format-nonliteral
-      -Wno-implicit-fallthrough
 
       # enable to turn warnings into errors
       #-Werror
@@ -104,7 +103,15 @@ function(set_project_warnings project_name)
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(PROJECT_WARNINGS ${CLANG_WARNINGS})
   else()
-    set(PROJECT_WARNINGS ${GCC_WARNINGS})
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "7.0.0")
+      set(GCC_EXTRA_WARNINGS
+        -Wno-implicit-fallthrough
+      )
+    else()
+      set(GCC_EXTRA_WARNINGS
+      )
+    endif()
+    set(PROJECT_WARNINGS ${GCC_WARNINGS} ${GCC_EXTRA_WARNINGS})
   endif()
 
   target_compile_options(${project_name} PRIVATE ${PROJECT_WARNINGS})
