@@ -27,7 +27,7 @@ Doxygen can help you in three ways:
 Download
 ---------
 The latest binaries and source of Doxygen can be downloaded from:
-* http://www.doxygen.org/
+* https://www.doxygen.nl/
 
 Developers
 ---------
@@ -38,7 +38,7 @@ Developers
 
 * Doxygen's Doxygen Documentation: <a href="https://codedocs.xyz/doxygen/doxygen/"><img src="https://codedocs.xyz/doxygen/doxygen.svg"/></a>
 
-* Install: Please read the installation section of the manual (http://www.doxygen.org/manual/install.html)
+* Install: Please read the installation section of the manual (https://www.doxygen.nl/manual/install.html)
 
 * Project stats: https://www.openhub.net/p/doxygen
 
