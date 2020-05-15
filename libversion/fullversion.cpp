@@ -8,12 +8,12 @@ const char *getFullVersion(void)
   static bool init = false;
   if (!init)
   {
-    strlcpy(fullVersionString,getDoxygenVersion(),BUF_SIZE);
+    strncpy(fullVersionString,getDoxygenVersion(),BUF_SIZE-1);
     if (strlen(getGitVersion())>0)
     {
-      strlcat(fullVersionString," (",BUF_SIZE);
-      strlcat(fullVersionString,getGitVersion(),BUF_SIZE);
-      strlcat(fullVersionString,")",BUF_SIZE);
+      strncat(fullVersionString," (",BUF_SIZE-1);
+      strncat(fullVersionString,getGitVersion(),BUF_SIZE-1);
+      strncat(fullVersionString,")",BUF_SIZE-1);
     }
     fullVersionString[BUF_SIZE-1]='\0';
     init = true;

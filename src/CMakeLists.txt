@@ -315,8 +315,8 @@ if (use_libclang)
 endif()
 
 target_link_libraries(doxygen
-    doxycfg
     doxymain
+    doxycfg
     qtools
     md5
     lodepng
