@@ -1705,6 +1705,15 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     }
   }
 
+  /* DGA: fix #7495  Perlmod does not generate bitfield */
+  if (md->memberType() == MemberType_Variable && md->bitfieldString())
+  {
+	QCString bitfield = md->bitfieldString();
+	if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);
+	m_output.addFieldQuotedString("bitfield", bitfield);
+  }
+  /* DGA: end of fix #7495 */
+
   const MemberDef *rmd = md->reimplements();
   if (rmd)
     m_output.openHash("reimplements")
