@@ -19,6 +19,7 @@ include_directories(
 add_library(doxygen_version STATIC
     ${POST_CONFIGURE_DOXYGEN_VERSION_FILE}
     ${POST_CONFIGURE_GIT_VERSION_FILE}
+    fullversion.cpp
 )
 
 add_dependencies( doxygen_version check_git_repository )

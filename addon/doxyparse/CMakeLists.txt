@@ -18,7 +18,7 @@ if (use_libclang)
 endif()
 
 target_link_libraries(doxyparse
-_doxygen
+doxymain
 qtools
 md5
 lodepng

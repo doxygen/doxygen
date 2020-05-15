@@ -142,7 +142,6 @@ PageDef         *Doxygen::mainPage = 0;
 bool             Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
 NamespaceDef    *Doxygen::globalScope = 0;
 bool             Doxygen::parseSourcesNeeded = FALSE;
-QTime            Doxygen::runningTime;
 SearchIndexIntf *Doxygen::searchIndex=0;
 QDict<DefinitionIntf> *Doxygen::symbolMap = 0;
 QDict<Definition> *Doxygen::clangUsrMap = 0;
@@ -9662,7 +9661,7 @@ void initDoxygen()
 
   Portable::correct_path();
 
-  Doxygen::runningTime.start();
+  Debug::startTimer();
   Doxygen::preprocessor = new Preprocessor();
 
   Doxygen::parserManager = new ParserManager(            std::make_unique<NullOutlineParser>(),
@@ -11524,7 +11523,7 @@ void generateOutput()
   if (Debug::isFlagSet(Debug::Time))
   {
     msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
-         ((double)Doxygen::runningTime.elapsed())/1000.0,
+         ((double)Debug::elapsedTime())/1000.0,
          Portable::getSysElapsedTime()
         );
     g_s.print();

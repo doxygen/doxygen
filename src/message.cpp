@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -14,13 +14,9 @@
  */
 
 #include <stdio.h>
-#include <qdatetime.h>
 #include "config.h"
-#include "util.h"
 #include "debug.h"
-#include "doxygen.h"
 #include "portable.h"
-#include "filedef.h"
 #include "message.h"
 
 static QCString outputFormat;
@@ -110,7 +106,7 @@ void msg(const char *fmt, ...)
   {
     if (Debug::isFlagSet(Debug::Time))
     {
-      printf("%.3f sec: ",((double)Doxygen::runningTime.elapsed())/1000.0);
+      printf("%.3f sec: ",((double)Debug::elapsedTime())/1000.0);
     }
     va_list args;
     va_start(args, fmt);
@@ -125,15 +121,6 @@ static void format_warn(const char *file,int line,const char *text)
   QCString lineSubst; lineSubst.setNum(line);
   QCString textSubst = text;
   QCString versionSubst;
-  if (file) // get version from file name
-  {
-    bool ambig;
-    FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,file,ambig);
-    if (fd)
-    {
-      versionSubst = fd->getVersion();
-    }
-  }
   // substitute markers by actual values
   bool warnAsError = Config_getBool(WARN_AS_ERROR);
   QCString msgText =

@@ -195,9 +195,6 @@ void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=FALSE)
 
 QCString substituteClassNames(const QCString &s);
 
-QCString substitute(const QCString &s,const QCString &src,const QCString &dst);
-QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq);
-QCString substitute(const QCString &s,char srcChar,char dstChar);
 
 QCString clearBlock(const char *s,const char *begin,const char *end);
 
@@ -502,5 +499,4 @@ int usedTableLevels();
 void incUsedTableLevels();
 void decUsedTableLevels();
 
-QCString getFullVersion();
 #endif

@@ -812,4 +812,9 @@ inline std::string toStdString(const QCString &s)
   if (!s.isEmpty()) return std::string(s.data()); else return std::string();
 }
 
+// helper functions
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst);
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq);
+QCString substitute(const QCString &s,char srcChar,char dstChar);
+
 #endif // QCSTRING_H

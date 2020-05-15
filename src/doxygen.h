@@ -118,7 +118,6 @@ class Doxygen
     static NamespaceDef             *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
-    static QTime                     runningTime;
     static SearchIndexIntf          *searchIndex;
     static QDict<DefinitionIntf>    *symbolMap;
     static QDict<Definition>        *clangUsrMap;

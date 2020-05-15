@@ -840,3 +840,113 @@ inline QCString operator+( const QGString &s1, const QCString &s2 )
     return tmp;
 }
 
+/// substitute all occurrences of \a src in \a s by \a dst
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
+{
+  if (s.isEmpty() || src.isEmpty()) return s;
+  const char *p, *q;
+  int srcLen = src.length();
+  int dstLen = dst.length();
+  int resLen;
+  if (srcLen!=dstLen)
+  {
+    int count;
+    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
+    resLen = s.length()+count*(dstLen-srcLen);
+  }
+  else // result has same size as s
+  {
+    resLen = s.length();
+  }
+  QCString result(resLen+1);
+  char *r;
+  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  {
+    int l = (int)(q-p);
+    memcpy(r,p,l);
+    r+=l;
+
+    if (dst) memcpy(r,dst,dstLen);
+    r+=dstLen;
+  }
+  qstrcpy(r,p);
+  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
+  return result;
+}
+
+
+/// substitute all occurrences of \a src in \a s by \a dst, but skip
+/// each consecutive sequence of \a src where the number consecutive
+/// \a src matches \a skip_seq; if \a skip_seq is negative, skip any
+/// number of consecutive \a src
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq)
+{
+  if (s.isEmpty() || src.isEmpty()) return s;
+  const char *p, *q;
+  int srcLen = src.length();
+  int dstLen = dst.length();
+  int resLen;
+  if (srcLen!=dstLen)
+  {
+    int count;
+    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
+    resLen = s.length()+count*(dstLen-srcLen);
+  }
+  else // result has same size as s
+  {
+    resLen = s.length();
+  }
+  QCString result(resLen+1);
+  char *r;
+  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  {
+    // search a consecutive sequence of src
+    int seq = 0, skip = 0;
+    if (skip_seq)
+    {
+      for (const char *n=q+srcLen; qstrncmp(n,src,srcLen)==0; seq=1+skip, n+=srcLen)
+        ++skip; // number of consecutive src after the current one
+
+      // verify the allowed number of consecutive src to skip
+      if (skip_seq > 0 && skip_seq != seq)
+        seq = skip = 0;
+    }
+
+    // skip a consecutive sequence of src when necessary
+    int l = (int)((q + seq * srcLen)-p);
+    memcpy(r,p,l);
+    r+=l;
+
+    if (skip)
+    {
+      // skip only the consecutive src found after the current one
+      q += skip * srcLen;
+      // the next loop will skip the current src, aka (p=q+srcLen)
+      continue;
+    }
+
+    if (dst) memcpy(r,dst,dstLen);
+    r+=dstLen;
+  }
+  qstrcpy(r,p);
+  result.resize((int)strlen(result.data())+1);
+  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
+  return result;
+}
+
+/// substitute all occurrences of \a srcChar in \a s by \a dstChar
+QCString substitute(const QCString &s,char srcChar,char dstChar)
+{
+  int l=s.length();
+  QCString result(l+1);
+  char *q=result.rawData();
+  if (l>0)
+  {
+    const char *p=s.data();
+    char c;
+    while ((c=*p++)) *q++ = (c==srcChar) ? dstChar : c;
+  }
+  *q='\0';
+  return result;
+}
+

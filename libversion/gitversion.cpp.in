@@ -6,11 +6,18 @@
  * - No git information is present (no .git directory)
  * in those cases clear the gitVersionString (would have string GIT-NOTFOUND).
  */
-char *getGitVersion(void)
+const char *getGitVersion(void)
 {
-  static char gitVersionString[100];
-  strcpy(gitVersionString,"@GIT_HEAD_SHA1@");
-  strcat(gitVersionString,!strcmp("@GIT_IS_DIRTY@","true")?"*":"");
-  if (!strcmp("@GIT_HEAD_SHA1@", "GIT-NOTFOUND")) gitVersionString[0] = '\0';
+#define BUF_SIZE 100
+  static char gitVersionString[BUF_SIZE];
+  static bool init = false;
+  if (!init)
+  {
+    strncpy(gitVersionString,"@GIT_HEAD_SHA1@",BUF_SIZE);
+    strncat(gitVersionString,!strcmp("@GIT_IS_DIRTY@","true")?"*":"",BUF_SIZE);
+    if (!strcmp("@GIT_HEAD_SHA1@", "GIT-NOTFOUND")) gitVersionString[0] = '\0';
+    gitVersionString[BUF_SIZE-1]='\0';
+    init = true;
+  }
   return gitVersionString;
 }
