@@ -4,19 +4,16 @@ mark_as_advanced(JAVACC_EXECUTABLE)
 if(JAVACC_EXECUTABLE)
   set(JAVACC_FOUND 1)
   message(STATUS "The javacc executable: ${JAVACC_EXECUTABLE}")
-  if(JAVACC_EXECUTABLE)
-    execute_process(
+  execute_process(
       COMMAND "${JAVACC_EXECUTABLE}" --version
       OUTPUT_VARIABLE JAVACC_TEMP_VERSION
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      RESULT_VARIABLE _JavaCC_version_result
-    )
-    if(_JavaCC_version_result)
-      message(WARNING "Unable to determine JavaCC version: ${_JavaCC_version_result}")
-      set(JAVACC_FOUND 0)
-    else()
-      string(REGEX REPLACE ".* ([0-9]+\.[0-9]+[\.0-9]*) .*" "\\1" JAVACC_VERSION ${JAVACC_TEMP_VERSION})
-    endif()
+  )
+  string(REGEX MATCH ".* ([0-9]+\.[0-9]+[\.0-9]*) .*" JAVACC_TEMP_VERSION2_UNUSED "${JAVACC_TEMP_VERSION}")
+  if(CMAKE_MATCH_1)
+    set(JAVACC_VERSION ${CMAKE_MATCH_1})
+  else()
+    message(STATUS "Unable to determine JavaCC version, using existing files")
+    set(JAVACC_FOUND 0)
   endif()
 else()
   set(JAVACC_FOUND 0)

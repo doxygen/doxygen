@@ -2,7 +2,7 @@ find_package(Javacc)
 if (JAVACC_FOUND)
     if (JAVACC_VERSION VERSION_LESS 7.0.5)
         message(STATUS "  Doxygen requires at least JavaCC version 7.0.5 (installed: ${JAVACC_VERSION})")
-	message(STATUS "  Fall back to JavaCC not installed.")
+	message(STATUS "  Fall back to JavaCC not installed, using existing files.")
     else()
 
     add_custom_command(
