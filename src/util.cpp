@@ -4524,11 +4524,9 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
     if (fn->size()==1)
     {
       const std::unique_ptr<FileDef> &fd = fn->front();
-#if defined(_WIN32) || defined(__MACOSX__) || defined(__CYGWIN__) // Windows or MacOSX
-      bool isSamePath = fd->getPath().right(path.length()).lower()==path.lower();
-#else // Unix
-      bool isSamePath = fd->getPath().right(path.length())==path;
-#endif
+      bool isSamePath = Portable::fileSystemIsCaseSensitive() ?
+                 fd->getPath().right(path.length())==path :
+                 fd->getPath().right(path.length()).lower()==path.lower();
       if (path.isEmpty() || isSamePath)
       {
         cachedResult->fileDef = fd.get();
@@ -7331,22 +7329,14 @@ void stackTrace()
     p += sprintf(p,"%p ", backtraceFrames[x]);
   }
   fprintf(stderr,"========== STACKTRACE START ==============\n");
-  #if defined(_WIN32) && !defined(__CYGWIN__)
-  if (FILE *fp = _popen(cmd, "r"))
-  #else
-  if (FILE *fp = ::popen(cmd, "r"))
-  #endif
+  if (FILE *fp = Portable::popen(cmd, "r"))
   {
     char resBuf[512];
     while (size_t len = fread(resBuf, 1, sizeof(resBuf), fp))
     {
       fwrite(resBuf, 1, len, stderr);
     }
-    #if defined(_WIN32) && !defined(__CYGWIN__)
-    _pclose(fp);
-    #else
-    ::pclose(fp);
-    #endif
+    Portable::pclose(fp);
   }
   fprintf(stderr,"============ STACKTRACE END ==============\n");
   //fprintf(stderr,"%s\n", frameStrings[x]);
@@ -7510,10 +7500,11 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
   static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
   bool found = FALSE;
 
-  // For Windows/Mac, always do the case insensitive match
-#if defined(_WIN32) || defined(__MACOSX__) || defined(__CYGWIN__)
-  caseSenseNames = FALSE;
-#endif
+  // For platforms where the file system is non case sensitive overrule the setting
+  if (!Portable::fileSystemIsCaseSensitive())
+  {
+    caseSenseNames = FALSE;
+  }
 
   if (patList)
   {

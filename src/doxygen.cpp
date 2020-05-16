@@ -13,10 +13,6 @@
  *
  */
 
-#if !defined(_WIN32) || defined(__CYGWIN__)
-#define _DEFAULT_SOURCE 1
-#endif
-
 #include <locale.h>
 
 #include <qfileinfo.h>
