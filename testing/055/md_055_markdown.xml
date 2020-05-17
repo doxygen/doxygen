@@ -28,7 +28,7 @@
         <sect2 id="md_055_markdown_1autotoc_md3">
           <title>Markdown in HTML</title>
           <para>
-            <heading level="3">**Header3** blah <emphasis>blah</emphasis> <computeroutput>blah</computeroutput></heading>
+            <heading level="3"><bold>Header3</bold> blah <emphasis>blah</emphasis> <computeroutput>blah</computeroutput></heading>
           </para>
         </sect2>
       </sect1>
