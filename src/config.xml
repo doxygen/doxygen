@@ -2054,6 +2054,16 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='bool' id='HTML_INDEX_ANCHORS' defval='1' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ By default, index entries created via the \ref cmdaddindex "\\addindex"
+ command will link to anchors at the exact location where they were used. If the
+ \c HTML_INDEX_ANCHORS tag is set to \c NO, index entries will instead link to
+ the top of the respective (sub-)section.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='GENERATE_DOCSET' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[

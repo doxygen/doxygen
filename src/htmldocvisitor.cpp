@@ -918,12 +918,28 @@ void HtmlDocVisitor::visit(DocFormula *f)
 
 void HtmlDocVisitor::visit(DocIndexEntry *e)
 {
-  QCString anchor = convertIndexWordToAnchor(e->entry());
-  if (e->member()) 
+  QCString anchor;
+  if (Config_getBool(HTML_INDEX_ANCHORS))
   {
-    anchor.prepend(e->member()->anchor()+"_");
+    anchor = convertIndexWordToAnchor(e->entry());
+    if (e->member()) 
+    {
+      anchor.prepend(e->member()->anchor()+"_");
+    }
+    m_t << "<a name=\"" << anchor << "\"></a>";
   }
-  m_t << "<a name=\"" << anchor << "\"></a>";
+  else if (e->scope()->definitionType()==Definition::TypePage)
+  {
+    anchor = m_lastSectionAnchor;
+  }
+  else if (e->member())
+  {
+    anchor = e->member()->anchor();
+  }
+  else
+  {
+    anchor = "";
+  }
   //printf("*** DocIndexEntry: word='%s' scope='%s' member='%s'\n",
   //       e->entry().data(),
   //       e->scope()  ? e->scope()->name().data()  : "<null>",
@@ -1356,6 +1372,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
 
 void HtmlDocVisitor::visitPre(DocRoot *)
 {
+  m_lastSectionAnchor = "";
 }
 
 void HtmlDocVisitor::visitPost(DocRoot *)
@@ -1470,6 +1487,7 @@ void HtmlDocVisitor::visitPre(DocSection *s)
   m_t << "\"></a>" << endl;
   filter(convertCharEntitiesToUTF8(s->title().data()));
   m_t << "</h" << s->level() << ">\n";
+  m_lastSectionAnchor = s->anchor();
 }
 
 void HtmlDocVisitor::visitPost(DocSection *s) 
