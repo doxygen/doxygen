@@ -98,6 +98,10 @@ class BufStr
     { 
       return m_writeOffset; 
     }
+    void backupPos(const uint num)
+    {
+      m_writeOffset -= num;
+    }
     void dropFromStart(uint bytes)
     {
       if (bytes>m_size) bytes=m_size;
