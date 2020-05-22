@@ -2591,7 +2591,7 @@ QCString markdownFileNameToId(const QCString &fileName)
   QCString baseFn  = stripFromPath(QFileInfo(fileName).absFilePath().utf8());
   int i = baseFn.findRev('.');
   if (i!=-1) baseFn = baseFn.left(i);
-  QCString baseName = substitute(substitute(baseFn," ","_"),"/","_");
+  QCString baseName = substitute(substitute(substitute(baseFn," ","_"),"/","_"),":","_");
   return "md_"+baseName;
 }
 
@@ -2658,7 +2658,8 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   QCString titleFn = QFileInfo(fileName).baseName().utf8();
   QCString fn      = QFileInfo(fileName).fileName().utf8();
   static QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
-  if (id.isEmpty()) id = markdownFileNameToId(fileName);
+  bool wasEmpty = id.isEmpty();
+  if (wasEmpty) id = markdownFileNameToId(fileName);
   if (!isExplicitPage(docs))
   {
     if (!mdfileAsMainPage.isEmpty() &&
@@ -2679,6 +2680,7 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
     else
     {
       if (title.isEmpty()) title = titleFn;
+      if (!wasEmpty) docs.prepend("@anchor " +  markdownFileNameToId(fileName) + "\n");
       docs.prepend("@page "+id+" "+title+"\n");
     }
   }
