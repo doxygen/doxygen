@@ -204,7 +204,6 @@ add_library(doxymain STATIC
     context.cpp
     cppvalue.cpp
     defgen.cpp
-    define.cpp
     definition.cpp
     dia.cpp
     diagram.cpp

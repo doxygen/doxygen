@@ -28,6 +28,7 @@
 #include "membergroup.h"
 #include "dirdef.h"
 #include "memberlist.h"
+#include "define.h"
 
 class RefList;
 class PageSList;
@@ -107,7 +108,6 @@ class Doxygen
     static FileNameLinkedMap        *diaFileNameLinkedMap;
     static MemberNameLinkedMap      *memberNameLinkedMap;
     static MemberNameLinkedMap      *functionNameLinkedMap;
-    static QStrList                  tagfileList;
     static StringUnorderedMap        namespaceAliasMap;
     static GroupSDict               *groupSDict;
     static NamespaceSDict           *namespaceSDict;
@@ -139,6 +139,7 @@ class Doxygen
     static bool                      markdownSupport;
     static GenericsSDict            *genericsDict;
     static Preprocessor             *preprocessor;
+    static DefineList                macroDefinitions;
 };
 
 void initDoxygen();

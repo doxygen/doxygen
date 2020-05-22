@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -28,31 +28,21 @@ class FileDef;
 class Define
 {
   public:
-    Define();
-    Define(const Define &d);
-   ~Define();
-    bool hasDocumentation();
     QCString name;
     QCString definition;
     QCString fileName;
-    QCString doc;
-    QCString brief;
     QCString args;
-    QCString anchor;
-    FileDef *fileDef;
-    int lineNr;
-    int columnNr;
-    int nargs;
-    bool undef;
-    bool varArgs;
-    bool isPredefined;
-    bool nonRecursive;
+    FileDef *fileDef = 0;
+    int lineNr = 1;
+    int columnNr = 1;
+    int nargs = -1;
+    bool undef = FALSE;
+    bool varArgs = FALSE;
+    bool isPredefined = FALSE;
+    bool nonRecursive = FALSE;
 };
 
-/** A dictionary of references to Define objects. */
-typedef std::map< std::string,Define* > DefineMapRef;
-
-/** A dictionary of managed Define objects. */
-typedef std::map< std::string,std::unique_ptr<Define> > DefineMapOwning;
+/** List of all macro definitions */
+using DefineList = std::vector< std::unique_ptr<Define> >;
 
 #endif

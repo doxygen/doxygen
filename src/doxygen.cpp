@@ -160,6 +160,7 @@ bool             Doxygen::generatingXmlOutput = FALSE;
 bool             Doxygen::markdownSupport = TRUE;
 GenericsSDict   *Doxygen::genericsDict;
 Preprocessor    *Doxygen::preprocessor = 0;
+DefineList       Doxygen::macroDefinitions;
 
 // locally accessible globals
 static std::unordered_map< std::string, const Entry* > g_classEntries;
@@ -7698,6 +7699,36 @@ static void addSourceReferences()
 
 //----------------------------------------------------------------------------
 
+// add the macro definitions found during preprocessing as file members
+static void buildDefineList()
+{
+  for (const auto &def : Doxygen::macroDefinitions)
+  {
+    std::unique_ptr<MemberDef> md { createMemberDef(
+      def->fileName,def->lineNr,def->columnNr,
+      "#define",def->name,def->args,0,
+      Public,Normal,FALSE,Member,MemberType_Define,
+      ArgumentList(),ArgumentList(),"") };
+
+    if (!def->args.isEmpty())
+    {
+      md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def->args));
+    }
+    md->setInitializer(def->definition);
+    md->setFileDef(def->fileDef);
+    md->setDefinition("#define "+def->name);
+
+    MemberName *mn=Doxygen::functionNameLinkedMap->add(def->name);
+    if (def->fileDef)
+    {
+      def->fileDef->insertMember(md.get());
+    }
+    mn->push_back(std::move(md));
+  }
+}
+
+//----------------------------------------------------------------------------
+
 static void sortMemberLists()
 {
   // sort class member lists
@@ -10875,6 +10906,10 @@ void parseInput()
   /**************************************************************************
    *             Gather information                                         *
    **************************************************************************/
+
+  g_s.begin("Building macro definition list...\n");
+  buildDefineList();
+  g_s.end();
 
   g_s.begin("Building group list...\n");
   buildGroupList(root.get());

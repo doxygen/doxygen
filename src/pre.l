@@ -57,8 +57,6 @@
 #include "condparser.h"
 #include "config.h"
 #include "filedef.h"
-#include "memberdef.h"
-#include "membername.h"
 
 #define YY_NO_UNISTD_H 1
 
@@ -92,6 +90,12 @@ struct FileState
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
 };
+
+/** A dictionary of references to Define objects. */
+typedef std::map< std::string,Define* > DefineMapRef;
+
+/** A dictionary of managed Define objects. */
+typedef std::map< std::string,std::unique_ptr<Define> > DefineMapOwning;
 
 /** @brief Singleton that manages the defines available while 
  *  preprocessing files. 
@@ -415,7 +419,7 @@ static bool      otherCaseDone(yyscan_t yyscanner);
 static bool  computeExpression(yyscan_t yyscanner,const QCString &expr);
 static void   startCondSection(yyscan_t yyscanner,const char *sectId);
 static void     endCondSection(yyscan_t yyscanner);
-static void          addDefine(yyscan_t yyscanner);
+static void addMacroDefinition(yyscan_t yyscanner);
 static std::unique_ptr<Define> newDefine(yyscan_t yyscanner);
 static void        setFileName(yyscan_t yyscanner,const char *name);
 static yy_size_t        yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
@@ -1540,7 +1544,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  //printf("Define name='%s' text='%s' litTexti='%s'\n",yyextra->defName.data(),yyextra->defText.data(),yyextra->defLitText.data());
 					  if (yyextra->includeStack.empty() || yyextra->curlyCount>0) 
 					  {
-					    addDefine(yyscanner);
+					    addMacroDefinition(yyscanner);
 					  }
 					  def=g_defineManager.isDefined(yyextra->defName);
 					  if (def==0) // new define
@@ -2787,60 +2791,46 @@ static std::unique_ptr<Define> newDefine(yyscan_t yyscanner)
   return def;
 }
 
-static void addDefine(yyscan_t yyscanner)
+static void addMacroDefinition(yyscan_t yyscanner)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   if (state->skip) return; // do not add this define as it is inside a 
                       // conditional section (cond command) that is disabled.
 
-  //printf("addDefine '%s' '%s'\n",state->defName.data(),state->defArgsStr.data());
-  //ArgumentList *al = new ArgumentList;
-  //stringToArgumentList(state->defArgsStr,al);
-  std::unique_ptr<MemberDef> md { createMemberDef(
-      state->yyFileName,state->yyLineNr-state->yyMLines,state->yyColNr,
-      "#define",state->defName,state->defArgsStr,0,
-      Public,Normal,FALSE,Member,MemberType_Define,ArgumentList(),ArgumentList(),"") };
-  if (!state->defArgsStr.isEmpty())
-  {
-    //printf("addDefine() state->defName='%s' state->defArgsStr='%s'\n",state->defName.data(),state->defArgsStr.data());
-    md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, state->defArgsStr));
-  }
-  //printf("Setting initializer for '%s' to '%s'\n",state->defName.data(),state->defText.data());
-  int l=state->defLitText.find('\n');
-  if (l>0 && state->defLitText.left(l).stripWhiteSpace()=="\\")
+  auto define = std::make_unique<Define>();
+  define->fileName = state->yyFileName;
+  define->lineNr   = state->yyLineNr - state->yyMLines;
+  define->columnNr = state->yyColNr;
+  define->name     = state->defName;
+  define->args     = state->defArgsStr;
+  define->fileDef  = state->inputFileDef;
+
+  QCString litText = state->defLitText;
+  int l=litText.find('\n');
+  if (l>0 && litText.left(l).stripWhiteSpace()=="\\")
   {
     // strip first line if it only contains a slash
-    state->defLitText = state->defLitText.right(state->defLitText.length()-l-1);
+    litText = litText.right(litText.length()-l-1);
   }
   else if (l>0)
   {
     // align the items on the first line with the items on the second line
     int k=l+1;
-    const char *p=state->defLitText.data()+k;
+    const char *p=litText.data()+k;
     char c;
     while ((c=*p++) && (c==' ' || c=='\t')) k++;
-    state->defLitText=state->defLitText.mid(l+1,k-l-1)+state->defLitText.stripWhiteSpace();
+    litText=litText.mid(l+1,k-l-1)+litText.stripWhiteSpace();
   }
-  QCString defLitTextStripped = state->defLitText.stripWhiteSpace();
-  if (defLitTextStripped.contains('\n')>=1)
+  QCString litTextStripped = state->defLitText.stripWhiteSpace();
+  if (litTextStripped.contains('\n')>=1)
   {
-    md->setInitializer(state->defLitText);
+    define->definition = litText;
   }
   else
   {
-    md->setInitializer(defLitTextStripped);
+    define->definition = litTextStripped;
   }
-
-  //printf("pre.l: md->setFileDef(%p)\n",state->inputFileDef);
-  md->setFileDef(state->inputFileDef);
-  md->setDefinition("#define "+state->defName);
-
-  MemberName *mn=Doxygen::functionNameLinkedMap->add(state->defName);
-  if (state->yyFileDef) 
-  {
-    state->yyFileDef->insertMember(md.get());
-  }
-  mn->push_back(std::move(md));
+  Doxygen::macroDefinitions.push_back(std::move(define));
 }
 
 static inline void outputChar(yyscan_t yyscanner,char c)
