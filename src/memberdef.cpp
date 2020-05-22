@@ -2733,7 +2733,7 @@ void MemberDefImpl::getLabels(QStrList &sl,const Definition *container) const
        isFriend() || isRelated() ||
        (isInline() && inlineInfo) ||
        isSignal() || isSlot() ||
-       isStatic() ||
+       isStatic() || isExternal() ||
        (getClassDef() && getClassDef()!=container && container->definitionType()==TypeClass) ||
        (m_impl->memSpec & ~Entry::Inline)!=0
       )
@@ -2745,7 +2745,7 @@ void MemberDefImpl::getLabels(QStrList &sl,const Definition *container) const
     //ol.docify(" [");
     SrcLangExt lang = getLanguage();
     bool optVhdl = lang==SrcLangExt_VHDL;
-    bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
+    static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     if (optVhdl)
     {
       sl.append(theTranslator->trVhdlType(getMemberSpecifiers(),TRUE));
@@ -2756,7 +2756,8 @@ void MemberDefImpl::getLabels(QStrList &sl,const Definition *container) const
       else if (isRelated()) sl.append("related");
       else
       {
-        if      (Config_getBool(INLINE_INFO) && isInline()) sl.append("inline");
+        if      (isExternal())            sl.append("extern");
+        if      (inlineInfo && isInline()) sl.append("inline");
         if      (isExplicit())            sl.append("explicit");
         if      (isMutable())             sl.append("mutable");
         if      (isStatic())              sl.append("static");
