@@ -128,12 +128,30 @@ foreach(lex_file ${LEX_FILES})
         OUTPUT  ${GENERATED_SRC}/${lex_file}.l.h
     )
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.l.h PROPERTIES GENERATED 1)
+    # for code coverage we need the flex sources in the build src directory
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/src/${lex_file}.l ${CMAKE_BINARY_DIR}/src/${lex_file}.l
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/${lex_file}.l
+        OUTPUT  ${CMAKE_BINARY_DIR}/src/${lex_file}.l
+    )
 
-    FLEX_TARGET(${lex_file}        ${lex_file}.l        ${GENERATED_SRC}/${lex_file}.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
+    FLEX_TARGET(${lex_file}
+                ${lex_file}.l
+                ${GENERATED_SRC}/${lex_file}.cpp
+                COMPILE_FLAGS "${LEX_FLAGS}")
 endforeach()
 
 
-BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "${YACC_FLAGS}")
+BISON_TARGET(constexp
+             constexp.y
+             ${GENERATED_SRC}/ce_parse.cpp
+             COMPILE_FLAGS "${YACC_FLAGS}")
+
+add_custom_command(
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/src/constexp.y ${CMAKE_BINARY_DIR}/src
+    DEPENDS ${CMAKE_SOURCE_DIR}/src/constexp.y
+    OUTPUT  ${CMAKE_BINARY_DIR}/src/constexp.y
+)
 
 add_library(doxycfg STATIC
     ${GENERATED_SRC}/lang_cfg.h
@@ -204,7 +222,6 @@ add_library(doxymain STATIC
     context.cpp
     cppvalue.cpp
     defgen.cpp
-    define.cpp
     definition.cpp
     dia.cpp
     diagram.cpp
@@ -291,8 +308,9 @@ endif()
 ##add_library(doxymain STATIC ${GENERATED_SRC}/${lex_file}.l.h)
 ##endforeach()
 
-add_executable(doxygen main.cpp)
-
+add_executable(doxygen
+    main.cpp
+)
 
 if (use_libclang)
     find_package(LLVM REQUIRED CONFIG)
@@ -328,12 +346,18 @@ target_link_libraries(doxygen
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
     ${CLANG_LIBS}
+    ${COVERAGE_LINKER_FLAGS}
     ${DOXYGEN_EXTRA_LINK_OPTIONS}
 )
 
 set_project_warnings(doxycfg)
 set_project_warnings(doxymain)
 set_project_warnings(doxygen)
+
+set_project_coverage(qtools)
+set_project_coverage(doxycfg)
+set_project_coverage(doxymain)
+set_project_coverage(doxygen)
 
 install(TARGETS doxygen DESTINATION bin)
 
