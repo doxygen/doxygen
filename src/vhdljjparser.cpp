@@ -292,8 +292,7 @@ int VHDLOutlineParser::checkInlineCode(QCString & doc)
        qcs = qcs.simplifyWhiteSpace();
        if (qcs.contains("\\code"))
        {
-	     std::string val1=qcs.data();
-       int i=qcs.find('{');
+	     int i=qcs.find('{');
 	     int j=qcs.find('}');
 	     if(i>0 && j>0 && j>i){
 	       nna = qcs.mid(i+1,(j-i-1));
