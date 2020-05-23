@@ -129,11 +129,11 @@ foreach(lex_file ${LEX_FILES})
     )
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.l.h PROPERTIES GENERATED 1)
 
-    FLEX_TARGET(${lex_file}        ${lex_file}.l        ${GENERATED_SRC}/${lex_file}.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
+    FLEX_TARGET(${lex_file}        ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l        ${GENERATED_SRC}/${lex_file}.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
 endforeach()
 
 
-BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "${YACC_FLAGS}")
+BISON_TARGET(constexp      ${CMAKE_CURRENT_LIST_DIR}/constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "${YACC_FLAGS}")
 
 add_library(doxycfg STATIC
     ${GENERATED_SRC}/lang_cfg.h
