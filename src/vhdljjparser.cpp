@@ -287,10 +287,19 @@ int VHDLOutlineParser::checkInlineCode(QCString & doc)
      VhdlDocGen::prepareComment(p->strComment);
      QCStringList ql = QCStringList::split('\n', p->strComment);
      QCString co ;
+     QCString nna;
      for (QCString qcs : ql) {
        qcs = qcs.simplifyWhiteSpace();
        if (qcs.contains("\\code"))
-         continue;
+       {
+	     std::string val1=qcs.data();
+       int i=qcs.find('{');
+	     int j=qcs.find('}');
+	     if(i>0 && j>0 && j>i){
+	       nna = qcs.mid(i+1,(j-i-1));
+	    }
+	     continue;
+	   }
        qcs.stripPrefix("\\brief");
        co += qcs;
        co += '\n';
@@ -299,6 +308,9 @@ int VHDLOutlineParser::checkInlineCode(QCString & doc)
      VhdlDocGen::prepareComment(co);
      
      Entry gBlock;
+     if(!nna.isEmpty())
+      gBlock.name=nna;
+      else
      gBlock.name = "misc" + VhdlDocGen::getRecordNumber();
      gBlock.startLine = p->yyLineNr-1;
      gBlock.bodyLine = p->yyLineNr-1;
