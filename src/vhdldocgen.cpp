@@ -2383,7 +2383,7 @@ void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString
                        0,                // scope
                        codeFragment,     // input
                        SrcLangExt_VHDL,  // lang
-                       FALSE,            // isExample
+                       TRUE,            // isExample
                        0,               // exampleName
                        const_cast<FileDef*>(mdef->getFileDef()), // fileDef
                        mdef->getStartBodyLine(),      // startLine

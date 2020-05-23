@@ -81,6 +81,7 @@ struct VHDLOutlineParser::Private
   VHDLDocInfo             str_doc;
   VhdlParser::SharedState shared;
   QCString                forL;
+  int code=0;
 
 };
 
@@ -264,11 +265,80 @@ void VHDLOutlineParser::handleFlowComment(const char* doc)
   }
 }
 
+int VHDLOutlineParser::checkInlineCode(QCString & doc)
+{
+ int index=doc.find("\\code");
+ if(doc.contains("\\endcode")>0)
+  return 1;
+
+ if (index < 0) return index;
+  
+     VhdlParser::SharedState* s = &p->shared;
+     p->strComment += doc;
+     //printf("\n starting code..[%d] \n%s \n", p->yyLineNr, p->strComment.data());
+     p->code = p->inputString.find("\\code", p->code + 1);
+     int com = p->inputString.find(p->strComment.data());
+     int ref = p->inputString.find("\\endcode", p->code + 1);
+     int len = p->strComment.size();
+     int ll = com + len;
+     int diff = ref - ll - 3;
+     QCString code = p->inputString.mid(ll, diff);
+     int val=code.contains('\n');
+     VhdlDocGen::prepareComment(p->strComment);
+     QCStringList ql = QCStringList::split('\n', p->strComment);
+     QCString co ;
+     for (QCString qcs : ql) {
+       qcs = qcs.simplifyWhiteSpace();
+       if (qcs.contains("\\code"))
+         continue;
+       qcs.stripPrefix("\\brief");
+       co += qcs;
+       co += '\n';
+     }
+
+     VhdlDocGen::prepareComment(co);
+     
+     Entry gBlock;
+     gBlock.name = "misc" + VhdlDocGen::getRecordNumber();
+     gBlock.startLine = p->yyLineNr-1;
+     gBlock.bodyLine = p->yyLineNr-1;
+     gBlock.doc = code;
+     gBlock.inbodyDocs = code;
+     gBlock.brief = co;
+     gBlock.section = Entry::VARIABLE_SEC;
+     gBlock.spec = VhdlDocGen::MISCELLANEOUS;
+     gBlock.fileName = p->yyFileName;
+     gBlock.endBodyLine = p->yyLineNr +  val - 1;
+     gBlock.lang = SrcLangExt_VHDL;
+     std::shared_ptr<Entry> compound;
+  
+    if (s->lastEntity)
+       compound = s->lastEntity;
+     else if (s->lastCompound)
+       compound = s->lastCompound;
+     else
+       compound = 0;
+
+     if (compound)
+     {
+       compound->copyToSubEntry(&gBlock);
+     }
+     else
+     {
+       gBlock.type = "misc"; // global code like library ieee...
+       s->current_root->copyToSubEntry(&gBlock);
+     }
+     p->strComment.resize(0);
+     return index;
+}
 
 void VHDLOutlineParser::handleCommentBlock(const char* doc1,bool brief)
 {
+  int position=0;
+  bool needsEntry=FALSE;
   VhdlParser::SharedState *s = &p->shared;
   QCString doc = doc1;
+   
   if (doc.isEmpty()) return;
 
   if (checkMultiComment(doc,p->yyLineNr))
@@ -276,14 +346,14 @@ void VHDLOutlineParser::handleCommentBlock(const char* doc1,bool brief)
     p->strComment.resize(0);
     return;
   }
-
-  VhdlDocGen::prepareComment(doc);
-
+  
+  if (checkInlineCode(doc) > 0 ) { return; }
+  
   Protection protection=Public;
+  VhdlDocGen::prepareComment(doc);
 
   if (p->oldEntry==s->current.get())
   {
-    //printf("\n find pending message  < %s > at line: %d \n ",doc.data(),iDocLine);
     p->str_doc.doc=doc;
     p->str_doc.iDocLine=p->iDocLine;
     p->str_doc.brief=brief;
@@ -309,8 +379,8 @@ void VHDLOutlineParser::handleCommentBlock(const char* doc1,bool brief)
     s->current->stat=true;
   }
 
-  int position=0;
-  bool needsEntry=FALSE;
+  //int position=0;
+ 
   QCString processedDoc = processMarkdownForCommentBlock(doc,p->yyFileName,p->iDocLine);
    while (p->commentScanner.parseCommentBlock(
         p->thisParser,
@@ -352,7 +422,9 @@ void VHDLOutlineParser::parsePrototype(const char *text)
 
 void VHDLOutlineParser::addCompInst(const char *n, const char* instName, const char* comp,int iLine)
 {
+  
   VhdlParser::SharedState *s = &p->shared;
+ 
   s->current->spec=VhdlDocGen::INSTANTIATION;
   s->current->section=Entry::VARIABLE_SEC;
   s->current->startLine=iLine;
