@@ -1499,8 +1499,11 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
       while (i<size && data[i]==' ') i++;
       if (i==size || data[i]=='\n')
       {
-        offset=i;
-        return endTildes==startTildes;
+        if (endTildes==startTildes)
+	{
+          offset=i;
+          return TRUE;
+        }
       }
     }
     i++;
