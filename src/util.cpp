@@ -5885,8 +5885,9 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
   {
     //printf("1:result+=%s\n",fullName.mid(p,i-p).data());
     int e=i+1;
+    bool done=FALSE;
     int count=1;
-    while(e < l)
+    while (e<l && !done)
     {
       char c=fullName.at(e++);
       if (c=='<')
@@ -5896,8 +5897,18 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
       else if (c=='>')
       {
         count--;
+        done = count==0;
       }
     }
+
+    //check for > in case less than used in template specialization
+    int rabi = fullName.find(">",e);
+    if (rabi!=-1)
+    {
+      e = rabi + 1;
+      //printf("rabi is %s\n",&fullName.at(e));
+    }
+
     int si= fullName.find("::",e);
 
     if (parentOnly && si==-1) break;
