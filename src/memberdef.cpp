@@ -4008,16 +4008,13 @@ void MemberDefImpl::warnIfUndocumented() const
   const FileDef      *fd = getFileDef();
   const GroupDef     *gd = getGroupDef();
   const Definition *d=0;
-  const char *t=0;
+  QCString t;
   if (cd)
-    t="class", d=cd;
+    t=cd->compoundTypeString(), d=cd;
   else if (nd)
   {
     d=nd;
-    if (d->getLanguage() == SrcLangExt_Fortran)
-      t="module";
-    else
-      t="namespace";
+    t=nd->compoundTypeString();
   }
   else if (gd)
     t="group", d=gd;
@@ -4036,7 +4033,7 @@ void MemberDefImpl::warnIfUndocumented() const
      )
   {
     warn_undoc(getDefFileName(),getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
-         qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),t,qPrint(d->name()));
+         qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),qPrint(t),qPrint(d->name()));
   }
   else if (!isDetailedSectionLinkable())
   {
