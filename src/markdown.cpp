@@ -1500,7 +1500,7 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
       if (i==size || data[i]=='\n')
       {
         if (endTildes==startTildes)
-	{
+        {
           offset=i;
           return TRUE;
         }
