@@ -100,9 +100,9 @@ function(set_project_warnings project_name)
 
   if(MSVC)
     set(PROJECT_WARNINGS ${MSVC_WARNINGS})
-  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang") # e.g. Clang or AppleClang
     set(PROJECT_WARNINGS ${CLANG_WARNINGS})
-  else()
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "7.0.0")
       set(GCC_EXTRA_WARNINGS
         -Wno-implicit-fallthrough

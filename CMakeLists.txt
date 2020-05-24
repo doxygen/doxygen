@@ -26,6 +26,7 @@ option(use_libclang    "Add support for libclang parsing." OFF)
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(english_only    "Only compile in support for the English language" OFF)
 option(force_qt4       "Forces doxywizard to build using Qt4 even if Qt5 is installed" OFF)
+option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
 
 SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
 
@@ -159,6 +160,7 @@ if (win_static)
 endif()
 
 include(cmake/CompilerWarnings.cmake)
+include(cmake/Coverage.cmake)
 
 add_subdirectory(libmd5)
 add_subdirectory(liblodepng)
