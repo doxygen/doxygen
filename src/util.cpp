@@ -5885,9 +5885,8 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
   {
     //printf("1:result+=%s\n",fullName.mid(p,i-p).data());
     int e=i+1;
-    bool done=FALSE;
     int count=1;
-    while (e<l && !done)
+    while(e < l)
     {
       char c=fullName.at(e++);
       if (c=='<')
@@ -5897,7 +5896,6 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
       else if (c=='>')
       {
         count--;
-        done = count==0;
       }
     }
     int si= fullName.find("::",e);
@@ -5910,7 +5908,7 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
     if (getClass(result+fullName.mid(i,e-i))!=0)
     {
       result+=fullName.mid(i,e-i);
-      //printf("  2:result+=%s\n",fullName.mid(i,e-i-1).data());
+      //printf("  2:result+=%s\n",fullName.mid(i,e-i).data());
     }
     else if (pLastScopeStripped)
     {
