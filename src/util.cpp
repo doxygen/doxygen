@@ -5901,12 +5901,12 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
       }
     }
 
-    //check for > in case less than used in template specialization
+    //check for trailing > in case greater than used in template specialization
     int rabi = fullName.find(">",e);
     if (rabi!=-1)
     {
       e = rabi + 1;
-      //printf("rabi is %s\n",&fullName.at(e));
+      //printf("trailing right angle bracket index is %d\n",rabi);
     }
 
     int si= fullName.find("::",e);
