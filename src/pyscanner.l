@@ -1618,6 +1618,10 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   // TODO: Fix me
   yyextra->docBlockInBody=FALSE;
   
+  if (!yyextra->current->doc.isEmpty())
+  {
+    yyextra->current->doc=yyextra->current->doc.stripWhiteSpace()+"\n\n";
+  }
   if (yyextra->docBlockInBody && yyextra->previous && !yyextra->previous->doc.isEmpty())
   {
     yyextra->previous->doc=yyextra->previous->doc.stripWhiteSpace()+"\n\n";
