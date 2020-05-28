@@ -671,6 +671,23 @@ static void writeMarkdownImage(GrowBuf &out, const char *fmt, bool explicitTitle
   out.addStr("\n");
 }
 
+static QCString getAbsoluteFilePath(const QCString &relative)
+{
+  QFileInfo forg(relative);
+  if (!(forg.exists() && forg.isReadable()))
+  {
+    QFileInfo fi(g_fileName);
+    QCString mdFile = g_fileName.left(g_fileName.length()-fi.fileName().length()) + relative;
+    QFileInfo fmd(mdFile);
+    if (fmd.exists() && fmd.isReadable())
+    {
+      return fmd.absFilePath().data();
+    }
+  }
+  // return input value if file checks failed
+  return relative;
+}
+
 static int processLink(GrowBuf &out,const char *data,int,int size)
 {
   QCString content;
@@ -880,6 +897,17 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   {
     bool ambig;
     FileDef *fd=0;
+
+    // Images relative to current markdown file have to be copied to output
+    if (!(Portable::isAbsolutePath(link) || isURL(link)))
+    {
+      // Current working directory is not the same where markdown is located.
+      // Convert to full path and add to image cache
+      QCString imagePath = getAbsoluteFilePath(link);
+      readFileOrDirectory(imagePath,Doxygen::imageNameLinkedMap,0,0,
+                          0,0,0,FALSE,FALSE);
+    }
+
     if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1 ||
         (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
         // assume doxygen symbol link or local image link
@@ -914,20 +942,22 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     {
       if (lp==-1) // link to markdown page
       {
-        out.addStr("@ref ");
-        if (!(Portable::isAbsolutePath(link) || isURL(link)))
+        if (Portable::isAbsolutePath(link) || isURL(link))
         {
-          QFileInfo forg(link);
-          if (!(forg.exists() && forg.isReadable()))
-          {
-            QFileInfo fi(g_fileName);
-            QCString mdFile = g_fileName.left(g_fileName.length()-fi.fileName().length()) + link;
-            QFileInfo fmd(mdFile);
-            if (fmd.exists() && fmd.isReadable())
-            {
-              link = fmd.absFilePath().data();
-            }
-          }
+          out.addStr("@ref ");
+        }
+        else
+        {
+          // Relative file names in markdown usually represent nested pages.
+          // This helps to navigate same markdown file in browser renderer and
+          // in generated Doxygen treeview/html output.
+          // Hijacked title string to give explicit command that relative link
+          // shall be created as a subpage to current page.
+          if (title == "@subpage")
+            out.addStr("@subpage ");
+          else
+            out.addStr("@ref ");
+          link = markdownFileNameToId(getAbsoluteFilePath(link));
         }
       }
       out.addStr(link);
