@@ -203,6 +203,7 @@ EXTRA_SEARCH_MAPPINGS  =
 GENERATE_LATEX         = YES
 LATEX_OUTPUT           =
 LATEX_CMD_NAME         = latex
+PDF_DST_FILE           =
 MAKEINDEX_CMD_NAME     = makeindex
 COMPACT_LATEX          = NO
 PAPER_TYPE             = a4wide

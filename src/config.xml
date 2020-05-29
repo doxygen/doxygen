@@ -2603,6 +2603,15 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
 ]]>
       </docs>
     </option>
+    <option type='string' id='PDF_DST_FILE' format='file' defval='' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ The \c PDF_DST_FILE copies the generated refman.pdf to the defined destination. This makes the
+ PDF much easier to access than in the full blown latex build folder. It will take effekt at the
+ end of the makefile run. It is a path relative to the build folder of latex.
+]]>
+      </docs>
+    </option>
     <option type='string' id='LATEX_CMD_NAME' format='file' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[

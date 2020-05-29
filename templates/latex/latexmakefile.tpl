@@ -17,6 +17,10 @@ refman.pdf: clean refman.tex
 	    done
 	{{ config.MAKEINDEX_CMD_NAME }} refman.idx
 	pdflatex refman
+	{% if config.PDF_DST_FILE %}
+	cp refman.pdf {{ config.PDF_DST_FILE }}
+	{% endif %}
+
 {% else %}
 all: refman.dvi
 
