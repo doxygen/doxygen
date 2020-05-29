@@ -394,6 +394,10 @@ class TranslatorEnglish : public Translator
       {
         return "Data Structure Documentation";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return "Design Unit Documentation";
+      }
       else
       {
         return "Class Documentation";
