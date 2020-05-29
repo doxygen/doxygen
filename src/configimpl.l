@@ -234,6 +234,11 @@ void ConfigBool::convertStrToVal()
 
 void ConfigEnum::convertStrToVal()
 {
+  if (m_value.isEmpty())
+  {
+    m_value = m_defValue;
+    return;
+  }
   QCString val = m_value.stripWhiteSpace().lower();
   const char *s=m_valueRange.first();
   while (s)
