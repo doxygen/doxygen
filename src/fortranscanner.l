@@ -2300,12 +2300,27 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     // iterate variables: get and apply yyextra->modifiers
     for (const auto &ce : scope->children())
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC &&
+          ce->section != Entry::CLASS_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
       if (mdfsMap.contains(ce->name.lower()))
+      {
         applyModifiers(ce.get(), mdfsMap[ce->name.lower()]);
+      }
+      else
+      {
+        QString nm = ce->name.lower();
+        if (nm.startsWith(scope->name.lower() + "::"))
+        {
+          nm = nm.mid(scope->name.length()+2);
+          if (mdfsMap.contains(nm.data()))
+          {
+            applyModifiers(ce.get(), mdfsMap[nm.data()]);
+          }
+        }
+      }
     }
   }
 
