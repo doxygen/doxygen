@@ -3540,7 +3540,7 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
    {
       case 14 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                      VhdlParser::setLineParsed(ALIAS_T);
+                      parser->outlineParser()->setLineParsed(ALIAS_T);
          break;
        }
       case 17 : {
