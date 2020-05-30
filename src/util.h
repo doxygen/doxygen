@@ -386,6 +386,20 @@ QCString relativePathToRoot(const char *name);
 
 void createSubDirs(QDir &d);
 
+/**
+ * @brief Create subdirectories required to save @p d;
+ * @param f The file 
+ * @return true if creation was successfull
+ */
+bool createSubDirsForFile(QFile const & f);
+
+/**
+ * @brief Recursively create all directories needed for @p d
+ * @param d The directory to create
+ * @return true if creation was successfull
+ */
+bool createSubDirRecursive(QDir const& d);
+
 QCString stripPath(const char *s);
 
 bool containsWord(const QCString &s,const QCString &word);

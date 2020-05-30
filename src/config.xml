@@ -2384,7 +2384,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='string' id='FORMULA_MACROFILE' format='file' defval=''>
       <docs>
 <![CDATA[
- The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and 
+ The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and
  `\renewcommand` commands to create new \f$\mbox{\LaTeX}\f$ commands to be used
  in formulas as building blocks.
  See the section \ref formulas for details.
@@ -2815,7 +2815,7 @@ or
     <option type='string' id='LATEX_EMOJI_DIRECTORY' format='dir' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute) 
+ The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute)
  path from which the emoji images will be read.
  If a relative path is entered, it will be relative to the \ref cfg_latex_output "LATEX_OUTPUT"
  directory. If left blank the \ref cfg_latex_output "LATEX_OUTPUT" directory will be used.
@@ -3502,6 +3502,18 @@ to be found in the default search path.
 <![CDATA[
  The \c DOT_PATH tag can be used to specify the path where the \c dot tool can be found.
  If left blank, it is assumed the \c dot tool can be found in the \c path.
+]]>
+      </docs>
+    </option>
+    <option type='string' id='DOT_CACHEDIR' format='dir' defval='' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ The \c DOT_CACHEDIR tag can be used to specify the path where the generated dot images are cached. This can speed
+ up rebuilding the documentation, for example when running in a CI-Environment.
+ <br>Alternatively the DOXY_DOT_CACHEDIR environment variable can be set. The path in the configuration however
+ takes precidence.
+ <br>If the cachedir does not exist, it will not be created, but the caching-feature will be turned off.
+ Also there is no house-keeping. The cache-dir must therefore manually be cleaned up from time to time.
 ]]>
       </docs>
     </option>

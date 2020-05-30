@@ -71,6 +71,7 @@ class DotGraph
     QCString absBaseName() const { return m_absPath + m_baseName; }
     QCString absDotName()  const { return m_absPath + m_baseName + ".dot"; }
     QCString imgName()     const;
+    QCString imgSuffix()   const;
     QCString absImgName()  const { return m_absPath + imgName(); }
     QCString relImgName()  const { return m_relPath + imgName(); }
 

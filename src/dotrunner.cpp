@@ -22,6 +22,8 @@
 #include "message.h"
 #include "ftextstream.h"
 #include "config.h"
+#include <string>
+using namespace std::string_literals;
 
 // the graphicx LaTeX has a limitation of maximum size of 16384
 // To be on the save side we take it a little bit smaller i.e. 150 inch * 72 dpi
@@ -62,10 +64,10 @@ static void checkPngResult(const char *imgName)
   }
 }
 
-static bool resetPDFSize(const int width,const int height, const char *base)
+static bool resetPDFSize(const int width,const int height, const std::string base)
 {
-  QCString tmpName = QCString(base)+".tmp";
-  QCString patchFile = QCString(base)+".dot";
+  auto tmpName = QCString(base.c_str())+".tmp";
+  auto patchFile = QCString(base.c_str())+".dot";
   if (!QDir::current().rename(patchFile,tmpName))
   {
     err("Failed to rename file %s to %s!\n",patchFile.data(),tmpName.data());
@@ -146,9 +148,9 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
 
 //---------------------------------------------------------------------------------
 
-DotRunner::DotRunner(const std::string& absDotName, const std::string& md5Hash)
-  : m_file(absDotName.data())
-  , m_md5Hash(md5Hash.data())
+DotRunner::DotRunner(std::string absDotName, std::string md5Hash)
+  : m_file(std::move(absDotName))
+  , m_md5Hash(std::move(md5Hash))
   , m_dotExe(Config_getString(DOT_PATH)+"dot")
   , m_cleanUp(Config_getBool(DOT_CLEANUP))
   , m_jobs()
@@ -156,50 +158,65 @@ DotRunner::DotRunner(const std::string& absDotName, const std::string& md5Hash)
 }
 
 
-void DotRunner::addJob(const char *format, const char *output)
+void DotRunner::addJob(const char *format, const char *output, const char * cachefile)
 {
 
   for (auto& s: m_jobs)
   {
-    if (s.format != format) continue;
-    if (s.output != output) continue;
-    // we have this job already
-    return;
+    if (s.output == output) {
+      if (s.format != format) {
+        err("The file %s of is generatred twice yet for different types (%s, %s)", s.output.c_str(), s.format.c_str(), format);
+      }
+      return;
+    };
   }
-  auto args = std::string ("-T") + format + " -o \"" + output + "\"";
-  m_jobs.emplace_back(format, output, args);
+  m_jobs.emplace_back(format, output, (cachefile != nullptr) ? cachefile : "");
 }
 
-QCString getBaseNameOfOutput(const QCString &output)
+std::string getBaseNameOfOutput(std::string const& output)
 {
-  int index = output.findRev('.');
-  if (index < 0) return output;
-  return output.left(index);
+  auto index = output.rfind('.');
+  if (index == std::string::npos) {
+    err("File %s has no suffix", output.c_str());
+    return output;
+  }
+  return output.substr(0, index);
 }
 
 bool DotRunner::run()
 {
   int exitCode=0;
 
-  QCString dotArgs;
+  // Reuse string for all args, be able to pass it to the error-handler
+  auto dotArgs = std::string();
 
   // create output
   if (Config_getBool(DOT_MULTI_TARGETS))
   {
-    dotArgs=QCString("\"")+m_file.data()+"\"";
-    for (auto& s: m_jobs)
+    dotArgs="\""s + m_file + "\"";
+    for (auto const & s: m_jobs)
     {
       dotArgs+=' ';
-      dotArgs+=s.args.data();
+      dotArgs+=s.getarg();
     }
-    if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
+    if ((exitCode=Portable::system(m_dotExe.data(),dotArgs.c_str(),FALSE))!=0) goto error;
   }
   else
   {
-    for (auto& s : m_jobs)
+    for (auto const & s : m_jobs)
     {
-      dotArgs=QCString("\"")+m_file.data()+"\" "+s.args.data();
-      if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
+      dotArgs="\""s + m_file + "\" " + s.getarg();
+      auto cstr = dotArgs.c_str();
+      if ((exitCode=Portable::system(m_dotExe.data(),cstr,FALSE))!=0) goto error;
+    }
+  }
+
+  // Copy files to cache-dir
+  for (auto const & s : m_jobs)
+  {
+    if (!createSubDirsForFile(QFile(s.cachefile.data()))) term("Unable to create directory for %s", s.cachefile.data());
+    if (!copyFile(s.output.data(), s.cachefile.data())) {
+      term("Failed to copy %s to %s\n", s.output.data(), s.cachefile.data());
     }
   }
 
@@ -213,9 +230,9 @@ bool DotRunner::run()
       if (!readBoundingBox(s.output.data(),&width,&height,FALSE)) goto error;
       if ((width > MAX_LATEX_GRAPH_SIZE) || (height > MAX_LATEX_GRAPH_SIZE))
       {
-        if (!resetPDFSize(width,height,getBaseNameOfOutput(s.output.data()))) goto error;
-        dotArgs=QCString("\"")+m_file.data()+"\" "+s.args.data();
-        if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
+        if (!resetPDFSize(width,height,getBaseNameOfOutput(s.output))) goto error;
+        dotArgs = "\""s + m_file.data() + "\" " + s.getarg();
+        if ((exitCode=Portable::system(m_dotExe.data(), dotArgs.c_str() ,FALSE))!=0) goto error;
       }
     }
 
@@ -232,21 +249,25 @@ bool DotRunner::run()
     Portable::unlink(m_file.data());
   }
 
-  // create checksum file
-  if (!m_md5Hash.empty())
-  {
-    QCString md5Name = getBaseNameOfOutput(m_file.data()) + ".md5";
-    FILE *f = Portable::fopen(md5Name,"w");
-    if (f)
+  // Take care of caching
+  if (Config_getString(DOT_CACHEDIR).isEmpty()) {
+    // create checksum file
+    if (!m_md5Hash.empty())
     {
-      fwrite(m_md5Hash.data(),1,32,f);
-      fclose(f);
+      auto md5Name = getBaseNameOfOutput(m_file) + ".md5";
+      FILE* f = Portable::fopen(md5Name.c_str(), "w");
+      if (f)
+      {
+        fwrite(m_md5Hash.data(), 1, 32, f);
+        fclose(f);
+      }
     }
   }
+
   return TRUE;
 error:
   err("Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
-    exitCode,m_dotExe.data(),dotArgs.data());
+    exitCode,m_dotExe.data(),dotArgs.c_str());
   return FALSE;
 }
 

@@ -5027,6 +5027,23 @@ void createSubDirs(QDir &d)
   }
 }
 
+bool createSubDirRecursive(QDir const& d) {
+  if (d.exists()) return true;
+  QDir up (d.path() + "/..");
+  if (!createSubDirRecursive(up)) return false;
+  if(!d.mkdir(QString())) return false;
+  return true;
+}
+
+
+bool createSubDirsForFile(QFile const & d)
+{
+  //Translite file into dir and up.
+  return createSubDirRecursive(QDir(d.name() + "/.."));
+  
+}
+
+
 /*! Input is a scopeName, output is the scopename split into a
  *  namespace part (as large as possible) and a classname part.
  */

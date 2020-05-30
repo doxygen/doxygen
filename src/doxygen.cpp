@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <memory>
+#include <string>
 
 #include "version.h"
 #include "doxygen.h"
@@ -10813,6 +10814,16 @@ void parseInput()
     {
       Portable::setenv("DOTFONTPATH",curFontPath);
     }
+    auto& doxycachedir = Config_getString(DOT_CACHEDIR);
+    
+    if (doxycachedir.isEmpty()) {
+      auto doxycachenv = Portable::getenv("DOXY_DOT_CACHEDIR");
+      if ((doxycachenv != nullptr) && (doxycachenv[0] != '\0')) {
+        //Copy into configuration
+        doxycachedir = doxycachenv;
+      }
+    }
+
   }
 
 
