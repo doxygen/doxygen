@@ -317,15 +317,15 @@
   \end{DoxyDesc}%
 }
 
+
 % Used by parameter lists
 \newenvironment{DoxyParams}[2][]{%
-    \tabulinesep=1mm%
     \par%
-    \ifthenelse{\equal{#1}{}}%
-      {\begin{longtabu*}spread 0pt [l]{|X[-1,l]|X[-1,l]|}}% name + description
+    \ifthenelse{\equal{#1}{0}}%
+	{\begin{longtable}[l]{|l|p{0.8\textwidth}|}}%
     {\ifthenelse{\equal{#1}{1}}%
-      {\begin{longtabu*}spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + name + desc
-      {\begin{longtabu*}spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + type + name + desc
+       {\begin{longtable}[l]{|l|l|p{0.75\textwidth}|}}%
+       {\begin{longtable}[l]{|l|l|p{0.7\textwidth}|}}%
     }
     \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
     \hline%
@@ -334,7 +334,7 @@
     \hline%
     \endhead%
 }{%
-    \end{longtabu*}%
+    \end{longtable}%
     \vspace{6pt}%
 }
 
