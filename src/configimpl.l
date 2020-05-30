@@ -1620,6 +1620,11 @@ void Config::checkAndCorrect()
     err("When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
     Config_getBool(GENERATE_TREEVIEW)=FALSE;
   }
+  if (!(Config_getString(HTML_FILE_EXTENSION) == ".html") && Config_getBool(GENERATE_HTMLHELP))
+  {
+    err("When enabling GENERATE_HTMLHELP the HTML_FILE_EXTENSION should be \".html\". I'll do it for you.\n");
+    Config_getString(HTML_FILE_EXTENSION)=".html";
+  }
   if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTMLHELP))
   {
     err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
