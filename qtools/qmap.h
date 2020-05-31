@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of QMap class
 **
@@ -102,6 +102,7 @@ class Q_EXPORT QMapIterator
     QMapIterator() : node( 0 ) {}
     QMapIterator( QMapNode<K,T>* p ) : node( p ) {}
     QMapIterator( const QMapIterator<K,T>& it ) : node( it.node ) {}
+    QMapIterator &operator=(const QMapIterator &it) = default;
 
     bool operator==( const QMapIterator<K,T>& it ) const { return node == it.node; }
     bool operator!=( const QMapIterator<K,T>& it ) const { return node != it.node; }

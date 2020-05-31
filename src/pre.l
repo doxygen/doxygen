@@ -30,6 +30,7 @@
 #include <deque>
 #include <algorithm>
 #include <utility>
+#include <mutex>
 
 #include <stdio.h>
 #include <assert.h>
@@ -161,6 +162,9 @@ class DefineManager
      */
     void startContext(const char *fileName)
     {
+#if MULTITHREADED_INPUT
+      std::unique_lock<std::mutex> lock(m_mutex);
+#endif
       //printf("DefineManager::startContext()\n");
       m_contextDefines.clear();
       if (fileName==0) return;
@@ -177,6 +181,9 @@ class DefineManager
      */
     void endContext()
     {
+#if MULTITHREADED_INPUT
+      std::unique_lock<std::mutex> lock(m_mutex);
+#endif
       //printf("DefineManager::endContext()\n");
       m_contextDefines.clear();
     }
@@ -188,6 +195,10 @@ class DefineManager
     void addFileToContext(const char *fileName)
     {
       if (fileName==0) return;
+#if MULTITHREADED_INPUT
+      std::unique_lock<std::mutex> lock(m_mutex);
+#endif
+
       //printf("DefineManager::addFileToContext(%s)\n",fileName);
       auto it = m_fileMap.find(fileName);
       if (it==m_fileMap.end())
@@ -210,6 +221,10 @@ class DefineManager
     void addDefine(const char *fileName,std::unique_ptr<Define> &&def)
     {
       if (fileName==0) return;
+
+#if MULTITHREADED_INPUT
+      std::unique_lock<std::mutex> lock(m_mutex);
+#endif
       //printf("DefineManager::addDefine(%s,%s)\n",fileName,def->name.data());
 
       m_contextDefines[def->name.data()] = def.get();
@@ -233,6 +248,9 @@ class DefineManager
      */
     void addInclude(const char *fromFileName,const char *toFileName)
     {
+#if MULTITHREADED_INPUT
+      std::unique_lock<std::mutex> lock(m_mutex);
+#endif
       //printf("DefineManager::addInclude(%s,%s)\n",fromFileName,toFileName);
       if (fromFileName==0 || toFileName==0) return;
       auto it = m_fileMap.find(fromFileName);
@@ -252,6 +270,9 @@ class DefineManager
      */
     Define *isDefined(const char *name)
     {
+#if MULTITHREADED_INPUT
+      std::unique_lock<std::mutex> lock(m_mutex);
+#endif
       Define *d=0;
       auto it = m_contextDefines.find(name);
       if (it!=m_contextDefines.end())
@@ -295,6 +316,9 @@ class DefineManager
 
     std::map< std::string,std::unique_ptr<DefinesPerFile> > m_fileMap;
     DefineMapRef m_contextDefines;
+#if MULTITHREADED_INPUT
+    std::mutex m_mutex;
+#endif
 };
 
 
@@ -2848,7 +2872,7 @@ static inline void outputArray(yyscan_t yyscanner,const char *a,int len)
 static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  static bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
+  bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
   uint i=0;
 
   // find the start of the include file name

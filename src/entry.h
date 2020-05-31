@@ -207,7 +207,7 @@ class Entry
      *  @{
      */
     void moveToSubEntryAndKeep(Entry* e);
-    void moveToSubEntryAndKeep(std::shared_ptr<Entry> &e);
+    void moveToSubEntryAndKeep(std::shared_ptr<Entry> e);
     /*! @} */
 
     /*! @name add entry as a child, pass ownership and reinitialize entry */

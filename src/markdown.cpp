@@ -39,6 +39,8 @@
 #include <qvector.h>
 //#define USE_ORIGINAL_TABLES
 
+#include <atomic>
+
 #include "markdown.h"
 #include "growbuf.h"
 #include "debug.h"
@@ -1312,7 +1314,7 @@ static QCString extractTitleId(QCString &title, int level)
   }
   if ((level > 0) && (level <= Config_getInt(TOC_INCLUDE_HEADINGS)))
   {
-    static int autoId = 0;
+    static AtomicInt autoId { 0 };
     QCString id;
     id.sprintf("autotoc_md%d",autoId++);
     //printf("auto-generated id='%s' title='%s'\n",id.data(),title.data());
@@ -2469,7 +2471,7 @@ static QCString extractPageTitle(QCString &docs,QCString &id)
 
 static QCString detab(const QCString &s,int &refIndent)
 {
-  static int tabSize = Config_getInt(TAB_SIZE);
+  int tabSize = Config_getInt(TAB_SIZE);
   int size = s.length();
   GrowBuf out(size);
   const char *data = s.data();
@@ -2539,7 +2541,7 @@ static QCString detab(const QCString &s,int &refIndent)
 
 QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,const QCString &input)
 {
-  static bool init=FALSE;
+  static AtomicBool init { FALSE };
   if (!init)
   {
     // setup callback table for special characters
@@ -2562,7 +2564,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
   g_current = e;
   g_fileName = fileName;
   g_lineNr   = lineNr;
-  static GrowBuf out;
+  GrowBuf out;
   if (input.isEmpty()) return input;
   out.clear();
   int refIndent;
@@ -2657,7 +2659,7 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   g_indentLevel=title.isEmpty() ? 0 : -1;
   QCString titleFn = QFileInfo(fileName).baseName().utf8();
   QCString fn      = QFileInfo(fileName).fileName().utf8();
-  static QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
+  QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   bool wasEmpty = id.isEmpty();
   if (wasEmpty) id = markdownFileNameToId(fileName);
   if (!isExplicitPage(docs))
@@ -2729,11 +2731,7 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
 
 void MarkdownOutlineParser::parsePrototype(const char *text)
 {
-  OutlineParserInterface &intf = Doxygen::parserManager->getOutlineParser("*.cpp");
-  if (&intf!=this)
-  {
-    intf.parsePrototype(text);
-  }
+  Doxygen::parserManager->getOutlineParser("*.cpp")->parsePrototype(text);
 }
 
 //------------------------------------------------------------------------

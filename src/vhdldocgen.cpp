@@ -2936,13 +2936,13 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   bool b=readCodeFragment( fd->absFilePath().data(), actualStart,actualEnd,codeFragment);
   if (!b) return;
 
-  VHDLOutlineParser &intf =dynamic_cast<VHDLOutlineParser&>(Doxygen::parserManager->getOutlineParser(".vhd"));
+  auto parser { Doxygen::parserManager->getOutlineParser(".vhd") };
   VhdlDocGen::setFlowMember(mdef);
   std::shared_ptr<Entry> root = std::make_shared<Entry>();
   QStrList filesInSameTu;
-  intf.startTranslationUnit("");
-  intf.parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);
-  intf.finishTranslationUnit();
+  parser->startTranslationUnit("");
+  parser->parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);
+  parser->finishTranslationUnit();
 }
 
 void VhdlDocGen::resetCodeVhdlParserState()

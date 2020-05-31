@@ -30,6 +30,18 @@
 #include "memberlist.h"
 #include "define.h"
 
+#define MULTITHREADED_INPUT 0
+
+#if MULTITHREADED_INPUT
+#define THREAD_LOCAL thread_local
+#define AtomicInt    std::atomic_int
+#define AtomicBool   std::atomic_bool
+#else
+#define THREAD_LOCAL
+#define AtomicInt    int
+#define AtomicBool   bool
+#endif
+
 class RefList;
 class PageSList;
 class PageSDict;
@@ -138,7 +150,6 @@ class Doxygen
     static bool                      generatingXmlOutput;
     static bool                      markdownSupport;
     static GenericsSDict            *genericsDict;
-    static Preprocessor             *preprocessor;
     static DefineList                macroDefinitions;
 };
 

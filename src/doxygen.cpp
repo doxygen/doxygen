@@ -103,6 +103,7 @@
 #include "emoji.h"
 #include "plantuml.h"
 #include "stlsupport.h"
+#include "threadpool.h"
 
 // provided by the generated file resources.cpp
 extern void initResources();
@@ -159,7 +160,6 @@ QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
 bool             Doxygen::markdownSupport = TRUE;
 GenericsSDict   *Doxygen::genericsDict;
-Preprocessor    *Doxygen::preprocessor = 0;
 DefineList       Doxygen::macroDefinitions;
 
 // locally accessible globals
@@ -9034,7 +9034,7 @@ static void generateDiskNames()
 
 //----------------------------------------------------------------------------
 
-static OutlineParserInterface &getParserForFile(const char *fn)
+static std::unique_ptr<OutlineParserInterface> getParserForFile(const char *fn)
 {
   QCString fileName=fn;
   QCString extension;
@@ -9052,8 +9052,8 @@ static OutlineParserInterface &getParserForFile(const char *fn)
   return Doxygen::parserManager->getOutlineParser(extension);
 }
 
-static void parseFile(OutlineParserInterface &parser,
-                      const std::shared_ptr<Entry> &root,FileDef *fd,const char *fn,
+static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
+                      FileDef *fd,const char *fn,
                       bool sameTu,QStrList &filesInSameTu)
 {
 #if USE_LIBCLANG
@@ -9079,10 +9079,18 @@ static void parseFile(OutlineParserInterface &parser,
   if (Config_getBool(ENABLE_PREPROCESSING) &&
       parser.needsPreprocessing(extension))
   {
+    Preprocessor preprocessor;
+    QStrList &includePath = Config_getList(INCLUDE_PATH);
+    char *s=includePath.first();
+    while (s)
+    {
+      preprocessor.addSearchDir(QFileInfo(s).absFilePath().utf8());
+      s=includePath.next();
+    }
     BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",fn);
     readInputFile(fileName,inBuf);
-    Doxygen::preprocessor->processFile(fileName,inBuf,preBuf);
+    preprocessor.processFile(fileName,inBuf,preBuf);
   }
   else // no preprocessing
   {
@@ -9110,7 +9118,7 @@ static void parseFile(OutlineParserInterface &parser,
   // use language parse to parse the file
   parser.parseInput(fileName,convBuf.data(),fileRoot,sameTu,filesInSameTu);
   fileRoot->setFileDef(fd);
-  root->moveToSubEntryAndKeep(fileRoot);
+  return fileRoot;
 }
 
 //! parse the list of input files
@@ -9138,9 +9146,10 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
       if (fd->isSource() && !fd->isReference()) // this is a source file
       {
         QStrList filesInSameTu;
-        OutlineParserInterface &parser = getParserForFile(s.c_str());
-        parser.startTranslationUnit(s.c_str());
-        parseFile(parser,root,fd,s.c_str(),FALSE,filesInSameTu);
+        std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
+        parser->startTranslationUnit(s.c_str());
+        std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),FALSE,filesInSameTu);
+        root->moveToSubEntryAndKeep(fileRoot);
         //printf("  got %d extra files in tu\n",filesInSameTu.count());
 
         // Now process any include files in the same translation unit
@@ -9155,13 +9164,14 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
             {
               QStrList moreFiles;
               //printf("  Processing %s in same translation unit as %s\n",incFile,s->c_str());
-              parseFile(parser,root,ifd,incFile,TRUE,moreFiles);
+              fileRoot = parseFile(*parser.get(),ifd,incFile,TRUE,moreFiles);
+              root->moveToSubEntryAndKeep(fileRoot);
               g_processedFiles.insert(incFile,(void*)0x8);
             }
           }
           incFile = filesInSameTu.next();
         }
-        parser.finishTranslationUnit();
+        parser->finishTranslationUnit();
         g_processedFiles.insert(s.c_str(),(void*)0x8);
       }
     }
@@ -9174,10 +9184,11 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
         QStrList filesInSameTu;
         FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
         ASSERT(fd!=0);
-        OutlineParserInterface &parser = getParserForFile(s.c_str());
-        parser.startTranslationUnit(s.c_str());
-        parseFile(parser,root,fd,s.c_str(),FALSE,filesInSameTu);
-        parser.finishTranslationUnit();
+        std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
+        parser->startTranslationUnit(s.c_str());
+        std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),FALSE,filesInSameTu);
+        root->moveToSubEntryAndKeep(fileRoot);
+        parser->finishTranslationUnit();
         g_processedFiles.insert(s.c_str(),(void*)0x8);
       }
     }
@@ -9185,16 +9196,46 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
   else // normal processing
 #endif
   {
+#if !MULTITHREADED_INPUT
     for (const auto &s : g_inputFiles)
     {
       bool ambig;
       QStrList filesInSameTu;
       FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
       ASSERT(fd!=0);
-      OutlineParserInterface &parser = getParserForFile(s.c_str());
-      parser.startTranslationUnit(s.c_str());
-      parseFile(parser,root,fd,s.c_str(),FALSE,filesInSameTu);
+      std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
+      parser->startTranslationUnit(s.c_str());
+      std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),FALSE,filesInSameTu);
+      root->moveToSubEntryAndKeep(fileRoot);
     }
+#else
+    std::size_t numThreads = std::thread::hardware_concurrency();
+    msg("Processing input using %lu threads.\n",numThreads);
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future< std::shared_ptr<Entry> > > results;
+    for (const auto &s : g_inputFiles)
+    {
+      // lambda representing the work to executed by a thread
+      auto processFile = [s]() {
+        bool ambig;
+        QStrList filesInSameTu;
+        FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+        ASSERT(fd!=0);
+        std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
+        parser->startTranslationUnit(s.c_str());
+        std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),FALSE,filesInSameTu);
+        return fileRoot;
+      };
+      // dispatch the work and collect the future results
+      results.emplace_back(threadPool.queue(processFile));
+    }
+    // synchronise with the Entry results produced and add them to the root
+    for (auto &f : results)
+    {
+      root->moveToSubEntryAndKeep(f.get());
+    }
+#warning "Multi-threaded input enabled. This is a highly experimental feature. Only use for doxygen development."
+#endif
   }
 }
 
@@ -9676,6 +9717,10 @@ class NullOutlineParser : public OutlineParserInterface
 };
 
 
+template<class T> std::function< std::unique_ptr<T>() > make_output_parser_factory()
+{
+  return []() { return std::make_unique<T>(); };
+}
 
 void initDoxygen()
 {
@@ -9689,27 +9734,25 @@ void initDoxygen()
   Portable::correct_path();
 
   Debug::startTimer();
-  Doxygen::preprocessor = new Preprocessor();
-
-  Doxygen::parserManager = new ParserManager(            std::make_unique<NullOutlineParser>(),
+  Doxygen::parserManager = new ParserManager(            make_output_parser_factory<NullOutlineParser>(),
                                                          std::make_unique<FileCodeParser>());
-  Doxygen::parserManager->registerParser("c",            std::make_unique<COutlineParser>(),
+  Doxygen::parserManager->registerParser("c",            make_output_parser_factory<COutlineParser>(),
                                                          std::make_unique<CCodeParser>());
-  Doxygen::parserManager->registerParser("python",       std::make_unique<PythonOutlineParser>(),
+  Doxygen::parserManager->registerParser("python",       make_output_parser_factory<PythonOutlineParser>(),
                                                          std::make_unique<PythonCodeParser>());
-  Doxygen::parserManager->registerParser("fortran",      std::make_unique<FortranOutlineParser>(),
+  Doxygen::parserManager->registerParser("fortran",      make_output_parser_factory<FortranOutlineParser>(),
                                                          std::make_unique<FortranCodeParser>());
-  Doxygen::parserManager->registerParser("fortranfree",  std::make_unique<FortranOutlineParserFree>(),
+  Doxygen::parserManager->registerParser("fortranfree",  make_output_parser_factory<FortranOutlineParserFree>(),
                                                          std::make_unique<FortranCodeParserFree>());
-  Doxygen::parserManager->registerParser("fortranfixed", std::make_unique<FortranOutlineParserFixed>(),
+  Doxygen::parserManager->registerParser("fortranfixed", make_output_parser_factory<FortranOutlineParserFixed>(),
                                                          std::make_unique<FortranCodeParserFixed>());
-  Doxygen::parserManager->registerParser("vhdl",         std::make_unique<VHDLOutlineParser>(),
+  Doxygen::parserManager->registerParser("vhdl",         make_output_parser_factory<VHDLOutlineParser>(),
                                                          std::make_unique<VHDLCodeParser>());
-  Doxygen::parserManager->registerParser("xml",          std::make_unique<NullOutlineParser>(),
+  Doxygen::parserManager->registerParser("xml",          make_output_parser_factory<NullOutlineParser>(),
                                                          std::make_unique<XMLCodeParser>());
-  Doxygen::parserManager->registerParser("sql",          std::make_unique<NullOutlineParser>(),
+  Doxygen::parserManager->registerParser("sql",          make_output_parser_factory<NullOutlineParser>(),
                                                          std::make_unique<SQLCodeParser>());
-  Doxygen::parserManager->registerParser("md",           std::make_unique<MarkdownOutlineParser>(),
+  Doxygen::parserManager->registerParser("md",           make_output_parser_factory<MarkdownOutlineParser>(),
                                                          std::make_unique<FileCodeParser>());
 
   // register any additional parsers here...
@@ -9788,7 +9831,6 @@ void cleanUpDoxygen()
   delete Doxygen::exampleSDict;
   delete Doxygen::globalScope;
   delete Doxygen::parserManager;
-  delete Doxygen::preprocessor;
   delete theTranslator;
   delete g_outputList;
   Mappers::freeMappers();
@@ -10250,14 +10292,6 @@ void adjustConfiguration()
     warn_uncond("Output language %s not supported! Using English instead.\n",
        outputLanguage.data());
   }
-  QStrList &includePath = Config_getList(INCLUDE_PATH);
-  char *s=includePath.first();
-  while (s)
-  {
-    QFileInfo fi(s);
-    Doxygen::preprocessor->addSearchDir(fi.absFilePath().utf8());
-    s=includePath.next();
-  }
 
   /* Set the global html file extension. */
   Doxygen::htmlFileExtension = Config_getString(HTML_FILE_EXTENSION);
@@ -10312,7 +10346,7 @@ void adjustConfiguration()
 
   // add predefined macro name to a dictionary
   QStrList &expandAsDefinedList =Config_getList(EXPAND_AS_DEFINED);
-  s=expandAsDefinedList.first();
+  char *s=expandAsDefinedList.first();
   while (s)
   {
     Doxygen::expandAsDefinedSet.insert(s);
