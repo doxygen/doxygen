@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,16 +19,16 @@
 \addindex installation
 \tableofcontents{html,latex}
 
-First go to the 
+First go to the
 <a href="http://www.doxygen.org/download.html">download</a> page
 to get the latest distribution, if you have not downloaded doxygen already.
 
 \section install_src_unix Compiling from source on UNIX
 
-If you downloaded the source distribution, you need at least the 
+If you downloaded the source distribution, you need at least the
 following to build the executable:
 <ul>
-<li>The <a href="ftp://prep.ai.mit.edu/pub/gnu/">GNU</a> tools 
+<li>The <a href="ftp://prep.ai.mit.edu/pub/gnu/">GNU</a> tools
     \c flex, \c bison, \c libiconv and <code>GNU make</code>, and \c strip
     \addindex flex
     \addindex bison
@@ -37,7 +37,7 @@ following to build the executable:
     \addindex strip
     \addindex python
 <li>You need \c python (version 2.6 or higher, see https://www.python.org).
-<li>In order to generate a \c Makefile for your platform, you need 
+<li>In order to generate a \c Makefile for your platform, you need
     <a href="https://cmake.org/">cmake</a> version 3.1.3 or later.
     \addindex cmake
 </ul>
@@ -46,24 +46,24 @@ To take full advantage of doxygen's features the following additional
 tools should be installed.
 
 <ul>
-<li>Qt Software's GUI toolkit 
+<li>Qt Software's GUI toolkit
     <a href="https://www.qt.io/developers/">Qt</A>
     \addindex Qt
     version 4.3 or higher (including Qt 5).
-    This is needed to build the GUI front-end doxywizard. 
+    This is needed to build the GUI front-end doxywizard.
 <li>A \LaTeX distribution: for instance
     <a href="http://www.tug.org/interest.html#free">TeX Live</a>
     This is needed for generating \LaTeX, Postscript, and PDF output.
 <li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10 or higher</a>
-    Needed for the include dependency graphs, 
+    Needed for the include dependency graphs,
     the graphical inheritance graphs, and the collaboration graphs.
     If you compile graphviz yourself, make sure you do include
-    freetype support (which requires the freetype library and header files), 
+    freetype support (which requires the freetype library and header files),
     otherwise the graphs will not render proper text labels.
 <li>For formulas in the HTML output (when MathJax is not used)
     or in case you do not wish to use `pdflatex`,
-    the ghostscript interpreter is needed. You can find it at 
+    the ghostscript interpreter is needed. You can find it at
     <a href="https://www.ghostscript.com/">www.ghostscript.com</a>.
 </ul>
 
@@ -71,7 +71,7 @@ Compilation is now done by performing the following steps:
 
 <ol>
 <li>Unpack the archive, unless you already have done that:
-   
+
         gunzip doxygen-$VERSION.src.tar.gz    # uncompress the archive
         tar xf doxygen-$VERSION.src.tar       # unpack it
 
@@ -106,16 +106,16 @@ Compilation is now done by performing the following steps:
     should be available in the bin directory within the build directory.
 
 <li>Optional: Generate the user manual.
-    
+
         cmake -Dbuild_doc=YES ..
         make docs
 
     To let doxygen generate the HTML and PDF documentation.
-    
+
     The HTML directory within the build directory will now contain the html
     documentation (just point a HTML browser to the file
     <code>index.html</code> in the html directory).
-    
+
 <li>Optional: static linking
 
     If you want to build a statically linked version of doxygen that embeds libclang
@@ -142,32 +142,22 @@ Compilation is now done by performing the following steps:
 \section install_bin_unix    Installing the binaries on UNIX
 
 After the compilation of the source code do a <code>make install</code>
-to install doxygen. If you downloaded the binary distribution for UNIX,
+to install doxygen. If you downloaded the binary distribution for Linux,
 type:
 
-    ./configure
     make install
 
-Binaries are installed into the directory <code>\<prefix\>/bin</code>.
-Use <code>make install_docs</code> to install the
-documentation and examples into <code>\<docdir\>/doxygen</code>. 
-
-<code>\<prefix\></code> defaults to <code>/usr/local</code> but can be changed with 
-the `--prefix` option of the configure script. 
-The default <code>\<docdir\></code> directory is 
-<code>\<prefix\>/share/doc/packages</code> and can be changed with
-the `--docdir` option of the configure script.
-
-Alternatively, you can also copy the binaries from the <code>bin</code> 
-directory manually to some <code>bin</code> directory in your search path.
-This is sufficient to use doxygen.
+Binaries are installed into the directory <code>/usr/local/bin</code>,
+man pages in <code>/usr/local/man/man1</code> and documentation in
+<code>/usr/local/doc/doxygen</code>
+To change this just edit the Makefile.
 
 \note You need the GNU install tool for this to work (it is part of
-the coreutils package). Other install tools may put the binaries in 
+the coreutils package). Other install tools may put the binaries in
 the wrong directory!
 
-If you have a RPM or DEP package, then please follow the 
-standard installation procedure that is required for these packages. 
+If you have a RPM or DEP package, then please follow the
+standard installation procedure that is required for these packages.
 
 \section install_src_windows Compiling from source on Windows
 
@@ -178,8 +168,8 @@ cmake can be downloaded from https://cmake.org/download/
 At the moment only the express version of Visual Studio 2013 is tested,
 but other version might also work.
 
-Alternatively, you can compile doxygen 
-\ref install_src_unix "the UNIX way" using 
+Alternatively, you can compile doxygen
+\ref install_src_unix "the UNIX way" using
 <a href="https://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
 or <a href="http://www.mingw.org/">MinGW</a>.
 
@@ -224,30 +214,30 @@ Doxygen comes as a self-installing archive, so installation is extremely simple.
 Just follow the dialogs.
 
 After installation it is recommended to also download and install GraphViz
-(version 2.20 or better is highly recommended). Doxygen can use the \c dot tool 
-of the GraphViz package to render nicer diagrams, see the 
+(version 2.20 or better is highly recommended). Doxygen can use the \c dot tool
+of the GraphViz package to render nicer diagrams, see the
 \ref cfg_have_dot "HAVE_DOT" option in the configuration file.
 
-If you want to produce compressed HTML files (see \ref 
-cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the configuration file, then 
-you need the Microsoft HTML help workshop. 
-You can download it from 
+If you want to produce compressed HTML files (see \ref
+cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the configuration file, then
+you need the Microsoft HTML help workshop.
+You can download it from
 <a href="https://www.microsoft.com/en-us/download/details.aspx?id=21138">Microsoft</a>.
 
-If you want to produce Qt Compressed Help files (see \ref 
-cfg_qhg_location "QHG_LOCATION") in the configuration file, then 
-you need qhelpgenerator which is part of Qt. 
+If you want to produce Qt Compressed Help files (see \ref
+cfg_qhg_location "QHG_LOCATION") in the configuration file, then
+you need qhelpgenerator which is part of Qt.
 You can download Qt from <a href="https://www.qt.io/download">Qt Software Downloads</a>.
 
 In order to generate PDF output or use scientific formulas you will also need to
-install <a href="https://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and 
-<a href="https://en.wikipedia.org/wiki/Ghostscript">Ghostscript</a>. 
+install <a href="https://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and
+<a href="https://en.wikipedia.org/wiki/Ghostscript">Ghostscript</a>.
 
 For \LaTeX a number of distributions exists. Popular ones that should work with
-doxygen are <a href="https://miktex.org/">MikTex</a> 
+doxygen are <a href="https://miktex.org/">MikTex</a>
 and <a href="https://www.tug.org/protext/">proTeXt</a>.
 
-Ghostscript can be <a href="https://sourceforge.net/projects/ghostscript/">downloaded</a> 
+Ghostscript can be <a href="https://sourceforge.net/projects/ghostscript/">downloaded</a>
 from Sourceforge.
 
 After installing \LaTeX and Ghostscript you'll need to make sure the tools
