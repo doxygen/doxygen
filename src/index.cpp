@@ -3908,14 +3908,14 @@ void writeGraphInfo(OutputList &ol)
   DotLegendGraph gd;
   gd.writeGraph(Config_getString(HTML_OUTPUT));
 
-  bool &stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
+  bool stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
   bool oldStripCommentsState = stripCommentsStateRef;
-  bool &createSubdirs = Config_getBool(CREATE_SUBDIRS);
+  bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
   bool oldCreateSubdirs = createSubdirs;
   // temporarily disable the stripping of comments for our own code example!
-  stripCommentsStateRef = FALSE;
+  stripCommentsStateRef = Config_updateBool(STRIP_CODE_COMMENTS,FALSE);
   // temporarily disable create subdirs for linking to our example
-  createSubdirs = FALSE;
+  createSubdirs = Config_updateBool(CREATE_SUBDIRS,FALSE);
 
   startFile(ol,"graph_legend",0,theTranslator->trLegendTitle().data());
   startTitle(ol,0);
@@ -3936,8 +3936,8 @@ void writeGraphInfo(OutputList &ol)
   delete fd;
 
   // restore config settings
-  stripCommentsStateRef = oldStripCommentsState;
-  createSubdirs = oldCreateSubdirs;
+  Config_updateBool(STRIP_CODE_COMMENTS,oldStripCommentsState);
+  Config_updateBool(CREATE_SUBDIRS,oldCreateSubdirs);
 
   endFile(ol);
   ol.popGeneratorState();

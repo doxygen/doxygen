@@ -511,10 +511,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{fixltx2e}\n" // for \textsubscript
        "\\usepackage{calc}\n"
        "\\usepackage{doxygen}\n";
-  QStrList extraLatexStyle = Config_getList(LATEX_EXTRA_STYLESHEET);
-  for (uint i=0; i<extraLatexStyle.count(); ++i)
+  const StringVector &extraLatexStyles = Config_getList(LATEX_EXTRA_STYLESHEET);
+  for (const auto &extraStyle : extraLatexStyles)
   {
-    QCString fileName(extraLatexStyle.at(i));
+    QCString fileName = extraStyle.c_str();
     if (!fileName.isEmpty())
     {
       QFileInfo fi(fileName);
@@ -914,8 +914,8 @@ void LatexGenerator::startProjectNumber()
 
 void LatexGenerator::startIndexSection(IndexSections is)
 {
-  bool &compactLatex = Config_getBool(COMPACT_LATEX);
-  QCString &latexHeader = Config_getString(LATEX_HEADER);
+  bool compactLatex = Config_getBool(COMPACT_LATEX);
+  QCString latexHeader = Config_getString(LATEX_HEADER);
   switch (is)
   {
     case isTitlePageStart:

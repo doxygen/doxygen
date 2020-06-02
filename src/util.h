@@ -31,6 +31,7 @@
 #include "docparser.h"
 #include "classdef.h"
 #include "arguments.h"
+#include "containers.h"
 
 //--------------------------------------------------------------------
 
@@ -436,7 +437,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,
                    bool filter=TRUE,bool isSourceCode=FALSE);
 QCString filterTitle(const QCString &title);
 
-bool patternMatch(const QFileInfo &fi,const QStrList *patList);
+bool patternMatch(const QFileInfo &fi,const StringVector &patList);
 
 QCString externalLinkTarget(const bool parent = false);
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);

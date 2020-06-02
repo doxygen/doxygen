@@ -24,19 +24,25 @@ class FTextStream;
 //! @{
 //! some convenience macros for accessing the config options
 //! mainly done like this for backward compatibility
-#if DYNAMIC_LOOKUP // for debug purposes
-#define Config_getString(val) (ConfigValues::instance().*((ConfigValues::InfoString*)ConfigValues::instance().get(#val))->item)
-#define Config_getBool(val)   (ConfigValues::instance().*((ConfigValues::InfoBool*)ConfigValues::instance().get(#val))->item)
-#define Config_getInt(val)    (ConfigValues::instance().*((ConfigValues::InfoInt*)ConfigValues::instance().get(#val))->item)
-#define Config_getEnum(val)   (ConfigValues::instance().*((ConfigValues::InfoString*)ConfigValues::instance().get(#val))->item)
-#define Config_getList(val)   (ConfigValues::instance().*((ConfigValues::InfoList*)ConfigValues::instance().get(#val))->item)
-#else // direct access
-#define Config_getString(val) (ConfigValues::instance().val)
-#define Config_getBool(val)   (ConfigValues::instance().val)
-#define Config_getInt(val)    (ConfigValues::instance().val)
-#define Config_getEnum(val)   (ConfigValues::instance().val)
-#define Config_getList(val)   (ConfigValues::instance().val)
-#endif
+//#if DYNAMIC_LOOKUP // for debug purposes
+//#define Config_getString(val) (ConfigValues::instance().*((ConfigValues::InfoString*)ConfigValues::instance().get(#val))->item)
+//#define Config_getBool(val)   (ConfigValues::instance().*((ConfigValues::InfoBool*)ConfigValues::instance().get(#val))->item)
+//#define Config_getInt(val)    (ConfigValues::instance().*((ConfigValues::InfoInt*)ConfigValues::instance().get(#val))->item)
+//#define Config_getEnum(val)   (ConfigValues::instance().*((ConfigValues::InfoString*)ConfigValues::instance().get(#val))->item)
+//#define Config_getList(val)   (ConfigValues::instance().*((ConfigValues::InfoList*)ConfigValues::instance().get(#val))->item)
+//#else // direct access
+#define Config_getString(name) (ConfigValues::instance().name())
+#define Config_getBool(name)   (ConfigValues::instance().name())
+#define Config_getInt(name)    (ConfigValues::instance().name())
+#define Config_getEnum(name)   (ConfigValues::instance().name())
+#define Config_getList(name)   (ConfigValues::instance().name())
+#define Config_updateString(name,value) (ConfigValues::instance().update_##name(value));
+#define Config_updateBool(name,value)   (ConfigValues::instance().update_##name(value));
+#define Config_updateInt(name,value)    (ConfigValues::instance().update_##name(value));
+#define Config_updateEnum(name,value)   (ConfigValues::instance().update_##name(value));
+#define Config_updateList(name,...)   (ConfigValues::instance().update_##name(__VA_ARGS__));
+#define Config_setterFunc(name) (std::bind(&ConfigValues::update_##name,ConfigValues::instance(),std::placeholders::_1))
+//#endif
 //! @}
 
 /** \brief Public function to deal with the configuration file. */

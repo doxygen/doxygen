@@ -1796,8 +1796,8 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
   QFileInfo fi(fileName);
   if (fi.exists() && fi.isFile())
   {
-    const QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
-    if (patternMatch(fi,&exclPatterns)) return 0;
+    const StringVector &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
+    if (patternMatch(fi,exclPatterns)) return 0;
 
     QCString absName = fi.absFilePath().utf8();
 
@@ -2918,11 +2918,10 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 	}
 	else if (searchIncludes) // search in INCLUDE_PATH as well
 	{
-	  QStrList &includePath = Config_getList(INCLUDE_PATH);
-	  char *incPath=includePath.first();
-	  while (incPath)
+	  const StringVector &includePath = Config_getList(INCLUDE_PATH);
+          for (const auto &incPath : includePath)
 	  {
-	    QFileInfo fi3(incPath);
+	    QFileInfo fi3(incPath.c_str());
 	    if (fi3.exists() && fi3.isDir())
 	    {
 	      absName = QCString(fi3.absFilePath().utf8())+"/"+incFileName;
@@ -2935,7 +2934,6 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 	      }
 	      //printf( "absIncFileName = %s\n", absIncFileName.data() );
 	    }
-	    incPath=includePath.next();
 	  }
 	}
 	//printf( "absIncFileName = %s\n", absIncFileName.data() );
@@ -3191,12 +3189,10 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
 
   // add predefined macros
-  char *defStr;
-  QStrList &predefList = Config_getList(PREDEFINED);
-  QStrListIterator sli(predefList);
-  for (sli.toFirst();(defStr=sli.current());++sli)
+  const StringVector &predefList = Config_getList(PREDEFINED);
+  for (const auto &defStr : predefList)
   {
-    QCString ds = defStr;
+    QCString ds = defStr.c_str();
     int i_equals=ds.find('=');
     int i_obrace=ds.find('(');
     int i_cbrace=ds.find(')');

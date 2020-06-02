@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -36,25 +36,25 @@ static QDict<QCString> g_symbolDict(10007);
  */
 bool Htags::execute(const QCString &htmldir)
 {
-  static QStrList &inputSource = Config_getList(INPUT);
-  static bool quiet = Config_getBool(QUIET);
-  static bool warnings = Config_getBool(WARNINGS);
-  static QCString htagsOptions = ""; //Config_getString(HTAGS_OPTIONS);
-  static QCString projectName = Config_getString(PROJECT_NAME);
-  static QCString projectNumber = Config_getString(PROJECT_NUMBER);
+  const StringVector &inputSource = Config_getList(INPUT);
+  bool quiet = Config_getBool(QUIET);
+  bool warnings = Config_getBool(WARNINGS);
+  QCString htagsOptions = ""; //Config_getString(HTAGS_OPTIONS);
+  QCString projectName = Config_getString(PROJECT_NAME);
+  QCString projectNumber = Config_getString(PROJECT_NUMBER);
 
   QCString cwd = QDir::currentDirPath().utf8();
-  if (inputSource.isEmpty())
+  if (inputSource.empty())
   {
     g_inputDir.setPath(cwd);
   }
-  else if (inputSource.count()==1)
+  else if (inputSource.size()==1)
   {
-    g_inputDir.setPath(inputSource.first());
+    g_inputDir.setPath(inputSource.back().c_str());
     if (!g_inputDir.exists())
       err("Cannot find directory %s. "
           "Check the value of the INPUT tag in the configuration file.\n",
-          inputSource.first()
+          inputSource.back().c_str()
          );
   }
   else
@@ -69,16 +69,16 @@ bool Htags::execute(const QCString &htmldir)
   QCString commandLine = " -g -s -a -n ";
   if (!quiet)   commandLine += "-v ";
   if (warnings) commandLine += "-w ";
-  if (!htagsOptions.isEmpty()) 
+  if (!htagsOptions.isEmpty())
   {
     commandLine += ' ';
     commandLine += htagsOptions;
   }
-  if (!projectName.isEmpty()) 
+  if (!projectName.isEmpty())
   {
     commandLine += "-t \"";
     commandLine += projectName;
-    if (!projectNumber.isEmpty()) 
+    if (!projectNumber.isEmpty())
     {
       commandLine += '-';
       commandLine += projectNumber;
@@ -150,7 +150,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
     }
     else
     {
-      err("file %s cannot be opened\n",fileMapName.data()); 
+      err("file %s cannot be opened\n",fileMapName.data());
     }
   }
   return FALSE;

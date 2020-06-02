@@ -3524,12 +3524,11 @@ void  FlowChart::printUmlTree()
   }
   qcs+="\n";
 
-  QCString & htmlOutDir = Config_getString(HTML_OUTPUT);
+  QCString htmlOutDir = Config_getString(HTML_OUTPUT);
 
   QCString n=convertNameToFileName();
-  QCString tmp=htmlOutDir;
-  n=PlantumlManager::instance()->writePlantUMLSource(tmp,n,qcs,PlantumlManager::PUML_SVG);
-  PlantumlManager::instance()->generatePlantUMLOutput(n.data(),tmp.data(),PlantumlManager::PUML_SVG);
+  n=PlantumlManager::instance()->writePlantUMLSource(htmlOutDir,n,qcs,PlantumlManager::PUML_SVG);
+  PlantumlManager::instance()->generatePlantUMLOutput(n,htmlOutDir,PlantumlManager::PUML_SVG);
 }
 
 QCString FlowChart::convertNameToFileName()

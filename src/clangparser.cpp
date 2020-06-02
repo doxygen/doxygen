@@ -159,10 +159,10 @@ void ClangParser::determineInputFilesInSameTu(QStrList &files)
 
 void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
 {
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-  static QStrList &includePath = Config_getList(INCLUDE_PATH);
-  static QStrList clangOptions = Config_getList(CLANG_OPTIONS);
-  static QCString clangCompileDatabase = Config_getString(CLANG_DATABASE_PATH);
+  bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+  const StringVector &includePath = Config_getList(INCLUDE_PATH);
+  const StringVector &clangOptions = Config_getList(CLANG_OPTIONS);
+  QCString clangCompileDatabase = Config_getString(CLANG_DATABASE_PATH);
   if (!clangAssistedParsing) return;
   //printf("ClangParser::start(%s)\n",fileName);
   p->fileName = fileName;
@@ -198,8 +198,8 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   }
   char **argv = (char**)malloc(sizeof(char*)*
                                (4+Doxygen::inputPaths.size()+
-                                includePath.count()+
-                                clangOptions.count()+
+                                includePath.size()+
+                                clangOptions.size()+
                                 clang_option_len));
   if (!command.empty() )
   {
@@ -222,15 +222,15 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
       //printf("argv[%d]=%s\n",argc,argv[argc]);
     }
     // add external include paths
-    for (uint i=0;i<includePath.count();i++)
+    for (size_t i=0;i<includePath.size();i++)
     {
-      QCString inc = QCString("-I")+includePath.at(i);
+      QCString inc = QCString("-I")+includePath[i].c_str();
       argv[argc++]=qstrdup(inc.data());
     }
     // user specified options
-    for (uint i=0;i<clangOptions.count();i++)
+    for (size_t i=0;i<clangOptions.size();i++)
     {
-      argv[argc++]=qstrdup(clangOptions.at(i));
+      argv[argc++]=qstrdup(clangOptions[i].c_str());
     }
     // extra options
     argv[argc++]=qstrdup("-ferror-limit=0");

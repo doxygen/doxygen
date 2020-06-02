@@ -186,14 +186,14 @@ void RTFGenerator::init()
   }
 
   // overwrite some (or all) definitions from file
-  QCString &rtfStyleSheetFile = Config_getString(RTF_STYLESHEET_FILE);
+  QCString rtfStyleSheetFile = Config_getString(RTF_STYLESHEET_FILE);
   if (!rtfStyleSheetFile.isEmpty())
   {
     loadStylesheet(rtfStyleSheetFile, rtf_Style);
   }
 
   // If user has defined an extension file, load its contents.
-  QCString &rtfExtensionsFile = Config_getString(RTF_EXTENSIONS_FILE);
+  QCString rtfExtensionsFile = Config_getString(RTF_EXTENSIONS_FILE);
   if (!rtfExtensionsFile.isEmpty())
   {
     loadExtensions(rtfExtensionsFile);

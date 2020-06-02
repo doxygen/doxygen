@@ -69,7 +69,7 @@ class DirDefImpl : public DefinitionImpl, public DirDef
     void endMemberDeclarations(OutputList &ol);
 
     static DirDef *createNewDir(const char *path);
-    static bool matchPath(const QCString &path,QStrList &l);
+    static bool matchPath(const QCString &path,const StringVector &l);
 
     DirList m_subdirs;
     QCString m_dispName;
@@ -792,17 +792,15 @@ DirDef *DirDefImpl::createNewDir(const char *path)
   return dir;
 }
 
-bool DirDefImpl::matchPath(const QCString &path,QStrList &l)
+bool DirDefImpl::matchPath(const QCString &path,const StringVector &l)
 {
-  const char *s=l.first();
-  while (s)
+  for (const auto &s : l)
   {
-    QCString prefix = s;
-    if (qstricmp(prefix.left(path.length()),path)==0) // case insensitive compare
+    std::string prefix = s.substr(0,path.length());
+    if (qstricmp(prefix.c_str(),path)==0) // case insensitive compare
     {
       return TRUE;
     }
-    s = l.next();
   }
   return FALSE;
 }

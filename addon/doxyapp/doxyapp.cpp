@@ -264,31 +264,32 @@ int main(int argc,char **argv)
   checkConfiguration();
   adjustConfiguration();
   // we need a place to put intermediate files
-  Config_getString(OUTPUT_DIRECTORY)="/tmp/doxygen";
+  Config_updateString(OUTPUT_DIRECTORY,"/tmp/doxygen");
   // disable html output
-  Config_getBool(GENERATE_HTML)=FALSE;
+  Config_updateBool(GENERATE_HTML,FALSE);
   // disable latex output
-  Config_getBool(GENERATE_LATEX)=FALSE;
+  Config_updateBool(GENERATE_LATEX,FALSE);
   // be quiet
-  Config_getBool(QUIET)=TRUE;
+  Config_updateBool(QUIET,TRUE);
   // turn off warnings
-  Config_getBool(WARNINGS)=FALSE;
-  Config_getBool(WARN_IF_UNDOCUMENTED)=FALSE;
-  Config_getBool(WARN_IF_DOC_ERROR)=FALSE;
+  Config_updateBool(WARNINGS,FALSE);
+  Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
+  Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
   // Extract as much as possible
-  Config_getBool(EXTRACT_ALL)=TRUE;
-  Config_getBool(EXTRACT_STATIC)=TRUE;
-  Config_getBool(EXTRACT_PRIVATE)=TRUE;
-  Config_getBool(EXTRACT_LOCAL_METHODS)=TRUE;
+  Config_updateBool(EXTRACT_ALL,TRUE);
+  Config_updateBool(EXTRACT_STATIC,TRUE);
+  Config_updateBool(EXTRACT_PRIVATE,TRUE);
+  Config_updateBool(EXTRACT_LOCAL_METHODS,TRUE);
   // Extract source browse information, needed
   // to make doxygen gather the cross reference info
-  Config_getBool(SOURCE_BROWSER)=TRUE;
+  Config_updateBool(SOURCE_BROWSER,TRUE);
   // In case of a directory take all files on directory and its subdirectories
-  Config_getBool(RECURSIVE)=TRUE;
+  Config_updateBool(RECURSIVE,TRUE);
 
   // set the input
-  Config_getList(INPUT).clear();
-  Config_getList(INPUT).append(argv[1]);
+  StringVector inputList;
+  inputList.push_back(argv[1]);
+  Config_updateList(INPUT,inputList);
 
   // parse the files
   parseInput();

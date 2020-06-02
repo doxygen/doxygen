@@ -277,22 +277,20 @@ QCString generateMarker(int id)
   return result;
 }
 
-static QCString stripFromPath(const QCString &path,QStrList &l)
+static QCString stripFromPath(const QCString &path,const StringVector &l)
 {
   // look at all the strings in the list and strip the longest match
-  const char *s=l.first();
   QCString potential;
   unsigned int length = 0;
-  while (s)
+  for (const auto &s : l)
   {
-    QCString prefix = s;
+    QCString prefix = s.c_str();
     if (prefix.length() > length &&
         qstricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
     {
       length = prefix.length();
       potential = path.right(path.length()-prefix.length());
     }
-    s = l.next();
   }
   if (length) return potential;
   return path;
@@ -2377,15 +2375,13 @@ int filterCRLF(char *buf,int len)
   return dest;                 // length of the valid part of the buf
 }
 
-static QCString getFilterFromList(const char *name,const QStrList &filterList,bool &found)
+static QCString getFilterFromList(const char *name,const StringVector &filterList,bool &found)
 {
   found=FALSE;
   // compare the file name to the filter pattern list
-  QStrListIterator sli(filterList);
-  char* filterStr;
-  for (sli.toFirst(); (filterStr = sli.current()); ++sli)
+  for (const auto &filterStr : filterList)
   {
-    QCString fs = filterStr;
+    QCString fs = filterStr.c_str();
     int i_equals=fs.find('=');
     if (i_equals!=-1)
     {
@@ -2419,12 +2415,12 @@ QCString getFileFilter(const char* name,bool isSourceCode)
   // sanity check
   if (name==0) return "";
 
-  QStrList& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
-  QStrList& filterList    = Config_getList(FILTER_PATTERNS);
+  const StringVector& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
+  const StringVector& filterList    = Config_getList(FILTER_PATTERNS);
 
   QCString filterName;
   bool found=FALSE;
-  if (isSourceCode && !filterSrcList.isEmpty())
+  if (isSourceCode && !filterSrcList.empty())
   { // first look for source filter pattern list
     filterName = getFilterFromList(name,filterSrcList,found);
   }
@@ -4633,11 +4629,10 @@ QCString substituteKeywords(const QCString &s,const char *title,
 int getPrefixIndex(const QCString &name)
 {
   if (name.isEmpty()) return 0;
-  static QStrList &sl = Config_getList(IGNORE_PREFIX);
-  char *s = sl.first();
-  while (s)
+  const StringVector &sl = Config_getList(IGNORE_PREFIX);
+  for (const auto &s : sl)
   {
-    const char *ps=s;
+    const char *ps=s.c_str();
     const char *pd=name.data();
     int i=0;
     while (*ps!=0 && *pd!=0 && *ps==*pd) ps++,pd++,i++;
@@ -4645,7 +4640,6 @@ int getPrefixIndex(const QCString &name)
     {
       return i;
     }
-    s = sl.next();
   }
   return 0;
 }
@@ -7506,7 +7500,7 @@ QCString filterTitle(const QCString &title)
 // returns TRUE if the name of the file represented by 'fi' matches
 // one of the file patterns in the 'patList' list.
 
-bool patternMatch(const QFileInfo &fi,const QStrList *patList)
+bool patternMatch(const QFileInfo &fi,const StringVector &patList)
 {
   static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
   bool found = FALSE;
@@ -7517,17 +7511,15 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
     caseSenseNames = FALSE;
   }
 
-  if (patList)
+  if (!patList.empty())
   {
-    QStrListIterator it(*patList);
-    QCString pattern;
-
     QCString fn = fi.fileName().data();
     QCString fp = fi.filePath().data();
     QCString afp= fi.absFilePath().data();
 
-    for (it.toFirst();(pattern=it.current());++it)
+    for (const auto &pat: patList)
     {
+      QCString pattern = pat.c_str();
       if (!pattern.isEmpty())
       {
         int i=pattern.find('=');
@@ -8368,18 +8360,16 @@ bool openOutputFile(const char *outFile,QFile &f)
 void writeExtraLatexPackages(FTextStream &t)
 {
   // User-specified packages
-  QStrList &extraPackages = Config_getList(EXTRA_PACKAGES);
-  if (!extraPackages.isEmpty())
+  const StringVector &extraPackages = Config_getList(EXTRA_PACKAGES);
+  if (!extraPackages.empty())
   {
     t << "% Packages requested by user\n";
-    const char *pkgName=extraPackages.first();
-    while (pkgName)
+    for (const auto &pkgName : extraPackages)
     {
       if ((pkgName[0] == '[') || (pkgName[0] == '{'))
-        t << "\\usepackage" << pkgName << "\n";
+        t << "\\usepackage" << pkgName.c_str() << "\n";
       else
-        t << "\\usepackage{" << pkgName << "}\n";
-      pkgName=extraPackages.next();
+        t << "\\usepackage{" << pkgName.c_str() << "}\n";
     }
     t << "\n";
   }

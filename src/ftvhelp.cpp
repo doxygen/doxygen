@@ -669,7 +669,7 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
     t << "var NAVTREE =" << endl;
     t << "[" << endl;
     t << "  [ ";
-    QCString &projName = Config_getString(PROJECT_NAME);
+    QCString projName = Config_getString(PROJECT_NAME);
     if (projName.isEmpty())
     {
       if (mainPageHasTitle()) // Use title of main page as root

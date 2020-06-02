@@ -159,13 +159,12 @@ void DefinitionImpl::setDefFile(const QCString &df,int defLine,int defCol)
 
 static bool matchExcludedSymbols(const char *name)
 {
-  static QStrList &exclSyms = Config_getList(EXCLUDE_SYMBOLS);
-  if (exclSyms.count()==0) return FALSE; // nothing specified
-  const char *pat = exclSyms.first();
+  const StringVector &exclSyms = Config_getList(EXCLUDE_SYMBOLS);
+  if (exclSyms.empty()) return FALSE; // nothing specified
   QCString symName = name;
-  while (pat)
+  for (const auto &pat : exclSyms)
   {
-    QCString pattern = pat;
+    QCString pattern = pat.c_str();
     bool forceStart=FALSE;
     bool forceEnd=FALSE;
     if (pattern.at(0)=='^')
@@ -210,7 +209,6 @@ static bool matchExcludedSymbols(const char *name)
         }
       }
     }
-    pat = exclSyms.next();
   }
   //printf("--> name=%s: no match\n",name);
   return FALSE;
@@ -1930,15 +1928,13 @@ QCString abbreviate(const char *s,const char *name)
     result=result.left(result.length()-1);
 
   // strip any predefined prefix
-  QStrList &briefDescAbbrev = Config_getList(ABBREVIATE_BRIEF);
-  const char *p = briefDescAbbrev.first();
-  while (p)
+  const StringVector &briefDescAbbrev = Config_getList(ABBREVIATE_BRIEF);
+  for (const auto &p : briefDescAbbrev)
   {
-    QCString str = p;
+    QCString str = p.c_str();
     str.replace(QRegExp("\\$name"), scopelessName);  // replace $name with entity name
     str += " ";
     stripWord(result,str);
-    p = briefDescAbbrev.next();
   }
 
   // capitalize first word

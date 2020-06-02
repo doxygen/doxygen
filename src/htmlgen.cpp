@@ -415,7 +415,6 @@ static QCString substituteHtmlKeywords(const QCString &str,
 {
   // Build CSS/JavaScript tags depending on treeview, search engine settings
   QCString cssFile;
-  QStrList extraCssFile;
   QCString generatedBy;
   QCString treeViewCssJs;
   QCString searchCssJs;
@@ -456,10 +455,10 @@ static QCString substituteHtmlKeywords(const QCString &str,
   }
 
   extraCssText = "";
-  extraCssFile = Config_getList(HTML_EXTRA_STYLESHEET);
-  for (uint i=0; i<extraCssFile.count(); ++i)
+  const StringVector &extraCssFile = Config_getList(HTML_EXTRA_STYLESHEET);
+  for (const auto &extraFile : extraCssFile)
   {
-    QCString fileName(extraCssFile.at(i));
+    QCString fileName = extraFile.c_str();
     if (!fileName.isEmpty())
     {
       QFileInfo fi(fileName);
@@ -541,12 +540,10 @@ static QCString substituteHtmlKeywords(const QCString &str,
     mathJaxJs = "<script type=\"text/x-mathjax-config\">\n"
                 "  MathJax.Hub.Config({\n"
                 "    extensions: [\"tex2jax.js\"";
-    QStrList &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
-    const char *s = mathJaxExtensions.first();
-    while (s)
+    const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
+    for (const auto &s : mathJaxExtensions)
     {
-      mathJaxJs+= ", \""+QCString(s)+".js\"";
-      s = mathJaxExtensions.next();
+      mathJaxJs+= ", \""+QCString(s.c_str())+".js\"";
     }
     if (mathJaxFormat.isEmpty())
     {
@@ -1261,10 +1258,10 @@ void HtmlGenerator::writeStyleInfo(int part)
       }
       Doxygen::indexList->addStyleSheetFile(cssfi.fileName().utf8());
     }
-    static QStrList extraCssFile = Config_getList(HTML_EXTRA_STYLESHEET);
-    for (uint i=0; i<extraCssFile.count(); ++i)
+    const StringVector &extraCssFiles = Config_getList(HTML_EXTRA_STYLESHEET);
+    for (const auto &extraCss : extraCssFiles)
     {
-      QCString fileName(extraCssFile.at(i));
+      QCString fileName = extraCss.c_str();
       if (!fileName.isEmpty())
       {
         QFileInfo fi(fileName);
@@ -2768,11 +2765,10 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "var tagMap = {" << endl;
     bool first=TRUE;
     // add search mappings
-    QStrList &extraSearchMappings = Config_getList(EXTRA_SEARCH_MAPPINGS);
-    char *ml=extraSearchMappings.first();
-    while (ml)
+    const StringVector &extraSearchMappings = Config_getList(EXTRA_SEARCH_MAPPINGS);
+    for (const auto &ml : extraSearchMappings)
     {
-      QCString mapLine = ml;
+      QCString mapLine = ml.c_str();
       int eqPos = mapLine.find('=');
       if (eqPos!=-1) // tag command contains a destination
       {
@@ -2785,7 +2781,6 @@ void HtmlGenerator::writeExternalSearchPage()
           first=FALSE;
         }
       }
-      ml=extraSearchMappings.next();
     }
     if (!first) t << endl;
     t << "};" << endl << endl;

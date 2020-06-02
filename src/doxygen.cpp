@@ -628,7 +628,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,const Entry *root)
           iName=fd->name();
         }
       }
-      else if (!Config_getList(STRIP_FROM_INC_PATH).isEmpty())
+      else if (!Config_getList(STRIP_FROM_INC_PATH).empty())
       {
         iName=stripFromIncludePath(fd->absFilePath());
       }
@@ -8856,10 +8856,10 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
 //----------------------------------------------------------------------------
 static void copyLatexStyleSheet()
 {
-  QStrList latexExtraStyleSheet = Config_getList(LATEX_EXTRA_STYLESHEET);
-  for (uint i=0; i<latexExtraStyleSheet.count(); ++i)
+  const StringVector &latexExtraStyleSheet = Config_getList(LATEX_EXTRA_STYLESHEET);
+  for (const auto &sheet : latexExtraStyleSheet)
   {
-    QCString fileName(latexExtraStyleSheet.at(i));
+    QCString fileName = sheet.c_str();
     if (!fileName.isEmpty())
     {
       QFileInfo fi(fileName);
@@ -8883,14 +8883,14 @@ static void copyLatexStyleSheet()
 //----------------------------------------------------------------------------
 static void copyStyleSheet()
 {
-  QCString &htmlStyleSheet = Config_getString(HTML_STYLESHEET);
+  QCString htmlStyleSheet = Config_getString(HTML_STYLESHEET);
   if (!htmlStyleSheet.isEmpty())
   {
     QFileInfo fi(htmlStyleSheet);
     if (!fi.exists())
     {
       err("Style sheet '%s' specified by HTML_STYLESHEET does not exist!\n",htmlStyleSheet.data());
-      htmlStyleSheet.resize(0); // revert to the default
+      htmlStyleSheet = Config_updateString(HTML_STYLESHEET,""); // revert to the default
     }
     else
     {
@@ -8898,10 +8898,10 @@ static void copyStyleSheet()
       copyFile(htmlStyleSheet,destFileName);
     }
   }
-  QStrList htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
-  for (uint i=0; i<htmlExtraStyleSheet.count(); ++i)
+  const StringVector &htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
+  for (const auto &sheet : htmlExtraStyleSheet)
   {
-    QCString fileName(htmlExtraStyleSheet.at(i));
+    QCString fileName = sheet.c_str();
     if (!fileName.isEmpty())
     {
       QFileInfo fi(fileName);
@@ -8924,14 +8924,14 @@ static void copyStyleSheet()
 
 static void copyLogo(const QCString &outputOption)
 {
-  QCString &projectLogo = Config_getString(PROJECT_LOGO);
+  QCString projectLogo = Config_getString(PROJECT_LOGO);
   if (!projectLogo.isEmpty())
   {
     QFileInfo fi(projectLogo);
     if (!fi.exists())
     {
       err("Project logo '%s' specified by PROJECT_LOGO does not exist!\n",projectLogo.data());
-      projectLogo.resize(0); // revert to the default
+      projectLogo = Config_updateString(PROJECT_LOGO,""); // revert to the default
     }
     else
     {
@@ -8942,13 +8942,11 @@ static void copyLogo(const QCString &outputOption)
   }
 }
 
-static void copyExtraFiles(QStrList files,const QCString &filesOption,const QCString &outputOption)
+static void copyExtraFiles(const StringVector &files,const QCString &filesOption,const QCString &outputOption)
 {
-  uint i;
-  for (i=0; i<files.count(); ++i)
+  for (const auto &file : files)
   {
-    QCString fileName(files.at(i));
-
+    QCString fileName = file.c_str();
     if (!fileName.isEmpty())
     {
       QFileInfo fi(fileName);
@@ -9080,12 +9078,10 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
       parser.needsPreprocessing(extension))
   {
     Preprocessor preprocessor;
-    QStrList &includePath = Config_getList(INCLUDE_PATH);
-    char *s=includePath.first();
-    while (s)
+    const StringVector &includePath = Config_getList(INCLUDE_PATH);
+    for (const auto &s : includePath)
     {
-      preprocessor.addSearchDir(QFileInfo(s).absFilePath().utf8());
-      s=includePath.next();
+      preprocessor.addSearchDir(QFileInfo(s.c_str()).absFilePath().utf8());
     }
     BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",fn);
@@ -9318,8 +9314,8 @@ static QDict<void> g_pathsVisited(1009);
 static int readDir(QFileInfo *fi,
             FileNameLinkedMap *fnMap,
             StringUnorderedSet *exclSet,
-            QStrList *patList,
-            QStrList *exclPatList,
+            const StringVector *patList,
+            const StringVector *exclPatList,
             StringVector *resultList,
             StringUnorderedSet *resultSet,
             bool errorIfNotExist,
@@ -9366,8 +9362,8 @@ static int readDir(QFileInfo *fi,
         }
         else if (cfi->isFile() &&
             (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
-            (patList==0 || patternMatch(*cfi,patList)) &&
-            !patternMatch(*cfi,exclPatList) &&
+            (patList==0 || patternMatch(*cfi,*patList)) &&
+            (exclPatList==0 || !patternMatch(*cfi,*exclPatList)) &&
             (killSet==0 || killSet->find(cfi->absFilePath().utf8().data())==killSet->end())
             )
         {
@@ -9391,7 +9387,7 @@ static int readDir(QFileInfo *fi,
         else if (recursive &&
             (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
             cfi->isDir() &&
-            !patternMatch(*cfi,exclPatList) &&
+            (exclPatList==0 || !patternMatch(*cfi,*exclPatList)) &&
             cfi->fileName().at(0)!='.') // skip "." ".." and ".dir"
         {
           cfi->setFile(cfi->absFilePath());
@@ -9414,8 +9410,8 @@ static int readDir(QFileInfo *fi,
 int readFileOrDirectory(const char *s,
                         FileNameLinkedMap *fnMap,
                         StringUnorderedSet *exclSet,
-                        QStrList *patList,
-                        QStrList *exclPatList,
+                        const StringVector *patList,
+                        const StringVector *exclPatList,
                         StringVector *resultList,
                         StringUnorderedSet *resultSet,
                         bool recursive,
@@ -9554,13 +9550,12 @@ void readAliases()
 {
   // add aliases to a dictionary
   Doxygen::aliasDict.setAutoDelete(TRUE);
-  QStrList &aliasList = Config_getList(ALIASES);
-  const char *s=aliasList.first();
-  while (s)
+  const StringVector &aliasList = Config_getList(ALIASES);
+  for (const auto &s : aliasList)
   {
-    if (Doxygen::aliasDict[s]==0)
+    QCString alias=s.c_str();
+    if (Doxygen::aliasDict[alias]==0)
     {
-      QCString alias=s;
       int i=alias.find('=');
       if (i>0)
       {
@@ -9581,7 +9576,6 @@ void readAliases()
         }
       }
     }
-    s=aliasList.next();
   }
   expandAliases();
   escapeAliases();
@@ -10308,15 +10302,13 @@ void adjustConfiguration()
    *            Add custom extension mappings
    **************************************************************************/
 
-  QStrList &extMaps = Config_getList(EXTENSION_MAPPING);
-  char *mapping = extMaps.first();
-  while (mapping)
+  const StringVector &extMaps = Config_getList(EXTENSION_MAPPING);
+  for (const auto &mapping : extMaps)
   {
-    QCString mapStr = mapping;
+    QCString mapStr = mapping.c_str();
     int i=mapStr.find('=');
     if (i==-1)
     {
-      mapping = extMaps.next();
       continue;
     }
     else
@@ -10325,7 +10317,6 @@ void adjustConfiguration()
       QCString language = mapStr.mid(i+1).stripWhiteSpace().lower();
       if (ext.isEmpty() || language.isEmpty())
       {
-        mapping = extMaps.next();
         continue;
       }
 
@@ -10341,23 +10332,20 @@ void adjustConfiguration()
             ext.data(),language.data());
       }
     }
-    mapping = extMaps.next();
   }
 
   // add predefined macro name to a dictionary
-  QStrList &expandAsDefinedList =Config_getList(EXPAND_AS_DEFINED);
-  char *s=expandAsDefinedList.first();
-  while (s)
+  const StringVector &expandAsDefinedList =Config_getList(EXPAND_AS_DEFINED);
+  for (const auto &s : expandAsDefinedList)
   {
-    Doxygen::expandAsDefinedSet.insert(s);
-    s=expandAsDefinedList.next();
+    Doxygen::expandAsDefinedSet.insert(s.c_str());
   }
 
   // read aliases and store them in a dictionary
   readAliases();
 
   // store number of spaces in a tab into Doxygen::spaces
-  int &tabSize = Config_getInt(TAB_SIZE);
+  int tabSize = Config_getInt(TAB_SIZE);
   Doxygen::spaces.resize(tabSize+1);
   int sp;for (sp=0;sp<tabSize;sp++) Doxygen::spaces.at(sp)=' ';
   Doxygen::spaces.at(tabSize)='\0';
@@ -10387,7 +10375,7 @@ static void stopDoxygen(int)
 
 static void writeTagFile()
 {
-  QCString &generateTagFile = Config_getString(GENERATE_TAGFILE);
+  QCString generateTagFile = Config_getString(GENERATE_TAGFILE);
   if (generateTagFile.isEmpty()) return;
 
   QFile tag(generateTagFile);
@@ -10490,26 +10478,30 @@ static void exitDoxygen()
 }
 
 static QCString createOutputDirectory(const QCString &baseDirName,
-                                  QCString &formatDirName,
-                                  const char *defaultDirName)
+                                  const QCString &formatDirName,
+                                  const char *defaultDirName,
+                                  std::function<void(const QCString&)> updateConfig)
 {
+  QCString result = formatDirName;
   // Note the & on the next line, we modify the formatDirOption!
-  if (formatDirName.isEmpty())
+  if (result.isEmpty())
   {
-    formatDirName = baseDirName + defaultDirName;
+    result = baseDirName + defaultDirName;
+    updateConfig(result);
   }
   else if (formatDirName[0]!='/' && (formatDirName.length()==1 || formatDirName[1]!=':'))
   {
-    formatDirName.prepend(baseDirName+'/');
+    result.prepend(baseDirName+'/');
+    updateConfig(result);
   }
-  QDir formatDir(formatDirName);
-  if (!formatDir.exists() && !formatDir.mkdir(formatDirName))
+  QDir formatDir(result);
+  if (!formatDir.exists() && !formatDir.mkdir(result))
   {
-    err("Could not create output directory %s\n", formatDirName.data());
+    err("Could not create output directory %s\n", result.data());
     cleanUpDoxygen();
     exit(1);
   }
-  return formatDirName;
+  return result;
 }
 
 static QCString getQchFileName()
@@ -10533,23 +10525,20 @@ void searchInputFiles()
 {
   StringUnorderedSet killSet;
 
-  QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
+  const StringVector &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
   bool alwaysRecursive = Config_getBool(RECURSIVE);
   StringUnorderedSet excludeNameSet;
 
   // gather names of all files in the include path
   g_s.begin("Searching for include files...\n");
   killSet.clear();
-  QStrList &includePathList = Config_getList(INCLUDE_PATH);
-  char *s=includePathList.first();
-  while (s)
+  const StringVector &includePathList = Config_getList(INCLUDE_PATH);
+  for (const auto &s : includePathList)
   {
-    QStrList &pl = Config_getList(INCLUDE_FILE_PATTERNS);
-    if (pl.count()==0)
-    {
-      pl = Config_getList(FILE_PATTERNS);
-    }
-    readFileOrDirectory(s,                             // s
+    size_t plSize = Config_getList(INCLUDE_FILE_PATTERNS).size();
+    const StringVector &pl = plSize==0 ? Config_getList(FILE_PATTERNS) :
+                                         Config_getList(INCLUDE_FILE_PATTERNS);
+    readFileOrDirectory(s.c_str(),                     // s
                         Doxygen::includeNameLinkedMap, // fnDict
                         0,                             // exclSet
                         &pl,                           // patList
@@ -10559,17 +10548,15 @@ void searchInputFiles()
                         alwaysRecursive,               // recursive
                         TRUE,                          // errorIfNotExist
                         &killSet);                     // killSet
-    s=includePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for example files...\n");
   killSet.clear();
-  QStrList &examplePathList = Config_getList(EXAMPLE_PATH);
-  s=examplePathList.first();
-  while (s)
+  const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
+  for (const auto &s : examplePathList)
   {
-    readFileOrDirectory(s,                                                      // s
+    readFileOrDirectory(s.c_str(),                                              // s
                         Doxygen::exampleNameLinkedMap,                          // fnDict
                         0,                                                      // exclSet
                         &Config_getList(EXAMPLE_PATTERNS),                      // patList
@@ -10579,17 +10566,15 @@ void searchInputFiles()
                         (alwaysRecursive || Config_getBool(EXAMPLE_RECURSIVE)), // recursive
                         TRUE,                                                   // errorIfNotExist
                         &killSet);                                              // killSet
-    s=examplePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for images...\n");
   killSet.clear();
-  QStrList &imagePathList=Config_getList(IMAGE_PATH);
-  s=imagePathList.first();
-  while (s)
+  const StringVector &imagePathList=Config_getList(IMAGE_PATH);
+  for (const auto &s : imagePathList)
   {
-    readFileOrDirectory(s,                                // s
+    readFileOrDirectory(s.c_str(),                        // s
                         Doxygen::imageNameLinkedMap,      // fnDict
                         0,                                // exclSet
                         0,                                // patList
@@ -10599,17 +10584,15 @@ void searchInputFiles()
                         alwaysRecursive,                  // recursive
                         TRUE,                             // errorIfNotExist
                         &killSet);                        // killSet
-    s=imagePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for dot files...\n");
   killSet.clear();
-  QStrList &dotFileList=Config_getList(DOTFILE_DIRS);
-  s=dotFileList.first();
-  while (s)
+  const StringVector &dotFileList=Config_getList(DOTFILE_DIRS);
+  for (const auto &s : dotFileList)
   {
-    readFileOrDirectory(s,                              // s
+    readFileOrDirectory(s.c_str(),                      // s
                         Doxygen::dotFileNameLinkedMap,  // fnDict
                         0,                              // exclSet
                         0,                              // patList
@@ -10619,17 +10602,15 @@ void searchInputFiles()
                         alwaysRecursive,                // recursive
                         TRUE,                           // errorIfNotExist
                         &killSet);                      // killSet
-    s=dotFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for msc files...\n");
   killSet.clear();
-  QStrList &mscFileList=Config_getList(MSCFILE_DIRS);
-  s=mscFileList.first();
-  while (s)
+  const StringVector &mscFileList=Config_getList(MSCFILE_DIRS);
+  for (const auto &s : mscFileList)
   {
-    readFileOrDirectory(s,                               // s
+    readFileOrDirectory(s.c_str(),                       // s
                         Doxygen::mscFileNameLinkedMap,   // fnDict
                         0,                               // exclSet
                         0,                               // patList
@@ -10639,17 +10620,15 @@ void searchInputFiles()
                         alwaysRecursive,                 // recursive
                         TRUE,                            // errorIfNotExist
                         &killSet);                       // killSet
-    s=mscFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for dia files...\n");
   killSet.clear();
-  QStrList &diaFileList=Config_getList(DIAFILE_DIRS);
-  s=diaFileList.first();
-  while (s)
+  const StringVector &diaFileList=Config_getList(DIAFILE_DIRS);
+  for (const auto &s : diaFileList)
   {
-    readFileOrDirectory(s,                                 // s
+    readFileOrDirectory(s.c_str(),                         // s
                         Doxygen::diaFileNameLinkedMap,     // fnDict
                         0,                                 // exclSet
                         0,                                 // patList
@@ -10659,16 +10638,14 @@ void searchInputFiles()
                         alwaysRecursive,                   // recursive
                         TRUE,                              // errorIfNotExist
                         &killSet);                         // killSet
-    s=diaFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for files to exclude\n");
-  QStrList &excludeList = Config_getList(EXCLUDE);
-  s=excludeList.first();
-  while (s)
+  const StringVector &excludeList = Config_getList(EXCLUDE);
+  for (const auto &s : excludeList)
   {
-    readFileOrDirectory(s,                                  // s
+    readFileOrDirectory(s.c_str(),                          // s
                         0,                                  // fnDict
                         0,                                  // exclSet
                         &Config_getList(FILE_PATTERNS),     // patList
@@ -10677,7 +10654,6 @@ void searchInputFiles()
                         &excludeNameSet,                    // resultSet
                         alwaysRecursive,                    // recursive
                         FALSE);                             // errorIfNotExist
-    s=excludeList.next();                                   // killSet
   }
   g_s.end();
 
@@ -10688,11 +10664,10 @@ void searchInputFiles()
   g_s.begin("Searching INPUT for files to process...\n");
   killSet.clear();
   Doxygen::inputPaths.clear();
-  QStrList &inputList=Config_getList(INPUT);
-  s=inputList.first();
-  while (s)
+  const StringVector &inputList=Config_getList(INPUT);
+  for (const auto &s : inputList)
   {
-    QCString path=s;
+    QCString path=s.c_str();
     uint l = path.length();
     if (l>0)
     {
@@ -10712,7 +10687,6 @@ void searchInputFiles()
           &killSet,                           // killSet
           &Doxygen::inputPaths);              // paths
     }
-    s=inputList.next();
   }
   std::sort(Doxygen::inputNameLinkedMap->begin(),
             Doxygen::inputNameLinkedMap->end(),
@@ -10738,10 +10712,10 @@ void parseInput()
   /**************************************************************************
    *            Make sure the output directory exists
    **************************************************************************/
-  QCString &outputDirectory = Config_getString(OUTPUT_DIRECTORY);
+  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
   if (outputDirectory.isEmpty())
   {
-    outputDirectory=QDir::currentDirPath().utf8();
+    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,QDir::currentDirPath().utf8());
   }
   else
   {
@@ -10763,7 +10737,7 @@ void parseInput()
       }
       dir.cd(outputDirectory);
     }
-    outputDirectory=dir.absPath().utf8();
+    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,dir.absPath().utf8());
   }
 
   /**************************************************************************
@@ -10795,34 +10769,40 @@ void parseInput()
    **************************************************************************/
 
   QCString htmlOutput;
-  bool &generateHtml = Config_getBool(GENERATE_HTML);
+  bool generateHtml = Config_getBool(GENERATE_HTML);
   if (generateHtml || g_useOutputTemplate /* TODO: temp hack */)
-    htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
+    htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),
+                                              "/html",Config_setterFunc(HTML_OUTPUT));
 
   QCString docbookOutput;
-  bool &generateDocbook = Config_getBool(GENERATE_DOCBOOK);
+  bool generateDocbook = Config_getBool(GENERATE_DOCBOOK);
   if (generateDocbook)
-    docbookOutput = createOutputDirectory(outputDirectory,Config_getString(DOCBOOK_OUTPUT),"/docbook");
+    docbookOutput = createOutputDirectory(outputDirectory,Config_getString(DOCBOOK_OUTPUT),
+                                              "/docbook",Config_setterFunc(DOCBOOK_OUTPUT));
 
   QCString xmlOutput;
-  bool &generateXml = Config_getBool(GENERATE_XML);
+  bool generateXml = Config_getBool(GENERATE_XML);
   if (generateXml)
-    xmlOutput = createOutputDirectory(outputDirectory,Config_getString(XML_OUTPUT),"/xml");
+    xmlOutput = createOutputDirectory(outputDirectory,Config_getString(XML_OUTPUT),
+                                              "/xml",Config_setterFunc(XML_OUTPUT));
 
   QCString latexOutput;
-  bool &generateLatex = Config_getBool(GENERATE_LATEX);
+  bool generateLatex = Config_getBool(GENERATE_LATEX);
   if (generateLatex)
-    latexOutput = createOutputDirectory(outputDirectory,Config_getString(LATEX_OUTPUT),"/latex");
+    latexOutput = createOutputDirectory(outputDirectory,Config_getString(LATEX_OUTPUT),
+                                              "/latex",Config_setterFunc(LATEX_OUTPUT));
 
   QCString rtfOutput;
-  bool &generateRtf = Config_getBool(GENERATE_RTF);
+  bool generateRtf = Config_getBool(GENERATE_RTF);
   if (generateRtf)
-    rtfOutput = createOutputDirectory(outputDirectory,Config_getString(RTF_OUTPUT),"/rtf");
+    rtfOutput = createOutputDirectory(outputDirectory,Config_getString(RTF_OUTPUT),
+                                              "/rtf",Config_setterFunc(RTF_OUTPUT));
 
   QCString manOutput;
-  bool &generateMan = Config_getBool(GENERATE_MAN);
+  bool generateMan = Config_getBool(GENERATE_MAN);
   if (generateMan)
-    manOutput = createOutputDirectory(outputDirectory,Config_getString(MAN_OUTPUT),"/man");
+    manOutput = createOutputDirectory(outputDirectory,Config_getString(MAN_OUTPUT),
+                                              "/man",Config_setterFunc(MAN_OUTPUT));
 
   //QCString sqlOutput;
   //bool &generateSql = Config_getBool(GENERATE_SQLITE3);
@@ -10856,11 +10836,11 @@ void parseInput()
    **************************************************************************/
 
   LayoutDocManager::instance().init();
-  QCString &layoutFileName = Config_getString(LAYOUT_FILE);
+  QCString layoutFileName = Config_getString(LAYOUT_FILE);
   bool defaultLayoutUsed = FALSE;
   if (layoutFileName.isEmpty())
   {
-    layoutFileName = "DoxygenLayout.xml";
+    layoutFileName = Config_updateString(LAYOUT_FILE,"DoxygenLayout.xml");
     defaultLayoutUsed = TRUE;
   }
 
@@ -10880,13 +10860,14 @@ void parseInput()
    **************************************************************************/
 
   // prevent search in the output directories
-  QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
-  if (generateHtml)    exclPatterns.append(htmlOutput);
-  if (generateDocbook) exclPatterns.append(docbookOutput);
-  if (generateXml)     exclPatterns.append(xmlOutput);
-  if (generateLatex)   exclPatterns.append(latexOutput);
-  if (generateRtf)     exclPatterns.append(rtfOutput);
-  if (generateMan)     exclPatterns.append(manOutput);
+  StringVector exclPatterns = Config_getList(EXCLUDE_PATTERNS);
+  if (generateHtml)    exclPatterns.push_back(htmlOutput.data());
+  if (generateDocbook) exclPatterns.push_back(docbookOutput.data());
+  if (generateXml)     exclPatterns.push_back(xmlOutput.data());
+  if (generateLatex)   exclPatterns.push_back(latexOutput.data());
+  if (generateRtf)     exclPatterns.push_back(rtfOutput.data());
+  if (generateMan)     exclPatterns.push_back(manOutput.data());
+  Config_updateList(EXCLUDE_PATTERNS,exclPatterns);
 
   searchInputFiles();
 
@@ -10919,12 +10900,10 @@ void parseInput()
   std::shared_ptr<Entry> root = std::make_shared<Entry>();
   msg("Reading and parsing tag files\n");
 
-  QStrList &tagFileList = Config_getList(TAGFILES);
-  char *s=tagFileList.first();
-  while (s)
+  const StringVector &tagFileList = Config_getList(TAGFILES);
+  for (const auto &s : tagFileList)
   {
-    readTagFile(root,s);
-    s=tagFileList.next();
+    readTagFile(root,s.c_str());
   }
 
   /**************************************************************************

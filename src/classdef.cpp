@@ -1848,16 +1848,15 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
   if (m_impl->incInfo)
   {
     QCString nm;
-    QStrList paths = Config_getList(STRIP_FROM_PATH);
-    if (!paths.isEmpty() && m_impl->incInfo->fileDef)
+    const StringVector &paths = Config_getList(STRIP_FROM_PATH);
+    if (!paths.empty() && m_impl->incInfo->fileDef)
     {
       QCString abs = m_impl->incInfo->fileDef->absFilePath();
-      const char *s = paths.first();
       QCString potential;
       unsigned int length = 0;
-      while (s)
+      for (const auto &s : paths)
       {
-        QFileInfo info(s);
+        QFileInfo info(s.c_str());
         if (info.exists())
         {
           QCString prefix = info.absFilePath().utf8();
@@ -1872,7 +1871,6 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
             length = prefix.length();
             potential = abs.right(abs.length() - prefix.length());
           }
-          s = paths.next();
         }
       }
 

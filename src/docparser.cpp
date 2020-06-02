@@ -1846,18 +1846,16 @@ static void readTextFileByName(const QCString &file,QCString &text)
       return;
     }
   }
-  QStrList &examplePathList = Config_getList(EXAMPLE_PATH);
-  char *s=examplePathList.first();
-  while (s)
+  const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
+  for (const auto &s : examplePathList)
   {
-    QCString absFileName = QCString(s)+Portable::pathSeparator()+file;
+    QCString absFileName = QCString(s.c_str())+Portable::pathSeparator()+file;
     QFileInfo fi(absFileName);
     if (fi.exists())
     {
       text = fileToString(absFileName,Config_getBool(FILTER_SOURCE_FILES));
       return;
     }
-    s=examplePathList.next();
   }
 
   // as a fallback we also look in the exampleNameDict
@@ -2569,7 +2567,7 @@ void DocRef::parse()
 
 DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //context)
 {
-  static uint numBibFiles = Config_getList(CITE_BIB_FILES).count();
+  size_t numBibFiles = Config_getList(CITE_BIB_FILES).size();
   m_parent = parent;
   //printf("DocCite::DocCite(target=%s)\n",target.data());
   ASSERT(!target.isEmpty());
