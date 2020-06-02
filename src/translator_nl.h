@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-class TranslatorDutch : public Translator
+class TranslatorDutch : public TranslatorAdapter_1_8_19
 {
   public:
     QCString idLanguage()

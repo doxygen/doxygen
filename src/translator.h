@@ -646,6 +646,12 @@ class Translator
     virtual QCString trOperationDocumentation() = 0;
     virtual QCString trDataMembers() = 0;
     virtual QCString trDataMemberDocumentation() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDesignUnitDocumentation() = 0;
 };
 
 #endif
