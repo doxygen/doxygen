@@ -1941,8 +1941,15 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       return "Fasona Superrigardo";
     }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
 //////////////////////////////////////////////////////////////////////////
 
+    virtual QCString trISOLang()
+    {
+        return("eo");
+    }
 };
 
 #endif

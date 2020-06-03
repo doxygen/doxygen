@@ -1944,8 +1944,15 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
       return "Dizaina pārskats";
     }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
 //////////////////////////////////////////////////////////////////////////
 
+    virtual QCString trISOLang()
+    {
+        return("lv");
+    }
 };
 
 #endif

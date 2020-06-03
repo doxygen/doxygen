@@ -2304,8 +2304,15 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
         return "Documentación miembro de datos";
     }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
 //////////////////////////////////////////////////////////////////////////
 
+    virtual QCString trISOLang()
+    {
+        return("es");
+    }
 };
 
 #endif

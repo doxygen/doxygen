@@ -2254,8 +2254,15 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trCustomReference(const char *name)
     { return QCString(name)+"-Referenz"; }
 
-    //////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trISOLang()
+    {
+        return("de");
+    }
 };
 
 #endif

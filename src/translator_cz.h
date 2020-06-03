@@ -2041,8 +2041,15 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
       return result;
     }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
 //////////////////////////////////////////////////////////////////////////
 
+    virtual QCString trISOLang()
+    {
+        return("cs");
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

@@ -1812,6 +1812,15 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trDirDepGraph(const char *name)
     { return QCString("Bagan dependensi directori untuk ")+name+":"; }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trISOLang()
+    {
+        return("id");
+    }
 };
 
 #endif

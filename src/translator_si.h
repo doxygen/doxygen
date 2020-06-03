@@ -1207,6 +1207,15 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
              "podana je zaradi priročnosti. Metoda se od predhodnje razlikuje "
              "samo v številu in/ali tipu formalnih argumentov.";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trISOLang()
+    {
+        return("sl");
+    }
 };
 
 #endif

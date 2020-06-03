@@ -1563,6 +1563,15 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
               "generert for deg. Den skiller seg ut fra "
               "funksjonen ovenfor i argument(ene) den aksepterer.";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trISOLang()
+    {
+        return("nn");
+    }
 };
 
 #endif

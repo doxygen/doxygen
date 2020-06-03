@@ -1866,8 +1866,15 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     virtual QCString trAdditionalInheritedMembers()
     { return "Dodatkowe Dziedziczone Składowe"; }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
 //////////////////////////////////////////////////////////////////////////
 
+    virtual QCString trISOLang()
+    {
+        return("pl");
+    }
 };
 
 #endif

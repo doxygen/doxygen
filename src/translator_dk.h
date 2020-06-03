@@ -1766,6 +1766,15 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     }
 
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trISOLang()
+    {
+        return("da");
+    }
+
 /*---------- For internal use: ----------------------------------------*/
   protected:
 	/*! For easy flexible-noun implementation.

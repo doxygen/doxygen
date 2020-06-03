@@ -1718,6 +1718,15 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     {
       return "Ограничувања на Тип";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trISOLang()
+    {
+        return("mk");
+    }
 };
 
 #endif

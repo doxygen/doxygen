@@ -1779,6 +1779,15 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return convertDigitsToFarsi(sdate);
     }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trISOLang()
+    {
+        return("fa");
+    }
 };
 
 #endif

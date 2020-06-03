@@ -1838,6 +1838,15 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     virtual QCString trDirDepGraph(const char *name)
     { return QCString("Graf de dependència de directoris per a ")+name+":"; }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trISOLang()
+    {
+        return("ca");
+    }
 };
 
 #endif

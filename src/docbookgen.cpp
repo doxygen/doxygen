@@ -320,6 +320,7 @@ DB_GEN_C
   t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
   t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
   if (!pageName.isEmpty()) t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
+  t << " xml:lang=\"" << theTranslator->trISOLang() << "\"";
   t << ">" << endl;
 }
 

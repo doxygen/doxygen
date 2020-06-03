@@ -646,6 +646,13 @@ class Translator
     virtual QCString trOperationDocumentation() = 0;
     virtual QCString trDataMembers() = 0;
     virtual QCString trDataMemberDocumentation() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    /// see for complete list: https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
+    virtual QCString trISOLang() = 0;
 };
 
 #endif

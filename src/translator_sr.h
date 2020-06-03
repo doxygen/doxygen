@@ -1769,6 +1769,15 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
 //       return result;
 //     }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trISOLang()
+    {
+        return("sr-Latn");
+    }
 };
 
 #endif

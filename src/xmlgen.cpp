@@ -154,7 +154,9 @@ static void writeXMLHeader(FTextStream &t)
   t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
   t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"compound.xsd\" ";
-  t << "version=\"" << getDoxygenVersion() << "\">" << endl;
+  t << "version=\"" << getDoxygenVersion() << "\" ";
+  t << "xml:lang=\"" << theTranslator->trISOLang() << "\"";
+  t << ">" << endl;
 }
 
 static void writeCombineScript()
@@ -178,7 +180,7 @@ static void writeCombineScript()
   "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">\n"
   "  <xsl:output method=\"xml\" version=\"1.0\" indent=\"no\" standalone=\"yes\" />\n"
   "  <xsl:template match=\"/\">\n"
-  "    <doxygen version=\"{doxygenindex/@version}\">\n"
+  "    <doxygen version=\"{doxygenindex/@version}\" xml:lang=\"{doxygenindex/@xml:lang}\">\n"
   "      <!-- Load all doxygen generated xml files -->\n"
   "      <xsl:for-each select=\"doxygenindex/compound\">\n"
   "        <xsl:copy-of select=\"document( concat( @refid, '.xml' ) )/doxygen/*\" />\n"
@@ -1907,6 +1909,7 @@ void generateXML()
   QDir xmlDir(outputDirectory);
   createSubDirs(xmlDir);
 
+  ResourceMgr::instance().copyResource("xml.xsd",outputDirectory);
   ResourceMgr::instance().copyResource("index.xsd",outputDirectory);
 
   QCString fileName=outputDirectory+"/compound.xsd";
@@ -1959,7 +1962,9 @@ void generateXML()
   t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
   t << "<doxygenindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
-  t << "version=\"" << getDoxygenVersion() << "\">" << endl;
+  t << "version=\"" << getDoxygenVersion() << "\" ";
+  t << "xml:lang=\"" << theTranslator->trISOLang() << "\"";
+  t << ">" << endl;
 
   {
     ClassSDict::Iterator cli(*Doxygen::classSDict);
