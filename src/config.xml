@@ -3335,6 +3335,14 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='string' id='DOT_SHAPE' format='string' defval='plain' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ Define 'record' to have a box around nodes.
+ More shapes are described here: https://www.graphviz.org/doc/info/shapes.html
+]]>
+      </docs>
+    </option>
     <option type='bool' id='CLASS_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>
 <![CDATA[

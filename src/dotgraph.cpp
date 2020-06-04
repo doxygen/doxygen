@@ -289,7 +289,7 @@ void DotGraph::writeGraphHeader(FTextStream &t,const QCString &title)
          "labelfontname=\"" << fontName << "\","
          "labelfontsize=\"" << fontSize << "\"];\n";
   t << "  node [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\",shape=record];\n";
+         "fontsize=\"" << fontSize << "\",shape=" << Config_getString(DOT_SHAPE) << "];\n";
 }
 
 void DotGraph::writeGraphFooter(FTextStream &t)
