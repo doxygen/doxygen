@@ -185,8 +185,7 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
     outputStream << DotNode::convertLabel(directory->shortName());
   }
   outputStream << "\", "
-      "fontname=\"" << Config_getString(DOT_FONTNAME) << "\", "
-      "fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\", "
+       << Config_getString(DOT_COMMON_ATTR) << " "
       "URL=\"" << addHtmlExtensionIfMissing(directory->getOutputFileBase()) << "\""
       "]\n";
   if (!isAncestor)

@@ -427,6 +427,15 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     }
     t << "}\"";
   }
+  else if (Config_getString(DOT_NODE_ATTR).contains("shape=plain"))
+  {
+    if (m_isRoot)
+      t << "<<b>" << convertToXML(m_label) << "</b>>";
+    else if (m_truncated == Truncated)
+      t << "<<i>" << convertToXML(m_label) << "</i>>";
+    else
+      t << '"' << convertLabel(m_label) << '"';
+  }
   else // standard look
   {
     t << '"' << convertLabel(m_label) << '"';
@@ -536,8 +545,7 @@ void DotNode::writeArrow(TextStream &t,
   bool umlUseArrow = aStyle=="odiamond";
 
   if (pointBack && !umlUseArrow) t << "dir=\"back\",";
-  t << "color=\"" << eProps->edgeColorMap[ei->color()]
-    << "\",fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\",";
+  t << "color=\"" << eProps->edgeColorMap[ei->color()] << "\",";
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
   if (!ei->label().isEmpty())
   {
@@ -556,7 +564,6 @@ void DotNode::writeArrow(TextStream &t,
       t << ",arrowhead=\"" << eProps->arrowStyleMap[ei->color()] << "\"";
   }
 
-  if (format==GOF_BITMAP) t << ",fontname=\"" << Config_getString(DOT_FONTNAME) << "\"";
   t << "];\n";
 }
 

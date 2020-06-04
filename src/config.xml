@@ -3615,32 +3615,49 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='string' id='DOT_FONTNAME' format='string' defval='Helvetica' depends='HAVE_DOT'>
+    <option type='string' id='DOT_COMMON_ATTR' format='string' depends='HAVE_DOT'
+      defval='fontname=Helvetica fontsize=10'>
       <docs>
 <![CDATA[
+ \c DOT_COMMON_ATTR is common attributes for nodes, edges and labels of subgraphs.
  When you want a differently looking font in the dot files that doxygen generates
- you can specify the font name
- using \c DOT_FONTNAME. You need to make sure dot is able to find the font,
- which can be done by putting it in a standard location or by setting the
- \c DOTFONTPATH environment variable or by setting \ref cfg_dot_fontpath "DOT_FONTPATH" to the
+ you can specify fontname, fontcolor and fontsize attributes.
+ For details please see
+ <a href=https://graphviz.org/doc/info/attrs.html>Node, Edge and Graph Attributes specification</a>
+ You need to make sure dot is able to find the font,
+ which can be done by putting it in a standard location
+ or by setting the \c DOTFONTPATH environment variable or by
+ setting \ref cfg_dot_fontpath "DOT_FONTPATH" to the
  directory containing the font.
+ Default graphviz fontsize is 14.
 ]]>
       </docs>
     </option>
-    <option type='int' id='DOT_FONTSIZE' minval='4' maxval='24' defval='10' depends='HAVE_DOT'>
+    <option type='string' id='DOT_EDGE_ATTR' format='string' depends='HAVE_DOT'
+      defval='labelfontname=Helvetica labelfontsize=10'>
       <docs>
 <![CDATA[
- The \c DOT_FONTSIZE tag can be used to set the size (in points) of the font of dot graphs.
+ \c DOT_EDGE_ATTR is concatenated with \ref cfg_dot_common_attr "DOT_COMMON_ATTR".
+ For elegant style you can add 'arrowhead=open, arrowtail=open, arrowsize=0.5'.
+ <a href=https://graphviz.org/doc/info/arrows.html>Complete documentation about arrows shapes.</a>
+]]>
+      </docs>
+    </option>
+    <option type='string' id='DOT_NODE_ATTR' format='string' depends='HAVE_DOT'
+      defval='fontsize=10 shape=box height=0.2 width=0.4'>
+      <docs>
+<![CDATA[
+ \c DOT_NODE_ATTR is concatenated with \ref cfg_dot_common_attr "DOT_COMMON_ATTR".
+ For view without boxes around nodes set 'shape=plain' or 'shape=plaintext'
+ <a href=https://www.graphviz.org/doc/info/shapes.html>Shapes specification</a>
 ]]>
       </docs>
     </option>
     <option type='string' id='DOT_FONTPATH' format='dir' defval='' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- By default doxygen will tell \c dot to use the default font as specified with \ref cfg_dot_fontname "DOT_FONTNAME".
- If you specify a
- different font using \ref cfg_dot_fontname "DOT_FONTNAME" you can set the path where \c dot
- can find it using this tag.
+ You can set the path where \c dot can find font specified with
+ fontname in \ref cfg_dot_common_attr "DOT_COMMON_ATTR" and others dot attributes.
 ]]>
       </docs>
     </option>
@@ -4009,5 +4026,7 @@ This setting is not only used for dot files but also for msc temporary files.
     <option type='obsolete' orgtype='bool' id='RTF_SOURCE_CODE'/>
     <option type='obsolete' orgtype='bool' id='LATEX_SOURCE_CODE'/>
     <option type='obsolete' orgtype='bool' id='CLASS_DIAGRAMS'/>
+    <option type='obsolete' orgtype='int' id='DOT_FONTSIZE'/>
+    <option type='obsolete' orgtype='string' id='DOT_FONTNAME'/>
   </group>
 </doxygenconfig>

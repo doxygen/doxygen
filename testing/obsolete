@@ -1,0 +1,9 @@
+# Usage:
+#
+# cat obsolete | ../build/bin/doxygen -s -u - | grep -e 'DOT_COMMON_ATTR.*F1.*123' -e 'DOT_EDGE_ATTR.*F1.*123'
+#
+# Check ouput manually. Expected two lines.
+
+# obsoleted attributes:
+DOT_FONTNAME=F1
+DOT_FONTSIZE=123

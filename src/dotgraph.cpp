@@ -274,8 +274,6 @@ void DotGraph::generateCode(TextStream &t)
 
 void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
 {
-  int fontSize      = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
   t << "digraph ";
   if (title.isEmpty())
   {
@@ -296,12 +294,9 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
   {
     t << "  bgcolor=\"transparent\";\n";
   }
-  t << "  edge [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\","
-         "labelfontname=\"" << fontName << "\","
-         "labelfontsize=\"" << fontSize << "\"];\n";
-  t << "  node [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\",shape=\"box\"];\n";
+  QCString c = Config_getString(DOT_COMMON_ATTR) + " ";
+  t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
+  t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
 }
 
 void DotGraph::writeGraphFooter(TextStream &t)
