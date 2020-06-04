@@ -1458,7 +1458,9 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << nd->getOutputFileBase()
-    << "\" kind=\"namespace\" language=\""
+    << "\" kind=\"namespace\" "
+    << (nd->isInline()?"inline=\"yes\" ":"")
+    << "language=\""
     << langToString(nd->getLanguage()) << "\">" << endl;
   t << "    <compoundname>";
   writeXMLString(t,nd->name());
