@@ -44,12 +44,8 @@ QCString DotLegendGraph::getBaseName() const
 
 void DotLegendGraph::computeTheGraph()
 {
-  int fontSize = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
   TextStream md5stream;
   writeGraphHeader(md5stream,theTranslator->trLegendTitle());
-  md5stream << "  node [fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\"];\n";
-  md5stream << "  edge [fontsize=\"" << fontSize << "\",fontname=\"" << fontName << "\"];\n";
 
   DotNode{9, "Inherited", "", "", TRUE}.writeBox(md5stream, CallGraph, GOF_BITMAP, false);
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",style=\"solid\"];\n";

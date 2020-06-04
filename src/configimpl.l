@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 
 #include "config.h"
 #include "regex.h"
@@ -1874,16 +1875,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
-  // correct DOT_FONTNAME if needed
-  QCString dotFontName=Config_getString(DOT_FONTNAME);
-  if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
-  {
-    warn_uncond("doxygen no longer ships with the FreeSans font.\n"
-               "  You may want to clear or change DOT_FONTNAME.\n"
-               "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
-  }
-
-  //------------------------
   // clip number of threads
   int dotNumThreads = Config_getInt(DOT_NUM_THREADS);
   if (dotNumThreads>32)
@@ -2073,6 +2064,15 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
 }
 
+static void appendAttribute(QCString& a, const char * name, ConfigObsolete* value)
+{
+  if (!value || !value->valueStringRef()->length())
+    return;
+  if (a.length())
+    a += ' ';
+  a += name + QCString("=") + value->valueStringRef()->quoted();
+}
+
 void Config::updateObsolete()
 {
   //------------------------
@@ -2101,6 +2101,27 @@ void Config::updateObsolete()
       }
     }
   }
+
+  auto fontname = dynamic_cast<ConfigObsolete*>(ConfigImpl::instance()->get("DOT_FONTNAME"));
+  auto fontsize = dynamic_cast<ConfigObsolete*>(ConfigImpl::instance()->get("DOT_FONTSIZE"));
+
+  // correct DOT_FONTNAME if needed
+  if (fontname &&
+      (*fontname->valueStringRef() == "FreeSans"
+      || *fontname->valueStringRef() == "FreeSans.ttf"))
+    warn_uncond("doxygen no longer ships with the FreeSans font.\n"
+               "  You may want to clear or change DOT_FONTNAME.\n"
+               "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
+
+  QCString& common_attr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"))->valueRef();
+
+  appendAttribute(common_attr, "fontname", fontname);
+  appendAttribute(common_attr, "fontsize", fontsize);
+
+  QCString& edge_attr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"))->valueRef();
+
+  appendAttribute(edge_attr, "labelfontname", fontname);
+  appendAttribute(edge_attr, "labelfontsize", fontsize);
 }
 
 void Config::writeTemplate(TextStream &t,bool shortList,bool update)
