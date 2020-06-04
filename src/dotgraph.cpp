@@ -31,9 +31,6 @@
 
 #define MAP_CMD "cmapx"
 
-//QCString DotGraph::DOT_FONTNAME; // will be initialized in initDot
-//int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot
-
 /*! Checks if a file "baseName".md5 exists. If so the contents
 *  are compared with \a md5. If equal FALSE is returned.
 *  The .md5 is created or updated after successful creation of the output file.
@@ -267,8 +264,6 @@ void DotGraph::generateCode(TextStream &t)
 
 void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
 {
-  int fontSize      = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
   t << "digraph ";
   if (title.isEmpty())
   {
@@ -289,12 +284,10 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
   {
     t << "  bgcolor=\"transparent\";\n";
   }
-  t << "  edge [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\","
-         "labelfontname=\"" << fontName << "\","
-         "labelfontsize=\"" << fontSize << "\"];\n";
-  t << "  node [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\",shape=record];\n";
+  QCString c = Config_getString(DOT_COMMON_ATTR) + " ";
+  t << "  graph [" << Config_getString(DOT_GRAPH_ATTR) << "];\n";
+  t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
+  t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
 }
 
 void DotGraph::writeGraphFooter(TextStream &t)

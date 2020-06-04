@@ -278,7 +278,7 @@ def parseOption(node):
                 print("              \"%s\"" % (line))
         print("             );")
         if defval != '':
-            print("  cs->setDefaultValue(\"%s\");" % (defval.replace('\\','\\\\')))
+            print("  cs->setDefaultValue(\"%s\");" % (defval.replace('\\','\\\\').replace('"','\\"')))
         if format == 'file':
             print("  cs->setWidgetType(ConfigString::File);")
         elif format == 'image':

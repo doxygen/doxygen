@@ -1808,16 +1808,6 @@ void Config::checkAndCorrect(bool quiet)
   }
 
   //------------------------
-  // correct DOT_FONTNAME if needed
-  QCString dotFontName=Config_getString(DOT_FONTNAME);
-  if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
-  {
-    warn_uncond("doxygen no longer ships with the FreeSans font.\n"
-               "  You may want to clear or change DOT_FONTNAME.\n"
-               "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
-  }
-
-  //------------------------
   // clip number of threads
   int dotNumThreads = Config_getInt(DOT_NUM_THREADS);
   if (dotNumThreads>32)

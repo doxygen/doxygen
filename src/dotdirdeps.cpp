@@ -185,8 +185,7 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
     outputStream << directory->shortName();
   }
   outputStream << "\", "
-      "fontname=\"" << Config_getString(DOT_FONTNAME) << "\", "
-      "fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\", "
+       << Config_getString(DOT_GRAPH_ATTR) << " "
       "URL=\"" << directory->getOutputFileBase() << Doxygen::htmlFileExtension << "\""
       "]\n";
   if (!isAncestor)

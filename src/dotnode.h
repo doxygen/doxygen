@@ -81,9 +81,8 @@ class DotNode
     void writeXML(TextStream &t,bool isClassGraph) const;
     void writeDocbook(TextStream &t,bool isClassGraph) const;
     void writeDEF(TextStream &t) const;
-    void writeBox(TextStream &t,GraphType gt,GraphOutputFormat f,
-                  bool hasNonReachableChildren) const;
     void writeLabel(TextStream &t, GraphType gt) const;
+    void writeNode(TextStream &t, GraphType gt) const;
     void writeArrow(TextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
                     const EdgeInfo *ei,bool topDown, bool pointBack=TRUE) const;
 
