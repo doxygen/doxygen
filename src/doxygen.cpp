@@ -10479,20 +10479,16 @@ static void exitDoxygen()
 
 static QCString createOutputDirectory(const QCString &baseDirName,
                                   const QCString &formatDirName,
-                                  const char *defaultDirName,
-                                  std::function<void(const QCString&)> updateConfig)
+                                  const char *defaultDirName)
 {
   QCString result = formatDirName;
-  // Note the & on the next line, we modify the formatDirOption!
   if (result.isEmpty())
   {
     result = baseDirName + defaultDirName;
-    updateConfig(result);
   }
   else if (formatDirName[0]!='/' && (formatDirName.length()==1 || formatDirName[1]!=':'))
   {
     result.prepend(baseDirName+'/');
-    updateConfig(result);
   }
   QDir formatDir(result);
   if (!formatDir.exists() && !formatDir.mkdir(result))
@@ -10771,43 +10767,58 @@ void parseInput()
   QCString htmlOutput;
   bool generateHtml = Config_getBool(GENERATE_HTML);
   if (generateHtml || g_useOutputTemplate /* TODO: temp hack */)
-    htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),
-                                              "/html",Config_setterFunc(HTML_OUTPUT));
+  {
+    htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
+    Config_updateString(HTML_OUTPUT,htmlOutput);
+  }
 
   QCString docbookOutput;
   bool generateDocbook = Config_getBool(GENERATE_DOCBOOK);
   if (generateDocbook)
-    docbookOutput = createOutputDirectory(outputDirectory,Config_getString(DOCBOOK_OUTPUT),
-                                              "/docbook",Config_setterFunc(DOCBOOK_OUTPUT));
+  {
+    docbookOutput = createOutputDirectory(outputDirectory,Config_getString(DOCBOOK_OUTPUT),"/docbook");
+    Config_updateString(DOCBOOK_OUTPUT,docbookOutput);
+  }
 
   QCString xmlOutput;
   bool generateXml = Config_getBool(GENERATE_XML);
   if (generateXml)
-    xmlOutput = createOutputDirectory(outputDirectory,Config_getString(XML_OUTPUT),
-                                              "/xml",Config_setterFunc(XML_OUTPUT));
+  {
+    xmlOutput = createOutputDirectory(outputDirectory,Config_getString(XML_OUTPUT),"/xml");
+    Config_updateString(XML_OUTPUT,xmlOutput);
+  }
 
   QCString latexOutput;
   bool generateLatex = Config_getBool(GENERATE_LATEX);
   if (generateLatex)
-    latexOutput = createOutputDirectory(outputDirectory,Config_getString(LATEX_OUTPUT),
-                                              "/latex",Config_setterFunc(LATEX_OUTPUT));
+  {
+    latexOutput = createOutputDirectory(outputDirectory,Config_getString(LATEX_OUTPUT), "/latex");
+    Config_updateString(LATEX_OUTPUT,latexOutput);
+  }
 
   QCString rtfOutput;
   bool generateRtf = Config_getBool(GENERATE_RTF);
   if (generateRtf)
-    rtfOutput = createOutputDirectory(outputDirectory,Config_getString(RTF_OUTPUT),
-                                              "/rtf",Config_setterFunc(RTF_OUTPUT));
+  {
+    rtfOutput = createOutputDirectory(outputDirectory,Config_getString(RTF_OUTPUT),"/rtf");
+    Config_updateString(RTF_OUTPUT,rtfOutput);
+  }
 
   QCString manOutput;
   bool generateMan = Config_getBool(GENERATE_MAN);
   if (generateMan)
-    manOutput = createOutputDirectory(outputDirectory,Config_getString(MAN_OUTPUT),
-                                              "/man",Config_setterFunc(MAN_OUTPUT));
+  {
+    manOutput = createOutputDirectory(outputDirectory,Config_getString(MAN_OUTPUT),"/man");
+    Config_updateString(MAN_OUTPUT,manOutput);
+  }
 
   //QCString sqlOutput;
   //bool &generateSql = Config_getBool(GENERATE_SQLITE3);
   //if (generateSql)
-  //  sqlOutput = createOutputDirectory(outputDirectory,"SQLITE3_OUTPUT","/sqlite3");
+  //{
+  //  sqlOutput = createOutputDirectory(outputDirectory,Config_getString(SQLITE3_OUTPUT),"/sqlite3");
+  //  Config_update(SQLITE3_OUTPUT,sqlOutput);
+  //}
 
   if (Config_getBool(HAVE_DOT))
   {

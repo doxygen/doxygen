@@ -41,7 +41,6 @@ class FTextStream;
 #define Config_updateInt(name,value)    (ConfigValues::instance().update_##name(value));
 #define Config_updateEnum(name,value)   (ConfigValues::instance().update_##name(value));
 #define Config_updateList(name,...)   (ConfigValues::instance().update_##name(__VA_ARGS__));
-#define Config_setterFunc(name) (std::bind(&ConfigValues::update_##name,ConfigValues::instance(),std::placeholders::_1))
 //#endif
 //! @}
 
