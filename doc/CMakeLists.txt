@@ -32,7 +32,7 @@ set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path whe
 set(DOC_FILES
         arch.doc
         archoverview.eps
-        archoverview.gif
+        archoverview.svg
         autolink.doc
         changelog.doc
         commands.doc
