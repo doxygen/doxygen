@@ -420,7 +420,7 @@ void HtmlHelp::initialize()
   s_languageDict.insert("chinese-traditional", new QCString("0x404 Chinese (Taiwan)"));
 
   // new LCIDs
-  s_languageDict.insert("indonesian",  new QCString("0x412 Indonesian"));
+  s_languageDict.insert("indonesian",  new QCString("0x421 Indonesian"));
   s_languageDict.insert("croatian",    new QCString("0x41A Croatian"));
   s_languageDict.insert("romanian",    new QCString("0x418 Romanian"));
   s_languageDict.insert("slovene",     new QCString("0x424 Slovenian"));
