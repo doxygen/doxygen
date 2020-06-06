@@ -1102,7 +1102,7 @@ static void substEnvVarsInStrList(StringVector &sl)
     }
     else // just goto the next element in the list
     {
-      results.push_back(result.data());
+      if (!result.isEmpty()) results.push_back(result.data());
     }
   }
   sl = results;
