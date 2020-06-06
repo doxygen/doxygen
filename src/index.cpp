@@ -3988,7 +3988,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       numSubItems += gd->getNamespaces()->count();
       numSubItems += gd->getClasses()->count();
       numSubItems += gd->getFiles()->count();
-      numSubItems += gd->getDirs().size();
+      numSubItems += static_cast<int>(gd->getDirs().size());
       numSubItems += gd->getPages()->count();
     }
 

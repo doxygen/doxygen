@@ -333,7 +333,7 @@ void CitationManager::generatePage()
     // so no problem.
     for (size_t j = 1; j <= citeDataList.size(); j++)
     {
-      thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(j) + ".bib");
+      thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(static_cast<ulong>(j)) + ".bib");
     }
     thisDir.rmdir(bibOutputDir);
   }
