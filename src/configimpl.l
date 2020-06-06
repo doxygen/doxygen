@@ -1090,7 +1090,7 @@ static void substEnvVarsInStrList(StringVector &sl)
 	  }
 	  else if (c==' ' || c=='\t') // separator
 	  {
-            results.push_back(result.mid(p,i-p).data());
+            if (i>p) results.push_back(result.mid(p,i-p).data());
 	    p=i+1;
 	  }
 	}
