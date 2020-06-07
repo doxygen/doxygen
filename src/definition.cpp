@@ -2177,7 +2177,7 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
   return relPath;
 }
 
-QCString DefinitionImpl::name() const
+const QCString &DefinitionImpl::name() const
 {
   return m_impl->name;
 }
