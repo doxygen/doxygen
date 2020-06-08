@@ -1150,7 +1150,8 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
       if (!nd->isHidden() && !nd->isAnonymous())
       {
         t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
-          << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
+          << "\"" << (nd->isInline() ? " inline=\"yes\"" : "")
+          << ">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
       }
     }
   }
