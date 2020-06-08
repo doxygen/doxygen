@@ -366,10 +366,13 @@ class Tester:
 		if (self.args.pdf):
 			failed_latex=False
 			latex_output='%s/latex' % self.test_out
+			# with languages like Hungarian we had problems with some tests on windows when stderr was used.
 			if (sys.platform == 'win32'):
+				outType=False
 				redirl='>nul: 2>temp'
 				mk='make.bat'
 			else:
+				outType=True
 				redirl='>/dev/null 2>temp'
 				mk='make'
 			cur_directory = os.getcwd()
@@ -377,18 +380,22 @@ class Tester:
 			exe_string = mk
 			exe_string1 = exe_string
 			exe_string += ' %s' % (redirl)
-			exe_string += ' %s more temp' % (separ)
-			latex_out = xpopen(exe_string,exe_string1,getStderr=True)
+			if outType:
+				exe_string += ' %s more temp' % (separ)
+			latex_out = xpopen(exe_string,exe_string1,getStderr=outType)
 			os.chdir(cur_directory);
-			if latex_out.find("Error")!=-1:
+			if (outType and latex_out.find("Error")!=-1):
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
-				failed_html=True
+				failed_latex=True
+			elif (not outType and xopen(latex_output + "/temp",'r').read().find("Error")!= -1):
+				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+				failed_latex=True
 			elif xopen(latex_output + "/refman.log",'r').read().find("Error")!= -1:
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
-				failed_html=True
+				failed_latex=True
 			elif xopen(latex_output + "/refman.log",'r').read().find("Emergency stop")!= -1:
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
-				failed_html=True
+				failed_latex=True
 			elif not self.args.keep:
 				shutil.rmtree(latex_output,ignore_errors=True)
 
