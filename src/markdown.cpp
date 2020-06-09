@@ -112,7 +112,8 @@ static QCString       g_fileName;
 static int            g_lineNr;
 static int            g_indentLevel=0;  // 0 is outside markdown, -1=page level
 static const uchar    g_utf8_nbsp[3] = { 0xc2, 0xa0, 0}; // UTF-8 nbsp
-static const char    *g_doxy_nsbp = "&_doxy_nbsp;";            // doxygen escape command for UTF-8 nbsp
+static const char    *g_doxy_nbsp = "&_doxy_nbsp;"; // doxygen escape command for UTF-8 nbsp
+static bool           g_inside_code_tag = false;
 //----------
 
 const int codeBlockIndent = 4;
@@ -519,6 +520,52 @@ static int processQuoted(GrowBuf &out,const char *data,int,int size)
   return 0;
 }
 
+/** Process KaTeX formula in between `$...$` or `$$...$$` and translate them to
+ *  Doxygen formula command
+ */
+static int processKaTeX(GrowBuf &out,const char *data,int offset,int size)
+{
+  // skip escaped \$
+  if (g_inside_code_tag || (offset>0 && data[-1]=='\\'))
+  {
+    return 0;
+  }
+
+  int i=1;
+  if (size>2 && data[1]!='$') // $...$
+  {
+    while (i<size && data[i]!='$')
+    {
+      i++;
+    }
+    if (i > 2 && i<size && data[i]=='$')
+    {
+      out.addStr("@f$",3);
+      out.addStr(&data[1],i-1);
+      out.addStr("@f$",3);
+      return i+1;
+    }
+  }
+  else if (size>3 && data[1]=='$' && data[2]!='$') // $$...$$
+  {
+    i = 2;
+    while (i<size && data[i]!='$')
+    {
+      i++;
+    }
+    if (i > 4 && i+1<size && data[i]=='$' && data[i+1]=='$')
+    {
+      out.addStr("@f[",3);
+      out.addStr(&data[2],i-2);
+      out.addStr("@f]",3);
+      return i+2;
+    }
+  }
+
+  // not a formula
+  return 0;
+}
+
 /** Process a HTML tag. Note that <pre>..</pre> are treated specially, in
  *  the sense that all code inside is written unprocessed
  */
@@ -533,6 +580,12 @@ static int processHtmlTagWrite(GrowBuf &out,const char *data,int offset,int size
   while (i<size && isIdChar(i)) i++,l++;
   QCString tagName;
   convertStringFragment(tagName,data+1,i-1);
+  if (tagName.isNull() && strncasecmp(data, "</code>", 7)==0)
+  {
+    //printf("Found </code> tag");
+    g_inside_code_tag = false;
+    return 0;
+  }
   if (tagName.lower()=="pre") // found <pre> tag
   {
     bool insideStr=FALSE;
@@ -575,6 +628,11 @@ static int processHtmlTagWrite(GrowBuf &out,const char *data,int offset,int size
       {
         //printf("Found htmlTag={%s}\n",QCString(data).left(i+1).data());
         if (doWrite) out.addStr(data,i+1);
+        if (tagName.lower()=="code")
+        {
+          //printf("Found <code> tag");
+          g_inside_code_tag = true;
+        }
         return i+1;
       }
       else if (data[i]==' ') // <bla attr=...
@@ -595,6 +653,11 @@ static int processHtmlTagWrite(GrowBuf &out,const char *data,int offset,int size
           {
             //printf("Found htmlTag={%s}\n",QCString(data).left(i+1).data());
             if (doWrite) out.addStr(data,i+1);
+            if (tagName.lower()=="code")
+            {
+              //printf("Found <code attr=...> tag");
+              g_inside_code_tag = true;
+            }
             return i+1;
           }
           i++;
@@ -1046,13 +1109,13 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
 
 static void addStrEscapeUtf8Nbsp(GrowBuf &out,const char *s,int len)
 {
-  if (Portable::strnstr(s,g_doxy_nsbp,len)==0) // no escape needed -> fast
+  if (Portable::strnstr(s,g_doxy_nbsp,len)==0) // no escape needed -> fast
   {
     out.addStr(s,len);
   }
   else // escape needed -> slow
   {
-    out.addStr(substitute(QCString(s).left(len),g_doxy_nsbp,(const char *)g_utf8_nbsp));
+    out.addStr(substitute(QCString(s).left(len),g_doxy_nbsp,(const char *)g_utf8_nbsp));
   }
 }
 
@@ -2506,7 +2569,7 @@ static QCString detab(const QCString &s,int &refIndent)
           // special handling of the UTF-8 nbsp character 0xC2 0xA0
           if ((uchar)c == 0xC2 && (uchar)(data[i]) == 0xA0)
           {
-            out.addStr(g_doxy_nsbp);
+            out.addStr(g_doxy_nbsp);
             i++;
           }
           else
@@ -2556,6 +2619,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
     g_actions[(unsigned int)'<']=processHtmlTag;
     g_actions[(unsigned int)'-']=processNmdash;
     g_actions[(unsigned int)'"']=processQuoted;
+    g_actions[(unsigned int)'$']=processKaTeX;
     init=TRUE;
   }
 
@@ -2583,7 +2647,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
   processInline(out,s,s.length());
   out.addChar(0);
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(out.get()));
-  return substitute(out.get(),g_doxy_nsbp,"&nbsp;");
+  return substitute(out.get(),g_doxy_nbsp,"&nbsp;");
 }
 
 //---------------------------------------------------------------------------

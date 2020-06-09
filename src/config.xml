@@ -385,7 +385,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  in this list, if found as the leading text of the brief description, will be
  stripped from the text and the result, after processing the whole list, is used
  as the annotated text. Otherwise, the brief description is used as-is. If left
- blank, the following values are used (`$name` is automatically replaced with the
+ blank, the following values are used (`\$name` is automatically replaced with the
  name of the entity):
 ]]>
       </docs>
@@ -1309,7 +1309,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  tags, which will be replaced by the file and line number from which the
  warning originated and the warning text.
  Optionally the format may contain
- <code>$version</code>, which will be replaced by the version of the file (if it could
+ <code>\$version</code>, which will be replaced by the version of the file (if it could
  be obtained via \ref cfg_file_version_filter "FILE_VERSION_FILTER")
 ]]>
       </docs>
@@ -1969,7 +1969,7 @@ hr.footer {
  The \c HTML_EXTRA_FILES tag can be used to specify one or more extra images or
  other source files which should be copied to the HTML output directory. Note
  that these files will be copied to the base HTML output directory. Use the
- <code>$relpath^</code> marker in the \ref cfg_html_header "HTML_HEADER" and/or
+ <code>\$relpath^</code> marker in the \ref cfg_html_header "HTML_HEADER" and/or
  \ref cfg_html_footer "HTML_FOOTER" files to load these
  files. In the \ref cfg_html_stylesheet "HTML_STYLESHEET" file, use the file name only. Also note that
  the files will be copied as-is; there are no commands or markers available.
