@@ -783,7 +783,7 @@ block_statement()
 LOOKAHEAD([identifier() ":"] [<POSTPONED_T>] <PROCESS_T>)
 process_statement()
 |
-LOOKAHEAD(generate_statement())
+LOOKAHEAD(3)
 generate_statement()
 |
 case_scheme()
