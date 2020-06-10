@@ -511,7 +511,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
 inline QCString substitute(const QCString &s,char srcChar,char dstChar)
 {
   std::string ss = s.str();
-  ss.replace(ss.begin(),ss.end(),srcChar,dstChar);
+  std::replace(ss.begin(),ss.end(),srcChar,dstChar);
   return ss;
 }
 
