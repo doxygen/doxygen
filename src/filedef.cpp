@@ -55,7 +55,8 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     virtual ~FileDefImpl();
 
     virtual DefType definitionType() const { return TypeFile; }
-    virtual QCString name() const;
+    virtual const QCString &name() const;
+
     virtual QCString displayName(bool=TRUE) const { return name(); }
     virtual QCString fileName() const { return m_fileName; }
     virtual QCString getOutputFileBase() const;
@@ -1464,7 +1465,7 @@ void FileDefImpl::insertNamespace(NamespaceDef *nd)
   }
 }
 
-QCString FileDefImpl::name() const
+const QCString &FileDefImpl::name() const
 {
   if (Config_getBool(FULL_PATH_NAMES))
     return m_fileName;
