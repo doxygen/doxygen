@@ -350,7 +350,7 @@ class QCString
     /** Converts the string to a plain C string */
     operator const char *() const
     {
-      return const_cast<const char *>(data());
+      return data();
     }
 
     std::string str() const
