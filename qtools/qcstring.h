@@ -168,7 +168,7 @@ class QCString
      */
     bool fill( char c, int len = -1 )
     {
-      int l = len==-1 ? m_rep.size() : len;
+      int l = len==-1 ? (int)m_rep.size() : len;
       m_rep = std::string(l,c);
       return TRUE;
     }
@@ -226,7 +226,7 @@ class QCString
     {
       std::string s = m_rep;
       std::transform(s.begin(),s.end(),s.begin(),
-                     [](unsigned char c){ return std::tolower(c); });
+                     [](unsigned char c){ return (unsigned char)std::tolower(c); });
       return s;
     }
 
@@ -234,7 +234,7 @@ class QCString
     {
       std::string s = m_rep;
       std::transform(s.begin(),s.end(),s.begin(),
-                     [](unsigned char c){ return std::toupper(c); });
+                     [](unsigned char c){ return (unsigned char)std::toupper(c); });
       return s;
     }
 
@@ -256,7 +256,7 @@ class QCString
       uint len = s ? qstrlen(s) : 0;
       if (len>0)
       {
-        uint ol = m_rep.size();
+        uint ol = (uint)m_rep.size();
         if (index>ol) // insert beyond end of string and fill gap with spaces
         {
           m_rep.resize(index+len);
