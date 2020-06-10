@@ -544,6 +544,8 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{ifpdf,ifxetex}\n"
        "\n";
 
+  t << "\\newboolean{DoxyFontSet}\n"
+       "\\setboolean{DoxyFontSet}{false}\n";
   // Language support
   QCString languageSupport = theTranslator->latexLanguageSupportCommand();
   if (!languageSupport.isEmpty())
@@ -564,7 +566,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{courier}\n"
        "\\usepackage{amssymb}\n"
        "\\usepackage{sectsty}\n"
-       "\\renewcommand{\\familydefault}{\\sfdefault}\n"
+       "\\ifthenelse{\\not \\boolean{DoxyFontSet}}{\\renewcommand{\\familydefault}{\\sfdefault}}{}\n"
        "\\allsectionsfont{%\n"
        "  \\fontseries{bc}\\selectfont%\n"
        "  \\color{darkgray}%\n"
