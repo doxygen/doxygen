@@ -460,7 +460,7 @@ bool DotFilePatcher::run() const
         convertMapFile(tt,map->mapFile,map->relPath,map->urlOnly,map->context);
         if (!result.isEmpty())
         {
-          t << "<map name=\"" << map->label << "\" id=\"" << map->label << "\">" << endl;
+          t << "<map name=\"" << map->label << "\" id=\"" << correctId(map->label) << "\">" << endl;
           t << result;
           t << "</map>" << endl;
         }

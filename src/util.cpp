@@ -5272,6 +5272,16 @@ QCString convertToId(const char *s)
   return growBuf.get();
 }
 
+/*! Some strings have been corrected but the requirement regarding the fact
+ *  that an id cannot have a digit at the first position. To overcome problems
+ *  with double labels we always place an "a" in front
+ */
+QCString correctId(QCString s)
+{
+  if (s.isEmpty()) return s;
+  return "a" + s;
+}
+
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s, bool keepEntities)
 {

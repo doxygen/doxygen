@@ -278,6 +278,7 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
 QCString stripScope(const char *name);
 
 QCString convertToId(const char *s);
+QCString correctId(QCString s);
 
 QCString convertToHtml(const char *s,bool keepEntities=TRUE);
 
