@@ -60,14 +60,17 @@ class TranslatorGreek : public TranslatorAdapter_1_8_15
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage{fontspec}\n"
-             "\\usepackage[greek]{babel}\n"
-             "\\setmainfont{Libertinus Sans}\n"
-             "\\setboolean{DoxyFontSet}{true}\n";
+             "\\usepackage[greek]{babel}\n";
     }
 
     virtual QCString latexFontenc()
     {
       return "";
+    }
+    virtual QCString latexFont()
+    {
+      return "\\setmainfont{Libertinus Sans}\n"
+             "\\setmonofont{Courier New}\n";
     }
 
     // --- Language translation methods -------------------
