@@ -1150,7 +1150,8 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
       if (!nd->isHidden() && !nd->isAnonymous())
       {
         t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
-          << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
+          << "\"" << (nd->isInline() ? " inline=\"yes\"" : "")
+          << ">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
       }
     }
   }
@@ -1458,7 +1459,9 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << nd->getOutputFileBase()
-    << "\" kind=\"namespace\" language=\""
+    << "\" kind=\"namespace\" "
+    << (nd->isInline()?"inline=\"yes\" ":"")
+    << "language=\""
     << langToString(nd->getLanguage()) << "\">" << endl;
   t << "    <compoundname>";
   writeXMLString(t,nd->name());
