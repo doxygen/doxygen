@@ -167,6 +167,7 @@ add_library(doxycfg STATIC
     message.cpp
     debug.cpp
 )
+add_sanitizers(doxycfg)
 
 add_library(doxymain STATIC
     # generated for/by flex/bison
@@ -296,6 +297,7 @@ add_library(doxymain STATIC
     xmldocvisitor.cpp
     xmlgen.cpp
 )
+add_sanitizers(doxymain)
 
 # LLVM/clang headers give a lot of warnings with -Wshadow and -Wcast-align so we disable them for
 # the one file that includes them
@@ -311,6 +313,7 @@ endif()
 add_executable(doxygen
     main.cpp
 )
+add_sanitizers(doxygen)
 
 if (use_libclang)
     find_package(LLVM REQUIRED CONFIG)
@@ -358,6 +361,7 @@ set_project_coverage(qtools)
 set_project_coverage(doxycfg)
 set_project_coverage(doxymain)
 set_project_coverage(doxygen)
+
 
 install(TARGETS doxygen DESTINATION bin)
 

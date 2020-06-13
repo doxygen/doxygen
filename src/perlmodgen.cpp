@@ -1446,16 +1446,6 @@ static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output
   output.closeList();
 }
 
-#if 0
-static void addMemberTemplateLists(MemberDef *md,PerlModOutput &output)
-{
-  ClassDef *cd = md->getClassDef();
-  const char *cname = cd ? cd->name().data() : 0;
-  if (md->templateArguments()) // function template prefix
-    addTemplateArgumentList(md->templateArguments(),output,cname);
-}
-#endif
-
 static void addTemplateList(const ClassDef *cd,PerlModOutput &output)
 {
   addTemplateArgumentList(cd->templateArguments(),output,cd->name());

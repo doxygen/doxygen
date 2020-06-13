@@ -31,6 +31,7 @@ option(enable_coverage "Enable coverage reporting for gcc/clang [development]" O
 SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Sanitizers")
 set(TOP "${CMAKE_SOURCE_DIR}")
 include(version)
 
@@ -102,6 +103,7 @@ if (BISON_VERSION VERSION_LESS 2.7)
   message(SEND_ERROR "Doxygen requires at least bison version 2.7 (installed: ${BISON_VERSION})")
 endif()
 find_package(Threads)
+find_package(Sanitizers)
 
 if (sqlite3)
   find_package(SQLite3 REQUIRED)
