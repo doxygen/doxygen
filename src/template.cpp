@@ -2843,7 +2843,11 @@ template<class T> class TemplateNodeCreator : public TemplateNode
         if (d.exists())
         {
           bool ok = d.mkdir(fileName.mid(j,i-j));
-          if (!ok) break;
+          if (!ok) 
+          {
+            err("Failed to create directory '%s'\n",(fileName.mid(j,i-j)).data());
+            break;
+          }
           QCString dirName = outputDir+'/'+fileName.left(i);
           d = QDir(dirName);
           j = i+1;
