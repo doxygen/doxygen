@@ -150,11 +150,11 @@ class Tester:
 			if (self.args.clang):
 				print('CLANG_ASSISTED_PARSING=YES', file=f)
 			if (self.args.cfgs):
-				for cfg in list(itertools.chain.from_iterable(self.args.cfgs)):
-					if cfg.find('=') == -1:
+				for cfg in self.args.cfgs:
+					if cfg[0].find('=') == -1:
 						print("Not a doxygen configuration item, missing '=' sign: '%s'."%cfg)
 						sys.exit(1)
-					print(cfg, file=f)
+					print(cfg[0], file=f)
 
 		if 'check' not in self.config or not self.config['check']:
 			print('Test doesn\'t specify any files to check')
@@ -474,6 +474,25 @@ class TestManager:
 			shutil.rmtree("dtd",ignore_errors=True)
 			shutil.copytree(self.args.inputdir+"/dtd", "dtd")
 
+def split_and_keep(s, sep):
+	if not s: return []
+
+	# Find replacement character that is not used in string
+	# i.e. just use the highest available character plus one
+	# Note: This fails if ord(max(s)) = 0x10FFFF (ValueError)
+	p=chr(ord(max(s))+1)
+
+	retVal = []
+	for val in s.replace(sep, p+sep).split(p):
+		vv = val.split(" ",1)
+		if ((len(vv) == 1) and not vv[0] == ''):
+			retVal += vv
+		if ((len(vv) == 2) and not vv[1] == ''):
+			retVal += vv
+		if ((len(vv) == 2) and vv[1] == ''):
+			retVal += [vv[0]]
+	return retVal
+
 def main():
 	# argument handling
 	parser = argparse.ArgumentParser(description='run doxygen tests')
@@ -524,7 +543,9 @@ def main():
 	parser.add_argument('--cfg',nargs='+',dest='cfgs',action='append',help=
 		'run test with extra doxygen configuration settings '
 		'(the option may be specified multiple times')
-	test_flags = os.getenv('TEST_FLAGS', default='').split()
+
+	test_flags = split_and_keep(os.getenv('TEST_FLAGS', default=''), '--')
+
 	args = parser.parse_args(test_flags + sys.argv[1:])
 
 	# sanity check
