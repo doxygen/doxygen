@@ -10343,7 +10343,7 @@ void generateTemplateFiles(const char *templateDir)
   QCString outDir = QCString(templateDir)+"/html";
   if (!thisDir.exists(outDir) && !thisDir.mkdir(outDir))
   {
-    err("Failed to create output directory '%s'\n",templateDir);
+    err("Failed to create output directory '%s'\n",outDir.data());
     return;
   }
   ResourceMgr::instance().writeCategory("html",outDir);

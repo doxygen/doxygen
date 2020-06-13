@@ -150,11 +150,11 @@ class Tester:
 			if (self.args.clang):
 				print('CLANG_ASSISTED_PARSING=YES', file=f)
 			if (self.args.cfgs):
-				for cfg in list(itertools.chain.from_iterable(self.args.cfgs)):
-					if cfg.find('=') == -1:
+				for cfg in self.args.cfgs:
+					if cfg[0].find('=') == -1:
 						print("Not a doxygen configuration item, missing '=' sign: '%s'."%cfg)
 						sys.exit(1)
-					print(cfg, file=f)
+					print(cfg[0], file=f)
 
 		if 'check' not in self.config or not self.config['check']:
 			print('Test doesn\'t specify any files to check')
@@ -183,7 +183,7 @@ class Tester:
 				# check if the file we need to check is actually generated
 				if not os.path.isfile(check_file):
 					print('Non-existing file %s after \'check:\' statement' % check_file)
-					return
+					return False
 				# convert output to canonical form
 				data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file))
 				if data:
@@ -191,12 +191,13 @@ class Tester:
 					data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
 				else:
 					print('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out))
-					return
+					return False
 				out_file='%s/%s' % (self.test_out,check)
 				with xopen(out_file,'w') as f:
 					print(data,file=f)
 		shutil.rmtree(self.test_out+'/out',ignore_errors=True)
 		os.remove(self.test_out+'/Doxyfile')
+		return True
 
 	# check the relevant files of a doxygen run with the reference material
 	def perform_test(self,testmgr):
@@ -401,17 +402,22 @@ class Tester:
 
 		if failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
 			testmgr.ok(False,self.test_name,msg)
-			return
+			return False
 
 		testmgr.ok(True,self.test_name)
 		if not self.args.keep:
 			shutil.rmtree(self.test_out,ignore_errors=True)
+		return True
 
 	def run(self,testmgr):
 		if self.update:
-			self.update_test(testmgr)
+			return self.update_test(testmgr)
 		else:
-			self.perform_test(testmgr)
+			return self.perform_test(testmgr)
+
+def do_generation_work(test):
+	tester = Tester(test[0].args,test[1])
+	return tester.run(test[0])
 
 class TestManager:
 	def __init__(self,args,tests):
@@ -426,10 +432,10 @@ class TestManager:
 
 	def ok(self,result,test_name,msg='Ok'):
 		if result:
-			print('ok %s - %s' % (self.count,test_name))
+			print('ok - %s' % (test_name))
 			self.passed = self.passed + 1
 		else:
-			print('not ok %s - %s' % (self.count,test_name))
+			print('not ok - %s' % (test_name))
 			print('-------------------------------------')
 			for o in msg:
 				print(o)
@@ -444,9 +450,20 @@ class TestManager:
 		return 0 if self.passed==self.num_tests else 1
 
 	def perform_tests(self):
-		for test in self.tests:
-			tester = Tester(self.args,test)
-			tester.run(self)
+		if (self.args.pool == 1):
+			passed = 0
+			for test in self.tests:
+				tester = Tester(self.args,test)
+				passed += tester.run(self)
+			self.passed = passed
+		else:
+			dl = []
+			for test in self.tests:
+				dl += [(self, test)]
+			import multiprocessing as mp
+			p = mp.Pool(processes=self.args.pool)
+			passed = p.map(do_generation_work, dl)
+			self.passed = sum(passed)
 		res=self.result()
 		if self.args.xhtml and self.args.inputdir!='.' and not res and not self.args.keep:
 			shutil.rmtree("dtd",ignore_errors=True)
@@ -456,6 +473,25 @@ class TestManager:
 		if self.args.inputdir!='.':
 			shutil.rmtree("dtd",ignore_errors=True)
 			shutil.copytree(self.args.inputdir+"/dtd", "dtd")
+
+def split_and_keep(s, sep):
+	if not s: return []
+
+	# Find replacement character that is not used in string
+	# i.e. just use the highest available character plus one
+	# Note: This fails if ord(max(s)) = 0x10FFFF (ValueError)
+	p=chr(ord(max(s))+1)
+
+	retVal = []
+	for val in s.replace(sep, p+sep).split(p):
+		vv = val.split(" ",1)
+		if ((len(vv) == 1) and not vv[0] == ''):
+			retVal += vv
+		if ((len(vv) == 2) and not vv[1] == ''):
+			retVal += vv
+		if ((len(vv) == 2) and vv[1] == ''):
+			retVal += [vv[0]]
+	return retVal
 
 def main():
 	# argument handling
@@ -483,6 +519,8 @@ def main():
 		'output directory to write the doxygen output to')
 	parser.add_argument('--noredir',help=
 		'disable redirection of doxygen warnings',action="store_true")
+	parser.add_argument('--pool',nargs='?',default='1',type=int,help=
+		'pool size of multiprocess tests')
 	parser.add_argument('--xml',help='create xml output and check',
 		action="store_true")
 	parser.add_argument('--rtf',help=
@@ -505,7 +543,9 @@ def main():
 	parser.add_argument('--cfg',nargs='+',dest='cfgs',action='append',help=
 		'run test with extra doxygen configuration settings '
 		'(the option may be specified multiple times')
-	test_flags = os.getenv('TEST_FLAGS', default='').split()
+
+	test_flags = split_and_keep(os.getenv('TEST_FLAGS', default=''), '--')
+
 	args = parser.parse_args(test_flags + sys.argv[1:])
 
 	# sanity check

@@ -203,7 +203,11 @@ void CitationManager::generatePage()
   QCString bibOutputDir = outputDir+"/"+bibTmpDir;
   QCString bibOutputFiles = "";
   QDir thisDir;
-  thisDir.mkdir(bibOutputDir);
+  if (!thisDir.exists(bibOutputDir) && !thisDir.mkdir(bibOutputDir))
+  {
+    err("Failed to create temorary output directory '%s', skiping citations\n",bibOutputDir.data());
+    return;
+  }
   int i = 0;
   for (const auto &bibdata : citeDataList)
   {

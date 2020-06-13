@@ -750,7 +750,7 @@ int FilePairDict::compareValues(const FilePair *left,const FilePair *right) cons
 
 //----------------------------------------------------------------------
 
-UsedDir::UsedDir(DirDef *dir,bool inherited) :
+UsedDir::UsedDir(const DirDef *dir,bool inherited) :
    m_dir(dir), m_filePairs(7), m_inherited(inherited)
 {
   m_filePairs.setAutoDelete(TRUE);

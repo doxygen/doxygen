@@ -5022,10 +5022,16 @@ void createSubDirs(QDir &d)
     int l1,l2;
     for (l1=0;l1<16;l1++)
     {
-      d.mkdir(QCString().sprintf("d%x",l1));
+      if (!d.mkdir(QCString().sprintf("d%x",l1)))
+      {
+        term("Failed to create output directory '%s'\n",(QCString().sprintf("d%x",l1)).data());
+      }
       for (l2=0;l2<256;l2++)
       {
-        d.mkdir(QCString().sprintf("d%x/d%02x",l1,l2));
+        if (!d.mkdir(QCString().sprintf("d%x/d%02x",l1,l2)))
+        {
+          term("Failed to create output directory '%s'\n",(QCString().sprintf("d%x/d%02x",l1,l2)).data());
+        }
       }
     }
   }
@@ -5270,6 +5276,16 @@ QCString convertToId(const char *s)
   }
   growBuf.addChar(0);
   return growBuf.get();
+}
+
+/*! Some strings have been corrected but the requirement regarding the fact
+ *  that an id cannot have a digit at the first position. To overcome problems
+ *  with double labels we always place an "a" in front
+ */
+QCString correctId(QCString s)
+{
+  if (s.isEmpty()) return s;
+  return "a" + s;
 }
 
 /*! Converts a string to an XML-encoded string */
