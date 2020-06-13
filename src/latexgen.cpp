@@ -560,11 +560,13 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   {
     t << "\\usepackage[" << fontenc << "]{fontenc}\n";
   }
-  t << "\\usepackage[scaled=.90]{helvet}\n"
-       "\\usepackage{courier}\n"
-       "\\usepackage{amssymb}\n"
+  QCString font = theTranslator->latexFont();
+  if (!font.isEmpty())
+  {
+    t << font;
+  }
+  t << "\\usepackage{amssymb}\n"
        "\\usepackage{sectsty}\n"
-       "\\renewcommand{\\familydefault}{\\sfdefault}\n"
        "\\allsectionsfont{%\n"
        "  \\fontseries{bc}\\selectfont%\n"
        "  \\color{darkgray}%\n"

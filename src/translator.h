@@ -50,6 +50,11 @@ class Translator
      * can be returned.
      */
     virtual QCString latexFontenc() { return "T1"; }
+    virtual QCString latexFont() {
+      return "\\usepackage[scaled=.90]{helvet}\n"
+             "\\usepackage{courier}\n"
+             "\\renewcommand{\\familydefault}{\\sfdefault}\n";
+    }
     /*!
      * Sets the commands to be inserted directly after the `\\begin{document}`
      * in the LaTeX document.

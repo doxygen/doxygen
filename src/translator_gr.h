@@ -59,8 +59,18 @@ class TranslatorGreek : public TranslatorAdapter_1_8_15
 
     virtual QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage[greek,english]{babel}\n"
-             "\\usepackage{alphabeta}\n";
+      return "\\usepackage{fontspec}\n"
+             "\\usepackage[greek]{babel}\n";
+    }
+
+    virtual QCString latexFontenc()
+    {
+      return "";
+    }
+    virtual QCString latexFont()
+    {
+      return "\\setmainfont{Libertinus Sans}\n"
+             "\\setmonofont{Courier New}\n";
     }
 
     // --- Language translation methods -------------------
@@ -1159,6 +1169,16 @@ class TranslatorGreek : public TranslatorAdapter_1_8_15
       return "1253";
     }
 
+    virtual QCString latexCommandName()
+    {
+      QCString latex_command = Config_getString(LATEX_CMD_NAME);
+      if (latex_command.isEmpty()) latex_command = "latex";
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        if (latex_command == "latex") latex_command = "xelatex";
+      }
+      return latex_command;
+    }
 
     /*! Used as ansicpg for RTF fcharset
      */
