@@ -2606,8 +2606,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
      )
   {
     DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),
-                getOuterScope()?getOuterScope():d,this,briefDescription(),
-                TRUE,FALSE,0,TRUE,FALSE);
+                getOuterScope()?getOuterScope():d,this,briefDescription(),TRUE,FALSE,
+                0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
 
     if (rootNode && !rootNode->isEmpty())
     {
@@ -3147,7 +3147,8 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
           {
             ol.generateDoc(fmd->briefFile(),fmd->briefLine(),
                 getOuterScope()?getOuterScope():container,
-                fmd,fmd->briefDescription(),TRUE,FALSE);
+                fmd,fmd->briefDescription(),TRUE,FALSE,
+                0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
           }
           // FIXME:PARA
           //if (!fmd->briefDescription().isEmpty() &&
@@ -3159,7 +3160,8 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
           {
             ol.generateDoc(fmd->docFile(),fmd->docLine(),
                 getOuterScope()?getOuterScope():container,
-                fmd,fmd->documentation()+"\n",TRUE,FALSE);
+                fmd,fmd->documentation()+"\n",TRUE,FALSE,
+                0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
           }
           ol.endDescTableData();
           ol.endDescTableRow();
@@ -3707,7 +3709,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     ol.startParagraph();
     ol.generateDoc(briefFile(),briefLine(),
                 scopedContainer,this,
-                brief,FALSE,FALSE,0,TRUE,FALSE);
+                brief,FALSE,FALSE,
+                0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endParagraph();
   }
 
@@ -3723,14 +3726,16 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     else
     {
-      ol.generateDoc(docFile(),docLine(),scopedContainer,this,detailed+"\n",TRUE,FALSE);
+      ol.generateDoc(docFile(),docLine(),scopedContainer,this,detailed+"\n",TRUE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
 
     if (!inbodyDocumentation().isEmpty())
     {
       ol.generateDoc(inbodyFile(),inbodyLine(),
-                  scopedContainer,this,
-                  inbodyDocumentation()+"\n",TRUE,FALSE);
+                     scopedContainer,this,
+                     inbodyDocumentation()+"\n",TRUE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
   }
   else if (!brief.isEmpty() && (Config_getBool(REPEAT_BRIEF) ||
@@ -3738,7 +3743,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   {
     if (!inbodyDocumentation().isEmpty())
     {
-      ol.generateDoc(inbodyFile(),inbodyLine(),scopedContainer,this,inbodyDocumentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(inbodyFile(),inbodyLine(),scopedContainer,this,inbodyDocumentation()+"\n",TRUE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
   }
 
@@ -3765,7 +3771,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         this,         // memberDef
         paramDocs,    // docStr
         TRUE,         // indexWords
-        FALSE         // isExample
+        FALSE,        // isExample
+        0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
         );
 
   }
@@ -3959,7 +3966,8 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   {
     ol.generateDoc(briefFile(),briefLine(),
                 getOuterScope()?getOuterScope():container,this,
-                brief,FALSE,FALSE,0,TRUE,FALSE);
+                brief,FALSE,FALSE,
+                0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   }
 
   /* write detailed description */
@@ -3967,7 +3975,8 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   {
     ol.generateDoc(docFile(),docLine(),
                 getOuterScope()?getOuterScope():container,this,
-                detailed+"\n",FALSE,FALSE,0,FALSE,FALSE);
+                detailed+"\n",FALSE,FALSE,
+                0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
 
   }
 

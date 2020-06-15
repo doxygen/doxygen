@@ -12,6 +12,7 @@ include_directories(
 add_executable(doxyparse
 doxyparse.cpp
 )
+add_sanitizers(doxyparse)
 
 if (use_libclang)
     set(CLANG_LIBS libclang clangTooling ${llvm_libs})

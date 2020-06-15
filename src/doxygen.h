@@ -148,7 +148,7 @@ class Doxygen
     static int                       subpageNestingLevel;
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
-    static bool                      markdownSupport;
+    //static bool                      markdownSupport;
     static GenericsSDict            *genericsDict;
     static DefineList                macroDefinitions;
 };

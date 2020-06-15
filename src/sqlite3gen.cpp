@@ -1424,7 +1424,11 @@ QCString getSQLDocBlock(const Definition *scope,
     dynamic_cast<const MemberDef*>(def),
     doc,
     FALSE,
-    FALSE
+    FALSE,
+    0,
+    FALSE,
+    FALSE,
+    Config_getBool(MARKDOWN_SUPPORT)
   );
   XMLCodeGenerator codeGen(t);
   // create a parse tree visitor for XML

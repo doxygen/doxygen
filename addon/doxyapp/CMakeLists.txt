@@ -12,6 +12,7 @@ include_directories(
 add_executable(doxyapp
 doxyapp.cpp
 )
+add_sanitizers(doxyapp)
 
 if (use_libclang)
     set(CLANG_LIBS libclang clangTooling ${llvm_libs})

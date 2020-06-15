@@ -7016,7 +7016,9 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 
   int position=0;
   bool needsEntry=FALSE;
-  QCString processedDoc = processMarkdownForCommentBlock(stripIndentation(doc),yyextra->yyFileName,lineNr);
+  Markdown markdown(yyextra->yyFileName,lineNr);
+  QCString strippedDoc = stripIndentation(doc);
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc) : strippedDoc;
   while (yyextra->commentScanner.parseCommentBlock(
 	yyextra->thisParser,
 	yyextra->docBlockInBody && yyextra->previous ? yyextra->previous.get() : yyextra->current.get(),
@@ -7028,7 +7030,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 	yyextra->docBlockInBody,                               // isInBody
 	yyextra->protection,
         position,
-        needsEntry
+        needsEntry,
+        Config_getBool(MARKDOWN_SUPPORT)
         )
      )
   {
@@ -7087,9 +7090,10 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
 	     FALSE,
 	     yyextra->protection,
 	     position,
-	     needsEntry
+	     needsEntry,
+             Config_getBool(MARKDOWN_SUPPORT)
 	    )
-	  ) 
+	  )
       {
 	//printf("handleParametersCommentBlock position=%d [%s]\n",position,doc.data()+position);
 	if (needsEntry) newEntry(yyscanner);

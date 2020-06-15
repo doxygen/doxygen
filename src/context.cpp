@@ -1262,7 +1262,8 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
                                 const QCString &relPath,const QCString &docStr,bool isBrief)
 {
   TemplateVariant result;
-  DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,0,isBrief,FALSE);
+  DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,
+                                     0,isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   QGString docs;
   {
     FTextStream ts(&docs);

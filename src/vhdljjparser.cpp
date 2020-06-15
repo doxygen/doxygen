@@ -271,7 +271,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   QRegExp cend("[\\s ]*[\\\\@]endcode");
   QRegExp cbrief("[\\\\@]brief");
   int index = doc.find(cs);
- 
+
   if (doc.contains(cend) > 0)
     return 1;
 
@@ -284,16 +284,16 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   int com = p->inputString.find(p->strComment.data());
   int ref = p->inputString.find(cend, p->code + 1);
   int len = p->strComment.size();
-  
+
   int ll = com + len;
   int diff = ref - ll - 3;
   QCString code = p->inputString.mid(ll, diff);
-  int iLine = 0; 
+  int iLine = 0;
   code = stripLeadingAndTrailingEmptyLines(code, iLine);
   int val = code.contains('\n');
   VhdlDocGen::prepareComment(p->strComment);
   QCStringList ql = QCStringList::split('\n', p->strComment);
- 
+
    QCString co;
    QCString na;
    for (QCString qcs : ql)
@@ -406,8 +406,9 @@ void VHDLOutlineParser::handleCommentBlock(const char *doc1, bool brief)
 
   //int position=0;
 
-  QCString processedDoc = processMarkdownForCommentBlock(doc, p->yyFileName, p->iDocLine);
-  
+  Markdown markdown(p->yyFileName,p->iDocLine);
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc) : doc;
+
    while (p->commentScanner.parseCommentBlock(
       p->thisParser,
       s->current.get(),
@@ -419,7 +420,8 @@ void VHDLOutlineParser::handleCommentBlock(const char *doc1, bool brief)
       FALSE,
       protection,
       position,
-      needsEntry))
+      needsEntry,
+      Config_getBool(MARKDOWN_SUPPORT)))
   {
     if (needsEntry)
       newEntry();

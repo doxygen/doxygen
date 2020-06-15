@@ -60,6 +60,7 @@ static const char *g_inputString;
 static QCString g_fileName;
 static bool g_insidePre;
 static int g_sharpCount=0;
+static bool g_markdownSupport=TRUE;
 
 // context for section finding phase
 static const Definition  *g_definition;
@@ -487,7 +488,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          return TK_LISTITEM;
                        }
 <St_Para>^{MLISTITEM}  { /* list item */ 
-                         if (!Doxygen::markdownSupport || g_insidePre)
+                         if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -503,7 +504,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          }
                        }
 <St_Para>^{OLISTITEM}  { /* numbered list item */ 
-                         if (!Doxygen::markdownSupport || g_insidePre)
+                         if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -529,7 +530,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          return TK_LISTITEM;
                        }
 <St_Para>{BLANK}*\n{MLISTITEM}     { /* list item on next line */ 
-                         if (!Doxygen::markdownSupport || g_insidePre)
+                         if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -546,7 +547,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          }
                        }
 <St_Para>{BLANK}*\n{OLISTITEM}     { /* list item on next line */ 
-                         if (!Doxygen::markdownSupport || g_insidePre)
+                         if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -768,13 +769,13 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          }
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (!Doxygen::markdownSupport || g_insidePre || g_autoListLevel==0)
+                         if (!g_markdownSupport || g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;
                          }
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{OLISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (!Doxygen::markdownSupport || g_insidePre || g_autoListLevel==0)
+                         if (!g_markdownSupport || g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;
                          }
@@ -1405,13 +1406,14 @@ void doctokenizerYYFindSections(const char *input,const Definition *d,
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
-void doctokenizerYYinit(const char *input,const char *fileName)
+void doctokenizerYYinit(const char *input,const char *fileName,bool markdownSupport)
 {
   g_autoListLevel = 0;
   g_inputString = input;
   g_inputPos    = 0;
   g_fileName    = fileName;
   g_insidePre   = FALSE;
+  g_markdownSupport = markdownSupport;
   BEGIN(St_Para);
 }
 

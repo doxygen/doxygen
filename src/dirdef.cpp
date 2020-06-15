@@ -223,7 +223,8 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
-      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     // separator between brief and details
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
@@ -243,7 +244,8 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     // write documentation
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
   }
 }
@@ -253,7 +255,8 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
   if (hasBriefDescription())
   {
     DocRoot *rootNode = validatingParseDoc(
-         briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
+         briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE,
+         0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
@@ -341,7 +344,8 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
               FALSE, // isExample
               0,     // exampleName
               TRUE,  // single line
-              TRUE   // link from index
+              TRUE,  // link from index
+              Config_getBool(MARKDOWN_SUPPORT)
               );
           ol.endMemberDescription();
         }
@@ -412,7 +416,8 @@ void DirDefImpl::writeFileList(OutputList &ol)
               FALSE, // isExample
               0,     // exampleName
               TRUE,  // single line
-              TRUE   // link from index
+              TRUE,  // link from index
+              Config_getBool(MARKDOWN_SUPPORT)
               );
           ol.endMemberDescription();
         }

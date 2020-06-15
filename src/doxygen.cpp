@@ -158,7 +158,7 @@ int              Doxygen::subpageNestingLevel = 0;
 bool             Doxygen::userComments = FALSE;
 QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
-bool             Doxygen::markdownSupport = TRUE;
+//bool             Doxygen::markdownSupport = TRUE;
 GenericsSDict   *Doxygen::genericsDict;
 DefineList       Doxygen::macroDefinitions;
 
@@ -8632,7 +8632,10 @@ static void generateExampleDocs()
                          pd->documentation()+"\n\n\\include"+lineNoOptStr+" "+pd->name(), // docs
                          TRUE,                                     // index words
                          TRUE,                                     // is example
-                         pd->name()
+                         pd->name(),
+                         FALSE,
+                         FALSE,
+                         Config_getBool(MARKDOWN_SUPPORT)
                         );
     endFile(*g_outputList); // contains g_outputList->endContents()
   }
@@ -10296,7 +10299,7 @@ void adjustConfiguration()
                                 Config_getBool(REFERENCES_RELATION) ||
                                 Config_getBool(REFERENCED_BY_RELATION);
 
-  Doxygen::markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
+  //Doxygen::markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
 
   /**************************************************************************
    *            Add custom extension mappings

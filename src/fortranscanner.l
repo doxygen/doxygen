@@ -2514,7 +2514,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
   int position=0;
   bool needsEntry = FALSE;
-  QCString processedDoc = processMarkdownForCommentBlock(doc,yyextra->fileName,lineNr);
+  Markdown markdown(yyextra->fileName,lineNr);
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc) : doc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         yyextra->docBlockInBody ? yyextra->subrCurrent.back().get() : yyextra->current.get(),
@@ -2526,8 +2527,9 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
         yyextra->docBlockInBody,
         yyextra->defaultProtection,
         position,
-        needsEntry
-        )) 
+        needsEntry,
+        Config_getBool(MARKDOWN_SUPPORT)
+        ))
   {
     DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
     if (needsEntry) addCurrentEntry(yyscanner,false);

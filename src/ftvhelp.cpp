@@ -348,7 +348,8 @@ static void generateBriefDoc(FTextStream &t,const Definition *def)
   if (!brief.isEmpty())
   {
     DocNode *root = validatingParseDoc(def->briefFile(),def->briefLine(),
-        def,0,brief,FALSE,FALSE,0,TRUE,TRUE);
+        def,0,brief,FALSE,FALSE,
+        0,TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT));
     QCString relPath = relativePathToRoot(def->getOutputFileBase());
     HtmlCodeGenerator htmlGen(t,relPath);
     HtmlDocVisitor *visitor = new HtmlDocVisitor(t,htmlGen,def);

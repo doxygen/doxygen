@@ -13,6 +13,7 @@ class GrowBuf
     GrowBuf() : m_str(0), m_pos(0), m_len(0) {}
     GrowBuf(uint initialSize) : m_pos(0), m_len(initialSize) { m_str=(char*)malloc(m_len); }
    ~GrowBuf()         { free(m_str); }
+    void reserve(uint size) { if (m_len<size) { m_len = size; m_str = (char*)realloc(m_str,m_len); } }
     void clear()      { m_pos=0; }
     void addChar(char c)  { if (m_pos>=m_len) { m_len+=GROW_AMOUNT; m_str = (char*)realloc(m_str,m_len); }
                         m_str[m_pos++]=c;
