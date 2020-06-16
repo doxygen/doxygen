@@ -410,6 +410,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 %x	SkipCPP
 %x	SkipComment
 %x	SkipCxxComment
+%x	PreDefine
 %x	RemoveSpecialCComment
 %x	StripSpecialCComment
 %x	Body
@@ -615,22 +616,32 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  endFontClass(yyscanner);
 					  BEGIN( Body );
   					}
+<Body,Bases>^[ \t]*"#"[ \t]*"define"	{ 
+  					  startFontClass(yyscanner,"preprocessor");
+					  yyextra->lastSkipCppContext = YY_START;
+  					  yyextra->code->codify(yytext);
+  					  BEGIN( PreDefine ) ; 
+					}
 <Body,Bases>^[ \t]*"#"			{ 
   					  startFontClass(yyscanner,"preprocessor");
 					  yyextra->lastSkipCppContext = YY_START;
   					  yyextra->code->codify(yytext);
   					  BEGIN( SkipCPP ) ; 
 					}
-<SkipCPP>.				{ 
+<PreDefine>{ID} 			{
+					  generateFunctionLink(yyscanner,*yyextra->code,yytext);
+  					  BEGIN( SkipCPP ) ; 
+					}
+<PreDefine,SkipCPP>.			{ 
   					  yyextra->code->codify(yytext);
 					}
 <SkipCPP>[^\n\/\\]+			{
   					  yyextra->code->codify(yytext);
   					}
-<SkipCPP>\\[\r]?\n			{ 
+<PreDefine,SkipCPP>\\[\r]?\n		{ 
   					  codifyLines(yyscanner,yytext);
 					}
-<SkipCPP>"//"				{ 
+<PreDefine,SkipCPP>"//"			{ 
   					  yyextra->code->codify(yytext);
 					}
 <Body,FuncCall>"{"			{ 
