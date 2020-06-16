@@ -698,6 +698,13 @@ int main(int argc,char **argv)
       msgBox.exec();
       exit(0);
     }
+    else if (!qstrcmp(argv[1],"--version"))
+    {
+      QMessageBox msgBox;
+      msgBox.setText(QString::fromLatin1("Doxywizard version: %1").arg(QString::fromLatin1(getFullVersion())));
+      msgBox.exec();
+      exit(0);
+    }
   }
   if (argc > 2)
   {
