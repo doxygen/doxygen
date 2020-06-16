@@ -205,7 +205,7 @@ void CitationManager::generatePage()
   QDir thisDir;
   if (!thisDir.exists(bibOutputDir) && !thisDir.mkdir(bibOutputDir))
   {
-    err("Failed to create temorary output directory '%s', skiping citations\n",bibOutputDir.data());
+    err("Failed to create temporary output directory '%s', skipping citations\n",bibOutputDir.data());
     return;
   }
   int i = 0;
