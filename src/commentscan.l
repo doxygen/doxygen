@@ -30,6 +30,7 @@
 #include <map>
 #include <stack>
 #include <string>
+#include <mutex>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -400,6 +401,13 @@ struct commentscanYY_state
   DocGroup         docGroup;
   bool             markdownSupport = TRUE;
 };
+
+
+#if MULTITHREADED_INPUT
+static std::mutex g_sectionMutex;
+static std::mutex g_formulaMutex;
+static std::mutex g_citeMutex;
+#endif
 
 //-----------------------------------------------------------------------------
 
@@ -2786,6 +2794,10 @@ static void addXRefItem(yyscan_t yyscanner,
   if (listName==0) return;
   //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
 
+#if MULTITHREADED_INPUT
+  std::unique_lock<std::mutex> lock(g_sectionMutex);
+#endif
+
   RefList *refList = RefListManager::instance().add(listName,listTitle,itemTitle);
   RefItem *item = 0;
   for (RefItem *i : yyextra->current->sli)
@@ -2826,25 +2838,27 @@ static void addXRefItem(yyscan_t yyscanner,
       yyextra->current->doc += cmdString;
     }
 
-    SectionManager &sm = SectionManager::instance();
-    const SectionInfo *si = sm.find(anchorLabel);
-    if (si)
     {
-      if (si->lineNr() != -1)
+      SectionManager &sm = SectionManager::instance();
+      const SectionInfo *si = sm.find(anchorLabel);
+      if (si)
       {
-        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel.data(),si->fileName().data(),si->lineNr());
+        if (si->lineNr() != -1)
+        {
+          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel.data(),si->fileName().data(),si->lineNr());
+        }
+        else
+        {
+          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel.data(),si->fileName().data());
+        }
       }
       else
       {
-        warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel.data(),si->fileName().data());
+        si = sm.add(anchorLabel,listName,yyextra->lineNr,
+            yyextra->sectionTitle,SectionType::Anchor,
+            yyextra->sectionLevel);
+        yyextra->current->anchors.push_back(si);
       }
-    }
-    else
-    {
-      si = sm.add(anchorLabel,listName,yyextra->lineNr,
-                   yyextra->sectionTitle,SectionType::Anchor,
-                   yyextra->sectionLevel);
-      yyextra->current->anchors.push_back(si);
     }
   }
   yyextra->outputXRef.resize(0);
@@ -2856,6 +2870,9 @@ static void addXRefItem(yyscan_t yyscanner,
 // not already added. Returns the label of the formula.
 static QCString addFormula(yyscan_t yyscanner)
 {
+#if MULTITHREADED_INPUT
+  std::unique_lock<std::mutex> lock(g_formulaMutex);
+#endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString formLabel;
   QCString fText=yyextra->formulaText.simplifyWhiteSpace();
@@ -2877,6 +2894,9 @@ static SectionType sectionLevelToType(int level)
 
 static void addSection(yyscan_t yyscanner)
 {
+#if MULTITHREADED_INPUT
+  std::unique_lock<std::mutex> lock(g_sectionMutex);
+#endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   SectionManager &sm = SectionManager::instance();
   const SectionInfo *si = sm.find(yyextra->sectionLabel);
@@ -2909,6 +2929,9 @@ static void addSection(yyscan_t yyscanner)
 
 static void addCite(yyscan_t yyscanner)
 {
+#if MULTITHREADED_INPUT
+  std::unique_lock<std::mutex> lock(g_citeMutex);
+#endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString name=yytext;
   if (yytext[0] =='"')
@@ -3060,6 +3083,9 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
 
 static void addAnchor(yyscan_t yyscanner,const char *anchor)
 {
+#if MULTITHREADED_INPUT
+  std::unique_lock<std::mutex> lock(g_sectionMutex);
+#endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   SectionManager &sm = SectionManager::instance();
   const SectionInfo *si = sm.find(anchor);

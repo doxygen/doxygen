@@ -360,6 +360,11 @@ void DefineManager::DefinesPerFile::collectDefines(
  *
  *	global state
  */
+#if MULTITHREADED_INPUT
+static std::mutex            g_allIncludesMutex;
+static std::mutex            g_addIncludeRelationMutex;
+static std::mutex            g_macroDefinitionsMutex;
+#endif
 static StringUnorderedSet    g_allIncludes;
 static DefineManager         g_defineManager;
 
@@ -1804,6 +1809,10 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     // global guard
     if (state->curlyCount==0) // not #include inside { ... }
     {
+#if MULTITHREADED_INPUT
+      std::unique_lock<std::mutex> lock(g_allIncludesMutex);
+#endif
+
       if (g_allIncludes.find(absName.data())!=g_allIncludes.end())
       {
         alreadyIncluded = TRUE;
@@ -2854,7 +2863,12 @@ static void addMacroDefinition(yyscan_t yyscanner)
   {
     define->definition = litTextStripped;
   }
-  Doxygen::macroDefinitions.push_back(std::move(define));
+  {
+#if MULTITHREADED_INPUT
+    std::unique_lock<std::mutex> lock(g_macroDefinitionsMutex);
+#endif
+    Doxygen::macroDefinitions.push_back(std::move(define));
+  }
 }
 
 static inline void outputChar(yyscan_t yyscanner,char c)
@@ -2959,6 +2973,9 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       }
       if (oldFileDef)
       {
+#if MULTITHREADED_INPUT
+        std::unique_lock<std::mutex> lock(g_addIncludeRelationMutex);
+#endif
         // add include dependency to the file in which the #include was found
 	bool ambig;
 	// change to absolute name for bug 641336 
@@ -2973,6 +2990,9 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       }
       else if (state->inputFileDef)
       {
+#if MULTITHREADED_INPUT
+        std::unique_lock<std::mutex> lock(g_addIncludeRelationMutex);
+#endif
         state->inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,state->isImported,TRUE);
       }
       struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
@@ -3002,6 +3022,9 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       //printf("  calling findFile(%s) alreadyInc=%d\n",incFileName.data(),alreadyIncluded);
       if (oldFileDef)
       {
+#if MULTITHREADED_INPUT
+        std::unique_lock<std::mutex> lock(g_addIncludeRelationMutex);
+#endif
 	bool ambig;
 
 	// change to absolute name for bug 641336 
@@ -3018,6 +3041,9 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       }
       else if (state->inputFileDef)
       {
+#if MULTITHREADED_INPUT
+        std::unique_lock<std::mutex> lock(g_addIncludeRelationMutex);
+#endif
         state->inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,state->isImported,TRUE);
       }
       if (Debug::isFlagSet(Debug::Preprocessor))

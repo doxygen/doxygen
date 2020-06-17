@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include <mutex>
+#include <unordered_set>
 
 #include "md5.h"
 
@@ -7019,9 +7020,8 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 
 //--------------------------------------------------------------------------------------
 
-static QDict<void> aliasesProcessed;
-
-static QCString expandAliasRec(const QCString s,bool allowRecursion=FALSE);
+static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,
+                               const QCString s,bool allowRecursion=FALSE);
 
 struct Marker
 {
@@ -7063,7 +7063,8 @@ static int findEndOfCommand(const char *s)
  *  with the corresponding values found in the comma separated argument
  *  list \a argList and the returns the result after recursive alias expansion.
  */
-static QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList)
+static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
+                                      const QCString &aliasValue,const QCString &argList)
 {
   //printf("----- replaceAliasArguments(val=[%s],args=[%s])\n",aliasValue.data(),argList.data());
 
@@ -7143,7 +7144,7 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
     //printf("part before marker %d: '%s'\n",i,aliasValue.mid(p,m->pos-p).data());
     if (m->number>0 && m->number<=(int)args.count()) // valid number
     {
-      result+=expandAliasRec(*args.at(m->number-1),TRUE);
+      result+=expandAliasRec(aliasesProcessed,*args.at(m->number-1),TRUE);
       //printf("marker index=%d pos=%d number=%d size=%d replacement %s\n",i,m->pos,m->number,m->size,
       //    args.at(m->number-1)->data());
     }
@@ -7155,7 +7156,7 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
   // expand the result again
   result = substitute(result,"\\{","{");
   result = substitute(result,"\\}","}");
-  result = expandAliasRec(substitute(result,"\\,",","));
+  result = expandAliasRec(aliasesProcessed,substitute(result,"\\,",","));
 
   return result;
 }
@@ -7182,7 +7183,7 @@ static QCString escapeCommas(const QCString &s)
   return result.data();
 }
 
-static QCString expandAliasRec(const QCString s,bool allowRecursion)
+static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCString s,bool allowRecursion)
 {
   QCString result;
   static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
@@ -7215,19 +7216,20 @@ static QCString expandAliasRec(const QCString s,bool allowRecursion)
     }
     //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s' aliasText=%s\n",
     //    s.data(),cmd.data(),numArgs,args.data(),aliasText?aliasText->data():"<none>");
-    if ((allowRecursion || aliasesProcessed.find(cmd)==0) && aliasText) // expand the alias
+    if ((allowRecursion || aliasesProcessed.find(cmd.str())==aliasesProcessed.end()) &&
+        aliasText) // expand the alias
     {
       //printf("is an alias!\n");
-      if (!allowRecursion) aliasesProcessed.insert(cmd,(void *)0x8);
+      if (!allowRecursion) aliasesProcessed.insert(cmd.str());
       QCString val = *aliasText;
       if (hasArgs)
       {
-        val = replaceAliasArguments(val,args);
+        val = replaceAliasArguments(aliasesProcessed,val,args);
         //printf("replace '%s'->'%s' args='%s'\n",
         //       aliasText->data(),val.data(),args.data());
       }
-      result+=expandAliasRec(val);
-      if (!allowRecursion) aliasesProcessed.remove(cmd);
+      result+=expandAliasRec(aliasesProcessed,val);
+      if (!allowRecursion) aliasesProcessed.erase(cmd.str());
       p=i+l;
       if (hasArgs) p+=argsLen+2;
     }
@@ -7297,9 +7299,9 @@ QCString extractAliasArgs(const QCString &args,int pos)
 QCString resolveAliasCmd(const QCString aliasCmd)
 {
   QCString result;
-  aliasesProcessed.clear();
+  StringUnorderedSet aliasesProcessed;
   //printf("Expanding: '%s'\n",aliasCmd.data());
-  result = expandAliasRec(aliasCmd);
+  result = expandAliasRec(aliasesProcessed,aliasCmd);
   //printf("Expanding result: '%s'->'%s'\n",aliasCmd.data(),result.data());
   return result;
 }
@@ -7307,12 +7309,12 @@ QCString resolveAliasCmd(const QCString aliasCmd)
 QCString expandAlias(const QCString &aliasName,const QCString &aliasValue)
 {
   QCString result;
-  aliasesProcessed.clear();
+  StringUnorderedSet aliasesProcessed;
   // avoid expanding this command recursively
-  aliasesProcessed.insert(aliasName,(void *)0x8);
+  aliasesProcessed.insert(aliasName.str());
   // expand embedded commands
   //printf("Expanding: '%s'->'%s'\n",aliasName.data(),aliasValue.data());
-  result = expandAliasRec(aliasValue);
+  result = expandAliasRec(aliasesProcessed,aliasValue);
   //printf("Expanding result: '%s'->'%s'\n",aliasName.data(),result.data());
   return result;
 }
@@ -7520,7 +7522,7 @@ QCString filterTitle(const QCString &title)
 
 bool patternMatch(const QFileInfo &fi,const StringVector &patList)
 {
-  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
   bool found = FALSE;
 
   // For platforms where the file system is non case sensitive overrule the setting

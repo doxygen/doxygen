@@ -2574,11 +2574,6 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   }
   int lineNr=1;
 
-  // even without markdown support enabled, we still
-  // parse markdown files as such
-  //bool markdownEnabled = Doxygen::markdownSupport;
-  //Doxygen::markdownSupport = TRUE;
-
   Protection prot=Public;
   bool needsEntry = FALSE;
   int position=0;
@@ -2610,9 +2605,6 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   {
     root->moveToSubEntryAndKeep(current);
   }
-
-  // restore setting
-  //Doxygen::markdownSupport = markdownEnabled;
 }
 
 void MarkdownOutlineParser::parsePrototype(const char *text)

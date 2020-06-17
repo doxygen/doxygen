@@ -158,7 +158,6 @@ int              Doxygen::subpageNestingLevel = 0;
 bool             Doxygen::userComments = FALSE;
 QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
-//bool             Doxygen::markdownSupport = TRUE;
 GenericsSDict   *Doxygen::genericsDict;
 DefineList       Doxygen::macroDefinitions;
 
@@ -10298,8 +10297,6 @@ void adjustConfiguration()
                                 Config_getBool(CALLER_GRAPH) ||
                                 Config_getBool(REFERENCES_RELATION) ||
                                 Config_getBool(REFERENCED_BY_RELATION);
-
-  //Doxygen::markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
 
   /**************************************************************************
    *            Add custom extension mappings

@@ -289,13 +289,6 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
 void PageDefImpl::writePageDocumentation(OutputList &ol)
 {
-
-  //bool markdownEnabled = Doxygen::markdownSupport;
-  //if (getLanguage()==SrcLangExt_Markdown)
-  //{
-  //  Doxygen::markdownSupport = TRUE;
-  //}
-
   ol.startTextBlock();
   QCString docStr = documentation()+inbodyDocumentation();
   if (hasBriefDescription() && !SectionManager::instance().find(name()))
@@ -319,8 +312,6 @@ void PageDefImpl::writePageDocumentation(OutputList &ol)
       TRUE                 // markdown support
       );
   ol.endTextBlock();
-
-  //Doxygen::markdownSupport = markdownEnabled;
 
   if (hasSubPages())
   {
