@@ -216,9 +216,6 @@ class TranslatorAdapter_1_8_2 : public TranslatorAdapter_1_8_4
 
     virtual QCString trMethodDocumentation()
     { return english.trMethodDocumentation(); }
-
-    virtual QCString trDesignOverview()
-    { return english.trDesignOverview(); }
 };
 
 

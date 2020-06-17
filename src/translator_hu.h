@@ -1955,14 +1955,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       return "Metódus dokumentáció";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Dizájn áttekintés";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////

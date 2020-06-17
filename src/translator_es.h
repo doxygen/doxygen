@@ -1992,14 +1992,6 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
       return "Método de documentación";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Diseño información general";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
