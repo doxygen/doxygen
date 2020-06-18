@@ -2011,15 +2011,6 @@ class TranslatorBrazilian : public Translator
       return "Documentação do método";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      // I'm not sure how to accurately translate it
-      return "Visão geral do design";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////

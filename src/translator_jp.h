@@ -1925,14 +1925,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       return "メソッド詳解";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "デザイン概観";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////

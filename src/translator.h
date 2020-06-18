@@ -593,7 +593,6 @@ class Translator
     virtual QCString trClassMethods() = 0;
     virtual QCString trInstanceMethods() = 0;
     virtual QCString trMethodDocumentation() = 0;
-    virtual QCString trDesignOverview() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
