@@ -5023,15 +5023,19 @@ void createSubDirs(QDir &d)
     int l1,l2;
     for (l1=0;l1<16;l1++)
     {
-      if (!d.mkdir(QCString().sprintf("d%x",l1)))
+      QCString subdir;
+      subdir.sprintf("d%x",l1);
+      if (!d.exists(subdir) && !d.mkdir(subdir))
       {
-        term("Failed to create output directory '%s'\n",(QCString().sprintf("d%x",l1)).data());
+        term("Failed to create output directory '%s'\n",subdir.data());
       }
       for (l2=0;l2<256;l2++)
       {
-        if (!d.mkdir(QCString().sprintf("d%x/d%02x",l1,l2)))
+        QCString subsubdir;
+        subsubdir.sprintf("d%x/d%02x",l1,l2);
+        if (!d.exists(subsubdir) && !d.mkdir(subsubdir))
         {
-          term("Failed to create output directory '%s'\n",(QCString().sprintf("d%x/d%02x",l1,l2)).data());
+          term("Failed to create output directory '%s'\n",subsubdir.data());
         }
       }
     }
