@@ -391,25 +391,14 @@ class Tester:
 			elif (not outType and xopen(latex_output + "/temp",'r').read().find("Error")!= -1):
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
 				failed_latex=True
-			else:
-				res = False;
-				try:
-					res = xopen(latex_output + "/refman.log",'r').read().find("Error")!= -1
-				except:
-					res = xopen(latex_output + "/refman.log",'r', encoding = "ISO-8859-1").read().find("Error")!= -1
-				if res:
-					msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
-					failed_latex=True
-				else:
-					try:
-						res = xopen(latex_output + "/refman.log",'r').read().find("Emergency stop")!= -1
-					except:
-						res = xopen(latex_output + "/refman.log",'r', encoding = "ISO-8859-1").read().find("Emergency stop")!= -1
-					if res:
-						msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
-						failed_latex=True
-					elif not self.args.keep:
-						shutil.rmtree(latex_output,ignore_errors=True)
+			elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Error")!= -1:
+				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+				failed_latex=True
+			elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Emergency stop")!= -1:
+				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+				failed_latex=True
+			elif not self.args.keep:
+				shutil.rmtree(latex_output,ignore_errors=True)
 
 		if failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
 			testmgr.ok(False,self.test_name,msg)
