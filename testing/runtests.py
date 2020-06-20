@@ -391,10 +391,10 @@ class Tester:
 			elif (not outType and xopen(latex_output + "/temp",'r').read().find("Error")!= -1):
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
 				failed_latex=True
-			elif xopen(latex_output + "/refman.log",'r').read().find("Error")!= -1:
+			elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Error")!= -1:
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
 				failed_latex=True
-			elif xopen(latex_output + "/refman.log",'r').read().find("Emergency stop")!= -1:
+			elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Emergency stop")!= -1:
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
 				failed_latex=True
 			elif not self.args.keep:
