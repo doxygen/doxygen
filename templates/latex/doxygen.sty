@@ -574,3 +574,11 @@
 \refstepcounter{figure}%
 \@dblarg{\@caption{figure}}}
 \makeatother
+
+
+% the polyglossia package before 1.50 has a bug in respect to the robustness of \ttfamily
+% for non latin sets
+% setting here the default version and when using polyglossia resetting the commands when necessary
+\newcommand \doxyrmfamily \rmfamily
+\newcommand \doxysffamily \sffamily
+\newcommand \doxyttfamily \ttfamily

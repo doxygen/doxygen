@@ -307,7 +307,7 @@ void LatexDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "{\\itshape ";     else m_t << "}";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "{\\ttfamily ";   else m_t << "}";
+      if (s->enable()) m_t << "{\\doxyttfamily ";   else m_t << "}";
       break;
     case DocStyleChange::Subscript:
       if (s->enable()) m_t << "\\textsubscript{";    else m_t << "}";
