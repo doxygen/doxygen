@@ -667,9 +667,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             yyextra->spaceBeforeCmd = QCString(yytext).left(i);
                                             if (it->second.endsBrief && !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
                                             {
-                                              yyextra->briefEndsAtDot=FALSE;
-                                              // this command forces the end of brief description
-                                              setOutput(yyscanner,OutputDoc);
+                                              if ((yyextra->inContext == OutputBrief) && !yyextra->current->doc.stripWhiteSpace().isEmpty())
+                                              {
+                                                yyextra->briefEndsAtDot=FALSE;
+                                                // this command forces the end of brief description
+                                                setOutput(yyscanner,OutputDoc);
+                                              }
                                             }
                                             //if (i>0) addOutput(yyscanner,QCString(yytext).left(i)); // removed for bug 689341
                                             if (it->second.handler && it->second.handler(yyscanner, cmdName, optList))
