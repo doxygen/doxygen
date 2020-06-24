@@ -950,7 +950,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  will only generate file names in lower-case letters. If set to
  \c YES, upper-case letters are also allowed. This is useful if you have
  classes or files whose names only differ in case and if your file system
- supports case sensitive file names. Windows (including Cygwin) ands
+ supports case sensitive file names. Windows (including Cygwin) and
  Mac users are advised to set this option to \c NO.
 ]]>
       </docs>
