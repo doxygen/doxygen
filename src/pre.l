@@ -1632,7 +1632,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					}
 <SkipDoubleQuote>"//"[/]?		{ yyextra->defText += yytext; yyextra->defLitText+=yytext; }
-<SkipDoubleQuote>"/*"			{ yyextra->defText += yytext; yyextra->defLitText+=yytext; }
+<SkipDoubleQuote>"/*"[*]?		{ yyextra->defText += yytext; yyextra->defLitText+=yytext; }
 <SkipDoubleQuote>\"			{
   					  yyextra->defText += *yytext; yyextra->defLitText+=yytext; 
 					  BEGIN(DefineText);

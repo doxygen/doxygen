@@ -621,16 +621,22 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  yyextra->code->codify(yytext);
   					  BEGIN( SkipCPP ) ; 
 					}
+<SkipCPP>\"				{ 
+  					  yyextra->code->codify(yytext);
+  					  yyextra->lastStringContext=YY_START;
+  					  BEGIN( SkipString ) ; 
+					}
 <SkipCPP>.				{ 
   					  yyextra->code->codify(yytext);
 					}
-<SkipCPP>[^\n\/\\]+			{
+<SkipCPP>[^\n\/\\\"]+			{
   					  yyextra->code->codify(yytext);
   					}
 <SkipCPP>\\[\r]?\n			{ 
   					  codifyLines(yyscanner,yytext);
 					}
-<SkipCPP>"//"				{ 
+<SkipCPP>"//"/[^/!]			{ 
+  					  REJECT;
   					  yyextra->code->codify(yytext);
 					}
 <Body,FuncCall>"{"			{ 
@@ -1971,15 +1977,25 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  yyextra->yyLineNr+=QCString(yytext).contains('\n');
 					}
 <RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*({B}*(("//@"[{}])|("/*@"[{}]"*/")){B}*\n)? {
-  					  yyextra->yyLineNr+=QCString(yytext).contains('\n');
-					  nextCodeLine(yyscanner);
 					  if (yyextra->lastSpecialCContext==SkipCxxComment)
 					  { // force end of C++ comment here
+  					    yyextra->yyLineNr+=QCString(yytext).contains('\n');
+					    nextCodeLine(yyscanner);
 					    endFontClass(yyscanner);
 					    BEGIN( yyextra->lastCContext ) ;
 					  }
 					  else
 					  {
+  					    yyextra->yyLineNr+=QCString(yytext).contains('\n');
+                                            if (QCString(yytext).at(strlen(yytext)-1) == '\n')
+                                            {
+                                              yyextra->yyLineNr--;
+                                              unput('\n');
+                                            }
+                                            else
+                                            {
+					      nextCodeLine(yyscanner);
+                                            }
   					    BEGIN(yyextra->lastSpecialCContext);
 					  }
   					}
@@ -2101,14 +2117,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    endFontClass(yyscanner);
 					  }
   					}
-<*>"//"[!/][^\n]*\n			{ // strip special one-line comment
+<*>"//"[!/][^\n]*/\n			{ // strip special one-line comment
                                           if (YY_START==SkipComment || YY_START==SkipString) REJECT;
-  					  if (Config_getBool(STRIP_CODE_COMMENTS))
-					  {
-					    char c[2]; c[0]='\n'; c[1]=0;
-					    codifyLines(yyscanner,c);
-					  }
-					  else
+  					  if (!Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    startFontClass(yyscanner,"comment");
 					    codifyLines(yyscanner,yytext);
