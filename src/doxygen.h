@@ -30,7 +30,9 @@
 #include "memberlist.h"
 #include "define.h"
 
+#ifndef MULTITHREADED_INPUT
 #define MULTITHREADED_INPUT 0
+#endif
 
 #if MULTITHREADED_INPUT
 #define THREAD_LOCAL thread_local
@@ -149,7 +151,7 @@ class Doxygen
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
     static GenericsSDict            *genericsDict;
-    static DefineList                macroDefinitions;
+    static DefinesPerFileList        macroDefinitions;
 };
 
 void initDoxygen();

@@ -44,13 +44,12 @@ class FTextStream;
 /** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
 {
-  IncludeInfo() : fileDef(0), local(FALSE), imported(FALSE), indirect(FALSE) {}
+  IncludeInfo() : fileDef(0), local(FALSE), imported(FALSE) {}
   ~IncludeInfo() {}
   FileDef *fileDef;
   QCString includeName;
   bool local;
   bool imported;
-  bool indirect;
 };
 
 /** A model of a file symbol.
@@ -170,7 +169,7 @@ class FileDef : virtual public Definition
     virtual bool generateSourceFile() const = 0;
     virtual void sortMemberLists() = 0;
 
-    virtual void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported,bool indirect) = 0;
+    virtual void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported) = 0;
     virtual void addIncludedByDependency(FileDef *fd,const char *incName,bool local,bool imported) = 0;
 
     virtual void addMembersToMemberGroup() = 0;

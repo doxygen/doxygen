@@ -159,7 +159,7 @@ bool             Doxygen::userComments = FALSE;
 QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
 GenericsSDict   *Doxygen::genericsDict;
-DefineList       Doxygen::macroDefinitions;
+DefinesPerFileList Doxygen::macroDefinitions;
 
 // locally accessible globals
 static std::unordered_map< std::string, const Entry* > g_classEntries;
@@ -7701,28 +7701,35 @@ static void addSourceReferences()
 // add the macro definitions found during preprocessing as file members
 static void buildDefineList()
 {
-  for (const auto &def : Doxygen::macroDefinitions)
+  for (const auto &s : g_inputFiles)
   {
-    std::unique_ptr<MemberDef> md { createMemberDef(
-      def->fileName,def->lineNr,def->columnNr,
-      "#define",def->name,def->args,0,
-      Public,Normal,FALSE,Member,MemberType_Define,
-      ArgumentList(),ArgumentList(),"") };
-
-    if (!def->args.isEmpty())
+    auto it = Doxygen::macroDefinitions.find(s);
+    if (it!=Doxygen::macroDefinitions.end())
     {
-      md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def->args));
-    }
-    md->setInitializer(def->definition);
-    md->setFileDef(def->fileDef);
-    md->setDefinition("#define "+def->name);
+      for (const auto &def : it->second)
+      {
+        std::unique_ptr<MemberDef> md { createMemberDef(
+            def->fileName,def->lineNr,def->columnNr,
+            "#define",def->name,def->args,0,
+            Public,Normal,FALSE,Member,MemberType_Define,
+            ArgumentList(),ArgumentList(),"") };
 
-    MemberName *mn=Doxygen::functionNameLinkedMap->add(def->name);
-    if (def->fileDef)
-    {
-      def->fileDef->insertMember(md.get());
+        if (!def->args.isEmpty())
+        {
+          md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def->args));
+        }
+        md->setInitializer(def->definition);
+        md->setFileDef(def->fileDef);
+        md->setDefinition("#define "+def->name);
+
+        MemberName *mn=Doxygen::functionNameLinkedMap->add(def->name);
+        if (def->fileDef)
+        {
+          def->fileDef->insertMember(md.get());
+        }
+        mn->push_back(std::move(md));
+      }
     }
-    mn->push_back(std::move(md));
   }
 }
 
