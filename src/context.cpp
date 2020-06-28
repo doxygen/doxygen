@@ -1774,10 +1774,7 @@ class IncludeInfoListContext::Private : public GenericNodeListContext
       IncludeInfo *ii;
       for (li.toFirst();(ii=li.current());++li)
       {
-        if (!ii->indirect)
-        {
-          append(IncludeInfoContext::alloc(ii,lang));
-        }
+        append(IncludeInfoContext::alloc(ii,lang));
       }
     }
 };
