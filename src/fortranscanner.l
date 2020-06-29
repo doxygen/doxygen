@@ -467,6 +467,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <Use>{ID}                               { 
                                           DBG_CTX((stderr,"using dir %s\n",yytext));
                                           yyextra->current->name=yytext;
+                                          yyextra->current->name=yyextra->current->name.lower();
                                           yyextra->current->fileName = yyextra->fileName; 
                                           yyextra->current->section=Entry::USINGDIR_SEC;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
@@ -475,12 +476,14 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 <Use>{ID}/,                             { 
                                           yyextra->useModuleName=yytext;
+                                          yyextra->useModuleName=yyextra->useModuleName.lower();
                                         }
 <Use>,{BS}"ONLY"                        { BEGIN(UseOnly); 
                                         }           
 <UseOnly>{BS},{BS}                      {}
 <UseOnly>{ID}                           {
                                           yyextra->current->name= yyextra->useModuleName+"::"+yytext;
+                                          yyextra->current->name=yyextra->current->name.lower();
                                           yyextra->current->fileName = yyextra->fileName; 
                                           yyextra->current->section=Entry::USINGDECL_SEC;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
