@@ -152,6 +152,7 @@ class Doxygen
     static bool                      generatingXmlOutput;
     static GenericsSDict            *genericsDict;
     static DefinesPerFileList        macroDefinitions;
+    static bool                      clangAssistedParsing;
 };
 
 void initDoxygen();

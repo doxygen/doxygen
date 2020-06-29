@@ -160,6 +160,7 @@ QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
 GenericsSDict   *Doxygen::genericsDict;
 DefinesPerFileList Doxygen::macroDefinitions;
+bool             Doxygen::clangAssistedParsing = FALSE;
 
 // locally accessible globals
 static std::unordered_map< std::string, const Entry* > g_classEntries;
@@ -7477,8 +7478,7 @@ static void generateFileSources()
   if (!Doxygen::inputNameLinkedMap->empty())
   {
 #if USE_LIBCLANG
-    static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-    if (clangAssistedParsing)
+    if (Doxygen::clangAssistedParsing)
     {
       QDict<void> g_processedFiles(10007);
 
@@ -9063,11 +9063,6 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
                       FileDef *fd,const char *fn,
                       bool sameTu,QStrList &filesInSameTu)
 {
-#if USE_LIBCLANG
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-#else
-  static bool clangAssistedParsing = FALSE;
-#endif
   QCString fileName=fn;
   QCString extension;
   int ei = fileName.findRev('.');
@@ -9114,7 +9109,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
 
   convBuf.addChar('\0');
 
-  if (clangAssistedParsing && !sameTu)
+  if (Doxygen::clangAssistedParsing && !sameTu)
   {
     fd->getAllIncludeFilesRecursively(filesInSameTu);
   }
@@ -9130,8 +9125,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
 static void parseFiles(const std::shared_ptr<Entry> &root)
 {
 #if USE_LIBCLANG
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-  if (clangAssistedParsing)
+  if (Doxygen::clangAssistedParsing)
   {
     QDict<void> g_processedFiles(10007);
 
@@ -10706,6 +10700,10 @@ void searchInputFiles()
 void parseInput()
 {
   atexit(exitDoxygen);
+
+#if USE_LIBCLANG
+  Doxygen::clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+#endif
 
   // we would like to show the versionString earlier, but we first have to handle the configuration file
   // to know the value of the QUIET setting.

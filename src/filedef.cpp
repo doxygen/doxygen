@@ -1212,8 +1212,7 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
   (void)sameTu;
   (void)filesInSameTu;
 #if USE_LIBCLANG
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-  if (clangAssistedParsing &&
+  if (Doxygen::clangAssistedParsing &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
   {
     ol.startCodeFragment();
@@ -1276,8 +1275,7 @@ void FileDefImpl::parseSource(bool sameTu,QStrList &filesInSameTu)
   (void)sameTu;
   (void)filesInSameTu;
 #if USE_LIBCLANG
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-  if (clangAssistedParsing &&
+  if (Doxygen::clangAssistedParsing &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
   {
     if (!sameTu)
