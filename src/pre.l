@@ -3365,7 +3365,7 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
       }
     }
     // add the macro definition for this file to the global map
-    Doxygen::macroDefinitions.emplace(std::make_pair(state->yyFileName,std::move(state->macroDefinitions)));
+    Doxygen::macroDefinitions.emplace(std::make_pair(state->yyFileName.str(),std::move(state->macroDefinitions)));
   }
 
   //yyextra->defineManager.endContext();
