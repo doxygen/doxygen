@@ -67,7 +67,7 @@ static void writeClientSearchBox(FTextStream &t,const char *relPath)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
   t << "        <span class=\"left\">\n";
-  t << "          <img id=\"MSearchSelect\" src=\"" << relPath << "search/mag_sel.png\"\n";
+  t << "          <img id=\"MSearchSelect\" src=\"" << relPath << "search/mag_sel.svg\"\n";
   t << "               onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
   t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
   t << "               alt=\"\"/>\n";
@@ -78,7 +78,7 @@ static void writeClientSearchBox(FTextStream &t,const char *relPath)
   t << "               onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
   t << "          </span><span class=\"right\">\n";
   t << "            <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
-    << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"" << relPath << "search/close.png\" alt=\"\"/></a>\n";
+    << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"" << relPath << "search/close.svg\" alt=\"\"/></a>\n";
   t << "          </span>\n";
   t << "        </div>\n";
 }
@@ -100,7 +100,7 @@ static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlig
     t << "search.php";
   }
   t << "\" method=\"get\">\n";
-  t << "              <img id=\"MSearchSelect\" src=\"" << relPath << "search/mag.png\" alt=\"\"/>\n";
+  t << "              <img id=\"MSearchSelect\" src=\"" << relPath << "search/mag.svg\" alt=\"\"/>\n";
   if (!highlightSearch)
   {
     t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\""
@@ -1046,15 +1046,15 @@ void HtmlGenerator::writeSearchData(const char *dir)
   Doxygen::indexList->addImageFile("search/search_r.png");
   if (serverBasedSearch)
   {
-    mgr.copyResource("mag.png",dir);
-    Doxygen::indexList->addImageFile("search/mag.png");
+    mgr.copyResource("mag.svg",dir);
+    Doxygen::indexList->addImageFile("search/mag.svg");
   }
   else
   {
-    mgr.copyResource("close.png",dir);
-    Doxygen::indexList->addImageFile("search/close.png");
-    mgr.copyResource("mag_sel.png",dir);
-    Doxygen::indexList->addImageFile("search/mag_sel.png");
+    mgr.copyResource("close.svg",dir);
+    Doxygen::indexList->addImageFile("search/close.svg");
+    mgr.copyResource("mag_sel.svg",dir);
+    Doxygen::indexList->addImageFile("search/mag_sel.svg");
   }
 
   QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
