@@ -3174,20 +3174,18 @@ void  FlowChart::printFlowTree()
 
 void  FlowChart::colTextNodes()
 {
-  QCString text;
-  FlowChart *flno;
+  FlowChart *flno = NULL;
   bool found=FALSE;
   for (uint j=0;j<flowList.count();j++)
   {
     FlowChart *flo=flowList.at(j);
     if (flo->type&TEXT_NO)
     {
-      text+=flo->text+'\n';
       if (!found)
       {
         flno=flo;
       }
-      if (found)
+      else
       {
         flno->text+=flo->text;
         flowList.remove(flo);
