@@ -3191,7 +3191,7 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
         def->nonRecursive = nonRecursive;
         def->fileDef      = state->yyFileDef;
         def->fileName     = fileName;
-        state->contextDefines.insert(std::make_pair(state->yyFileName.str(),std::move(def)));
+        state->contextDefines.insert(std::make_pair(toStdString(def->name),std::move(def)));
 
         //printf("#define '%s' '%s' #nargs=%d\n",
         //  def->name.data(),def->definition.data(),def->nargs);
@@ -3223,7 +3223,7 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
         def->nonRecursive = nonRecursive;
         def->fileDef      = state->yyFileDef;
         def->fileName     = fileName;
-        state->contextDefines.insert(std::make_pair(state->yyFileName.str(),std::move(def)));
+        state->contextDefines.insert(std::make_pair(toStdString(def->name),std::move(def)));
       }
     }
   }
