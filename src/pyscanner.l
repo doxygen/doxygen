@@ -97,6 +97,7 @@ struct pyscannerYY_state
   QGString *              copyString = 0;
   int                     indent = 0;
   int                     curIndent = 0;
+  int                     commentIndent = 0;
   bool                    importTuple = FALSE;
   QDict<QCString>         packageNameCache;
   char                    atomStart = 0;
@@ -140,6 +141,7 @@ static void initSpecialBlock(yyscan_t yyscanner);
 static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
 static QCString findPackageScope(yyscan_t yyscanner,const char *fileName);
+static QCString stripSpace(const char * doc,const int ind);
 
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
@@ -1251,7 +1253,8 @@ STARTDOCSYMS      "##"
 			      QCString actualDoc=yyextra->docBlock;
 			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-			        actualDoc.prepend("\\verbatim ");
+                                actualDoc = stripSpace(actualDoc,yyextra->commentIndent);
+			        actualDoc.prepend("\\verbatim\n");
 			        actualDoc.append("\\endverbatim ");
 			      }
 			      //printf("-------> yyextra->current=%p yyextra->bodyEntry=%p\n",yyextra->current,yyextra->bodyEntry);
@@ -1262,7 +1265,8 @@ STARTDOCSYMS      "##"
 			      QCString actualDoc=yyextra->docBlock;
 			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-			        actualDoc.prepend("\\verbatim ");
+                                actualDoc = stripSpace(actualDoc,yyextra->commentIndent);
+			        actualDoc.prepend("\\verbatim\n");
 			        actualDoc.append("\\endverbatim ");
 			      }
 			      actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
@@ -1290,18 +1294,7 @@ STARTDOCSYMS      "##"
 
 
     ^{BB}		{ // leading whitespace
-      			  int indent = computeIndent(yytext);
-			  if (indent>=yyextra->curIndent)
-			  { // strip yyextra->curIndent amount of whitespace
-			    int i;
-			    for (i=0;i<indent-yyextra->curIndent;i++) yyextra->docBlock+=' ';
-			    DBG_CTX((stderr,"stripping indent %d\n",yyextra->curIndent));
-			  }
-			  else
-			  {
-			    DBG_CTX((stderr,"not stripping: %d<%d\n",indent,yyextra->curIndent));
-			    yyextra->docBlock += yytext;
-			  }
+			  yyextra->docBlock += yytext;
       			}
     [^"'\n \t\\]+       {
 			  yyextra->docBlock += yytext;
@@ -1529,6 +1522,52 @@ static inline int computeIndent(const char *s)
   return col;
 }
 
+static QCString stripSpace(const char *doc,const int ind)
+{
+  static GrowBuf growBuf;
+  growBuf.clear();
+  if (ind <= 0) return doc;
+  signed char c;
+  const signed char *p=(const signed char*)doc;
+  bool startLine = false;
+  int cnt = 0;
+  while ((c=*p++)!=0)
+  {
+    switch(c)
+    {
+      case '\n':
+        growBuf.addChar(c);
+        startLine = true;
+        cnt = ind;
+        break;
+      case ' ':
+        if (startLine)
+        {
+          if (cnt)
+          {
+            cnt--;
+          }
+          else
+          {
+            startLine = false;
+            growBuf.addChar(c);
+          }
+        }
+        else
+        {
+          growBuf.addChar(c);
+        }
+        break;
+      default:
+        startLine = false;
+        growBuf.addChar(c);
+        break;
+    }
+  }
+
+  growBuf.addChar(0);
+  return growBuf.get();
+}
 static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1686,6 +1725,7 @@ static void initTriDoubleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlockJavaStyle = TRUE;
   yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   yyextra->docBlock.resize(0);
+  yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = TRUE;
   startCommentBlock(yyscanner,FALSE);
 }
@@ -1698,6 +1738,7 @@ static void initTriSingleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlockJavaStyle = TRUE;
   yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   yyextra->docBlock.resize(0);
+  yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = FALSE;
   startCommentBlock(yyscanner,FALSE);
 }
@@ -1710,6 +1751,7 @@ static void initSpecialBlock(yyscan_t yyscanner)
   yyextra->docBlockJavaStyle = TRUE;
   yyextra->docBrief = TRUE;
   yyextra->docBlock.resize(0);
+  yyextra->commentIndent = yyextra->curIndent;
   startCommentBlock(yyscanner,TRUE);
 }
 
