@@ -11583,7 +11583,7 @@ void generateOutput()
   if (Debug::isFlagSet(Debug::Time))
   {
     msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
-         ((double)Debug::elapsedTime())/1000.0,
+         ((double)Debug::elapsedTime()),
          Portable::getSysElapsedTime()
         );
     g_s.print();
