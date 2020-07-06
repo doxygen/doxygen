@@ -114,11 +114,11 @@ class Timer
     {
       m_startTime = std::chrono::system_clock::now();
     }
-    int elapsedTimeMs()
+    double elapsedTimeS()
     {
-      return std::chrono::duration_cast<
+      return (std::chrono::duration_cast<
                   std::chrono::milliseconds>(
-                  std::chrono::system_clock::now() - m_startTime).count();
+                  std::chrono::system_clock::now() - m_startTime).count()) / 1000.0;
     }
   private:
     std::chrono::time_point<std::chrono::system_clock> m_startTime;
@@ -131,8 +131,8 @@ void Debug::startTimer()
   g_runningTime.start();
 }
 
-int Debug::elapsedTime()
+double Debug::elapsedTime()
 {
-  return g_runningTime.elapsedTimeMs();
+  return g_runningTime.elapsedTimeS();
 }
 

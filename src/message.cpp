@@ -117,7 +117,7 @@ void msg(const char *fmt, ...)
 #endif
     if (Debug::isFlagSet(Debug::Time))
     {
-      printf("%.3f sec: ",((double)Debug::elapsedTime())/1000.0);
+      printf("%.3f sec: ",((double)Debug::elapsedTime()));
     }
     va_list args;
     va_start(args, fmt);
