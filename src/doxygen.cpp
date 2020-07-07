@@ -7480,15 +7480,16 @@ static void generateFileSources()
 #if USE_LIBCLANG
     if (Doxygen::clangAssistedParsing)
     {
-      QDict<void> g_processedFiles(10007);
+      StringUnorderedSet processedFiles;
 
       // create a dictionary with files to process
-      QDict<void> g_filesToProcess(10007);
+      StringUnorderedSet filesToProcess;
+
       for (const auto &fn : *Doxygen::inputNameLinkedMap)
       {
         for (const auto &fd : *fn)
         {
-          g_filesToProcess.insert(fd->absFilePath(),(void*)0x8);
+          filesToProcess.insert(fd->absFilePath().str());
         }
       }
       // process source files (and their include dependencies)
@@ -7515,9 +7516,9 @@ static void generateFileSources()
             }
 
             char *incFile = filesInSameTu.first();
-            while (incFile && g_filesToProcess.find(incFile))
+            while (incFile && filesToProcess.find(incFile)!=filesToProcess.end())
             {
-              if (fd->absFilePath()!=incFile && !g_processedFiles.find(incFile))
+              if (fd->absFilePath()!=incFile && processedFiles.find(incFile)==processedFiles.end())
               {
                 QStrList moreFiles;
                 bool ambig;
@@ -7536,13 +7537,13 @@ static void generateFileSources()
                     msg(" Parsing code for file %s...\n",ifd->docName().data());
                     ifd->parseSource(TRUE,moreFiles);
                   }
-                  g_processedFiles.insert(incFile,(void*)0x8);
+                  processedFiles.insert(incFile);
                 }
               }
               incFile = filesInSameTu.next();
             }
             fd->finishParsing();
-            g_processedFiles.insert(fd->absFilePath(),(void*)0x8);
+            processedFiles.insert(fd->absFilePath().str());
           }
         }
       }
@@ -7551,7 +7552,7 @@ static void generateFileSources()
       {
         for (const auto &fd : *fn)
         {
-          if (!g_processedFiles.find(fd->absFilePath())) // not yet processed
+          if (processedFiles.find(fd->absFilePath().str())==processedFiles.end()) // not yet processed
           {
             QStrList filesInSameTu;
             fd->startParsing();
@@ -9127,13 +9128,13 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing)
   {
-    QDict<void> g_processedFiles(10007);
+    StringUnorderedSet processedFiles;
 
     // create a dictionary with files to process
-    QDict<void> g_filesToProcess(10007);
+    StringUnorderedSet filesToProcess;
     for (const auto &s : g_inputFiles)
     {
-      g_filesToProcess.insert(s.c_str(),(void*)0x8);
+      filesToProcess.insert(s);
     }
 
     // process source files (and their include dependencies)
@@ -9154,9 +9155,9 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
         // Now process any include files in the same translation unit
         // first. When libclang is used this is much more efficient.
         char *incFile = filesInSameTu.first();
-        while (incFile && g_filesToProcess.find(incFile))
+        while (incFile && filesToProcess.find(incFile)!=filesToProcess.end())
         {
-          if (qstrcmp(incFile,s.c_str()) && !g_processedFiles.find(incFile))
+          if (qstrcmp(incFile,s.c_str()) && processedFiles.find(incFile)==processedFiles.end())
           {
             FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile,ambig);
             if (ifd && !ifd->isReference())
@@ -9165,19 +9166,19 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
               //printf("  Processing %s in same translation unit as %s\n",incFile,s->c_str());
               fileRoot = parseFile(*parser.get(),ifd,incFile,TRUE,moreFiles);
               root->moveToSubEntryAndKeep(fileRoot);
-              g_processedFiles.insert(incFile,(void*)0x8);
+              processedFiles.insert(incFile);
             }
           }
           incFile = filesInSameTu.next();
         }
         parser->finishTranslationUnit();
-        g_processedFiles.insert(s.c_str(),(void*)0x8);
+        processedFiles.insert(s);
       }
     }
     // process remaining files
     for (const auto &s : g_inputFiles)
     {
-      if (!g_processedFiles.find(s.c_str())) // not yet processed
+      if (processedFiles.find(s)==processedFiles.end()) // not yet processed
       {
         bool ambig;
         QStrList filesInSameTu;
@@ -9188,7 +9189,7 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
         std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),FALSE,filesInSameTu);
         root->moveToSubEntryAndKeep(fileRoot);
         parser->finishTranslationUnit();
-        g_processedFiles.insert(s.c_str(),(void*)0x8);
+        processedFiles.insert(s);
       }
     }
   }
