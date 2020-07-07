@@ -47,7 +47,7 @@ class Debug
     static void setPriority(int p);
 
     static void startTimer();
-    static int  elapsedTime();
+    static double elapsedTime();
 
   private:
     static DebugMask curMask;
