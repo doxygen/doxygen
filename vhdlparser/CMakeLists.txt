@@ -1,3 +1,18 @@
+#
+# Generate parser (default target)
+#
+# when generating the parser with debug options it will look like:
+#   make JAVACC_FLAGS=-debug_parser
+#  or
+#   make JAVACC_FLAGS="-debug_parser -debug_lookahead"
+#
+# Available debug options:
+#  -debug_parser
+#  -debug_token_manager
+#  -debug_lookahead
+#
+# For other javacc settings / options consult the documentation of javacc.
+
 find_package(Javacc)
 if (JAVACC_FOUND)
     if (JAVACC_VERSION VERSION_LESS 7.0.5)
