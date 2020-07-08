@@ -870,6 +870,9 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
   				     copyToOutput(yyscanner,yytext,(int)yyleng);
   				   }
 
+<*>.                               {
+  				     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
 %%
 
 static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len)
