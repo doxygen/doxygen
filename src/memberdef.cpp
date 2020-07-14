@@ -4167,6 +4167,7 @@ void MemberDefImpl::warnIfUndocumentedParams() const
   if (!Config_getBool(EXTRACT_ALL) &&
       Config_getBool(WARN_IF_UNDOCUMENTED) &&
       Config_getBool(WARN_NO_PARAMDOC) &&
+      isFunction() &&
       !isDeleted() &&
       !isReference() &&
       !Doxygen::suppressDocWarnings)
@@ -4179,7 +4180,7 @@ void MemberDefImpl::warnIfUndocumentedParams() const
           qPrint(qualifiedName()));
     }
     if (!m_impl->hasDocumentedReturnType &&
-        isFunction() && hasDocumentation() && !returnType.isEmpty())
+        hasDocumentation() && !returnType.isEmpty())
     {
       warn_doc_error(getDefFileName(),getDefLine(),
           "return type of member %s is not documented",
