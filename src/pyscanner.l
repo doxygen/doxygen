@@ -1517,7 +1517,7 @@ static void newFunction(yyscan_t yyscanner)
 static inline int computeIndent(const char *s)
 {
   int col=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -1936,8 +1936,7 @@ PythonOutlineParser::~PythonOutlineParser()
 void PythonOutlineParser::parseInput(const char *fileName,
                                        const char *fileBuf,
                                        const std::shared_ptr<Entry> &root,
-                                       bool /*sameTranslationUnit*/,
-                                       QStrList & /*filesInSameTranslationUnit*/)
+                                       ClangTUParser * /*clangParser*/)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;

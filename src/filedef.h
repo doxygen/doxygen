@@ -25,6 +25,7 @@
 #include "definition.h"
 #include "sortdict.h"
 #include "memberlist.h"
+#include "containers.h"
 
 class MemberList;
 class FileDef;
@@ -40,6 +41,7 @@ class MemberGroupSDict;
 class PackageDef;
 class DirDef;
 class FTextStream;
+class ClangTUParser;
 
 /** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
@@ -118,7 +120,7 @@ class FileDef : virtual public Definition
     virtual SDict<Definition> *getUsedClasses() const = 0;
     virtual QList<IncludeInfo> *includeFileList() const = 0;
     virtual QList<IncludeInfo> *includedByFileList() const = 0;
-    virtual void getAllIncludeFilesRecursively(QStrList &incFiles) const = 0;
+    virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const = 0;
 
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
     virtual const QList<MemberList> &getMemberLists() const = 0;
@@ -148,10 +150,8 @@ class FileDef : virtual public Definition
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeTagFile(FTextStream &t) = 0;
 
-    virtual void startParsing() = 0;
-    virtual void writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu) = 0;
-    virtual void parseSource(bool sameTu,QStrList &filesInSameTu) = 0;
-    virtual void finishParsing() = 0;
+    virtual void writeSource(OutputList &ol,ClangTUParser *clangParser) = 0;
+    virtual void parseSource(ClangTUParser *clangParser) = 0;
     virtual void setDiskName(const QCString &name) = 0;
 
     virtual void insertMember(MemberDef *md) = 0;

@@ -2942,10 +2942,8 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   auto parser { Doxygen::parserManager->getOutlineParser(".vhd") };
   VhdlDocGen::setFlowMember(mdef);
   std::shared_ptr<Entry> root = std::make_shared<Entry>();
-  QStrList filesInSameTu;
-  parser->startTranslationUnit("");
-  parser->parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);
-  parser->finishTranslationUnit();
+  StringVector filesInSameTu;
+  parser->parseInput("",codeFragment.data(),root,nullptr);
 }
 
 void VhdlDocGen::resetCodeVhdlParserState()

@@ -93,13 +93,10 @@ class MarkdownOutlineParser : public OutlineParserInterface
   public:
     MarkdownOutlineParser();
     virtual ~MarkdownOutlineParser();
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
     void parseInput(const char *fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    bool sameTranslationUnit,
-                    QStrList &filesInSameTranslationUnit);
+                    ClangTUParser *clangParser);
     bool needsPreprocessing(const QCString &) const { return FALSE; }
     void parsePrototype(const char *text);
   private:

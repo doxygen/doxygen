@@ -2528,8 +2528,7 @@ MarkdownOutlineParser::~MarkdownOutlineParser()
 void MarkdownOutlineParser::parseInput(const char *fileName,
                 const char *fileBuf,
                 const std::shared_ptr<Entry> &root,
-                bool /*sameTranslationUnit*/,
-                QStrList & /*filesInSameTranslationUnit*/)
+                ClangTUParser* /*clangParser*/)
 {
   std::shared_ptr<Entry> current = std::make_shared<Entry>();
   current->lang = SrcLangExt_Markdown;

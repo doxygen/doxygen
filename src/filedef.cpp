@@ -82,7 +82,7 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     virtual SDict<Definition> *getUsedClasses() const      { return m_usingDeclList; }
     virtual QList<IncludeInfo> *includeFileList() const    { return m_includeList; }
     virtual QList<IncludeInfo> *includedByFileList() const { return m_includedByList; }
-    virtual void getAllIncludeFilesRecursively(QStrList &incFiles) const;
+    virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const;
     virtual MemberList *getMemberList(MemberListType lt) const;
     virtual const QList<MemberList> &getMemberLists() const { return m_memberLists; }
     virtual MemberGroupSDict *getMemberGroupSDict() const { return m_memberGroupSDict; }
@@ -101,10 +101,8 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeSummaryLinks(OutputList &ol) const;
     virtual void writeTagFile(FTextStream &t);
-    virtual void startParsing();
-    virtual void writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu);
-    virtual void parseSource(bool sameTu,QStrList &filesInSameTu);
-    virtual void finishParsing();
+    virtual void writeSource(OutputList &ol,ClangTUParser *clangParser);
+    virtual void parseSource(ClangTUParser *clangParser);
     virtual void setDiskName(const QCString &name);
     virtual void insertMember(MemberDef *md);
     virtual void insertClass(ClassDef *cd);
@@ -1151,7 +1149,7 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
 }
 
 /*! Write a source listing of this file to the output */
-void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
+void FileDefImpl::writeSource(OutputList &ol,ClangTUParser *clangParser)
 {
   static bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
@@ -1209,22 +1207,13 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
     ol.popGeneratorState();
   }
 
-  (void)sameTu;
-  (void)filesInSameTu;
 #if USE_LIBCLANG
-  if (Doxygen::clangAssistedParsing &&
+  if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
   {
     ol.startCodeFragment();
-    if (!sameTu)
-    {
-      ClangParser::instance()->start(absFilePath(),filesInSameTu);
-    }
-    else
-    {
-      ClangParser::instance()->switchToFile(absFilePath());
-    }
-    ClangParser::instance()->writeSources(ol,this);
+    clangParser->switchToFile(this);
+    clangParser->writeSources(ol,this);
     ol.endCodeFragment();
   }
   else
@@ -1268,25 +1257,16 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
   ol.enableAll();
 }
 
-void FileDefImpl::parseSource(bool sameTu,QStrList &filesInSameTu)
+void FileDefImpl::parseSource(ClangTUParser *clangParser)
 {
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   DevNullCodeDocInterface devNullIntf;
-  (void)sameTu;
-  (void)filesInSameTu;
 #if USE_LIBCLANG
-  if (Doxygen::clangAssistedParsing &&
+  if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
   {
-    if (!sameTu)
-    {
-      ClangParser::instance()->start(absFilePath(),filesInSameTu);
-    }
-    else
-    {
-      ClangParser::instance()->switchToFile(absFilePath());
-    }
-    ClangParser::instance()->writeSources(devNullIntf,this);
+    clangParser->switchToFile(this);
+    clangParser->writeSources(devNullIntf,this);
   }
   else
 #endif
@@ -1300,15 +1280,6 @@ void FileDefImpl::parseSource(bool sameTu,QStrList &filesInSameTu)
             FALSE,0,this
            );
   }
-}
-
-void FileDefImpl::startParsing()
-{
-}
-
-void FileDefImpl::finishParsing()
-{
-  ClangParser::instance()->finish();
 }
 
 void FileDefImpl::addMembersToMemberGroup()
@@ -2159,7 +2130,7 @@ bool FileDefImpl::isLinkableInProject() const
 }
 
 static void getAllIncludeFilesRecursively(
-    QDict<void> *filesVisited,const FileDef *fd,QStrList &incFiles)
+    StringUnorderedSet &filesVisited,const FileDef *fd,StringVector &incFiles)
 {
   if (fd->includeFileList())
   {
@@ -2168,21 +2139,21 @@ static void getAllIncludeFilesRecursively(
     for (iii.toFirst();(ii=iii.current());++iii)
     {
       if (ii->fileDef && !ii->fileDef->isReference() &&
-          !filesVisited->find(ii->fileDef->absFilePath()))
+          filesVisited.find(ii->fileDef->absFilePath().str())==filesVisited.end())
       {
         //printf("FileDefImpl::addIncludeDependency(%s)\n",ii->fileDef->absFilePath().data());
-        incFiles.append(ii->fileDef->absFilePath());
-        filesVisited->insert(ii->fileDef->absFilePath(),(void*)0x8);
+        incFiles.push_back(ii->fileDef->absFilePath().str());
+        filesVisited.insert(ii->fileDef->absFilePath().str());
         getAllIncludeFilesRecursively(filesVisited,ii->fileDef,incFiles);
       }
     }
   }
 }
 
-void FileDefImpl::getAllIncludeFilesRecursively(QStrList &incFiles) const
+void FileDefImpl::getAllIncludeFilesRecursively(StringVector &incFiles) const
 {
-  QDict<void> includes(257);
-  ::getAllIncludeFilesRecursively(&includes,this,incFiles);
+  StringUnorderedSet includes;
+  ::getAllIncludeFilesRecursively(includes,this,incFiles);
 }
 
 QCString FileDefImpl::title() const

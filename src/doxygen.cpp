@@ -104,6 +104,7 @@
 #include "plantuml.h"
 #include "stlsupport.h"
 #include "threadpool.h"
+#include "clangparser.h"
 
 // provided by the generated file resources.cpp
 extern void initResources();
@@ -7499,50 +7500,48 @@ static void generateFileSources()
         {
           if (fd->isSource() && !fd->isReference())
           {
-            QStrList filesInSameTu;
-            fd->getAllIncludeFilesRecursively(filesInSameTu);
-            fd->startParsing();
+            auto clangParser = ClangParser::instance()->createTUParser(fd.get());
             if (fd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
             {
               msg("Generating code for file %s...\n",fd->docName().data());
-              fd->writeSource(*g_outputList,FALSE,filesInSameTu);
+              clangParser->parse();
+              fd->writeSource(*g_outputList,clangParser.get());
 
             }
             else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
               // we needed to parse the sources even if we do not show them
             {
               msg("Parsing code for file %s...\n",fd->docName().data());
-              fd->parseSource(FALSE,filesInSameTu);
+              clangParser->parse();
+              fd->parseSource(clangParser.get());
             }
 
-            char *incFile = filesInSameTu.first();
-            while (incFile && filesToProcess.find(incFile)!=filesToProcess.end())
+            for (auto incFile : clangParser->filesInSameTU())
             {
-              if (fd->absFilePath()!=incFile && processedFiles.find(incFile)==processedFiles.end())
+              if (filesToProcess.find(incFile)!=filesToProcess.end() &&  // part of input
+                  fd->absFilePath()!=incFile &&                          // not same file
+                  processedFiles.find(incFile)==processedFiles.end())    // not yet marked as processed
               {
-                QStrList moreFiles;
+                StringVector moreFiles;
                 bool ambig;
-                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile,ambig);
+                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile.c_str(),ambig);
                 if (ifd && !ifd->isReference())
                 {
                   if (ifd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
                   {
                     msg(" Generating code for file %s...\n",ifd->docName().data());
-                    ifd->writeSource(*g_outputList,TRUE,moreFiles);
-
+                    ifd->writeSource(*g_outputList,clangParser.get());
                   }
                   else if (!ifd->isReference() && Doxygen::parseSourcesNeeded)
                     // we needed to parse the sources even if we do not show them
                   {
                     msg(" Parsing code for file %s...\n",ifd->docName().data());
-                    ifd->parseSource(TRUE,moreFiles);
+                    ifd->parseSource(clangParser.get());
                   }
                   processedFiles.insert(incFile);
                 }
               }
-              incFile = filesInSameTu.next();
             }
-            fd->finishParsing();
             processedFiles.insert(fd->absFilePath().str());
           }
         }
@@ -7554,21 +7553,21 @@ static void generateFileSources()
         {
           if (processedFiles.find(fd->absFilePath().str())==processedFiles.end()) // not yet processed
           {
-            QStrList filesInSameTu;
-            fd->startParsing();
+            auto clangParser = ClangParser::instance()->createTUParser(fd.get());
             if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
             {
               msg("Generating code for file %s...\n",fd->docName().data());
-              fd->writeSource(*g_outputList,FALSE,filesInSameTu);
+              clangParser->parse();
+              fd->writeSource(*g_outputList,clangParser.get());
 
             }
             else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
               // we needed to parse the sources even if we do not show them
             {
               msg("Parsing code for file %s...\n",fd->docName().data());
-              fd->parseSource(FALSE,filesInSameTu);
+              clangParser->parse();
+              fd->parseSource(clangParser.get());
             }
-            fd->finishParsing();
           }
         }
       }
@@ -7580,21 +7579,20 @@ static void generateFileSources()
       {
         for (const auto &fd : *fn)
         {
-          QStrList filesInSameTu;
-          fd->startParsing();
+          StringVector filesInSameTu;
+          fd->getAllIncludeFilesRecursively(filesInSameTu);
           if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
           {
             msg("Generating code for file %s...\n",fd->docName().data());
-            fd->writeSource(*g_outputList,FALSE,filesInSameTu);
+            fd->writeSource(*g_outputList,nullptr);
 
           }
           else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
             // we needed to parse the sources even if we do not show them
           {
             msg("Parsing code for file %s...\n",fd->docName().data());
-            fd->parseSource(FALSE,filesInSameTu);
+            fd->parseSource(nullptr);
           }
-          fd->finishParsing();
         }
       }
     }
@@ -9062,7 +9060,7 @@ static std::unique_ptr<OutlineParserInterface> getParserForFile(const char *fn)
 
 static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
                       FileDef *fd,const char *fn,
-                      bool sameTu,QStrList &filesInSameTu)
+                      ClangTUParser *clangParser,bool newTU)
 {
   QCString fileName=fn;
   QCString extension;
@@ -9110,17 +9108,159 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
 
   convBuf.addChar('\0');
 
-  if (Doxygen::clangAssistedParsing && !sameTu)
-  {
-    fd->getAllIncludeFilesRecursively(filesInSameTu);
-  }
-
   std::shared_ptr<Entry> fileRoot = std::make_shared<Entry>();
   // use language parse to parse the file
-  parser.parseInput(fileName,convBuf.data(),fileRoot,sameTu,filesInSameTu);
+  if (clangParser)
+  {
+    if (newTU) clangParser->parse();
+    clangParser->switchToFile(fd);
+  }
+  parser.parseInput(fileName,convBuf.data(),fileRoot,clangParser);
   fileRoot->setFileDef(fd);
   return fileRoot;
 }
+
+#if MULTITHREADED_INPUT
+
+//! parse the list of input files
+static void parseFiles(const std::shared_ptr<Entry> &root)
+{
+#if USE_LIBCLANG
+  if (Doxygen::clangAssistedParsing)
+  {
+    StringUnorderedSet processedFiles;
+
+    // create a dictionary with files to process
+    StringUnorderedSet filesToProcess;
+    for (const auto &s : g_inputFiles)
+    {
+      filesToProcess.insert(s);
+    }
+
+    std::mutex processedFilesLock;
+    // process source files (and their include dependencies)
+    std::size_t numThreads = std::thread::hardware_concurrency();
+    msg("Processing input using %lu threads.\n",numThreads);
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future< std::vector< std::shared_ptr<Entry> > > > results;
+    for (const auto &s : g_inputFiles)
+    {
+      bool ambig;
+      FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+      ASSERT(fd!=0);
+      if (fd->isSource() && !fd->isReference()) // this is a source file
+      {
+        // lambda representing the work to executed by a thread
+        auto processFile = [s,&filesToProcess,&processedFilesLock,&processedFiles]() {
+          bool ambig;
+          std::vector< std::shared_ptr<Entry> > roots;
+          FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+          auto clangParser = ClangParser::instance()->createTUParser(fd);
+          auto parser = getParserForFile(s.c_str());
+          auto fileRoot { parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true) };
+          roots.push_back(fileRoot);
+
+          // Now process any include files in the same translation unit
+          // first. When libclang is used this is much more efficient.
+          for (auto incFile : clangParser->filesInSameTU())
+          {
+            if (filesToProcess.find(incFile)!=filesToProcess.end())
+            {
+              bool needsToBeProcessed;
+              {
+                std::lock_guard<std::mutex> lock(processedFilesLock);
+                needsToBeProcessed = processedFiles.find(incFile)==processedFiles.end();
+                if (needsToBeProcessed) processedFiles.insert(incFile);
+              }
+              if (incFile!=s && needsToBeProcessed)
+              {
+                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile.c_str(),ambig);
+                if (ifd && !ifd->isReference())
+                {
+                  //printf("  Processing %s in same translation unit as %s\n",incFile,s->c_str());
+                  fileRoot = parseFile(*parser.get(),ifd,incFile.c_str(),clangParser.get(),false);
+                  roots.push_back(fileRoot);
+                }
+              }
+            }
+          }
+          return roots;
+        };
+        // dispatch the work and collect the future results
+        results.emplace_back(threadPool.queue(processFile));
+      }
+    }
+    // synchronise with the Entry result lists produced and add them to the root
+    for (auto &f : results)
+    {
+      auto l = f.get();
+      for (auto &e : l)
+      {
+        root->moveToSubEntryAndKeep(e);
+      }
+    }
+    // process remaining files
+    results.clear();
+    for (const auto &s : g_inputFiles)
+    {
+      if (processedFiles.find(s)==processedFiles.end()) // not yet processed
+      {
+        // lambda representing the work to executed by a thread
+        auto processFile = [s]() {
+          bool ambig;
+          std::vector< std::shared_ptr<Entry> > roots;
+          FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+          auto clangParser = ClangParser::instance()->createTUParser(fd);
+          auto parser { getParserForFile(s.c_str()) };
+          auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
+          roots.push_back(fileRoot);
+          return roots;
+        };
+        // dispatch the work and collect the future results
+        results.emplace_back(threadPool.queue(processFile));
+      }
+    }
+    // synchronise with the Entry result lists produced and add them to the root
+    for (auto &f : results)
+    {
+      auto l = f.get();
+      for (auto &e : l)
+      {
+        root->moveToSubEntryAndKeep(e);
+      }
+    }
+  }
+  else // normal processing
+#endif
+  {
+    std::size_t numThreads = std::thread::hardware_concurrency();
+    msg("Processing input using %lu threads.\n",numThreads);
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future< std::shared_ptr<Entry> > > results;
+    for (const auto &s : g_inputFiles)
+    {
+      // lambda representing the work to executed by a thread
+      auto processFile = [s]() {
+        bool ambig;
+        FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+        auto clangParser = ClangParser::instance()->createTUParser(fd);
+        auto parser = getParserForFile(s.c_str());
+        auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
+        return fileRoot;
+      };
+      // dispatch the work and collect the future results
+      results.emplace_back(threadPool.queue(processFile));
+    }
+    // synchronise with the Entry results produced and add them to the root
+    for (auto &f : results)
+    {
+      root->moveToSubEntryAndKeep(f.get());
+    }
+#warning "Multi-threaded input enabled. This is a highly experimental feature. Only use for doxygen development."
+  }
+}
+
+#else // !MULTITHREADED_INPUT
 
 //! parse the list of input files
 static void parseFiles(const std::shared_ptr<Entry> &root)
@@ -9145,34 +9285,30 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
       ASSERT(fd!=0);
       if (fd->isSource() && !fd->isReference()) // this is a source file
       {
-        QStrList filesInSameTu;
-        std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
-        parser->startTranslationUnit(s.c_str());
-        std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),FALSE,filesInSameTu);
+        auto clangParser = ClangParser::instance()->createTUParser(fd);
+        auto parser { getParserForFile(s.c_str()) };
+        auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
         root->moveToSubEntryAndKeep(fileRoot);
-        //printf("  got %d extra files in tu\n",filesInSameTu.count());
+        processedFiles.insert(s);
 
         // Now process any include files in the same translation unit
         // first. When libclang is used this is much more efficient.
-        char *incFile = filesInSameTu.first();
-        while (incFile && filesToProcess.find(incFile)!=filesToProcess.end())
+        for (auto incFile : clangParser->filesInSameTU())
         {
-          if (qstrcmp(incFile,s.c_str()) && processedFiles.find(incFile)==processedFiles.end())
+          //printf("    file %s\n",incFile.c_str());
+          if (filesToProcess.find(incFile)!=filesToProcess.end() && // file need to be processed
+              processedFiles.find(incFile)==processedFiles.end())   // and is not processed already
           {
-            FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile,ambig);
+            FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile.c_str(),ambig);
             if (ifd && !ifd->isReference())
             {
-              QStrList moreFiles;
-              //printf("  Processing %s in same translation unit as %s\n",incFile,s->c_str());
-              fileRoot = parseFile(*parser.get(),ifd,incFile,TRUE,moreFiles);
+              //printf("  Processing %s in same translation unit as %s\n",incFile.c_str(),s.c_str());
+              fileRoot = parseFile(*parser.get(),ifd,incFile.c_str(),clangParser.get(),false);
               root->moveToSubEntryAndKeep(fileRoot);
               processedFiles.insert(incFile);
             }
           }
-          incFile = filesInSameTu.next();
         }
-        parser->finishTranslationUnit();
-        processedFiles.insert(s);
       }
     }
     // process remaining files
@@ -9181,14 +9317,11 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
       if (processedFiles.find(s)==processedFiles.end()) // not yet processed
       {
         bool ambig;
-        QStrList filesInSameTu;
         FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
-        ASSERT(fd!=0);
-        std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
-        parser->startTranslationUnit(s.c_str());
-        std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),FALSE,filesInSameTu);
+        auto clangParser = ClangParser::instance()->createTUParser(fd);
+        auto parser { getParserForFile(s.c_str()) };
+        auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
         root->moveToSubEntryAndKeep(fileRoot);
-        parser->finishTranslationUnit();
         processedFiles.insert(s);
       }
     }
@@ -9196,48 +9329,19 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
   else // normal processing
 #endif
   {
-#if !MULTITHREADED_INPUT
     for (const auto &s : g_inputFiles)
     {
       bool ambig;
-      QStrList filesInSameTu;
       FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
       ASSERT(fd!=0);
       std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
-      parser->startTranslationUnit(s.c_str());
-      std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),FALSE,filesInSameTu);
+      std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),nullptr,true);
       root->moveToSubEntryAndKeep(fileRoot);
     }
-#else
-    std::size_t numThreads = std::thread::hardware_concurrency();
-    msg("Processing input using %lu threads.\n",numThreads);
-    ThreadPool threadPool(numThreads);
-    std::vector< std::future< std::shared_ptr<Entry> > > results;
-    for (const auto &s : g_inputFiles)
-    {
-      // lambda representing the work to executed by a thread
-      auto processFile = [s]() {
-        bool ambig;
-        QStrList filesInSameTu;
-        FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
-        ASSERT(fd!=0);
-        std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
-        parser->startTranslationUnit(s.c_str());
-        std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),FALSE,filesInSameTu);
-        return fileRoot;
-      };
-      // dispatch the work and collect the future results
-      results.emplace_back(threadPool.queue(processFile));
-    }
-    // synchronise with the Entry results produced and add them to the root
-    for (auto &f : results)
-    {
-      root->moveToSubEntryAndKeep(f.get());
-    }
-#warning "Multi-threaded input enabled. This is a highly experimental feature. Only use for doxygen development."
-#endif
   }
 }
+
+#endif
 
 // resolves a path that may include symlinks, if a recursive symlink is
 // found an empty string is returned.
@@ -9707,9 +9811,7 @@ static const char *getArg(int argc,char **argv,int &optind)
 class NullOutlineParser : public OutlineParserInterface
 {
   public:
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
-    void parseInput(const char *, const char *,const std::shared_ptr<Entry> &, bool, QStrList &) {}
+    void parseInput(const char *, const char *,const std::shared_ptr<Entry> &, ClangTUParser*) {}
     bool needsPreprocessing(const QCString &) const { return FALSE; }
     void parsePrototype(const char *) {}
 };

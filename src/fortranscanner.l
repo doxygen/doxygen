@@ -2803,8 +2803,7 @@ FortranOutlineParser::~FortranOutlineParser()
 void FortranOutlineParser::parseInput(const char *fileName,
                                         const char *fileBuf,
                                         const std::shared_ptr<Entry> &root,
-                                        bool /*sameTranslationUnit*/,
-                                        QStrList & /*filesInSameTranslationUnit*/)
+                                        ClangTUParser * /*clangParser*/)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;

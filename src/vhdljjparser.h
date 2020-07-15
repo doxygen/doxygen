@@ -32,20 +32,17 @@ class VHDLOutlineParser : public OutlineParserInterface
   public:
     VHDLOutlineParser();
     virtual ~VHDLOutlineParser();
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
     void parseInput(const char * fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    bool sameTranslationUnit,
-                    QStrList &filesInSameTranslationUnit);
+                    ClangTUParser *clangParser);
 
     bool needsPreprocessing(const QCString &) const { return TRUE; }
     void parsePrototype(const char *text);
 
 
     // interface for generated parser code
-   
+
     void setLineParsed(int tok);
     int getLine(int tok);
     int getLine();

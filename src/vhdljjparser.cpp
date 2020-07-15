@@ -126,7 +126,7 @@ VHDLOutlineParser::~VHDLOutlineParser()
 }
 
 void VHDLOutlineParser::parseInput(const char *fileName,const char *fileBuf,
-                                   const std::shared_ptr<Entry> &root, bool ,QStrList&)
+                                   const std::shared_ptr<Entry> &root, ClangTUParser *)
 {
   VhdlParser::SharedState *s = &p->shared;
   p->thisParser=this;
