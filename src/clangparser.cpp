@@ -894,34 +894,34 @@ std::unique_ptr<ClangTUParser> ClangParser::createTUParser(const FileDef *fd) co
 //--------------------------------------------------------------------------
 #else // use stubbed functionality in case libclang support is disabled.
 
-void ClangParser::start(const char *,QStrList &)
+void ClangTUParser::switchToFile(FileDef *fd)
 {
 }
 
-void ClangParser::switchToFile(const char *)
+void ClangTUParser::parse()
 {
 }
 
-void ClangParser::finish()
-{
-}
-
-QCString ClangParser::lookup(uint,const char *)
+QCString ClangTUParser::lookup(uint,const char *)
 {
   return "";
 }
 
-void ClangParser::writeSources(CodeOutputInterface &,FileDef *)
+class ClangParser::Private
 {
-}
+};
 
-ClangParser::ClangParser()
+ClangParser::ClangParser() : p(std::make_unique<Private>())
 {
-  p = NULL;
 }
 
 ClangParser::~ClangParser()
 {
+}
+
+std::unique_ptr<ClangTUParser> ClangParser::createTUParser(const FileDef *) const
+{
+  return nullptr;
 }
 
 #endif
