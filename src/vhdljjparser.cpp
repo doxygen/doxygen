@@ -397,14 +397,7 @@ void VHDLOutlineParser::handleCommentBlock(const char *doc1, bool brief)
     s->current->docLine = p->yyLineNr;
   }
 
-  int j = doc.find("[plant]");
-  if (j >= 0)
-  {
-    doc = doc.remove(j, 7);
-    s->current->stat = true;
-  }
-
-  //int position=0;
+ 
 
   Markdown markdown(p->yyFileName,p->iDocLine);
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc) : doc;

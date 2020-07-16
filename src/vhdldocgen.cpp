@@ -3638,7 +3638,7 @@ void FlowChart::writeFlowChart()
 #endif
   const MemberDef *p=VhdlDocGen::getFlowMember();
 
-  if (p->isStatic())
+  if (!Config_getString(PLANTUML_JAR_PATH).isEmpty())
   {
     printUmlTree();
     delFlowList();
