@@ -474,26 +474,13 @@ class TestManager:
 			shutil.rmtree("dtd",ignore_errors=True)
 			shutil.copytree(self.args.inputdir+"/dtd", "dtd")
 
-def split_and_keep(s, sep):
-	if not s: return []
-
-	# Find replacement character that is not used in string
-	# i.e. just use the highest available character plus one
-	# Note: This fails if ord(max(s)) = 0x10FFFF (ValueError)
-	p=chr(ord(max(s))+1)
-
-	retVal = []
-	for val in s.replace(sep, p+sep).split(p):
-		vv = val.split(" ",1)
-		if ((len(vv) == 1) and not vv[0] == ''):
-			retVal += vv
-		if (len(vv) == 2):
-			vv[1] = vv[1].strip()
-		if ((len(vv) == 2) and not vv[1] == ''):
-			retVal += vv
-		if ((len(vv) == 2) and vv[1] == ''):
-			retVal += [vv[0]]
-	return retVal
+def split_and_keep(s,sep):
+    s = s.replace(sep,'\0'+sep)             # add token separator
+    s = s.split('\0')                       # split by null delimiter
+    s = [x.strip() for x in filter(None,s)] # strip and remove empty elements
+    s = [z.split(' ',1) for z in s]         # split by first space
+    s = [i for ss in s for i in ss]         # flatten the list
+    return s
 
 def main():
 	# argument handling
