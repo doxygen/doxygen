@@ -103,6 +103,8 @@
 #include "emoji.h"
 #include "plantuml.h"
 #include "stlsupport.h"
+#include "threadpool.h"
+#include "clangparser.h"
 
 // provided by the generated file resources.cpp
 extern void initResources();
@@ -157,10 +159,9 @@ int              Doxygen::subpageNestingLevel = 0;
 bool             Doxygen::userComments = FALSE;
 QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
-bool             Doxygen::markdownSupport = TRUE;
 GenericsSDict   *Doxygen::genericsDict;
-Preprocessor    *Doxygen::preprocessor = 0;
-DefineList       Doxygen::macroDefinitions;
+DefinesPerFileList Doxygen::macroDefinitions;
+bool             Doxygen::clangAssistedParsing = FALSE;
 
 // locally accessible globals
 static std::unordered_map< std::string, const Entry* > g_classEntries;
@@ -628,7 +629,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,const Entry *root)
           iName=fd->name();
         }
       }
-      else if (!Config_getList(STRIP_FROM_INC_PATH).isEmpty())
+      else if (!Config_getList(STRIP_FROM_INC_PATH).empty())
       {
         iName=stripFromIncludePath(fd->absFilePath());
       }
@@ -3443,7 +3444,7 @@ static void buildFunctionList(const Entry *root)
                 {
                   // merge argument lists
                   ArgumentList mergedArgList = root->argList;
-                  mergeArguments(mdAl,mergedArgList,!root->proto);
+                  mergeArguments(mdAl,mergedArgList,!root->doc.isEmpty());
                   // merge documentation
                   if (md->documentation().isEmpty() && !root->doc.isEmpty())
                   {
@@ -4952,7 +4953,7 @@ static void addMemberDocs(const Entry *root,
   {
     ArgumentList mergedAl = *al;
     //printf("merging arguments (1) docs=%d\n",root->doc.isEmpty());
-    mergeArguments(mdAl,mergedAl,!root->proto);
+    mergeArguments(mdAl,mergedAl,!root->doc.isEmpty());
   }
   else
   {
@@ -4965,7 +4966,7 @@ static void addMemberDocs(const Entry *root,
     {
       //printf("merging arguments (2)\n");
       ArgumentList mergedArgList = root->argList;
-      mergeArguments(mdAl,mergedArgList,!root->proto);
+      mergeArguments(mdAl,mergedArgList,!root->doc.isEmpty());
     }
   }
   if (over_load)  // the \overload keyword was used
@@ -7478,18 +7479,18 @@ static void generateFileSources()
   if (!Doxygen::inputNameLinkedMap->empty())
   {
 #if USE_LIBCLANG
-    static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-    if (clangAssistedParsing)
+    if (Doxygen::clangAssistedParsing)
     {
-      QDict<void> g_processedFiles(10007);
+      StringUnorderedSet processedFiles;
 
       // create a dictionary with files to process
-      QDict<void> g_filesToProcess(10007);
+      StringUnorderedSet filesToProcess;
+
       for (const auto &fn : *Doxygen::inputNameLinkedMap)
       {
         for (const auto &fd : *fn)
         {
-          g_filesToProcess.insert(fd->absFilePath(),(void*)0x8);
+          filesToProcess.insert(fd->absFilePath().str());
         }
       }
       // process source files (and their include dependencies)
@@ -7499,51 +7500,49 @@ static void generateFileSources()
         {
           if (fd->isSource() && !fd->isReference())
           {
-            QStrList filesInSameTu;
-            fd->getAllIncludeFilesRecursively(filesInSameTu);
-            fd->startParsing();
+            auto clangParser = ClangParser::instance()->createTUParser(fd.get());
             if (fd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
             {
               msg("Generating code for file %s...\n",fd->docName().data());
-              fd->writeSource(*g_outputList,FALSE,filesInSameTu);
+              clangParser->parse();
+              fd->writeSource(*g_outputList,clangParser.get());
 
             }
             else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
               // we needed to parse the sources even if we do not show them
             {
               msg("Parsing code for file %s...\n",fd->docName().data());
-              fd->parseSource(FALSE,filesInSameTu);
+              clangParser->parse();
+              fd->parseSource(clangParser.get());
             }
 
-            char *incFile = filesInSameTu.first();
-            while (incFile && g_filesToProcess.find(incFile))
+            for (auto incFile : clangParser->filesInSameTU())
             {
-              if (fd->absFilePath()!=incFile && !g_processedFiles.find(incFile))
+              if (filesToProcess.find(incFile)!=filesToProcess.end() &&  // part of input
+                  fd->absFilePath()!=incFile &&                          // not same file
+                  processedFiles.find(incFile)==processedFiles.end())    // not yet marked as processed
               {
-                QStrList moreFiles;
+                StringVector moreFiles;
                 bool ambig;
-                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile,ambig);
+                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile.c_str(),ambig);
                 if (ifd && !ifd->isReference())
                 {
                   if (ifd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
                   {
                     msg(" Generating code for file %s...\n",ifd->docName().data());
-                    ifd->writeSource(*g_outputList,TRUE,moreFiles);
-
+                    ifd->writeSource(*g_outputList,clangParser.get());
                   }
                   else if (!ifd->isReference() && Doxygen::parseSourcesNeeded)
                     // we needed to parse the sources even if we do not show them
                   {
                     msg(" Parsing code for file %s...\n",ifd->docName().data());
-                    ifd->parseSource(TRUE,moreFiles);
+                    ifd->parseSource(clangParser.get());
                   }
-                  g_processedFiles.insert(incFile,(void*)0x8);
+                  processedFiles.insert(incFile);
                 }
               }
-              incFile = filesInSameTu.next();
             }
-            fd->finishParsing();
-            g_processedFiles.insert(fd->absFilePath(),(void*)0x8);
+            processedFiles.insert(fd->absFilePath().str());
           }
         }
       }
@@ -7552,23 +7551,23 @@ static void generateFileSources()
       {
         for (const auto &fd : *fn)
         {
-          if (!g_processedFiles.find(fd->absFilePath())) // not yet processed
+          if (processedFiles.find(fd->absFilePath().str())==processedFiles.end()) // not yet processed
           {
-            QStrList filesInSameTu;
-            fd->startParsing();
+            auto clangParser = ClangParser::instance()->createTUParser(fd.get());
             if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
             {
               msg("Generating code for file %s...\n",fd->docName().data());
-              fd->writeSource(*g_outputList,FALSE,filesInSameTu);
+              clangParser->parse();
+              fd->writeSource(*g_outputList,clangParser.get());
 
             }
             else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
               // we needed to parse the sources even if we do not show them
             {
               msg("Parsing code for file %s...\n",fd->docName().data());
-              fd->parseSource(FALSE,filesInSameTu);
+              clangParser->parse();
+              fd->parseSource(clangParser.get());
             }
-            fd->finishParsing();
           }
         }
       }
@@ -7580,21 +7579,20 @@ static void generateFileSources()
       {
         for (const auto &fd : *fn)
         {
-          QStrList filesInSameTu;
-          fd->startParsing();
+          StringVector filesInSameTu;
+          fd->getAllIncludeFilesRecursively(filesInSameTu);
           if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
           {
             msg("Generating code for file %s...\n",fd->docName().data());
-            fd->writeSource(*g_outputList,FALSE,filesInSameTu);
+            fd->writeSource(*g_outputList,nullptr);
 
           }
           else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
             // we needed to parse the sources even if we do not show them
           {
             msg("Parsing code for file %s...\n",fd->docName().data());
-            fd->parseSource(FALSE,filesInSameTu);
+            fd->parseSource(nullptr);
           }
-          fd->finishParsing();
         }
       }
     }
@@ -7702,28 +7700,35 @@ static void addSourceReferences()
 // add the macro definitions found during preprocessing as file members
 static void buildDefineList()
 {
-  for (const auto &def : Doxygen::macroDefinitions)
+  for (const auto &s : g_inputFiles)
   {
-    std::unique_ptr<MemberDef> md { createMemberDef(
-      def->fileName,def->lineNr,def->columnNr,
-      "#define",def->name,def->args,0,
-      Public,Normal,FALSE,Member,MemberType_Define,
-      ArgumentList(),ArgumentList(),"") };
-
-    if (!def->args.isEmpty())
+    auto it = Doxygen::macroDefinitions.find(s);
+    if (it!=Doxygen::macroDefinitions.end())
     {
-      md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def->args));
-    }
-    md->setInitializer(def->definition);
-    md->setFileDef(def->fileDef);
-    md->setDefinition("#define "+def->name);
+      for (const auto &def : it->second)
+      {
+        std::unique_ptr<MemberDef> md { createMemberDef(
+            def->fileName,def->lineNr,def->columnNr,
+            "#define",def->name,def->args,0,
+            Public,Normal,FALSE,Member,MemberType_Define,
+            ArgumentList(),ArgumentList(),"") };
 
-    MemberName *mn=Doxygen::functionNameLinkedMap->add(def->name);
-    if (def->fileDef)
-    {
-      def->fileDef->insertMember(md.get());
+        if (!def->args.isEmpty())
+        {
+          md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def->args));
+        }
+        md->setInitializer(def->definition);
+        md->setFileDef(def->fileDef);
+        md->setDefinition("#define "+def->name);
+
+        MemberName *mn=Doxygen::functionNameLinkedMap->add(def->name);
+        if (def->fileDef)
+        {
+          def->fileDef->insertMember(md.get());
+        }
+        mn->push_back(std::move(md));
+      }
     }
-    mn->push_back(std::move(md));
   }
 }
 
@@ -8632,7 +8637,10 @@ static void generateExampleDocs()
                          pd->documentation()+"\n\n\\include"+lineNoOptStr+" "+pd->name(), // docs
                          TRUE,                                     // index words
                          TRUE,                                     // is example
-                         pd->name()
+                         pd->name(),
+                         FALSE,
+                         FALSE,
+                         Config_getBool(MARKDOWN_SUPPORT)
                         );
     endFile(*g_outputList); // contains g_outputList->endContents()
   }
@@ -8856,10 +8864,10 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
 //----------------------------------------------------------------------------
 static void copyLatexStyleSheet()
 {
-  QStrList latexExtraStyleSheet = Config_getList(LATEX_EXTRA_STYLESHEET);
-  for (uint i=0; i<latexExtraStyleSheet.count(); ++i)
+  const StringVector &latexExtraStyleSheet = Config_getList(LATEX_EXTRA_STYLESHEET);
+  for (const auto &sheet : latexExtraStyleSheet)
   {
-    QCString fileName(latexExtraStyleSheet.at(i));
+    QCString fileName = sheet.c_str();
     if (!fileName.isEmpty())
     {
       QFileInfo fi(fileName);
@@ -8883,14 +8891,14 @@ static void copyLatexStyleSheet()
 //----------------------------------------------------------------------------
 static void copyStyleSheet()
 {
-  QCString &htmlStyleSheet = Config_getString(HTML_STYLESHEET);
+  QCString htmlStyleSheet = Config_getString(HTML_STYLESHEET);
   if (!htmlStyleSheet.isEmpty())
   {
     QFileInfo fi(htmlStyleSheet);
     if (!fi.exists())
     {
       err("Style sheet '%s' specified by HTML_STYLESHEET does not exist!\n",htmlStyleSheet.data());
-      htmlStyleSheet.resize(0); // revert to the default
+      htmlStyleSheet = Config_updateString(HTML_STYLESHEET,""); // revert to the default
     }
     else
     {
@@ -8898,10 +8906,10 @@ static void copyStyleSheet()
       copyFile(htmlStyleSheet,destFileName);
     }
   }
-  QStrList htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
-  for (uint i=0; i<htmlExtraStyleSheet.count(); ++i)
+  const StringVector &htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
+  for (const auto &sheet : htmlExtraStyleSheet)
   {
-    QCString fileName(htmlExtraStyleSheet.at(i));
+    QCString fileName = sheet.c_str();
     if (!fileName.isEmpty())
     {
       QFileInfo fi(fileName);
@@ -8924,14 +8932,14 @@ static void copyStyleSheet()
 
 static void copyLogo(const QCString &outputOption)
 {
-  QCString &projectLogo = Config_getString(PROJECT_LOGO);
+  QCString projectLogo = Config_getString(PROJECT_LOGO);
   if (!projectLogo.isEmpty())
   {
     QFileInfo fi(projectLogo);
     if (!fi.exists())
     {
       err("Project logo '%s' specified by PROJECT_LOGO does not exist!\n",projectLogo.data());
-      projectLogo.resize(0); // revert to the default
+      projectLogo = Config_updateString(PROJECT_LOGO,""); // revert to the default
     }
     else
     {
@@ -8942,13 +8950,11 @@ static void copyLogo(const QCString &outputOption)
   }
 }
 
-static void copyExtraFiles(QStrList files,const QCString &filesOption,const QCString &outputOption)
+static void copyExtraFiles(const StringVector &files,const QCString &filesOption,const QCString &outputOption)
 {
-  uint i;
-  for (i=0; i<files.count(); ++i)
+  for (const auto &file : files)
   {
-    QCString fileName(files.at(i));
-
+    QCString fileName = file.c_str();
     if (!fileName.isEmpty())
     {
       QFileInfo fi(fileName);
@@ -9034,7 +9040,7 @@ static void generateDiskNames()
 
 //----------------------------------------------------------------------------
 
-static OutlineParserInterface &getParserForFile(const char *fn)
+static std::unique_ptr<OutlineParserInterface> getParserForFile(const char *fn)
 {
   QCString fileName=fn;
   QCString extension;
@@ -9052,15 +9058,10 @@ static OutlineParserInterface &getParserForFile(const char *fn)
   return Doxygen::parserManager->getOutlineParser(extension);
 }
 
-static void parseFile(OutlineParserInterface &parser,
-                      const std::shared_ptr<Entry> &root,FileDef *fd,const char *fn,
-                      bool sameTu,QStrList &filesInSameTu)
+static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
+                      FileDef *fd,const char *fn,
+                      ClangTUParser *clangParser,bool newTU)
 {
-#if USE_LIBCLANG
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-#else
-  static bool clangAssistedParsing = FALSE;
-#endif
   QCString fileName=fn;
   QCString extension;
   int ei = fileName.findRev('.');
@@ -9079,10 +9080,16 @@ static void parseFile(OutlineParserInterface &parser,
   if (Config_getBool(ENABLE_PREPROCESSING) &&
       parser.needsPreprocessing(extension))
   {
+    Preprocessor preprocessor;
+    const StringVector &includePath = Config_getList(INCLUDE_PATH);
+    for (const auto &s : includePath)
+    {
+      preprocessor.addSearchDir(QFileInfo(s.c_str()).absFilePath().utf8());
+    }
     BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",fn);
     readInputFile(fileName,inBuf);
-    Doxygen::preprocessor->processFile(fileName,inBuf,preBuf);
+    preprocessor.processFile(fileName,inBuf,preBuf);
   }
   else // no preprocessing
   {
@@ -9101,32 +9108,173 @@ static void parseFile(OutlineParserInterface &parser,
 
   convBuf.addChar('\0');
 
-  if (clangAssistedParsing && !sameTu)
-  {
-    fd->getAllIncludeFilesRecursively(filesInSameTu);
-  }
-
   std::shared_ptr<Entry> fileRoot = std::make_shared<Entry>();
   // use language parse to parse the file
-  parser.parseInput(fileName,convBuf.data(),fileRoot,sameTu,filesInSameTu);
+  if (clangParser)
+  {
+    if (newTU) clangParser->parse();
+    clangParser->switchToFile(fd);
+  }
+  parser.parseInput(fileName,convBuf.data(),fileRoot,clangParser);
   fileRoot->setFileDef(fd);
-  root->moveToSubEntryAndKeep(fileRoot);
+  return fileRoot;
 }
+
+#if MULTITHREADED_INPUT
 
 //! parse the list of input files
 static void parseFiles(const std::shared_ptr<Entry> &root)
 {
 #if USE_LIBCLANG
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-  if (clangAssistedParsing)
+  if (Doxygen::clangAssistedParsing)
   {
-    QDict<void> g_processedFiles(10007);
+    StringUnorderedSet processedFiles;
 
     // create a dictionary with files to process
-    QDict<void> g_filesToProcess(10007);
+    StringUnorderedSet filesToProcess;
     for (const auto &s : g_inputFiles)
     {
-      g_filesToProcess.insert(s.c_str(),(void*)0x8);
+      filesToProcess.insert(s);
+    }
+
+    std::mutex processedFilesLock;
+    // process source files (and their include dependencies)
+    std::size_t numThreads = std::thread::hardware_concurrency();
+    msg("Processing input using %lu threads.\n",numThreads);
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future< std::vector< std::shared_ptr<Entry> > > > results;
+    for (const auto &s : g_inputFiles)
+    {
+      bool ambig;
+      FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+      ASSERT(fd!=0);
+      if (fd->isSource() && !fd->isReference()) // this is a source file
+      {
+        // lambda representing the work to executed by a thread
+        auto processFile = [s,&filesToProcess,&processedFilesLock,&processedFiles]() {
+          bool ambig;
+          std::vector< std::shared_ptr<Entry> > roots;
+          FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+          auto clangParser = ClangParser::instance()->createTUParser(fd);
+          auto parser = getParserForFile(s.c_str());
+          auto fileRoot { parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true) };
+          roots.push_back(fileRoot);
+
+          // Now process any include files in the same translation unit
+          // first. When libclang is used this is much more efficient.
+          for (auto incFile : clangParser->filesInSameTU())
+          {
+            if (filesToProcess.find(incFile)!=filesToProcess.end())
+            {
+              bool needsToBeProcessed;
+              {
+                std::lock_guard<std::mutex> lock(processedFilesLock);
+                needsToBeProcessed = processedFiles.find(incFile)==processedFiles.end();
+                if (needsToBeProcessed) processedFiles.insert(incFile);
+              }
+              if (incFile!=s && needsToBeProcessed)
+              {
+                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile.c_str(),ambig);
+                if (ifd && !ifd->isReference())
+                {
+                  //printf("  Processing %s in same translation unit as %s\n",incFile,s->c_str());
+                  fileRoot = parseFile(*parser.get(),ifd,incFile.c_str(),clangParser.get(),false);
+                  roots.push_back(fileRoot);
+                }
+              }
+            }
+          }
+          return roots;
+        };
+        // dispatch the work and collect the future results
+        results.emplace_back(threadPool.queue(processFile));
+      }
+    }
+    // synchronise with the Entry result lists produced and add them to the root
+    for (auto &f : results)
+    {
+      auto l = f.get();
+      for (auto &e : l)
+      {
+        root->moveToSubEntryAndKeep(e);
+      }
+    }
+    // process remaining files
+    results.clear();
+    for (const auto &s : g_inputFiles)
+    {
+      if (processedFiles.find(s)==processedFiles.end()) // not yet processed
+      {
+        // lambda representing the work to executed by a thread
+        auto processFile = [s]() {
+          bool ambig;
+          std::vector< std::shared_ptr<Entry> > roots;
+          FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+          auto clangParser = ClangParser::instance()->createTUParser(fd);
+          auto parser { getParserForFile(s.c_str()) };
+          auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
+          roots.push_back(fileRoot);
+          return roots;
+        };
+        // dispatch the work and collect the future results
+        results.emplace_back(threadPool.queue(processFile));
+      }
+    }
+    // synchronise with the Entry result lists produced and add them to the root
+    for (auto &f : results)
+    {
+      auto l = f.get();
+      for (auto &e : l)
+      {
+        root->moveToSubEntryAndKeep(e);
+      }
+    }
+  }
+  else // normal processing
+#endif
+  {
+    std::size_t numThreads = std::thread::hardware_concurrency();
+    msg("Processing input using %lu threads.\n",numThreads);
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future< std::shared_ptr<Entry> > > results;
+    for (const auto &s : g_inputFiles)
+    {
+      // lambda representing the work to executed by a thread
+      auto processFile = [s]() {
+        bool ambig;
+        FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+        auto clangParser = ClangParser::instance()->createTUParser(fd);
+        auto parser = getParserForFile(s.c_str());
+        auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
+        return fileRoot;
+      };
+      // dispatch the work and collect the future results
+      results.emplace_back(threadPool.queue(processFile));
+    }
+    // synchronise with the Entry results produced and add them to the root
+    for (auto &f : results)
+    {
+      root->moveToSubEntryAndKeep(f.get());
+    }
+#warning "Multi-threaded input enabled. This is a highly experimental feature. Only use for doxygen development."
+  }
+}
+
+#else // !MULTITHREADED_INPUT
+
+//! parse the list of input files
+static void parseFiles(const std::shared_ptr<Entry> &root)
+{
+#if USE_LIBCLANG
+  if (Doxygen::clangAssistedParsing)
+  {
+    StringUnorderedSet processedFiles;
+
+    // create a dictionary with files to process
+    StringUnorderedSet filesToProcess;
+    for (const auto &s : g_inputFiles)
+    {
+      filesToProcess.insert(s);
     }
 
     // process source files (and their include dependencies)
@@ -9137,48 +9285,44 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
       ASSERT(fd!=0);
       if (fd->isSource() && !fd->isReference()) // this is a source file
       {
-        QStrList filesInSameTu;
-        OutlineParserInterface &parser = getParserForFile(s.c_str());
-        parser.startTranslationUnit(s.c_str());
-        parseFile(parser,root,fd,s.c_str(),FALSE,filesInSameTu);
-        //printf("  got %d extra files in tu\n",filesInSameTu.count());
+        auto clangParser = ClangParser::instance()->createTUParser(fd);
+        auto parser { getParserForFile(s.c_str()) };
+        auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
+        root->moveToSubEntryAndKeep(fileRoot);
+        processedFiles.insert(s);
 
         // Now process any include files in the same translation unit
         // first. When libclang is used this is much more efficient.
-        char *incFile = filesInSameTu.first();
-        while (incFile && g_filesToProcess.find(incFile))
+        for (auto incFile : clangParser->filesInSameTU())
         {
-          if (qstrcmp(incFile,s.c_str()) && !g_processedFiles.find(incFile))
+          //printf("    file %s\n",incFile.c_str());
+          if (filesToProcess.find(incFile)!=filesToProcess.end() && // file need to be processed
+              processedFiles.find(incFile)==processedFiles.end())   // and is not processed already
           {
-            FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile,ambig);
+            FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile.c_str(),ambig);
             if (ifd && !ifd->isReference())
             {
-              QStrList moreFiles;
-              //printf("  Processing %s in same translation unit as %s\n",incFile,s->c_str());
-              parseFile(parser,root,ifd,incFile,TRUE,moreFiles);
-              g_processedFiles.insert(incFile,(void*)0x8);
+              //printf("  Processing %s in same translation unit as %s\n",incFile.c_str(),s.c_str());
+              fileRoot = parseFile(*parser.get(),ifd,incFile.c_str(),clangParser.get(),false);
+              root->moveToSubEntryAndKeep(fileRoot);
+              processedFiles.insert(incFile);
             }
           }
-          incFile = filesInSameTu.next();
         }
-        parser.finishTranslationUnit();
-        g_processedFiles.insert(s.c_str(),(void*)0x8);
       }
     }
     // process remaining files
     for (const auto &s : g_inputFiles)
     {
-      if (!g_processedFiles.find(s.c_str())) // not yet processed
+      if (processedFiles.find(s)==processedFiles.end()) // not yet processed
       {
         bool ambig;
-        QStrList filesInSameTu;
         FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
-        ASSERT(fd!=0);
-        OutlineParserInterface &parser = getParserForFile(s.c_str());
-        parser.startTranslationUnit(s.c_str());
-        parseFile(parser,root,fd,s.c_str(),FALSE,filesInSameTu);
-        parser.finishTranslationUnit();
-        g_processedFiles.insert(s.c_str(),(void*)0x8);
+        auto clangParser = ClangParser::instance()->createTUParser(fd);
+        auto parser { getParserForFile(s.c_str()) };
+        auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
+        root->moveToSubEntryAndKeep(fileRoot);
+        processedFiles.insert(s);
       }
     }
   }
@@ -9188,15 +9332,16 @@ static void parseFiles(const std::shared_ptr<Entry> &root)
     for (const auto &s : g_inputFiles)
     {
       bool ambig;
-      QStrList filesInSameTu;
       FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
       ASSERT(fd!=0);
-      OutlineParserInterface &parser = getParserForFile(s.c_str());
-      parser.startTranslationUnit(s.c_str());
-      parseFile(parser,root,fd,s.c_str(),FALSE,filesInSameTu);
+      std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
+      std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),nullptr,true);
+      root->moveToSubEntryAndKeep(fileRoot);
     }
   }
 }
+
+#endif
 
 // resolves a path that may include symlinks, if a recursive symlink is
 // found an empty string is returned.
@@ -9277,8 +9422,8 @@ static QDict<void> g_pathsVisited(1009);
 static int readDir(QFileInfo *fi,
             FileNameLinkedMap *fnMap,
             StringUnorderedSet *exclSet,
-            QStrList *patList,
-            QStrList *exclPatList,
+            const StringVector *patList,
+            const StringVector *exclPatList,
             StringVector *resultList,
             StringUnorderedSet *resultSet,
             bool errorIfNotExist,
@@ -9325,8 +9470,8 @@ static int readDir(QFileInfo *fi,
         }
         else if (cfi->isFile() &&
             (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
-            (patList==0 || patternMatch(*cfi,patList)) &&
-            !patternMatch(*cfi,exclPatList) &&
+            (patList==0 || patternMatch(*cfi,*patList)) &&
+            (exclPatList==0 || !patternMatch(*cfi,*exclPatList)) &&
             (killSet==0 || killSet->find(cfi->absFilePath().utf8().data())==killSet->end())
             )
         {
@@ -9350,7 +9495,7 @@ static int readDir(QFileInfo *fi,
         else if (recursive &&
             (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
             cfi->isDir() &&
-            !patternMatch(*cfi,exclPatList) &&
+            (exclPatList==0 || !patternMatch(*cfi,*exclPatList)) &&
             cfi->fileName().at(0)!='.') // skip "." ".." and ".dir"
         {
           cfi->setFile(cfi->absFilePath());
@@ -9373,8 +9518,8 @@ static int readDir(QFileInfo *fi,
 int readFileOrDirectory(const char *s,
                         FileNameLinkedMap *fnMap,
                         StringUnorderedSet *exclSet,
-                        QStrList *patList,
-                        QStrList *exclPatList,
+                        const StringVector *patList,
+                        const StringVector *exclPatList,
                         StringVector *resultList,
                         StringUnorderedSet *resultSet,
                         bool recursive,
@@ -9513,13 +9658,12 @@ void readAliases()
 {
   // add aliases to a dictionary
   Doxygen::aliasDict.setAutoDelete(TRUE);
-  QStrList &aliasList = Config_getList(ALIASES);
-  const char *s=aliasList.first();
-  while (s)
+  const StringVector &aliasList = Config_getList(ALIASES);
+  for (const auto &s : aliasList)
   {
-    if (Doxygen::aliasDict[s]==0)
+    QCString alias=s.c_str();
+    if (Doxygen::aliasDict[alias]==0)
     {
-      QCString alias=s;
       int i=alias.find('=');
       if (i>0)
       {
@@ -9540,7 +9684,6 @@ void readAliases()
         }
       }
     }
-    s=aliasList.next();
   }
   expandAliases();
   escapeAliases();
@@ -9668,14 +9811,16 @@ static const char *getArg(int argc,char **argv,int &optind)
 class NullOutlineParser : public OutlineParserInterface
 {
   public:
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
-    void parseInput(const char *, const char *,const std::shared_ptr<Entry> &, bool, QStrList &) {}
+    void parseInput(const char *, const char *,const std::shared_ptr<Entry> &, ClangTUParser*) {}
     bool needsPreprocessing(const QCString &) const { return FALSE; }
     void parsePrototype(const char *) {}
 };
 
 
+template<class T> std::function< std::unique_ptr<T>() > make_output_parser_factory()
+{
+  return []() { return std::make_unique<T>(); };
+}
 
 void initDoxygen()
 {
@@ -9689,27 +9834,25 @@ void initDoxygen()
   Portable::correct_path();
 
   Debug::startTimer();
-  Doxygen::preprocessor = new Preprocessor();
-
-  Doxygen::parserManager = new ParserManager(            std::make_unique<NullOutlineParser>(),
+  Doxygen::parserManager = new ParserManager(            make_output_parser_factory<NullOutlineParser>(),
                                                          std::make_unique<FileCodeParser>());
-  Doxygen::parserManager->registerParser("c",            std::make_unique<COutlineParser>(),
+  Doxygen::parserManager->registerParser("c",            make_output_parser_factory<COutlineParser>(),
                                                          std::make_unique<CCodeParser>());
-  Doxygen::parserManager->registerParser("python",       std::make_unique<PythonOutlineParser>(),
+  Doxygen::parserManager->registerParser("python",       make_output_parser_factory<PythonOutlineParser>(),
                                                          std::make_unique<PythonCodeParser>());
-  Doxygen::parserManager->registerParser("fortran",      std::make_unique<FortranOutlineParser>(),
+  Doxygen::parserManager->registerParser("fortran",      make_output_parser_factory<FortranOutlineParser>(),
                                                          std::make_unique<FortranCodeParser>());
-  Doxygen::parserManager->registerParser("fortranfree",  std::make_unique<FortranOutlineParserFree>(),
+  Doxygen::parserManager->registerParser("fortranfree",  make_output_parser_factory<FortranOutlineParserFree>(),
                                                          std::make_unique<FortranCodeParserFree>());
-  Doxygen::parserManager->registerParser("fortranfixed", std::make_unique<FortranOutlineParserFixed>(),
+  Doxygen::parserManager->registerParser("fortranfixed", make_output_parser_factory<FortranOutlineParserFixed>(),
                                                          std::make_unique<FortranCodeParserFixed>());
-  Doxygen::parserManager->registerParser("vhdl",         std::make_unique<VHDLOutlineParser>(),
+  Doxygen::parserManager->registerParser("vhdl",         make_output_parser_factory<VHDLOutlineParser>(),
                                                          std::make_unique<VHDLCodeParser>());
-  Doxygen::parserManager->registerParser("xml",          std::make_unique<NullOutlineParser>(),
+  Doxygen::parserManager->registerParser("xml",          make_output_parser_factory<NullOutlineParser>(),
                                                          std::make_unique<XMLCodeParser>());
-  Doxygen::parserManager->registerParser("sql",          std::make_unique<NullOutlineParser>(),
+  Doxygen::parserManager->registerParser("sql",          make_output_parser_factory<NullOutlineParser>(),
                                                          std::make_unique<SQLCodeParser>());
-  Doxygen::parserManager->registerParser("md",           std::make_unique<MarkdownOutlineParser>(),
+  Doxygen::parserManager->registerParser("md",           make_output_parser_factory<MarkdownOutlineParser>(),
                                                          std::make_unique<FileCodeParser>());
 
   // register any additional parsers here...
@@ -9788,7 +9931,6 @@ void cleanUpDoxygen()
   delete Doxygen::exampleSDict;
   delete Doxygen::globalScope;
   delete Doxygen::parserManager;
-  delete Doxygen::preprocessor;
   delete theTranslator;
   delete g_outputList;
   Mappers::freeMappers();
@@ -10250,14 +10392,6 @@ void adjustConfiguration()
     warn_uncond("Output language %s not supported! Using English instead.\n",
        outputLanguage.data());
   }
-  QStrList &includePath = Config_getList(INCLUDE_PATH);
-  char *s=includePath.first();
-  while (s)
-  {
-    QFileInfo fi(s);
-    Doxygen::preprocessor->addSearchDir(fi.absFilePath().utf8());
-    s=includePath.next();
-  }
 
   /* Set the global html file extension. */
   Doxygen::htmlFileExtension = Config_getString(HTML_FILE_EXTENSION);
@@ -10268,21 +10402,17 @@ void adjustConfiguration()
                                 Config_getBool(REFERENCES_RELATION) ||
                                 Config_getBool(REFERENCED_BY_RELATION);
 
-  Doxygen::markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
-
   /**************************************************************************
    *            Add custom extension mappings
    **************************************************************************/
 
-  QStrList &extMaps = Config_getList(EXTENSION_MAPPING);
-  char *mapping = extMaps.first();
-  while (mapping)
+  const StringVector &extMaps = Config_getList(EXTENSION_MAPPING);
+  for (const auto &mapping : extMaps)
   {
-    QCString mapStr = mapping;
+    QCString mapStr = mapping.c_str();
     int i=mapStr.find('=');
     if (i==-1)
     {
-      mapping = extMaps.next();
       continue;
     }
     else
@@ -10291,7 +10421,6 @@ void adjustConfiguration()
       QCString language = mapStr.mid(i+1).stripWhiteSpace().lower();
       if (ext.isEmpty() || language.isEmpty())
       {
-        mapping = extMaps.next();
         continue;
       }
 
@@ -10307,23 +10436,20 @@ void adjustConfiguration()
             ext.data(),language.data());
       }
     }
-    mapping = extMaps.next();
   }
 
   // add predefined macro name to a dictionary
-  QStrList &expandAsDefinedList =Config_getList(EXPAND_AS_DEFINED);
-  s=expandAsDefinedList.first();
-  while (s)
+  const StringVector &expandAsDefinedList =Config_getList(EXPAND_AS_DEFINED);
+  for (const auto &s : expandAsDefinedList)
   {
-    Doxygen::expandAsDefinedSet.insert(s);
-    s=expandAsDefinedList.next();
+    Doxygen::expandAsDefinedSet.insert(s.c_str());
   }
 
   // read aliases and store them in a dictionary
   readAliases();
 
   // store number of spaces in a tab into Doxygen::spaces
-  int &tabSize = Config_getInt(TAB_SIZE);
+  int tabSize = Config_getInt(TAB_SIZE);
   Doxygen::spaces.resize(tabSize+1);
   int sp;for (sp=0;sp<tabSize;sp++) Doxygen::spaces.at(sp)=' ';
   Doxygen::spaces.at(tabSize)='\0';
@@ -10353,7 +10479,7 @@ static void stopDoxygen(int)
 
 static void writeTagFile()
 {
-  QCString &generateTagFile = Config_getString(GENERATE_TAGFILE);
+  QCString generateTagFile = Config_getString(GENERATE_TAGFILE);
   if (generateTagFile.isEmpty()) return;
 
   QFile tag(generateTagFile);
@@ -10456,26 +10582,26 @@ static void exitDoxygen()
 }
 
 static QCString createOutputDirectory(const QCString &baseDirName,
-                                  QCString &formatDirName,
+                                  const QCString &formatDirName,
                                   const char *defaultDirName)
 {
-  // Note the & on the next line, we modify the formatDirOption!
-  if (formatDirName.isEmpty())
+  QCString result = formatDirName;
+  if (result.isEmpty())
   {
-    formatDirName = baseDirName + defaultDirName;
+    result = baseDirName + defaultDirName;
   }
   else if (formatDirName[0]!='/' && (formatDirName.length()==1 || formatDirName[1]!=':'))
   {
-    formatDirName.prepend(baseDirName+'/');
+    result.prepend(baseDirName+'/');
   }
-  QDir formatDir(formatDirName);
-  if (!formatDir.exists() && !formatDir.mkdir(formatDirName))
+  QDir formatDir(result);
+  if (!formatDir.exists() && !formatDir.mkdir(result))
   {
-    err("Could not create output directory %s\n", formatDirName.data());
+    err("Could not create output directory %s\n", result.data());
     cleanUpDoxygen();
     exit(1);
   }
-  return formatDirName;
+  return result;
 }
 
 static QCString getQchFileName()
@@ -10499,23 +10625,20 @@ void searchInputFiles()
 {
   StringUnorderedSet killSet;
 
-  QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
+  const StringVector &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
   bool alwaysRecursive = Config_getBool(RECURSIVE);
   StringUnorderedSet excludeNameSet;
 
   // gather names of all files in the include path
   g_s.begin("Searching for include files...\n");
   killSet.clear();
-  QStrList &includePathList = Config_getList(INCLUDE_PATH);
-  char *s=includePathList.first();
-  while (s)
+  const StringVector &includePathList = Config_getList(INCLUDE_PATH);
+  for (const auto &s : includePathList)
   {
-    QStrList &pl = Config_getList(INCLUDE_FILE_PATTERNS);
-    if (pl.count()==0)
-    {
-      pl = Config_getList(FILE_PATTERNS);
-    }
-    readFileOrDirectory(s,                             // s
+    size_t plSize = Config_getList(INCLUDE_FILE_PATTERNS).size();
+    const StringVector &pl = plSize==0 ? Config_getList(FILE_PATTERNS) :
+                                         Config_getList(INCLUDE_FILE_PATTERNS);
+    readFileOrDirectory(s.c_str(),                     // s
                         Doxygen::includeNameLinkedMap, // fnDict
                         0,                             // exclSet
                         &pl,                           // patList
@@ -10525,17 +10648,15 @@ void searchInputFiles()
                         alwaysRecursive,               // recursive
                         TRUE,                          // errorIfNotExist
                         &killSet);                     // killSet
-    s=includePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for example files...\n");
   killSet.clear();
-  QStrList &examplePathList = Config_getList(EXAMPLE_PATH);
-  s=examplePathList.first();
-  while (s)
+  const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
+  for (const auto &s : examplePathList)
   {
-    readFileOrDirectory(s,                                                      // s
+    readFileOrDirectory(s.c_str(),                                              // s
                         Doxygen::exampleNameLinkedMap,                          // fnDict
                         0,                                                      // exclSet
                         &Config_getList(EXAMPLE_PATTERNS),                      // patList
@@ -10545,17 +10666,15 @@ void searchInputFiles()
                         (alwaysRecursive || Config_getBool(EXAMPLE_RECURSIVE)), // recursive
                         TRUE,                                                   // errorIfNotExist
                         &killSet);                                              // killSet
-    s=examplePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for images...\n");
   killSet.clear();
-  QStrList &imagePathList=Config_getList(IMAGE_PATH);
-  s=imagePathList.first();
-  while (s)
+  const StringVector &imagePathList=Config_getList(IMAGE_PATH);
+  for (const auto &s : imagePathList)
   {
-    readFileOrDirectory(s,                                // s
+    readFileOrDirectory(s.c_str(),                        // s
                         Doxygen::imageNameLinkedMap,      // fnDict
                         0,                                // exclSet
                         0,                                // patList
@@ -10565,17 +10684,15 @@ void searchInputFiles()
                         alwaysRecursive,                  // recursive
                         TRUE,                             // errorIfNotExist
                         &killSet);                        // killSet
-    s=imagePathList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for dot files...\n");
   killSet.clear();
-  QStrList &dotFileList=Config_getList(DOTFILE_DIRS);
-  s=dotFileList.first();
-  while (s)
+  const StringVector &dotFileList=Config_getList(DOTFILE_DIRS);
+  for (const auto &s : dotFileList)
   {
-    readFileOrDirectory(s,                              // s
+    readFileOrDirectory(s.c_str(),                      // s
                         Doxygen::dotFileNameLinkedMap,  // fnDict
                         0,                              // exclSet
                         0,                              // patList
@@ -10585,17 +10702,15 @@ void searchInputFiles()
                         alwaysRecursive,                // recursive
                         TRUE,                           // errorIfNotExist
                         &killSet);                      // killSet
-    s=dotFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for msc files...\n");
   killSet.clear();
-  QStrList &mscFileList=Config_getList(MSCFILE_DIRS);
-  s=mscFileList.first();
-  while (s)
+  const StringVector &mscFileList=Config_getList(MSCFILE_DIRS);
+  for (const auto &s : mscFileList)
   {
-    readFileOrDirectory(s,                               // s
+    readFileOrDirectory(s.c_str(),                       // s
                         Doxygen::mscFileNameLinkedMap,   // fnDict
                         0,                               // exclSet
                         0,                               // patList
@@ -10605,17 +10720,15 @@ void searchInputFiles()
                         alwaysRecursive,                 // recursive
                         TRUE,                            // errorIfNotExist
                         &killSet);                       // killSet
-    s=mscFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for dia files...\n");
   killSet.clear();
-  QStrList &diaFileList=Config_getList(DIAFILE_DIRS);
-  s=diaFileList.first();
-  while (s)
+  const StringVector &diaFileList=Config_getList(DIAFILE_DIRS);
+  for (const auto &s : diaFileList)
   {
-    readFileOrDirectory(s,                                 // s
+    readFileOrDirectory(s.c_str(),                         // s
                         Doxygen::diaFileNameLinkedMap,     // fnDict
                         0,                                 // exclSet
                         0,                                 // patList
@@ -10625,16 +10738,14 @@ void searchInputFiles()
                         alwaysRecursive,                   // recursive
                         TRUE,                              // errorIfNotExist
                         &killSet);                         // killSet
-    s=diaFileList.next();
   }
   g_s.end();
 
   g_s.begin("Searching for files to exclude\n");
-  QStrList &excludeList = Config_getList(EXCLUDE);
-  s=excludeList.first();
-  while (s)
+  const StringVector &excludeList = Config_getList(EXCLUDE);
+  for (const auto &s : excludeList)
   {
-    readFileOrDirectory(s,                                  // s
+    readFileOrDirectory(s.c_str(),                          // s
                         0,                                  // fnDict
                         0,                                  // exclSet
                         &Config_getList(FILE_PATTERNS),     // patList
@@ -10643,7 +10754,6 @@ void searchInputFiles()
                         &excludeNameSet,                    // resultSet
                         alwaysRecursive,                    // recursive
                         FALSE);                             // errorIfNotExist
-    s=excludeList.next();                                   // killSet
   }
   g_s.end();
 
@@ -10654,11 +10764,10 @@ void searchInputFiles()
   g_s.begin("Searching INPUT for files to process...\n");
   killSet.clear();
   Doxygen::inputPaths.clear();
-  QStrList &inputList=Config_getList(INPUT);
-  s=inputList.first();
-  while (s)
+  const StringVector &inputList=Config_getList(INPUT);
+  for (const auto &s : inputList)
   {
-    QCString path=s;
+    QCString path=s.c_str();
     uint l = path.length();
     if (l>0)
     {
@@ -10678,7 +10787,6 @@ void searchInputFiles()
           &killSet,                           // killSet
           &Doxygen::inputPaths);              // paths
     }
-    s=inputList.next();
   }
   std::sort(Doxygen::inputNameLinkedMap->begin(),
             Doxygen::inputNameLinkedMap->end(),
@@ -10696,6 +10804,10 @@ void parseInput()
 {
   atexit(exitDoxygen);
 
+#if USE_LIBCLANG
+  Doxygen::clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+#endif
+
   // we would like to show the versionString earlier, but we first have to handle the configuration file
   // to know the value of the QUIET setting.
   QCString versionString = getFullVersion();
@@ -10704,10 +10816,10 @@ void parseInput()
   /**************************************************************************
    *            Make sure the output directory exists
    **************************************************************************/
-  QCString &outputDirectory = Config_getString(OUTPUT_DIRECTORY);
+  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
   if (outputDirectory.isEmpty())
   {
-    outputDirectory=QDir::currentDirPath().utf8();
+    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,QDir::currentDirPath().utf8());
   }
   else
   {
@@ -10729,7 +10841,7 @@ void parseInput()
       }
       dir.cd(outputDirectory);
     }
-    outputDirectory=dir.absPath().utf8();
+    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,dir.absPath().utf8());
   }
 
   /**************************************************************************
@@ -10761,39 +10873,60 @@ void parseInput()
    **************************************************************************/
 
   QCString htmlOutput;
-  bool &generateHtml = Config_getBool(GENERATE_HTML);
+  bool generateHtml = Config_getBool(GENERATE_HTML);
   if (generateHtml || g_useOutputTemplate /* TODO: temp hack */)
+  {
     htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
+    Config_updateString(HTML_OUTPUT,htmlOutput);
+  }
 
   QCString docbookOutput;
-  bool &generateDocbook = Config_getBool(GENERATE_DOCBOOK);
+  bool generateDocbook = Config_getBool(GENERATE_DOCBOOK);
   if (generateDocbook)
+  {
     docbookOutput = createOutputDirectory(outputDirectory,Config_getString(DOCBOOK_OUTPUT),"/docbook");
+    Config_updateString(DOCBOOK_OUTPUT,docbookOutput);
+  }
 
   QCString xmlOutput;
-  bool &generateXml = Config_getBool(GENERATE_XML);
+  bool generateXml = Config_getBool(GENERATE_XML);
   if (generateXml)
+  {
     xmlOutput = createOutputDirectory(outputDirectory,Config_getString(XML_OUTPUT),"/xml");
+    Config_updateString(XML_OUTPUT,xmlOutput);
+  }
 
   QCString latexOutput;
-  bool &generateLatex = Config_getBool(GENERATE_LATEX);
+  bool generateLatex = Config_getBool(GENERATE_LATEX);
   if (generateLatex)
-    latexOutput = createOutputDirectory(outputDirectory,Config_getString(LATEX_OUTPUT),"/latex");
+  {
+    latexOutput = createOutputDirectory(outputDirectory,Config_getString(LATEX_OUTPUT), "/latex");
+    Config_updateString(LATEX_OUTPUT,latexOutput);
+  }
 
   QCString rtfOutput;
-  bool &generateRtf = Config_getBool(GENERATE_RTF);
+  bool generateRtf = Config_getBool(GENERATE_RTF);
   if (generateRtf)
+  {
     rtfOutput = createOutputDirectory(outputDirectory,Config_getString(RTF_OUTPUT),"/rtf");
+    Config_updateString(RTF_OUTPUT,rtfOutput);
+  }
 
   QCString manOutput;
-  bool &generateMan = Config_getBool(GENERATE_MAN);
+  bool generateMan = Config_getBool(GENERATE_MAN);
   if (generateMan)
+  {
     manOutput = createOutputDirectory(outputDirectory,Config_getString(MAN_OUTPUT),"/man");
+    Config_updateString(MAN_OUTPUT,manOutput);
+  }
 
   //QCString sqlOutput;
   //bool &generateSql = Config_getBool(GENERATE_SQLITE3);
   //if (generateSql)
-  //  sqlOutput = createOutputDirectory(outputDirectory,"SQLITE3_OUTPUT","/sqlite3");
+  //{
+  //  sqlOutput = createOutputDirectory(outputDirectory,Config_getString(SQLITE3_OUTPUT),"/sqlite3");
+  //  Config_update(SQLITE3_OUTPUT,sqlOutput);
+  //}
 
   if (Config_getBool(HAVE_DOT))
   {
@@ -10822,11 +10955,11 @@ void parseInput()
    **************************************************************************/
 
   LayoutDocManager::instance().init();
-  QCString &layoutFileName = Config_getString(LAYOUT_FILE);
+  QCString layoutFileName = Config_getString(LAYOUT_FILE);
   bool defaultLayoutUsed = FALSE;
   if (layoutFileName.isEmpty())
   {
-    layoutFileName = "DoxygenLayout.xml";
+    layoutFileName = Config_updateString(LAYOUT_FILE,"DoxygenLayout.xml");
     defaultLayoutUsed = TRUE;
   }
 
@@ -10846,13 +10979,14 @@ void parseInput()
    **************************************************************************/
 
   // prevent search in the output directories
-  QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
-  if (generateHtml)    exclPatterns.append(htmlOutput);
-  if (generateDocbook) exclPatterns.append(docbookOutput);
-  if (generateXml)     exclPatterns.append(xmlOutput);
-  if (generateLatex)   exclPatterns.append(latexOutput);
-  if (generateRtf)     exclPatterns.append(rtfOutput);
-  if (generateMan)     exclPatterns.append(manOutput);
+  StringVector exclPatterns = Config_getList(EXCLUDE_PATTERNS);
+  if (generateHtml)    exclPatterns.push_back(htmlOutput.data());
+  if (generateDocbook) exclPatterns.push_back(docbookOutput.data());
+  if (generateXml)     exclPatterns.push_back(xmlOutput.data());
+  if (generateLatex)   exclPatterns.push_back(latexOutput.data());
+  if (generateRtf)     exclPatterns.push_back(rtfOutput.data());
+  if (generateMan)     exclPatterns.push_back(manOutput.data());
+  Config_updateList(EXCLUDE_PATTERNS,exclPatterns);
 
   searchInputFiles();
 
@@ -10885,12 +11019,10 @@ void parseInput()
   std::shared_ptr<Entry> root = std::make_shared<Entry>();
   msg("Reading and parsing tag files\n");
 
-  QStrList &tagFileList = Config_getList(TAGFILES);
-  char *s=tagFileList.first();
-  while (s)
+  const StringVector &tagFileList = Config_getList(TAGFILES);
+  for (const auto &s : tagFileList)
   {
-    readTagFile(root,s);
-    s=tagFileList.next();
+    readTagFile(root,s.c_str());
   }
 
   /**************************************************************************
@@ -11554,7 +11686,7 @@ void generateOutput()
   if (Debug::isFlagSet(Debug::Time))
   {
     msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
-         ((double)Debug::elapsedTime())/1000.0,
+         ((double)Debug::elapsedTime()),
          Portable::getSysElapsedTime()
         );
     g_s.print();

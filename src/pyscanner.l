@@ -1517,7 +1517,7 @@ static void newFunction(yyscan_t yyscanner)
 static inline int computeIndent(const char *s)
 {
   int col=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -1618,6 +1618,10 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   // TODO: Fix me
   yyextra->docBlockInBody=FALSE;
   
+  if (!yyextra->current->doc.isEmpty())
+  {
+    yyextra->current->doc=yyextra->current->doc.stripWhiteSpace()+"\n\n";
+  }
   if (yyextra->docBlockInBody && yyextra->previous && !yyextra->previous->doc.isEmpty())
   {
     yyextra->previous->doc=yyextra->previous->doc.stripWhiteSpace()+"\n\n";
@@ -1626,7 +1630,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int position = 0;
   bool needsEntry;
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
-  QCString processedDoc = processMarkdownForCommentBlock(doc,yyextra->yyFileName,lineNr);
+  Markdown markdown(yyextra->yyFileName,lineNr);
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc) : doc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         (yyextra->docBlockInBody && yyextra->previous) ? yyextra->previous.get() : yyextra->current.get(),
@@ -1638,7 +1643,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
         yyextra->docBlockInBody,
         yyextra->protection,
         position,
-        needsEntry)
+        needsEntry,
+        Config_getBool(MARKDOWN_SUPPORT))
      ) // need to start a new entry
   {
     if (needsEntry)
@@ -1930,8 +1936,7 @@ PythonOutlineParser::~PythonOutlineParser()
 void PythonOutlineParser::parseInput(const char *fileName,
                                        const char *fileBuf,
                                        const std::shared_ptr<Entry> &root,
-                                       bool /*sameTranslationUnit*/,
-                                       QStrList & /*filesInSameTranslationUnit*/)
+                                       ClangTUParser * /*clangParser*/)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;

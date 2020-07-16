@@ -26,10 +26,12 @@ option(use_libclang    "Add support for libclang parsing." OFF)
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(english_only    "Only compile in support for the English language" OFF)
 option(force_qt4       "Forces doxywizard to build using Qt4 even if Qt5 is installed" OFF)
+option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
 
 SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Sanitizers")
 set(TOP "${CMAKE_SOURCE_DIR}")
 include(version)
 
@@ -101,6 +103,7 @@ if (BISON_VERSION VERSION_LESS 2.7)
   message(SEND_ERROR "Doxygen requires at least bison version 2.7 (installed: ${BISON_VERSION})")
 endif()
 find_package(Threads)
+find_package(Sanitizers)
 
 if (sqlite3)
   find_package(SQLite3 REQUIRED)
@@ -159,6 +162,7 @@ if (win_static)
 endif()
 
 include(cmake/CompilerWarnings.cmake)
+include(cmake/Coverage.cmake)
 
 add_subdirectory(libmd5)
 add_subdirectory(liblodepng)

@@ -1904,14 +1904,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       return "Документация метода";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Обзор дизайна";
-    }
-
 ///////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 ///////////////////////////////////////////////////////////////////////

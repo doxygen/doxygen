@@ -1431,7 +1431,8 @@ void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag) const
     ol.writeString(" - ");
     ol.popGeneratorState();
     ol.generateDoc(briefFile(),briefLine(),this,0,
-                   briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
+                   briefDescription(),TRUE,FALSE,0,
+                   TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::RTF);
     ol.writeString(" \n");
@@ -1462,7 +1463,8 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   // repeat brief description
   if (!briefDescription().isEmpty() && repeatBrief)
   {
-    ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+    ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+                   0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   }
   if (!briefDescription().isEmpty() && repeatBrief &&
       !documentation().isEmpty())
@@ -1475,7 +1477,8 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   // write documentation
   if (!documentation().isEmpty())
   {
-    ol.generateDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE);
+    ol.generateDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE,
+                   0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   }
   // write type constraints
   writeTypeConstraints(ol,this,m_impl->typeConstraints);
@@ -1848,16 +1851,15 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
   if (m_impl->incInfo)
   {
     QCString nm;
-    QStrList paths = Config_getList(STRIP_FROM_PATH);
-    if (!paths.isEmpty() && m_impl->incInfo->fileDef)
+    const StringVector &paths = Config_getList(STRIP_FROM_PATH);
+    if (!paths.empty() && m_impl->incInfo->fileDef)
     {
       QCString abs = m_impl->incInfo->fileDef->absFilePath();
-      const char *s = paths.first();
       QCString potential;
       unsigned int length = 0;
-      while (s)
+      for (const auto &s : paths)
       {
-        QFileInfo info(s);
+        QFileInfo info(s.c_str());
         if (info.exists())
         {
           QCString prefix = info.absFilePath().utf8();
@@ -1872,7 +1874,6 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
             length = prefix.length();
             potential = abs.right(abs.length() - prefix.length());
           }
-          s = paths.next();
         }
       }
 
@@ -2574,7 +2575,8 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const char *h
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
       DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
-                                briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+                                briefDescription(),FALSE,FALSE,
+                                0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       if (rootNode && !rootNode->isEmpty())
       {
         ol.startMemberDescription(anchor());

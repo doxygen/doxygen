@@ -171,7 +171,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
   dict->sort();
   IndexFieldSDict::Iterator ifli(*dict);
   IndexField *f;
-  QCString lastLevel1;
+  QCString prevLevel1;
   bool level2Started=FALSE;
   for (;(f=ifli.current());++ifli)
   {
@@ -187,7 +187,6 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
       level1  = f->name.copy();
     }
 
-    //if (level1!=lastLevel1)
     { // finish old list at level 2
       if (level2Started) t << "  </UL>" << endl;
       level2Started=FALSE;
@@ -206,10 +205,11 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
         nextLevel1 = fnext->name.left(fnext->name.find('?'));
         --ifli;
       }
-      if (level1 != nextLevel1)
+      if (!(level1 == prevLevel1 || level1 == nextLevel1))
       {
         level2 = "";
       }
+      prevLevel1 = level1.copy();
       // </Antony>
 
       if (level2.isEmpty())
@@ -257,7 +257,6 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
       t << "<param name=\"Name\" value=\"" << m_help->recode(level2) << "\">"
          "</OBJECT>\n";
     }
-    lastLevel1 = level1.copy();
   } 
   if (level2Started) t << "  </UL>" << endl;
 }
@@ -420,7 +419,7 @@ void HtmlHelp::initialize()
   s_languageDict.insert("chinese-traditional", new QCString("0x404 Chinese (Taiwan)"));
 
   // new LCIDs
-  s_languageDict.insert("indonesian",  new QCString("0x412 Indonesian"));
+  s_languageDict.insert("indonesian",  new QCString("0x421 Indonesian"));
   s_languageDict.insert("croatian",    new QCString("0x41A Croatian"));
   s_languageDict.insert("romanian",    new QCString("0x418 Romanian"));
   s_languageDict.insert("slovene",     new QCString("0x424 Slovenian"));

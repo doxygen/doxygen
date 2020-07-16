@@ -1907,7 +1907,7 @@ void VhdlParser::concurrent_statement() {
       if (!hasError) {
       process_statement();
       }
-    } else if (jj_2_20(2147483647)) {
+    } else if (jj_2_20(3)) {
       if (!hasError) {
       generate_statement();
       }

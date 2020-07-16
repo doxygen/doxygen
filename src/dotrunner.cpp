@@ -13,6 +13,8 @@
 *
 */
 
+#include <cassert>
+
 #include "dotrunner.h"
 
 #include "qstring.h"
@@ -151,7 +153,6 @@ DotRunner::DotRunner(const std::string& absDotName, const std::string& md5Hash)
   , m_md5Hash(md5Hash.data())
   , m_dotExe(Config_getString(DOT_PATH)+"dot")
   , m_cleanUp(Config_getBool(DOT_CLEANUP))
-  , m_jobs()
 {
 }
 

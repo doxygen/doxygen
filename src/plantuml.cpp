@@ -208,21 +208,23 @@ static void runPlantumlContent(const QDict< QList <QCString> > &plantumlFiles,
   QCString pumlType = "";
   QCString pumlOutDir = "";
 
-  QStrList &pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
-  char *s=pumlIncludePathList.first();
-  if (s)
+  const StringVector &pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
   {
-    pumlArgs += "-Dplantuml.include.path=\"";
-    pumlArgs += s;
-    s = pumlIncludePathList.next();
+    auto it = pumlIncludePathList.begin();
+    if (it!=pumlIncludePathList.end())
+    {
+      pumlArgs += "-Dplantuml.include.path=\"";
+      pumlArgs += it->c_str();
+      ++it;
+    }
+    while (it!=pumlIncludePathList.end())
+    {
+      pumlArgs += Portable::pathListSeparator();
+      pumlArgs += it->c_str();
+      ++it;
+    }
   }
-  while (s)
-  {
-    pumlArgs += Portable::pathListSeparator();
-    pumlArgs += s;
-    s = pumlIncludePathList.next();
-  }
-  if (pumlIncludePathList.first()) pumlArgs += "\" ";
+  if (!pumlIncludePathList.empty()) pumlArgs += "\" ";
   pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"plantuml.jar\" ";
   if (!plantumlConfigFile.isEmpty())
   {

@@ -137,7 +137,7 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const QCString
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
 #ifdef FLEX_DEBUG
-  yyset_debug(1,yyscanner);
+  constexpYYset_debug(1,p->yyscanner);
 #endif
 
   yyextra->constExpFileName = fileName;

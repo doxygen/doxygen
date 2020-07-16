@@ -44,14 +44,14 @@
 
 {% if config.SERVER_BASED_SEARCH %}
   {# server side search resources #}
-  {% resource 'mag.png'     as 'search/mag.png'     %}
+  {% resource 'mag.svg'     as 'search/mag.svg'     %}
   {% resource 'extsearch.js as 'search/search.js'   %}
   {% resource 'search_functions.php'  as 'search/search_functions.php'  %}
   {% resource 'search_opensearch.php' as 'search/search_opensearch.php' %}
 {% else %}
   {# client side search resources #}
-  {% resource 'mag_sel.png' as 'search/mag_sel.png' %}
-  {% resource 'close.png'   as 'search/close.png'   %}
+  {% resource 'mag_sel.svg' as 'search/mag_sel.svg' %}
+  {% resource 'close.svg'   as 'search/close.svg'   %}
   {% resource 'search.js'   as 'search/search.js'   %}
 {% endif %}
 

@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -36,13 +36,10 @@ class PythonOutlineParser : public OutlineParserInterface
   public:
     PythonOutlineParser();
     virtual ~PythonOutlineParser();
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
-    void parseInput(const char * fileName, 
-                    const char *fileBuf, 
+    void parseInput(const char * fileName,
+                    const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    bool sameTranslationUnit,
-                    QStrList &filesInSameTranslationUnit);
+                    ClangTUParser *clangParser);
     bool needsPreprocessing(const QCString &extension) const;
     void parsePrototype(const char *text);
   private:

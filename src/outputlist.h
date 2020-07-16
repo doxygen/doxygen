@@ -59,8 +59,9 @@ class OutputList : public OutputDocInterface
 
     void generateDoc(const char *fileName,int startLine,
                      const Definition *ctx,const MemberDef *md,const QCString &docStr,
-                     bool indexWords,bool isExample,const char *exampleName=0,
-                     bool singleLine=FALSE,bool linkFromIndex=FALSE);
+                     bool indexWords,bool isExample,const char *exampleName /*=0*/,
+                     bool singleLine /*=FALSE*/,bool linkFromIndex /*=FALSE*/,
+                     bool markdownSupport /*=FALSE*/);
     void writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md);
     void parseText(const QCString &textStr);
 

@@ -207,7 +207,7 @@ class Entry
      *  @{
      */
     void moveToSubEntryAndKeep(Entry* e);
-    void moveToSubEntryAndKeep(std::shared_ptr<Entry> &e);
+    void moveToSubEntryAndKeep(std::shared_ptr<Entry> e);
     /*! @} */
 
     /*! @name add entry as a child, pass ownership and reinitialize entry */
@@ -296,9 +296,6 @@ class Entry
     QCString    id;           //!< libclang id
     LocalToc    localToc;
     QCString    metaData;     //!< Slice metadata
-
-
-    static int  num;          //!< counts the total number of entries
 
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const

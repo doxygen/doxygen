@@ -1446,16 +1446,6 @@ static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output
   output.closeList();
 }
 
-#if 0
-static void addMemberTemplateLists(MemberDef *md,PerlModOutput &output)
-{
-  ClassDef *cd = md->getClassDef();
-  const char *cname = cd ? cd->name().data() : 0;
-  if (md->templateArguments()) // function template prefix
-    addTemplateArgumentList(md->templateArguments(),output,cname);
-}
-#endif
-
 static void addTemplateList(const ClassDef *cd,PerlModOutput &output)
 {
   addTemplateArgumentList(cd->templateArguments(),output,cd->name());
@@ -1473,7 +1463,8 @@ static void addPerlModDocBlock(PerlModOutput &output,
   if (stext.isEmpty())
     output.addField(name).add("{}");
   else {
-    DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext,FALSE,0);
+    DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext,FALSE,FALSE,
+                                       0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     output.openHash(name);
     PerlModDocVisitor *visitor = new PerlModDocVisitor(output);
     root->accept(visitor);

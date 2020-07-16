@@ -12,6 +12,7 @@ include_directories(
 add_executable(doxyapp
 doxyapp.cpp
 )
+add_sanitizers(doxyapp)
 
 if (use_libclang)
     set(CLANG_LIBS libclang clangTooling ${llvm_libs})
@@ -31,6 +32,7 @@ ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}
 ${EXTRA_LIBS}
 ${CLANG_LIBS}
+${COVERAGE_LINKER_FLAGS}
 )
 
 install(TARGETS doxyapp DESTINATION bin)

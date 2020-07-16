@@ -69,7 +69,7 @@ class DirDefImpl : public DefinitionImpl, public DirDef
     void endMemberDeclarations(OutputList &ol);
 
     static DirDef *createNewDir(const char *path);
-    static bool matchPath(const QCString &path,QStrList &l);
+    static bool matchPath(const QCString &path,const StringVector &l);
 
     DirList m_subdirs;
     QCString m_dispName;
@@ -223,7 +223,8 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
-      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     // separator between brief and details
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
@@ -243,7 +244,8 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     // write documentation
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
   }
 }
@@ -253,7 +255,8 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
   if (hasBriefDescription())
   {
     DocRoot *rootNode = validatingParseDoc(
-         briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
+         briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE,
+         0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
@@ -341,7 +344,8 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
               FALSE, // isExample
               0,     // exampleName
               TRUE,  // single line
-              TRUE   // link from index
+              TRUE,  // link from index
+              Config_getBool(MARKDOWN_SUPPORT)
               );
           ol.endMemberDescription();
         }
@@ -412,7 +416,8 @@ void DirDefImpl::writeFileList(OutputList &ol)
               FALSE, // isExample
               0,     // exampleName
               TRUE,  // single line
-              TRUE   // link from index
+              TRUE,  // link from index
+              Config_getBool(MARKDOWN_SUPPORT)
               );
           ol.endMemberDescription();
         }
@@ -750,7 +755,7 @@ int FilePairDict::compareValues(const FilePair *left,const FilePair *right) cons
 
 //----------------------------------------------------------------------
 
-UsedDir::UsedDir(DirDef *dir,bool inherited) :
+UsedDir::UsedDir(const DirDef *dir,bool inherited) :
    m_dir(dir), m_filePairs(7), m_inherited(inherited)
 {
   m_filePairs.setAutoDelete(TRUE);
@@ -792,17 +797,15 @@ DirDef *DirDefImpl::createNewDir(const char *path)
   return dir;
 }
 
-bool DirDefImpl::matchPath(const QCString &path,QStrList &l)
+bool DirDefImpl::matchPath(const QCString &path,const StringVector &l)
 {
-  const char *s=l.first();
-  while (s)
+  for (const auto &s : l)
   {
-    QCString prefix = s;
-    if (qstricmp(prefix.left(path.length()),path)==0) // case insensitive compare
+    std::string prefix = s.substr(0,path.length());
+    if (qstricmp(prefix.c_str(),path)==0) // case insensitive compare
     {
       return TRUE;
     }
-    s = l.next();
   }
   return FALSE;
 }

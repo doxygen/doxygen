@@ -16,11 +16,13 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
-#include <map>
-#include <string>
+#include <vector>
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 #include <qcstring.h>
+#include "containers.h"
 
 class FileDef;
 
@@ -44,5 +46,6 @@ class Define
 
 /** List of all macro definitions */
 using DefineList = std::vector< std::unique_ptr<Define> >;
+using DefinesPerFileList = std::unordered_map< std::string, DefineList >;
 
 #endif

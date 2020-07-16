@@ -111,7 +111,7 @@ class Definition : public DefinitionIntf
     virtual bool isAlias() const = 0;
 
     /*! Returns the name of the definition */
-    virtual QCString name() const = 0;
+    virtual const QCString &name() const = 0;
 
     /*! Returns TRUE iff this definition has an artificially generated name
      * (typically starting with a @) that is used for nameless definitions

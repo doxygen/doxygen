@@ -1424,7 +1424,11 @@ QCString getSQLDocBlock(const Definition *scope,
     dynamic_cast<const MemberDef*>(def),
     doc,
     FALSE,
-    FALSE
+    FALSE,
+    0,
+    FALSE,
+    FALSE,
+    Config_getBool(MARKDOWN_SUPPORT)
   );
   XMLCodeGenerator codeGen(t);
   // create a parse tree visitor for XML
@@ -1991,7 +1995,6 @@ static void generateSqlite3ForClass(const ClassDef *cd)
       DBG_CTX(("-----> ClassDef includeInfo for %s\n", nm.data()));
       DBG_CTX(("       local    : %d\n", ii->local));
       DBG_CTX(("       imported : %d\n", ii->imported));
-      DBG_CTX(("       indirect : %d\n", ii->indirect));
       DBG_CTX(("header: %s\n", ii->fileDef->absFilePath().data()));
       DBG_CTX(("       file_id  : %d\n", file_id));
       DBG_CTX(("       header_id: %d\n", header_id));
@@ -2207,7 +2210,6 @@ static void generateSqlite3ForFile(const FileDef *fd)
       DBG_CTX(("-----> FileDef includeInfo for %s\n", ii->includeName.data()));
       DBG_CTX(("       local:    %d\n", ii->local));
       DBG_CTX(("       imported: %d\n", ii->imported));
-      DBG_CTX(("       indirect: %d\n", ii->indirect));
       if(ii->fileDef)
       {
         DBG_CTX(("include: %s\n", ii->fileDef->absFilePath().data()));

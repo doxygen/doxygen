@@ -4,8 +4,8 @@
  * Based on a patch by David Munger
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -94,7 +94,7 @@ void CitationManager::clear()
 
 bool CitationManager::isEmpty() const
 {
-  uint numFiles = Config_getList(CITE_BIB_FILES).count();
+  size_t numFiles = Config_getList(CITE_BIB_FILES).size();
   return (numFiles==0 || p->entries.empty());
 }
 
@@ -117,12 +117,10 @@ void CitationManager::generatePage()
 
   // 0. add cross references from the bib files to the cite dictionary
   QFile f;
-  const QStrList &citeDataList = Config_getList(CITE_BIB_FILES);
-  QStrListIterator li(citeDataList);
-  const char *bibdata = 0;
-  for (li.toFirst() ; (bibdata = li.current()) ; ++li)
+  const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
+  for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = bibdata;
+    QCString bibFile = bibdata.c_str();
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
     QFileInfo fi(bibFile);
     if (fi.exists())
@@ -130,7 +128,7 @@ void CitationManager::generatePage()
       if (!bibFile.isEmpty())
       {
         f.setName(bibFile);
-        if (!f.open(IO_ReadOnly)) 
+        if (!f.open(IO_ReadOnly))
         {
           err("could not open file %s for reading\n",bibFile.data());
         }
@@ -173,7 +171,7 @@ void CitationManager::generatePage()
   QCString outputDir = Config_getString(OUTPUT_DIRECTORY);
   QCString citeListFile = outputDir+"/citelist.doc";
   f.setName(citeListFile);
-  if (!f.open(IO_WriteOnly)) 
+  if (!f.open(IO_WriteOnly))
   {
     err("could not open file %s for writing\n",citeListFile.data());
   }
@@ -205,11 +203,15 @@ void CitationManager::generatePage()
   QCString bibOutputDir = outputDir+"/"+bibTmpDir;
   QCString bibOutputFiles = "";
   QDir thisDir;
-  thisDir.mkdir(bibOutputDir);
-  int i = 0;
-  for (li.toFirst() ; (bibdata = li.current()) ; ++li)
+  if (!thisDir.exists(bibOutputDir) && !thisDir.mkdir(bibOutputDir))
   {
-    QCString bibFile = bibdata;
+    err("Failed to create temporary output directory '%s', skipping citations\n",bibOutputDir.data());
+    return;
+  }
+  int i = 0;
+  for (const auto &bibdata : citeDataList)
+  {
+    QCString bibFile = bibdata.c_str();
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
     QFileInfo fi(bibFile);
     if (fi.exists())
@@ -242,7 +244,7 @@ void CitationManager::generatePage()
 
   // 6. read back the file
   f.setName(citeListFile);
-  if (!f.open(IO_ReadOnly)) 
+  if (!f.open(IO_ReadOnly))
   {
     err("could not open file %s for reading\n",citeListFile.data());
   }
@@ -294,16 +296,16 @@ void CitationManager::generatePage()
   // 7. add it as a page
   addRelatedPage(fileName(),theTranslator->trCiteReferences(),doc,fileName(),1);
 
-  // 8. for latex we just copy the bib files to the output and let 
+  // 8. for latex we just copy the bib files to the output and let
   //    latex do this work.
   if (Config_getBool(GENERATE_LATEX))
   {
     // copy bib files to the latex output dir
     QCString latexOutputDir = Config_getString(LATEX_OUTPUT)+"/";
     i = 0;
-    for (li.toFirst() ; (bibdata = li.current()) ; ++li)
+    for (const auto &bibdata : citeDataList)
     {
-      QCString bibFile = bibdata;
+      QCString bibFile = bibdata.c_str();
       // Note: file can now have multiple dots
       if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
       fi.setFile(bibFile);
@@ -333,9 +335,9 @@ void CitationManager::generatePage()
     // we might try to remove too many files as empty files didn't get a corresponding new file
     // but the remove function does not emit an error for it and we don't catch the error return
     // so no problem.
-    for (unsigned int j = 1; j <= citeDataList.count(); j++)
+    for (size_t j = 1; j <= citeDataList.size(); j++)
     {
-      thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(j) + ".bib");
+      thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(static_cast<ulong>(j)) + ".bib");
     }
     thisDir.rmdir(bibOutputDir);
   }
@@ -370,13 +372,11 @@ void CitationManager::writeLatexBibliography(FTextStream &t) const
   }
   t << "\\bibliographystyle{" << style << "}\n"
        "\\bibliography{";
-  QStrList &citeDataList = Config_getList(CITE_BIB_FILES);
+  const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
   int i = 0;
-  QStrListIterator li(citeDataList);
-  const char *bibdata = 0;
-  for (li.toFirst() ; (bibdata = li.current()) ; ++li)
+  for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = bibdata;
+    QCString bibFile = bibdata.c_str();
     // Note: file can now have multiple dots
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
     QFileInfo fi(bibFile);

@@ -457,6 +457,7 @@ static RowInfo *computeCanvasSize(Context      *ctx,
     nextYmin = ymin = ctx->opts.entityHeadGap;
     yskipmax = 0;
 
+    ymax  = 0;
     MscResetArcIterator(m);
     do
     {

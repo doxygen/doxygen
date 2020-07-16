@@ -236,7 +236,7 @@ void DotGraph::generateCode(FTextStream &t)
     else // add link to bitmap file with image map
     {
       if (!m_noDivTag) t << "<div class=\"center\">";
-      t << "<img src=\"" << relImgName() << "\" border=\"0\" usemap=\"#" << getMapLabel() << "\" alt=\"" << getImgAltText() << "\"/>";
+      t << "<img src=\"" << relImgName() << "\" border=\"0\" usemap=\"#" << correctId(getMapLabel()) << "\" alt=\"" << getImgAltText() << "\"/>";
       if (!m_noDivTag) t << "</div>";
       t << endl;
       if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, getMapLabel()))
