@@ -74,59 +74,14 @@ class ClangTUParser
 /** @brief Wrapper for to let libclang assisted parsing. */
 class ClangParser
 {
+    friend class ClangTUParser;
   public:
     /** Returns the one and only instance of the class */
     static ClangParser *instance();
-
     std::unique_ptr<ClangTUParser> createTUParser(const FileDef *fd) const;
-    const clang::tooling::CompilationDatabase *database() const;
-
-#if 0
-    /** Start parsing a file.
-     *  @param[in] fileName The name of the file to parse.
-     *  @param[in,out] filesInTranslationUnit Other files that are
-     *                 part of the input and included by the file.
-     *                 The function will return a subset of the files,
-     *                 only including the ones that were actually found
-     *                 during parsing.
-     */
-    void start(const char *fileName,StringVector &filesInTranslationUnit);
-
-    /** Switches to another file within the translation unit started
-     *  with start().
-     *  @param[in] fileName The name of the file to switch to.
-     */
-    void switchToFile(const char *fileName);
-
-    /** Finishes parsing a translation unit. Free any resources that
-     *  were needed for parsing.
-     */
-    void finish();
-
-    /** Looks for \a symbol which should be found at \a line and
-     *  returns a clang unique reference to the symbol.
-     */
-    QCString lookup(uint line,const char *symbol);
-
-    /** writes the syntax highlighted source code for a file
-     *  @param[out] ol The output generator list to write to.
-     *  @param[in]  fd The file to write sources for.
-     */
-    void writeSources(CodeOutputInterface &ol,FileDef *fd);
-#endif
 
   private:
-#if 0
-    void linkIdentifier(CodeOutputInterface &ol,FileDef *fd,
-                        uint &line,uint &column,
-                        const char *text,int tokenIndex);
-    void linkMacro(CodeOutputInterface &ol,FileDef *fd,
-                   uint &line,uint &column,
-                   const char *text);
-    void linkInclude(CodeOutputInterface &ol,FileDef *fd,
-                   uint &line,uint &column,
-                   const char *text);
-#endif
+    const clang::tooling::CompilationDatabase *database() const;
     class Private;
     std::unique_ptr<Private> p;
     ClangParser();
