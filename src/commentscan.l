@@ -1906,7 +1906,6 @@ static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const QCStringLi
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
   yyextra->current->groupDocType = Entry::GROUPDOC_NORMAL;
-  setOutput(yyscanner,OutputBrief);
   BEGIN( GroupDocArg1 );
   return stop;
 }

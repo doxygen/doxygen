@@ -173,7 +173,7 @@ void ManGenerator::endTitleHead(const char *,const char *name)
   t << ".ad l" << endl;
   t << ".nh" << endl;
   t << ".SH NAME" << endl;
-  t << name;
+  t << name << " \\- ";
   m_firstCol=FALSE;
   m_paragraph=TRUE;
   m_inHeader=TRUE;

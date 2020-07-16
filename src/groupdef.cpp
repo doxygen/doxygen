@@ -1207,6 +1207,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Man);
   ol.endTitleHead(getOutputFileBase(),name());
+  ol.parseText(m_title);
   ol.popGeneratorState();
   ol.endHeaderSection();
   ol.startContents();
