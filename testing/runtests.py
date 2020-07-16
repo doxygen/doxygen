@@ -487,6 +487,8 @@ def split_and_keep(s, sep):
 		vv = val.split(" ",1)
 		if ((len(vv) == 1) and not vv[0] == ''):
 			retVal += vv
+		if (len(vv) == 2):
+			vv[1] = vv[1].strip()
 		if ((len(vv) == 2) and not vv[1] == ''):
 			retVal += vv
 		if ((len(vv) == 2) and vv[1] == ''):
