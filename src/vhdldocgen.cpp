@@ -3636,7 +3636,6 @@ void FlowChart::writeFlowChart()
 #ifdef DEBUGFLOW
    printFlowTree();
 #endif
-  const MemberDef *p=VhdlDocGen::getFlowMember();
 
   if (!Config_getString(PLANTUML_JAR_PATH).isEmpty())
   {
