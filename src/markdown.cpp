@@ -1846,7 +1846,7 @@ int Markdown::writeTableBlock(const char *data,int size)
       }
       // need at least one space on either side of the cell text in
       // order for doxygen to do other formatting
-      m_out.addStr("> " + cellText + "</" + cellTag + ">");
+      m_out.addStr("> " + cellText + " </" + cellTag + ">");
     }
     cellTag = "td";
     cellClass = "class=\"markdownTableBody";
