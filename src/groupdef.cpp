@@ -1209,7 +1209,6 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   ol.endTitleHead(getOutputFileBase(),name());
   if (!m_title.isEmpty())
   {
-    ol.writeString(" - ");
     ol.parseText(m_title);
   }
   ol.popGeneratorState();
