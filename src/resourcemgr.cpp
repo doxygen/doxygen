@@ -150,6 +150,18 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
           }
         }
         break;
+      case Resource::SVG:
+        {
+          QFile f(pathName);
+          if (f.open(IO_WriteOnly))
+          {
+            QCString buf(res->size+1);
+            memcpy(buf.rawData(),res->data,res->size);
+            FTextStream t(&f);
+            t << replaceColorMarkers(buf);
+            return TRUE;
+          }
+        }
     }
   }
   else

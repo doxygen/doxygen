@@ -1016,7 +1016,7 @@ void HtmlGenerator::writeTabData()
   mgr.copyResource("nav_h.lum",dname);
   mgr.copyResource("nav_f.lum",dname);
   mgr.copyResource("bc_s.luma",dname);
-  mgr.copyResource("doxygen.luma",dname);
+  mgr.copyResource("doxygen.svg",dname);
   mgr.copyResource("closed.luma",dname);
   mgr.copyResource("open.luma",dname);
   mgr.copyResource("bdwn.luma",dname);
@@ -1181,7 +1181,7 @@ QCString HtmlGenerator::writeLogoAsString(const char *path)
   result += "&#160;\n<a href=\"http://www.doxygen.org/index.html\">\n"
             "<img class=\"footer\" src=\"";
   result += path;
-  result += "doxygen.png\" alt=\"doxygen\"/></a> ";
+  result += "doxygen.svg\" width=\"104\" height=\"31\" alt=\"doxygen\"/></a> ";
   result += getDoxygenVersion();
   result += " ";
   return result;

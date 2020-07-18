@@ -20,7 +20,7 @@
 /** @brief Compiled resource */
 struct Resource
 {
-  enum Type { Verbatim, Luminance, LumAlpha, CSS };
+  enum Type { Verbatim, Luminance, LumAlpha, CSS, SVG };
   const char *category;
   const char *name;
   const unsigned char *data;
