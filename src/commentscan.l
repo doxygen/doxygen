@@ -556,27 +556,27 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
    *   XML commands, <summary></summary><remarks></remarks>
    */
 
-<Comment>{CMD}{CMD}[a-z_A-Z]+{B}*        { // escaped command
-                                            addOutput(yyscanner,yytext);
-                                          }
+<Comment>{CMD}{CMD}[a-z_A-Z]+{B}*       { // escaped command
+                                          addOutput(yyscanner,yytext);
+                                        }
 <Comment>{CMD}{CMD}"~"[a-z_A-Z]*        { // escaped command
-                                            addOutput(yyscanner,yytext);
-                                          }
-<Comment>{MAILADDR}                        { // mail address
-                                            addOutput(yyscanner,yytext);
-                                          }
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>{MAILADDR}                     { // mail address
+                                          addOutput(yyscanner,yytext);
+                                        }
 <Comment>"\""[^"\n]*"\""                { // quoted text
                                           addOutput(yyscanner,yytext);
-                                          }
-<Comment>("\\"[a-z_A-Z]+)+"\\"                { // directory (or chain of commands!)
-                                            addOutput(yyscanner,yytext);
-                                          }
-<Comment>"<"{DETAILEDHTML}{ATTR}">"        { // HTML command that ends a brief description
+                                        }
+<Comment>("\\"[a-z_A-Z]+)+"\\"          { // directory (or chain of commands!)
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>"<"{DETAILEDHTML}{ATTR}">"     { // HTML command that ends a brief description
                                           setOutput(yyscanner,OutputDoc);
                                           // continue with the same input
                                           REJECT;
                                         }
-<Comment>"<"{DETAILEDHTMLOPT}{ATTR}">"        { // HTML command that ends a brief description
+<Comment>"<"{DETAILEDHTMLOPT}{ATTR}">"  { // HTML command that ends a brief description
                                           if (yyextra->current->lang==SrcLangExt_CSharp)
                                           {
                                             setOutput(yyscanner,OutputDoc);
@@ -584,24 +584,24 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           // continue with the same input
                                           REJECT;
                                         }
-<Comment>"<summary>"                        { // start of a .NET XML style brief description
+<Comment>"<summary>"                    { // start of a .NET XML style brief description
                                           setOutput(yyscanner,OutputBrief);
                                           addOutput(yyscanner,yytext);
-                                          }
+                                        }
 <Comment>"<remarks>"                    { // start of a .NET XML style detailed description
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
-                                          }
-<Comment>"</summary>"                        { // start of a .NET XML style detailed description
+                                        }
+<Comment>"</summary>"                   { // start of a .NET XML style detailed description
                                           setOutput(yyscanner,OutputBrief);
                                           addOutput(yyscanner,yytext);
                                           setOutput(yyscanner,OutputDoc);
-                                          }
-<Comment>"</remarks>"                        { // end of a brief or detailed description
+                                        }
+<Comment>"</remarks>"                   { // end of a brief or detailed description
 
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
-                                          }
+                                        }
 <Comment>"<"{CAPTION}{ATTR}">"          {
                                           QCString tag=yytext;
                                           int s=tag.find("id=");
@@ -638,14 +638,14 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>"<!\[CDATA\["                  {
                                           BEGIN(CdataSection);
                                         }
-<Comment>{B}*{CMD}"endinternal"{B}*        {
+<Comment>{B}*{CMD}"endinternal"{B}*     {
                                           addOutput(yyscanner," \\endinternal ");
                                           if (!yyextra->inInternalDocs)
                                               warn(yyextra->fileName,yyextra->lineNr,
                                                "found \\endinternal without matching \\internal"
                                               );
                                           yyextra->inInternalDocs = FALSE;
-                                          }
+                                        }
 <Comment>{B}*{CMD}[a-z_A-Z]+"{"[a-zA-Z_,:0-9\. ]*"}"{B}*  |
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*        { // potentially interesting command
                                           // the {B}* in the front was added for bug620924
@@ -663,8 +663,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           else // options present
                                           {
                                             cmdName = fullMatch.left(idx).stripWhiteSpace().data()+1; // to remove {CMD}
-                                            QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
-                                            optList = QCStringList::split(',',optStr);
+                                          QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+                                          optList = QCStringList::split(',',optStr);
                                           }
                                           auto it = docCmdMap.find(cmdName.data());
                                           if (it!=docCmdMap.end()) // special action is required
@@ -708,18 +708,18 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           {
                                             addOutput(yyscanner,yytext);
                                           }
-                                          }
-<Comment>{B}*({CMD}{CMD})"f"[$\[{]        { // escaped formula command
-                                            addOutput(yyscanner,yytext);
-                                          }
-<Comment>{B}*{CMD}"~"[a-z_A-Z-]*                { // language switch command
+                                        }
+<Comment>{B}*({CMD}{CMD})"f"[$\[{]      { // escaped formula command
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>{B}*{CMD}"~"[a-z_A-Z-]*        { // language switch command
                                           QCString langId = QCString(yytext).stripWhiteSpace().data()+2;
-                                                 if (!langId.isEmpty() &&
+                                          if (!langId.isEmpty() &&
                                               qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)!=0)
                                           { // enable language specific section
                                             BEGIN(SkipLang);
                                           }
-                                          }
+                                        }
 <Comment>{B}*{CMD}"f{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
                                           setOutput(yyscanner,OutputDoc);
                                           yyextra->formulaText="\\begin";
@@ -732,18 +732,18 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           yyextra->formulaText+=yyextra->formulaEnv;
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaLong);
-                                          }
-<Comment>{B}*{CMD}"f$"                        { // start of a inline formula
+                                        }
+<Comment>{B}*{CMD}"f$"                  { // start of a inline formula
                                           yyextra->formulaText="$";
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaShort);
-                                          }
-<Comment>{B}*{CMD}"f["                        { // start of a block formula
+                                        }
+<Comment>{B}*{CMD}"f["                  { // start of a block formula
                                           setOutput(yyscanner,OutputDoc);
                                           yyextra->formulaText="\\[";
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaLong);
-                                          }
+                                        }
 <Comment>{B}*{CMD}"{"                   { // begin of a group
                                           //yyextra->langParser->handleGroupStartCommand(yyextra->memberGroupHeader);
                                           yyextra->docGroup.open(yyextra->current,yyextra->fileName,yyextra->lineNr);
@@ -761,17 +761,17 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 #endif
                                           yyterminate();
                                         }
-<Comment>{B}*{CMD}[$@\\&~<>#%]                { // escaped character
-                                            addOutput(yyscanner,yytext);
-                                          }
-<Comment>[a-z_A-Z]+                        { // normal word
+<Comment>{B}*{CMD}[$@\\&~<>#%]          { // escaped character
                                           addOutput(yyscanner,yytext);
-                                          }
+                                        }
+<Comment>[a-z_A-Z]+                     { // normal word
+                                          addOutput(yyscanner,yytext);
+                                        }
 <Comment>^{B}*"."{B}*/\n                { // explicit end autolist: e.g "  ."
                                             addOutput(yyscanner,yytext);
                                         }
 <Comment>^{B}*[1-9][0-9]*"."{B}+        |
-<Comment>^{B}*[*+]{B}+                        { // start of autolist
+<Comment>^{B}*[*+]{B}+                  { // start of autolist
                                           if (!yyextra->markdownSupport)
                                           {
                                             REJECT;
@@ -792,8 +792,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             yyextra->briefEndsAtDot=FALSE;
                                             setOutput(yyscanner,OutputDoc);
                                           }
-                                            addOutput(yyscanner,yytext);
-                                          }
+                                          addOutput(yyscanner,yytext);
+                                        }
 <Comment>^{B}*([\-:|]{B}*)*("--"|"---")({B}*[\-:|])*{B}*/\n { // horizontal line (dashed)
                                             addOutput(yyscanner,yytext);
                                         }
@@ -817,23 +817,23 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           }
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>("."+)[a-z_A-Z0-9\)]                { // . at start or in the middle of a word, or ellipsis
-                                            addOutput(yyscanner,yytext);
-                                          }
-<Comment>".\\"[ \t]                        { // . with escaped space.
-                                            addOutput(yyscanner,yytext[0]);
-                                            addOutput(yyscanner,yytext[2]);
-                                          }
-<Comment>".,"                                { // . with comma such as "e.g.,"
-                                            addOutput(yyscanner,yytext);
-                                          }
-<Comment>"...\\"[ \t]                        { // ellipsis with escaped space.
-                                            addOutput(yyscanner,"... ");
-                                          }
-<Comment>".."[\.]?/[^ \t\n]                 { // internal ellipsis
-                                            addOutput(yyscanner,yytext);
-                                          }
-<Comment>(\n|\\_linebr)({B}*(\n|\\_linebr))+        { // at least one blank line (or blank line command)
+<Comment>("."+)[a-z_A-Z0-9\)]           { // . at start or in the middle of a word, or ellipsis
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>".\\"[ \t]                     { // . with escaped space.
+                                          addOutput(yyscanner,yytext[0]);
+                                          addOutput(yyscanner,yytext[2]);
+                                        }
+<Comment>".,"                           { // . with comma such as "e.g.,"
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>"...\\"[ \t]                   { // ellipsis with escaped space.
+                                          addOutput(yyscanner,"... ");
+                                        }
+<Comment>".."[\.]?/[^ \t\n]             { // internal ellipsis
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>(\n|\\_linebr)({B}*(\n|\\_linebr))+ { // at least one blank line (or blank line command)
                                           if (yyextra->inContext==OutputXRef)
                                           {
                                             // see bug 613024, we need to put the newlines after ending the XRef section.
@@ -862,35 +862,35 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             // found some brief description and not just whitespace
                                             endBrief(yyscanner,FALSE);
                                           }
-                                            lineCount(yyscanner);
-                                          }
-<Comment>"."                                { // potential end of a JavaDoc style comment
-                                            addOutput(yyscanner,*yytext);
-                                            if (yyextra->briefEndsAtDot)
+                                          lineCount(yyscanner);
+                                        }
+<Comment>"."                            { // potential end of a JavaDoc style comment
+                                          addOutput(yyscanner,*yytext);
+                                          if (yyextra->briefEndsAtDot)
                                           {
                                             setOutput(yyscanner,OutputDoc);
                                             yyextra->briefEndsAtDot=FALSE;
                                           }
-                                          }
-<Comment>\n                                { // newline
-                                            addOutput(yyscanner,*yytext);
-                                            yyextra->lineNr++;
-                                          }
-<Comment>.                                { // catch-all for anything else
-                                            addOutput(yyscanner,*yytext);
-                                          }
+                                        }
+<Comment>\n                             { // newline
+                                          addOutput(yyscanner,*yytext);
+                                          yyextra->lineNr++;
+                                        }
+<Comment>.                              { // catch-all for anything else
+                                          addOutput(yyscanner,*yytext);
+                                        }
 
 
  /* --------------   Rules for handling HTML comments ----------- */
 
-<HtmlComment>"--"[!]?">"{B}*                { BEGIN( Comment ); }
-<HtmlComment>{DOCNL}                        {
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          }
-<HtmlComment>[^\\\n\-]+                        { // ignore unimportant characters
-                                          }
-<HtmlComment>.                                { // ignore every else
-                                          }
+<HtmlComment>"--"[!]?">"{B}*            { BEGIN( Comment ); }
+<HtmlComment>{DOCNL}                    {
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                        }
+<HtmlComment>[^\\\n\-]+                 { // ignore unimportant characters
+                                        }
+<HtmlComment>.                          { // ignore every else
+                                        }
 
 <CdataSection>"\]\]>"                   {
                                           BEGIN( Comment );
@@ -912,26 +912,26 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
  /* --------------   Rules for handling formulas ---------------- */
 
-<ReadFormulaShort>{CMD}"f$"                { // end of inline formula
-                                            yyextra->formulaText+="$";
+<ReadFormulaShort>{CMD}"f$"             { // end of inline formula
+                                          yyextra->formulaText+="$";
                                           addOutput(yyscanner," "+addFormula(yyscanner));
                                           BEGIN(Comment);
-                                          }
-<ReadFormulaLong>{CMD}"f]"                { // end of block formula
+                                        }
+<ReadFormulaLong>{CMD}"f]"              { // end of block formula
                                           yyextra->formulaText+="\\]";
                                           addOutput(yyscanner," "+addFormula(yyscanner));
                                           BEGIN(Comment);
-                                          }
-<ReadFormulaLong>{CMD}"f}"                { // end of custom env formula
+                                        }
+<ReadFormulaLong>{CMD}"f}"              { // end of custom env formula
                                           yyextra->formulaText+="\\end";
                                           yyextra->formulaText+=yyextra->formulaEnv;
                                           addOutput(yyscanner," "+addFormula(yyscanner));
                                           BEGIN(Comment);
-                                          }
+                                        }
 <ReadFormulaLong,ReadFormulaShort>[^\\@\n]+ { // any non-special character
                                           yyextra->formulaText+=yytext;
-                                         }
-<ReadFormulaLong,ReadFormulaShort>\n        { // new line
+                                        }
+<ReadFormulaLong,ReadFormulaShort>\n    { // new line
                                           yyextra->formulaNewLines++;
                                           yyextra->formulaText+=*yytext;
                                           yyextra->lineNr++;
@@ -942,77 +942,80 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ------------ handle argument of enum command --------------- */
 
-<EnumDocArg1>{SCOPEID}                        { // handle argument
-                                            yyextra->current->name = yytext;
+<EnumDocArg1>{SCOPEID}                  { // handle argument
+                                          yyextra->current->name = yytext;
                                           BEGIN( Comment );
-                                          }
-<EnumDocArg1>{LC}                        { // line continuation
-                                            yyextra->lineNr++;
+                                        }
+<EnumDocArg1>{LC}                       { // line continuation
+                                          yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<EnumDocArg1>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+<EnumDocArg1>{DOCNL}                    { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after \\enum."
                                               );
-                                          addOutput(yyscanner,'\n');
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          unput('\n');
+                                          //addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
                                           BEGIN( Comment );
-                                          }
-<EnumDocArg1>.                                { // ignore other stuff
-                                          }
+                                        }
+<EnumDocArg1>.                          { // ignore other stuff
+                                        }
 
   /* ------------ handle argument of namespace command --------------- */
 
-<NameSpaceDocArg1>{SCOPENAME}                { // handle argument
-                                            yyextra->current->name = substitute(yytext,".","::");
+<NameSpaceDocArg1>{SCOPENAME}           { // handle argument
+                                          yyextra->current->name = substitute(yytext,".","::");
                                           BEGIN( Comment );
-                                          }
-<NameSpaceDocArg1>{LC}                        { // line continuation
+                                        }
+<NameSpaceDocArg1>{LC}                  { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<NameSpaceDocArg1>{DOCNL}                { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+<NameSpaceDocArg1>{DOCNL}               { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after "
                                                "\\namespace."
                                               );
-                                          addOutput(yyscanner,'\n');
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          unput('\n');
+                                          //addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
                                           BEGIN( Comment );
-                                          }
-<NameSpaceDocArg1>.                        { // ignore other stuff
-                                          }
+                                        }
+<NameSpaceDocArg1>.                     { // ignore other stuff
+                                        }
 
   /* ------------ handle argument of package command --------------- */
 
-<PackageDocArg1>{ID}("."{ID})*                { // handle argument
-                                            yyextra->current->name = yytext;
+<PackageDocArg1>{ID}("."{ID})*          { // handle argument
+                                          yyextra->current->name = yytext;
                                           BEGIN( Comment );
-                                          }
-<PackageDocArg1>{LC}                        { // line continuation
+                                        }
+<PackageDocArg1>{LC}                    { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<PackageDocArg1>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+<PackageDocArg1>{DOCNL}                 { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after "
                                                "\\package."
                                               );
-                                          addOutput(yyscanner,'\n');
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          unput('\n');
+                                          //addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
                                           BEGIN( Comment );
-                                          }
-<PackageDocArg1>.                        { // ignore other stuff
-                                          }
+                                        }
+<PackageDocArg1>.                       { // ignore other stuff
+                                        }
 
   /* ------ handle argument of class/struct/union command --------------- */
 
 <ClassDocArg1>{SCOPENAME}{TMPLSPEC}     {
-                                            yyextra->current->name = substitute(removeRedundantWhiteSpace(yytext),".","::");
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(yytext),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
-<ClassDocArg1>{SCOPENAME}                { // first argument
-                                            yyextra->current->name = substitute(yytext,".","::");
+<ClassDocArg1>{SCOPENAME}               { // first argument
+                                          yyextra->current->name = substitute(yytext,".","::");
                                           if (yyextra->current->section==Entry::PROTOCOLDOC_SEC)
                                           {
                                             yyextra->current->name+="-p";
@@ -1021,94 +1024,98 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN( ClassDocArg2 );
                                         }
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
-                                            yyextra->current->name = substitute(yytext,".","::");
+                                          yyextra->current->name = substitute(yytext,".","::");
                                           BEGIN( ClassDocArg2 );
-                                           }
+                                        }
 <ClassDocArg1,CategoryDocArg1>{LC}      { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<ClassDocArg1,CategoryDocArg1>{DOCNL}        {
-                                            warn(yyextra->fileName,yyextra->lineNr,
+<ClassDocArg1,CategoryDocArg1>{DOCNL}   {
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after "
                                                "\\%s.",YY_START==ClassDocArg1?"class":"category"
                                               );
-                                          addOutput(yyscanner,'\n');
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          unput('\n');
                                           BEGIN( Comment );
-                                          }
-<ClassDocArg1,CategoryDocArg1>.                { // ignore other stuff
-                                          }
+                                        }
+<ClassDocArg1,CategoryDocArg1>.         { // ignore other stuff
+                                        }
 
-<ClassDocArg2>{FILE}|"<>"                { // second argument; include file
+<ClassDocArg2>{FILE}|"<>"               { // second argument; include file
                                           yyextra->current->includeFile = yytext;
                                           BEGIN( ClassDocArg3 );
                                         }
-<ClassDocArg2>{LC}                        { // line continuation
+<ClassDocArg2>{LC}                      { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<ClassDocArg2>{DOCNL}                        {
-                                          addOutput(yyscanner,'\n');
-                                            if (*yytext=='\n') yyextra->lineNr++;
+<ClassDocArg2>{DOCNL}                   {
+                                          //addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          unput('\n');
                                           BEGIN( Comment );
                                         }
-<ClassDocArg2>.                                { // ignore other stuff
-                                          }
+<ClassDocArg2>.                         { // ignore other stuff
+                                        }
 
-<ClassDocArg3>[<"]?{FILE}?[">]?                { // third argument; include file name
-                                           yyextra->current->includeName = yytext;
+<ClassDocArg3>[<"]?{FILE}?[">]?         { // third argument; include file name
+                                          yyextra->current->includeName = yytext;
                                           BEGIN( Comment );
                                         }
-<ClassDocArg3>{LC}                        { // line continuation
+<ClassDocArg3>{LC}                      { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<ClassDocArg3>{DOCNL}                        {
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                            BEGIN( Comment );
+<ClassDocArg3>{DOCNL}                   {
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          unput('\n');
+                                          BEGIN( Comment );
                                         }
-<ClassDocArg3>.                                { // ignore other stuff
-                                          }
+<ClassDocArg3>.                         { // ignore other stuff
+                                        }
 
   /* --------- handle arguments of {def,add,weak}group commands --------- */
 
-<GroupDocArg1>{LABELID}(".html"?)        { // group name
-                                            yyextra->current->name = yytext;
+<GroupDocArg1>{LABELID}(".html"?)       { // group name
+                                           yyextra->current->name = yytext;
                                           //lastDefGroup.groupname = yytext;
                                           //lastDefGroup.pri = yyextra->current->groupingPri();
-                                            // the .html stuff is for Qt compatibility
+                                          // the .html stuff is for Qt compatibility
                                           if (yyextra->current->name.right(5)==".html")
                                           {
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-5);
                                           }
                                           yyextra->current->type.resize(0);
                                           BEGIN(GroupDocArg2);
-                                          }
-<GroupDocArg1>"\\"{B}*"\n"                { // line continuation
-                                            yyextra->lineNr++;
+                                        }
+<GroupDocArg1>"\\"{B}*"\n"              { // line continuation
+                                          yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<GroupDocArg1>{DOCNL}                        { // missing argument!
-                                            warn(yyextra->fileName,yyextra->lineNr,
+<GroupDocArg1>{DOCNL}                   { // missing argument!
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                                "missing group name after %s",
                                                yyextra->current->groupDocCmd()
                                               );
-                                          addOutput(yyscanner,'\n');
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          unput('\n');
                                           BEGIN( Comment );
-                                          }
-<GroupDocArg1>.                                { // ignore other stuff
-                                          }
-<GroupDocArg2>"\\"{B}*"\n"                { // line continuation
-                                            yyextra->lineNr++;
+                                        }
+<GroupDocArg1>.                         { // ignore other stuff
+                                        }
+<GroupDocArg2>"\\"{B}*"\n"              { // line continuation
+                                          yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<GroupDocArg2>[^\n\\]+                        { // title (stored in type)
+<GroupDocArg2>[^\n\\]+                  { // title (stored in type)
                                           yyextra->current->type += yytext;
                                           yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                         }
-<GroupDocArg2>{DOCNL}                        {
+<GroupDocArg2>{DOCNL}                   {
                                           if ( yyextra->current->groupDocType==Entry::GROUPDOC_NORMAL &&
                                                yyextra->current->type.isEmpty()
                                              ) // defgroup requires second argument
@@ -1118,10 +1125,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                                  "\\defgroup %s", yyextra->current->name.data()
                                                 );
                                           }
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+                                          unput('\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
-                                          }
+                                        }
 <GroupDocArg2>.                         { // title (stored in type)
                                           yyextra->current->type += yytext;
                                           yyextra->current->type = yyextra->current->type.stripWhiteSpace();
@@ -1129,38 +1137,40 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* --------- handle arguments of page/mainpage command ------------------- */
 
-<PageDocArg1>{FILE}                        { // first argument; page name
+<PageDocArg1>{FILE}                     { // first argument; page name
                                           yyextra->current->name = stripQuotes(yytext);
                                           yyextra->current->args = "";
                                           BEGIN( PageDocArg2 );
                                         }
-<PageDocArg1>{LC}                        { yyextra->lineNr++;
+<PageDocArg1>{LC}                       { yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<PageDocArg1>{DOCNL}                        {
+<PageDocArg1>{DOCNL}                    {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after "
                                                "\\page."
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
-                                          BEGIN( Comment );
-                                          }
-<PageDocArg1>.                                { // ignore other stuff
-                                          }
-<PageDocArg2>{DOCNL}                        { // second argument; page title
-                                          if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+                                          unput('\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
-<PageDocArg2>{CMD}[<>]                       {
+<PageDocArg1>.                          { // ignore other stuff
+                                        }
+<PageDocArg2>{DOCNL}                    { // second argument; page title
+                                          unput('\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
+                                          BEGIN( Comment );
+                                        }
+<PageDocArg2>{CMD}[<>]                  {
                                           // bug 748927
                                           QCString tmp = yytext;
                                           tmp = substitute(substitute(tmp,"@<","&lt;"),"@>","&gt;");
                                           tmp = substitute(substitute(tmp,"\\<","&lt;"),"\\>","&gt;");
                                           yyextra->current->args += tmp;
                                         }
-<PageDocArg2>.                                {
+<PageDocArg2>.                          {
                                           yyextra->current->args += yytext;
                                         }
   /* --------- handle arguments of the param command ------------ */
@@ -1181,262 +1191,265 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* --------- handle arguments of the file/dir/example command ------------ */
 
-<FileDocArg1>{DOCNL}                        { // no file name specified
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+<FileDocArg1>{DOCNL}                    { // no file name specified
+                                          unput('\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
-<FileDocArg1>{FILE}                        { // first argument; name
-                                            yyextra->current->name = stripQuotes(yytext);
+<FileDocArg1>{FILE}                     { // first argument; name
+                                          yyextra->current->name = stripQuotes(yytext);
                                           BEGIN( Comment );
-                                          }
-<FileDocArg1>{LC}                        { yyextra->lineNr++;
+                                        }
+<FileDocArg1>{LC}                       { yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<FileDocArg1>.                                { // ignore other stuff
-                                          }
+<FileDocArg1>.                          { // ignore other stuff
+                                        }
 
   /* --------- handle arguments of the xrefitem command ------------ */
 
-<XRefItemParam1>{LABELID}                { // first argument
-                                            yyextra->newXRefItemKey=yytext;
+<XRefItemParam1>{LABELID}               { // first argument
+                                          yyextra->newXRefItemKey=yytext;
                                           setOutput(yyscanner,OutputXRef);
                                           BEGIN(XRefItemParam2);
                                         }
-<XRefItemParam1>{LC}                        { // line continuation
+<XRefItemParam1>{LC}                    { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<XRefItemParam1>{DOCNL}                        { // missing arguments
-                                            warn(yyextra->fileName,yyextra->lineNr,
+<XRefItemParam1>{DOCNL}                 { // missing arguments
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                                "Missing first argument of \\xrefitem"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           yyextra->inContext = OutputDoc;
                                           BEGIN( Comment );
-                                          }
-<XRefItemParam1>.                        { // ignore other stuff
-                                          }
+                                        }
+<XRefItemParam1>.                       { // ignore other stuff
+                                        }
 
 <XRefItemParam2>"\""[^\n\"]*"\""        { // second argument
-                                            yyextra->xrefItemTitle = stripQuotes(yytext);
+                                          yyextra->xrefItemTitle = stripQuotes(yytext);
                                           BEGIN(XRefItemParam3);
-                                          }
-<XRefItemParam2>{LC}                        { // line continuation
+                                        }
+<XRefItemParam2>{LC}                    { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          }
-<XRefItemParam2>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<XRefItemParam2>{DOCNL}                 { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "Missing second argument of \\xrefitem"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           yyextra->inContext = OutputDoc;
                                           BEGIN( Comment );
-                                          }
-<XRefItemParam2>.                        { // ignore other stuff
-                                          }
+                                        }
+<XRefItemParam2>.                       { // ignore other stuff
+                                        }
 
 <XRefItemParam3>"\""[^\n\"]*"\""        { // third argument
-                                            yyextra->xrefListTitle = stripQuotes(yytext);
+                                          yyextra->xrefListTitle = stripQuotes(yytext);
                                           yyextra->xrefKind = XRef_Item;
                                           BEGIN( Comment );
-                                          }
-<XRefItemParam2,XRefItemParam3>{LC}        { // line continuation
+                                        }
+<XRefItemParam2,XRefItemParam3>{LC}     { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          }
-<XRefItemParam3>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<XRefItemParam3>{DOCNL}                 { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "Missing third argument of \\xrefitem"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           yyextra->inContext = OutputDoc;
                                           BEGIN( Comment );
-                                          }
-<XRefItemParam3>.                        { // ignore other stuff
-                                          }
+                                        }
+<XRefItemParam3>.                       { // ignore other stuff
+                                        }
 
 
   /* ----- handle arguments of the relates(also)/memberof command ------- */
 
-<RelatesParam1>({ID}("::"|"."))*{ID}        { // argument
-                                            yyextra->current->relates = yytext;
+<RelatesParam1>({ID}("::"|"."))*{ID}    { // argument
+                                          yyextra->current->relates = yytext;
                                           //if (yyextra->current->mGrpId!=DOX_NOGROUP)
                                           //{
                                           //  memberGroupRelates = yytext;
                                           //}
                                           BEGIN( Comment );
                                         }
-<RelatesParam1>{LC}                        { // line continuation
+<RelatesParam1>{LC}                     { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          }
-<RelatesParam1>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<RelatesParam1>{DOCNL}                  { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "Missing argument of \\relates or \\memberof command"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+                                          unput('\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
-                                          }
+                                        }
 <RelatesParam1>.                        { // ignore other stuff
-                                          }
+                                        }
 
 
   /* ----- handle arguments of the relates(also)/addindex commands ----- */
 
-<LineParam>{DOCNL}                        { // end of argument
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+<LineParam>{DOCNL}                      { // end of argument
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
+                                          unput('\n');
                                           BEGIN( Comment );
-                                          }
-<LineParam>{LC}                                { // line continuation
+                                        }
+<LineParam>{LC}                         { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          }
-<LineParam>.                                { // ignore other stuff
-                                            addOutput(yyscanner,*yytext);
-                                          }
+                                        }
+<LineParam>.                            { // ignore other stuff
+                                          addOutput(yyscanner,*yytext);
+                                        }
 
   /* ----- handle arguments of the section/subsection/.. commands ------- */
 
-<SectionLabel>{LABELID}                        { // first argument
-                                            yyextra->sectionLabel=yytext;
+<SectionLabel>{LABELID}                 { // first argument
+                                          yyextra->sectionLabel=yytext;
                                           addOutput(yyscanner,yytext);
                                           yyextra->sectionTitle.resize(0);
                                           BEGIN(SectionTitle);
-                                          }
-<SectionLabel>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<SectionLabel>{DOCNL}                   { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "\\section command has no label"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
-                                          }
-<SectionLabel>.                                { // invalid character for section label
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<SectionLabel>.                         { // invalid character for section label
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing section label"
                                               );
                                           BEGIN(Comment);
-                                          }
+                                        }
 <SectionTitle>[^\n@\\*]*/"\n"           { // end of section title
-                                            addSection(yyscanner);
+                                          addSection(yyscanner);
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
-                                          }
+                                        }
 <SectionTitle>[^\n@\\]*/"\\_linebr"     { // end of section title
-                                            addSection(yyscanner);
+                                          addSection(yyscanner);
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
-                                          }
-<SectionTitle>{LC}                        { // line continuation
+                                        }
+<SectionTitle>{LC}                      { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          }
-<SectionTitle>[^\n@\\]*                        { // any character without special meaning
-                                            yyextra->sectionTitle+=yytext;
+                                        }
+<SectionTitle>[^\n@\\]*                 { // any character without special meaning
+                                          yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,yytext);
-                                          }
-<SectionTitle>({CMD}{CMD}){ID}                { // unescape escaped command
-                                            yyextra->sectionTitle+=&yytext[1];
+                                        }
+<SectionTitle>({CMD}{CMD}){ID}          { // unescape escaped command
+                                          yyextra->sectionTitle+=&yytext[1];
                                           addOutput(yyscanner,yytext);
-                                          }
-<SectionTitle>{CMD}[$@\\&~<>#%]                { // unescape escaped character
-                                            yyextra->sectionTitle+=yytext[1];
-                                            addOutput(yyscanner,yytext);
-                                          }
-<SectionTitle>.                                { // anything else
-                                            yyextra->sectionTitle+=yytext;
+                                        }
+<SectionTitle>{CMD}[$@\\&~<>#%]         { // unescape escaped character
+                                          yyextra->sectionTitle+=yytext[1];
+                                          addOutput(yyscanner,yytext);
+                                        }
+<SectionTitle>.                         { // anything else
+                                          yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,*yytext);
-                                          }
+                                        }
 
   /* ----- handle arguments of the subpage command ------- */
 
-<SubpageLabel>{LABELID}                        { // first argument
+<SubpageLabel>{LABELID}                 { // first argument
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.
                                           yyextra->current->extends.push_back(BaseInfo(yytext,Public,Normal));
                                           BEGIN(SubpageTitle);
-                                          }
-<SubpageLabel>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<SubpageLabel>{DOCNL}                   { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "\\subpage command has no label"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
-                                          }
-<SubpageTitle>{DOCNL}                        { // no title, end command
-                                            addOutput(yyscanner,yytext);
+                                        }
+<SubpageTitle>{DOCNL}                   { // no title, end command
+                                          addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
-                                          }
-<SubpageTitle>[ \t]*"\""[^\"\n]*"\""        { // add title, end of command
-                                            addOutput(yyscanner,yytext);
+                                        }
+<SubpageTitle>[ \t]*"\""[^\"\n]*"\""    { // add title, end of command
+                                          addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
-                                          }
-<SubpageTitle>.                                { // no title, end of command
-                                            unput(*yytext);
+                                        }
+<SubpageTitle>.                         { // no title, end of command
+                                          unput(*yytext);
                                           BEGIN( Comment );
-                                          }
+                                        }
 
   /* ----- handle arguments of the anchor command ------- */
 
-<AnchorLabel>{LABELID}                        { // found argument
+<AnchorLabel>{LABELID}                  { // found argument
                                           addAnchor(yyscanner,yytext);
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
-                                          }
-<AnchorLabel>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<AnchorLabel>{DOCNL}                    { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "\\anchor command has no label"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
-                                          }
-<AnchorLabel>.                                { // invalid character for anchor label
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<AnchorLabel>.                          { // invalid character for anchor label
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing anchor label"
                                               );
                                           BEGIN(Comment);
-                                          }
+                                        }
 
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
 <FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc"|"endvhdlflow")/{NW} { // possible ends
-                                            addOutput(yyscanner,yytext);
+                                          addOutput(yyscanner,yytext);
                                           if (&yytext[4]==yyextra->blockName) // found end of the block
                                           {
                                               BEGIN(Comment);
                                           }
-                                          }
+                                        }
 <FormatBlock>{CMD}"enduml"              {
-                                            addOutput(yyscanner,yytext);
+                                          addOutput(yyscanner,yytext);
                                           if (yyextra->blockName=="startuml") // found end of the block
                                           {
                                               BEGIN(Comment);
                                           }
                                         }
-<FormatBlock>[^ \@\*\/\\\n]*                { // some word
-                                            addOutput(yyscanner,yytext);
-                                          }
-<FormatBlock>{DOCNL}                        { // new line
-                                            if (*yytext=='\n') yyextra->lineNr++;
+<FormatBlock>[^ \@\*\/\\\n]*            { // some word
+                                          addOutput(yyscanner,yytext);
+                                        }
+<FormatBlock>{DOCNL}                    { // new line
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          }
-<FormatBlock>"/*"                        { // start of a C-comment
+                                        }
+<FormatBlock>"/*"                       { // start of a C-comment
                                           if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim")) yyextra->commentCount++;
-                                            addOutput(yyscanner,yytext);
-                                          }
-<FormatBlock>"*/"                        { // end of a C-comment
-                                            addOutput(yyscanner,yytext);
+                                          addOutput(yyscanner,yytext);
+                                        }
+<FormatBlock>"*/"                       { // end of a C-comment
+                                          addOutput(yyscanner,yytext);
                                           if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim"))
                                           {
                                             yyextra->commentCount--;
@@ -1445,12 +1458,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               warn(yyextra->fileName,yyextra->lineNr,
                                                  "found */ without matching /* while inside a \\%s block! Perhaps a missing \\end%s?\n",yyextra->blockName.data(),yyextra->blockName.data());
                                             }
-                                            }
                                           }
-<FormatBlock>.                                {
-                                            addOutput(yyscanner,*yytext);
-                                          }
-<FormatBlock><<EOF>>                        {
+                                        }
+<FormatBlock>.                          {
+                                          addOutput(yyscanner,*yytext);
+                                        }
+<FormatBlock><<EOF>>                    {
                                           QCString endTag = "end"+yyextra->blockName;
                                           if (yyextra->blockName=="startuml") endTag="enduml";
                                           warn(yyextra->fileName,yyextra->lineNr,
@@ -1458,11 +1471,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             yyextra->blockName.data(),endTag.data()
                                           );
                                           yyterminate();
-                                            }
+                                        }
 
   /* ----- handle arguments of if/ifnot commands ------- */
 
-<GuardParam>{B}*"("                         {
+<GuardParam>{B}*"("                     {
                                           yyextra->guardExpr=yytext;
                                           yyextra->roundCount=1;
                                           BEGIN(GuardExpr);
@@ -1488,52 +1501,52 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           unput(*yytext);
                                           BEGIN(GuardParam);
                                         }
-<GuardParam>{B}*[a-z_A-Z0-9.\-]+            { // parameter of if/ifnot yyextra->guards
+<GuardParam>{B}*[a-z_A-Z0-9.\-]+        { // parameter of if/ifnot yyextra->guards
                                           handleGuard(yyscanner,yytext);
-                                          }
-<GuardParam>{DOCNL}                        { // end of argument
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                        }
+<GuardParam>{DOCNL}                     { // end of argument
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
-                                          }
+                                        }
 <GuardParam>{LC}                        { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          }
-<GuardParam>.                                { // ignore other stuff
-                                            addOutput(yyscanner,*yytext);
-                                          }
-<GuardParamEnd>{B}*{DOCNL}                {
-                                            lineCount(yyscanner);
-                                            yyextra->spaceBeforeIf.resize(0);
-                                            BEGIN(Comment);
-                                          }
-<GuardParamEnd>{B}*                        {
-                                            if (!yyextra->spaceBeforeIf.isEmpty()) // needed for 665313 in combination with bug620924
+                                        }
+<GuardParam>.                           { // ignore other stuff
+                                          addOutput(yyscanner,*yytext);
+                                        }
+<GuardParamEnd>{B}*{DOCNL}              {
+                                          lineCount(yyscanner);
+                                          yyextra->spaceBeforeIf.resize(0);
+                                          BEGIN(Comment);
+                                        }
+<GuardParamEnd>{B}*                     {
+                                          if (!yyextra->spaceBeforeIf.isEmpty()) // needed for 665313 in combination with bug620924
                                           {
                                             addOutput(yyscanner,yyextra->spaceBeforeIf);
                                           }
-                                            yyextra->spaceBeforeIf.resize(0);
-                                            BEGIN(Comment);
-                                          }
+                                          yyextra->spaceBeforeIf.resize(0);
+                                          BEGIN(Comment);
+                                        }
 <GuardParamEnd>.                        {
-                                            unput(*yytext);
-                                            BEGIN(Comment);
-                                          }
+                                          unput(*yytext);
+                                          BEGIN(Comment);
+                                        }
 
   /* ----- handle skipping of conditional sections ------- */
 
-<SkipGuardedSection>{CMD}"ifnot"/{NW}        {
+<SkipGuardedSection>{CMD}"ifnot"/{NW}   {
                                           yyextra->guardType = Guard_IfNot;
-                                            BEGIN( GuardParam );
-                                          }
-<SkipGuardedSection>{CMD}"if"/{NW}        {
+                                          BEGIN( GuardParam );
+                                        }
+<SkipGuardedSection>{CMD}"if"/{NW}      {
                                           yyextra->guardType = Guard_If;
-                                            BEGIN( GuardParam );
-                                          }
-<SkipGuardedSection>{CMD}"endif"/{NW}        {
-                                            if (yyextra->guards.empty())
+                                          BEGIN( GuardParam );
+                                        }
+<SkipGuardedSection>{CMD}"endif"/{NW}   {
+                                          if (yyextra->guards.empty())
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\endif without matching start command");
@@ -1549,9 +1562,9 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               BEGIN( GuardParamEnd );
                                             }
                                           }
-                                          }
-<SkipGuardedSection>{CMD}"else"/{NW}        {
-                                            if (yyextra->guards.empty())
+                                        }
+<SkipGuardedSection>{CMD}"else"/{NW}    {
+                                          if (yyextra->guards.empty())
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\else without matching start command");
@@ -1566,9 +1579,9 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               BEGIN( GuardParamEnd );
                                             }
                                           }
-                                          }
+                                        }
 <SkipGuardedSection>{CMD}"elseif"/{NW}  {
-                                            if (yyextra->guards.empty())
+                                          if (yyextra->guards.empty())
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\elseif without matching start command");
@@ -1582,162 +1595,165 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               BEGIN( GuardParam );
                                             }
                                           }
-                                          }
-<SkipGuardedSection>{DOCNL}                { // skip line
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                        }
+<SkipGuardedSection>{DOCNL}             { // skip line
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
-                                          }
-<SkipGuardedSection>[^ \\@\n]+                { // skip non-special characters
-                                          }
-<SkipGuardedSection>.                        { // any other character
-                                          }
+                                        }
+<SkipGuardedSection>[^ \\@\n]+          { // skip non-special characters
+                                        }
+<SkipGuardedSection>.                   { // any other character
+                                        }
 
 
   /* ----- handle skipping of internal section ------- */
 
-<SkipInternal>{DOCNL}                        { // skip line
-                                            if (*yytext=='\n') yyextra->lineNr++;
+<SkipInternal>{DOCNL}                   { // skip line
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          }
-<SkipInternal>[@\\]"if"/[ \t]                {
+                                        }
+<SkipInternal>[@\\]"if"/[ \t]           {
                                           yyextra->condCount++;
                                           }
 <SkipInternal>[@\\]"ifnot"/[ \t]        {
                                           yyextra->condCount++;
-                                          }
-<SkipInternal>[@\\]/"endif"                {
+                                        }
+<SkipInternal>[@\\]/"endif"             {
                                           yyextra->condCount--;
                                           if (yyextra->condCount<0) // handle conditional section around of \internal, see bug607743
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
-                                          }
-<SkipInternal>[@\\]/"section"[ \t]        {
-                                            if (yyextra->sectionLevel>0)
+                                        }
+<SkipInternal>[@\\]/"section"[ \t]      {
+                                          if (yyextra->sectionLevel>0)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
-                                          }
-<SkipInternal>[@\\]/"subsection"[ \t]        {
-                                            if (yyextra->sectionLevel>1)
+                                        }
+<SkipInternal>[@\\]/"subsection"[ \t]   {
+                                          if (yyextra->sectionLevel>1)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
-                                          }
-<SkipInternal>[@\\]/"subsubsection"[ \t]        {
-                                            if (yyextra->sectionLevel>2)
+                                        }
+<SkipInternal>[@\\]/"subsubsection"[ \t] {
+                                          if (yyextra->sectionLevel>2)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
-                                          }
-<SkipInternal>[@\\]/"paragraph"[ \t]        {
-                                            if (yyextra->sectionLevel>3)
+                                        }
+<SkipInternal>[@\\]/"paragraph"[ \t]    {
+                                          if (yyextra->sectionLevel>3)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
-                                          }
+                                        }
 <SkipInternal>[@\\]"endinternal"[ \t]*  {
                                           BEGIN(Comment);
                                         }
 <SkipInternal>[^ \\@\n]+                { // skip non-special characters
-                                          }
-<SkipInternal>.                                { // any other character
-                                          }
+                                        }
+<SkipInternal>.                         { // any other character
+                                        }
 
 
   /* ----- handle argument of name command ------- */
 
-<NameParam>{DOCNL}                        { // end of argument
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+<NameParam>{DOCNL}                      { // end of argument
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
+                                          unput('\n');
                                           BEGIN( Comment );
-                                          }
-<NameParam>{LC}                                { // line continuation
+                                        }
+<NameParam>{LC}                         { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           yyextra->docGroup.appendHeader(' ');
-                                          }
-<NameParam>.                                { // ignore other stuff
+                                        }
+<NameParam>.                            { // ignore other stuff
                                           yyextra->docGroup.appendHeader(*yytext);
                                           yyextra->current->name+=*yytext;
-                                          }
+                                        }
 
   /* ----- handle argument of noop command ------- */
-<Noop>{DOCNL}                                { // end of argument
+<Noop>{DOCNL}                           { // end of argument
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
-<Noop>.                                        { // ignore other stuff
+<Noop>.                                 { // ignore other stuff
                                         }
   /* ----- handle argument of ingroup command ------- */
 
-<InGroupParam>{LABELID}                        { // group id
-                                            yyextra->current->groups.push_back(
+<InGroupParam>{LABELID}                 { // group id
+                                          yyextra->current->groups.push_back(
                                              Grouping(yytext, Grouping::GROUPING_INGROUP)
                                           );
                                           yyextra->inGroupParamFound=TRUE;
-                                          }
-<InGroupParam>{DOCNL}                        { // missing argument
-                                            if (!yyextra->inGroupParamFound)
+                                        }
+<InGroupParam>{DOCNL}                   { // missing argument
+                                          if (!yyextra->inGroupParamFound)
                                           {
-                                              warn(yyextra->fileName,yyextra->lineNr,
+                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "Missing group name for \\ingroup command"
                                                 );
                                           }
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
+                                          unput('\n');
                                           BEGIN( Comment );
-                                          }
-<InGroupParam>{LC}                        { // line continuation
+                                        }
+<InGroupParam>{LC}                      { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          }
-<InGroupParam>.                                { // ignore other stuff
-                                            addOutput(yyscanner,*yytext);
-                                          }
+                                        }
+<InGroupParam>.                         { // ignore other stuff
+                                          addOutput(yyscanner,*yytext);
+                                        }
 
   /* ----- handle argument of fn command ------- */
 
 <FnParam>{DOCNL}                        { // end of argument
-                                            if (yyextra->braceCount==0)
+                                          if (yyextra->braceCount==0)
                                           {
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                            addOutput(yyscanner,'\n');
+                                            //if (*yytext=='\n') yyextra->lineNr++;
+                                            //addOutput(yyscanner,'\n');
+                                            unput('\n');
                                             yyextra->langParser->parsePrototype(yyextra->functionProto);
                                             BEGIN( Comment );
                                           }
-                                          }
-<FnParam>{LC}                                { // line continuation
+                                        }
+<FnParam>{LC}                           { // line continuation
                                           yyextra->lineNr++;
                                           yyextra->functionProto+=' ';
-                                          }
-<FnParam>[^@\\\n()]+                        { // non-special characters
+                                        }
+<FnParam>[^@\\\n()]+                    { // non-special characters
                                           yyextra->functionProto+=yytext;
-                                          }
-<FnParam>"("                                {
+                                        }
+<FnParam>"("                            {
                                           yyextra->functionProto+=yytext;
                                           yyextra->braceCount++;
                                         }
-<FnParam>")"                                {
+<FnParam>")"                            {
                                           yyextra->functionProto+=yytext;
                                           yyextra->braceCount--;
                                         }
-<FnParam>.                                { // add other stuff
+<FnParam>.                              { // add other stuff
                                           yyextra->functionProto+=*yytext;
-                                          }
+                                        }
 
 
   /* ----- handle argument of overload command ------- */
 
 
-<OverloadParam>{DOCNL}                        { // end of argument
-                                            if (*yytext=='\n') yyextra->lineNr++;
+<OverloadParam>{DOCNL}                  { // end of argument
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           if (yyextra->functionProto.stripWhiteSpace().isEmpty())
                                           { // plain overload command
                                             addOutput(yyscanner,getOverloadDocs());
@@ -1749,117 +1765,119 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             yyextra->langParser->parsePrototype(yyextra->functionProto);
                                           }
                                           BEGIN( Comment );
-                                          }
-<OverloadParam>{LC}                        { // line continuation
+                                        }
+<OverloadParam>{LC}                     { // line continuation
                                           yyextra->lineNr++;
                                           yyextra->functionProto+=' ';
-                                          }
+                                        }
 <OverloadParam>.                        { // add other stuff
                                           yyextra->functionProto+=*yytext;
-                                          }
+                                        }
 
   /* ----- handle argument of inherit command ------- */
 
-<InheritParam>({ID}("::"|"."))*{ID}        { // found argument
+<InheritParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
                                             BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
                                           );
                                           BEGIN( Comment );
-                                          }
-<InheritParam>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<InheritParam>{DOCNL}                   { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "\\inherit command has no argument"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
-                                          }
-<InheritParam>.                                { // invalid character for anchor label
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<InheritParam>.                         { // invalid character for anchor label
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing name for \\inherit command"
                                               );
                                           BEGIN(Comment);
-                                          }
+                                        }
 
   /* ----- handle argument of extends and implements commands ------- */
 
-<ExtendsParam>({ID}("::"|"."))*{ID}        { // found argument
+<ExtendsParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
                                             BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
                                           );
                                           BEGIN( Comment );
-                                          }
-<ExtendsParam>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<ExtendsParam>{DOCNL}                   { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "\\extends or \\implements command has no argument"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
+                                          unput('\n');
                                           BEGIN( Comment );
-                                          }
-<ExtendsParam>.                                { // ignore other stuff
-                                          }
+                                        }
+<ExtendsParam>.                         { // ignore other stuff
+                                        }
 
   /* ----- handle language specific sections ------- */
 
-<SkipLang>[\\@]"~"[a-zA-Z-]*        { /* language switch */
-                                     QCString langId = &yytext[2];
-                                     if (langId.isEmpty() ||
-                                         qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)==0)
-                                     { // enable language specific section
-                                       BEGIN(Comment);
-                                     }
-                                   }
-<SkipLang>[^*@\\\n]*                   { /* any character not a *, @, backslash or new line */
-                                   }
-<SkipLang>{DOCNL}                   { /* new line in verbatim block */
-                                       if (*yytext=='\n') yyextra->lineNr++;
-                                   }
-<SkipLang>.                           { /* any other character */
-                                   }
+<SkipLang>[\\@]"~"[a-zA-Z-]*            { /* language switch */
+                                          QCString langId = &yytext[2];
+                                          if (langId.isEmpty() ||
+                                              qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)==0)
+                                          { // enable language specific section
+                                            BEGIN(Comment);
+                                          }
+                                        }
+<SkipLang>[^*@\\\n]*                    { /* any character not a *, @, backslash or new line */
+                                        }
+<SkipLang>{DOCNL}                       { /* new line in verbatim block */
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                        }
+<SkipLang>.                             { /* any other character */
+                                        }
 
   /* ----- handle arguments of the cite command ------- */
 
-<CiteLabel>{CITEID}                        { // found argument
-                                            addCite(yyscanner);
+<CiteLabel>{CITEID}                     { // found argument
+                                          addCite(yyscanner);
                                           addOutput(yyscanner,yytext);
                                           BEGIN(Comment);
-                                          }
-<CiteLabel>{DOCNL}                        { // missing argument
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<CiteLabel>{DOCNL}                      { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
                                               "\\cite command has no label"
                                               );
-                                            if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          //addOutput(yyscanner,'\n');
+                                          unput('\n');
                                           BEGIN( Comment );
-                                          }
-<CiteLabel>.                                { // invalid character for cite label
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                        }
+<CiteLabel>.                            { // invalid character for cite label
+                                           warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing cite label"
                                               );
                                           BEGIN(Comment);
-                                          }
+                                        }
 
   /* ----- handle argument of the copydoc command ------- */
 
 <CopyDoc><<EOF>>                        |
 <CopyDoc>{DOCNL}                        {
-                                            if (*yytext=='\n') yyextra->lineNr++;
+                                          if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner," \\copydetails ");
                                           addOutput(yyscanner,yyextra->copyDocArg);
                                           addOutput(yyscanner,"\n");
                                           BEGIN(Comment);
-                                          }
-<CopyDoc>[^\n\\]+                        {
-                                            yyextra->copyDocArg+=yytext;
+                                        }
+<CopyDoc>[^\n\\]+                       {
+                                          yyextra->copyDocArg+=yytext;
                                           addOutput(yyscanner,yytext);
-                                          }
-<CopyDoc>.                                {
-                                            yyextra->copyDocArg+=yytext;
+                                        }
+<CopyDoc>.                              {
+                                          yyextra->copyDocArg+=yytext;
                                           addOutput(yyscanner,yytext);
-                                          }
+                                        }
 
 
 %%
