@@ -330,9 +330,9 @@ if (use_libclang)
     endif()
     include_directories(${LLVM_INCLUDE_DIRS})
     add_definitions(${LLVM_DEFINITIONS})
-    llvm_map_components_to_libnames(llvm_libs support core option)
+    llvm_map_components_to_libnames(llvm_libs support)
     target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
-    set(CLANG_LIBS libclang clangTooling ${llvm_libs})
+    set(CLANG_LIBS libclang clang-cpp ${llvm_libs})
 endif()
 
 target_link_libraries(doxygen

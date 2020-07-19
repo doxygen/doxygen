@@ -15,7 +15,7 @@ doxyapp.cpp
 add_sanitizers(doxyapp)
 
 if (use_libclang)
-    set(CLANG_LIBS libclang clangTooling ${llvm_libs})
+    set(CLANG_LIBS libclang clang-cpp ${llvm_libs})
 endif()
 
 target_link_libraries(doxyapp
