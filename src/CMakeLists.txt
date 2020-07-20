@@ -330,9 +330,14 @@ if (use_libclang)
     endif()
     include_directories(${LLVM_INCLUDE_DIRS})
     add_definitions(${LLVM_DEFINITIONS})
-    llvm_map_components_to_libnames(llvm_libs support core option)
+    if (static_libclang)
+        llvm_map_components_to_libnames(llvm_libs support core option)
+        set(CLANG_LIBS libclang clangTooling ${llvm_libs})
+    else() # dynamically linked version of clang
+        llvm_map_components_to_libnames(llvm_libs support)
+        set(CLANG_LIBS libclang clang-cpp ${llvm_libs})
+    endif()
     target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
-    set(CLANG_LIBS libclang clangTooling ${llvm_libs})
 endif()
 
 target_link_libraries(doxygen
