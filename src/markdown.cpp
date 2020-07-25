@@ -79,6 +79,15 @@
    data[i]=='\\' || \
    data[i]=='@')
 
+inline int isNewline(const char *data)
+{
+  // plain return
+  if (data[0] == '\n') return(1);
+  // doxygen return from ^^ in ALIASES
+  if (data[0] == '\\' && data[1] == '\\' && data[2] == '_' && data[3] == 'l' && data[4] == 'i' && 
+      data[5] == 'n'  && data[6] == 'e'  && data[7] == 'b' && data[8] == 'r') return(9);
+  return(0);
+}
 //----------
 
 struct TableCell
@@ -1603,8 +1612,10 @@ int findTableColumns(const char *data,int size,int &start,int &end,int &columns)
   start = i;
 
   // find end character of the table line
-  while (i<size && data[i]!='\n') i++;
-  eol=i+1;
+  int j = 0;
+  while (i<size && !(j = isNewline(data + i))) i++;
+  eol=i+j;
+
   i--;
   while (i>0 && data[i]==' ') i--;
   if (i>0 && data[i-1]!='\\' && data[i]=='|') i--,n++; // trailing or escaped | does not count
@@ -2039,7 +2050,9 @@ void Markdown::findEndOfLine(const char *data,int size,
   // find end of the line
   int nb=0;
   end=i+1;
-  while (end<=size && data[end-1]!='\n')
+  //while (end<=size && data[end-1]!='\n')
+  int j = 0;
+  while (end<=size && !(j = isNewline(data+end-1)))
   {
     // while looking for the end of the line we might encounter a block
     // that needs to be passed unprocessed.
@@ -2100,6 +2113,7 @@ void Markdown::findEndOfLine(const char *data,int size,
       end++;
     }
   }
+  if (j) end += j-1;
   //printf("findEndOfLine pi=%d i=%d end=%d {%s}\n",pi,i,end,QCString(data+i).left(end-i).data());
 }
 
