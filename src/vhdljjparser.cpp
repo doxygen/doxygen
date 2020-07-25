@@ -32,6 +32,8 @@
 #include "markdown.h"
 #include "VhdlParserTokenManager.h"
 #include "VhdlParserErrorHandler.hpp"
+#include "vhdlstring.h"
+
 
 using namespace vhdl::parser;
 
@@ -82,14 +84,36 @@ struct VHDLOutlineParser::Private
   VhdlParser::SharedState shared;
   QCString                forL;
   int code = 0;
-
 };
+
+
+ bool  checkInputString(const char* s,const char *fi,VhdlString & vhd)
+  {
+	 // allows mbstate_t in vhdlstring.h to work with UTF-8 multibyte encoding
+     setlocale(LC_CTYPE, "en_US.UTF-8");
+	 
+	 int error=vhd.charToWChar(s); 
+	
+	 if(error==EILSEQ)
+	 {
+	   QCString conf=Config_getString(INPUT_ENCODING);
+	   err("\n Invalid or incomplete multibyte or wide character found in file [ %s ] \n \
+	   the file is most likely not encoded in UTF-8 \n \
+	   check your Input Encoding: %s \n",fi,conf.data()); 
+	   return false;
+	 }
+	 return true;
+	}
 
 void VHDLOutlineParser::Private::parseVhdlfile(const char *fileName,
                                                const char* inputBuffer,bool inLine)
 {
-  JAVACC_STRING_TYPE s =inputBuffer;
-  CharStream *stream = new CharStream(s.c_str(), (int)s.size(), 1, 1);
+   
+  VhdlString vhd;
+  if(!checkInputString(inputBuffer,fileName,vhd))
+    return;
+  
+  CharStream *stream = new CharStream(vhd.c_str(), vhd.size(), 1, 1);
   VhdlParserTokenManager *tokenManager = new VhdlParserTokenManager(stream);
   VhdlTokenManagerErrorHandler *tokErrHandler=new VhdlTokenManagerErrorHandler(fileName);
   vhdlParser=new VhdlParser(tokenManager);
