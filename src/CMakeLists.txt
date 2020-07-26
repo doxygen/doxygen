@@ -322,25 +322,26 @@ if (use_libclang)
         cmake_minimum_required(VERSION 3.1)
         target_compile_features(doxymain PRIVATE cxx_alignof)
         target_compile_features(doxygen PRIVATE cxx_alignof)
-        target_compile_options(doxymain PRIVATE -stdlib=libc++)
-        target_compile_options(doxygen PRIVATE -stdlib=libc++)
+        if (use_libc++)
+            target_compile_options(doxymain PRIVATE -stdlib=libc++)
+            target_compile_options(doxygen PRIVATE -stdlib=libc++)
+        endif()
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(doxymain PRIVATE -std=c++11)
-        target_compile_options(doxygen PRIVATE -std=c++11)
+        target_compile_options(doxymain PRIVATE cxx_std_11)
+        target_compile_options(doxygen PRIVATE cxx_std_11)
     endif()
     include_directories(${LLVM_INCLUDE_DIRS})
     add_definitions(${LLVM_DEFINITIONS})
     if (static_libclang)
-        llvm_map_components_to_libnames(llvm_libs support core option)
-        set(CLANG_LIBS libclang clangTooling ${llvm_libs})
+        set(CLANG_LIBS libclang clangTooling)
     else() # dynamically linked version of clang
-        llvm_map_components_to_libnames(llvm_libs support)
-        set(CLANG_LIBS libclang clang-cpp ${llvm_libs})
+        llvm_config(doxymain USE_SHARED support)
+        set(CLANG_LIBS libclang clang-cpp)
     endif()
     target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
 endif()
 
-target_link_libraries(doxygen
+target_link_libraries(doxygen PRIVATE
     doxymain
     doxycfg
     qtools
