@@ -2540,7 +2540,7 @@ static bool handleInternal(yyscan_t yyscanner,const QCString &, const QCStringLi
 
 static bool handleLineBr(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
-  addOutput(yyscanner,"\\ilinebr");
+  addOutput(yyscanner,"\\ilinebr ");
   return FALSE;
 }
 
