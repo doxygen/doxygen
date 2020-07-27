@@ -641,7 +641,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>{B}*{CMD}"endinternal"{B}*     {
                                           addOutput(yyscanner," \\endinternal ");
                                           if (!yyextra->inInternalDocs)
-                                              warn(yyextra->fileName,yyextra->lineNr,
+                                              warn(yyextra->fileName,yyextra->lineNr + 1,
                                                "found \\endinternal without matching \\internal"
                                               );
                                           yyextra->inInternalDocs = FALSE;
@@ -951,7 +951,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <EnumDocArg1>{DOCNL}                    { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                                "missing argument after \\enum."
                                               );
                                           unput('\n');
@@ -973,7 +973,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <NameSpaceDocArg1>{DOCNL}               { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                                "missing argument after "
                                                "\\namespace."
                                               );
@@ -996,7 +996,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <PackageDocArg1>{DOCNL}                 { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                                "missing argument after "
                                                "\\package."
                                               );
@@ -1032,7 +1032,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <ClassDocArg1,CategoryDocArg1>{DOCNL}   {
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                                "missing argument after "
                                                "\\%s.",YY_START==ClassDocArg1?"class":"category"
                                               );
@@ -1096,7 +1096,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <GroupDocArg1>{DOCNL}                   { // missing argument!
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                                "missing group name after %s",
                                                yyextra->current->groupDocCmd()
                                               );
@@ -1120,7 +1120,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                                yyextra->current->type.isEmpty()
                                              ) // defgroup requires second argument
                                           {
-                                              warn(yyextra->fileName,yyextra->lineNr,
+                                              warn(yyextra->fileName,yyextra->lineNr + 1,
                                                  "missing title after "
                                                  "\\defgroup %s", yyextra->current->name.data()
                                                 );
@@ -1146,7 +1146,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <PageDocArg1>{DOCNL}                    {
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                            warn(yyextra->fileName,yyextra->lineNr + 1,
                                                "missing argument after "
                                                "\\page."
                                               );
@@ -1219,7 +1219,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <XRefItemParam1>{DOCNL}                 { // missing arguments
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                                "Missing first argument of \\xrefitem"
                                               );
                                           if (*yytext=='\n') yyextra->lineNr++;
@@ -1239,7 +1239,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <XRefItemParam2>{DOCNL}                 { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "Missing second argument of \\xrefitem"
                                               );
                                           if (*yytext=='\n') yyextra->lineNr++;
@@ -1260,7 +1260,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <XRefItemParam3>{DOCNL}                 { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "Missing third argument of \\xrefitem"
                                               );
                                           if (*yytext=='\n') yyextra->lineNr++;
@@ -1287,7 +1287,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,'\n');
                                         }
 <RelatesParam1>{DOCNL}                  { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "Missing argument of \\relates or \\memberof command"
                                               );
                                           unput('\n');
@@ -1324,7 +1324,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN(SectionTitle);
                                         }
 <SectionLabel>{DOCNL}                   { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "\\section command has no label"
                                               );
                                           if (*yytext=='\n') yyextra->lineNr++;
@@ -1332,7 +1332,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN( Comment );
                                         }
 <SectionLabel>.                         { // invalid character for section label
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "Invalid or missing section label"
                                               );
                                           BEGIN(Comment);
@@ -1378,7 +1378,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN(SubpageTitle);
                                         }
 <SubpageLabel>{DOCNL}                   { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "\\subpage command has no label"
                                               );
                                           if (*yytext=='\n') yyextra->lineNr++;
@@ -1406,7 +1406,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN( Comment );
                                         }
 <AnchorLabel>{DOCNL}                    { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "\\anchor command has no label"
                                               );
                                           if (*yytext=='\n') yyextra->lineNr++;
@@ -1414,7 +1414,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN( Comment );
                                         }
 <AnchorLabel>.                          { // invalid character for anchor label
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "Invalid or missing anchor label"
                                               );
                                           BEGIN(Comment);
@@ -1455,7 +1455,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             yyextra->commentCount--;
                                             if (yyextra->commentCount<0)
                                             {
-                                              warn(yyextra->fileName,yyextra->lineNr,
+                                              warn(yyextra->fileName,yyextra->lineNr + 1,
                                                  "found */ without matching /* while inside a \\%s block! Perhaps a missing \\end%s?\n",yyextra->blockName.data(),yyextra->blockName.data());
                                             }
                                           }
@@ -1466,7 +1466,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <FormatBlock><<EOF>>                    {
                                           QCString endTag = "end"+yyextra->blockName;
                                           if (yyextra->blockName=="startuml") endTag="enduml";
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                             "reached end of comment while inside a \\%s block; check for missing \\%s tag!",
                                             yyextra->blockName.data(),endTag.data()
                                           );
@@ -1496,7 +1496,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           }
                                         }
 <GuardExpr>\n                           {
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                                 "invalid expression '%s' for yyextra->guards",yyextra->guardExpr.data());
                                           unput(*yytext);
                                           BEGIN(GuardParam);
@@ -1548,7 +1548,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <SkipGuardedSection>{CMD}"endif"/{NW}   {
                                           if (yyextra->guards.empty())
                                           {
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                            warn(yyextra->fileName,yyextra->lineNr + 1,
                                                 "found \\endif without matching start command");
                                           }
                                           else
@@ -1566,7 +1566,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <SkipGuardedSection>{CMD}"else"/{NW}    {
                                           if (yyextra->guards.empty())
                                           {
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                            warn(yyextra->fileName,yyextra->lineNr + 1,
                                                 "found \\else without matching start command");
                                           }
                                           else
@@ -1583,7 +1583,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <SkipGuardedSection>{CMD}"elseif"/{NW}  {
                                           if (yyextra->guards.empty())
                                           {
-                                            warn(yyextra->fileName,yyextra->lineNr,
+                                            warn(yyextra->fileName,yyextra->lineNr + 1,
                                                 "found \\elseif without matching start command");
                                           }
                                           else
@@ -1700,7 +1700,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <InGroupParam>{DOCNL}                   { // missing argument
                                           if (!yyextra->inGroupParamFound)
                                           {
-                                             warn(yyextra->fileName,yyextra->lineNr,
+                                             warn(yyextra->fileName,yyextra->lineNr + 1,
                                                 "Missing group name for \\ingroup command"
                                                 );
                                           }
@@ -1783,7 +1783,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN( Comment );
                                         }
 <InheritParam>{DOCNL}                   { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "\\inherit command has no argument"
                                               );
                                           if (*yytext=='\n') yyextra->lineNr++;
@@ -1791,7 +1791,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN( Comment );
                                         }
 <InheritParam>.                         { // invalid character for anchor label
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "Invalid or missing name for \\inherit command"
                                               );
                                           BEGIN(Comment);
@@ -1806,7 +1806,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN( Comment );
                                         }
 <ExtendsParam>{DOCNL}                   { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "\\extends or \\implements command has no argument"
                                               );
                                           //if (*yytext=='\n') yyextra->lineNr++;
@@ -1843,7 +1843,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN(Comment);
                                         }
 <CiteLabel>{DOCNL}                      { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "\\cite command has no label"
                                               );
                                           //if (*yytext=='\n') yyextra->lineNr++;
@@ -1852,7 +1852,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           BEGIN( Comment );
                                         }
 <CiteLabel>.                            { // invalid character for cite label
-                                           warn(yyextra->fileName,yyextra->lineNr,
+                                           warn(yyextra->fileName,yyextra->lineNr + 1,
                                               "Invalid or missing cite label"
                                               );
                                           BEGIN(Comment);
@@ -2106,7 +2106,7 @@ static bool handleExample(yyscan_t yyscanner,const QCString &cmd, const QCString
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,
+      warn(yyextra->fileName,yyextra->lineNr + 1,
           "unsupported option '%s' for command '\\%s'",qPrint(opt),qPrint(cmd));
     }
   }
@@ -2200,7 +2200,7 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const QCStringLi
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->insideParBlock)
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "found \\parblock command while already in a parblock!");
   }
   if (!yyextra->spaceBeforeCmd.isEmpty())
@@ -2218,7 +2218,7 @@ static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const QCStrin
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->insideParBlock)
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "found \\endparblock command without matching \\parblock!");
   }
   addOutput(yyscanner,"@endparblock");
@@ -2232,7 +2232,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &, const QCStringLis
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->relates.isEmpty())
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
   yyextra->current->relatesType = Simple;
@@ -2245,7 +2245,7 @@ static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &, const QCStrin
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->relates.isEmpty())
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
   yyextra->current->relatesType = Duplicate;
@@ -2258,7 +2258,7 @@ static bool handleMemberOf(yyscan_t yyscanner,const QCString &, const QCStringLi
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->relates.isEmpty())
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
   yyextra->current->relatesType = MemberOf;
@@ -2295,7 +2295,7 @@ static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const QCStringLi
       yyextra->current->section!=Entry::MAINPAGEDOC_SEC
      )
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "found \\subpage command in a comment block that is not marked as a page!");
   }
   if (!yyextra->spaceBeforeCmd.isEmpty())
@@ -2380,7 +2380,7 @@ static bool handleElseIf(yyscan_t yyscanner,const QCString &, const QCStringList
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->guards.empty())
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "found \\else without matching start command");
   }
   else
@@ -2397,7 +2397,7 @@ static bool handleElse(yyscan_t yyscanner,const QCString &, const QCStringList &
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->guards.empty())
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "found \\else without matching start command");
   }
   else
@@ -2413,7 +2413,7 @@ static bool handleEndIf(yyscan_t yyscanner,const QCString &, const QCStringList 
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->guards.empty())
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "found \\endif without matching start command");
   }
   else
@@ -2617,7 +2617,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const QCStringList &o
       {
         if (sscanf(opt.right(opt.length() - i - 1).data(),"%d%c",&level,&dum) != 1)
         {
-          warn(yyextra->fileName,yyextra->lineNr,"Unknown option:level specified with \\tableofcontents: '%s'", (*it).stripWhiteSpace().data());
+          warn(yyextra->fileName,yyextra->lineNr + 1,"Unknown option:level specified with \\tableofcontents: '%s'", (*it).stripWhiteSpace().data());
           opt = "";
         }
         else
@@ -2647,7 +2647,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const QCStringList &o
         }
         else
         {
-          warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\tableofcontents: '%s'", (*it).stripWhiteSpace().data());
+          warn(yyextra->fileName,yyextra->lineNr + 1,"Unknown option specified with \\tableofcontents: '%s'", (*it).stripWhiteSpace().data());
         }
       }
     }
@@ -2867,11 +2867,11 @@ static void addXRefItem(yyscan_t yyscanner,
       {
         if (si->lineNr() != -1)
         {
-          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel.data(),si->fileName().data(),si->lineNr());
+          warn(listName,yyextra->lineNr + 1,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel.data(),si->fileName().data(),si->lineNr());
         }
         else
         {
-          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel.data(),si->fileName().data());
+          warn(listName,yyextra->lineNr + 1,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel.data(),si->fileName().data());
         }
       }
       else
@@ -2926,11 +2926,11 @@ static void addSection(yyscan_t yyscanner)
   {
     if (si->lineNr() != -1)
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",yyextra->sectionLabel.data(),si->fileName().data(),si->lineNr());
+      warn(yyextra->fileName,yyextra->lineNr + 1,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",yyextra->sectionLabel.data(),si->fileName().data(),si->lineNr());
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s)",yyextra->sectionLabel.data(),si->fileName().data());
+      warn(yyextra->fileName,yyextra->lineNr + 1,"multiple use of section label '%s' while adding section, (first occurrence: %s)",yyextra->sectionLabel.data(),si->fileName().data());
     }
   }
   else
@@ -3115,11 +3115,11 @@ static void addAnchor(yyscan_t yyscanner,const char *anchor)
   {
     if (si->lineNr() != -1)
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",anchor,si->fileName().data(),si->lineNr());
+      warn(yyextra->fileName,yyextra->lineNr + 1,"multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",anchor,si->fileName().data(),si->lineNr());
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",anchor,si->fileName().data());
+      warn(yyextra->fileName,yyextra->lineNr + 1,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",anchor,si->fileName().data());
     }
   }
   else
@@ -3177,7 +3177,7 @@ static void checkFormula(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (YY_START==ReadFormulaShort || YY_START==ReadFormulaLong)
   {
-    warn(yyextra->fileName,yyextra->lineNr,"End of comment block while inside formula.");
+    warn(yyextra->fileName,yyextra->lineNr + 1,"End of comment block while inside formula.");
   }
 }
 
@@ -3273,12 +3273,12 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
 
   if (!yyextra->guards.empty())
   {
-    warn(yyextra->fileName,yyextra->lineNr,"Documentation block ended in the middle of a conditional section!");
+    warn(yyextra->fileName,yyextra->lineNr + 1,"Documentation block ended in the middle of a conditional section!");
   }
 
   if (yyextra->insideParBlock)
   {
-    warn(yyextra->fileName,yyextra->lineNr,
+    warn(yyextra->fileName,yyextra->lineNr + 1,
         "Documentation block ended while inside a \\parblock. Missing \\endparblock");
   }
 
