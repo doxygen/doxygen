@@ -9628,7 +9628,7 @@ static void escapeAliases()
           value.mid(in,14)!="\\nosubgrouping"
          )
       {
-        newValue+="\\_linebr ";
+        newValue+="\\ilinebr ";
       }
       else
       {
@@ -9643,7 +9643,7 @@ static void escapeAliases()
     while ((in=value.find("^^",p))!=-1)
     {
       newValue+=value.mid(p,in-p);
-      newValue+="\\\\_linebr ";
+      newValue+="\\ilinebr ";
       p=in+2;
     }
     newValue+=value.mid(p,value.length()-p);
