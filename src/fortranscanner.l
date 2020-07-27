@@ -2518,7 +2518,9 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int position=0;
   bool needsEntry = FALSE;
   Markdown markdown(yyextra->fileName,lineNr);
-  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc) : doc;
+  int startNewlines = 0;
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,startNewlines) : doc;
+  lineNr += startNewlines;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         yyextra->docBlockInBody ? yyextra->subrCurrent.back().get() : yyextra->current.get(),
