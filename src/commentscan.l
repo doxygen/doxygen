@@ -163,7 +163,7 @@ struct DocCmdMap
 static const std::map< std::string, DocCmdMap > docCmdMap =
 {
   // command name      handler function           command spacing
-  { "_linebr",         { &handleLineBr,           CommandSpacing::Inline    }},
+  { "ilinebr",         { &handleLineBr,           CommandSpacing::Inline    }},
   { "addindex",        { &handleAddIndex,         CommandSpacing::Invisible }},
   { "addtogroup",      { &handleAddToGroup,       CommandSpacing::Invisible }},
   { "anchor",          { &handleAnchor,           CommandSpacing::Invisible }},
@@ -472,7 +472,7 @@ BL        [ \t\r]*"\n"
 B         [ \t]
 BS        ^(({B}*"//")?)(({B}*"*"+)?){B}*
 ATTR      ({B}+[^>\n]*)?
-DOCNL     "\n"|"\\_linebr"
+DOCNL     "\n"|"\\ilinebr"
 LC        "\\"{B}*"\n"
 NW          [^a-z_A-Z0-9]
 FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+@&#]
@@ -505,34 +505,34 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 %x      XRefItemParam3
 %x      FileDocArg1
 %x      ParamArg1
-%x        EnumDocArg1
-%x        NameSpaceDocArg1
-%x        PackageDocArg1
-%x        GroupDocArg1
-%x        GroupDocArg2
-%x        SectionLabel
-%x        SectionTitle
-%x        SubpageLabel
-%x        SubpageTitle
-%x        FormatBlock
-%x        LineParam
-%x        GuardParam
-%x        GuardParamEnd
-%x        SkipGuardedSection
-%x        SkipInternal
+%x      EnumDocArg1
+%x      NameSpaceDocArg1
+%x      PackageDocArg1
+%x      GroupDocArg1
+%x      GroupDocArg2
+%x      SectionLabel
+%x      SectionTitle
+%x      SubpageLabel
+%x      SubpageTitle
+%x      FormatBlock
+%x      LineParam
+%x      GuardParam
+%x      GuardParamEnd
+%x      SkipGuardedSection
+%x      SkipInternal
 %x      NameParam
-%x        InGroupParam
-%x        FnParam
-%x        OverloadParam
-%x        InheritParam
-%x        ExtendsParam
+%x      InGroupParam
+%x      FnParam
+%x      OverloadParam
+%x      InheritParam
+%x      ExtendsParam
 %x      ReadFormulaShort
-%x        ReadFormulaLong
-%x        AnchorLabel
+%x      ReadFormulaLong
+%x      AnchorLabel
 %x      HtmlComment
 %x      SkipLang
-%x        CiteLabel
-%x        CopyDoc
+%x      CiteLabel
+%x      CopyDoc
 %x      GuardExpr
 %x      CdataSection
 %x      Noop
@@ -833,7 +833,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>".."[\.]?/[^ \t\n]             { // internal ellipsis
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>(\n|\\_linebr)({B}*(\n|\\_linebr))+ { // at least one blank line (or blank line command)
+<Comment>(\n|\\ilinebr)({B}*(\n|\\ilinebr))+ { // at least one blank line (or blank line command)
                                           if (yyextra->inContext==OutputXRef)
                                           {
                                             // see bug 613024, we need to put the newlines after ending the XRef section.
@@ -842,7 +842,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
-                                              else if (strcmp(yytext+i,"\\_linebr")==0) addOutput(yyscanner,'\n'),i+=8;
+                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner,"\\ilinebr"),i+=8;
                                               else i++;
                                             }
                                           }
@@ -852,7 +852,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
-                                              else if (strcmp(yytext+i,"\\_linebr")==0) addOutput(yyscanner,'\n'),i+=8;
+                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner,"\\ilinebr"),i+=8;
                                               else i++;
                                             }
                                             setOutput(yyscanner,OutputDoc);
@@ -1342,7 +1342,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
                                         }
-<SectionTitle>[^\n@\\]*/"\\_linebr"     { // end of section title
+<SectionTitle>[^\n@\\]*/"\\ilinebr"     { // end of section title
                                           addSection(yyscanner);
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
@@ -2540,7 +2540,7 @@ static bool handleInternal(yyscan_t yyscanner,const QCString &, const QCStringLi
 
 static bool handleLineBr(yyscan_t yyscanner,const QCString &, const QCStringList &)
 {
-  addOutput(yyscanner,'\n');
+  addOutput(yyscanner,"\\ilinebr");
   return FALSE;
 }
 

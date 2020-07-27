@@ -114,6 +114,20 @@ bool doctokenizerYYpopContext()
   return TRUE;
 }
 
+QCString extractPartAfterNewLine(const QCString &text)
+{
+  int nl1 = text.findRev('\n');
+  if (nl1!=-1)
+  {
+    return text.mid(nl1+1);
+  }
+  int nl2 = text.findRev("\\ilinebr");
+  if (nl2!=-1)
+  {
+    return text.mid(nl2+8);
+  }
+  return text;
+}
 
 //--------------------------------------------------------------------------
 
@@ -520,25 +534,23 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>{BLANK}*\n{LISTITEM}     { /* list item on next line */ 
-                         QCString text=yytext;
-			 text=text.right(text.length()-text.find('\n')-1);
+<St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */ 
+                         QCString text=extractPartAfterNewLine(yytext);
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
                          g_token->id         = -1;
 			 g_token->indent     = computeIndent(text,dashPos);
                          return TK_LISTITEM;
                        }
-<St_Para>{BLANK}*\n{MLISTITEM}     { /* list item on next line */ 
+<St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */ 
                          if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
                          else
                          {
-                           QCString text=yytext;
+                           QCString text=extractPartAfterNewLine(yytext);
                            static QRegExp re("[*+]");
-                           text=text.right(text.length()-text.find('\n')-1);
                            int markPos = text.findRev(re);
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
@@ -546,17 +558,14 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>{BLANK}*\n{OLISTITEM}     { /* list item on next line */ 
+<St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */ 
                          if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
                          else
                          {
-                           QCString text=yytext;
-                           int nl=text.findRev('\n');
-                           int len=text.length();
-                           text=text.right(len-nl-1);
+                           QCString text=extractPartAfterNewLine(yytext);
                            static QRegExp re("[1-9]");
                            int digitPos = text.find(re);
                            int dotPos = text.find('.',digitPos);
@@ -571,11 +580,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
-<St_Para>{BLANK}*\n{ENDLIST}      { /* end list on next line */ 
-                         QCString text=yytext;
-			 text=text.right(text.length()-text.find('\n')-1);
+<St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */ 
+                         QCString text=extractPartAfterNewLine(yytext);
                          int dotPos = text.findRev('.');
-			 g_token->indent     = computeIndent(text,dotPos);
+			 g_token->indent = computeIndent(text,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>"{"{BLANK}*"@link"/{BLANK}+ {
@@ -586,9 +594,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 g_token->name = "inheritdoc";
 			 return TK_COMMAND_AT;
 		       }
-<St_Para>"@_fakenl"     { // artificial new line
-                             yylineno++; 
-  		          }
+<St_Para>"@_fakenl"    { // artificial new line
+                         yylineno++; 
+  		       }
 <St_Para>{SPCMD3}      {
   			 g_token->name = "_form";
 			 bool ok;
@@ -602,6 +610,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->name = g_token->name.stripWhiteSpace();
 			 g_token->paramDir=TokenInfo::Unspecified;
 			 return TK_COMMAND_SEL();
+                       }
+<St_Para>"\\ilinebr"   {
                        }
 <St_Para>{SPCMD1}      |
 <St_Para>{SPCMD2}      |
@@ -1367,17 +1377,23 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          warn(g_fileName,yylineno,"Unexpected character '%s' while looking for section label or title",yytext); 
                        }
 
-<St_Snippet>[^\n]+     |
-<St_Snippet>[^\n]*\n   {
-  			 g_token->name = yytext;
+<St_Snippet>[^\\\n]+   {
+  			 g_token->name += yytext;
+                       }
+<St_Snippet>"\\"       {
+  			 g_token->name += yytext;
+                       }
+<St_Snippet>(\n|"\\ilinebr")  {
 			 g_token->name = g_token->name.stripWhiteSpace();
-			 return TK_WORD;  
+			 return TK_WORD;
   		       }
    
      /* Generic rules that work for all states */ 
 <*>\n                  { 
                          warn(g_fileName,yylineno,"Unexpected new line character"); 
 		       }
+<*>"\\ilinebr"         {
+                       }
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
                          //warn(g_fileName,yylineno,"Unexpected character '%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
@@ -1571,6 +1587,7 @@ void doctokenizerYYsetStateAnchor()
 
 void doctokenizerYYsetStateSnippet()
 {
+  g_token->name="";
   BEGIN(St_Snippet);
 }
 
