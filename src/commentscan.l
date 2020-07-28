@@ -2972,7 +2972,23 @@ static void stripTrailingWhiteSpace(QCString &s)
   uint len = s.length();
   int i = (int)len-1;
   char c;
-  while (i>=0 && ((c = s.at(i))==' ' || c=='\t' || c=='\r')) i--;
+  while (i>=0)
+  {
+    c = s.at(i);
+    if (c==' ' || c=='\t' || c=='\r') // normal whitespace
+    {
+      i--;
+    }
+    else if (c=='r' && i>=7 && qstrncmp("\\ilinebr",s.data()+i-7,8)==0) // special line break marker
+    {
+      i-=8;
+    }
+    else // non-whitespace
+    {
+      break;
+    }
+  }
+  //printf("stripTrailingWhitespace(%s) i=%d len=%d\n",s.data(),i,len);
   if (i!=(int)len-1)
   {
     s.resize(i+2); // string up to and including char at pos i and \0 terminator

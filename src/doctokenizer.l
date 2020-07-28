@@ -954,6 +954,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          unput(*yytext);
   			 return 0;
   		       }
+<St_Title>"\\ilinebr"  {
+  			 return 0;
+                       }
 <St_TitleN>"&"{ID}";"  { /* symbol */
                          g_token->name = yytext;
   		         return TK_SYMBOL;
@@ -990,6 +993,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          unput(*yytext);
   			 return 0;
                        }
+<St_TitleN>"\\ilinebr" {
+  			 return 0;
+                       }
 <St_TitleQ>"&"{ID}";"  { /* symbol */
                          g_token->name = yytext;
   		         return TK_SYMBOL;
@@ -1017,6 +1023,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          unput(*yytext);
   			 return 0;
                        }
+<St_TitleQ>"\\ilinebr" {
+  			 return 0;
+                       }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
   			 g_token->name = yytext;
 			 g_token->name = g_token->name.left(g_token->name.find('=')).stripWhiteSpace();
@@ -1033,6 +1042,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                        }
 <St_TitleV,St_TitleA>\n	 {
   			 unput(*yytext);
+  			 return 0;
+                       }
+<St_TitleV,St_TitleA>"\\ilinebr" {
   			 return 0;
                        }
 
@@ -1064,6 +1076,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          unput(*yytext);
   			 return 0;
   		       }
+<St_Cite>"\\ilinebr"   {
+  			 return 0;
+                       }
 <St_Cite>.	       { // any other character
                          unput(*yytext);
   			 return 0;
@@ -1091,6 +1106,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          unput(*yytext);
   			 return 0;
   		       }
+<St_Ref>"\\ilinebr"    {
+  			 return 0;
+                       }
 <St_Ref>.	       { // any other character
                          unput(*yytext);
   			 return 0;
@@ -1150,7 +1168,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->chars=yytext;
   			 return TK_WHITESPACE;
                        }
-<St_Ref2>"\""|\n       { /* " or \n => end of title */
+<St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title */
   			 return 0;
                        }
 <St_XRefItem>{LABELID} {
@@ -1246,7 +1264,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
      /* State for skipping title (all chars until the end of the line) */
 
 <St_SkipTitle>.
-<St_SkipTitle>\n       { return 0; }
+<St_SkipTitle>(\n|"\\ilinebr") { return 0; }
 
      /* State for the pass used to find the anchors and sections */ 
 
@@ -1352,9 +1370,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                     }
 <St_SecSkip>[^a-z_A-Z0-9\-\\\@]+
 <St_SecSkip>.
-<St_SecSkip>\n
+<St_SecSkip>(\n|"\\ilinebr")
 <St_Sections>.
-<St_Sections>\n        
+<St_Sections>(\n|"\\ilinebr")
 <St_SecLabel1>{LABELID} { 
                          g_secLabel = yytext;
                          processSection();
@@ -1370,6 +1388,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_SecTitle>[^\n]*\n  {
                          g_secTitle = yytext;
 			 g_secTitle = g_secTitle.stripWhiteSpace();
+                         if (g_secTitle.right(8)=="\\ilinebr")
+                         {
+                           g_secTitle.left(g_secTitle.length()-8);
+                         }
                          processSection();
                          BEGIN(St_Sections);
 		       }
