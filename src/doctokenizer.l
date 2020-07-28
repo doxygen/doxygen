@@ -955,6 +955,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 return 0;
   		       }
 <St_Title>"\\ilinebr"  {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
 <St_TitleN>"&"{ID}";"  { /* symbol */
@@ -994,6 +995,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 return 0;
                        }
 <St_TitleN>"\\ilinebr" {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
 <St_TitleQ>"&"{ID}";"  { /* symbol */
@@ -1024,6 +1026,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 return 0;
                        }
 <St_TitleQ>"\\ilinebr" {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
@@ -1045,6 +1048,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 return 0;
                        }
 <St_TitleV,St_TitleA>"\\ilinebr" {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
 
@@ -1077,6 +1081,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 return 0;
   		       }
 <St_Cite>"\\ilinebr"   {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
 <St_Cite>.	       { // any other character
@@ -1107,6 +1112,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 return 0;
   		       }
 <St_Ref>"\\ilinebr"    {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
 <St_Ref>.	       { // any other character

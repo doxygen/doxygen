@@ -163,7 +163,6 @@ struct DocCmdMap
 static const std::map< std::string, DocCmdMap > docCmdMap =
 {
   // command name      handler function           command spacing
-  { "ilinebr",         { &handleLineBr,           CommandSpacing::Inline    }},
   { "addindex",        { &handleAddIndex,         CommandSpacing::Invisible }},
   { "addtogroup",      { &handleAddToGroup,       CommandSpacing::Invisible }},
   { "anchor",          { &handleAnchor,           CommandSpacing::Invisible }},
@@ -646,6 +645,9 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               );
                                           yyextra->inInternalDocs = FALSE;
                                         }
+<Comment>{B}*"\\ilinebr"{B}*            { // preserve spacing around \\ilinebr
+                                          addOutput(yyscanner,yytext);
+                                        }
 <Comment>{B}*{CMD}[a-z_A-Z]+"{"[a-zA-Z_,:0-9\. ]*"}"{B}*  |
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*        { // potentially interesting command
                                           // the {B}* in the front was added for bug620924
@@ -663,8 +665,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           else // options present
                                           {
                                             cmdName = fullMatch.left(idx).stripWhiteSpace().data()+1; // to remove {CMD}
-                                          QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
-                                          optList = QCStringList::split(',',optStr);
+                                            QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+                                            optList = QCStringList::split(',',optStr);
                                           }
                                           auto it = docCmdMap.find(cmdName.data());
                                           if (it!=docCmdMap.end()) // special action is required
@@ -2535,12 +2537,6 @@ static bool handleInternal(yyscan_t yyscanner,const QCString &, const QCStringLi
     addOutput(yyscanner," \\internal ");
     yyextra->inInternalDocs = TRUE;
   }
-  return FALSE;
-}
-
-static bool handleLineBr(yyscan_t yyscanner,const QCString &, const QCStringList &)
-{
-  addOutput(yyscanner,"\\ilinebr ");
   return FALSE;
 }
 
