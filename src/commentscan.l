@@ -119,7 +119,6 @@ static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, 
 static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const QCStringList &);
 static bool handleHideReferencesRelation(yyscan_t yyscanner,const QCString &, const QCStringList &);
 static bool handleInternal(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleLineBr(yyscan_t yyscanner,const QCString &, const QCStringList &);
 static bool handleStatic(yyscan_t yyscanner,const QCString &, const QCStringList &);
 static bool handlePure(yyscan_t yyscanner,const QCString &, const QCStringList &);
 static bool handlePrivate(yyscan_t yyscanner,const QCString &, const QCStringList &);

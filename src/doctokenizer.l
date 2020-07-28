@@ -810,9 +810,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = g_token->name.mid(i+1,g_token->name.length()-i-2);
                          BEGIN(St_Code);
                        }
+<St_CodeOpt>"\\ilinebr" |
 <St_CodeOpt>\n         |
 <St_CodeOpt>.          {
-                         unput(*yytext);
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
                          BEGIN(St_Code);
                        }
 <St_Code>{WS}*{CMD}"endcode" {
@@ -832,6 +833,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                         }
 <St_HtmlOnlyOption>.|\n {
                          unput(*yytext);
+                         BEGIN(St_HtmlOnly);
+                        }
+<St_HtmlOnlyOption>"\\ilinebr" {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
                          BEGIN(St_HtmlOnly);
                         }
 <St_HtmlOnly>{CMD}"endhtmlonly" {
@@ -925,10 +930,15 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
+<St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}*/"\\linebr" { // case 5: plain file name specified without title or attributes
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_PlantUMLOpt>"\\ilinebr" |
 <St_PlantUMLOpt>"\n"   |
 <St_PlantUMLOpt>.      {
                          g_token->sectionId = "";
-                         unput(*yytext);
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
                          return RetVal_OK;
                        }
 <St_PlantUML>{CMD}"enduml"  {
@@ -990,11 +1000,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->chars=yytext;
   			 return TK_WHITESPACE;
                        }
-<St_TitleN>\n	       { /* new line => end of title */
-                         unput(*yytext);
-  			 return 0;
-                       }
-<St_TitleN>"\\ilinebr" {
+<St_TitleN>(\n|"\\ilinebr") { /* new line => end of title */
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
@@ -1021,11 +1027,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 BEGIN(St_TitleA);
   			 return 0;
                        }
-<St_TitleQ>\n	       { /* new line => end of title */
-                         unput(*yytext);
-  			 return 0;
-                       }
-<St_TitleQ>"\\ilinebr" {
+<St_TitleQ>(\n|"\\ilinebr") { /* new line => end of title */
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
@@ -1043,11 +1045,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 unput(*yytext);
   			 return 0;
                        }
-<St_TitleV,St_TitleA>\n	 {
-  			 unput(*yytext);
-  			 return 0;
-                       }
-<St_TitleV,St_TitleA>"\\ilinebr" {
+<St_TitleV,St_TitleA>(\n|"\\ilinebr") {
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
@@ -1076,14 +1074,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 unput(' ');
   			 return 0;
                        }
-<St_Cite>\n	       { // new line
-                         unput(*yytext);
-  			 return 0;
-  		       }
-<St_Cite>"\\ilinebr"   {
+<St_Cite>(\n|"\\ilinebr")  { // new line
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
-                       }
+  		       }
 <St_Cite>.	       { // any other character
                          unput(*yytext);
   			 return 0;
@@ -1107,14 +1101,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Ref>{WS}+"\""{WS}* { // white space following by quoted string
   			 BEGIN(St_Ref2);
                        }
-<St_Ref>\n	       { // new line
-                         unput(*yytext);
-  			 return 0;
-  		       }
-<St_Ref>"\\ilinebr"    {
+<St_Ref>(\n|"\\ilinebr") { // new line
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
-                       }
+  		       }
 <St_Ref>.	       { // any other character
                          unput(*yytext);
   			 return 0;
