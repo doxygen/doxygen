@@ -397,18 +397,18 @@ void VHDLOutlineParser::handleCommentBlock(const char *doc1, bool brief)
     s->current->docLine = p->yyLineNr;
   }
 
- 
+
 
   Markdown markdown(p->yyFileName,p->iDocLine);
-  int startNewlines = 0;
-  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,startNewlines) : doc;
+  int lineNr = p->iDocLine;
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
 
    while (p->commentScanner.parseCommentBlock(
       p->thisParser,
       s->current.get(),
       processedDoc,  // text
       p->yyFileName, // file
-      p->iDocLine,   // line of block start
+      lineNr,       // line of block start
       brief,
       0,
       FALSE,
