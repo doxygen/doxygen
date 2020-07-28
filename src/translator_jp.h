@@ -77,19 +77,36 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     virtual QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage{CJKutf8}\n";
+      return "\\usepackage{polyglossia}\n"
+             "\\makeatletter\n"
+             "\\AtBeginOfPackageFile*{polyglossia}{\n"
+             "  \\@ifpackagelater{polyglossia}{2020/04/09}{}{\n"
+             "    \\renewcommand{\\doxyrmfamily}{\\protect \\rmfamily}\n"
+             "    \\renewcommand{\\doxysffamily}{\\protect \\sffamily}\n"
+             "    \\renewcommand{\\doxyttfamily}{\\protect \\ttfamily}\n"
+             "  }\n"
+             "}\n"
+             "\\makeatother\n"
+             "\\setdefaultlanguage{japanese}\n";
+    }
+    virtual QCString latexCommandName()
+    {
+      QCString latex_command = Config_getString(LATEX_CMD_NAME);
+      if (latex_command.isEmpty()) latex_command = "latex";
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        if (latex_command == "latex") latex_command = "xelatex";
+      }
+      return latex_command;
     }
     virtual QCString latexFontenc()
     {
       return "";
     }
-    virtual QCString latexDocumentPre()
+    virtual QCString latexFont()
     {
-      return "\\begin{CJK}{UTF8}{min}\n";
-    }
-    virtual QCString latexDocumentPost()
-    {
-      return "\\end{CJK}\n";
+      return "\\setmainfont{Noto Sans CJK JP}\n"
+             "\\setmonofont{Noto Sans Mono CJK JP}\n";
     }
 
     /*! used in the compound documentation before a list of related functions. */

@@ -83,10 +83,17 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      // I'm not sure what this should be.
-      // When I figure it out, I'll update this.
-      // see http://www.ktug.or.kr/jsboard/read.php?table=operate&no=4422&page=1
-      return "\\usepackage{kotex}\n";
+      return "\\usepackage{polyglossia}\n"
+             "\\makeatletter\n"
+             "\\AtBeginOfPackageFile*{polyglossia}{\n"
+             "  \\@ifpackagelater{polyglossia}{2020/04/09}{}{\n"
+             "    \\renewcommand{\\doxyrmfamily}{\\protect \\rmfamily}\n"
+             "    \\renewcommand{\\doxysffamily}{\\protect \\sffamily}\n"
+             "    \\renewcommand{\\doxyttfamily}{\\protect \\ttfamily}\n"
+             "  }\n"
+             "}\n"
+             "\\makeatother\n"
+             "\\setdefaultlanguage{korean}\n";
     }
     virtual QCString latexCommandName()
     {
@@ -97,6 +104,15 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         if (latex_command == "latex") latex_command = "xelatex";
       }
       return latex_command;
+    }
+    virtual QCString latexFontenc()
+    {
+      return "";
+    }
+    virtual QCString latexFont()
+    {
+      return "\\setmainfont{Noto Sans CJK KR}\n"
+             "\\setmonofont{Noto Sans Mono CJK KR}\n";
     }
 
     // --- Language translation methods -------------------

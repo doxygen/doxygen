@@ -1688,10 +1688,10 @@ void LatexGenerator::startMemberDoc(const char *clname,
   }
   if (memTotal>1)
   {
-    t << "\\hspace{0.1cm}{\\footnotesize\\ttfamily [" << memCount << "/" << memTotal << "]}";
+    t << "\\hspace{0.1cm}{\\footnotesize\\doxyttfamily [" << memCount << "/" << memTotal << "]}";
   }
   t << "}";
-  t << "\n{\\footnotesize\\ttfamily ";
+  t << "\n{\\footnotesize\\doxyttfamily ";
   //m_disableLinks=TRUE;
 }
 
@@ -2366,7 +2366,7 @@ void LatexGenerator::startLabels()
 
 void LatexGenerator::writeLabel(const char *l,bool isLast)
 {
-  t << "{\\ttfamily [" << l << "]}";
+  t << "{\\doxyttfamily [" << l << "]}";
   if (!isLast) t << ", ";
 }
 
