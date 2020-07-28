@@ -1631,7 +1631,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   bool needsEntry;
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
   Markdown markdown(yyextra->yyFileName,lineNr);
-  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc) : doc;
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         (yyextra->docBlockInBody && yyextra->previous) ? yyextra->previous.get() : yyextra->current.get(),

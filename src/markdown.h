@@ -33,7 +33,7 @@ class Markdown
 {
   public:
     Markdown(const char *fileName,int lineNr,int indentLevel=0);
-    QCString process(const QCString &input);
+    QCString process(const QCString &input, int &startNewlines);
     QCString extractPageTitle(QCString &docs,QCString &id);
     void setIndentLevel(int level) { m_indentLevel = level; }
 

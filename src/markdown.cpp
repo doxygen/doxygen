@@ -2606,7 +2606,7 @@ QCString Markdown::detab(const QCString &s,int &refIndent)
 
 //---------------------------------------------------------------------------
 
-QCString Markdown::process(const QCString &input)
+QCString Markdown::process(const QCString &input, int &startNewlines)
 {
   if (input.isEmpty()) return input;
   int refIndent;
@@ -2637,7 +2637,7 @@ QCString Markdown::process(const QCString &input)
   if (p)
   {
     while (*p==' ')  p++; // skip over spaces
-    while (*p=='\n') p++; // skip over newlines
+    while (*p=='\n') {startNewlines++;p++;}; // skip over newlines
     if (qstrncmp(p,"<br>",4)==0) p+=4; // skip over <br>
   }
   if (p>result.data())
@@ -2726,7 +2726,9 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   Protection prot=Public;
   bool needsEntry = FALSE;
   int position=0;
-  QCString processedDocs = markdown.process(docs);
+  int startNewlines;
+  QCString processedDocs = markdown.process(docs,startNewlines);
+  lineNr += startNewlines;
   while (p->commentScanner.parseCommentBlock(
         this,
         current.get(),
