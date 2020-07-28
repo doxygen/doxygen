@@ -7020,7 +7020,9 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   bool needsEntry=FALSE;
   Markdown markdown(yyextra->yyFileName,lineNr);
   QCString strippedDoc = stripIndentation(doc);
-  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc) : strippedDoc;
+  int startNewlines = 0;
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,startNewlines) : strippedDoc;
+  lineNr += startNewlines;
   while (yyextra->commentScanner.parseCommentBlock(
 	yyextra->thisParser,
 	yyextra->docBlockInBody && yyextra->previous ? yyextra->previous.get() : yyextra->current.get(),

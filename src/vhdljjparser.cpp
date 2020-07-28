@@ -400,7 +400,8 @@ void VHDLOutlineParser::handleCommentBlock(const char *doc1, bool brief)
  
 
   Markdown markdown(p->yyFileName,p->iDocLine);
-  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc) : doc;
+  int startNewlines = 0;
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,startNewlines) : doc;
 
    while (p->commentScanner.parseCommentBlock(
       p->thisParser,
