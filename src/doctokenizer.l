@@ -930,7 +930,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
-<St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}*/"\\linebr" { // case 5: plain file name specified without title or attributes
+<St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}*/"\\ilinebr" { // case 5: plain file name specified without title or attributes
                          g_token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
