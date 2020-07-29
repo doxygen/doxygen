@@ -1008,6 +1008,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = yytext;
   		         return TK_SYMBOL;
                        }
+<St_TitleQ>(\n|"\\ilinebr") { /* new line => end of title */
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+  			 return 0;
+                       }
 <St_TitleQ>{SPCMD1}    |   
 <St_TitleQ>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;
@@ -1025,10 +1029,6 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                        }
 <St_TitleQ>"\""	       { /* closing quote => end of title */
   			 BEGIN(St_TitleA);
-  			 return 0;
-                       }
-<St_TitleQ>(\n|"\\ilinebr") { /* new line => end of title */
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
@@ -1148,6 +1148,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = yytext;
   		         return TK_SYMBOL;
                        }
+<St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title */
+  			 return 0;
+                       }
 <St_Ref2>{SPCMD1}      |   
 <St_Ref2>{SPCMD2}      { /* special command */ 
                          g_token->name = yytext+1;
@@ -1163,9 +1166,6 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Ref2>[ \t]+        {
                          g_token->chars=yytext;
   			 return TK_WHITESPACE;
-                       }
-<St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title */
-  			 return 0;
                        }
 <St_XRefItem>{LABELID} {
                          g_token->name=yytext;
