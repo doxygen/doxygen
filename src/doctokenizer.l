@@ -974,6 +974,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                        }
 <St_TitleN>{HTMLTAG}   {
   		       }
+<St_TitleN>(\n|"\\ilinebr") { /* new line => end of title */
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+  			 return 0;
+                       }
 <St_TitleN>{SPCMD1}    |   
 <St_TitleN>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;
@@ -999,10 +1003,6 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_TitleN>[ \t]+      {
                          g_token->chars=yytext;
   			 return TK_WHITESPACE;
-                       }
-<St_TitleN>(\n|"\\ilinebr") { /* new line => end of title */
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
-  			 return 0;
                        }
 <St_TitleQ>"&"{ID}";"  { /* symbol */
                          g_token->name = yytext;
