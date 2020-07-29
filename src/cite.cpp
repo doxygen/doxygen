@@ -139,6 +139,7 @@ void CitationManager::generatePage()
         input.at(fi.size())='\0';
         int pos=0;
         int s;
+        QCString label1;
         while ((s=input.find('\n',pos))!=-1)
         {
           QCString line = input.mid((uint)pos,(uint)(s-pos));
@@ -152,9 +153,45 @@ void CitationManager::generatePage()
             if (j!=-1 && k!=-1)
             {
               QCString label = line.mid((uint)(j+1),(uint)(k-j-1));
-              if (p->entries.find(label.data())==p->entries.end()) // not found yet
+              // check if the reference with the cross reference is used
+              // insert cross refererence when cross reference has not yet been added.
+              if ((p->entries.find(label1.data())!=p->entries.end()) &&
+                  (p->entries.find(label.data())==p->entries.end())) // not found yet
               {
                 insert(label);
+              }
+            }
+          }
+          else if (line.stripWhiteSpace().startsWith("@"))
+          {
+            // assumption entry like: "@book { name," or "@book { name" (spaces optional)
+            int j=line.find("{",0);
+            // when no {, go hunting for it
+            while (j==-1 && (s=input.find('\n',pos))!=-1)
+            {
+              line = input.mid((uint)pos,(uint)(s-pos));
+              j=line.find("{",0);
+              pos=s+1;
+            }
+            // search for the name
+            label1 = "";
+            while (label1.isEmpty())
+            {
+              int k=line.find(",",j);
+              if (k != -1)
+              {
+                label1 = line.mid((uint)(j+1),(uint)(k-j-1));
+              }
+              else
+              {
+                label1 = line.mid((uint)(j+1));
+              }
+              label1 = label1.stripWhiteSpace();
+              j = -1;
+              if (label1.isEmpty() && (s=input.find('\n',pos))!=-1)
+              {
+                line = input.mid((uint)pos,(uint)(s-pos));
+                pos=s+1;
               }
             }
           }
