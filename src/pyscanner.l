@@ -141,7 +141,7 @@ static void initSpecialBlock(yyscan_t yyscanner);
 static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
 static QCString findPackageScope(yyscan_t yyscanner,const char *fileName);
-static QCString stripSpace(const char * doc,const int ind);
+static void stripIndentation(QCString &doc,const int indentationLevel);
 
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
@@ -1253,7 +1253,7 @@ STARTDOCSYMS      "##"
 			      QCString actualDoc=yyextra->docBlock;
 			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-                                actualDoc = stripSpace(actualDoc,yyextra->commentIndent);
+                                stripIndentation(actualDoc,yyextra->commentIndent);
 			        actualDoc.prepend("\\verbatim\n");
 			        actualDoc.append("\\endverbatim ");
 			      }
@@ -1265,7 +1265,7 @@ STARTDOCSYMS      "##"
 			      QCString actualDoc=yyextra->docBlock;
 			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-                                actualDoc = stripSpace(actualDoc,yyextra->commentIndent);
+                                stripIndentation(actualDoc,yyextra->commentIndent);
 			        actualDoc.prepend("\\verbatim\n");
 			        actualDoc.append("\\endverbatim ");
 			      }
@@ -1522,52 +1522,55 @@ static inline int computeIndent(const char *s)
   return col;
 }
 
-static QCString stripSpace(const char *doc,const int ind)
+// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
+static void stripIndentation(QCString &doc,const int indentationLevel)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
-  if (ind <= 0) return doc;
-  signed char c;
-  const signed char *p=(const signed char*)doc;
-  bool startLine = false;
+  if (indentationLevel <= 0) return; // nothing to strip
+
+  // by stripping content the string will only become shorter so we write the results
+  // back into the input string and then resize it at the end.
+  char c;
+  const char *src = doc.data();
+  char *dst = doc.rawData();
+  bool insideIndent = false; // skip the initial line from stripping
   int cnt = 0;
-  while ((c=*p++)!=0)
+  while ((c=*src++)!=0)
   {
+    // invariant: dst<=src
     switch(c)
     {
       case '\n':
-        growBuf.addChar(c);
-        startLine = true;
-        cnt = ind;
+        *dst++ = c;
+        insideIndent = true;
+        cnt = indentationLevel;
         break;
       case ' ':
-        if (startLine)
+        if (insideIndent)
         {
-          if (cnt)
+          if (cnt>0) // count down the spacing until the end of the indent
           {
             cnt--;
           }
-          else
+          else // reached the end of the indent, start of the part of the line to keep
           {
-            startLine = false;
-            growBuf.addChar(c);
+            insideIndent = false;
+            *dst++ = c;
           }
         }
-        else
+        else // part after indent, copy to the output
         {
-          growBuf.addChar(c);
+          *dst++ = c;
         }
         break;
       default:
-        startLine = false;
-        growBuf.addChar(c);
+        insideIndent = false;
+        *dst++ = c;
         break;
     }
   }
-
-  growBuf.addChar(0);
-  return growBuf.get();
+  doc.resize(dst-doc.data()+1);
 }
+
 static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
