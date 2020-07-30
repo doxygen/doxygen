@@ -8141,15 +8141,18 @@ QCString extractDirection(QCString &docs)
   int l=0;
   if (re.match(docs,0,&l)==0)
   {
-    QCString dir=docs.left(l);
-    bool input  = dir.find("in")!=-1;
-    bool output = dir.find("out")!=-1;
-    if (input || output) // in,out attributes
+    // make dir the part inside [...] without separators
+    QCString dir=substitute(substitute(docs.mid(1,l-2)," ",""),",","");
+    int inIndex, outIndex;
+    unsigned char ioMask=0;
+    if (( inIndex=dir.find( "in"))!=-1) dir.remove (inIndex,2),ioMask|=(1<<0);
+    if ((outIndex=dir.find("out"))!=-1) dir.remove(outIndex,3),ioMask|=(1<<1);
+    if (dir.isEmpty() && ioMask!=0) // only in and/or out attributes found
     {
       docs = docs.mid(l); // strip attributes
-      if (input && output) return "[in,out]";
-      else if (input)      return "[in]";
-      else if (output)     return "[out]";
+      if (ioMask==((1<<0)|(1<<1))) return "[in,out]";
+      else if (ioMask==(1<<0))     return "[in]";
+      else if (ioMask==(1<<1))     return "[out]";
     }
   }
   return QCString();
