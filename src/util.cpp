@@ -8141,10 +8141,25 @@ QCString extractDirection(QCString &docs)
   int l=0;
   if (re.match(docs,0,&l)==0)
   {
-    int  inPos  = docs.find("in", 1,FALSE);
-    int outPos  = docs.find("out",1,FALSE);
-    bool input  =  inPos!=-1 &&  inPos<l;
-    bool output = outPos!=-1 && outPos<l;
+    QRegExp re_in("\\[ *in *\\]"); // [in]
+    QRegExp re_out("\\[ *out *\\]"); // [out]
+    QRegExp re_inout("\\[ *in *[,]? *out *\\]"); // [in,out]
+    QRegExp re_outin("\\[ *out *[,]? *in *\\]"); // [out,in]
+    int l_in = 0;
+    int l_out = 0;
+    int l_inout = 0;
+    int l_outin = 0;
+    int inPos = re_in.match(docs,0,&l_in);
+    int outPos = re_out.match(docs,0,&l_out);
+    int inoutPos = re_inout.match(docs,0,&l_inout);
+    int outinPos = re_outin.match(docs,0,&l_outin);
+    // we only take the first occurrence into account
+    bool input  =  (inPos!=-1    &&  l==l_in) ||
+                   (inoutPos!=-1 &&  l==l_inout) ||
+                   (outinPos!=-1 &&  l==l_outin);
+    bool output =  (outPos!=-1   &&  l==l_out) ||
+                   (inoutPos!=-1 &&  l==l_inout) ||
+                   (outinPos!=-1 &&  l==l_outin);
     if (input || output) // in,out attributes
     {
       docs = docs.mid(l); // strip attributes
