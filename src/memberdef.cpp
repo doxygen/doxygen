@@ -3761,7 +3761,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       {
         QCString docsWithoutDir = a.docs;
         QCString direction = extractDirection(docsWithoutDir);
-        paramDocs+="@param"+direction+" "+a.name+" "+a.docs;
+        paramDocs+="@param"+direction+" "+a.name+" "+docsWithoutDir;
       }
     }
     // feed the result to the documentation parser
