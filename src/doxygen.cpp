@@ -10920,13 +10920,15 @@ void parseInput()
     Config_updateString(MAN_OUTPUT,manOutput);
   }
 
-  //QCString sqlOutput;
-  //bool &generateSql = Config_getBool(GENERATE_SQLITE3);
-  //if (generateSql)
-  //{
-  //  sqlOutput = createOutputDirectory(outputDirectory,Config_getString(SQLITE3_OUTPUT),"/sqlite3");
-  //  Config_update(SQLITE3_OUTPUT,sqlOutput);
-  //}
+#if USE_SQLITE3
+  QCString sqlOutput;
+  bool generateSql = Config_getBool(GENERATE_SQLITE3);
+  if (generateSql)
+  {
+    sqlOutput = createOutputDirectory(outputDirectory,Config_getString(SQLITE3_OUTPUT),"/sqlite3");
+    Config_updateString(SQLITE3_OUTPUT,sqlOutput);
+  }
+#endif
 
   if (Config_getBool(HAVE_DOT))
   {
@@ -11543,12 +11545,14 @@ void generateOutput()
     Doxygen::generatingXmlOutput=FALSE;
     g_s.end();
   }
-  if (USE_SQLITE3)
+#if USE_SQLITE3
+  if (Config_getBool(GENERATE_SQLITE3))
   {
     g_s.begin("Generating SQLITE3 output...\n");
     generateSqlite3();
     g_s.end();
   }
+#endif
 
   if (Config_getBool(GENERATE_AUTOGEN_DEF))
   {

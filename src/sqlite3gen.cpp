@@ -2503,11 +2503,10 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
 static sqlite3* openDbConnection()
 {
 
-  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
+  QCString outputDirectory = Config_getString(SQLITE3_OUTPUT);
   QDir sqlite3Dir(outputDirectory);
   sqlite3 *db;
   int rc;
-  struct stat buf;
 
   rc = sqlite3_initialize();
   if (rc != SQLITE_OK)
@@ -2516,15 +2515,24 @@ static sqlite3* openDbConnection()
     return NULL;
   }
 
+  QCString dbFileName = "doxygen_sqlite3.db";
+  QFileInfo fi(outputDirectory+"/"+dbFileName);
 
-  if (stat (outputDirectory+"/doxygen_sqlite3.db", &buf) == 0)
+  if (fi.exists())
   {
-    err("doxygen_sqlite3.db already exists! Rename, remove, or archive it to regenerate\n");
-    return NULL;
+    if (Config_getBool(SQLITE3_RECREATE_DB))
+    {
+       QDir().remove(fi.absFilePath());
+    }
+    else
+    {
+      err("doxygen_sqlite3.db already exists! Rename, remove, or archive it to regenerate\n");
+      return NULL;
+    }
   }
 
   rc = sqlite3_open_v2(
-    outputDirectory+"/doxygen_sqlite3.db",
+    fi.absFilePath().utf8(),
     &db,
     SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
     0

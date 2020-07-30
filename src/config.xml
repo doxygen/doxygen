@@ -3034,9 +3034,8 @@ front of it.
       </docs>
     </option>
   </group>
-<!--
-  <group name='Sqlite3' docs='Configuration options related to Sqlite3 output'>
-    <option type='bool' id='GENERATE_SQLITE3' defval='0'>
+  <group name='Sqlite3' setting='USE_SQLITE3' docs='Configuration options related to Sqlite3 output'>
+    <option type='bool' id='GENERATE_SQLITE3' setting='USE_SQLITE3' defval='0'>
       <docs>
 <![CDATA[
 If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
@@ -3044,7 +3043,7 @@ If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
 ]]>
       </docs>
     </option>
-    <option type='string' id='SQLITE3_OUTPUT' format='dir' defval='sqlite3' depends='GENERATE_SQLITE3'>
+    <option type='string' id='SQLITE3_OUTPUT' format='dir' defval='sqlite3' setting='USE_SQLITE3' depends='GENERATE_SQLITE3'>
       <docs>
 <![CDATA[
 The \c SQLITE3_OUTPUT tag is used to specify where the \c Sqlite3 database will be put.
@@ -3053,9 +3052,17 @@ put in front of it.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='SQLITE3_RECREATE_DB' defval='1' setting='USE_SQLITE3' depends='GENERATE_SQLITE3'>
+      <docs>
+<![CDATA[
+The \c SQLITE3_OVERWRITE_DB tag is set to \c YES, the existing doxygen_sqlite3.db
+database file will be recreated with each doxygen run.
+If set to \c NO, doxygen will warn if an a database file is already found and not modify it.
+]]>
+      </docs>
+    </option>
 
   </group>
--->
   <group name='PerlMod' docs='Configuration options related to the Perl module output'>
     <option type='bool' id='GENERATE_PERLMOD' defval='0'>
       <docs>

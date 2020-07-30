@@ -345,6 +345,9 @@ def parseOption(node):
 def parseGroups(node):
 	name = node.getAttribute('name')
 	doc = node.getAttribute('docs')
+	setting = node.getAttribute('setting')
+	if len(setting) > 0:
+		print("#if %s" % (setting))
 	print("%s%s" % ("  //-----------------------------------------",
 					"----------------------------------"))
 	print("  cfg->addInfo(\"%s\",\"%s\");" % (name, doc))
@@ -354,6 +357,8 @@ def parseGroups(node):
 	for n in node.childNodes:
 		if n.nodeType == Node.ELEMENT_NODE:
 			parseOption(n)
+	if len(setting) > 0:
+		print("#endif")
 
 
 def parseGroupMapGetter(node):
