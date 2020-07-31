@@ -354,6 +354,7 @@ struct commentscanYY_state
 {
   OutlineParserInterface *langParser = 0;  // the language parser that is calling us
   QCString         inputString;            // input string
+  QCString         currentCmd;             // the command used
   int              inputPosition = 0;      // read pointer
   QCString         fileName;               // file name that is read from
   int              lineNr = 0;             // line number in the input
@@ -1035,7 +1036,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <ClassDocArg1,CategoryDocArg1>{DOCNL}   {
                                           warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after "
-                                               "\\%s.",YY_START==ClassDocArg1?"class":"category"
+                                               "'\\%s'.",yyextra->currentCmd.data()
                                               );
                                           //addOutput(yyscanner,'\n');
                                           //if (*yytext=='\n') yyextra->lineNr++;
@@ -1289,7 +1290,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                         }
 <RelatesParam1>{DOCNL}                  { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                              "Missing argument of \\relates or \\memberof command"
+                                              "Missing argument of '\\%s' command",yyextra->currentCmd.data()
                                               );
                                           unput('\n');
                                           //if (*yytext=='\n') yyextra->lineNr++;
@@ -1808,7 +1809,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                         }
 <ExtendsParam>{DOCNL}                   { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                              "\\extends or \\implements command has no argument"
+                                              "'\\%s' command has no argument",yyextra->currentCmd.data()
                                               );
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
@@ -1970,10 +1971,11 @@ static bool handlePackage(yyscan_t yyscanner,const QCString &, const QCStringLis
   return stop;
 }
 
-static bool handleClass(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleClass(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::CLASSDOC_SEC);
+  yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
 }
@@ -1985,50 +1987,56 @@ static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const QCString
   return FALSE;
 }
 
-static bool handleProtocol(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleProtocol(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 { // Obj-C protocol
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::PROTOCOLDOC_SEC);
+  yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
 }
 
-static bool handleCategory(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleCategory(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 { // Obj-C category
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::CATEGORYDOC_SEC);
+  yyextra->currentCmd = cmd;
   BEGIN( CategoryDocArg1 );
   return stop;
 }
 
-static bool handleUnion(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleUnion(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::UNIONDOC_SEC);
+  yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
 }
 
-static bool handleStruct(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleStruct(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::STRUCTDOC_SEC);
+  yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
 }
 
-static bool handleInterface(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleInterface(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::INTERFACEDOC_SEC);
+  yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
 }
 
-static bool handleIdlException(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleIdlException(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::EXCEPTIONDOC_SEC);
+  yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
 }
@@ -2228,7 +2236,7 @@ static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const QCStrin
   return FALSE;
 }
 
-static bool handleRelated(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->relates.isEmpty())
@@ -2241,7 +2249,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &, const QCStringLis
   return FALSE;
 }
 
-static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->relates.isEmpty())
@@ -2250,11 +2258,12 @@ static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &, const QCStrin
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
   yyextra->current->relatesType = Duplicate;
+  yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
 }
 
-static bool handleMemberOf(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleMemberOf(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->relates.isEmpty())
@@ -2263,6 +2272,7 @@ static bool handleMemberOf(yyscan_t yyscanner,const QCString &, const QCStringLi
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
   yyextra->current->relatesType = MemberOf;
+  yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
 }
@@ -2663,9 +2673,10 @@ static bool handleInherit(yyscan_t yyscanner,const QCString &, const QCStringLis
   return FALSE;
 }
 
-static bool handleExtends(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleExtends(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->currentCmd = cmd;
   BEGIN(ExtendsParam);
   return FALSE;
 }
