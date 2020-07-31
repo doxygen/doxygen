@@ -616,7 +616,10 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
     if (dst) memcpy(r,dst,dstLen);
     r+=dstLen;
   }
-  qstrcpy(r,p);
+  if (r)
+  {
+    qstrcpy(r,p);
+  }
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }

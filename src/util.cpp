@@ -8139,7 +8139,7 @@ QCString extractDirection(QCString &docs)
 {
   QRegExp re("\\[[ inout,]+\\]"); // [...]
   int l=0;
-  if (re.match(docs,0,&l)==0)
+  if (re.match(docs,0,&l)==0 && l>2)
   {
     // make dir the part inside [...] without separators
     QCString dir=substitute(substitute(docs.mid(1,l-2)," ",""),",","");
