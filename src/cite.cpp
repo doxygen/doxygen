@@ -108,6 +108,123 @@ const char *CitationManager::anchorPrefix() const
   return "CITEREF_";
 }
 
+void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
+{
+  // sanity checks
+  if (bibFile.isEmpty())
+  {
+    return;
+  }
+  QFileInfo fi(bibFile);
+  if (!fi.exists())
+  {
+    err("bib file %s not found!\n",bibFile.data());
+    return;
+  }
+  QFile f(bibFile);
+  if (!f.open(IO_ReadOnly))
+  {
+    err("could not open file %s for reading\n",bibFile.data());
+    return;
+  }
+
+  // convert file to string
+  QCString doc;
+  QCString input(fi.size()+1);
+  f.readBlock(input.rawData(),fi.size());
+  f.close();
+  input.at(fi.size())='\0';
+
+  int pos=0;
+  int s;
+
+  // helper lambda function to get the next line of input and update pos accordingly
+  auto get_next_line = [&input,&pos,&s]()
+  {
+    uint prevPos = (uint)pos;
+    pos=s+1;
+    return input.mid(prevPos,(uint)(s-prevPos));
+  };
+
+  // helper lambda function to return if the end of the input has reached
+  auto end_of_input = [&s]()
+  {
+    return s==-1;
+  };
+
+  // helper lambda function to proceed to the next line in the input, and update s
+  // to point to the start of the line. Return true as long as there is a new line.
+  auto has_next_line = [&input,&pos,&s]()
+  {
+    s=input.find('\n',pos);
+    return s!=-1;
+  };
+
+  // search for citation cross references
+  QCString citeName;
+  while (has_next_line())
+  {
+    QCString line = get_next_line();
+
+    int i;
+    if (line.stripWhiteSpace().startsWith("@"))
+    {
+      // assumption entry like: "@book { name," or "@book { name" (spaces optional)
+      int j = line.find('{');
+      // when no {, go hunting for it
+      while (j==-1 && has_next_line())
+      {
+        line = get_next_line();
+        j = line.find('{');
+      }
+      // search for the name
+      citeName = "";
+      if (!end_of_input() && j!=-1) // to prevent something like "@manual ," and no { found
+      {
+        int k = line.find(',',j);
+        j++;
+        // found a line "@....{.....,...." or "@.....{....."
+        //                     ^=j  ^=k               ^=j   k=-1
+        while (!end_of_input() && citeName.isEmpty())
+        {
+          if (k!=-1)
+          {
+            citeName = line.mid((uint)(j),(uint)(k-j));
+          }
+          else
+          {
+            citeName = line.mid((uint)(j));
+          }
+          citeName = citeName.stripWhiteSpace();
+          j = 0;
+          if (citeName.isEmpty() && has_next_line())
+          {
+            line = get_next_line();
+            k = line.find(',');
+          }
+        }
+      }
+      //printf("citeName = #%s#\n",citeName.data());
+    }
+    else if ((i=line.find("crossref"))!=-1 && !citeName.isEmpty()) /* assumption cross reference is on one line and the only item */
+    {
+      int j = line.find('{',i);
+      int k = line.find('}',i);
+      if (j>i && k>j)
+      {
+        QCString crossrefName = line.mid((uint)(j+1),(uint)(k-j-1));
+        // check if the reference with the cross reference is used
+        // insert cross refererence when cross reference has not yet been added.
+        if ((p->entries.find(citeName.data())!=p->entries.end()) &&
+            (p->entries.find(crossrefName.data())==p->entries.end())) // not found yet
+        {
+          insert(crossrefName);
+        }
+      }
+    }
+  }
+}
+
 void CitationManager::generatePage()
 {
   //printf("** CitationManager::generatePage() count=%d\n",m_ordering.count());
@@ -122,49 +239,7 @@ void CitationManager::generatePage()
   {
     QCString bibFile = bibdata.c_str();
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-    QFileInfo fi(bibFile);
-    if (fi.exists())
-    {
-      if (!bibFile.isEmpty())
-      {
-        f.setName(bibFile);
-        if (!f.open(IO_ReadOnly))
-        {
-          err("could not open file %s for reading\n",bibFile.data());
-        }
-        QCString doc;
-        QCString input(fi.size()+1);
-        f.readBlock(input.rawData(),fi.size());
-        f.close();
-        input.at(fi.size())='\0';
-        int pos=0;
-        int s;
-        while ((s=input.find('\n',pos))!=-1)
-        {
-          QCString line = input.mid((uint)pos,(uint)(s-pos));
-          pos=s+1;
-
-	  int i;
-          if ((i = line.find("crossref")) != -1) /* assumption cross reference is on one line and the only item */
-          {
-            int j=line.find("{",i);
-            int k=line.find("}",i);
-            if (j!=-1 && k!=-1)
-            {
-              QCString label = line.mid((uint)(j+1),(uint)(k-j-1));
-              if (p->entries.find(label.data())==p->entries.end()) // not found yet
-              {
-                insert(label);
-              }
-            }
-          }
-        }
-      }
-    }
-    else if (!fi.exists())
-    {
-      err("bib file %s not found!\n",bibFile.data());
-    }
+    insertCrossReferencesForBibFile(bibFile);
   }
 
   // 1. generate file with markers and citations to OUTPUT_DIRECTORY

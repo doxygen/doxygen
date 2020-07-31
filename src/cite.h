@@ -4,8 +4,8 @@
  * Based on a patch by David Munger
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -70,6 +70,7 @@ class CitationManager
   private:
     /** Create the database, with an expected maximum of \a size entries */
     CitationManager();
+    void insertCrossReferencesForBibFile(const QCString &bibFile);
     struct Private;
     std::unique_ptr<Private> p;
 };
