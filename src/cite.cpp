@@ -22,6 +22,7 @@
 #include "portable.h"
 #include "resourcemgr.h"
 #include "util.h"
+#include "debug.h"
 
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -29,10 +30,6 @@
 
 #include <map>
 #include <string>
-
-// Remove the temporary files
-#define RM_TMP_FILES (true)
-//#define RM_TMP_FILES (false)
 
 const char *bibTmpFile = "bibTmpFile_";
 const char *bibTmpDir  = "bibTmpDir/";
@@ -114,6 +111,8 @@ void CitationManager::generatePage()
 
   // do not generate an empty citations page
   if (isEmpty()) return; // nothing to cite
+
+  bool citeDebug = Debug::isFlagSet(Debug::Cite);
 
   // 0. add cross references from the bib files to the cite dictionary
   QFile f;
@@ -233,7 +232,7 @@ void CitationManager::generatePage()
   int exitCode;
   Portable::sysTimerStop();
   if ((exitCode=Portable::system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
-                         citeListFile+"\"")) != 0)
+                         citeListFile+"\"" + (citeDebug ? " -d" : ""))) != 0)
   {
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         exitCode);
@@ -327,7 +326,7 @@ void CitationManager::generatePage()
   }
 
   // 9. Remove temporary files
-  if (RM_TMP_FILES)
+  if (!citeDebug)
   {
     thisDir.remove(citeListFile);
     thisDir.remove(doxygenBstFile);

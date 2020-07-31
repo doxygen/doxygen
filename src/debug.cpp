@@ -42,7 +42,8 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "filteroutput",      Debug::FilterOutput      },
   { "lex",               Debug::Lex               },
   { "plantuml",          Debug::Plantuml          },
-  { "fortranfixed2free", Debug::FortranFixed2Free }
+  { "fortranfixed2free", Debug::FortranFixed2Free },
+  { "cite",              Debug::Cite              }
 };
 
 //------------------------------------------------------------------------
