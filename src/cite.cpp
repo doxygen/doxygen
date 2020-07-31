@@ -139,6 +139,7 @@ void CitationManager::generatePage()
         input.at(fi.size())='\0';
         int pos=0;
         int s;
+        QCString citeName;
         while ((s=input.find('\n',pos))!=-1)
         {
           QCString line = input.mid((uint)pos,(uint)(s-pos));
@@ -151,12 +152,54 @@ void CitationManager::generatePage()
             int k=line.find("}",i);
             if (j!=-1 && k!=-1)
             {
-              QCString label = line.mid((uint)(j+1),(uint)(k-j-1));
-              if (p->entries.find(label.data())==p->entries.end()) // not found yet
+              QCString crossrefName = line.mid((uint)(j+1),(uint)(k-j-1));
+              // check if the reference with the cross reference is used
+              // insert cross refererence when cross reference has not yet been added.
+              if ((p->entries.find(citeName.data())!=p->entries.end()) &&
+                  (p->entries.find(crossrefName.data())==p->entries.end())) // not found yet
               {
-                insert(label);
+                insert(crossrefName);
               }
             }
+          }
+          else if (line.stripWhiteSpace().startsWith("@"))
+          {
+            // assumption entry like: "@book { name," or "@book { name" (spaces optional)
+            int j=line.find("{");
+            // when no {, go hunting for it
+            while (j==-1 && (s=input.find('\n',pos))!=-1)
+            {
+              line = input.mid((uint)pos,(uint)(s-pos));
+              j=line.find("{");
+              pos=s+1;
+            }
+            // search for the name
+            citeName = "";
+            if (s != -1 && j!= -1) // to prevent something like "@manual ," and no { found
+            {
+              int k=line.find(",",j);
+              j++;
+              while (s != -1 && citeName.isEmpty())
+              {
+                if (k != -1)
+                {
+                  citeName = line.mid((uint)(j),(uint)(k-j));
+                }
+                else
+                {
+                  citeName = line.mid((uint)(j));
+                }
+                citeName = citeName.stripWhiteSpace();
+                j = 0;
+                if (citeName.isEmpty() && (s=input.find('\n',pos))!=-1)
+                {
+                  line = input.mid((uint)pos,(uint)(s-pos));
+                  pos=s+1;
+                  k=line.find(",");
+                }
+              }
+            }
+            //printf("citeName = #%s#\n",citeName.data());
           }
         }
       }
