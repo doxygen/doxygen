@@ -118,11 +118,14 @@ sub html_ent {
 	s/\\lfloor\b/&lfloor;/g;
 	s/\\rfloor\b/&rfloor;/g;
 }
+$bdebug = 0;
 foreach (@ARGV) {
   if (/\.bib$/) {
     $bibfile = $_;
     $bibfile =~ s/\.bib$//;
     push(@bibfiles,$bibfile);
+  } elsif ("$_" eq "-d") {
+    $bdebug = 1;
   } else {
     $htmlfile = $_;
   }
@@ -315,5 +318,7 @@ close (OHTMLFILE);
 close(HTMLFILE);
 chmod($mode, "$htmlfile$$");
 rename("$htmlfile$$", $htmlfile);
-unlink(@tmpfiles);
+if ($bdebug == 0) {
+  unlink(@tmpfiles);
+}
 exit(0);
