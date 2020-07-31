@@ -175,28 +175,31 @@ void CitationManager::generatePage()
             }
             // search for the name
             citeName = "";
-            if (j != -1) // to prevent something like "@manual ," and no { found
+            if (s != -1 && j!= -1) // to prevent something like "@manual ," and no { found
             {
+              int k=line.find(",",j);
+              j++;
               while (s != -1 && citeName.isEmpty())
               {
-                int k=line.find(",",j);
                 if (k != -1)
                 {
-                  citeName = line.mid((uint)(j+1),(uint)(k-j-1));
+                  citeName = line.mid((uint)(j),(uint)(k-j));
                 }
                 else
                 {
-                  citeName = line.mid((uint)(j+1));
+                  citeName = line.mid((uint)(j));
                 }
                 citeName = citeName.stripWhiteSpace();
-                j = -1;
+                j = 0;
                 if (citeName.isEmpty() && (s=input.find('\n',pos))!=-1)
                 {
                   line = input.mid((uint)pos,(uint)(s-pos));
                   pos=s+1;
+                  k=line.find(",");
                 }
               }
             }
+            //printf("citeName = #%s#\n",citeName.data());
           }
         }
       }
