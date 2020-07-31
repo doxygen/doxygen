@@ -3359,9 +3359,9 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
       {
         inc->fromFileDef->addIncludeDependency(inc->toFileDef,inc->includeName,inc->local,inc->imported);
       }
-      if (inc->toFileDef)
+      if (inc->toFileDef && inc->fromFileDef)
       {
-        inc->toFileDef->addIncludedByDependency(inc->fromFileDef,inc->includeName,inc->local,inc->imported);
+        inc->toFileDef->addIncludedByDependency(inc->fromFileDef,inc->fromFileDef->docName(),inc->local,inc->imported);
       }
     }
     // add the macro definition for this file to the global map
