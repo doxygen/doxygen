@@ -23,6 +23,7 @@
 #include <qdict.h>
 #include <qregexp.h>
 #include <qfile.h>
+#include <qfileinfo.h>
 
 #include "qtextcodec.h"
 #include "sortdict.h"
@@ -74,6 +75,7 @@ class HtmlHelpIndex
                  const char *url, const char *anchor,
                  bool hasLink,bool reversed);
     void writeFields(FTextStream &t);
+    int dictCount(void) {return dict->count();};
   private:
     IndexFieldSDict *dict;   
     HtmlHelp *m_help;
@@ -375,20 +377,20 @@ void HtmlHelp::initialize()
      0x404 Chinese (Taiwan)
 
      New LCIDs:
-	 0x421 Indonesian
-	 0x41A Croatian
-	 0x418 Romanian
-	 0x424 Slovenian
-	 0x41B Slovak
-	 0x422 Ukrainian
-	 0x81A Serbian (Serbia, Latin)
-	 0x403 Catalan
-	 0x426 Latvian
-	 0x427 Lithuanian
-	 0x436 Afrikaans
-	 0x42A Vietnamese
-	 0x429 Persian (Iran)
-	 0xC01 Arabic (Egypt) - I don't know which version of arabic is used inside translator_ar.h ,
+     0x421 Indonesian
+     0x41A Croatian
+     0x418 Romanian
+     0x424 Slovenian
+     0x41B Slovak
+     0x422 Ukrainian
+     0x81A Serbian (Serbia, Latin)
+     0x403 Catalan
+     0x426 Latvian
+     0x427 Lithuanian
+     0x436 Afrikaans
+     0x42A Vietnamese
+     0x429 Persian (Iran)
+     0xC01 Arabic (Egypt) - I don't know which version of arabic is used inside translator_ar.h ,
      so I have chosen Egypt at random
 
   */
@@ -468,6 +470,12 @@ void HtmlHelp::createProjectFile()
   {
     FTextStream t(&f);
     
+    char *hhcFile = "\"index.hhc\"";
+    char *hhkFile = "\"index.hhk\"";
+    int hhkPresent = index->dictCount();
+    if (!ctsItemPresent) hhcFile = "";
+    if (!hhkPresent) hhkFile = "";
+
     QCString indexName="index"+Doxygen::htmlFileExtension;
     t << "[OPTIONS]\n";
     if (!Config_getString(CHM_FILE).isEmpty())
@@ -475,12 +483,12 @@ void HtmlHelp::createProjectFile()
       t << "Compiled file=" << Config_getString(CHM_FILE) << "\n";
     }
     t << "Compatibility=1.1\n"
-         "Full-text search=Yes\n"
-         "Contents file=index.hhc\n"
-         "Default Window=main\n"
-         "Default topic=" << indexName << "\n"
-         "Index file=index.hhk\n"
-         "Language=" << getLanguageString() << endl;
+         "Full-text search=Yes\n";
+    if (ctsItemPresent) t << "Contents file=index.hhc\n";
+    t << "Default Window=main\n"
+         "Default topic=" << indexName << "\n";
+    if (hhkPresent) t << "Index file=index.hhk\n";
+    t << "Language=" << getLanguageString() << endl;
     if (Config_getBool(BINARY_TOC)) t << "Binary TOC=YES\n";
     if (Config_getBool(GENERATE_CHI)) t << "Create CHI file=YES\n";
     t << "Title=" << recode(Config_getString(PROJECT_NAME)) << endl << endl;
@@ -499,14 +507,14 @@ void HtmlHelp::createProjectFile()
     //       Value has been taken from htmlhelp.h file of the HTML Help Workshop
     if (Config_getBool(BINARY_TOC))
     {
-      t << "main=\"" << recode(Config_getString(PROJECT_NAME)) << "\",\"index.hhc\","
-         "\"index.hhk\",\"" << indexName << "\",\"" << 
+      t << "main=\"" << recode(Config_getString(PROJECT_NAME)) << "\"," << hhcFile << ","
+         << hhkFile << ",\"" << indexName << "\",\"" <<
          indexName << "\",,,,,0x23520,,0x70387e,,,,,,,,0" << endl << endl;
     }
     else
     {
-      t << "main=\"" << recode(Config_getString(PROJECT_NAME)) << "\",\"index.hhc\","
-         "\"index.hhk\",\"" << indexName << "\",\"" << 
+      t << "main=\"" << recode(Config_getString(PROJECT_NAME)) << "\"," << hhcFile << ","
+         << hhkFile << ",\"" << indexName << "\",\"" <<
          indexName << "\",,,,,0x23520,,0x10387e,,,,,,,,0" << endl << endl;
     }
     
@@ -520,7 +528,7 @@ void HtmlHelp::createProjectFile()
     uint i;
     for (i=0;i<imageFiles.count();i++)
     {
-      t << imageFiles.at(i) << endl;
+      t << QFileInfo(imageFiles.at(i)).fileName().data() << endl;
     }
     f.close();
   }
@@ -639,6 +647,7 @@ void HtmlHelp::addContentsItem(bool isDir,
     //file = 0;
     //anchor = 0;
   //}
+  ctsItemPresent = true;
   int i; for (i=0;i<dc;i++) cts << "  ";
   cts << "<LI><OBJECT type=\"text/sitemap\">";
   cts << "<param name=\"Name\" value=\"" << convertToHtml(recode(name),TRUE) << "\">";
