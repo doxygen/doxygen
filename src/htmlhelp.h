@@ -92,6 +92,7 @@ class HtmlHelp  : public IndexIntf
 
     QFile *cf,*kf; 
     FTextStream cts,kts;
+    bool ctsItemPresent = false;
     HtmlHelpIndex *index;
     int dc;
     QStrList indexFiles;
