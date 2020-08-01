@@ -1396,7 +1396,8 @@ static void writeSingleFileIndex(OutputList &ol,FileDef *fd)
           FALSE, // isExample
           0,     // example name
           TRUE,  // single line
-          TRUE   // link from index
+          TRUE,  // link from index
+          Config_getBool(MARKDOWN_SUPPORT)
           );
       //ol.docify(")");
     }
@@ -1768,7 +1769,8 @@ static void writeNamespaceIndex(OutputList &ol)
                  FALSE, // isExample
                  0,     // example name
                  TRUE,  // single line
-                 TRUE   // link from index
+                 TRUE,  // link from index
+                 Config_getBool(MARKDOWN_SUPPORT)
                 );
         //ol.docify(")");
       }
@@ -1902,7 +1904,8 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
                  FALSE,  // isExample
                  0,     // example name
                  TRUE,  // single line
-                 TRUE   // link from index
+                 TRUE,  // link from index
+                 Config_getBool(MARKDOWN_SUPPORT)
                 );
       }
       ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
@@ -3908,14 +3911,14 @@ void writeGraphInfo(OutputList &ol)
   DotLegendGraph gd;
   gd.writeGraph(Config_getString(HTML_OUTPUT));
 
-  bool &stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
+  bool stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
   bool oldStripCommentsState = stripCommentsStateRef;
-  bool &createSubdirs = Config_getBool(CREATE_SUBDIRS);
+  bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
   bool oldCreateSubdirs = createSubdirs;
   // temporarily disable the stripping of comments for our own code example!
-  stripCommentsStateRef = FALSE;
+  stripCommentsStateRef = Config_updateBool(STRIP_CODE_COMMENTS,FALSE);
   // temporarily disable create subdirs for linking to our example
-  createSubdirs = FALSE;
+  createSubdirs = Config_updateBool(CREATE_SUBDIRS,FALSE);
 
   startFile(ol,"graph_legend",0,theTranslator->trLegendTitle().data());
   startTitle(ol,0);
@@ -3932,12 +3935,13 @@ void writeGraphInfo(OutputList &ol)
     //printf("legendDocs=%s\n",legendDocs.data());
   }
   FileDef *fd = createFileDef("","graph_legend.dox");
-  ol.generateDoc("graph_legend",1,fd,0,legendDocs,FALSE,FALSE);
+  ol.generateDoc("graph_legend",1,fd,0,legendDocs,FALSE,FALSE,
+                 0,FALSE,FALSE,FALSE);
   delete fd;
 
   // restore config settings
-  stripCommentsStateRef = oldStripCommentsState;
-  createSubdirs = oldCreateSubdirs;
+  Config_updateBool(STRIP_CODE_COMMENTS,oldStripCommentsState);
+  Config_updateBool(CREATE_SUBDIRS,oldCreateSubdirs);
 
   endFile(ol);
   ol.popGeneratorState();
@@ -3988,7 +3992,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       numSubItems += gd->getNamespaces()->count();
       numSubItems += gd->getClasses()->count();
       numSubItems += gd->getFiles()->count();
-      numSubItems += gd->getDirs().size();
+      numSubItems += static_cast<int>(gd->getDirs().size());
       numSubItems += gd->getPages()->count();
     }
 
@@ -4496,8 +4500,8 @@ static void writeIndex(OutputList &ol)
       ol.startHeaderSection();
       ol.startTitleHead(0);
       ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->docLine(),
-                  Doxygen::mainPage,0,Doxygen::mainPage->title(),
-                  TRUE,FALSE,0,TRUE,FALSE);
+                  Doxygen::mainPage,0,Doxygen::mainPage->title(),TRUE,FALSE,
+                  0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       headerWritten = TRUE;
     }
   }
@@ -4533,7 +4537,8 @@ static void writeIndex(OutputList &ol)
 
     ol.startTextBlock();
     ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,
-                Doxygen::mainPage->documentation(),TRUE,FALSE);
+                Doxygen::mainPage->documentation(),TRUE,FALSE,
+                0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endTextBlock();
     ol.endPageDoc();
 
@@ -4570,7 +4575,8 @@ static void writeIndex(OutputList &ol)
   if (!Config_getString(PROJECT_NUMBER).isEmpty())
   {
     ol.startProjectNumber();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,Config_getString(PROJECT_NUMBER),FALSE,FALSE);
+    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,Config_getString(PROJECT_NUMBER),FALSE,FALSE,
+                   0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endProjectNumber();
   }
   ol.endIndexSection(isTitlePageStart);
@@ -4783,7 +4789,8 @@ static void writeIndex(OutputList &ol)
     ol.startContents();
     ol.startTextBlock();
     ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,
-                Doxygen::mainPage->documentation(),FALSE,FALSE
+                Doxygen::mainPage->documentation(),FALSE,FALSE,
+                0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
                );
     ol.endTextBlock();
     endFile(ol);

@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,11 +18,11 @@
 
 \tableofcontents{html,latex}
 
-Doxygen provides a large number of \ref commands "special commands", 
+Doxygen provides a large number of \ref commands "special commands",
 \ref xmlcmds "XML commands", and \ref htmlcmds "HTML commands".
-that can be used to enhance or structure the documentation inside a comment block. 
+that can be used to enhance or structure the documentation inside a comment block.
 If you for some reason have a need to define new commands you can do
-so by means of an \e alias definition. 
+so by means of an \e alias definition.
 
 The definition of an alias should be specified in the configuration file using
 the \ref cfg_aliases "ALIASES" configuration tag.
@@ -32,15 +32,15 @@ The simplest form of an alias is a simple substitution of the form
 \verbatim
  name=value
 \endverbatim
- For example defining the following alias: 
+ For example defining the following alias:
 \verbatim
- ALIASES += sideeffect="\par Side Effects:\n" 
+ ALIASES += sideeffect="\par Side Effects:\n"
 \endverbatim
  will allow you to
- put the command `\sideeffect` (or `@sideeffect`) in the documentation, which 
+ put the command `\sideeffect` (or `@sideeffect`) in the documentation, which
  will result in a user-defined paragraph with heading <b>Side Effects:</b>.
 
-Note that you can put `\n`'s in the value part of an alias to insert newlines
+Note that you cannot put `\n`'s in the value part of an alias to insert newlines
 (in the resulting output). You can put `^^` in the value part of an alias to
 insert a newline as if a physical newline was in the original file.
 
@@ -52,7 +52,7 @@ use a double escape (\c \\\\{ and \c \\\\})
 Also note that you can redefine existing special commands if you wish.
 
 Some commands, such as \ref cmdxrefitem "\\xrefitem" are designed to be used in
-combination with aliases. 
+combination with aliases.
 
 \section custcmd_complex Aliases with arguments
 Aliases can also have one or more arguments. In the alias definition you then need
@@ -101,9 +101,9 @@ ALIASES += reminder="\xreflist{reminders,Reminder,Reminders}"
 
 Note that if for aliases with more than one argument a comma is used as a separator,
 if you want to put a comma inside the command, you will need to escape it with a backslash,
-i.e. 
+i.e.
 \verbatim
-\l{SomeClass,Some text\, with an escaped comma} 
+\l{SomeClass,Some text\, with an escaped comma}
 \endverbatim
 given the alias definition of `\l` in the example above.
 

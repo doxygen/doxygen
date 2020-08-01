@@ -136,14 +136,14 @@ foreach(lex_file ${LEX_FILES})
     )
 
     FLEX_TARGET(${lex_file}
-                ${lex_file}.l
+                ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
                 ${GENERATED_SRC}/${lex_file}.cpp
                 COMPILE_FLAGS "${LEX_FLAGS}")
 endforeach()
 
 
 BISON_TARGET(constexp
-             constexp.y
+             ${CMAKE_CURRENT_LIST_DIR}/constexp.y
              ${GENERATED_SRC}/ce_parse.cpp
              COMPILE_FLAGS "${YACC_FLAGS}")
 
@@ -167,6 +167,7 @@ add_library(doxycfg STATIC
     message.cpp
     debug.cpp
 )
+add_sanitizers(doxycfg)
 
 add_library(doxymain STATIC
     # generated for/by flex/bison
@@ -296,6 +297,7 @@ add_library(doxymain STATIC
     xmldocvisitor.cpp
     xmlgen.cpp
 )
+add_sanitizers(doxymain)
 
 # LLVM/clang headers give a lot of warnings with -Wshadow and -Wcast-align so we disable them for
 # the one file that includes them
@@ -311,6 +313,7 @@ endif()
 add_executable(doxygen
     main.cpp
 )
+add_sanitizers(doxygen)
 
 if (use_libclang)
     find_package(LLVM REQUIRED CONFIG)
@@ -319,20 +322,23 @@ if (use_libclang)
         cmake_minimum_required(VERSION 3.1)
         target_compile_features(doxymain PRIVATE cxx_alignof)
         target_compile_features(doxygen PRIVATE cxx_alignof)
-        target_compile_options(doxymain PRIVATE -stdlib=libc++)
-        target_compile_options(doxygen PRIVATE -stdlib=libc++)
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(doxymain PRIVATE -std=c++11)
-        target_compile_options(doxygen PRIVATE -std=c++11)
+        if (use_libc++)
+            target_compile_options(doxymain PRIVATE -stdlib=libc++)
+            target_compile_options(doxygen PRIVATE -stdlib=libc++)
+        endif()
     endif()
     include_directories(${LLVM_INCLUDE_DIRS})
     add_definitions(${LLVM_DEFINITIONS})
-    llvm_map_components_to_libnames(llvm_libs support core option)
+    if (static_libclang)
+        set(CLANG_LIBS libclang clangTooling)
+    else() # dynamically linked version of clang
+        llvm_config(doxymain USE_SHARED support)
+        set(CLANG_LIBS libclang clang-cpp)
+    endif()
     target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
-    set(CLANG_LIBS libclang clangTooling ${llvm_libs})
 endif()
 
-target_link_libraries(doxygen
+target_link_libraries(doxygen PRIVATE
     doxymain
     doxycfg
     qtools
@@ -358,6 +364,7 @@ set_project_coverage(qtools)
 set_project_coverage(doxycfg)
 set_project_coverage(doxymain)
 set_project_coverage(doxygen)
+
 
 install(TARGETS doxygen DESTINATION bin)
 

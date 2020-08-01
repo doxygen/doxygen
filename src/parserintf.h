@@ -26,12 +26,14 @@
 #include <string>
 
 #include "types.h"
+#include "containers.h"
 
 class Entry;
 class FileDef;
 class CodeOutputInterface;
 class MemberDef;
 class Definition;
+class ClangTUParser;
 
 /** \brief Abstract interface for outline parsers.
  *
@@ -44,36 +46,18 @@ class OutlineParserInterface
   public:
     virtual ~OutlineParserInterface() {}
 
-    /** Starts processing a translation unit (source files + headers).
-     *  After this call parseInput() is called with sameTranslationUnit
-     *  set to FALSE. If parseInput() returns additional include files,
-     *  these are also processed using parseInput() with
-     *  sameTranslationUnit set to TRUE. After that
-     *  finishTranslationUnit() is called.
-     */
-    virtual void startTranslationUnit(const char *fileName) = 0;
-
-    /** Called after all files in a translation unit have been
-     *  processed.
-     */
-    virtual void finishTranslationUnit() = 0;
-
     /** Parses a single input file with the goal to build an Entry tree.
      *  @param[in] fileName    The full name of the file.
      *  @param[in] fileBuf     The contents of the file (zero terminated).
      *  @param[in,out] root    The root of the tree of Entry *nodes
      *             representing the information extracted from the file.
-     *  @param[in] sameTranslationUnit TRUE if this file was found in the same
-     *             translation unit (in the filesInSameTranslationUnit list
-     *             returned for another file).
-     *  @param[in,out] filesInSameTranslationUnit other files expected to be
-     *              found in the same translation unit (used for libclang)
+     *  @param[in] clangParser The clang translation unit parser object
+     *                         or nullptr if disabled.
      */
     virtual void parseInput(const char *fileName,
                             const char *fileBuf,
                             const std::shared_ptr<Entry> &root,
-                            bool sameTranslationUnit,
-                            QStrList &filesInSameTranslationUnit) = 0;
+                            ClangTUParser *clangParser) = 0;
 
     /** Returns TRUE if the language identified by \a extension needs
      *  the C preprocessor to be run before feed the result to the input

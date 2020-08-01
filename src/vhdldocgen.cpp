@@ -2165,8 +2165,9 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
     QCString s=mdef->briefDescription();
     ol.startMemberDescription(mdef->anchor(), NULL, mm == VhdlDocGen::PORT);
     ol.generateDoc(mdef->briefFile(),mdef->briefLine(),
-    mdef->getOuterScope()?mdef->getOuterScope():d,
-    mdef,s.data(),TRUE,FALSE,0,TRUE,FALSE);
+                   mdef->getOuterScope()?mdef->getOuterScope():d,
+                   mdef,s.data(),TRUE,FALSE,
+                   0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     if (detailsVisible)
     {
       ol.pushGeneratorState();
@@ -2270,7 +2271,8 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
   if (subtitle && subtitle[0]!=0)
   {
     ol.startMemberSubtitle();
-    ol.generateDoc("[generated]",-1,0,0,subtitle,FALSE,FALSE,0,TRUE,FALSE);
+    ol.generateDoc("[generated]",-1,0,0,subtitle,FALSE,FALSE,
+                   0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endMemberSubtitle();
   } //printf("memberGroupList=%p\n",memberGroupList);
 
@@ -2296,7 +2298,8 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
         {
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
-          ol.generateDoc("[generated]",-1,0,0,mg->documentation()+"\n",FALSE,FALSE);
+          ol.generateDoc("[generated]",-1,0,0,mg->documentation()+"\n",FALSE,FALSE,
+                         0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
           ol.endMemberGroupDocs();
         }
         ol.startMemberGroup();
@@ -2939,10 +2942,8 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   auto parser { Doxygen::parserManager->getOutlineParser(".vhd") };
   VhdlDocGen::setFlowMember(mdef);
   std::shared_ptr<Entry> root = std::make_shared<Entry>();
-  QStrList filesInSameTu;
-  parser->startTranslationUnit("");
-  parser->parseInput("",codeFragment.data(),root,FALSE,filesInSameTu);
-  parser->finishTranslationUnit();
+  StringVector filesInSameTu;
+  parser->parseInput("",codeFragment.data(),root,nullptr);
 }
 
 void VhdlDocGen::resetCodeVhdlParserState()
@@ -3171,20 +3172,18 @@ void  FlowChart::printFlowTree()
 
 void  FlowChart::colTextNodes()
 {
-  QCString text;
-  FlowChart *flno;
+  FlowChart *flno = NULL;
   bool found=FALSE;
   for (uint j=0;j<flowList.count();j++)
   {
     FlowChart *flo=flowList.at(j);
     if (flo->type&TEXT_NO)
     {
-      text+=flo->text+'\n';
       if (!found)
       {
         flno=flo;
       }
-      if (found)
+      else
       {
         flno->text+=flo->text;
         flowList.remove(flo);
@@ -3524,12 +3523,11 @@ void  FlowChart::printUmlTree()
   }
   qcs+="\n";
 
-  QCString & htmlOutDir = Config_getString(HTML_OUTPUT);
+  QCString htmlOutDir = Config_getString(HTML_OUTPUT);
 
   QCString n=convertNameToFileName();
-  QCString tmp=htmlOutDir;
-  n=PlantumlManager::instance()->writePlantUMLSource(tmp,n,qcs,PlantumlManager::PUML_SVG);
-  PlantumlManager::instance()->generatePlantUMLOutput(n.data(),tmp.data(),PlantumlManager::PUML_SVG);
+  n=PlantumlManager::instance()->writePlantUMLSource(htmlOutDir,n,qcs,PlantumlManager::PUML_SVG);
+  PlantumlManager::instance()->generatePlantUMLOutput(n,htmlOutDir,PlantumlManager::PUML_SVG);
 }
 
 QCString FlowChart::convertNameToFileName()
@@ -3638,9 +3636,8 @@ void FlowChart::writeFlowChart()
 #ifdef DEBUGFLOW
    printFlowTree();
 #endif
-  const MemberDef *p=VhdlDocGen::getFlowMember();
 
-  if (p->isStatic())
+  if (!Config_getString(PLANTUML_JAR_PATH).isEmpty())
   {
     printUmlTree();
     delFlowList();

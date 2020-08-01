@@ -1862,14 +1862,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
       return "函数文档";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "设计概要";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////

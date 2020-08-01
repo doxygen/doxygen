@@ -1948,14 +1948,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       return "메소드 문서화";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "디자인 개요";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////

@@ -97,6 +97,7 @@ struct pyscannerYY_state
   QGString *              copyString = 0;
   int                     indent = 0;
   int                     curIndent = 0;
+  int                     commentIndent = 0;
   bool                    importTuple = FALSE;
   QDict<QCString>         packageNameCache;
   char                    atomStart = 0;
@@ -140,6 +141,7 @@ static void initSpecialBlock(yyscan_t yyscanner);
 static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
 static QCString findPackageScope(yyscan_t yyscanner,const char *fileName);
+static void stripIndentation(QCString &doc,const int indentationLevel);
 
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
@@ -1251,7 +1253,8 @@ STARTDOCSYMS      "##"
 			      QCString actualDoc=yyextra->docBlock;
 			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-			        actualDoc.prepend("\\verbatim ");
+                                stripIndentation(actualDoc,yyextra->commentIndent);
+			        actualDoc.prepend("\\verbatim\n");
 			        actualDoc.append("\\endverbatim ");
 			      }
 			      //printf("-------> yyextra->current=%p yyextra->bodyEntry=%p\n",yyextra->current,yyextra->bodyEntry);
@@ -1262,7 +1265,8 @@ STARTDOCSYMS      "##"
 			      QCString actualDoc=yyextra->docBlock;
 			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-			        actualDoc.prepend("\\verbatim ");
+                                stripIndentation(actualDoc,yyextra->commentIndent);
+			        actualDoc.prepend("\\verbatim\n");
 			        actualDoc.append("\\endverbatim ");
 			      }
 			      actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
@@ -1290,18 +1294,7 @@ STARTDOCSYMS      "##"
 
 
     ^{BB}		{ // leading whitespace
-      			  int indent = computeIndent(yytext);
-			  if (indent>=yyextra->curIndent)
-			  { // strip yyextra->curIndent amount of whitespace
-			    int i;
-			    for (i=0;i<indent-yyextra->curIndent;i++) yyextra->docBlock+=' ';
-			    DBG_CTX((stderr,"stripping indent %d\n",yyextra->curIndent));
-			  }
-			  else
-			  {
-			    DBG_CTX((stderr,"not stripping: %d<%d\n",indent,yyextra->curIndent));
-			    yyextra->docBlock += yytext;
-			  }
+			  yyextra->docBlock += yytext;
       			}
     [^"'\n \t\\]+       {
 			  yyextra->docBlock += yytext;
@@ -1517,7 +1510,7 @@ static void newFunction(yyscan_t yyscanner)
 static inline int computeIndent(const char *s)
 {
   int col=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -1527,6 +1520,55 @@ static inline int computeIndent(const char *s)
     else break;
   }
   return col;
+}
+
+// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
+static void stripIndentation(QCString &doc,const int indentationLevel)
+{
+  if (indentationLevel <= 0) return; // nothing to strip
+
+  // by stripping content the string will only become shorter so we write the results
+  // back into the input string and then resize it at the end.
+  char c;
+  const char *src = doc.data();
+  char *dst = doc.rawData();
+  bool insideIndent = false; // skip the initial line from stripping
+  int cnt = 0;
+  while ((c=*src++)!=0)
+  {
+    // invariant: dst<=src
+    switch(c)
+    {
+      case '\n':
+        *dst++ = c;
+        insideIndent = true;
+        cnt = indentationLevel;
+        break;
+      case ' ':
+        if (insideIndent)
+        {
+          if (cnt>0) // count down the spacing until the end of the indent
+          {
+            cnt--;
+          }
+          else // reached the end of the indent, start of the part of the line to keep
+          {
+            insideIndent = false;
+            *dst++ = c;
+          }
+        }
+        else // part after indent, copy to the output
+        {
+          *dst++ = c;
+        }
+        break;
+      default:
+        insideIndent = false;
+        *dst++ = c;
+        break;
+    }
+  }
+  doc.resize(dst-doc.data()+1);
 }
 
 static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path)
@@ -1630,7 +1672,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int position = 0;
   bool needsEntry;
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
-  QCString processedDoc = processMarkdownForCommentBlock(doc,yyextra->yyFileName,lineNr);
+  Markdown markdown(yyextra->yyFileName,lineNr);
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         (yyextra->docBlockInBody && yyextra->previous) ? yyextra->previous.get() : yyextra->current.get(),
@@ -1642,7 +1685,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
         yyextra->docBlockInBody,
         yyextra->protection,
         position,
-        needsEntry)
+        needsEntry,
+        Config_getBool(MARKDOWN_SUPPORT))
      ) // need to start a new entry
   {
     if (needsEntry)
@@ -1684,6 +1728,7 @@ static void initTriDoubleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlockJavaStyle = TRUE;
   yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   yyextra->docBlock.resize(0);
+  yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = TRUE;
   startCommentBlock(yyscanner,FALSE);
 }
@@ -1696,6 +1741,7 @@ static void initTriSingleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlockJavaStyle = TRUE;
   yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
   yyextra->docBlock.resize(0);
+  yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = FALSE;
   startCommentBlock(yyscanner,FALSE);
 }
@@ -1708,6 +1754,7 @@ static void initSpecialBlock(yyscan_t yyscanner)
   yyextra->docBlockJavaStyle = TRUE;
   yyextra->docBrief = TRUE;
   yyextra->docBlock.resize(0);
+  yyextra->commentIndent = yyextra->curIndent;
   startCommentBlock(yyscanner,TRUE);
 }
 
@@ -1934,8 +1981,7 @@ PythonOutlineParser::~PythonOutlineParser()
 void PythonOutlineParser::parseInput(const char *fileName,
                                        const char *fileBuf,
                                        const std::shared_ptr<Entry> &root,
-                                       bool /*sameTranslationUnit*/,
-                                       QStrList & /*filesInSameTranslationUnit*/)
+                                       ClangTUParser * /*clangParser*/)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;

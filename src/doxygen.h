@@ -30,7 +30,9 @@
 #include "memberlist.h"
 #include "define.h"
 
+#ifndef MULTITHREADED_INPUT
 #define MULTITHREADED_INPUT 0
+#endif
 
 #if MULTITHREADED_INPUT
 #define THREAD_LOCAL thread_local
@@ -148,9 +150,9 @@ class Doxygen
     static int                       subpageNestingLevel;
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
-    static bool                      markdownSupport;
     static GenericsSDict            *genericsDict;
-    static DefineList                macroDefinitions;
+    static DefinesPerFileList        macroDefinitions;
+    static bool                      clangAssistedParsing;
 };
 
 void initDoxygen();
@@ -165,8 +167,8 @@ void cleanUpDoxygen();
 int readFileOrDirectory(const char *s,
                         FileNameLinkedMap *fnDict,
                         StringUnorderedSet *exclSet,
-                        QStrList *patList,
-                        QStrList *exclPatList,
+                        const StringVector *patList,
+                        const StringVector *exclPatList,
                         StringVector *resultList,
                         StringUnorderedSet *resultSet,
                         bool recursive,

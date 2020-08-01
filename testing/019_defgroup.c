@@ -38,7 +38,7 @@ void func_g3();
 /** \} */
 
 /** \addtogroup g3
- *  \{ 
+ *  \{
  */
 
 /** Another function added to the third group */

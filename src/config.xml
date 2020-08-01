@@ -950,7 +950,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  will only generate file names in lower-case letters. If set to
  \c YES, upper-case letters are also allowed. This is useful if you have
  classes or files whose names only differ in case and if your file system
- supports case sensitive file names. Windows (including Cygwin) ands
+ supports case sensitive file names. Windows (including Cygwin) and
  Mac users are advised to set this option to \c NO.
 ]]>
       </docs>
@@ -1705,10 +1705,12 @@ to disable this feature.
       <docs>
 <![CDATA[
  If clang assisted parsing is enabled you can provide the clang parser with the
- path to the <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">
- compilation database</a> used when the files were built. This is equivalent to
- specifying the "-p" option to a clang tool, such as clang-check. These options
- will then be passed to the parser.
+ path to the directory containing a file called compile_commands.json.
+ This file is the <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">
+ compilation database</a> containing the options used when the source files were built.
+ This is equivalent to specifying the "-p" option to a clang tool, such as clang-check.
+ These options will then be passed to the parser. Any options specified with
+ \ref cfg_clang_options "CLANG_OPTIONS" will be added as well.
 
  @note The availability of this option depends on whether or not doxygen
  was generated with the `-Duse_libclang=ON` option for CMake.
@@ -2154,7 +2156,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
  The \c GENERATE_CHI flag
  controls if a separate `.chi` index file is generated (\c YES) or that
- it should be included in the master `.chm` file (\c NO).
+ it should be included in the main `.chm` file (\c NO).
 ]]>
       </docs>
     </option>
@@ -2756,9 +2758,12 @@ or
     <option type='bool' id='USE_PDFLATEX' defval='1' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- If the \c USE_PDFLATEX tag is set to \c YES, doxygen will use
- \c pdflatex to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
+ If the \c USE_PDFLATEX tag is set to \c YES, doxygen will use the engine
+ as specified with \ref cfg_latex_cmd_name "LATEX_CMD_NAME"
+ to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
  files.  Set this option to \c YES, to get a higher quality PDF documentation.
+<br>
+ See also section \ref cfg_latex_cmd_name "LATEX_CMD_NAME" for selecting the engine.
 ]]>
       </docs>
     </option>
@@ -3029,9 +3034,8 @@ front of it.
       </docs>
     </option>
   </group>
-<!--
-  <group name='Sqlite3' docs='Configuration options related to Sqlite3 output'>
-    <option type='bool' id='GENERATE_SQLITE3' defval='0'>
+  <group name='Sqlite3' setting='USE_SQLITE3' docs='Configuration options related to Sqlite3 output'>
+    <option type='bool' id='GENERATE_SQLITE3' setting='USE_SQLITE3' defval='0'>
       <docs>
 <![CDATA[
 If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
@@ -3039,7 +3043,7 @@ If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
 ]]>
       </docs>
     </option>
-    <option type='string' id='SQLITE3_OUTPUT' format='dir' defval='sqlite3' depends='GENERATE_SQLITE3'>
+    <option type='string' id='SQLITE3_OUTPUT' format='dir' defval='sqlite3' setting='USE_SQLITE3' depends='GENERATE_SQLITE3'>
       <docs>
 <![CDATA[
 The \c SQLITE3_OUTPUT tag is used to specify where the \c Sqlite3 database will be put.
@@ -3048,9 +3052,17 @@ put in front of it.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='SQLITE3_RECREATE_DB' defval='1' setting='USE_SQLITE3' depends='GENERATE_SQLITE3'>
+      <docs>
+<![CDATA[
+The \c SQLITE3_OVERWRITE_DB tag is set to \c YES, the existing doxygen_sqlite3.db
+database file will be recreated with each doxygen run.
+If set to \c NO, doxygen will warn if an a database file is already found and not modify it.
+]]>
+      </docs>
+    </option>
 
   </group>
--->
   <group name='PerlMod' docs='Configuration options related to the Perl module output'>
     <option type='bool' id='GENERATE_PERLMOD' defval='0'>
       <docs>

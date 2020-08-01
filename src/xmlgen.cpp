@@ -403,7 +403,8 @@ static void writeXMLDocBlock(FTextStream &t,
   QCString stext = text.stripWhiteSpace();
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
-  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,text,FALSE,FALSE);
+  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,text,FALSE,FALSE,
+                                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   // create a code generator
   XMLCodeGenerator *xmlCodeGen = new XMLCodeGenerator(t);
   // create a parse tree visitor for XML
@@ -1152,7 +1153,8 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
       if (!nd->isHidden() && !nd->isAnonymous())
       {
         t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
-          << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
+          << "\"" << (nd->isInline() ? " inline=\"yes\"" : "")
+          << ">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
       }
     }
   }
@@ -1460,7 +1462,9 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << nd->getOutputFileBase()
-    << "\" kind=\"namespace\" language=\""
+    << "\" kind=\"namespace\" "
+    << (nd->isInline()?"inline=\"yes\" ":"")
+    << "language=\""
     << langToString(nd->getLanguage()) << "\">" << endl;
   t << "    <compoundname>";
   writeXMLString(t,nd->name());

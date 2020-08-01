@@ -467,6 +467,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <Use>{ID}                               { 
                                           DBG_CTX((stderr,"using dir %s\n",yytext));
                                           yyextra->current->name=yytext;
+                                          yyextra->current->name=yyextra->current->name.lower();
                                           yyextra->current->fileName = yyextra->fileName; 
                                           yyextra->current->section=Entry::USINGDIR_SEC;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
@@ -475,12 +476,14 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 <Use>{ID}/,                             { 
                                           yyextra->useModuleName=yytext;
+                                          yyextra->useModuleName=yyextra->useModuleName.lower();
                                         }
 <Use>,{BS}"ONLY"                        { BEGIN(UseOnly); 
                                         }           
 <UseOnly>{BS},{BS}                      {}
 <UseOnly>{ID}                           {
                                           yyextra->current->name= yyextra->useModuleName+"::"+yytext;
+                                          yyextra->current->name=yyextra->current->name.lower();
                                           yyextra->current->fileName = yyextra->fileName; 
                                           yyextra->current->section=Entry::USINGDECL_SEC;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
@@ -2514,7 +2517,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
   int position=0;
   bool needsEntry = FALSE;
-  QCString processedDoc = processMarkdownForCommentBlock(doc,yyextra->fileName,lineNr);
+  Markdown markdown(yyextra->fileName,lineNr);
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         yyextra->docBlockInBody ? yyextra->subrCurrent.back().get() : yyextra->current.get(),
@@ -2526,8 +2530,9 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
         yyextra->docBlockInBody,
         yyextra->defaultProtection,
         position,
-        needsEntry
-        )) 
+        needsEntry,
+        Config_getBool(MARKDOWN_SUPPORT)
+        ))
   {
     DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
     if (needsEntry) addCurrentEntry(yyscanner,false);
@@ -2801,8 +2806,7 @@ FortranOutlineParser::~FortranOutlineParser()
 void FortranOutlineParser::parseInput(const char *fileName,
                                         const char *fileBuf,
                                         const std::shared_ptr<Entry> &root,
-                                        bool /*sameTranslationUnit*/,
-                                        QStrList & /*filesInSameTranslationUnit*/)
+                                        ClangTUParser * /*clangParser*/)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;

@@ -13,7 +13,8 @@
  *
  */
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <cassert>
 
 #include <qdir.h>
 

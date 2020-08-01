@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of QShared struct
 **
@@ -42,13 +42,15 @@
 #include "qglobal.h"
 #endif // QT_H
 
+#include <atomic>
+
 
 struct QShared
 {
-    QShared()		{ count = 1; }
+    QShared()		: count(1) { }
     void ref()		{ count++; }
     bool deref()	{ return !--count; }
-    uint count;
+    std::atomic_uint count;
 };
 
 

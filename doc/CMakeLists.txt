@@ -32,7 +32,7 @@ set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path whe
 set(DOC_FILES
         arch.doc
         archoverview.eps
-        archoverview.gif
+        archoverview.svg
         autolink.doc
         changelog.doc
         commands.doc
@@ -212,12 +212,22 @@ install(FILES
         DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
 )
 
+install(CODE "if(NOT EXISTS \"${PROJECT_BINARY_DIR}/latex/doxygen_manual.pdf\")
+    message(FATAL_ERROR \"\nTerminating:\n    documentation has not been generated, \n    create documentation by using the 'docs' target followed by an 'install'\n\")
+endif()"
+)
+
 install(FILES
         "${PROJECT_BINARY_DIR}/latex/doxygen_manual.pdf"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"
 )
 
 if (build_doc_chm)
+install(CODE "if(NOT EXISTS \"${PROJECT_BINARY_DIR}/chm/doxygen_manual.chm\")
+    message(FATAL_ERROR \"\nTerminating:\n    CHM documentation has not been generated, \n    create CHM documentation by using the 'docs_chm' target followed by an 'install'\n\")
+endif()"
+)
+
 install(FILES
         "${PROJECT_BINARY_DIR}/chm/doxygen_manual.chm"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"

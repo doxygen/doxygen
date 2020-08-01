@@ -36,7 +36,8 @@ class Debug
                      FilterOutput = 0x00001000,
                      Lex          = 0x00002000,
                      Plantuml     = 0x00004000,
-                     FortranFixed2Free = 0x00008000
+                     FortranFixed2Free = 0x00008000,
+                     Cite         = 0x00010000
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
 
@@ -47,7 +48,7 @@ class Debug
     static void setPriority(int p);
 
     static void startTimer();
-    static int  elapsedTime();
+    static double elapsedTime();
 
   private:
     static DebugMask curMask;

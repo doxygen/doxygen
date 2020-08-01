@@ -114,6 +114,7 @@ static uint                   g_includeFileOffset;
 static uint                   g_includeFileLength;
 static int                    g_includeFileLine;
 static bool                   g_includeFileShowLineNo;
+static bool                   g_markdownSupport;
 
 
 /** Parser's context to store all global variables.
@@ -1799,7 +1800,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 
   if (doc.isEmpty()) return retval;
 
-  doctokenizerYYinit(doc,g_fileName);
+  doctokenizerYYinit(doc,g_fileName,g_markdownSupport);
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
@@ -1846,18 +1847,16 @@ static void readTextFileByName(const QCString &file,QCString &text)
       return;
     }
   }
-  QStrList &examplePathList = Config_getList(EXAMPLE_PATH);
-  char *s=examplePathList.first();
-  while (s)
+  const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
+  for (const auto &s : examplePathList)
   {
-    QCString absFileName = QCString(s)+Portable::pathSeparator()+file;
+    QCString absFileName = QCString(s.c_str())+Portable::pathSeparator()+file;
     QFileInfo fi(absFileName);
     if (fi.exists())
     {
       text = fileToString(absFileName,Config_getBool(FILTER_SOURCE_FILES));
       return;
     }
-    s=examplePathList.next();
   }
 
   // as a fallback we also look in the exampleNameDict
@@ -2569,7 +2568,7 @@ void DocRef::parse()
 
 DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //context)
 {
-  static uint numBibFiles = Config_getList(CITE_BIB_FILES).count();
+  size_t numBibFiles = Config_getList(CITE_BIB_FILES).size();
   m_parent = parent;
   //printf("DocCite::DocCite(target=%s)\n",target.data());
   ASSERT(!target.isEmpty());
@@ -7567,7 +7566,8 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
                             const Definition *ctx,const MemberDef *md,
                             const char *input,bool indexWords,
                             bool isExample, const char *exampleName,
-                            bool singleLine, bool linkFromIndex)
+                            bool singleLine, bool linkFromIndex,
+                            bool markdownSupport)
 {
   //printf("validatingParseDoc(%s,%s)=[%s]\n",ctx?ctx->name().data():"<none>",
   //                                     md?md->name().data():"<none>",
@@ -7724,6 +7724,7 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   g_retvalsFound.clear();
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
+  g_markdownSupport = markdownSupport;
 
   //printf("Starting comment block at %s:%d\n",g_fileName.data(),startLine);
   doctokenizerYYlineno=startLine;
@@ -7734,7 +7735,7 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
     inpStr+='\n';
   }
   //printf("processCopyDoc(in='%s' out='%s')\n",input,inpStr.data());
-  doctokenizerYYinit(inpStr,g_fileName);
+  doctokenizerYYinit(inpStr,g_fileName,markdownSupport);
 
   // build abstract syntax tree
   DocRoot *root = new DocRoot(md!=0,singleLine);
@@ -7802,7 +7803,7 @@ DocText *validatingParseText(const char *input)
   if (input)
   {
     doctokenizerYYlineno=1;
-    doctokenizerYYinit(input,g_fileName);
+    doctokenizerYYinit(input,g_fileName,Config_getBool(MARKDOWN_SUPPORT));
 
     // build abstract syntax tree
     txt->parse();

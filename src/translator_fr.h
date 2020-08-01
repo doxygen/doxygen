@@ -2001,14 +2001,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
       return "Documentation des méthodes";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Vue d'ensemble";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////

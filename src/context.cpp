@@ -298,18 +298,16 @@ class ConfigContext::Private
   public:
     Private() { m_cachedLists.setAutoDelete(TRUE); }
     virtual ~Private() { }
-    TemplateVariant fetchList(const QCString &name,const QStrList *list)
+    TemplateVariant fetchList(const QCString &name,const StringVector &list)
     {
       TemplateVariant *v = m_cachedLists.find(name);
       if (v==0)
       {
         TemplateList *tlist = TemplateList::alloc();
         m_cachedLists.insert(name,new TemplateVariant(tlist));
-        QStrListIterator li(*list);
-        char *s;
-        for (li.toFirst();(s=li.current());++li)
+        for (const auto &s : list)
         {
-          tlist->append(s);
+          tlist->append(s.c_str());
         }
         return tlist;
       }
@@ -345,23 +343,23 @@ TemplateVariant ConfigContext::get(const char *name) const
       {
         case ConfigValues::Info::Bool:
           {
-            bool b = ConfigValues::instance().*((ConfigValues::InfoBool*)option)->item;
+            bool b = ConfigValues::instance().*(option->value.b);
             return TemplateVariant(b);
           }
         case ConfigValues::Info::Int:
           {
-            int i = ConfigValues::instance().*((ConfigValues::InfoInt*)option)->item;
+            int i = ConfigValues::instance().*(option->value.i);
             return TemplateVariant(i);
           }
         case ConfigValues::Info::String:
           {
-            QCString s = ConfigValues::instance().*((ConfigValues::InfoString*)option)->item;
+            QCString s = ConfigValues::instance().*(option->value.s);
             return TemplateVariant(s);
           }
         case ConfigValues::Info::List:
           {
-            const QStrList &l = ConfigValues::instance().*((ConfigValues::InfoList*)option)->item;
-            return p->fetchList(name,&l);
+            const StringVector &l = ConfigValues::instance().*(option->value.l);
+            return p->fetchList(name,l);
           }
         default:
           break;
@@ -1264,7 +1262,8 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
                                 const QCString &relPath,const QCString &docStr,bool isBrief)
 {
   TemplateVariant result;
-  DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,0,isBrief,FALSE);
+  DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,
+                                     0,isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   QGString docs;
   {
     FTextStream ts(&docs);
@@ -1775,10 +1774,7 @@ class IncludeInfoListContext::Private : public GenericNodeListContext
       IncludeInfo *ii;
       for (li.toFirst();(ii=li.current());++li)
       {
-        if (!ii->indirect)
-        {
-          append(IncludeInfoContext::alloc(ii,lang));
-        }
+        append(IncludeInfoContext::alloc(ii,lang));
       }
     }
 };
@@ -10345,7 +10341,7 @@ void generateTemplateFiles(const char *templateDir)
   QCString outDir = QCString(templateDir)+"/html";
   if (!thisDir.exists(outDir) && !thisDir.mkdir(outDir))
   {
-    err("Failed to create output directory '%s'\n",templateDir);
+    err("Failed to create output directory '%s'\n",outDir.data());
     return;
   }
   ResourceMgr::instance().writeCategory("html",outDir);

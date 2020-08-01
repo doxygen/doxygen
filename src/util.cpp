@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include <mutex>
+#include <unordered_set>
 
 #include "md5.h"
 
@@ -277,22 +278,20 @@ QCString generateMarker(int id)
   return result;
 }
 
-static QCString stripFromPath(const QCString &path,QStrList &l)
+static QCString stripFromPath(const QCString &path,const StringVector &l)
 {
   // look at all the strings in the list and strip the longest match
-  const char *s=l.first();
   QCString potential;
   unsigned int length = 0;
-  while (s)
+  for (const auto &s : l)
   {
-    QCString prefix = s;
+    QCString prefix = s.c_str();
     if (prefix.length() > length &&
         qstricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
     {
       length = prefix.length();
       potential = path.right(path.length()-prefix.length());
     }
-    s = l.next();
   }
   if (length) return potential;
   return path;
@@ -2377,15 +2376,13 @@ int filterCRLF(char *buf,int len)
   return dest;                 // length of the valid part of the buf
 }
 
-static QCString getFilterFromList(const char *name,const QStrList &filterList,bool &found)
+static QCString getFilterFromList(const char *name,const StringVector &filterList,bool &found)
 {
   found=FALSE;
   // compare the file name to the filter pattern list
-  QStrListIterator sli(filterList);
-  char* filterStr;
-  for (sli.toFirst(); (filterStr = sli.current()); ++sli)
+  for (const auto &filterStr : filterList)
   {
-    QCString fs = filterStr;
+    QCString fs = filterStr.c_str();
     int i_equals=fs.find('=');
     if (i_equals!=-1)
     {
@@ -2419,12 +2416,12 @@ QCString getFileFilter(const char* name,bool isSourceCode)
   // sanity check
   if (name==0) return "";
 
-  QStrList& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
-  QStrList& filterList    = Config_getList(FILTER_PATTERNS);
+  const StringVector& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
+  const StringVector& filterList    = Config_getList(FILTER_PATTERNS);
 
   QCString filterName;
   bool found=FALSE;
-  if (isSourceCode && !filterSrcList.isEmpty())
+  if (isSourceCode && !filterSrcList.empty())
   { // first look for source filter pattern list
     filterName = getFilterFromList(name,filterSrcList,found);
   }
@@ -4633,11 +4630,10 @@ QCString substituteKeywords(const QCString &s,const char *title,
 int getPrefixIndex(const QCString &name)
 {
   if (name.isEmpty()) return 0;
-  static QStrList &sl = Config_getList(IGNORE_PREFIX);
-  char *s = sl.first();
-  while (s)
+  const StringVector &sl = Config_getList(IGNORE_PREFIX);
+  for (const auto &s : sl)
   {
-    const char *ps=s;
+    const char *ps=s.c_str();
     const char *pd=name.data();
     int i=0;
     while (*ps!=0 && *pd!=0 && *ps==*pd) ps++,pd++,i++;
@@ -4645,7 +4641,6 @@ int getPrefixIndex(const QCString &name)
     {
       return i;
     }
-    s = sl.next();
   }
   return 0;
 }
@@ -5028,10 +5023,20 @@ void createSubDirs(QDir &d)
     int l1,l2;
     for (l1=0;l1<16;l1++)
     {
-      d.mkdir(QCString().sprintf("d%x",l1));
+      QCString subdir;
+      subdir.sprintf("d%x",l1);
+      if (!d.exists(subdir) && !d.mkdir(subdir))
+      {
+        term("Failed to create output directory '%s'\n",subdir.data());
+      }
       for (l2=0;l2<256;l2++)
       {
-        d.mkdir(QCString().sprintf("d%x/d%02x",l1,l2));
+        QCString subsubdir;
+        subsubdir.sprintf("d%x/d%02x",l1,l2);
+        if (!d.exists(subsubdir) && !d.mkdir(subsubdir))
+        {
+          term("Failed to create output directory '%s'\n",subsubdir.data());
+        }
       }
     }
   }
@@ -5276,6 +5281,16 @@ QCString convertToId(const char *s)
   }
   growBuf.addChar(0);
   return growBuf.get();
+}
+
+/*! Some strings have been corrected but the requirement regarding the fact
+ *  that an id cannot have a digit at the first position. To overcome problems
+ *  with double labels we always place an "a" in front
+ */
+QCString correctId(QCString s)
+{
+  if (s.isEmpty()) return s;
+  return "a" + s;
 }
 
 /*! Converts a string to an XML-encoded string */
@@ -6597,10 +6612,11 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   // search for leading empty lines
   int i=0,li=-1,l=s.length();
   char c;
-  while ((c=*p++))
+  while ((c=*p))
   {
-    if (c==' ' || c=='\t' || c=='\r') i++;
-    else if (c=='\n') i++,li=i,docLine++;
+    if (c==' ' || c=='\t' || c=='\r') i++,p++;
+    else if (c=='\\' && qstrncmp(p,"\\ilinebr",8)==0) i+=8,li=i,docLine++,p+=8;
+    else if (c=='\n') i++,li=i,docLine++,p++;
     else break;
   }
 
@@ -6609,9 +6625,10 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   p=s.data()+b;
   while (b>=0)
   {
-    c=*p; p--;
-    if (c==' ' || c=='\t' || c=='\r') b--;
-    else if (c=='\n') bi=b,b--;
+    c=*p;
+    if (c==' ' || c=='\t' || c=='\r') b--,p--;
+    else if (c=='r' && b>=7 && qstrncmp(p-7,"\\ilinebr",8)==0) bi=b-7,b-=8,p-=8;
+    else if (c=='\n') bi=b,b--,p--;
     else break;
   }
 
@@ -6622,6 +6639,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   if (bi==-1) bi=l;
   if (li==-1) li=0;
   if (bi<=li) return 0; // only empty lines
+  //printf("docLine='%s' len=%d li=%d bi=%d\n",s.data(),s.length(),li,bi);
   return s.mid(li,bi-li);
 }
 
@@ -6973,7 +6991,8 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   if (doc.isEmpty()) return s.data();
   FTextStream t(&s);
   DocNode *root = validatingParseDoc(fileName,lineNr,
-      (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE);
+      (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE,
+      0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   TextDocVisitor *visitor = new TextDocVisitor(t);
   root->accept(visitor);
   delete visitor;
@@ -7008,9 +7027,8 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 
 //--------------------------------------------------------------------------------------
 
-static QDict<void> aliasesProcessed;
-
-static QCString expandAliasRec(const QCString s,bool allowRecursion=FALSE);
+static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,
+                               const QCString s,bool allowRecursion=FALSE);
 
 struct Marker
 {
@@ -7052,7 +7070,8 @@ static int findEndOfCommand(const char *s)
  *  with the corresponding values found in the comma separated argument
  *  list \a argList and the returns the result after recursive alias expansion.
  */
-static QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList)
+static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
+                                      const QCString &aliasValue,const QCString &argList)
 {
   //printf("----- replaceAliasArguments(val=[%s],args=[%s])\n",aliasValue.data(),argList.data());
 
@@ -7132,7 +7151,7 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
     //printf("part before marker %d: '%s'\n",i,aliasValue.mid(p,m->pos-p).data());
     if (m->number>0 && m->number<=(int)args.count()) // valid number
     {
-      result+=expandAliasRec(*args.at(m->number-1),TRUE);
+      result+=expandAliasRec(aliasesProcessed,*args.at(m->number-1),TRUE);
       //printf("marker index=%d pos=%d number=%d size=%d replacement %s\n",i,m->pos,m->number,m->size,
       //    args.at(m->number-1)->data());
     }
@@ -7144,7 +7163,7 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
   // expand the result again
   result = substitute(result,"\\{","{");
   result = substitute(result,"\\}","}");
-  result = expandAliasRec(substitute(result,"\\,",","));
+  result = expandAliasRec(aliasesProcessed,substitute(result,"\\,",","));
 
   return result;
 }
@@ -7171,7 +7190,7 @@ static QCString escapeCommas(const QCString &s)
   return result.data();
 }
 
-static QCString expandAliasRec(const QCString s,bool allowRecursion)
+static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCString s,bool allowRecursion)
 {
   QCString result;
   static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
@@ -7204,19 +7223,20 @@ static QCString expandAliasRec(const QCString s,bool allowRecursion)
     }
     //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s' aliasText=%s\n",
     //    s.data(),cmd.data(),numArgs,args.data(),aliasText?aliasText->data():"<none>");
-    if ((allowRecursion || aliasesProcessed.find(cmd)==0) && aliasText) // expand the alias
+    if ((allowRecursion || aliasesProcessed.find(cmd.str())==aliasesProcessed.end()) &&
+        aliasText) // expand the alias
     {
       //printf("is an alias!\n");
-      if (!allowRecursion) aliasesProcessed.insert(cmd,(void *)0x8);
+      if (!allowRecursion) aliasesProcessed.insert(cmd.str());
       QCString val = *aliasText;
       if (hasArgs)
       {
-        val = replaceAliasArguments(val,args);
+        val = replaceAliasArguments(aliasesProcessed,val,args);
         //printf("replace '%s'->'%s' args='%s'\n",
         //       aliasText->data(),val.data(),args.data());
       }
-      result+=expandAliasRec(val);
-      if (!allowRecursion) aliasesProcessed.remove(cmd);
+      result+=expandAliasRec(aliasesProcessed,val);
+      if (!allowRecursion) aliasesProcessed.erase(cmd.str());
       p=i+l;
       if (hasArgs) p+=argsLen+2;
     }
@@ -7286,9 +7306,9 @@ QCString extractAliasArgs(const QCString &args,int pos)
 QCString resolveAliasCmd(const QCString aliasCmd)
 {
   QCString result;
-  aliasesProcessed.clear();
+  StringUnorderedSet aliasesProcessed;
   //printf("Expanding: '%s'\n",aliasCmd.data());
-  result = expandAliasRec(aliasCmd);
+  result = expandAliasRec(aliasesProcessed,aliasCmd);
   //printf("Expanding result: '%s'->'%s'\n",aliasCmd.data(),result.data());
   return result;
 }
@@ -7296,12 +7316,12 @@ QCString resolveAliasCmd(const QCString aliasCmd)
 QCString expandAlias(const QCString &aliasName,const QCString &aliasValue)
 {
   QCString result;
-  aliasesProcessed.clear();
+  StringUnorderedSet aliasesProcessed;
   // avoid expanding this command recursively
-  aliasesProcessed.insert(aliasName,(void *)0x8);
+  aliasesProcessed.insert(aliasName.str());
   // expand embedded commands
   //printf("Expanding: '%s'->'%s'\n",aliasName.data(),aliasValue.data());
-  result = expandAliasRec(aliasValue);
+  result = expandAliasRec(aliasesProcessed,aliasValue);
   //printf("Expanding result: '%s'->'%s'\n",aliasName.data(),result.data());
   return result;
 }
@@ -7319,7 +7339,8 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
     linkifyText(TextGeneratorOLImpl(ol),d,0,0,a.type);
     ol.endConstraintType();
     ol.startConstraintDocs();
-    ol.generateDoc(d->docFile(),d->docLine(),d,0,a.docs,TRUE,FALSE);
+    ol.generateDoc(d->docFile(),d->docLine(),d,0,a.docs,TRUE,FALSE,
+                   0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endConstraintDocs();
   }
   ol.endConstraintList();
@@ -7506,9 +7527,9 @@ QCString filterTitle(const QCString &title)
 // returns TRUE if the name of the file represented by 'fi' matches
 // one of the file patterns in the 'patList' list.
 
-bool patternMatch(const QFileInfo &fi,const QStrList *patList)
+bool patternMatch(const QFileInfo &fi,const StringVector &patList)
 {
-  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
   bool found = FALSE;
 
   // For platforms where the file system is non case sensitive overrule the setting
@@ -7517,17 +7538,15 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
     caseSenseNames = FALSE;
   }
 
-  if (patList)
+  if (!patList.empty())
   {
-    QStrListIterator it(*patList);
-    QCString pattern;
-
     QCString fn = fi.fileName().data();
     QCString fp = fi.filePath().data();
     QCString afp= fi.absFilePath().data();
 
-    for (it.toFirst();(pattern=it.current());++it)
+    for (const auto &pat: patList)
     {
+      QCString pattern = pat.c_str();
       if (!pattern.isEmpty())
       {
         int i=pattern.find('=');
@@ -8118,20 +8137,22 @@ bool classVisibleInIndex(const ClassDef *cd)
 
 QCString extractDirection(QCString &docs)
 {
-  QRegExp re("\\[[^\\]]+\\]"); // [...]
+  QRegExp re("\\[[ inout,]+\\]"); // [...]
   int l=0;
-  if (re.match(docs,0,&l)==0)
+  if (re.match(docs,0,&l)==0 && l>2)
   {
-    int  inPos  = docs.find("in", 1,FALSE);
-    int outPos  = docs.find("out",1,FALSE);
-    bool input  =  inPos!=-1 &&  inPos<l;
-    bool output = outPos!=-1 && outPos<l;
-    if (input || output) // in,out attributes
+    // make dir the part inside [...] without separators
+    QCString dir=substitute(substitute(docs.mid(1,l-2)," ",""),",","");
+    int inIndex, outIndex;
+    unsigned char ioMask=0;
+    if (( inIndex=dir.find( "in"))!=-1) dir.remove (inIndex,2),ioMask|=(1<<0);
+    if ((outIndex=dir.find("out"))!=-1) dir.remove(outIndex,3),ioMask|=(1<<1);
+    if (dir.isEmpty() && ioMask!=0) // only in and/or out attributes found
     {
       docs = docs.mid(l); // strip attributes
-      if (input && output) return "[in,out]";
-      else if (input)      return "[in]";
-      else if (output)     return "[out]";
+      if (ioMask==((1<<0)|(1<<1))) return "[in,out]";
+      else if (ioMask==(1<<0))     return "[in]";
+      else if (ioMask==(1<<1))     return "[out]";
     }
   }
   return QCString();
@@ -8368,18 +8389,16 @@ bool openOutputFile(const char *outFile,QFile &f)
 void writeExtraLatexPackages(FTextStream &t)
 {
   // User-specified packages
-  QStrList &extraPackages = Config_getList(EXTRA_PACKAGES);
-  if (!extraPackages.isEmpty())
+  const StringVector &extraPackages = Config_getList(EXTRA_PACKAGES);
+  if (!extraPackages.empty())
   {
     t << "% Packages requested by user\n";
-    const char *pkgName=extraPackages.first();
-    while (pkgName)
+    for (const auto &pkgName : extraPackages)
     {
       if ((pkgName[0] == '[') || (pkgName[0] == '{'))
-        t << "\\usepackage" << pkgName << "\n";
+        t << "\\usepackage" << pkgName.c_str() << "\n";
       else
-        t << "\\usepackage{" << pkgName << "}\n";
-      pkgName=extraPackages.next();
+        t << "\\usepackage{" << pkgName.c_str() << "}\n";
     }
     t << "\n";
   }

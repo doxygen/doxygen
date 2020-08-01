@@ -115,7 +115,8 @@ void OutputList::generateDoc(const char *fileName,int startLine,
                   const Definition *ctx,const MemberDef * md,
                   const QCString &docStr,bool indexWords,
                   bool isExample,const char *exampleName,
-                  bool singleLine,bool linkFromIndex)
+                  bool singleLine,bool linkFromIndex,
+                  bool markdownSupport)
 {
   int count=0;
   if (docStr.isEmpty()) return;
@@ -132,7 +133,7 @@ void OutputList::generateDoc(const char *fileName,int startLine,
   DocRoot *root=0;
   root = validatingParseDoc(fileName,startLine,
                             ctx,md,docStr,indexWords,isExample,exampleName,
-                            singleLine,linkFromIndex);
+                            singleLine,linkFromIndex,markdownSupport);
   if (count>0) writeDoc(root,ctx,md);
   delete root;
 }

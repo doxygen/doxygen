@@ -193,6 +193,8 @@ struct scannerYY_state
   uint             fencedSize = 0;
   bool             nestedComment = false;
   std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
+
+  ClangTUParser * clangParser = 0;
 };
 
 #if USE_STATE2STRING
@@ -766,9 +768,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    yyextra->current->type = "id";
 					  }
 					  yyextra->current->name = yytext;
-                                          if (yyextra->insideCpp || yyextra->insideObjC) 
+                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
                                           {
-                                            yyextra->current->id = ClangParser::instance()->lookup(yyextra->yyLineNr,yytext);
+                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
                                           }
   					}
 <ObjCMethod>":"{B}*			{ // start of parameter list
@@ -2045,9 +2047,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 				          BEGIN(FindMembers);
 			 	        }
 <FindMembers,FindMemberName>{SCOPENAME}	{
-                                          if (yyextra->insideCpp || yyextra->insideObjC) 
+                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
                                           {
-                                            yyextra->current->id = ClangParser::instance()->lookup(yyextra->yyLineNr,yytext);
+                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
                                           }
 					  yyextra->yyBegColNr=yyextra->yyColNr;
 					  yyextra->yyBegLineNr=yyextra->yyLineNr;
@@ -2348,9 +2350,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   */
 <Define>{ID}				{
   					  //printf("Define '%s' without args\n",yytext);
-                                          if (yyextra->insideCpp || yyextra->insideObjC) 
+                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
                                           {
-                                            yyextra->current->id = ClangParser::instance()->lookup(yyextra->yyLineNr,yytext);
+                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
                                           }
   					  yyextra->current->bodyLine = yyextra->yyLineNr;
 					  yyextra->current->bodyColumn = yyextra->yyColNr;
@@ -2359,7 +2361,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <DefineEnd>\n				{
   					  //printf("End define: doc=%s docFile=%s docLine=%d\n",yyextra->current->doc.data(),yyextra->current->docFile.data(),yyextra->current->docLine);
-                                          lineCount(yyscanner);
 					  yyextra->current->fileName   = yyextra->yyFileName;
 					  yyextra->current->startLine  = yyextra->yyLineNr;
 					  yyextra->current->startColumn = yyextra->yyColNr;
@@ -2368,6 +2369,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  yyextra->current->name       = yyextra->current->name.stripWhiteSpace();
 					  yyextra->current->section    = Entry::DEFINE_SEC;
 					  yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                          lineCount(yyscanner);
 					  initEntry(yyscanner);
 					  BEGIN(yyextra->lastDefineContext);
   					}
@@ -3463,9 +3465,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <Sharp>.				{ yyextra->current->type += *yytext ; }
 <FindFields>{ID}			{
-                                          if (yyextra->insideCpp || yyextra->insideObjC) 
+                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
                                           {
-                                            yyextra->current->id = ClangParser::instance()->lookup(yyextra->yyLineNr,yytext);
+                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
                                           }
   					  yyextra->current->bodyLine = yyextra->yyLineNr;
 					  yyextra->current->bodyColumn = yyextra->yyColNr;
@@ -5334,9 +5336,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <CompoundName>{SCOPENAME}		{ 
 					  yyextra->current->name = yytext ;
-                                          if (yyextra->insideCpp || yyextra->insideObjC) 
+                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
                                           {
-                                            yyextra->current->id = ClangParser::instance()->lookup(yyextra->yyLineNr,yytext);
+                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
                                           }
 					  lineCount(yyscanner);
 					  if (yyextra->current->spec & Entry::Protocol)
@@ -5399,9 +5401,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					}
 <ClassVar>{ID}				{
-                                          if (yyextra->insideCpp || yyextra->insideObjC) 
+                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
                                           {
-                                            yyextra->current->id = ClangParser::instance()->lookup(yyextra->yyLineNr,yytext);
+                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
                                           }
   					  if (yyextra->insideIDL && qstrcmp(yytext,"switch")==0)
 					  {
@@ -7016,7 +7018,9 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 
   int position=0;
   bool needsEntry=FALSE;
-  QCString processedDoc = processMarkdownForCommentBlock(stripIndentation(doc),yyextra->yyFileName,lineNr);
+  Markdown markdown(yyextra->yyFileName,lineNr);
+  QCString strippedDoc = stripIndentation(doc);
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,lineNr) : strippedDoc;
   while (yyextra->commentScanner.parseCommentBlock(
 	yyextra->thisParser,
 	yyextra->docBlockInBody && yyextra->previous ? yyextra->previous.get() : yyextra->current.get(),
@@ -7028,7 +7032,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 	yyextra->docBlockInBody,                               // isInBody
 	yyextra->protection,
         position,
-        needsEntry
+        needsEntry,
+        Config_getBool(MARKDOWN_SUPPORT)
         )
      )
   {
@@ -7087,9 +7092,10 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
 	     FALSE,
 	     yyextra->protection,
 	     position,
-	     needsEntry
+	     needsEntry,
+             Config_getBool(MARKDOWN_SUPPORT)
 	    )
-	  ) 
+	  )
       {
 	//printf("handleParametersCommentBlock position=%d [%s]\n",position,doc.data()+position);
 	if (needsEntry) newEntry(yyscanner);
@@ -7228,8 +7234,7 @@ static void parseMain(yyscan_t yyscanner,
                       const char *fileName,
                       const char *fileBuf,
                       const std::shared_ptr<Entry> &rt,
-                      bool sameTranslationUnit,
-                      QStrList & filesInSameTranslationUnit)
+                      ClangTUParser *clangParser)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   initParser(yyscanner);
@@ -7250,19 +7255,8 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->yyBegLineNr   = 1;
   yyextra->yyBegColNr    = 0;
   yyextra->yyFileName = fileName;
+  yyextra->clangParser = clangParser;
   setContext(yyscanner);
-  bool processWithClang = yyextra->insideCpp || yyextra->insideObjC;
-  if (processWithClang)
-  {
-    if (!sameTranslationUnit) // new file
-    {
-      ClangParser::instance()->start(fileName,filesInSameTranslationUnit);
-    }
-    else
-    {
-      ClangParser::instance()->switchToFile(fileName);
-    }
-  }
   rt->lang = yyextra->language;
   msg("Parsing file %s...\n",yyextra->yyFileName.data());
 
@@ -7399,33 +7393,17 @@ COutlineParser::~COutlineParser()
   scannerYYlex_destroy(p->yyscanner);
 }
 
-void COutlineParser::startTranslationUnit(const char *)
-{
-}
-
-void COutlineParser::finishTranslationUnit()
-{
-  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  bool processWithClang = yyextra->insideCpp || yyextra->insideObjC;
-  if (processWithClang)
-  {
-    ClangParser::instance()->finish();
-  }
-}
-
 void COutlineParser::parseInput(const char *fileName,
                                   const char *fileBuf,
                                   const std::shared_ptr<Entry> &root,
-                                  bool sameTranslationUnit,
-                                  QStrList & filesInSameTranslationUnit)
+                                  ClangTUParser *clangParser)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;
 
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
 
-  ::parseMain(p->yyscanner, fileName,fileBuf,root,
-              sameTranslationUnit,filesInSameTranslationUnit);
+  ::parseMain(p->yyscanner,fileName,fileBuf,root,clangParser);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }

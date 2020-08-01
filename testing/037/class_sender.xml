@@ -19,7 +19,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="037_msc.cpp" line="17" column="10"/>
+        <location file="037_msc.cpp" line="35" column="10"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -32,7 +32,7 @@
 </msc>
  </para>
     </detaileddescription>
-    <location file="037_msc.cpp" line="13" column="1" bodyfile="037_msc.cpp" bodystart="14" bodyend="18"/>
+    <location file="037_msc.cpp" line="31" column="1" bodyfile="037_msc.cpp" bodystart="32" bodyend="36"/>
     <listofallmembers>
       <member refid="class_sender_1a8ad2c6f9baa4e798868fe4a4d45f8fda" prot="public" virt="non-virtual">
         <scope>Sender</scope>

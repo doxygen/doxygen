@@ -218,135 +218,6 @@ int QCString::contains( const QRegExp &rx ) const
   return count;
 }
 
-bool QCString::startsWith( const char *s ) const
-{
-  const char *p = data();
-  if (p==0 || s==0) return s==0;
-  while (*p!=0 && *p==*s) p++,s++;
-  return *s==0;
-}
-
-bool QCString::stripPrefix(const char *prefix)
-{
-  if (prefix==0 || length()==0) return FALSE;
-  int len = qstrlen(prefix);
-  if (qstrncmp(prefix,data(),len)==0)
-  {
-    m_rep=mid(len,length()-len).m_rep; // need to make a deep copy
-    return TRUE;
-  }
-  return FALSE;
-}
-
-QCString QCString::left( uint len )  const
-{
-  if (isEmpty())
-  {
-    return QCString();
-  }
-  else if (len>=length())
-  {
-    return QCString(data());
-  }
-  else
-  {
-    QCString s( len+1 );
-    memcpy( s.rawData(), data(), len);
-    return s;
-  }
-}
-
-QCString QCString::right( uint len ) const
-{
-  if (isEmpty())
-  {
-    return QCString();
-  }
-  else
-  {
-    int l = length();
-    if ((int)len>l) len=l;
-    const char *pos = data() + (l-len);
-    return QCString(pos);
-  }
-}
-
-QCString QCString::mid( uint index, uint len) const
-{
-  uint slen = (uint)length();
-  if (len==0xffffffff) len = slen-index;
-  if (isEmpty() || index>=slen || len==0)
-  {
-    return QCString();
-  }
-  else
-  {
-    const char *p = data()+index;
-    QCString s(len+1);
-    qstrncpy( s.rawData(), p, len+1 );
-    return s;
-  }
-}
-
-QCString QCString::lower() const
-{
-  if (length()==0) return QCString();
-  QCString s(data());
-  char *pos = s.rawData();
-  if (pos)
-  {
-    while (*pos)
-    {
-      *pos = tolower((unsigned char)*pos);
-      pos++;
-    }
-  }
-  return s;
-}
-
-QCString QCString::upper() const
-{
-  if (length()==0) return QCString();
-  QCString s(data());
-  char *pos = s.rawData();
-  if (pos)
-  {
-    while (*pos)
-    {
-      *pos = toupper((unsigned char)*pos);
-      pos++;
-    }
-  }
-  return s;
-}
-
-QCString QCString::stripWhiteSpace() const
-{
-  if ( isEmpty() )                            // nothing to do
-    return *this;
-
-  const char *cs = data();
-  int reslen = length();
-  if ( !isspace((uchar)cs[0]) && !isspace((uchar)cs[reslen-1]) )
-    return *this;                             // returns a copy
-
-  QCString result(cs);
-  char *s = result.rawData();
-  int start = 0;
-  int end = reslen - 1;
-  while ( isspace((uchar) s[start]) )                 // skip white space from start
-    start++;
-  if ( s[start] == '\0' )
-  {                                                   // only white space
-    return QCString();
-  }
-  while ( end && isspace((uchar) s[end]) )            // skip white space from end
-    end--;
-  end -= start - 1;
-  qmemmove( s, &s[start], end );
-  result.resize( end + 1 );
-  return result;
-}
 
 QCString QCString::simplifyWhiteSpace() const
 {
@@ -373,67 +244,6 @@ QCString QCString::simplifyWhiteSpace() const
   *to = '\0';
   result.resize( (int)(to - result.data()) + 1 );
   return result;
-}
-
-QCString &QCString::assign( const char *str )
-{
-  return operator=(str);
-}
-
-QCString &QCString::insert( uint index, const char *s )
-{
-  int len = s ? qstrlen(s) : 0;
-  if ( len == 0 ) return *this;
-  int olen = length();
-  int nlen = olen + len;
-  if ((int)index>=olen)
-  {
-    resize(nlen+index-olen+1);
-    memset(rawData()+olen, ' ', index-olen);
-    memcpy(rawData()+index,s, len+1);
-  }
-  else
-  {
-    resize(nlen+1);
-    qmemmove(rawData()+index+len,data()+index,olen-index+1);
-    memcpy(rawData()+index,s,len);
-  }
-  return *this;
-}
-
-QCString &QCString::insert( uint index, char c)
-{
-  char buf[2];
-  buf[0] = c;
-  buf[1] = '\0';
-  return insert( index, buf );
-}
-QCString &QCString::append( const char *s )
-{
-  return operator+=(s);
-}
-QCString &QCString::prepend( const char *s )
-{
-  return insert(0,s);
-}
-QCString &QCString::remove( uint index, uint len )
-{
-  uint olen = length();
-  if ( index + len >= olen ) // range problems
-  {
-    if ( index < olen )  // index ok
-    {
-      resize( index+1 );
-    }
-  }
-  else if ( len != 0 )
-  {
-    QCString tmp(olen-index-len+1);
-    qmemmove( tmp.rawData(), data()+index+len, olen-index-len+1 );
-    resize( olen-len+1 );
-    memcpy( rawData()+index,tmp.data(),tmp.length() );
-  }
-  return *this;
 }
 
 QCString &QCString::replace( uint index, uint len, const char *s)
@@ -645,65 +455,6 @@ bye:
   return is_ok ? val : 0;
 }
 
-QCString &QCString::setNum(short n)
-{
-  return setNum((long)n);
-}
-
-QCString &QCString::setNum(ushort n)
-{
-  return setNum((ulong)n);
-}
-
-QCString &QCString::setNum(int n)
-{
-  return setNum((long)n);
-}
-
-QCString &QCString::setNum(uint n)
-{
-  return setNum((ulong)n);
-}
-
-QCString &QCString::setNum(long n)
-{
-  char buf[20];
-  char *p = &buf[19];
-  bool neg;
-  if ( n < 0 )
-  {
-    neg = TRUE;
-    n = -n;
-  }
-  else
-  {
-    neg = FALSE;
-  }
-  *p = '\0';
-  do
-  {
-    *--p = ((int)(n%10)) + '0';
-    n /= 10;
-  } while ( n );
-  if ( neg ) *--p = '-';
-  operator=( p );
-  return *this;
-}
-
-QCString &QCString::setNum( ulong n)
-{
-  char buf[20];
-  char *p = &buf[19];
-  *p = '\0';
-  do
-  {
-    *--p = ((int)(n%10)) + '0';
-    n /= 10;
-  } while ( n );
-  operator=( p );
-  return *this;
-}
-
 //-------------------------------------------------
 
 void *qmemmove( void *dst, const void *src, uint len )
@@ -828,16 +579,12 @@ QDataStream &operator>>( QDataStream &s, QCString &str )
 
 inline QCString operator+( const QCString &s1, const QGString &s2 )
 {
-    QCString tmp(s1);
-    tmp += s2.data();
-    return tmp;
+  return s1.str()+s2.data();
 }
 
 inline QCString operator+( const QGString &s1, const QCString &s2 )
 {
-    QCString tmp(s1.data());
-    tmp += s2;
-    return tmp;
+  return s1.data()+s2.str();
 }
 
 /// substitute all occurrences of \a src in \a s by \a dst
@@ -869,7 +616,10 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
     if (dst) memcpy(r,dst,dstLen);
     r+=dstLen;
   }
-  qstrcpy(r,p);
+  if (r)
+  {
+    qstrcpy(r,p);
+  }
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }
@@ -931,22 +681,6 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
   qstrcpy(r,p);
   result.resize((int)strlen(result.data())+1);
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
-  return result;
-}
-
-/// substitute all occurrences of \a srcChar in \a s by \a dstChar
-QCString substitute(const QCString &s,char srcChar,char dstChar)
-{
-  int l=s.length();
-  QCString result(l+1);
-  char *q=result.rawData();
-  if (l>0)
-  {
-    const char *p=s.data();
-    char c;
-    while ((c=*p++)) *q++ = (c==srcChar) ? dstChar : c;
-  }
-  *q='\0';
   return result;
 }
 

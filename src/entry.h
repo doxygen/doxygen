@@ -297,9 +297,6 @@ class Entry
     LocalToc    localToc;
     QCString    metaData;     //!< Slice metadata
 
-
-    static int  num;          //!< counts the total number of entries
-
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const
     {

@@ -35,7 +35,7 @@
      <div id="MSearchBox" class="MSearchBoxInactive">
        <div class="left">
          <form id="FSearchBox" action="{{ page.relPath }}search{% if config.EXTERNAL_SEARCH %}{{ config.HTML_FILE_EXTENSION }}{% else %}.php{% endif %}" method="get">
-           <img id="MSearchSelect" src="{{ page.relPath }}search/mag.png" alt=""/>
+           <img id="MSearchSelect" src="{{ page.relPath }}search/mag.svg" alt=""/>
       {% if page.highlight!='search' %}
            <input type="text" id="MSearchField" name="query" value="{{ tr.search }}" size="20" accesskey="S" 
                   onfocus="searchBox.OnSearchFieldFocus(true)" 
@@ -50,7 +50,7 @@
    <li>
      <div id="MSearchBox" class="MSearchBoxInactive">
      <span class="left">
-       <img id="MSearchSelect" src="{{ page.relPath }}search/mag_sel.png"
+       <img id="MSearchSelect" src="{{ page.relPath }}search/mag_sel.svg"
             onmouseover="return searchBox.OnSearchSelectShow()"
             onmouseout="return searchBox.OnSearchSelectHide()"
             alt=""/>
@@ -60,7 +60,7 @@
             onkeyup="searchBox.OnSearchFieldChange(event)"/>
        </span><span class="right">
          <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img
-            id="MSearchCloseImg" border="0" src="{{ page.relPath }}search/close.png" alt=""/></a>
+            id="MSearchCloseImg" border="0" src="{{ page.relPath }}search/close.svg" alt=""/></a>
        </span>
      </div>
    </li>

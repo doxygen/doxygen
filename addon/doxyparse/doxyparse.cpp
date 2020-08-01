@@ -462,44 +462,35 @@ int main(int argc,char **argv) {
   else
     tmpdir << "doxyparse-" << pid;
 
-  Config_getString(OUTPUT_DIRECTORY)= tmpdir.str().c_str();
+  Config_updateString(OUTPUT_DIRECTORY,tmpdir.str().c_str());
   // enable HTML (fake) output to omit warning about missing output format
-  Config_getBool(GENERATE_HTML)=TRUE;
+  Config_updateBool(GENERATE_HTML,TRUE);
   // disable latex output
-  Config_getBool(GENERATE_LATEX)=FALSE;
+  Config_updateBool(GENERATE_LATEX,FALSE);
   // be quiet
-  Config_getBool(QUIET)=TRUE;
+  Config_updateBool(QUIET,TRUE);
   // turn off warnings
-  Config_getBool(WARNINGS)=FALSE;
-  Config_getBool(WARN_IF_UNDOCUMENTED)=FALSE;
-  Config_getBool(WARN_IF_DOC_ERROR)=FALSE;
+  Config_updateBool(WARNINGS,FALSE);
+  Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
+  Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
   // Extract as much as possible
-  Config_getBool(EXTRACT_ALL)=TRUE;
-  Config_getBool(EXTRACT_STATIC)=TRUE;
-  Config_getBool(EXTRACT_PRIVATE)=TRUE;
-  Config_getBool(EXTRACT_LOCAL_METHODS)=TRUE;
-  Config_getBool(EXTRACT_PACKAGE)=TRUE;
+  Config_updateBool(EXTRACT_ALL,TRUE);
+  Config_updateBool(EXTRACT_STATIC,TRUE);
+  Config_updateBool(EXTRACT_PRIVATE,TRUE);
+  Config_updateBool(EXTRACT_LOCAL_METHODS,TRUE);
+  Config_updateBool(EXTRACT_PACKAGE,TRUE);
   // Extract source browse information, needed
   // to make doxygen gather the cross reference info
-  Config_getBool(SOURCE_BROWSER)=TRUE;
+  Config_updateBool(SOURCE_BROWSER,TRUE);
   // find functions call between modules
-  Config_getBool(CALL_GRAPH)=TRUE;
+  Config_updateBool(CALL_GRAPH,TRUE);
   // loop recursive over input files
-  Config_getBool(RECURSIVE)=TRUE;
+  Config_updateBool(RECURSIVE,TRUE);
   // add file extensions
-  Config_getList(FILE_PATTERNS).append("*.cc");
-  Config_getList(FILE_PATTERNS).append("*.cxx");
-  Config_getList(FILE_PATTERNS).append("*.cpp");
-  Config_getList(FILE_PATTERNS).append("*.java");
-  Config_getList(FILE_PATTERNS).append("*.py");
-  Config_getList(FILE_PATTERNS).append("*.pyw");
-  Config_getList(FILE_PATTERNS).append("*.cs");
-  Config_getList(FILE_PATTERNS).append("*.c");
-  Config_getList(FILE_PATTERNS).append("*.h");
-  Config_getList(FILE_PATTERNS).append("*.hh");
-  Config_getList(FILE_PATTERNS).append("*.hpp");
+  Config_updateList(FILE_PATTERNS, { "*.cc", "*.cxx", "*.cpp", "*.java",
+                                     "*.py", "*.pyw", "*.cs", "*.c", "*.h", "*.hh", "*.hpp"});
   // set the input
-  Config_getList(INPUT).clear();
+  StringVector inputList;
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-") == 0) {
       char filename[1024];
@@ -508,13 +499,14 @@ int main(int argc,char **argv) {
         if (feof(stdin)) {
           break;
         }
-        Config_getList(INPUT).append(filename);
+        inputList.push_back(filename);
       }
     } else {
-      Config_getList(INPUT).append(argv[i]);
+      inputList.push_back(argv[i]);
     }
   }
-  if (Config_getList(INPUT).isEmpty()) {
+  Config_updateList(INPUT,inputList);
+  if (inputList.empty()) {
     exit(0);
   }
 

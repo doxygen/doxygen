@@ -104,7 +104,7 @@ class FilePairDict : public SDict<FilePair>
 class UsedDir
 {
   public:
-    UsedDir(DirDef *dir,bool inherited);
+    UsedDir(const DirDef *dir,bool inherited);
     virtual ~UsedDir();
     void addFileDep(FileDef *srcFd,FileDef *dstFd);
     FilePair *findFilePair(const char *name);
@@ -114,7 +114,7 @@ class UsedDir
     void sort();
 
   private:
-    DirDef *m_dir;
+    const DirDef *m_dir;
     FilePairDict m_filePairs;
     bool m_inherited;
 };

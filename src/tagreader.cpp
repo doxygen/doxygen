@@ -1526,7 +1526,7 @@ void TagFileParser::addIncludes()
                 //        ifd->getOutputFileBase().data(),ii->id.data());
                 if (ifd->getOutputFileBase()==QCString(ii->id))
                 {
-                  fd->addIncludeDependency(ifd.get(),ii->text,ii->isLocal,ii->isImported,FALSE);
+                  fd->addIncludeDependency(ifd.get(),ii->text,ii->isLocal,ii->isImported);
                 }
               }
             }

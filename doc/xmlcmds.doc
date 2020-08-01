@@ -17,7 +17,7 @@
 /*! \page xmlcmds XML Commands
 
 Doxygen supports most of the XML commands that are typically used in C# 
-code comments. The XML tags are defined in Appendix E of the
+code comments. The XML tags are defined in Appendix D of the
 <a href="http://www.ecma-international.org/publications/standards/Ecma-334.htm">ECMA-334</a> 
 standard, which defines the C# language. Unfortunately, the specification is
 not very precise and a number of the examples given are of poor quality.

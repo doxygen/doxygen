@@ -42,7 +42,8 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "filteroutput",      Debug::FilterOutput      },
   { "lex",               Debug::Lex               },
   { "plantuml",          Debug::Plantuml          },
-  { "fortranfixed2free", Debug::FortranFixed2Free }
+  { "fortranfixed2free", Debug::FortranFixed2Free },
+  { "cite",              Debug::Cite              }
 };
 
 //------------------------------------------------------------------------
@@ -114,11 +115,11 @@ class Timer
     {
       m_startTime = std::chrono::system_clock::now();
     }
-    int elapsedTimeMs()
+    double elapsedTimeS()
     {
-      return std::chrono::duration_cast<
+      return (std::chrono::duration_cast<
                   std::chrono::milliseconds>(
-                  std::chrono::system_clock::now() - m_startTime).count();
+                  std::chrono::system_clock::now() - m_startTime).count()) / 1000.0;
     }
   private:
     std::chrono::time_point<std::chrono::system_clock> m_startTime;
@@ -131,8 +132,8 @@ void Debug::startTimer()
   g_runningTime.start();
 }
 
-int Debug::elapsedTime()
+double Debug::elapsedTime()
 {
-  return g_runningTime.elapsedTimeMs();
+  return g_runningTime.elapsedTimeS();
 }
 

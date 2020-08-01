@@ -834,7 +834,8 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
-      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     // write separator between brief and details
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
@@ -854,13 +855,15 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
     // write detailed documentation
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
 
     // write inbody documentation
     if (!inbodyDocumentation().isEmpty())
     {
-      ol.generateDoc(inbodyFile(),inbodyLine(),this,0,inbodyDocumentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(inbodyFile(),inbodyLine(),this,0,inbodyDocumentation()+"\n",TRUE,FALSE,
+                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
   }
 }
@@ -870,7 +873,8 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
   if (hasBriefDescription())
   {
     DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
-                                briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
+                                briefDescription(),TRUE,FALSE,
+                                0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
@@ -944,7 +948,8 @@ void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
       if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(fd->getOutputFileBase());
-        ol.generateDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+        ol.generateDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE,
+                       0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(0,0);
@@ -999,7 +1004,8 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
         if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(gd->getOutputFileBase());
-          ol.generateDoc(briefFile(),briefLine(),gd,0,gd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+          ol.generateDoc(briefFile(),briefLine(),gd,0,gd->briefDescription(),FALSE,FALSE,
+                         0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(0,0);
@@ -1030,7 +1036,8 @@ void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
       if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(dd->getOutputFileBase());
-        ol.generateDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+        ol.generateDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),FALSE,FALSE,
+                       0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(0,0);
@@ -1068,7 +1075,8 @@ void GroupDefImpl::writePageDocumentation(OutputList &ol)
         ol.endSection(si->label(),SectionType::Subsection);
       }
       ol.startTextBlock();
-      ol.generateDoc(pd->docFile(),pd->docLine(),pd,0,pd->documentation()+pd->inbodyDocumentation(),TRUE,FALSE,0,TRUE,FALSE);
+      ol.generateDoc(pd->docFile(),pd->docLine(),pd,0,pd->documentation()+pd->inbodyDocumentation(),TRUE,FALSE,
+                     0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       ol.endTextBlock();
     }
   }
@@ -1199,6 +1207,11 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Man);
   ol.endTitleHead(getOutputFileBase(),name());
+  if (!m_title.isEmpty())
+  {
+    ol.writeString(" - ");
+    ol.parseText(m_title);
+  }
   ol.popGeneratorState();
   ol.endHeaderSection();
   ol.startContents();
