@@ -470,8 +470,8 @@ void HtmlHelp::createProjectFile()
   {
     FTextStream t(&f);
     
-    char *hhcFile = "\"index.hhc\"";
-    char *hhkFile = "\"index.hhk\"";
+    const char *hhcFile = "\"index.hhc\"";
+    const char *hhkFile = "\"index.hhk\"";
     int hhkPresent = index->dictCount();
     if (!ctsItemPresent) hhcFile = "";
     if (!hhkPresent) hhkFile = "";
