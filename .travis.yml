@@ -123,7 +123,7 @@ script:
     - cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
     - make
     - if [ ! "${TRAVIS_OS_NAME}" == "osx" ] && [ ! "${TRAVIS_COMPILER}" == "clang" ]; then
-        make tests && make docs;
+        make tests docs;
       fi;
     - if [ ! "${TRAVIS_OS_NAME}" == "osx" ] && [ "${TRAVIS_COMPILER}" == "clang" ]; then
         make docs;
