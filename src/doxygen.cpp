@@ -9411,7 +9411,10 @@ static QCString resolveSymlink(QCString path)
   return QDir::cleanDirPath(result).data();
 }
 
-static QDict<void> g_pathsVisited(1009);
+#if MULTITHREADED_INPUT
+static std::mutex g_pathsVisitedMutex;
+#endif
+static StringUnorderedSet g_pathsVisited(1009);
 
 //----------------------------------------------------------------------------
 // Read all files matching at least one pattern in 'patList' in the
@@ -9441,8 +9444,12 @@ static int readDir(QFileInfo *fi,
   {
     dirName = resolveSymlink(dirName.data());
     if (dirName.isEmpty()) return 0;            // recursive symlink
-    if (g_pathsVisited.find(dirName)) return 0; // already visited path
-    g_pathsVisited.insert(dirName,(void*)0x8);
+
+#if MULTITHREADED_INPUT
+    std::lock_guard<std::mutex> lock(g_pathsVisitedMutex);
+#endif
+    if (g_pathsVisited.find(dirName.str())!=g_pathsVisited.end()) return 0; // already visited path
+    g_pathsVisited.insert(dirName.str());
   }
   QDir dir(dirName);
   dir.setFilter( QDir::Files | QDir::Dirs | QDir::Hidden );
