@@ -57,14 +57,14 @@ linux-s390x: &linux-s390x
 
 jobs:
     include:
-        - <<: *linux-ppc64le
-          compiler: gcc
-        - <<: *linux-ppc64le
-          compiler: clang
-        - <<: *linux-s390x
-          compiler: gcc
-        - <<: *linux-s390x
-          compiler: clang
+#        - <<: *linux-ppc64le
+#          compiler: gcc
+#        - <<: *linux-ppc64le
+#          compiler: clang
+#        - <<: *linux-s390x
+#          compiler: gcc
+#        - <<: *linux-s390x
+#          compiler: clang
 #        - os: osx
 #          compiler: clang
 #          addons:
@@ -125,4 +125,5 @@ script:
     - if [ ! "${TRAVIS_OS_NAME}" == "osx" ]; then
         make tests;
         make docs;
+        make tests && make docs;
       fi;
