@@ -24,6 +24,7 @@
 #include <qdict.h>
 #include <qptrdict.h>
 
+#include "containers.h"
 #include "definition.h"
 #include "arguments.h"
 
@@ -433,18 +434,15 @@ struct UsesClassDef
 {
   UsesClassDef(ClassDef *cd) : classDef(cd)
   {
-    accessors = new QDict<void>(17);
-    containment = TRUE;
   }
  ~UsesClassDef()
   {
-    delete accessors;
   }
   void addAccessor(const char *s)
   {
-    if (accessors->find(s)==0)
+    if (accessors.find(s)==accessors.end())
     {
-      accessors->insert(s,(void *)666);
+      accessors.insert(s);
     }
   }
   /** Class definition that this relation uses. */
@@ -453,12 +451,12 @@ struct UsesClassDef
   /** Dictionary of member variable names that form the edge labels of the
    *  usage relation.
    */
-  QDict<void> *accessors;
+  StringSet accessors;
 
   /** Template arguments used for the base class */
   QCString templSpecifiers;
 
-  bool containment;
+  bool containment = true;
 };
 
 /** Dictionary of usage relations.
@@ -486,8 +484,7 @@ class UsesClassDictIterator : public QDictIterator<UsesClassDef>
  */
 struct BaseClassDef
 {
-  BaseClassDef(ClassDef *cd,const char *n,Protection p,
-               Specifier v,const char *t) :
+  BaseClassDef(ClassDef *cd,const char *n,Protection p, Specifier v,const char *t) :
         classDef(cd), usedName(n), prot(p), virt(v), templSpecifiers(t) {}
 
   /** Class definition that this relation inherits from. */
@@ -549,17 +546,15 @@ struct ConstraintClassDef
 {
   ConstraintClassDef(ClassDef *cd) : classDef(cd)
   {
-    accessors = new QDict<void>(17);
   }
  ~ConstraintClassDef()
   {
-    delete accessors;
   }
   void addAccessor(const char *s)
   {
-    if (accessors->find(s)==0)
+    if (accessors.find(s)==accessors.end())
     {
-      accessors->insert(s,(void *)666);
+      accessors.insert(s);
     }
   }
   /** Class definition that this relation uses. */
@@ -568,7 +563,7 @@ struct ConstraintClassDef
   /** Dictionary of member types names that form the edge labels of the
    *  constraint relation.
    */
-  QDict<void> *accessors;
+  StringSet accessors;
 };
 
 /** Dictionary of constraint relations.
