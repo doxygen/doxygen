@@ -15,6 +15,9 @@
 #ifndef RESOURCEMGR_H
 #define RESOURCEMGR_H
 
+#include <memory>
+#include <initializer_list>
+
 #include <qcstring.h>
 
 /** @brief Compiled resource */
@@ -36,7 +39,7 @@ class ResourceMgr
     static ResourceMgr &instance();
 
     /** Registers an array of resources */
-    void registerResources(const Resource resources[],int numResources);
+    void registerResources(std::initializer_list<Resource> resources);
 
     /** Writes all resource belonging to a given category to a given target directory */
     bool writeCategory(const char *categoryName,const char *targetDir) const;
@@ -57,7 +60,7 @@ class ResourceMgr
     ResourceMgr();
    ~ResourceMgr();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 #endif

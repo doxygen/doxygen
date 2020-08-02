@@ -87,7 +87,7 @@ file(GLOB RESOURCES ${CMAKE_SOURCE_DIR}/templates/*/*)
 add_custom_command(
     COMMENT  "Generating ${GENERATED_SRC}/resources.cpp"
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py ${CMAKE_SOURCE_DIR}/templates ${GENERATED_SRC}/resources.cpp
-    DEPENDS ${RESOURCES}
+    DEPENDS ${RESOURCES} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py
     OUTPUT ${GENERATED_SRC}/resources.cpp
 )
 set_source_files_properties(${GENERATED_SRC}/resources.cpp PROPERTIES GENERATED 1)
@@ -95,7 +95,7 @@ set_source_files_properties(${GENERATED_SRC}/resources.cpp PROPERTIES GENERATED 
 # layout_default.xml
 add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/to_c_cmd.py < ${CMAKE_CURRENT_LIST_DIR}/layout_default.xml > ${GENERATED_SRC}/layout_default.xml.h
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/layout_default.xml
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/layout_default.xml ${CMAKE_CURRENT_LIST_DIR}/to_c_cmd.py
     OUTPUT  ${GENERATED_SRC}/layout_default.xml.h
 )
 set_source_files_properties(${GENERATED_SRC}/layout_default.xml.h PROPERTIES GENERATED 1)
