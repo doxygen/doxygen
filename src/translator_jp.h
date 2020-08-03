@@ -79,6 +79,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return "\\usepackage{CJKutf8}\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "ja";
+    }
     virtual QCString latexFontenc()
     {
       return "";
@@ -158,7 +162,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
     { return " の全メンバ一覧です。"; }
-    /* trThisIsTheListOfAllMembers から続くように定義すること */    
+    /* trThisIsTheListOfAllMembers から続くように定義すること */
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
@@ -268,7 +272,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       }
       return "詳解が付けられているファイルの一覧です。";
     }
-    
+
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
@@ -844,7 +848,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return "非推奨";
     }
-    
+
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
@@ -1851,7 +1855,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool)
-    { 
+    {
       return "次のファイルからこの列挙についての詳解を抽出しました:";
     }
 
@@ -1879,7 +1883,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      
+
       QCString opt = enable ? "有効" : "無効";
       return "クリックで同期表示が"+opt+"になります";
     }
@@ -1977,15 +1981,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
              "の詳解を抽出しました:";
     }
 
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("ja");
-    }
 };
 
 #endif

@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-class TranslatorDutch : public TranslatorAdapter_1_8_19
+class TranslatorDutch : public Translator
 {
   public:
     QCString idLanguage()
@@ -35,9 +35,9 @@ class TranslatorDutch : public TranslatorAdapter_1_8_19
      *  </pre>
      */
     QCString latexLanguageSupportCommand()
-    {
-      return "\\usepackage[dutch]{babel}\n";
-    }
+    { return "\\usepackage[dutch]{babel}\n"; }
+    QCString trISOLang()
+    { return "nl"; }
     QCString trRelatedFunctions()
     { return "Gerelateerde functies"; }
     QCString trRelatedSubscript()
@@ -1776,15 +1776,12 @@ class TranslatorDutch : public TranslatorAdapter_1_8_19
     { return "Data members"; }
     virtual QCString trDataMemberDocumentation()
     { return "Documentatie van data members"; }
-//
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trISOLang()
-    {
-        return("nl");
-    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trDesignUnitDocumentation()
+    { return "Ontwerp Eenheid Documentatie"; }
 };
 
 #endif

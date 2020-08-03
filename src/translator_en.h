@@ -74,6 +74,11 @@ class TranslatorEnglish : public Translator
       return "";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "en-US";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -2253,8 +2258,6 @@ class TranslatorEnglish : public Translator
 // new since 1.8.19
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trISOLang()
-    { return("en-US"); }
     /** VHDL design unit documentation */
     virtual QCString trDesignUnitDocumentation()
     { return "Design Unit Documentation"; }

@@ -68,6 +68,9 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       return "";
     }
 
+    virtual QCString trISOLang()
+    { return "ar-EG"; }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1565,14 +1568,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
               "فقط في نوعية ال argument(s) التي تقبلها.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("ar-EG");
-    }
 };
 
 #endif

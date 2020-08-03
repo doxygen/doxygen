@@ -35,9 +35,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
 
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
-    {
-        return "\\usepackage[T2A]{fontenc}\n\\usepackage[russian]{babel}\n";
-    }
+    { return "\\usepackage[T2A]{fontenc}\n\\usepackage[russian]{babel}\n"; }
+
+    virtual QCString trISOLang()
+    { return "ru"; }
 
     // --- Language translation methods -------------------
 
@@ -1958,16 +1959,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
                                 "сгенерирована из следующего файл";
       if (single) result+="а:"; else result+="ов:";
       return result;
-    }
-
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("ru");
     }
 };
 

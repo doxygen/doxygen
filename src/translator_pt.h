@@ -94,6 +94,11 @@ class TranslatorPortuguese : public TranslatorAdapter_1_8_19
         "\\usepackage[portuges]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "pt";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -2263,14 +2268,6 @@ class TranslatorPortuguese : public TranslatorAdapter_1_8_19
         return "Dados Membros";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("pt");
-    }
 
 };
 

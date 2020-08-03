@@ -73,6 +73,10 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     {
       return "\\usepackage[turkish]{babel}\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "tr";
+    }
 
     // --- Language translation methods -------------------
 
@@ -1816,16 +1820,6 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 		return sdate;
     }
 
-
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("tr");
-    }
 };
 
 #endif

@@ -78,6 +78,7 @@ class Translator
       }
       return latex_command;
     }
+    virtual QCString trISOLang() = 0;
 
     // --- Language translation methods -------------------
 
@@ -655,7 +656,6 @@ class Translator
 // new since 1.8.19
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trISOLang() = 0;
     virtual QCString trDesignUnitDocumentation() = 0;
 };
 

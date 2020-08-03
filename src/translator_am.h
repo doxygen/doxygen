@@ -32,9 +32,11 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
     {
-        return "\\usepackage[latin]{armtex}\n"
-	       "\\usepackage[armscii8]{inputenc}\n";
+      return "\\usepackage[latin]{armtex}\n"
+             "\\usepackage[armscii8]{inputenc}\n";
     }
+    virtual QCString trISOLang()
+    { return "hy"; }
 
     // --- Language translation methods -------------------
 
@@ -1798,15 +1800,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const char *name)
     { return name + QCString("-ի ֆայլադարանների կախվածությունների գծագիր:"); }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("hy");
-    }
 
 };
 #endif

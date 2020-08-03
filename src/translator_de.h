@@ -166,6 +166,11 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
       return "\\usepackage[ngerman]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "de";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -2250,8 +2255,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
 // new since 1.8.19
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trISOLang()
-    { return("de"); }
     /** VHDL design unit documentation */
     virtual QCString trDesignUnitDocumentation()
     { return "Entwurfseinheiten-Dokumentation"; }

@@ -49,6 +49,10 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
              "\\xpatchparametertext\\@cline{-}{\\cA-}{}{}\n"
              "\\makeatother\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "sk";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1963,15 +1967,6 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       return result;
     }
 
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("sk");
-    }
 };
 
 #endif // TRANSLATOR_SK_H

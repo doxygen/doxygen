@@ -55,6 +55,10 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     {
       return "\\usepackage{CJKutf8}\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "zh";
+    }
     virtual QCString latexFontenc()
     {
       return "";
@@ -1912,15 +1916,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
       return "该单例的文档由下列文件生成:";
     }
 
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("zh");
-    }
 };
 
 #endif

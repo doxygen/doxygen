@@ -169,6 +169,11 @@ class TranslatorSwedish : public TranslatorAdapter_1_8_19
       return "\\usepackage[swedish]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "sv";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1975,7 +1980,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_8_19
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      QCString opt = enable ? "aktivera" : "inaktivera"; 
+      QCString opt = enable ? "aktivera" : "inaktivera";
       return "klicka för att "+opt+" panelsynkronisering";
     }
 
@@ -2089,9 +2094,9 @@ class TranslatorSwedish : public TranslatorAdapter_1_8_19
     /** VHDL design unit members */
     virtual QCString trDesignUnitMembers()
     { return "Designenhetsmedlemmar"; }
-    /** VHDL design unit list description 
-     * Orginal: Here is a list of all design unit members with links to 
-     *          the Entities they belong to: 
+    /** VHDL design unit list description
+     * Orginal: Here is a list of all design unit members with links to
+     *          the Entities they belong to:
      */
     virtual QCString trDesignUnitListDescription()
     {
@@ -2329,14 +2334,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_8_19
         return "Datamedlemsdokumentation";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("sv");
-    }
 
 };
 #endif

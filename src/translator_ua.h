@@ -31,6 +31,10 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     {
       return "\\usepackage[T2A]{fontenc}\n\\usepackage[ukrainian]{babel}\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "uk";
+    }
 
     // --- Language translation methods -------------------
 
@@ -1909,14 +1913,6 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       return "Огляд дизайну проекту";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("uk");
-    }
 };
 
 #endif

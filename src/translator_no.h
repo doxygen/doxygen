@@ -75,6 +75,11 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         "\\usepackage[norsk]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "nn";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1564,14 +1569,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
               "funksjonen ovenfor i argument(ene) den aksepterer.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("nn");
-    }
 };
 
 #endif

@@ -65,6 +65,11 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
              "\\usepackage[lithuanian]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "lt";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1509,15 +1514,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
               "Jis skiriasi nuo aukščiau minėto tik argumetais.";
     }
 
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("lt");
-    }
 
 };
 

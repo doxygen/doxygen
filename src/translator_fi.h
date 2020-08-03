@@ -130,6 +130,10 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       return "\\usepackage[finnish]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "fi";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1854,15 +1858,6 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       return "Tyyppien rajoitteet"; // "Type Constraints"
     }
 
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("fi");
-    }
 };
 
 #endif

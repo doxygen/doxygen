@@ -105,6 +105,11 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
              "\\makeatother\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "cs";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -2033,15 +2038,6 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
       return result;
     }
 
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("cs");
-    }
 };
 
 #endif // TRANSLATOR_CZ_H

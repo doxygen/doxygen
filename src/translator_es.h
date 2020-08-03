@@ -68,6 +68,11 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
       return "\\usepackage[spanish]{babel}";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "es";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -2296,15 +2301,6 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
         return "Documentación miembro de datos";
     }
 
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("es");
-    }
 };
 
 #endif

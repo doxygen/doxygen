@@ -92,6 +92,8 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "croatian"; }
     QCString latexLanguageSupportCommand()
     { return "\\usepackage[croatian]{babel}\n"; }
+    QCString trISOLang()
+    { return "hr"; }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()
@@ -1567,15 +1569,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     virtual QCString trAdditionalInheritedMembers()
     { return "Dodatni naslijeđeni članovi"; }
 
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
-//////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trISOLang()
-    {
-        return("hr");
-    }
 };
 
 #endif
