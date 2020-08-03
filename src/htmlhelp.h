@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -21,14 +19,10 @@
 #ifndef HTMLHELP_H
 #define HTMLHELP_H
 
-#include <qstrlist.h>
-#include <qdict.h>
+#include <memory>
 #include "index.h"
-#include "ftextstream.h"
 
-class QFile;
 class Definition;
-class HtmlHelpIndex;
 
 /** A class that generated the HTML Help specific files.
  *
@@ -37,10 +31,10 @@ class HtmlHelpIndex;
  */
 class HtmlHelp  : public IndexIntf
 {
-    /*! used in imageNumber param of HTMLHelp::addContentsItem() function 
-        to specify document icon in tree view.  
+    /*! used in imageNumber param of HTMLHelp::addContentsItem() function
+        to specify document icon in tree view.
         Writes \<param name="ImageNumber" value="xx"\> in .HHC file. */
-    enum ImageNumber { 
+    enum ImageNumber {
       BOOK_CLOSED=1,    BOOK_OPEN,
       BOOK_CLOSED_NEW,  BOOK_OPEN_NEW,
       FOLDER_CLOSED,    FOLDER_OPEN,
@@ -72,8 +66,8 @@ class HtmlHelp  : public IndexIntf
     void incContentsDepth();
     void decContentsDepth();
     void addContentsItem(bool isDir,
-                         const char *name, 
-                         const char *ref, 
+                         const char *name,
+                         const char *ref,
                          const char *file,
                          const char *anchor,
                          bool separateIndex,
@@ -87,20 +81,10 @@ class HtmlHelp  : public IndexIntf
     static QCString getLanguageString();
 
   private:
-    friend class HtmlHelpIndex;
-    void createProjectFile();
-
-    QFile *cf,*kf; 
-    FTextStream cts,kts;
-    bool ctsItemPresent = false;
-    HtmlHelpIndex *index;
-    int dc;
-    QStrList indexFiles;
-    QStrList imageFiles;
-    QDict<void> indexFileDict;
-    static HtmlHelp *theInstance;
+    class Private;
+    std::unique_ptr<Private> p;
     QCString recode(const QCString &s);
-    void *m_fromUtf8;
+
 };
 
 #endif /* HTMLHELP_H */
