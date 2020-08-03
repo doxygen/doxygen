@@ -71,7 +71,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "";
+      return "\\usepackage[turkish]{babel}\n";
     }
 
     // --- Language translation methods -------------------
