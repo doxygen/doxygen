@@ -394,6 +394,10 @@ class TranslatorEnglish : public Translator
       {
         return "Data Structure Documentation";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Class Documentation";
@@ -2244,6 +2248,14 @@ class TranslatorEnglish : public Translator
     {
         return "Data Member Documentation";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "Design Unit Documentation"; }
 
 //////////////////////////////////////////////////////////////////////////
 

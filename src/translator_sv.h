@@ -143,7 +143,7 @@ I left use clause untouched as I didn't find a suitable translation for it.
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public Translator
+class TranslatorSwedish : public TranslatorAdapter_1_8_19
 {
   public:
 
