@@ -153,8 +153,8 @@ int Trace::s_indent = 0;
 // is character at position i in data allowed before an emphasis section
 #define isOpenEmphChar(i) \
   (data[i]=='\n' || data[i]==' ' || data[i]=='\'' || data[i]=='<' || \
-   data[i]=='{'  || data[i]=='(' || data[i]=='['  || data[i]==',' || \
-   data[i]==':'  || data[i]==';')
+   data[i]=='>'  || data[i]=='{' || data[i]=='('  || data[i]=='[' || \
+   data[i]==','  || data[i]==':' || data[i]==';')
 
 // is character at position i in data an escape that prevents ending an emphasis section
 // so for example *bla (*.txt) is cool*
