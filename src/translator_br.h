@@ -49,7 +49,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public Translator
+class TranslatorBrazilian : public TranslatorAdapter_1_8_19
 {
   public:
 
@@ -83,6 +83,11 @@ class TranslatorBrazilian : public Translator
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[brazil]{babel}";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "pt-BR";
     }
 
     // --- Language translation methods -------------------
@@ -2326,7 +2331,6 @@ class TranslatorBrazilian : public Translator
         return "Dados Membros";
     }
 
-//////////////////////////////////////////////////////////////////////////
 
 };
 

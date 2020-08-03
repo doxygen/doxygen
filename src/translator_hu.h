@@ -100,6 +100,11 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
              "\\usepackage[magyar]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "hu";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -2012,9 +2017,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       result+="lett létrehozva:";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
-
 };
 
 #endif

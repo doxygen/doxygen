@@ -112,6 +112,11 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
       return "\\usepackage[italian]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "it";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1967,8 +1972,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
       if (single) result+="dal seguente file:"; else result+="dai seguenti file:";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

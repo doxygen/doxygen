@@ -58,6 +58,11 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "\\usepackage[bahasa]{babel}";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "id";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

@@ -41,7 +41,17 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_8_15 : public TranslatorAdapterBase
+class TranslatorAdapter_1_8_19 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.8.19"); }
+
+    virtual QCString trDesignUnitDocumentation()
+    { return english.trDesignUnitDocumentation(); }
+};
+
+class TranslatorAdapter_1_8_15 : public TranslatorAdapter_1_8_19
 {
   public:
     virtual QCString updateNeededMessage()
@@ -268,16 +278,6 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
 
     virtual QCString trDirDepGraph(const char *name)
     { return english.trDirDepGraph(name); }
-};
-
-/** Adapter class for languages that only contain translations up to
- *  version 1.6.3.
- */
-class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
-{
-  public:
-    virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.6.3"); }
 
     virtual QCString trFileIn(const char *name)
     { return english.trFileIn(name); }
@@ -292,7 +292,7 @@ class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
 /** Adapter class for languages that only contain translations up to
  *  version 1.6.0.
  */
-class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
+class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_7_5
 {
   public:
     virtual QCString updateNeededMessage()
@@ -312,16 +312,6 @@ class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
 
     virtual QCString trNoMatches()
     { return english.trNoMatches(); }
-};
-
-/** Adapter class for languages that only contain translations up to
- *  version 1.5.4
- */
-class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
-{
-  public:
-    virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.5.4"); }
 
     virtual QCString trMemberFunctionDocumentationFortran()
     { return english.trMemberFunctionDocumentationFortran(); }
@@ -396,7 +386,7 @@ class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
 /** Adapter class for languages that only contain translations up to
  *  version 1.4.6
  */
-class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4
+class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_6_0
 {
   public:
     virtual QCString updateNeededMessage()

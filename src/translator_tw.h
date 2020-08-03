@@ -86,6 +86,10 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       return "\\end{CJK}\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "zh-Hant";
+    }
 
     // --- Language translation methods -------------------
 
@@ -1968,8 +1972,6 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
       result+=":";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

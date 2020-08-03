@@ -35,9 +35,9 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  method is used to generate the command for using the babel package.
      */
     QCString latexLanguageSupportCommand()
-    {
-      return "\\usepackage[slovene]{babel}\n";
-    }
+    { return "\\usepackage[slovene]{babel}\n"; }
+    QCString trISOLang()
+    { return "sl"; }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()
@@ -1207,6 +1207,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
              "podana je zaradi priročnosti. Metoda se od predhodnje razlikuje "
              "samo v številu in/ali tipu formalnih argumentov.";
     }
+
 };
 
 #endif

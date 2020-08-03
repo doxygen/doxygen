@@ -119,6 +119,11 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 	"\\usepackage[danish]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "da";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1764,6 +1769,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     {
       return QCString("Afhængighedsgraf for katalog ")+name+":";
     }
+
 
 
 /*---------- For internal use: ----------------------------------------*/

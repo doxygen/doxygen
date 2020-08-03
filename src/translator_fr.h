@@ -135,6 +135,11 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
              "\\NoAutoSpaceBeforeFDP\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "fr";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -2311,8 +2316,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     {
         return "Documentation des champs de données";
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

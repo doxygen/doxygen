@@ -36,9 +36,9 @@
 	exception -> εξαίρεση
 	namespace -> χώρος ονομάτων
 	enumeration -> απαρίθμηση
-*/ 
- 
- 
+*/
+
+
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
@@ -61,6 +61,11 @@ class TranslatorGreek : public TranslatorAdapter_1_8_15
     {
       return "\\usepackage{fontspec}\n"
              "\\usepackage[greek]{babel}\n";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "el";
     }
 
     virtual QCString latexFontenc()
@@ -1991,6 +1996,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_15
       if (single) result+="το ακόλουθο αρχείο:"; else result+="τα ακόλουθα αρχεία:";
       return result;
     }
+
 
 };
 

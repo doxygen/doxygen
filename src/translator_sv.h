@@ -143,7 +143,7 @@ I left use clause untouched as I didn't find a suitable translation for it.
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public Translator
+class TranslatorSwedish : public TranslatorAdapter_1_8_19
 {
   public:
 
@@ -167,6 +167,11 @@ class TranslatorSwedish : public Translator
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[swedish]{babel}\n";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "sv";
     }
 
     // --- Language translation methods -------------------
@@ -1975,7 +1980,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      QCString opt = enable ? "aktivera" : "inaktivera"; 
+      QCString opt = enable ? "aktivera" : "inaktivera";
       return "klicka för att "+opt+" panelsynkronisering";
     }
 
@@ -2089,9 +2094,9 @@ class TranslatorSwedish : public Translator
     /** VHDL design unit members */
     virtual QCString trDesignUnitMembers()
     { return "Designenhetsmedlemmar"; }
-    /** VHDL design unit list description 
-     * Orginal: Here is a list of all design unit members with links to 
-     *          the Entities they belong to: 
+    /** VHDL design unit list description
+     * Orginal: Here is a list of all design unit members with links to
+     *          the Entities they belong to:
      */
     virtual QCString trDesignUnitListDescription()
     {
@@ -2328,6 +2333,7 @@ class TranslatorSwedish : public Translator
     {
         return "Datamedlemsdokumentation";
     }
-};
 
+
+};
 #endif

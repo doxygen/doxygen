@@ -59,6 +59,10 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     {
       return "\\usepackage[afrikaans]{babel}\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "af";
+    }
 
     // --- Language translation methods -------------------
 

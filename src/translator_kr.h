@@ -98,6 +98,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       }
       return latex_command;
     }
+    virtual QCString trISOLang()
+    {
+      return "ko";
+    }
 
     // --- Language translation methods -------------------
 
@@ -2003,8 +2007,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 	  result+="로부터 생성되었습니다.:";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

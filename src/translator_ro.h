@@ -74,6 +74,10 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       return "\\usepackage[romanian]{babel}\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "ro";
+    }
 
     // --- Language translation methods -------------------
 
@@ -2004,8 +2008,6 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         result += "următoarele fișiere:";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

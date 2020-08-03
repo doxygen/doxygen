@@ -143,7 +143,7 @@ TOKEN [IGNORE_CASE] :
  <ABS_T: "abs">
 | <ACCESS_T: "access">
 | <AFTER_T: "after">
-| <ALIAS_T: "alias">
+| <ALIAS_T: "alias"> {parser->outlineParser()->setLineParsed(ALIAS_T);}
 | <ALL_T: "all">
 | <AND_T: "and">
 | <ARCHITECTURE_T: "architecture"> {parser->outlineParser()->setLineParsed(ARCHITECTURE_T);}
