@@ -57,9 +57,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      //should we use return "\\usepackage[afrikaans]{babel}\n";
-      // not sure - for now return an empty string
-      return "";
+      return "\\usepackage[afrikaans]{babel}\n";
     }
 
     // --- Language translation methods -------------------

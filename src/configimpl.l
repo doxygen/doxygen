@@ -1577,6 +1577,14 @@ void Config::checkAndCorrect()
   }
 
   //------------------------
+  // check if GENERATE_HTMLHELP and HTML_FILE_EXTENSION is not .html
+  if (Config_getString(HTML_FILE_EXTENSION)!=".html" && Config_getBool(GENERATE_HTMLHELP))
+  {
+    err("When enabling GENERATE_HTMLHELP the HTML_FILE_EXTENSION should be \".html\". I'll do it for you.\n");
+    Config_updateString(HTML_FILE_EXTENSION,".html");
+  }
+
+  //------------------------
   // check if SEARCHENGINE and GENERATE_HTMLHELP are both enabled
   if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTMLHELP))
   {

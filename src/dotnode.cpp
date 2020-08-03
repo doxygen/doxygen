@@ -87,7 +87,7 @@ static const char *umlEdgeStyleMap[] =
   "solid"          // usage
 };
 
-static EdgeProperties normalEdgeProps = 
+static EdgeProperties normalEdgeProps =
 {
   normalEdgeColorMap, normalArrowStyleMap, normalEdgeStyleMap
 };
@@ -117,9 +117,8 @@ static QCString escapeTooltip(const QCString &tooltip)
 
 static void writeBoxMemberList(FTextStream &t,
   char prot,MemberList *ml,const ClassDef *scope,
-  bool isStatic=FALSE,const QDict<void> *skipNames=0)
+  bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
 {
-  (void)isStatic;
   if (ml)
   {
     MemberListIterator mlia(*ml);
@@ -127,8 +126,8 @@ static void writeBoxMemberList(FTextStream &t,
     int totalCount=0;
     for (mlia.toFirst();(mma = mlia.current());++mlia)
     {
-      if (mma->getClassDef()==scope && 
-        (skipNames==0 || skipNames->find(mma->name())==0))
+      if (mma->getClassDef()==scope &&
+        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
       {
         totalCount++;
       }
@@ -138,7 +137,7 @@ static void writeBoxMemberList(FTextStream &t,
     for (mlia.toFirst();(mma = mlia.current());++mlia)
     {
       if (mma->getClassDef() == scope &&
-        (skipNames==0 || skipNames->find(mma->name())==0))
+        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
       {
         int numFields = Config_getInt(UML_LIMIT_NUM_FIELDS);
         if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
@@ -150,7 +149,7 @@ static void writeBoxMemberList(FTextStream &t,
         {
           t << prot << " ";
           t << DotNode::convertLabel(mma->name());
-          if (!mma->isObjCMethod() && 
+          if (!mma->isObjCMethod() &&
             (mma->isFunction() || mma->isSlot() || mma->isSignal())) t << "()";
           t << "\\l";
           count++;
@@ -218,7 +217,7 @@ QCString DotNode::convertLabel(const QCString &l)
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=1;
     }
-    else if (charsLeft>1+foldLen/4 && sinceLast>foldLen+foldLen/3 && 
+    else if (charsLeft>1+foldLen/4 && sinceLast>foldLen+foldLen/3 &&
       !isupper(c) && isupper(p[idx]))
     {
       result+=replacement;
@@ -385,9 +384,9 @@ void DotNode::writeBox(FTextStream &t,
 
   if (m_classDef && Config_getBool(UML_LOOK) && (gt==Inheritance || gt==Collaboration))
   {
-    // add names shown as relations to a dictionary, so we don't show
+    // add names shown as relations to a set, so we don't show
     // them as attributes as well
-    QDict<void> arrowNames(17);
+    StringUnorderedSet arrowNames;
     if (m_edgeInfo)
     {
       // for each edge
@@ -403,11 +402,11 @@ void DotNode::writeBox(FTextStream &t,
           while ((i=ei->label().find('\n',p))!=-1)
           {
             lab = stripProtectionPrefix(ei->label().mid(p,i-p));
-            arrowNames.insert(lab,(void*)0x8);
+            arrowNames.insert(lab.str());
             p=i+1;
           }
           lab = stripProtectionPrefix(ei->label().right(ei->label().length()-p));
-          arrowNames.insert(lab,(void*)0x8);
+          arrowNames.insert(lab.str());
         }
       }
     }
@@ -500,7 +499,7 @@ void DotNode::writeBox(FTextStream &t,
   {
     t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0' is used
   }
-  t << "];" << endl; 
+  t << "];" << endl;
 }
 
 void DotNode::writeArrow(FTextStream &t,
@@ -536,20 +535,20 @@ void DotNode::writeArrow(FTextStream &t,
     t << ",label=\" " << convertLabel(ei->label()) << "\" ";
   }
   if (Config_getBool(UML_LOOK) &&
-    eProps->arrowStyleMap[ei->color()] && 
+    eProps->arrowStyleMap[ei->color()] &&
     (gt==Inheritance || gt==Collaboration)
     )
   {
     bool rev = pointBack;
     if (umlUseArrow) rev=!rev; // UML use relates has arrow on the start side
-    if (rev) 
-      t << ",arrowtail=\"" << eProps->arrowStyleMap[ei->color()] << "\""; 
-    else 
+    if (rev)
+      t << ",arrowtail=\"" << eProps->arrowStyleMap[ei->color()] << "\"";
+    else
       t << ",arrowhead=\"" << eProps->arrowStyleMap[ei->color()] << "\"";
   }
 
   if (format==GOF_BITMAP) t << ",fontname=\"" << Config_getString(DOT_FONTNAME) << "\"";
-  t << "];" << endl; 
+  t << "];" << endl;
 }
 
 void DotNode::write(FTextStream &t,
@@ -564,7 +563,7 @@ void DotNode::write(FTextStream &t,
   if (!m_visible) return; // node is not visible
   writeBox(t,gt,format,m_truncated==Truncated);
   m_written=TRUE;
-  QList<DotNode> *nl = toChildren ? m_children : m_parents; 
+  QList<DotNode> *nl = toChildren ? m_children : m_parents;
   if (nl)
   {
     if (toChildren)
@@ -671,7 +670,7 @@ void DotNode::writeXML(FTextStream &t,bool isClassGraph) const
           << "</edgelabel>" << endl;
       }
       t << "        </childnode>" << endl;
-    } 
+    }
   }
   t << "      </node>" << endl;
 }
@@ -841,7 +840,7 @@ void DotNode::clearWriteFlag()
 }
 
 void DotNode::colorConnectedNodes(int curColor)
-{ 
+{
   if (m_children)
   {
     QListIterator<DotNode> dnlic(*m_children);

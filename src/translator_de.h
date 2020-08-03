@@ -480,7 +480,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-          return "Entwurfseinheiten-Dokumentation";
+          return trDesignUnitDocumentation();
       }
       else
       {
@@ -2246,15 +2246,16 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trCustomReference(const char *name)
     { return QCString(name)+"-Referenz"; }
 
-
 //////////////////////////////////////////////////////////////////////////
-// new since 1.8.19, but completely filled so no need for a TranslatorAdapter_1_8_19
+// new since 1.8.19
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trISOLang()
-    {
-        return("de");
-    }
+    { return("de"); }
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "Entwurfseinheiten-Dokumentation"; }
+
 };
 
 #endif

@@ -12,7 +12,8 @@
  * input used in their production; they are not affected by this license.
  *
  */
-#include <qdict.h>
+
+#include <map>
 #include <qfile.h>
 #include <qcstring.h>
 #include <qglobal.h>
@@ -28,8 +29,7 @@
 class ResourceMgr::Private
 {
   public:
-    Private() : resources(257) {}
-    QDict<Resource> resources;
+    std::map<std::string,Resource> resources;
 };
 
 ResourceMgr &ResourceMgr::instance()
@@ -38,37 +38,34 @@ ResourceMgr &ResourceMgr::instance()
   return theInstance;
 }
 
-ResourceMgr::ResourceMgr()
+ResourceMgr::ResourceMgr() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ResourceMgr::~ResourceMgr()
 {
-  delete p;
 }
 
-void ResourceMgr::registerResources(const Resource resources[],int numResources)
+void ResourceMgr::registerResources(std::initializer_list<Resource> resources)
 {
-  for (int i=0;i<numResources;i++)
+  for (auto &res : resources)
   {
-    p->resources.insert(resources[i].name,&resources[i]);
+    p->resources.insert({res.name,res});
   }
 }
 
 bool ResourceMgr::writeCategory(const char *categoryName,const char *targetDir) const
 {
-  QDictIterator<Resource> it(p->resources);
-  const Resource *res;
-  for (it.toFirst();(res=it.current());++it)
+  for (auto &kv : p->resources)
   {
-    if (qstrcmp(res->category,categoryName)==0)
+    Resource &res = kv.second;
+    if (qstrcmp(res.category,categoryName)==0)
     {
-      QCString pathName = QCString(targetDir)+"/"+res->name;
+      QCString pathName = QCString(targetDir)+"/"+res.name;
       QFile f(pathName);
-      if (!f.open(IO_WriteOnly) || f.writeBlock((const char *)res->data,res->size)!=res->size)
+      if (!f.open(IO_WriteOnly) || f.writeBlock((const char *)res.data,res.size)!=res.size)
       {
-        err("Failed to write resource '%s' to directory '%s'\n",res->name,targetDir);
+        err("Failed to write resource '%s' to directory '%s'\n",res.name,targetDir);
         return FALSE;
       }
     }
@@ -178,7 +175,9 @@ bool ResourceMgr::copyResource(const char *name,const char *targetDir) const
 
 const Resource *ResourceMgr::get(const char *name) const
 {
-  return p->resources.find(name);
+  auto it = p->resources.find(name);
+  if (it!=p->resources.end()) return &it->second;
+  return 0;
 }
 
 QCString ResourceMgr::getAsString(const char *name) const

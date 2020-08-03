@@ -58,6 +58,7 @@
 #include "namespacedef.h"
 #include "tooltip.h"
 #include "fortrancode.h"
+#include "containers.h"
 
 const int fixedCommentAfter = 72;
 
@@ -114,10 +115,8 @@ class Scope
 {
   public:
     QCStringList useNames; //!< contains names of used modules
-    QDict<void> localVars; //!< contains names of local variables
-    QDict<void> externalVars; //!< contains names of external entities
-
-    Scope() : localVars(7, FALSE /*caseSensitive*/), externalVars(7, FALSE /*caseSensitive*/) {}
+    StringUnorderedSet localVars; //!< contains names of local variables
+    StringUnorderedSet externalVars; //!< contains names of external entities
 };
 
 /*===================================================================*/
@@ -447,7 +446,9 @@ static MemberDef *getFortranDefs(const QCString &memberName, const QCString &mod
   Scope *scope;
   for (it.toLast();(scope=it.current());--it)
   {
-    if (scope->localVars.find(memberName) && (!scope->externalVars.find(memberName)))
+    std::string lowMemName = memberName.lower().str();
+    if (scope->localVars.find(lowMemName)!=std::end(scope->localVars) &&     // local var
+        scope->externalVars.find(lowMemName)==std::end(scope->externalVars)) // and not external
     {
       return nullptr;
     }
@@ -665,8 +666,9 @@ static void addLocalVar(const QCString &varName)
 {
   if (!scopeStack.isEmpty())
   {
-    scopeStack.getLast()->localVars.insert(varName, (void*)1);
-    if (g_isExternal) scopeStack.getLast()->externalVars.insert(varName, (void*)1);
+    std::string lowVarName = varName.lower().str();
+    scopeStack.getLast()->localVars.insert(lowVarName);
+    if (g_isExternal) scopeStack.getLast()->externalVars.insert(lowVarName);
   }
 }
 

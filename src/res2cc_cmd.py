@@ -116,13 +116,10 @@ def main():
 	print("#include \"resourcemgr.h\"\n",file=outputFile)
 	for f in files:
 		f.writeContents(outputFile)
-	print("static Resource resourceDir[] =",file=outputFile)
-	print("{",file=outputFile)
+	print("void initResources() { ResourceMgr::instance().registerResources({",file=outputFile)
 	for f in files:
 		f.writeDirEntry(outputFile)
-	print("};",file=outputFile)
-	print("static int resourceDir_len = %s;" % len(files), file=outputFile)
-	print("void initResources() { ResourceMgr::instance().registerResources(resourceDir,resourceDir_len); }",file=outputFile)
+	print("});}",file=outputFile)
 
 if __name__ == '__main__':
 	main()
