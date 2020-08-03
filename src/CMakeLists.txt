@@ -14,7 +14,11 @@ include_directories(
 
 
 file(MAKE_DIRECTORY ${GENERATED_SRC})
-file(GLOB LANGUAGE_FILES "${CMAKE_CURRENT_LIST_DIR}/translator_??.h")
+if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+    file(GLOB LANGUAGE_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/translator_??.h")
+else()
+    file(GLOB LANGUAGE_FILES "${CMAKE_CURRENT_LIST_DIR}/translator_??.h")
+endif()
 
 # instead of increasebuffer.py
 add_definitions(-DYY_BUF_SIZE=${enlarge_lex_buffers} -DYY_READ_BUF_SIZE=${enlarge_lex_buffers})
@@ -81,7 +85,11 @@ add_custom_command(
 set_source_files_properties(${GENERATED_SRC}/lang_cfg.h PROPERTIES GENERATED 1)
 
 # all resource files
-file(GLOB RESOURCES ${CMAKE_SOURCE_DIR}/templates/*/*)
+if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+    file(GLOB RESOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/templates/*/*)
+else()
+    file(GLOB RESOURCES ${CMAKE_SOURCE_DIR}/templates/*/*)
+endif()
 
 # resources.cpp
 add_custom_command(
