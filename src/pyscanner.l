@@ -1253,9 +1253,12 @@ STARTDOCSYMS      "##"
 			      QCString actualDoc=yyextra->docBlock;
 			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-                                stripIndentation(actualDoc,yyextra->commentIndent);
-			        actualDoc.prepend("\\verbatim\n");
-			        actualDoc.append("\\endverbatim ");
+                                if (!actualDoc.isEmpty())
+                                {
+                                  stripIndentation(actualDoc,yyextra->commentIndent);
+			          actualDoc.prepend("\\verbatim\n");
+			          actualDoc.append("\\endverbatim ");
+			        }
 			      }
 			      //printf("-------> yyextra->current=%p yyextra->bodyEntry=%p\n",yyextra->current,yyextra->bodyEntry);
 			      handleCommentBlock(yyscanner, actualDoc, FALSE);
@@ -1265,9 +1268,12 @@ STARTDOCSYMS      "##"
 			      QCString actualDoc=yyextra->docBlock;
 			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-                                stripIndentation(actualDoc,yyextra->commentIndent);
-			        actualDoc.prepend("\\verbatim\n");
-			        actualDoc.append("\\endverbatim ");
+                                if (!actualDoc.isEmpty())
+                                {
+                                  stripIndentation(actualDoc,yyextra->commentIndent);
+			          actualDoc.prepend("\\verbatim\n");
+			          actualDoc.append("\\endverbatim ");
+			        }
 			      }
 			      actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
 			      handleCommentBlock(yyscanner, actualDoc, FALSE);
