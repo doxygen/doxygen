@@ -30,19 +30,9 @@
 #include "memberlist.h"
 #include "define.h"
 
-#ifndef MULTITHREADED_INPUT
-#define MULTITHREADED_INPUT 0
-#endif
-
-#if MULTITHREADED_INPUT
 #define THREAD_LOCAL thread_local
 #define AtomicInt    std::atomic_int
 #define AtomicBool   std::atomic_bool
-#else
-#define THREAD_LOCAL
-#define AtomicInt    int
-#define AtomicBool   bool
-#endif
 
 class RefList;
 class PageSList;

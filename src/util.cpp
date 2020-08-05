@@ -4479,18 +4479,14 @@ struct FindFileCacheElem
 
 static QCache<FindFileCacheElem> g_findFileDefCache(5000);
 
-#if MULTITHREADED_INPUT
 static std::mutex g_findFileDefMutex;
-#endif
 
 FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
 {
   ambig=FALSE;
   if (n==0) return 0;
 
-#if MULTITHREADED_INPUT
   std::unique_lock<std::mutex> lock(g_findFileDefMutex);
-#endif
 
   const int maxAddrSize = 20;
   char addr[maxAddrSize];

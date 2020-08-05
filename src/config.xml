@@ -812,6 +812,21 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='int' id='NUM_PROC_THREADS' defval='1' minval='0' maxval='32'>
+      <docs>
+<![CDATA[
+ The \c NUM_PROC_THREADS specifies the number threads doxygen is allowed to use during
+ processing. When set to \c 0 doxygen will based this on the number of cores
+ available in the system. You can set it explicitly to a value larger than 0
+ to get more control over the balance between CPU load and processing speed.
+ At this moment only the input processing can be done using multiple threads.
+ Since this is still an experimental feature the default is set to 1,
+ which efficively disables parallel processing. Please report any issues you
+ encounter.
+ Generating dot graphs in parallel is controlled by the \c DOT_NUM_THREADS setting.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Build' docs='Build related configuration options'>
     <option type='bool' id='EXTRACT_ALL' defval='0'>

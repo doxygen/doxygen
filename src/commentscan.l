@@ -409,11 +409,9 @@ struct commentscanYY_state
 };
 
 
-#if MULTITHREADED_INPUT
 static std::mutex g_sectionMutex;
 static std::mutex g_formulaMutex;
 static std::mutex g_citeMutex;
-#endif
 
 //-----------------------------------------------------------------------------
 
@@ -2822,9 +2820,7 @@ static void addXRefItem(yyscan_t yyscanner,
   if (listName==0) return;
   //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
 
-#if MULTITHREADED_INPUT
   std::unique_lock<std::mutex> lock(g_sectionMutex);
-#endif
 
   RefList *refList = RefListManager::instance().add(listName,listTitle,itemTitle);
   RefItem *item = 0;
@@ -2898,9 +2894,7 @@ static void addXRefItem(yyscan_t yyscanner,
 // not already added. Returns the label of the formula.
 static QCString addFormula(yyscan_t yyscanner)
 {
-#if MULTITHREADED_INPUT
   std::unique_lock<std::mutex> lock(g_formulaMutex);
-#endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString formLabel;
   QCString fText=yyextra->formulaText.simplifyWhiteSpace();
@@ -2922,9 +2916,7 @@ static SectionType sectionLevelToType(int level)
 
 static void addSection(yyscan_t yyscanner)
 {
-#if MULTITHREADED_INPUT
   std::unique_lock<std::mutex> lock(g_sectionMutex);
-#endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   SectionManager &sm = SectionManager::instance();
   const SectionInfo *si = sm.find(yyextra->sectionLabel);
@@ -2957,9 +2949,7 @@ static void addSection(yyscan_t yyscanner)
 
 static void addCite(yyscan_t yyscanner)
 {
-#if MULTITHREADED_INPUT
   std::unique_lock<std::mutex> lock(g_citeMutex);
-#endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString name=yytext;
   if (yytext[0] =='"')
@@ -3127,9 +3117,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
 
 static void addAnchor(yyscan_t yyscanner,const char *anchor)
 {
-#if MULTITHREADED_INPUT
   std::unique_lock<std::mutex> lock(g_sectionMutex);
-#endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   SectionManager &sm = SectionManager::instance();
   const SectionInfo *si = sm.find(anchor);

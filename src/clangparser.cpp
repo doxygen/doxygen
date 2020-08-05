@@ -20,22 +20,16 @@
 #include "membername.h"
 #include "filename.h"
 #include "tooltip.h"
-#if MULTITHREADED_INPUT
 #include <mutex>
-#endif
 #endif
 
 //--------------------------------------------------------------------------
 
-#if MULTITHREADED_INPUT
 std::mutex g_clangMutex;
-#endif
 
 ClangParser *ClangParser::instance()
 {
-#if MULTITHREADED_INPUT
   std::lock_guard<std::mutex> lock(g_clangMutex);
-#endif
   if (!s_instance) s_instance = new ClangParser;
   return s_instance;
 }

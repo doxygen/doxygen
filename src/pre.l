@@ -32,10 +32,8 @@
 #include <deque>
 #include <algorithm>
 #include <utility>
-#if MULTITHREADED_INPUT
 #include <mutex>
 #include <thread>
-#endif
 
 #include <stdio.h>
 #include <assert.h>
@@ -221,13 +219,9 @@ class DefineManager
  *
  *	global state
  */
-#if MULTITHREADED_INPUT
 static std::mutex            g_debugMutex;
 static std::mutex            g_globalDefineMutex;
-//static std::mutex            g_addIncludeRelationMutex;
-//static std::mutex            g_macroDefinitionsMutex;
 static std::mutex            g_updateGlobals;
-#endif
 static DefineManager         g_defineManager;
 
 
@@ -1539,10 +1533,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
 					    yyextra->includeStack.pop_back();
 
-#if MULTITHREADED_INPUT
                                             {
                                               std::lock_guard<std::mutex> lock(g_globalDefineMutex);
-#endif
                                               // to avoid deadlocks we allow multiple threads to process the same header file.
                                               // The first one to finish will store the results globally. After that the
                                               // next time the same file is encountered, the stored data is used and the file
@@ -1560,9 +1552,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                                   Debug::print(Debug::Preprocessor,0,"#include %s: was already processed by another thread! not storing data...\n",qPrint(toFileName));
                                                 }
                                               }
-#if MULTITHREADED_INPUT
                                             }
-#endif
 					  }
   					}
 <*>"/*"/"*/"				|
@@ -1695,10 +1685,7 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     // global guard
     if (state->curlyCount==0) // not #include inside { ... }
     {
-#if MULTITHREADED_INPUT
       std::lock_guard<std::mutex> lock(g_globalDefineMutex);
-#endif
-
       if (g_defineManager.alreadyProcessed(absName.str()))
       {
         alreadyProcessed = TRUE;
@@ -2905,9 +2892,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       if (alreadyProcessed) // if this header was already process we can just copy the stored macros
                            // in the local context
       {
-#if MULTITHREADED_INPUT
         std::lock_guard<std::mutex> lock(g_globalDefineMutex);
-#endif
         g_defineManager.retrieve(absIncFileName.str(),state->contextDefines);
       }
 
@@ -3318,9 +3303,7 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
 
   if (Debug::isFlagSet(Debug::Preprocessor))
   {
-#if MULTITHREADED_INPUT
     std::lock_guard<std::mutex> lock(g_debugMutex);
-#endif
     char *orgPos=output.data()+orgOffset;
     char *newPos=output.data()+output.curPos();
     Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %d bytes):\n",fileName,newPos-orgPos);
@@ -3350,9 +3333,7 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
   }
 
   {
-#if MULTITHREADED_INPUT
     std::lock_guard<std::mutex> lock(g_updateGlobals);
-#endif
     for (const auto &inc : state->includeRelations)
     {
       if (inc->fromFileDef)

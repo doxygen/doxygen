@@ -35,9 +35,7 @@ static const char *error_str = "error: ";
 static FILE *warnFile = stderr;
 
 
-#if MULTITHREADED_INPUT
 static std::mutex g_mutex;
-#endif
 
 void initWarningFormat()
 {
@@ -112,9 +110,7 @@ void msg(const char *fmt, ...)
 {
   if (!Config_getBool(QUIET))
   {
-#if MULTITHREADED_INPUT
     std::unique_lock<std::mutex> lock(g_mutex);
-#endif
     if (Debug::isFlagSet(Debug::Time))
     {
       printf("%.3f sec: ",((double)Debug::elapsedTime()));
@@ -155,9 +151,7 @@ static void format_warn(const char *file,int line,const char *text)
   msgText += '\n';
 
   {
-#if MULTITHREADED_INPUT
     std::unique_lock<std::mutex> lock(g_mutex);
-#endif
     // print resulting message
     fwrite(msgText.data(),1,msgText.length(),warnFile);
   }
@@ -257,9 +251,7 @@ extern void err_full(const char *file,int line,const char *fmt, ...)
 void term(const char *fmt, ...)
 {
   {
-#if MULTITHREADED_INPUT
     std::unique_lock<std::mutex> lock(g_mutex);
-#endif
     va_list args;
     va_start(args, fmt);
     vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
@@ -284,9 +276,7 @@ void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
     enter_txt_uc = "Finished";
   }
 
-#if MULTITHREADED_INPUT
   std::unique_lock<std::mutex> lock(g_mutex);
-#endif
   if (dbg)
   {
     if (fileName)
