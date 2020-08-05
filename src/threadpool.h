@@ -29,6 +29,13 @@
 /// Class managing a pool of worker threads.
 /// Work can be queued by passing a function to queue(). When the
 /// work is done the result of the function will be passed back via a future.
+///
+/// Note that due to a bug in Visual Studio's std::packaged_task implementation
+/// it does not allow m_work to have a void() template parameter, and still assign
+/// R() to it (you will get C2280: "attempting to reference a deleted function error").
+/// So to work around this we pass the return type with the class itself :-(
+/// See also https://stackoverflow.com/q/26733430/784672
+template<class R>
 class ThreadPool
 {
   public:
@@ -54,7 +61,9 @@ class ThreadPool
 
     /// Queue the lambda 'task' for the threads to execute.
     /// A future of the return type of the lambda is returned to capture the result.
-    template<class F, class R=std::result_of_t<F&()> >
+    /// use this once the Visual Studio bug is fixed:
+    ///    template<class F, class R=std::result_of_t<F&()> >
+    template<class F>
     std::future<R> queue(F&& f)
     {
       // wrap the function object into a packaged task, splitting
@@ -98,7 +107,7 @@ class ThreadPool
       while(true)
       {
 	// pop a task off the queue:
-	std::packaged_task<void()> f;
+	std::packaged_task<R()> f;
 	{
 	  // usual thread-safe queue code:
 	  std::unique_lock<std::mutex> l(m_mutex);
@@ -121,8 +130,8 @@ class ThreadPool
     std::mutex m_mutex;
     std::condition_variable m_cond;
 
-    // note that a packaged_task<void> can store a packaged_task<R>:
-    std::deque< std::packaged_task<void()> > m_work;
+    // note that a packaged_task<void()> can store a packaged_task<R()> (but not with buggy Visual Studio)
+    std::deque< std::packaged_task<R()> > m_work;
 
     // this holds futures representing the worker threads being done:
     std::vector< std::future<void> > m_finished;
