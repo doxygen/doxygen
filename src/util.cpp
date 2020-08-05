@@ -7920,6 +7920,55 @@ QCString stripIndentation(const QCString &s)
   return result.data();
 }
 
+// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
+static void stripIndentation(QCString &doc,const int indentationLevel)
+{
+  if (indentationLevel <= 0 || doc.isEmpty()) return; // nothing to strip
+
+  // by stripping content the string will only become shorter so we write the results
+  // back into the input string and then resize it at the end.
+  char c;
+  const char *src = doc.data();
+  char *dst = doc.rawData();
+  bool insideIndent = false; // skip the initial line from stripping
+  int cnt = 0;
+  while ((c=*src++)!=0)
+  {
+    // invariant: dst<=src
+    switch(c)
+    {
+      case '\n':
+        *dst++ = c;
+        insideIndent = true;
+        cnt = indentationLevel;
+        break;
+      case ' ':
+        if (insideIndent)
+        {
+          if (cnt>0) // count down the spacing until the end of the indent
+          {
+            cnt--;
+          }
+          else // reached the end of the indent, start of the part of the line to keep
+          {
+            insideIndent = false;
+            *dst++ = c;
+          }
+        }
+        else // part after indent, copy to the output
+        {
+          *dst++ = c;
+        }
+        break;
+      default:
+        insideIndent = false;
+        *dst++ = c;
+        break;
+    }
+  }
+  doc.resize(dst-doc.data()+1);
+}
+
 
 bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
 {
