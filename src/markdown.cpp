@@ -159,7 +159,7 @@ int Trace::s_indent = 0;
 // is character at position i in data an escape that prevents ending an emphasis section
 // so for example *bla (*.txt) is cool*
 #define ignoreCloseEmphChar(i) \
-  (data[i]=='('  || data[i]=='{' || data[i]=='[' || data[i]=='<' || \
+  (data[i]=='('  || data[i]=='{' || data[i]=='[' || (data[i]=='<' && data[i+1]!='/') || \
    data[i]=='\\' || \
    data[i]=='@')
 
@@ -356,12 +356,13 @@ int Markdown::findEmphasisChar(const char *data, int size, char c, int c_size)
   {
     while (i<size && data[i]!=c    && data[i]!='`' &&
                      data[i]!='\\' && data[i]!='@' &&
+                     !(data[i]=='/' && data[i-1]=='<') && // html end tag also ends emphasis
                      data[i]!='\n') i++;
     //printf("findEmphasisChar: data=[%s] i=%d c=%c\n",data,i,data[i]);
 
     // not counting escaped chars or characters that are unlikely
     // to appear as the end of the emphasis char
-    if (i>0 && ignoreCloseEmphChar(i-1))
+    if (ignoreCloseEmphChar(i-1))
     {
       i++;
       continue;
@@ -429,6 +430,10 @@ int Markdown::findEmphasisChar(const char *data, int size, char c, int c_size)
       {
         i++;
       }
+    }
+    else if (data[i-1]=='<' && data[i]=='/') // html end tag invalidates emphasis
+    {
+      return 0;
     }
     else if (data[i]=='\n') // end * or _ at paragraph boundary
     {
