@@ -472,6 +472,7 @@ QCString processMarkup(const QCString &s);
 bool protectionLevelVisible(Protection prot);
 
 QCString stripIndentation(const QCString &s);
+void stripIndentation(QCString &doc,const int indentationLevel);
 
 QCString getDotImageExtension(void);
 
