@@ -5939,8 +5939,8 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
             decIt!= decAl.end() && defIt!= defAl.end();
           ++decIt,               ++defIt)
   {
-    Argument decA = *decIt;
-    Argument defA = *defIt;
+    Argument &decA = *decIt;
+    Argument &defA = *defIt;
     if (decA.docs.isEmpty() && !defA.docs.isEmpty())
     {
       decA.docs = defA.docs;
