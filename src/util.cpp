@@ -1982,8 +1982,10 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   //printf("linkify='%s'\n",text);
   static QRegExp regExp("[a-z_A-Z\\x80-\\xFF][~!a-z_A-Z0-9$\\\\.:\\x80-\\xFF]*");
   static QRegExp regExpSplit("(?!:),");
+  if (text==0) return;
   QCString txtStr=text;
   int strLen = txtStr.length();
+  if (strLen==0) return;
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d external=%d\n",
   //    scope?scope->name().data():"<none>",
   //    fileScope?fileScope->name().data():"<none>",
@@ -1993,7 +1995,6 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   int newIndex;
   int skipIndex=0;
   int floatingIndex=0;
-  if (strLen==0) return;
   // read a word from the text string
   while ((newIndex=regExp.match(txtStr,index,&matchLen))!=-1)
   {

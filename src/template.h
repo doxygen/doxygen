@@ -17,7 +17,7 @@
 #define TEMPLATE_H
 
 #include <qcstring.h>
-#include <qvaluelist.h>
+#include <vector>
 
 class FTextStream;
 
@@ -95,12 +95,12 @@ class TemplateVariant
     {
       public:
         /** Callback type to use when creating a delegate from a function. */
-        typedef TemplateVariant (*StubType)(const void *obj, const QValueList<TemplateVariant> &args);
+        typedef TemplateVariant (*StubType)(const void *obj, const std::vector<TemplateVariant> &args);
 
         Delegate() : m_objectPtr(0) , m_stubPtr(0) {}
 
         /** Creates a delegate given an object. The method to call is passed as a template parameter */
-        template <class T, TemplateVariant (T::*TMethod)(const QValueList<TemplateVariant> &) const>
+        template <class T, TemplateVariant (T::*TMethod)(const std::vector<TemplateVariant> &) const>
         static Delegate fromMethod(const T* objectPtr)
         {
           Delegate d;
@@ -118,7 +118,7 @@ class TemplateVariant
         }
 
         /** Invokes the function/method stored in the delegate */
-        TemplateVariant operator()(const QValueList<TemplateVariant> &args) const
+        TemplateVariant operator()(const std::vector<TemplateVariant> &args) const
         {
           return (*m_stubPtr)(m_objectPtr, args);
         }
@@ -127,8 +127,8 @@ class TemplateVariant
         const void* m_objectPtr;
         StubType    m_stubPtr;
 
-        template <class T, TemplateVariant (T::*TMethod)(const QValueList<TemplateVariant> &) const>
-        static TemplateVariant methodStub(const void* objectPtr, const QValueList<TemplateVariant> &args)
+        template <class T, TemplateVariant (T::*TMethod)(const std::vector<TemplateVariant> &) const>
+        static TemplateVariant methodStub(const void* objectPtr, const std::vector<TemplateVariant> &args)
         {
           T* p = (T*)(objectPtr);
           return (p->*TMethod)(args);
@@ -269,7 +269,7 @@ class TemplateVariant
     /** Return the result of apply this function with \a args.
      *  Returns an empty string if the variant type is not a function.
      */
-    TemplateVariant call(const QValueList<TemplateVariant> &args)
+    TemplateVariant call(const std::vector<TemplateVariant> &args)
     {
       if (m_type==Function) return m_delegate(args);
       return TemplateVariant();
