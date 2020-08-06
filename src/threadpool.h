@@ -27,15 +27,23 @@
 #include <vector>
 
 /// Class managing a pool of worker threads.
-/// Work can be queued by passing a function to queue(). When the
-/// work is done the result of the function will be passed back via a future.
+/// Work can be queued by passing a function to queue(). A future will be
+/// returned that can be used to obtain the result of the function after execution.
 ///
-/// Note that due to a bug in Visual Studio's std::packaged_task implementation
-/// it does not allow m_work to have a void() template parameter, and still assign
-/// R() to it (you will get C2280: "attempting to reference a deleted function error").
-/// So to work around this we pass the return type with the class itself :-(
-/// See also https://stackoverflow.com/q/26733430/784672
-template<class R>
+/// Usage example:
+/// @code
+/// ThreadPool pool(10);
+/// std::vector< std::future< int > > results;
+/// for (int i=0;i<10;i++)
+/// {
+///   auto run = [](int i) { return i*i; };
+///   results.emplace_back(pool.queue(std::bind(run,i)));
+/// }
+/// for (auto &f : results)
+/// {
+///   printf("Result %d:\n", f.get());
+/// }
+/// @endcode
 class ThreadPool
 {
   public:
@@ -44,13 +52,13 @@ class ThreadPool
     {
       for (std::size_t i = 0; i < N; ++i)
       {
-	// each thread is a std::async running thread_task():
-	m_finished.push_back(
-	    std::async(
-	      std::launch::async,
-	      [this]{ threadTask(); }
-	      )
-	    );
+        // each thread is a std::async running thread_task():
+        m_finished.push_back(
+            std::async(
+              std::launch::async,
+              [this]{ threadTask(); }
+              )
+            );
       }
     }
     /// deletes the thread pool by finishing all threads
@@ -59,21 +67,23 @@ class ThreadPool
       finish();
     }
 
-    /// Queue the lambda 'task' for the threads to execute.
-    /// A future of the return type of the lambda is returned to capture the result.
-    /// use this once the Visual Studio bug is fixed:
-    ///    template<class F, class R=std::result_of_t<F&()> >
-    template<class F>
+    /// Queue the callable function \a f for the threads to execute.
+    /// A future of the return type of the function is returned to capture the result.
+    template<class F, class R=std::result_of_t<F&()> >
     std::future<R> queue(F&& f)
     {
-      // wrap the function object into a packaged task, splitting
-      // execution from the return value:
-      std::packaged_task<R()> p(std::forward<F>(f));
+      // We wrap the function object into a packaged task, splitting
+      // execution from the return value.
+      // Since the packaged_task object is not copyable, we create it on the heap
+      // and capture it via a shared pointer in a lambda and then assign that lambda
+      // to a std::function.
+      auto ptr = std::make_shared< std::packaged_task<R()> >(std::forward<F>(f));
+      auto taskFunc = [ptr]() { if (ptr->valid()) (*ptr)(); };
 
-      auto r=p.get_future(); // get the return value before we hand off the task
+      auto r=ptr->get_future(); // get the return value before we hand off the task
       {
-	std::unique_lock<std::mutex> l(m_mutex);
-	m_work.emplace_back(std::move(p)); // store the task<R()> as a task<void()>
+        std::unique_lock<std::mutex> l(m_mutex);
+        m_work.emplace_back(taskFunc);
         m_cond.notify_one(); // wake a thread to work on the task
       }
 
@@ -85,12 +95,12 @@ class ThreadPool
     void finish()
     {
       {
-	std::unique_lock<std::mutex> l(m_mutex);
-	for(auto&& u : m_finished)
-	{
+        std::unique_lock<std::mutex> l(m_mutex);
+        for(auto&& u : m_finished)
+        {
           unused_variable(u);
-	  m_work.push_back({});
-	}
+          m_work.push_back({}); // insert empty function object to signal abort
+        }
       }
       m_cond.notify_all();
       m_finished.clear();
@@ -106,22 +116,22 @@ class ThreadPool
     {
       while(true)
       {
-	// pop a task off the queue:
-	std::packaged_task<R()> f;
-	{
-	  // usual thread-safe queue code:
-	  std::unique_lock<std::mutex> l(m_mutex);
-	  if (m_work.empty())
-	  {
-	    m_cond.wait(l,[&]{return !m_work.empty();});
-	  }
-	  f = std::move(m_work.front());
-	  m_work.pop_front();
-	}
-	// if the task is invalid, it means we are asked to abort
-	if (!f.valid()) return;
-	// otherwise, run the task
-	f();
+        // pop a task off the queue:
+        std::function<void()> f;
+        {
+          // usual thread-safe queue code:
+          std::unique_lock<std::mutex> l(m_mutex);
+          if (m_work.empty())
+          {
+            m_cond.wait(l,[&]{return !m_work.empty();});
+          }
+          f = std::move(m_work.front());
+          m_work.pop_front();
+        }
+        // if the function is empty, it means we are asked to abort
+        if (!f) return;
+        // run the task
+        f();
       }
     }
 
@@ -130,8 +140,8 @@ class ThreadPool
     std::mutex m_mutex;
     std::condition_variable m_cond;
 
-    // note that a packaged_task<void()> can store a packaged_task<R()> (but not with buggy Visual Studio)
-    std::deque< std::packaged_task<R()> > m_work;
+    // hold the queue of work
+    std::deque< std::function<void()> > m_work;
 
     // this holds futures representing the worker threads being done:
     std::vector< std::future<void> > m_finished;

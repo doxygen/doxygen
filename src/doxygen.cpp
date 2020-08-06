@@ -9143,8 +9143,8 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
       numThreads = std::thread::hardware_concurrency();
     }
     msg("Processing input using %lu threads.\n",numThreads);
+    ThreadPool threadPool(numThreads);
     using FutureType = std::vector< std::shared_ptr<Entry> >;
-    ThreadPool<FutureType> threadPool(numThreads);
     std::vector< std::future< FutureType > > results;
     for (const auto &s : g_inputFiles)
     {
@@ -9238,8 +9238,8 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
   {
     std::size_t numThreads = std::thread::hardware_concurrency();
     msg("Processing input using %lu threads.\n",numThreads);
+    ThreadPool threadPool(numThreads);
     using FutureType = std::shared_ptr<Entry>;
-    ThreadPool< FutureType > threadPool(numThreads);
     std::vector< std::future< FutureType > > results;
     for (const auto &s : g_inputFiles)
     {
