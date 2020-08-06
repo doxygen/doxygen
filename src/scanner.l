@@ -5629,6 +5629,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <CompoundName,ClassVar>{B}*"{"{B}*	{ 
+                                          yyextra->current->program.resize(0);
                                           yyextra->current->fileName = yyextra->yyFileName ;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
 					  yyextra->current->bodyColumn = yyextra->yyColNr;
@@ -5880,7 +5881,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN(BasesProt);
 					  }
 					}
-<Bases>{B}*"{"{B}*			{ yyextra->current->fileName = yyextra->yyFileName ;
+<Bases>{B}*"{"{B}*			{
+                                          yyextra->current->program.resize(0);
+                                          yyextra->current->fileName = yyextra->yyFileName ;
 					  yyextra->current->bodyLine  = yyextra->yyLineNr;
 					  yyextra->current->bodyColumn = yyextra->yyColNr;
 					  yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
