@@ -2731,9 +2731,7 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   Protection prot=Public;
   bool needsEntry = FALSE;
   int position=0;
-  int startNewlines=0;
-  QCString processedDocs = markdown.process(docs,startNewlines);
-  lineNr += startNewlines;
+  QCString processedDocs = markdown.process(docs,lineNr);
   while (p->commentScanner.parseCommentBlock(
         this,
         current.get(),
