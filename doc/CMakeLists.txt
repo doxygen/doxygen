@@ -85,8 +85,7 @@ set(DOC_FILES
         maintainers.txt
         translator.py
         smile.png
-        doxygen_logo.gif
-        doxygen_logo_low.gif
+        doxygen_logo.svg
 )
 
 if (build_doc_chm)
@@ -163,7 +162,7 @@ add_custom_target(doxygen_pdf
         COMMAND ${CMAKE_COMMAND} -E remove refman.tex
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex  .
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/manual.sty  .
-        COMMAND ${EPSTOPDF} ${CMAKE_SOURCE_DIR}/doc/doxygen_logo.eps --outfile=doxygen_logo.pdf
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/doxygen_logo.pdf  .
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
         COMMAND ${MAKEINDEX} doxygen_manual.idx
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
