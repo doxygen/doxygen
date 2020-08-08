@@ -9155,12 +9155,12 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
       {
         // lambda representing the work to executed by a thread
         auto processFile = [s,&filesToProcess,&processedFilesLock,&processedFiles]() {
-          bool ambig;
+          bool ambig_l;
           std::vector< std::shared_ptr<Entry> > roots;
-          FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
-          auto clangParser = ClangParser::instance()->createTUParser(fd);
+          FileDef *fd_l = findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig_l);
+          auto clangParser = ClangParser::instance()->createTUParser(fd_l);
           auto parser = getParserForFile(s.c_str());
-          auto fileRoot { parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true) };
+          auto fileRoot { parseFile(*parser.get(),fd_l,s.c_str(),clangParser.get(),true) };
           roots.push_back(fileRoot);
 
           // Now process any include files in the same translation unit
@@ -9177,7 +9177,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
               }
               if (incFile!=s && needsToBeProcessed)
               {
-                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile.c_str(),ambig);
+                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile.c_str(),ambig_l);
                 if (ifd && !ifd->isReference())
                 {
                   //printf("  Processing %s in same translation unit as %s\n",incFile,s->c_str());

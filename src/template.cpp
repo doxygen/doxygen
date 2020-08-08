@@ -383,7 +383,7 @@ class TemplateListConstIterator : public TemplateListIntf::ConstIterator
     }
     virtual bool current(TemplateVariant &v) const
     {
-      if (m_index>=0 && m_index<m_list.p->elems.size())
+      if (m_index<m_list.p->elems.size())
       {
         v = m_list.p->elems[m_index];
         return TRUE;
