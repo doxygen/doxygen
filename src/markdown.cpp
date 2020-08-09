@@ -194,7 +194,7 @@ Markdown::Markdown(const char *fileName,int lineNr,int indentLevel)
 enum Alignment { AlignNone, AlignLeft, AlignCenter, AlignRight };
 
 
-//---------- contants -------
+//---------- constants -------
 //
 const uchar    g_utf8_nbsp[3] = { 0xc2, 0xa0, 0}; // UTF-8 nbsp
 const char    *g_doxy_nsbp = "&_doxy_nbsp;";            // doxygen escape command for UTF-8 nbsp
