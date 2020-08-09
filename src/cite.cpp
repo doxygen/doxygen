@@ -211,7 +211,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
       {
         QCString crossrefName = line.mid((uint)(j+1),(uint)(k-j-1));
         // check if the reference with the cross reference is used
-        // insert cross refererence when cross reference has not yet been added.
+        // insert cross reference when cross reference has not yet been added.
         if ((p->entries.find(citeName.data())!=p->entries.end()) &&
             (p->entries.find(crossrefName.data())==p->entries.end())) // not found yet
         {
