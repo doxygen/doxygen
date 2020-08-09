@@ -84,7 +84,7 @@ void LatexCodeGenerator::codify(const char *str)
     signed char c;
     //char cs[5];
     int spacesToNextTabStop;
-    static int tabSize = Config_getInt(TAB_SIZE);
+    int tabSize = Config_getInt(TAB_SIZE);
     static signed char *result = NULL;
     static int lresult = 0;
     int i;
@@ -168,8 +168,8 @@ void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
                                    const char *anchor,const char *name,
                                    const char *)
 {
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   int l = qstrlen(name);
   if (!ref && usePDFLatex && pdfHyperlinks)
   {
@@ -190,8 +190,8 @@ void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
 
 void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
 {
-  static bool usePDFLatex = Config_getBool(USE_PDFLATEX);
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool usePDFLatex = Config_getBool(USE_PDFLATEX);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!DoxyCodeLineOpen)
   {
     m_t << "\\DoxyCodeLine{";
@@ -265,16 +265,24 @@ void LatexCodeGenerator::setDoxyCodeOpen(bool val)
 
 //-------------------------------
 
-LatexGenerator::LatexGenerator() : OutputGenerator()
+LatexGenerator::LatexGenerator() : OutputGenerator(Config_getString(LATEX_OUTPUT))
 {
-  m_dir=Config_getString(LATEX_OUTPUT);
   //printf("LatexGenerator::LatexGenerator() m_insideTabbing=FALSE\n");
-  m_insideTabbing=FALSE;
-  m_firstDescItem=TRUE;
-  m_disableLinks=FALSE;
-  m_indent=0;
-  templateMemberItem = FALSE;
-  m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
+}
+
+LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og)
+{
+}
+
+LatexGenerator &LatexGenerator::operator=(const LatexGenerator &og)
+{
+  OutputGenerator::operator=(og);
+  return *this;
+}
+
+std::unique_ptr<OutputGenerator> LatexGenerator::clone() const
+{
+  return std::make_unique<LatexGenerator>(*this);
 }
 
 LatexGenerator::~LatexGenerator()
@@ -284,8 +292,7 @@ LatexGenerator::~LatexGenerator()
 static void writeLatexMakefile()
 {
   bool generateBib = !CitationManager::instance().isEmpty();
-  QCString dir=Config_getString(LATEX_OUTPUT);
-  QCString fileName=dir+"/Makefile";
+  QCString fileName=Config_getString(LATEX_OUTPUT)+"/Makefile";
   QFile file(fileName);
   if (!file.open(IO_WriteOnly))
   {
@@ -379,8 +386,7 @@ static void writeLatexMakefile()
 static void writeMakeBat()
 {
 #if defined(_MSC_VER)
-  QCString dir=Config_getString(LATEX_OUTPUT);
-  QCString fileName=dir+"/make.bat";
+  QCString fileName=dir()+"/make.bat";
   QCString latex_command = theTranslator->latexCommandName();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   QFile file(fileName);
@@ -463,12 +469,11 @@ static void writeMakeBat()
 
 void LatexGenerator::init()
 {
-
-  QCString dir=Config_getString(LATEX_OUTPUT);
-  QDir d(dir);
-  if (!d.exists() && !d.mkdir(dir))
+  QCString dname = Config_getString(LATEX_OUTPUT);
+  QDir d(dname);
+  if (!d.exists() && !d.mkdir(dname))
   {
-    term("Could not create output directory %s\n",dir.data());
+    term("Could not create output directory %s\n",dname.data());
   }
 
   writeLatexMakefile();
@@ -634,7 +639,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   // Headers & footers
   QGString genString;
   QCString generatedBy;
-  static bool timeStamp = Config_getBool(LATEX_TIMESTAMP);
+  bool timeStamp = Config_getBool(LATEX_TIMESTAMP);
   FTextStream tg(&genString);
   if (timeStamp)
   {
@@ -698,11 +703,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   QCString macroFile = Config_getString(FORMULA_MACROFILE);
   if (!macroFile.isEmpty())
   {
-    QCString dir=Config_getString(LATEX_OUTPUT);
     QFileInfo fi(macroFile);
     macroFile=fi.absFilePath().utf8();
     QCString stripMacroFile = fi.fileName().data();
-    copyFile(macroFile,dir + "/" + stripMacroFile);
+    copyFile(macroFile,Config_getString(LATEX_OUTPUT) + "/" + stripMacroFile);
     t << "\\input{" << stripMacroFile << "}" << endl;
   }
 
@@ -1087,10 +1091,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
 
 void LatexGenerator::endIndexSection(IndexSections is)
 {
-  //static bool compactLatex = Config_getBool(COMPACT_LATEX);
-  static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
-  static QCString latexHeader = Config_getString(LATEX_HEADER);
-  static QCString latexFooter = Config_getString(LATEX_FOOTER);
+  //bool compactLatex = Config_getBool(COMPACT_LATEX);
+  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
+  QCString latexHeader = Config_getString(LATEX_HEADER);
+  QCString latexFooter = Config_getString(LATEX_FOOTER);
   switch (is)
   {
     case isTitlePageStart:
@@ -1476,7 +1480,7 @@ void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
 
 void LatexGenerator::startTextLink(const char *f,const char *anchor)
 {
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!m_disableLinks && pdfHyperlinks)
   {
     t << "\\mbox{\\hyperlink{";
@@ -1492,7 +1496,7 @@ void LatexGenerator::startTextLink(const char *f,const char *anchor)
 
 void LatexGenerator::endTextLink()
 {
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!m_disableLinks && pdfHyperlinks)
   {
     t << "}";
@@ -1503,7 +1507,7 @@ void LatexGenerator::endTextLink()
 void LatexGenerator::writeObjectLink(const char *ref, const char *f,
                                      const char *anchor, const char *text)
 {
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!m_disableLinks && !ref && pdfHyperlinks)
   {
     t << "\\mbox{\\hyperlink{";
@@ -1538,8 +1542,8 @@ void LatexGenerator::endPageRef(const char *clname, const char *anchor)
 
 void LatexGenerator::startTitleHead(const char *fileName)
 {
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks && fileName)
   {
     t << "\\hypertarget{" << stripPath(fileName) << "}{}";
@@ -1669,8 +1673,8 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "}" << endl;
   }
   static const char *levelLab[] = { "doxysubsubsection","doxyparagraph","doxysubparagraph", "doxysubparagraph" };
-  static bool compactLatex = Config_getBool(COMPACT_LATEX);
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool compactLatex = Config_getBool(COMPACT_LATEX);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   int level=0;
   if (showInline) level+=2;
   if (compactLatex) level++;
@@ -1706,8 +1710,8 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
                                      const char *anchor, const char *,
                                      const char *)
 {
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   t << "\\mbox{";
   if (usePDFLatex && pdfHyperlinks)
   {
@@ -1730,8 +1734,8 @@ void LatexGenerator::writeAnchor(const char *fName,const char *name)
 {
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
   t << "\\label{" << stripPath(name) << "}" << endl;
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
   {
     if (fName)
@@ -1775,8 +1779,8 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 
 void LatexGenerator::startSection(const char *lab,const char *,SectionType type)
 {
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  static bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
   {
     t << "\\hypertarget{" << stripPath(lab) << "}{}";
@@ -1838,7 +1842,7 @@ void LatexGenerator::startClassDiagram()
 void LatexGenerator::endClassDiagram(const ClassDiagram &d,
                                        const char *fileName,const char *)
 {
-  d.writeFigure(t,m_dir,fileName);
+  d.writeFigure(t,dir(),fileName);
 }
 
 
@@ -2067,7 +2071,7 @@ void LatexGenerator::startDotGraph()
 
 void LatexGenerator::endDotGraph(DotClassGraph &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startInclDepGraph()
@@ -2076,7 +2080,7 @@ void LatexGenerator::startInclDepGraph()
 
 void LatexGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startGroupCollaboration()
@@ -2085,7 +2089,7 @@ void LatexGenerator::startGroupCollaboration()
 
 void LatexGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startCallGraph()
@@ -2094,7 +2098,7 @@ void LatexGenerator::startCallGraph()
 
 void LatexGenerator::endCallGraph(DotCallGraph &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startDirDepGraph()
@@ -2103,7 +2107,7 @@ void LatexGenerator::startDirDepGraph()
 
 void LatexGenerator::endDirDepGraph(DotDirDeps &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString(LATEX_OUTPUT),m_fileName,m_relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startDescription()

@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -27,19 +27,12 @@ class ManGenerator : public OutputGenerator
 {
   public:
     ManGenerator();
-   ~ManGenerator();
-    
-    //OutputGenerator *copy()  { return new ManGenerator; } 
-    //OutputGenerator *clone() { return new ManGenerator(*this); }
-    //void append(const OutputGenerator *o);
-    void enable() 
-    { if (m_genStack->top()) m_active=*m_genStack->top(); else m_active=TRUE; }
-    void disable() { m_active=FALSE; }
-    void enableIf(OutputType o)  { if (o==Man) enable(); }
-    void disableIf(OutputType o) { if (o==Man) disable(); }
-    void disableIfNot(OutputType o) { if (o!=Man) disable(); }
-    bool isEnabled(OutputType o) { return (o==Man && m_active); } 
-    OutputGenerator *get(OutputType o) { return (o==Man) ? this : 0; }
+    ManGenerator(const ManGenerator &g);
+    ManGenerator &operator=(const ManGenerator &g);
+    virtual ~ManGenerator();
+    virtual std::unique_ptr<OutputGenerator> clone() const;
+
+    OutputType type() const { return Man; }
 
     void writeDoc(DocNode *,const Definition *,const MemberDef *);
 
@@ -60,7 +53,7 @@ class ManGenerator : public OutputGenerator
     void endTitleHead(const char *,const char *);
     void startTitle();
     void endTitle();
-    
+
     void newParagraph();
     void startParagraph(const char *classDef);
     void endParagraph();
@@ -68,11 +61,11 @@ class ManGenerator : public OutputGenerator
     void startIndexListItem() {}
     void endIndexListItem() {}
     void startIndexList() {}
-    void endIndexList()   { newParagraph(); } 
+    void endIndexList()   { newParagraph(); }
     void startIndexKey() {}
-    void endIndexKey()   {} 
+    void endIndexKey()   {}
     void startIndexValue(bool) {}
-    void endIndexValue(const char *,bool)   {} 
+    void endIndexValue(const char *,bool)   {}
     void startItemList()  {}
     void endItemList()    { newParagraph(); }
     void startIndexItem(const char *ref,const char *file);
@@ -163,7 +156,7 @@ class ManGenerator : public OutputGenerator
     void endSmall()           {}
     void startMemberDescription(const char *,const char *,bool) { t << "\n.RI \""; m_firstCol=FALSE; }
     void endMemberDescription()   { t << "\""; m_firstCol=FALSE; }
-    void startMemberDeclaration() {} 
+    void startMemberDeclaration() {}
     void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
@@ -196,7 +189,7 @@ class ManGenerator : public OutputGenerator
     void startContents() {}
     void endContents() {}
     void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }
-    
+
     void startDescTable(const char *t);
     void endDescTable();
     void startDescTableRow() {}
@@ -214,7 +207,7 @@ class ManGenerator : public OutputGenerator
     void endGroupCollaboration(DotGroupCollaboration &) {}
     void startCallGraph() {}
     void endCallGraph(DotCallGraph &) {}
-    void startDirDepGraph() {} 
+    void startDirDepGraph() {}
     void endDirDepGraph(DotDirDeps &) {}
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
@@ -264,15 +257,13 @@ class ManGenerator : public OutputGenerator
     void addWord(const char *,bool) {}
 
   private:
-    bool m_firstCol;
-    bool m_paragraph;
-    int  m_col;
-    bool m_upperCase;
-    bool m_insideTabbing;
-    bool m_inHeader;
+    bool m_firstCol = true;
+    bool m_paragraph = true;
+    int  m_col = 0;
+    bool m_upperCase = false;
+    bool m_insideTabbing = false;
+    bool m_inHeader = false;
 
-    ManGenerator(const ManGenerator &g);
-    ManGenerator &operator=(const ManGenerator &g);
 };
 
 #endif

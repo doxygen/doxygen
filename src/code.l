@@ -36,6 +36,7 @@
 #include <ctype.h>
 #include <qregexp.h>
 #include <qdir.h>
+#include <qstack.h>
 
 #include "code.h"
 #include "entry.h"

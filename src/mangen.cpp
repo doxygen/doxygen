@@ -74,15 +74,23 @@ static QCString getSubdir()
   return dir;
 }
 
-ManGenerator::ManGenerator() : OutputGenerator()
+ManGenerator::ManGenerator() : OutputGenerator(Config_getString(MAN_OUTPUT)+"/"+getSubdir())
 {
-  m_dir=Config_getString(MAN_OUTPUT) + "/" + getSubdir();
-  m_firstCol=TRUE;
-  m_paragraph=TRUE;
-  m_col=0;
-  m_upperCase=FALSE;
-  m_insideTabbing=FALSE;
-  m_inHeader=FALSE;
+}
+
+ManGenerator::ManGenerator(const ManGenerator &og) : OutputGenerator(og)
+{
+}
+
+ManGenerator &ManGenerator::operator=(const ManGenerator &og)
+{
+  OutputGenerator::operator=(og);
+  return *this;
+}
+
+std::unique_ptr<OutputGenerator> ManGenerator::clone() const
+{
+  return std::make_unique<ManGenerator>(*this);
 }
 
 ManGenerator::~ManGenerator()
@@ -428,7 +436,7 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
     //       name,baseName.data(),buildFileName(baseName).data());
 
     // - remove dangerous characters and append suffix, then add dir prefix
-    QCString fileName=m_dir+"/"+buildFileName( baseName );
+    QCString fileName=dir()+"/"+buildFileName( baseName );
     QFile linkfile( fileName );
     // - only create file if it doesn't exist already
     if ( !linkfile.open( IO_ReadOnly ) )

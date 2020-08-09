@@ -7586,7 +7586,6 @@ static void generateFileSources()
           {
             msg("Generating code for file %s...\n",fd->docName().data());
             fd->writeSource(*g_outputList,nullptr);
-
           }
           else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
             // we needed to parse the sources even if we do not show them
@@ -11383,10 +11382,10 @@ void generateOutput()
   bool generateDocbook = Config_getBool(GENERATE_DOCBOOK);
 
 
-  g_outputList = new OutputList(TRUE);
+  g_outputList = new OutputList;
   if (generateHtml)
   {
-    g_outputList->add(new HtmlGenerator);
+    g_outputList->add<HtmlGenerator>();
     HtmlGenerator::init();
 
     // add HTML indexers that are enabled
@@ -11405,22 +11404,22 @@ void generateOutput()
   }
   if (generateLatex)
   {
-    g_outputList->add(new LatexGenerator);
+    g_outputList->add<LatexGenerator>();
     LatexGenerator::init();
   }
   if (generateDocbook)
   {
-    g_outputList->add(new DocbookGenerator);
+    g_outputList->add<DocbookGenerator>();
     DocbookGenerator::init();
   }
   if (generateMan)
   {
-    g_outputList->add(new ManGenerator);
+    g_outputList->add<ManGenerator>();
     ManGenerator::init();
   }
   if (generateRtf)
   {
-    g_outputList->add(new RTFGenerator);
+    g_outputList->add<RTFGenerator>();
     RTFGenerator::init();
   }
   if (Config_getBool(USE_HTAGS))
@@ -11533,7 +11532,7 @@ void generateOutput()
   generateDirDocs(*g_outputList);
   g_s.end();
 
-  if (g_outputList->count()>0)
+  if (g_outputList->size()>0)
   {
     writeIndexHierarchy(*g_outputList);
   }

@@ -1151,11 +1151,11 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
 /*! Write a source listing of this file to the output */
 void FileDefImpl::writeSource(OutputList &ol,ClangTUParser *clangParser)
 {
-  static bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
-  static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
-  static bool latexSourceCode   = Config_getBool(LATEX_SOURCE_CODE);
-  static bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
-  static bool rtfSourceCode     = Config_getBool(RTF_SOURCE_CODE);
+  bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
+  bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
+  bool latexSourceCode   = Config_getBool(LATEX_SOURCE_CODE);
+  bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
+  bool rtfSourceCode     = Config_getBool(RTF_SOURCE_CODE);
   DevNullCodeDocInterface devNullIntf;
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())

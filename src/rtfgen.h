@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Parker Waechter & Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,6 +18,7 @@
 #ifndef RTFGEN_H
 #define RTFGEN_H
 
+#include "config.h"
 #include "outputgen.h"
 
 class QFile;
@@ -27,21 +28,18 @@ class RTFGenerator : public OutputGenerator
 {
   public:
     RTFGenerator();
-   ~RTFGenerator();
+    RTFGenerator(const RTFGenerator &);
+    RTFGenerator &operator=(const RTFGenerator &);
+    virtual ~RTFGenerator();
+    virtual std::unique_ptr<OutputGenerator> clone() const;
+
     static void init();
     static void writeStyleSheetFile(QFile &f);
     static void writeExtensionsFile(QFile &file);
+    OutputType type() const { return RTF; }
 
     void setRelativePath(const QCString &path);
     void setSourceFileName(const QCString &sourceFileName);
-    void enable() 
-    { if (m_genStack->top()) m_active=*m_genStack->top(); else m_active=TRUE; }
-    void disable() { m_active=FALSE; }
-    void enableIf(OutputType o)  { if (o==RTF) enable();  }
-    void disableIf(OutputType o) { if (o==RTF) disable(); }
-    void disableIfNot(OutputType o) { if (o!=RTF) disable(); }
-    bool isEnabled(OutputType o) { return (o==RTF && m_active); } 
-    OutputGenerator *get(OutputType o) { return (o==RTF) ? this : 0; }
 
     void writeDoc(DocNode *,const Definition *,const MemberDef *);
 
@@ -51,7 +49,7 @@ class RTFGenerator : public OutputGenerator
     void endFile();
     void clearBuffer();
     //void postProcess(QByteArray &);
-    
+
     void startIndexSection(IndexSections);
     void endIndexSection(IndexSections);
     void writePageLink(const char *,bool);
@@ -61,7 +59,7 @@ class RTFGenerator : public OutputGenerator
     void startTitleHead(const char *);
     void startTitle();
     void endTitleHead(const char *,const char *name);
-    void endTitle() {} 
+    void endTitle() {}
 
     void newParagraph();
     void startParagraph(const char *classDef);
@@ -102,13 +100,13 @@ class RTFGenerator : public OutputGenerator
     void endItemListItem();
 
     void startMemberSections() {}
-    void endMemberSections() {} 
+    void endMemberSections() {}
     void startHeaderSection() {}
     void endHeaderSection() {}
     void startMemberHeader(const char *,int) { startGroupHeader(FALSE); }
     void endMemberHeader() { endGroupHeader(FALSE); }
-    void startMemberSubtitle(); 
-    void endMemberSubtitle(); 
+    void startMemberSubtitle();
+    void endMemberSubtitle();
     void startMemberDocList() {}
     void endMemberDocList() {}
     void startMemberList();
@@ -125,7 +123,7 @@ class RTFGenerator : public OutputGenerator
     void insertMemberAlignLeft(int,bool){}
 
     void writeRuler() { rtfwriteRuler_thin(); }
-	
+
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment();
     void endCodeFragment();
@@ -147,7 +145,7 @@ class RTFGenerator : public OutputGenerator
     void endDoxyAnchor(const char *,const char *);
     void writeChar(char c);
     void writeLatexSpacing() {};//{ t << "\\hspace{0.3cm}"; }
-    void writeStartAnnoItem(const char *type,const char *file, 
+    void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *name);
     void startSubsection();
@@ -161,7 +159,7 @@ class RTFGenerator : public OutputGenerator
 
     void startMemberDescription(const char *,const char *,bool);
     void endMemberDescription();
-    void startMemberDeclaration() {} 
+    void startMemberDeclaration() {}
     void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
@@ -193,7 +191,7 @@ class RTFGenerator : public OutputGenerator
     void startContents() {}
     void endContents() {}
     void writeNonBreakableSpace(int);
-	
+
     void startDescTable(const char *title);
     void endDescTable();
     void startDescTableRow();
@@ -202,7 +200,7 @@ class RTFGenerator : public OutputGenerator
     void endDescTableTitle();
     void startDescTableData();
     void endDescTableData();
-    
+
     void startDotGraph();
     void endDotGraph(DotClassGraph &);
     void startInclDepGraph();
@@ -221,7 +219,7 @@ class RTFGenerator : public OutputGenerator
     void endMemberGroupDocs();
     void startMemberGroup();
     void endMemberGroup(bool);
-    
+
     void startTextBlock(bool dense);
     void endTextBlock(bool);
     void lastIndexPage();
@@ -268,11 +266,8 @@ class RTFGenerator : public OutputGenerator
     void addWord(const char *,bool) {}
 
     static bool preProcessFileInplace(const char *path,const char *name);
-    
-  private:
-    RTFGenerator(const RTFGenerator &);
-    RTFGenerator &operator=(const RTFGenerator &);
 
+  private:
     const char *rtf_BList_DepthStyle();
     const char *rtf_CList_DepthStyle();
     const char *rtf_EList_DepthStyle();
@@ -281,16 +276,6 @@ class RTFGenerator : public OutputGenerator
     const char *rtf_Code_DepthStyle();
     void incrementIndentLevel();
     void decrementIndentLevel();
-    QCString m_sourceFileName;
-    int  m_col;
-    bool m_prettyCode;
-
-    bool m_bstartedBody;  // has startbody been called yet?
-    int  m_listLevel; // // RTF does not really have a additive indent...manually set list level.
-    bool m_omitParagraph; // should a the next paragraph command be ignored?
-    int  m_numCols; // number of columns in a table
-    QCString m_relPath;
-
     void beginRTFDocument();
     void beginRTFChapter();
     void beginRTFSection();
@@ -299,7 +284,15 @@ class RTFGenerator : public OutputGenerator
     void rtfwriteRuler_thick();
     void rtfwriteRuler_thin();
     void writeRTFReference(const char *label);
-    //char *getMultiByte(int c);
+
+    QCString m_sourceFileName;
+    int  m_col = 0;
+    bool m_prettyCode = Config_getBool(RTF_SOURCE_CODE);
+    bool m_bstartedBody = false;  // has startbody been called yet?
+    int  m_listLevel = 0; // // RTF does not really have a additive indent...manually set list level.
+    bool m_omitParagraph = false; // should a the next paragraph command be ignored?
+    int  m_numCols = 0; // number of columns in a table
+    QCString m_relPath;
 };
 
 #endif

@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,6 +18,7 @@
 #ifndef LATEXGEN_H
 #define LATEXGEN_H
 
+#include "config.h"
 #include "outputgen.h"
 
 class QFile;
@@ -72,23 +73,17 @@ class LatexGenerator : public OutputGenerator
 {
   public:
     LatexGenerator();
-   ~LatexGenerator();
+    LatexGenerator(const LatexGenerator &);
+    LatexGenerator &operator=(const LatexGenerator &);
+    virtual ~LatexGenerator();
+    virtual std::unique_ptr<OutputGenerator> clone() const;
+
     static void init();
     static void writeStyleSheetFile(QFile &f);
     static void writeHeaderFile(QFile &f);
     static void writeFooterFile(QFile &f);
 
-    //OutputGenerator *copy();
-    //OutputGenerator *clone() { return new LatexGenerator(*this); }
-    //void append(const OutputGenerator *o);
-    void enable() 
-    { if (m_genStack->top()) m_active=*m_genStack->top(); else m_active=TRUE; }
-    void disable() { m_active=FALSE; }
-    void enableIf(OutputType o)  { if (o==Latex) enable();  }
-    void disableIf(OutputType o) { if (o==Latex) disable(); }
-    void disableIfNot(OutputType o) { if (o!=Latex) disable(); }
-    bool isEnabled(OutputType o) { return (o==Latex && m_active); } 
-    OutputGenerator *get(OutputType o) { return (o==Latex) ? this : 0; }
+    virtual OutputType type() const { return Latex; }
 
     // --- CodeOutputInterface
     void codify(const char *text)
@@ -123,7 +118,7 @@ class LatexGenerator : public OutputGenerator
     void writeFooter(const char *) {}
     void endFile();
     void clearBuffer();
-    
+
     void startIndexSection(IndexSections);
     void endIndexSection(IndexSections);
     void writePageLink(const char *,bool);
@@ -167,7 +162,7 @@ class LatexGenerator : public OutputGenerator
     void endItemListItem()   {}
 
     void startMemberSections() {}
-    void endMemberSections() {} 
+    void endMemberSections() {}
     void startHeaderSection() {}
     void endHeaderSection() {}
     void startMemberHeader(const char *,int);
@@ -193,7 +188,7 @@ class LatexGenerator : public OutputGenerator
     void endMemberGroupDocs();
     void startMemberGroup();
     void endMemberGroup(bool);
-    
+
     void insertMemberAlign(bool) {}
     void insertMemberAlignLeft(int,bool){}
 
@@ -216,7 +211,7 @@ class LatexGenerator : public OutputGenerator
     void endDoxyAnchor(const char *,const char *);
     void writeChar(char c);
     void writeLatexSpacing() { t << "\\hspace{0.3cm}"; }
-    void writeStartAnnoItem(const char *type,const char *file, 
+    void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *name);
     void startSubsection() { t << "\\subsection*{"; }
@@ -229,7 +224,7 @@ class LatexGenerator : public OutputGenerator
     void endSmall()         { t << "\\normalsize "; }
     void startMemberDescription(const char *,const char *,bool);
     void endMemberDescription();
-    void startMemberDeclaration() {} 
+    void startMemberDeclaration() {}
     void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
@@ -326,15 +321,13 @@ class LatexGenerator : public OutputGenerator
 
 
   private:
-    LatexGenerator(const LatexGenerator &);
-    LatexGenerator &operator=(const LatexGenerator &);
-    bool m_insideTabbing;
-    bool m_firstDescItem;
-    bool m_disableLinks;
+    bool m_insideTabbing = false;
+    bool m_firstDescItem = true;
+    bool m_disableLinks = false;
     QCString m_relPath;
-    int m_indent;
-    bool templateMemberItem;
-    bool m_prettyCode;
+    int m_indent = 0;
+    bool templateMemberItem = false;
+    bool m_prettyCode = Config_getBool(LATEX_SOURCE_CODE);
     LatexCodeGenerator m_codeGen;
 };
 
