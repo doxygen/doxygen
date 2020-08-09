@@ -5,6 +5,7 @@
 \subsection log_1_8_19 Release 1.8.19
 \htmlonly
 <b>(release date 08-08-2020)</b>
+</p>
 <h3>Bug fixes</h3>
 <ul>
 <li>issue #6846: Doxygen parsing global variable as function in certain cases (#7903) [<a href="https://github.com/doxygen/doxygen/commit/8c02f1e963682edfebfd0da619c65112cf30448b">view</a>]</li>
@@ -178,7 +179,7 @@
 <li>sqlite: flip _static default in bindTextParameter [<a href="https://github.com/doxygen/doxygen/commit/ee9a4679ae630f8f808619c5450f6b2f5a860994">view</a>]</li>
 <li>sqlite: use err instead of term :) [<a href="https://github.com/doxygen/doxygen/commit/27307c2a16139b657697ee7cb79e7d8989fbc95c">view</a>]</li>
 <li>try to make it so that argumentList is always from the definition [<a href="https://github.com/doxygen/doxygen/commit/dface804388013579f408d0baf01aa2739993317">view</a>]</li>
-<li>update URLS on README to prevent redirects [<a href="https://github.com/doxygen/doxygen/commit/28469fb1386797795a4c56ca7b75309df7ae48d6">view</a>]</ul>
+<li>update URLS on README to prevent redirects [<a href="https://github.com/doxygen/doxygen/commit/28469fb1386797795a4c56ca7b75309df7ae48d6">view</a>]</li>
 </ul>
 <p>
 \endhtmlonly
