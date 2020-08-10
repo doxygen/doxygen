@@ -1189,13 +1189,13 @@ static QCString configFileToString(const char *name)
     if (fileOpened)
     {
       const int bSize=4096;
-      QCString contents(bSize);
+      QCString contents(bSize+1);
       int totalSize=0;
       int size;
       while ((size=f.readBlock(contents.rawData()+totalSize,bSize))==bSize)
       {
         totalSize+=bSize;
-        contents.resize(totalSize+bSize);
+        contents.resize(totalSize+bSize+1);
       }
       totalSize+=size+2;
       contents.resize(totalSize);
