@@ -513,6 +513,16 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='PYTHON_DOCSTRING' defval='1'>
+      <docs>
+<![CDATA[
+  By default Python docstrings are displayed as preformatted text
+  and doxygen's special commands cannot be used. By setting \c PYTHON_DOCSTRING to
+  \c NO the doxygen's special commands can be used and the contents of the docstring
+  documentation blocks is shown as doxygen documentation.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='INHERIT_DOCS' defval='1'>
       <docs>
 <![CDATA[
