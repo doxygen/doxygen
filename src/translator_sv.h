@@ -67,10 +67,13 @@ Problem!
    Deprecated: nån hygglig svensk översättning???
 
    Skicka gärna synpunkter.
+
 2015/01/09
 * Uppdaterat den till senaste versionen 1.8.9.1
+
 2015/09/12
 * Fixat lite särksirvningar och inkonsekvenser
+
 2020/01/08
 * Uppdaterat den till senaste språkversionen 1.8.15
 
@@ -86,6 +89,11 @@ Changed Deprecated from Föråldrad to Obsolet
 
 The VHDL translations may not perfect, as I only used it once before.
 I left use clause untouched as I didn't find a suitable translation for it.
+
+2020/08/14
+* Uppdaterat översättningarna till 1.8.19
+English:
+* Updated the language translation to 1.8.19
 
 ===================================================================================
   Ordlista
@@ -143,7 +151,7 @@ I left use clause untouched as I didn't find a suitable translation for it.
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public TranslatorAdapter_1_8_19
+class TranslatorSwedish : public Translator
 {
   public:
 
@@ -2334,6 +2342,13 @@ class TranslatorSwedish : public TranslatorAdapter_1_8_19
         return "Datamedlemsdokumentation";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "Designenhetsdokumentation"; }
 
 };
 #endif
