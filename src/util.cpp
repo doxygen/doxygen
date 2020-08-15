@@ -6580,7 +6580,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   while ((c=*p))
   {
     if (c==' ' || c=='\t' || c=='\r') i++,p++;
-    else if (c=='\\' && qstrncmp(p,"\\ilinebr",8)==0) i+=8,li=i,docLine++,p+=8;
+    else if (c=='\\' && qstrncmp(p,"\\ilinebr",8)==0) i+=8,li=i,p+=8;
     else if (c=='\n') i++,li=i,docLine++,p++;
     else break;
   }
