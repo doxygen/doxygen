@@ -4051,34 +4051,14 @@ void MemberDefImpl::warnIfUndocumented() const
   }
 }
 
-static QCString removeReturnTypeKeywords(const QCString &s)
-{
-  QCString result = s;
-  bool done;
-  do
-  {
-    done=true;
-    if (result.stripPrefix("constexpr ")  ||
-        result.stripPrefix("consteval ") ||
-        result.stripPrefix("virtual ")   ||
-        result.stripPrefix("static ")    ||
-        result.stripPrefix("volatile "))
-    {
-      done=false;
-    }
-  }
-  while (!done);
-  return result;
-}
-
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
   if (!Config_getBool(WARN_NO_PARAMDOC)) return;
-  QCString returnType = removeReturnTypeKeywords(typeString());
+  QCString returnType = typeString();
   bool isPython = getLanguage()==SrcLangExt_Python;
   bool isFortran = getLanguage()==SrcLangExt_Fortran;
   bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
-  bool isVoidReturn = returnType=="void";
+  bool isVoidReturn = (returnType=="void") || (returnType.right(5)==" void");
 
   if (!m_impl->hasDocumentedParams && hasParamCommand)
   {
