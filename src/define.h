@@ -45,7 +45,7 @@ class Define
 };
 
 /** List of all macro definitions */
-using DefineList = std::vector< std::unique_ptr<Define> >;
+using DefineList = std::vector<Define>;
 using DefinesPerFileList = std::unordered_map< std::string, DefineList >;
 
 #endif

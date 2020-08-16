@@ -7708,23 +7708,23 @@ static void buildDefineList()
       for (const auto &def : it->second)
       {
         std::unique_ptr<MemberDef> md { createMemberDef(
-            def->fileName,def->lineNr,def->columnNr,
-            "#define",def->name,def->args,0,
+            def.fileName,def.lineNr,def.columnNr,
+            "#define",def.name,def.args,0,
             Public,Normal,FALSE,Member,MemberType_Define,
             ArgumentList(),ArgumentList(),"") };
 
-        if (!def->args.isEmpty())
+        if (!def.args.isEmpty())
         {
-          md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def->args));
+          md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def.args));
         }
-        md->setInitializer(def->definition);
-        md->setFileDef(def->fileDef);
-        md->setDefinition("#define "+def->name);
+        md->setInitializer(def.definition);
+        md->setFileDef(def.fileDef);
+        md->setDefinition("#define "+def.name);
 
-        MemberName *mn=Doxygen::functionNameLinkedMap->add(def->name);
-        if (def->fileDef)
+        MemberName *mn=Doxygen::functionNameLinkedMap->add(def.name);
+        if (def.fileDef)
         {
-          def->fileDef->insertMember(md.get());
+          def.fileDef->insertMember(md.get());
         }
         mn->push_back(std::move(md));
       }
