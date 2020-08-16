@@ -106,7 +106,7 @@ Just follow the following steps:
            See the HTML specification for the codes.
      </ul>
    </ul>
-<li>Edit <code>doxygen/doc/maintainers.txt</code> and add yourself to the list of maintaners like:
+<li>Edit <code>doxygen/doc/maintainers.txt</code> and add yourself to the list of maintainers like:
     \code
          TranslatorYourLanguage
          <your name>: <your dot email at your dot domain>
