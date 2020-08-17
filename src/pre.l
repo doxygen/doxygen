@@ -136,6 +136,8 @@ class DefineManager
           {
             m_defines.emplace(kv.first,kv.second);
           }
+          //printf("  m_defines.size()=%zu\n",m_defines.size());
+          m_stored=true;
         }
         void retrieve(DefineMap &toMap)
         {
@@ -144,14 +146,15 @@ class DefineManager
         }
         void retrieveRec(DefineMap &toMap,StringSet &includeStack)
         {
+          //printf("  retrieveRec #includedFiles=%zu\n",m_includedFiles.size());
           for (auto incFile : m_includedFiles)
           {
             DefinesPerFile *dpf = m_parent->find(incFile);
             if (dpf && includeStack.find(incFile)==includeStack.end())
             {
-              //printf("  processing include %s\n",incFile.data());
               includeStack.insert(incFile);
               dpf->retrieveRec(toMap,includeStack);
+              //printf("  retrieveRec: processing include %s: #toMap=%zu\n",incFile.data(),toMap.size());
             }
           }
           for (auto &kv : m_defines)
@@ -159,10 +162,12 @@ class DefineManager
             toMap.emplace(kv.first,kv.second);
           }
         }
+        bool stored() const { return m_stored; }
       private:
         DefineManager *m_parent;
         DefineMap m_defines;
         StringSet m_includedFiles;
+        bool m_stored = false;
     };
 
     friend class DefinesPerFile;
@@ -170,12 +175,14 @@ class DefineManager
 
     void addInclude(std::string fromFileName,std::string toFileName)
     {
+      //printf("DefineManager::addInclude('%s'->'%s')\n",fromFileName.c_str(),toFileName.c_str());
       auto it = m_fileMap.find(fromFileName);
-      if (it!=m_fileMap.end())
+      if (it==m_fileMap.end())
       {
-        auto &dpf = it->second;
-        dpf->addInclude(toFileName);
+        it = m_fileMap.emplace(fromFileName,std::make_unique<DefinesPerFile>(this)).first;
       }
+      auto &dpf = it->second;
+      dpf->addInclude(toFileName);
     }
 
     void store(std::string fileName,const DefineMap &fromMap)
@@ -191,18 +198,23 @@ class DefineManager
 
     void retrieve(std::string fileName,DefineMap &toMap)
     {
-      //printf("DefineManager::retrieve(%s,#=%zu)\n",fileName.c_str(),toMap.size());
       auto it = m_fileMap.find(fileName);
       if (it!=m_fileMap.end())
       {
         auto &dpf = it->second;
         dpf->retrieve(toMap);
       }
+      //printf("DefineManager::retrieve(%s,#=%zu)\n",fileName.c_str(),toMap.size());
     }
 
     bool alreadyProcessed(std::string fileName) const
     {
-      return m_fileMap.find(fileName)!=m_fileMap.end();
+      auto it = m_fileMap.find(fileName);
+      if (it!=m_fileMap.end())
+      {
+        return it->second->stored();
+      }
+      return false;
     }
 
   private:
@@ -1548,17 +1560,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                                 // now that the file is completely processed, prevent it from processing it again
                                                 g_defineManager.addInclude(yyextra->yyFileName.str(),toFileName.str());
                                                 g_defineManager.store(toFileName.str(),yyextra->localDefines);
-                                                // move the local macros definitions for in this file to the translation unit context
-                                                for (const auto &kv : yyextra->localDefines)
-                                                {
-                                                  auto pair = yyextra->contextDefines.insert(kv);
-                                                  if (!pair.second) // define already in context -> replace with local version
-                                                  {
-                                                    yyextra->contextDefines.erase(pair.first);
-                                                    yyextra->contextDefines.insert(kv);
-                                                  }
-                                                }
-                                                yyextra->localDefines.clear();
                                               }
                                               else
                                               {
@@ -1568,6 +1569,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                                 }
                                               }
                                             }
+                                            // move the local macros definitions for in this file to the translation unit context
+                                            for (const auto &kv : yyextra->localDefines)
+                                            {
+                                              auto pair = yyextra->contextDefines.insert(kv);
+                                              if (!pair.second) // define already in context -> replace with local version
+                                              {
+                                                yyextra->contextDefines.erase(pair.first);
+                                                yyextra->contextDefines.insert(kv);
+                                              }
+                                            }
+                                            yyextra->localDefines.clear();
 					  }
   					}
 <*>"/*"/"*/"				|
@@ -2716,9 +2728,9 @@ static void addDefine(yyscan_t yyscanner)
   def.lineNr     = state->yyLineNr-state->yyMLines;
   def.columnNr   = state->yyColNr;
   def.varArgs    = state->defVarArgs;
-  //printf("newDefine: %s %s file: %s\n",def->name.data(),def->definition.data(),
-  //    def->fileDef ? def->fileDef->name().data() : def->fileName.data());
-  //printf("newDefine: '%s'->'%s'\n",def->name.data(),def->definition.data());
+  //printf("newDefine: %s %s file: %s\n",def.name.data(),def.definition.data(),
+  //    def.fileDef ? def.fileDef->name().data() : def.fileName.data());
+  //printf("newDefine: '%s'->'%s'\n",def.name.data(),def.definition.data());
   if (!def.name.isEmpty() && 
       Doxygen::expandAsDefinedSet.find(def.name.str())!=Doxygen::expandAsDefinedSet.end())
   {
@@ -2868,6 +2880,11 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
     //printf("calling findFile(%s)\n",incFileName.data());
     if ((fs=findFile(yyscanner,incFileName,localInclude,alreadyProcessed))) // see if the include file can be found
     {
+      {
+        std::lock_guard<std::mutex> lock(g_globalDefineMutex);
+        g_defineManager.addInclude(oldFileName.str(),absIncFileName.str());
+      }
+
       //printf("Found include file!\n");
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
@@ -2924,6 +2941,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
                            // in the local context
       {
         std::lock_guard<std::mutex> lock(g_globalDefineMutex);
+        g_defineManager.addInclude(state->yyFileName.str(),absIncFileName.str());
         g_defineManager.retrieve(absIncFileName.str(),state->contextDefines);
       }
 
@@ -3368,6 +3386,10 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
       Debug::print(Debug::Preprocessor,0,"Macros accessible in this file (%s):\n", fileName);
       Debug::print(Debug::Preprocessor,0,"---------\n");
       for (auto &kv : yyextra->contextDefines)
+      {
+        Debug::print(Debug::Preprocessor,0,"%s ",qPrint(kv.second.name));
+      }
+      for (auto &kv : yyextra->localDefines)
       {
         Debug::print(Debug::Preprocessor,0,"%s ",qPrint(kv.second.name));
       }
