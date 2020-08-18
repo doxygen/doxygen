@@ -9142,7 +9142,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
     {
       numThreads = std::thread::hardware_concurrency();
     }
-    msg("Processing input using %lu threads.\n",numThreads);
+    msg("Processing input using %zu threads.\n",numThreads);
     ThreadPool threadPool(numThreads);
     using FutureType = std::vector< std::shared_ptr<Entry> >;
     std::vector< std::future< FutureType > > results;
