@@ -1317,6 +1317,15 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='bool' id='IGNORE_MISSING_PARAMDOC' defval='0'>
+      <docs>
+<![CDATA[
+ This \c IGNORE_MISSING_PARAMDOC option can be enabled to ignore warnings
+ about missing parameter documentation in a documented function.
+ It is only effective if \c WARN_IF_DOC_ERROR tag is set to \c YES.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='WARN_AS_ERROR' defval='0'>
       <docs>
 <![CDATA[
