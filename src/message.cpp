@@ -161,6 +161,18 @@ static void format_warn(const char *file,int line,const char *text)
   }
 }
 
+static void handle_warn_as_error(void)
+{
+  static bool warnAsError = Config_getBool(WARN_AS_ERROR);
+  if (warnAsError)
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    QCString msgText = " (warning treated as error, aborting now)\n";
+    fwrite(msgText.data(),1,msgText.length(),warnFile);
+    exit(1);
+  }
+}
+
 static void do_warn(bool enabled, const char *file, int line, const char *prefix, const char *fmt, va_list args)
 {
   if (!enabled) return; // warning type disabled
@@ -230,6 +242,7 @@ void warn_uncond(const char *fmt, ...)
   va_start(args, fmt);
   vfprintf(warnFile, (QCString(warning_str) + fmt).data(), args);
   va_end(args);
+  handle_warn_as_error();
 }
 
 void err(const char *fmt, ...)
@@ -238,6 +251,7 @@ void err(const char *fmt, ...)
   va_start(args, fmt);
   vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
   va_end(args);
+  handle_warn_as_error();
 }
 
 extern void err_full(const char *file,int line,const char *fmt, ...)
