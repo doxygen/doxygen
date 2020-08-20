@@ -6391,9 +6391,19 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    REJECT;
 					  }
+  					  else if (yyextra->docBlockName=="<pre>")
+					  {
+                                            // don't reject when it is just one '*', is a "lineup" in a comment block or
+                                            // translated by doxygen from a "///" block
+					    if (QCString(yytext).stripWhiteSpace().length() != 1) REJECT;
+					  }
   					  else if (yyextra->docBlockName=="code")
 					  {
 					    REJECT;
+					  }
+  					  else if (yyextra->docBlockName=="<code>")
+					  {
+					    if (QCString(yytext).stripWhiteSpace().length() != 1) REJECT;
 					  }
                                           else
                                           {
