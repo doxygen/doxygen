@@ -2050,17 +2050,11 @@ void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
        ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
        ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
   ml->append(md);
-#if 0
-  if (ml->needsSorting())
-    ml->inSort(md);
-  else
-    ml->append(md);
-#endif
   if (lt&MemberListType_documentationLists)
   {
     ml->setInFile(TRUE);
   }
-  if (ml->listType()&MemberListType_declarationLists) md->setSectionList(ml);
+  if (ml->listType()&MemberListType_declarationLists) md->setSectionList(this,ml);
 }
 
 void FileDefImpl::sortMemberLists()

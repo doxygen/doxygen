@@ -75,7 +75,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual const QCString &initializer() const;
     virtual int initializerLines() const;
     virtual uint64 getMemberSpecifiers() const;
-    virtual const MemberList *getSectionList() const;
+    virtual const MemberList *getSectionList(const Definition *) const;
     virtual QCString    displayDefinition() const;
     virtual const ClassDef *getClassDef() const;
     virtual ClassDef *getClassDef();
@@ -251,7 +251,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setBitfields(const char *s);
     virtual void setMaxInitLines(int lines);
     virtual void setMemberClass(ClassDef *cd);
-    virtual void setSectionList(MemberList *sl);
+    virtual void setSectionList(const Definition *container,MemberList *sl);
     virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0);
@@ -418,8 +418,8 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { return getMdAlias()->initializerLines(); }
     virtual uint64 getMemberSpecifiers() const
     { return getMdAlias()->getMemberSpecifiers(); }
-    virtual const MemberList *getSectionList() const
-    { return getMdAlias()->getSectionList(); }
+    virtual const MemberList *getSectionList(const Definition *container) const
+    { return getMdAlias()->getSectionList(container); }
     virtual QCString displayDefinition() const
     { return getMdAlias()->displayDefinition(); }
     virtual const ClassDef *getClassDef() const
@@ -763,7 +763,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void setBitfields(const char *s) {}
     virtual void setMaxInitLines(int lines) {}
     virtual void setMemberClass(ClassDef *cd) {}
-    virtual void setSectionList(MemberList *sl) {}
+    virtual void setSectionList(const Definition *c,MemberList *sl) {}
     virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0) {}
@@ -4449,18 +4449,18 @@ void MemberDefImpl::addListReference(Definition *)
         getOutputFileBase()+"#"+anchor(),memName,memArgs,pd);
 }
 
-const MemberList *MemberDefImpl::getSectionList() const
+const MemberList *MemberDefImpl::getSectionList(const Definition *container) const
 {
-  const Definition *d= resolveAlias()->getOuterScope();
+  const Definition *d = container;
   char key[20];
   sprintf(key,"%p",(void*)d);
   return (d!=0 && m_impl->classSectionSDict) ? m_impl->classSectionSDict->find(key) : 0;
 }
 
-void MemberDefImpl::setSectionList(MemberList *sl)
+void MemberDefImpl::setSectionList(const Definition *container,MemberList *sl)
 {
-  //printf("MemberDefImpl::setSectionList(%p,%p) name=%s\n",d,sl,name().data());
-  const Definition *d= resolveAlias()->getOuterScope();
+  //printf("MemberDefImpl::setSectionList(%s,%p) name=%s\n",d->name().data(),sl,name().data());
+  const Definition *d= container;
   char key[20];
   sprintf(key,"%p",(void*)d);
   if (m_impl->classSectionSDict==0)

@@ -9238,7 +9238,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
             MemberDef *md;
             for (li.toFirst();(md=li.current());++li)
             {
-              if (lt==md->getSectionList()->listType() &&
+              if (lt==md->getSectionList(mg->container())->listType() &&
                   !md->isReimplementedBy(inheritedFrom) &&
                   md->isBriefSectionVisible())
               {

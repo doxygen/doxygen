@@ -571,7 +571,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  //  absPath = QDir::cleanDirPath(yyextra->sourceFileDef->getPath()+"/"+absPath);
 					  //}
 
-                                          FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,yytext,ambig);
+                                          const FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,yytext,ambig);
 					  //printf("looking for include %s -> %s fd=%p\n",yytext,absPath.data(),fd);
 					  if (fd && fd->isLinkable())
 					  {

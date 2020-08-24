@@ -42,8 +42,8 @@ class RefItem;
 class MemberGroup
 {
   public:
-    MemberGroup();
-    MemberGroup(int id,const char *header,
+    //MemberGroup();
+    MemberGroup(const Definition *container,int id,const char *header,
                 const char *docs,const char *docFile,int docLine);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
@@ -78,6 +78,7 @@ class MemberGroup
     int numDecEnumValues() const;
     int numDocMembers() const;
     int numDocEnumValues() const;
+    const Definition *container() const;
 
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void setInGroup(bool b);
@@ -90,17 +91,16 @@ class MemberGroup
     int docLine() const { return m_docLine; }
 
   private:
+    const Definition *m_container;
     MemberList *memberList = 0;      // list of all members in the group
     MemberList *inDeclSection = 0;
     int grpId = 0;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file
     QCString doc;
-    bool inSameSection = 0;
-    int  m_numDecMembers = 0;
-    int  m_numDocMembers = 0;
+    bool inSameSection = true;
     QCString m_docFile;
-    int m_docLine = 0;
+    int m_docLine;
     RefItemVector m_xrefListItems;
 };
 
