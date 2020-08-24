@@ -2,6 +2,35 @@
 \tableofcontents{html,latex}
 \section log_1_8 1.8 Series
 
+\subsection log_1_8_20 Release 1.8.20
+\htmlonly
+<b>(release date 24-08-2020)</b>
+</p>
+<h3>Bug fixes</h3>
+<ul>
+<li>issue #7760: void return type reported as not documented [<a href="https://github.com/doxygen/doxygen/commit/24a6115110e386d5693adc28e3c2fde18b51199c">view</a>]</li>
+<li>issue #7951: Doxywizard 1.8.19 (Windows): Source code directory seems to be ignored [<a href="https://github.com/doxygen/doxygen/commit/40d87c40019d55adf47e1e8ccf766a9d47eb1f79">view</a>]</li>
+<li>issue #7954: The Doxygen uses too much memory (or has probably a memory leak) [<a href="https://github.com/doxygen/doxygen/commit/d4963dfa7d1045479b5add8086b57ea92a179866">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/1efb1b23ce1547f5a38b7078d5e6ec69cc40f263">view</a>]</li>
+<li>issue #7970: Doxygen doesn&#39;t stop on errors [<a href="https://github.com/doxygen/doxygen/commit/a3410621bdb09e07728faaaf4ebe09f27953c5be">view</a>]</li>
+<li>issue #7973: C++ grouped functions in namespace have disappeard [<a href="https://github.com/doxygen/doxygen/commit/8578e6bead66cae44b61214b3a43f776ed008362">view</a>]</li>
+<li>Improvement of line count for e.g. warnings [<a href="https://github.com/doxygen/doxygen/commit/eb3cb7b93be84b0fdb43ade81616f5523b33cd04">view</a>]</li>
+<li>Improved layout on the bibliography page [<a href="https://github.com/doxygen/doxygen/commit/5aa83d4e5568157d581122e4f4670e604c46c13a">view</a>]</li>
+<li>Updated the swedish language translation to 1.8.19 [<a href="https://github.com/doxygen/doxygen/commit/03d3bbce2a0e481ac08e6e01aca42d2fcd920f3e">view</a>]</li>
+</ul>
+<h3>Features</h3>
+<ul>
+<li>add configuration setting to have docstrings not as preformatted text but as normal documentation [<a href="https://github.com/doxygen/doxygen/commit/66cf0cf586dd6adc8aea1a1139233c865315f40b">view</a>]</li>
+</ul>
+<h3>Refactoring and cleanup</h3>
+<ul>
+<li>Format for size_t (in e.g. warnings) [<a href="https://github.com/doxygen/doxygen/commit/2f426ac495f4234b97649a591314fe695691cf99">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/61738cd5b380a03b51aabdb3a6d6369229d53ee4">view</a>]</li>
+<li>Spelling corrections [<a href="https://github.com/doxygen/doxygen/commit/a2104f7015f90315621c9c1896bdf1cb56f7ab4d">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/1dc1acd5e1a639f61a431e0ff6ebbd8edd96de64">view</a>], and [<a href="https://github.com/doxygen/doxygen/commit/fc5c31bed5b2bd7db70d93028adf36970ec89492">view</a>]</li>
+<li>Minor tweaks to clangparser.cpp [<a href="https://github.com/doxygen/doxygen/commit/c4ed324b4a834e7442956521be51936014e0fc9d">view</a>]</li>
+<li>Building documentation after changing language files [<a href="https://github.com/doxygen/doxygen/commit/f7bd440af03ef881d1b4b8ec891cebf9e9728eed">view</a>]</li>
+</ul>
+<p>
+\endhtmlonly
+
 \subsection log_1_8_19 Release 1.8.19
 \htmlonly
 <b>(release date 08-08-2020)</b>
