@@ -1070,7 +1070,7 @@ void HtmlGenerator::writeSearchData(const char *dname)
     Doxygen::indexList->addImageFile("search/mag_sel.svg");
   }
 
-  QCString searchDirName = QCString(dname)+"/search";
+  QCString searchDirName = dname;
   QFile f(searchDirName+"/search.css");
   if (f.open(IO_WriteOnly))
   {
