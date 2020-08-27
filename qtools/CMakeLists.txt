@@ -25,8 +25,6 @@ qstringlist.cpp
 qcstringlist.cpp
 qxml.cpp
 qmap.cpp
-qthread.cpp
-qmutex.cpp
 qutfcodec.cpp
 )
 
@@ -35,9 +33,6 @@ list(APPEND qtools_src
 qfile_unix.cpp
 qdir_unix.cpp
 qfileinfo_unix.cpp
-qthread_unix.cpp
-qmutex_unix.cpp
-qwaitcondition_unix.cpp
 )
 endif()
 
@@ -46,9 +41,6 @@ list(APPEND qtools_src
 qfile_win32.cpp
 qdir_win32.cpp
 qfileinfo_win32.cpp
-qthread_win32.cpp
-qmutex_win32.cpp
-qwaitcondition_win32.cpp
 
 )
 endif()

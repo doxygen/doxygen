@@ -29,7 +29,7 @@ int constexpYYerror(yyscan_t yyscanner, const char *s)
 {
   struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
   warn(yyextra->constExpFileName, yyextra->constExpLineNr,
-       "preprocessing issue while doing constant expression evaluation: %s",s);
+       "preprocessing issue while doing constant expression evaluation: %s: input='%s'",s,yyextra->inputString);
   return 0;
 }
 

@@ -32,9 +32,11 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
     {
-        return "\\usepackage[latin]{armtex}\n"
-	       "\\usepackage[armscii8]{inputenc}\n";
+      return "\\usepackage[latin]{armtex}\n"
+             "\\usepackage[armscii8]{inputenc}\n";
     }
+    virtual QCString trISOLang()
+    { return "hy"; }
 
     // --- Language translation methods -------------------
 
@@ -1800,5 +1802,4 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     { return name + QCString("-ի ֆայլադարանների կախվածությունների գծագիր:"); }
 
 };
-
 #endif

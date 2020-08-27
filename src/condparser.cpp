@@ -2,8 +2,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,6 +19,8 @@
  *         !     NOT operator
  */
 
+#include <algorithm>
+
 #include "condparser.h"
 #include "config.h"
 #include "message.h"
@@ -27,7 +29,7 @@
 
 /**
  * parses and evaluates the given expression.
- * @returns 
+ * @returns
  * - On error, an error message is returned.
  * - On success, the result of the expression is either "1" or "0".
  */
@@ -102,8 +104,7 @@ static bool isAlpha(const char c)
 
 static bool isAlphaNumSpec(const char c)
 {
-  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' ||
-    (((unsigned char)c)>=0x80 && ((unsigned char)c)<=0xFF);
+  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' || (((unsigned char)c)>=0x80);
 }
 
 /**
@@ -124,13 +125,13 @@ int CondParser::getOperatorId(const QCString &opName)
 
 /**
  * Get next token in the current string expr.
- * Uses the data in m_expr pointed to by m_e to 
+ * Uses the data in m_expr pointed to by m_e to
  * produce m_tokenType and m_token, set m_err in case of an error
  */
 void CondParser::getToken()
 {
   m_tokenType = NOTHING;
-  m_token.resize(0);     
+  m_token.resize(0);
 
   //printf("\tgetToken e:{%c}, ascii=%i, col=%i\n", *e, *e, e-expr);
 
@@ -304,7 +305,7 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
  */
 bool CondParser::evalVariable(const char *varName)
 {
-  if (Config_getList(ENABLED_SECTIONS).find(varName)==-1) return FALSE;
-  return TRUE;
+  const StringVector &list = Config_getList(ENABLED_SECTIONS);
+  return std::find(list.begin(),list.end(),varName)!=list.end();
 }
 

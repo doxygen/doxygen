@@ -31,7 +31,8 @@ enum GraphType            { Dependency, Inheritance, Collaboration, Hierarchy, C
 class DotGraph
 {
   public:
-    DotGraph() : m_curNodeNumber(0), m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE), m_zoomable(TRUE), m_urlOnly(FALSE) {}
+    DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
+                 m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() {}
 
   protected:
@@ -98,7 +99,7 @@ class DotGraph
     bool prepareDotFile();
     void generateCode(FTextStream &t);
 
-    int m_curNodeNumber;
+    int m_curNodeNumber = 0;
 };
 
 #endif

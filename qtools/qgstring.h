@@ -43,7 +43,7 @@ class QGString
     bool	truncate( uint pos )  { return resize(pos+1); }
         operator const char *() const { return (const char *)data(); }
     char &at( uint index ) const      { return m_data[index]; }
-    char &operator[]( int i ) const   { return at(i); }
+    char &operator[]( uint i ) const  { return at(i); }
     
   private:
     char *      m_data;

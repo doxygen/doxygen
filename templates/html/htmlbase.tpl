@@ -100,7 +100,7 @@ $(function() {
    <div id="MSearchBox" class="MSearchBoxInactive">
     <div class="left">
      <form id="FSearchBox" action="{{ page.relPath }}{% if config.EXTERNAL_SEARCH %}search{{ doxygen.htmlFileExtension }}{% else %}search.php{% endif %}" method="get">
-      <img id="MSearchSelect" src="{{ page.relPath }}search/mag.png" alt=""/>
+      <img id="MSearchSelect" src="{{ page.relPath }}search/mag.svg" alt=""/>
       <input type="text" id="MSearchField" name="query" value="{{ tr.search }}" size="20" accesskey="S"
                 onfocus="searchBox.OnSearchFieldFocus(true)"
                 onblur="searchBox.OnSearchFieldFocus(false)"/>
@@ -111,7 +111,7 @@ $(function() {
   {% else %}{# !SERVER_BASED_SEARCH #}
    <div id="MSearchBox" class="MSearchBoxInactive">
     <span class="left">
-      <img id="MSearchSelect" src="{{ page.relPath }}search/mag_sel.png"
+      <img id="MSearchSelect" src="{{ page.relPath }}search/mag_sel.svg"
            onmouseover="return searchBox.OnSearchSelectShow()"
            onmouseout="return searchBox.OnSearchSelectHide()"
            alt=""/>
@@ -121,7 +121,7 @@ $(function() {
            onkeyup="searchBox.OnSearchFieldChange(event)"/>
     </span><span class="right">
         <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img
-           id="MSearchCloseImg" border="0" src="{{ page.relPath }}search/close.png"
+           id="MSearchCloseImg" border="0" src="{{ page.relPath }}search/close.svg"
            alt=""/></a>
     </span>
    </div>
@@ -228,8 +228,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% else %}
 {{ tr.generatedBy }}
 {% endif %}
-    <a href="http://www.doxygen.org/index.html">
-    <img class="footer" src="{{ page.relPath }}doxygen.png" alt="doxygen"/></a> {{ doxygen.version }} </li>
+    <a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a> {{ doxygen.version }} </li>
   </ul>
 </div>
 {% else %}
@@ -239,7 +238,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% else %}
 {{ tr.generatedBy }}
 {% endif %}
-&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.png" alt="doxygen"/></a>
+&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a>
   {{ doxygen.version }}
   </small></address>
 {% endif %}

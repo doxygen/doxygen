@@ -12,6 +12,10 @@
 
 %option never-interactive
 %option prefix="config_doxywYY"
+%top{
+#include <stdint.h>
+}
+
 %{
 
 /*
@@ -19,6 +23,7 @@
  */
 #include "config.h"
 #include "input.h"
+#include "inputstring.h"
 
 #include <QString>
 #include <QVariant>
@@ -29,6 +34,7 @@
 #include <QStringList>
 #include <QRegExp>
 #include <QTextStream>
+#include <QMessageBox>
 
 #define YY_NO_UNISTD_H 1
 
@@ -216,6 +222,7 @@ static void readIncludeFile(const QString &incName)
 %x	SkipComment
 %x      SkipInvalid
 %x      GetString
+%x      GetEnum
 %x      GetStrList
 %x      GetQuotedString
 %x      GetEnvVar
@@ -224,7 +231,7 @@ static void readIncludeFile(const QString &incName)
 %%
 
 <*>\0x0d
-<Start,GetString,GetStrList,SkipInvalid>"#"	 { BEGIN(SkipComment); }
+<Start,GetString,GetEnum,GetStrList,SkipInvalid>"#"	 { BEGIN(SkipComment); }
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { QString cmd = g_codec->toUnicode(yytext);
                                            cmd=cmd.left(cmd.length()-1).trimmed(); 
 					   g_curOption = g_options->value(cmd);
@@ -246,7 +253,14 @@ static void readIncludeFile(const QString &incName)
 					         BEGIN(GetStrList);
 					         break;
 					       case Input::String:
-					         BEGIN(GetString);
+                                                 if (dynamic_cast<InputString *>(g_curOption)->stringMode() == InputString::StringFixed)
+                                                 {
+                                                   BEGIN(GetEnum);
+                                                 }
+                                                 else
+                                                 {
+                                                   BEGIN(GetString);
+                                                 }
 					         break;
 					       case Input::Int:
 					         BEGIN(GetString);
@@ -328,7 +342,7 @@ static void readIncludeFile(const QString &incName)
   					}
 
 <Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,yylineno,qPrintable(g_yyFileName)); }
-<GetString,SkipInvalid>\n	        { BEGIN(Start); }
+<GetString,GetEnum,SkipInvalid>\n	        { BEGIN(Start); }
 <GetStrList>\n				{ 
 					  if (!g_elemStr.isEmpty())
 					  {
@@ -345,11 +359,15 @@ static void readIncludeFile(const QString &incName)
 					  }
 					  g_elemStr = QString();
   					}
-<GetString>[^ \"\t\r\n]+		{ 
+<GetString>[^ \"\t\r\n]+		{
                                           *g_arg = QVariant(g_codec->toUnicode(yytext)); 
                                           checkEncoding();
                                         }
-<GetString,GetStrList,SkipInvalid>"\""	{ g_lastState=YY_START;
+<GetEnum>[^ \"\t\r\n]+			{
+                                          InputString *cur = dynamic_cast<InputString *>(g_curOption);
+                                          *g_arg = cur->checkEnumVal(g_codec->toUnicode(yytext));
+                                        }
+<GetString,GetEnum,GetStrList,SkipInvalid>"\""	{ g_lastState=YY_START;
   					  BEGIN(GetQuotedString); 
                                           g_tmpString="";
 					}
@@ -357,10 +375,15 @@ static void readIncludeFile(const QString &incName)
                                           // we add a bogus space to signal that the string was quoted. This space will be stripped later on.
                                           g_tmpString+=" ";
   					  //printf("Quoted String = '%s'\n",qPrintable(tmpString));
-  					  if (g_lastState==GetString)
+					  if (g_lastState==GetString)
 					  {
 					    *g_arg = g_codec->toUnicode(g_tmpString);
                                             checkEncoding();
+					  }
+					  else if (g_lastState==GetEnum)
+					  {
+                                            InputString *cur = dynamic_cast<InputString *>(g_curOption);
+                                            *g_arg = cur->checkEnumVal(g_codec->toUnicode(g_tmpString));
 					  }
 					  else
 					  {

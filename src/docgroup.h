@@ -41,7 +41,7 @@ class DocGroup
     void addDocs(Entry *e);
 
   private:
-    int findExistingGroup(int &groupId,const MemberGroupInfo *info);
+    int findExistingGroup(const MemberGroupInfo *info);
     int              m_openCount = 0;
     QCString         m_memberGroupHeader;
     int              m_memberGroupId = 0;

@@ -59,6 +59,11 @@ class TranslatorKoreanEn : public TranslatorEnglish
     {
       return "129";
     }
+
+    virtual QCString trISOLang()
+    {
+      return "ko";
+    }
 };
 
 #endif

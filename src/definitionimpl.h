@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -31,7 +31,7 @@ class DefinitionImpl : virtual public Definition
     virtual ~DefinitionImpl();
 
     virtual bool isAlias() const { return FALSE; }
-    virtual QCString name() const;
+    virtual const QCString &name() const;
     virtual bool isAnonymous() const;
     virtual QCString localName() const;
     virtual QCString qualifiedName() const;
@@ -61,13 +61,14 @@ class DefinitionImpl : virtual public Definition
     virtual QCString getReference() const;
     virtual bool isReference() const;
     virtual QCString externalReference(const QCString &relPath) const;
+    virtual int getStartDefLine() const;
     virtual int getStartBodyLine() const;
     virtual int getEndBodyLine() const;
     virtual FileDef *getBodyDef() const;
     virtual SrcLangExt getLanguage() const;
     virtual GroupList *partOfGroups() const;
     virtual bool isLinkableViaGroup() const;
-    virtual const std::vector<ListItemInfo> &xrefListItems() const;
+    virtual const RefItemVector &xrefListItems() const;
     virtual Definition *findInnerCompound(const char *name) const;
     virtual Definition *getOuterScope() const;
     virtual MemberSDict *getReferencesMembers() const;
@@ -76,7 +77,7 @@ class DefinitionImpl : virtual public Definition
     virtual bool hasSources() const;
     virtual bool hasBriefDescription() const;
     virtual QCString id() const;
-    virtual SectionDict * getSectionDict() const;
+    virtual const SectionRefs &getSectionRefs() const;
     virtual void setName(const char *name);
     virtual void setId(const char *name);
     virtual void setDefFile(const QCString& df,int defLine,int defColumn);
@@ -85,11 +86,11 @@ class DefinitionImpl : virtual public Definition
     virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine);
     virtual void setReference(const char *r);
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
-    virtual void setBodySegment(int bls,int ble);
+    virtual void setBodySegment(int defLine,int bls,int ble);
     virtual void setBodyDef(FileDef *fd);
     virtual void addSourceReferencedBy(const MemberDef *d);
     virtual void addSourceReferences(const MemberDef *d);
-    virtual void setRefItems(const std::vector<ListItemInfo> &sli);
+    virtual void setRefItems(const RefItemVector &sli);
     virtual void mergeRefItems(Definition *d);
     virtual void addInnerCompound(const Definition *d);
     virtual void setOuterScope(Definition *d);
@@ -117,7 +118,7 @@ class DefinitionImpl : virtual public Definition
 
     DefinitionImpl(const DefinitionImpl &d);
 
-  private: 
+  private:
     virtual void _setSymbolName(const QCString &name);
     virtual QCString _symbolName() const ;
 
@@ -141,7 +142,7 @@ class DefinitionAliasImpl : virtual public Definition
     virtual ~DefinitionAliasImpl();
 
     virtual bool isAlias() const { return TRUE; }
-    virtual QCString name() const
+    virtual const QCString &name() const
     { return m_def->name(); }
     virtual bool isAnonymous() const
     { return m_def->isAnonymous(); }
@@ -201,6 +202,8 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->isReference(); }
     virtual QCString externalReference(const QCString &relPath) const
     { return m_def->externalReference(relPath); }
+    virtual int getStartDefLine() const
+    { return m_def->getStartDefLine(); }
     virtual int getStartBodyLine() const
     { return m_def->getStartBodyLine(); }
     virtual int getEndBodyLine() const
@@ -213,7 +216,7 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->partOfGroups(); }
     virtual bool isLinkableViaGroup() const
     { return m_def->isLinkableViaGroup(); }
-    virtual const std::vector<ListItemInfo> &xrefListItems() const
+    virtual const RefItemVector &xrefListItems() const
     { return m_def->xrefListItems(); }
     virtual Definition *findInnerCompound(const char *name) const
     { return m_def->findInnerCompound(name); }
@@ -231,43 +234,43 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->hasBriefDescription(); }
     virtual QCString id() const
     { return m_def->id(); }
-    virtual SectionDict * getSectionDict() const
-    { return m_def->getSectionDict(); }
-    virtual QCString navigationPathAsString() const 
+    virtual const SectionRefs &getSectionRefs() const
+    { return m_def->getSectionRefs(); }
+    virtual QCString navigationPathAsString() const
     { return m_def->navigationPathAsString(); }
-    virtual QCString pathFragment() const 
+    virtual QCString pathFragment() const
     { return m_def->pathFragment(); }
-    virtual void setName(const char *name) { }
-    virtual void setId(const char *name) { }
-    virtual void setDefFile(const QCString& df,int defLine,int defColumn) {}
-    virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE) {}
-    virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine) {}
-    virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine) {}
-    virtual void setReference(const char *r) {}
-    virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) {}
-    virtual void setBodySegment(int bls,int ble) {}
-    virtual void setBodyDef(FileDef *fd) {}
-    virtual void addSourceReferencedBy(const MemberDef *d) {}
-    virtual void addSourceReferences(const MemberDef *d) {}
-    virtual void setRefItems(const std::vector<ListItemInfo> &sli) {}
-    virtual void mergeRefItems(Definition *d) {}
-    virtual void addInnerCompound(const Definition *d) {}
-    virtual void setOuterScope(Definition *d) {}
-    virtual void setHidden(bool b) {}
-    virtual void setArtificial(bool b) {}
-    virtual void setLanguage(SrcLangExt lang) {}
-    virtual void writeSourceDef(OutputList &ol,const char *scopeName) const {}
-    virtual void writeInlineCode(OutputList &ol,const char *scopeName) const {}
-    virtual void writeSourceRefs(OutputList &ol,const char *scopeName) const {}
-    virtual void writeSourceReffedBy(OutputList &ol,const char *scopeName) const {}
-    virtual void makePartOfGroup(GroupDef *gd) {}
-    virtual void writeNavigationPath(OutputList &ol) const {}
+    virtual void setName(const char *) { }
+    virtual void setId(const char *) { }
+    virtual void setDefFile(const QCString&,int,int) {}
+    virtual void setDocumentation(const char *,const char *,int,bool=TRUE) {}
+    virtual void setBriefDescription(const char *,const char *,int) {}
+    virtual void setInbodyDocumentation(const char *,const char *,int) {}
+    virtual void setReference(const char *) {}
+    virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &) {}
+    virtual void setBodySegment(int,int,int) {}
+    virtual void setBodyDef(FileDef *) {}
+    virtual void addSourceReferencedBy(const MemberDef *) {}
+    virtual void addSourceReferences(const MemberDef *) {}
+    virtual void setRefItems(const RefItemVector &) {}
+    virtual void mergeRefItems(Definition *) {}
+    virtual void addInnerCompound(const Definition *) {}
+    virtual void setOuterScope(Definition *) {}
+    virtual void setHidden(bool) {}
+    virtual void setArtificial(bool) {}
+    virtual void setLanguage(SrcLangExt) {}
+    virtual void writeSourceDef(OutputList &,const char *) const {}
+    virtual void writeInlineCode(OutputList &,const char *) const {}
+    virtual void writeSourceRefs(OutputList &,const char *) const {}
+    virtual void writeSourceReffedBy(OutputList &,const char *) const {}
+    virtual void makePartOfGroup(GroupDef *) {}
+    virtual void writeNavigationPath(OutputList &) const {}
     virtual void writeQuickMemberLinks(OutputList &,const MemberDef *) const {}
     virtual void writeSummaryLinks(OutputList &) const {}
     virtual void writeDocAnchorsToTagFile(FTextStream &) const {}
-    virtual void setLocalName(const QCString name) {}
+    virtual void setLocalName(const QCString) {}
     virtual void addSectionsToIndex() {}
-    virtual void writeToc(OutputList &ol, const LocalToc &lt) const {}
+    virtual void writeToc(OutputList &, const LocalToc &) const {}
     virtual void setCookie(Cookie *cookie) const { delete m_cookie; m_cookie = cookie; }
     virtual Cookie *cookie() const { return m_cookie; }
   protected:

@@ -60,7 +60,7 @@
 */
 
 
-/*! \enum QCollection::Item
+/*! \typedef QCollection::Item
 
   This type is the generic "item" in a QCollection.
 */

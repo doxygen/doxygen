@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="group__g3" kind="group">
     <compoundname>g3</compoundname>
     <title>Third Group</title>
@@ -34,9 +34,9 @@
       </memberdef>
     </sectiondef>
     <briefdescription>
-      <para>Text for third group. </para>
     </briefdescription>
     <detaileddescription>
+      <para>Text for third group. </para>
     </detaileddescription>
   </compounddef>
 </doxygen>

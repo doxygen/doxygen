@@ -16,9 +16,8 @@
 #ifndef DOT_H
 #define DOT_H
 
-#include <qlist.h>
-#include <qdict.h>
 #include <qcstring.h>
+#include <map>
 
 #include "sortdict.h"
 
@@ -35,19 +34,20 @@ class DotManager
 {
   public:
     static DotManager *instance();
-    DotRunner*      createRunner(const QCString& absDotName, const QCString& md5Hash);
-    DotFilePatcher *createFilePatcher(const QCString &fileName);
+    static void deleteInstance();
+    DotRunner*      createRunner(const std::string& absDotName, const std::string& md5Hash);
+    DotFilePatcher *createFilePatcher(const std::string &fileName);
     bool run() const;
 
   private:
     DotManager();
     virtual ~DotManager();
 
-    QDict<DotRunner>       m_runners;
-    SDict<DotFilePatcher>  m_filePatchers;
+    std::map<std::string, std::unique_ptr<DotRunner>>       m_runners;
+    std::map<std::string, DotFilePatcher>  m_filePatchers;
     static DotManager     *m_theInstance;
     DotRunnerQueue        *m_queue;
-    QList<DotWorkerThread> m_workers;
+    std::vector< std::unique_ptr<DotWorkerThread> > m_workers;
 };
 
 void writeDotGraphFromFile(const char *inFile,const char *outDir,

@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -50,48 +50,91 @@ enum RefQualifierType
   RefQualifierRValue
 };
 
-/*! \brief This class represents an function or template argument list. 
+/*! \brief This class represents an function or template argument list.
  *
  *  This class also stores some information about member that is typically
- *  put after the argument list, such as whether the member is const, 
+ *  put after the argument list, such as whether the member is const,
  *  volatile or pure virtual.
  */
-class ArgumentList : public std::vector<Argument>
+class ArgumentList
 {
   public:
+    using Vec = std::vector<Argument>;
+    using iterator = typename Vec::iterator;
+    using const_iterator = typename Vec::const_iterator;
+
     /*! Does any argument of this list have documentation? */
     bool hasDocumentation() const;
     /*! Does this list have zero or more parameters */
     bool hasParameters() const
     {
-      return !empty() || noParameters;
+      return !empty() || m_noParameters;
     }
     void reset()
     {
       clear();
-      constSpecifier = FALSE;
-      volatileSpecifier = FALSE;
-      pureSpecifier = FALSE;
-      trailingReturnType.resize(0);
-      isDeleted = FALSE;
-      refQualifier = RefQualifierNone;
-      noParameters = FALSE;
+      m_constSpecifier = FALSE;
+      m_volatileSpecifier = FALSE;
+      m_pureSpecifier = FALSE;
+      m_trailingReturnType.resize(0);
+      m_isDeleted = FALSE;
+      m_refQualifier = RefQualifierNone;
+      m_noParameters = FALSE;
     }
 
+    // make vector accessible
+    iterator begin()                      { return m_args.begin(); }
+    iterator end()                        { return m_args.end();   }
+    const_iterator begin() const          { return m_args.cbegin(); }
+    const_iterator end() const            { return m_args.cend();   }
+    const_iterator cbegin() const         { return m_args.cbegin(); }
+    const_iterator cend() const           { return m_args.cend();   }
+    bool empty() const                    { return m_args.empty(); }
+    size_t size() const                   { return m_args.size();  }
+    void clear()                          { m_args.clear(); }
+    void push_back(const Argument &a)     { m_args.push_back(a); }
+    Argument &back()                      { return m_args.back(); }
+    const Argument &back() const          { return m_args.back(); }
+    Argument &front()                     { return m_args.front(); }
+    const Argument &front() const         { return m_args.front(); }
+    Argument &at(size_t i)                { return m_args.at(i); }
+    const Argument &at(size_t i) const    { return m_args.at(i); }
+
+    // getters for list wide attributes
+    bool constSpecifier() const           { return m_constSpecifier; }
+    bool volatileSpecifier() const        { return m_volatileSpecifier; }
+    bool pureSpecifier() const            { return m_pureSpecifier; }
+    QCString trailingReturnType() const   { return m_trailingReturnType; }
+    bool isDeleted() const                { return m_isDeleted; }
+    RefQualifierType refQualifier() const { return m_refQualifier; }
+    bool noParameters() const             { return m_noParameters; }
+
+    void setConstSpecifier(bool b)        { m_constSpecifier = b; }
+    void setVolatileSpecifier(bool b)     { m_volatileSpecifier = b; }
+    void setPureSpecifier(bool b)         { m_pureSpecifier = b; }
+    void setTrailingReturnType(const QCString &s) { m_trailingReturnType = s; }
+    void setIsDeleted(bool b)             { m_isDeleted = b; }
+    void setRefQualifier(RefQualifierType t) { m_refQualifier = t; }
+    void setNoParameters(bool b)          { m_noParameters = b; }
+
+  private:
+    std::vector<Argument> m_args;
     /*! Does the member modify the state of the class? */
-    bool constSpecifier = FALSE;
+    bool m_constSpecifier = FALSE;
     /*! Is the member volatile? */
-    bool volatileSpecifier = FALSE;
+    bool m_volatileSpecifier = FALSE;
     /*! Is this a pure virtual member? */
-    bool pureSpecifier = FALSE;
+    bool m_pureSpecifier = FALSE;
     /*! C++11 style Trailing return type? */
-    QCString trailingReturnType;
+    QCString m_trailingReturnType;
     /*! method with =delete */
-    bool isDeleted = FALSE;
+    bool m_isDeleted = FALSE;
     /*! C++11 ref qualifier */
-    RefQualifierType refQualifier = RefQualifierNone;
+    RefQualifierType m_refQualifier = RefQualifierNone;
     /*! is it an explicit empty list */
-    bool noParameters = FALSE;
+    bool m_noParameters = FALSE;
 };
+
+using ArgumentLists = std::vector<ArgumentList>;
 
 #endif

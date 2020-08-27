@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,8 +16,8 @@
 #ifndef VHDLDOCGEN_H
 #define VHDLDOCGEN_H
 
-/** 
- * This class implements functions for parsing and generating 
+/**
+ * This class implements functions for parsing and generating
  * vhdl documents
  */
 
@@ -39,8 +39,35 @@ class FileDef;
 class NamespaceDef;
 struct Argument;
 
+
+
+struct VhdlConfNode
+{
+  VhdlConfNode(const char*  a,const char*  b,const char* config,const char* cs,bool leaf)
+  {
+    arch=a;              // architecture  e.g. for iobuffer
+    arch=arch.lower();
+    binding=b;           // binding e.g.  use entity work.xxx(bev)
+    binding=binding.lower();
+    confVhdl=config;     // configuration foo is bar
+    compSpec=cs;
+    isInlineConf=false;  // primary configuration?
+    isLeaf=leaf;
+  };
+
+  QCString confVhdl;
+  QCString arch;
+  QCString binding;
+  QCString compSpec;
+  int level = 0;
+  bool isLeaf = false;
+  bool isInlineConf = false;
+
+};
+
+
 /** Class for generating documentation specific for VHDL */
-class VhdlDocGen  
+class VhdlDocGen
 {
   public:
 
@@ -71,11 +98,11 @@ class VhdlDocGen
       USE,
       PROCESS,
       PORT,
-      UNITS,	  
+      UNITS,
       GENERIC,
       INSTANTIATION,
       GROUP,
-      VFILE,   
+      VFILE,
       SHAREDVARIABLE,
       CONFIG,
       ALIAS,
@@ -88,7 +115,7 @@ class VhdlDocGen
     static void init();
     static QCString convertFileNameToClassName(QCString name);
     // --- used by vhdlscanner.l -----------
-    
+
     static bool isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int level);
 
     static QCString getIndexWord(const char* ,int index);
@@ -105,7 +132,7 @@ class VhdlDocGen
     static QCString* findKeyWord(const QCString& word);
 
     static ClassDef* getPackageName(const QCString& name);
-    static MemberDef* findMember(const QCString& className, 
+    static MemberDef* findMember(const QCString& className,
                                  const QCString& memName);
     static void findAllPackages(ClassDef*);
     static MemberDef* findMemberDef(ClassDef* cd,
@@ -180,19 +207,18 @@ class VhdlDocGen
     static QCString convertArgumentListToString(const ArgumentList &al,bool f);
     static QCString getProcessNumber();
     static QCString getRecordNumber();
-   
+
     static QCString getClassName(const ClassDef*);
     static bool isNumber(const QCString& s);
     static QCString getProtectionName(int prot);
 
     static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);
-    static bool findConstraintFile( LayoutNavEntry *lne);
 
     static ClassDef*  findArchitecture(const ClassDef *cd);
     static ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
 
     static void correctMemberProperties(MemberDef *md);
-    
+
     static void writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname);
 
     static QCString  parseForConfig(QCString & entity,QCString & arch);
@@ -202,15 +228,15 @@ class VhdlDocGen
 
     static void writeOverview(OutputList &ol);
     static void writeOverview();
- 
+
  // flowcharts
     static void createFlowChart(const MemberDef*);
     //static void addFlowImage(const FTextStream &,const QCString &);
-    
+
     static void setFlowMember( const MemberDef *flowMember);
     static const MemberDef *getFlowMember();
 
-    static  bool isVhdlClass (const Entry *cu) 
+    static  bool isVhdlClass (const Entry *cu)
     {
       return cu->spec==VhdlDocGen::ENTITY       ||
              cu->spec==VhdlDocGen::PACKAGE      ||
@@ -226,7 +252,7 @@ class VhdlDocGen
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
     static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
-    static void  writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef);
+    static void  writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol ,const MemberDef *mdef);
 };
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -263,7 +289,7 @@ class FlowChart
       BEGIN_NO     = 1<<21
     };
 
-    //---------- create svg ------------------------------------------------------------- 
+    //---------- create svg -------------------------------------------------------------
     static void createSVG();
     static void startDot(FTextStream &t);
     static void endDot(FTextStream &t);

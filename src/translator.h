@@ -50,6 +50,11 @@ class Translator
      * can be returned.
      */
     virtual QCString latexFontenc() { return "T1"; }
+    virtual QCString latexFont() {
+      return "\\usepackage[scaled=.90]{helvet}\n"
+             "\\usepackage{courier}\n"
+             "\\renewcommand{\\familydefault}{\\sfdefault}\n";
+    }
     /*!
      * Sets the commands to be inserted directly after the `\\begin{document}`
      * in the LaTeX document.
@@ -73,6 +78,7 @@ class Translator
       }
       return latex_command;
     }
+    virtual QCString trISOLang() = 0;
 
     // --- Language translation methods -------------------
 
@@ -588,7 +594,6 @@ class Translator
     virtual QCString trClassMethods() = 0;
     virtual QCString trInstanceMethods() = 0;
     virtual QCString trMethodDocumentation() = 0;
-    virtual QCString trDesignOverview() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
@@ -646,6 +651,12 @@ class Translator
     virtual QCString trOperationDocumentation() = 0;
     virtual QCString trDataMembers() = 0;
     virtual QCString trDataMemberDocumentation() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDesignUnitDocumentation() = 0;
 };
 
 #endif

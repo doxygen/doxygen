@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -63,10 +63,11 @@ MemberList::~MemberList()
   delete memberGroupList;
 }
 
-int MemberList::compareValues(const MemberDef *c1, const MemberDef *c2) const
+static int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
 {
-  static bool sortConstructorsFirst = Config_getBool(SORT_MEMBERS_CTORS_1ST);
-  if (sortConstructorsFirst) {
+  bool sortConstructorsFirst = Config_getBool(SORT_MEMBERS_CTORS_1ST);
+  if (sortConstructorsFirst)
+  {
     int ord1 = c1->isConstructor() ? 2 : (c1->isDestructor() ? 1 : 0);
     int ord2 = c2->isConstructor() ? 2 : (c2->isDestructor() ? 1 : 0);
     if (ord1 > ord2)
@@ -74,9 +75,29 @@ int MemberList::compareValues(const MemberDef *c1, const MemberDef *c2) const
     else if (ord2 > ord1)
       return 1;
   }
+  // sort on name
   int cmp = qstricmp(c1->name(),c2->name());
-  if (cmp==0) cmp = qstricmp(c1->argsString(),c2->argsString());
-  return cmp!=0 ? cmp : c1->getDefLine()-c2->getDefLine();
+  // then on argument list
+  if (cmp==0 && c1->argsString() && c2->argsString())
+  {
+    cmp = qstricmp(c1->argsString(),c2->argsString());
+  }
+  // then on file in which the item is defined
+  if (cmp==0)
+  {
+    cmp = qstricmp(c1->getDefFileName(),c2->getDefFileName());
+  }
+  // then on line number at which the member is defined
+  if (cmp==0)
+  {
+    cmp = c1->getDefLine()-c2->getDefLine();
+  }
+  return cmp;
+}
+
+int MemberList::compareValues(const MemberDef *c1, const MemberDef *c2) const
+{
+  return genericCompareMembers(c1,c2);
 }
 
 int MemberList::countInheritableMembers(const ClassDef *inheritedFrom) const
@@ -288,7 +309,7 @@ MemberDef *MemberList::take(uint index)
 }
 
 MemberListIterator::MemberListIterator(const MemberList &l) :
-  QListIterator<MemberDef>(l) 
+  QListIterator<MemberDef>(l)
 {
 }
 
@@ -378,9 +399,9 @@ bool MemberList::declVisible() const
         case MemberType_Service:    // fall through
         case MemberType_Sequence:   // fall through
         case MemberType_Dictionary: // fall through
-        case MemberType_Event:  
+        case MemberType_Event:
           return TRUE;
-        case MemberType_Enumeration: 
+        case MemberType_Enumeration:
           {
             // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
@@ -392,7 +413,7 @@ bool MemberList::declVisible() const
           break;
         case MemberType_Friend:
           return TRUE;
-        case MemberType_EnumValue: 
+        case MemberType_EnumValue:
           {
             if (m_inGroup)
             {
@@ -412,7 +433,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                       ) const
 {
   //printf("----- writePlainDeclaration() ----\n");
-  static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
   if (numDecMembers()==-1)
   {
     err("MemberList::numDecMembers()==-1, so the members of this list have not been counted. Please report as a bug.\n");
@@ -425,7 +445,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   }
   //printf("  --> writePlainDeclaration() numDecMembers()=%d\n",
   //    numDecMembers());
-  
+
   ol.pushGeneratorState();
 
   bool first=TRUE;
@@ -454,13 +474,13 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         case MemberType_Service:     // fall through
         case MemberType_Sequence:    // fall through
         case MemberType_Dictionary:  // fall through
-        case MemberType_Event:  
+        case MemberType_Event:
           {
             if (first) ol.startMemberList(),first=FALSE;
             md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
             break;
           }
-        case MemberType_Enumeration: 
+        case MemberType_Enumeration:
           {
             // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
@@ -497,7 +517,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                     md->briefFile(),md->briefLine(),
                     cd,md,
                     md->briefDescription(),
-                    TRUE,FALSE,0,TRUE,FALSE
+                    TRUE,FALSE,
+                    0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
                     );
                 if (rootNode && !rootNode->isEmpty())
                 {
@@ -525,7 +546,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         case MemberType_Friend:
           if (inheritedFrom==0)
           {
-            if (first) 
+            if (first)
             {
               ol.startMemberList();
               first=FALSE;
@@ -533,7 +554,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
             break;
           }
-        case MemberType_EnumValue: 
+        case MemberType_EnumValue:
           {
             if (m_inGroup)
             {
@@ -551,8 +572,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   // no variables of the anonymous compound type exist.
   if (cd)
   {
-    MemberListIterator mli(*this);
-    for  ( ; (md=mli.current()) ; ++mli )
+    for  ( mli.toFirst(); (md=mli.current()) ; ++mli )
     {
       if (md->fromAnonymousScope() && !md->anonymousDeclShown())
       {
@@ -560,7 +580,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         //printf("anonymous compound members\n");
         if (md->isBriefSectionVisible())
         {
-          if (first) 
+          if (first)
           {
             ol.startMemberList();
             first=FALSE;
@@ -571,10 +591,10 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       }
     }
   }
- 
-  if (!first) 
+
+  if (!first)
   {
-    ol.endMemberList(); 
+    ol.endMemberList();
   }
 
   ol.popGeneratorState();
@@ -630,7 +650,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       if (title)
       {
         ol.writeInheritedSectionTitle(inheritId,cd->getReference(),
-                                      cd->getOutputFileBase(), 
+                                      cd->getOutputFileBase(),
                                       cd->anchor(),title,cd->displayName());
       }
       ol.popGeneratorState();
@@ -638,7 +658,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   }
   else if (num>numEnumValues)
   {
-    if (title) 
+    if (title)
     {
       if (showInline)
       {
@@ -658,14 +678,15 @@ void MemberList::writeDeclarations(OutputList &ol,
         ol.endMemberHeader();
       }
     }
-    if (subtitle) 
+    if (subtitle)
     {
       QCString st=subtitle;
       st = st.stripWhiteSpace();
       if (!st.isEmpty())
       {
         ol.startMemberSubtitle();
-        ol.generateDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,0,FALSE,FALSE);
+        ol.generateDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,
+                       0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
         ol.endMemberSubtitle();
       }
     }
@@ -708,7 +729,8 @@ void MemberList::writeDeclarations(OutputList &ol,
           {
             //printf("Member group has docs!\n");
             ol.startMemberGroupDocs();
-            ol.generateDoc(mg->docFile(),mg->docLine(),ctx,0,mg->documentation()+"\n",FALSE,FALSE);
+            ol.generateDoc(mg->docFile(),mg->docLine(),ctx,0,mg->documentation()+"\n",FALSE,FALSE,
+                           0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
             ol.endMemberGroupDocs();
           }
           ol.startMemberGroup();
@@ -723,7 +745,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       }
     }
   }
-  if (inheritedFrom && cd) 
+  if (inheritedFrom && cd)
   {
     // also add members that of this list type, that are grouped together
     // in a separate list in class 'inheritedFrom'
@@ -767,7 +789,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   overloadCountDict.setAutoDelete(TRUE);
   for (mli.toFirst() ; (md=mli.current()) ; ++mli)
   {
-    if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) && 
+    if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) &&
         !(md->isEnumValue() && !showInline))
     {
       uint *pCount = overloadTotalDict.find(md->name());
@@ -785,7 +807,7 @@ void MemberList::writeDocumentation(OutputList &ol,
 
   for (mli.toFirst() ; (md=mli.current()) ; ++mli)
   {
-    if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) && 
+    if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) &&
         !(md->isEnumValue() && !showInline))
     {
       uint overloadCount = *overloadTotalDict.find(md->name());
@@ -944,7 +966,7 @@ void MemberList::addListReferences(Definition *def)
         MemberDef *vmd;
         for ( ; (vmd=vmli.current()) ; ++vmli)
         {
-          //printf("   adding %s\n",vmd->name().data());  
+          //printf("   adding %s\n",vmd->name().data());
           vmd->addListReference(def);
         }
       }
@@ -985,7 +1007,7 @@ void MemberList::setNeedsSorting(bool b)
   m_needsSorting = b;
 }
 
-QCString MemberList::listTypeAsString(MemberListType type) 
+QCString MemberList::listTypeAsString(MemberListType type)
 {
   switch(type)
   {
@@ -1082,16 +1104,7 @@ void MemberList::writeTagFile(FTextStream &tagFile)
 
 int MemberSDict::compareValues(const MemberDef *c1, const MemberDef *c2) const
 {
-  //printf("MemberSDict::compareValues(%s,%s)\n",c1->name().data(),c2->name().data());
-  int cmp = qstricmp(c1->name(),c2->name());
-  if (cmp)
-  {
-    return cmp;
-  }
-  else
-  {
-    return c1->getDefLine()-c2->getDefLine();
-  }
+  return genericCompareMembers(c1,c2);
 }
 
 

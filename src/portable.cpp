@@ -207,11 +207,6 @@ unsigned int Portable::pid(void)
   return pid;
 }
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
-#else
-  static char **last_environ;
-#endif
-
 #if !defined(_WIN32) || defined(__CYGWIN__)
 void loadEnvironment()
 {
@@ -251,7 +246,7 @@ void Portable::setenv(const char *name,const char *value)
       loadEnvironment();
     }
 
-    proc_env[name] = std::string(value); // create or replace exisiting value
+    proc_env[name] = std::string(value); // create or replace existing value
 #endif
 }
 
@@ -261,9 +256,6 @@ void Portable::unsetenv(const char *variable)
     SetEnvironmentVariable(variable,0);
 #else
     /* Some systems don't have unsetenv(), so we do it ourselves */
-    size_t len;
-    char **ep;
-
     if (variable == NULL || *variable == '\0' || strchr (variable, '=') != NULL)
     {
       return; // not properly formatted
@@ -348,10 +340,71 @@ char  Portable::pathListSeparator(void)
 #endif
 }
 
+static bool ExistsOnPath(const char *fileName)
+{
+  QFileInfo fi1(fileName);
+  if (fi1.exists()) return true;
+
+  const char *p = Portable::getenv("PATH");
+  char listSep = Portable::pathListSeparator();
+  char pathSep = Portable::pathSeparator();
+  QCString paths(p);
+  int strt = 0;
+  int idx;
+  while ((idx = paths.find(listSep,strt)) != -1)
+  {
+    QCString locFile(paths.mid(strt,idx-strt));
+    locFile += pathSep;
+    locFile += fileName;
+    QFileInfo fi(locFile);
+    if (fi.exists()) return true;
+    strt = idx + 1;
+  }
+  // to be sure the last path component is checked as well
+  QCString locFile(paths.mid(strt));
+  if (!locFile.isEmpty())
+  {
+    locFile += pathSep;
+    locFile += fileName;
+    QFileInfo fi(locFile);
+    if (fi.exists()) return true;
+  }
+  return false;
+}
+
+bool Portable::checkForExecutable(const char *fileName)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  char *extensions[] = {".bat",".com",".exe"};
+  for (int i = 0; i < sizeof(extensions) / sizeof(*extensions); i++)
+  {
+    if (ExistsOnPath(QCString(fileName) + extensions[i])) return true;
+  }
+  return false;
+#else
+  return ExistsOnPath(fileName);
+#endif
+}
+
 const char *Portable::ghostScriptCommand(void)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    return "gswin32c.exe";
+    static char *gsexe = NULL;
+    if (!gsexe)
+    {
+        char *gsExec[] = {"gswin32c.exe","gswin64c.exe"};
+        for (int i = 0; i < sizeof(gsExec) / sizeof(*gsExec); i++)
+        {
+            if (ExistsOnPath(gsExec[i]))
+	    {
+                gsexe = gsExec[i];
+                return gsexe;
+            }
+        }
+        gsexe = gsExec[0];
+        return gsexe;
+    }
+    return gsexe;
 #else
     return "gs";
 #endif
@@ -517,4 +570,13 @@ const char *Portable::strnstr(const char *haystack, const char *needle, size_t h
     }
   }
   return 0;
+}
+
+const char *Portable::devNull()
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  return "NUL";
+#else
+  return "/dev/null";
+#endif
 }

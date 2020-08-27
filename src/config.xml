@@ -513,6 +513,16 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='PYTHON_DOCSTRING' defval='1'>
+      <docs>
+<![CDATA[
+  By default Python docstrings are displayed as preformatted text
+  and doxygen's special commands cannot be used. By setting \c PYTHON_DOCSTRING to
+  \c NO the doxygen's special commands can be used and the contents of the docstring
+  documentation blocks is shown as doxygen documentation.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='INHERIT_DOCS' defval='1'>
       <docs>
 <![CDATA[
@@ -585,16 +595,6 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='list' id='TCL_SUBST' format='string'>
-      <docs>
-<![CDATA[
- This tag can be used to specify a number of word-keyword mappings (TCL only).
- A mapping has the form <code>"name=value"</code>. For example adding
- <code>"class=itcl::class"</code> will allow you to use the command class in the
- <code>itcl::class</code> meaning.
-]]>
-      </docs>
-    </option>
     <option type='bool' id='OPTIMIZE_OUTPUT_FOR_C' defval='0'>
       <docs>
 <![CDATA[
@@ -649,10 +649,10 @@ Go to the <a href="commands.html">next</a> section or return to the
  Doxygen has a built-in mapping, but you can override or extend it using this tag.
  The format is <code>ext=language</code>, where \c ext is a file extension, and language is one of
  the parsers supported by doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, D, PHP,
- md (Markdown), Objective-C, Python, Slice, Fortran (fixed format Fortran: FortranFixed,
+ md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (fixed format Fortran: FortranFixed,
  free formatted Fortran: FortranFree, unknown formatted Fortran: Fortran. In
  the later case the parser tries to guess whether the code is fixed or free
- formatted code, this is the default for Fortran type files), VHDL, tcl.
+ formatted code, this is the default for Fortran type files).
 
  For instance to make doxygen treat
  <code>.inc</code> files as Fortran files (default is PHP), and <code>.f</code> files as C (default is Fortran),
@@ -822,6 +822,21 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='int' id='NUM_PROC_THREADS' defval='1' minval='0' maxval='32'>
+      <docs>
+<![CDATA[
+ The \c NUM_PROC_THREADS specifies the number threads doxygen is allowed to use during
+ processing. When set to \c 0 doxygen will based this on the number of cores
+ available in the system. You can set it explicitly to a value larger than 0
+ to get more control over the balance between CPU load and processing speed.
+ At this moment only the input processing can be done using multiple threads.
+ Since this is still an experimental feature the default is set to 1,
+ which efficively disables parallel processing. Please report any issues you
+ encounter.
+ Generating dot graphs in parallel is controlled by the \c DOT_NUM_THREADS setting.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Build' docs='Build related configuration options'>
     <option type='bool' id='EXTRACT_ALL' defval='0'>
@@ -960,7 +975,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  will only generate file names in lower-case letters. If set to
  \c YES, upper-case letters are also allowed. This is useful if you have
  classes or files whose names only differ in case and if your file system
- supports case sensitive file names. Windows (including Cygwin) ands
+ supports case sensitive file names. Windows (including Cygwin) and
  Mac users are advised to set this option to \c NO.
 ]]>
       </docs>
@@ -1413,9 +1428,9 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <value name='*.f95'/>
       <value name='*.f03'/>
       <value name='*.f08'/>
+      <value name='*.f18'/>
       <value name='*.f'/>
       <value name='*.for'/>
-      <value name='*.tcl'/>
       <value name='*.vhd'/>
       <value name='*.vhdl'/>
       <value name='*.ucf'/>
@@ -1715,10 +1730,12 @@ to disable this feature.
       <docs>
 <![CDATA[
  If clang assisted parsing is enabled you can provide the clang parser with the
- path to the <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">
- compilation database</a> used when the files were built. This is equivalent to
- specifying the "-p" option to a clang tool, such as clang-check. These options
- will then be passed to the parser.
+ path to the directory containing a file called compile_commands.json.
+ This file is the <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">
+ compilation database</a> containing the options used when the source files were built.
+ This is equivalent to specifying the "-p" option to a clang tool, such as clang-check.
+ These options will then be passed to the parser. Any options specified with
+ \ref cfg_clang_options "CLANG_OPTIONS" will be added as well.
 
  @note The availability of this option depends on whether or not doxygen
  was generated with the `-Duse_libclang=ON` option for CMake.
@@ -2164,7 +2181,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
  The \c GENERATE_CHI flag
  controls if a separate `.chi` index file is generated (\c YES) or that
- it should be included in the master `.chm` file (\c NO).
+ it should be included in the main `.chm` file (\c NO).
 ]]>
       </docs>
     </option>
@@ -2357,6 +2374,18 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
+    <option type='enum' id='HTML_FORMULA_FORMAT' defval='png' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ If the \c HTML_FORMULA_FORMAT option is set to \c svg, doxygen will use the pdf2svg
+ tool (see https://github.com/dawbarton/pdf2svg) or inkscape (see https://inkscape.org)
+ to generate formulas as SVG images instead of
+ PNGs for the HTML output. These images will generally look nicer at scaled resolutions.
+]]>
+      </docs>
+      <value name="png" desc="(the default)"/>
+      <value name="svg" desc="(looks nicer but requires the pdf2svg or inkscape tool)"/>
+    </option>
     <option type='int' id='FORMULA_FONTSIZE' minval='8' maxval='50' defval='10' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
@@ -2415,7 +2444,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <value name="NativeMML" desc="(i.e. MathML)"/>
       <value name="SVG"/>
     </option>
-    <option type='string' id='MATHJAX_RELPATH' format='string' defval='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/' depends='USE_MATHJAX'>
+    <option type='string' id='MATHJAX_RELPATH' format='string' defval='https://cdn.jsdelivr.net/npm/mathjax@2' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
  When MathJax is enabled you need to specify the location relative to the
@@ -2754,9 +2783,12 @@ or
     <option type='bool' id='USE_PDFLATEX' defval='1' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- If the \c USE_PDFLATEX tag is set to \c YES, doxygen will use
- \c pdflatex to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
+ If the \c USE_PDFLATEX tag is set to \c YES, doxygen will use the engine
+ as specified with \ref cfg_latex_cmd_name "LATEX_CMD_NAME"
+ to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
  files.  Set this option to \c YES, to get a higher quality PDF documentation.
+<br>
+ See also section \ref cfg_latex_cmd_name "LATEX_CMD_NAME" for selecting the engine.
 ]]>
       </docs>
     </option>
@@ -3027,9 +3059,8 @@ front of it.
       </docs>
     </option>
   </group>
-<!--
-  <group name='Sqlite3' docs='Configuration options related to Sqlite3 output'>
-    <option type='bool' id='GENERATE_SQLITE3' defval='0'>
+  <group name='Sqlite3' setting='USE_SQLITE3' docs='Configuration options related to Sqlite3 output'>
+    <option type='bool' id='GENERATE_SQLITE3' setting='USE_SQLITE3' defval='0'>
       <docs>
 <![CDATA[
 If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
@@ -3037,7 +3068,7 @@ If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
 ]]>
       </docs>
     </option>
-    <option type='string' id='SQLITE3_OUTPUT' format='dir' defval='sqlite3' depends='GENERATE_SQLITE3'>
+    <option type='string' id='SQLITE3_OUTPUT' format='dir' defval='sqlite3' setting='USE_SQLITE3' depends='GENERATE_SQLITE3'>
       <docs>
 <![CDATA[
 The \c SQLITE3_OUTPUT tag is used to specify where the \c Sqlite3 database will be put.
@@ -3046,9 +3077,17 @@ put in front of it.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='SQLITE3_RECREATE_DB' defval='1' setting='USE_SQLITE3' depends='GENERATE_SQLITE3'>
+      <docs>
+<![CDATA[
+The \c SQLITE3_OVERWRITE_DB tag is set to \c YES, the existing doxygen_sqlite3.db
+database file will be recreated with each doxygen run.
+If set to \c NO, doxygen will warn if an a database file is already found and not modify it.
+]]>
+      </docs>
+    </option>
 
   </group>
--->
   <group name='PerlMod' docs='Configuration options related to the Perl module output'>
     <option type='bool' id='GENERATE_PERLMOD' defval='0'>
       <docs>
@@ -3643,5 +3682,6 @@ remove the intermediate dot files that are used to generate the various graphs.
     <option type='obsolete' id='XML_DTD'/>
     <option type='obsolete' id='PERL_PATH'/>
     <option type='obsolete' id='MSCGEN_PATH'/>
+    <option type='obsolete' id='TCL_SUBST'/>
   </group>
 </doxygenconfig>

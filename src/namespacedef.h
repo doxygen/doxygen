@@ -146,7 +146,7 @@ class NamespaceListIterator : public QListIterator<NamespaceDef>
 class NamespaceDict : public QDict<NamespaceDef>
 {
   public:
-    NamespaceDict(int size) : QDict<NamespaceDef>(size) {}
+    NamespaceDict(uint size) : QDict<NamespaceDef>(size) {}
    ~NamespaceDict() {}
 };
 
@@ -154,7 +154,7 @@ class NamespaceDict : public QDict<NamespaceDef>
 class NamespaceSDict : public SDict<NamespaceDef>
 {
   public:
-    NamespaceSDict(int size=17) : SDict<NamespaceDef>(size) {}
+    NamespaceSDict(uint size=17) : SDict<NamespaceDef>(size) {}
    ~NamespaceSDict() {}
     void writeDeclaration(OutputList &ol,const char *title,
             bool isConstantGroup=false, bool localName=FALSE);

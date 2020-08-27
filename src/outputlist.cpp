@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -30,10 +30,30 @@
 #include "docparser.h"
 #include "vhdldocgen.h"
 
-OutputList::OutputList(bool)
+
+OutputList::OutputList()
 {
   //printf("OutputList::OutputList()\n");
-  m_outputs.setAutoDelete(TRUE);
+}
+
+OutputList::OutputList(const OutputList &ol)
+{
+  for (const auto &og : ol.m_outputs)
+  {
+    m_outputs.emplace_back(og->clone());
+  }
+}
+
+OutputList &OutputList::operator=(const OutputList &ol)
+{
+  if (this!=&ol)
+  {
+    for (const auto &og : ol.m_outputs)
+    {
+      m_outputs.emplace_back(og->clone());
+    }
+  }
+  return *this;
 }
 
 OutputList::~OutputList()
@@ -41,16 +61,9 @@ OutputList::~OutputList()
   //printf("OutputList::~OutputList()\n");
 }
 
-void OutputList::add(const OutputGenerator *og)
-{
-  if (og) m_outputs.append(og);
-}
-
 void OutputList::disableAllBut(OutputGenerator::OutputType o)
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->disableIfNot(o);
   }
@@ -58,9 +71,7 @@ void OutputList::disableAllBut(OutputGenerator::OutputType o)
 
 void OutputList::enableAll()
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->enable();
   }
@@ -68,9 +79,7 @@ void OutputList::enableAll()
 
 void OutputList::disableAll()
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->disable();
   }
@@ -78,9 +87,7 @@ void OutputList::disableAll()
 
 void OutputList::disable(OutputGenerator::OutputType o)
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->disableIf(o);
   }
@@ -88,9 +95,7 @@ void OutputList::disable(OutputGenerator::OutputType o)
 
 void OutputList::enable(OutputGenerator::OutputType o)
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->enableIf(o);
   }
@@ -99,9 +104,7 @@ void OutputList::enable(OutputGenerator::OutputType o)
 bool OutputList::isEnabled(OutputGenerator::OutputType o)
 {
   bool result=FALSE;
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     result=result || og->isEnabled(o);
   }
@@ -110,9 +113,7 @@ bool OutputList::isEnabled(OutputGenerator::OutputType o)
 
 void OutputList::pushGeneratorState()
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->pushGeneratorState();
   }
@@ -120,9 +121,7 @@ void OutputList::pushGeneratorState()
 
 void OutputList::popGeneratorState()
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->popGeneratorState();
   }
@@ -132,14 +131,13 @@ void OutputList::generateDoc(const char *fileName,int startLine,
                   const Definition *ctx,const MemberDef * md,
                   const QCString &docStr,bool indexWords,
                   bool isExample,const char *exampleName,
-                  bool singleLine,bool linkFromIndex)
+                  bool singleLine,bool linkFromIndex,
+                  bool markdownSupport)
 {
   int count=0;
   if (docStr.isEmpty()) return;
 
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     if (og->isEnabled()) count++;
   }
@@ -151,16 +149,14 @@ void OutputList::generateDoc(const char *fileName,int startLine,
   DocRoot *root=0;
   root = validatingParseDoc(fileName,startLine,
                             ctx,md,docStr,indexWords,isExample,exampleName,
-                            singleLine,linkFromIndex);
+                            singleLine,linkFromIndex,markdownSupport);
   if (count>0) writeDoc(root,ctx,md);
   delete root;
 }
 
 void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md)
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     //printf("og->printDoc(extension=%s)\n",
     //    ctx?ctx->getDefFileExtension().data():"<null>");
@@ -172,9 +168,7 @@ void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *m
 void OutputList::parseText(const QCString &textStr)
 {
   int count=0;
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     if (og->isEnabled()) count++;
   }
@@ -187,7 +181,7 @@ void OutputList::parseText(const QCString &textStr)
 
   if (count>0)
   {
-    for (it.toFirst();(og=it.current());++it)
+    for (const auto &og : m_outputs)
     {
       if (og->isEnabled()) og->writeDoc(root,0,0);
     }

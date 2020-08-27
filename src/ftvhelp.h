@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -72,22 +72,7 @@ class FTVHelp : public IndexIntf
     bool m_topLevelIndex;
 };
 
-#define JAVASCRIPT_LICENSE_TEXT                                                                 \
-	"/*\n@licstart  The following is the entire license notice for the\n"                   \
-	"JavaScript code in this file.\n\nCopyright (C) 1997-2019 by Dimitri van Heesch\n\n"    \
-	"This program is free software; you can redistribute it and/or modify\n"                \
-	"it under the terms of version 2 of the GNU General Public License as published by\n"   \
-	"the Free Software Foundation\n\n"                                                      \
-	"This program is distributed in the hope that it will be useful,\n"                     \
-	"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"                      \
-	"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n"                        \
-	"GNU General Public License for more details.\n\n"                                      \
-	"You should have received a copy of the GNU General Public License along\n"             \
-	"with this program; if not, write to the Free Software Foundation, Inc.,\n"             \
-	"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n\n"                       \
-	"@licend  The above is the entire license notice\n"                                     \
-	"for the JavaScript code in this file\n"                                                \
-	"*/\n"
+extern const char *JAVASCRIPT_LICENSE_TEXT;
 
 #endif /* FTVHELP_H */
 

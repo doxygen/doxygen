@@ -132,7 +132,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
   //bool isXLink=FALSE;
   int len = 6;
   int indexS = buf.find("href=\""), indexE;
-  bool setTarget = FALSE;
+  bool targetAlreadySet = buf.find("target=")!=-1;
   if (indexS>5 && buf.find("xlink:href=\"")!=-1) // XLink href (for SVG)
   {
     indexS-=6;
@@ -152,9 +152,9 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
         // fake ref node to resolve the url
         DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
         result+=externalRef(relPath,df->ref(),TRUE);
-        if (!df->file().isEmpty())  
+        if (!df->file().isEmpty())
           result += df->file().data() + Doxygen::htmlFileExtension;
-        if (!df->anchor().isEmpty()) 
+        if (!df->anchor().isEmpty())
           result += "#" + df->anchor();
         delete df;
         result += "\"";
@@ -173,8 +173,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
         QCString url = link.mid(marker+1);
         if (!ref.isEmpty())
         {
-          result = externalLinkTarget();
-          if (result != "") setTarget = TRUE;
+          result = externalLinkTarget(true);
         }
         result+= href+"=\"";
         result+=externalRef(relPath,ref,TRUE);
@@ -185,12 +184,14 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
         result = href+"=\"" + link + "\"";
       }
     }
-    if (!target.isEmpty() && !setTarget)
+    if (!target.isEmpty() && !targetAlreadySet)
     {
       result+=" target=\""+target+"\"";
     }
     QCString leftPart = buf.left(indexS);
     QCString rightPart = buf.mid(indexE+1);
+    //printf("replaceRef(\n'%s'\n)->\n'%s+%s+%s'\n",
+    //    buf.data(),leftPart.data(),result.data(),rightPart.data());
     return leftPart + result + rightPart;
   }
   else
@@ -215,7 +216,7 @@ bool DotFilePatcher::convertMapFile(FTextStream &t,const char *mapName,
                     const QCString &context)
 {
   QFile f(mapName);
-  if (!f.open(IO_ReadOnly)) 
+  if (!f.open(IO_ReadOnly))
   {
     err("problems opening map file %s for inclusion in the docs!\n"
       "If you installed Graphviz/dot after a previous failing run, \n"
@@ -250,7 +251,7 @@ bool DotFilePatcher::convertMapFile(FTextStream &t,const char *mapName,
   return TRUE;
 }
 
-DotFilePatcher::DotFilePatcher(const char *patchFile) 
+DotFilePatcher::DotFilePatcher(const char *patchFile)
   : m_patchFile(patchFile)
 {
   m_maps.setAutoDelete(TRUE);
@@ -346,7 +347,7 @@ bool DotFilePatcher::run() const
   }
   QFile fi(tmpName);
   QFile fo(patchFile);
-  if (!fi.open(IO_ReadOnly)) 
+  if (!fi.open(IO_ReadOnly))
   {
     err("problem opening file %s for patching!\n",tmpName.data());
     QDir::current().rename(tmpName,patchFile);
@@ -380,7 +381,7 @@ bool DotFilePatcher::run() const
     ASSERT(numBytes<maxLineLen);
     if (isSVGFile)
     {
-      if (interactiveSVG_local) 
+      if (interactiveSVG_local)
       {
         if (line.find("<svg")!=-1 && !replacedHeader)
         {
@@ -412,7 +413,7 @@ bool DotFilePatcher::run() const
           replacedHeader=TRUE;
         }
       }
-      if (!insideHeader || !foundSize) // copy SVG and replace refs, 
+      if (!insideHeader || !foundSize) // copy SVG and replace refs,
                                        // unless we are inside the header of the SVG.
                                        // Then we replace it with another header.
       {
@@ -459,7 +460,7 @@ bool DotFilePatcher::run() const
         convertMapFile(tt,map->mapFile,map->relPath,map->urlOnly,map->context);
         if (!result.isEmpty())
         {
-          t << "<map name=\"" << map->label << "\" id=\"" << map->label << "\">" << endl;
+          t << "<map name=\"" << map->label << "\" id=\"" << correctId(map->label) << "\">" << endl;
           t << result;
           t << "</map>" << endl;
         }
@@ -506,9 +507,9 @@ bool DotFilePatcher::run() const
     fo.close();
     // keep original SVG file so we can refer to it, we do need to replace
     // dummy link by real ones
-    QFile fi(tmpName);
-    QFile fo(orgName);
-    if (!fi.open(IO_ReadOnly)) 
+    fi.setName(tmpName);
+    fo.setName(orgName);
+    if (!fi.open(IO_ReadOnly))
     {
       err("problem opening file %s for reading!\n",tmpName.data());
       return FALSE;
@@ -518,7 +519,7 @@ bool DotFilePatcher::run() const
       err("problem opening file %s for writing!\n",orgName.data());
       return FALSE;
     }
-    FTextStream t(&fo);
+    FTextStream to(&fo);
     while (!fi.atEnd()) // foreach line
     {
       QCString line(maxLineLen);
@@ -529,7 +530,7 @@ bool DotFilePatcher::run() const
       }
       line.resize(numBytes+1);
       Map *map = m_maps.at(0); // there is only one 'map' for a SVG file
-      t << replaceRef(line,map->relPath,map->urlOnly,map->context,"_top");
+      to << replaceRef(line,map->relPath,map->urlOnly,map->context,"_top");
     }
     fi.close();
     fo.close();
@@ -602,18 +603,18 @@ bool DotFilePatcher::writeSVGFigureLink(FTextStream &out,const QCString &relPath
     if (height<=60) height=300; else height+=300; // add some extra space for zooming
     if (height>600) height=600; // clip to maximum height of 600 pixels
     out << "<div class=\"zoom\">";
-    //out << "<object type=\"image/svg+xml\" data=\"" 
-    //out << "<embed type=\"image/svg+xml\" src=\"" 
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" 
+    //out << "<object type=\"image/svg+xml\" data=\""
+    //out << "<embed type=\"image/svg+xml\" src=\""
+    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\""
         << relPath << baseName << ".svg\" width=\"100%\" height=\"" << height << "\">";
   }
   else
   {
-    //out << "<object type=\"image/svg+xml\" data=\"" 
-    //out << "<embed type=\"image/svg+xml\" src=\"" 
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" 
-        << relPath << baseName << ".svg\" width=\"" 
-        << ((width*96+48)/72) << "\" height=\"" 
+    //out << "<object type=\"image/svg+xml\" data=\""
+    //out << "<embed type=\"image/svg+xml\" src=\""
+    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\""
+        << relPath << baseName << ".svg\" width=\""
+        << ((width*96+48)/72) << "\" height=\""
         << ((height*96+48)/72) << "\">";
   }
   writeSVGNotSupported(out);
@@ -650,7 +651,7 @@ bool DotFilePatcher::writeVecGfxFigure(FTextStream &out,const QCString &baseName
   }
   //printf("Got PDF/EPS size %d,%d\n",width,height);
   int maxWidth  = 350;  /* approx. page width in points, excl. margins */
-  int maxHeight = 550;  /* approx. page height in points, excl. margins */ 
+  int maxHeight = 550;  /* approx. page height in points, excl. margins */
   out << "\\nopagebreak\n"
          "\\begin{figure}[H]\n"
          "\\begin{center}\n"

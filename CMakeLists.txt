@@ -11,7 +11,7 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.3)
 project(doxygen)
 
 option(build_wizard    "Build the GUI frontend for doxygen." OFF)
@@ -22,14 +22,20 @@ option(build_search    "Build external search tools (doxysearch and doxyindexer)
 option(build_doc       "Build user manual (HTML and PDF)" OFF)
 option(build_doc_chm   "Build user manual (CHM)" OFF)
 option(use_sqlite3     "Add support for sqlite3 output [experimental]." OFF)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    option(use_libc++  "Use libc++ as C++ standard library." ON)
+endif()
 option(use_libclang    "Add support for libclang parsing." OFF)
+option(static_libclang "Link to a statically compiled version of LLVM/libclang." OFF)
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(english_only    "Only compile in support for the English language" OFF)
 option(force_qt4       "Forces doxywizard to build using Qt4 even if Qt5 is installed" OFF)
+option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
 
 SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Sanitizers")
 set(TOP "${CMAKE_SOURCE_DIR}")
 include(version)
 
@@ -62,7 +68,8 @@ if (CMAKE_SYSTEM MATCHES "Darwin")
 endif()
 
 if (WIN32)
-    if (NOT CMAKE_GENERATOR MATCHES "MinGW Makefiles")
+    if ((NOT CMAKE_GENERATOR MATCHES "MinGW Makefiles") AND 
+        (NOT CMAKE_GENERATOR MATCHES "MSYS Makefiles"))
         if (NOT ICONV_DIR)
           set(ICONV_DIR "${CMAKE_SOURCE_DIR}/winbuild")
         endif()
@@ -100,6 +107,7 @@ if (BISON_VERSION VERSION_LESS 2.7)
   message(SEND_ERROR "Doxygen requires at least bison version 2.7 (installed: ${BISON_VERSION})")
 endif()
 find_package(Threads)
+find_package(Sanitizers)
 
 if (sqlite3)
   find_package(SQLite3 REQUIRED)
@@ -157,6 +165,8 @@ if (win_static)
     endforeach()
 endif()
 
+include(cmake/CompilerWarnings.cmake)
+include(cmake/Coverage.cmake)
 
 add_subdirectory(libmd5)
 add_subdirectory(liblodepng)

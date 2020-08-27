@@ -394,8 +394,6 @@ void SearchIndex::write(const char *fileName)
       }
     }
     // write urls
-    QIntDictIterator<URL> udi(m_urls);
-    URL *url;
     for (udi.toFirst();(url=udi.current());++udi)
     {
       writeString(f,url->name);
@@ -833,53 +831,41 @@ void createJavaScriptSearchIndex()
   }
 
   // index files
-  FileNameListIterator fnli(*Doxygen::inputNameList);
-  FileName *fn;
-  for (;(fn=fnli.current());++fnli)
+  for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {
-    FileNameIterator fni(*fn);
-    FileDef *fd;
-    for (;(fd=fni.current());++fni)
+    for (const auto &fd : *fn)
     {
       uint letter = getUtf8CodeToLower(fd->name(),0);
       if (fd->isLinkable() && isId(letter))
       {
-        g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,fd);
-        g_searchIndexInfo[SEARCH_INDEX_FILES].symbolList.append(letter,fd);
+        g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,fd.get());
+        g_searchIndexInfo[SEARCH_INDEX_FILES].symbolList.append(letter,fd.get());
       }
     }
   }
 
   // index class members
   {
-    MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
-    MemberName *mn;
     // for each member name
-    for (mnli.toFirst();(mn=mnli.current());++mnli)
+    for (const auto &mn : *Doxygen::memberNameLinkedMap)
     {
-      MemberDef *md;
-      MemberNameIterator mni(*mn);
       // for each member definition
-      for (mni.toFirst();(md=mni.current());++mni)
+      for (const auto &md : *mn)
       {
-        addMemberToSearchIndex(md);
+        addMemberToSearchIndex(md.get());
       }
     }
   }
 
   // index file/namespace members
   {
-    MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
-    MemberName *mn;
     // for each member name
-    for (fnli.toFirst();(mn=fnli.current());++fnli)
+    for (const auto &mn : *Doxygen::functionNameLinkedMap)
     {
-      MemberDef *md;
-      MemberNameIterator mni(*mn);
       // for each member definition
-      for (mni.toFirst();(md=mni.current());++mni)
+      for (const auto &md : *mn)
       {
-        addMemberToSearchIndex(md);
+        addMemberToSearchIndex(md.get());
       }
     }
   }
@@ -984,7 +970,7 @@ void writeJavaScriptSearchIndex()
             " \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
           t << "<html><head><title></title>" << endl;
           t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
-          t << "<meta name=\"generator\" content=\"Doxygen " << getVersion() << "\"/>" << endl;
+          t << "<meta name=\"generator\" content=\"Doxygen " << getDoxygenVersion() << "\"/>" << endl;
           t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
           t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>" << endl;
           t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
@@ -1009,6 +995,12 @@ void writeJavaScriptSearchIndex()
           t << "document.getElementById(\"NoMatches\").style.display=\"none\";" << endl;
           t << "var searchResults = new SearchResults(\"searchResults\");" << endl;
           t << "searchResults.Search();" << endl;
+          t << "window.addEventListener(\"message\", function(event) {" << endl;
+          t << "  if (event.data == \"take_focus\") {" << endl;
+          t << "    var elem = searchResults.NavNext(0);" << endl;
+          t << "    if (elem) elem.focus();" << endl;
+          t << "  }" << endl;
+          t << "});" << endl;
 					t << "/* @license-end */\n";
           t << "--></script>" << endl;
           t << "</div>" << endl; // SRIndex
@@ -1036,7 +1028,7 @@ void writeJavaScriptSearchIndex()
         int itemCount=0;
         for (li.toFirst();(dl=li.current());++li)
         {
-          Definition *d = dl->getFirst();
+          const Definition *d = dl->getFirst();
 
           if (!firstEntry)
           {
@@ -1048,11 +1040,11 @@ void writeJavaScriptSearchIndex()
 
           if (dl->count()==1) // item with a unique name
           {
-            MemberDef  *md = dynamic_cast<MemberDef*>(d);
+            const MemberDef  *md = dynamic_cast<const MemberDef*>(d);
             QCString anchor = d->anchor();
 
             ti << "'" << externalRef("../",d->getReference(),TRUE)
-              << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+              << addHtmlExtensionIfMissing(d->getOutputFileBase());
             if (!anchor.isEmpty())
             {
               ti << "#" << anchor;
@@ -1092,15 +1084,15 @@ void writeJavaScriptSearchIndex()
           {
             QListIterator<Definition> di(*dl);
             bool overloadedFunction = FALSE;
-            Definition *prevScope = 0;
+            const Definition *prevScope = 0;
             int childCount=0;
             for (di.toFirst();(d=di.current());)
             {
               ++di;
-              Definition *scope     = d->getOuterScope();
-              Definition *next      = di.current();
-              Definition *nextScope = 0;
-              MemberDef  *md        = dynamic_cast<MemberDef*>(d);
+              const Definition *scope     = d->getOuterScope();
+              const Definition *next      = di.current();
+              const Definition *nextScope = 0;
+              const MemberDef  *md        = dynamic_cast<const MemberDef*>(d);
               if (next) nextScope = next->getOuterScope();
               QCString anchor = d->anchor();
 
@@ -1109,7 +1101,7 @@ void writeJavaScriptSearchIndex()
                 ti << "],[";
               }
               ti << "'" << externalRef("../",d->getReference(),TRUE)
-                << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+                << addHtmlExtensionIfMissing(d->getOutputFileBase());
               if (!anchor.isEmpty())
               {
                 ti << "#" << anchor;
@@ -1144,12 +1136,12 @@ void writeJavaScriptSearchIndex()
               QCString name;
               if (d->definitionType()==Definition::TypeClass)
               {
-                name = convertToXML((dynamic_cast<ClassDef*>(d))->displayName());
+                name = convertToXML((dynamic_cast<const ClassDef*>(d))->displayName());
                 found = TRUE;
               }
               else if (d->definitionType()==Definition::TypeNamespace)
               {
-                name = convertToXML((dynamic_cast<NamespaceDef*>(d))->displayName());
+                name = convertToXML((dynamic_cast<const NamespaceDef*>(d))->displayName());
                 found = TRUE;
               }
               else if (scope==0 || scope==Doxygen::globalScope) // in global scope

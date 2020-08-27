@@ -105,6 +105,11 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
              "\\makeatother\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "cs";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1977,14 +1982,6 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
       return "Dokumentace metody";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Návrhové schéma";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -2040,8 +2037,6 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
       else        result+="z následujících souborů:";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

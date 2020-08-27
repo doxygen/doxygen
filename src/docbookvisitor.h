@@ -1,8 +1,6 @@
 /******************************************************************************
 *
-* 
-*
-* Copyright (C) 1997-2015 by Dimitri van Heesch.
+* Copyright (C) 1997-2020 by Dimitri van Heesch.
 *
 * Permission to use, copy, modify, and distribute this software and its
 * documentation under the terms of the GNU General Public License is hereby
@@ -18,6 +16,7 @@
 #ifndef _DOCBOOKDOCVISITOR_H
 #define _DOCBOOKDOCVISITOR_H
 
+#include "containers.h"
 #include "docvisitor.h"
 #include <qstack.h>
 #include <qlist.h>
@@ -173,10 +172,12 @@ class DocbookDocVisitor : public DocVisitor
     //--------------------------------------
     FTextStream &m_t;
     CodeOutputInterface &m_ci;
-    bool m_insidePre;
-    bool m_hide;
-    QStack<bool> m_enabled;
+    bool m_insidePre = false;
+    bool m_hide = false;
+    BoolStack m_enabled;
     QCString m_langExt;
+    int m_colCnt = 0;
+    BoolStack m_bodySet; // it is possible to have tables without a header, needs to be an array as we can have tables in tables
 };
 
 #endif

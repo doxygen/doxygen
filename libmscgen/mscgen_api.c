@@ -300,7 +300,7 @@ static char *splitStringToWidth(Context *ctx, char *l, unsigned int width)
 
         /* Copy the remaining line to the start of the string */
         m = 0;
-        n = (p - l);
+        n = (int)(p - l);
 
         while (isspace(orig[n]) && orig[n] != '\0')
         {
@@ -390,7 +390,7 @@ static unsigned int computeLabelLines(Context          *ctx,
         char *nextLine = strstr(label, "\\n");
         if (nextLine)
         {
-            const int lineLen = nextLine - label;
+            const int lineLen = (int)(nextLine - label);
 
             /* Allocate storage and duplicate the line */
             retLines[c] = malloc_s(lineLen + 1);
@@ -457,6 +457,7 @@ static RowInfo *computeCanvasSize(Context      *ctx,
     nextYmin = ymin = ctx->opts.entityHeadGap;
     yskipmax = 0;
 
+    ymax  = 0;
     MscResetArcIterator(m);
     do
     {
@@ -633,11 +634,11 @@ static char *getLine(const char        *string,
     /* Determine the length of the line */
     if(lineEnd != NULL)
     {
-        lineLen = lineEnd - lineStart;
+        lineLen = (unsigned int)(lineEnd - lineStart);
     }
     else
     {
-        lineLen = strlen(string) - (lineStart - string);
+        lineLen = (unsigned int)(strlen(string) - (lineStart - string));
     }
 
     /* Clamp the length to the buffer */
@@ -1328,8 +1329,8 @@ static void arcLine(Context          *ctx,
             hasArrows = FALSE;
 
             /* Get co-ordinates of the arc end-point */
-            ADrawComputeArcPoint(sx, y - 1, ctx->opts.entitySpacing - 8,
-                                 ctx->opts.loopArcHeight, 180.0f - 45.0f,
+            ADrawComputeArcPoint((float)sx, (float)(y - 1), (float)(ctx->opts.entitySpacing - 8),
+                                 (float)ctx->opts.loopArcHeight, 180.0f - 45.0f,
                                  &px, &py);
 
             /* Draw a cross */
@@ -1392,8 +1393,9 @@ static void arcLine(Context          *ctx,
             hasArrows = FALSE;
 
             /* Get co-ordinates of the arc end-point */
-            ADrawComputeArcPoint(sx, y - 1, ctx->opts.entitySpacing - 8,
-                                 ctx->opts.loopArcHeight, 45.0f,
+            ADrawComputeArcPoint((float)sx, (float)(y - 1),
+                                 (float)(ctx->opts.entitySpacing - 8),
+                                 (float)ctx->opts.loopArcHeight, 45.0f,
                                  &px, &py);
 
             /* Draw a cross */

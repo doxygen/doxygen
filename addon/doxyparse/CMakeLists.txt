@@ -12,13 +12,18 @@ include_directories(
 add_executable(doxyparse
 doxyparse.cpp
 )
+add_sanitizers(doxyparse)
 
 if (use_libclang)
-    set(CLANG_LIBS libclang clangTooling ${llvm_libs})
+    if (static_libclang)
+        set(CLANG_LIBS libclang clangTooling ${llvm_libs})
+    else()
+        set(CLANG_LIBS libclang clang-cpp ${llvm_libs})
+    endif()
 endif()
 
 target_link_libraries(doxyparse
-_doxygen
+doxymain
 qtools
 md5
 lodepng
@@ -31,6 +36,7 @@ ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}
 ${EXTRA_LIBS}
 ${CLANG_LIBS}
+${COVERAGE_LINKER_FLAGS}
 )
 
 install(TARGETS doxyparse DESTINATION bin)

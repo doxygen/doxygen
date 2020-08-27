@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -224,27 +224,22 @@ Rtf_Style_Default rtf_Style_Default[] =
   }
 };
 
-const QRegExp StyleData::s_clause("\\\\s[0-9]+\\s*");
+static const QRegExp s_clause("\\\\s[0-9]+\\s*");
 
 StyleData::StyleData(const char* reference, const char* definition)
 {
-  int start = s_clause.match(reference); ASSERT(start >= 0);
-  reference += start;
-  index = (int)atol(reference + 2); ASSERT(index > 0);
+  const char *ref = reference;
 
-  ASSERT(reference != 0);
-  size_t size = 1 + strlen(reference);
-  memcpy(this->reference = new char[size], reference, size);
+  int start = s_clause.match(ref); ASSERT(start >= 0);
+  ref += start;
+  m_index = (int)atol(ref + 2); ASSERT(m_index > 0);
 
-  ASSERT(definition != 0);
-  size = 1 + strlen(definition);
-  memcpy(this->definition = new char[size], definition, size);
+  m_reference = ref;
+  m_definition = definition;
 }
 
 StyleData::~StyleData()
 {
-  delete[] reference;
-  delete[] definition;
 }
 
 bool StyleData::setStyle(const char* s, const char* styleName)
@@ -261,7 +256,7 @@ bool StyleData::setStyle(const char* s, const char* styleName)
     return FALSE;
   }
   s += start;
-  index = (int)atol(s + 2); ASSERT(index > 0);
+  m_index = (int)atol(s + 2); ASSERT(m_index > 0);
 
   // search for the end of pure formatting codes
   const char* end = s + len;
@@ -299,16 +294,10 @@ bool StyleData::setStyle(const char* s, const char* styleName)
     else // plain name without leading \\snext
       break;
   }
-  delete[] reference;
-  reference = new char[ref_len + 1];
-  memcpy(reference, s, ref_len); 
-  reference[ref_len] = 0;
+  m_reference = s;
   if (haveNewDefinition)
   {
-    delete[] definition;
-    size_t size = 1 + strlen(end);
-    definition = new char[size];
-    memcpy(definition, end, size);
+    m_definition = end;
   }
   return TRUE;
 }

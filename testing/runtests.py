@@ -3,6 +3,7 @@
 from __future__ import print_function
 import argparse, glob, itertools, re, shutil, os, sys
 import subprocess
+import shlex
 
 config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
 
@@ -28,10 +29,10 @@ def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
 		return os.popen(cmd).read() # Python 2 without encoding
 	else:
 		if (getStderr):
-			proc = subprocess.run(cmd1,encoding=encoding,capture_output=True) # Python 3 with encoding
-			return proc.stderr
+			proc = subprocess.Popen(shlex.split(cmd1),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
+			return proc.stderr.read()
 		else:
-			proc = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
+			proc = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
 			return proc.stdout.read()
 
 class Tester:
@@ -137,7 +138,7 @@ class Tester:
 				print('GENERATE_DOCBOOK=NO', file=f)
 			if (self.args.xhtml):
 				print('GENERATE_HTML=YES', file=f)
-			# HTML_OUTPUT can also be set locally
+			# HTML_OUTPUT can also have been set locally
 			print('HTML_OUTPUT=%s/html' % self.test_out, file=f)
 			print('HTML_FILE_EXTENSION=.xhtml', file=f)
 			if (self.args.pdf):
@@ -149,11 +150,11 @@ class Tester:
 			if (self.args.clang):
 				print('CLANG_ASSISTED_PARSING=YES', file=f)
 			if (self.args.cfgs):
-				for cfg in list(itertools.chain.from_iterable(self.args.cfgs)):
-					if cfg.find('=') == -1:
+				for cfg in self.args.cfgs:
+					if cfg[0].find('=') == -1:
 						print("Not a doxygen configuration item, missing '=' sign: '%s'."%cfg)
 						sys.exit(1)
-					print(cfg, file=f)
+					print(cfg[0], file=f)
 
 		if 'check' not in self.config or not self.config['check']:
 			print('Test doesn\'t specify any files to check')
@@ -182,20 +183,21 @@ class Tester:
 				# check if the file we need to check is actually generated
 				if not os.path.isfile(check_file):
 					print('Non-existing file %s after \'check:\' statement' % check_file)
-					return
+					return False
 				# convert output to canonical form
-				data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file)).read()
+				data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file))
 				if data:
 					# strip version
 					data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
 				else:
 					print('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out))
-					return
+					return False
 				out_file='%s/%s' % (self.test_out,check)
 				with xopen(out_file,'w') as f:
 					print(data,file=f)
 		shutil.rmtree(self.test_out+'/out',ignore_errors=True)
 		os.remove(self.test_out+'/Doxyfile')
+		return True
 
 	# check the relevant files of a doxygen run with the reference material
 	def perform_test(self,testmgr):
@@ -326,7 +328,7 @@ class Tester:
 			tests.append(glob.glob('%s/*.xml' % (docbook_output)))
 			tests.append(glob.glob('%s/*/*/*.xml' % (docbook_output)))
 			tests = ' '.join(list(itertools.chain.from_iterable(tests))).replace(self.args.outputdir +'/','').replace('\\','/')
-			exe_string = '%s --nonet --postvalid %s' % (self.args.xmllint,tests)
+			exe_string = '%s --noout --nonet --postvalid %s' % (self.args.xmllint,tests)
 			exe_string1 = exe_string
 			exe_string += ' %s' % (redirx)
 			exe_string += ' %s more "%s/temp"' % (separ,docbook_output)
@@ -346,7 +348,11 @@ class Tester:
 				redirx=' 2> %s/temp >nul:'%html_output
 			else:
 				redirx='2>%s/temp >/dev/null'%html_output
-			exe_string = '%s --path dtd --nonet --postvalid %s/*xhtml' % (self.args.xmllint,html_output)
+			check_file = []
+			check_file.append(glob.glob('%s/*.xhtml' % (html_output)))
+			check_file.append(glob.glob('%s/*/*/*.xhtml' % (html_output)))
+			check_file = ' '.join(list(itertools.chain.from_iterable(check_file))).replace(self.args.outputdir +'/','').replace('\\','/')
+			exe_string = '%s --noout --path dtd --nonet --postvalid %s' % (self.args.xmllint,check_file)
 			exe_string1 = exe_string
 			exe_string += ' %s' % (redirx)
 			exe_string += ' %s more "%s/temp"' % (separ,html_output)
@@ -361,10 +367,13 @@ class Tester:
 		if (self.args.pdf):
 			failed_latex=False
 			latex_output='%s/latex' % self.test_out
+			# with languages like Hungarian we had problems with some tests on windows when stderr was used.
 			if (sys.platform == 'win32'):
+				outType=False
 				redirl='>nul: 2>temp'
 				mk='make.bat'
 			else:
+				outType=True
 				redirl='>/dev/null 2>temp'
 				mk='make'
 			cur_directory = os.getcwd()
@@ -372,34 +381,43 @@ class Tester:
 			exe_string = mk
 			exe_string1 = exe_string
 			exe_string += ' %s' % (redirl)
-			exe_string += ' %s more temp' % (separ)
-			latex_out = xpopen(exe_string,exe_string1,getStderr=True)
+			if outType:
+				exe_string += ' %s more temp' % (separ)
+			latex_out = xpopen(exe_string,exe_string1,getStderr=outType)
 			os.chdir(cur_directory);
-			if latex_out.find("Error")!=-1:
+			if (outType and latex_out.find("Error")!=-1):
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
-				failed_html=True
-			elif xopen(latex_output + "/refman.log",'r').read().find("Error")!= -1:
+				failed_latex=True
+			elif (not outType and xopen(latex_output + "/temp",'r').read().find("Error")!= -1):
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
-				failed_html=True
-			elif xopen(latex_output + "/refman.log",'r').read().find("Emergency stop")!= -1:
+				failed_latex=True
+			elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Error")!= -1:
 				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
-				failed_html=True
+				failed_latex=True
+			elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Emergency stop")!= -1:
+				msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+				failed_latex=True
 			elif not self.args.keep:
 				shutil.rmtree(latex_output,ignore_errors=True)
 
 		if failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
 			testmgr.ok(False,self.test_name,msg)
-			return
+			return False
 
 		testmgr.ok(True,self.test_name)
 		if not self.args.keep:
 			shutil.rmtree(self.test_out,ignore_errors=True)
+		return True
 
 	def run(self,testmgr):
 		if self.update:
-			self.update_test(testmgr)
+			return self.update_test(testmgr)
 		else:
-			self.perform_test(testmgr)
+			return self.perform_test(testmgr)
+
+def do_generation_work(test):
+	tester = Tester(test[0].args,test[1])
+	return tester.run(test[0])
 
 class TestManager:
 	def __init__(self,args,tests):
@@ -414,10 +432,10 @@ class TestManager:
 
 	def ok(self,result,test_name,msg='Ok'):
 		if result:
-			print('ok %s - %s' % (self.count,test_name))
+			print('ok - %s' % (test_name))
 			self.passed = self.passed + 1
 		else:
-			print('not ok %s - %s' % (self.count,test_name))
+			print('not ok - %s' % (test_name))
 			print('-------------------------------------')
 			for o in msg:
 				print(o)
@@ -432,9 +450,20 @@ class TestManager:
 		return 0 if self.passed==self.num_tests else 1
 
 	def perform_tests(self):
-		for test in self.tests:
-			tester = Tester(self.args,test)
-			tester.run(self)
+		if (self.args.pool == 1):
+			passed = 0
+			for test in self.tests:
+				tester = Tester(self.args,test)
+				passed += tester.run(self)
+			self.passed = passed
+		else:
+			dl = []
+			for test in self.tests:
+				dl += [(self, test)]
+			import multiprocessing as mp
+			p = mp.Pool(processes=self.args.pool)
+			passed = p.map(do_generation_work, dl)
+			self.passed = sum(passed)
 		res=self.result()
 		if self.args.xhtml and self.args.inputdir!='.' and not res and not self.args.keep:
 			shutil.rmtree("dtd",ignore_errors=True)
@@ -444,6 +473,14 @@ class TestManager:
 		if self.args.inputdir!='.':
 			shutil.rmtree("dtd",ignore_errors=True)
 			shutil.copytree(self.args.inputdir+"/dtd", "dtd")
+
+def split_and_keep(s,sep):
+    s = s.replace(sep,'\0'+sep)             # add token separator
+    s = s.split('\0')                       # split by null delimiter
+    s = [x.strip() for x in filter(None,s)] # strip and remove empty elements
+    s = [z.split(' ',1) for z in s]         # split by first space
+    s = [i for ss in s for i in ss]         # flatten the list
+    return s
 
 def main():
 	# argument handling
@@ -471,6 +508,8 @@ def main():
 		'output directory to write the doxygen output to')
 	parser.add_argument('--noredir',help=
 		'disable redirection of doxygen warnings',action="store_true")
+	parser.add_argument('--pool',nargs='?',default='1',type=int,help=
+		'pool size of multiprocess tests')
 	parser.add_argument('--xml',help='create xml output and check',
 		action="store_true")
 	parser.add_argument('--rtf',help=
@@ -493,7 +532,9 @@ def main():
 	parser.add_argument('--cfg',nargs='+',dest='cfgs',action='append',help=
 		'run test with extra doxygen configuration settings '
 		'(the option may be specified multiple times')
-	test_flags = os.getenv('TEST_FLAGS', default='').split()
+
+	test_flags = split_and_keep(os.getenv('TEST_FLAGS', default=''), '--')
+
 	args = parser.parse_args(test_flags + sys.argv[1:])
 
 	# sanity check

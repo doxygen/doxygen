@@ -76,6 +76,11 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       return "\\usepackage[esperanto]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "eo";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1940,8 +1945,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     {
       return "Fasona Superrigardo";
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

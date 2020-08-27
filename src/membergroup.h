@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -23,6 +23,7 @@
 #include <qlist.h>
 #include "sortdict.h"
 #include "types.h"
+#include "reflist.h"
 
 #define DOX_NOGROUP -1
 
@@ -35,14 +36,14 @@ class GroupDef;
 class OutputList;
 class Definition;
 class FTextStream;
-struct ListItemInfo;
+class RefItem;
 
 /** A class representing a group of members. */
-class MemberGroup 
+class MemberGroup
 {
   public:
-    MemberGroup();
-    MemberGroup(int id,const char *header,
+    //MemberGroup();
+    MemberGroup(const Definition *container,int id,const char *header,
                 const char *docs,const char *docFile,int docLine);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
@@ -77,31 +78,30 @@ class MemberGroup
     int numDecEnumValues() const;
     int numDocMembers() const;
     int numDocEnumValues() const;
+    const Definition *container() const;
 
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void setInGroup(bool b);
     void addListReferences(Definition *d);
-    void setRefItems(const std::vector<ListItemInfo> &sli);
+    void setRefItems(const RefItemVector &sli);
     MemberList *members() const { return memberList; }
     QCString anchor() const;
 
     QCString docFile() const { return m_docFile; }
     int docLine() const { return m_docLine; }
 
-  private: 
+  private:
+    const Definition *m_container;
     MemberList *memberList = 0;      // list of all members in the group
     MemberList *inDeclSection = 0;
     int grpId = 0;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file
     QCString doc;
-    bool inSameSection = 0;
-    int  m_numDecMembers = 0;
-    int  m_numDocMembers = 0;
-    const Definition *m_parent = 0;
+    bool inSameSection = true;
     QCString m_docFile;
-    int m_docLine = 0;
-    std::vector<ListItemInfo> m_xrefListItems;
+    int m_docLine;
+    RefItemVector m_xrefListItems;
 };
 
 /** A list of MemberGroup objects. */
@@ -113,7 +113,7 @@ class MemberGroupList : public QList<MemberGroup>
 class MemberGroupListIterator : public QListIterator<MemberGroup>
 {
   public:
-    MemberGroupListIterator(const MemberGroupList &l) : 
+    MemberGroupListIterator(const MemberGroupList &l) :
       QListIterator<MemberGroup>(l) {}
 };
 
@@ -133,13 +133,13 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
 /** Data collected for a member group */
 struct MemberGroupInfo
 {
-  void setRefItems(const std::vector<ListItemInfo> &sli);
+  void setRefItems(const RefItemVector &sli);
   QCString header;
   QCString doc;
   QCString docFile;
   int docLine = -1;
   QCString compoundName;
-  std::vector<ListItemInfo> m_sli;
+  RefItemVector m_sli;
 };
 
 #endif

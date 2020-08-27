@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -21,7 +19,9 @@
 #include "sortdict.h"
 #include "definition.h"
 
-#include <qlist.h>
+#include <vector>
+#include <qglobal.h>
+#include <qcstring.h>
 
 class FileList;
 class ClassSDict;
@@ -34,11 +34,9 @@ class FTextStream;
 class DirDef;
 
 /** A list of directories. */
-class DirList : public QList<DirDef>
-{
-  public:
-   int compareValues(const DirDef *item1,const DirDef *item2) const;
-};
+typedef std::vector<DirDef*> DirList;
+
+bool compareDirDefs(const DirDef *item1, const DirDef *item2);
 
 /** A model of a directory symbol. */
 class DirDef : virtual public Definition
@@ -82,7 +80,7 @@ class DirDef : virtual public Definition
 };
 
 /** Class representing a pair of FileDef objects */
-class FilePair 
+class FilePair
 {
   public:
     FilePair(FileDef *src,FileDef *dst) : m_src(src), m_dst(dst) {}
@@ -97,7 +95,7 @@ class FilePair
 class FilePairDict : public SDict<FilePair>
 {
   public:
-    FilePairDict(int size) : SDict<FilePair>(size) {}
+    FilePairDict(uint size) : SDict<FilePair>(size) {}
   private:
     int compareValues(const FilePair *item1,const FilePair *item2) const;
 };
@@ -106,7 +104,7 @@ class FilePairDict : public SDict<FilePair>
 class UsedDir
 {
   public:
-    UsedDir(DirDef *dir,bool inherited);
+    UsedDir(const DirDef *dir,bool inherited);
     virtual ~UsedDir();
     void addFileDep(FileDef *srcFd,FileDef *dstFd);
     FilePair *findFilePair(const char *name);
@@ -116,7 +114,7 @@ class UsedDir
     void sort();
 
   private:
-    DirDef *m_dir;
+    const DirDef *m_dir;
     FilePairDict m_filePairs;
     bool m_inherited;
 };
@@ -125,7 +123,7 @@ class UsedDir
 class DirRelation
 {
   public:
-    DirRelation(const QCString &name,const DirDef *src,UsedDir *dst) 
+    DirRelation(const QCString &name,const DirDef *src,UsedDir *dst)
       : m_name(name), m_src(src), m_dst(dst) {}
     const DirDef  *source() const      { return m_src; }
     UsedDir *destination() const { return m_dst; }
@@ -138,16 +136,11 @@ class DirRelation
     UsedDir *m_dst;
 };
 
-inline int DirList::compareValues(const DirDef *item1,const DirDef *item2) const
-{
-  return qstricmp(item1->shortName(),item2->shortName());
-}
-
 /** A sorted dictionary of DirDef objects. */
 class DirSDict : public SDict<DirDef>
 {
   public:
-    DirSDict(int size) : SDict<DirDef>(size) {}
+    DirSDict(uint size) : SDict<DirDef>(size) {}
     int compareValues(const DirDef *item1,const DirDef *item2) const
     {
       return qstricmp(item1->shortName(),item2->shortName());

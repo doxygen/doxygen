@@ -49,6 +49,10 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
              "\\xpatchparametertext\\@cline{-}{\\cA-}{}{}\n"
              "\\makeatother\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "sk";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1907,14 +1911,6 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       return "Dokumentácia metódy";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Návrhová schéma";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -1971,7 +1967,6 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
 };
 
 #endif // TRANSLATOR_SK_H

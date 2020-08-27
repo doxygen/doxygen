@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="struct_vehicle" kind="struct" language="C++" prot="public">
     <compoundname>Vehicle</compoundname>
     <basecompoundref refid="struct_object" prot="public" virt="non-virtual">Object</basecompoundref>
@@ -105,7 +105,7 @@
         <link refid="struct_object"/>
       </node>
     </collaborationgraph>
-    <location file="027_extends.c" line="44" column="1" bodyfile="027_extends.c" bodystart="43" bodyend="46"/>
+    <location file="027_extends.c" line="43" column="1" bodyfile="027_extends.c" bodystart="44" bodyend="46"/>
     <listofallmembers>
       <member refid="struct_vehicle_1ad7970f528d429f6fc1725173e93a77c2" prot="protected" virt="non-virtual">
         <scope>Vehicle</scope>

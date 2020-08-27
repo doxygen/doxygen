@@ -18,6 +18,9 @@
 
 %option never-interactive
 %option prefix="doctokenizerYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 
@@ -43,6 +46,8 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
 #define TK_COMMAND_SEL() (yytext[0] == '@' ? TK_COMMAND_AT : TK_COMMAND_BS)
   
 //--------------------------------------------------------------------------
@@ -50,17 +55,18 @@
 // context for tokenizer phase
 static int g_commentState;
 TokenInfo *g_token = 0;
-static int g_inputPos = 0;
+static yy_size_t g_inputPos = 0;
 static const char *g_inputString;
 static QCString g_fileName;
 static bool g_insidePre;
 static int g_sharpCount=0;
+static bool g_markdownSupport=TRUE;
 
 // context for section finding phase
 static const Definition  *g_definition;
 static QCString     g_secLabel;
 static QCString     g_secTitle;
-static SectionInfo::SectionType g_secType;
+static SectionType  g_secType;
 static QCString     g_endMarker;
 static int          g_autoListLevel;
 
@@ -76,7 +82,9 @@ struct DocLexerContext
 
 static QStack<DocLexerContext> g_lexerStack;
 
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 //--------------------------------------------------------------------------
 
 void doctokenizerYYpushContext()
@@ -106,6 +114,20 @@ bool doctokenizerYYpopContext()
   return TRUE;
 }
 
+QCString extractPartAfterNewLine(const QCString &text)
+{
+  int nl1 = text.findRev('\n');
+  if (nl1!=-1)
+  {
+    return text.mid(nl1+1);
+  }
+  int nl2 = text.findRev("\\ilinebr");
+  if (nl2!=-1)
+  {
+    return text.mid(nl2+8);
+  }
+  return text;
+}
 
 //--------------------------------------------------------------------------
 
@@ -167,11 +189,11 @@ static void processSection()
   {
     warn(g_fileName,yylineno,"Found section/anchor %s without context\n",g_secLabel.data()); 
   }
-  SectionInfo *si=0;
-  if ((si=Doxygen::sectionDict->find(g_secLabel)))
+  SectionInfo *si = SectionManager::instance().find(g_secLabel);
+  if (si)
   {
-    si->fileName = file;
-    si->type     = g_secType;
+    si->setFileName(file);
+    si->setType(g_secType);
   }
 }
 
@@ -320,9 +342,9 @@ static QCString stripEmptyLines(const QCString &s)
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
-static int yyread(char *buf,int max_size)
+static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
-  int c=0;
+  yy_size_t c=0;
   const char *src=g_inputString+g_inputPos;
   while ( c < max_size && *src ) *buf++ = *src++, c++;
   g_inputPos+=c;
@@ -370,7 +392,7 @@ SPCMD2    {CMD}[\\@<>&$#%~".+=|-]
 SPCMD3    {CMD}_form#[0-9]+
 SPCMD4    {CMD}"::"
 SPCMD5    {CMD}":"
-INOUT	  "inout"|"in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
+INOUT	  "in"|"out"|("in"{BLANK}*","?{BLANK}*"out")|("out"{BLANK}*","?{BLANK}*"in")
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 VARARGS   "..."
 TEMPCHAR  [a-z_A-Z0-9.,: \t\*\&\(\)\[\]]
@@ -388,7 +410,7 @@ FUNCARG   "("{FUNCPART}")"({BLANK}*("volatile"|"const"){BLANK})?
 FUNCARG2  "("{FUNCPART}")"({BLANK}*("volatile"|"const"))?
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
-OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
+OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"|"<=>"
 OPCAST    {BLANK}+[^<(\r\n.,][^(\r\n.,]*
 OPMASK    ({BLANK}*{OPNORM}{FUNCARG})
 OPMASKOPT ({BLANK}*{OPNORM}{FUNCARG}?)|({OPCAST}{FUNCARG})
@@ -480,7 +502,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          return TK_LISTITEM;
                        }
 <St_Para>^{MLISTITEM}  { /* list item */ 
-                         if (!Doxygen::markdownSupport || g_insidePre)
+                         if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -496,7 +518,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          }
                        }
 <St_Para>^{OLISTITEM}  { /* numbered list item */ 
-                         if (!Doxygen::markdownSupport || g_insidePre)
+                         if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -512,25 +534,23 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>{BLANK}*\n{LISTITEM}     { /* list item on next line */ 
-                         QCString text=yytext;
-			 text=text.right(text.length()-text.find('\n')-1);
+<St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */ 
+                         QCString text=extractPartAfterNewLine(yytext);
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
                          g_token->id         = -1;
 			 g_token->indent     = computeIndent(text,dashPos);
                          return TK_LISTITEM;
                        }
-<St_Para>{BLANK}*\n{MLISTITEM}     { /* list item on next line */ 
-                         if (!Doxygen::markdownSupport || g_insidePre)
+<St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */ 
+                         if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
                          else
                          {
-                           QCString text=yytext;
+                           QCString text=extractPartAfterNewLine(yytext);
                            static QRegExp re("[*+]");
-                           text=text.right(text.length()-text.find('\n')-1);
                            int markPos = text.findRev(re);
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
@@ -538,17 +558,14 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>{BLANK}*\n{OLISTITEM}     { /* list item on next line */ 
-                         if (!Doxygen::markdownSupport || g_insidePre)
+<St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */ 
+                         if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
                          else
                          {
-                           QCString text=yytext;
-                           int nl=text.findRev('\n');
-                           int len=text.length();
-                           text=text.right(len-nl-1);
+                           QCString text=extractPartAfterNewLine(yytext);
                            static QRegExp re("[1-9]");
                            int digitPos = text.find(re);
                            int dotPos = text.find('.',digitPos);
@@ -563,11 +580,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
-<St_Para>{BLANK}*\n{ENDLIST}      { /* end list on next line */ 
-                         QCString text=yytext;
-			 text=text.right(text.length()-text.find('\n')-1);
+<St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */ 
+                         QCString text=extractPartAfterNewLine(yytext);
                          int dotPos = text.findRev('.');
-			 g_token->indent     = computeIndent(text,dotPos);
+			 g_token->indent = computeIndent(text,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>"{"{BLANK}*"@link"/{BLANK}+ {
@@ -578,9 +594,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 g_token->name = "inheritdoc";
 			 return TK_COMMAND_AT;
 		       }
-<St_Para>"@_fakenl"     { // artificial new line
-                             yylineno++; 
-  		          }
+<St_Para>"@_fakenl"    { // artificial new line
+                         yylineno++; 
+  		       }
 <St_Para>{SPCMD3}      {
   			 g_token->name = "_form";
 			 bool ok;
@@ -594,6 +610,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 g_token->name = g_token->name.stripWhiteSpace();
 			 g_token->paramDir=TokenInfo::Unspecified;
 			 return TK_COMMAND_SEL();
+                       }
+<St_Para>"\\ilinebr"   {
                        }
 <St_Para>{SPCMD1}      |
 <St_Para>{SPCMD2}      |
@@ -630,7 +648,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 }
 			 return TK_COMMAND_SEL();
   		       }
-<St_Para>{URLPROTOCOL}{URLMASK}/\. { // URL.
+<St_Para>{URLPROTOCOL}{URLMASK}/[,\.] { // URL, or URL.
                          g_token->name=yytext;
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
@@ -761,13 +779,13 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          }
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (!Doxygen::markdownSupport || g_insidePre || g_autoListLevel==0)
+                         if (!g_markdownSupport || g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;
                          }
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{OLISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (!Doxygen::markdownSupport || g_insidePre || g_autoListLevel==0)
+                         if (!g_markdownSupport || g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;
                          }
@@ -792,9 +810,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = g_token->name.mid(i+1,g_token->name.length()-i-2);
                          BEGIN(St_Code);
                        }
+<St_CodeOpt>"\\ilinebr" |
 <St_CodeOpt>\n         |
 <St_CodeOpt>.          {
-                         unput(*yytext);
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
                          BEGIN(St_Code);
                        }
 <St_Code>{WS}*{CMD}"endcode" {
@@ -814,6 +833,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                         }
 <St_HtmlOnlyOption>.|\n {
                          unput(*yytext);
+                         BEGIN(St_HtmlOnly);
+                        }
+<St_HtmlOnlyOption>"\\ilinebr" {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
                          BEGIN(St_HtmlOnly);
                         }
 <St_HtmlOnly>{CMD}"endhtmlonly" {
@@ -907,10 +930,15 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
+<St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}*/"\\ilinebr" { // case 5: plain file name specified without title or attributes
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_PlantUMLOpt>"\\ilinebr" |
 <St_PlantUMLOpt>"\n"   |
 <St_PlantUMLOpt>.      {
                          g_token->sectionId = "";
-                         unput(*yytext);
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
                          return RetVal_OK;
                        }
 <St_PlantUML>{CMD}"enduml"  {
@@ -936,12 +964,20 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          unput(*yytext);
   			 return 0;
   		       }
+<St_Title>"\\ilinebr"  {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+  			 return 0;
+                       }
 <St_TitleN>"&"{ID}";"  { /* symbol */
                          g_token->name = yytext;
   		         return TK_SYMBOL;
                        }
 <St_TitleN>{HTMLTAG}   {
   		       }
+<St_TitleN>(\n|"\\ilinebr") { /* new line => end of title */
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+  			 return 0;
+                       }
 <St_TitleN>{SPCMD1}    |   
 <St_TitleN>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;
@@ -968,13 +1004,13 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->chars=yytext;
   			 return TK_WHITESPACE;
                        }
-<St_TitleN>\n	       { /* new line => end of title */
-                         unput(*yytext);
-  			 return 0;
-                       }
 <St_TitleQ>"&"{ID}";"  { /* symbol */
                          g_token->name = yytext;
   		         return TK_SYMBOL;
+                       }
+<St_TitleQ>(\n|"\\ilinebr") { /* new line => end of title */
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+  			 return 0;
                        }
 <St_TitleQ>{SPCMD1}    |   
 <St_TitleQ>{SPCMD2}    { /* special command */ 
@@ -995,10 +1031,6 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 BEGIN(St_TitleA);
   			 return 0;
                        }
-<St_TitleQ>\n	       { /* new line => end of title */
-                         unput(*yytext);
-  			 return 0;
-                       }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
   			 g_token->name = yytext;
 			 g_token->name = g_token->name.left(g_token->name.find('=')).stripWhiteSpace();
@@ -1013,8 +1045,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 unput(*yytext);
   			 return 0;
                        }
-<St_TitleV,St_TitleA>\n	 {
-  			 unput(*yytext);
+<St_TitleV,St_TitleA>(\n|"\\ilinebr") {
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
                        }
 
@@ -1030,7 +1062,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          if (yytext[0] =='"')
                          {
                            g_token->name=yytext+1;
-                           g_token->name=g_token->name.left(yyleng-2);
+                           g_token->name=g_token->name.left(static_cast<uint>(yyleng)-2);
                          }
                          else
                          {
@@ -1042,8 +1074,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   			 unput(' ');
   			 return 0;
                        }
-<St_Cite>\n	       { // new line
-                         unput(*yytext);
+<St_Cite>(\n|"\\ilinebr")  { // new line
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
   		       }
 <St_Cite>.	       { // any other character
@@ -1069,8 +1101,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Ref>{WS}+"\""{WS}* { // white space following by quoted string
   			 BEGIN(St_Ref2);
                        }
-<St_Ref>\n	       { // new line
-                         unput(*yytext);
+<St_Ref>(\n|"\\ilinebr") { // new line
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
   			 return 0;
   		       }
 <St_Ref>.	       { // any other character
@@ -1116,6 +1148,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name = yytext;
   		         return TK_SYMBOL;
                        }
+<St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title */
+  			 return 0;
+                       }
 <St_Ref2>{SPCMD1}      |   
 <St_Ref2>{SPCMD2}      { /* special command */ 
                          g_token->name = yytext+1;
@@ -1131,9 +1166,6 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Ref2>[ \t]+        {
                          g_token->chars=yytext;
   			 return TK_WHITESPACE;
-                       }
-<St_Ref2>"\""|\n       { /* " or \n => end of title */
-  			 return 0;
                        }
 <St_XRefItem>{LABELID} {
                          g_token->name=yytext;
@@ -1167,9 +1199,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   		       }
 <St_Param>[^ \t\n,@\\]+  {
   			 g_token->name = yytext;
-                         if (g_token->name.at(yyleng-1)==':')
+                         if (g_token->name.at(static_cast<uint>(yyleng)-1)==':')
                          {
-                           g_token->name=g_token->name.left(yyleng-1);
+                           g_token->name=g_token->name.left(static_cast<uint>(yyleng)-1);
                          }
 			 return TK_WORD;
                        }
@@ -1228,7 +1260,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
      /* State for skipping title (all chars until the end of the line) */
 
 <St_SkipTitle>.
-<St_SkipTitle>\n       { return 0; }
+<St_SkipTitle>(\n|"\\ilinebr") { return 0; }
 
      /* State for the pass used to find the anchors and sections */ 
 
@@ -1245,7 +1277,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                           int e=tag.find(c,s+4);
                                           if (e!=-1) // found matching end
                                           {
-                                            g_secType = SectionInfo::Table;
+                                            g_secType = SectionType::Table;
                                             g_secLabel=tag.mid(s+4,e-s-4); // extract id
                                             processSection();
                                           }
@@ -1253,23 +1285,23 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                       }
                                     }
 <St_Sections>{CMD}"anchor"{BLANK}+  { 
-                                      g_secType = SectionInfo::Anchor; 
+                                      g_secType = SectionType::Anchor; 
 				      BEGIN(St_SecLabel1); 
                                     }
 <St_Sections>{CMD}"section"{BLANK}+ { 
-                                      g_secType = SectionInfo::Section; 
+                                      g_secType = SectionType::Section; 
                                       BEGIN(St_SecLabel2); 
                                     }
 <St_Sections>{CMD}"subsection"{BLANK}+ { 
-                                      g_secType = SectionInfo::Subsection; 
+                                      g_secType = SectionType::Subsection; 
                                       BEGIN(St_SecLabel2); 
                                     }
 <St_Sections>{CMD}"subsubsection"{BLANK}+ { 
-                                      g_secType = SectionInfo::Subsubsection; 
+                                      g_secType = SectionType::Subsubsection; 
                                       BEGIN(St_SecLabel2); 
                                     }
 <St_Sections>{CMD}"paragraph"{BLANK}+ { 
-                                      g_secType = SectionInfo::Paragraph; 
+                                      g_secType = SectionType::Paragraph; 
                                       BEGIN(St_SecLabel2); 
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
@@ -1294,6 +1326,14 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                     }
 <St_Sections>{CMD}"latexonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endlatexonly";
+				      BEGIN(St_SecSkip);
+                                    }
+<St_Sections>{CMD}"manonly"/[^a-z_A-Z0-9] {
+                                      g_endMarker="endmanonly";
+				      BEGIN(St_SecSkip);
+                                    }
+<St_Sections>{CMD}"rtfonly"/[^a-z_A-Z0-9] {
+                                      g_endMarker="endrtfonly";
 				      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"xmlonly"/[^a-z_A-Z0-9] {
@@ -1326,9 +1366,9 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                     }
 <St_SecSkip>[^a-z_A-Z0-9\-\\\@]+
 <St_SecSkip>.
-<St_SecSkip>\n
+<St_SecSkip>(\n|"\\ilinebr")
 <St_Sections>.
-<St_Sections>\n        
+<St_Sections>(\n|"\\ilinebr")
 <St_SecLabel1>{LABELID} { 
                          g_secLabel = yytext;
                          processSection();
@@ -1344,6 +1384,10 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_SecTitle>[^\n]*\n  {
                          g_secTitle = yytext;
 			 g_secTitle = g_secTitle.stripWhiteSpace();
+                         if (g_secTitle.right(8)=="\\ilinebr")
+                         {
+                           g_secTitle.left(g_secTitle.length()-8);
+                         }
                          processSection();
                          BEGIN(St_Sections);
 		       }
@@ -1351,17 +1395,23 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          warn(g_fileName,yylineno,"Unexpected character '%s' while looking for section label or title",yytext); 
                        }
 
-<St_Snippet>[^\n]+     |
-<St_Snippet>[^\n]*\n   {
-  			 g_token->name = yytext;
+<St_Snippet>[^\\\n]+   {
+  			 g_token->name += yytext;
+                       }
+<St_Snippet>"\\"       {
+  			 g_token->name += yytext;
+                       }
+<St_Snippet>(\n|"\\ilinebr")  {
 			 g_token->name = g_token->name.stripWhiteSpace();
-			 return TK_WORD;  
+			 return TK_WORD;
   		       }
    
      /* Generic rules that work for all states */ 
 <*>\n                  { 
                          warn(g_fileName,yylineno,"Unexpected new line character"); 
 		       }
+<*>"\\ilinebr"         {
+                       }
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
                          //warn(g_fileName,yylineno,"Unexpected character '%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
@@ -1390,13 +1440,14 @@ void doctokenizerYYFindSections(const char *input,const Definition *d,
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
-void doctokenizerYYinit(const char *input,const char *fileName)
+void doctokenizerYYinit(const char *input,const char *fileName,bool markdownSupport)
 {
   g_autoListLevel = 0;
   g_inputString = input;
   g_inputPos    = 0;
   g_fileName    = fileName;
   g_insidePre   = FALSE;
+  g_markdownSupport = markdownSupport;
   BEGIN(St_Para);
 }
 
@@ -1554,6 +1605,7 @@ void doctokenizerYYsetStateAnchor()
 
 void doctokenizerYYsetStateSnippet()
 {
+  g_token->name="";
   BEGIN(St_Snippet);
 }
 
@@ -1620,4 +1672,6 @@ void doctokenizerYYendAutoList()
 //  return retval;
 //}
 
+#if USE_STATE2STRING
 #include "doctokenizer.l.h"
+#endif

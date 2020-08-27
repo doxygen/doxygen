@@ -17,6 +17,7 @@ target_link_libraries(doxyindexer
                       ${XAPIAN_LIBRARIES}
                       ${ZLIB_LIBRARIES}
 		      ${WIN_EXTRA_LIBS}
+                      ${COVERAGE_LINKER_FLAGS}
                       qtools
 )
 

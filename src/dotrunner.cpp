@@ -13,8 +13,11 @@
 *
 */
 
+#include <cassert>
+
 #include "dotrunner.h"
 
+#include "qstring.h"
 #include "util.h"
 #include "portable.h"
 #include "dot.h"
@@ -72,7 +75,7 @@ static bool resetPDFSize(const int width,const int height, const char *base)
   }
   QFile fi(tmpName);
   QFile fo(patchFile);
-  if (!fi.open(IO_ReadOnly)) 
+  if (!fi.open(IO_ReadOnly))
   {
     err("problem opening file %s for patching!\n",tmpName.data());
     QDir::current().rename(tmpName,patchFile);
@@ -114,9 +117,9 @@ static bool resetPDFSize(const int width,const int height, const char *base)
 bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool isEps)
 {
   const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
-  int bblen = strlen(bb);
+  int bblen = (int)strlen(bb);
   FILE *f = Portable::fopen(fileName,"rb");
-  if (!f) 
+  if (!f)
   {
     //printf("readBoundingBox: could not open %s\n",fileName);
     return FALSE;
@@ -145,29 +148,30 @@ bool DotRunner::readBoundingBox(const char *fileName,int *width,int *height,bool
 
 //---------------------------------------------------------------------------------
 
-DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
-  : m_file(absDotName), m_md5Hash(md5Hash), m_cleanUp(Config_getBool(DOT_CLEANUP)),
-    m_dotExe(Config_getString(DOT_PATH)+"dot")
+DotRunner::DotRunner(const std::string& absDotName, const std::string& md5Hash)
+  : m_file(absDotName.data())
+  , m_md5Hash(md5Hash.data())
+  , m_dotExe(Config_getString(DOT_PATH)+"dot")
+  , m_cleanUp(Config_getBool(DOT_CLEANUP))
 {
-  m_jobs.setAutoDelete(TRUE);
 }
 
-void DotRunner::addJob(const char *format,const char *output)
+
+void DotRunner::addJob(const char *format, const char *output)
 {
-  QListIterator<DotJob> li(m_jobs);
-  DotJob *s;
-  for (li.toFirst(); (s = li.current()); ++li)
+
+  for (auto& s: m_jobs)
   {
-    if (qstrcmp(s->format.data(), format) != 0) continue;
-    if (qstrcmp(s->output.data(), output) != 0) continue;
+    if (s.format != format) continue;
+    if (s.output != output) continue;
     // we have this job already
     return;
   }
-  QCString args = QCString("-T")+format+" -o \""+output+"\"";
-  m_jobs.append(new DotJob(format, output, args));
+  auto args = std::string ("-T") + format + " -o \"" + output + "\"";
+  m_jobs.emplace_back(format, output, args);
 }
 
-QCString getBaseNameOfOutput(QCString const& output)
+QCString getBaseNameOfOutput(const QCString &output)
 {
   int index = output.findRev('.');
   if (index < 0) return output;
@@ -179,66 +183,64 @@ bool DotRunner::run()
   int exitCode=0;
 
   QCString dotArgs;
-  QListIterator<DotJob> li(m_jobs);
-  DotJob *s;
 
   // create output
   if (Config_getBool(DOT_MULTI_TARGETS))
   {
     dotArgs=QCString("\"")+m_file.data()+"\"";
-    for (li.toFirst();(s=li.current());++li)
+    for (auto& s: m_jobs)
     {
       dotArgs+=' ';
-      dotArgs+=s->args.data();
+      dotArgs+=s.args.data();
     }
     if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
   }
   else
   {
-    for (li.toFirst();(s=li.current());++li)
+    for (auto& s : m_jobs)
     {
-      dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
+      dotArgs=QCString("\"")+m_file.data()+"\" "+s.args.data();
       if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
     }
   }
 
   // check output
   // As there should be only one pdf file be generated, we don't need code for regenerating multiple pdf files in one call
-  for (li.toFirst();(s=li.current());++li)
+  for (auto& s : m_jobs)
   {
-    if (qstrncmp(s->format.data(), "pdf", 3) == 0)
+    if (s.format.compare(0, 3, "pdf") == 0)
     {
       int width=0,height=0;
-      if (!readBoundingBox(s->output.data(),&width,&height,FALSE)) goto error;
+      if (!readBoundingBox(s.output.data(),&width,&height,FALSE)) goto error;
       if ((width > MAX_LATEX_GRAPH_SIZE) || (height > MAX_LATEX_GRAPH_SIZE))
       {
-        if (!resetPDFSize(width,height,getBaseNameOfOutput(s->output.data()))) goto error;
-        dotArgs=QCString("\"")+m_file.data()+"\" "+s->args.data();
+        if (!resetPDFSize(width,height,getBaseNameOfOutput(s.output.data()))) goto error;
+        dotArgs=QCString("\"")+m_file.data()+"\" "+s.args.data();
         if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
       }
     }
 
-    if (qstrncmp(s->format.data(), "png", 3) == 0)
+    if (s.format.compare(0, 3, "png") == 0)
     {
-      checkPngResult(s->output.data());
+      checkPngResult(s.output.data());
     }
   }
 
   // remove .dot files
-  if (m_cleanUp) 
+  if (m_cleanUp)
   {
     //printf("removing dot file %s\n",m_file.data());
     Portable::unlink(m_file.data());
   }
 
   // create checksum file
-  if (!m_md5Hash.isEmpty()) 
+  if (!m_md5Hash.empty())
   {
     QCString md5Name = getBaseNameOfOutput(m_file.data()) + ".md5";
     FILE *f = Portable::fopen(md5Name,"w");
     if (f)
     {
-      fwrite(m_md5Hash.data(),1,32,f); 
+      fwrite(m_md5Hash.data(),1,32,f);
       fclose(f);
     }
   }
@@ -254,27 +256,27 @@ error:
 
 void DotRunnerQueue::enqueue(DotRunner *runner)
 {
-  QMutexLocker locker(&m_mutex);
-  m_queue.enqueue(runner);
-  m_bufferNotEmpty.wakeAll();
+  std::lock_guard<std::mutex> locker(m_mutex);
+  m_queue.push(runner);
+  m_bufferNotEmpty.notify_all();
 }
 
 DotRunner *DotRunnerQueue::dequeue()
 {
-  QMutexLocker locker(&m_mutex);
-  while (m_queue.isEmpty())
-  {
-    // wait until something is added to the queue
-    m_bufferNotEmpty.wait(&m_mutex);
-  }
-  DotRunner *result = m_queue.dequeue();
+  std::unique_lock<std::mutex> locker(m_mutex);
+
+  // wait until something is added to the queue
+  m_bufferNotEmpty.wait(locker, [this]() { return !m_queue.empty(); });
+
+  DotRunner *result = m_queue.front();
+  m_queue.pop();
   return result;
 }
 
-uint DotRunnerQueue::count() const
+size_t DotRunnerQueue::size() const
 {
-  QMutexLocker locker(&m_mutex);
-  return m_queue.count();
+  std::lock_guard<std::mutex> locker(m_mutex);
+  return m_queue.size();
 }
 
 //--------------------------------------------------------------------
@@ -284,6 +286,14 @@ DotWorkerThread::DotWorkerThread(DotRunnerQueue *queue)
 {
 }
 
+DotWorkerThread::~DotWorkerThread()
+{
+  if (isRunning())
+  {
+    wait();
+  }
+}
+
 void DotWorkerThread::run()
 {
   DotRunner *runner;
@@ -291,4 +301,10 @@ void DotWorkerThread::run()
   {
     runner->run();
   }
+}
+
+void DotWorkerThread::start()
+{
+  assert(!m_thread);
+  m_thread = std::make_unique<std::thread>(&DotWorkerThread::run, this);
 }

@@ -107,22 +107,22 @@ class DotNode
 
   private:
     int              m_number;
-    QCString         m_label;     //!< label text
-    QCString         m_tooltip;   //!< node's tooltip
-    QCString         m_url;       //!< url of the node (format: remote$local)
-    QList<DotNode>  *m_parents;   //!< list of parent nodes (incoming arrows)
-    QList<DotNode>  *m_children;  //!< list of child nodes (outgoing arrows)
-    QList<EdgeInfo> *m_edgeInfo;  //!< edge info for each child
-    bool             m_deleted;   //!< used to mark a node as deleted
-    mutable bool     m_written;   //!< used to mark a node as written
-    bool             m_hasDoc;    //!< used to mark a node as documented
-    bool             m_isRoot;    //!< indicates if this is a root node
-    const ClassDef * m_classDef;  //!< class representing this node (can be 0)
-    bool             m_visible;   //!< is the node visible in the output
-    TruncState       m_truncated; //!< does the node have non-visible children/parents
-    int              m_distance;  //!< shortest path to the root node
-    bool             m_renumbered;//!< indicates if the node has been renumbered (to prevent endless loops)
-    int              m_subgraphId;
+    QCString         m_label;                //!< label text
+    QCString         m_tooltip;              //!< node's tooltip
+    QCString         m_url;                  //!< url of the node (format: remote$local)
+    QList<DotNode>  *m_parents    = 0;       //!< list of parent nodes (incoming arrows)
+    QList<DotNode>  *m_children   = 0;       //!< list of child nodes (outgoing arrows)
+    QList<EdgeInfo> *m_edgeInfo   = 0;       //!< edge info for each child
+    bool             m_deleted    = false;   //!< used to mark a node as deleted
+    mutable bool     m_written    = false;   //!< used to mark a node as written
+    bool             m_hasDoc     = false;   //!< used to mark a node as documented
+    bool             m_isRoot;               //!< indicates if this is a root node
+    const ClassDef * m_classDef;             //!< class representing this node (can be 0)
+    bool             m_visible    = false;   //!< is the node visible in the output
+    TruncState       m_truncated  = Unknown; //!< does the node have non-visible children/parents
+    int              m_distance   = 1000;    //!< shortest path to the root node
+    bool             m_renumbered = false;   //!< indicates if the node has been renumbered (to prevent endless loops)
+    int              m_subgraphId = -1;
 };
 
 /** Class representing a list of DotNode objects. */

@@ -13,12 +13,14 @@
  *
  */
 
+#include <atomic>
 #include "doxygen.h"
 #include "util.h"
 #include "entry.h"
 #include "message.h"
 #include "docgroup.h"
 
+static std::atomic_int g_groupId;
 
 void DocGroup::enterFile(const char *fileName,int)
 {
@@ -84,7 +86,7 @@ void DocGroup::leaveCompound(const char *,int,const char * /*name*/)
   m_compoundName.resize(0);
 }
 
-int DocGroup::findExistingGroup(int &groupId,const MemberGroupInfo *info)
+int DocGroup::findExistingGroup(const MemberGroupInfo *info)
 {
   //printf("findExistingGroup %s:%s\n",info->header.data(),info->compoundName.data());
   QIntDictIterator<MemberGroupInfo> di(Doxygen::memGrpInfoDict);
@@ -100,8 +102,7 @@ int DocGroup::findExistingGroup(int &groupId,const MemberGroupInfo *info)
       return (int)di.currentKey(); // put the item in this group
     }
   }
-  groupId++; // start new group
-  return groupId;
+  return ++g_groupId; // start new group
 }
 
 void DocGroup::open(Entry *e,const char *,int, bool implicit)
@@ -118,12 +119,10 @@ void DocGroup::open(Entry *e,const char *,int, bool implicit)
     //printf("    membergroup id=%d %s\n",m_memberGroupId,m_memberGroupHeader.data());
     if (m_memberGroupId==DOX_NOGROUP) // no group started yet
     {
-      static int curGroupId=0;
-
       MemberGroupInfo *info = new MemberGroupInfo;
       info->header = m_memberGroupHeader.stripWhiteSpace();
       info->compoundName = m_compoundName;
-      m_memberGroupId = findExistingGroup(curGroupId,info);
+      m_memberGroupId = findExistingGroup(info);
       //printf("    use membergroup %d\n",m_memberGroupId);
       Doxygen::memGrpInfoDict.insert(m_memberGroupId,info);
 

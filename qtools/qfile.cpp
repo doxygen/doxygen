@@ -497,7 +497,7 @@ QCString QFile::encodeName( const QString &fileName )
 }
 
 /*!
-  \enum QFile::EncoderFn
+  \typedef QFile::EncoderFn
 
   This is used by QFile::setEncodingFunction().
 */
@@ -532,7 +532,7 @@ QString QFile::decodeName( const QCString &localFileName )
 }
 
 /*!
-  \enum QFile::DecoderFn
+  \typedef QFile::DecoderFn
 
   This is used by QFile::setDecodingFunction().
 */

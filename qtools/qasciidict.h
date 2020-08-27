@@ -46,7 +46,7 @@
 template<class type> class Q_EXPORT QAsciiDict : public QGDict
 {
 public:
-    QAsciiDict(int size=17, bool caseSensitive=TRUE, bool copyKeys=TRUE )
+    QAsciiDict(uint size=17, bool caseSensitive=TRUE, bool copyKeys=TRUE )
 	: QGDict(size,AsciiKey,caseSensitive,copyKeys) {}
     QAsciiDict( const QAsciiDict<type> &d ) : QGDict(d) {}
    ~QAsciiDict()			{ clear(); }

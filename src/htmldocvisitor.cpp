@@ -36,6 +36,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "formula.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -180,6 +181,10 @@ static bool isDocIncludeVisible(DocInclude *s)
   {
     case DocInclude::DontInclude:
     case DocInclude::LatexInclude:
+    case DocInclude::RtfInclude:
+    case DocInclude::ManInclude:
+    case DocInclude::XmlInclude:
+    case DocInclude::DocbookInclude:
       return FALSE;
     default:
       return TRUE;
@@ -715,6 +720,10 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::DontInclude:
     case DocInclude::LatexInclude:
+    case DocInclude::RtfInclude:
+    case DocInclude::ManInclude:
+    case DocInclude::XmlInclude:
+    case DocInclude::DocbookInclude:
     case DocInclude::DontIncWithLines:
       break;
     case DocInclude::HtmlInclude:
@@ -880,10 +889,25 @@ void HtmlDocVisitor::visit(DocFormula *f)
     m_t << "\" alt=\"";
     filterQuotedCdataAttr(f->text());
     m_t << "\"";
-    // TODO: cache image dimensions on formula generation and give height/width
-    // for faster preloading and better rendering of the page
-    m_t << " src=\"" << f->relPath() << f->name() << ".png\"/>";
-
+    m_t << " src=\"" << f->relPath() << f->name();
+    if (Config_getEnum(HTML_FORMULA_FORMAT)=="svg")
+    {
+      m_t << ".svg";
+    }
+    else
+    {
+      m_t << ".png";
+    }
+    FormulaManager::DisplaySize size = FormulaManager::instance().displaySize(f->id());
+    if (size.width!=-1)
+    {
+      m_t << "\" width=\"" << size.width;
+    }
+    if (size.height!=-1)
+    {
+      m_t << "\" height=\"" << size.height;
+    }
+    m_t << "\"/>";
   }
   if (bDisplay)
   {
@@ -1726,7 +1750,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       src = correctURL(url,img->relPath());
     }
-    if (typeSVG)
+    if (typeSVG && !inlineImage)
     {
       m_t << "<object type=\"image/svg+xml\" data=\"" << convertToHtml(src)
         << "\"" << sizeAttribs << attrs;
@@ -1765,14 +1789,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     else if (inlineImage)
     {
-      if (typeSVG)
-      {
-        m_t << ">" << alt << "</object>";
-      }
-      else
-      {
-        m_t << "/>";
-      }
+      m_t << "/>";
     }
   }
   else // other format -> skip
@@ -1792,16 +1809,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
     {
       if (inlineImage)
       {
-        if (img->isSVG())
-        {
-          QCString alt;
-          QCString attrs = htmlAttribsToString(img->attribs(),&alt);
-          m_t << "\">" << alt << "</object>";
-        }
-        else
-        {
-          m_t << "\"/>";
-        }
+        m_t << "\"/>";
       }
       else // end <div class="caption">
       {
@@ -2218,6 +2226,11 @@ void HtmlDocVisitor::filter(const char *str)
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
       case '&':  m_t << "&amp;"; break;
+      case '\\': if ((*p == '(') || (*p == ')'))
+                   m_t << "\\&zwj;" << *p++;
+                 else
+                   m_t << c;
+                 break;
       default:   m_t << c;
     }
   }
@@ -2239,6 +2252,11 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
       case '"':  m_t << "&quot;"; break;
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
+      case '\\': if ((*p == '(') || (*p == ')'))
+                   m_t << "\\&zwj;" << *p++;
+                 else
+                   m_t << c;
+                 break;
       default:   m_t << c;
     }
   }
@@ -2437,7 +2455,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
         nodeIndex--;
     }
     if (nodeIndex<0) return; // first visible node in paragraph
-    DocNode *n = para->children().at(nodeIndex);
+    n = para->children().at(nodeIndex);
     if (mustBeOutsideParagraph(n)) return; // previous node already outside paragraph context
     nodeIndex--;
     bool styleOutsideParagraph=insideStyleChangeThatIsOutsideParagraph(para,nodeIndex);
@@ -2474,7 +2492,7 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     }
     if (nodeIndex<numNodes)
     {
-      DocNode *n = para->children().at(nodeIndex);
+      n = para->children().at(nodeIndex);
       if (mustBeOutsideParagraph(n)) return; // next element also outside paragraph
     }
     else

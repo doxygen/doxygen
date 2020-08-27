@@ -19,6 +19,9 @@
 
 %option never-interactive
 %option prefix="xmlcodeYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 
@@ -69,7 +72,9 @@ static MemberDef *   g_currentMemberDef;
 static bool          g_includeCodeFragment;
 static const char *  g_currentFontClass;
 
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 
 static void codify(const char* text) 
 { 
@@ -435,4 +440,6 @@ void XMLCodeParser::resetCodeParserState()
   resetXmlCodeParserState();
 }
 
+#if USE_STATE2STRING
 #include "xmlcode.l.h"
+#endif

@@ -180,14 +180,14 @@ class GenericNodeListContext : public TemplateListIntf
     }
 
     // TemplateListIntf methods
-    int count() const
+    uint count() const
     {
-      return (int)m_children.count();
+      return m_children.count();
     }
-    TemplateVariant at(int index) const
+    TemplateVariant at(uint index) const
     {
       TemplateVariant result;
-      if (index>=0 && index<count())
+      if (index<count())
       {
         result = *m_children.at(index);
       }
@@ -298,18 +298,16 @@ class ConfigContext::Private
   public:
     Private() { m_cachedLists.setAutoDelete(TRUE); }
     virtual ~Private() { }
-    TemplateVariant fetchList(const QCString &name,const QStrList *list)
+    TemplateVariant fetchList(const QCString &name,const StringVector &list)
     {
       TemplateVariant *v = m_cachedLists.find(name);
       if (v==0)
       {
         TemplateList *tlist = TemplateList::alloc();
         m_cachedLists.insert(name,new TemplateVariant(tlist));
-        QStrListIterator li(*list);
-        char *s;
-        for (li.toFirst();(s=li.current());++li)
+        for (const auto &s : list)
         {
-          tlist->append(s);
+          tlist->append(s.c_str());
         }
         return tlist;
       }
@@ -345,23 +343,23 @@ TemplateVariant ConfigContext::get(const char *name) const
       {
         case ConfigValues::Info::Bool:
           {
-            bool b = ConfigValues::instance().*((ConfigValues::InfoBool*)option)->item;
+            bool b = ConfigValues::instance().*(option->value.b);
             return TemplateVariant(b);
           }
         case ConfigValues::Info::Int:
           {
-            int i = ConfigValues::instance().*((ConfigValues::InfoInt*)option)->item;
+            int i = ConfigValues::instance().*(option->value.i);
             return TemplateVariant(i);
           }
         case ConfigValues::Info::String:
           {
-            QCString s = ConfigValues::instance().*((ConfigValues::InfoString*)option)->item;
+            QCString s = ConfigValues::instance().*(option->value.s);
             return TemplateVariant(s);
           }
         case ConfigValues::Info::List:
           {
-            const QStrList &l = ConfigValues::instance().*((ConfigValues::InfoList*)option)->item;
-            return p->fetchList(name,&l);
+            const StringVector &l = ConfigValues::instance().*(option->value.l);
+            return p->fetchList(name,l);
           }
         default:
           break;
@@ -380,7 +378,7 @@ class DoxygenContext::Private
   public:
     TemplateVariant version() const
     {
-      return getVersion();
+      return getDoxygenVersion();
     }
     TemplateVariant date() const
     {
@@ -445,147 +443,147 @@ class TranslateContext::Private
 {
   public:
 
-    TemplateVariant handleGeneratedAt(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleGeneratedAt(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==2)
+      if (args.size()==2)
       {
         return theTranslator->trGeneratedAt(args[0].toString(),args[1].toString());
       }
       else
       {
-        err("tr.generateAt should take two arguments, got %d!\n",args.count());
+        err("tr.generateAt should take two arguments, got %zu!\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleInheritanceDiagramFor(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleInheritanceDiagramFor(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trClassDiagram(args[0].toString());
       }
       else
       {
-        err("tr.inheritanceDiagramFor should take one argument, got %d!\n",args.count());
+        err("tr.inheritanceDiagramFor should take one argument, got %zu!\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleCollaborationDiagramFor(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleCollaborationDiagramFor(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trCollaborationDiagram(args[0].toString());
       }
       else
       {
-        err("tr.collaborationDiagramFor should take one argument, got %d!\n",args.count());
+        err("tr.collaborationDiagramFor should take one argument, got %zu!\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleDirDependencyGraphFor(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleDirDependencyGraphFor(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trDirDepGraph(args[0].toString());
       }
       else
       {
-        err("tr.dirDependencyGraphFor should take one argument, got %d!\n",args.count());
+        err("tr.dirDependencyGraphFor should take one argument, got %zu!\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleInheritsList(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleInheritsList(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trInheritsList(args[0].toInt());
       }
       else
       {
-        err("tr.inheritsList should take one integer argument, got %d!\n",args.count());
+        err("tr.inheritsList should take one integer argument, got %zu!\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleInheritedByList(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleInheritedByList(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trInheritedByList(args[0].toInt());
       }
       else
       {
-        err("tr.inheritedByList should take one integer argument, got %d!\n",args.count());
+        err("tr.inheritedByList should take one integer argument, got %zu!\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleWriteList(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleWriteList(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trWriteList(args[0].toInt());
       }
       else
       {
-        err("tr.*List should take one integer argument, got %d!\n",args.count());
+        err("tr.*List should take one integer argument, got %zu!\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleImplementedBy(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleImplementedBy(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trImplementedInList(args[0].toInt());
       }
       else
       {
-        err("tr.implementedBy should take one integer argument, got %d!\n",args.count());
+        err("tr.implementedBy should take one integer argument, got %zu!\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleReimplementedBy(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleReimplementedBy(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trReimplementedInList(args[0].toInt());
       }
       else
       {
-        err("tr.reimplementedBy should take one integer argument, got %d!\n",args.count());
+        err("tr.reimplementedBy should take one integer argument, got %zu!\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleSourceRefs(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleSourceRefs(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trReferences()+" "+theTranslator->trWriteList(args[0].toInt())+".";
       }
       else
       {
-        err("tr.sourceRefs should take one integer argument, got %d\n",args.count());
+        err("tr.sourceRefs should take one integer argument, got %zu\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleSourceRefBys(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleSourceRefBys(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trReferencedBy()+" "+theTranslator->trWriteList(args[0].toInt())+".";
       }
       else
       {
-        err("tr.sourceRefBys should take one integer argument, got %d\n",args.count());
+        err("tr.sourceRefBys should take one integer argument, got %zu\n",args.size());
       }
       return TemplateVariant();
     }
-    TemplateVariant handleIncludeDependencyGraph(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleIncludeDependencyGraph(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return theTranslator->trInclDepGraph(args[0].toString());
       }
       else
       {
-        err("tr.includeDependencyGraph should take one string argument, got %d\n",args.count());
+        err("tr.includeDependencyGraph should take one string argument, got %zu\n",args.size());
       }
       return TemplateVariant();
     }
@@ -1073,7 +1071,7 @@ class TranslateContext::Private
         s_inst.addProperty("namespaceList",     &Private::namespaceList);
         //%% string namespaceMembers
         s_inst.addProperty("namespaceMembers",  &Private::namespaceMembers);
-        //%% srting fileList
+        //%% string fileList
         s_inst.addProperty("fileList",          &Private::fileList);
         //%% string fileMembers
         s_inst.addProperty("fileMembers",       &Private::fileMembers);
@@ -1264,7 +1262,8 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
                                 const QCString &relPath,const QCString &docStr,bool isBrief)
 {
   TemplateVariant result;
-  DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,0,isBrief,FALSE);
+  DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,
+                                     0,isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   QGString docs;
   {
     FTextStream ts(&docs);
@@ -1397,6 +1396,7 @@ class DefinitionContext
     {
       assert(d!=0);
     }
+    virtual ~DefinitionContext() {}
     void addBaseProperties(PropertyMapper<T> &inst)
     {
       //%% string name: the name of the symbol
@@ -1544,7 +1544,6 @@ class DefinitionContext
         case SrcLangExt_VHDL:     result="vhdl";     break;
         case SrcLangExt_XML:      result="xml";      break;
         case SrcLangExt_SQL:      result="sql";      break;
-        case SrcLangExt_Tcl:      result="tcl";      break;
         case SrcLangExt_Markdown: result="markdown"; break;
         case SrcLangExt_Slice:    result="slice";    break;
       }
@@ -1775,10 +1774,7 @@ class IncludeInfoListContext::Private : public GenericNodeListContext
       IncludeInfo *ii;
       for (li.toFirst();(ii=li.current());++li)
       {
-        if (!ii->indirect)
-        {
-          append(IncludeInfoContext::alloc(ii,lang));
-        }
+        append(IncludeInfoContext::alloc(ii,lang));
       }
     }
 };
@@ -1794,12 +1790,12 @@ IncludeInfoListContext::~IncludeInfoListContext()
 }
 
 // TemplateListIntf
-int IncludeInfoListContext::count() const
+uint IncludeInfoListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant IncludeInfoListContext::at(int index) const
+TemplateVariant IncludeInfoListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -2007,7 +2003,6 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         {
           case ContextOutputFormat_Html:
             {
-              QGString result;
               FTextStream tt(&result);
 
               QCString name = convertToHtml(m_classDef->displayName());
@@ -2136,7 +2131,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       return cache.inheritedByList.get();
     }
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool detailed=FALSE) const
+                                  MemberListType type,const char *title,bool=FALSE) const
     {
       if (!list)
       {
@@ -2504,15 +2499,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.allMembersList)
       {
-        if (m_classDef->memberNameInfoSDict())
-        {
-          AllMembersListContext *ml = AllMembersListContext::alloc(m_classDef->memberNameInfoSDict());
-          cache.allMembersList.reset(ml);
-        }
-        else
-        {
-          cache.allMembersList.reset(AllMembersListContext::alloc());
-        }
+        AllMembersListContext *ml = AllMembersListContext::alloc(m_classDef->memberNameInfoLinkedMap());
+        cache.allMembersList.reset(ml);
       }
       return cache.allMembersList.get();
     }
@@ -2834,7 +2822,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       return cache.constantgroups.get();
     }
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool detailed=FALSE) const
+                                  MemberListType type,const char *title,bool=FALSE) const
     {
       if (!list)
       {
@@ -3293,7 +3281,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       return cache.constantgroups.get();
     }
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool detailed=FALSE) const
+                                  MemberListType type,const char *title,bool=FALSE) const
     {
       if (!list)
       {
@@ -3533,10 +3521,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       if (!cache.dirs)
       {
         cache.dirs.reset(TemplateList::alloc());
-        const DirList &subDirs = m_dirDef->subDirs();
-        QListIterator<DirDef> it(subDirs);
-        const DirDef *dd;
-        for (it.toFirst();(dd=it.current());++it)
+        for(const auto dd : m_dirDef->subDirs())
         {
           DirContext *dc = new DirContext(dd);
           cache.dirs->append(dc);
@@ -3977,7 +3962,7 @@ TemplateVariant createLinkedText(const Definition *def,const QCString &relPath,c
 class MemberContext::Private : public DefinitionContext<MemberContext::Private>
 {
   public:
-    Private(MemberDef *md) : DefinitionContext<MemberContext::Private>(md) , m_memberDef(md)
+    Private(const MemberDef *md) : DefinitionContext<MemberContext::Private>(md) , m_memberDef(md)
     {
       static bool init=FALSE;
       if (!init)
@@ -4438,8 +4423,9 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         {
           scopeName = m_memberDef->getNamespaceDef()->name();
         }
-        cache.initializer = parseCode(m_memberDef,scopeName,relPathAsString(),
-                                        m_memberDef->initializer());
+        cache.initializer = parseCode(const_cast<MemberDef*>(m_memberDef),
+                                      scopeName,relPathAsString(),
+                                      m_memberDef->initializer());
         cache.initializerParsed = TRUE;
       }
       return cache.initializer;
@@ -4671,27 +4657,27 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasConstQualifier() const
     {
-      return getDefArgList().constSpecifier;
+      return getDefArgList().constSpecifier();
     }
     TemplateVariant hasVolatileQualifier() const
     {
-      return getDefArgList().volatileSpecifier;
+      return getDefArgList().volatileSpecifier();
     }
     TemplateVariant hasRefQualifierLValue() const
     {
-      return getDefArgList().refQualifier==RefQualifierLValue;
+      return getDefArgList().refQualifier()==RefQualifierLValue;
     }
     TemplateVariant hasRefQualifierRValue() const
     {
-      return getDefArgList().refQualifier==RefQualifierRValue;
+      return getDefArgList().refQualifier()==RefQualifierRValue;
     }
     TemplateVariant trailingReturnType() const
     {
       const ArgumentList &al = getDefArgList();
-      if (!al.trailingReturnType.isEmpty())
+      if (!al.trailingReturnType().isEmpty())
       {
         return createLinkedText(m_memberDef,relPathAsString(),
-                                al.trailingReturnType);
+                                al.trailingReturnType());
       }
       else
       {
@@ -4776,12 +4762,13 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         if (m_memberDef->argumentList().hasDocumentation())
         {
           QCString paramDocs;
-          for (Argument &a : m_memberDef->argumentList())
+          for (const Argument &a : m_memberDef->argumentList())
           {
             if (a.hasDocumentation())
             {
-              QCString direction = extractDirection(a.docs);
-              paramDocs+="@param"+direction+" "+a.name+" "+a.docs;
+              QCString docs = a.docs;
+              QCString direction = extractDirection(docs);
+              paramDocs+="@param"+direction+" "+a.name+" "+docs;
             }
           }
           cache.paramDocs.reset(new TemplateVariant(parseDoc(m_memberDef,
@@ -4983,7 +4970,9 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
           {
             scopeName = m_memberDef->getNamespaceDef()->name();
           }
-          cache.sourceCode = parseCode(m_memberDef,scopeName,relPathAsString(),codeFragment,startLine,endLine,TRUE);
+          cache.sourceCode = parseCode(const_cast<MemberDef*>(m_memberDef),
+                                       scopeName,relPathAsString(),
+                                       codeFragment,startLine,endLine,TRUE);
           cache.sourceCodeParsed = TRUE;
         }
       }
@@ -5137,15 +5126,15 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       return m_memberDef->typeString();
     }
-    TemplateVariant handleDetailsVisibleFor(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleDetailsVisibleFor(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         return m_memberDef->isDetailedSectionVisible(args[0].toString()=="module",args[0].toString()=="file");
       }
       else
       {
-        err(".detailsVisibleFor should take one string argument, got %d\n",args.count());
+        err(".detailsVisibleFor should take one string argument, got %zu\n",args.size());
       }
       return TemplateVariant();
     }
@@ -5153,9 +5142,9 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       return TemplateVariant::Delegate::fromMethod<Private,&Private::handleDetailsVisibleFor>(this);
     }
-    TemplateVariant handleNameWithContextFor(const QValueList<TemplateVariant> &args) const
+    TemplateVariant handleNameWithContextFor(const std::vector<TemplateVariant> &args) const
     {
-      if (args.count()==1)
+      if (args.size()==1)
       {
         SrcLangExt lang = m_memberDef->getLanguage();
         QCString n = m_memberDef->name();
@@ -5177,7 +5166,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       }
       else
       {
-        err(".nameWithContextFor should take one string argument, got %d\n",args.count());
+        err(".nameWithContextFor should take one string argument, got %zu\n",args.size());
       }
       return TemplateVariant();
     }
@@ -5186,10 +5175,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       return TemplateVariant::Delegate::fromMethod<Private,&Private::handleNameWithContextFor>(this);
     }
   private:
-    MemberDef *m_memberDef;
+    const MemberDef *m_memberDef;
     struct Cachable : public DefinitionContext<MemberContext::Private>::Cachable
     {
-      Cachable(MemberDef *md) : DefinitionContext<MemberContext::Private>::Cachable(md),
+      Cachable(const MemberDef *md) : DefinitionContext<MemberContext::Private>::Cachable(md),
                                 initializerParsed(FALSE), sourceCodeParsed(FALSE),
                                 declArgsParsed(FALSE), declTypeParsed(FALSE) { }
       SharedPtr<ArgumentListContext> templateArgs;
@@ -5239,7 +5228,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
 
 PropertyMapper<MemberContext::Private> MemberContext::Private::s_inst;
 
-MemberContext::MemberContext(MemberDef *md) : RefCountedContext("MemberContext")
+MemberContext::MemberContext(const MemberDef *md) : RefCountedContext("MemberContext")
 {
   p = new Private(md);
 }
@@ -5464,14 +5453,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.dirs)
       {
         TemplateList *dirList = TemplateList::alloc();
-        if (m_groupDef->getDirs())
+        for(const auto dd : m_groupDef->getDirs())
         {
-          QListIterator<DirDef> it(*m_groupDef->getDirs());
-          const DirDef *dd;
-          for (it.toFirst();(dd=it.current());++it)
-          {
-            dirList->append(DirContext::alloc(dd));
-          }
+          dirList->append(DirContext::alloc(dd));
         }
         cache.dirs.reset(dirList);
       }
@@ -5564,7 +5548,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     }
 
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool detailed=FALSE) const
+                                  MemberListType type,const char *title,bool=FALSE) const
     {
       if (!list)
       {
@@ -5852,12 +5836,12 @@ ClassListContext::~ClassListContext()
 }
 
 // TemplateListIntf
-int ClassListContext::count() const
+uint ClassListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ClassListContext::at(int index) const
+TemplateVariant ClassListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -6600,27 +6584,21 @@ class NestingContext::Private : public GenericNodeListContext
     }
     void addDirs(const DirList &dirList)
     {
-      QListIterator<DirDef> li(dirList);
-      const DirDef *dd;
-      for (li.toFirst();(dd=li.current());++li)
+      for(const auto dd : dirList)
       {
         append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE));
         m_index++;
       }
     }
-    void addFiles(const FileNameList &fnList)
+    void addFiles(const FileNameLinkedMap &fnList)
     {
-      FileNameListIterator fnli(fnList);
-      FileName *fn;
-      for (fnli.toFirst();(fn=fnli.current());++fnli)
+      for (const FileNameLinkedMap::Ptr &fn : fnList)
       {
-        FileNameIterator fni(*fn);
-        const FileDef *fd;
-        for (;(fd=fni.current());++fni)
+        for (const auto &fd : *fn)
         {
           if (fd->getDirDef()==0) // top level file
           {
-            append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE));
+            append(NestingNodeContext::alloc(m_parent,fd.get(),m_index,m_level,FALSE,FALSE,FALSE));
             m_index++;
           }
         }
@@ -6760,12 +6738,12 @@ NestingContext::~NestingContext()
 }
 
 // TemplateListIntf
-int NestingContext::count() const
+uint NestingContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant NestingContext::at(int index) const
+TemplateVariant NestingContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -6795,7 +6773,7 @@ void NestingContext::addDirs(const DirList &dirs)
   p->addDirs(dirs);
 }
 
-void NestingContext::addFiles(const FileNameList &files)
+void NestingContext::addFiles(const FileNameLinkedMap &files)
 {
   p->addFiles(files);
 }
@@ -6987,12 +6965,12 @@ NamespaceListContext::~NamespaceListContext()
 }
 
 // TemplateListIntf
-int NamespaceListContext::count() const
+uint NamespaceListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant NamespaceListContext::at(int index) const
+TemplateVariant NamespaceListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7131,23 +7109,19 @@ TemplateVariant NamespaceTreeContext::get(const char *name) const
 class FileListContext::Private : public GenericNodeListContext
 {
   public:
-    void addFiles(const FileNameList &fnList)
+    void addFiles(const FileNameLinkedMap &fnMap)
     {
       // TODO: if FULL_PATH_NAMES is enabled, the ordering should be dir+file
-      FileNameListIterator fnli(fnList);
-      FileName *fn;
-      for (fnli.toFirst();(fn=fnli.current());++fnli)
+      for (const auto &fn : fnMap)
       {
-        FileNameIterator fni(*fn);
-        const FileDef *fd;
-        for (fni.toFirst();(fd=fni.current());++fni)
+        for (const auto &fd : *fn)
         {
           bool doc = fd->isLinkableInProject();
           bool src = fd->generateSourceFile();
           bool nameOk = !fd->isDocumentationFile();
           if (nameOk && (doc || src) && !fd->isReference())
           {
-            append(FileContext::alloc(fd));
+            append(FileContext::alloc(fd.get()));
           }
         }
       }
@@ -7157,7 +7131,7 @@ class FileListContext::Private : public GenericNodeListContext
 FileListContext::FileListContext() : RefCountedContext("FileListContext")
 {
   p = new Private;
-  if (Doxygen::inputNameList) p->addFiles(*Doxygen::inputNameList);
+  if (Doxygen::inputNameLinkedMap) p->addFiles(*Doxygen::inputNameLinkedMap);
 }
 
 FileListContext::~FileListContext()
@@ -7166,12 +7140,12 @@ FileListContext::~FileListContext()
 }
 
 // TemplateListIntf
-int FileListContext::count() const
+uint FileListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant FileListContext::at(int index) const
+TemplateVariant FileListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7209,12 +7183,12 @@ DirListContext::~DirListContext()
 }
 
 // TemplateListIntf
-int DirListContext::count() const
+uint DirListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant DirListContext::at(int index) const
+TemplateVariant DirListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7257,12 +7231,12 @@ UsedFilesContext::~UsedFilesContext()
 }
 
 // TemplateListIntf
-int UsedFilesContext::count() const
+uint UsedFilesContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant UsedFilesContext::at(int index) const
+TemplateVariant UsedFilesContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7292,9 +7266,9 @@ class FileTreeContext::Private
       {
         m_dirFileTree->addDirs(*Doxygen::directories);
       }
-      if (Doxygen::inputNameList)
+      if (Doxygen::inputNameLinkedMap)
       {
-        m_dirFileTree->addFiles(*Doxygen::inputNameList);
+        m_dirFileTree->addFiles(*Doxygen::inputNameLinkedMap);
       }
       //%% DirFile tree:
       static bool init=FALSE;
@@ -7532,12 +7506,12 @@ PageListContext::~PageListContext()
 }
 
 // TemplateListIntf
-int PageListContext::count() const
+uint PageListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant PageListContext::at(int index) const
+TemplateVariant PageListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7581,12 +7555,12 @@ ExampleListContext::~ExampleListContext()
 }
 
 // TemplateListIntf
-int ExampleListContext::count() const
+uint ExampleListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ExampleListContext::at(int index) const
+TemplateVariant ExampleListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7628,12 +7602,12 @@ ModuleListContext::~ModuleListContext()
 }
 
 // TemplateListIntf
-int ModuleListContext::count() const
+uint ModuleListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ModuleListContext::at(int index) const
+TemplateVariant ModuleListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -7997,21 +7971,17 @@ class GlobalsIndexContext::Private
       if (!listRef)
       {
         TemplateList *list = TemplateList::alloc();
-        MemberName *mn;
-        MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
-        for (fnli.toFirst();(mn=fnli.current());++fnli)
+        for (const auto &mn : *Doxygen::functionNameLinkedMap)
         {
-          MemberDef *md;
-          MemberNameIterator mni(*mn);
-          for (mni.toFirst();(md=mni.current());++mni)
+          for (const auto &md : *mn)
           {
             const FileDef *fd=md->getFileDef();
             if (fd && fd->isLinkableInProject() &&
                 !md->name().isEmpty() && !md->getNamespaceDef() && md->isLinkableInProject())
             {
-              if (filter==0 || (md->*filter)())
+              if (filter==0 || (md.get()->*filter)())
               {
-                list->append(MemberContext::alloc(md));
+                list->append(MemberContext::alloc(md.get()));
               }
             }
           }
@@ -8154,21 +8124,17 @@ class ClassMembersIndexContext::Private
       if (!listRef)
       {
         TemplateList *list = TemplateList::alloc();
-        MemberName *mn;
-        MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
-        for (mnli.toFirst();(mn=mnli.current());++mnli)
+        for (const auto &mn : *Doxygen::memberNameLinkedMap)
         {
-          MemberDef *md;
-          MemberNameIterator mni(*mn);
-          for (mni.toFirst();(md=mni.current());++mni)
+          for (const auto &md : *mn)
           {
             const ClassDef *cd = md->getClassDef();
             if (cd && cd->isLinkableInProject() && cd->templateMaster()==0 &&
                 md->isLinkableInProject() && !md->name().isEmpty())
             {
-              if (filter==0 || (md->*filter)())
+              if (filter==0 || (md.get()->*filter)())
               {
-                list->append(MemberContext::alloc(md));
+                list->append(MemberContext::alloc(md.get()));
               }
             }
           }
@@ -8313,21 +8279,17 @@ class NamespaceMembersIndexContext::Private
       if (!listRef)
       {
         TemplateList *list = TemplateList::alloc();
-        MemberName *mn;
-        MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
-        for (fnli.toFirst();(mn=fnli.current());++fnli)
+        for (const auto &mn : *Doxygen::functionNameLinkedMap)
         {
-          MemberDef *md;
-          MemberNameIterator mni(*mn);
-          for (mni.toFirst();(md=mni.current());++mni)
+          for (const auto &md : *mn)
           {
             const NamespaceDef *nd=md->getNamespaceDef();
             if (nd && nd->isLinkableInProject() &&
                 !md->name().isEmpty() && md->isLinkableInProject())
             {
-              if (filter==0 || (md->*filter)())
+              if (filter==0 || (md.get()->*filter)())
               {
-                list->append(MemberContext::alloc(md));
+                list->append(MemberContext::alloc(md.get()));
               }
             }
           }
@@ -8594,12 +8556,12 @@ InheritanceListContext::~InheritanceListContext()
 }
 
 // TemplateListIntf
-int InheritanceListContext::count() const
+uint InheritanceListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant InheritanceListContext::at(int index) const
+TemplateVariant InheritanceListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -8670,12 +8632,12 @@ MemberListContext::~MemberListContext()
 }
 
 // TemplateListIntf
-int MemberListContext::count() const
+uint MemberListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant MemberListContext::at(int index) const
+TemplateVariant MemberListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -8714,7 +8676,7 @@ class MemberInfoContext::Private
     }
     TemplateVariant protection() const
     {
-      switch (m_memberInfo->prot)
+      switch (m_memberInfo->prot())
       {
         case ::Public:    return "public";
         case ::Protected: return "protected";
@@ -8725,7 +8687,7 @@ class MemberInfoContext::Private
     }
     TemplateVariant virtualness() const
     {
-      switch (m_memberInfo->virt)
+      switch (m_memberInfo->virt())
       {
         case ::Normal:   return "normal";
         case ::Virtual:  return "virtual";
@@ -8735,13 +8697,13 @@ class MemberInfoContext::Private
     }
     TemplateVariant ambiguityScope() const
     {
-      return m_memberInfo->ambiguityResolutionScope;
+      return m_memberInfo->ambiguityResolutionScope();
     }
     TemplateVariant member() const
     {
-      if (!m_member && m_memberInfo->memberDef)
+      if (!m_member && m_memberInfo->memberDef())
       {
-        m_member.reset(MemberContext::alloc(m_memberInfo->memberDef));
+        m_member.reset(MemberContext::alloc(m_memberInfo->memberDef()));
       }
       if (m_member)
       {
@@ -8783,31 +8745,24 @@ TemplateVariant MemberInfoContext::get(const char *name) const
 class AllMembersListContext::Private : public GenericNodeListContext
 {
   public:
-    Private(const MemberNameInfoSDict *ml)
+    Private(const MemberNameInfoLinkedMap &ml)
     {
-      if (ml)
+      static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
+      for (auto &mni : ml)
       {
-        static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
-        MemberNameInfoSDict::Iterator mnii(*ml);
-        MemberNameInfo *mni;
-        for (mnii.toFirst();(mni=mnii.current());++mnii)
+        for (auto &mi : *mni)
         {
-          MemberNameInfoIterator mnii2(*mni);
-          MemberInfo *mi;
-          for (mnii2.toFirst();(mi=mnii2.current());++mnii2)
+          const MemberDef *md=mi->memberDef();
+          const ClassDef  *cd=md->getClassDef();
+          if (cd && !md->isAnonymous())
           {
-            MemberDef *md=mi->memberDef;
-            const ClassDef  *cd=md->getClassDef();
-            if (cd && !md->isAnonymous())
+            if ((cd->isLinkable() && md->isLinkable()) ||
+                (!cd->isArtificial() && !hideUndocMembers &&
+                 (protectionLevelVisible(md->protection()) || md->isFriend())
+                )
+               )
             {
-              if ((cd->isLinkable() && md->isLinkable()) ||
-                  (!cd->isArtificial() && !hideUndocMembers &&
-                   (protectionLevelVisible(md->protection()) || md->isFriend())
-                  )
-                 )
-              {
-                append(MemberInfoContext::alloc(mi));
-              }
+              append(MemberInfoContext::alloc(mi.get()));
             }
           }
         }
@@ -8815,12 +8770,8 @@ class AllMembersListContext::Private : public GenericNodeListContext
     }
 };
 
-AllMembersListContext::AllMembersListContext() : RefCountedContext("AllMembersListContext")
-{
-  p = new Private(0);
-}
-
-AllMembersListContext::AllMembersListContext(const MemberNameInfoSDict *ml) : RefCountedContext("AllMembersListContext")
+AllMembersListContext::AllMembersListContext(const MemberNameInfoLinkedMap &ml)
+  : RefCountedContext("AllMembersListContext")
 {
   p = new Private(ml);
 }
@@ -8831,12 +8782,12 @@ AllMembersListContext::~AllMembersListContext()
 }
 
 // TemplateListIntf
-int AllMembersListContext::count() const
+uint AllMembersListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant AllMembersListContext::at(int index) const
+TemplateVariant AllMembersListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9013,12 +8964,12 @@ MemberGroupListContext::~MemberGroupListContext()
 }
 
 // TemplateListIntf
-int MemberGroupListContext::count() const
+uint MemberGroupListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant MemberGroupListContext::at(int index) const
+TemplateVariant MemberGroupListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9287,7 +9238,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
             MemberDef *md;
             for (li.toFirst();(md=li.current());++li)
             {
-              if (lt==md->getSectionList()->listType() &&
+              if (lt==md->getSectionList(mg->container())->listType() &&
                   !md->isReimplementedBy(inheritedFrom) &&
                   md->isBriefSectionVisible())
               {
@@ -9376,12 +9327,12 @@ InheritedMemberInfoListContext::~InheritedMemberInfoListContext()
 }
 
 // TemplateListIntf
-int InheritedMemberInfoListContext::count() const
+uint InheritedMemberInfoListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant InheritedMemberInfoListContext::at(int index) const
+TemplateVariant InheritedMemberInfoListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9458,7 +9409,7 @@ class ArgumentContext::Private
     TemplateVariant namePart() const
     {
       QCString result = m_argument.attrib;
-      int l = result.length();
+      uint l = result.length();
       if (l>2 && result.at(0)=='[' && result.at(l-1)==']')
       {
         result = result.mid(1,l-2);
@@ -9467,7 +9418,7 @@ class ArgumentContext::Private
       return result;
     }
   private:
-    const Argument &m_argument;
+    Argument m_argument;
     const Definition *m_def;
     QCString m_relPath;
     struct Cachable
@@ -9529,12 +9480,12 @@ ArgumentListContext::~ArgumentListContext()
 }
 
 // TemplateListIntf
-int ArgumentListContext::count() const
+uint ArgumentListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ArgumentListContext::at(int index) const
+TemplateVariant ArgumentListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9723,12 +9674,12 @@ SymbolListContext::~SymbolListContext()
 }
 
 // TemplateListIntf
-int SymbolListContext::count() const
+uint SymbolListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SymbolListContext::at(int index) const
+TemplateVariant SymbolListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9822,7 +9773,7 @@ class SymbolGroupListContext::Private : public GenericNodeListContext
     }
 };
 
-SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList *sil) 
+SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList *sil)
     : RefCountedContext("SymbolGroupListContext")
 {
   p = new Private(sil);
@@ -9834,12 +9785,12 @@ SymbolGroupListContext::~SymbolGroupListContext()
 }
 
 // TemplateListIntf
-int SymbolGroupListContext::count() const
+uint SymbolGroupListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SymbolGroupListContext::at(int index) const
+TemplateVariant SymbolGroupListContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -9946,12 +9897,12 @@ SymbolIndicesContext::~SymbolIndicesContext()
 }
 
 // TemplateListIntf
-int SymbolIndicesContext::count() const
+uint SymbolIndicesContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SymbolIndicesContext::at(int index) const
+TemplateVariant SymbolIndicesContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -10055,12 +10006,12 @@ SearchIndicesContext::~SearchIndicesContext()
 }
 
 // TemplateListIntf
-int SearchIndicesContext::count() const
+uint SearchIndicesContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SearchIndicesContext::at(int index) const
+TemplateVariant SearchIndicesContext::at(uint index) const
 {
   return p->at(index);
 }
@@ -10390,7 +10341,7 @@ void generateTemplateFiles(const char *templateDir)
   QCString outDir = QCString(templateDir)+"/html";
   if (!thisDir.exists(outDir) && !thisDir.mkdir(outDir))
   {
-    err("Failed to create output directory '%s'\n",templateDir);
+    err("Failed to create output directory '%s'\n",outDir.data());
     return;
   }
   ResourceMgr::instance().writeCategory("html",outDir);

@@ -38,7 +38,7 @@ tries to be complete):
 
 First, assure that your programming language has a reasonable chance of being
 recognized by doxygen. These languages are supported by default: C, C++, C#,
-Objective-C, IDL, Java, VHDL, PHP, Python, Tcl, Fortran, and D. It
+Objective-C, IDL, Java, VHDL, PHP, Python, Fortran and D. It
 is possible to configure certain file type extensions to use certain parsers:
 see the \ref cfg_extension_mapping "Configuration/ExtensionMappings" for details. 
 Also, completely different languages can be supported by using preprocessor 
@@ -114,15 +114,15 @@ Extension | Language | Extension | Language     | Extension | Language
 .cc       |C / C++   | .java     |Java          | .f95      |Fortran
 .cxx      |C / C++   | .cs       |C#            | .f03      |Fortran
 .cpp      |C / C++   | .d        |D             | .f08      |Fortran
-.c++      |C / C++   | .php      |PHP           | .vhd      |VHDL
-.ii       |C / C++   | .php4     |PHP           | .vhdl     |VHDL
-.ixx      |C / C++   | .php5     |PHP           | .ucf      |VHDL
-.ipp      |C / C++   | .inc      |PHP           | .qsf      |VHDL
-.i++      |C / C++   | .phtml    |PHP           | .tcl      |TCL
-.inl      |C / C++   | .m        |Objective-C   | .md       |Markdown
-.h        |C / C++   | .M        |Objective-C   | .markdown |Markdown
-.H        |C / C++   | .py       |Python        | .ice      |Slice
-.hh       |C / C++   | .pyw      |Python        | | |
+.c++      |C / C++   | .php      |PHP           | .f18      |Fortran
+.ii       |C / C++   | .php4     |PHP           | .vhd      |VHDL
+.ixx      |C / C++   | .php5     |PHP           | .vhdl     |VHDL
+.ipp      |C / C++   | .inc      |PHP           | .ucf      |VHDL
+.i++      |C / C++   | .phtml    |PHP           | .qsf      |VHDL
+.inl      |C / C++   | .m        |Objective-C   | &nbsp;    |&nbsp;
+.h        |C / C++   | .M        |Objective-C   | .md       |Markdown
+.H        |C / C++   | .py       |Python        | .markdown |Markdown
+.hh       |C / C++   | .pyw      |Python        | .ice      |Slice
 .HH       |C / C++   | | | | |
 .hxx      |C / C++   | | | | |
 .hpp      |C / C++   | | | | |

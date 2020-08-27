@@ -74,6 +74,11 @@ class TranslatorEnglish : public Translator
       return "";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "en-US";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -393,6 +398,10 @@ class TranslatorEnglish : public Translator
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Data Structure Documentation";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
       }
       else
       {
@@ -1940,14 +1949,6 @@ class TranslatorEnglish : public Translator
       return "Method Documentation";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Design Overview";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -2254,6 +2255,12 @@ class TranslatorEnglish : public Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "Design Unit Documentation"; }
 
 };
 

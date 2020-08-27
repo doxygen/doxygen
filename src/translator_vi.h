@@ -95,6 +95,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       }
       return latex_command;
     }
+    virtual QCString trISOLang()
+    {
+      return "vi";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

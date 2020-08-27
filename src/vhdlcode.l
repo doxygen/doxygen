@@ -20,6 +20,9 @@
 %option never-interactive
 %option case-insensitive
 %option prefix="vhdlcodeYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 
@@ -50,6 +53,8 @@
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
+
+#define USE_STATE2STRING 0
   
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -113,7 +118,10 @@ static bool writeColoredWord(QCString& word );
 static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName, bool typeOnly=FALSE, const char *curr_class=0);
 static void endFontClass();
 static void startFontClass(const char *s);
+
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 //-------------------------------------------------------------------
 
 
@@ -852,7 +860,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			  generateMemLink(*g_code,g_PortMapComp,s1); 
 			  while (index++<t1.size()) 
 			  { 
-			    char cc=t1.at(index);
+			    cc=t1.at(index);
 			    if (cc==' ' || cc=='\t')
 			    {
 			      char c2[2];
@@ -1644,5 +1652,7 @@ void codeFreeVhdlScanner()
 #endif
 }
 
+#if USE_STATE2STRING
 #include "vhdlcode.l.h"
+#endif
 

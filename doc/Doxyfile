@@ -50,8 +50,7 @@ PDF_HYPERLINKS    = YES
 USE_PDFLATEX      = YES
 STRIP_CODE_COMMENTS = NO
 HTML_STYLESHEET   = doxygen_manual.css
-HTML_EXTRA_FILES  = doxygen_logo.gif
-HTML_EXTRA_FILES += doxygen_logo_low.gif
+HTML_EXTRA_FILES  = doxygen_logo.svg
 ALIASES           = LaTeX="\f$\mbox{\LaTeX}\f$"
 ALIASES          += TeX="\f$\mbox{\TeX}\f$"
 LATEX_BATCHMODE   = YES

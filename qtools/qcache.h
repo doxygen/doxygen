@@ -46,7 +46,7 @@ template<class type> class Q_EXPORT QCache : public QGCache
 {
 public:
     QCache( const QCache<type> &c ) : QGCache(c) {}
-    QCache( int maxCost=100, int size=17, bool caseSensitive=TRUE )
+    QCache( int maxCost=100, uint size=17, bool caseSensitive=TRUE )
 	: QGCache( maxCost, size, AsciiKey, caseSensitive, TRUE ) {}
    ~QCache()				{ clear(); }
     QCache<type> &operator=( const QCache<type> &c )

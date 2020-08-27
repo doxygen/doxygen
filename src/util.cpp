@@ -1,11 +1,11 @@
 /*****************************************************************************
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,6 +19,11 @@
 #include <errno.h>
 #include <math.h>
 #include <limits.h>
+#include <cinttypes>
+#include <string.h>
+
+#include <mutex>
+#include <unordered_set>
 
 #include "md5.h"
 
@@ -84,7 +89,7 @@
 #define ALGO_COUNT 1
 #define ALGO_CRC16 2
 #define ALGO_MD5   3
-    
+
 //#define MAP_ALGO ALGO_COUNT
 //#define MAP_ALGO ALGO_CRC16
 #define MAP_ALGO ALGO_MD5
@@ -95,12 +100,12 @@
 // TextGeneratorOLImpl implementation
 //------------------------------------------------------------------------
 
-TextGeneratorOLImpl::TextGeneratorOLImpl(OutputDocInterface &od) : m_od(od) 
+TextGeneratorOLImpl::TextGeneratorOLImpl(OutputDocInterface &od) : m_od(od)
 {
 }
 
 void TextGeneratorOLImpl::writeString(const char *s,bool keepSpaces) const
-{ 
+{
   if (s==0) return;
   //printf("TextGeneratorOlImpl::writeString('%s',%d)\n",s,keepSpaces);
   if (keepSpaces)
@@ -113,19 +118,19 @@ void TextGeneratorOLImpl::writeString(const char *s,bool keepSpaces) const
       cs[1]='\0';
       while ((c=*p++))
       {
-        if (c==' ') m_od.writeNonBreakableSpace(1); 
+        if (c==' ') m_od.writeNonBreakableSpace(1);
         else cs[0]=c,m_od.docify(cs);
       }
     }
   }
   else
   {
-    m_od.docify(s); 
+    m_od.docify(s);
   }
 }
 
 void TextGeneratorOLImpl::writeBreak(int indent) const
-{ 
+{
   m_od.lineBreak("typebreak");
   int i;
   for (i=0;i<indent;i++)
@@ -146,9 +151,9 @@ void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
 //------------------------------------------------------------------------
 
 // an inheritance tree of depth of 100000 should be enough for everyone :-)
-const int maxInheritanceDepth = 100000; 
+const int maxInheritanceDepth = 100000;
 
-/*! 
+/*!
   Removes all anonymous scopes from string s
   Possible examples:
 \verbatim
@@ -177,9 +182,9 @@ QCString removeAnonymousScopes(const QCString &s)
     while (c<i+l && s.at(c)!='@') if (s.at(c++)==':') b1=TRUE;
     c=i+l-1;
     while (c>=i && s.at(c)!='@') if (s.at(c--)==':') b2=TRUE;
-    if (b1 && b2) 
-    { 
-      result+="::"; 
+    if (b1 && b2)
+    {
+      result+="::";
     }
     p=i+l;
   }
@@ -248,7 +253,7 @@ done:
 void writePageRef(OutputDocInterface &od,const char *cn,const char *mn)
 {
   od.pushGeneratorState();
-  
+
   od.disable(OutputGenerator::Html);
   od.disable(OutputGenerator::Man);
   od.disable(OutputGenerator::Docbook);
@@ -273,22 +278,20 @@ QCString generateMarker(int id)
   return result;
 }
 
-static QCString stripFromPath(const QCString &path,QStrList &l)
+static QCString stripFromPath(const QCString &path,const StringVector &l)
 {
-  // look at all the strings in the list and strip the longest match  
-  const char *s=l.first();
+  // look at all the strings in the list and strip the longest match
   QCString potential;
   unsigned int length = 0;
-  while (s)
+  for (const auto &s : l)
   {
-    QCString prefix = s;
+    QCString prefix = s.c_str();
     if (prefix.length() > length &&
         qstricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
     {
       length = prefix.length();
       potential = path.right(path.length()-prefix.length());
     }
-    s = l.next();
   }
   if (length) return potential;
   return path;
@@ -311,7 +314,7 @@ QCString stripFromIncludePath(const QCString &path)
 }
 
 /*! try to determine if \a name is a source or a header file name by looking
- * at the extension. A number of variations is allowed in both upper and 
+ * at the extension. A number of variations is allowed in both upper and
  * lower case) If anyone knows or uses another extension please let me know :-)
  */
 int guessSection(const char *name)
@@ -331,7 +334,7 @@ int guessSection(const char *name)
       n.right(4)==".i++"  ||
       n.right(4)==".inl"  ||
       n.right(4)==".xml"  ||
-      n.right(4)==".sql" 
+      n.right(4)==".sql"
      ) return Entry::SOURCE_SEC;
   if (n.right(2)==".h"    || // header
       n.right(3)==".hh"   ||
@@ -352,7 +355,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
   //printf("<<resolveTypeDef(%s,%s)\n",
   //          context ? context->name().data() : "<none>",qualifiedName.data());
   QCString result;
-  if (qualifiedName.isEmpty()) 
+  if (qualifiedName.isEmpty())
   {
     //printf("  qualified name empty!\n");
     return result;
@@ -374,12 +377,12 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
       return result;
     }
   }
-  MemberDef *md=0;
+  const MemberDef *md=0;
   while (mContext && md==0)
   {
     // step 1: get the right scope
     const Definition *resScope=mContext;
-    if (scopeIndex!=-1) 
+    if (scopeIndex!=-1)
     {
       // split-off scope part
       QCString resScopeName = qualifiedName.left(scopeIndex);
@@ -400,31 +403,30 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
       }
     }
     //printf("resScope=%s\n",resScope?resScope->name().data():"<none>");
-    
+
     // step 2: get the member
-    if (resScope) // no scope or scope found in the current context 
+    if (resScope) // no scope or scope found in the current context
     {
       //printf("scope found: %s, look for typedef %s\n",
       //     resScope->qualifiedName().data(),resName.data());
-      MemberNameSDict *mnd=0;
+      MemberNameLinkedMap *mnd=0;
       if (resScope->definitionType()==Definition::TypeClass)
       {
-        mnd=Doxygen::memberNameSDict;
+        mnd=Doxygen::memberNameLinkedMap;
       }
       else
       {
-        mnd=Doxygen::functionNameSDict;
+        mnd=Doxygen::functionNameLinkedMap;
       }
       MemberName *mn=mnd->find(resName);
       if (mn)
       {
-        MemberNameIterator mni(*mn);
-        MemberDef *tmd=0;
         int minDist=-1;
-        for (;(tmd=mni.current());++mni)
+        for (const auto &tmd_p : *mn)
         {
+          const MemberDef *tmd = tmd_p.get();
           //printf("Found member %s resScope=%s outerScope=%s mContext=%p\n",
-          //    tmd->name().data(), resScope->name().data(), 
+          //    tmd->name().data(), resScope->name().data(),
           //    tmd->getOuterScope()->name().data(), mContext);
           if (tmd->isTypedef() /*&& tmd->getOuterScope()==resScope*/)
           {
@@ -465,48 +467,38 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     //    qualifiedName.data(),context ? context->name().data() : "<global>");
   }
   return result;
-  
+
 }
 
 
-/*! Get a class definition given its name. 
+/*! Get a class definition given its name.
  *  Returns 0 if the class is not found.
  */
 ClassDef *getClass(const char *n)
 {
   if (n==0 || n[0]=='\0') return 0;
-  QCString name=n;
-  ClassDef *result = Doxygen::classSDict->find(name);
-  //if (result==0 && !exact) // also try generic and protocol versions
-  //{
-  //  result = Doxygen::classSDict->find(name+"-g");
-  //  if (result==0)
-  //  {
-  //    result = Doxygen::classSDict->find(name+"-p");
-  //  }
-  //}
-  //printf("getClass(%s)=%s\n",n,result?result->name().data():"<none>");
-  return result;
+  return Doxygen::classSDict->find(n);
 }
 
 NamespaceDef *getResolvedNamespace(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-  QCString *subst = Doxygen::namespaceAliasDict[name];
-  if (subst)
+  auto it = Doxygen::namespaceAliasMap.find(name);
+  if (it!=Doxygen::namespaceAliasMap.end())
   {
     int count=0; // recursion detection guard
-    QCString *newSubst;
-    while ((newSubst=Doxygen::namespaceAliasDict[*subst]) && count<10)
+    StringUnorderedMap::iterator it2;
+    while ((it2=Doxygen::namespaceAliasMap.find(it->second))!=Doxygen::namespaceAliasMap.end() &&
+           count<10)
     {
-      subst=newSubst;
+      it=it2;
       count++;
     }
     if (count==10)
     {
       warn_uncond("possible recursive namespace alias detected for %s!\n",name);
     }
-    return Doxygen::namespaceSDict->find(subst->data());
+    return Doxygen::namespaceSDict->find(it->second.data());
   }
   else
   {
@@ -532,7 +524,7 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
  *  within file \a fileScope.
  *
  *  Example: typedef A T; will return the class representing A if it is a class.
- * 
+ *
  *  Example: typedef int T; will return 0, since "int" is not a class.
  */
 const ClassDef *newResolveTypedef(const FileDef *fileScope,
@@ -540,7 +532,7 @@ const ClassDef *newResolveTypedef(const FileDef *fileScope,
                                   const MemberDef **pMemType,
                                   QCString *pTemplSpec,
                                   QCString *pResolvedType,
-                                  const ArgumentList *actTemplParams)
+                                  const std::unique_ptr<ArgumentList> &actTemplParams)
 {
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
@@ -560,19 +552,19 @@ const ClassDef *newResolveTypedef(const FileDef *fileScope,
   if (g_resolvedTypedefs.find(qname)) return 0; // typedef already done
 
   g_resolvedTypedefs.insert(qname,md); // put on the trace list
-  
+
   const ClassDef *typeClass = md->getClassDef();
   QCString type = md->typeString(); // get the "value" of the typedef
   if (typeClass && typeClass->isTemplate() &&
       actTemplParams && !actTemplParams->empty())
   {
     type = substituteTemplateArgumentsInString(type,
-            typeClass->templateArguments(),*actTemplParams);
+            typeClass->templateArguments(),actTemplParams);
   }
   QCString typedefValue = type;
   int tl=type.length();
   int ip=tl-1; // remove * and & at the end
-  while (ip>=0 && (type.at(ip)=='*' || type.at(ip)=='&' || type.at(ip)==' ')) 
+  while (ip>=0 && (type.at(ip)=='*' || type.at(ip)=='&' || type.at(ip)==' '))
   {
     ip--;
   }
@@ -587,7 +579,7 @@ const ClassDef *newResolveTypedef(const FileDef *fileScope,
   const ClassDef  *result = getResolvedClassRec(md->getOuterScope(),
                                   fileScope,type,&memTypeDef,0,pResolvedType);
   // if type is a typedef then return what it resolves to.
-  if (memTypeDef && memTypeDef->isTypedef()) 
+  if (memTypeDef && memTypeDef->isTypedef())
   {
     result=newResolveTypedef(fileScope,memTypeDef,pMemType,pTemplSpec);
     goto done;
@@ -647,8 +639,8 @@ done:
   }
 
   // remember computed value for next time
-  if (result && result->getDefFileName()!="<code>") 
-    // this check is needed to prevent that temporary classes that are 
+  if (result && result->getDefFileName()!="<code>")
+    // this check is needed to prevent that temporary classes that are
     // introduced while parsing code fragments are being cached here.
   {
     //printf("setting cached typedef %p in result %p\n",md,result);
@@ -659,9 +651,9 @@ done:
         pResolvedType ? *pResolvedType : QCString()
        );
   }
-  
+
   g_resolvedTypedefs.remove(qname); // remove from the trace list
-  
+
   return result;
 }
 
@@ -696,11 +688,11 @@ static QCString substTypedef(const Definition *scope,const FileDef *fileScope,co
         {
           // test accessibility of typedef within scope.
           int distance = isAccessibleFromWithExpScope(scope,fileScope,d,"");
-          if (distance!=-1 && distance<minDistance) 
+          if (distance!=-1 && distance<minDistance)
             // definition is accessible and a better match
           {
             minDistance=distance;
-            bestMatch = md; 
+            bestMatch = md;
           }
         }
       }
@@ -715,18 +707,18 @@ static QCString substTypedef(const Definition *scope,const FileDef *fileScope,co
     {
       // test accessibility of typedef within scope.
       int distance = isAccessibleFromWithExpScope(scope,fileScope,d,"");
-      if (distance!=-1) // definition is accessible 
+      if (distance!=-1) // definition is accessible
       {
-        bestMatch = md; 
+        bestMatch = md;
       }
     }
   }
-  if (bestMatch) 
+  if (bestMatch)
   {
     result = bestMatch->typeString();
     if (pTypeDef) *pTypeDef=bestMatch;
   }
-  
+
   //printf("substTypedef(%s,%s)=%s\n",scope?scope->name().data():"<global>",
   //                                  name.data(),result.data());
   return result;
@@ -750,8 +742,8 @@ static const Definition *endOfPathIsUsedClass(const SDict<Definition> *cl,const 
 }
 
 /*! Starting with scope \a start, the string \a path is interpreted as
- *  a part of a qualified scope name (e.g. A::B::C), and the scope is 
- *  searched. If found the scope definition is returned, otherwise 0 
+ *  a part of a qualified scope name (e.g. A::B::C), and the scope is
+ *  searched. If found the scope definition is returned, otherwise 0
  *  is returned.
  */
 static const Definition *followPath(const Definition *start,const FileDef *fileScope,const QCString &path)
@@ -782,7 +774,7 @@ static const Definition *followPath(const Definition *start,const FileDef *fileS
     //     qualScopePart.data(),
     //     current->name().data(),
     //     next?next->name().data():"<null>");
-    if (next==0) // failed to follow the path 
+    if (next==0) // failed to follow the path
     {
       //printf("==> next==0!\n");
       if (current->definitionType()==Definition::TypeNamespace)
@@ -817,7 +809,7 @@ bool accessibleViaUsingClass(const SDict<Definition> *cl,
                             )
 {
   //printf("accessibleViaUsingClass(%p)\n",cl);
-  if (cl) // see if the class was imported via a using statement 
+  if (cl) // see if the class was imported via a using statement
   {
     SDict<Definition>::Iterator cli(*cl);
     Definition *ucd;
@@ -826,7 +818,7 @@ bool accessibleViaUsingClass(const SDict<Definition> *cl,
     {
       //printf("Trying via used class %s\n",ucd->name().data());
       const Definition *sc = explicitScopePartEmpty ? ucd : followPath(ucd,fileScope,explicitScopePart);
-      if (sc && sc==item) return TRUE; 
+      if (sc && sc==item) return TRUE;
       //printf("Try via used class done\n");
     }
   }
@@ -849,10 +841,10 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
       //printf("[Trying via used namespace %s: count=%d/%d\n",und->name().data(),
       //    count,nl->count());
       const Definition *sc = explicitScopePart.isEmpty() ? und : followPath(und,fileScope,explicitScopePart);
-      if (sc && item->getOuterScope()==sc) 
+      if (sc && item->getOuterScope()==sc)
       {
         //printf("] found it\n");
-        return TRUE; 
+        return TRUE;
       }
       if (item->getLanguage()==SrcLangExt_Cpp)
       {
@@ -916,7 +908,7 @@ class AccessStack
       for (i=0;i<m_index;i++)
       {
         AccessElem *e = &m_elements[i];
-        if (e->scope==scope && e->fileScope==fileScope && e->item==item) 
+        if (e->scope==scope && e->fileScope==fileScope && e->item==item)
         {
           return TRUE;
         }
@@ -929,7 +921,7 @@ class AccessStack
       for (i=0;i<m_index;i++)
       {
         AccessElem *e = &m_elements[i];
-        if (e->scope==scope && e->fileScope==fileScope && e->item==item && e->expScope==expScope) 
+        if (e->scope==scope && e->fileScope==fileScope && e->item==item && e->expScope==expScope)
         {
           return TRUE;
         }
@@ -951,7 +943,7 @@ class AccessStack
 };
 
 /* Returns the "distance" (=number of levels up) from item to scope, or -1
- * if item in not inside scope. 
+ * if item in not inside scope.
  */
 int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Definition *item)
 {
@@ -969,20 +961,20 @@ int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Defi
   int i;
 
   Definition *itemScope=item->getOuterScope();
-  bool memberAccessibleFromScope = 
+  bool memberAccessibleFromScope =
       (item->definitionType()==Definition::TypeMember &&                   // a member
        itemScope && itemScope->definitionType()==Definition::TypeClass  && // of a class
        scope->definitionType()==Definition::TypeClass &&                   // accessible
        (dynamic_cast<const ClassDef*>(scope))->isAccessibleMember(dynamic_cast<const MemberDef *>(item)) // from scope
       );
-  bool nestedClassInsideBaseClass = 
+  bool nestedClassInsideBaseClass =
       (item->definitionType()==Definition::TypeClass &&                    // a nested class
-       itemScope && itemScope->definitionType()==Definition::TypeClass &&  // inside a base 
+       itemScope && itemScope->definitionType()==Definition::TypeClass &&  // inside a base
        scope->definitionType()==Definition::TypeClass &&                   // class of scope
-       (dynamic_cast<const ClassDef*>(scope))->isBaseClass(dynamic_cast<ClassDef*>(itemScope),TRUE)          
+       (dynamic_cast<const ClassDef*>(scope))->isBaseClass(dynamic_cast<ClassDef*>(itemScope),TRUE)
       );
 
-  if (itemScope==scope || memberAccessibleFromScope || nestedClassInsideBaseClass) 
+  if (itemScope==scope || memberAccessibleFromScope || nestedClassInsideBaseClass)
   {
     //printf("> found it\n");
     if (nestedClassInsideBaseClass) result++; // penalty for base class to prevent
@@ -994,13 +986,13 @@ int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Defi
     if (fileScope)
     {
       SDict<Definition> *cl = fileScope->getUsedClasses();
-      if (accessibleViaUsingClass(cl,fileScope,item)) 
+      if (accessibleViaUsingClass(cl,fileScope,item))
       {
         //printf("> found via used class\n");
         goto done;
       }
       NamespaceSDict *nl = fileScope->getUsedNamespaces();
-      if (accessibleViaUsingNamespace(nl,fileScope,item)) 
+      if (accessibleViaUsingNamespace(nl,fileScope,item))
       {
         //printf("> found via used namespace\n");
         goto done;
@@ -1017,13 +1009,13 @@ int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Defi
       const NamespaceDef *nscope = dynamic_cast<const NamespaceDef*>(scope);
       //printf("  %s is namespace with %d used classes\n",nscope->name().data(),nscope->getUsedClasses());
       const SDict<Definition> *cl = nscope->getUsedClasses();
-      if (accessibleViaUsingClass(cl,fileScope,item)) 
+      if (accessibleViaUsingClass(cl,fileScope,item))
       {
         //printf("> found via used class\n");
         goto done;
       }
       const NamespaceSDict *nl = nscope->getUsedNamespaces();
-      if (accessibleViaUsingNamespace(nl,fileScope,item)) 
+      if (accessibleViaUsingNamespace(nl,fileScope,item))
       {
         //printf("> found via used namespace\n");
         goto done;
@@ -1050,10 +1042,10 @@ done:
  * class B { public: class J {}; };
  *
  * - Looking for item=='J' inside scope=='B' will return 0.
- * - Looking for item=='I' inside scope=='B' will return -1 
+ * - Looking for item=='I' inside scope=='B' will return -1
  *   (as it is not found in B nor in the global scope).
- * - Looking for item=='A::I' inside scope=='B', first the match B::A::I is tried but 
- *   not found and then A::I is searched in the global scope, which matches and 
+ * - Looking for item=='A::I' inside scope=='B', first the match B::A::I is tried but
+ *   not found and then A::I is searched in the global scope, which matches and
  *   thus the result is 1.
  */
 int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScope,
@@ -1097,7 +1089,7 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
              (dynamic_cast<const ClassDef*>(newScope))->isBaseClass(dynamic_cast<const ClassDef*>(itemScope),TRUE,0)
             )
     {
-      // inheritance is also ok. Example: looking for B::I, where 
+      // inheritance is also ok. Example: looking for B::I, where
       // class A { public: class I {} };
       // class B : public A {}
       // but looking for B::I, where
@@ -1172,7 +1164,7 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
     {
       const NamespaceDef *nscope = dynamic_cast<const NamespaceDef*>(scope);
       const NamespaceSDict *nl = nscope->getUsedNamespaces();
-      if (accessibleViaUsingNamespace(nl,fileScope,item,explicitScopePart)) 
+      if (accessibleViaUsingNamespace(nl,fileScope,item,explicitScopePart))
       {
         //printf("> found in used namespace\n");
         goto done;
@@ -1183,7 +1175,7 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
       if (fileScope)
       {
         const NamespaceSDict *nl = fileScope->getUsedNamespaces();
-        if (accessibleViaUsingNamespace(nl,fileScope,item,explicitScopePart)) 
+        if (accessibleViaUsingNamespace(nl,fileScope,item,explicitScopePart))
         {
           //printf("> found in used namespace\n");
           goto done;
@@ -1216,9 +1208,9 @@ int computeQualifiedIndex(const QCString &name)
 
 static void getResolvedSymbol(const Definition *scope,
                        const FileDef *fileScope,
-                       Definition *d, 
+                       Definition *d,
                        const QCString &explicitScopePart,
-                       ArgumentList *actTemplParams,
+                       const std::unique_ptr<ArgumentList> &actTemplParams,
                        int &minDistance,
                        const ClassDef *&bestMatch,
                        const MemberDef *&bestTypedef,
@@ -1231,8 +1223,8 @@ static void getResolvedSymbol(const Definition *scope,
 
   // only look at classes and members that are enums or typedefs
   if (d->definitionType()==Definition::TypeClass ||
-      (d->definitionType()==Definition::TypeMember && 
-       ((dynamic_cast<MemberDef*>(d))->isTypedef() || (dynamic_cast<MemberDef*>(d))->isEnumerate()) 
+      (d->definitionType()==Definition::TypeMember &&
+       ((dynamic_cast<MemberDef*>(d))->isTypedef() || (dynamic_cast<MemberDef*>(d))->isEnumerate())
       )
      )
   {
@@ -1248,23 +1240,23 @@ static void getResolvedSymbol(const Definition *scope,
         ClassDef *cd = dynamic_cast<ClassDef *>(d);
         //printf("cd=%s\n",cd->name().data());
         if (!cd->isTemplateArgument()) // skip classes that
-          // are only there to 
-          // represent a template 
+          // are only there to
+          // represent a template
           // argument
         {
           //printf("is not a templ arg\n");
           if (distance<minDistance) // found a definition that is "closer"
           {
             minDistance=distance;
-            bestMatch = cd; 
+            bestMatch = cd;
             bestTypedef = 0;
             bestTemplSpec.resize(0);
             bestResolvedType = cd->qualifiedName();
           }
           else if (distance==minDistance &&
               fileScope && bestMatch &&
-              fileScope->getUsedNamespaces() && 
-              d->getOuterScope()->definitionType()==Definition::TypeNamespace && 
+              fileScope->getUsedNamespaces() &&
+              d->getOuterScope()->definitionType()==Definition::TypeNamespace &&
               bestMatch->getOuterScope()==Doxygen::globalScope
               )
           {
@@ -1277,7 +1269,7 @@ static void getResolvedSymbol(const Definition *scope,
             // Just a non-perfect heuristic but it could help in some situations
             // (kdecore code is an example).
             minDistance=distance;
-            bestMatch = cd; 
+            bestMatch = cd;
             bestTypedef = 0;
             bestTemplSpec.resize(0);
             bestResolvedType = cd->qualifiedName();
@@ -1376,7 +1368,7 @@ static void getResolvedSymbol(const Definition *scope,
 /* Find the fully qualified class name referred to by the input class
  * or typedef name against the input scope.
  * Loops through scope and each of its parent scopes looking for a
- * match against the input name. Can recursively call itself when 
+ * match against the input name. Can recursively call itself when
  * resolving typedefs.
  */
 static const ClassDef *getResolvedClassRec(const Definition *scope,
@@ -1388,16 +1380,17 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
     )
 {
   //printf("[getResolvedClassRec(%s,%s)\n",scope?scope->name().data():"<global>",n);
+  if (n==0 || *n=='\0') return 0;
   QCString name;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
   name=stripTemplateSpecifiersFromScope
                      (removeRedundantWhiteSpace(n),TRUE,
                       &strippedTemplateParams);
-  ArgumentList actTemplParams;
+  std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
-    stringToArgumentList(scope->getLanguage(),strippedTemplateParams,actTemplParams);
+    actTemplParams = stringToArgumentList(scope->getLanguage(),strippedTemplateParams);
   }
 
   int qualifierIndex = computeQualifiedIndex(name);
@@ -1411,7 +1404,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
     name=name.mid(qualifierIndex+2);
   }
 
-  if (name.isEmpty()) 
+  if (name.isEmpty())
   {
     //printf("] empty name\n");
     return 0; // empty name
@@ -1419,28 +1412,24 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
 
   //printf("Looking for symbol %s\n",name.data());
   DefinitionIntf *di = Doxygen::symbolMap->find(name);
-  // the -g (for C# generics) and -p (for ObjC protocols) are now already 
+  // the -g (for C# generics) and -p (for ObjC protocols) are now already
   // stripped from the key used in the symbolMap, so that is not needed here.
-  if (di==0) 
+  if (di==0)
   {
-    //di = Doxygen::symbolMap->find(name+"-g");
-    //if (di==0)
-    //{
-      di = Doxygen::symbolMap->find(name+"-p");
-      if (di==0)
-      {
-        //printf("no such symbol!\n");
-        return 0;
-      }
-    //}
+    di = Doxygen::symbolMap->find(name+"-p");
+    if (di==0)
+    {
+      //printf("no such symbol!\n");
+      return 0;
+    }
   }
   //printf("found symbol!\n");
 
-  bool hasUsingStatements = 
-    (fileScope && ((fileScope->getUsedNamespaces() && 
+  bool hasUsingStatements =
+    (fileScope && ((fileScope->getUsedNamespaces() &&
                     fileScope->getUsedNamespaces()->count()>0) ||
-                   (fileScope->getUsedClasses() && 
-                    fileScope->getUsedClasses()->count()>0)) 
+                   (fileScope->getUsedClasses() &&
+                    fileScope->getUsedClasses()->count()>0))
     );
   //printf("hasUsingStatements=%d\n",hasUsingStatements);
   // Since it is often the case that the same name is searched in the same
@@ -1467,7 +1456,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
 
   // if a file scope is given and it contains using statements we should
   // also use the file part in the key (as a class name can be in
-  // two different namespaces and a using statement in a file can select 
+  // two different namespaces and a using statement in a file can select
   // one of them).
   if (hasUsingStatements)
   {
@@ -1483,19 +1472,19 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   //printf("Searching for %s result=%p\n",key.data(),pval);
   if (pval)
   {
-    //printf("LookupInfo %p %p '%s' %p\n", 
-    //    pval->classDef, pval->typeDef, pval->templSpec.data(), 
-    //    pval->resolvedType.data()); 
+    //printf("LookupInfo %p %p '%s' %p\n",
+    //    pval->classDef, pval->typeDef, pval->templSpec.data(),
+    //    pval->resolvedType.data());
     if (pTemplSpec)    *pTemplSpec=pval->templSpec;
     if (pTypeDef)      *pTypeDef=pval->typeDef;
     if (pResolvedType) *pResolvedType=pval->resolvedType;
     //printf("] cachedMatch=%s\n",
     //    pval->classDef?pval->classDef->name().data():"<none>");
-    //if (pTemplSpec) 
+    //if (pTemplSpec)
     //  printf("templSpec=%s\n",pTemplSpec->data());
-    return pval->classDef; 
+    return pval->classDef;
   }
-  else // not found yet; we already add a 0 to avoid the possibility of 
+  else // not found yet; we already add a 0 to avoid the possibility of
     // endless recursion.
   {
     Doxygen::lookupCache->insert(key,new LookupInfo);
@@ -1515,7 +1504,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
     int count=0;
     for (dli.toFirst();(d=dli.current());++dli,++count) // foreach definition
     {
-      getResolvedSymbol(scope,fileScope,d,explicitScopePart,&actTemplParams,
+      getResolvedSymbol(scope,fileScope,d,explicitScopePart,actTemplParams,
                         minDistance,bestMatch,bestTypedef,bestTemplSpec,
                         bestResolvedType);
     }
@@ -1524,12 +1513,12 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   {
     //printf("  name is unique\n");
     Definition *d = (Definition *)di;
-    getResolvedSymbol(scope,fileScope,d,explicitScopePart,&actTemplParams,
+    getResolvedSymbol(scope,fileScope,d,explicitScopePart,actTemplParams,
                       minDistance,bestMatch,bestTypedef,bestTemplSpec,
                       bestResolvedType);
   }
 
-  if (pTypeDef) 
+  if (pTypeDef)
   {
     *pTypeDef = bestTypedef;
   }
@@ -1558,7 +1547,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
-  //if (pTemplSpec) 
+  //if (pTemplSpec)
   //  printf("templSpec=%s\n",pTemplSpec->data());
   return bestMatch;
 }
@@ -1566,7 +1555,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
 /* Find the fully qualified class name referred to by the input class
  * or typedef name against the input scope.
  * Loops through scope and each of its parent scopes looking for a
- * match against the input name. 
+ * match against the input name.
  */
 const ClassDef *getResolvedClass(const Definition *scope,
     const FileDef *fileScope,
@@ -1581,7 +1570,7 @@ const ClassDef *getResolvedClass(const Definition *scope,
   static bool optimizeOutputVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   g_resolvedTypedefs.clear();
   if (scope==0 ||
-      (scope->definitionType()!=Definition::TypeClass && 
+      (scope->definitionType()!=Definition::TypeClass &&
        scope->definitionType()!=Definition::TypeNamespace
       ) ||
       (scope->getLanguage()==SrcLangExt_Java && QCString(n).find("::")!=-1)
@@ -1610,7 +1599,7 @@ const ClassDef *getResolvedClass(const Definition *scope,
   {
     result = getClass(n);
   }
-  if (!mayBeUnlinkable && result && !result->isLinkable()) 
+  if (!mayBeUnlinkable && result && !result->isLinkable())
   {
     if (!mayBeHidden || !result->isHidden())
     {
@@ -1628,34 +1617,6 @@ const ClassDef *getResolvedClass(const Definition *scope,
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 
-static bool findOperator(const QCString &s,int i)
-{
-  int b = s.findRev("operator",i);
-  if (b==-1) return FALSE; // not found
-  b+=8;
-  while (b<i) // check if there are only spaces in between 
-    // the operator and the >
-  {
-    if (!isspace((uchar)s.at(b))) return FALSE;
-    b++;
-  }
-  return TRUE;
-}
-
-static bool findOperator2(const QCString &s,int i)
-{
-  int b = s.findRev("operator",i);
-  if (b==-1) return FALSE; // not found
-  b+=8;
-  while (b<i) // check if there are only non-ascii
-              // characters in front of the operator
-  {
-    if (isId((uchar)s.at(b))) return FALSE;
-    b++;
-  }
-  return TRUE;
-}
-
 static const char constScope[]    = { 'c', 'o', 'n', 's', 't', ':' };
 static const char virtualScope[]  = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 static const char operatorScope[] = { 'o', 'p', 'e', 'r', 'a', 't', 'o', 'r', '?', '?', '?' };
@@ -1664,30 +1625,30 @@ struct CharAroundSpace
 {
   CharAroundSpace()
   {
-    charMap['('].before=FALSE;
-    charMap['='].before=FALSE;
-    charMap['&'].before=FALSE;
-    charMap['*'].before=FALSE;
-    charMap['['].before=FALSE;
-    charMap['|'].before=FALSE;
-    charMap['+'].before=FALSE;
-    charMap[';'].before=FALSE;
-    charMap[':'].before=FALSE;
-    charMap['/'].before=FALSE;
+    charMap[static_cast<int>('(')].before=FALSE;
+    charMap[static_cast<int>('=')].before=FALSE;
+    charMap[static_cast<int>('&')].before=FALSE;
+    charMap[static_cast<int>('*')].before=FALSE;
+    charMap[static_cast<int>('[')].before=FALSE;
+    charMap[static_cast<int>('|')].before=FALSE;
+    charMap[static_cast<int>('+')].before=FALSE;
+    charMap[static_cast<int>(';')].before=FALSE;
+    charMap[static_cast<int>(':')].before=FALSE;
+    charMap[static_cast<int>('/')].before=FALSE;
 
-    charMap['='].after=FALSE;
-    charMap[' '].after=FALSE;
-    charMap['['].after=FALSE;
-    charMap[']'].after=FALSE;
-    charMap['\t'].after=FALSE;
-    charMap['\n'].after=FALSE;
-    charMap[')'].after=FALSE;
-    charMap[','].after=FALSE;
-    charMap['<'].after=FALSE;
-    charMap['|'].after=FALSE;
-    charMap['+'].after=FALSE;
-    charMap['('].after=FALSE;
-    charMap['/'].after=FALSE;
+    charMap[static_cast<int>('=')].after=FALSE;
+    charMap[static_cast<int>(' ')].after=FALSE;
+    charMap[static_cast<int>('[')].after=FALSE;
+    charMap[static_cast<int>(']')].after=FALSE;
+    charMap[static_cast<int>('\t')].after=FALSE;
+    charMap[static_cast<int>('\n')].after=FALSE;
+    charMap[static_cast<int>(')')].after=FALSE;
+    charMap[static_cast<int>(',')].after=FALSE;
+    charMap[static_cast<int>('<')].after=FALSE;
+    charMap[static_cast<int>('|')].after=FALSE;
+    charMap[static_cast<int>('+')].after=FALSE;
+    charMap[static_cast<int>('(')].after=FALSE;
+    charMap[static_cast<int>('/')].after=FALSE;
   }
   struct CharElem
   {
@@ -1704,15 +1665,16 @@ static CharAroundSpace g_charAroundSpace;
 // Note: this function is not reentrant due to the use of static buffer!
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
-  static bool cliSupport = Config_getBool(CPP_CLI_SUPPORT);
-  static bool vhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool cliSupport = Config_getBool(CPP_CLI_SUPPORT);
+  bool vhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
 
   if (s.isEmpty() || vhdl) return s;
 
   // We use a static character array to
   // improve the performance of this function
-  static char *growBuf = 0;
-  static int growBufLen = 0;
+  // and thread_local is needed to make it multi-thread safe
+  static THREAD_LOCAL char *growBuf = 0;
+  static THREAD_LOCAL int growBufLen = 0;
   if ((int)s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
   {
     growBufLen = s.length()*3;
@@ -1994,10 +1956,10 @@ bool rightScopeMatch(const QCString &scope, const QCString &name)
 {
   int sl=scope.length();
   int nl=name.length();
-  return (name==scope || // equal 
-          (scope.right(nl)==name && // substring 
+  return (name==scope || // equal
+          (scope.right(nl)==name && // substring
            sl-nl>1 && scope.at(sl-nl-1)==':' && scope.at(sl-nl-2)==':' // scope
-          ) 
+          )
          );
 }
 
@@ -2005,10 +1967,10 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 {
   int sl=scope.length();
   int nl=name.length();
-  return (name==scope || // equal 
-          (scope.left(nl)==name && // substring 
+  return (name==scope || // equal
+          (scope.left(nl)==name && // substring
            sl>nl+1 && scope.at(nl)==':' && scope.at(nl+1)==':' // scope
-          ) 
+          )
          );
 }
 
@@ -2021,8 +1983,10 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   //printf("linkify='%s'\n",text);
   static QRegExp regExp("[a-z_A-Z\\x80-\\xFF][~!a-z_A-Z0-9$\\\\.:\\x80-\\xFF]*");
   static QRegExp regExpSplit("(?!:),");
+  if (text==0) return;
   QCString txtStr=text;
   int strLen = txtStr.length();
+  if (strLen==0) return;
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d external=%d\n",
   //    scope?scope->name().data():"<none>",
   //    fileScope?fileScope->name().data():"<none>",
@@ -2032,7 +1996,6 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   int newIndex;
   int skipIndex=0;
   int floatingIndex=0;
-  if (strLen==0) return;
   // read a word from the text string
   while ((newIndex=regExp.match(txtStr,index,&matchLen))!=-1)
   {
@@ -2045,11 +2008,11 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     }
 
     // add non-word part to the result
-    bool insideString=FALSE; 
+    bool insideString=FALSE;
     int i;
-    for (i=index;i<newIndex;i++) 
-    { 
-      if (txtStr.at(i)=='"') insideString=!insideString; 
+    for (i=index;i<newIndex;i++)
+    {
+      if (txtStr.at(i)=='"') insideString=!insideString;
     }
 
     //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
@@ -2069,16 +2032,16 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
         out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
         out.writeString(splitText.right(splitLength-i-offset),keepSpaces);
         floatingIndex=splitLength-i-offset+matchLen;
-      } 
+      }
       else
       {
-        out.writeString(splitText,keepSpaces); 
+        out.writeString(splitText,keepSpaces);
       }
     }
     else
     {
-      //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex)); 
-      out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex),keepSpaces); 
+      //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex));
+      out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex),keepSpaces);
     }
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
@@ -2112,7 +2075,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           }
         }
       }
-      if (!found && (cd || (cd=getClass(matchWord)))) 
+      if (!found && (cd || (cd=getClass(matchWord))))
       {
         //printf("Found class %s\n",cd->name().data());
         // add link to the result
@@ -2156,10 +2119,10 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 
       int m = matchWord.findRev("::");
       QCString scopeName;
-      if (scope && 
-          (scope->definitionType()==Definition::TypeClass || 
+      if (scope &&
+          (scope->definitionType()==Definition::TypeClass ||
            scope->definitionType()==Definition::TypeNamespace
-          ) 
+          )
          )
       {
         scopeName=scope->name();
@@ -2171,19 +2134,19 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       }
 
       //printf("ScopeName=%s\n",scopeName.data());
-      //if (!found) printf("Trying to link %s in %s\n",word.data(),scopeName.data()); 
-      if (!found && 
-          getDefs(scopeName,matchWord,0,md,cd,fd,nd,gd) && 
-          //(md->isTypedef() || md->isEnumerate() || 
+      //if (!found) printf("Trying to link %s in %s\n",word.data(),scopeName.data());
+      if (!found &&
+          getDefs(scopeName,matchWord,0,md,cd,fd,nd,gd) &&
+          //(md->isTypedef() || md->isEnumerate() ||
           // md->isReference() || md->isVariable()
-          //) && 
-          (external ? md->isLinkable() : md->isLinkableInProject()) 
+          //) &&
+          (external ? md->isLinkable() : md->isLinkableInProject())
          )
       {
         //printf("Found ref scope=%s\n",d?d->name().data():"<global>");
         //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
         //                       md->anchor(),word);
-        if (md!=self && (self==0 || md->name()!=self->name())) 
+        if (md!=self && (self==0 || md->name()!=self->name()))
           // name check is needed for overloaded members, where getDefs just returns one
         {
           /* in case of Fortran scop and the variable is a non Fortran variable: don't link,
@@ -2230,7 +2193,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
     ol.parseText(exampleLine.mid(index,newIndex-index));
     uint entryIndex = exampleLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
     Example *e=ed->at(entryIndex);
-    if (ok && e) 
+    if (ok && e)
     {
       ol.pushGeneratorState();
       //if (latexEnabled) ol.disable(OutputGenerator::Latex);
@@ -2254,7 +2217,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
       ol.popGeneratorState();
     }
     index=newIndex+matchLen;
-  } 
+  }
   ol.parseText(exampleLine.right(exampleLine.length()-index));
   ol.writeString(".");
 }
@@ -2296,12 +2259,12 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
     if (it!=al.end()) result+=", ";
   }
   result+=")";
-  if (al.constSpecifier) result+=" const";
-  if (al.volatileSpecifier) result+=" volatile";
-  if (al.refQualifier==RefQualifierLValue) result+=" &";
-  else if (al.refQualifier==RefQualifierRValue) result+=" &&";
-  if (!al.trailingReturnType.isEmpty()) result+=" -> "+al.trailingReturnType;
-  if (al.pureSpecifier) result+=" =0";
+  if (al.constSpecifier()) result+=" const";
+  if (al.volatileSpecifier()) result+=" volatile";
+  if (al.refQualifier()==RefQualifierLValue) result+=" &";
+  else if (al.refQualifier()==RefQualifierRValue) result+=" &&";
+  if (!al.trailingReturnType().isEmpty()) result+=" -> "+al.trailingReturnType();
+  if (al.pureSpecifier()) result+=" =0";
   return removeRedundantWhiteSpace(result);
 }
 
@@ -2404,7 +2367,7 @@ int filterCRLF(char *buf,int len)
     {
       c = '\n';                // each CR to LF
       if (src<len && buf[src] == '\n')
-        ++src;                 // skip LF just after CR (DOS) 
+        ++src;                 // skip LF just after CR (DOS)
     }
     else if ( c == '\0' && src<len-1) // filter out internal \0 characters, as it will confuse the parser
     {
@@ -2415,21 +2378,19 @@ int filterCRLF(char *buf,int len)
   return dest;                 // length of the valid part of the buf
 }
 
-static QCString getFilterFromList(const char *name,const QStrList &filterList,bool &found)
+static QCString getFilterFromList(const char *name,const StringVector &filterList,bool &found)
 {
   found=FALSE;
   // compare the file name to the filter pattern list
-  QStrListIterator sli(filterList);
-  char* filterStr;
-  for (sli.toFirst(); (filterStr = sli.current()); ++sli)
+  for (const auto &filterStr : filterList)
   {
-    QCString fs = filterStr;
+    QCString fs = filterStr.c_str();
     int i_equals=fs.find('=');
     if (i_equals!=-1)
     {
       QCString filterPattern = fs.left(i_equals);
-      QRegExp fpat(filterPattern,Portable::fileSystemIsCaseSensitive(),TRUE); 
-      if (fpat.match(name)!=-1) 
+      QRegExp fpat(filterPattern,Portable::fileSystemIsCaseSensitive(),TRUE);
+      if (fpat.match(name)!=-1)
       {
         // found a match!
         QCString filterName = fs.mid(i_equals+1);
@@ -2457,12 +2418,12 @@ QCString getFileFilter(const char* name,bool isSourceCode)
   // sanity check
   if (name==0) return "";
 
-  QStrList& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
-  QStrList& filterList    = Config_getList(FILTER_PATTERNS);
+  const StringVector& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
+  const StringVector& filterList    = Config_getList(FILTER_PATTERNS);
 
   QCString filterName;
   bool found=FALSE;
-  if (isSourceCode && !filterSrcList.isEmpty())
+  if (isSourceCode && !filterSrcList.empty())
   { // first look for source filter pattern list
     filterName = getFilterFromList(name,filterSrcList,found);
   }
@@ -2497,7 +2458,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
   int outputSize=inputSize*4+1;
   QCString output(outputSize);
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
-  if (cd==(void *)(-1)) 
+  if (cd==(void *)(-1))
   {
     err("unsupported character conversion: '%s'->'%s'\n",
         inputEncoding.data(),outputEncoding);
@@ -2529,7 +2490,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
 
 /*! reads a file with name \a name and returns it as a string. If \a filter
  *  is TRUE the file will be filtered by any user specified input filter.
- *  If \a name is "-" the string will be read from standard input. 
+ *  If \a name is "-" the string will be read from standard input.
  */
 QCString fileToString(const char *name,bool filter,bool isSourceCode)
 {
@@ -2543,13 +2504,13 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
     if (fileOpened)
     {
       const int bSize=4096;
-      QCString contents(bSize);
+      QCString contents(bSize+1);
       int totalSize=0;
       int size;
       while ((size=f.readBlock(contents.rawData()+totalSize,bSize))==bSize)
       {
         totalSize+=bSize;
-        contents.resize(totalSize+bSize);
+        contents.resize(totalSize+bSize+1);
       }
       totalSize = filterCRLF(contents.rawData(),totalSize+size)+2;
       contents.resize(totalSize);
@@ -2579,7 +2540,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
       return buf.data();
     }
   }
-  if (!fileOpened)  
+  if (!fileOpened)
   {
     err("cannot open file '%s' for reading\n",name);
   }
@@ -2609,7 +2570,7 @@ static QDateTime getCurrentDateTime()
       static bool warnedOnce=FALSE;
       if (!warnedOnce)
       {
-        warn_uncond("Environment variable SOURCE_DATE_EPOCH must have a value smaller than or equal to %llu; actual value %llu\n",UINT_MAX,epoch);
+        warn_uncond("Environment variable SOURCE_DATE_EPOCH must have a value smaller than or equal to %d; actual value %" PRIu64 "\n",UINT_MAX, (uint64_t)epoch);
         warnedOnce=TRUE;
       }
     }
@@ -2643,24 +2604,24 @@ QCString yearToString()
 }
 
 //----------------------------------------------------------------------
-// recursive function that returns the number of branches in the 
+// recursive function that returns the number of branches in the
 // inheritance tree that the base class 'bcd' is below the class 'cd'
 
 int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
 {
-  if (bcd->categoryOf()) // use class that is being extended in case of 
+  if (bcd->categoryOf()) // use class that is being extended in case of
     // an Objective-C category
   {
     bcd=bcd->categoryOf();
   }
-  if (cd==bcd) return level; 
+  if (cd==bcd) return level;
   if (level==256)
   {
     warn_uncond("class %s seem to have a recursive "
         "inheritance relation!\n",cd->name().data());
     return -1;
   }
-  int m=maxInheritanceDepth; 
+  int m=maxInheritanceDepth;
   if (cd->baseClasses())
   {
     BaseClassListIterator bcli(*cd->baseClasses());
@@ -2677,12 +2638,12 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
 
 Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot,int level)
 {
-  if (bcd->categoryOf()) // use class that is being extended in case of 
+  if (bcd->categoryOf()) // use class that is being extended in case of
     // an Objective-C category
   {
     bcd=bcd->categoryOf();
   }
-  if (cd==bcd) 
+  if (cd==bcd)
   {
     goto exit;
   }
@@ -2707,165 +2668,6 @@ exit:
   return prot;
 }
 
-#ifndef NEWMATCH
-// strip any template specifiers that follow className in string s
-static QCString trimTemplateSpecifiers(
-    const QCString &namespaceName,
-    const QCString &className,
-    const QCString &s
-    )
-{
-  //printf("trimTemplateSpecifiers(%s,%s,%s)\n",namespaceName.data(),className.data(),s.data());
-  QCString scopeName=mergeScopes(namespaceName,className);
-  ClassDef *cd=getClass(scopeName);
-  if (cd==0) return s; // should not happen, but guard anyway.
-
-  QCString result=s;
-
-  int i=className.length()-1;
-  if (i>=0 && className.at(i)=='>') // template specialization
-  {
-    // replace unspecialized occurrences in s, with their specialized versions.
-    int count=1;
-    int cl=i+1;
-    while (i>=0)
-    {
-      char c=className.at(i);
-      if (c=='>') count++,i--;
-      else if (c=='<') { count--; if (count==0) break; }
-      else i--;
-    }
-    QCString unspecClassName=className.left(i);
-    int l=i;
-    int p=0;
-    while ((i=result.find(unspecClassName,p))!=-1)
-    {
-      if (result.at(i+l)!='<') // unspecialized version
-      {
-        result=result.left(i)+className+result.right(result.length()-i-l);
-        l=cl;
-      }
-      p=i+l;
-    }
-  }
-
-  //printf("result after specialization: %s\n",result.data());
-
-  QCString qualName=cd->qualifiedNameWithTemplateParameters();
-  //printf("QualifiedName = %s\n",qualName.data());
-  // We strip the template arguments following className (if any)
-  if (!qualName.isEmpty()) // there is a class name
-  {
-    int is,ps=0;
-    int p=0,l,i;
-
-    while ((is=getScopeFragment(qualName,ps,&l))!=-1)
-    {
-      QCString qualNamePart = qualName.right(qualName.length()-is);
-      //printf("qualNamePart=%s\n",qualNamePart.data());
-      while ((i=result.find(qualNamePart,p))!=-1)
-      {
-        int ql=qualNamePart.length();
-        result=result.left(i)+cd->name()+result.right(result.length()-i-ql);
-        p=i+cd->name().length();
-      }
-      ps=is+l;
-    }
-  }
-  //printf("result=%s\n",result.data());
-
-  return result.stripWhiteSpace();
-}
-
-/*!
- * @param pattern pattern to look for
- * @param s string to search in
- * @param p position to start
- * @param len resulting pattern length
- * @returns position on which string is found, or -1 if not found
- */
-static int findScopePattern(const QCString &pattern,const QCString &s,
-    int p,int *len)
-{
-  int sl=s.length();
-  int pl=pattern.length();
-  int sp=0; 
-  *len=0;
-  while (p<sl)
-  {
-    sp=p; // start of match
-    int pp=0; // pattern position
-    while (p<sl && pp<pl)
-    {
-      if (s.at(p)=='<') // skip template arguments while matching
-      {
-        int bc=1;
-        //printf("skipping pos=%d c=%c\n",p,s.at(p));
-        p++;
-        while (p<sl)
-        {
-          if (s.at(p)=='<') bc++;
-          else if (s.at(p)=='>') 
-          {
-            bc--;
-            if (bc==0) 
-            {
-              p++;
-              break;
-            }
-          }
-          //printf("skipping pos=%d c=%c\n",p,s.at(p));
-          p++;
-        }
-      }
-      else if (s.at(p)==pattern.at(pp))
-      {
-        //printf("match at position p=%d pp=%d c=%c\n",p,pp,s.at(p));
-        p++;
-        pp++;
-      }
-      else // no match
-      {
-        //printf("restarting at %d c=%c pat=%s\n",p,s.at(p),pattern.data());
-        p=sp+1;
-        break;
-      }
-    }
-    if (pp==pl) // whole pattern matches
-    {
-      *len=p-sp;
-      return sp;
-    }
-  }
-  return -1;
-}
-
-static QCString trimScope(const QCString &name,const QCString &s)
-{
-  int scopeOffset=name.length();
-  QCString result=s;
-  do // for each scope
-  {
-    QCString tmp;
-    QCString scope=name.left(scopeOffset)+"::";
-    //printf("Trying with scope='%s'\n",scope.data());
-
-    int i,p=0,l;
-    while ((i=findScopePattern(scope,result,p,&l))!=-1) // for each occurrence
-    {
-      tmp+=result.mid(p,i-p); // add part before pattern
-      p=i+l;
-    }
-    tmp+=result.right(result.length()-p); // add trailing part
-
-    scopeOffset=name.findRev("::",scopeOffset-1);
-    result = tmp;
-  } while (scopeOffset>0);   
-  //printf("trimScope(name=%s,scope=%s)=%s\n",name.data(),s.data(),result.data());
-  return result;
-}
-#endif
-
 void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
 {
   //printf("trimBaseClassScope level=%d '%s'\n",level,s.data());
@@ -2884,7 +2686,7 @@ void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
     }
     //printf("base class '%s'\n",cd->name().data());
     if (cd->baseClasses())
-      trimBaseClassScope(cd->baseClasses(),s,level+1); 
+      trimBaseClassScope(cd->baseClasses(),s,level+1);
   }
 }
 
@@ -2982,7 +2784,7 @@ static void stripIrrelevantString(QCString &target,const QCString &str)
       if (i1==-1 && i2==-1)
       {
         // strip str from target at index i
-        target=target.left(i)+target.right(target.length()-i-l); 
+        target=target.left(i)+target.right(target.length()-i-l);
         changed=TRUE;
         i-=l;
       }
@@ -3011,8 +2813,8 @@ static void stripIrrelevantString(QCString &target,const QCString &str)
 
   \code
   const T param     ->   T param          // not relevant
-  const T& param    ->   const T& param   // const needed               
-  T* const param    ->   T* param         // not relevant                   
+  const T& param    ->   const T& param   // const needed
+  T* const param    ->   T* param         // not relevant
   const T* param    ->   const T* param   // const needed
   \endcode
  */
@@ -3032,276 +2834,6 @@ void stripIrrelevantConstVolatile(QCString &s)
 //#define MATCH printf("Match at line %d\n",__LINE__);
 //#define NOMATCH printf("Nomatch at line %d\n",__LINE__);
 
-#ifndef NEWMATCH
-static bool matchArgument(const Argument *srcA,const Argument *dstA,
-    const QCString &className,
-    const QCString &namespaceName,
-    NamespaceSDict *usingNamespaces,
-    SDict<Definition> *usingClasses)
-{
-  //printf("match argument start '%s|%s' <-> '%s|%s' using nsp=%p class=%p\n",
-  //    srcA->type.data(),srcA->name.data(),
-  //    dstA->type.data(),dstA->name.data(),
-  //    usingNamespaces,
-  //    usingClasses);
-
-  // TODO: resolve any typedefs names that are part of srcA->type
-  //       before matching. This should use className and namespaceName
-  //       and usingNamespaces and usingClass to determine which typedefs
-  //       are in-scope, so it will not be very efficient :-(
-
-  QCString srcAType=trimTemplateSpecifiers(namespaceName,className,srcA->type);
-  QCString dstAType=trimTemplateSpecifiers(namespaceName,className,dstA->type);
-  QCString srcAName=srcA->name.stripWhiteSpace();
-  QCString dstAName=dstA->name.stripWhiteSpace();
-  srcAType.stripPrefix("class ");
-  dstAType.stripPrefix("class ");
-
-  // allow distinguishing "const A" from "const B" even though 
-  // from a syntactic point of view they would be two names of the same 
-  // type "const". This is not fool prove of course, but should at least 
-  // catch the most common cases.
-  if ((srcAType=="const" || srcAType=="volatile") && !srcAName.isEmpty())
-  {
-    srcAType+=" ";
-    srcAType+=srcAName;
-  } 
-  if ((dstAType=="const" || dstAType=="volatile") && !dstAName.isEmpty())
-  {
-    dstAType+=" ";
-    dstAType+=dstAName;
-  }
-  if (srcAName=="const" || srcAName=="volatile")
-  {
-    srcAType+=srcAName;
-    srcAName.resize(0);
-  }
-  else if (dstA->name=="const" || dstA->name=="volatile")
-  {
-    dstAType+=dstA->name;
-    dstAName.resize(0);
-  }
-
-  stripIrrelevantConstVolatile(srcAType);
-  stripIrrelevantConstVolatile(dstAType);
-
-  // strip typename keyword
-  if (qstrncmp(srcAType,"typename ",9)==0)
-  {
-    srcAType = srcAType.right(srcAType.length()-9); 
-  }
-  if (qstrncmp(dstAType,"typename ",9)==0)
-  {
-    dstAType = dstAType.right(dstAType.length()-9); 
-  }
-
-  srcAType = removeRedundantWhiteSpace(srcAType);
-  dstAType = removeRedundantWhiteSpace(dstAType);
-
-  //srcAType=stripTemplateSpecifiersFromScope(srcAType,FALSE);
-  //dstAType=stripTemplateSpecifiersFromScope(dstAType,FALSE);
-
-  //printf("srcA='%s|%s' dstA='%s|%s'\n",srcAType.data(),srcAName.data(),
-  //      dstAType.data(),dstAName.data());
-
-  if (srcA->array!=dstA->array) // nomatch for char[] against char
-  {
-    NOMATCH
-      return FALSE;
-  }
-  if (srcAType!=dstAType) // check if the argument only differs on name 
-  {
-
-    // remove a namespace scope that is only in one type 
-    // (assuming a using statement was used)
-    //printf("Trimming %s<->%s: %s\n",srcAType.data(),dstAType.data(),namespaceName.data());
-    //trimNamespaceScope(srcAType,dstAType,namespaceName);
-    //printf("After Trimming %s<->%s\n",srcAType.data(),dstAType.data());
-
-    //QCString srcScope;
-    //QCString dstScope;
-
-    // strip redundant scope specifiers
-    if (!className.isEmpty())
-    {
-      srcAType=trimScope(className,srcAType);
-      dstAType=trimScope(className,dstAType);
-      //printf("trimScope: '%s' <=> '%s'\n",srcAType.data(),dstAType.data());
-      ClassDef *cd;
-      if (!namespaceName.isEmpty())
-        cd=getClass(namespaceName+"::"+className);
-      else
-        cd=getClass(className);
-      if (cd && cd->baseClasses())
-      {
-        trimBaseClassScope(cd->baseClasses(),srcAType); 
-        trimBaseClassScope(cd->baseClasses(),dstAType); 
-      }
-      //printf("trimBaseClassScope: '%s' <=> '%s'\n",srcAType.data(),dstAType.data());
-    }
-    if (!namespaceName.isEmpty())
-    {
-      srcAType=trimScope(namespaceName,srcAType);
-      dstAType=trimScope(namespaceName,dstAType);
-    }
-    //printf("#usingNamespace=%d\n",usingNamespaces->count());
-    if (usingNamespaces && usingNamespaces->count()>0)
-    {
-      NamespaceSDict::Iterator nli(*usingNamespaces);
-      NamespaceDef *nd;
-      for (;(nd=nli.current());++nli)
-      {
-        srcAType=trimScope(nd->name(),srcAType);
-        dstAType=trimScope(nd->name(),dstAType);
-      }
-    }
-    //printf("#usingClasses=%d\n",usingClasses->count());
-    if (usingClasses && usingClasses->count()>0)
-    {
-      SDict<Definition>::Iterator cli(*usingClasses);
-      Definition *cd;
-      for (;(cd=cli.current());++cli)
-      {
-        srcAType=trimScope(cd->name(),srcAType);
-        dstAType=trimScope(cd->name(),dstAType);
-      }
-    }
-
-    //printf("2. srcA=%s|%s dstA=%s|%s\n",srcAType.data(),srcAName.data(),
-    //    dstAType.data(),dstAName.data());
-
-    if (!srcAName.isEmpty() && !dstA->type.isEmpty() &&
-        (srcAType+" "+srcAName)==dstAType)
-    {
-      MATCH
-      return TRUE;
-    }
-    else if (!dstAName.isEmpty() && !srcA->type.isEmpty() &&
-        (dstAType+" "+dstAName)==srcAType)
-    {
-      MATCH
-      return TRUE;
-    }
-
-
-    uint srcPos=0,dstPos=0; 
-    bool equal=TRUE;
-    while (srcPos<srcAType.length() && dstPos<dstAType.length() && equal)
-    {
-      equal=srcAType.at(srcPos)==dstAType.at(dstPos);
-      if (equal) srcPos++,dstPos++; 
-    }
-    uint srcATypeLen=srcAType.length();
-    uint dstATypeLen=dstAType.length();
-    if (srcPos<srcATypeLen && dstPos<dstATypeLen)
-    {
-      // if nothing matches or the match ends in the middle or at the
-      // end of a string then there is no match
-      if (srcPos==0 || dstPos==0) 
-      {
-        NOMATCH
-        return FALSE;
-      }
-      if (isId(srcAType.at(srcPos)) && isId(dstAType.at(dstPos)))
-      {
-        //printf("partial match srcPos=%d dstPos=%d!\n",srcPos,dstPos);
-        // check if a name if already found -> if no then there is no match
-        if (!srcAName.isEmpty() || !dstAName.isEmpty()) 
-        {
-          NOMATCH
-          return FALSE;
-        }
-        // types only
-        while (srcPos<srcATypeLen && isId(srcAType.at(srcPos))) srcPos++;
-        while (dstPos<dstATypeLen && isId(dstAType.at(dstPos))) dstPos++;
-        if (srcPos<srcATypeLen || 
-            dstPos<dstATypeLen ||
-            (srcPos==srcATypeLen && dstPos==dstATypeLen)
-           ) 
-        {
-          NOMATCH
-          return FALSE;
-        }
-      }
-      else
-      {
-        // otherwise we assume that a name starts at the current position.
-        while (srcPos<srcATypeLen && isId(srcAType.at(srcPos))) srcPos++;
-        while (dstPos<dstATypeLen && isId(dstAType.at(dstPos))) dstPos++;
-
-        // if nothing more follows for both types then we assume we have
-        // found a match. Note that now 'signed int' and 'signed' match, but
-        // seeing that int is not a name can only be done by looking at the
-        // semantics.
-
-        if (srcPos!=srcATypeLen || dstPos!=dstATypeLen) 
-        { 
-          NOMATCH
-          return FALSE; 
-        }
-      }
-    }
-    else if (dstPos<dstAType.length())
-    {
-      if (!isspace((uchar)dstAType.at(dstPos))) // maybe the names differ
-      {
-        if (!dstAName.isEmpty()) // dst has its name separated from its type
-        {
-          NOMATCH
-          return FALSE;
-        }
-        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-        if (dstPos!=dstAType.length()) 
-        {
-          NOMATCH
-          return FALSE; // more than a difference in name -> no match
-        }
-      }
-      else  // maybe dst has a name while src has not
-      {
-        dstPos++;
-        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-        if (dstPos!=dstAType.length() || !srcAName.isEmpty()) 
-        {
-          NOMATCH
-          return FALSE; // nope not a name -> no match
-        }
-      }
-    }
-    else if (srcPos<srcAType.length())
-    {
-      if (!isspace((uchar)srcAType.at(srcPos))) // maybe the names differ
-      {
-        if (!srcAName.isEmpty()) // src has its name separated from its type
-        {
-          NOMATCH
-          return FALSE;
-        }
-        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-        if (srcPos!=srcAType.length()) 
-        {
-          NOMATCH
-          return FALSE; // more than a difference in name -> no match
-        }
-      }
-      else // maybe src has a name while dst has not
-      {
-        srcPos++;
-        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-        if (srcPos!=srcAType.length() || !dstAName.isEmpty()) 
-        {
-          NOMATCH
-          return FALSE; // nope not a name -> no match
-        }
-      }
-    }
-  }
-  MATCH
-  return TRUE;
-}
-
-#endif
-
 static QCString stripDeclKeywords(const QCString &s)
 {
   int i=s.find(" class ");
@@ -3320,11 +2852,11 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
 
 QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec)
 {
-  
+
   QCString templSpec = spec.stripWhiteSpace();
   // this part had been commented out before... but it is needed to match for instance
   // std::list<std::string> against list<string> so it is now back again!
-  if (!templSpec.isEmpty() && templSpec.at(0) == '<') 
+  if (!templSpec.isEmpty() && templSpec.at(0) == '<')
   {
     templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace());
   }
@@ -3346,7 +2878,7 @@ static QCString getCanonicalTypeForIdentifier(
 
   QCString symName,result,templSpec,tmpName;
   //DefinitionList *defList=0;
-  if (tSpec && !tSpec->isEmpty()) 
+  if (tSpec && !tSpec->isEmpty())
     templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
 
   if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
@@ -3508,7 +3040,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
     QCString ct = getCanonicalTypeForIdentifier(d,fs,word,&templSpec);
 
     // in case the ct is empty it means that "word" represents scope "d"
-    // and this does not need to be added to the canonical 
+    // and this does not need to be added to the canonical
     // type (it is redundant), so/ we skip it. This solves problem 589616.
     if (ct.isEmpty() && type.mid(p,2)=="::")
     {
@@ -3522,7 +3054,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
     //    word.data(),templSpec.data(),canType.data(),ct.data());
     if (!templSpec.isEmpty()) // if we didn't use up the templSpec already
                               // (i.e. type is not a template specialization)
-                              // then resolve any identifiers inside. 
+                              // then resolve any identifiers inside.
     {
       static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9\\x80-\\xFF]*");
       int tp=0,tl,ti;
@@ -3550,11 +3082,11 @@ static QCString extractCanonicalArgType(const Definition *d,const FileDef *fs,co
   QCString type = arg.type.stripWhiteSpace();
   QCString name = arg.name;
   //printf("----- extractCanonicalArgType(type=%s,name=%s)\n",type.data(),name.data());
-  if ((type=="const" || type=="volatile") && !name.isEmpty()) 
+  if ((type=="const" || type=="volatile") && !name.isEmpty())
   { // name is part of type => correct
     type+=" ";
     type+=name;
-  } 
+  }
   if (name=="const" || name=="volatile")
   { // name is part of type => correct
     if (!type.isEmpty()) type+=" ";
@@ -3630,34 +3162,46 @@ static bool matchArgument2(
 
 
 // new algorithm for argument matching
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList &inSrcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList &inDstAl,
+bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
+                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
                      bool checkCV)
 {
   ASSERT(srcScope!=0 && dstScope!=0);
 
-  ArgumentList srcAl = inSrcAl;
-  ArgumentList dstAl = inDstAl;
+  if (srcAl==0 || dstAl==0)
+  {
+    bool match = srcAl==dstAl;
+    if (match)
+    {
+      MATCH
+      return TRUE;
+    }
+    else
+    {
+      NOMATCH
+      return FALSE;
+    }
+  }
 
   // handle special case with void argument
-  if ( srcAl.empty() && dstAl.size()==1 && dstAl.front().type=="void" )
+  if ( srcAl->empty() && dstAl->size()==1 && dstAl->front().type=="void" )
   { // special case for finding match between func() and func(void)
     Argument a;
     a.type = "void";
-    srcAl.push_back(a);
+    const_cast<ArgumentList*>(srcAl)->push_back(a);
     MATCH
     return TRUE;
   }
-  if ( dstAl.empty() && srcAl.size()==1 && srcAl.front().type=="void" )
+  if ( dstAl->empty() && srcAl->size()==1 && srcAl->front().type=="void" )
   { // special case for finding match between func(void) and func()
     Argument a;
     a.type = "void";
-    dstAl.push_back(a);
+    const_cast<ArgumentList*>(dstAl)->push_back(a);
     MATCH
     return TRUE;
   }
 
-  if (srcAl.size() != dstAl.size())
+  if (srcAl->size() != dstAl->size())
   {
     NOMATCH
     return FALSE; // different number of arguments -> no match
@@ -3665,19 +3209,19 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 
   if (checkCV)
   {
-    if (srcAl.constSpecifier != dstAl.constSpecifier) 
+    if (srcAl->constSpecifier() != dstAl->constSpecifier())
     {
       NOMATCH
       return FALSE; // one member is const, the other not -> no match
     }
-    if (srcAl.volatileSpecifier != dstAl.volatileSpecifier)
+    if (srcAl->volatileSpecifier() != dstAl->volatileSpecifier())
     {
       NOMATCH
       return FALSE; // one member is volatile, the other not -> no match
     }
   }
 
-  if (srcAl.refQualifier != dstAl.refQualifier)
+  if (srcAl->refQualifier() != dstAl->refQualifier())
   {
     NOMATCH
     return FALSE; // one member is has a different ref-qualifier than the other
@@ -3685,12 +3229,12 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 
   // so far the argument list could match, so we need to compare the types of
   // all arguments.
-  auto srcIt = srcAl.begin();
-  auto dstIt = dstAl.begin();
-  for (;srcIt!=srcAl.end() && dstIt!=dstAl.end();++srcIt,++dstIt)
+  auto srcIt = srcAl->begin();
+  auto dstIt = dstAl->begin();
+  for (;srcIt!=srcAl->end() && dstIt!=dstAl->end();++srcIt,++dstIt)
   {
-    Argument &srcA = *srcIt;
-    Argument &dstA = *dstIt;
+    Argument &srcA = const_cast<Argument&>(*srcIt);
+    Argument &dstA = const_cast<Argument&>(*dstIt);
     if (!matchArgument2(srcScope,srcFileScope,srcA,
           dstScope,dstFileScope,dstA)
        )
@@ -3700,7 +3244,7 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
     }
   }
   MATCH
-  return TRUE; // all arguments match 
+  return TRUE; // all arguments match
 }
 
 
@@ -3843,7 +3387,7 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
   }
 }
 
-static void findMembersWithSpecificName(MemberName *mn,
+static void findMembersWithSpecificName(const MemberName *mn,
                                         const char *args,
                                         bool checkStatics,
                                         const FileDef *currentFile,
@@ -3853,34 +3397,31 @@ static void findMembersWithSpecificName(MemberName *mn,
 {
   //printf("  Function with global scope name '%s' args='%s'\n",
   //       mn->memberName(),args);
-  MemberNameIterator mli(*mn);
-  const MemberDef *md = 0;
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto &md_p : *mn)
   {
+    const MemberDef *md = md_p.get();
     const FileDef  *fd=md->getFileDef();
     const GroupDef *gd=md->getGroupDef();
     //printf("  md->name()='%s' md->args='%s' fd=%p gd=%p current=%p ref=%s\n",
     //    md->name().data(),args,fd,gd,currentFile,md->getReference().data());
     if (
-        ((gd && gd->isLinkable()) || (fd && fd->isLinkable()) || md->isReference()) && 
+        ((gd && gd->isLinkable()) || (fd && fd->isLinkable()) || md->isReference()) &&
         md->getNamespaceDef()==0 && md->isLinkable() &&
-        (!checkStatics || (!md->isStatic() && !md->isDefine()) || 
+        (!checkStatics || (!md->isStatic() && !md->isDefine()) ||
          currentFile==0 || fd==currentFile) // statics must appear in the same file
-       ) 
+       )
     {
       bool match=TRUE;
-      ArgumentList *argList=0;
       if (args && !md->isDefine() && qstrcmp(args,"()")!=0)
       {
         const ArgumentList &mdAl = md->argumentList();
-        ArgumentList argList;
-        stringToArgumentList(md->getLanguage(),args,argList);
+        auto argList_p = stringToArgumentList(md->getLanguage(),args);
         match=matchArguments2(
-            md->getOuterScope(),fd,mdAl,
-            Doxygen::globalScope,fd,argList,
+            md->getOuterScope(),fd,&mdAl,
+            Doxygen::globalScope,fd,argList_p.get(),
             checkCV);
       }
-      if (match && (forceTagFile==0 || md->getReference()==forceTagFile)) 
+      if (match && (forceTagFile==0 || md->getReference()==forceTagFile))
       {
         //printf("Found match!\n");
         members.append(md);
@@ -3894,17 +3435,17 @@ static void findMembersWithSpecificName(MemberName *mn,
  * memberName may also include a (partial) scope to indicate the scope
  * in which the member is located.
  *
- * The parameter 'scName' is a string representing the name of the scope in 
+ * The parameter 'scName' is a string representing the name of the scope in
  * which the link was found.
  *
- * In case of a function args contains a string representation of the 
- * argument list. Passing 0 means the member has no arguments. 
+ * In case of a function args contains a string representation of the
+ * argument list. Passing 0 means the member has no arguments.
  * Passing "()" means any argument list will do, but "()" is preferred.
  *
  * The function returns TRUE if the member is known and documented or
  * FALSE if it is not.
- * If TRUE is returned parameter 'md' contains a pointer to the member 
- * definition. Furthermore exactly one of the parameter 'cd', 'nd', or 'fd' 
+ * If TRUE is returned parameter 'md' contains a pointer to the member
+ * definition. Furthermore exactly one of the parameter 'cd', 'nd', or 'fd'
  * will be non-zero:
  *   - if 'cd' is non zero, the member was found in a class pointed to by cd.
  *   - if 'nd' is non zero, the member was found in a namespace pointed to by nd.
@@ -3912,12 +3453,12 @@ static void findMembersWithSpecificName(MemberName *mn,
  *     file fd.
  */
 bool getDefs(const QCString &scName,
-             const QCString &mbName, 
+             const QCString &mbName,
              const char *args,
-             const MemberDef *&md, 
-             const ClassDef *&cd, 
-             const FileDef *&fd, 
-             const NamespaceDef *&nd, 
+             const MemberDef *&md,
+             const ClassDef *&cd,
+             const FileDef *&fd,
+             const NamespaceDef *&nd,
              const GroupDef *&gd,
              bool forceEmptyScope,
              const FileDef *currentFile,
@@ -3937,12 +3478,12 @@ bool getDefs(const QCString &scName,
 
   int is,im=0,pm=0;
   // strip common part of the scope from the scopeName
-  while ((is=scopeName.findRev("::"))!=-1 && 
+  while ((is=scopeName.findRev("::"))!=-1 &&
          (im=memberName.find("::",pm))!=-1 &&
           (scopeName.right(scopeName.length()-is-2)==memberName.mid(pm,im-pm))
         )
   {
-    scopeName=scopeName.left(is); 
+    scopeName=scopeName.left(is);
     pm=im+2;
   }
   //printf("result after scope corrections scope=%s name=%s\n",
@@ -3952,11 +3493,11 @@ bool getDefs(const QCString &scName,
   QCString mScope;
   if (memberName.left(9)!="operator " && // treat operator conversion methods
       // as a special case
-      (im=memberName.findRev("::"))!=-1 && 
+      (im=memberName.findRev("::"))!=-1 &&
       im<(int)memberName.length()-2 // not A::
      )
   {
-    mScope=memberName.left(im); 
+    mScope=memberName.left(im);
     mName=memberName.right(memberName.length()-im-2);
   }
 
@@ -3965,7 +3506,7 @@ bool getDefs(const QCString &scName,
 
   //printf("mScope='%s' mName='%s'\n",mScope.data(),mName.data());
 
-  MemberName *mn = Doxygen::memberNameSDict->find(mName);
+  MemberName *mn = Doxygen::memberNameLinkedMap->find(mName);
   //printf("mName=%s mn=%p\n",mName.data(),mn);
 
   if ((!forceEmptyScope || scopeName.isEmpty()) && // this was changed for bug638856, forceEmptyScope => empty scopeName
@@ -3995,26 +3536,25 @@ bool getDefs(const QCString &scName,
       //printf("Trying class scope %s: fcd=%p tmd=%p\n",className.data(),fcd,tmd);
       // todo: fill in correct fileScope!
       if (fcd &&  // is it a documented class
-          fcd->isLinkable() 
+          fcd->isLinkable()
          )
       {
         //printf("  Found fcd=%p\n",fcd);
-        MemberNameIterator mmli(*mn);
-        MemberDef *mmd;
-        int mdist=maxInheritanceDepth; 
-        ArgumentList argList;
+        int mdist=maxInheritanceDepth;
+        std::unique_ptr<ArgumentList> argList;
         if (args)
         {
-          stringToArgumentList(fcd->getLanguage(),args,argList);
+          argList = stringToArgumentList(fcd->getLanguage(),args);
         }
-        for (mmli.toFirst();(mmd=mmli.current());++mmli)
+        for (const auto &mmd_p : *mn)
         {
+          MemberDef *mmd = mmd_p.get();
           if (!mmd->isStrongEnumValue())
           {
             const ArgumentList &mmdAl = mmd->argumentList();
             bool match=args==0 ||
-              matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
-                             fcd,                  fcd->getFileDef(),argList,
+              matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),&mmdAl,
+                             fcd,                  fcd->getFileDef(),argList.get(),
                              checkCV);
             //printf("match=%d\n",match);
             if (match)
@@ -4037,8 +3577,9 @@ bool getDefs(const QCString &scName,
           // no exact match found, but if args="()" an arbitrary member will do
         {
           //printf("  >Searching for arbitrary member\n");
-          for (mmli.toFirst();(mmd=mmli.current());++mmli)
+          for (const auto &mmd_p : *mn)
           {
+            MemberDef *mmd = mmd_p.get();
             //if (mmd->isLinkable())
             //{
             ClassDef *mcd=mmd->getClassDef();
@@ -4058,9 +3599,9 @@ bool getDefs(const QCString &scName,
           }
         }
         //printf("  >Success=%d\n",mdist<maxInheritanceDepth);
-        if (mdist<maxInheritanceDepth) 
+        if (mdist<maxInheritanceDepth)
         {
-          if (!md->isLinkable() || md->isStrongEnumValue()) 
+          if (!md->isLinkable() || md->isStrongEnumValue())
           {
             md=0; // avoid returning things we cannot link to
             cd=0;
@@ -4073,7 +3614,7 @@ bool getDefs(const QCString &scName,
             return TRUE; /* found match */
           }
         }
-      } 
+      }
       if (tmd && tmd->isEnumerate() && tmd->isStrong()) // scoped enum
       {
         //printf("Found scoped enum!\n");
@@ -4117,18 +3658,18 @@ bool getDefs(const QCString &scName,
   if (mn && scopeName.isEmpty() && mScope.isEmpty()) // Maybe a related function?
   {
     //printf("Global symbol\n");
-    MemberNameIterator mmli(*mn);
-    MemberDef *mmd, *fuzzy_mmd = 0;
-    ArgumentList argList;
+    const MemberDef *fuzzy_mmd = 0;
+    std::unique_ptr<ArgumentList> argList;
     bool hasEmptyArgs = args && qstrcmp(args, "()") == 0;
 
     if (args)
     {
-      stringToArgumentList(SrcLangExt_Cpp, args, argList);
+      argList = stringToArgumentList(SrcLangExt_Cpp, args);
     }
 
-    for (mmli.toFirst(); (mmd = mmli.current()); ++mmli)
+    for (const auto &mmd_p : *mn)
     {
+      const MemberDef *mmd = mmd_p.get();
       if (!mmd->isLinkable() || (!mmd->isRelated() && !mmd->isForeign()) ||
            !mmd->getClassDef())
       {
@@ -4137,16 +3678,18 @@ bool getDefs(const QCString &scName,
 
       if (!args)
       {
+        fuzzy_mmd = mmd;
         break;
       }
 
-      ArgumentList &mmdAl = mmd->argumentList();
-      if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
-            Doxygen::globalScope,mmd->getFileDef(),argList,
+      const ArgumentList &mmdAl = mmd->argumentList();
+      if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),&mmdAl,
+            Doxygen::globalScope,mmd->getFileDef(),argList.get(),
             checkCV
             )
          )
       {
+        fuzzy_mmd = mmd;
         break;
       }
 
@@ -4156,12 +3699,10 @@ bool getDefs(const QCString &scName,
       }
     }
 
-    mmd = mmd ? mmd : fuzzy_mmd;
-
-    if (mmd && !mmd->isStrongEnumValue())
+    if (fuzzy_mmd && !fuzzy_mmd->isStrongEnumValue())
     {
-      md = mmd;
-      cd = mmd->getClassDef();
+      md = fuzzy_mmd;
+      cd = fuzzy_mmd->getClassDef();
       return TRUE;
     }
   }
@@ -4170,7 +3711,7 @@ bool getDefs(const QCString &scName,
   // maybe an namespace, file or group member ?
   //printf("Testing for global symbol scopeName='%s' mScope='%s' :: mName='%s'\n",
   //              scopeName.data(),mScope.data(),mName.data());
-  if ((mn=Doxygen::functionNameSDict->find(mName))) // name is known
+  if ((mn=Doxygen::functionNameLinkedMap->find(mName))) // name is known
   {
     //printf("  >symbol name found\n");
     NamespaceDef *fnd=0;
@@ -4187,7 +3728,7 @@ bool getDefs(const QCString &scName,
         namespaceName=mScope.copy();
       }
       //printf("Trying namespace %s\n",namespaceName.data());
-      if (!namespaceName.isEmpty() && 
+      if (!namespaceName.isEmpty() &&
           (fnd=Doxygen::namespaceSDict->find(namespaceName)) &&
           fnd->isLinkable()
          )
@@ -4195,23 +3736,23 @@ bool getDefs(const QCString &scName,
         //printf("Symbol inside existing namespace '%s' count=%d\n",
         //    namespaceName.data(),mn->count());
         bool found=FALSE;
-        MemberNameIterator mmli(*mn);
-        const MemberDef *mmd;
-        for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
+        for (const auto &mmd_p : *mn)
         {
+          const MemberDef *mmd = mmd_p.get();
           //printf("mmd->getNamespaceDef()=%p fnd=%p\n",
           //    mmd->getNamespaceDef(),fnd);
           const MemberDef *emd = mmd->getEnumScope();
           if (emd && emd->isStrong())
           {
             //printf("yes match %s<->%s!\n",mScope.data(),emd->localName().data());
-            if (emd->getNamespaceDef()==fnd && 
+            if (emd->getNamespaceDef()==fnd &&
                 rightScopeMatch(mScope,emd->localName()))
             {
               //printf("found it!\n");
               nd=fnd;
               md=mmd;
               found=TRUE;
+              break;
             }
             else
             {
@@ -4223,14 +3764,13 @@ bool getDefs(const QCString &scName,
           else if (mmd->getOuterScope()==fnd /* && mmd->isLinkable() */ )
           { // namespace is found
             bool match=TRUE;
-            ArgumentList argList;
             if (args && qstrcmp(args,"()")!=0)
             {
               const ArgumentList &mmdAl = mmd->argumentList();
-              stringToArgumentList(mmd->getLanguage(),args,argList);
+              auto argList_p = stringToArgumentList(mmd->getLanguage(),args);
               match=matchArguments2(
-                  mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
-                  fnd,mmd->getFileDef(),argList,
+                  mmd->getOuterScope(),mmd->getFileDef(),&mmdAl,
+                  fnd,mmd->getFileDef(),argList_p.get(),
                   checkCV);
             }
             if (match)
@@ -4238,26 +3778,29 @@ bool getDefs(const QCString &scName,
               nd=fnd;
               md=mmd;
               found=TRUE;
+              break;
             }
           }
         }
-        if (!found && args && !qstrcmp(args,"()")) 
-          // no exact match found, but if args="()" an arbitrary 
+        if (!found && args && !qstrcmp(args,"()"))
+          // no exact match found, but if args="()" an arbitrary
           // member will do
         {
-          for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
+          for (const auto &mmd_p : *mn)
           {
+            const MemberDef *mmd = mmd_p.get();
             if (mmd->getNamespaceDef()==fnd /*&& mmd->isLinkable() */ )
             {
               nd=fnd;
               md=mmd;
               found=TRUE;
+              break;
             }
           }
         }
         if (found)
         {
-          if (!md->isLinkable()) 
+          if (!md->isLinkable())
           {
             md=0; // avoid returning things we cannot link to
             nd=0;
@@ -4274,10 +3817,9 @@ bool getDefs(const QCString &scName,
       else
       {
         //printf("not a namespace\n");
-        MemberNameIterator mmli(*mn);
-        MemberDef *mmd;
-        for (mmli.toFirst();(mmd=mmli.current());++mmli)
+        for (const auto &mmd_p : *mn)
         {
+          const MemberDef *mmd = mmd_p.get();
           const MemberDef *tmd = mmd->getEnumScope();
           //printf("try member %s tmd=%s\n",mmd->name().data(),tmd?tmd->name().data():"<none>");
           int ni=namespaceName.findRev("::");
@@ -4325,20 +3867,23 @@ bool getDefs(const QCString &scName,
       {
         // no exact match found, but if args="()" an arbitrary
         // member will do
-        MemberNameIterator mni(*mn);
-        for (mni.toLast();(md=mni.current());--mni)
+        //MemberNameIterator mni(*mn);
+        //for (mni.toLast();(md=mni.current());--mni)
+        for (auto it = mn->rbegin(); it!=mn->rend(); ++it)
         {
-          //printf("Found member '%s'\n",md->name().data());
-          //printf("member is linkable md->name()='%s'\n",md->name().data());
-          fd=md->getFileDef();
-          gd=md->getGroupDef();
-          const MemberDef *tmd = md->getEnumScope();
+          const auto &mmd_p = *it;
+          const MemberDef *mmd = mmd_p.get();
+          //printf("Found member '%s'\n",mmd->name().data());
+          //printf("member is linkable mmd->name()='%s'\n",mmd->name().data());
+          fd=mmd->getFileDef();
+          gd=mmd->getGroupDef();
+          const MemberDef *tmd = mmd->getEnumScope();
           if (
               (gd && gd->isLinkable()) || (fd && fd->isLinkable()) ||
               (tmd && tmd->isStrong())
              )
           {
-            members.append(md);
+            members.append(mmd);
           }
         }
       }
@@ -4351,7 +3896,7 @@ bool getDefs(const QCString &scName,
           QListIterator<MemberDef> mit(members);
           for (mit.toFirst();(md=mit.current());++mit)
           {
-            if (md->getFileDef() && md->getFileDef()->name() == currentFile->name()) 
+            if (md->getFileDef() && md->getFileDef()->name() == currentFile->name())
             {
               break; // found match in the current file
             }
@@ -4366,7 +3911,7 @@ bool getDefs(const QCString &scName,
           md=members.getLast();
         }
       }
-      if (md && (md->getEnumScope()==0 || !md->getEnumScope()->isStrong())) 
+      if (md && (md->getEnumScope()==0 || !md->getEnumScope()->isStrong()))
            // found a matching global member, that is not a scoped enum value (or uniquely matches)
       {
         fd=md->getFileDef();
@@ -4384,14 +3929,14 @@ bool getDefs(const QCString &scName,
 
 /*!
  * Searches for a scope definition given its name as a string via parameter
- * `scope`. 
+ * `scope`.
  *
- * The parameter `docScope` is a string representing the name of the scope in 
+ * The parameter `docScope` is a string representing the name of the scope in
  * which the `scope` string was found.
  *
  * The function returns TRUE if the scope is known and documented or
  * FALSE if it is not.
- * If TRUE is returned exactly one of the parameter `cd`, `nd` 
+ * If TRUE is returned exactly one of the parameter `cd`, `nd`
  * will be non-zero:
  *   - if `cd` is non zero, the scope was a class pointed to by cd.
  *   - if `nd` is non zero, the scope was a namespace pointed to by nd.
@@ -4408,7 +3953,7 @@ static bool getScopeDefs(const char *docScope,const char *scope,
   bool explicitGlobalScope=FALSE;
   if (scopeName.at(0)==':' && scopeName.at(1)==':')
   {
-    scopeName=scopeName.right(scopeName.length()-2);  
+    scopeName=scopeName.right(scopeName.length()-2);
     explicitGlobalScope=TRUE;
   }
   if (scopeName.isEmpty())
@@ -4429,11 +3974,11 @@ static bool getScopeDefs(const char *docScope,const char *scope,
          //(cd=getClass(fullName+"-g"))       // C# generic
         ) && cd->isLinkable())
     {
-      return TRUE; // class link written => quit 
+      return TRUE; // class link written => quit
     }
     else if ((nd=Doxygen::namespaceSDict->find(fullName)) && nd->isLinkable())
     {
-      return TRUE; // namespace link written => quit 
+      return TRUE; // namespace link written => quit
     }
     if (scopeOffset==0)
     {
@@ -4454,10 +3999,10 @@ static bool isLowerCase(QCString &s)
   if (p==0) return TRUE;
   int c;
   while ((c=*p++)) if (!islower(c)) return FALSE;
-  return TRUE; 
+  return TRUE;
 }
 
-/*! Returns an object to reference to given its name and context 
+/*! Returns an object to reference to given its name and context
  *  @post return value TRUE implies *resContext!=0 or *resMember!=0
  */
 bool resolveRef(/* in */  const char *scName,
@@ -4501,10 +4046,10 @@ bool resolveRef(/* in */  const char *scName,
     ClassDef *cd=0;
     NamespaceDef *nd=0;
 
-    // the following if() was commented out for releases in the range 
+    // the following if() was commented out for releases in the range
     // 1.5.2 to 1.6.1, but has been restored as a result of bug report 594787.
     if (!inSeeBlock && scopePos==-1 && isLowerCase(tsName))
-    { // link to lower case only name => do not try to autolink 
+    { // link to lower case only name => do not try to autolink
       return FALSE;
     }
 
@@ -4524,7 +4069,7 @@ bool resolveRef(/* in */  const char *scName,
       }
       return TRUE;
     }
-    else if (scName==fullName || (!inSeeBlock && scopePos==-1)) 
+    else if (scName==fullName || (!inSeeBlock && scopePos==-1))
       // nothing to link => output plain text
     {
       //printf("found scName=%s fullName=%s scName==fullName=%d "
@@ -4544,7 +4089,7 @@ bool resolveRef(/* in */  const char *scName,
   if (bracePos!=-1) argsStr=fullName.right(fullName.length()-bracePos);
 
   // strip template specifier
-  // TODO: match against the correct partial template instantiation 
+  // TODO: match against the correct partial template instantiation
   int templPos=nameStr.find('<');
   bool tryUnspecializedVersion = FALSE;
   if (templPos!=-1 && nameStr.find("operator")==-1)
@@ -4584,11 +4129,11 @@ bool resolveRef(/* in */  const char *scName,
      )
   {
     //printf("after getDefs checkScope=%d nameStr=%s cd=%p nd=%p\n",checkScope,nameStr.data(),cd,nd);
-    if (checkScope && md && md->getOuterScope()==Doxygen::globalScope && 
+    if (checkScope && md && md->getOuterScope()==Doxygen::globalScope &&
         !md->isStrongEnumValue() &&
         (!scopeStr.isEmpty() || nameStr.find("::")>0))
     {
-      // we did find a member, but it is a global one while we were explicitly 
+      // we did find a member, but it is a global one while we were explicitly
       // looking for a scoped variable. See bug 616387 for an example why this check is needed.
       // note we do need to support autolinking to "::symbol" hence the >0
       //printf("not global member!\n");
@@ -4615,7 +4160,7 @@ bool resolveRef(/* in */  const char *scName,
   else if (tsName.find('.')!=-1) // maybe a link to a file
   {
     bool ambig;
-    fd=findFileDef(Doxygen::inputNameDict,tsName,ambig);
+    fd=findFileDef(Doxygen::inputNameLinkedMap,tsName,ambig);
     if (fd && !ambig)
     {
       *resContext=fd;
@@ -4667,20 +4212,20 @@ QCString linkToText(SrcLangExt lang,const char *link,bool isFileName)
 #if 0
 /*
  * generate a reference to a class, namespace or member.
- * 'scName' is the name of the scope that contains the documentation 
+ * 'scName' is the name of the scope that contains the documentation
  * string that is returned.
  * 'name' is the name that we want to link to.
  * 'name' may have the following formats:
  *    1) "ScopeName"
- *    2) "memberName()"    one of the (overloaded) function or define 
+ *    2) "memberName()"    one of the (overloaded) function or define
  *                         with name memberName.
- *    3) "memberName(...)" a specific (overloaded) function or define 
+ *    3) "memberName(...)" a specific (overloaded) function or define
  *                         with name memberName
  *    4) "::name           a global variable or define
  *    4) "\#memberName     member variable, global variable or define
- *    5) ("ScopeName::")+"memberName()" 
- *    6) ("ScopeName::")+"memberName(...)" 
- *    7) ("ScopeName::")+"memberName" 
+ *    5) ("ScopeName::")+"memberName()"
+ *    6) ("ScopeName::")+"memberName(...)"
+ *    7) ("ScopeName::")+"memberName"
  * instead of :: the \# symbol may also be used.
  */
 
@@ -4752,7 +4297,7 @@ bool resolveLink(/* in */ const char *scName,
   const ClassDef *cd;
   const DirDef   *dir;
   const NamespaceDef *nd;
-  SectionInfo *si=0;
+  const SectionInfo *si=0;
   bool ambig;
   if (linkRef.isEmpty()) // no reference name!
   {
@@ -4760,12 +4305,12 @@ bool resolveLink(/* in */ const char *scName,
   }
   else if ((pd=Doxygen::pageSDict->find(linkRef))) // link to a page
   {
-    const GroupDef *gd = pd->getGroupDef();
+    gd = pd->getGroupDef();
     if (gd)
     {
-      if (!pd->name().isEmpty()) si=Doxygen::sectionDict->find(pd->name());
+      if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
       *resContext=gd;
-      if (si) resAnchor = si->label;
+      if (si) resAnchor = si->label();
     }
     else
     {
@@ -4773,10 +4318,10 @@ bool resolveLink(/* in */ const char *scName,
     }
     return TRUE;
   }
-  else if ((si=Doxygen::sectionDict->find(linkRef)))
+  else if ((si=SectionManager::instance().find(linkRef)))
   {
-    *resContext=si->definition;
-    resAnchor = si->label;
+    *resContext=si->definition();
+    resAnchor = si->label();
     return TRUE;
   }
   else if ((pd=Doxygen::exampleSDict->find(linkRef))) // link to an example
@@ -4789,7 +4334,7 @@ bool resolveLink(/* in */ const char *scName,
     *resContext=gd;
     return TRUE;
   }
-  else if ((fd=findFileDef(Doxygen::inputNameDict,linkRef,ambig)) // file link
+  else if ((fd=findFileDef(Doxygen::inputNameLinkedMap,linkRef,ambig)) // file link
       && fd->isLinkable())
   {
     *resContext=fd;
@@ -4842,7 +4387,7 @@ bool resolveLink(/* in */ const char *scName,
 
 //----------------------------------------------------------------------
 // General function that generates the HTML code for a reference to some
-// file, class or member from text 'lr' within the context of class 'clName'. 
+// file, class or member from text 'lr' within the context of class 'clName'.
 // This link has the text 'lt' (if not 0), otherwise 'lr' is used as a
 // basis for the link's text.
 // returns TRUE if a link could be generated.
@@ -4860,14 +4405,14 @@ bool generateLink(OutputDocInterface &od,const char *clName,
     if (compound) // link to compound
     {
       if (lt==0 && anchor.isEmpty() &&                      /* compound link */
-          compound->definitionType()==Definition::TypeGroup /* is group */ 
+          compound->definitionType()==Definition::TypeGroup /* is group */
          )
       {
         linkText=(dynamic_cast<const GroupDef *>(compound))->groupTitle(); // use group's title as link
       }
       else if (compound->definitionType()==Definition::TypeFile)
       {
-        linkText=linkToText(compound->getLanguage(),lt,TRUE); 
+        linkText=linkToText(compound->getLanguage(),lt,TRUE);
       }
       od.writeObjectLink(compound->getReference(),
           compound->getOutputFileBase(),anchor,linkText);
@@ -4896,12 +4441,12 @@ void generateFileRef(OutputDocInterface &od,const char *name,const char *text)
   //FileInfo *fi;
   FileDef *fd;
   bool ambig;
-  if ((fd=findFileDef(Doxygen::inputNameDict,name,ambig)) && 
-      fd->isLinkable()) 
+  if ((fd=findFileDef(Doxygen::inputNameLinkedMap,name,ambig)) &&
+      fd->isLinkable())
     // link to documented input file
     od.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,linkText);
   else
-    od.docify(linkText); 
+    od.docify(linkText);
 }
 
 //----------------------------------------------------------------------
@@ -4944,14 +4489,18 @@ struct FindFileCacheElem
 
 static QCache<FindFileCacheElem> g_findFileDefCache(5000);
 
-FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
+static std::mutex g_findFileDefMutex;
+
+FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
 {
   ambig=FALSE;
   if (n==0) return 0;
 
+  std::unique_lock<std::mutex> lock(g_findFileDefMutex);
+
   const int maxAddrSize = 20;
   char addr[maxAddrSize];
-  qsnprintf(addr,maxAddrSize,"%p:",fnDict);
+  qsnprintf(addr,maxAddrSize,"%p:",(void*)fnMap);
   QCString key = addr;
   key+=n;
 
@@ -4972,49 +4521,46 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
   QCString name=QDir::cleanDirPath(n).utf8();
   QCString path;
   int slashPos;
-  FileName *fn;
+  const FileName *fn;
   if (name.isEmpty()) goto exit;
   slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
     path=name.left(slashPos+1);
-    name=name.right(name.length()-slashPos-1); 
+    name=name.right(name.length()-slashPos-1);
     //printf("path=%s name=%s\n",path.data(),name.data());
   }
   if (name.isEmpty()) goto exit;
-  if ((fn=(*fnDict)[name]))
+  if ((fn=fnMap->find(name)))
   {
     //printf("fn->count()=%d\n",fn->count());
-    if (fn->count()==1)
+    if (fn->size()==1)
     {
-      FileDef *fd = fn->getFirst();
-#if defined(_WIN32) || defined(__MACOSX__) || defined(__CYGWIN__) // Windows or MacOSX
-      bool isSamePath = fd->getPath().right(path.length()).lower()==path.lower();
-#else // Unix
-      bool isSamePath = fd->getPath().right(path.length())==path;
-#endif
+      const std::unique_ptr<FileDef> &fd = fn->front();
+      bool isSamePath = Portable::fileSystemIsCaseSensitive() ?
+                 fd->getPath().right(path.length())==path :
+                 fd->getPath().right(path.length()).lower()==path.lower();
       if (path.isEmpty() || isSamePath)
       {
-        cachedResult->fileDef = fd;
+        cachedResult->fileDef = fd.get();
         g_findFileDefCache.insert(key,cachedResult);
         //printf("=1 ===> add to cache %p\n",fd);
-        return fd;
+        return fd.get();
       }
     }
     else // file name alone is ambiguous
     {
       int count=0;
-      FileNameIterator fni(*fn);
-      FileDef *fd;
       FileDef *lastMatch=0;
       QCString pathStripped = stripFromIncludePath(path);
-      for (fni.toFirst();(fd=fni.current());++fni)
+      for (const auto &fd_p : *fn)
       {
+        FileDef *fd = fd_p.get();
         QCString fdStripPath = stripFromIncludePath(fd->getPath());
-        if (path.isEmpty() || fdStripPath.right(pathStripped.length())==pathStripped) 
-        { 
-          count++; 
-          lastMatch=fd; 
+        if (path.isEmpty() || fdStripPath.right(pathStripped.length())==pathStripped)
+        {
+          count++;
+          lastMatch=fd;
         }
       }
       //printf(">1 ===> add to cache %p\n",fd);
@@ -5039,7 +4585,7 @@ exit:
 
 //----------------------------------------------------------------------
 
-QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
+QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const char *n)
 {
   QCString result;
   QCString name=n;
@@ -5048,14 +4594,12 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
   if (slashPos!=-1)
   {
     path=name.left(slashPos+1);
-    name=name.right(name.length()-slashPos-1); 
+    name=name.right(name.length()-slashPos-1);
   }
-  FileName *fn;
-  if ((fn=(*fnDict)[name]))
+  const FileName *fn;
+  if ((fn=fnMap->find(name)))
   {
-    FileNameIterator fni(*fn);
-    FileDef *fd;
-    for (fni.toFirst();(fd=fni.current());++fni)
+    for (const auto &fd : *fn)
     {
       if (path.isEmpty() || fd->getPath().right(path.length())==path)
       {
@@ -5063,118 +4607,6 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
       }
     }
   }
-  return result;
-}
-
-//----------------------------------------------------------------------
-
-/// substitute all occurrences of \a src in \a s by \a dst
-QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
-{
-  if (s.isEmpty() || src.isEmpty()) return s;
-  const char *p, *q;
-  int srcLen = src.length();
-  int dstLen = dst.length();
-  int resLen;
-  if (srcLen!=dstLen)
-  {
-    int count;
-    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
-    resLen = s.length()+count*(dstLen-srcLen);
-  }
-  else // result has same size as s
-  {
-    resLen = s.length();
-  }
-  QCString result(resLen+1);
-  char *r;
-  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
-  {
-    int l = (int)(q-p);
-    memcpy(r,p,l);
-    r+=l;
-
-    if (dst) memcpy(r,dst,dstLen);
-    r+=dstLen;
-  }
-  qstrcpy(r,p);
-  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
-  return result;
-}
-
-
-/// substitute all occurrences of \a src in \a s by \a dst, but skip
-/// each consecutive sequence of \a src where the number consecutive
-/// \a src matches \a skip_seq; if \a skip_seq is negative, skip any
-/// number of consecutive \a src
-QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq)
-{
-  if (s.isEmpty() || src.isEmpty()) return s;
-  const char *p, *q;
-  int srcLen = src.length();
-  int dstLen = dst.length();
-  int resLen;
-  if (srcLen!=dstLen)
-  {
-    int count;
-    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
-    resLen = s.length()+count*(dstLen-srcLen);
-  }
-  else // result has same size as s
-  {
-    resLen = s.length();
-  }
-  QCString result(resLen+1);
-  char *r;
-  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
-  {
-    // search a consecutive sequence of src
-    int seq = 0, skip = 0;
-    if (skip_seq)
-    {
-      for (const char *n=q+srcLen; qstrncmp(n,src,srcLen)==0; seq=1+skip, n+=srcLen)
-        ++skip; // number of consecutive src after the current one
-
-      // verify the allowed number of consecutive src to skip
-      if (skip_seq > 0 && skip_seq != seq)
-        seq = skip = 0;
-    }
-
-    // skip a consecutive sequence of src when necessary
-    int l = (int)((q + seq * srcLen)-p);
-    memcpy(r,p,l);
-    r+=l;
-
-    if (skip)
-    {
-      // skip only the consecutive src found after the current one
-      q += skip * srcLen;
-      // the next loop will skip the current src, aka (p=q+srcLen)
-      continue;
-    }
-
-    if (dst) memcpy(r,dst,dstLen);
-    r+=dstLen;
-  }
-  qstrcpy(r,p);
-  result.resize(strlen(result.data())+1);
-  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
-  return result;
-}
-
-/// substitute all occurrences of \a srcChar in \a s by \a dstChar
-QCString substitute(const QCString &s,char srcChar,char dstChar)
-{
-  int l=s.length();
-  QCString result(l+1);
-  char *q=result.rawData();
-  if (l>0)
-  {
-    const char *p=s.data();
-    char c;
-    while ((c=*p++)) *q++ = (c==srcChar) ? dstChar : c;
-  }
-  *q='\0';
   return result;
 }
 
@@ -5188,7 +4620,7 @@ QCString substituteKeywords(const QCString &s,const char *title,
   result = substitute(result,"$datetime",dateToString(TRUE));
   result = substitute(result,"$date",dateToString(FALSE));
   result = substitute(result,"$year",yearToString());
-  result = substitute(result,"$doxygenversion",getVersion());
+  result = substitute(result,"$doxygenversion",getDoxygenVersion());
   result = substitute(result,"$projectname",projName);
   result = substitute(result,"$projectnumber",projNum);
   result = substitute(result,"$projectbrief",projBrief);
@@ -5201,15 +4633,14 @@ QCString substituteKeywords(const QCString &s,const char *title,
 /*! Returns the character index within \a name of the first prefix
  *  in Config_getList(IGNORE_PREFIX) that matches \a name at the left hand side,
  *  or zero if no match was found
- */ 
+ */
 int getPrefixIndex(const QCString &name)
 {
   if (name.isEmpty()) return 0;
-  static QStrList &sl = Config_getList(IGNORE_PREFIX);
-  char *s = sl.first();
-  while (s)
+  const StringVector &sl = Config_getList(IGNORE_PREFIX);
+  for (const auto &s : sl)
   {
-    const char *ps=s;
+    const char *ps=s.c_str();
     const char *pd=name.data();
     int i=0;
     while (*ps!=0 && *pd!=0 && *ps==*pd) ps++,pd++,i++;
@@ -5217,7 +4648,6 @@ int getPrefixIndex(const QCString &name)
     {
       return i;
     }
-    s = sl.next();
   }
   return 0;
 }
@@ -5249,7 +4679,7 @@ bool classHasVisibleChildren(const ClassDef *cd)
     if (cd->baseClasses()==0) return FALSE;
     bcl=cd->baseClasses();
   }
-  else 
+  else
   {
     if (cd->subClasses()==0) return FALSE;
     bcl=cd->subClasses();
@@ -5307,8 +4737,8 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
   static GrowBuf growBuf;
   growBuf.clear();
   if (name==0) return "";
-  char c;
-  const char *p=name;
+  signed char c;
+  const signed char *p=(const signed char*)name;
   while ((c=*p++)!=0)
   {
     switch(c)
@@ -5340,7 +4770,8 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
       case '@': growBuf.addStr("_0d"); break;
       case ']': growBuf.addStr("_0e"); break;
       case '[': growBuf.addStr("_0f"); break;
-      default: 
+      case '#': growBuf.addStr("_0g"); break;
+      default:
                 if (c<0)
                 {
                   char ids[5];
@@ -5348,7 +4779,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
                   bool doEscape = TRUE;
                   if (allowUnicodeNames && uc <= 0xf7)
                   {
-                    const char* pt = p;
+                    const signed char* pt = p;
                     ids[ 0 ] = c;
                     int l = 0;
                     if ((uc&0xE0)==0xC0)
@@ -5402,7 +4833,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
                 else
                 {
                   growBuf.addChar('_');
-                  growBuf.addChar(tolower(c)); 
+                  growBuf.addChar((char)tolower(c));
                 }
                 break;
     }
@@ -5454,6 +4885,7 @@ QCString unescapeCharsInString(const char *s)
                case 'd': result+='@'; p+=2; break; // _0d -> '@'
                case 'e': result+=']'; p+=2; break; // _0e -> ']'
                case 'f': result+='['; p+=2; break; // _0f -> '['
+               case 'g': result+='#'; p+=2; break; // _0g -> '#'
                default: // unknown escape, just pass underscore character as-is
                  result+=c;
                  break;
@@ -5462,7 +4894,7 @@ QCString unescapeCharsInString(const char *s)
           default:
             if (!caseSenseNames && c>='a' && c<='z') // lower to upper case escape, _a -> 'A'
             {
-              result+=toupper(*p);
+              result+=(char)toupper(*p);
               p++;
             }
             else // unknown escape, pass underscore character as-is
@@ -5482,7 +4914,7 @@ QCString unescapeCharsInString(const char *s)
 }
 
 /*! This function determines the file name on disk of an item
- *  given its name, which could be a class name with template 
+ *  given its name, which could be a class name with template
  *  arguments, so special characters need to be escaped.
  */
 QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
@@ -5508,7 +4940,7 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
     {
       num = *value;
     }
-    result.sprintf("a%05d",num); 
+    result.sprintf("a%05d",num);
   }
   else // long names
   {
@@ -5521,17 +4953,17 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
       QCString sigStr(33);
       MD5Buffer((const unsigned char *)result.data(),resultLen,md5_sig);
       MD5SigToString(md5_sig,sigStr.rawData(),33);
-      result=result.left(128-32)+sigStr; 
+      result=result.left(128-32)+sigStr;
     }
   }
   if (createSubdirs)
   {
     int l1Dir=0,l2Dir=0;
 
-#if MAP_ALGO==ALGO_COUNT 
+#if MAP_ALGO==ALGO_COUNT
     // old algorithm, has the problem that after regeneration the
     // output can be located in a different dir.
-    if (Doxygen::htmlDirMap==0) 
+    if (Doxygen::htmlDirMap==0)
     {
       Doxygen::htmlDirMap=new QDict<int>(100003);
       Doxygen::htmlDirMap->setAutoDelete(TRUE);
@@ -5540,7 +4972,7 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
     int *dirNum = Doxygen::htmlDirMap->find(result);
     if (dirNum==0) // new name
     {
-      Doxygen::htmlDirMap->insert(result,new int(curDirNum)); 
+      Doxygen::htmlDirMap->insert(result,new int(curDirNum));
       l1Dir = (curDirNum)&0xf;    // bits 0-3
       l2Dir = (curDirNum>>4)&0xff; // bits 4-11
       curDirNum++;
@@ -5598,10 +5030,20 @@ void createSubDirs(QDir &d)
     int l1,l2;
     for (l1=0;l1<16;l1++)
     {
-      d.mkdir(QCString().sprintf("d%x",l1));
+      QCString subdir;
+      subdir.sprintf("d%x",l1);
+      if (!d.exists(subdir) && !d.mkdir(subdir))
+      {
+        term("Failed to create output directory '%s'\n",subdir.data());
+      }
       for (l2=0;l2<256;l2++)
       {
-        d.mkdir(QCString().sprintf("d%x/d%02x",l1,l2));
+        QCString subsubdir;
+        subsubdir.sprintf("d%x/d%02x",l1,l2);
+        if (!d.exists(subsubdir) && !d.mkdir(subsubdir))
+        {
+          term("Failed to create output directory '%s'\n",subsubdir.data());
+        }
       }
     }
   }
@@ -5624,7 +5066,7 @@ void extractNamespaceName(const QCString &scopeName,
     goto done;
   }
   p=clName.length()-2;
-  while (p>=0 && (i=clName.findRev("::",p))!=-1) 
+  while (p>=0 && (i=clName.findRev("::",p))!=-1)
     // see if the first part is a namespace (and not a class)
   {
     //printf("Trying %s\n",clName.left(i).data());
@@ -5634,7 +5076,7 @@ void extractNamespaceName(const QCString &scopeName,
       namespaceName=nd->name().copy();
       className=clName.right(clName.length()-i-2);
       goto done;
-    } 
+    }
     p=i-2; // try a smaller piece of the scope
   }
   //printf("not found!\n");
@@ -5671,12 +5113,12 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
         ((cd=getClass(scope.left(si)))==0 || cd->templateArguments().empty())
         )
     {
-      //printf("Tried '%s'\n",(scope.left(si)+templ).data()); 
-      pi=si+2; 
+      //printf("Tried '%s'\n",(scope.left(si)+templ).data());
+      pi=si+2;
     }
     if (si==-1) // not nested => append template specifier
     {
-      result+=templ; 
+      result+=templ;
     }
     else // nested => insert template specifier before after first class name
     {
@@ -5688,55 +5130,10 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
   return result;
 }
 
-#if 0 // original version
+
 /*! Strips the scope from a name. Examples: A::B will return A
  *  and A<T>::B<N::C<D> > will return A<T>.
  */
-QCString stripScope(const char *name)
-{
-  QCString result = name;
-  int l=result.length();
-  int p=l-1;
-  bool done;
-  int count;
-
-  while (p>=0)
-  {
-    char c=result.at(p);
-    switch (c)
-    {
-      case ':': 
-        //printf("stripScope(%s)=%s\n",name,result.right(l-p-1).data());
-        return result.right(l-p-1);
-      case '>':
-        count=1;
-        done=FALSE;
-        //printf("pos < = %d\n",p);
-        p--;
-        while (p>=0 && !done)
-        {
-          c=result.at(p--);
-          switch (c)
-          {
-            case '>': count++; break;
-            case '<': count--; if (count<=0) done=TRUE; break;
-            default: 
-                      //printf("c=%c count=%d\n",c,count);
-                      break;
-          }
-        }
-        //printf("pos > = %d\n",p+1);
-        break;
-      default:
-        p--;
-    }
-  }
-  //printf("stripScope(%s)=%s\n",name,name);
-  return name;
-}
-#endif
-
-// new version by Davide Cesari which also works for Fortran
 QCString stripScope(const char *name)
 {
   QCString result = name;
@@ -5745,6 +5142,7 @@ QCString stripScope(const char *name)
   bool done = FALSE;
   bool skipBracket=FALSE; // if brackets do not match properly, ignore them altogether
   int count=0;
+  int round=0;
 
   do
   {
@@ -5754,10 +5152,13 @@ QCString stripScope(const char *name)
       char c=result.at(p);
       switch (c)
       {
-        case ':': 
+        case ':':
           // only exit in the case of ::
           //printf("stripScope(%s)=%s\n",name,result.right(l-p-1).data());
-          if (p>0 && result.at(p-1)==':') return result.right(l-p-1);
+          if (p>0 && result.at(p-1)==':' && (count==0 || skipBracket))
+          {
+            return result.right(l-p-1);
+          }
           p--;
           break;
         case '>':
@@ -5781,22 +5182,31 @@ QCString stripScope(const char *name)
               c=result.at(p--);
               switch (c)
               {
-                case '>': 
-                  count++; 
+                case ')':
+                  round++;
                   break;
-                case '<': 
-                  if (p>0)
+                case '(':
+                  round--;
+                  break;
+                case '>': // ignore > inside (...) to support e.g. (sizeof(T)>0) inside template parameters
+                  if (round==0) count++;
+                  break;
+                case '<':
+                  if (round==0)
                   {
-                    if (result.at(p-1) == '<') // skip << operator
+                    if (p>0)
                     {
-                      p--;
-                      break;
+                      if (result.at(p-1) == '<') // skip << operator
+                      {
+                        p--;
+                        break;
+                      }
                     }
+                    count--;
+                    foundMatch = count==0;
                   }
-                  count--; 
-                  foundMatch = count==0;
                   break;
-                default: 
+                default:
                   //printf("c=%c count=%d\n",c,count);
                   break;
               }
@@ -5848,6 +5258,16 @@ QCString convertToId(const char *s)
   return growBuf.get();
 }
 
+/*! Some strings have been corrected but the requirement regarding the fact
+ *  that an id cannot have a digit at the first position. To overcome problems
+ *  with double labels we always place an "a" in front
+ */
+QCString correctId(QCString s)
+{
+  if (s.isEmpty()) return s;
+  return "a" + s;
+}
+
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s, bool keepEntities)
 {
@@ -5886,7 +5306,7 @@ QCString convertToXML(const char *s, bool keepEntities)
                    growBuf.addStr("&amp;");
                  }
                  break;
-      case '\'': growBuf.addStr("&apos;"); break; 
+      case '\'': growBuf.addStr("&apos;"); break;
       case '"':  growBuf.addStr("&quot;"); break;
       case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8:
       case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
@@ -5996,10 +5416,10 @@ QCString convertToHtml(const char *s,bool keepEntities)
                  }
                  else
                  {
-                   growBuf.addStr("&amp;");  
+                   growBuf.addStr("&amp;");
                  }
                  break;
-      case '\'': growBuf.addStr("&#39;");  break; 
+      case '\'': growBuf.addStr("&#39;");  break;
       case '"':  growBuf.addStr("&quot;"); break;
       default:   growBuf.addChar(c);       break;
     }
@@ -6110,7 +5530,7 @@ void addMembersToMemberGroup(MemberList *ml,
     const Definition *context)
 {
   ASSERT(context!=0);
-  //printf("addMemberToMemberGroup()\n");
+  //printf("addMemberToMemberGroup() context=%s\n",context->name().data());
   if (ml==0) return;
   MemberListIterator mli(*ml);
   MemberDef *md;
@@ -6143,6 +5563,7 @@ void addMembersToMemberGroup(MemberList *ml,
               if (mg==0)
               {
                 mg = new MemberGroup(
+                    context,
                     groupId,
                     info->header,
                     info->doc,
@@ -6175,6 +5596,7 @@ void addMembersToMemberGroup(MemberList *ml,
         if (mg==0)
         {
           mg = new MemberGroup(
+              context,
               groupId,
               info->header,
               info->doc,
@@ -6184,7 +5606,7 @@ void addMembersToMemberGroup(MemberList *ml,
           (*ppMemberGroupSDict)->append(groupId,mg);
         }
         md = ml->take(index); // remove from member list
-        mg->insertMember(md); // insert in member group
+        mg->insertMember(md->resolveAlias()); // insert in member group
         mg->setRefItems(info->m_sli);
         md->setMemberGroup(mg);
         continue;
@@ -6241,11 +5663,11 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
         int brCount=1;
         while (te<typeLen && brCount!=0)
         {
-          if (type.at(te)=='<') 
+          if (type.at(te)=='<')
           {
             if (te<typeLen-1 && type.at(te+1)=='<') te++; else brCount++;
           }
-          if (type.at(te)=='>') 
+          if (type.at(te)=='>')
           {
             if (te<typeLen-1 && type.at(te+1)=='>') te++; else brCount--;
           }
@@ -6253,7 +5675,7 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
         }
       }
       name = type.mid(i,l);
-      if (te>ts) 
+      if (te>ts)
       {
         templSpec = type.mid(ts,te-ts),tl+=te-ts;
         pos=i+l+tl;
@@ -6334,21 +5756,24 @@ QCString normalizeNonTemplateArgumentsInString(
 QCString substituteTemplateArgumentsInString(
     const QCString &name,
     const ArgumentList &formalArgs,
-    const ArgumentList &actualArgs)
+    const std::unique_ptr<ArgumentList> &actualArgs)
 {
   //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
   //    name.data(),argListToString(formalArgs).data(),argListToString(actualArgs).data());
   if (formalArgs.empty()) return name;
   QCString result;
-  static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9\\x80-\\xFF]*");
+  static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9:\\x80-\\xFF]*");
   int p=0,l,i;
   // for each identifier in the base class name (e.g. B<T> -> B and T)
   while ((i=re.match(name,p,&l))!=-1)
   {
     result += name.mid(p,i-p);
     QCString n = name.mid(i,l);
-    auto formIt = formalArgs.begin();
-    auto actIt  = actualArgs.begin();
+    ArgumentList::iterator actIt;
+    if (actualArgs)
+    {
+      actIt = actualArgs->begin();
+    }
 
     // if n is a template argument, then we substitute it
     // for its template instance argument.
@@ -6360,7 +5785,7 @@ QCString substituteTemplateArgumentsInString(
     {
       Argument formArg = *formIt;
       Argument actArg;
-      if (actIt!=actualArgs.end())
+      if (actualArgs && actIt!=actualArgs->end())
       {
         actArg = *actIt;
       }
@@ -6378,35 +5803,35 @@ QCString substituteTemplateArgumentsInString(
       {
         //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s'\n",
         //  n.data(),formArg->type.data(),formArg->name.data(),formArg->defval.data());
-        //printf(">> formArg->name='%s' actArg->type='%s' actArg->name='%s'\n",
-        //    formArg->name.data(),actArg ? actArg->type.data() : "",actArg ? actArg->name.data() : ""
+        //printf(">> n='%s' formArg->name='%s' actArg->type='%s' actArg->name='%s'\n",
+        //    n.data(),formArg.name.data(),actIt!=actualArgs.end() ? actIt->type.data() : "",actIt!=actualArgs.end() ? actIt->name.data() : ""
         //    );
-        if (formArg.name==n && actIt!=actualArgs.end() && !actArg.type.isEmpty()) // base class is a template argument
+        if (formArg.name==n && actualArgs && actIt!=actualArgs->end() && !actArg.type.isEmpty()) // base class is a template argument
         {
           // replace formal argument with the actual argument of the instance
-          if (!leftScopeMatch(actArg.type,n)) 
-            // the scope guard is to prevent recursive lockup for 
-            // template<class A> class C : public<A::T>, 
-            // where A::T would become A::T::T here, 
+          if (!leftScopeMatch(actArg.type,n))
+            // the scope guard is to prevent recursive lockup for
+            // template<class A> class C : public<A::T>,
+            // where A::T would become A::T::T here,
             // since n==A and actArg->type==A::T
             // see bug595833 for an example
           {
             if (actArg.name.isEmpty())
             {
-              result += actArg.type+" "; 
+              result += actArg.type+" ";
               found=TRUE;
             }
-            else 
+            else
               // for case where the actual arg is something like "unsigned int"
               // the "int" part is in actArg->name.
             {
-              result += actArg.type+" "+actArg.name+" "; 
+              result += actArg.type+" "+actArg.name+" ";
               found=TRUE;
             }
           }
         }
         else if (formArg.name==n &&
-                 actIt==actualArgs.end() &&
+                 (actualArgs==nullptr || actIt==actualArgs->end()) &&
                  !formArg.defval.isEmpty() &&
                  formArg.defval!=name /* to prevent recursion */
             )
@@ -6416,7 +5841,7 @@ QCString substituteTemplateArgumentsInString(
         }
       }
       else if (formArg.name==n &&
-               actIt==actualArgs.end() &&
+               (actualArgs==nullptr || actIt==actualArgs->end()) &&
                !formArg.defval.isEmpty() &&
                formArg.defval!=name /* to prevent recursion */
               )
@@ -6424,7 +5849,7 @@ QCString substituteTemplateArgumentsInString(
         result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs)+" ";
         found=TRUE;
       }
-      if (actIt!=actualArgs.end())
+      if (actualArgs && actIt!=actualArgs->end())
       {
         actIt++;
       }
@@ -6441,62 +5866,45 @@ QCString substituteTemplateArgumentsInString(
   return result.stripWhiteSpace();
 }
 
-#if 0
-/*! Makes a deep copy of the list of argument lists \a srcLists. 
- *  Will allocate memory, that is owned by the caller.
- */
-QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists)
-{
-  ASSERT(srcLists!=0);
-  QList<ArgumentList> *dstLists = new QList<ArgumentList>;
-  dstLists->setAutoDelete(TRUE);
-  QListIterator<ArgumentList> sli(*srcLists);
-  ArgumentList *sl;
-  for (;(sl=sli.current());++sli)
-  {
-    dstLists->append(sl->deepCopy());
-  }
-  return dstLists;
-}
-#endif
 
-/*! Strips template specifiers from scope \a fullName, except those 
- *  that make up specialized classes. The switch \a parentOnly 
- *  determines whether or not a template "at the end" of a scope 
- *  should be considered, e.g. with \a parentOnly is \c TRUE, A<T>::B<S> will 
- *  try to strip \<T\> and not \<S\>, while \a parentOnly is \c FALSE will 
- *  strip both unless A<T> or B<S> are specialized template classes. 
+/*! Strips template specifiers from scope \a fullName, except those
+ *  that make up specialized classes. The switch \a parentOnly
+ *  determines whether or not a template "at the end" of a scope
+ *  should be considered, e.g. with \a parentOnly is \c TRUE, \c A<T>::B<S> will
+ *  try to strip `<T>` and not `<S>`, while \a parentOnly is \c FALSE will
+ *  strip both unless `A<T>` or `B<S>` are specialized template classes.
  */
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
     bool parentOnly,
     QCString *pLastScopeStripped)
 {
+  int i=fullName.find('<');
+  if (i==-1) return fullName;
   QCString result;
   int p=0;
   int l=fullName.length();
-  int i=fullName.find('<');
   while (i!=-1)
   {
     //printf("1:result+=%s\n",fullName.mid(p,i-p).data());
     int e=i+1;
-    bool done=FALSE;
     int count=1;
-    while (e<l && !done)
+    int round=0;
+    while (e<l && count>0)
     {
       char c=fullName.at(e++);
-      if (c=='<') 
+      switch (c)
       {
-        count++;
-      }
-      else if (c=='>') 
-      {
-        count--;
-        done = count==0;
+        case '(': round++; break;
+        case ')': if (round>0) round--; break;
+        case '<': if (round==0) count++; break;
+        case '>': if (round==0) count--; break;
+        default:
+          break;
       }
     }
     int si= fullName.find("::",e);
 
-    if (parentOnly && si==-1) break; 
+    if (parentOnly && si==-1) break;
     // we only do the parent scope, so we stop here if needed
 
     result+=fullName.mid(p,i-p);
@@ -6523,10 +5931,10 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
  *  Example1: \c A::B and \c B::C will result in \c A::B::C <br>
  *  Example2: \c A and \c B will be \c A::B <br>
  *  Example3: \c A::B and B will be \c A::B
- *  
+ *
  *  @param leftScope the left hand part of the scope.
  *  @param rightScope the right hand part of the scope.
- *  @returns the merged scope. 
+ *  @returns the merged scope.
  */
 QCString mergeScopes(const QCString &leftScope,const QCString &rightScope)
 {
@@ -6588,7 +5996,7 @@ int getScopeFragment(const QCString &s,int p,int *l)
         while (sp<sl && !done)
         {
           // TODO: deal with << and >> operators!
-          char c=s.at(sp++);
+          c=s.at(sp++);
           switch(c)
           {
             case '<': count++; break;
@@ -6613,7 +6021,7 @@ found:
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const QCString &doc,
     const char *fileName,int startLine,
-    const std::vector<ListItemInfo> &sli,
+    const RefItemVector &sli,
     GroupDef *gd,
     const TagInfo *tagInfo,
     bool xref,
@@ -6635,7 +6043,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
   else // new page
   {
     QCString baseName=name;
-    if (baseName.right(4)==".tex") 
+    if (baseName.right(4)==".tex")
       baseName=baseName.left(baseName.length()-4);
     else if (baseName.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
       baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
@@ -6667,32 +6075,31 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       {
         file=gd->getOutputFileBase();
       }
-      else 
+      else
       {
         file=pd->getOutputFileBase();
       }
-      SectionInfo *si = Doxygen::sectionDict->find(pd->name());
+      const SectionInfo *si = SectionManager::instance().find(pd->name());
       if (si)
       {
-        if (si->lineNr != -1)
+        if (si->lineNr() != -1)
         {
-          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s, line %d)",pd->name().data(),si->fileName.data(),si->lineNr);
+          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s, line %d)",pd->name().data(),si->fileName().data(),si->lineNr());
         }
         else
         {
-          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s)",pd->name().data(),si->fileName.data());
+          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s)",pd->name().data(),si->fileName().data());
         }
       }
       else
       {
-        si=new SectionInfo(
-            file,-1,pd->name(),pd->title(),SectionInfo::Page,0,pd->getReference());
+        SectionManager::instance().add(pd->name(),
+            file,-1,pd->title(),SectionType::Page,0,pd->getReference());
         //printf("si->label='%s' si->definition=%s si->fileName='%s'\n",
         //      si->label.data(),si->definition?si->definition->name().data():"<none>",
         //      si->fileName.data());
         //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
         //printf("Adding section key=%s si->fileName=%s\n",pageName.data(),si->fileName.data());
-        Doxygen::sectionDict->append(pd->name(),si);
       }
     }
   }
@@ -6701,39 +6108,21 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
 //----------------------------------------------------------------------------
 
-void addRefItem(const std::vector<ListItemInfo> &sli,
-    const char *key, 
-    const char *prefix, const char *name,const char *title,const char *args,Definition *scope)
+void addRefItem(const RefItemVector &sli,
+    const char *key,
+    const char *prefix, const char *name,const char *title,const char *args,const Definition *scope)
 {
-  //printf("addRefItem(sli=%p,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",sli,key,prefix,name,title,args);
+  //printf("addRefItem(sli=%d,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",(int)sli.size(),key,prefix,name,title,args);
   if (key && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
   {
-    for (const ListItemInfo &lii : sli)
+    for (RefItem *item : sli)
     {
-      RefList *refList = Doxygen::xrefLists->find(lii.type);
-      if (refList
-          &&
-          (
-           // either not a built-in list or the list is enabled
-           (lii.type!="todo"       || Config_getBool(GENERATE_TODOLIST)) &&
-           (lii.type!="test"       || Config_getBool(GENERATE_TESTLIST)) &&
-           (lii.type!="bug"        || Config_getBool(GENERATE_BUGLIST))  &&
-           (lii.type!="deprecated" || Config_getBool(GENERATE_DEPRECATEDLIST))
-          )
-         )
-      {
-        RefItem *item = refList->getRefItem(lii.itemId);
-        ASSERT(item!=0);
-
-        item->prefix = prefix;
-        item->scope  = scope;
-        item->name   = name;
-        item->title  = title;
-        item->args   = args;
-
-        refList->insertIntoList(key,item);
-
-      }
+        item->setPrefix(prefix);
+        item->setScope(scope);
+        item->setName(name);
+        item->setTitle(title);
+        item->setArgs(args);
+        item->setGroup(key);
     }
   }
 }
@@ -6754,11 +6143,11 @@ bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root
     bool first=true;
     for (gli.toFirst();(gd=gli.current());++gli)
     {
+      if (!first) { ol.writeString(" &#124; "); } else first=false;
       if (recursivelyAddGroupListToTitle(ol, gd, FALSE))
       {
         ol.writeString(" &raquo; ");
       }
-      if (!first) { ol.writeString(" &#124; "); } else first=FALSE;
       ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
     }
     if (root)
@@ -6812,6 +6201,7 @@ void filterLatexString(FTextStream &t,const char *str,
         case '%':  t << "\\%"; break;
         case '#':  t << "\\#"; break;
         case '$':  t << "\\$"; break;
+        case '"':  t << "\"{}"; break;
         case '-':  t << "-\\/"; break;
         case '^':  (usedTableLevels()>0) ? t << "\\string^" : t << (char)c;    break;
         case '~':  t << "\\string~";    break;
@@ -6870,9 +6260,9 @@ void filterLatexString(FTextStream &t,const char *str,
                    }
                    break;
         case '*':  t << "$\\ast$";       break;
-        case '_':  if (!insideTabbing) t << "\\+";  
-                   t << "\\_"; 
-                   if (!insideTabbing) t << "\\+";  
+        case '_':  if (!insideTabbing) t << "\\+";
+                   t << "\\_";
+                   if (!insideTabbing) t << "\\+";
                    break;
         case '{':  t << "\\{";           break;
         case '}':  t << "\\}";           break;
@@ -6880,8 +6270,8 @@ void filterLatexString(FTextStream &t,const char *str,
         case '>':  t << "$>$";           break;
         case '|':  t << "$\\vert$";      break;
         case '~':  t << "$\\sim$";       break;
-        case '[':  if (Config_getBool(PDF_HYPERLINKS) || insideItem) 
-                     t << "\\mbox{[}"; 
+        case '[':  if (Config_getBool(PDF_HYPERLINKS) || insideItem)
+                     t << "\\mbox{[}";
                    else
                      t << "[";
                    break;
@@ -6889,12 +6279,12 @@ void filterLatexString(FTextStream &t,const char *str,
                      if (Config_getBool(PDF_HYPERLINKS) || insideItem)
                        t << "\\mbox{]}";
                      else
-                       t << "]";             
+                       t << "]";
                    break;
         case '-':  t << "-\\/";
                    break;
         case '\\': t << "\\textbackslash{}";
-                   break;           
+                   break;
         case '"':  t << "\\char`\\\"{}";
                    break;
         case '`':  t << "\\`{}";
@@ -6904,9 +6294,9 @@ void filterLatexString(FTextStream &t,const char *str,
         case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
                    break;
 
-        default:   
+        default:
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
-                   if (!insideTabbing && 
+                   if (!insideTabbing &&
                        ((c>='A' && c<='Z' && pc!=' ' && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
                       )
                    {
@@ -6940,7 +6330,7 @@ QCString latexEscapeLabelName(const char *s)
       case '}': t << "\\rcurly{}"; break;
       case '~': t << "````~"; break; // to get it a bit better in index together with other special characters
       // NOTE: adding a case here, means adding it to while below as well!
-      default:  
+      default:
         i=0;
         // collect as long string as possible, before handing it to docify
         tmp[i++]=c;
@@ -6979,7 +6369,7 @@ QCString latexEscapeIndexChars(const char *s)
       case '{': t << "\\lcurly{}"; break;
       case '}': t << "\\rcurly{}"; break;
       // NOTE: adding a case here, means adding it to while below as well!
-      default:  
+      default:
         i=0;
         // collect as long string as possible, before handing it to docify
         tmp[i++]=c;
@@ -7081,6 +6471,7 @@ QCString rtfFormatBmkStr(const char *name)
     }
   }
 
+  //printf("Name = %s RTF_tag = %s\n",name,(*tag).data());
   return *tag;
 }
 
@@ -7091,7 +6482,9 @@ bool checkExtension(const char *fName, const char *ext)
 
 QCString addHtmlExtensionIfMissing(const char *fName)
 {
-  if (QFileInfo(fName).extension(FALSE).isEmpty())
+  if (fName==0) return fName;
+  const char *p = strchr(fName,'.');
+  if (p==nullptr) // no extension
   {
     return QCString(fName)+Doxygen::htmlFileExtension;
   }
@@ -7118,11 +6511,14 @@ void replaceNamespaceAliases(QCString &scope,int i)
   while (i>0)
   {
     QCString ns = scope.left(i);
-    QCString *s = Doxygen::namespaceAliasDict[ns];
-    if (s)
+    if (!ns.isEmpty())
     {
-      scope=*s+scope.right(scope.length()-i);
-      i=s->length();
+      auto it = Doxygen::namespaceAliasMap.find(ns.data());
+      if (it!=Doxygen::namespaceAliasMap.end())
+      {
+        scope=it->second.data()+scope.right(scope.length()-i);
+        i=static_cast<int>(it->second.length());
+      }
     }
     if (i>0 && ns==scope.left(i)) break;
   }
@@ -7163,9 +6559,9 @@ bool findAndRemoveWord(QCString &s,const QCString &word)
   int p=0,i,l;
   while ((i=wordExp.match(s,p,&l))!=-1)
   {
-    if (s.mid(i,l)==word) 
+    if (s.mid(i,l)==word)
     {
-      if (i>0 && isspace((uchar)s.at(i-1))) 
+      if (i>0 && isspace((uchar)s.at(i-1)))
         i--,l++;
       else if (i+l<(int)s.length() && isspace((uchar)s.at(i+l)))
         l++;
@@ -7193,10 +6589,11 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   // search for leading empty lines
   int i=0,li=-1,l=s.length();
   char c;
-  while ((c=*p++))
+  while ((c=*p))
   {
-    if (c==' ' || c=='\t' || c=='\r') i++;
-    else if (c=='\n') i++,li=i,docLine++;
+    if (c==' ' || c=='\t' || c=='\r') i++,p++;
+    else if (c=='\\' && qstrncmp(p,"\\ilinebr",8)==0) i+=8,li=i,p+=8;
+    else if (c=='\n') i++,li=i,docLine++,p++;
     else break;
   }
 
@@ -7205,9 +6602,10 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   p=s.data()+b;
   while (b>=0)
   {
-    c=*p; p--;
-    if (c==' ' || c=='\t' || c=='\r') b--;
-    else if (c=='\n') bi=b,b--;
+    c=*p;
+    if (c==' ' || c=='\t' || c=='\r') b--,p--;
+    else if (c=='r' && b>=7 && qstrncmp(p-7,"\\ilinebr",8)==0) bi=b-7,b-=8,p-=8;
+    else if (c=='\n') bi=b,b--,p--;
     else break;
   }
 
@@ -7218,6 +6616,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   if (bi==-1) bi=l;
   if (li==-1) li=0;
   if (bi<=li) return 0; // only empty lines
+  //printf("docLine='%s' len=%d li=%d bi=%d\n",s.data(),s.length(),li,bi);
   return s.mid(li,bi-li);
 }
 
@@ -7249,7 +6648,7 @@ static struct Lang2ExtMap
   const char *langName;
   const char *parserName;
   SrcLangExt parserId;
-} 
+}
 g_lang2extMap[] =
 {
 //  language       parser           parser option
@@ -7270,7 +6669,6 @@ g_lang2extMap[] =
   { "vhdl",        "vhdl",          SrcLangExt_VHDL     },
   { "xml",         "xml",           SrcLangExt_XML      },
   { "sql",         "sql",           SrcLangExt_SQL      },
-  { "tcl",         "tcl",           SrcLangExt_Tcl      },
   { "md",          "md",            SrcLangExt_Markdown },
   { 0,             0,              (SrcLangExt)0        }
 };
@@ -7361,9 +6759,9 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".f95",      "fortran");
   updateLanguageMapping(".f03",      "fortran");
   updateLanguageMapping(".f08",      "fortran");
+  updateLanguageMapping(".f18",      "fortran");
   updateLanguageMapping(".vhd",      "vhdl");
   updateLanguageMapping(".vhdl",     "vhdl");
-  updateLanguageMapping(".tcl",      "tcl");
   updateLanguageMapping(".ucf",      "vhdl");
   updateLanguageMapping(".qsf",      "vhdl");
   updateLanguageMapping(".md",       "md");
@@ -7404,7 +6802,7 @@ QCString getFileNameExtension(QCString fn)
 
 //--------------------------------------------------------------------------
 
-MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope, 
+MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope,
                                 const char *n)
 {
   if (scope==0 ||
@@ -7488,9 +6886,9 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const char 
 
 const char *writeUtf8Char(FTextStream &t,const char *s)
 {
-  char c=*s++;
-  t << c;
-  if (c<0) // multibyte character
+  uchar c=(uchar)*s++;
+  t << (char)c;
+  if (c>=0x80) // multibyte character
   {
     if (((uchar)c&0xE0)==0xC0)
     {
@@ -7516,12 +6914,12 @@ const char *writeUtf8Char(FTextStream &t,const char *s)
   return s;
 }
 
-int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos)
+int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos)
 {
   int bytes=1;
   if (startPos>=len) return len;
-  char c = utf8Str[startPos];
-  if (c<0) // multibyte utf-8 character
+  uchar c = (uchar)utf8Str[startPos];
+  if (c>=0x80) // multibyte utf-8 character
   {
     if (((uchar)c&0xE0)==0xC0)
     {
@@ -7570,7 +6968,8 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   if (doc.isEmpty()) return s.data();
   FTextStream t(&s);
   DocNode *root = validatingParseDoc(fileName,lineNr,
-      (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE);
+      (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE,
+      0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   TextDocVisitor *visitor = new TextDocVisitor(t);
   root->accept(visitor);
   delete visitor;
@@ -7605,9 +7004,8 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 
 //--------------------------------------------------------------------------------------
 
-static QDict<void> aliasesProcessed;
-
-static QCString expandAliasRec(const QCString s,bool allowRecursion=FALSE);
+static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,
+                               const QCString s,bool allowRecursion=FALSE);
 
 struct Marker
 {
@@ -7617,8 +7015,8 @@ struct Marker
   int size; // size of the marker
 };
 
-/** For a string \a s that starts with a command name, returns the character 
- *  offset within that string representing the first character after the 
+/** For a string \a s that starts with a command name, returns the character
+ *  offset within that string representing the first character after the
  *  command. For an alias with argument, this is the offset to the
  *  character just after the argument list.
  *
@@ -7640,16 +7038,17 @@ static int findEndOfCommand(const char *s)
       QCString args = extractAliasArgs(p,0);
       i+=args.length();
     }
-    i+=p-s;
+    i+=(int)(p-s);
   }
   return i;
 }
 
-/** Replaces the markers in an alias definition \a aliasValue 
- *  with the corresponding values found in the comma separated argument 
+/** Replaces the markers in an alias definition \a aliasValue
+ *  with the corresponding values found in the comma separated argument
  *  list \a argList and the returns the result after recursive alias expansion.
  */
-static QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList)
+static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
+                                      const QCString &aliasValue,const QCString &argList)
 {
   //printf("----- replaceAliasArguments(val=[%s],args=[%s])\n",aliasValue.data(),argList.data());
 
@@ -7661,7 +7060,7 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
   for (i=0;i<l;i++)
   {
     char c = argList.at(i);
-    if (c==',' && (i==0 || argList.at(i-1)!='\\')) 
+    if (c==',' && (i==0 || argList.at(i-1)!='\\'))
     {
       args.append(new QCString(argList.mid(s,i-s)));
       s=i+1; // start of next argument
@@ -7729,7 +7128,7 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
     //printf("part before marker %d: '%s'\n",i,aliasValue.mid(p,m->pos-p).data());
     if (m->number>0 && m->number<=(int)args.count()) // valid number
     {
-      result+=expandAliasRec(*args.at(m->number-1),TRUE);
+      result+=expandAliasRec(aliasesProcessed,*args.at(m->number-1),TRUE);
       //printf("marker index=%d pos=%d number=%d size=%d replacement %s\n",i,m->pos,m->number,m->size,
       //    args.at(m->number-1)->data());
     }
@@ -7741,7 +7140,7 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
   // expand the result again
   result = substitute(result,"\\{","{");
   result = substitute(result,"\\}","}");
-  result = expandAliasRec(substitute(result,"\\,",","));
+  result = expandAliasRec(aliasesProcessed,substitute(result,"\\,",","));
 
   return result;
 }
@@ -7768,7 +7167,7 @@ static QCString escapeCommas(const QCString &s)
   return result.data();
 }
 
-static QCString expandAliasRec(const QCString s,bool allowRecursion)
+static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCString s,bool allowRecursion)
 {
   QCString result;
   static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
@@ -7789,8 +7188,8 @@ static QCString expandAliasRec(const QCString s,bool allowRecursion)
       cmd += QCString().sprintf("{%d}",numArgs);  // alias name + {n}
     }
     QCString *aliasText=Doxygen::aliasDict.find(cmd);
-    if (numArgs>1 && aliasText==0) 
-    { // in case there is no command with numArgs parameters, but there is a command with 1 parameter, 
+    if (numArgs>1 && aliasText==0)
+    { // in case there is no command with numArgs parameters, but there is a command with 1 parameter,
       // we also accept all text as the argument of that command (so you don't have to escape commas)
       aliasText=Doxygen::aliasDict.find(cmdNoArgs+"{1}");
       if (aliasText)
@@ -7801,19 +7200,20 @@ static QCString expandAliasRec(const QCString s,bool allowRecursion)
     }
     //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s' aliasText=%s\n",
     //    s.data(),cmd.data(),numArgs,args.data(),aliasText?aliasText->data():"<none>");
-    if ((allowRecursion || aliasesProcessed.find(cmd)==0) && aliasText) // expand the alias
+    if ((allowRecursion || aliasesProcessed.find(cmd.str())==aliasesProcessed.end()) &&
+        aliasText) // expand the alias
     {
       //printf("is an alias!\n");
-      if (!allowRecursion) aliasesProcessed.insert(cmd,(void *)0x8);
+      if (!allowRecursion) aliasesProcessed.insert(cmd.str());
       QCString val = *aliasText;
       if (hasArgs)
       {
-        val = replaceAliasArguments(val,args);
+        val = replaceAliasArguments(aliasesProcessed,val,args);
         //printf("replace '%s'->'%s' args='%s'\n",
         //       aliasText->data(),val.data(),args.data());
       }
-      result+=expandAliasRec(val);
-      if (!allowRecursion) aliasesProcessed.remove(cmd);
+      result+=expandAliasRec(aliasesProcessed,val);
+      if (!allowRecursion) aliasesProcessed.erase(cmd.str());
       p=i+l;
       if (hasArgs) p+=argsLen+2;
     }
@@ -7836,7 +7236,7 @@ int countAliasArguments(const QCString argList)
   int count=1;
   int l = argList.length();
   int i;
-  for (i=0;i<l;i++) 
+  for (i=0;i<l;i++)
   {
     char c = argList.at(i);
     if (c==',' && (i==0 || argList.at(i-1)!='\\')) count++;
@@ -7870,7 +7270,7 @@ QCString extractAliasArgs(const QCString &args,int pos)
         prevChar=0;
       }
 
-      if (bc==0) 
+      if (bc==0)
       {
         //printf("extractAliasArgs('%s')->'%s'\n",args.data(),args.mid(pos+1,i-pos-1).data());
         return args.mid(pos+1,i-pos-1);
@@ -7883,9 +7283,9 @@ QCString extractAliasArgs(const QCString &args,int pos)
 QCString resolveAliasCmd(const QCString aliasCmd)
 {
   QCString result;
-  aliasesProcessed.clear();
+  StringUnorderedSet aliasesProcessed;
   //printf("Expanding: '%s'\n",aliasCmd.data());
-  result = expandAliasRec(aliasCmd);
+  result = expandAliasRec(aliasesProcessed,aliasCmd);
   //printf("Expanding result: '%s'->'%s'\n",aliasCmd.data(),result.data());
   return result;
 }
@@ -7893,12 +7293,12 @@ QCString resolveAliasCmd(const QCString aliasCmd)
 QCString expandAlias(const QCString &aliasName,const QCString &aliasValue)
 {
   QCString result;
-  aliasesProcessed.clear();
+  StringUnorderedSet aliasesProcessed;
   // avoid expanding this command recursively
-  aliasesProcessed.insert(aliasName,(void *)0x8);
+  aliasesProcessed.insert(aliasName.str());
   // expand embedded commands
   //printf("Expanding: '%s'->'%s'\n",aliasName.data(),aliasValue.data());
-  result = expandAliasRec(aliasValue);
+  result = expandAliasRec(aliasesProcessed,aliasValue);
   //printf("Expanding result: '%s'->'%s'\n",aliasName.data(),result.data());
   return result;
 }
@@ -7906,7 +7306,7 @@ QCString expandAlias(const QCString &aliasName,const QCString &aliasValue)
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al)
 {
   if (al.empty()) return;
-  ol.startConstraintList(theTranslator->trTypeConstraints()); 
+  ol.startConstraintList(theTranslator->trTypeConstraints());
   for (const Argument &a : al)
   {
     ol.startConstraintParam();
@@ -7916,7 +7316,8 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
     linkifyText(TextGeneratorOLImpl(ol),d,0,0,a.type);
     ol.endConstraintType();
     ol.startConstraintDocs();
-    ol.generateDoc(d->docFile(),d->docLine(),d,0,a.docs,TRUE,FALSE);
+    ol.generateDoc(d->docFile(),d->docLine(),d,0,a.docs,TRUE,FALSE,
+                   0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endConstraintDocs();
   }
   ol.endConstraintList();
@@ -7932,27 +7333,19 @@ void stackTrace()
   static char cmd[40960];
   char *p = cmd;
   p += sprintf(p,"/usr/bin/atos -p %d ", (int)getpid());
-  for (int x = 0; x < frameCount; x++) 
+  for (int x = 0; x < frameCount; x++)
   {
     p += sprintf(p,"%p ", backtraceFrames[x]);
   }
   fprintf(stderr,"========== STACKTRACE START ==============\n");
-  #if defined(_WIN32) && !defined(__CYGWIN__)
-  if (FILE *fp = _popen(cmd, "r"))
-  #else
-  if (FILE *fp = ::popen(cmd, "r"))
-  #endif
+  if (FILE *fp = Portable::popen(cmd, "r"))
   {
     char resBuf[512];
     while (size_t len = fread(resBuf, 1, sizeof(resBuf), fp))
     {
       fwrite(resBuf, 1, len, stderr);
     }
-    #if defined(_WIN32) && !defined(__CYGWIN__)
-    _pclose(fp);
-    #else
-    ::pclose(fp);
-    #endif
+    Portable::pclose(fp);
   }
   fprintf(stderr,"============ STACKTRACE END ==============\n");
   //fprintf(stderr,"%s\n", frameStrings[x]);
@@ -7965,7 +7358,7 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   if (inputEncoding==0 || outputEncoding==0) return size;
   if (qstricmp(inputEncoding,outputEncoding)==0) return size;
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
-  if (cd==(void *)(-1)) 
+  if (cd==(void *)(-1))
   {
     term("unsupported character conversion: '%s'->'%s': %s\n"
         "Check the INPUT_ENCODING setting in the config file!\n",
@@ -8111,27 +7504,26 @@ QCString filterTitle(const QCString &title)
 // returns TRUE if the name of the file represented by 'fi' matches
 // one of the file patterns in the 'patList' list.
 
-bool patternMatch(const QFileInfo &fi,const QStrList *patList)
+bool patternMatch(const QFileInfo &fi,const StringVector &patList)
 {
-  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
   bool found = FALSE;
 
-  // For Windows/Mac, always do the case insensitive match
-#if defined(_WIN32) || defined(__MACOSX__) || defined(__CYGWIN__)
-  caseSenseNames = FALSE;
-#endif
-
-  if (patList)
+  // For platforms where the file system is non case sensitive overrule the setting
+  if (!Portable::fileSystemIsCaseSensitive())
   {
-    QStrListIterator it(*patList);
-    QCString pattern;
+    caseSenseNames = FALSE;
+  }
 
+  if (!patList.empty())
+  {
     QCString fn = fi.fileName().data();
     QCString fp = fi.filePath().data();
     QCString afp= fi.absFilePath().data();
 
-    for (it.toFirst();(pattern=it.current());++it)
+    for (const auto &pat: patList)
     {
+      QCString pattern = pat.c_str();
       if (!pattern.isEmpty())
       {
         int i=pattern.find('=');
@@ -8181,10 +7573,15 @@ void writeSummaryLink(OutputList &ol,const char *label,const char *title,
 }
 #endif
 
-QCString externalLinkTarget()
+QCString externalLinkTarget(const bool parent)
 {
   static bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
-  if (extLinksInWindow) return "target=\"_blank\" "; else return "";
+  if (extLinksInWindow)
+    return "target=\"_blank\" ";
+  else if (parent)
+    return "target=\"_parent\" ";
+  else
+    return "";
 }
 
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
@@ -8213,7 +7610,7 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
   return result;
 }
 
-/** Writes the intensity only bitmap represented by \a data as an image to 
+/** Writes the intensity only bitmap represented by \a data as an image to
  *  directory \a dir using the colors defined by HTML_COLORSTYLE_*.
  */
 void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
@@ -8242,8 +7639,8 @@ void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
 }
 
 /** Replaces any markers of the form \#\#AA in input string \a str
- *  by new markers of the form \#AABBCC, where \#AABBCC represents a 
- *  valid color, based on the intensity represented by hex number AA 
+ *  by new markers of the form \#AABBCC, where \#AABBCC represents a
+ *  valid color, based on the intensity represented by hex number AA
  *  and the current HTML_COLORSTYLE_* settings.
  */
 QCString replaceColorMarkers(const char *str)
@@ -8264,7 +7661,7 @@ QCString replaceColorMarkers(const char *str)
 #define HEXTONUM(x) (((x)>='0' && (x)<='9') ? ((x)-'0') :       \
                      ((x)>='a' && (x)<='f') ? ((x)-'a'+10) :    \
                      ((x)>='A' && (x)<='F') ? ((x)-'A'+10) : 0)
-    
+
     double r,g,b;
     int red,green,blue;
     int level = HEXTONUM(lumStr[0])*16+HEXTONUM(lumStr[1]);
@@ -8290,7 +7687,7 @@ QCString replaceColorMarkers(const char *str)
   return result;
 }
 
-/** Copies the contents of file with name \a src to the newly created 
+/** Copies the contents of file with name \a src to the newly created
  *  file with name \a dest. Returns TRUE if successful.
  */
 bool copyFile(const QCString &src,const QCString &dest)
@@ -8322,7 +7719,7 @@ bool copyFile(const QCString &src,const QCString &dest)
   return TRUE;
 }
 
-/** Returns the section of text, in between a pair of markers. 
+/** Returns the section of text, in between a pair of markers.
  *  Full lines are returned, excluding the lines on which the markers appear.
  *  \sa routine lineBlock
  */
@@ -8410,7 +7807,6 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_VHDL:     return "VHDL";
     case SrcLangExt_XML:      return "XML";
     case SrcLangExt_SQL:      return "SQL";
-    case SrcLangExt_Tcl:      return "Tcl";
     case SrcLangExt_Markdown: return "Markdown";
     case SrcLangExt_Slice:    return "Slice";
   }
@@ -8433,16 +7829,11 @@ QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope)
     return "::";
   }
 }
-QCString replaceScopeSeparator(QCString str)
-{
-  // we don't know about the language so we have to go for the worse
-  return substitute(substitute(str,"\\","::"),".","::");  // PHP and Java, CSharp, VHDL, Python
-}
 /** Checks whether the given url starts with a supported protocol */
 bool isURL(const QCString &url)
 {
   QCString loc_url = url.stripWhiteSpace();
-  return loc_url.left(5)=="http:" || loc_url.left(6)=="https:" || 
+  return loc_url.left(5)=="http:" || loc_url.left(6)=="https:" ||
          loc_url.left(4)=="ftp:"  || loc_url.left(5)=="file:";
 }
 /** Corrects URL \a url according to the relative path \a relPath.
@@ -8465,8 +7856,8 @@ bool protectionLevelVisible(Protection prot)
   static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   static bool extractPackage = Config_getBool(EXTRACT_PACKAGE);
 
-  return (prot!=Private && prot!=Package)  || 
-         (prot==Private && extractPrivate) || 
+  return (prot!=Private && prot!=Package)  ||
+         (prot==Private && extractPrivate) ||
          (prot==Package && extractPackage);
 }
 
@@ -8489,7 +7880,7 @@ QCString stripIndentation(const QCString &s)
     if      (c=='\t') indent+=tabSize - (indent%tabSize);
     else if (c=='\n') indent=0,searchIndent=TRUE;
     else if (c==' ')  indent++;
-    else if (searchIndent) 
+    else if (searchIndent)
     {
       searchIndent=FALSE;
       if (indent<minIndent) minIndent=indent;
@@ -8538,6 +7929,55 @@ QCString stripIndentation(const QCString &s)
   return result.data();
 }
 
+// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
+void stripIndentation(QCString &doc,const int indentationLevel)
+{
+  if (indentationLevel <= 0 || doc.isEmpty()) return; // nothing to strip
+
+  // by stripping content the string will only become shorter so we write the results
+  // back into the input string and then resize it at the end.
+  char c;
+  const char *src = doc.data();
+  char *dst = doc.rawData();
+  bool insideIndent = false; // skip the initial line from stripping
+  int cnt = 0;
+  while ((c=*src++)!=0)
+  {
+    // invariant: dst<=src
+    switch(c)
+    {
+      case '\n':
+        *dst++ = c;
+        insideIndent = true;
+        cnt = indentationLevel;
+        break;
+      case ' ':
+        if (insideIndent)
+        {
+          if (cnt>0) // count down the spacing until the end of the indent
+          {
+            cnt--;
+          }
+          else // reached the end of the indent, start of the part of the line to keep
+          {
+            insideIndent = false;
+            *dst++ = c;
+          }
+        }
+        else // part after indent, copy to the output
+        {
+          *dst++ = c;
+        }
+        break;
+      default:
+        insideIndent = false;
+        *dst++ = c;
+        break;
+    }
+  }
+  doc.resize(dst-doc.data()+1);
+}
+
 
 bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
 {
@@ -8546,7 +7986,7 @@ bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
   genSourceFile = !isDocFile && fd->generateSourceFile();
   return ( ((allExternals && fd->isLinkable()) ||
             fd->isLinkableInProject()
-           ) && 
+           ) &&
            !isDocFile
          );
 }
@@ -8555,7 +7995,7 @@ void addDocCrossReference(MemberDef *src,MemberDef *dst)
 {
   //printf("--> addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
-  if ((dst->hasReferencedByRelation() || dst->hasCallerGraph()) && 
+  if ((dst->hasReferencedByRelation() || dst->hasCallerGraph()) &&
       src->showInCallGraph()
      )
   {
@@ -8571,7 +8011,7 @@ void addDocCrossReference(MemberDef *src,MemberDef *dst)
       mdDecl->addSourceReferencedBy(src);
     }
   }
-  if ((src->hasReferencesRelation() || src->hasCallGraph()) && 
+  if ((src->hasReferencesRelation() || src->hasCallGraph()) &&
       src->showInCallGraph()
      )
   {
@@ -8627,7 +8067,7 @@ uint getUtf8Code( const QCString& s, int idx )
 }
 
 
-/*! @brief Returns one unicode character as an unsigned integer 
+/*! @brief Returns one unicode character as an unsigned integer
  *  from utf-8 string, making the character lower case if it was upper case.
  *
  * @param s utf-8 encoded string
@@ -8642,7 +8082,7 @@ uint getUtf8CodeToLower( const QCString& s, int idx )
 }
 
 
-/*! @brief Returns one unicode character as an unsigned integer 
+/*! @brief Returns one unicode character as an unsigned integer
  *  from utf-8 string, making the character upper case if it was lower case.
  *
  * @param s utf-8 encoded string
@@ -8723,20 +8163,22 @@ bool classVisibleInIndex(const ClassDef *cd)
 
 QCString extractDirection(QCString &docs)
 {
-  QRegExp re("\\[[^\\]]+\\]"); // [...]
+  QRegExp re("\\[[ inout,]+\\]"); // [...]
   int l=0;
-  if (re.match(docs,0,&l)==0)
+  if (re.match(docs,0,&l)==0 && l>2)
   {
-    int  inPos  = docs.find("in", 1,FALSE);
-    int outPos  = docs.find("out",1,FALSE);
-    bool input  =  inPos!=-1 &&  inPos<l;
-    bool output = outPos!=-1 && outPos<l;
-    if (input || output) // in,out attributes
+    // make dir the part inside [...] without separators
+    QCString dir=substitute(substitute(docs.mid(1,l-2)," ",""),",","");
+    int inIndex, outIndex;
+    unsigned char ioMask=0;
+    if (( inIndex=dir.find( "in"))!=-1) dir.remove (inIndex,2),ioMask|=(1<<0);
+    if ((outIndex=dir.find("out"))!=-1) dir.remove(outIndex,3),ioMask|=(1<<1);
+    if (dir.isEmpty() && ioMask!=0) // only in and/or out attributes found
     {
       docs = docs.mid(l); // strip attributes
-      if (input && output) return "[in,out]";
-      else if (input)      return "[in]";
-      else if (output)     return "[out]";
+      if (ioMask==((1<<0)|(1<<1))) return "[in,out]";
+      else if (ioMask==(1<<0))     return "[in]";
+      else if (ioMask==(1<<1))     return "[out]";
     }
   }
   return QCString();
@@ -8963,7 +8405,7 @@ bool openOutputFile(const char *outFile,QFile &f)
       if (backup.exists()) // remove existing backup
         dir.remove(backup.fileName());
       dir.rename(fi.fileName(),fi.fileName()+".bak");
-    } 
+    }
     f.setName(outFile);
     fileOpened = f.open(IO_WriteOnly|IO_Translate);
   }
@@ -8973,18 +8415,16 @@ bool openOutputFile(const char *outFile,QFile &f)
 void writeExtraLatexPackages(FTextStream &t)
 {
   // User-specified packages
-  QStrList &extraPackages = Config_getList(EXTRA_PACKAGES);
-  if (!extraPackages.isEmpty()) 
+  const StringVector &extraPackages = Config_getList(EXTRA_PACKAGES);
+  if (!extraPackages.empty())
   {
     t << "% Packages requested by user\n";
-    const char *pkgName=extraPackages.first();
-    while (pkgName)
+    for (const auto &pkgName : extraPackages)
     {
       if ((pkgName[0] == '[') || (pkgName[0] == '{'))
-        t << "\\usepackage" << pkgName << "\n";
+        t << "\\usepackage" << pkgName.c_str() << "\n";
       else
-        t << "\\usepackage{" << pkgName << "}\n";
-      pkgName=extraPackages.next();
+        t << "\\usepackage{" << pkgName.c_str() << "}\n";
     }
     t << "\n";
   }
@@ -9034,5 +8474,3 @@ int usedTableLevels()
 }
 
 //------------------------------------------------------
-
-

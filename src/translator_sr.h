@@ -58,6 +58,10 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
       QCString result="\\usepackage[serbian]{babel}\n";
       return result;
     }
+    virtual QCString trISOLang()
+    {
+      return "sr-Latn";
+    }
 
     // --- Language translation methods -------------------
 

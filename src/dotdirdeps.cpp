@@ -55,11 +55,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
       << dd->shortName() << "\"];\n";
 
     // add nodes for sub directories
-    QListIterator<DirDef> sdi(dd->subDirs());
-    const DirDef *sdir;
-    for (sdi.toFirst();(sdir=sdi.current());++sdi)
+    for(const auto sdir : dd->subDirs())
     {
-      t << "    " << sdir->getOutputFileBase() << " [shape=box label=\"" 
+      t << "    " << sdir->getOutputFileBase() << " [shape=box label=\""
         << sdir->shortName() << "\"";
       if (sdir->isCluster())
       {
@@ -70,7 +68,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
         t << " color=\"black\"";
       }
       t << " fillcolor=\"white\" style=\"filled\"";
-      t << " URL=\"" << sdir->getOutputFileBase() 
+      t << " URL=\"" << sdir->getOutputFileBase()
         << Doxygen::htmlFileExtension << "\"";
       t << "];\n";
       dirsInGraph.insert(sdir->getOutputFileBase(),sdir);
@@ -90,50 +88,52 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   }
 
   // add nodes for other used directories
-  QDictIterator<UsedDir> udi(*dd->usedDirs());
-  UsedDir *udir;
-  //printf("*** For dir %s\n",shortName().data());
-  for (udi.toFirst();(udir=udi.current());++udi) 
-    // for each used dir (=directly used or a parent of a directly used dir)
   {
-    const DirDef *usedDir=udir->dir();
-    const DirDef *dir=dd;
-    while (dir)
+    QDictIterator<UsedDir> udi(*dd->usedDirs());
+    UsedDir *udir;
+    //printf("*** For dir %s\n",shortName().data());
+    for (udi.toFirst();(udir=udi.current());++udi) 
+      // for each used dir (=directly used or a parent of a directly used dir)
     {
-      //printf("*** check relation %s->%s same_parent=%d !%s->isParentOf(%s)=%d\n",
-      //    dir->shortName().data(),usedDir->shortName().data(),
-      //    dir->parent()==usedDir->parent(),
-      //    usedDir->shortName().data(),
-      //    shortName().data(),
-      //    !usedDir->isParentOf(this)
-      //    );
-      if (dir!=usedDir && dir->parent()==usedDir->parent() && 
-        !usedDir->isParentOf(dd))
-        // include if both have the same parent (or no parent)
+      const DirDef *usedDir=udir->dir();
+      const DirDef *dir=dd;
+      while (dir)
       {
-        t << "  " << usedDir->getOutputFileBase() << " [shape=box label=\"" 
-          << usedDir->shortName() << "\"";
-        if (usedDir->isCluster())
+        //printf("*** check relation %s->%s same_parent=%d !%s->isParentOf(%s)=%d\n",
+        //    dir->shortName().data(),usedDir->shortName().data(),
+        //    dir->parent()==usedDir->parent(),
+        //    usedDir->shortName().data(),
+        //    shortName().data(),
+        //    !usedDir->isParentOf(this)
+        //    );
+        if (dir!=usedDir && dir->parent()==usedDir->parent() && 
+            !usedDir->isParentOf(dd))
+          // include if both have the same parent (or no parent)
         {
-          if (!Config_getBool(DOT_TRANSPARENT))
+          t << "  " << usedDir->getOutputFileBase() << " [shape=box label=\"" 
+            << usedDir->shortName() << "\"";
+          if (usedDir->isCluster())
           {
-            t << " fillcolor=\"white\" style=\"filled\"";
+            if (!Config_getBool(DOT_TRANSPARENT))
+            {
+              t << " fillcolor=\"white\" style=\"filled\"";
+            }
+            t << " color=\"red\"";
           }
-          t << " color=\"red\"";
+          t << " URL=\"" << usedDir->getOutputFileBase() 
+            << Doxygen::htmlFileExtension << "\"];\n";
+          dirsInGraph.insert(usedDir->getOutputFileBase(),usedDir);
+          break;
         }
-        t << " URL=\"" << usedDir->getOutputFileBase() 
-          << Doxygen::htmlFileExtension << "\"];\n";
-        dirsInGraph.insert(usedDir->getOutputFileBase(),usedDir);
-        break;
+        dir=dir->parent();
       }
-      dir=dir->parent();
     }
   }
 
   // add relations between all selected directories
   const DirDef *dir;
   QDictIterator<DirDef> di(dirsInGraph);
-  for (di.toFirst();(dir=di.current());++di) // foreach dir in the graph
+  for (;(dir=di.current());++di) // foreach dir in the graph
   {
     QDictIterator<UsedDir> udi(*dir->usedDirs());
     UsedDir *udir;

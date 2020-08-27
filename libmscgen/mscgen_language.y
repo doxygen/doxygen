@@ -179,7 +179,7 @@ int yywrap()
 
 char *removeEscapes(char *in)
 {
-    const uint16_t l = strlen(in);
+    const uint16_t l = (uint16_t)strlen(in);
     char          *r = (char *)malloc_s(l + 1);
     uint16_t       t, u;
 

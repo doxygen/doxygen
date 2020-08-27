@@ -71,7 +71,11 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "";
+      return "\\usepackage[turkish]{babel}\n";
+    }
+    virtual QCString trISOLang()
+    {
+      return "tr";
     }
 
     // --- Language translation methods -------------------
@@ -1815,7 +1819,6 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 		}
 		return sdate;
     }
-
 
 };
 

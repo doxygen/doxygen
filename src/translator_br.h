@@ -49,7 +49,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public Translator
+class TranslatorBrazilian : public TranslatorAdapter_1_8_19
 {
   public:
 
@@ -83,6 +83,11 @@ class TranslatorBrazilian : public Translator
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[brazil]{babel}";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "pt-BR";
     }
 
     // --- Language translation methods -------------------
@@ -2011,15 +2016,6 @@ class TranslatorBrazilian : public Translator
       return "Documentação do método";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      // I'm not sure how to accurately translate it
-      return "Visão geral do design";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -2335,7 +2331,6 @@ class TranslatorBrazilian : public Translator
         return "Dados Membros";
     }
 
-//////////////////////////////////////////////////////////////////////////
 
 };
 

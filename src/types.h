@@ -54,7 +54,7 @@ enum SrcLangExt
   SrcLangExt_Fortran  = 0x01000,
   SrcLangExt_VHDL     = 0x02000,
   SrcLangExt_XML      = 0x04000,
-  SrcLangExt_Tcl      = 0x08000,
+  //SrcLangExt_Tcl      = 0x08000, // no longer supported
   SrcLangExt_Markdown = 0x10000,
   SrcLangExt_SQL      = 0x20000,
   SrcLangExt_Slice    = 0x40000
@@ -95,12 +95,6 @@ struct Grouping
   QCString groupname;   //!< name of the group
   GroupPri_t pri;       //!< priority of this definition
 
-};
-
-struct ListItemInfo
-{
-  QCString type;
-  int itemId;
 };
 
 enum MemberListType

@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -29,33 +29,14 @@
 #include "entry.h"
 #include "md5.h"
 
-//static QCString idToName(int id)
-//{
-//  QCString result;
-//  result.sprintf("mgroup_%d",id);
-//  return result;
-//}
-
-MemberGroup::MemberGroup()
-{
-}
-
-MemberGroup::MemberGroup(int id,const char *hdr,const char *d,const char *docFile,int docLine)
+MemberGroup::MemberGroup(const Definition *container,int id,const char *hdr,const char *d,const char *docFile,int docLine)
+  : m_container(container), grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
 
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
   memberList      = new MemberList(MemberListType_memberGroup);
   memberList->setNeedsSorting(sortBriefDocs); // detailed sections are already sorted elsewhere.
-  grpId           = id;
-  grpHeader       = hdr;
-  doc             = d;
-  inSameSection   = TRUE;
-  inDeclSection   = 0;
-  m_numDecMembers = -1;
-  m_numDocMembers = -1;
-  m_docFile       = docFile;
-  m_docLine       = docLine;
   //printf("Member group docs='%s'\n",doc.data());
 }
 
@@ -74,13 +55,14 @@ void MemberGroup::insertMember(MemberDef *md)
   //       md,md->name().data());
 
   MemberDef *firstMd = memberList->getFirst();
-  if (inSameSection && firstMd && firstMd->getSectionList()!=md->getSectionList())
+  if (inSameSection && firstMd &&
+      firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
     inSameSection=FALSE;
   }
   else if (inDeclSection==0)
   {
-    inDeclSection = const_cast<MemberList*>(md->getSectionList());
+    inDeclSection = const_cast<MemberList*>(md->getSectionList(m_container));
     //printf("inDeclSection=%p type=%d\n",inDeclSection,inDeclSection->listType());
   }
   memberList->append(md);
@@ -125,6 +107,7 @@ void MemberGroup::writePlainDeclarations(OutputList &ol,
 void MemberGroup::writeDocumentation(OutputList &ol,const char *scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const
 {
+  //printf("MemberGroup::writeDocumentation() %s\n",grpHeader.data());
   memberList->writeDocumentation(ol,scopeName,container,0,showEnumValues,showInline);
 }
 
@@ -149,13 +132,13 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
   for (li.toFirst();(md=li.current());++li)
   {
     //printf("matching %d == %d\n",lt,md->getSectionList()->listType());
-    const MemberList *ml = md->getSectionList();
+    const MemberList *ml = md->getSectionList(m_container);
     if (ml && lt==ml->listType())
     {
-      MemberList ml(lt);
-      ml.append(md);
-      ml.countDecMembers();
-      ml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
+      MemberList mml(lt);
+      mml.append(md);
+      mml.countDecMembers();
+      mml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
     }
   }
 }
@@ -169,7 +152,7 @@ int MemberGroup::countGroupedInheritedMembers(MemberListType lt)
   for (li.toFirst();(md=li.current());++li)
   {
     //printf("matching %d == %d\n",lt,md->getSectionList()->listType());
-    const MemberList *ml = md->getSectionList();
+    const MemberList *ml = md->getSectionList(m_container);
     if (ml && lt==ml->listType())
     {
       count++;
@@ -202,6 +185,10 @@ void MemberGroup::countDocMembers()
   memberList->countDocMembers();
 }
 
+const Definition *MemberGroup::container() const
+{
+  return m_container;
+}
 
 int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
 {
@@ -253,49 +240,49 @@ int MemberGroup::varCount() const
   return memberList->varCount();
 }
 
-int MemberGroup::funcCount() const      
-{ 
-  return memberList->funcCount(); 
+int MemberGroup::funcCount() const
+{
+  return memberList->funcCount();
 }
 
-int MemberGroup::enumCount() const      
-{ 
-  return memberList->enumCount(); 
+int MemberGroup::enumCount() const
+{
+  return memberList->enumCount();
 }
 
-int MemberGroup::enumValueCount() const 
-{ 
-  return memberList->enumValueCount(); 
+int MemberGroup::enumValueCount() const
+{
+  return memberList->enumValueCount();
 }
 
-int MemberGroup::typedefCount() const   
-{ 
-  return memberList->typedefCount(); 
+int MemberGroup::typedefCount() const
+{
+  return memberList->typedefCount();
 }
 
-int MemberGroup::sequenceCount() const   
-{ 
-  return memberList->sequenceCount(); 
+int MemberGroup::sequenceCount() const
+{
+  return memberList->sequenceCount();
 }
 
-int MemberGroup::dictionaryCount() const   
-{ 
-  return memberList->dictionaryCount(); 
+int MemberGroup::dictionaryCount() const
+{
+  return memberList->dictionaryCount();
 }
 
-int MemberGroup::protoCount() const     
-{ 
-  return memberList->protoCount(); 
+int MemberGroup::protoCount() const
+{
+  return memberList->protoCount();
 }
 
-int MemberGroup::defineCount() const    
-{ 
-  return memberList->defineCount(); 
+int MemberGroup::defineCount() const
+{
+  return memberList->defineCount();
 }
 
-int MemberGroup::friendCount() const    
-{ 
-  return memberList->friendCount(); 
+int MemberGroup::friendCount() const
+{
+  return memberList->friendCount();
 }
 #endif
 
@@ -356,7 +343,7 @@ void MemberGroup::findSectionsInDocumentation(const Definition *d)
   memberList->findSectionsInDocumentation(d);
 }
 
-void MemberGroup::setRefItems(const std::vector<ListItemInfo> &sli)
+void MemberGroup::setRefItems(const RefItemVector &sli)
 {
   m_xrefListItems.insert(m_xrefListItems.end(), sli.cbegin(), sli.cend());
 }
@@ -368,7 +355,7 @@ void MemberGroup::writeTagFile(FTextStream &tagFile)
 
 //--------------------------------------------------------------------------
 
-void MemberGroupInfo::setRefItems(const std::vector<ListItemInfo> &sli)
+void MemberGroupInfo::setRefItems(const RefItemVector &sli)
 {
   m_sli.insert(m_sli.end(), sli.cbegin(), sli.cend());
 }

@@ -80,6 +80,11 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
              "\\usepackage[latvian]{babel}\n";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "lv";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1943,8 +1948,6 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     {
       return "Dizaina pārskats";
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

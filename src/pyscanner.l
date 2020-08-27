@@ -23,6 +23,11 @@
 
 %option never-interactive
 %option prefix="pyscannerYY"
+%option reentrant
+%option extra-type="struct pyscannerYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 
@@ -49,8 +54,8 @@
 #include "defargs.h"
 #include "language.h"
 #include "commentscan.h"
-#include "pycode.h"
 #include "arguments.h"
+#include "markdown.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -59,358 +64,90 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-/* -----------------------------------------------------------------
- *
- *	statics
- */
+#define USE_STATE2STRING 0
 
-  
-static OutlineParserInterface *g_thisParser;
-static const char *     inputString;
-static int		inputPosition;
-static QFile            inputFile;
+/* ----------------------------------------------------------------- */
 
-static Protection	protection;
+struct pyscannerYY_state
+{
+  pyscannerYY_state() : packageNameCache(257) {}
+  CommentScanner          commentScanner;
+  OutlineParserInterface *thisParser = 0;
+  const char *            inputString = 0;
+  yy_size_t               inputPosition = 0;
+  Protection              protection = Public;
+  std::shared_ptr<Entry>  current_root;
+  std::shared_ptr<Entry>  current;
+  std::shared_ptr<Entry>  previous;
+  std::shared_ptr<Entry>  bodyEntry;
+  int                     yyLineNr = 1 ;
+  QCString                yyFileName;
+  MethodTypes             mtype = Method;
+  bool                    stat = FALSE;
+  Specifier               virt = Normal;
+  int                     docBlockContext = 0;
+  QCString                docBlock;
+  bool                    docBlockInBody = FALSE;
+  bool                    docBlockJavaStyle = FALSE;
+  bool                    docBrief = FALSE;
+  bool                    docBlockSpecial = FALSE;
+  bool                    doubleQuote = FALSE;
+  bool                    specialBlock = FALSE;
+  int                     stringContext = 0;
+  QGString *              copyString = 0;
+  int                     indent = 0;
+  int                     curIndent = 0;
+  int                     commentIndent = 0;
+  bool                    importTuple = FALSE;
+  QDict<QCString>         packageNameCache;
+  char                    atomStart = 0;
+  char                    atomEnd = 0;
+  int                     atomCount = 0;
+  QCString                moduleScope;
+  QCString                packageName;
+  QGString                defVal;
+  int                     braceCount = 0;
+  bool                    lexInit = FALSE;
+  bool                    packageCommentAllowed = FALSE;
+  bool                    start_init = FALSE;
+  int                     search_count = 0;
+  QCString                argType;
+  bool                    funcParamsEnd = FALSE;
+};
 
-static std::shared_ptr<Entry> current_root;
-static std::shared_ptr<Entry> current;
-static std::shared_ptr<Entry> previous;
-static std::shared_ptr<Entry> bodyEntry;
-static int		yyLineNr     = 1 ;
-static QCString		yyFileName;
-static MethodTypes 	mtype;
-static bool    		gstat;
-static Specifier 	virt;
-
-static int              docBlockContext;
-static QCString         docBlock;
-static bool             docBlockInBody;
-static bool             docBlockJavaStyle;
-static bool             docBrief;
-static bool             docBlockSpecial;
-
-static bool             g_doubleQuote;
-static bool             g_specialBlock;
-static int              g_stringContext;
-static QGString *       g_copyString;
-static int              g_indent = 0;
-static int              g_curIndent = 0;
-static bool             g_importTuple;
-
-static QDict<QCString>  g_packageNameCache(257);
-
-static char             g_atomStart;
-static char             g_atomEnd;
-static int              g_atomCount;
-
-
-//static bool             g_insideConstructor;
-
-static QCString         g_moduleScope;
-static QCString         g_packageName;
-
-//static bool             g_hideClassDocs;
-
-static QGString         g_defVal;
-static int              g_braceCount;
-
-static bool             g_lexInit = FALSE;
-static bool             g_packageCommentAllowed;
-
-static bool             g_start_init = FALSE;
-static int              g_search_count = 0;
-
-static QCString         g_argType = "";
-static bool             g_funcParamsEnd;
 //-----------------------------------------------------------------------------
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 
+static inline int computeIndent(const char *s);
 
-static void initParser()
-{
-  protection = Public;
-  mtype = Method;
-  gstat = FALSE;
-  virt = Normal;
-  previous = 0;
-  g_packageCommentAllowed = TRUE;
-  g_packageNameCache.setAutoDelete(TRUE);
-}
+static void initParser(yyscan_t yyscanner);
+static void initEntry(yyscan_t yyscanner);
+static void newEntry(yyscan_t yyscanner);
+static void newVariable(yyscan_t yyscanner);
+static void newFunction(yyscan_t yyscanner);
+static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path);
+static void addFrom(yyscan_t yyscanner,bool all);
+static void lineCount(yyscan_t yyscanner);
+static void incLineNr(yyscan_t yyscanner);
+static void startCommentBlock(yyscan_t yyscanner,bool brief);
+static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief);
+static void endOfDef(yyscan_t yyscanner,int correction=0);
+static inline void addToString(yyscan_t yyscanner,const char *s);
+static void initTriDoubleQuoteBlock(yyscan_t yyscanner);
+static void initTriSingleQuoteBlock(yyscan_t yyscanner);
+static void initSpecialBlock(yyscan_t yyscanner);
+static void searchFoundDef(yyscan_t yyscanner);
+static void searchFoundClass(yyscan_t yyscanner);
+static QCString findPackageScope(yyscan_t yyscanner,const char *fileName);
 
-static void initEntry()
-{
-  //current->python = TRUE;
-  current->protection = protection ;
-  current->mtype      = mtype;
-  current->virt       = virt;
-  current->stat       = gstat;
-  current->lang       = SrcLangExt_Python; 
-  Doxygen::docGroup.initGroupInfo(current.get());
-  gstat = FALSE;
-}
-
-static void newEntry()
-{
-  previous = current;
-  current_root->moveToSubEntryAndRefresh(current);
-  initEntry();
-}
-
-static void newVariable()
-{
-  if (!current->name.isEmpty() && current->name.at(0)=='_') // mark as private
-  {
-    current->protection=Private;
-  }
-  if (current_root->section&Entry::COMPOUND_MASK) // mark as class variable
-  {
-    current->stat = TRUE;
-  }
-  newEntry();
-}
-
-static void newFunction()
-{
-  if (current->name.left(2)=="__" && current->name.right(2)=="__")
-  {
-    // special method name, see
-    // http://docs.python.org/ref/specialnames.html
-    current->protection=Public;
-  }
-  else if (current->name.at(0)=='_')
-  {
-    current->protection=Private;
-  }
-}
-
-static inline int computeIndent(const char *s)
-{
-  int col=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
-  const char *p=s;
-  char c;
-  while ((c=*p++))
-  {
-    if (c==' ') col++;
-    else if (c=='\t') col+=tabSize-(col%tabSize);
-    else break;
-  }
-  return col;
-}
-
-static QCString findPackageScopeFromPath(const QCString &path)
-{
-  QCString *pScope = g_packageNameCache.find(path);
-  if (pScope)
-  {
-    return *pScope;
-  }
-  QFileInfo pf(path+"/__init__.py"); // found package initialization file
-  if (pf.exists())
-  {
-    int i=path.findRev('/');
-    if (i!=-1)
-    {
-      QCString scope = findPackageScopeFromPath(path.left(i));
-      if (!scope.isEmpty())
-      {
-	scope+="::";
-      }
-      scope+=path.mid(i+1);
-      g_packageNameCache.insert(path,new QCString(scope));
-      return scope;
-    }
-  }
-  return "";
-}
-  
-static QCString findPackageScope(const char *fileName)
-{
-  if (fileName==0) return "";
-  QFileInfo fi(fileName);
-  return findPackageScopeFromPath(fi.dirPath(TRUE).data());
-}
-
-static void addFrom(bool all)
-{
-  QCString item=all ? g_packageName : g_packageName+"."+yytext;
-  current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
-  current->fileName = yyFileName; 
-  //printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
-  current->section=all ? Entry::USINGDIR_SEC : Entry::USINGDECL_SEC;
-  current_root->moveToSubEntryAndRefresh(current);
-  initEntry();
-}
-//-----------------------------------------------------------------------------
-
-static void lineCount()
-{
-  DBG_CTX((stderr,"yyLineNr=%d\n",yyLineNr));
-  for (const char *p = yytext; *p; ++p)
-  {
-    yyLineNr += (*p == '\n') ;
-  }
-}
-
-static void incLineNr()
-{
-  DBG_CTX((stderr,"yyLineNr=%d\n",yyLineNr));
-  yyLineNr++;
-}
-
-//-----------------------------------------------------------------
-static void startCommentBlock(bool brief)
-{
-  if (brief)
-  {
-    current->briefFile = yyFileName;
-    current->briefLine = yyLineNr;
-  }
-  else
-  {
-    current->docFile = yyFileName;
-    current->docLine = yyLineNr;
-  }
-}
-
-static void handleCommentBlock(const QCString &doc,bool brief)
-{
-  //printf("handleCommentBlock(doc=[%s] brief=%d docBlockInBody=%d docBlockJavaStyle=%d\n",
-  //    doc.data(),brief,docBlockInBody,docBlockJavaStyle);
-
-  // TODO: Fix me
-  docBlockInBody=FALSE;
-  
-  if (docBlockInBody && previous && !previous->doc.isEmpty())
-  {
-    previous->doc=previous->doc.stripWhiteSpace()+"\n\n";
-  }
-
-  int position = 0;
-  bool needsEntry;
-  int lineNr = brief ? current->briefLine : current->docLine;
-  QCString processedDoc = preprocessCommentBlock(doc,yyFileName,lineNr);
-  while (parseCommentBlock(
-	g_thisParser,
-	(docBlockInBody && previous) ? previous.get() : current.get(),
-	processedDoc, // text
-	yyFileName,   // file
-	lineNr,
-	docBlockInBody ? FALSE : brief, 
-    docBlockJavaStyle, // javadoc style // or FALSE,
-	docBlockInBody,
-	protection,
-        position,
-        needsEntry)
-     ) // need to start a new entry
-  {
-    if (needsEntry)
-    {
-      newEntry();
-    }
-  }
-  if (needsEntry)
-  {
-    newEntry();
-  }
-
-}
-
-static void endOfDef(int correction=0)
-{
-  //printf("endOfDef at=%d\n",yyLineNr);
-  if (bodyEntry)
-  {
-    bodyEntry->endBodyLine  = yyLineNr-correction;
-    bodyEntry = 0;
-  }
-  newEntry();
-  //g_insideConstructor = FALSE;
-}
-
-static inline void addToString(const char *s)
-{
-  if (g_copyString) (*g_copyString)+=s;
-}
-
-static void initTriDoubleQuoteBlock()
-{
-  docBlockContext   = YY_START;
-  docBlockInBody    = FALSE;
-  docBlockJavaStyle = TRUE;
-  docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
-  docBlock.resize(0);
-  g_doubleQuote = TRUE;
-  startCommentBlock(FALSE);
-}
-
-static void initTriSingleQuoteBlock()
-{
-  docBlockContext   = YY_START;
-  docBlockInBody    = FALSE;
-  docBlockJavaStyle = TRUE;
-  docBlockSpecial   = yytext[strlen(yytext) - 1]=='!';
-  docBlock.resize(0);
-  g_doubleQuote = FALSE;
-  startCommentBlock(FALSE);
-}
-
-static void initSpecialBlock()
-{
-  docBlockContext   = YY_START;
-  docBlockInBody    = FALSE;
-  docBlockJavaStyle = TRUE;
-  docBrief = TRUE;
-  docBlock.resize(0);
-  startCommentBlock(TRUE);
-}
-
-static void searchFoundDef()
-{
-  current->fileName  = yyFileName;
-  current->startLine = yyLineNr;
-  current->bodyLine  = yyLineNr;
-  current->section = Entry::FUNCTION_SEC;
-  current->lang = SrcLangExt_Python;
-  current->virt = Normal;
-  current->stat = gstat;
-  current->mtype = mtype = Method;
-  current->type.resize(0);
-  current->name.resize(0);
-  current->args.resize(0);
-  current->argList.clear();
-  g_packageCommentAllowed = FALSE;
-  gstat=FALSE;
-  //printf("searchFoundDef at=%d\n",yyLineNr);
-}
-
-static void searchFoundClass()
-{
-  current->section = Entry::CLASS_SEC;
-  current->argList.clear();
-  current->type += "class" ;
-  current->fileName  = yyFileName;
-  current->startLine  = yyLineNr;
-  current->bodyLine  = yyLineNr;
-  g_packageCommentAllowed = FALSE;
-}
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 //-----------------------------------------------------------------------------
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
-#define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
-
-static int yyread(char *buf,int max_size)
-{
-  int c=0;
-  while ( c < max_size && inputString[inputPosition] )
-  {
-    *buf = inputString[inputPosition++] ;
-    //printf("%d (%c)\n",*buf,*buf);
-    c++; buf++;
-  }
-  return c;
-}
+#define	YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
 %}
 
@@ -517,125 +254,125 @@ STARTDOCSYMS      "##"
 <Search>{
 
     ^{B}"def"{BB}       { // start of a function/method definition with indent
-      			  DBG_CTX((stderr,"Found def at %d\n",yyLineNr));
-      			  g_indent=computeIndent(yytext);
-			  searchFoundDef();
+      			  DBG_CTX((stderr,"Found def at %d\n",yyextra->yyLineNr));
+      			  yyextra->indent=computeIndent(yytext);
+			  searchFoundDef(yyscanner);
 			  BEGIN( FunctionDec );
       			}
     "def"{BB}           { // start of a function/method definition
-			  searchFoundDef();
+			  searchFoundDef(yyscanner);
 			  BEGIN( FunctionDec );
                         }
 
      ^{B}"class"{BB}	{ // start of a class definition with indent
-       			  DBG_CTX((stderr,"Found class at %d\n",yyLineNr));
-      			  g_indent=computeIndent(yytext);
-			  searchFoundClass();
+       			  DBG_CTX((stderr,"Found class at %d\n",yyextra->yyLineNr));
+      			  yyextra->indent=computeIndent(yytext);
+			  searchFoundClass(yyscanner);
 			  BEGIN( ClassDec ) ;
        			}
      "class"{BB}        {  // start of a class definition
-			  searchFoundClass();
+			  searchFoundClass(yyscanner);
 			  BEGIN( ClassDec ) ;
                        }
      ^{B}"from"{BB}    |
      "from"{BB}	       { // start of an from import
-			  g_packageCommentAllowed = FALSE;
+			  yyextra->packageCommentAllowed = FALSE;
                           BEGIN( FromMod );
                        }
 
      ^{B}"import"{BB}  |
      "import"{BB}      { // start of an import statement
-			  g_packageCommentAllowed = FALSE;
+			  yyextra->packageCommentAllowed = FALSE;
                           BEGIN( Import );
                        }
      ^{B}{IDENTIFIER}/{B}"="{B}"property" { // property
-      			current->section   = Entry::VARIABLE_SEC;
-  			current->mtype     = Property;
-			current->name      = QCString(yytext).stripWhiteSpace();
-			current->fileName  = yyFileName;
-			current->startLine = yyLineNr;
-			current->bodyLine  = yyLineNr;
-			g_packageCommentAllowed = FALSE;
+      			yyextra->current->section   = Entry::VARIABLE_SEC;
+  			yyextra->current->mtype     = Property;
+			yyextra->current->name      = QCString(yytext).stripWhiteSpace();
+			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->startLine = yyextra->yyLineNr;
+			yyextra->current->bodyLine  = yyextra->yyLineNr;
+			yyextra->packageCommentAllowed = FALSE;
 			BEGIN(VariableDec);
        	              }
      ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
-                        if (g_search_count) REJECT;
-      			g_indent=computeIndent(yytext);
-      			current->section   = Entry::VARIABLE_SEC;
-			current->name      = QCString(yytext).stripWhiteSpace();
-			current->fileName  = yyFileName;
-			current->startLine = yyLineNr;
-			current->bodyLine  = yyLineNr;
-			g_packageCommentAllowed = FALSE;
+                        if (yyextra->search_count) REJECT;
+      			yyextra->indent=computeIndent(yytext);
+      			yyextra->current->section   = Entry::VARIABLE_SEC;
+			yyextra->current->name      = QCString(yytext).stripWhiteSpace();
+			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->startLine = yyextra->yyLineNr;
+			yyextra->current->bodyLine  = yyextra->yyLineNr;
+			yyextra->packageCommentAllowed = FALSE;
 			BEGIN(VariableDec);
       		      }
      {B}{IDENTIFIER}/({B},{B}{IDENTIFIER})*{B}")"*{B}"="[^=] { // list of variables, we cannot place the default value
                                                                // so we will skip it later on in a general rule
                                                                // Also note ")" this is to catch also (a,b). the "("
                                                                // is caught in the rule: [(], the ")" will be handled in [)]
-                        if (g_search_count > 1) REJECT;
-      			g_indent=computeIndent(yytext);
-      			current->section   = Entry::VARIABLE_SEC;
-			current->name      = QCString(yytext).stripWhiteSpace();
-			current->fileName  = yyFileName;
-			current->startLine = yyLineNr;
-			current->bodyLine  = yyLineNr;
-			g_packageCommentAllowed = FALSE;
-			newVariable();
+                        if (yyextra->search_count > 1) REJECT;
+      			yyextra->indent=computeIndent(yytext);
+      			yyextra->current->section   = Entry::VARIABLE_SEC;
+			yyextra->current->name      = QCString(yytext).stripWhiteSpace();
+			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->startLine = yyextra->yyLineNr;
+			yyextra->current->bodyLine  = yyextra->yyLineNr;
+			yyextra->packageCommentAllowed = FALSE;
+			newVariable(yyscanner);
       		      }
      "'"	      { // start of a single quoted string
-       		        g_stringContext=YY_START;
-		        g_copyString=0;
-			g_packageCommentAllowed = FALSE;
+       		        yyextra->stringContext=YY_START;
+		        yyextra->copyString=0;
+			yyextra->packageCommentAllowed = FALSE;
                         BEGIN( SingleQuoteString );
                       }
      "\""	      { // start of a double quoted string
-       	                g_stringContext=YY_START;
-			g_copyString=0;
-			g_packageCommentAllowed = FALSE;
+       	                yyextra->stringContext=YY_START;
+			yyextra->copyString=0;
+			yyextra->packageCommentAllowed = FALSE;
                         BEGIN( DoubleQuoteString );
                       }
     "@staticmethod"  {
-       			gstat=TRUE;
+       			yyextra->stat=TRUE;
       		      }
     {SCRIPTCOMMENT}   { // Unix type script comment
-                        if (yyLineNr != 1) REJECT;
+                        if (yyextra->yyLineNr != 1) REJECT;
       		      }
     {POUNDCOMMENT}    { // normal comment 
-			g_packageCommentAllowed = FALSE;
+			yyextra->packageCommentAllowed = FALSE;
       		      }
     {IDENTIFIER}      { // some other identifier
-			g_packageCommentAllowed = FALSE;
+			yyextra->packageCommentAllowed = FALSE;
 		      }
     ^{BB}	      {
-      			g_curIndent=computeIndent(yytext);
+      			yyextra->curIndent=computeIndent(yytext);
                       }
 
     {NEWLINE}+        { // new line
-                        lineCount();
+                        lineCount(yyscanner);
                       }
 
     {TRIDOUBLEQUOTE}  { // start of a comment block
-			initTriDoubleQuoteBlock();
+			initTriDoubleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
 
     {TRISINGLEQUOTE}  { // start of a comment block
-			initTriSingleQuoteBlock();
+			initTriSingleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
 
     {STARTDOCSYMS}/[^#]    {  // start of a special comment
-      			g_curIndent=computeIndent(yytext);
-			g_packageCommentAllowed = FALSE;
-			initSpecialBlock();
+      			yyextra->curIndent=computeIndent(yytext);
+			yyextra->packageCommentAllowed = FALSE;
+			initSpecialBlock(yyscanner);
 			BEGIN(SpecialComment);
                       }
     [(]               { // we have to do something with (
-                        g_search_count += 1;
+                        yyextra->search_count += 1;
                       }
     [)]               { // we have to do something with )
-                        g_search_count -= 1;
+                        yyextra->search_count -= 1;
                       }
     [^\n]             { // any other character...
                         // This is the major default
@@ -648,13 +385,13 @@ STARTDOCSYMS      "##"
   "."                 { // python3 style imports
                       }
   {IDENTIFIER}({B}"."{B}{IDENTIFIER})* { // from package import 
-                        g_packageName=yytext;
+                        yyextra->packageName=yytext;
 		      }
   "import"{B}	      {
     			BEGIN(FromModItem);
     		      }
   \n		      {
-                        incLineNr();
+                        incLineNr(yyscanner);
                         BEGIN(Search);
                       }
   {B}		      {
@@ -667,25 +404,25 @@ STARTDOCSYMS      "##"
 
 <FromModItem>{
   "*"		{ // import all
-                  addFrom(TRUE);
+                  addFrom(yyscanner,TRUE);
                   BEGIN(Search);
     		}
   {IDENTIFIER}/{B}","{B} {
-                  addFrom(FALSE);
+                  addFrom(yyscanner,FALSE);
 		}
   {IDENTIFIER}/{B}")" {
-                  addFrom(FALSE);
+                  addFrom(yyscanner,FALSE);
                 }
   {IDENTIFIER}  {
-                  addFrom(FALSE);
-                  if (!g_importTuple)
+                  addFrom(yyscanner,FALSE);
+                  if (!yyextra->importTuple)
                   {
                     BEGIN(Search);
                   }
 		}
   \n		{
-                  incLineNr();
-                  if (!g_importTuple)
+                  incLineNr(yyscanner);
+                  if (!yyextra->importTuple)
                   {
                     BEGIN(Search);
                   }
@@ -693,16 +430,16 @@ STARTDOCSYMS      "##"
   {B}		{
 		}
   "("           {
-                  g_importTuple=TRUE;
+                  yyextra->importTuple=TRUE;
                 }
   ")"           {
-                  g_importTuple=FALSE;
+                  yyextra->importTuple=FALSE;
                   BEGIN(Search);
                 }
   ","		{
   		}
   "\\"{B}\n     { // line continuation
-                  incLineNr();
+                  incLineNr(yyscanner);
                 }
   .             {
                   unput(*yytext);
@@ -712,16 +449,16 @@ STARTDOCSYMS      "##"
 
 <Import>{
   {IDENTIFIER}({B}"."{B}{IDENTIFIER})* {
-			current->name=removeRedundantWhiteSpace(substitute(yytext,".","::"));
-			current->fileName = yyFileName; 
-			//printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
-			current->section=Entry::USINGDECL_SEC;
-			current_root->moveToSubEntryAndRefresh(current);
-			initEntry();
+			yyextra->current->name=removeRedundantWhiteSpace(substitute(yytext,".","::"));
+			yyextra->current->fileName = yyextra->yyFileName; 
+			//printf("Adding using declaration: found:%s:%d name=%s\n",yyextra->yyFileName.data(),yyextra->yyLineNr,yyextra->current->name.data());
+			yyextra->current->section=Entry::USINGDECL_SEC;
+			yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+			initEntry(yyscanner);
 			BEGIN(Search);
                       }
   \n		{
-                  incLineNr();
+                  incLineNr(yyscanner);
                   BEGIN(Search);
                 }
   {B}		{
@@ -734,60 +471,60 @@ STARTDOCSYMS      "##"
 
 <SearchMemVars>{
     "self."{IDENTIFIER}/{B}"=" {
-                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],current_root->name.data(),yyLineNr));
-			current->name=&yytext[5];
-			current->section=Entry::VARIABLE_SEC;
-			current->fileName  = yyFileName;
-			current->startLine = yyLineNr;
-			current->bodyLine  = yyLineNr;
-			current->type.resize(0);
-			if (current->name.at(0)=='_') // mark as private
+                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],yyextra->current_root->name.data(),yyextra->yyLineNr));
+			yyextra->current->name=&yytext[5];
+			yyextra->current->section=Entry::VARIABLE_SEC;
+			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->startLine = yyextra->yyLineNr;
+			yyextra->current->bodyLine  = yyextra->yyLineNr;
+			yyextra->current->type.resize(0);
+			if (yyextra->current->name.at(0)=='_') // mark as private
 			{
-			  current->protection=Private;
+			  yyextra->current->protection=Private;
 			}
-			newEntry();
+			newEntry(yyscanner);
                       }
     "cls."{IDENTIFIER}/{B}"=" {
-                        DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],current_root->name.data(),yyLineNr));
-			current->name=&yytext[4];
-			current->section=Entry::VARIABLE_SEC;
-			current->fileName  = yyFileName;
-			current->startLine = yyLineNr;
-			current->bodyLine  = yyLineNr;
-			current->type.resize(0);
-			if (current->name.at(0)=='_') // mark as private
+                        DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],yyextra->current_root->name.data(),yyextra->yyLineNr));
+			yyextra->current->name=&yytext[4];
+			yyextra->current->section=Entry::VARIABLE_SEC;
+			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->startLine = yyextra->yyLineNr;
+			yyextra->current->bodyLine  = yyextra->yyLineNr;
+			yyextra->current->type.resize(0);
+			if (yyextra->current->name.at(0)=='_') // mark as private
 			{
-			  current->protection=Private;
+			  yyextra->current->protection=Private;
 			}
-			newEntry();
+			newEntry(yyscanner);
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
-			initTriDoubleQuoteBlock();
+			initTriDoubleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
 
     {TRISINGLEQUOTE}  { // start of a comment block
-			initTriSingleQuoteBlock();
+			initTriSingleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
 
     {STARTDOCSYMS}/[^#]    {  // start of a special comment
-			initSpecialBlock();
+			initSpecialBlock(yyscanner);
 			BEGIN(SpecialComment);
                       }
     {POUNDCOMMENT}    { // #
 	              }
     "'"	              { // start of a single quoted string
-       			g_stringContext=YY_START;
-			g_copyString=0;
+       			yyextra->stringContext=YY_START;
+			yyextra->copyString=0;
                         BEGIN( SingleQuoteString );
                       }
     "\""              { // start of a double quoted string
-       			g_stringContext=YY_START;
-			g_copyString=0;
+       			yyextra->stringContext=YY_START;
+			yyextra->copyString=0;
                         BEGIN( DoubleQuoteString );
                       }
-    \n		      { incLineNr(); }
+    \n		      { incLineNr(yyscanner); }
     {IDENTIFIER}      // identifiers
     [^'"\.#a-z_A-Z\n]+  // other uninteresting stuff
     .                 // anything else
@@ -795,106 +532,106 @@ STARTDOCSYMS      "##"
 
 <FunctionBody>{
     \n{B}/{IDENTIFIER}{BB}  {
-                        DBG_CTX((stderr,"indent %d<=%d\n",computeIndent(&yytext[1]),g_indent));
-                        if (computeIndent(&yytext[1])<=g_indent) 
+                        DBG_CTX((stderr,"indent %d<=%d\n",computeIndent(&yytext[1]),yyextra->indent));
+                        if (computeIndent(&yytext[1])<=yyextra->indent) 
 			{
 			  int i;
 			  for (i=(int)yyleng-1;i>=0;i--)
 			  {
 			    unput(yytext[i]);
 			  }
-			  endOfDef();
+			  endOfDef(yyscanner);
 			  //YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                           BEGIN(Search);
 			}
 			else
 			{
-                          incLineNr();
-      		          current->program+=yytext;
+                          incLineNr(yyscanner);
+      		          yyextra->current->program+=yytext;
 			}
                       }
     \n{B}/"##"	      {
-                        if (computeIndent(&yytext[1])<=g_indent)
+                        if (computeIndent(&yytext[1])<=yyextra->indent)
 			{
 			  int i;
 			  for (i=(int)yyleng-1;i>=0;i--)
 			  {
 			    unput(yytext[i]);
 			  }
-			  endOfDef();
+			  endOfDef(yyscanner);
 			  //YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                           BEGIN(Search);
 			}
 			else
 			{
-			  incLineNr();
-      		          current->program+=yytext;
+			  incLineNr(yyscanner);
+      		          yyextra->current->program+=yytext;
 			}
       		      }
     <<EOF>>	      {
-			endOfDef();
+			endOfDef(yyscanner);
 			yyterminate();
       		      }
     ^{BB}/\n	      { // skip empty line
-      		        current->program+=yytext;
+      		        yyextra->current->program+=yytext;
       	              }
     ^{BB}	      { // something at indent >0
-      		        current->program+=yytext;
-			g_curIndent = computeIndent(yytext);
-                        if (g_curIndent<=g_indent) 
+      		        yyextra->current->program+=yytext;
+			yyextra->curIndent = computeIndent(yytext);
+                        if (yyextra->curIndent<=yyextra->indent) 
 			  // jumped out of the function
 			{
-			  endOfDef(1);
+			  endOfDef(yyscanner,1);
                           BEGIN(Search);
 			}
       		      }
     "'"	              { // start of a single quoted string
-      		        current->program+=yytext;
-       			g_stringContext=YY_START;
-		        g_specialBlock = FALSE; 
-			g_copyString=&current->program;
+      		        yyextra->current->program+=yytext;
+       			yyextra->stringContext=YY_START;
+		        yyextra->specialBlock = FALSE; 
+			yyextra->copyString=&yyextra->current->program;
                         BEGIN( SingleQuoteString );
                       }
     "\""              { // start of a double quoted string
-      		        current->program+=yytext;
-       			g_stringContext=YY_START;
-		        g_specialBlock = FALSE; 
-			g_copyString=&current->program;
+      		        yyextra->current->program+=yytext;
+       			yyextra->stringContext=YY_START;
+		        yyextra->specialBlock = FALSE; 
+			yyextra->copyString=&yyextra->current->program;
                         BEGIN( DoubleQuoteString );
                       }
     [^ \t\n#'".]+     { // non-special stuff
-      		        current->program+=yytext;
-		        g_specialBlock = FALSE; 
+      		        yyextra->current->program+=yytext;
+		        yyextra->specialBlock = FALSE; 
                       }
     ^{POUNDCOMMENT}   { // normal comment 
-      		        current->program+=yytext;
+      		        yyextra->current->program+=yytext;
       		      }
     "#".*             { // comment half way
-      		        current->program+=yytext;
+      		        yyextra->current->program+=yytext;
                       }
     {NEWLINE}	      { 
-			incLineNr(); 
-      		        current->program+=yytext;
+			incLineNr(yyscanner); 
+      		        yyextra->current->program+=yytext;
 		      }
     .                 { // any character
-      		        current->program+=*yytext;
-		        g_specialBlock = FALSE; 
+      		        yyextra->current->program+=*yytext;
+		        yyextra->specialBlock = FALSE; 
                       }
 
     {TRIDOUBLEQUOTE}  { // start of a comment block
-			current->program+=yytext;
-			initTriDoubleQuoteBlock();
+			yyextra->current->program+=yytext;
+			initTriDoubleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
 
     {TRISINGLEQUOTE}  { // start of a comment block
-			current->program+=yytext;
-			initTriSingleQuoteBlock();
+			yyextra->current->program+=yytext;
+			initTriSingleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
 
     {STARTDOCSYMS}/[^#]  {  // start of a special comment
-			initSpecialBlock();
+			initSpecialBlock(yyscanner);
 			BEGIN(SpecialComment);
                       }
     
@@ -903,37 +640,37 @@ STARTDOCSYMS      "##"
 <FunctionDec>{
     {IDENTIFIER}            {
 			      //found function name
-			      if (current->type.isEmpty()) 
+			      if (yyextra->current->type.isEmpty()) 
 			      {
-				  current->type = "def";
+				  yyextra->current->type = "def";
 			      }
-			      current->name = yytext;
-			      current->name = current->name.stripWhiteSpace();
-			      newFunction();
+			      yyextra->current->name = yytext;
+			      yyextra->current->name = yyextra->current->name.stripWhiteSpace();
+			      newFunction(yyscanner);
                             }
     {B}":"{B}		    { // function without arguments
-			      g_specialBlock = TRUE; // expecting a docstring
-			      bodyEntry = current;
+			      yyextra->specialBlock = TRUE; // expecting a docstring
+			      yyextra->bodyEntry = yyextra->current;
                               BEGIN(FunctionBody);
 			    }
 
     "->"                    {
-			      g_defVal.resize(0);
-			      g_braceCount = 0;
+			      yyextra->defVal.resize(0);
+			      yyextra->braceCount = 0;
 			      BEGIN(FunctionTypeAnnotation);
 		            }
     {B}"("                  {
-			      g_funcParamsEnd = FALSE;
-                              current->bodyLine  = yyLineNr;
+			      yyextra->funcParamsEnd = FALSE;
+                              yyextra->current->bodyLine  = yyextra->yyLineNr;
 			      BEGIN(FunctionParams);
 		            }
     ")"                     { // end of parameter list
-                              if (current->argList.empty())
+                              if (yyextra->current->argList.empty())
                               {
-                                current->argList.noParameters=TRUE;
+                                yyextra->current->argList.setNoParameters(TRUE);
                               }
-        		      current->args = argListToString(current->argList);
-        		      g_funcParamsEnd = TRUE;
+        		      yyextra->current->args = argListToString(yyextra->current->argList);
+        		      yyextra->funcParamsEnd = TRUE;
                             }
 }
 
@@ -942,21 +679,21 @@ STARTDOCSYMS      "##"
                         }
 
     [\*]+               {
-                          g_argType = yytext;
+                          yyextra->argType = yytext;
                         }
     {IDENTIFIER}        { // Name of parameter
-			  lineCount();
+			  lineCount(yyscanner);
 			  Argument a;
 			  a.name = QCString(yytext).stripWhiteSpace();
-			  a.type = g_argType;
-			  current->argList.push_back(a);
-                          g_argType = "";
+			  a.type = yyextra->argType;
+			  yyextra->current->argList.push_back(a);
+                          yyextra->argType = "";
                         }
     "="		        { // default value
                           // TODO: this rule is too simple, need to be able to
                           // match things like =")" as well!
-			  g_defVal.resize(0);
-			  g_braceCount = 0;
+			  yyextra->defVal.resize(0);
+			  yyextra->braceCount = 0;
 			  BEGIN(FunctionParamDefVal);
       			}
      ")"                {
@@ -964,8 +701,8 @@ STARTDOCSYMS      "##"
 			  BEGIN(FunctionDec);
                         }
      ":"{B}             {
-			  g_defVal.resize(0);
-			  g_braceCount = 0;
+			  yyextra->defVal.resize(0);
+			  yyextra->braceCount = 0;
 			  BEGIN(FunctionAnnotation);
 			}
     {POUNDCOMMENT}	{ // a comment
@@ -979,43 +716,43 @@ STARTDOCSYMS      "##"
      "{"		|
      "["		|
      "("		{
-     			  ++g_braceCount;
-     			  g_defVal+=*yytext;
+     			  ++yyextra->braceCount;
+     			  yyextra->defVal+=*yytext;
      			}
      "}"		|
      "]"		|
      ")"		{
-			  --g_braceCount;
-			  g_defVal+=*yytext;
+			  --yyextra->braceCount;
+			  yyextra->defVal+=*yytext;
        			}
      ":"		{
-			  if (g_braceCount == 0)
+			  if (yyextra->braceCount == 0)
 			  {
-			    current->type = g_defVal.data();
+			    yyextra->current->type = yyextra->defVal.data();
 			    unput(*yytext);
 			    BEGIN(FunctionDec);
 			  }
 			  else
-     			    g_defVal+=*yytext;
+     			    yyextra->defVal+=*yytext;
        			}
      "'"                {
-			  g_defVal+=*yytext;
-			  g_copyString=&g_defVal;
-			  g_stringContext=FunctionTypeAnnotation;
+			  yyextra->defVal+=*yytext;
+			  yyextra->copyString=&yyextra->defVal;
+			  yyextra->stringContext=FunctionTypeAnnotation;
 			  BEGIN(SingleQuoteString);
                         }
      "\""               {
-			  g_defVal+=*yytext;
-			  g_copyString=&g_defVal;
-			  g_stringContext=FunctionTypeAnnotation;
+			  yyextra->defVal+=*yytext;
+			  yyextra->copyString=&yyextra->defVal;
+			  yyextra->stringContext=FunctionTypeAnnotation;
 			  BEGIN(DoubleQuoteString);
                         }
      \n                 {
-			  g_defVal+=*yytext;
-			  incLineNr();
+			  yyextra->defVal+=*yytext;
+			  incLineNr(yyscanner);
 			}
      .			{
-			  g_defVal+=*yytext;
+			  yyextra->defVal+=*yytext;
        			}
 }
 
@@ -1023,21 +760,21 @@ STARTDOCSYMS      "##"
      "{"		|
      "["		|
      "("		{
-     			  ++g_braceCount;
-     			  g_defVal+=*yytext;
+     			  ++yyextra->braceCount;
+     			  yyextra->defVal+=*yytext;
      			}
      "}"		|
      "]"		{
-			  --g_braceCount;
-			  g_defVal+=*yytext;
+			  --yyextra->braceCount;
+			  yyextra->defVal+=*yytext;
        			}
      ")"		|
      "="		|
      ","		{
-			  if (g_braceCount == 0)
+			  if (yyextra->braceCount == 0)
 			  {
-			    if (!current->argList.empty())
-			      current->argList.back().type += g_defVal;
+			    if (!yyextra->current->argList.empty())
+			      yyextra->current->argList.back().type += yyextra->defVal;
 			    if (*yytext != ',')
 			      unput(*yytext);
 			    BEGIN(FunctionParams);
@@ -1045,28 +782,28 @@ STARTDOCSYMS      "##"
 			  else
 			  {
 			    if (*yytext == ')')
-			      --g_braceCount;
-			    g_defVal += *yytext;
+			      --yyextra->braceCount;
+			    yyextra->defVal += *yytext;
      			  }
        			}
      "'"                {
-			  g_defVal+=*yytext;
-			  g_copyString=&g_defVal;
-			  g_stringContext=FunctionAnnotation;
+			  yyextra->defVal+=*yytext;
+			  yyextra->copyString=&yyextra->defVal;
+			  yyextra->stringContext=FunctionAnnotation;
 			  BEGIN(SingleQuoteString);
                         }
      "\""               {
-			  g_defVal+=*yytext;
-			  g_copyString=&g_defVal;
-			  g_stringContext=FunctionAnnotation;
+			  yyextra->defVal+=*yytext;
+			  yyextra->copyString=&yyextra->defVal;
+			  yyextra->stringContext=FunctionAnnotation;
 			  BEGIN(DoubleQuoteString);
                         }
      \n                 {
-			  g_defVal+=*yytext;
-			  incLineNr();
+			  yyextra->defVal+=*yytext;
+			  incLineNr(yyscanner);
        			}
      .			{
-			  g_defVal+=*yytext;
+			  yyextra->defVal+=*yytext;
        			}
 }
 
@@ -1074,20 +811,20 @@ STARTDOCSYMS      "##"
      "{"		| 
      "["		| 
      "("		{ // internal opening brace, assumption is that we have correct code so braces do match
-       			  ++g_braceCount;
-			  g_defVal+=*yytext;
+       			  ++yyextra->braceCount;
+			  yyextra->defVal+=*yytext;
        			}
      "}"		|
      "]"		{
-			  --g_braceCount;
-			  g_defVal+=*yytext;
+			  --yyextra->braceCount;
+			  yyextra->defVal+=*yytext;
        			}
      ")"		|
      ","		{
-			  if (g_braceCount == 0)
+			  if (yyextra->braceCount == 0)
 			  {
-			    if (!current->argList.empty())
-			      current->argList.back().defval=QCString(g_defVal).stripWhiteSpace();
+			    if (!yyextra->current->argList.empty())
+			      yyextra->current->argList.back().defval=QCString(yyextra->defVal).stripWhiteSpace();
 			    if (*yytext == ')')
 			      unput(*yytext);
 			    BEGIN(FunctionParams);
@@ -1095,140 +832,140 @@ STARTDOCSYMS      "##"
      			  else
      			  {
 			    if (*yytext == ')')
-			      --g_braceCount;
-     			    g_defVal += *yytext;
+			      --yyextra->braceCount;
+     			    yyextra->defVal += *yytext;
      			  }
        			}
 
      "'"                {
-                          g_defVal+=*yytext;
-                          g_copyString=&g_defVal;
-                          g_stringContext=FunctionParamDefVal;
+                          yyextra->defVal+=*yytext;
+                          yyextra->copyString=&yyextra->defVal;
+                          yyextra->stringContext=FunctionParamDefVal;
                           BEGIN( SingleQuoteString );
                         }
      "\""               {
-                          g_defVal+=*yytext;
-                          g_copyString=&g_defVal;
-                          g_stringContext=FunctionParamDefVal;
+                          yyextra->defVal+=*yytext;
+                          yyextra->copyString=&yyextra->defVal;
+                          yyextra->stringContext=FunctionParamDefVal;
                           BEGIN( DoubleQuoteString );
                         }
      \n                 {
-       			    g_defVal+=*yytext;
-			    incLineNr();
+       			    yyextra->defVal+=*yytext;
+			    incLineNr(yyscanner);
        			}
      .			{
-			    g_defVal+=*yytext;
+			    yyextra->defVal+=*yytext;
        			}
 }
 
 
 <ClassBody>{
     \n/{IDENTIFIER}{BB}  { // new def at indent 0
-                        incLineNr();
-			endOfDef();
-			//g_hideClassDocs = FALSE;
+                        incLineNr(yyscanner);
+			endOfDef(yyscanner);
+			//yyextra->hideClassDocs = FALSE;
 			//YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                         BEGIN(Search);
                       }
     \n/"##"[^#]       {  // start of a special comment at indent 0
-                        incLineNr();
-			endOfDef();
-			//g_hideClassDocs = FALSE;
+                        incLineNr(yyscanner);
+			endOfDef(yyscanner);
+			//yyextra->hideClassDocs = FALSE;
 			//YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                         BEGIN(Search);
                       }
     ^{BB}/\n	      { // skip empty line
-      		        current->program+=yytext;
+      		        yyextra->current->program+=yytext;
       	              }
     <<EOF>>	      {
-			endOfDef();
+			endOfDef(yyscanner);
 			yyterminate();
       		      }
     ^{BB}	      { // something at indent >0
-                        g_curIndent=computeIndent(yytext);
-			DBG_CTX((stderr,"g_curIndent=%d g_indent=%d\n",g_curIndent,g_indent));
-                        if (g_curIndent<=g_indent) 
+                        yyextra->curIndent=computeIndent(yytext);
+			DBG_CTX((stderr,"yyextra->curIndent=%d yyextra->indent=%d\n",yyextra->curIndent,yyextra->indent));
+                        if (yyextra->curIndent<=yyextra->indent) 
 			  // jumped out of the class/method
 			{
-			  endOfDef(1);
-			  g_indent=g_curIndent;
+			  endOfDef(yyscanner,1);
+			  yyextra->indent=yyextra->curIndent;
 			  // make sure the next rule matches ^...
 			  //YY_CURRENT_BUFFER->yy_at_bol=TRUE;
-			  //g_hideClassDocs = FALSE;
+			  //yyextra->hideClassDocs = FALSE;
                           BEGIN(Search);
 			}
 			else
 			{
-      		          current->program+=yytext;
+      		          yyextra->current->program+=yytext;
 			}
       		      }
     "'"	              { // start of a single quoted string
-      		        current->program+=*yytext;
-       			g_stringContext=YY_START;
-		        g_specialBlock = FALSE; 
-			g_copyString=&current->program;
+      		        yyextra->current->program+=*yytext;
+       			yyextra->stringContext=YY_START;
+		        yyextra->specialBlock = FALSE; 
+			yyextra->copyString=&yyextra->current->program;
                         BEGIN( SingleQuoteString );
                       }
     "\""              { // start of a double quoted string
-      		        current->program+=*yytext;
-       			g_stringContext=YY_START;
-		        g_specialBlock = FALSE; 
-			g_copyString=&current->program;
+      		        yyextra->current->program+=*yytext;
+       			yyextra->stringContext=YY_START;
+		        yyextra->specialBlock = FALSE; 
+			yyextra->copyString=&yyextra->current->program;
                         BEGIN( DoubleQuoteString );
                       }
     [^ \t\n#'"]+      { // non-special stuff
-      		        current->program+=yytext;
-		        g_specialBlock = FALSE; 
-			//g_hideClassDocs = FALSE;
+      		        yyextra->current->program+=yytext;
+		        yyextra->specialBlock = FALSE; 
+			//yyextra->hideClassDocs = FALSE;
                       }
     {NEWLINE}	      { 
-      		        current->program+=*yytext;
-			incLineNr(); 
+      		        yyextra->current->program+=*yytext;
+			incLineNr(yyscanner); 
 		      }
     {POUNDCOMMENT}    { // normal comment
-      		        current->program+=yytext;
+      		        yyextra->current->program+=yytext;
                       }
     .                 { // any character
-		        g_specialBlock = FALSE; 
-      		        current->program+=*yytext;
+		        yyextra->specialBlock = FALSE; 
+      		        yyextra->current->program+=*yytext;
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
-      		        //if (!g_hideClassDocs) 
-			current->program+=yytext;
-			initTriDoubleQuoteBlock();
+      		        //if (!yyextra->hideClassDocs) 
+			yyextra->current->program+=yytext;
+			initTriDoubleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
 
     {TRISINGLEQUOTE}  { // start of a comment block
-      		        //if (!g_hideClassDocs) 
-			current->program+=yytext;
-			initTriSingleQuoteBlock();
+      		        //if (!yyextra->hideClassDocs) 
+			yyextra->current->program+=yytext;
+			initTriSingleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
 }
 
 <ClassDec>{IDENTIFIER} {
-			  if (current->type.isEmpty()) 
+			  if (yyextra->current->type.isEmpty()) 
 			  {
-			      current->type = "class";
+			      yyextra->current->type = "class";
 			  }
 
-			  current->section = Entry::CLASS_SEC;
-			  current->name = yytext;
+			  yyextra->current->section = Entry::CLASS_SEC;
+			  yyextra->current->name = yytext;
 
 			  // prepend scope in case of nested classes
-			  if (current_root->section&Entry::SCOPE_MASK)
+			  if (yyextra->current_root->section&Entry::SCOPE_MASK)
 			  {
-			    //printf("*** Prepending scope %s to class %s\n",current_root->name.data(),current->name.data());
-			    current->name.prepend(current_root->name+"::");
+			    //printf("*** Prepending scope %s to class %s\n",yyextra->current_root->name.data(),yyextra->current->name.data());
+			    yyextra->current->name.prepend(yyextra->current_root->name+"::");
 			  }
 			  
-			  current->name = current->name.stripWhiteSpace();
-			  current->fileName = yyFileName;        
-			  docBlockContext   = YY_START;
-			  docBlockInBody    = FALSE;
-			  docBlockJavaStyle = FALSE;
-			  docBlock.resize(0);
+			  yyextra->current->name = yyextra->current->name.stripWhiteSpace();
+			  yyextra->current->fileName = yyextra->yyFileName;        
+			  yyextra->docBlockContext   = YY_START;
+			  yyextra->docBlockInBody    = FALSE;
+			  yyextra->docBlockJavaStyle = FALSE;
+			  yyextra->docBlock.resize(0);
 
 			  BEGIN(ClassInheritance);                 
                         }
@@ -1238,37 +975,37 @@ STARTDOCSYMS      "##"
                        }
 
     ":"                { // begin of the class definition
-			 g_specialBlock = TRUE; // expecting a docstring
-                         current->bodyLine  = yyLineNr;
-			 current->program.resize(0);
+			 yyextra->specialBlock = TRUE; // expecting a docstring
+                         yyextra->current->bodyLine  = yyextra->yyLineNr;
+			 yyextra->current->program.resize(0);
       			 BEGIN(ClassCaptureIndent);
                        }
 
     {SCOPE}            {
-                         current->extends.push_back(
+                         yyextra->current->extends.push_back(
 					      BaseInfo(substitute(yytext,".","::"),Public,Normal)
 					    );
                          //Has base class-do stuff
                        }
     "'"	               { // start of a single quoted string
-       			 g_stringContext=YY_START;
+       			 yyextra->stringContext=YY_START;
                          BEGIN( SingleQuoteStringIgnore );
                        }
     "\""               { // start of a double quoted string
-       			 g_stringContext=YY_START;
+       			 yyextra->stringContext=YY_START;
                          BEGIN( DoubleQuoteStringIgnore );
                        }
 }
 
 <SingleQuoteStringIgnore>{
     "'"	               { // end of a single quoted string
-			 BEGIN(g_stringContext);
+			 BEGIN(yyextra->stringContext);
                        }
     .	               { }
 }
 <DoubleQuoteStringIgnore>{
     "\""	       { // end of a double quoted string
-			 BEGIN(g_stringContext);
+			 BEGIN(yyextra->stringContext);
                        }
     .	               { }
 }
@@ -1276,42 +1013,42 @@ STARTDOCSYMS      "##"
 <ClassCaptureIndent>{
     "\n"|({BB}"\n")            {
                                  // Blankline - ignore, keep looking for indentation.
-				 lineCount();
-      				 current->program+=yytext;
+				 lineCount(yyscanner);
+      				 yyextra->current->program+=yytext;
                                }
 
     {TRIDOUBLEQUOTE}           { // start of a comment block
-				 initTriDoubleQuoteBlock();
-      				 current->program+=yytext;
+				 initTriDoubleQuoteBlock(yyscanner);
+      				 yyextra->current->program+=yytext;
 			 	 BEGIN(TripleComment);
                       	       }
     {TRISINGLEQUOTE}           { // start of a comment block
-			         initTriSingleQuoteBlock();
-      				 current->program+=yytext;
+			         initTriSingleQuoteBlock(yyscanner);
+      				 yyextra->current->program+=yytext;
 			         BEGIN(TripleComment);
                                }
     {STARTDOCSYMS}[#]*         {  // start of a special comment
-                                 initSpecialBlock();
+                                 initSpecialBlock(yyscanner);
                                  BEGIN(SpecialComment);
                                }
     {POUNDCOMMENT}             { // ignore comment with just one #
                                }
     ^{BB} 		       {
-      				 current->program+=yytext;
-			         //current->startLine = yyLineNr;
-				 g_curIndent=computeIndent(yytext);
-				 bodyEntry = current;
-				 DBG_CTX((stderr,"setting indent %d\n",g_curIndent));
-				 //printf("current->program=[%s]\n",current->program.data());
-				 //g_hideClassDocs = TRUE;
+      				 yyextra->current->program+=yytext;
+			         //yyextra->current->startLine = yyextra->yyLineNr;
+				 yyextra->curIndent=computeIndent(yytext);
+				 yyextra->bodyEntry = yyextra->current;
+				 DBG_CTX((stderr,"setting indent %d\n",yyextra->curIndent));
+				 //printf("yyextra->current->program=[%s]\n",yyextra->current->program.data());
+				 //yyextra->hideClassDocs = TRUE;
 			         BEGIN(ClassBody);
                                }
 
     ""/({NONEMPTY}|{EXPCHAR})  {
 				 // Just pushback an empty class, and
 				 // resume parsing the body.
-                                 newEntry();
-      				 current->program+=yytext;
+                                 newEntry(yyscanner);
+      				 yyextra->current->program+=yytext;
 
 				 // printf("Failed to find indent - skipping!");
 				 BEGIN( Search );
@@ -1321,82 +1058,82 @@ STARTDOCSYMS      "##"
 
 <VariableDec>{
    "="                { // the assignment operator
-                        //printf("====== VariableDec at line %d\n",yyLineNr);
-                        g_start_init = TRUE;
-			current->initializer = yytext;
-			current->initializer += " ";
+                        //printf("====== VariableDec at line %d\n",yyextra->yyLineNr);
+                        yyextra->start_init = TRUE;
+			yyextra->current->initializer = yytext;
+			yyextra->current->initializer += " ";
                       }
    {B}                { // spaces
-			current->initializer += yytext;
+			yyextra->current->initializer += yytext;
 	              }
    {INTNUMBER}	      { // integer value
-			if (current-> type.isEmpty()) current->type = "int";
-			current->initializer += yytext;
+			if (yyextra->current-> type.isEmpty()) yyextra->current->type = "int";
+			yyextra->current->initializer += yytext;
 		      }
    {FLOATNUMBER}      { // floating point value
-			if (current->type.isEmpty()) current->type = "float";
-			current->initializer += yytext;
+			if (yyextra->current->type.isEmpty()) yyextra->current->type = "float";
+			yyextra->current->initializer += yytext;
 		      }
    {BOOL}             { // boolean value
-			if (current->type.isEmpty()) current->type = "bool";
-			current->initializer += yytext;
+			if (yyextra->current->type.isEmpty()) yyextra->current->type = "bool";
+			yyextra->current->initializer += yytext;
 		      }
    {STRINGPREFIX}?"'" { // string
-			if (current->type.isEmpty()) current->type = "string";
-			current->initializer += yytext;
-			g_copyString=&current->initializer;
-       			g_stringContext=VariableDec;
+			if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+			yyextra->current->initializer += yytext;
+			yyextra->copyString=&yyextra->current->initializer;
+       			yyextra->stringContext=VariableDec;
                         BEGIN( SingleQuoteString );
      		      }
    {STRINGPREFIX}?"\"" { // string
-			if (current->type.isEmpty()) current->type = "string";
-			current->initializer += yytext;
-			g_copyString=&current->initializer;
-       			g_stringContext=VariableDec;
+			if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+			yyextra->current->initializer += yytext;
+			yyextra->copyString=&yyextra->current->initializer;
+       			yyextra->stringContext=VariableDec;
                         BEGIN( DoubleQuoteString );
      		      }
    {TRIDOUBLEQUOTE}   { // start of a comment block
-			if (current->type.isEmpty()) current->type = "string";
-			current->initializer += yytext;
-			g_doubleQuote=TRUE;
-			g_copyString=&current->initializer;
-       			g_stringContext=VariableDec;
+			if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+			yyextra->current->initializer += yytext;
+			yyextra->doubleQuote=TRUE;
+			yyextra->copyString=&yyextra->current->initializer;
+       			yyextra->stringContext=VariableDec;
 			BEGIN(TripleString);
                       }
 
    {TRISINGLEQUOTE}   { // start of a comment block
-			if (current->type.isEmpty()) current->type = "string";
-			current->initializer += yytext;
-			g_doubleQuote=FALSE;
-			g_copyString=&current->initializer;
-       			g_stringContext=VariableDec;
+			if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+			yyextra->current->initializer += yytext;
+			yyextra->doubleQuote=FALSE;
+			yyextra->copyString=&yyextra->current->initializer;
+       			yyextra->stringContext=VariableDec;
 			BEGIN(TripleString);
                       }
    "("		      { // tuple, only when direct after =
-                        if (current->mtype!=Property && g_start_init)
+                        if (yyextra->current->mtype!=Property && yyextra->start_init)
 			{
-			  current->type = "tuple";
+			  yyextra->current->type = "tuple";
 			}
-      		        current->initializer+=*yytext;
-                        g_atomStart='(';
-			g_atomEnd=')';
-			g_atomCount=1;
+      		        yyextra->current->initializer+=*yytext;
+                        yyextra->atomStart='(';
+			yyextra->atomEnd=')';
+			yyextra->atomCount=1;
 			BEGIN( VariableAtom );
                       }
    "["                { // list
-                        if (g_start_init) current->type = "list";
-      		        current->initializer+=*yytext;
-                        g_atomStart='[';
-			g_atomEnd=']';
-			g_atomCount=1;
+                        if (yyextra->start_init) yyextra->current->type = "list";
+      		        yyextra->current->initializer+=*yytext;
+                        yyextra->atomStart='[';
+			yyextra->atomEnd=']';
+			yyextra->atomCount=1;
 			BEGIN( VariableAtom );
                       }
    "{"		      { // dictionary
-                        if (g_start_init) current->type = "dictionary";
-      		        current->initializer+=*yytext;
-                        g_atomStart='{';
-			g_atomEnd='}';
-			g_atomCount=1;
+                        if (yyextra->start_init) yyextra->current->type = "dictionary";
+      		        yyextra->current->initializer+=*yytext;
+                        yyextra->atomStart='{';
+			yyextra->atomEnd='}';
+			yyextra->atomCount=1;
 			BEGIN( VariableAtom );
                       }
    "#".*              { // comment
@@ -1404,26 +1141,26 @@ STARTDOCSYMS      "##"
                       }
    {IDENTIFIER}	      {
 			// do something based on the type of the IDENTIFIER
-			if (current->type.isEmpty())
+			if (yyextra->current->type.isEmpty())
                         {
-                          //QListIterator<Entry> eli(*(current_root->children()));
+                          //QListIterator<Entry> eli(*(yyextra->current_root->children()));
                           //Entry *child;
-                          //for (eli.toFirst();(child=eli.current());++eli)
-                          for (const auto &child : current_root->children())
+                          //for (eli.toFirst();(child=eli.yyextra->current());++eli)
+                          for (const auto &child : yyextra->current_root->children())
                           {
                             if (child->name == QCString(yytext))
                             {
-                               current->type = child->type;
+                               yyextra->current->type = child->type;
                                break;
                             }
                           }
                         }
-                        g_start_init = FALSE;
-      		        current->initializer+=yytext;
+                        yyextra->start_init = FALSE;
+      		        yyextra->current->initializer+=yytext;
 	              }
    .		      {
-                        g_start_init = FALSE;
-      		        current->initializer+=*yytext;
+                        yyextra->start_init = FALSE;
+      		        yyextra->current->initializer+=*yytext;
                       }
    \n		      {
      		        unput('\n');
@@ -1433,71 +1170,71 @@ STARTDOCSYMS      "##"
 
 <VariableAtom>{
     [\(\[\{]	      {
-      		        current->initializer+=*yytext;
-                        if (g_atomStart==*yytext)
+      		        yyextra->current->initializer+=*yytext;
+                        if (yyextra->atomStart==*yytext)
 			{
-			  g_atomCount++;
+			  yyextra->atomCount++;
 			}
                       }
     [\)\]\}]	      {
-      		        current->initializer+=*yytext;
-                        if (g_atomEnd==*yytext)
+      		        yyextra->current->initializer+=*yytext;
+                        if (yyextra->atomEnd==*yytext)
 			{
-			  g_atomCount--;
+			  yyextra->atomCount--;
 			}
-			if (g_atomCount==0)
+			if (yyextra->atomCount==0)
 			{
-                          g_start_init = FALSE;
+                          yyextra->start_init = FALSE;
 			  BEGIN(VariableDec);
 			}
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
-                        g_specialBlock = FALSE;
-			current->program+=yytext;
-			initTriDoubleQuoteBlock();
+                        yyextra->specialBlock = FALSE;
+			yyextra->current->program+=yytext;
+			initTriDoubleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
 
     {TRISINGLEQUOTE}  { // start of a comment block
-                        g_specialBlock = FALSE;
-			current->program+=yytext;
-			initTriSingleQuoteBlock();
+                        yyextra->specialBlock = FALSE;
+			yyextra->current->program+=yytext;
+			initTriSingleQuoteBlock(yyscanner);
 			BEGIN(TripleComment);
                       }
    "'"	              {
-       			g_stringContext=YY_START;
-			current->initializer+="'";
-			g_copyString=&current->initializer;
+       			yyextra->stringContext=YY_START;
+			yyextra->current->initializer+="'";
+			yyextra->copyString=&yyextra->current->initializer;
                         BEGIN( SingleQuoteString );
                       }
    "\""	              {
-       			g_stringContext=YY_START;
-			current->initializer+="\"";
-			g_copyString=&current->initializer;
+       			yyextra->stringContext=YY_START;
+			yyextra->current->initializer+="\"";
+			yyextra->copyString=&yyextra->current->initializer;
                         BEGIN( DoubleQuoteString );
                       }
    {IDENTIFIER}       {
-      		        current->initializer+=yytext;
+      		        yyextra->current->initializer+=yytext;
 	              }
    .		      {
-      		        current->initializer+=*yytext;
+      		        yyextra->current->initializer+=*yytext;
                       }
    \n		      {
-      		        current->initializer+=*yytext;
-     			incLineNr();
+      		        yyextra->current->initializer+=*yytext;
+     			incLineNr(yyscanner);
      		      }
 
 }
 
 <VariableEnd>{
     \n                {
-                        incLineNr();
-			newVariable();
+                        incLineNr(yyscanner);
+			newVariable(yyscanner);
                         BEGIN(Search);
                       }
     .		      { 
                         unput(*yytext);
-			newVariable();
+			newVariable(yyscanner);
                         BEGIN(Search);
       		      }
     <<EOF>>           { yyterminate();
@@ -1507,78 +1244,75 @@ STARTDOCSYMS      "##"
 <TripleComment>{
     {ENDTRIDOUBLEQUOTE}   | 
     {ENDTRISINGLEQUOTE}   {
-			  // printf("Expected module block %d special=%d\n",g_expectModuleDocs,g_specialBlock);
-			  if (g_doubleQuote==(yytext[0]=='"')) 
+			  // printf("Expected module block %d special=%d\n",yyextra->expectModuleDocs,yyextra->specialBlock);
+			  if (yyextra->doubleQuote==(yytext[0]=='"')) 
 			  {
-			    if (g_specialBlock) // expecting a docstring
+			    if (yyextra->specialBlock) // expecting a docstring
 			    {
-			      QCString actualDoc=docBlock;
-			      if (!docBlockSpecial) // legacy unformatted docstring
+			      QCString actualDoc=yyextra->docBlock;
+			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-			        actualDoc.prepend("\\verbatim ");
-			        actualDoc.append("\\endverbatim ");
+                                if (!actualDoc.isEmpty())
+                                {
+                                  stripIndentation(actualDoc,yyextra->commentIndent);
+			          actualDoc.prepend("\\verbatim\n");
+			          actualDoc.append("\\endverbatim ");
+			        }
 			      }
-			      //printf("-------> current=%p bodyEntry=%p\n",current,bodyEntry);
-			      handleCommentBlock(actualDoc, FALSE);
+			      //printf("-------> yyextra->current=%p yyextra->bodyEntry=%p\n",yyextra->current,yyextra->bodyEntry);
+			      handleCommentBlock(yyscanner, actualDoc, FALSE);
 			    }
-			    else if (g_packageCommentAllowed) // expecting module docs
+			    else if (yyextra->packageCommentAllowed) // expecting module docs
 			    {
-			      QCString actualDoc=docBlock;
-			      if (!docBlockSpecial) // legacy unformatted docstring
+			      QCString actualDoc=yyextra->docBlock;
+			      if (!yyextra->docBlockSpecial) // legacy unformatted docstring
 			      {
-			        actualDoc.prepend("\\verbatim ");
-			        actualDoc.append("\\endverbatim ");
+                                if (!actualDoc.isEmpty())
+                                {
+                                  stripIndentation(actualDoc,yyextra->commentIndent);
+			          actualDoc.prepend("\\verbatim\n");
+			          actualDoc.append("\\endverbatim ");
+			        }
 			      }
-			      actualDoc.prepend("\\namespace "+g_moduleScope+" ");
-			      handleCommentBlock(actualDoc, FALSE);
+			      actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
+			      handleCommentBlock(yyscanner, actualDoc, FALSE);
 			    }
-			    if ((docBlockContext==ClassBody /*&& !g_hideClassDocs*/) ||
-				docBlockContext==FunctionBody)
+			    if ((yyextra->docBlockContext==ClassBody /*&& !yyextra->hideClassDocs*/) ||
+				yyextra->docBlockContext==FunctionBody)
 			    {
-			      current->program+=docBlock;
-			      current->program+=yytext;
+			      yyextra->current->program+=yyextra->docBlock;
+			      yyextra->current->program+=yytext;
 			    }
-                            //if (g_hideClassDocs)
+                            //if (yyextra->hideClassDocs)
 			    //{
-                            //  current->startLine = yyLineNr;
+                            //  yyextra->current->startLine = yyextra->yyLineNr;
 			    //}
-			    //g_hideClassDocs=FALSE;
-			    BEGIN(docBlockContext);
+			    //yyextra->hideClassDocs=FALSE;
+			    BEGIN(yyextra->docBlockContext);
 			  }
                           else 
 			  {
-                            docBlock += yytext;
+                            yyextra->docBlock += yytext;
                           }
-			  g_packageCommentAllowed = FALSE;
+			  yyextra->packageCommentAllowed = FALSE;
                         }
 
 
     ^{BB}		{ // leading whitespace
-      			  int indent = computeIndent(yytext);
-			  if (indent>=g_curIndent)
-			  { // strip g_curIndent amount of whitespace
-			    int i;
-			    for (i=0;i<indent-g_curIndent;i++) docBlock+=' ';
-			    DBG_CTX((stderr,"stripping indent %d\n",g_curIndent));
-			  }
-			  else
-			  {
-			    DBG_CTX((stderr,"not stripping: %d<%d\n",indent,g_curIndent));
-			    docBlock += yytext;
-			  }
+			  yyextra->docBlock += yytext;
       			}
     [^"'\n \t\\]+       {
-			  docBlock += yytext;
+			  yyextra->docBlock += yytext;
                         }
     \n			{
-      			  incLineNr();
-			  docBlock += yytext;
+      			  incLineNr(yyscanner);
+			  yyextra->docBlock += yytext;
       			}
     \\.		        { // escaped char
-			  docBlock += yytext;
+			  yyextra->docBlock += yytext;
       			}
     .			{
-			  docBlock += yytext;
+			  yyextra->docBlock += yytext;
       			}
 }
 
@@ -1586,91 +1320,91 @@ STARTDOCSYMS      "##"
     ^{B}"#"("#")*	{ // skip leading hashes
       			}
     \n/{B}"#"		{ // continuation of the comment on the next line
-      			  docBlock+='\n';
-			  docBrief = FALSE;
-                          startCommentBlock(FALSE);
-			  incLineNr();
+      			  yyextra->docBlock+='\n';
+			  yyextra->docBrief = FALSE;
+                          startCommentBlock(yyscanner,FALSE);
+			  incLineNr(yyscanner);
       			}
     [^#\n]+             { // any other stuff
-      			  docBlock+=yytext;
+      			  yyextra->docBlock+=yytext;
       			}
     \n			{ // new line that ends the comment
-			  handleCommentBlock(docBlock, docBrief);
-      			  incLineNr();
-			  BEGIN(docBlockContext);
+			  handleCommentBlock(yyscanner, yyextra->docBlock, yyextra->docBrief);
+      			  incLineNr(yyscanner);
+			  BEGIN(yyextra->docBlockContext);
       			}
     .			{ // anything we missed
-      			  docBlock+=*yytext;
+      			  yyextra->docBlock+=*yytext;
       			}
 }
 
 <SingleQuoteString>{
     \\{B}\n                    { // line continuation
-      			         addToString(yytext);
-      				 incLineNr();
+      			         addToString(yyscanner,yytext);
+      				 incLineNr(yyscanner);
                                }
     \\.			       { // escaped char
-      			         addToString(yytext);
+      			         addToString(yyscanner,yytext);
                                }
     "\"\"\""		       { // triple double quotes
-      			         addToString(yytext);
+      			         addToString(yyscanner,yytext);
       			       }
     "'"			       { // end of the string
-      			         addToString(yytext);
-      		                 BEGIN(g_stringContext);
+      			         addToString(yyscanner,yytext);
+      		                 BEGIN(yyextra->stringContext);
                                }
     [^"'\n\\]+	               { // normal chars
-      			         addToString(yytext);
+      			         addToString(yyscanner,yytext);
                                }
     .			       { // normal char
-      			         addToString(yytext);
+      			         addToString(yyscanner,yytext);
                                }
 }
 
 <DoubleQuoteString>{
     \\{B}\n                    { // line continuation
-      			         addToString(yytext);
-      				 incLineNr();
+      			         addToString(yyscanner,yytext);
+      				 incLineNr(yyscanner);
                                }
     \\.			       { // escaped char
-      			         addToString(yytext);
+      			         addToString(yyscanner,yytext);
                                }
     "'''"		       { // triple single quotes
-      			         addToString(yytext);
+      			         addToString(yyscanner,yytext);
       			       }
     "\""		       { // end of the string
-      			         addToString(yytext);
-      		                 BEGIN(g_stringContext);
+      			         addToString(yyscanner,yytext);
+      		                 BEGIN(yyextra->stringContext);
                                }
     [^"'\n\\]+	               { // normal chars
-      			         addToString(yytext);
+      			         addToString(yyscanner,yytext);
                                }
     .			       { // normal char
-      			         addToString(yytext);
+      			         addToString(yyscanner,yytext);
                                }
 }
 
 <TripleString>{
     {ENDTRIDOUBLEQUOTE}    | 
     {ENDTRISINGLEQUOTE}    {
-                          *g_copyString += yytext;
-			  if (g_doubleQuote==(yytext[0]=='"')) 
+                          *yyextra->copyString += yytext;
+			  if (yyextra->doubleQuote==(yytext[0]=='"')) 
 			  {
-			    BEGIN(g_stringContext);
+			    BEGIN(yyextra->stringContext);
 			  }
                         }
 
 
     ({LONGSTRINGBLOCK}) {
-			  lineCount();
-                          *g_copyString += yytext;
+			  lineCount(yyscanner);
+                          *yyextra->copyString += yytext;
                         }
     \n			{
-      			  incLineNr();
-                          *g_copyString += yytext;
+      			  incLineNr(yyscanner);
+                          *yyextra->copyString += yytext;
       			}
     .			{
-                          *g_copyString += *yytext;
+                          *yyextra->copyString += *yytext;
       			}
 }
 
@@ -1679,16 +1413,16 @@ STARTDOCSYMS      "##"
   /*
 <*>({NONEMPTY}|{EXPCHAR}|{BB})           { // This should go one character at a time.
 				 // printf("[pyscanner] '%s' [ state %d ]  [line %d] no match\n",
-				 //       yytext, YY_START, yyLineNr);
+				 //       yytext, YY_START, yyextra->yyLineNr);
 
                                }
   */
 
 <*>{NEWLINE}                   {
 				 //printf("[pyscanner] %d NEWLINE [line %d] no match\n",
-				 //       YY_START, yyLineNr);
+				 //       YY_START, yyextra->yyLineNr);
 
-                                 lineCount();
+                                 lineCount(yyscanner);
                                }
 
 <*>"'"                         {
@@ -1697,7 +1431,7 @@ STARTDOCSYMS      "##"
 
 <*>.                           {
 				 //printf("[pyscanner] '%s' [ state %d ]  [line %d] no match\n",
-				 //       yytext, YY_START, yyLineNr);
+				 //       yytext, YY_START, yyextra->yyLineNr);
 
                                }
 
@@ -1706,10 +1440,319 @@ STARTDOCSYMS      "##"
 
 //----------------------------------------------------------------------------
 
-static void parseCompounds(std::shared_ptr<Entry> rt)
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yy_size_t c=0;
+  const char *p = yyextra->inputString + yyextra->inputPosition;
+  while ( c < max_size && *p ) { *buf++ = *p++; c++; }
+  yyextra->inputPosition+=c;
+  return c;
+}
+
+static void initParser(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->protection = Public;
+  yyextra->mtype = Method;
+  yyextra->stat = FALSE;
+  yyextra->virt = Normal;
+  yyextra->previous = 0;
+  yyextra->packageCommentAllowed = TRUE;
+  yyextra->packageNameCache.setAutoDelete(TRUE);
+}
+
+static void initEntry(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //yyextra->current->python = TRUE;
+  yyextra->current->protection = yyextra->protection ;
+  yyextra->current->mtype      = yyextra->mtype;
+  yyextra->current->virt       = yyextra->virt;
+  yyextra->current->stat       = yyextra->stat;
+  yyextra->current->lang       = SrcLangExt_Python; 
+  yyextra->commentScanner.initGroupInfo(yyextra->current.get());
+  yyextra->stat = FALSE;
+}
+
+static void newEntry(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->previous = yyextra->current;
+  yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+  initEntry(yyscanner);
+}
+
+static void newVariable(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_') // mark as private
+  {
+    yyextra->current->protection=Private;
+  }
+  if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
+  {
+    yyextra->current->stat = TRUE;
+  }
+  newEntry(yyscanner);
+}
+
+static void newFunction(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->current->name.left(2)=="__" && yyextra->current->name.right(2)=="__")
+  {
+    // special method name, see
+    // http://docs.python.org/ref/specialnames.html
+    yyextra->current->protection=Public;
+  }
+  else if (yyextra->current->name.at(0)=='_')
+  {
+    yyextra->current->protection=Private;
+  }
+}
+
+static inline int computeIndent(const char *s)
+{
+  int col=0;
+  int tabSize=Config_getInt(TAB_SIZE);
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    if (c==' ') col++;
+    else if (c=='\t') col+=tabSize-(col%tabSize);
+    else break;
+  }
+  return col;
+}
+
+static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  QCString *pScope = yyextra->packageNameCache.find(path);
+  if (pScope)
+  {
+    return *pScope;
+  }
+  QFileInfo pf(path+"/__init__.py"); // found package initialization file
+  if (pf.exists())
+  {
+    int i=path.findRev('/');
+    if (i!=-1)
+    {
+      QCString scope = findPackageScopeFromPath(yyscanner,path.left(i));
+      if (!scope.isEmpty())
+      {
+	scope+="::";
+      }
+      scope+=path.mid(i+1);
+      yyextra->packageNameCache.insert(path,new QCString(scope));
+      return scope;
+    }
+  }
+  return "";
+}
+  
+static QCString findPackageScope(yyscan_t yyscanner,const char *fileName)
+{
+  if (fileName==0) return "";
+  QFileInfo fi(fileName);
+  return findPackageScopeFromPath(yyscanner,fi.dirPath(TRUE).data());
+}
+
+static void addFrom(yyscan_t yyscanner,bool all)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  QCString item=all ? yyextra->packageName : yyextra->packageName+"."+yytext;
+  yyextra->current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
+  yyextra->current->fileName = yyextra->yyFileName; 
+  //printf("Adding using declaration: found:%s:%d name=%s\n",yyextra->yyFileName.data(),yyextra->yyLineNr,yyextra->current->name.data());
+  yyextra->current->section=all ? Entry::USINGDIR_SEC : Entry::USINGDECL_SEC;
+  yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+  initEntry(yyscanner);
+}
+//-----------------------------------------------------------------------------
+
+static void lineCount(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  DBG_CTX((stderr,"yyextra->yyLineNr=%d\n",yyextra->yyLineNr));
+  for (const char *p = yytext; *p; ++p)
+  {
+    yyextra->yyLineNr += (*p == '\n') ;
+  }
+}
+
+static void incLineNr(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  DBG_CTX((stderr,"yyextra->yyLineNr=%d\n",yyextra->yyLineNr));
+  yyextra->yyLineNr++;
+}
+
+//-----------------------------------------------------------------
+static void startCommentBlock(yyscan_t yyscanner,bool brief)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (brief)
+  {
+    yyextra->current->briefFile = yyextra->yyFileName;
+    yyextra->current->briefLine = yyextra->yyLineNr;
+  }
+  else
+  {
+    yyextra->current->docFile = yyextra->yyFileName;
+    yyextra->current->docLine = yyextra->yyLineNr;
+  }
+}
+
+static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //printf("handleCommentBlock(doc=[%s] brief=%d yyextra->docBlockInBody=%d yyextra->docBlockJavaStyle=%d\n",
+  //    doc.data(),brief,yyextra->docBlockInBody,yyextra->docBlockJavaStyle);
+
+  // TODO: Fix me
+  yyextra->docBlockInBody=FALSE;
+  
+  if (!yyextra->current->doc.isEmpty())
+  {
+    yyextra->current->doc=yyextra->current->doc.stripWhiteSpace()+"\n\n";
+  }
+  if (yyextra->docBlockInBody && yyextra->previous && !yyextra->previous->doc.isEmpty())
+  {
+    yyextra->previous->doc=yyextra->previous->doc.stripWhiteSpace()+"\n\n";
+  }
+
+  int position = 0;
+  bool needsEntry;
+  int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
+  Markdown markdown(yyextra->yyFileName,lineNr);
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
+  while (yyextra->commentScanner.parseCommentBlock(
+        yyextra->thisParser,
+        (yyextra->docBlockInBody && yyextra->previous) ? yyextra->previous.get() : yyextra->current.get(),
+        processedDoc, // text
+        yyextra->yyFileName,   // file
+        lineNr,
+        yyextra->docBlockInBody ? FALSE : brief, 
+        yyextra->docBlockJavaStyle, // javadoc style // or FALSE,
+        yyextra->docBlockInBody,
+        yyextra->protection,
+        position,
+        needsEntry,
+        Config_getBool(MARKDOWN_SUPPORT))
+     ) // need to start a new entry
+  {
+    if (needsEntry)
+    {
+      newEntry(yyscanner);
+    }
+  }
+  if (needsEntry)
+  {
+    newEntry(yyscanner);
+  }
+
+}
+
+static void endOfDef(yyscan_t yyscanner,int correction)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //printf("endOfDef at=%d\n",yyextra->yyLineNr);
+  if (yyextra->bodyEntry)
+  {
+    yyextra->bodyEntry->endBodyLine  = yyextra->yyLineNr-correction;
+    yyextra->bodyEntry = 0;
+  }
+  newEntry(yyscanner);
+  //yyextra->insideConstructor = FALSE;
+}
+
+static inline void addToString(yyscan_t yyscanner,const char *s)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->copyString) (*yyextra->copyString)+=s;
+}
+
+static void initTriDoubleQuoteBlock(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->docBlockContext   = YY_START;
+  yyextra->docBlockInBody    = FALSE;
+  yyextra->docBlockJavaStyle = TRUE;
+  yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!' || !Config_getBool(PYTHON_DOCSTRING);
+  yyextra->docBlock.resize(0);
+  yyextra->commentIndent = yyextra->curIndent;
+  yyextra->doubleQuote = TRUE;
+  startCommentBlock(yyscanner,FALSE);
+}
+
+static void initTriSingleQuoteBlock(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->docBlockContext   = YY_START;
+  yyextra->docBlockInBody    = FALSE;
+  yyextra->docBlockJavaStyle = TRUE;
+  yyextra->docBlockSpecial   = yytext[strlen(yytext) - 1]=='!' || !Config_getBool(PYTHON_DOCSTRING);
+  yyextra->docBlock.resize(0);
+  yyextra->commentIndent = yyextra->curIndent;
+  yyextra->doubleQuote = FALSE;
+  startCommentBlock(yyscanner,FALSE);
+}
+
+static void initSpecialBlock(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->docBlockContext   = YY_START;
+  yyextra->docBlockInBody    = FALSE;
+  yyextra->docBlockJavaStyle = TRUE;
+  yyextra->docBrief = TRUE;
+  yyextra->docBlock.resize(0);
+  yyextra->commentIndent = yyextra->curIndent;
+  startCommentBlock(yyscanner,TRUE);
+}
+
+static void searchFoundDef(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->fileName  = yyextra->yyFileName;
+  yyextra->current->startLine = yyextra->yyLineNr;
+  yyextra->current->bodyLine  = yyextra->yyLineNr;
+  yyextra->current->section = Entry::FUNCTION_SEC;
+  yyextra->current->lang = SrcLangExt_Python;
+  yyextra->current->virt = Normal;
+  yyextra->current->stat = yyextra->stat;
+  yyextra->current->mtype = yyextra->mtype = Method;
+  yyextra->current->type.resize(0);
+  yyextra->current->name.resize(0);
+  yyextra->current->args.resize(0);
+  yyextra->current->argList.clear();
+  yyextra->packageCommentAllowed = FALSE;
+  yyextra->stat=FALSE;
+  //printf("searchFoundDef at=%d\n",yyextra->yyLineNr);
+}
+
+static void searchFoundClass(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->section = Entry::CLASS_SEC;
+  yyextra->current->argList.clear();
+  yyextra->current->type += "class" ;
+  yyextra->current->fileName  = yyextra->yyFileName;
+  yyextra->current->startLine  = yyextra->yyLineNr;
+  yyextra->current->bodyLine  = yyextra->yyLineNr;
+  yyextra->packageCommentAllowed = FALSE;
+}
+
+//----------------------------------------------------------------------------
+
+static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("parseCompounds(%s)\n",rt->name.data());
-  for (int i=0; i<rt->children().size(); ++i)
+  for (size_t i=0; i<rt->children().size(); ++i)
   {
     std::shared_ptr<Entry> ce = rt->children()[i];
     if (!ce->program.isEmpty())
@@ -1717,184 +1760,189 @@ static void parseCompounds(std::shared_ptr<Entry> rt)
       //printf("-- %s ---------\n%s\n---------------\n",
       //  ce->name.data(),ce->program.data());
       // init scanner state
-      inputString = ce->program;
-      inputPosition = 0;
-      pyscannerYYrestart( pyscannerYYin ) ;
+      yyextra->inputString = ce->program;
+      yyextra->inputPosition = 0;
+      pyscannerYYrestart( 0, yyscanner );
       if (ce->section&Entry::COMPOUND_MASK)
       {
-        current_root = ce;
+        yyextra->current_root = ce;
         BEGIN( Search );
       }
       else if (ce->parent())
       {
-        current_root = rt;
+        yyextra->current_root = rt;
 	//printf("Searching for member variables in %s parent=%s\n",
 	//    ce->name.data(),ce->parent->name.data());
 	BEGIN( SearchMemVars );
       }
-      yyFileName = ce->fileName;
-      yyLineNr   = ce->bodyLine ;
-      current = std::make_shared<Entry>();
-      initEntry();
+      yyextra->yyFileName = ce->fileName;
+      yyextra->yyLineNr   = ce->bodyLine ;
+      yyextra->current = std::make_shared<Entry>();
+      initEntry(yyscanner);
 
       QCString name = ce->name;
-      Doxygen::docGroup.enterCompound(yyFileName,yyLineNr,name);
+      yyextra->commentScanner.enterCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
 
-      pyscannerYYlex() ;
-      g_lexInit=TRUE;
+      pyscannerYYlex(yyscanner) ;
+      yyextra->lexInit=TRUE;
       ce->program.resize(0);
 
-      Doxygen::docGroup.leaveCompound(yyFileName,yyLineNr,name);
+      yyextra->commentScanner.leaveCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
 
     }
-    parseCompounds(ce);
+    parseCompounds(yyscanner,ce);
   }
 }
 
 //----------------------------------------------------------------------------
 
 
-static void parseMain(const char *fileName,const char *fileBuf,const std::shared_ptr<Entry> &rt)
+static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileBuf,const std::shared_ptr<Entry> &rt)
 {
-  initParser();
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  initParser(yyscanner);
 
-  inputString = fileBuf;
-  inputPosition = 0;
+  yyextra->inputString = fileBuf;
+  yyextra->inputPosition = 0;
 
-  protection    = Public;
-  mtype         = Method;
-  gstat         = FALSE;
-  virt          = Normal;
-  current_root  = rt;
-  g_specialBlock = FALSE;
+  yyextra->protection    = Public;
+  yyextra->mtype         = Method;
+  yyextra->stat         = FALSE;
+  yyextra->virt          = Normal;
+  yyextra->current_root  = rt;
+  yyextra->specialBlock = FALSE;
 
 
-  inputFile.setName(fileName);
-  if (inputFile.open(IO_ReadOnly))
+  yyextra->yyLineNr= 1 ; 
+  yyextra->yyFileName = fileName;
+  //setContext();
+  msg("Parsing file %s...\n",yyextra->yyFileName.data());
+
+  QFileInfo fi(fileName);
+  yyextra->moduleScope = findPackageScope(yyscanner,fileName);
+  QCString baseName=fi.baseName().utf8();
+  if (baseName!="__init__") // package initializer file is not a package itself
   {
-    yyLineNr= 1 ; 
-    yyFileName = fileName;
-    //setContext();
-    msg("Parsing file %s...\n",yyFileName.data());
-
-    QFileInfo fi(fileName);
-    g_moduleScope = findPackageScope(fileName);
-    QCString baseName=fi.baseName().utf8();
-    if (baseName!="__init__") // package initializer file is not a package itself
+    if (!yyextra->moduleScope.isEmpty())
     {
-      if (!g_moduleScope.isEmpty())
-      {
-	g_moduleScope+="::";
-      }
-      g_moduleScope+=baseName;
+      yyextra->moduleScope+="::";
     }
-
-    current            = std::make_shared<Entry>();
-    initEntry();
-    current->name      = g_moduleScope;
-    current->section   = Entry::NAMESPACE_SEC;
-    current->type      = "namespace";
-    current->fileName  = yyFileName;
-    current->startLine = yyLineNr;
-    current->bodyLine  = yyLineNr;
-
-    current_root  = current;
-
-    rt->moveToSubEntryAndRefresh(current);
-
-    initParser();
-
-    Doxygen::docGroup.enterFile(yyFileName,yyLineNr);
-    
-    current->reset();
-    initEntry();
-    pyscannerYYrestart( pyscannerYYin );
-    BEGIN( Search );
-    pyscannerYYlex();
-    g_lexInit=TRUE;
-
-    Doxygen::docGroup.leaveFile(yyFileName,yyLineNr);
-
-    current_root->program.resize(0);
-
-    parseCompounds(current_root);
-
-    inputFile.close();
+    yyextra->moduleScope+=baseName;
   }
-  
+
+  yyextra->current            = std::make_shared<Entry>();
+  initEntry(yyscanner);
+  yyextra->current->name      = yyextra->moduleScope;
+  yyextra->current->section   = Entry::NAMESPACE_SEC;
+  yyextra->current->type      = "namespace";
+  yyextra->current->fileName  = yyextra->yyFileName;
+  yyextra->current->startLine = yyextra->yyLineNr;
+  yyextra->current->bodyLine  = yyextra->yyLineNr;
+
+  yyextra->current_root  = yyextra->current;
+
+  rt->moveToSubEntryAndRefresh(yyextra->current);
+
+  initParser(yyscanner);
+
+  yyextra->commentScanner.enterFile(yyextra->yyFileName,yyextra->yyLineNr);
+
+  yyextra->current->reset();
+  initEntry(yyscanner);
+  pyscannerYYrestart(0,yyscanner);
+  BEGIN( Search );
+  pyscannerYYlex(yyscanner);
+  yyextra->lexInit=TRUE;
+
+  yyextra->commentScanner.leaveFile(yyextra->yyFileName,yyextra->yyLineNr);
+
+  yyextra->current_root->program.resize(0);
+
+  parseCompounds(yyscanner, yyextra->current_root);
 }
 
 //----------------------------------------------------------------------------
 
-static void parsePrototype(const QCString &text)
+static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 {
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("**** parsePrototype(%s) begin\n",text.data());
   if (text.isEmpty()) 
   {
-    warn(yyFileName,yyLineNr,"Empty prototype found!");
+    warn(yyextra->yyFileName,yyextra->yyLineNr,"Empty prototype found!");
     return;
   }
 
-  g_specialBlock = FALSE;
-  g_packageCommentAllowed = FALSE;
+  yyextra->specialBlock = FALSE;
+  yyextra->packageCommentAllowed = FALSE;
 
   const char *orgInputString;
-  int orgInputPosition;
+  yy_size_t orgInputPosition;
   YY_BUFFER_STATE orgState;
   
   // save scanner state
   orgState = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(pyscannerYYin, YY_BUF_SIZE));
-  orgInputString = inputString; 
-  orgInputPosition = inputPosition;
+  yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner), yyscanner);
+  orgInputString = yyextra->inputString; 
+  orgInputPosition = yyextra->inputPosition;
 
   // set new string
-  inputString = text;
-  inputPosition = 0;
-  pyscannerYYrestart( pyscannerYYin );
+  yyextra->inputString = text;
+  yyextra->inputPosition = 0;
+  pyscannerYYrestart( 0, yyscanner );
 
   BEGIN( FunctionDec );
 
-  pyscannerYYlex();
-  g_lexInit=TRUE;
+  pyscannerYYlex(yyscanner);
+  yyextra->lexInit=TRUE;
 
-  current->name = current->name.stripWhiteSpace();
-  if (current->section == Entry::MEMBERDOC_SEC && current->args.isEmpty())
-    current->section = Entry::VARIABLEDOC_SEC;
+  yyextra->current->name = yyextra->current->name.stripWhiteSpace();
+  if (yyextra->current->section == Entry::MEMBERDOC_SEC && yyextra->current->args.isEmpty())
+    yyextra->current->section = Entry::VARIABLEDOC_SEC;
 
   // restore original scanner state
 
   YY_BUFFER_STATE tmpBuf = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(orgState);
-  yy_delete_buffer(tmpBuf);
+  yy_switch_to_buffer(orgState, yyscanner);
+  yy_delete_buffer(tmpBuf, yyscanner);
 
-  inputString = orgInputString; 
-  inputPosition = orgInputPosition;
+  yyextra->inputString = orgInputString; 
+  yyextra->inputPosition = orgInputPosition;
 
   //printf("**** parsePrototype end\n");
 }
 
-void pyscanFreeScanner()
+//----------------------------------------------------------------------------
+
+struct PythonOutlineParser::Private
 {
-#if defined(YY_FLEX_SUBMINOR_VERSION) 
-  if (g_lexInit)
-  {
-    pyscannerYYlex_destroy();
-  }
+  yyscan_t yyscanner;
+  pyscannerYY_state state;
+};
+
+PythonOutlineParser::PythonOutlineParser() : p(std::make_unique<PythonOutlineParser::Private>())
+{
+  pyscannerYYlex_init_extra(&p->state,&p->yyscanner);
+#ifdef FLEX_DEBUG
+  pyscannerYYset_debug(1,p->yyscanner);
 #endif
 }
 
-//----------------------------------------------------------------------------
+PythonOutlineParser::~PythonOutlineParser()
+{
+  pyscannerYYlex_destroy(p->yyscanner);
+}
+
 
 void PythonOutlineParser::parseInput(const char *fileName,
                                        const char *fileBuf,
                                        const std::shared_ptr<Entry> &root,
-                                       bool /*sameTranslationUnit*/,
-                                       QStrList & /*filesInSameTranslationUnit*/)
+                                       ClangTUParser * /*clangParser*/)
 {
-  g_thisParser = this;
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->thisParser = this;
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
-  ::parseMain(fileName,fileBuf,root);
+  ::parseMain(p->yyscanner, fileName,fileBuf,root);
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 
   // May print the AST for debugging purposes
@@ -1908,10 +1956,12 @@ bool PythonOutlineParser::needsPreprocessing(const QCString &) const
 
 void PythonOutlineParser::parsePrototype(const char *text)
 {
-  ::parsePrototype(text);
+  ::parsePrototype(p->yyscanner,text);
 
 }
 
 //----------------------------------------------------------------------------
 
+#if USE_STATE2STRING
 #include "pyscanner.l.h"
+#endif

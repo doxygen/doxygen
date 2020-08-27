@@ -1,11 +1,11 @@
 /******************************************************************************
  *
- * Copyright (C) 2011 by Dimitri van Heesch
+ * Copyright (C) 2020 by Dimitri van Heesch
  * Based on a patch by David Munger
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,178 +15,246 @@
  */
 
 #include "cite.h"
-#include "portable.h"
 #include "config.h"
-#include "message.h"
-#include "util.h"
-#include "language.h"
 #include "ftextstream.h"
+#include "language.h"
+#include "message.h"
+#include "portable.h"
 #include "resourcemgr.h"
-#include "doxygen.h"
+#include "util.h"
+#include "debug.h"
+
+#include <qfile.h>
+#include <qfileinfo.h>
 #include <qdir.h>
 
-//--------------------------------------------------------------------------
+#include <map>
+#include <string>
 
-const QCString CiteConsts::fileName("citelist");
-/* when changing this also take doxygen.bst into account */
-const QCString CiteConsts::anchorPrefix("CITEREF_");
-const QCString bibTmpFile("bibTmpFile_");
-const QCString bibTmpDir("bibTmpDir/");
+const char *bibTmpFile = "bibTmpFile_";
+const char *bibTmpDir  = "bibTmpDir/";
 
-//--------------------------------------------------------------------------
+class CiteInfoImpl : public CiteInfo
+{
+  public:
+    CiteInfoImpl(const char *label, const char *text=0)
+    : m_label(label), m_text(text) { }
 
-CiteDict::CiteDict(int size) : m_entries(size, FALSE)
-{ 
-  m_entries.setAutoDelete(TRUE);
+    virtual QCString label()    const { return m_label;    }
+    virtual QCString text()     const { return m_text;     }
+
+    void setText(const char *s) { m_text = s; }
+
+  private:
+    QCString m_label;
+    QCString m_text;
+};
+
+struct CitationManager::Private
+{
+  std::map< std::string,std::unique_ptr<CiteInfoImpl> > entries;
+};
+
+CitationManager &CitationManager::instance()
+{
+  static CitationManager ct;
+  return ct;
 }
 
-void CiteDict::writeLatexBibliography(FTextStream &t)
+CitationManager::CitationManager() : p(new Private)
 {
-  if (m_entries.isEmpty())
-    return;
+}
 
-  QCString style = Config_getString(LATEX_BIB_STYLE);
-  if (style.isEmpty())
-    style="plain";
-  QCString unit;
-  if (Config_getBool(COMPACT_LATEX))
-    unit = "section";
-  else
-    unit = "chapter";
-  t << "% Bibliography\n"
-       "\\newpage\n"
-       "\\phantomsection\n";
-  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (!pdfHyperlinks)
+void CitationManager::insert(const char *label)
+{
+  p->entries.insert(
+      std::make_pair(
+        std::string(label),
+        std::make_unique<CiteInfoImpl>(label)
+      ));
+}
+
+const CiteInfo *CitationManager::find(const char *label) const
+{
+  auto it = p->entries.find(label);
+  if (it!=p->entries.end())
   {
-    t << "\\clearemptydoublepage\n";
-    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
+    return it->second.get();
   }
-  t << "\\bibliographystyle{" << style << "}\n"
-       "\\bibliography{";
-  QStrList &citeDataList = Config_getList(CITE_BIB_FILES);
-  int i = 0;
-  const char *bibdata = citeDataList.first();
-  while (bibdata)
+  return 0;
+}
+
+void CitationManager::clear()
+{
+  p->entries.clear();
+}
+
+bool CitationManager::isEmpty() const
+{
+  size_t numFiles = Config_getList(CITE_BIB_FILES).size();
+  return (numFiles==0 || p->entries.empty());
+}
+
+const char *CitationManager::fileName() const
+{
+  return "citelist";
+}
+
+const char *CitationManager::anchorPrefix() const
+{
+  return "CITEREF_";
+}
+
+void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
+{
+  // sanity checks
+  if (bibFile.isEmpty())
   {
-    QCString bibFile = bibdata;
-    // Note: file can now have multiple dots
-    if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-    QFileInfo fi(bibFile);
-    if (fi.exists())
+    return;
+  }
+  QFileInfo fi(bibFile);
+  if (!fi.exists())
+  {
+    err("bib file %s not found!\n",bibFile.data());
+    return;
+  }
+  QFile f(bibFile);
+  if (!f.open(IO_ReadOnly))
+  {
+    err("could not open file %s for reading\n",bibFile.data());
+    return;
+  }
+
+  // convert file to string
+  QCString doc;
+  QCString input(fi.size()+1);
+  f.readBlock(input.rawData(),fi.size());
+  f.close();
+  input.at(fi.size())='\0';
+
+  int pos=0;
+  int s;
+
+  // helper lambda function to get the next line of input and update pos accordingly
+  auto get_next_line = [&input,&pos,&s]()
+  {
+    uint prevPos = (uint)pos;
+    pos=s+1;
+    return input.mid(prevPos,(uint)(s-prevPos));
+  };
+
+  // helper lambda function to return if the end of the input has reached
+  auto end_of_input = [&s]()
+  {
+    return s==-1;
+  };
+
+  // helper lambda function to proceed to the next line in the input, and update s
+  // to point to the start of the line. Return true as long as there is a new line.
+  auto has_next_line = [&input,&pos,&s]()
+  {
+    s=input.find('\n',pos);
+    return s!=-1;
+  };
+
+  // search for citation cross references
+  QCString citeName;
+  while (has_next_line())
+  {
+    QCString line = get_next_line();
+
+    int i;
+    if (line.stripWhiteSpace().startsWith("@"))
     {
-      if (!bibFile.isEmpty())
+      // assumption entry like: "@book { name," or "@book { name" (spaces optional)
+      int j = line.find('{');
+      // when no {, go hunting for it
+      while (j==-1 && has_next_line())
       {
-        if (i) t << ",";
-        i++;
-        t << bibTmpFile << QCString().setNum(i);
+        line = get_next_line();
+        j = line.find('{');
+      }
+      // search for the name
+      citeName = "";
+      if (!end_of_input() && j!=-1) // to prevent something like "@manual ," and no { found
+      {
+        int k = line.find(',',j);
+        j++;
+        // found a line "@....{.....,...." or "@.....{....."
+        //                     ^=j  ^=k               ^=j   k=-1
+        while (!end_of_input() && citeName.isEmpty())
+        {
+          if (k!=-1)
+          {
+            citeName = line.mid((uint)(j),(uint)(k-j));
+          }
+          else
+          {
+            citeName = line.mid((uint)(j));
+          }
+          citeName = citeName.stripWhiteSpace();
+          j = 0;
+          if (citeName.isEmpty() && has_next_line())
+          {
+            line = get_next_line();
+            k = line.find(',');
+          }
+        }
+      }
+      //printf("citeName = #%s#\n",citeName.data());
+    }
+    else if ((i=line.find("crossref"))!=-1 && !citeName.isEmpty()) /* assumption cross reference is on one line and the only item */
+    {
+      int j = line.find('{',i);
+      int k = line.find('}',i);
+      if (j>i && k>j)
+      {
+        QCString crossrefName = line.mid((uint)(j+1),(uint)(k-j-1));
+        // check if the reference with the cross reference is used
+        // insert cross reference when cross reference has not yet been added.
+        if ((p->entries.find(citeName.data())!=p->entries.end()) &&
+            (p->entries.find(crossrefName.data())==p->entries.end())) // not found yet
+        {
+          insert(crossrefName);
+        }
       }
     }
-    bibdata = citeDataList.next();
   }
-  t << "}\n";
-  if (pdfHyperlinks)
-  {
-    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
-  }
-  t << "\n";
 }
 
-void CiteDict::insert(const char *label)
+void CitationManager::generatePage()
 {
-  m_entries.insert(label,new CiteInfo(label));
-}
-
-CiteInfo *CiteDict::find(const char *label) const
-{
-  return label ? m_entries.find(label) : 0;
-}
-
-void CiteDict::clear()
-{
-  m_entries.clear();
-}
-
-bool CiteDict::isEmpty() const
-{
-  QStrList &citeBibFiles = Config_getList(CITE_BIB_FILES);
-  return (citeBibFiles.count()==0 || m_entries.isEmpty());
-}
-
-void CiteDict::generatePage() const
-{
-  //printf("** CiteDict::generatePage() count=%d\n",m_ordering.count());
+  //printf("** CitationManager::generatePage() count=%d\n",m_ordering.count());
 
   // do not generate an empty citations page
   if (isEmpty()) return; // nothing to cite
 
+  bool citeDebug = Debug::isFlagSet(Debug::Cite);
+
   // 0. add cross references from the bib files to the cite dictionary
   QFile f;
-  QStrList &citeDataList = Config_getList(CITE_BIB_FILES);
-  const char *bibdata = citeDataList.first();
-  while (bibdata)
+  const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
+  for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = bibdata;
+    QCString bibFile = bibdata.c_str();
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-    QFileInfo fi(bibFile);
-    if (fi.exists())
-    {
-      if (!bibFile.isEmpty())
-      {
-        f.setName(bibFile);
-        if (!f.open(IO_ReadOnly)) 
-        {
-          err("could not open file %s for reading\n",bibFile.data());
-        }
-        QCString doc;
-        QFileInfo fi(bibFile);
-        QCString input(fi.size()+1);
-        f.readBlock(input.rawData(),fi.size());
-        f.close();
-        input.at(fi.size())='\0';
-        int p=0,s;
-        while ((s=input.find('\n',p))!=-1)
-        {
-          QCString line = input.mid(p,s-p);
-          p=s+1;
-
-	  int i;
-          if ((i = line.find("crossref")) != -1) /* assumption cross reference is on one line and the only item */
-          {
-            int j=line.find("{",i);
-            int k=line.find("}",i);
-            if (j!=-1 && k!=-1)
-            {
-              QCString label = line.mid(j+1,k-j-1);
-              if (!m_entries.find(label)) Doxygen::citeDict->insert(label.data());
-            }
-          }
-        }
-      }
-    }
-    else if (!fi.exists())
-    {
-      err("bib file %s not found!\n",bibFile.data());
-    }
-    bibdata = citeDataList.next();
+    insertCrossReferencesForBibFile(bibFile);
   }
 
   // 1. generate file with markers and citations to OUTPUT_DIRECTORY
   QCString outputDir = Config_getString(OUTPUT_DIRECTORY);
   QCString citeListFile = outputDir+"/citelist.doc";
   f.setName(citeListFile);
-  if (!f.open(IO_WriteOnly)) 
+  if (!f.open(IO_WriteOnly))
   {
     err("could not open file %s for writing\n",citeListFile.data());
   }
   FTextStream t(&f);
   t << "<!-- BEGIN CITATIONS -->" << endl;
   t << "<!--" << endl;
-  QDictIterator<CiteInfo> it(m_entries);
-  CiteInfo *ci;
-  for (it.toFirst();(ci=it.current());++it)
+  for (const auto &it : p->entries)
   {
-    t << "\\citation{" << ci->label << "}" << endl;
+    t << "\\citation{" << it.second->label() << "}" << endl;
   }
   t << "-->" << endl;
   t << "<!-- END CITATIONS -->" << endl;
@@ -209,12 +277,15 @@ void CiteDict::generatePage() const
   QCString bibOutputDir = outputDir+"/"+bibTmpDir;
   QCString bibOutputFiles = "";
   QDir thisDir;
-  thisDir.mkdir(bibOutputDir);
-  bibdata = citeDataList.first();
-  int i = 0;
-  while (bibdata)
+  if (!thisDir.exists(bibOutputDir) && !thisDir.mkdir(bibOutputDir))
   {
-    QCString bibFile = bibdata;
+    err("Failed to create temporary output directory '%s', skipping citations\n",bibOutputDir.data());
+    return;
+  }
+  int i = 0;
+  for (const auto &bibdata : citeDataList)
+  {
+    QCString bibFile = bibdata.c_str();
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
     QFileInfo fi(bibFile);
     if (fi.exists())
@@ -226,7 +297,6 @@ void CiteDict::generatePage() const
         bibOutputFiles = bibOutputFiles + " " + bibTmpDir + bibTmpFile + QCString().setNum(i) + ".bib";
       }
     }
-    bibdata = citeDataList.next();
   }
 
   QString oldDir = QDir::currentDirPath();
@@ -237,7 +307,7 @@ void CiteDict::generatePage() const
   int exitCode;
   Portable::sysTimerStop();
   if ((exitCode=Portable::system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
-                         citeListFile+"\"")) != 0)
+                         citeListFile+"\"" + (citeDebug ? " -d" : ""))) != 0)
   {
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         exitCode);
@@ -248,29 +318,29 @@ void CiteDict::generatePage() const
 
   // 6. read back the file
   f.setName(citeListFile);
-  if (!f.open(IO_ReadOnly)) 
+  if (!f.open(IO_ReadOnly))
   {
     err("could not open file %s for reading\n",citeListFile.data());
   }
-  bool insideBib=FALSE;
-  
+
   QCString doc;
   QFileInfo fi(citeListFile);
   QCString input(fi.size()+1);
   f.readBlock(input.rawData(),fi.size());
   f.close();
   input.at(fi.size())='\0';
-  int p=0,s;
+
+  bool insideBib=FALSE;
+  int pos=0,s;
   //printf("input=[%s]\n",input.data());
-  while ((s=input.find('\n',p))!=-1)
+  while ((s=input.find('\n',pos))!=-1)
   {
-    QCString line = input.mid(p,s-p);
-    //printf("p=%d s=%d line=[%s]\n",p,s,line.data());
-    p=s+1;
+    QCString line = input.mid((uint)pos,(uint)(s-pos));
+    //printf("pos=%d s=%d line=[%s]\n",pos,s,line.data());
+    pos=s+1;
 
     if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
     else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;
-    int i;
     // determine text to use at the location of the @cite command
     if (insideBib && (i=line.find("name=\"CITEREF_"))!=-1)
     {
@@ -278,15 +348,18 @@ void CiteDict::generatePage() const
       int k=line.find("]</a>");
       if (j!=-1 && k!=-1)
       {
-        QCString label = line.mid(i+14,j-i-14);
-        QCString number = line.mid(j+2,k-j-1);
+        uint ui=(uint)i;
+        uint uj=(uint)j;
+        uint uk=(uint)k;
+        QCString label = line.mid(ui+14,uj-ui-14);
+        QCString number = line.mid(uj+2,uk-uj-1);
         label = substitute(substitute(label,"&ndash;","--"),"&mdash;","---");
-        CiteInfo *ci = m_entries.find(label);
-        //printf("label='%s' number='%s' => %p\n",label.data(),number.data(),ci);
-        line = line.left(i+14) + label + line.right(line.length()-j);
-        if (ci)
+        line = line.left(ui+14) + label + line.right(line.length()-uj);
+        auto it = p->entries.find(label.data());
+        //printf("label='%s' number='%s' => %p\n",label.data(),number.data(),it->second.get());
+        if (it!=p->entries.end())
         {
-          ci->text = number;
+          it->second->setText(number);
         }
       }
     }
@@ -295,24 +368,21 @@ void CiteDict::generatePage() const
   //printf("doc=[%s]\n",doc.data());
 
   // 7. add it as a page
-  addRelatedPage(CiteConsts::fileName,
-       theTranslator->trCiteReferences(),doc,CiteConsts::fileName,1);
+  addRelatedPage(fileName(),theTranslator->trCiteReferences(),doc,fileName(),1);
 
-  // 8. for latex we just copy the bib files to the output and let 
+  // 8. for latex we just copy the bib files to the output and let
   //    latex do this work.
   if (Config_getBool(GENERATE_LATEX))
   {
     // copy bib files to the latex output dir
-    QStrList &citeDataList = Config_getList(CITE_BIB_FILES);
     QCString latexOutputDir = Config_getString(LATEX_OUTPUT)+"/";
-    int i = 0;
-    const char *bibdata = citeDataList.first();
-    while (bibdata)
+    i = 0;
+    for (const auto &bibdata : citeDataList)
     {
-      QCString bibFile = bibdata;
+      QCString bibFile = bibdata.c_str();
       // Note: file can now have multiple dots
       if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-      QFileInfo fi(bibFile);
+      fi.setFile(bibFile);
       if (fi.exists())
       {
         if (!bibFile.isEmpty())
@@ -327,21 +397,78 @@ void CiteDict::generatePage() const
       {
         err("bib file %s not found!\n",bibFile.data());
       }
-      bibdata = citeDataList.next();
     }
   }
 
   // 9. Remove temporary files
-  thisDir.remove(citeListFile);
-  thisDir.remove(doxygenBstFile);
-  thisDir.remove(bib2xhtmlFile);
-  // we might try to remove too many files as empty files didn't get a corresponding new file
-  // but the remove function does not emit an error for it and we don't catch the error return
-  // so no problem.
-  for (unsigned int j = 1; j <= citeDataList.count(); j++)
+  if (!citeDebug)
   {
-    thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(j) + ".bib");
+    thisDir.remove(citeListFile);
+    thisDir.remove(doxygenBstFile);
+    thisDir.remove(bib2xhtmlFile);
+    // we might try to remove too many files as empty files didn't get a corresponding new file
+    // but the remove function does not emit an error for it and we don't catch the error return
+    // so no problem.
+    for (size_t j = 1; j <= citeDataList.size(); j++)
+    {
+      thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(static_cast<ulong>(j)) + ".bib");
+    }
+    thisDir.rmdir(bibOutputDir);
   }
-  thisDir.rmdir(bibOutputDir);
+}
+
+void CitationManager::writeLatexBibliography(FTextStream &t) const
+{
+  if (p->entries.empty()) return;
+
+  QCString style = Config_getString(LATEX_BIB_STYLE);
+  if (style.isEmpty())
+  {
+    style="plain";
+  }
+  QCString unit;
+  if (Config_getBool(COMPACT_LATEX))
+  {
+    unit = "section";
+  }
+  else
+  {
+    unit = "chapter";
+  }
+  t << "% Bibliography\n"
+       "\\newpage\n"
+       "\\phantomsection\n";
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  if (!pdfHyperlinks)
+  {
+    t << "\\clearemptydoublepage\n";
+    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
+  }
+  t << "\\bibliographystyle{" << style << "}\n"
+       "\\bibliography{";
+  const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
+  int i = 0;
+  for (const auto &bibdata : citeDataList)
+  {
+    QCString bibFile = bibdata.c_str();
+    // Note: file can now have multiple dots
+    if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+    QFileInfo fi(bibFile);
+    if (fi.exists())
+    {
+      if (!bibFile.isEmpty())
+      {
+        if (i) t << ",";
+        i++;
+        t << bibTmpFile << QCString().setNum(i);
+      }
+    }
+  }
+  t << "}\n";
+  if (pdfHyperlinks)
+  {
+    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
+  }
+  t << "\n";
 }
 

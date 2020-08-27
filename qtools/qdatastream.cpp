@@ -730,7 +730,7 @@ QDataStream &QDataStream::operator<<( Q_INT16 i )
     if ( printable ) {				// printable data
 	char buf[16];
 	sprintf( buf, "%d\n", i );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else if ( noswap ) {			// no conversion needed
 	dev->writeBlock( (char *)&i, sizeof(Q_INT16) );
     } else {					// swap bytes
@@ -761,7 +761,7 @@ QDataStream &QDataStream::operator<<( Q_INT32 i )
     if ( printable ) {				// printable data
 	char buf[16];
 	sprintf( buf, "%d\n", i );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else if ( noswap ) {			// no conversion needed
 	dev->writeBlock( (char *)&i, sizeof(Q_INT32) );
     } else {					// swap bytes
@@ -793,7 +793,7 @@ QDataStream &QDataStream::operator<<( Q_INT64 i )
     if ( printable ) {				// printable data
 	char buf[20];
 	sprintf( buf, "%ld\n", i );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else if ( noswap ) {			// no conversion needed
 	dev->writeBlock( (char *)&i, sizeof(Q_INT64) );
     } else {					// swap bytes
@@ -815,13 +815,6 @@ QDataStream &QDataStream::operator<<( Q_INT64 i )
 }
 
 /*!
-  \fn QDataStream &QDataStream::operator<<( uint i )
-  Writes an unsigned integer to the stream as a 32-bit unsigned integer
-  (Q_UINT32).
-  Returns a reference to the stream.
-*/
-
-/*!
   \fn QDataStream &QDataStream::operator<<( int i )
   Writes a signed integer to the stream as a 32-bit signed integer (Q_INT32).
   Returns a reference to the stream.
@@ -839,7 +832,7 @@ QDataStream &QDataStream::operator<<( float f )
     if ( printable ) {				// printable data
 	char buf[32];
 	sprintf( buf, "%g\n", (double)f );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else {
 	float g = f;				// fixes float-on-stack problem
 	if ( noswap ) {				// no conversion needed
@@ -869,7 +862,7 @@ QDataStream &QDataStream::operator<<( double f )
     if ( printable ) {				// printable data
 	char buf[32];
 	sprintf( buf, "%g\n", f );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else if ( noswap ) {			// no conversion needed
 	dev->writeBlock( (char *)&f, sizeof(double) );
     } else {					// swap bytes

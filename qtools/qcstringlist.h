@@ -29,6 +29,10 @@ public:
     QCStringList( const QValueList<QCString>& l ) : QValueList<QCString>(l) { }
     QCStringList( const QCString& i ) { append(i); }
     QCStringList( const char* i ) { append(i); }
+    QCStringList &operator=(const QCStringList &l)
+    {
+      return static_cast<QCStringList&>(QValueList<QCString>::operator=(l));
+    }
 
     static QCStringList fromStrList(const QStrList&);
 

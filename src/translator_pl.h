@@ -54,6 +54,11 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
                                          */
     }
 
+    virtual QCString trISOLang()
+    {
+      return "pl";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1865,8 +1870,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "Dodatkowe Dziedziczone Składowe"; }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

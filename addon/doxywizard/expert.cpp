@@ -796,7 +796,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
 bool Expert::writeConfig(QTextStream &t,bool brief)
 {
   // write global header
-  t << "# Doxyfile " << getVersion() << endl << endl;
+  t << "# Doxyfile " << getDoxygenVersion() << endl << endl;
   if (!brief)
   {
     t << convertToComment(m_header);

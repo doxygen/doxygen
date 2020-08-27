@@ -18,17 +18,25 @@
 %option prefix="codeYY"
 %option reentrant
 %option extra-type="struct codeYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 
 /*
  *	includes
  */
+
+#include <memory>
+#include <algorithm>
+
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
 #include <qregexp.h>
 #include <qdir.h>
+#include <qstack.h>
 
 #include "code.h"
 #include "entry.h"
@@ -56,6 +64,8 @@
 #define CLASSBLOCK (int *)4
 #define SCOPEBLOCK (int *)8
 #define INNERBLOCK (int *)12
+
+#define USE_STATE2STRING 0
 
 /* -----------------------------------------------------------------
  *	statics
@@ -134,7 +144,7 @@ class VariableContext
     void addVariable(yyscan_t yyscanner,const QCString &type,const QCString &name);
     ClassDef *findVariable(const QCString &name);
 
-    int count() const { return m_scopes.count(); }
+    uint count() const { return m_scopes.count(); }
     
   private:
     Scope        m_globalScope;
@@ -221,7 +231,7 @@ struct codeYY_state
   QCString      parmName;
 
   const char *  inputString = 0;     //!< the code fragment as text
-  int	        inputPosition = 0;   //!< read offset during parsing 
+  yy_size_t     inputPosition = 0;   //!< read offset during parsing 
   int           inputLines = 0;      //!< number of line in the code fragment
   int	        yyLineNr = 0;        //!< current line number
   int	        yyColNr = 0;         //!< current column number
@@ -303,10 +313,12 @@ struct codeYY_state
 static bool isCastKeyword(const QCString &s);
 
 //-------------------------------------------------------------------
+#if USE_STATE2STRING
+static const char *stateToString(yyscan_t yyscanner,int state);
+#endif
 
 static void saveObjCContext(yyscan_t yyscanner);
 static void restoreObjCContext(yyscan_t yyscanner);
-static const char *stateToString(yyscan_t yyscanner,int state);
 static void addUsingDirective(yyscan_t yyscanner,const char *name);
 static void pushScope(yyscan_t yyscanner,const char *s);
 static void popScope(yyscan_t yyscanner);
@@ -356,7 +368,7 @@ static QCString escapeObject(yyscan_t yyscanner,const char *s);
 static QCString escapeWord(yyscan_t yyscanner,const char *s);
 static QCString escapeComment(yyscan_t yyscanner,const char *s);
 static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const QCString &kw);
-static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 
 /* -----------------------------------------------------------------
@@ -385,11 +397,39 @@ CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 ARITHOP "+"|"-"|"/"|"*"|"%"|"--"|"++"
 ASSIGNOP "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
-LOGICOP "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"
+LOGICOP "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"|"<=>"
 BITOP   "&"|"|"|"^"|"<<"|">>"|"~"
 OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
+
+  //- start: NUMBER -------------------------------------------------------------------------
+  // Note same defines in commentcnv.l: keep in sync
+DECIMAL_INTEGER  [1-9][0-9']*[0-9]?[uU]?[lL]?[lL]?
+HEXADECIMAL_INTEGER  "0"[xX][0-9a-zA-Z']+[0-9a-zA-Z]?
+OCTAL_INTEGER  "0"[0-7][0-7']+[0-7]?
+BINARY_INTEGER  "0"[bB][01][01']*[01]?
+INTEGER_NUMBER {DECIMAL_INTEGER}|{HEXADECIMAL_INTEGER}|{OCTAL_INTEGER}|{BINARY_INTEGER}
+
+FP_SUF [fFlL]
+
+DIGIT_SEQ [0-9][0-9']*[0-9]?
+FRAC_CONST {DIGIT_SEQ}"."|{DIGIT_SEQ}?"."{DIGIT_SEQ}
+FP_EXP [eE][+-]?{DIGIT_SEQ}
+DEC_FP1 {FRAC_CONST}{FP_EXP}?{FP_SUF}?
+DEC_FP2 {DIGIT_SEQ}{FP_EXP}{FP_SUF}
+
+HEX_DIGIT_SEQ [0-9a-fA-F][0-9a-fA-F']*[0-9a-fA-F]?
+HEX_FRAC_CONST {HEX_DIGIT_SEQ}"."|{HEX_DIGIT_SEQ}?"."{HEX_DIGIT_SEQ}
+BIN_EXP [pP][+-]?{DIGIT_SEQ}
+HEX_FP1 "0"[xX]{HEX_FRAC_CONST}{BIN_EXP}{FP_SUF}?
+HEX_FP2 "0"[xX]{HEX_DIGIT_SEQ}{BIN_EXP}{FP_SUF}?
+
+FLOAT_DECIMAL {DEC_FP1}|{DEC_FP2}
+FLOAT_HEXADECIMAL {HEX_FP1}|{HEX_FP2}
+FLOAT_NUMBER {FLOAT_DECIMAL}|{FLOAT_HEXADECIMAL}
+NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
+  //- end: NUMBER ---------------------------------------------------------------------------
 
 %option noyywrap
 
@@ -560,7 +600,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  //  absPath = QDir::cleanDirPath(yyextra->sourceFileDef->getPath()+"/"+absPath);
 					  //}
 
-                                          FileDef *fd=findFileDef(Doxygen::inputNameDict,yytext,ambig);
+                                          const FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,yytext,ambig);
 					  //printf("looking for include %s -> %s fd=%p\n",yytext,absPath.data(),fd);
 					  if (fd && fd->isLinkable())
 					  {
@@ -570,17 +610,16 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      QCString name = QDir::cleanDirPath(yytext).utf8();
 					      if (!name.isEmpty() && yyextra->sourceFileDef)
 					      {
-					        FileName *fn = Doxygen::inputNameDict->find(name);
+					        FileName *fn = Doxygen::inputNameLinkedMap->find(name);
 						if (fn)
 						{
-						  FileNameIterator fni(*fn);
-						  // for each include name
-						  for (fni.toFirst();!found && (fd=fni.current());++fni)
-						  {
-						    // see if this source file actually includes the file
-						    found = yyextra->sourceFileDef->isIncluded(fd->absFilePath());
-						    //printf("      include file %s found=%d\n",fd->absFilePath().data(),found);
-						  }
+						  // see if this source file actually includes the file
+                                                  auto it = std::find_if(fn->begin(),
+                                                                         fn->end(),
+                                                                         [&sfd=yyextra->sourceFileDef]
+                                                                         (const auto &lfd)
+                                                                         { return sfd->isIncluded(lfd->absFilePath()); });
+                                                  found = it!=fn->end();
 						}
 					      }
 					    }
@@ -598,7 +637,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    yyextra->code->codify(yytext);
 					  }
-					  char c=yyinput(yyscanner);
+					  char c=(char)yyinput(yyscanner);
 					  QCString text;
 					  text+=c;
 					  yyextra->code->codify(text);
@@ -1080,6 +1119,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           yyextra->parmType = yyextra->name;
 					  BEGIN(FuncCall);
                                         }
+<Body>"\\)"|"\\("                       {
+                                          yyextra->code->codify(yytext);
+                                        }
 <Body>[\\|\)\+\-\/\%\~\!]		{
   					  yyextra->code->codify(yytext);
   				          yyextra->name.resize(0);yyextra->type.resize(0);
@@ -1192,10 +1234,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
   					  yyextra->name+=yytext; 
 					}
-<Body>"("{B}*("*"{B}*)+{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func() but not "if (p) ..."
+<Body>"("{B}*("*"{B}*)+{SCOPENAME}+{B}*")"/{B}*	{  // (*p)->func() but not "if (p) ..."
 					  yyextra->code->codify(yytext);
-					  int s=0;while (s<(int)yyleng && !isId(yytext[s])) s++;
-                                          int e=(int)yyleng-1;while (e>=0 && !isId(yytext[e])) e--;
+					  uint s=0;while (s<(uint)yyleng && !isId(yytext[s])) s++;
+                                          uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
 					  QCString varname = ((QCString)yytext).mid(s,e-s+1); 
 					  addType(yyscanner);
   					  yyextra->name=varname; 
@@ -1215,7 +1257,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{RAWBEGIN}	{
                                           QCString text=yytext;
-                                          int i=text.find('R');
+                                          uint i=(uint)text.find('R');
                                           yyextra->code->codify(text.left(i+1));
 					  startFontClass(yyscanner,"stringliteral");
   					  yyextra->code->codify(yytext+i+1);
@@ -1232,6 +1274,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  yyextra->inForEachExpression = FALSE;
   					  BEGIN( SkipString );
   					}
+<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{NUMBER} { //Note similar code in commentcnv.l
+                                          if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
+  					  yyextra->code->codify(yytext);
+                                        }
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>\'	{
 					  startFontClass(yyscanner,"stringliteral");
   					  yyextra->code->codify(yytext);
@@ -1764,7 +1810,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  DBG_CTX((stderr,"yyextra->name=%s\n",yyextra->name.data()));
 					  if (index!=-1) 
 					  {
-					    QCString scope = yyextra->name.left(index);
+					    QCString scope = yyextra->name.left((uint)index);
 					    if (!yyextra->classScope.isEmpty()) scope.prepend(yyextra->classScope+"::");
 					    const ClassDef *cd=getResolvedClass(Doxygen::globalScope,yyextra->sourceFileDef,scope);
 					    if (cd)
@@ -1889,10 +1935,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
 					  BEGIN( MemberCall2 ); 
 					}
-<FuncCall,MemberCall2>("("{B}*("*"{B}*)+{ID}*{B}*")"{B}*)/("."|"->") { 
+<FuncCall,MemberCall2>("("{B}*("*"{B}*)+{ID}+{B}*")"{B}*)/("."|"->") { 
   					  yyextra->code->codify(yytext);
-					  int s=0;while (!isId(yytext[s])) s++;
-                                          int e=(int)yyleng-1;while (!isId(yytext[e])) e--;
+					  uint s=0;while (!isId(yytext[s])) s++;
+                                          uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
 					  yyextra->name=((QCString)yytext).mid(s,e-s+1); 
 					  BEGIN( MemberCall2 ); 
 					}
@@ -2104,8 +2150,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <*>"/*[tag:"[^\]\n]*"]*/"{B}*		{ // special pattern /*[tag:filename]*/ to force linking to a tag file
   					  yyextra->forceTagReference=yytext;
-					  int s=yyextra->forceTagReference.find(':');
-					  int e=yyextra->forceTagReference.findRev(']');
+					  uint s=(uint)yyextra->forceTagReference.find(':');
+					  uint e=(uint)yyextra->forceTagReference.findRev(']');
 					  yyextra->forceTagReference = yyextra->forceTagReference.mid(s+1,e-s-1);
   					}
 <*>\n{B}*"/*"[!*]/[^/*] 		{
@@ -2749,24 +2795,22 @@ static MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &name)
   }
 
   // look for a global member
-  if ((mn=Doxygen::functionNameSDict->find(name)))
+  if ((mn=Doxygen::functionNameLinkedMap->find(name)))
   {
     //printf("global var '%s'\n",name.data());
-    if (mn->count()==1) // global defined only once
+    if (mn->size()==1) // global defined only once
     {
-      MemberDef *md=mn->getFirst();
+      const std::unique_ptr<MemberDef> &md=mn->front();
       if (!md->isStatic() || md->getBodyDef()==yyextra->sourceFileDef)
       {
         yyextra->theCallContext.setScope(stripClassName(yyscanner,md->typeString(),md->getOuterScope()));
-        return md;
+        return md.get();
       }
       return 0;
     }
-    else if (mn->count()>1) // global defined more than once
+    else if (mn->size()>1) // global defined more than once
     {
-      MemberNameIterator it(*mn);
-      MemberDef *md;
-      for (;(md=it.current());++it)
+      for (const auto &md : *mn)
       {
 	//printf("mn=%p md=%p md->getBodyDef()=%p yyextra->sourceFileDef=%p\n",
 	//    mn,md,
@@ -2781,7 +2825,7 @@ static MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &name)
         {
           yyextra->theCallContext.setScope(stripClassName(yyscanner,md->typeString(),md->getOuterScope()));
 	  //printf("returning member %s in source file %s\n",md->name().data(),yyextra->sourceFileDef->name().data());
-          return md;
+          return md.get();
         }
       }
       return 0;
@@ -3225,7 +3269,7 @@ static void generateMemberLink(yyscan_t yyscanner,
     if (vcd && vcd->isLinkable())
     {
       //printf("Found class %s for variable '%s'\n",yyextra->classScope.data(),varName.data());
-      MemberName *vmn=Doxygen::memberNameSDict->find(varName);
+      MemberName *vmn=Doxygen::memberNameLinkedMap->find(varName);
       if (vmn==0)
       {
 	int vi;
@@ -3234,16 +3278,13 @@ static void generateMemberLink(yyscan_t yyscanner,
 	{
 	  ClassDef *jcd = getClass(vn.left(vi));
 	  vn=vn.right(vn.length()-vi-2);
-	  vmn=Doxygen::memberNameSDict->find(vn);
+	  vmn=Doxygen::memberNameLinkedMap->find(vn);
 	  //printf("Trying name '%s' scope=%s\n",vn.data(),scope.data());
 	  if (vmn)
 	  {
-	    MemberNameIterator vmni(*vmn);
-	    const MemberDef *vmd;
-	    for (;(vmd=vmni.current());++vmni)
+            for (const auto &vmd : *vmn)
 	    {
-	      if (/*(vmd->isVariable() || vmd->isFunction()) && */
-		  vmd->getClassDef()==jcd)
+	      if (vmd->getClassDef()==jcd)
 	      {
 		//printf("Found variable type=%s\n",vmd->typeString());
 		const ClassDef *mcd=stripClassName(yyscanner,vmd->typeString(),vmd->getOuterScope());
@@ -3259,12 +3300,9 @@ static void generateMemberLink(yyscan_t yyscanner,
       if (vmn)
       {
 	//printf("There is a variable with name '%s'\n",varName);
-	MemberNameIterator vmni(*vmn);
-	const MemberDef *vmd;
-	for (;(vmd=vmni.current());++vmni)
+        for (const auto &vmd : *vmn)
 	{
-	  if (/*(vmd->isVariable() || vmd->isFunction()) && */
-	      vmd->getClassDef()==vcd)
+	  if (vmd->getClassDef()==vcd)
 	  {
 	    //printf("Found variable type=%s\n",vmd->typeString());
 	    const ClassDef *mcd=stripClassName(yyscanner,vmd->typeString(),vmd->getOuterScope());
@@ -3667,14 +3705,14 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
 	      if (QCString(ictx->method->typeString())=="id")
 	      {
 		// see if the method name is unique, if so we link to it
-		MemberName *mn=Doxygen::memberNameSDict->find(ctx->methodName);
+		MemberName *mn=Doxygen::memberNameLinkedMap->find(ctx->methodName);
 		//printf("mn->count=%d ictx->method=%s ctx->methodName=%s\n",
 		//    mn==0?-1:(int)mn->count(),
 		//    ictx->method->name().data(),
 		//    ctx->methodName.data());
-		if (mn && mn->count()==1) // member name unique
+		if (mn && mn->size()==1) // member name unique
 		{
-		  ctx->method = mn->getFirst();
+		  ctx->method = mn->front().get();
 		}
 	      } 
 	      else
@@ -3723,7 +3761,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
         }
 	else // illegal marker
 	{
-	  ASSERT(!"invalid escape sequence");
+	  ASSERT("invalid escape sequence"==0);
 	}
       }
     }
@@ -3797,12 +3835,12 @@ static bool isCastKeyword(const QCString &s)
   return kw=="const_cast" || kw=="static_cast" || kw=="dynamic_cast" || kw=="reinterpret_cast";
 }
 
-static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int inputPosition = yyextra->inputPosition;
-  const char *s = yyextra->inputString + yyextra->inputPosition;
-  int c=0;
+  yy_size_t inputPosition = yyextra->inputPosition;
+  const char *s = yyextra->inputString + inputPosition;
+  yy_size_t c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
@@ -4004,4 +4042,6 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const 
   return;
 }
 
+#if USE_STATE2STRING
 #include "code.l.h"
+#endif

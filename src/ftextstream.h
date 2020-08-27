@@ -60,7 +60,8 @@ inline FTextStream &FTextStream::operator<<( const char* s)
 
 inline FTextStream &FTextStream::operator<<( const QCString &s)
 {
-  return operator<<(s.data());
+  if (m_dev) m_dev->writeBlock( s, s.length() );
+  return *this;
 }
 
 typedef FTextStream & (*FTSFUNC)(FTextStream &);// manipulator function

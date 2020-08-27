@@ -43,6 +43,8 @@ namespace Portable
   void           correct_path(void);
   void           setShortDir(void);
   const char *   strnstr(const char *haystack, const char *needle, size_t haystack_len);
+  const char *   devNull();
+  bool           checkForExecutable(const char *fileName);
 }
 
 

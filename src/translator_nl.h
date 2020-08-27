@@ -35,9 +35,9 @@ class TranslatorDutch : public Translator
      *  </pre>
      */
     QCString latexLanguageSupportCommand()
-    {
-      return "\\usepackage[dutch]{babel}\n";
-    }
+    { return "\\usepackage[dutch]{babel}\n"; }
+    QCString trISOLang()
+    { return "nl"; }
     QCString trRelatedFunctions()
     { return "Gerelateerde functies"; }
     QCString trRelatedSubscript()
@@ -1530,14 +1530,6 @@ class TranslatorDutch : public Translator
       return "Methode Documentatie";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Ontwerp Overzicht";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -1784,7 +1776,12 @@ class TranslatorDutch : public Translator
     { return "Data members"; }
     virtual QCString trDataMemberDocumentation()
     { return "Documentatie van data members"; }
-    //////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trDesignUnitDocumentation()
+    { return "Ontwerp Eenheid Documentatie"; }
 };
 
 #endif

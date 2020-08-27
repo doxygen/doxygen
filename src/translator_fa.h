@@ -91,6 +91,11 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "fa";
+    }
+
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
