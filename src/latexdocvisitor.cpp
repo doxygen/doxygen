@@ -1144,7 +1144,7 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
         if (span->colSpan>1) // row span is also part of a column span
         {
           m_t << "\\multicolumn{" << span->colSpan << "}{";
-          m_t <<  "}|}{}";
+          m_t <<  "c|}{}";
         }
         else // solitary row span
         {
