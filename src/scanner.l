@@ -60,6 +60,9 @@
 
 #define USE_STATE2STRING 0
 
+static AtomicInt  anonCount;
+static AtomicInt  anonNSCount;
+
 struct scannerYY_state
 {
   OutlineParserInterface *thisParser;
@@ -105,8 +108,6 @@ struct scannerYY_state
   int              yyBegLineNr  = 1 ;
   int              yyColNr      = 1 ;
   int              yyBegColNr   = 1 ;
-  int              anonCount    = 0 ;
-  int              anonNSCount  = 0 ;
   QCString         yyFileName;
   MethodTypes      mtype = Method;
   bool             stat = false;
@@ -3784,7 +3785,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  BEGIN(MemberSpecSkip); 
   					}
 <TypedefName>";"			{ /* typedef of anonymous type */
-					  yyextra->current->name.sprintf("@%d",yyextra->anonCount++);
+					  yyextra->current->name.sprintf("@%d",anonCount++);
 					  if ((yyextra->current->section == Entry::ENUM_SEC) || (yyextra->current->spec&Entry::Enum))
 					  {
 					    yyextra->current->program+=','; // add field terminator
@@ -3859,7 +3860,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 						{
 						  // anonymous compound yyextra->inside -> insert dummy variable name
 						  //printf("Adding anonymous variable for scope %s\n",p->name.data());
-						  yyextra->msName.sprintf("@%d",yyextra->anonCount++); 
+						  yyextra->msName.sprintf("@%d",anonCount++); 
 						  break;
 						}
 					      }
@@ -5644,12 +5645,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      }
 					      else // use invisible name
 					      {
-					        yyextra->current->name.sprintf("@%d",yyextra->anonNSCount);
+					        yyextra->current->name.sprintf("@%d",anonNSCount.load());
 					      }
 					    }
 					    else
 					    {
-					      yyextra->current->name.sprintf("@%d",yyextra->anonCount++);
+					      yyextra->current->name.sprintf("@%d",anonCount++);
 					    }
 					  }
 					  yyextra->curlyCount=0;
@@ -7247,7 +7248,6 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->column = 0;
   scannerYYrestart(0,yyscanner);
 
-  //yyextra->anonCount     = 0;  // don't reset per file
   //depthIf       = 0;
   yyextra->protection    = Public;
   yyextra->mtype         = Method;
@@ -7301,7 +7301,7 @@ static void parseMain(yyscan_t yyscanner,
 
   parseCompounds(yyscanner,rt);
 
-  yyextra->anonNSCount++;
+  anonNSCount++;
 
   // add additional entries that were created during processing
   for (auto &kv: yyextra->outerScopeEntries)
