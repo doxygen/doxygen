@@ -6348,7 +6348,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    REJECT;
 					  }
   					}
-<DocBlock>[^@*~\/\\\n]+			{ // any character that isn't special
+<DocBlock>^({B}*">")+{B}.*	{ // block quote
+  					  yyextra->docBlock+=yytext;
+  					}
+<DocBlock>[^@*~`\/\\\n]+			{ // any character that isn't special
   					  yyextra->docBlock+=yytext;
   					}
 <DocBlock>\n				{ // newline
