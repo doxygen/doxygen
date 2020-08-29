@@ -650,16 +650,22 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
   					  yyextra->code->codify(yytext);
   					  BEGIN( SkipCPP ) ; 
 					}
+<SkipCPP>\"				{ 
+  					  yyextra->code->codify(yytext);
+  					  yyextra->lastStringContext=YY_START;
+  					  BEGIN( SkipString ) ; 
+					}
 <SkipCPP>.				{ 
   					  yyextra->code->codify(yytext);
 					}
-<SkipCPP>[^\n\/\\]+			{
+<SkipCPP>[^\n\/\\\"]+			{
   					  yyextra->code->codify(yytext);
   					}
 <SkipCPP>\\[\r]?\n			{ 
   					  codifyLines(yyscanner,yytext);
 					}
-<SkipCPP>"//"				{ 
+<SkipCPP>"//"/[^/!]			{ 
+  					  REJECT;
   					  yyextra->code->codify(yytext);
 					}
 <Body,FuncCall>"{"			{ 
@@ -2004,15 +2010,25 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
   					  yyextra->yyLineNr+=QCString(yytext).contains('\n');
 					}
 <RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*({B}*(("//@"[{}])|("/*@"[{}]"*/")){B}*\n)? {
-  					  yyextra->yyLineNr+=QCString(yytext).contains('\n');
-					  nextCodeLine(yyscanner);
 					  if (yyextra->lastSpecialCContext==SkipCxxComment)
 					  { // force end of C++ comment here
+  					    yyextra->yyLineNr+=QCString(yytext).contains('\n');
+					    nextCodeLine(yyscanner);
 					    endFontClass(yyscanner);
 					    BEGIN( yyextra->lastCContext ) ;
 					  }
 					  else
 					  {
+  					    yyextra->yyLineNr+=QCString(yytext).contains('\n');
+                                            if (yytext[yyleng-1]=='\n')
+                                            {
+                                              yyextra->yyLineNr--;
+                                              unput('\n');
+                                            }
+                                            else
+                                            {
+					      nextCodeLine(yyscanner);
+                                            }
   					    BEGIN(yyextra->lastSpecialCContext);
 					  }
   					}
@@ -2033,7 +2049,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					  if (YY_START==SkipCPP) REJECT;
   					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
-					    yyextra->yyLineNr+=((QCString)yytext).contains('\n');
+  					    yyextra->yyLineNr+=QCString(yytext).contains('\n');
 					    nextCodeLine(yyscanner);
 					  }
 					  else
@@ -2048,10 +2064,10 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					    BEGIN( yyextra->lastCContext ) ;
 					  }
   					}
-<SkipCPP>\n/.*\n			{ 
+<SkipCPP>\n/.*\n			{
 					  endFontClass(yyscanner);
-  					  codifyLines(yyscanner,yytext);
 					  BEGIN( yyextra->lastSkipCppContext ) ;
+                                          unput('\n');
 					}
 <*>\n{B}*"//@"[{}].*\n			{ // remove one-line group marker
   					  if (Config_getBool(STRIP_CODE_COMMENTS))
@@ -2134,14 +2150,9 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					    endFontClass(yyscanner);
 					  }
   					}
-<*>"//"[!/][^\n]*\n			{ // strip special one-line comment
+<*>"//"[!/][^\n]*/\n			{ // strip special one-line comment
                                           if (YY_START==SkipComment || YY_START==SkipString) REJECT;
-  					  if (Config_getBool(STRIP_CODE_COMMENTS))
-					  {
-					    char c[2]; c[0]='\n'; c[1]=0;
-					    codifyLines(yyscanner,c);
-					  }
-					  else
+  					  if (!Config_getBool(STRIP_CODE_COMMENTS))
 					  {
 					    startFontClass(yyscanner,"comment");
 					    codifyLines(yyscanner,yytext);
