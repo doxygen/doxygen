@@ -2020,7 +2020,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					  else
 					  {
   					    yyextra->yyLineNr+=QCString(yytext).contains('\n');
-                                            if (QCString(yytext).at(strlen(yytext)-1) == '\n')
+                                            if (yytext[yyleng-1]=='\n')
                                             {
                                               yyextra->yyLineNr--;
                                               unput('\n');
@@ -2049,7 +2049,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					  if (YY_START==SkipCPP) REJECT;
   					  if (Config_getBool(STRIP_CODE_COMMENTS))
 					  {
-					    yyextra->yyLineNr+=((QCString)yytext).contains('\n');
+  					    yyextra->yyLineNr+=QCString(yytext).contains('\n');
 					    nextCodeLine(yyscanner);
 					  }
 					  else
@@ -2064,10 +2064,10 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					    BEGIN( yyextra->lastCContext ) ;
 					  }
   					}
-<SkipCPP>\n/.*\n			{ 
+<SkipCPP>\n/.*\n			{
 					  endFontClass(yyscanner);
-  					  codifyLines(yyscanner,yytext);
 					  BEGIN( yyextra->lastSkipCppContext ) ;
+                                          unput('\n');
 					}
 <*>\n{B}*"//@"[{}].*\n			{ // remove one-line group marker
   					  if (Config_getBool(STRIP_CODE_COMMENTS))
