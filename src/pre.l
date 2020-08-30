@@ -2036,7 +2036,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
   QCString arg;
   int argCount=0;
   bool done=FALSE;
-  
+
   // PHASE 1: read the macro arguments
   if (def->nargs==0)
   {
@@ -2395,7 +2395,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
 	}
 	else if (def && def->nargs>=0) // function macro
 	{
-          //printf(" >>>> call replaceFunctionMacro\n");
+          //printf(" >>>> call replaceFunctionMacro expr='%s'\n",qPrint(expr));
 	  replaced=replaceFunctionMacro(yyscanner,expr,rest,p+l,len,def,expMacro,level);
           //printf(" <<<< call replaceFunctionMacro: replaced=%d\n",replaced);
 	  len+=l;
@@ -3186,22 +3186,34 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
         i_obrace<i_cbrace
        ) // predefined function macro definition
     {
-      //printf("predefined function macro '%s'\n",defStr);
-      QRegExp reId("[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*"); // regexp matching an id
+      bool varArgs = false;
+      int count = 0;
+      int i,pi,l;
       std::map<std::string,int> argMap;
-      int i=i_obrace+1,pi,l,count=0;
-      // gather the formal arguments in a dictionary 
-      while (i<i_cbrace && (pi=reId.match(ds,i,&l)))
+      QRegExp reId("[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*"); // regexp matching an id
+      if (ds.mid(i_obrace+1,i_cbrace-i_obrace-1)=="...")
       {
-        if (l>0) // see bug375037
+        varArgs = true;
+        argMap.emplace("__VA_ARGS__",count);
+        count++;
+      }
+      else
+      {
+        //printf("predefined function macro '%s'\n",qPrint(ds.mid(i_obrace+1,i_cbrace-i_obrace-1)));
+        i=i_obrace+1;
+        // gather the formal arguments in a dictionary 
+        while (i<i_cbrace && (pi=reId.match(ds,i,&l)))
         {
-          argMap.emplace(toStdString(ds.mid(pi,l)),count);
-          count++;
-          i=pi+l;
-        }
-        else
-        {
-          i++;
+          if (l>0) // see bug375037
+          {
+            argMap.emplace(toStdString(ds.mid(pi,l)),count);
+            count++;
+            i=pi+l;
+          }
+          else
+          {
+            i++;
+          }
         }
       }
       // strip definition part
@@ -3241,6 +3253,7 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
         def.nonRecursive = nonRecursive;
         def.fileDef      = state->yyFileDef;
         def.fileName     = fileName;
+        def.varArgs      = varArgs;
         state->contextDefines.insert(std::make_pair(def.name.str(),def));
 
         //printf("#define '%s' '%s' #nargs=%d\n",
