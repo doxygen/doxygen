@@ -2787,6 +2787,7 @@ or
  as specified with \ref cfg_latex_cmd_name "LATEX_CMD_NAME"
  to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
  files.  Set this option to \c YES, to get a higher quality PDF documentation.
+ Other output formats, such as PostScript, are not supported if this tag is set to YES.
 <br>
  See also section \ref cfg_latex_cmd_name "LATEX_CMD_NAME" for selecting the engine.
 ]]>
