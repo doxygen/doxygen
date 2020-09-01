@@ -149,6 +149,7 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
   				  addType(yyscanner);
   				}
 <Start>{B}*"("({ID}"::")*{B}*[&*]({B}*("const"|"volatile"){B}+)?	{
+                                  if (yyextra->insidePHP) REJECT;
   				  addType(yyscanner);
 				  QCString text=yytext;
 				  yyextra->type+=text.stripWhiteSpace();
