@@ -2285,6 +2285,10 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					  yyextra->yyColNr++;
   					  codifyLines(yyscanner,yytext); 
   					}
+<*>[\x80-\xFF]*                         { // keep utf8 characters together...
+					  yyextra->yyColNr+=yyleng;
+  					  yyextra->code->codify(yytext);
+                                        }
 <*>.					{
 					  yyextra->yyColNr++;
   					  yyextra->code->codify(yytext);
