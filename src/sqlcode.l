@@ -190,6 +190,9 @@ commentclose    "\*/"
                         codifyLines(yytext,yyscanner);
                     }
 
+[\x80-\xFF]*        { // keep utf8 characters together...
+                        codifyLines(yytext,yyscanner);
+                    }
 .                   {
                         codifyLines(yytext,yyscanner);
                     }
