@@ -292,10 +292,8 @@ void LatexDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::Code: 
       {
         m_t << "\n\\begin{DoxyCode}\n";
-        Doxygen::parserManager->getParser(lang)
-                              ->parseCode(m_ci,s->context(),s->text(),langExt,
-                                          s->isExample(),s->exampleFile());
-        m_t << "\\end{DoxyCode}\n";
+	m_t << s->text();
+        m_t << "\n\\end{DoxyCode}\n";
       }
       break;
     case DocVerbatim::Verbatim: 
