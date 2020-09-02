@@ -1272,6 +1272,17 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
   					}
 <*>^{BS}"type"{BS}"="                   { g_code->codify(yytext); }
 
+<*>[\x80-\xFF]*                         { // keep utf8 characters together...
+                                          if (g_isFixedForm && yy_my_start > fixedCommentAfter)
+                                          {
+                                            startFontClass("comment");
+                                            codifyLines(yytext);
+                                          }
+                                          else
+                                          {
+                                            g_code->codify(yytext);
+                                          }
+                                        }
 <*>.                                    {
                                           if (g_isFixedForm && yy_my_start > fixedCommentAfter)
                                           {
