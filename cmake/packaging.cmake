@@ -10,7 +10,7 @@
 # - http://archive.ubuntu.com/ubuntu/pool/main/d/doxygen (http://old-releases.ubuntu.com/ubuntu/pool/main/d/doxygen)
 # - http://rpmfind.net/linux/rpm2html/search.php?query=doxygen
 
-set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+set(CPACK_SET_DESTDIR      ON)
 set(CPACK_STRIP_FILES      ON)
 set(CPACK_PACKAGE_NAME     ${PROJECT_NAME} )
 set(CPACK_PACKAGE_VERSION  ${VERSION})
