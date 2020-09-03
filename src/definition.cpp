@@ -613,6 +613,8 @@ void DefinitionImpl::_setBriefDescription(const char *b,const char *briefFile,in
                          outputLanguage!="Korean";
   QCString brief = b;
   brief = brief.stripWhiteSpace();
+  brief = stripLeadingAndTrailingEmptyLines(brief,briefLine);
+  brief = brief.stripWhiteSpace();
   if (brief.isEmpty()) return;
   uint bl = brief.length();
   if (bl>0 && needsDot) // add punctuation if needed
